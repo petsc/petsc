@@ -162,7 +162,7 @@ EXTERN_C_END
 
    This matrix type is identical to MATSEQCSRPERM when constructed with a single process communicator,
    and MATMPICSRPERM otherwise.  As a result, for single process communicators, 
-  MatSeqCSRPERMSetPreallocation is supported, and similarly MatMPICSRPERMSetPreallocation is supported 
+  MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.
 
@@ -183,7 +183,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CSRPERM(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQCSRPERM);CHKERRQ(ierr);
   } else {

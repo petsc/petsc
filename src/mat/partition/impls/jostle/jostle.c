@@ -37,28 +37,26 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
     int  size, rank, i;
     Mat mat = part->adj, matMPI;
     Mat_MPIAdj *adj = (Mat_MPIAdj *) mat->data;
-    MatPartitioning_Jostle *jostle_struct =
-        (MatPartitioning_Jostle *) part->data;
+    MatPartitioning_Jostle *jostle_struct = (MatPartitioning_Jostle *) part->data;
     PetscTruth flg;
 #ifdef PETSC_HAVE_UNISTD_H
-    int fd_stdout, fd_pipe[2], count;
+    int fd_stdout, fd_pipe[2], count,err;
 #endif
 
     PetscFunctionBegin;
 
     /* check that the number of partitions is equal to the number of processors */
-    ierr = MPI_Comm_rank(mat->comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
-    if (part->n != size) {
-        SETERRQ(PETSC_ERR_SUP, "Supports exactly one domain per processor");
-    }
+    ierr = MPI_Comm_rank(((PetscObject)mat)->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)mat)->comm, &size);CHKERRQ(ierr);
+    if (part->n != size) SETERRQ(PETSC_ERR_SUP, "Supports exactly one domain per processor");
 
     /* convert adjacency matrix to MPIAdj if needed*/
     ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
     if (!flg) {
         ierr = MatConvert(mat, MATMPIADJ, MAT_INITIAL_MATRIX, &matMPI);CHKERRQ(ierr);
-    } else
+    } else {
         matMPI = mat;
+    }
 
     adj = (Mat_MPIAdj *) matMPI->data;  /* adj contains adjacency graph */
     {
@@ -101,7 +99,7 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
 
         /* library call */
         pjostle_init(&size, &rank);
-        pjostle_comm(&matMPI->comm);
+        pjostle_comm(&((PetscObject)matMPI)->comm);
         jostle_env("format = contiguous");
         jostle_env("timer = off");
 
@@ -128,7 +126,8 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
 
 #ifdef PETSC_HAVE_UNISTD_H
         ierr = PetscMalloc(SIZE_LOG * sizeof(char), &(jostle_struct->mesg_log));CHKERRQ(ierr);
-        fflush(stdout);
+        err = fflush(stdout);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
         count = read(fd_pipe[0], jostle_struct->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)
             count = 0;
@@ -145,7 +144,7 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
         ierr = PetscFree(degree);CHKERRQ(ierr);
 
         /* Creation of the index set */
-        ierr = ISCreateGeneral(part->comm, mat->m, partition, partitioning);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(((PetscObject)part)->comm, mat->m, partition, partitioning);CHKERRQ(ierr);
 
         if (matMPI != mat) {
             ierr = MatDestroy(matMPI);CHKERRQ(ierr);
@@ -173,7 +172,7 @@ PetscErrorCode MatPartitioningView_Jostle(MatPartitioning part, PetscViewer view
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", jostle_struct->mesg_log);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Jostle partitioner",((PetscObject) viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Jostle partitioner",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -271,10 +270,7 @@ PetscErrorCode MatPartitioningDestroy_Jostle(MatPartitioning part)
     PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Jostle"
-/*@C
+/*MC
    MAT_PARTITIONING_JOSTLE - Creates a partitioning context via the external package Jostle.
 
    Collective on MPI_Comm
@@ -294,14 +290,19 @@ EXTERN_C_BEGIN
 
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
-@*/
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Jostle"
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning part)
 {
     PetscErrorCode ierr;
     MatPartitioning_Jostle *jostle_struct;
 
     PetscFunctionBegin;
-    ierr = PetscNew(MatPartitioning_Jostle, &jostle_struct);CHKERRQ(ierr);
+    ierr = PetscNewLog(part,MatPartitioning_Jostle, &jostle_struct);CHKERRQ(ierr);
+    part->data = (void*) jostle_struct;
 
     jostle_struct->nbvtxcoarsed = 20;
     jostle_struct->output = 0;
@@ -312,7 +313,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning p
     part->ops->view = MatPartitioningView_Jostle;
     part->ops->destroy = MatPartitioningDestroy_Jostle;
     part->ops->setfromoptions = MatPartitioningSetFromOptions_Jostle;
-    part->data = (void*) jostle_struct;
 
     PetscFunctionReturn(0);
 }

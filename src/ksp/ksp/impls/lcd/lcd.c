@@ -1,25 +1,4 @@
 #define PETSCKSP_DLL
-/*
-    This file implements the LCD (left conjugate direction) method in PETSc.
-    References: 
-   - J.Y. Yuan, G.H.Golub, R.J. Plemmons, and W.A.G. Cecilio. Semiconjugate
-     direction methods for real positive definite system. BIT Numerical
-     Mathematics, 44(1):189-207,2004.
-   - Y. Dai and J.Y. Yuan. Study on semi-conjugate direction methods for
-     non-symmetric systems. International Journal for Numerical Methods in
-     Engineering, 60:1383-1399,2004.
-   - L. Catabriga, A.L.G.A. Coutinho, and L.P.Franca. Evaluating the LCD
-     algorithm for solving linear systems of equations arising from implicit
-     SUPG formulation of compressible flows. International Journal for
-     Numerical Methods in Engineering, 60:1513-1534,2004 
-   - L. Catabriga, A. M. P. Valli, B. Z. Melotti, L. M. Pessoa,
-     A. L. G. A. Coutinho, Performance of LCD iterative method in the finite
-     element and finite difference solution of convection-diffusion
-     equations,  Communications in Numerical Methods in Engineering, (Early
-     View).
-
-  Contributed by: Lucia Catabriga <luciac@ices.utexas.edu>
-*/
 
 #include "src/ksp/ksp/impls/lcd/lcdctx.h"
 #undef __FUNCT__  
@@ -37,16 +16,16 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
      so generate an error otherwise.
   */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,"No right preconditioning for KSPCG");
+    SETERRQ(2,"No right preconditioning for KSPLCD");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,"No symmetric preconditioning for KSPCG");
+    SETERRQ(2,"No symmetric preconditioning for KSPLCD");
   }
 
   /* get work vectors needed by LCD */
   ierr = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);
  
-  ierr = VecDuplicateVecs(ksp->vec_rhs,restart+1,&lcd->P); CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(ksp->vec_rhs, restart + 1, &lcd->Q); CHKERRQ(ierr); 
+  ierr = VecDuplicateVecs(ksp->work[0],restart+1,&lcd->P); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ksp->work[0], restart + 1, &lcd->Q); CHKERRQ(ierr); 
   ierr = PetscLogObjectMemory(ksp,2*(restart+2)*sizeof(Vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -79,7 +58,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
   PetscFunctionBegin;
   
   ierr = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   lcd            = (KSP_LCD*)ksp->data;
   X              = ksp->vec_sol;
@@ -149,7 +128,7 @@ PetscErrorCode  KSPSolve_LCD(KSP ksp)
     }
     ierr = VecCopy(lcd->P[it],lcd->P[0]);CHKERRQ(ierr);
   }
-  if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (ksp->its >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
   ierr = VecCopy(X,ksp->vec_sol);
   
   PetscFunctionReturn(0);
@@ -167,11 +146,9 @@ PetscErrorCode KSPDestroy_LCD(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-
-  VecDestroyVecs(lcd->P, lcd->restart+1);
-  VecDestroyVecs(lcd->Q, lcd->restart+1);
-  
-  ierr = PetscFree(lcd);CHKERRQ(ierr);
+  if (lcd->P) { ierr = VecDestroyVecs(lcd->P, lcd->restart+1);CHKERRQ(ierr); }
+  if (lcd->Q) { ierr = VecDestroyVecs(lcd->Q, lcd->restart+1);CHKERRQ(ierr); }
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -224,6 +201,41 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+/*MC
+     KSPLCD -  Implements the LCD (left conjugate direction) method in PETSc.
+
+   Options Database Keys:
++   -ksp_lcd_restart - number of vectors conjudate
+-   -ksp_lcd_haptol - tolerance for exact convergence (happing ending)
+
+   Level: beginner
+
+
+    References: 
+   - J.Y. Yuan, G.H.Golub, R.J. Plemmons, and W.A.G. Cecilio. Semiconjugate
+     direction methods for real positive definite system. BIT Numerical
+     Mathematics, 44(1):189-207,2004.
+   - Y. Dai and J.Y. Yuan. Study on semi-conjugate direction methods for
+     non-symmetric systems. International Journal for Numerical Methods in
+     Engineering, 60:1383-1399,2004.
+   - L. Catabriga, A.L.G.A. Coutinho, and L.P.Franca. Evaluating the LCD
+     algorithm for solving linear systems of equations arising from implicit
+     SUPG formulation of compressible flows. International Journal for
+     Numerical Methods in Engineering, 60:1513-1534,2004 
+   - L. Catabriga, A. M. P. Valli, B. Z. Melotti, L. M. Pessoa,
+     A. L. G. A. Coutinho, Performance of LCD iterative method in the finite
+     element and finite difference solution of convection-diffusion
+     equations,  Communications in Numerical Methods in Engineering, (Early
+     View).
+
+  Contributed by: Lucia Catabriga <luciac@ices.utexas.edu>
+
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+           KSPCGSetType(), KSPLCDSetRestart(), KSPLCDSetHapTol()
+
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPCreate_LCD"
@@ -233,9 +245,7 @@ PetscErrorCode KSPCreate_LCD(KSP ksp)
   KSP_LCD         *lcd;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_LCD,&lcd);CHKERRQ(ierr);
-  ierr = PetscMemzero(lcd,sizeof(KSP_LCD));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_LCD));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_LCD,&lcd);CHKERRQ(ierr);
   ksp->data                      = (void*)lcd;
   ksp->pc_side                   = PC_LEFT;
   lcd->restart                   = 30;

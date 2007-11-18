@@ -9,6 +9,8 @@ PETSC_EXTERN_CXX_BEGIN
 
 extern PETSCVEC_DLLEXPORT PetscCookie IS_COOKIE;
 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char[]);
+
 /*S
      IS - Abstract PETSc object that indexing.
 
@@ -25,6 +27,7 @@ typedef struct _p_IS* IS;
 */
 typedef enum {IS_GENERAL=0,IS_STRIDE=1,IS_BLOCK = 2} ISType;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],IS *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneralNC(MPI_Comm,PetscInt,const PetscInt[],IS *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneralWithArray(MPI_Comm,PetscInt,PetscInt[],IS *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateBlock(MPI_Comm,PetscInt,PetscInt,const PetscInt[],IS *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
@@ -46,7 +49,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISEqual(IS,IS,PetscTruth *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSort(IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSorted(IS,PetscTruth *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISDifference(IS,IS,IS*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSum(IS*,IS);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSum(IS,IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISExpand(IS,IS,IS*);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlock(IS,PetscTruth*);
@@ -119,14 +122,14 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalTo
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 
-#define ISLocalToGlobalMappingApply(mapping,N,in,out) 0;\
-{\
-  PetscInt _i,*_idx = (mapping)->indices,_Nmax = (mapping)->n;\
-  for (_i=0; _i<N; _i++) {\
-    if ((in)[_i] < 0) {(out)[_i] = (in)[_i]; continue;}\
-    if ((in)[_i] >= _Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",(in)[_i],_Nmax,_i);\
-    (out)[_i] = _idx[(in)[_i]];\
-  }\
+PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[]){
+  PetscInt i,*idx = mapping->indices,Nmax = mapping->n;
+  for (i=0; i<N; i++) {
+    if (in[i] < 0) {out[i] = in[i]; continue;}
+    if (in[i] >= Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",in[i],Nmax,i);
+    out[i] = idx[in[i]];
+  }
+  PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------------------*/
@@ -136,12 +139,18 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGl
 
     Level: beginner
 
-$   IS_COLORING_LOCAL - does not include the colors for ghost points
-$   IS_COLORING_GHOSTED - includes colors for ghost points
+$   IS_COLORING_GLOBAL - does not include the colors for ghost points, this is used when the function 
+$                        is called synchronously in parallel. This requires generating a "parallel coloring".
+$   IS_COLORING_GHOSTED - includes colors for ghost points, this is used when the function can be called
+$                         seperately on individual processes with the ghost points already filled in. Does not
+$                         require a "parallel coloring", rather each process colors its local + ghost part.
+$                         Using this can result in much less parallel communication. In the paradigm of 
+$                         DAGetLocalVector() and DAGetGlobalVector() this could be called IS_COLORING_LOCAL
 
 .seealso: DAGetColoring()
 E*/
-typedef enum {IS_COLORING_LOCAL,IS_COLORING_GHOSTED} ISColoringType;
+typedef enum {IS_COLORING_GLOBAL,IS_COLORING_GHOSTED} ISColoringType;
+extern const char *ISColoringTypes[];
 typedef unsigned PETSC_IS_COLOR_VALUE_TYPE ISColoringValue;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,PetscInt*,ISColoringValue*[]);
 

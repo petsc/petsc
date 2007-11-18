@@ -2,7 +2,7 @@
 // File:          Ex1_System_Impl.cxx
 // Symbol:        Ex1.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for Ex1.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -39,9 +39,9 @@
 // DO-NOT-DELETE splicer.end(Ex1.System._includes)
 
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
-Ex1::System_impl::System_impl() : StubBase(reinterpret_cast< 
-  void*>(::Ex1::System::_wrapObj(reinterpret_cast< void*>(this))),false) ,
-  _wrapped(true){ 
+Ex1::System_impl::System_impl() : StubBase(reinterpret_cast< void*>(
+  ::Ex1::System::_wrapObj(reinterpret_cast< void*>(this))),false) , _wrapped(
+  true){ 
   // DO-NOT-DELETE splicer.begin(Ex1.System._ctor2)
   // Insert-Code-Here {Ex1.System._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(Ex1.System._ctor2)
@@ -203,13 +203,6 @@ Ex1::System_impl::go_impl ()
 #undef __FUNCT__
 #define __FUNCT__ "Ex1::System_impl::go"
   
-  // Parameter port stuff here (instead of argc, argv);
-  // for now pass fake argc and argv to solver
-  int argc = 1; 
-  char *argv[1];
-  argv[0] = (char*) malloc(10*sizeof(char));
-  strcpy(argv[0],"ex1");
-
   TOPS::Solver solver = ::babel_cast< TOPS::Structured::Solver >( 
   	myServices.getPort("TOPS.Structured.Solver") );
   if (solver._is_nil()) {
@@ -218,7 +211,7 @@ Ex1::System_impl::go_impl ()
     return 1;
   }
 
-  solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
+  solver.Initialize();
   
   solver.solve();
 

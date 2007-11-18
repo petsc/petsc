@@ -16,7 +16,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_ND(Mat mat,const MatOrderingType t
   PetscTruth     done;
 
   PetscFunctionBegin;
-  ierr = MatGetRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ1(PETSC_ERR_SUP,"Cannot get rows for matrix type %s",((PetscObject)mat)->type_name);
 
   ierr = PetscMalloc((4*nrow +1) * sizeof(PetscInt),&mask);CHKERRQ(ierr);
@@ -25,7 +25,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_ND(Mat mat,const MatOrderingType t
   ls   = xls  + nrow + 1;
 
   SPARSEPACKgennd(&nrow,ia,ja,mask,perm,xls,ls);
-  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,1,PETSC_TRUE,PETSC_TRUE,&nrow,&ia,&ja,&done);CHKERRQ(ierr);
 
   /* shift because Sparsepack indices start at one */
   for (i=0; i<nrow; i++) perm[i]--;

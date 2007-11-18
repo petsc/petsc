@@ -8,21 +8,21 @@ EXAMPLESC	 = ex10.c
 EXAMPLESF	 =
 MANSEC          = SNES
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex10: ex10.o  chkopts
 	-$(CLINKER) -o ex10 ex10.o $(PETSC_LIB)
 	$(RM) ex10.o
 #-----------------------------------------------------------------
 runex10:
-	-@$(MPIRUN) -np 2 ./ex10 -snes_smonitor > ex10_1.tmp 2>&1;   \
+	-@$(MPIEXEC) -np 2 ./ex10 -snes_monitor_short > ex10_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
 
 TESTEXAMPLES_C_NOCOMPLEX	 = ex10.PETSc runex10 ex10.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test
 
 
 

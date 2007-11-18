@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
+#include "include/private/matimpl.h"  /*I   "petscmat.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMultEqual"
@@ -37,13 +37,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
   PetscCheckSameComm(A,1,B,2);
-  ierr = PetscRandomCreate(A->comm,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(((PetscObject)A)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecCreate(A->comm,&x);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject)A)->comm,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,an,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   
-  ierr = VecCreate(A->comm,&s1);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject)A)->comm,&s1);CHKERRQ(ierr);
   ierr = VecSetSizes(s1,am,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
@@ -63,7 +63,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(0,"Error: %D-th MatMult() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %D-th MatMult() %G\n",k,r1);CHKERRQ(ierr);
       break;
     } 
   }
@@ -107,13 +107,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTr
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
   PetscCheckSameComm(A,1,B,2);
-  ierr = PetscRandomCreate(A->comm,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(((PetscObject)A)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecCreate(A->comm,&x);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject)A)->comm,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,an,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
-  ierr = VecCreate(A->comm,&s1);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject)A)->comm,&s1);CHKERRQ(ierr);
   ierr = VecSetSizes(s1,am,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
@@ -135,7 +135,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTr
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(0,"Error: %d-th MatMultAdd() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %d-th MatMultAdd() %G\n",k,r1);CHKERRQ(ierr);
       break;
     }
   }
@@ -180,13 +180,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,P
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
   PetscCheckSameComm(A,1,B,2);
-  ierr = PetscRandomCreate(A->comm,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(((PetscObject)A)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecCreate(A->comm,&x);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject)A)->comm,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,am,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
   
-  ierr = VecCreate(A->comm,&s1);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject)A)->comm,&s1);CHKERRQ(ierr);
   ierr = VecSetSizes(s1,an,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
@@ -206,7 +206,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,P
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(0,"Error: %d-th MatMultTranspose() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %d-th MatMultTranspose() %G\n",k,r1);CHKERRQ(ierr);
       break;
     } 
   }
@@ -250,13 +250,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt 
   ierr = MatGetLocalSize(B,&bm,&bn);CHKERRQ(ierr);
   if (am != bm || an != bn) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D %D %D",am,bm,an,bn);
   PetscCheckSameComm(A,1,B,2);
-  ierr = PetscRandomCreate(A->comm,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(((PetscObject)A)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = VecCreate(A->comm,&x);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject)A)->comm,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,am,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
-  ierr = VecCreate(A->comm,&s1);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject)A)->comm,&s1);CHKERRQ(ierr);
   ierr = VecSetSizes(s1,an,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(s1);CHKERRQ(ierr);
   ierr = VecDuplicate(s1,&s2);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt 
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(0,"Error: %d-th MatMultTransposeAdd() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %d-th MatMultTransposeAdd() %G\n",k,r1);CHKERRQ(ierr);
       break;
     }
   }

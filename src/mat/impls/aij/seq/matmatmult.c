@@ -97,7 +97,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = PetscMemzero(ca,(ci[am]+1)*sizeof(MatScalar));CHKERRQ(ierr);
   
   /* put together the new symbolic matrix */
-  ierr = MatCreateSeqAIJWithArrays(A->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,am,bn,ci,cj,ca,C);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* These are PETSc arrays, so change flags so arrays can be deleted by PETSc */
@@ -106,9 +106,16 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   c->free_ij  = PETSC_TRUE;
   c->nonew    = 0;
 
-  if (nspacedouble){
-    ierr = PetscInfo5((*C),"nspacedouble:%D, nnz(A):%D, nnz(B):%D, fill:%G, nnz(C):%D\n",nspacedouble,ai[am],bi[bm],fill,ci[am]);CHKERRQ(ierr);
+#if defined(PETSC_USE_INFO)
+  if (ci[am] != 0) {
+    PetscReal afill = ((PetscReal)ci[am])/(ai[am]+bi[bm]);
+    if (afill < 1.0) afill = 1.0;
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatMatMult(A,B,MatReuse,%G,&C) for best performance.;\n",afill);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
   }
+#endif
   PetscFunctionReturn(0);
 }
 

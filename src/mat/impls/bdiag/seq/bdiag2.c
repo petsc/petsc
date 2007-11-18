@@ -188,16 +188,15 @@ PetscErrorCode MatGetValues_SeqBDiag_1(Mat A,PetscInt m,const PetscInt im[],Pets
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscInt     kk,ldiag,row,j,k;
-  PetscScalar  zero = 0.0;
   PetscTruth   dfound;
 
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
+    if (row < 0) {v += n; continue;} /* SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row"); */
     if (row >= A->rmap.N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     for (j=0; j<n; j++) {
-      if (in[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
+      if (in[j] < 0) {v++; continue;} SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
       if (in[j] >= A->cmap.n) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
       ldiag = row - in[j]; /* diagonal number */
       dfound = PETSC_FALSE;
@@ -208,7 +207,7 @@ PetscErrorCode MatGetValues_SeqBDiag_1(Mat A,PetscInt m,const PetscInt im[],Pets
           break;
         }
       }
-      if (!dfound) *v++ = zero;
+      if (!dfound) *v++ = 0.0;
     }
   }
   PetscFunctionReturn(0);
@@ -220,16 +219,16 @@ PetscErrorCode MatGetValues_SeqBDiag_N(Mat A,PetscInt m,const PetscInt im[],Pets
 {
   Mat_SeqBDiag *a = (Mat_SeqBDiag*)A->data;
   PetscInt     kk,ldiag,shift,row,j,k,bs = A->rmap.bs;
-  PetscScalar  zero = 0.0;
   PetscTruth   dfound;
 
   PetscFunctionBegin;
   for (kk=0; kk<m; kk++) { /* loop over rows */
     row = im[kk];   
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
+    if (row < 0) {v += n; continue;} /* SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row"); */
     if (row >= A->rmap.N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     shift = (row/bs)*bs*bs + row%bs;
     for (j=0; j<n; j++) {
+      if (in[j] < 0) {v++; continue;} /* SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column"); */
       ldiag  = row/bs - in[j]/bs; /* block diagonal */
       dfound = PETSC_FALSE;
       for (k=0; k<a->nd; k++) {
@@ -239,7 +238,7 @@ PetscErrorCode MatGetValues_SeqBDiag_N(Mat A,PetscInt m,const PetscInt im[],Pets
           break;
         }
       }
-      if (!dfound) *v++ = zero;
+      if (!dfound) *v++ = 0.0;
     }
   }
   PetscFunctionReturn(0);

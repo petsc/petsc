@@ -7,7 +7,6 @@
 
 /* Logging support */
 PetscCookie PETSCDM_DLLEXPORT AO_COOKIE = 0;
-PetscCookie PETSCDM_DLLEXPORT AODATA_COOKIE = 0;
 PetscEvent  AO_PetscToApplication = 0, AO_ApplicationToPetsc = 0;
 
 #undef __FUNCT__  
@@ -44,7 +43,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOView(AO ao,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ao->comm);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(((PetscObject)ao)->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   ierr = (*ao->ops->view)(ao,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -71,14 +70,14 @@ PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO ao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
-  if (--ao->refct > 0) PetscFunctionReturn(0);
-
+  if (--((PetscObject)ao)->refct > 0) PetscFunctionReturn(0);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ao);CHKERRQ(ierr);
-
-  ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
+  /* destroy the internal part */
+  if (ao->ops->destroy) {
+    ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -269,6 +268,13 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetsc(AO ao,PetscInt n,PetscInt 
 . block - The block size
 - array - The integer array
 
+  Note: The length of the array should be block*N, where N is length
+  provided to the AOCreate*() method that created the AO.
+
+  The permutation takes array[i_pet] --> array[i_app], where i_app is
+  the index of 'i' in the application ordering and i_pet is the index
+  of 'i' in the petsc ordering.
+
   Level: beginner
 
 .keywords: application ordering, mapping
@@ -297,6 +303,13 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteInt(AO ao, PetscInt 
 + ao    - The application ordering context
 . block - The block size
 - array - The integer array
+
+  Note: The length of the array should be block*N, where N is length
+  provided to the AOCreate*() method that created the AO.
+
+  The permutation takes array[i_app] --> array[i_pet], where i_app is
+  the index of 'i' in the application ordering and i_pet is the index
+  of 'i' in the petsc ordering.
 
   Level: beginner
 
@@ -328,6 +341,13 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteInt(AO ao, PetscInt 
 . block - The block size
 - array - The integer array
 
+  Note: The length of the array should be block*N, where N is length
+  provided to the AOCreate*() method that created the AO.
+
+  The permutation takes array[i_pet] --> array[i_app], where i_app is
+  the index of 'i' in the application ordering and i_pet is the index
+  of 'i' in the petsc ordering.
+
   Level: beginner
 
 .keywords: application ordering, mapping
@@ -357,6 +377,13 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteReal(AO ao, PetscInt
 + ao    - The application ordering context
 . block - The block size
 - array - The integer array
+
+  Note: The length of the array should be block*N, where N is length
+  provided to the AOCreate*() method that created the AO.
+
+  The permutation takes array[i_app] --> array[i_pet], where i_app is
+  the index of 'i' in the application ordering and i_pet is the index
+  of 'i' in the petsc ordering.
 
   Level: beginner
 

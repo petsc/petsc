@@ -1,12 +1,12 @@
 #define PETSCKSP_DLL
 
 #include "include/private/pcimpl.h"
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"
 
 
 const char *PCSides[]          = {"LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
 const char *PCASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
-const char *PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SPECIAL","PCCompositeType","PC_COMPOSITE",0};
+const char *PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SYMMETRIC_MULTIPLICATIVE","SPECIAL","PCCompositeType","PC_COMPOSITE",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCInitializePackage"
@@ -28,7 +28,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
   char              logList[256];
   char             *className;
   PetscTruth        opt;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);
@@ -40,6 +40,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
   /* Register Events */
   ierr = PetscLogEventRegister(&PC_SetUp,                   "PCSetUp",          PC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&PC_SetUpOnBlocks,           "PCSetUpOnBlocks",  PC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplyOnBlocks,           "PCApplyOnBlocks",  PC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&PC_Apply,                   "PCApply",          PC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&PC_ApplyCoarse,             "PCApplyCoarse",    PC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&PC_ApplyMultiple,           "PCApplyMultiple",  PC_COOKIE);CHKERRQ(ierr);
@@ -67,12 +68,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
 
 const char *KSPCGTypes[]                  = {"SYMMETRIC","HERMITIAN","KSPCGType","KSP_CG_",0};
 const char *KSPGMRESCGSRefinementTypes[]  = {"REFINE_NEVER", "REFINE_IFNEEDED", "REFINE_ALWAYS","KSPGMRESRefinementType","KSP_GMRES_CGS_",0};
-const char *KSPNormTypes[]                = {"NO_NORM","PRECONDITIONED_NORM","UNPRECONDITIONED_NORM","NATURAL_NORM","KSPNormType","KSP_",0};
+const char *KSPNormTypes[]                = {"NO","PRECONDITIONED","UNPRECONDITIONED","NATURAL","KSPNormType","KSP_NORM_",0};
 const char *KSPConvergedReasons_Shifted[] = {"DIVERGED_INDEFINITE_MAT","DIVERGED_NAN","DIVERGED_INDEFINITE_PC",
 					     "DIVERGED_NONSYMMETRIC", "DIVERGED_BREAKDOWN_BICG","DIVERGED_BREAKDOWN",
                                              "DIVERGED_DTOL","DIVERGED_ITS","DIVERGED_NULL","","CONVERGED_ITERATING",
                                              "","CONVERGED_RTOL","CONVERGED_ATOL","CONVERGED_ITS",
-                                             "CONVERGED_STCG_NEG_CURVE","CONVERGED_STCG_CONSTRAINED","CONVERGED_STEP_LENGTH",
+                                             "CONVERGED_CG_NEG_CURVE","CONVERGED_CG_CONSTRAINED","CONVERGED_STEP_LENGTH",
                                              "CONVERGED_HAPPY_BREAKDOWN","KSPConvergedReason","KSP_",0};
 const char **KSPConvergedReasons = KSPConvergedReasons_Shifted + 10;
 
@@ -141,7 +142,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCKSP_DLLEXPORT PetscDLLibraryRegister_petscksp(char *path)
+PetscErrorCode PETSCKSP_DLLEXPORT PetscDLLibraryRegister_petscksp(const char path[])
 {
   PetscErrorCode ierr;
 

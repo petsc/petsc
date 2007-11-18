@@ -136,8 +136,8 @@ PetscErrorCode MatMult_CRL(Mat A,Vec xx,Vec yy)
   if (crl->xscat) {
     ierr = VecCopy(xx,crl->xwork);CHKERRQ(ierr);
     /* get remote values needed for local part of multiply */
-    ierr = VecScatterBegin(xx,crl->fwork,INSERT_VALUES,SCATTER_FORWARD,crl->xscat);CHKERRQ(ierr);
-    ierr = VecScatterEnd(xx,crl->fwork,INSERT_VALUES,SCATTER_FORWARD,crl->xscat);CHKERRQ(ierr);
+    ierr = VecScatterBegin(crl->xscat,xx,crl->fwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(crl->xscat,xx,crl->fwork,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     xx = crl->xwork;
   };
 
@@ -196,7 +196,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat A,MatType type,Ma
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_CRL,&crl);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_CRL,&crl);CHKERRQ(ierr);
   B->spptr = (void *) crl;
 
   crl->AssemblyEnd  = A->ops->assemblyend;

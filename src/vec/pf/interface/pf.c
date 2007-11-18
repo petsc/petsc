@@ -7,7 +7,7 @@
 /* Logging support */
 PetscCookie PF_COOKIE = 0;
 
-PetscFList PPetscFList         = PETSC_NULL; /* list of all registered PD functions */
+PetscFList PFList         = PETSC_NULL; /* list of all registered PD functions */
 PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
@@ -68,11 +68,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
-  if (--pf->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)pf)->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsHasName(pf->prefix,"-pf_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)pf)->prefix,"-pf_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PFView(pf,PETSC_VIEWER_STDOUT_(pf->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)pf)->comm,&viewer);CHKERRQ(ierr);
+    ierr = PFView(pf,viewer);CHKERRQ(ierr);
   }
 
   /* if memory was published with AMS then destroy it */
@@ -80,28 +82,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
 
   if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf->data);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(pf);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PFPublish_Petsc"
-static PetscErrorCode PFPublish_Petsc(PetscObject obj)
-{
-#if defined(PETSC_HAVE_AMS)
-  PF          v = (PF) obj;
-  PetscErrorCode ierr;
-#endif
-
-  PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (v->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
-
   PetscFunctionReturn(0);
 }
 
@@ -128,18 +108,17 @@ static PetscErrorCode PFPublish_Petsc(PetscObject obj)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 {
-  PF  newpf;
+  PF             newpf;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(pf,1);
   *pf = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);   
+  ierr = PFInitializePackage(PETSC_NULL);CHKERRQ(ierr);   
 #endif
 
   ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);CHKERRQ(ierr);
-  newpf->bops->publish    = PFPublish_Petsc;
   newpf->data             = 0;
 
   newpf->ops->destroy     = 0;
@@ -204,9 +183,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF pf,Vec x,Vec y)
 
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(y,&p);CHKERRQ(ierr);
-  if (pf->dimin*(n/pf->dimin) != n) SETERRQ2(PETSC_ERR_ARG_IDN,"Local input vector length %D not divisible by dimin %D of function",n,pf->dimin);
-  if (pf->dimout*(p/pf->dimout) != p) SETERRQ2(PETSC_ERR_ARG_IDN,"Local output vector length %D not divisible by dimout %D of function",p,pf->dimout);
-  if (n/pf->dimin != p/pf->dimout) SETERRQ4(PETSC_ERR_ARG_IDN,"Local vector lengths %D %D are wrong for dimin and dimout %D %D of function",n,p,pf->dimin,pf->dimout);
+  if ((pf->dimin*(n/pf->dimin)) != n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local input vector length %D not divisible by dimin %D of function",n,pf->dimin);
+  if ((pf->dimout*(p/pf->dimout)) != p) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local output vector length %D not divisible by dimout %D of function",p,pf->dimout);
+  if ((n/pf->dimin) != (p/pf->dimout)) SETERRQ4(PETSC_ERR_ARG_SIZ,"Local vector lengths %D %D are wrong for dimin and dimout %D %D of function",n,p,pf->dimin,pf->dimout);
 
   if (pf->ops->applyvec) {
     ierr = (*pf->ops->applyvec)(pf->data,x,y);CHKERRQ(ierr);
@@ -299,13 +278,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,PetscScalar* x,PetscS
 PetscErrorCode PETSCVEC_DLLEXPORT PFView(PF pf,PetscViewer viewer)
 {
   PFType            cstr;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(pf->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)pf)->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
   PetscCheckSameComm(pf,1,viewer,2);
 
@@ -376,15 +357,13 @@ M*/
 PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PF,void*))
 {
   PetscErrorCode ierr;
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PPetscFList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PFList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFGetType"
@@ -410,7 +389,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[
 PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,PFType *meth)
 {
   PetscFunctionBegin;
-  *meth = (PFType) pf->type_name;
+  *meth = (PFType) ((PetscObject)pf)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -442,10 +421,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,PFType *meth)
 .seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DACreatePF()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,const PFType type,void *ctx)
+PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,PFType type,void *ctx)
 {
   PetscErrorCode ierr,(*r)(PF,void*);
-  PetscTruth match;
+  PetscTruth     match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
@@ -457,10 +436,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,const PFType type,void *ctx)
   if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf);CHKERRQ(ierr);}
   pf->data        = 0;
 
-  /* Get the function pointers for the method requested */
-  if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr =  PetscFListFind(pf->comm,PPetscFList,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(PFList,((PetscObject)pf)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy             = 0;
   pf->ops->view                = 0;
@@ -499,15 +476,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,const PFType type,void *ctx)
 PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
 {
   PetscErrorCode ierr;
-  char       type[256];
-  PetscTruth flg;
+  char           type[256];
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
 
-  if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
-  ierr = PetscOptionsBegin(pf->comm,pf->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PPetscFList,0,type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)pf)->comm,((PetscObject)pf)->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
     }
@@ -519,6 +495,54 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PFInitializePackage"
+/*@C
+  PFInitializePackage - This function initializes everything in the PF package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PFCreate()
+  when using static libraries.
+
+  Input Parameter:
+. path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Vec, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT PFInitializePackage(const char path[]) 
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char              *className;
+  PetscTruth        opt;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&PF_COOKIE,          "PointFunction");CHKERRQ(ierr);
+  /* Register Constructors */
+  ierr = PFRegisterAll(path);CHKERRQ(ierr);
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "pf", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscInfoDeactivateClass(PF_COOKIE);CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "pf", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(PF_COOKIE);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 
 

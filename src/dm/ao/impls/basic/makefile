@@ -3,16 +3,16 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = aobasic.c aodatabasic.c aoreduced.c
+SOURCEC  = aobasic.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = aobasic.o aodatabasic.o aoreduced.o
+OBJSC    = aobasic.o
 OBJSF    =
 LIBBASE  = libpetscdm
 DIRS     = 
 MANSEC   = AO
 LOCDIR   = src/dm/ao/impls/basic/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 

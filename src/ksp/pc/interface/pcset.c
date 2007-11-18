@@ -64,39 +64,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc, PCType type)
   ierr = PetscTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (pc->ops->destroy) {ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr);}
-  ierr = PetscFListDestroy(&pc->qlist);CHKERRQ(ierr);
-  pc->data        = 0;
-  pc->setupcalled = 0;
-
-  /* Get the function pointers for the method requested */
-  if (!PCRegisterAllCalled) {ierr = PCRegisterAll(0);CHKERRQ(ierr);}
-
-  /* Determine the PCCreateXXX routine for a particular preconditioner */
-  ierr =  PetscFListFind(pc->comm,PCList,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(PCList,((PetscObject)pc)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
-  ierr = PetscFree(pc->data);CHKERRQ(ierr);
-
-  pc->ops->setup               = (PetscErrorCode (*)(PC)) 0;
-  pc->ops->apply               = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
-  pc->ops->applyrichardson     = (PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt)) 0;
-  pc->ops->applyBA             = (PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec)) 0;
-  pc->ops->applytranspose      = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
-  pc->ops->applyBAtranspose    = (PetscErrorCode (*)(PC,PetscInt,Vec,Vec,Vec)) 0;
-  pc->ops->setfromoptions      = (PetscErrorCode (*)(PC)) 0;
-  pc->ops->presolve            = (PetscErrorCode (*)(PC,KSP,Vec,Vec)) 0;
-  pc->ops->postsolve           = (PetscErrorCode (*)(PC,KSP,Vec,Vec)) 0;
-  pc->ops->getfactoredmatrix   = (PetscErrorCode (*)(PC,Mat*)) 0;
-  pc->ops->applysymmetricleft  = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
-  pc->ops->applysymmetricright = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
-  pc->ops->setuponblocks       = (PetscErrorCode (*)(PC)) 0;
-  pc->ops->destroy             = (PetscErrorCode (*)(PC)) 0;
-  pc->ops->view                = (PetscErrorCode (*)(PC,PetscViewer)) 0;
-  pc->modifysubmatrices        = (PetscErrorCode (*)(PC,PetscInt,const IS[],const IS[],Mat[],void*)) 0;
-
-  /* Call the PCCreateXXX routine for this particular preconditioner */
+  /* Destroy the previous private PC context */
+  if (pc->ops->destroy) { ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr); }
+  ierr = PetscFListDestroy(&((PetscObject)pc)->qlist);CHKERRQ(ierr);
+  /* Reinitialize function pointers in PCOps structure */
+  ierr = PetscMemzero(pc->ops,sizeof(struct _PCOps));CHKERRQ(ierr);
+  /* XXX Is this OK?? */
+  pc->modifysubmatrices        = 0;
+  pc->modifysubmatricesP       = 0;
+  /* Call the PCCreate_XXX routine for this particular preconditioner */
+  pc->setupcalled = 0;
   ierr = (*r)(pc);CHKERRQ(ierr);
-
   ierr = PetscObjectChangeTypeName((PetscObject)pc,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -121,10 +101,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PCList) {
-    ierr = PetscFListDestroy(&PCList);CHKERRQ(ierr);
-    PCList = 0;
-  }
+  ierr = PetscFListDestroy(&PCList);CHKERRQ(ierr);
   PCRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -153,7 +130,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
 PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,PCType *meth)
 {
   PetscFunctionBegin;
-  *meth = (PCType) pc->type_name;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidPointer(meth,2);
+  *meth = (PCType) ((PetscObject)pc)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -189,17 +168,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
 
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsBegin(pc->comm,pc->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
-    if (!pc->type_name) {
+  ierr = PetscOptionsBegin(((PetscObject)pc)->comm,((PetscObject)pc)->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
+    if (!((PetscObject)pc)->type_name) {
       ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
     } else {
-      def = pc->type_name;
+      def = ((PetscObject)pc)->type_name;
     }
 
     ierr = PetscOptionsList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSetType(pc,type);CHKERRQ(ierr);
-    } else if (!pc->type_name){
+    } else if (!((PetscObject)pc)->type_name){
       ierr = PCSetType(pc,def);CHKERRQ(ierr);
     } 
 
@@ -207,5 +186,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
       ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  pc->setfromoptionscalled++;
   PetscFunctionReturn(0);
 }

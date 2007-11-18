@@ -163,7 +163,7 @@ int main(int argc,char **argv)
 #endif
 
   if (fd_jacobian) {
-    ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
+    ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(user.J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
@@ -296,7 +296,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
     Vec          Y;
     ierr = PetscOptionsGetString(PETSC_NULL,"-initialGuess",filename,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_FILE_RDONLY,&view_in);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&view_in);CHKERRQ(ierr);
       ierr = VecLoad(view_in,PETSC_NULL,&Y);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(view_in);CHKERRQ(ierr);
       ierr = VecMax(Y,PETSC_NULL,&user->psi_bdy);CHKERRQ(ierr);

@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import PETSc.package
+import config.base
 
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['hg://www.mcs.anl.gov/petsc/parmetis-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis-dev.tar.gz']
+    self.download     = ['hg://petsc.cs.iit.edu/petsc/ParMetis-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis-dev-p1.tar.gz']
     self.functions    = ['ParMETIS_V3_PartKway']
     self.includes     = ['parmetis.h']
     self.liblist      = [['libparmetis.a','libmetis.a']]
@@ -19,31 +20,54 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    import os, sys
-    parmetisDir = self.getDir()
-    installDir = os.path.join(parmetisDir, self.arch.arch)
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
-    # We could make a check of the md5 of the current configure framework
-    self.logPrintBox('Configuring and compiling ParMetis; this may take several minutes')
-    try:
-      import cPickle
-      import logging
-      # Split Graphs into its own repository
-      oldDir = os.getcwd()
-      os.chdir(parmetisDir)
-      oldLog = logging.Logger.defaultLog
-      logging.Logger.defaultLog = file(os.path.join(parmetisDir, 'build.log'), 'w')
-      mod  = self.getModule(parmetisDir, 'make')
-      make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)), module = mod)
-      make.prefix = installDir
-      make.framework.argDB['with-petsc'] = 1
-      make.builder.argDB['ignoreCompileOutput'] = 1
-      make.run()
-      del sys.modules['make']
-      logging.Logger.defaultLog = oldLog
-      os.chdir(oldDir)
-    except RuntimeError, e:
-      raise RuntimeError('Error running configure on ParMetis: '+str(e))
-    self.framework.actions.addArgument('ParMetis', 'Install', 'Installed ParMetis into '+installDir)
-    return parmetisDir
+    import os
+    import sys
+
+    makeinc        = os.path.join(self.packageDir,'make.inc')
+    installmakeinc = os.path.join(self.confDir,'ParMetis')
+    configheader   = os.path.join(self.packageDir,'ParMETISLib','configureheader.h')
+
+    # Configure ParMetis 
+    g = open(makeinc,'w')
+    g.write('SHELL          = '+self.programs.SHELL+'\n')
+    g.write('CP             = '+self.programs.cp+'\n')
+    g.write('RM             = '+self.programs.RM+'\n')
+    g.write('MKDIR          = '+self.programs.mkdir+'\n')
+
+    g.write('AR             = '+self.setCompilers.AR+'\n')
+    g.write('ARFLAGS        = '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('AR_LIB_SUFFIX  = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('RANLIB         = '+self.setCompilers.RANLIB+'\n')
+
+    g.write('PARMETIS_ROOT  = '+self.packageDir+'\n')
+    g.write('PREFIX         = '+self.installDir+'\n')
+    g.write('METISLIB       = $(PARMETIS_ROOT)/libmetis.$(AR_LIB_SUFFIX)\n')
+    g.write('PARMETISLIB    = $(PARMETIS_ROOT)/libparmetis.$(AR_LIB_SUFFIX)\n')
+    
+    self.setCompilers.pushLanguage('C')
+    cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
+    cflags += ' ' + self.headers.toString(self.mpi.include)+' '+self.headers.toString('.')
+        
+    g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CFLAGS         = '+cflags)
+    self.setCompilers.popLanguage()
+    g.close()
+
+    if self.installNeeded('make.inc'):    # Now compile & install
+      self.framework.outputHeader(configheader)
+      try:
+        self.logPrintBox('Compiling & installing Parmetis; this may take several minutes')
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running make on ParMetis: '+str(e))
+      self.checkInstall(output,'make.inc')
+    return self.installDir
+  
+if __name__ == '__main__':
+  import config.framework
+  import sys
+  framework = config.framework.Framework(sys.argv[1:])
+  framework.setup()
+  framework.addChild(Configure(framework))
+  framework.configure()
+  framework.dumpSubstitutions()

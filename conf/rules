@@ -1,0 +1,817 @@
+#
+#
+# Checks that PETSC_DIR variable is set and creates library directory
+# if it does not exist
+chkpetsc_dir:
+	@mypwd=`pwd`; cd ${PETSC_DIR} 2>&1 > /dev/null; true_PETSC_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
+        newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
+        haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
+        if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
+          echo "*********************Warning*************************" ; \
+          echo "Your PETSC_DIR may not match the directory you are in";\
+          echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
+          echo "******************************************************" ; \
+        fi
+
+chk_loc:
+	@if [ ${LOC}foo = foo ] ; then \
+	  echo "*********************** ERROR ************************" ; \
+	  echo " Please specify LOC variable for eg: make allmanualpages LOC=/sandbox/petsc"; \
+	  echo "******************************************************";  false; fi
+	@${MKDIR} ${LOC}/docs/manualpages
+
+lssrc:
+	@if [ "${SOURCEC}"foo != "foo" -o "${SOURCEH}foo" != "foo" ]; then \
+	  ls ${SOURCEC} ${SOURCEH} | cat;\
+	 fi
+
+chklib_dir:
+	@if [ ! -d "${INSTALL_LIB_DIR}" ]; then \
+	  echo Making directory ${INSTALL_LIB_DIR} for library; ${MKDIR} ${INSTALL_LIB_DIR} ; fi
+
+
+# 3. Check if the shared libs are out of date
+chkopts: remote
+	@for LIBNAME in ${SHLIBS}; do \
+	  library=${INSTALL_LIB_DIR}/$$LIBNAME.a; \
+	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; \
+	flag=""; \
+	if [ -f $$library ]; then \
+	  if [ -f $$sharedlibrary ]; then \
+	    flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.a -newer $$sharedlibrary -print`; \
+	  fi; \
+	fi; \
+	if [ "$$flag" != "" ]; then \
+	  echo "Shared libs in ${INSTALL_LIB_DIR} are out of date, attempting to rebuild."; \
+	  if [ -w ${INSTALL_LIB_DIR} ]; then \
+	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH} shared; \
+	  else \
+	    echo "*********************** ERROR ************************"; \
+	    echo "Unable to rebuild shared libraries; you do not have write permission."; \
+	    user=`ls -l ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}  | tr -s ' ' | cut -d ' ' -f 3`; \
+	    echo "Libraries were built by user $$user; please contact him/her to have them rebuilt."; \
+	    echo "******************************************************"; \
+	    false; \
+	  fi; \
+	fi; \
+	done
+
+# Does nothing; needed for some rules that require actions.
+foo:
+
+# Builds library
+lib:  ${SOURCE}
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} chkpetsc_dir
+	@-if [ "${SPECIALLIB}" = "yes" ] ; then \
+	   ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  speciallib;  \
+	  else \
+            if [ "${SOURCEC}" != "" ] ; then \
+              ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libc; fi ; \
+            if [ "${SOURCEF}" != "" ] ; then \
+		${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  libf; fi ; \
+            if [ "${OBJS}" != " " ] ; then \
+		${RANLIB}  ${LIBNAME}; \
+		${RM} ${OBJS}; \
+	    fi;\
+          fi
+#
+#  Does not work for some machines with .F fortran files.
+#
+# Builds library - fast versiong
+
+libfast:  ${SOURCEC} ${SOURCEF}
+	-@if [ "${SPECIALFASTLIB}" = "yes" ] ; then \
+	    ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  specialfastlib;  \
+	else \
+	if [ "${SOURCEC}" != "" ]; then \
+                    ${PETSC_COMPILE}; \
+	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
+		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
+	    fi; \
+	fi
+
+# Removes garbage files
+clean: 
+	@-${RM} *.o *.lo *~ ex[0-9] ex[0-9][0-9] ex[0-9]f ex[0-9][0-9]f \
+	       ${CLEANFILES} ${TESTS} ex[0-9]f90 ex[0-9][0-9]f90 ex[0-9]c ex[0-9][0-9]c ex[0-9]d ex5d \
+	       PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out \
+	       trashz \#*\# *.mex* *.stolen *.trace Log.* joe jeff *.stolen \
+	       output/*~ .mpirtmp mon.out *.aus *.mon.* __* p4pg ins10*.c \
+	       ex[0-9].exe ex[0-9][0-9].exe ex[0-9]f.exe ex[0-9][0-9]f.exe \
+	       *.ad.c *.ad.h ad_deriv.h .adic* *.cp_ *.cp__ *.c*.c pageform.txt \
+               .adic* *.dep *.proj ctoatmp PETScArena* *.L *.anl main *.mod .mpi* \
+	       *.class *.ouit *.ad.* g_* silly.cmp *.tmp.* *.ilk *.pdb *.inst.c *.rej
+	@-${RM} -rf AD_cache SunWS_cache
+
+
+cleanadic:
+	@-${RM} *.ad.*
+#
+#  Checks if directory requires particular package or language
+# The makefile may contain
+#    #requirespackage 'PETSC_HAVE_XXX' 
+#    #requireslanguage CONLY (or CPP)
+#    #requiresscalar   real (or complex)
+#    #requiresprecision double (or single)
+#
+tree: ${ACTION}
+	-@for dir in ${DIRS} ftn-auto ftn-custom f90-custom; do \
+            if [ -d $$dir ]; then \
+	      r=`grep -w requirespackage $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+		PKGFLG=`echo $$r | cut -d \' -f2`;\
+                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  if [ "${PCONF}" != "" ]; then \
+                    echo ${PCONF} | sed s/-D//g | grep -w "$${PKGFLG}" > /dev/null; \
+                    if [ "$$?" = 1 ]; then \
+                      continue; \
+                    fi; \
+                  else \
+                    continue; \
+                  fi; \
+                fi; \
+              fi; \
+              r=`grep -w requireslanguage $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+                echo $$r | grep -w ${PETSC_LANGUAGE} > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+              r=`grep -w requiresscalar $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+                echo $$r |  grep -w ${PETSC_SCALAR} > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+              r=`grep -w requiresprecision $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+                echo $$r |  grep -w ${PETSC_PRECISION} > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+            else \
+              continue; \
+            fi; \
+            (cd $$dir ; \
+            echo ${ACTION} in: `pwd`; \
+            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH});\
+	  done
+
+# Performs the specified action throughout the directory tree
+tree_basic: ${ACTION}
+	@-if [ "${DIRS}" != "" ]; then \
+	for dir in ${DIRS} foo ; do if [ -d $$dir ]; then \
+	(cd $$dir ; echo ${ACTION} in: `pwd`; \
+	${OMAKE}  tree_basic ACTION=${ACTION}  \
+	PETSC_ARCH=${PETSC_ARCH}  LOC=${LOC}) ;fi; \
+	done ; fi
+
+#This target goes through all the dirs that contains a makefile
+alltree_makefile: ${ACTION}
+	-@DIRS=`ls`; \
+	for dir in $$DIRS foo ; do if [ -f $$dir/makefile ]; then \
+	(cd $$dir ; echo ${ACTION} in: `pwd`; \
+	${OMAKE}  alltree_makefile ACTION=${ACTION}  \
+	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ) ;fi; \
+	done
+# This target goes through all dirs specified by DIRS,EDIRS, and 
+# excludes dirs specified by $XDIRS
+alltree: ${ACTION}
+	@-if [ "${DIRS} ${EDIRS}" != " " ]; then \
+	NDIRS="${DIRS} ${EDIRS}" ;\
+	if [ "${XDIRS}" != "" ]; then \
+	for XDIR in ${XDIRS} qwertyuiop ; do \
+	NDIRS=`echo $$NDIRS | sed s/$$XDIR//g`; \
+	done; fi ; \
+	for dir in $$NDIRS foo ; do if [ -d $$dir ]; then \
+	(cd $$dir ;\
+	echo ${ACTION} in: `pwd`; \
+	${OMAKE}  alltree ACTION="${ACTION}"  \
+	PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} ; ) fi; \
+	done ; fi
+
+getlinklibs:
+	-@echo  ${C_SH_LIB_PATH} ${PETSC_TS_LIB}
+
+getincludedirs:
+	-@echo  ${PETSC_INCLUDE}
+
+getpetscflags:
+	-@echo  ${PETSCFLAGS}
+
+getmpilinklibs:
+	-@echo  ${MPI_LIB}
+
+getmpiincludedirs:
+	-@echo  ${MPI_INCLUDE}
+
+getmpiexec:
+	-@echo  ${MPIEXEC}
+
+# --------------------------------------------------------------------
+#
+# All remaining actions are intended for PETSc developers only.
+# PETSc users should not generally need to use these commands.
+#
+#
+
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat
+
+#
+#
+.sidl.tex:
+	${LGRIND} -d ${LGRIND_DIR}/lgrindef -ljava -i $< > $*.tex
+
+.c.tex .F.tex:
+	${LGRIND} -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
+
+.make.tex:
+	${LGRIND} -lmake -d ${LGRIND_DIR}/lgrindef -i $< > $*.tex
+
+.tex.mtex:
+	PYTHONPATH=${PETSC_DIR}/maint;export PYTHONPATH;cat $< | ${PETSC_DIR}/maint/mapnameslatex.py > $*.mtex
+
+.fig.pdf:
+	fig2dev -L pdf $< $*.pdf
+.fig.eps:
+	fig2dev -L eps $< $*.eps
+.fig.jpg:
+	fig2dev -L jpeg $< $*.jpg
+.pdf.jpg:
+	convert $< $*.jpg
+.eps.pdf:
+	epstopdf $< -o=$*.pdf
+.dvi.ps:
+	dvips -o $*.ps $<
+.svg.png:
+	inkscape --export-png=$*.png $<
+.svg.pdf:
+	inkscape --export-pdf=$*.pdf $<
+# Need to define PYTHON
+.fiat.h:
+	@if [ "${ELEMENT}" != "" ]; then \
+	  if [ "${ORDER}" != "" ]; then \
+	    python $< $*.h --element_family=${ELEMENT} --element_order=${ORDER}; \
+	  else \
+	    python $< $*.h --element_family=${ELEMENT}; \
+	  fi; \
+	else \
+	  if [ "${ORDER}" != "" ]; then \
+	    python $< $*.h --element_order=${ORDER}; \
+	  else \
+	    python $< $*.h; \
+	  fi; \
+	fi
+
+.c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
+	@if [ "${PETSCPORTABLE}" != "" ]; then \
+          ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
+        fi
+	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
+        if [ $${mypwd} != $${newpwd} ]; then \
+	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir;\
+        fi
+	${PETSC_MAKE_STOP_ON_ERROR}@if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
+          egrep PETSC_HAVE_ADIC ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null;\
+          if [ "$$?" = 0 ]; then \
+            haveadic=1; \
+          else \
+            haveadic=0;\
+          fi; \
+        else \
+          haveadic=1; \
+        fi; \
+	if [ "$${haveadic}" = "1" ]; then \
+	   egrep "Process adiC" $< > /dev/null ; \
+              if [ "$$?" = 0 ]; then \
+                if [ ! -f $<.tmp1 ]; then \
+                  c=`grep "Process adiC" $< | Sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
+                  r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
+                  echo Running adiC on function $${r};\
+                  ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
+                  ${CP} $<.tmp1 $<.tmp2;\
+	          echo '#include "petscda.h"' > $*.ad.c ; \
+	          echo '#include "petscsnes.h"' >> $*.ad.c ;\
+                  echo '#include "petscdmmg.h"' >> $*.ad.c ;\
+	          echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
+                  if [ "foo${ADIC_CC}" != "foo" ]; then \
+                    echo ${ADIC_CC}  -i ${PETSC_DIR}/conf/adic.init $<.tmp1; \
+	            ${ADIC_CC} -F -z -t -i ${PETSC_DIR}/conf/adic.init  $<.tmp1 ; \
+	            ${ADIC_CC} -F -z -t -h -i ${PETSC_DIR}/conf/adicmf.init   $<.tmp2 ; \
+                  else \
+                    echo "You need to run the ADIC server on $<.tmp1 and $<.tmp2, then rerun make";\
+                    exit;\
+                  fi;\
+                fi;\
+	        cat $<.ad.tmp1  >> $*.ad.c ;\
+	        egrep "main\(" $< > /dev/null ; \
+                if [ "$$?" = 0 ]; then \
+		      echo "#include \"${PETSC_DIR}/src/sys/adic/Gradient/ad_grad.c\"" >> $*.ad.c ;\
+	  	      echo "#include \"${PETSC_DIR}/src/sys/adic/Gradient/ad_utils.c\"" >> $*.ad.c ;\
+                fi;\
+                echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
+                echo "#define ad_GRAD_MAX 1"  >> $*.ad.c ;\
+                echo "typedef struct {double value;double  grad[ad_GRAD_MAX];} mfDERIV_TYPE;"  >> $*.ad.c ;\
+                sed -e "s/DERIV_TYPE/mfDERIV_TYPE/g" $<.ad.tmp2 >> $*.ad.c ;\
+	        egrep "Process blockadiC" $< > /dev/null ; \
+                if [ "$$?" = 0 ]; then \
+                  c=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
+                  r=`grep "Process blockadiC" $< | sed -e "s?[ ]*Process blockadiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
+                  echo Running adiC on function $${r};\
+                  ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
+                  echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
+                  echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
+                  ${ADIC_CC} -t -h -i ${PETSC_DIR}/conf/adicmfb.init   $<.tmp1 ; \
+                  echo "typedef struct {double value;double  grad[ad_GRAD_MAX];} mfbDERIV_TYPE;"  >> $*.ad.c ;\
+	          sed -e "s/DERIV_TYPE/mfbDERIV_TYPE/g" $<.ad.tmp1 >> $*.ad.c ;\
+                fi;\
+	        echo "#include \"$<\"" >> $*.ad.c ;\
+                ${RM} *.ad.tmp* *.c.tmp* ad_deriv.h ;\
+	        echo ${PCC} -g  -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	        ${PCC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+		 \
+              else \
+	        echo ${PETSC_COMPILE_SINGLE} $<; \
+	        ${PETSC_COMPILE_SINGLE} $<; \
+              fi; \
+        elif  [ -f $*.ad.c ]; then \
+          echo ${PCC} -g -o $*.o  -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+	  ${PCC} -g -o $*.o -c ${ADIC_DEFINES} -I${PETSC_DIR}/include/adic  ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} $*.ad.c ;\
+        else \
+	  echo ${PETSC_COMPILE_SINGLE} $<; \
+	  ${PETSC_COMPILE_SINGLE} $<; \
+        fi
+	@if [ "${PETSCPORTABLE}" != "" ]; then \
+          ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
+        fi
+
+.c.a .cpp.a .cc.a .C.a: 
+	-${PETSC_COMPILE_SINGLE} $<
+	-${AR} ${AR_FLAGS} ${LIBNAME} $*.o
+	-if test -n "${LIBTOOL}"; then ${AR} ${AR_FLAGS} ${LT_LIBNAME} $*.lo; fi
+	-${RM} $*.o $*.lo
+
+#
+#  These rules are for compiling the test examples.
+#
+.cpp.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm:
+	-@${RM} $* *.o $*.mon.* gmon.out mon.out
+	-@if test -e $*.exe; then ${RM} $*.exe; fi
+	-@if test -e $*.ilk; then ${RM} $*.ilk; fi
+	-@if test -e $*.pdb; then ${RM} $*.pdb; fi
+	-@if test -e $*.tds; then ${RM} $*.tds; fi
+
+.c.PETSc:
+	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
+	-@grep -v clog trashz | grep -v "information sections" | \
+          grep -v "WARNING: TOC" | \
+          grep -v "D4024 : unrecognized" | \
+          grep -v "Extra instructions" | \
+          grep -v "Unused external reference" | \
+          grep -v "f90 continuing despite warning messages" | \
+          grep -v "symbol if the" | \
+          grep -v "ignoring symbol version info" | \
+          grep -v "preempts that definition" | \
+          grep -v "is an array from" | \
+	  grep -v "At least one PA 2.0" | \
+          grep -v "Cannot cast" | \
+          grep -v "WARNING 134: weak definition of" | \
+          grep -v "Warning(s) detected" | \
+          grep -v "object file assumed" | \
+          grep -v "consider using mkstemp"  |\
+          grep -v EXTERNAL  |\
+          grep -v "warning prebinding disabled"  |\
+          grep -v volatile  |\
+          grep -v -i inconsistent |\
+          grep -v Anachronism | \
+          grep -v "/opt/ibmcmp/xlsmp/1.3/lib" | \
+          grep -v "/opt/ibmcmp/xlsmp/1.3/../.." | \
+          grep -v "IPO Error: unresolved" | \
+          grep -v "may result in errors or" | \
+	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
+	  if [ "$$?" != 1 ]; then \
+          echo "--------------Error detected during compile or link!-----------------------";\
+          echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
+	  cat trashz ; fi; ${RM} trashz
+
+.F.PETSc .F90.PETSc:
+	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
+	-@grep -v EXTERNAL trashz | grep -v Wall | \
+          grep -v "Unused external reference" | \
+          grep -v "D4024 : unrecognized" | \
+          grep -v "WARNING: TOC overflow." | \
+          grep -v "Extra instructions are being" | \
+          grep -v "symbol if the symbol" | \
+          grep -v -i inconsistent | \
+          grep -v -i "unused dummy" | \
+	  grep -v "WARNING:  -cpp is ignored" | \
+          grep -v "ignoring symbol version info" | \
+	  grep -v "At least one PA 2.0" | \
+	  grep -v "Inconsistent structure" | \
+          grep -v "object file assumed" | \
+	  grep -v "ex20.F:30:" | \
+	  grep -v "ex20f.F:31: warning" | \
+	  grep -v "f90 continuing despite warning messages" | \
+          grep -v "is an array from" | \
+          grep -v "consider using mkstemp"  |\
+	  grep -v "Unused external reference" | \
+          grep -v "WARNING 134: weak definition of" | \
+          grep -v 'continuing despite warning messages' | \
+          grep -v "warning prebinding disabled"  |\
+          grep -v "ex20f.F:34: warning:" | \
+	  grep -v "Unused dummy argument" | \
+          grep -v "IPO Error: unresolved" | \
+          grep -v "warning multiple definitions of symbol _matgetarray_" | \
+	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
+	  if [ "$$?" != 1 ]; then \
+          echo "--------------Error detected during compile or link!-----------------------";\
+          echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
+	  cat trashz ; fi; ${RM} trashz;
+
+#--------------------------------------------------------------------------------------
+remote_sshrsync:
+	-@${RSYNC} makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${WORKMACHINE}:${WORKSPACE}
+	-@echo ${SSH} ${WORKMACHINE} "cd ${WORKSPACE}; setenv PETSC_DIR ${WORKPETSCDIR} ; setenv PETSC_ARCH ${WORKPETSCARCH}; make ${EXECUTABLE}"
+	-@${SSH} ${WORKMACHINE} "cd ${WORKSPACE}; setenv PETSC_DIR ${WORKPETSCDIR} ; setenv PETSC_ARCH ${WORKPETSCARCH}; make ${EXECUTABLE}"
+	@IGNORE_THIS_ERROR
+
+#---------------------------------------------------------------------------------------
+
+deleteshared:
+	@for LIBNAME in ${SHLIBS}; \
+	do \
+           echo ${RM} ${INSTALL_LIB_DIR}/$${LIBNAME}.${SL_LINKER_SUFFIX}; \
+           ${RM} ${INSTALL_LIB_DIR}/$${LIBNAME}.${SL_LINKER_SUFFIX}; \
+	done
+	${RM} ${INSTALL_LIB_DIR}/so_locations
+
+noshared:
+# ---------------------------------------------------------------------------------------
+#   Rules for the automatic generation of documentation, tutorials etc
+# See rule for allmanualpages and allhtml in ${PETSC_DIR}/makefile 
+#
+# Builds manual pages in HTML in two stages
+#   1.) manualpages_buildcite: builds the file manualpages.cit for hyperlinks
+#   2.) manualpages: builds the html pages, complete with hyperlinks
+
+chk_mansec:
+	@if [ "${MANSEC}" = "" ] ; then \
+          echo "   makefile is missing MANSEC";\
+        fi
+
+chk_manualpage_dir:
+	@if [ ! -d "${LOC}/docs/manualpages/${MANSEC}" ]; then \
+	  echo Making directory ${LOC}/docs/manualpages/${MANSEC} for library; ${MKDIR} ${LOC}/docs/manualpages/${MANSEC}; fi
+
+manualpages_buildcite: chk_manualpage_dir
+	@-if [ "${MANSEC}" != "" ] ; then \
+	  DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
+	  TEXTFILTER_PATH=${PETSC_DIR}/src/docs/tex/doctext; export TEXTFILTER_PATH; \
+          ${DOCTEXT} -html -indexdir ../${MANSEC} \
+		-index ${LOC}/docs/manualpages/manualpages.cit \
+		-mpath ${LOC}/docs/manualpages/${MANSEC} ${SOURCEC} ${SOURCEH};  fi 
+#
+#
+manualpages:
+	-@if [ "${MANSEC}" != "" ] ; then \
+	  DOCTEXT_PATH=${PETSC_DIR}/src/docs/tex/doctext; export DOCTEXT_PATH; \
+	  ${DOCTEXT} -html \
+		-mpath ${LOC}/docs/manualpages/${MANSEC} -heading PETSc \
+		-defn ${PETSC_DIR}/src/docs/tex/doctext/html.def \
+		-locdir ${LOCDIR} -mapref ${LOC}/docs/manualpages/manualpages.cit \
+		${SOURCEC} ${SOURCEH}; \
+		chmod -f g+w ${LOC}/docs/manualpages/${MANSEC}/* ; fi 
+#
+#   Example usage for manual pages; adds each example that uses a function to that functions
+# manual page up to a limit of 10 examples.
+#
+manexamples:
+	-@base=`basename ${LOCDIR}`; \
+        if [ "$${base}" = "tutorials" ] ; then \
+          echo "Generating manual example links" ; \
+          for i in ${EXAMPLESC} ${EXAMPLESF} foo ; do \
+            if [ "$$i" != "foo" ] ; then \
+              a=`cat $$i | ${MAPNAMES} -map ${LOC}/docs/manualpages/manualpages.cit \
+                   -printmatch -o /dev/null | sort | uniq` ;  \
+              for j in $$a ; do \
+                b=`ls ${LOC}/docs/manualpages/*/$${j}.html | cut -f9` ; \
+                l=`grep tutorials $${b} | wc -l`; \
+                if [ $$l -le 10 ] ; then \
+                  if [ $$l -eq 0 ] ; then \
+                    echo "<P><H3><FONT COLOR=\"#CC3333\">Examples</FONT></H3>" >> $$b; \
+                  fi; \
+                  echo  "<A HREF=\"../../../BB\">BB</A><BR>" | sed s?BB?${LOCDIR}$$i.html?g >> $$b; \
+                  grep -v /BODY $$b > ltmp; \
+                  echo "</BODY></HTML>" >> ltmp; \
+                  mv -f ltmp $$b; \
+                fi; \
+              done; \
+            fi; \
+	  done; \
+        fi
+
+#
+#   Goes through all examples adding the Concepts: to the exampleconcepts file
+#
+exampleconcepts:
+	-@base=`basename ${LOCDIR}`; \
+        if [ "$${base}" = "tutorials" ] ; then \
+          echo "Generating concepts list" ; \
+          for i in ${EXAMPLESC} ${EXAMPLESF} foo ; do \
+            if [ "$$i" != "foo" ] ; then \
+              grep Concepts: $$i | sed -e s?Concepts:??g -e s?\!??g > ltmp;  \
+              line=`cat ltmp | wc -l`; \
+              line=`expr $$line - 1` ; \
+              line=`expr $$line + 1` ; \
+              while [ $$line -gt 0 ] ; do \
+                a=`head -$$line ltmp | tail -1`; \
+                echo ${LOCDIR}$$i $$a >> ${LOC}/docs/exampleconcepts; \
+                line=`expr $$line - 1` ; \
+              done; \
+              ${RM} ltmp; \
+            fi; \
+	  done; \
+        fi
+#
+#   Goes through all manual pages removing the Concepts: field and adding the 
+# concepts to the manconcepts file
+#
+manconcepts:
+	-@${RM} ${LOC}/docs/manconcepts ${LOC}/docs/exampleconcepts
+	-@for i in docs/manualpages/*/*.html ; do \
+              ${RM} ltmp; \
+              grep Concepts: $$i | sed s?Concepts:??g > ltmp;  \
+              line=`cat ltmp | wc -l`; \
+              line=`expr $$line - 1` ; \
+              line=`expr $$line + 1` ; \
+              if [ $$line -gt 0 ] ; then \
+                while [ $$line -gt 0 ] ; do \
+                  a=`head -$$line ltmp | tail -1`; \
+                  echo $$i $$a >> ${LOC}/docs/manconcepts; \
+                  line=`expr $$line - 1` ; \
+                done; \
+                grep -v Concepts: $$i | sed "s/PETSC[A-Z]*_DLLEXPORT//g" > tmp; \
+                mv tmp $$i; \
+              fi; \
+              ${RM} ltmp; \
+          done
+
+getexlist:
+	-@${PETSC_DIR}/maint/getexlist -locdir ${LOCDIR} -byfile -destdir ${LOC}/docs/manualpages/concepts/ ${EXAMPLESC} ${EXAMPLESF}
+	-@${RM} -f logfile.txt
+#
+#   Rules for generating html code from C and Fortran 
+#	
+checkmakefilelist:
+	-@ls makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} 2>/dev/null | grep -v \\.\\. |  sort | uniq > /tmp/$$USER.$$.make ;\
+	ls makefile *.c *.h *.F *.m *.h90 2>/dev/null | sort | uniq > /tmp/$$USER.$$.ls; \
+	${DIFF} /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls; \
+	${RM}  /tmp/$$USER.$$.make  /tmp/$$USER.$$.ls
+
+html:
+	-@sed -e s?man+../?man+ROOT/docs/manualpages/? ${LOC}/docs/manualpages/manualpages.cit > /tmp/$$USER.htmlmap
+	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> /tmp/$$USER.htmlmap
+	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
+          loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
+          ${MKDIR} -p $${loc} ;\
+          for i in ${SOURCEC} ${SOURCEF} ${SOURCEH} ${EXAMPLESC} ${EXAMPLESF} ${EXAMPLESCH} ${EXAMPLESFH} ${EXAMPLESMATLAB} *_Impl.cc *_Impl.hh *.sidl foo ; do\
+	    if [ -f $$i ]; then \
+	      idir=`dirname $$i`;\
+	      if [ ! -d $${loc}/$${idir} ]; then ${MKDIR} -p $${loc}/$${idir}; fi ; \
+              iroot=`echo $$i | sed -e "s?[a-z.]*/??g"`;\
+              IROOT=`echo $${i} | sed -e s?[.][.]??g` ;\
+              if [ "$${IROOT}" != "$${i}" ] ; then \
+                IROOT=".."; \
+              else \
+                IROOT=$${ROOT};\
+              fi;\
+              ${RM} $${loc}/$$i.html; \
+              echo "<center><a href=\"$${iroot}\">Actual source code: $${iroot}</a></center><br>" > $${loc}/$$i.html; \
+              sed -e "s/CHKERRQ(ierr);//g" -e "s/PetscFunctionReturn(0)/return(0)/g"  \
+              -e "s/ierr [ ]*= //g"  -e "s/PETSC[A-Z]*_DLLEXPORT//g" $$i | ${C2HTML} -n  | \
+              sed "s?splicer.begin(\([_A-Za-z0-9.]*\))?splicer.begin(\1)  <a name=\1></p>?g" | \
+              ${PETSC_DIR}/maint/fixinclude $$i $${ROOT} | \
+              egrep -v '(PetscValid|PetscFunctionBegin|PetscCheck|PetscErrorCode ierr;|PetscLogEvent|#if !defined\(__|#define __|#undef __|EXTERN_C|extern )' | \
+              ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml | sed -e s?ROOT?$${IROOT}?g >> $${loc}/$$i.html ; \
+	    fi; \
+         done
+	-@ROOT=`echo ${LOCDIR} | sed -e s?/[a-z]*?/..?g -e s?src/??g -e s?include/??g` ;\
+          loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`; ${RM} $${loc}/index.html; \
+          cat ${PETSC_DIR}/src/docs/manualpages-sec/header_${MANSEC} | sed -e "s?<A HREF=\"PETSC_DIR[a-z/]*\">Examples</A>?<A HREF=\"$${ROOT}/docs/manualpages/${MANSEC}\">Manual pages</A>?g" -e "s?PETSC_DIR?$${ROOT}/?g"> $${loc}/index.html; \
+          echo "<p>" >> $${loc}/index.html
+	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;\
+            if [ "${EXAMPLESC}" != "" ] ; then \
+               for file in ${EXAMPLESC} foo ; do \
+		if [ -f $$file ]; then \
+                   cmess=`grep "static char help" $${file} | cut -d\" -f2 | cut -d\. -f1`; \
+                   echo "<a href=\"$${file}.html\">$${file}: $${cmess}</a><br>" >> $${loc}/index.html;\
+		fi; \
+               done ;\
+            else \
+               for file in ${DIRS} foo; do \
+		 if [ -d $$file ]; then \
+                   echo "<a href=\"$${file}/\">$${file}/</a><br>" >> $${loc}/index.html; \
+		 fi; \
+               done; \
+               echo " " >> $${loc}/index.html; \
+               for file in ${SOURCEH} ${SOURCEC} ${SOURCEF} foo ; do \
+		 if [ -f $$file ]; then \
+                   echo "<a href=\"$${file}.html\">$${file}</a><br>" >> $${loc}/index.html; \
+		 fi; \
+               done; \
+            fi ;\
+            echo " " >> $${loc}/index.html; \
+            echo "<a href=\"makefile.html\">makefile</a><br>" >> $${loc}/index.html
+	-@loc=`pwd | sed -e s?\$${PETSC_DIR}?$${LOC}/?g -e s?/disks??g`;  \
+	   cat makefile | ${C2HTML}  | ${MAPNAMES} -map /tmp/$$USER.htmlmap -inhtml > $${loc}/makefile.html
+	-@${RM} /tmp/$$USER.htmlmap tmp
+
+cleanhtml:
+	-@${RM} makefile.html *.c.html *.F.html *.h.html *.h90.html index.html *.m.html
+
+# -------------------------------------------------------------------------------
+#
+#   Rule for generating ADIC derivatives from PETSc .c and .hfiles
+#
+adic:
+	@-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
+          for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
+          ${ADIC_CC} -s -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
+          fi; done ; \
+        fi; fi
+	@-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEH}" != "" ]; then \
+          for i in ${SOURCEH} foo; do if [ -f $$i ]; then \
+          ${ADIC_CC} -s -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
+          fi; done ; \
+        fi; fi
+	-@chmod -f go+rw *.ad.*
+
+adic2:
+	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
+          for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
+          ${ADIC_CC} -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
+          fi; done ; \
+        fi; fi
+	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEH}" != "" ]; then \
+          for i in ${SOURCEH} foo; do if [ -f $$i ]; then \
+          ${ADIC_CC} -h -f 1 ${CFLAGS} ${CCPPFLAGS} $$i ; \
+          fi; done ; \
+        fi; fi
+	-@chmod -f go+rw *.ad.*
+
+adiclib:
+	-@if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
+          ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${ADIC_INCLUDE} *.ad.c ; \
+        fi; fi
+	-@if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
+          ${AR} ${AR_FLAGS} ${INSTALL_LIB_DIR}/${LIBBASE}.a *.ad.o ; \
+        fi; fi
+	-@chmod -f go+rw ${INSTALL_LIB_DIR}/${LIBBASE}.a
+	-@${RM} *.ad.o
+
+adiclib2:
+	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
+          ${PCC} -c ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} ${ADIC_INCLUDE} *.ad.c ; \
+        fi; fi
+	-if [ "${NOADIC}" != "true" ]; then if [ "${SOURCEC}" != "" ]; then \
+          ${AR} ${AR_FLAGS} ${INSTALL_LIB_DIR}/${LIBBASE}.a *.ad.o ; \
+        fi; fi
+	-@chmod -f go+rw ${INSTALL_LIB_DIR}/${LIBBASE}.a
+	-@${RM} *.ad.o
+# ----------------------------------------------------------------------------------------
+# Rules for finding errors in the source and errors in the coding style
+#
+# Removes files generated by gcov
+cleangcov:
+	@-${RM}  *.bb *.bbg *.da *.gcov *.lines
+
+gcov:
+	@-if [ "${SOURCEC}" != "" ]; then \
+          for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
+           gcov  $${i}; \
+           name=`echo ${LOCDIR} | sed s?/?_?g`; \
+	   grep "##" $${i}.gcov | cut -f 2 -d ":" > /tmp/gcov/$${name}$${i}.lines ; \
+          fi; done ; \
+        fi
+
+gcovmerge:
+	for i in *.lines; do  \
+           comm -1 -2 $${i} ${ODIR}/$${i} > tmp; \
+           mv tmp $${i};\
+        done ; \
+
+countfunctions: 
+	-@if [ ! -f ${INSTALL_LIB_DIR}/countfunctions ]; then \
+	  touch ${INSTALL_LIB_DIR}/countfunctions ; fi
+	@-if [ "${SOURCEC}" != "" ]; then \
+          for i in ${SOURCEC} foo; do if [ -f $$i ]; then \
+           grep "define __FUNCT__" $$i | cut -f2 -d\" >> ${INSTALL_LIB_DIR}/countfunctions ; \
+          fi; done ; \
+        fi
+
+checkbadPetscFunctionBegin:
+	-@if [ "${SOURCEC}" != "" ] ; then \
+	${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  \
+	checkbadPetscFunctionBegin_private ; fi
+
+checkbadPetscFunctionBegin_private:
+	-@for filename in ${SOURCEC} ; do \
+	a=`grep '#define __FUNCT__' $$filename | wc -l`; \
+	b=`grep 'PetscFunctionBegin' $$filename | wc -l`; \
+	if [ $$a -ne $$b ] ; then \
+	echo "$$filename: __FUNCT__ = $$a; PetscFunctionBegin = $$b" ; \
+	fi; \
+	done
+
+checkbadFileHeader:
+	-@for filename in ${SOURCEC} makefile ${SOURCEH} ${SOURCEF} ${EXAMPLESC} ${EXAMPLESF}; do \
+	a=`grep 'Id:' $$filename | wc -l`; \
+	if [ $$a -ne 1 ] ; then \
+	echo "$$filename: missing RCS file header" ; \
+	fi; \
+	done
+
+checkbadSource:
+	-@for filename in ${SOURCEC} makefile ${SOURCEH} ${SOURCEF} ${EXAMPLESC} ${EXAMPLESF}; do \
+       a=`grep '( ' $$filename | wc -l`; \
+       if [ $$a -ge 1 ] ; then \
+       echo "$$filename: extra blank after (" ; \
+       fi; \
+       a=`grep ' )' $$filename | wc -l`; \
+       if [ $$a -ge 1 ] ; then \
+       echo "$$filename: extra blank before )" ; \
+       fi; \
+         a=`grep 'register int' $$filename | wc -l`; \
+       if [ $$a -ge 1 ] ; then \
+       echo "$$filename: do not use register keyword in PETSc" ; \
+       fi; \
+         a=`grep 'register double' $$filename | wc -l`; \
+       if [ $$a -ge 1 ] ; then \
+       echo "$$filename: do not use register keyword in PETSc" ; \
+       fi; \
+         a=`grep '; CHK' $$filename | wc -l`; \
+       if [ $$a -ge 1 ] ; then \
+       echo "$$filename: space before CHKERRx() or CHKPTRx()" ; \
+       fi; \
+         done
+
+checkTestCoverage:
+	-@for filename in ex*.c; do \
+	  if test -f $$filename; then \
+	    if ! grep run`basename $$filename .c`\: makefile 2>&1 > /dev/null; then \
+	      echo "Missing run target for `pwd`/$$filename"; \
+	    elif ! grep run`basename $$filename .c`\  makefile 2>&1 > /dev/null; then \
+	      echo "Missing test for `pwd`/$$filename"; \
+	    fi; \
+	  fi; \
+	done
+	-@for filename in ex*.f; do \
+	  if test -f $$filename; then \
+	    if ! grep run`basename $$filename .f`\: makefile 2>&1 > /dev/null; then \
+	      echo "Missing run target for `pwd`/$$filename"; \
+	    elif ! grep run`basename $$filename .f`\  makefile 2>&1 > /dev/null; then \
+	      echo "Missing test for `pwd`/$$filename"; \
+	    fi; \
+	  fi; \
+	done
+	-@for filename in ex*.F; do \
+	  if test -f $$filename; then \
+	    if ! grep run`basename $$filename .F`\: makefile 2>&1 > /dev/null; then \
+	      echo "Missing run target for `pwd`/$$filename"; \
+	    elif ! grep run`basename $$filename .F`\  makefile 2>&1 > /dev/null; then \
+	      echo "Missing test for `pwd`/$$filename"; \
+	    fi; \
+	  fi; \
+	done
+	-@for filename in ex*.f90; do \
+	  if test -f $$filename; then \
+	    if ! grep run`basename $$filename .f90`\: makefile 2>&1 > /dev/null; then \
+	      echo "Missing run target for `pwd`/$$filename"; \
+	    elif ! grep run`basename $$filename .f90`\  makefile 2>&1 > /dev/null; then \
+	      echo "Missing test for `pwd`/$$filename"; \
+	    fi; \
+	  fi; \
+	done
+
+#
+
+citool:
+	-@cd ${PETSC_DIR}; hg ct
+	-@cd ${PETSC_DIR}/python/BuildSystem; hg ct
+
+pull:
+	-@cd ${PETSC_DIR}; hg pull; hg update
+	-@cd ${PETSC_DIR}/python/BuildSystem; hg pull; hg update
+
+push:
+	-@cd ${PETSC_DIR}; hg push
+	-@cd ${PETSC_DIR}/python/BuildSystem; hg push
+
+
+include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscrules
+# some systems like this line between the two includes
+

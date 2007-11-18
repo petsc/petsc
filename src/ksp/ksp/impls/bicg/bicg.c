@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_BiCG"
@@ -36,7 +36,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
@@ -61,7 +61,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
   ierr = VecConjugate(Rl);CHKERRQ(ierr);
   ierr = VecConjugate(Zl);CHKERRQ(ierr);
-  if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
   } else {
     ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
@@ -104,7 +104,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
      ierr = VecAXPY(Rr,ma,Zr);CHKERRQ(ierr)
      ma = PetscConj(ma);
      ierr = VecAXPY(Rl,ma,Zl);CHKERRQ(ierr);
-     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
        ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
        ierr = VecConjugate(Rl);CHKERRQ(ierr);
        ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
      KSPMonitor(ksp,i+1,dp);
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
-     if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+     if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
        ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
        ierr = VecConjugate(Rl);CHKERRQ(ierr);
        ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
@@ -157,7 +157,10 @@ PetscErrorCode KSPDestroy_BiCG(KSP ksp)
 
    Level: beginner
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS
+   Note: this method requires that one be apply to apply the transpose of the preconditioner and operator
+         as well as the operator and preconditioner.
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPCGNE
 
 M*/
 EXTERN_C_BEGIN

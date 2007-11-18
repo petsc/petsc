@@ -91,7 +91,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 .seealso: PetscViewersCreate(), PetscViewersDestroy()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers viewers,int n,PetscViewer *viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
 
@@ -108,7 +108,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers viewers,int n,
     viewers->viewer = v;
   }
   if (!viewers->viewer[n]) {
-    ierr = PetscViewerCreate(viewers->comm,&viewers->viewer[n]);CHKERRQ(ierr);
+    ierr = PetscViewerCreate(((PetscObject)viewers)->comm,&viewers->viewer[n]);CHKERRQ(ierr);
   }
   *viewer = viewers->viewer[n];
   PetscFunctionReturn(0);

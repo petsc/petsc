@@ -6,7 +6,7 @@
   much of anything.
 */
 
-#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
 #include "private/vecimpl.h"  
 
 typedef struct {
@@ -326,16 +326,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat A)
   PetscFunctionBegin;
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  ierr = PetscNew(Mat_Shell,&b);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,sizeof(struct _p_Mat)+sizeof(Mat_Shell));CHKERRQ(ierr);
+  ierr = PetscNewLog(A,Mat_Shell,&b);CHKERRQ(ierr);
   A->data = (void*)b;
 
   if (A->rmap.n == PETSC_DECIDE || A->cmap.n == PETSC_DECIDE) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must give local row and column count for matrix");
   }
 
-  ierr = PetscMapInitialize(A->comm,&A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(A->comm,&A->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(&A->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(&A->cmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&A->cmap);CHKERRQ(ierr);
 
   b->ctx           = 0;
   b->scale         = PETSC_FALSE;

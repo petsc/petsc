@@ -9,7 +9,8 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 int main(int argc,char **argv)
 {
   PetscMPIInt    rank;
-  PetscInt       M = 13,w=1,s=1,wrap=1;
+  PetscInt       M = 13,s=1,dof=1;
+  DAPeriodicType wrap = DA_XPERIODIC;
   PetscErrorCode ierr;
   DA             da;
   PetscViewer    viewer;
@@ -27,11 +28,12 @@ int main(int argc,char **argv)
 
   /* Readoptions */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetEnum(PETSC_NULL,"-wrap",DAPeriodicTypes,(PetscEnum*)&wrap,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr); 
 
   /* Create distributed array and get vectors */
-  ierr = DACreate1d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,M,w,s,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,wrap,M,dof,s,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DAView(da,viewer);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
@@ -59,10 +61,19 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-local_print",&flg);CHKERRQ(ierr);
   if (flg) {
-    PetscViewer sviewer;
+    PetscViewer            sviewer;
+    ISLocalToGlobalMapping is;
+
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal Vector: processor %d\n",rank);CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
     ierr = VecView(local,sviewer);CHKERRQ(ierr); 
+    ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
+    ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"\nLocal to global mapping: processor %d\n",rank);CHKERRQ(ierr);
+    ierr = PetscViewerGetSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
+    ierr = DAGetISLocalToGlobalMapping(da,&is);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingView(is,sviewer);CHKERRQ(ierr); 
     ierr = PetscViewerRestoreSingleton(PETSC_VIEWER_STDOUT_WORLD,&sviewer);CHKERRQ(ierr);
     ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
   }

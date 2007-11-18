@@ -20,6 +20,7 @@ EXTERN PetscErrorCode PetscFListDestroyAll(void);
 EXTERN PetscErrorCode PetscSequentialPhaseBegin_Private(MPI_Comm,int);
 EXTERN PetscErrorCode PetscSequentialPhaseEnd_Private(MPI_Comm,int);
 EXTERN PetscErrorCode PetscLogCloseHistoryFile(FILE **);
+EXTERN PetscErrorCode PetscOptionsHelpDestroyList(void);
 
 /* this is used by the _, __, and ___ macros (see include/petscerror.h) */
 PetscErrorCode __gierr = 0;
@@ -43,14 +44,7 @@ PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
 
 PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(PetscCookie *cookie)
 {
-  if (*cookie == PETSC_DECIDE || *cookie == PETSC_NULL) {
-    *cookie = ++PETSC_LARGEST_COOKIE;
-  } else if (*cookie > 0) {
-    /* Need to check here for montonicity and insert if necessary */
-    return 0;
-  } else {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid suggested cookie %d", (int)*cookie);
-  }
+  *cookie = ++PETSC_LARGEST_COOKIE;
   return 0;
 }
 
@@ -107,7 +101,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializeNoArguments(void)
 /*@
       PetscInitialized - Determine whether PETSc is initialized.
   
-   Level: beginner
+7   Level: beginner
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
@@ -298,7 +292,7 @@ static char **PetscGlobalArgs = 0;
 
    Concepts: command line arguments
    
-.seealso: PetscFinalize(), PetscInitializeFortran()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArguments()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
@@ -309,6 +303,75 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
   }
   *argc = PetscGlobalArgc;
   *args = PetscGlobalArgs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetArguments"
+/*@C
+   PetscGetArguments - Allows you to access the  command line arguments anywhere
+     after PetscInitialize() is called but before PetscFinalize().
+
+   Not Collective
+
+   Output Parameters:
+.  args - the command line arguments
+
+   Level: intermediate
+
+   Notes:
+      This does NOT start with the program name and IS null terminated (final arg is void)
+
+   Concepts: command line arguments
+   
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscFreeArguments()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***args)
+{
+  PetscInt       i,argc = PetscGlobalArgc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!PetscGlobalArgs) {
+    SETERRQ(PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
+  }
+  ierr = PetscMalloc(argc*sizeof(char*),args);CHKERRQ(ierr);
+  for (i=0; i<argc-1; i++) {
+    ierr = PetscStrallocpy(PetscGlobalArgs[i+1],&(*args)[i]);CHKERRQ(ierr);
+  }
+  (*args)[argc-1] = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFreeArguments"
+/*@C
+   PetscFreeArguments - Frees the memory obtained with PetscGetArguments()
+
+   Not Collective
+
+   Output Parameters:
+.  args - the command line arguments 
+
+   Level: intermediate
+
+   Concepts: command line arguments
+   
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscGetArguments()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
+{
+  PetscInt       i = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (args[i]) {
+    ierr = PetscFree(args[i]);CHKERRQ(ierr);
+    i++;
+  }
+  ierr = PetscFree(args);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -325,8 +388,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
    Input Parameters:
 +  argc - count of number of command line arguments
 .  args - the command line arguments
-.  file - [optional] PETSc database file, defaults to ~username/.petscrc
-          (use PETSC_NULL for default)
+.  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL to not check for
+          code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
 -  help - [optional] Help message to print, use PETSC_NULL for no message
 
    If you wish PETSc to run on a subcommunicator of MPI_COMM_WORLD, create that
@@ -336,6 +399,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 +  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
 .  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
 .  -on_error_emacs <machinename> causes emacsclient to jump to error file
+.  -on_error_abort calls abort() when error detected (no traceback)
+.  -on_error_mpiabort calls MPI_abort() when error detected
+.  -error_output_stderr prints error messages to stderr instead of the default stdout
+.  -error_output_none does not print the error messages (but handles errors in the same way as if this was not called)
 .  -debugger_nodes [node1,node2,...] - Indicates nodes to start in debugger
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to 
@@ -379,8 +446,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 $       call PetscInitialize(file,ierr)
 
 +   ierr - error return code
--   file - [optional] PETSc database file name, defaults to 
-           ~username/.petscrc (use PETSC_NULL_CHARACTER for default)
+-  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_CHARACTER_NULL to not check for
+          code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
            
    Important Fortran Note:
    In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
@@ -397,14 +464,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 {
   PetscErrorCode ierr;
   PetscMPIInt    flag, size;
+  PetscInt       nodesize;
   PetscTruth     flg;
   char           hostname[256];
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
 
-  /* this must be initialized in a routine, not as a constant declaration*/
-  PETSC_STDOUT = stdout;  
+  /* these must be initialized in a routine, not as a constant declaration*/
+  PETSC_STDOUT = stdout;
+  PETSC_STDERR = stderr;
 
   ierr = PetscOptionsCreate();CHKERRQ(ierr);
 
@@ -417,7 +486,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   } else {
     ierr = PetscSetProgramName("Unknown Name");CHKERRQ(ierr);
   }
-
 
   ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
@@ -453,9 +521,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
     PetscScalar ic(0.0,1.0);
     PETSC_i = ic; 
 #else
-    PetscScalar ic;
-    ic = 1.I;
-    PETSC_i = ic;
+    PETSC_i = I;
 #endif
   }
 
@@ -478,11 +544,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 
+  
   /*
-     Build the options database and check for user setup requests
+     Build the options database
   */
   ierr = PetscOptionsInsert(argc,args,file);CHKERRQ(ierr);
 
+  
   /*
      Print main application help message
   */
@@ -491,7 +559,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr); 
-
+ 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogBegin_Private();CHKERRQ(ierr);
@@ -503,9 +571,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   */
   ierr = PetscInitialize_DynamicLibraries();CHKERRQ(ierr);
 
-  /*
-     Initialize all the default viewers
-  */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"PETSc successfully started: number of processors = %d\n",size);CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
@@ -515,6 +580,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions(); CHKERRQ(ierr);
 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
+  if (flg) {
+#if defined(PETSC_HAVE_MPI_COMM_SPAWN)
+    ierr = PetscOpenMPSpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); 
+#else
+    SETERRQ(PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_merge_size instead");
+#endif
+  } else {
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_merge_size",&nodesize,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscOpenMPMerge((PetscMPIInt) nodesize);CHKERRQ(ierr); 
+    }
+  }
 
   PetscFunctionReturn(ierr);
 }
@@ -566,6 +644,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   PetscMPIInt    rank;
   int            nopt;
   PetscTruth     flg1,flg2,flg3;
+  extern FILE   *PETSC_ZOPEFD;
   
   PetscFunctionBegin;
 
@@ -573,6 +652,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
+  ierr = PetscOpenMPFinalize();CHKERRQ(ierr); 
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_info",&flg2);CHKERRQ(ierr);
@@ -583,10 +663,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
   }
 
-  /* Destroy auxiliary packages */
-#if defined(PETSC_HAVE_MATHEMATICA)
-  ierr = PetscViewerMathematicaFinalizePackage();CHKERRQ(ierr);
-#endif
+  /* Destroy any packages that registered a finalize */
+  ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
 
   /*
      Destroy all the function registration lists created
@@ -607,6 +685,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     PETSC_VIEWER_XXX_().
   */
   ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
+  ierr = PetscOptionsHelpDestroyList();CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
   if (PetscStackActive) {
@@ -632,6 +711,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
       else           {ierr = PetscLogPrintSummary(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
     }
 
+    ierr = PetscOptionsGetString(PETSC_NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+    if (flg1) { 
+      if (mname[0])  {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
+      else           {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
+    }
+
     mname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(PETSC_NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);
@@ -655,8 +740,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   }
 
   /* to prevent PETSc -options_left from warning */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg1);CHKERRQ(ierr)
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&flg1);CHKERRQ(ierr);
 
   flg3 = PETSC_FALSE; /* default value is required */
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
@@ -703,7 +788,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   if (flg1) {
     char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
-    
+    int  err;
+
     fname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
@@ -712,7 +798,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
-      fclose(fd);
+      err = fclose(fd);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
     } else {
       MPI_Comm local_comm;
 
@@ -731,11 +818,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_log",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
       char sname[PETSC_MAX_PATH_LEN];
+      int  err;
 
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDumpLog(fd);CHKERRQ(ierr); 
-      fclose(fd);
+      err = fclose(fd);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
     } else {
       ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr); 
     }
@@ -760,6 +849,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   if (PetscBeganMPI) {
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
+
+  if(PETSC_ZOPEFD != NULL){ 
+    if (PETSC_ZOPEFD != PETSC_STDOUT) fprintf(PETSC_ZOPEFD, "<<<end>>>");
+    else fprintf(PETSC_STDOUT, "<<<end>>>");}
 
 /*
 

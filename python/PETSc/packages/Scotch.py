@@ -99,9 +99,6 @@ class Configure(config.base.Configure):
   def getDir(self):
     '''Find the directory containing Scotch'''
     packages = self.petscdir.externalPackagesDir 
-    if not os.path.isdir(packages):
-      os.mkdir(packages)
-      self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
     scotchDir = None
     for dir in os.listdir(packages):
       if dir.startswith('scotch_3.4') and os.path.isdir(os.path.join(packages, dir)):
@@ -137,11 +134,9 @@ class Configure(config.base.Configure):
     self.framework.actions.addArgument('Scotch', 'Download', 'Downloaded Scotch into '+self.getDir())
     # Get the Scotch directories
     scotchDir = self.getDir()  #~scotch_3.4
-    installDir = os.path.join(scotchDir, 'bin/i586_pc_linux2') #~scotch_3.4/bin/i586_pc_linux2
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
-    lib = self.libraryGuesses(installDir) 
-    include = [[installDir]]
+    self.installDir = os.path.join(scotchDir, 'bin/i586_pc_linux2') #~scotch_3.4/bin/i586_pc_linux2
+    lib = self.libraryGuesses(self.installDir) 
+    include = [[self.installDir]]
     return ('Downloaded Scotch', lib, include)
 
   def configureVersion(self):

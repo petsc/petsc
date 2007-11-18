@@ -93,6 +93,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_SeqAIJ(Mat A,MatType type,M
   B->ops->assemblyend      = lu->MatAssemblyEnd;
   B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
   B->ops->destroy          = lu->MatDestroy;
+  ierr     = PetscFree(lu);CHKERRQ(ierr);
+  A->spptr = PETSC_NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_superlu_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_superlu_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -114,11 +116,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,M
   Mat_SuperLU    *lu;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
+  if (reuse == MAT_INITIAL_MATRIX){
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_SuperLU,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_SuperLU,&lu);CHKERRQ(ierr);
   /* save the original SeqAIJ methods that we are changing */
   lu->MatDuplicate         = A->ops->duplicate;
   lu->MatView              = A->ops->view;
@@ -128,7 +130,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,M
   lu->CleanUpSuperLU       = PETSC_FALSE;
 
   /* add to the matrix the location for all the SuperLU data is to be stored */
-  B->spptr                 = (void*)lu;
+  B->spptr                 = (void*)lu; /* attach Mat_SuperLU to B->spptr is a bad design! */
 
   /* set the methods in the function table to the SuperLU versions */
   B->ops->duplicate        = MatDuplicate_SuperLU;
@@ -142,7 +144,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,M
                                            "MatConvert_SeqAIJ_SuperLU",MatConvert_SeqAIJ_SuperLU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_seqaij_C",
                                            "MatConvert_SuperLU_SeqAIJ",MatConvert_SuperLU_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscInfo(0,"Using SuperLU for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using SuperLU for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -444,9 +446,9 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   const char   *rowperm[]={"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by the petsc interface yet */
 
   PetscFunctionBegin;
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->lufactornumeric = MatLUFactorNumeric_SuperLU;
@@ -476,7 +478,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   lu->options.PrintStat = NO;
   lu->lwork = 0;   /* allocate space internally by system malloc */
 
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
   if (flg) {lu->options.ColPerm = (colperm_t)indx;}
   ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);
@@ -528,7 +530,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   lu->CleanUpSuperLU = PETSC_TRUE;
 
   *F = B;
-  ierr = PetscLogObjectMemory(B,(A->rmap.n+A->cmap.n)*sizeof(PetscInt)+sizeof(Mat_SuperLU));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(B,(A->rmap.n+A->cmap.n)*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -553,11 +555,13 @@ PetscErrorCode MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
   If SuperLU is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SuperLU solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU), then 
+  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() DO NOT
+  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSEQAIJ type without data copy.
+  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation() is 
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATSEQAIJ type AFTER the matrix values are set without data copy.
 
   Options Database Keys:
 + -mat_type superlu - sets the matrix type to "superlu" during a call to MatSetFromOptions()

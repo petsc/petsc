@@ -36,7 +36,7 @@
       call PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1,ierr)
       zero = 0
       one  = 1
-      call MatGetRowIJ(Ad,one,zero,n,ia,iia,ja,jja,done,ierr)
+      call MatGetRowIJ(Ad,one,zero,zero,n,ia,iia,ja,jja,done,ierr)
       call MatGetArray(Ad,aa,aaa,ierr)
       do 10, i=1,n
         write(7+rank,*) 'row ',i+rstart,' number nonzeros ',                &
@@ -45,12 +45,12 @@
           write(7+rank,*)'  ',j,ja(jja+j)+rstart,aa(aaa+j)
  20     continue
  10   continue
-      call MatRestoreRowIJ(Ad,one,zero,n,ia,iia,ja,jja,done,ierr)
+      call MatRestoreRowIJ(Ad,one,zero,zero,n,ia,iia,ja,jja,done,ierr)
 
 !
 !   Print off-diagonal portion of matrix
 !
-      call MatGetRowIJ(Ao,one,zero,n,ia,iia,ja,jja,done,ierr)
+      call MatGetRowIJ(Ao,one,zero,zero,n,ia,iia,ja,jja,done,ierr)
       call MatGetArray(Ao,aa,aaa,ierr)
       do 30, i=1,n
         write(7+rank,*) 'row ',i+rstart,' number nonzeros ',               &
@@ -59,7 +59,7 @@
           write(7+rank,*)'  ',j,icol(iicol+ja(jja+j))+1,aa(aaa+j)
  40     continue
  30   continue
-      call MatRestoreRowIJ(Ao,one,zero,n,ia,iia,ja,jja,done,ierr)
+      call MatRestoreRowIJ(Ao,one,zero,zero,n,ia,iia,ja,jja,done,ierr)
       call PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1,ierr)
 
       call MatView(A,PETSC_VIEWER_STDOUT_WORLD,ierr)

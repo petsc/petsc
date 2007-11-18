@@ -49,6 +49,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_MEMC             78   /* memory corruption */
 #define PETSC_ERR_CONV_FAILED      82   /* iterative method (KSP or SNES) failed */
 #define PETSC_ERR_USER             83   /* user has not provided needed function */
+#define PETSC_ERR_SYS              88   /* error in system call */
 
 #define PETSC_ERR_ARG_SIZ          60   /* nonconforming object sizes used in operation */
 #define PETSC_ERR_ARG_IDN          61   /* two arguments not allowed to be the same */
@@ -72,7 +73,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_MAT_LU_ZRPVT     71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT     81   /* detected a zero pivot during Cholesky factorization */
 
-#define PETSC_ERR_MAX_VALUE        88   /* this is always the one more than the largest error code */
+#define PETSC_ERR_MAX_VALUE        89   /* this is always the one more than the largest error code */
 
 #if defined(PETSC_USE_ERRORCHECKING)
 
@@ -82,7 +83,7 @@ PETSC_EXTERN_CXX_BEGIN
    Not Collective
 
    Synopsis:
-   void SETERRQ(PetscErrorCode errorcode,char *message)
+   PetscErrorCode SETERRQ(PetscErrorCode errorcode,char *message)
 
 
    Input Parameters:
@@ -96,8 +97,9 @@ PETSC_EXTERN_CXX_BEGIN
 
     See SETERRQ1(), SETERRQ2(), SETERRQ3() for versions that take arguments
 
+    In Fortran MPI_Abort() is always called
 
-   Experienced users can set the error handler with PetscPushErrorHandler().
+    Experienced users can set the error handler with PetscPushErrorHandler().
 
    Concepts: error^setting condition
 
@@ -111,7 +113,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void SETERRQ1(PetscErrorCode errorcode,char *formatmessage,arg)
+   PetscErrorCode SETERRQ1(PetscErrorCode errorcode,char *formatmessage,arg)
 
 
    Input Parameters:
@@ -138,7 +140,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void SETERRQ2(PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
+   PetscErrorCode SETERRQ2(PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
 
 
    Input Parameters:
@@ -166,7 +168,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void SETERRQ3(PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ3(PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
 
 
    Input Parameters:
@@ -203,7 +205,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void CHKERRQ(PetscErrorCode errorcode)
+   PetscErrorCode CHKERRQ(PetscErrorCode errorcode)
 
 
    Input Parameters:
@@ -222,8 +224,12 @@ M*/
     Although typical usage resembles "void CHKERRQ(PetscErrorCode)" as described above, for certain uses it is
     highly inappropriate to use it in this manner as it invokes return(PetscErrorCode). In particular,
     it cannot be used in functions which return(void) or any other datatype.  In these types of functions,
-    a more appropriate construct for using PETSc Error Handling would be
-         if (n) {PetscError(....); return(YourReturnType);}
+    you can use CHKERRV() which returns without an error code (bad idea since the error is ignored or
+         if (n) {PetscError(....); return(YourReturnType);} 
+    where you may pass back a PETSC_NULL to indicate an error. You can also call CHKERRABORT(comm,n) to have
+    MPI_Abort() returned immediately.
+
+    In Fortran MPI_Abort() is always called
 
    Concepts: error^setting condition
 
@@ -231,8 +237,11 @@ M*/
 M*/
 #define CHKERRQ(n)             if (n) {return PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
 
+#define CHKERRV(n)             if (n) {n = PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");return;}
 #define CHKERRABORT(comm,n)    if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");MPI_Abort(comm,n);}
 #define CHKERRCONTINUE(n)      if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
+
+#define CHKFPQ(f) if (f != f) {SETERRQ(PETSC_ERR_FP, "Invalid value: NaN");}
 
 /*MC
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
@@ -275,7 +284,7 @@ extern PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX];
 extern PetscInt       PetscExceptionsCount;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode);
-EXTERN void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
 EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
@@ -288,7 +297,7 @@ EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
      PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr);
 
   Input Parameters:
-  + xierr - error code returned from PetscExceptionTry1() 
+  + xierr - error code returned from PetscExceptionTry1() or other PETSc routine
   - zierr - error code you want it to be
 
   Level: advanced
@@ -296,9 +305,9 @@ EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
    Notes:
     PETSc must not be configured using the option --with-errorchecking=0 for this to work
 
-    Use PetscExceptionValue() to see if the current error code is one that has been "tried"
+    Use PetscExceptionValue() to see if an error code is being "tried"
 
-  Concepts: exceptions, exception hanlding
+  Concepts: exceptions, exception handling
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionTry1(), PetscExceptionValue()
@@ -355,9 +364,11 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
    Not Collective
 
    Synopsis:
-     PetscExceptionTry1(PetscErrorCode routine(....),PetscErrorCode);
+     PetscErrorCode PetscExceptionTry1(PetscErrorCode routine(....),PetscErrorCode);
 
   Level: advanced
+
+   No Fortran Equivalent (see PetscExceptionPush() for Fortran)
 
    Notes:
     PETSc must not be configured using the option --with-errorchecking=0 for this to work
@@ -372,7 +383,54 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
           CHKERRQ(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
 M*/
 extern PetscErrorCode PetscExceptionTmp;
-#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a , PetscExceptionPop(b),PetscExceptionTmp)
+#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a, (PetscExceptionPop(b) || PetscExceptionTmp))
+
+/*
+   Used by PetscExceptionTrySync(). Returns zierr on ALL processes in comm iff xierr is zierr on at least one process and zero on all others.
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscExceptionTrySync_Private(MPI_Comm comm,PetscErrorCode xierr,PetscErrorCode zierr) 
+{
+  PetscReal      in[2],out[2];
+  PetscErrorCode ierr;
+
+  if (xierr != zierr) return xierr;
+
+  in[0] = xierr;
+  in[1] = 0.0;   /* dummy value */
+
+  ierr = MPI_Allreduce(in,out,2,MPIU_REAL,0,comm); if (ierr) {;}
+  return xierr;
+}          
+
+/*MC
+   PetscExceptionTrySyncNorm - Runs the routine, causing a particular error code to be treated as an exception,
+         rather than an error. That is if that error code is treated the program returns to this level,
+         but does not call the error handlers
+
+     Collective on Comm
+
+   Synopsis:
+     PetscExceptionTrySyncNorm(MPI_Comm comm,PetscErrorCode routine(....),PetscErrorCode);
+
+  Level: advanced
+
+   Notes: This synchronizes the error code across all processes in the communicator IF the code matches PetscErrorCode. The next
+     call with an MPI_Reduce()/MPI_Allreduce() MUST be VecNorm() [We can added VecDot() and maybe others as needed].
+
+    PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+  Note: In general, the outer most try on an exception is the one that will be caught (that is trys down in 
+        PETSc code will not usually handle an exception that was issued above). See SNESSolve() for an example
+        of how the local try is ignored if a higher (in the stack) one is also in effect.
+
+  Concepts: exceptions, exception hanlding
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
+          CHKERRQ(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscExceptionTry1()
+M*/
+extern PetscErrorCode PetscExceptionTmp;
+#define PetscExceptionTrySyncNorm(comm,a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : \
+                                        (PetscExceptionTmp = a , PetscExceptionPop(b),PetscExceptionTrySyncNorm_Private(comm,PetscExceptionTmp,b))
 
 #else
 
@@ -392,7 +450,7 @@ extern PetscErrorCode PetscExceptionTmp;
 #define CHKERRQ(n)     ;
 #define CHKERRABORT(comm,n) ;
 #define CHKERRCONTINUE(n) ;
-
+#define CHKFPQ(f) ;
 #define CHKMEMQ        ;
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
@@ -400,10 +458,16 @@ extern PetscErrorCode PetscExceptionTmp;
 #define ___  
 #endif 
 
-#define PetscErrorSetCatchable(a,b) 0
-#define PetscExceptionCaught(a,b)   PETSC_FALSE
-#define PetscExceptionValue(a)      PETSC_FALSE
-#define PetscExceptionTry1(a,b)     a
+#define PetscExceptionPush(a)                0
+#define PetscExceptionPop(a)                 0
+#define PetscErrorSetCatchable(a,b)          0
+#define PetscErrorIsCatchable(a)             PETSC_FALSE
+
+#define PetscExceptionCaught(a,b)            PETSC_FALSE
+#define PetscExceptionValue(a)               PETSC_FALSE
+#define PetscExceptionTry1(a,b)              a
+#define PetscExceptionTrySyncNorm(comm,a,b)  a
+
 #endif
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize(void);
@@ -411,7 +475,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int,const char*[],char *
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscStopErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIAbortErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);

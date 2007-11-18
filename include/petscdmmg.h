@@ -8,13 +8,30 @@
 PETSC_EXTERN_CXX_BEGIN
 
 /*S
-     DMMG -  Data structure to easily manage multi-level non-linear solvers on grids managed by DM
-          
+     DMMGArray - Fortran only. This is used in the main program when doing DMMGCreate(), DMMGSetDM() etc.
+        in the subroutines like FormFunction() one should use DMMG.
+
+        You can use DMMGArrayGetDMMG(DMMGArray,DMMG,ierr) to obtain the DMMG from a DMMG.
+
    Level: intermediate
 
   Concepts: multigrid, Newton-multigrid
 
-.seealso:  VecPackCreate(), DA, VecPack, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES()
+.seealso:  DMCompositeCreate(), DA, DMComposite, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
+           DMMGSetNullSpace(), DMMGSetUseGalerkin(), DMMGSetMatType()
+S*/
+
+/*S
+     DMMG -  Data structure to easily manage multi-level non-linear solvers on grids managed by DM
+          
+   Level: intermediate
+
+   Fortran Users: see also DMMGArray
+
+  Concepts: multigrid, Newton-multigrid
+
+.seealso:  DMCompositeCreate(), DA, DMComposite, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
+           DMMGSetNullSpace(), DMMGSetUseGalerkin(), DMMGSetMatType()
 S*/
 typedef struct _n_DMMG* DMMG;
 struct _n_DMMG {
@@ -28,11 +45,12 @@ struct _n_DMMG {
   PetscErrorCode (*solve)(DMMG*,PetscInt);
   void           *user;         
   PetscTruth     galerkin;                  /* for A_c = R*A*R^T */
+  MatType        mtype;                     /* create matrices of this type */
+  char           *prefix;
 
   /* KSP only */
   KSP            ksp;             
   PetscErrorCode (*rhs)(DMMG,Vec);
-  PetscTruth     matricesset;               /* User had called DMMGSetKSP() and the matrices have been computed */
 
   /* SNES only */
   Vec            Rscale;                 /* scaling to restriction before computing Jacobian */
@@ -42,6 +60,7 @@ struct _n_DMMG {
   PetscTruth     updatejacobian;         /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
   PetscInt       updatejacobianperiod;   /* how often, inside a SNES, the Jacobian is recomputed */
 
+  ISColoringType isctype;
   MatFDColoring  fdcoloring;             /* only used with FD coloring for Jacobian */  
   SNES           snes;                  
   PetscErrorCode (*initialguess)(DMMG,Vec);
@@ -65,7 +84,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG*,PetscErrorCode (*)(DMMG,Vec),PetscErrorCode (*)(DMMG,Mat,Mat));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG*,PetscErrorCode (*)(SNES,Vec,Vec,void*),PetscErrorCode (*)(SNES,Vec,Mat*,Mat*,MatStructure*,void*));
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuessLocal(DMMG*,PetscErrorCode (*)(DALocalInfo*,void*));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuessLocal(DMMG*,PetscErrorCode (*)(void));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuess(DMMG*,PetscErrorCode (*)(DMMG,Vec));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG,Vec);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG*,PetscViewer);
@@ -75,7 +94,12 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG*,DM);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG*,KSP,PetscInt);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseGalerkinCoarse(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG*,PetscTruth,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG*,MatType);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetISColoringType(DMMG*,ISColoringType);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetPrefix(DMMG*,const char*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGFormFunction(SNES,Vec,Vec,void *);
 
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGGetSNESLocal(DMMG*,DALocalFunction1*,DALocalFunction1*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC)
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) \
@@ -261,6 +285,24 @@ M*/
 #define DMMGGetSNES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->snes
 
 /*MC
+   DMMGGetDM - Gets the DM object on the finest level
+
+   Synopsis:
+   DM DMMGGetDM(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP()
+
+M*/
+#define DMMGGetDM(ctx)             ((ctx)[(ctx)[0]->nlevels-1]->dm)
+
+/*MC
    DMMGGetDA - Gets the DA object on the finest level
 
    Synopsis:
@@ -273,18 +315,18 @@ M*/
 
    Level: intermediate
 
-   Notes: Use only if the DMMG was created with a DA, not a VecPack
+   Notes: Use only if the DMMG was created with a DA, not a DMComposite
 
-.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetVecPack()
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetDMComposite()
 
 M*/
 #define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
 
 /*MC
-   DMMGGetVecPack - Gets the VecPack object on the finest level
+   DMMGGetDMComposite - Gets the DMComposite object on the finest level
 
    Synopsis:
-   VecPack DMMGGetVecPack(DMMG *dmmg)
+   DMComposite DMMGGetDMComposite(DMMG *dmmg)
 
    Not Collective
 
@@ -293,12 +335,12 @@ M*/
 
    Level: intermediate
 
-   Notes: Use only if the DMMG was created with a DA, not a VecPack
+   Notes: Use only if the DMMG was created with a DA, not a DMComposite
 
 .seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetDA()
 
 M*/
-#define DMMGGetVecPack(ctx)        (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)
+#define DMMGGetDMComposite(ctx)        (DMComposite)((ctx)[(ctx)[0]->nlevels-1]->dm)
 
 /*MC
    DMMGGetUser - Returns the user context for a particular level

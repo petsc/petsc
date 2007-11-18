@@ -10,6 +10,44 @@
 static PetscMPIInt Petsc_Viewer_Stdout_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIIGetStdout"
+/*@C
+   PetscViewerASCIIGetStdout - Creates a ASCII PetscViewer shared by all processors 
+                    in a communicator. Error returning version of PETSC_VIEWER_STDOUT_()
+
+   Collective on MPI_Comm
+
+   Input Parameter:
+.  comm - the MPI communicator to share the PetscViewer
+
+   Level: beginner
+
+   Notes: 
+     This should be used in all PETSc source code instead of PETSC_VIEWER_STDOUT_()
+
+.seealso: PETSC_VIEWER_DRAW_(), PetscViewerASCIIOpen(), PETSC_VIEWER_STDERR_, PETSC_VIEWER_STDOUT_WORLD,
+          PETSC_VIEWER_STDOUT_SELF
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetStdout(MPI_Comm comm,PetscViewer *viewer)
+{
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+
+  PetscFunctionBegin;
+  if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);CHKERRQ(ierr);
+  }
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stdout_keyval,(void **)viewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  if (!flg) { /* PetscViewer not yet created */
+    ierr = PetscViewerASCIIOpen(comm,"stdout",viewer);CHKERRQ(ierr);
+    ierr = PetscObjectRegisterDestroy((PetscObject)*viewer);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(comm,Petsc_Viewer_Stdout_keyval,(void*)*viewer);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_STDOUT_"  
 /*@C
    PETSC_VIEWER_STDOUT_ - Creates a ASCII PetscViewer shared by all processors 
@@ -34,24 +72,11 @@ $      XXXView(XXX object,PETSC_VIEWER_STDOUT_(comm));
 PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDOUT_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  if (Petsc_Viewer_Stdout_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stdout_keyval,0);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
-  }
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stdout_keyval,(void **)&viewer,(PetscMPIInt*)&flg);
+  ierr = PetscViewerASCIIGetStdout(comm,&viewer);
   if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
-  if (!flg) { /* PetscViewer not yet created */
-    ierr = PetscViewerASCIIOpen(comm,"stdout",&viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
-    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
-    ierr = MPI_Attr_put(comm,Petsc_Viewer_Stdout_keyval,(void*)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDOUT_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
-  } 
   PetscFunctionReturn(viewer);
 }
 
@@ -61,6 +86,44 @@ PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDOUT_(MPI_Comm comm)
   is attached to a communicator, in this case the attribute is a PetscViewer.
 */
 static PetscMPIInt Petsc_Viewer_Stderr_keyval = MPI_KEYVAL_INVALID;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIIGetStderr"
+/*@C
+   PetscViewerASCIIGetStderr - Creates a ASCII PetscViewer shared by all processors 
+                    in a communicator. Error returning version of PETSC_VIEWER_STDERR_()
+
+   Collective on MPI_Comm
+
+   Input Parameter:
+.  comm - the MPI communicator to share the PetscViewer
+
+   Level: beginner
+
+   Notes: 
+     This should be used in all PETSc source code instead of PETSC_VIEWER_STDERR_()
+
+.seealso: PETSC_VIEWER_DRAW_(), PetscViewerASCIIOpen(), PETSC_VIEWER_STDERR_, PETSC_VIEWER_STDERR_WORLD,
+          PETSC_VIEWER_STDERR_SELF
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetStderr(MPI_Comm comm,PetscViewer *viewer)
+{
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+
+  PetscFunctionBegin;
+  if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);CHKERRQ(ierr);
+  }
+  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stderr_keyval,(void **)viewer,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  if (!flg) { /* PetscViewer not yet created */
+    ierr = PetscViewerASCIIOpen(comm,"stderr",viewer);CHKERRQ(ierr);
+    ierr = PetscObjectRegisterDestroy((PetscObject)*viewer);CHKERRQ(ierr);
+    ierr = MPI_Attr_put(comm,Petsc_Viewer_Stderr_keyval,(void*)*viewer);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_STDERR_" 
@@ -86,26 +149,14 @@ $      XXXView(XXX object,PETSC_VIEWER_STDERR_(comm));
 PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDERR_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  if (Petsc_Viewer_Stderr_keyval == MPI_KEYVAL_INVALID) {
-    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,MPI_NULL_DELETE_FN,&Petsc_Viewer_Stderr_keyval,0);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
-  }
-  ierr = MPI_Attr_get(comm,Petsc_Viewer_Stderr_keyval,(void **)&viewer,(PetscMPIInt*)&flg);
+  ierr = PetscViewerASCIIGetStderr(comm,&viewer);
   if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
-  if (!flg) { /* PetscViewer not yet created */
-    ierr = PetscViewerASCIIOpen(comm,"stderr",&viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
-    ierr = PetscObjectRegisterDestroy((PetscObject)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
-    ierr = MPI_Attr_put(comm,Petsc_Viewer_Stderr_keyval,(void*)viewer);
-    if (ierr) {PetscError(__LINE__,"PETSC_VIEWER_STDERR_",__FILE__,__SDIR__,1,1," "); PetscFunctionReturn(0);}
-  } 
   PetscFunctionReturn(viewer);
 }
+
 
 PetscMPIInt Petsc_Viewer_keyval = MPI_KEYVAL_INVALID;
 EXTERN_C_BEGIN
@@ -179,7 +230,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIOpen(MPI_Comm comm,const char nam
   PetscFunctionBegin;
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
   if (!len) {
-    *lab = PETSC_VIEWER_STDOUT_(comm);
+    ierr = PetscViewerASCIIGetStdout(comm,lab);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)*lab);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }

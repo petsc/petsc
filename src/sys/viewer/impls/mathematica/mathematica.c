@@ -18,32 +18,6 @@ PetscViewer  PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE = PETSC_NULL;
 static void *mathematicaEnv                   = PETSC_NULL;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscViewerMathematicaInitializePackage"
-/*@C
-  PetscViewerMathematicaInitializePackage - This function initializes everything in the Petsc interface to Mathematica. It is
-  called from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
-  when using static libraries.
-
-  Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
-
-  Level: developer
-
-.keywords: Petsc, initialize, package, PLAPACK
-.seealso: PetscInitializePackage(), PetscInitialize()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaInitializePackage(char *path)
-{
-  static PetscTruth initialized = PETSC_FALSE;
-
-  PetscFunctionBegin;
-  if (initialized) PetscFunctionReturn(0);
-  initialized = PETSC_TRUE;
-  mathematicaEnv = (void*) MLInitialize(0);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMathematicaDestroyPackage"
 /*@C
   PetscViewerMathematicaDestroyPackage - This function destroys everything in the Petsc interface to Mathematica. It is
@@ -60,6 +34,34 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaFinalizePackage(void)
   if (mathematicaEnv) MLDeinitialize((MLEnvironment) mathematicaEnv);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaInitializePackage"
+/*@C
+  PetscViewerMathematicaInitializePackage - This function initializes everything in the Petsc interface to Mathematica. It is
+  called from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
+  when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Petsc, initialize, package, PLAPACK
+.seealso: PetscInitializePackage(), PetscInitialize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaInitializePackage(const char path[])
+{
+  static PetscTruth initialized = PETSC_FALSE;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  mathematicaEnv = (void*) MLInitialize(0);
+  ierr = PetscRegisterFinalize(PetscViewerMathematicaFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerInitializeMathematicaWorld_Private"
@@ -176,12 +178,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Mathematica(PetscViewer v)
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
 
-  ierr = PetscNew(PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);
+  ierr = PetscNewLog(v,PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);
   v->data         = (void*) vmath;
   v->ops->destroy = PetscViewerDestroy_Mathematica;
   v->ops->flush   = 0;
-  ierr = PetscStrallocpy(PETSC_VIEWER_MATHEMATICA, &v->type_name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_VIEWER_MATHEMATICA, &((PetscObject)v)->type_name);CHKERRQ(ierr);
 
   vmath->linkname         = PETSC_NULL;
   vmath->linkhost         = PETSC_NULL;
@@ -237,8 +242,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscViewer 
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(v->comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(v->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)v)->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)v)->comm, &rank);CHKERRQ(ierr);
 
   /* Get link name */
   ierr = PetscOptionsGetString("viewer_", "-math_linkname", linkname, 255, &opt);CHKERRQ(ierr);

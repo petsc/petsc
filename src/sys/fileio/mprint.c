@@ -14,6 +14,16 @@ extern FILE *petsc_history;
      writes to go to terminal XX; assuming you have write permission there
 */
 FILE *PETSC_STDOUT = 0;
+/*
+     Allows one to overwrite where standard error is sent. For example
+     PETSC_STDERR = fopen("/dev/ttyXX","w") will cause all standard error
+     writes to go to terminal XX; assuming you have write permission there
+*/
+FILE *PETSC_STDERR = 0;
+/*
+     Used to output to Zope
+*/
+FILE *PETSC_ZOPEFD = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"
@@ -88,6 +98,34 @@ PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *f
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscZopeLog"
+
+PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp){
+  /* no malloc since may be called by error handler */
+  char     newformat[8*1024];
+  char     log[8*1024];
+  
+  extern FILE * PETSC_ZOPEFD;
+  char logstart[] = " <<<log>>>";
+  size_t len;
+  size_t formatlen;
+  PetscFormatConvert(format,newformat,8*1024);
+  PetscStrlen(logstart, &len);
+  PetscMemcpy(log, logstart, len);
+  PetscStrlen(newformat, &formatlen);
+  PetscMemcpy(&(log[len]), newformat, formatlen);
+  if(PETSC_ZOPEFD != NULL){
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
+  vfprintf(PETSC_ZOPEFD,log,(char *)Argp);
+#else
+  vfprintf(PETSC_ZOPEFD,log,Argp);
+  fflush(PETSC_ZOPEFD);
+#endif
+}
+  return 0;
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscVFPrintf"
 /* 
    All PETSc standard out and error messages are sent through this function; so, in theory, this can
@@ -98,12 +136,31 @@ PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *f
 
    No error handling because may be called by error handler
 */
-PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
+PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler */
-  char     newformat[8*1024];
- 
+  char        newformat[8*1024];
+  extern FILE *PETSC_ZOPEFD;
+
   PetscFormatConvert(format,newformat,8*1024); 
+  if(PETSC_ZOPEFD != NULL && PETSC_ZOPEFD != PETSC_STDOUT){
+    va_list s;
+#if defined(PETSC_HAVE_VA_COPY)
+    va_copy(s, Argp);
+#elif defined(PETSC_HAVE___VA_COPY)
+    __va_copy(s, Argp);
+#else
+    SETERRQ(PETSC_ERR_SUP_SYS,"Zope not supported due to missing va_copy()");
+#endif
+
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
+    vfprintf(PETSC_ZOPEFD,newformat,(char *)s);
+#else
+    vfprintf(PETSC_ZOPEFD,newformat,s);
+    fflush(PETSC_ZOPEFD);
+#endif
+  }
+
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
   vfprintf(fd,newformat,(char *)Argp);
 #else
@@ -187,9 +244,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char 
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    ierr = PetscVFPrintf(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
@@ -249,10 +306,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,c
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    ierr = PetscVFPrintf(fp,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(fp,format,Argp);CHKERRQ(ierr);
     queuefile = fp;
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
@@ -371,9 +428,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char fo
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(fd,format,Argp);CHKERRQ(ierr);
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
   }
@@ -442,9 +499,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],...
     } else {
       nformat = (char*)format;
     }
-    ierr = PetscVFPrintf(PETSC_STDOUT,nformat,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(PETSC_STDOUT,nformat,Argp);CHKERRQ(ierr);
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,nformat,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,nformat,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
     if (sub1) {ierr = PetscFree(nformat);CHKERRQ(ierr);}
@@ -466,9 +523,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char f
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    ierr = PetscVFPrintf(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
   }
@@ -477,64 +534,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char f
 
 /* ---------------------------------------------------------------------------------------*/
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscErrorPrintfDefault" 
-PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
-{
-  va_list            Argp;
-  static  PetscTruth PetscErrorPrintfCalled    = PETSC_FALSE;
-  static  PetscTruth InPetscErrorPrintfDefault = PETSC_FALSE;
-  static  FILE       *fd;
-
-  /*
-      InPetscErrorPrintfDefault is used to prevent the error handler called (potentially)
-     from PetscSleep(), PetscGetArchName(), ... below from printing its own error message.
-  */
-
-  /*
-      This function does not call PetscFunctionBegin and PetscFunctionReturn() because
-    it may be called by PetscStackView().
-
-      This function does not do error checking because it is called by the error handlers.
-  */
-
-  if (!PetscErrorPrintfCalled) {
-    PetscTruth use_stderr;
-
-    PetscErrorPrintfCalled    = PETSC_TRUE;
-    InPetscErrorPrintfDefault = PETSC_TRUE;
-
-    PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&use_stderr);
-    if (use_stderr) {
-      fd = stderr;
-    } else {
-      fd = PETSC_STDOUT;
-    }
-
-    /*
-        On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
-      different processors, the messages are printed all jumbled up; to try to 
-      prevent this we have each processor wait based on their rank
-    */
-#if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
-    {
-      PetscMPIInt rank;
-      if (PetscGlobalRank > 8) rank = 8; else rank = PetscGlobalRank;
-      PetscSleep(rank);
-    }
-#endif
-    InPetscErrorPrintfDefault = PETSC_FALSE;
-  }
-    
-  if (!InPetscErrorPrintfDefault) {
-    PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]PETSC ERROR: ",PetscGlobalRank);
-    va_start(Argp,format);
-    PetscVFPrintf(fd,format,Argp);
-    va_end(Argp);
-  }
-  return 0;
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSynchronizedFGets" 

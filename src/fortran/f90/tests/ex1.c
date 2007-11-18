@@ -25,11 +25,11 @@ typedef struct {
 EXTERN_C_BEGIN
 
 extern void fortran_routine_(abc *);
-void c_routine_(abc *x)
+void PETSC_STDCALL c_routine_(abc *x)
 {
   double     *data;
 
-  F90Array1dAccess(&(x->ptr),(void **)&data);
+  F90Array1dAccess(&(x->ptr),PETSC_SCALAR,(void **)&data);
   printf("From C: %d %5.2e %d\n",x->a,data[0],x->c);
   fflush(stdout);
   x->a = 2;

@@ -1,5 +1,5 @@
 
-/* Program usage:  mpirun ex1 [-help] [all PETSc options] */
+/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
 
 static char help[] = "Demonstrates VecStrideScatter() and VecStrideGather() with subvectors that are also strided.\n\n";
 

@@ -1,7 +1,7 @@
 
 #if !defined(__BAIJ_H)
 #define __BAIJ_H
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 #include "src/mat/impls/aij/seq/aij.h"
 
 
@@ -30,7 +30,7 @@
 
 
 typedef struct {
-  SEQAIJHEADER;
+  SEQAIJHEADER(PetscScalar);
   SEQBAIJHEADER;
 } Mat_SeqBAIJ;
 
@@ -43,7 +43,7 @@ EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat,IS,MatFactorInfo*,Ma
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
-EXTERN PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat);
+EXTERN PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat,PetscTruth*,PetscInt*);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqBAIJ(Mat);
 
 EXTERN PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);

@@ -2,7 +2,7 @@
 !   Solves a linear system in parallel with KSP.  Also indicates
 !   use of a user-provided preconditioner.  Input parameters include:
 !
-!  Program usage: mpirun ex21f [-help] [all PETSc options]
+!  Program usage: mpiexec ex21f [-help] [all PETSc options]
 !
 !/*T
 !   Concepts: KSP^basic parallel example
@@ -322,7 +322,7 @@
 !   SOR preconditioner
 !
 ! YOU CAN GET THE EXACT SAME EFFECT WITH THE PCCOMPOSITE preconditioner using
-! mpirun -np 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
+! mpiexec -np 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
 !
       subroutine SampleShellPCApply(dummy,x,y,ierr)
 

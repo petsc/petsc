@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"          /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"          /*I "petscmat.h" I*/
 #include "src/mat/impls/dense/seq/dense.h"
 
 typedef struct {
@@ -31,7 +31,7 @@ PetscErrorCode MatMult_LRC(Mat N,Vec x,Vec y)
 
   ierr = VecGetArray(Na->work1,&w1);CHKERRQ(ierr);
   ierr = VecGetArray(Na->work2,&w2);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(w1,w2,Na->nwork,MPIU_SCALAR,PetscSum_Op,N->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(w1,w2,Na->nwork,MPIU_SCALAR,PetscSum_Op,((PetscObject)N)->comm);CHKERRQ(ierr);
   ierr = VecRestoreArray(Na->work1,&w1);CHKERRQ(ierr);
   ierr = VecRestoreArray(Na->work2,&w2);CHKERRQ(ierr);
 
@@ -87,19 +87,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLRC(Mat A,Mat U, Mat V,Mat *N)
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreate(A->comm,N);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATLRC);CHKERRQ(ierr);
   
-  ierr      = PetscNew(Mat_LRC,&Na);CHKERRQ(ierr);
-  Na->A     = A;
+  ierr       = PetscNewLog(*N,Mat_LRC,&Na);CHKERRQ(ierr);
+  (*N)->data = (void*) Na;
+  Na->A      = A;
 
   ierr      = MatDenseGetLocalMatrix(U,&Na->U);CHKERRQ(ierr);
   ierr      = MatDenseGetLocalMatrix(V,&Na->V);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)Na->U);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)Na->V);CHKERRQ(ierr);
-  (*N)->data = (void*) Na;
 
   ierr                   = VecCreateSeq(PETSC_COMM_SELF,U->cmap.N,&Na->work1);CHKERRQ(ierr);
   ierr                   = VecDuplicate(Na->work1,&Na->work2);CHKERRQ(ierr);

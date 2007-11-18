@@ -169,7 +169,7 @@ int main( int argc, char **argv )
   /* Create interpolation between the levels */
   for (i=1; i<user.nlevels; i++) {
     ierr = FormInterpolation(&user,&user.grid[i],&user.grid[i-1]);CHKERRA(ierr);
-    ierr = PCMGSetInterpolate(pc,i,user.grid[i].R);CHKERRA(ierr);
+    ierr = PCMGSetInterpolation(pc,i,user.grid[i].R);CHKERRA(ierr);
     ierr = PCMGSetRestriction(pc,i,user.grid[i].R);CHKERRA(ierr);
   }
 
@@ -193,7 +193,7 @@ int main( int argc, char **argv )
   ierr = PetscGetTime(&v2); CHKERRA(ierr);
   ierr = PLogStagePop();CHKERRA(ierr);
   elapsed = v2 - v1;
-  ierr = SNESGetNumberLinearIterations(snes,&lits); CHKERRA(ierr);
+  ierr = SNESGetLinearSolveIterations(snes,&lits); CHKERRA(ierr);
   litspit = ((double)lits)/((double)its);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Elapsed Time = %e\n", elapsed );CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);

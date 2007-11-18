@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"  /*I   "petscmat.h"  I*/
+#include "include/private/matimpl.h"  /*I   "petscmat.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatAXPY"
@@ -13,7 +13,8 @@
 +  a - the scalar multiplier
 .  X - the first matrix
 .  Y - the second matrix
--  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
+-  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN 
+         or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
 
    Notes:
      Will only be efficient if one has the SAME_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
@@ -263,7 +264,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat inmat,Mat *mat)
   PetscValidHeaderSpecific(inmat,MAT_COOKIE,1);
   PetscValidPointer(mat,2);
 
-  comm = inmat->comm;
+  comm = ((PetscObject)inmat)->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(inmat,&m,0);CHKERRQ(ierr);

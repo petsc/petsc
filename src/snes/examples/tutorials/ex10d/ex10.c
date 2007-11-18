@@ -1,5 +1,5 @@
 /* 
-  Program usage:  mpirun -np <procs> usg [-help] [all PETSc options] 
+  Program usage:  mpiexec -np <procs> usg [-help] [all PETSc options] 
 */
 
 #if !defined(PETSC_USE_COMPLEX)
@@ -15,11 +15,13 @@ is done, scatters are created between local (sequential)and global\n\
 (distributed) vectors. Finally, we set up the nonlinear solver context\n\
 in the usual way as a structured grid  (see\n\
 petsc/src/snes/examples/tutorials/ex5.c).\n\
+This example also illustrates the use of parallel matrix coloring.\n\
 The command line options include:\n\
   -vert <Nv>, where Nv is the global number of nodes\n\
   -elem <Ne>, where Ne is the global number of elements\n\
   -nl_par <lambda>, where lambda is the multiplier for the non linear term (u*u) term\n\
-  -lin_par <alpha>, where alpha is the multiplier for the linear term (u) \n";
+  -lin_par <alpha>, where alpha is the multiplier for the linear term (u)\n\
+  -fd_jacobian_coloring -mat_coloring_type lf\n";
 
 /*T
    Concepts: SNES^unstructured grid
@@ -116,6 +118,9 @@ int main(int argc,char **argv)
   PetscReal              tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
   PetscInt               *tmp1,*tmp2;
 #endif
+  MatFDColoring          matfdcoloring = 0;
+  PetscTruth             fd_jacobian_coloring = PETSC_FALSE;
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -369,7 +374,9 @@ int main(int argc,char **argv)
   for (i=0; i<nvertices; i++) svertices[i] = bs*vertices[i];
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRQ(ierr);
   ierr = PetscFree(svertices);CHKERRQ(ierr);
-  ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRQ(ierr);  
+  ierr = ISDestroy(isglobal);CHKERRQ(ierr); 
+  ierr = ISDestroy(islocal);CHKERRQ(ierr); 
 
   /* 
      Create matrix data structure; Just to keep the example simple, we have not done any 
@@ -392,14 +399,28 @@ int main(int argc,char **argv)
 
   ierr = SNESCreate(MPI_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetType(snes,type);CHKERRQ(ierr);
+  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set routines for function and Jacobian evaluation
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
 
-   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
-   ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
+   ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,0);CHKERRQ(ierr);
+   if (!fd_jacobian_coloring){
+     ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
+   } else { /* Use matfdcoloring */
+     ISColoring    iscoloring;
+     MatStructure  flag;
+     ierr = FormJacobian(snes,x,&Jac,&Jac,&flag,&user);CHKERRQ(ierr);
+     ierr = MatGetColoring(Jac,MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
+     ierr = MatFDColoringCreate(Jac,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
+     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+     /* ierr = MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+     ierr = SNESSetJacobian(snes,Jac,Jac,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr); 
+     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -433,7 +454,7 @@ int main(int argc,char **argv)
 
    ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
+  ierr = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
  
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Print the output : solution vector and other information
@@ -453,13 +474,22 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
+  ierr = PetscFree(user.gloInd);CHKERRQ(ierr);
+  ierr = PetscFree(user.locInd);CHKERRQ(ierr);
+  ierr = PetscFree(vertices);CHKERRQ(ierr);
+  ierr = PetscFree(verticesmask);CHKERRQ(ierr);
+  ierr = PetscFree(tmp);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(user.scatter);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(isl2g);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);  
   ierr = VecDestroy(r);CHKERRQ(ierr);
   ierr = VecDestroy(user.localX);CHKERRQ(ierr);  
   ierr = VecDestroy(user.localF);CHKERRQ(ierr);
   ierr = MatDestroy(Jac);CHKERRQ(ierr);  ierr = SNESDestroy(snes);CHKERRQ(ierr);
   /*ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);*/
+  if (fd_jacobian_coloring){
+    ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
+  }
   ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
@@ -568,8 +598,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
  */
-  ierr = VecScatterBegin(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
@@ -651,8 +681,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
   */
-  ierr = VecScatterBegin(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   
   /*
      Get pointer to vector data
@@ -708,7 +738,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   /* MatView(jac,PETSC_VIEWER_STDOUT_SELF); */
   return 0;
 }

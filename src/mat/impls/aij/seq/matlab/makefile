@@ -1,4 +1,4 @@
-#requirespackage   'PETSC_HAVE_MATLAB'
+#requirespackage   'PETSC_HAVE_MATLAB_ENGINE'
 #requiresscalar    real
 #requiresprecision double
 
@@ -16,5 +16,5 @@ DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/aij/seq/matlab/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test

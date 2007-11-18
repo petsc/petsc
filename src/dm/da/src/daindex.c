@@ -50,7 +50,7 @@
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlobal()
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DAGetAO(), DAGetGlobalIndicesF90()
-          DAGetISLocalToGlobalMapping(), DACreate3d(), DACreate1d(), DALocalToLocalEnd()
+          DAGetISLocalToGlobalMapping(), DACreate3d(), DACreate1d(), DALocalToLocalEnd(), DAGetOwnershipRange()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalIndices(DA da,PetscInt *n,PetscInt **idx)
 {
@@ -106,7 +106,7 @@ PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
     }
   }
   *outNlocal = Nlocal;
-  ierr = ISCreateGeneral(da->comm,Nlocal,lidx,isnatural);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)da)->comm,Nlocal,lidx,isnatural);CHKERRQ(ierr);
   ierr = PetscFree(lidx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -136,7 +136,7 @@ PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
 .keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices()
+          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices(), DAGetOwnershipRange()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
 {
@@ -153,7 +153,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
     PetscInt  Nlocal;
 
     ierr = DAGetNatural_Private(da,&Nlocal,&isnatural);CHKERRQ(ierr);
-    ierr = ISCreateStride(da->comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
+    ierr = ISCreateStride(((PetscObject)da)->comm,Nlocal,da->base,1,&ispetsc);CHKERRQ(ierr);
     ierr = AOCreateBasicIS(isnatural,ispetsc,&da->ao);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(da,da->ao);CHKERRQ(ierr);
     ierr = ISDestroy(ispetsc);CHKERRQ(ierr);

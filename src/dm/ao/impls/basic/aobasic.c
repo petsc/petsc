@@ -28,7 +28,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
   PetscTruth     iascii;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(ao->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)ao)->comm,&rank);CHKERRQ(ierr);
   if (!rank){
     ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
     if (iascii) { 
@@ -38,7 +38,7 @@ PetscErrorCode AOView_Basic(AO ao,PetscViewer viewer)
         ierr = PetscViewerASCIIPrintf(viewer,"%3D  %3D    %3D  %3D\n",i,aodebug->app[i],i,aodebug->petsc[i]);CHKERRQ(ierr);
       }
     } else {
-      SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for AOData basic",((PetscObject)viewer)->type_name);
+      SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for AO basic",((PetscObject)viewer)->type_name);
     }
   }
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -226,8 +226,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
 #endif
 
   ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_BASIC, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
-  ierr = PetscNew(AO_Basic, &aobasic);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Basic));CHKERRQ(ierr);
+  ierr = PetscNewLog(ao, AO_Basic, &aobasic);CHKERRQ(ierr);
 
   ierr = PetscMemcpy(ao->ops, &AOops, sizeof(AOops));CHKERRQ(ierr);
   ao->data = (void*) aobasic;

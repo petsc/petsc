@@ -12,7 +12,7 @@ EXTERN_C_END
 #endif
 
 
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include "mat.h"   /* Matlab include file */
 
 #undef __FUNCT__  
@@ -28,7 +28,7 @@ PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
   const char     *fnames[] = {"dimension","m","n","p","dof","stencil_width","periodicity","stencil_type"};
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
     mx = mxCreateStructMatrix(1,1,8,(const char **)fnames);
@@ -177,25 +177,27 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 .keywords: distributed array, view, visualize
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
-          DAGetGhostCorners()
+          DAGetGhostCorners(), DAGetOwnershipRange(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscInt i,dof = da->w;
-  PetscTruth iascii,fieldsnamed = PETSC_FALSE,isbinary;
-#if defined(PETSC_HAVE_MATLAB)
-  PetscTruth ismatlab;
+  PetscInt       i,dof = da->w;
+  PetscTruth     iascii,fieldsnamed = PETSC_FALSE,isbinary;
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  PetscTruth     ismatlab;
 #endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(da->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
   if (iascii) {
@@ -219,7 +221,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
   }
   if (isbinary){
     ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {
     ierr = DAView_Matlab(da,viewer);CHKERRQ(ierr);
 #endif

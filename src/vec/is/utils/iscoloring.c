@@ -3,6 +3,8 @@
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
 
+const char *ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};
+
 #undef __FUNCT__  
 #define __FUNCT__ "ISColoringDestroy"
 /*@
@@ -62,7 +64,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringView(ISColoring iscoloring,PetscView
 
   PetscFunctionBegin;
   PetscValidPointer(iscoloring,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(iscoloring->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(iscoloring->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -139,7 +143,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
       }
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
 
-      if (iscoloring->ctype == IS_COLORING_LOCAL){
+      if (iscoloring->ctype == IS_COLORING_GLOBAL){
         ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
         base -= iscoloring->N;
         for (i=0; i<n; i++) {
@@ -218,7 +222,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringRestoreIS(ISColoring iscoloring,IS *
 
    Level: advanced
    
-    Notes: By default sets coloring type to  IS_COLORING_LOCAL
+    Notes: By default sets coloring type to  IS_COLORING_GLOBAL
 
 .seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
 
@@ -273,11 +277,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt ncolor
   (*iscoloring)->colors = (ISColoringValue *)colors;
   (*iscoloring)->N      = n;
   (*iscoloring)->refct  = 1;
-  (*iscoloring)->ctype  = IS_COLORING_LOCAL;
+  (*iscoloring)->ctype  = IS_COLORING_GLOBAL;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISColoringView(*iscoloring,PETSC_VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout((*iscoloring)->comm,&viewer);CHKERRQ(ierr);
+    ierr = ISColoringView(*iscoloring,viewer);CHKERRQ(ierr);
   }
   ierr = PetscInfo1(0,"Number of colors %d\n",nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -459,9 +465,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt count[])
 PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
 {
   PetscErrorCode ierr;
-  PetscInt       *indices,n,*lindices,i,N;
+  PetscInt       *indices,n,*lindices,i,N,step,first;
   MPI_Comm       comm;
   PetscMPIInt    size,*sizes = PETSC_NULL,*offsets = PETSC_NULL,nn;
+  PetscTruth     stride;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -469,23 +476,29 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
-  
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  nn   = (PetscMPIInt)n;
-  ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
-  offsets[0] = 0;
-  for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
-  N = offsets[size-1] + sizes[size-1];
+  ierr = ISStride(is,&stride);CHKERRQ(ierr);
+  if (size == 1 && stride) { /* should handle parallel ISStride also */
+    ierr = ISStrideGetInfo(is,&first,&step);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,isout);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
+  
+    nn   = (PetscMPIInt)n;
+    ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
+    offsets[0] = 0;
+    for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+    N = offsets[size-1] + sizes[size-1];
+    
+    ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+    ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
+    ierr = MPI_Allgatherv(lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
+    ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
+    ierr = PetscFree(sizes);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
-  ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
-  ierr = PetscFree(sizes);CHKERRQ(ierr);
-
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
-  ierr = PetscFree2(indices,offsets);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
+    ierr = PetscFree2(indices,offsets);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

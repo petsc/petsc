@@ -31,7 +31,7 @@ def check_petsc_arch(opts):
         opts.append(useName)
   return
 
-def chkcygwin():
+def chkbrokencygwin():
   if os.path.exists('/usr/bin/cygcheck.exe'):
     buf = os.popen('/usr/bin/cygcheck.exe -c cygwin').read()
     if buf.find('1.5.11-1') > -1:
@@ -39,11 +39,17 @@ def chkcygwin():
     else:
       return 0
   return 0
-  
-def chkcygwinpython():
+
+def chkusingwindowspython():
+  if os.path.exists('/usr/bin/cygcheck.exe'):
+    if sys.platform != 'cygwin':
+      return 1
+  return 0
+
+def chkcygwinpythonver():
   if os.path.exists('/usr/bin/cygcheck.exe'):
     buf = os.popen('/usr/bin/cygcheck.exe -c python').read()
-    if buf.find('2.4') > -1:
+    if (buf.find('2.4') > -1) or (buf.find('2.5') > -1) or (buf.find('2.6') > -1):
       return 1
     else:
       return 0
@@ -76,31 +82,61 @@ def petsc_configure(configure_options):
   check_petsc_arch(sys.argv)
   extraLogs = []
 
-  # support a few standard configure option types 
+  # support a few standard configure option types
+  foundsudo = 0
+  for l in range(0,len(sys.argv)):
+    if sys.argv[l] == '--with-sudo=sudo':
+      foundsudo = 1
+  
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
     if name.find('enable-') >= 0:
-      sys.argv[l] = name.replace('enable-','with-')
-      if name.find('=') == -1: sys.argv[l] = sys.argv[l]+'=1'
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('enable-','with-')+'=1'
+      else:
+        head, tail = name.split('=', 1)
+        sys.argv[l] = head.replace('enable-','with-')+'='+tail
     if name.find('disable-') >= 0:
-      sys.argv[l] = name.replace('disable-','with-')
-      if name.find('=') == -1: sys.argv[l] = sys.argv[l]+'=0'
-      elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('disable-','with-')+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('disable-','with-')+'='+tail
     if name.find('without-') >= 0:
-      sys.argv[l] = name.replace('without-','with-')
-      if name.find('=') == -1: sys.argv[l] = sys.argv[l]+'=0'
-      elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('without-','with-')+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('without-','with-')+'='+tail
+    if name.find('prefix=') >= 0 and not foundsudo:
+      head, installdir = name.split('=', 1)      
+      if os.path.exists(installdir):
+        if not os.access(installdir,os.W_OK):
+          print 'You do not have write access to requested install directory given with --prefix='+installdir+' perhaps use --with-sudo=sudo also'
+          sys.exit(3)
+        else:
+          try:
+            os.mkdir(installdir)
+          except:
+            print 'You do not have write access to create install directory given with --prefix='+installdir+' perhaps use --with-sudo=sudo also'
+            sys.exit(3)
+        
 
   # Check for sudo
   if os.getuid() == 0:
     print '================================================================================='
     print '             *** Do not run configure as root, or using sudo. ***'
-    print '             ***** That should be reserved for installation *****'
+    print '             *** Use the --with-sudo=sudo option to have      ***'
+    print '             *** installs of external packages done with sudo ***'
+    print '             *** use only with --prefix= when installing in   ***'
+    print '             *** system directories                           ***'
     print '================================================================================='
     sys.exit(3)
 
   # Check for broken cygwin
-  if chkcygwin():
+  if chkbrokencygwin():
     print '================================================================================='
     print ' *** cygwin-1.5.11-1 detected. config/configure.py fails with this version   ***'
     print ' *** Please upgrade to cygwin-1.5.12-1 or newer version. This can  ***'
@@ -116,13 +152,19 @@ def petsc_configure(configure_options):
    *** RHL9 detected. Threads do not work correctly with this distribution ***
     ****** Disabling thread usage for this run of config/configure.py *******
 ================================================================================''')
-
-  # Threads don't work for cygwin & python-2.4
-  if chkcygwinpython():
+  # Make sure cygwin-python is used on windows
+  if chkusingwindowspython():
+    print '================================================================================='
+    print ' *** Non-cygwin python detected. Please rerun config/configure.py with cygwin-python ***'
+    print '================================================================================='
+    sys.exit(3)
+    
+  # Threads don't work for cygwin & python-2.4, 2.5 etc..
+  if chkcygwinpythonver():
     sys.argv.append('--useThreads=0')
     extraLogs.append('''\
 ================================================================================
-** Cygwin-python-2.4 detected. Threads do not work correctly with this version *
+** Cygwin-python-2.4/2.5 detected. Threads do not work correctly with this version *
  ********* Disabling thread usage for this run of config/configure.py **********
 ================================================================================''')
           
@@ -202,6 +244,14 @@ def petsc_configure(configure_options):
     if not emsg.endswith('\n'): emsg = emsg+'\n'
     msg ='*********************************************************************************\n'\
     +'                     UNABLE to FIND MODULE for config/configure.py \n' \
+    +'---------------------------------------------------------------------------------------\n'  \
+    +emsg+'*********************************************************************************\n'
+    se = ''
+  except OSError, e :
+    emsg = str(e)
+    if not emsg.endswith('\n'): emsg = emsg+'\n'
+    msg ='*********************************************************************************\n'\
+    +'                    UNABLE to EXECUTE BINARIES for config/configure.py \n' \
     +'---------------------------------------------------------------------------------------\n'  \
     +emsg+'*********************************************************************************\n'
     se = ''

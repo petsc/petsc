@@ -1,5 +1,5 @@
 
-/* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
+/* Program usage:  mpiexec -np <procs> ex75 [-help] [all PETSc options] */ 
 
 static char help[] = "Tests the vatious routines in MatMPISBAIJ format.\n";
 
@@ -245,15 +245,15 @@ int main(int argc,char **args)
   ierr = MatScale(A,alpha);CHKERRQ(ierr);
   ierr = MatScale(sA,alpha);CHKERRQ(ierr);
 
-  /* Test MatGetRowMax() */
-  ierr = MatGetRowMax(A,s1);CHKERRQ(ierr);  
-  ierr = MatGetRowMax(sA,s2);CHKERRQ(ierr);
+  /* Test MatGetRowMaxAbs() */
+  ierr = MatGetRowMaxAbs(A,s1,PETSC_NULL);CHKERRQ(ierr);  
+  ierr = MatGetRowMaxAbs(sA,s2,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = VecNorm(s1,NORM_1,&r1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&r2);CHKERRQ(ierr);
   r1 -= r2;
   if (r1<-tol || r1>tol) { 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRowMax() \n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetRowMaxAbs() \n");CHKERRQ(ierr);
   } 
 
   /* Test MatMult(), MatMultAdd() */

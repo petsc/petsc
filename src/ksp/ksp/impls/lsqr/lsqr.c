@@ -4,7 +4,7 @@
 
 #define SWAP(a,b,c) { c = a; a = b; b = c; }
 
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"
 
 typedef struct {
   PetscInt  nwork_n,nwork_m; 
@@ -63,7 +63,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
 
@@ -199,7 +199,7 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   if (lsqr->se_flg && lsqr->se){
     ierr = VecDestroy(lsqr->se);CHKERRQ(ierr);
   }
-  ierr = PetscFree(lsqr);CHKERRQ(ierr);
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -283,7 +283,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_LSQR,&lsqr);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
   lsqr->se     = PETSC_NULL;
   lsqr->se_flg = PETSC_FALSE;
   ierr = PCSetType(ksp->pc,PCNONE);CHKERRQ(ierr);

@@ -6,7 +6,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Constant(PF,void*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_String(PF,void*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Quick(PF,void*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Identity(PF,void*);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Matlab(PF,void*);
 #endif
 EXTERN_C_END
@@ -38,7 +38,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFRegisterAll(const char path[])
   ierr = PFRegisterDynamic(PFSTRING           ,path,"PFCreate_String",PFCreate_String);CHKERRQ(ierr);
   ierr = PFRegisterDynamic(PFQUICK            ,path,"PFCreate_Quick",PFCreate_Quick);CHKERRQ(ierr);
   ierr = PFRegisterDynamic(PFIDENTITY         ,path,"PFCreate_Identity",PFCreate_Identity);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PFRegisterDynamic(PFMATLAB           ,path,"PFCreate_Matlab",PFCreate_Matlab);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);

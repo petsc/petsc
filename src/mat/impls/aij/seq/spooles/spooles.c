@@ -35,6 +35,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Spooles_Base(Mat A,MatType type,Mat
   if (f) {
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","",(PetscVoidFunction)lu->MatPreallocate);CHKERRQ(ierr);
   }
+  ierr     = PetscFree(lu);CHKERRQ(ierr);
+  A->spptr = PETSC_NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaijspooles_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_seqaijspooles_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -75,8 +77,8 @@ PetscErrorCode MatDestroy_SeqAIJSpooles(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJSpooles"
-PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatSolve_SeqSpooles"
+PetscErrorCode MatSolve_SeqSpooles(Mat A,Vec b,Vec x)
 {
   Mat_Spooles      *lu = (Mat_Spooles*)A->spptr;
   PetscScalar      *array;
@@ -122,11 +124,13 @@ PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
                  lu->cpus, lu->options.msglvl, lu->options.msgFile);
   }
   if ( lu->options.msglvl > 2 ) {
+    int err;
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n right hand side matrix after permutation");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(mtxY, lu->options.msgFile); 
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n solution matrix in new ordering");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(mtxX, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   /* permute solution into original ordering, then copy to x */  
@@ -152,8 +156,8 @@ PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNCT__   
-#define __FUNCT__ "MatFactorNumeric_SeqAIJSpooles"
-PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatFactorNumeric_SeqSpooles"
+PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
 {  
   Mat_Spooles        *lu = (Mat_Spooles*)(*F)->spptr;
   ChvManager         *chvmanager ;
@@ -174,7 +178,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
   
   PetscFunctionBegin;
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      
-    (*F)->ops->solve   = MatSolve_SeqAIJSpooles;
+    (*F)->ops->solve   = MatSolve_SeqSpooles;
     (*F)->ops->destroy = MatDestroy_SeqAIJSpooles;  
     (*F)->assembled    = PETSC_TRUE; 
     
@@ -245,10 +249,12 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
 
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS); 
   if ( lu->options.msglvl > 0 ) {
+    int err;
     printf("\n\n input matrix");
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n input matrix");CHKERRQ(ierr);
     InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */  
@@ -267,13 +273,16 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
     lu->graph = Graph_new();
     Graph_init2(lu->graph, 0, neqns, 0, nedges, neqns, nedges, adjIVL, NULL, NULL);
     if ( lu->options.msglvl > 2 ) {
+      int err;
+
       if (lu->options.useQR){
         ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n graph of A^T A");CHKERRQ(ierr);
       } else {
         ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n graph of the input matrix");CHKERRQ(ierr);
       }
       Graph_writeForHumanEye(lu->graph, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }
 
     switch (lu->options.ordering) {
@@ -294,9 +303,12 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
     }
 
     if ( lu->options.msglvl > 0 ) {
+      int err;
+
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n front tree from ordering");CHKERRQ(ierr);
       ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }
   
     /* get the permutation, permute the front tree */
@@ -332,6 +344,8 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
       lu->symbfacIVL = SymbFac_initFromInpMtx(lu->frontETree, lu->mtxA);
     }
     if ( lu->options.msglvl > 2 ) {
+      int err;
+
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n old-to-new permutation vector");CHKERRQ(ierr);
       IV_writeForHumanEye(lu->oldToNewIV, lu->options.msgFile);
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n new-to-old permutation vector");CHKERRQ(ierr);
@@ -342,7 +356,8 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
       InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n symbolic factorization");CHKERRQ(ierr);
       IVL_writeForHumanEye(lu->symbfacIVL, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }  
 
     lu->frontmtx   = FrontMtx_new();
@@ -450,9 +465,12 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
   ChvManager_free(chvmanager);
 
   if ( lu->options.msglvl > 0 ) {
+    int err;
+
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n factor matrix");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   if ( lu->options.symflag == SPOOLES_SYMMETRIC ) { /* || SPOOLES_HERMITIAN ? */
@@ -482,9 +500,12 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
   /* post-process the factorization */
   FrontMtx_postProcess(lu->frontmtx, lu->options.msglvl, lu->options.msgFile);
   if ( lu->options.msglvl > 2 ) {
+    int err;
+
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n factor matrix after post-processing");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   lu->flg = SAME_NONZERO_PATTERN;
@@ -502,26 +523,33 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,MatType 
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
+  ierr     = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr); 
   if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    lu->MatDuplicate               = B->ops->duplicate;
+    lu->MatCholeskyFactorSymbolic  = B->ops->choleskyfactorsymbolic;
+    lu->MatLUFactorSymbolic        = B->ops->lufactorsymbolic; 
+    lu->MatView                    = B->ops->view;
+    lu->MatAssemblyEnd             = B->ops->assemblyend;
+    lu->MatDestroy                 = B->ops->destroy;
+  } else {
+    lu->MatDuplicate               = A->ops->duplicate;
+    lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
+    lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
+    lu->MatView                    = A->ops->view;
+    lu->MatAssemblyEnd             = A->ops->assemblyend;
+    lu->MatDestroy                 = A->ops->destroy;
   }
-  ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   B->spptr = (void*)lu;
-
   lu->basetype                   = MATSEQAIJ;
   lu->useQR                      = PETSC_FALSE;
   lu->CleanUpSpooles             = PETSC_FALSE;
-  lu->MatDuplicate               = A->ops->duplicate;
-  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
-  lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
-  lu->MatView                    = A->ops->view;
-  lu->MatAssemblyEnd             = A->ops->assemblyend;
-  lu->MatDestroy                 = A->ops->destroy;
+
   B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJSpooles;
   B->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJSpooles; 
-  B->ops->view                   = MatView_SeqAIJSpooles;
+  B->ops->view                   = MatView_Spooles;
   B->ops->assemblyend            = MatAssemblyEnd_SeqAIJSpooles;
   B->ops->destroy                = MatDestroy_SeqAIJSpooles;
 
@@ -555,11 +583,13 @@ PetscErrorCode MatDuplicate_Spooles(Mat A, MatDuplicateOption op, Mat *M) {
   If SPOOLES is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SPOOLES solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQAIJSPOOLES), then 
+  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() etc DO NOT
+  call MatCreateSeqAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSEQAIJ type without data copy.
+  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation() is 
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATSEQAIJ type without data copy AFTER the matrix values have been set.
 
   Options Database Keys:
 + -mat_type seqaijspooles - sets the matrix type to "seqaijspooles" during a call to MatSetFromOptions()
@@ -604,12 +634,14 @@ EXTERN_C_END
   If SPOOLES is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SPOOLES solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJSPOOLES), then 
+  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() etc DO NOT
+  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
   This matrix type is supported for double precision real and complex.
 
-  This matrix inherits from MATAIJ.  As a result, MatSeqAIJSetPreallocation and MatMPIAIJSetPreallocation are
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATAIJ type without data copy.
+  This matrix inherits from MATAIJ.  As a result, MatSeqAIJSetPreallocation() and MatMPIAIJSetPreallocation() are
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATAIJ type without data copy AFTER the matrix values have been set.
 
   Options Database Keys:
 + -mat_type aijspooles - sets the matrix type to "aijspooles" during a call to MatSetFromOptions()
@@ -641,7 +673,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJSpooles(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatConvert_SeqAIJ_SeqAIJSpooles(A,MATSEQAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);

@@ -68,7 +68,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF4(PetscViewer viewer,co
    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
  }
 
- ierr = MPI_Comm_rank(viewer->comm,&rank);CE;
+ ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CE;
  ierr = PetscStrallocpy(name,&vhdf4->filename);CE;
  if (!rank) {
    vhdf4->sd_id = SDstart(name, acc);
@@ -90,7 +90,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_HDF4(PetscViewer v)
  PetscViewer_HDF4 *vhdf4;
  
  PetscFunctionBegin;
- ierr = PetscNew(PetscViewer_HDF4,&vhdf4); CE;
+ ierr = PetscNewLog(v,PetscViewer_HDF4,&vhdf4); CE;
  v->data            = (void*)vhdf4;
  v->ops->destroy    = PetscViewerDestroy_HDF4;
  v->ops->flush      = 0;

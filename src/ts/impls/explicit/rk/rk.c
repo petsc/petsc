@@ -9,7 +9,7 @@
  * http://asbjorn.aarrestad.com/
  * 
  */
-#include "src/ts/tsimpl.h"                /*I   "petscts.h"   I*/
+#include "include/private/tsimpl.h"                /*I   "petscts.h"   I*/
 #include "time.h"
 
 typedef struct {
@@ -482,8 +482,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Rk(TS ts)
   ts->ops->setfromoptions  = TSSetFromOptions_Rk;
   ts->ops->view            = TSView_Rk;
 
-  ierr = PetscNew(TS_Rk,&rk);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ts,sizeof(TS_Rk));CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,TS_Rk,&rk);CHKERRQ(ierr);
   ts->data = (void*)rk;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSRKSetTolerance_C","TSRKSetTolerance_RK",TSRKSetTolerance_RK);CHKERRQ(ierr);

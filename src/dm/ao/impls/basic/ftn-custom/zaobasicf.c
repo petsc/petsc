@@ -1,5 +1,5 @@
 
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscao.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -23,7 +23,7 @@ void PETSC_STDCALL aocreatebasic_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp,
 
 void PETSC_STDCALL aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)
 {
-  CHKFORTRANNULLOBJECT(aoout);
+  CHKFORTRANNULLOBJECT(ispetsc);
   *ierr = AOCreateBasicIS(*isapp,*ispetsc,aoout);
 }
 

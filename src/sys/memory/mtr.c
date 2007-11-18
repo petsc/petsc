@@ -330,7 +330,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemoryShowUsage"
-/*@
+/*@C
     PetscMemoryShowUsage - Shows the amount of memory currently being used 
         in a communicator.
    
@@ -344,7 +344,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
 
     Concepts: memory usage
 
-.seealso: PetscMemoryDump(), PetscMemoryGetCurrentUsage()
+.seealso: PetscMallocDump(), PetscMemoryGetCurrentUsage()
  @*/
 PetscErrorCode PETSC_DLLEXPORT PetscMemoryShowUsage(PetscViewer viewer,const char message[])
 {
@@ -456,7 +456,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocGetMaximumUsage(PetscLogDouble *space)
    Concepts: memory bleeding
    Concepts: bleeding memory
 
-.seealso:  PetscMallocGetCurrentSize(), PetscMallocDumpLog() 
+.seealso:  PetscMallocGetCurrentUsage(), PetscMallocDumpLog() 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
 {
@@ -466,7 +466,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (!fp) fp = stdout;
+  if (!fp) fp = PETSC_STDOUT;
   if (TRallocated > 0) {
     fprintf(fp,"[%d]Total space allocated %.0f bytes\n",rank,(PetscLogDouble)TRallocated);
   }
@@ -530,7 +530,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 {
   PetscInt       i,j,n,dummy,*perm;
   size_t         *shortlength;
-  int            *shortcount;
+  int            *shortcount,err;
   PetscMPIInt    rank,size,tag = 1212 /* very bad programming */;
   PetscTruth     match;
   const char     **shortfunction;
@@ -544,19 +544,22 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
   /*
        Try to get the data printed in order by processor. This will only sometimes work 
   */  
-  fflush(fp);
+  err = fflush(fp);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
+
   ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
   if (rank) {
     ierr = MPI_Recv(&dummy,1,MPIU_INT,rank-1,tag,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 
-  if (!fp) fp = stdout;
+  if (!fp) fp = PETSC_STDOUT;
   ierr = PetscMemoryGetCurrentUsage(&rss);CHKERRQ(ierr);
   if (rss) {
     ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %.0f maximum size of entire process %D\n",rank,(PetscLogDouble)TRMaxMem,rss);CHKERRQ(ierr);
   } else {
     ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %.0f OS cannot compute size of entire process\n",rank,(PetscLogDouble)TRMaxMem);CHKERRQ(ierr);
   }
+  if (PetscLogMalloc < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PetscMallocDumpLog() called without call to PetscMallocSetDumpLog() this is often due to\n                      setting the option -malloc_log AFTER PetscInitialize() with PetscOptionsInsert() or PetscOptionsInsertFile()");
   shortcount       = (int*)malloc(PetscLogMalloc*sizeof(int));if (!shortcount) SETERRQ(PETSC_ERR_MEM,"Out of memory");
   shortlength      = (size_t*)malloc(PetscLogMalloc*sizeof(size_t));if (!shortlength) SETERRQ(PETSC_ERR_MEM,"Out of memory");
   shortfunction    = (const char**)malloc(PetscLogMalloc*sizeof(char *));if (!shortfunction) SETERRQ(PETSC_ERR_MEM,"Out of memory");
@@ -592,7 +595,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
   free(shortlength);
   free(shortcount);
   free((char **)shortfunction);
-  fflush(fp);
+  err = fflush(fp);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   if (rank != size-1) {
     ierr = MPI_Send(&dummy,1,MPIU_INT,rank+1,tag,MPI_COMM_WORLD);CHKERRQ(ierr);
   }

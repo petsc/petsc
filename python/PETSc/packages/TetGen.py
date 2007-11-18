@@ -124,35 +124,139 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.deps = []
+    self.petscdir        = framework.require('PETSc.utilities.petscdir', self)
+    self.arch            = framework.require('PETSc.utilities.arch', self)
+    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
+    self.make            = framework.require('PETSc.utilities.Make', self)
+    self.deps            = []
     return
 
-  def Install(self):
+  def InstallOld(self):
     import os, sys
-    tetgenDir = self.getDir()
-    installDir = os.path.join(tetgenDir, self.arch.arch)
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
+    self.packageDir = self.getDir()
+    self.installDir = os.path.join(self.packageDir, self.arch.arch)
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
     # We could make a check of the md5 of the current configure framework
     self.logPrintBox('Configuring and compiling TetGen; this may take several minutes')
     try:
       import cPickle
-      import logging
+      import logger
       # Split Graphs into its own repository
       oldDir = os.getcwd()
-      os.chdir(tetgenDir)
-      oldLog = logging.Logger.defaultLog
-      logging.Logger.defaultLog = file(os.path.join(tetgenDir, 'build.log'), 'w')
-      mod  = self.getModule(tetgenDir, 'make')
+      os.chdir(self.packageDir)
+      oldLog = logger.Logger.defaultLog
+      logger.Logger.defaultLog = file(os.path.join(self.packageDir, 'build.log'), 'w')
+      mod  = self.getModule(self.packageDir, 'make')
       make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)),module = mod)
-      make.prefix = installDir
+      make.prefix = self.installDir
       make.framework.argDB['with-petsc'] = 1
       make.builder.argDB['ignoreCompileOutput'] = 1
       make.run()
       del sys.modules['make']
-      logging.Logger.defaultLog = oldLog
+      logger.Logger.defaultLog = oldLog
       os.chdir(oldDir)
     except RuntimeError, e:
       raise RuntimeError('Error running configure on TetGen: '+str(e))
-    self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+installDir)
-    return tetgenDir
+    self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+self.installDir)
+    return self.packageDir
+
+  def Install(self):
+    import os, sys
+    import config.base
+
+    libDir         = os.path.join(self.installDir, 'lib')
+    includeDir     = os.path.join(self.installDir, 'include')
+    makeinc        = os.path.join(self.packageDir, 'make.inc')
+    installmakeinc = os.path.join(self.installDir, 'make.inc')
+    configheader   = os.path.join(self.packageDir, 'configureheader.h')
+
+    # Configure ParMetis 
+    g = open(makeinc,'w')
+    g.write('include '+os.path.join(self.petscdir.dir, 'conf', 'rules.shared.basic')+'\n')
+    g.write('SHELL            = '+self.programs.SHELL+'\n')
+    g.write('CP               = '+self.programs.cp+'\n')
+    g.write('RM               = '+self.programs.RM+'\n')
+    g.write('MKDIR            = '+self.programs.mkdir+'\n')
+    g.write('OMAKE            = '+self.make.make+' '+self.make.flags+'\n')
+
+    g.write('CLINKER          = '+self.setCompilers.getLinker()+'\n')
+    g.write('AR               = '+self.setCompilers.AR+'\n')
+    g.write('ARFLAGS          = '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('AR_LIB_SUFFIX    = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('RANLIB           = '+self.setCompilers.RANLIB+'\n')
+    g.write('SL_LINKER_SUFFIX = '+self.setCompilers.sharedLibraryExt+'\n')
+
+    g.write('TETGEN_ROOT      = '+self.packageDir+'\n')
+    g.write('PREFIX           = '+self.installDir+'\n')
+    g.write('LIBDIR           = '+libDir+'\n')
+    g.write('INSTALL_LIB_DIR  = '+libDir+'\n')
+    g.write('TETGENLIB        = $(LIBDIR)/libtetgen.$(AR_LIB_SUFFIX)\n')
+    g.write('SHLIB            = libtetgen\n')
+    
+    self.setCompilers.pushLanguage('C')
+    cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
+    cflags += ' '+self.headers.toString('.')
+        
+    g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CFLAGS         = '+cflags+'\n')
+    self.setCompilers.popLanguage()
+
+    if self.sharedLibraries.useShared:
+      import config.setCompilers
+
+      g.write('BUILDSHAREDLIB = yes\n')
+      if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
+        g.write('shared_arch: shared_'+self.arch.hostOsBase+'gnu\n')
+      else:
+        g.write('shared_arch: shared_'+self.arch.hostOsBase+'\n')
+        g.write('''
+tetgen_shared: 
+	-@if [ "${BUILDSHAREDLIB}" = "no" ]; then \\
+	    echo "Shared libraries disabled"; \\
+	  else \
+	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \\
+	    ${RM} -rf ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
+	    mkdir ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
+            cwd=`pwd`; \\
+	    for LIBNAME in ${SHLIB}; \\
+	    do \\
+	      if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \\
+	        if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; then \\
+	          flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \\
+	          if [ "$$flag" = "" ]; then \\
+	            flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \\
+	          fi; \\
+	        else \\
+	          flag="build"; \\
+	        fi; \\
+	        if [ "$$flag" != "" ]; then \\
+                echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \\
+                  ${RM} -f ${INSTALL_LIB_DIR}/tmp-tetgen-shlib/*; \\
+	          cd  ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
+	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \\
+                  cd $$cwd;\\
+	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-tetgen-shlib shared_arch; \\
+	        fi; \\
+	      fi; \\
+	    done; \\
+	    ${RM} -rf ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
+	  fi\n''')
+    else:
+      g.write('BUILDSHAREDLIB = no\n')
+      g.write('shared_arch:\n')
+      g.write('shared:\n')
+    g.close()
+
+    # Now compile & install
+    if self.installNeeded('make.inc'):
+      self.framework.outputHeader(configheader)
+      try:
+        self.logPrintBox('Compiling & installing TetGen; this may take several minutes')
+        output1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make tetlib tetgen_shared; make clean', timeout=2500, log = self.framework.log)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running make on TetGen: '+str(e))
+      output2  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'tetgen.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
+      self.checkInstall(output1+output2,'make.inc')
+
+    return self.installDir

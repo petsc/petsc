@@ -1118,8 +1118,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 
   Vec locB;
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locB);CHKERRQ(ierr);
-  ierr = VecScatterBegin(locB, b, ADD_VALUES, SCATTER_FORWARD, user->injection);CHKERRQ(ierr);
-  ierr = VecScatterEnd(locB, b, ADD_VALUES, SCATTER_FORWARD, user->injection);CHKERRQ(ierr);
+  ierr = VecScatterBegin(user->injection, locB, b, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(user->injection, locB, b, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecDestroy(locB);CHKERRQ(ierr);
 
   /* force right hand side to be consistent for singular matrix */

@@ -13,13 +13,16 @@
 PETSC_EXTERN_CXX_BEGIN
 
 typedef struct {
+  MPI_Comm  comm;
   PetscInt  n,N;         /* local, global vector size */
   PetscInt  rstart,rend; /* local start, local end + 1 */
   PetscInt  *range;      /* the offset of each processor */
-  PetscInt  bs;          /* number of elements in each block (generally for multi-component problems */
+  PetscInt  bs;          /* number of elements in each block (generally for multi-component problems) Do NOT multiply above numbers by bs */
 } PetscMap;
 
 EXTERN PetscErrorCode PetscMapInitialize(MPI_Comm,PetscMap*);
+EXTERN PetscErrorCode PetscMapSetUp(PetscMap*);
+EXTERN PetscErrorCode PetscMapDestroy(PetscMap*);
 EXTERN PetscErrorCode PetscMapCopy(MPI_Comm,PetscMap*,PetscMap*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap*,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap*,PetscInt *);
@@ -27,8 +30,9 @@ PetscPolymorphicFunction(PetscMapGetLocalSize,(PetscMap *m),(m,&s),PetscInt,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap*,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap*,PetscInt *);
 PetscPolymorphicFunction(PetscMapGetSize,(PetscMap *m),(m,&s),PetscInt,s)
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap*,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap*,PetscInt *,PetscInt *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap*,PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap*,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSizeBlockSize(PetscMap*,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSizeBlockSize(PetscMap*,PetscInt *);
 
@@ -65,7 +69,7 @@ struct _VecOps {
   PetscErrorCode (*max)(Vec,PetscInt*,PetscReal*);      /* z = max(x); idx=index of max(x) */
   PetscErrorCode (*min)(Vec,PetscInt*,PetscReal*);      /* z = min(x); idx=index of min(x) */
   PetscErrorCode (*setrandom)(Vec,PetscRandom);         /* set y[j] = random numbers */
-  PetscErrorCode (*setoption)(Vec,VecOption);
+  PetscErrorCode (*setoption)(Vec,VecOption,PetscTruth);
   PetscErrorCode (*setvaluesblocked)(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*destroy)(Vec);
   PetscErrorCode (*view)(Vec,PetscViewer);
@@ -120,6 +124,7 @@ typedef struct {
   PetscInt      *nprocs;                /* tmp data used both during scatterbegin and end */
   PetscInt      nprocessed;             /* number of messages already processed */
   PetscTruth    donotstash;
+  PetscTruth    ignorenegidx;           /* ignore negative indices passed into VecSetValues/VetGetValues */
   InsertMode    insertmode;
   PetscInt      *bowners;
 } VecStash;
@@ -222,8 +227,15 @@ typedef struct {
   PetscMPIInt            *counts,*displs;
   /* for MPI_Alltoallw() approach */
   PetscTruth             use_alltoallw;
+#if defined(PETSC_HAVE_MPI_ALLTOALLW)
   PetscMPIInt            *wcounts,*wdispls;
   MPI_Datatype           *types;
+#endif
+  PetscTruth             use_window;
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+  MPI_Win                window;
+  PetscInt               *winstarts;    /* displacements in the processes I am putting to */
+#endif
 } VecScatter_MPI_General;
 
 struct _p_VecScatter {
@@ -233,8 +245,8 @@ struct _p_VecScatter {
   PetscTruth     beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd()
                                           is then treated as a nop */
   PetscTruth     packtogether;         /* packs all the messages before sending, same with receive */
-  PetscErrorCode (*begin)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
-  PetscErrorCode (*end)(Vec,Vec,InsertMode,ScatterMode,VecScatter);
+  PetscErrorCode (*begin)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
+  PetscErrorCode (*end)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
   PetscErrorCode (*copy)(VecScatter,VecScatter);
   PetscErrorCode (*destroy)(VecScatter);
   PetscErrorCode (*view)(VecScatter,PetscViewer);
@@ -258,15 +270,17 @@ EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,Pets
   idx    - the global of the inserted value
   values - the value inserted
 */
-#define VecStashValue_Private(stash,row,value) \
-{  \
-  /* Check and see if we have sufficient memory */ \
-  if (((stash)->n + 1) > (stash)->nmax) { \
-    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr); \
-  } \
-  (stash)->idx[(stash)->n]   = row; \
-  (stash)->array[(stash)->n] = value; \
-  (stash)->n++; \
+PETSC_STATIC_INLINE PetscErrorCode VecStashValue_Private(VecStash *stash,PetscInt row,PetscScalar value)
+{
+  PetscErrorCode ierr;
+  /* Check and see if we have sufficient memory */
+  if (((stash)->n + 1) > (stash)->nmax) {
+    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr);
+  }
+  (stash)->idx[(stash)->n]   = row;
+  (stash)->array[(stash)->n] = value;
+  (stash)->n++;
+  return 0;
 }
 
 /*
@@ -277,17 +291,19 @@ EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,Pets
   idx    - the global block index
   values - the values inserted
 */
-#define VecStashValuesBlocked_Private(stash,row,values) \
-{ \
-  PetscInt    jj,stash_bs=(stash)->bs; \
-  PetscScalar *array; \
-  if (((stash)->n+1) > (stash)->nmax) { \
-    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr); \
-  } \
-  array = (stash)->array + stash_bs*(stash)->n; \
-  (stash)->idx[(stash)->n]   = row; \
-  for (jj=0; jj<stash_bs; jj++) { array[jj] = values[jj];} \
-  (stash)->n++; \
+PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash,PetscInt row,PetscScalar *values) 
+{
+  PetscInt       jj,stash_bs=(stash)->bs;
+  PetscScalar    *array;
+  PetscErrorCode ierr;
+  if (((stash)->n+1) > (stash)->nmax) {
+    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr);
+  }
+  array = (stash)->array + stash_bs*(stash)->n;
+  (stash)->idx[(stash)->n]   = row;
+  for (jj=0; jj<stash_bs; jj++) { array[jj] = values[jj];}
+  (stash)->n++;
+  return 0;
 }
 
 EXTERN PetscErrorCode VecReciprocal_Default(Vec);
@@ -296,9 +312,9 @@ extern PetscEvent    VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MD
 extern PetscEvent    VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
 extern PetscEvent    VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
 extern PetscEvent    VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
-extern PetscEvent    VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier;
+extern PetscEvent    VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm;
 
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
 EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);

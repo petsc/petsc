@@ -6,10 +6,10 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = 
-SOURCEC   = senddense.c send.c sendsparse.c
+SOURCEC   = send.c 
 SOURCEF   =
 SOURCEH   = socket.h 
-OBJSC     = senddense.o send.o  sendsparse.o
+OBJSC     = send.o 
 OBJSF     =
 MANSEC    = Viewer
 LIBBASE   = libpetsc
@@ -17,7 +17,7 @@ DIRS      = matlab
 LOCDIR    = src/sys/viewer/impls/socket/
 NOADIC    = true
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 

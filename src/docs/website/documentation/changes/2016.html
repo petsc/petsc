@@ -34,6 +34,7 @@
           <li><a href="../referencing.html"><strong>Referencing&nbsp; PETSc</strong></a></li>
           <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
           <li><strong><a href="../installation.html">Installation</a> </strong></li>
+	  <li><strong><a href="../zope.html">Zope</a> </strong></li>
           <li><strong><a href="index.html">Changes</a></strong><ul>
               <li><a href="2028.html">2.0.28</a></li>
               <li><a href="2024.html">2.0.24</a></li>
@@ -75,7 +76,7 @@
     </ul>
     <p><font size="4"><strong><u>TS (Timestepping Solvers):</u></strong></font></p>
     <p><font size="4"><strong><u>SNES (Nonlinear Solvers): </u></strong></font><ul>
-      <li>You can now attach several SNES monitoring routines with SNESSetMonitor() instead of
+      <li>You can now attach several SNES monitoring routines with SNESMonitorSet() instead of
         only one as previously allowed. Similarly, multiple monitors can be used from the options
         database (e.g., -snes_monitor and -snes_xmonitor). </li>
     </ul>
@@ -106,7 +107,7 @@
       <li>Added the routines VecSetValuesLocal() and VecSetLocalToGlobalMapping() to allow the
         user to set values into a vector using a local numbering of the nodes rather than a global
         numbering. </li>
-      <li>Added the routine VecSetOption(Vec,VEC_IGNORE_OFF_PROCESSOR_ENTRIES), which causes all
+      <li>Added the routine VecSetOption(Vec,VEC_IGNORE_OFF_PROCESSOR_ENTRIES,PETSC_TRUE), which causes all
         entries on any processor destined to be stored on a different processor to be dropped
         instead. This is useful if you know that the &quot;owning&quot; processor is also always
         generating the correct entries, so PETSc need not transfer the duplicate entries generated

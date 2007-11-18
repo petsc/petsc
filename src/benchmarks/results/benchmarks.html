@@ -53,7 +53,7 @@ These tests were run using
 the code src/sles/examples/tutorials/ex10.c with the options
 <p>
 <tt>  
-mpirun -np 1 ex10 -f0 arco1 -f1 arco1 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -mat_baij -matload_block_size 3 -log_summary
+mpiexec -n 1 ex10 -f0 arco1 -f1 arco1 -pc_type ilu -ksp_gmres_unmodifiedgramschmidt -optionsleft -mat_baij -matload_block_size 3 -log_summary
 </tt>
 
 <P><HR><P>

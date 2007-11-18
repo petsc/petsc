@@ -39,8 +39,8 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
 M*/
 
 typedef struct {
-  MATFile             *ep;
-  PetscMPIInt         rank;
+  MATFile       *ep;
+  PetscMPIInt   rank;
   PetscFileMode btype;
 } PetscViewer_Matlab;
 
@@ -70,7 +70,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabPutArray(PetscViewer mfile,int m
   
   PetscFunctionBegin;  
   if (!ml->rank) {
-    ierr = PetscInfo1(0,"Putting Matlab array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo1(mfile,"Putting Matlab array %s\n",name);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
     mat  = mxCreateDoubleMatrix(m,n,mxREAL);
 #else
@@ -79,7 +79,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabPutArray(PetscViewer mfile,int m
     ierr = PetscMemcpy(mxGetPr(mat),array,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
     matPutVariable(ml->ep,name,mat);
 
-    ierr = PetscInfo1(0,"Put Matlab array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo1(mfile,"Put Matlab array %s\n",name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -121,11 +121,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer mfile,int m
   
   PetscFunctionBegin;  
   if (!ml->rank) {
-    ierr = PetscInfo1(0,"Getting Matlab array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo1(mfile,"Getting Matlab array %s\n",name);CHKERRQ(ierr);
     mat  = matGetVariable(ml->ep,name);
     if (!mat) SETERRQ1(PETSC_ERR_LIB,"Unable to get array %s from matlab",name);
     ierr = PetscMemcpy(array,mxGetPr(mat),m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-    ierr = PetscInfo1(0,"Got Matlab array %s\n",name);CHKERRQ(ierr);
+    ierr = PetscInfo1(mfile,"Got Matlab array %s\n",name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -152,7 +152,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name[])
 {
   PetscViewer_Matlab  *vmatlab = (PetscViewer_Matlab*)viewer->data;
-  PetscFileMode type = vmatlab->btype;
+  PetscFileMode       type = vmatlab->btype;
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) {
@@ -195,8 +195,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Matlab(PetscViewer viewer)
   PetscViewer_Matlab *e;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(PetscViewer_Matlab,&e);CHKERRQ(ierr);
-  ierr         = MPI_Comm_rank(viewer->comm,&e->rank);CHKERRQ(ierr);
+  ierr         = PetscNewLog(viewer,PetscViewer_Matlab,&e);CHKERRQ(ierr);
+  ierr         = MPI_Comm_rank(((PetscObject)viewer)->comm,&e->rank);CHKERRQ(ierr);
   e->btype     = (PetscFileMode)-1;
   viewer->data = (void*) e;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_Matlab",

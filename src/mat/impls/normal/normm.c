@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"          /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"          /*I "petscmat.h" I*/
 
 typedef struct {
   Mat A;
@@ -41,8 +41,8 @@ PetscErrorCode MatDestroy_Normal(Mat N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectDereference((PetscObject)Na->A);CHKERRQ(ierr);
-  ierr = VecDestroy(Na->w);CHKERRQ(ierr);
+  if (Na->A) { ierr = MatDestroy(Na->A);CHKERRQ(ierr); }
+  if (Na->w) { ierr = VecDestroy(Na->w);CHKERRQ(ierr); }
   ierr = PetscFree(Na);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -74,7 +74,7 @@ PetscErrorCode MatGetDiagonal_Normal(Mat N,Vec v)
     }
     ierr = MatRestoreRow(A,i,&nnz,&cols,&mvalues);CHKERRQ(ierr);
   }
-  ierr = MPI_Allreduce(work,diag,A->cmap.N,MPIU_SCALAR,MPI_SUM,N->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(work,diag,A->cmap.N,MPIU_SCALAR,MPI_SUM,((PetscObject)N)->comm);CHKERRQ(ierr);
   rstart = N->cmap.rstart;
   rend   = N->cmap.rend;
   ierr = VecGetArray(v,&values);CHKERRQ(ierr);
@@ -111,16 +111,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-  ierr = MatCreate(A->comm,N);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
   
-  ierr      = PetscNew(Mat_Normal,&Na);CHKERRQ(ierr);
-  Na->A     = A;
-  ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  ierr      = PetscNewLog(*N,Mat_Normal,&Na);CHKERRQ(ierr);
   (*N)->data = (void*) Na;
+  ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  Na->A     = A;
 
-  ierr    = VecCreateMPI(A->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
+  ierr    = VecCreateMPI(((PetscObject)A)->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
   (*N)->ops->destroy     = MatDestroy_Normal;
   (*N)->ops->mult        = MatMult_Normal;
   (*N)->ops->multadd     = MatMultAdd_Normal; 

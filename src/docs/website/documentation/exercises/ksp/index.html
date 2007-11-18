@@ -28,7 +28,7 @@ the code</a></p>
 <p><font color="#FF0000"> Objective: To demonstrate basic linear solver use</font></p>
 <p><br>
    Runtime command:<br>
-     % mpirun -np 2 ex23 -ksp_monitor<br>
+     % mpiexec -np 2 ex23 -ksp_monitor<br>
       where<br>
 -ksp_monitor : print residual norm at each iteration<br>
    Comments:<br>
@@ -40,7 +40,7 @@ Krylov methods at runtime.<br>
 </font>
 <br>
    Runtime command:<br>
-     % mpirun -np 2 ex23 -ksp_monitor -pc_type asm -ksp_type tfqmr -optionsleft<br>
+     % mpiexec -np 2 ex23 -ksp_monitor -pc_type asm -ksp_type tfqmr -optionsleft<br>
       where<br>
 -ksp_type tfqmr : set Krylov method to transpose-free QMR<br>
 -pc_type asm : set preconditioner to additive Schwarz</p>
@@ -51,7 +51,7 @@ Krylov methods at runtime.<br>
 </font>
 <br>
    Runtime command:<br>
-     % mpirun -np 4 ex23 -n 1259 -log_summary<br>
+     % mpiexec -np 4 ex23 -n 1259 -log_summary<br>
       where<br>
          -n &lt;dimension> : set the problem dimension<br>
    Comments:<br>

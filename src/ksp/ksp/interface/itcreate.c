@@ -3,7 +3,7 @@
 /*
      The basic KSP routines, Create, View etc. are here.
 */
-#include "src/ksp/ksp/kspimpl.h"      /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"      /*I "petscksp.h" I*/
 #include "petscsys.h"
 
 /* Logging support */
@@ -52,15 +52,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(ksp,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = KSPGetType(ksp,&type);CHKERRQ(ierr);
-    if (ksp->prefix) {
-      ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:(%s)\n",ksp->prefix);CHKERRQ(ierr);
+    if (((PetscObject)ksp)->prefix) {
+      ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:(%s)\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:\n");CHKERRQ(ierr);
     }
@@ -105,16 +105,16 @@ PetscFList KSPList = 0;
    Input Parameter:
 +  ksp - Krylov solver context
 -  normtype - one of 
-$   KSP_NO_NORM - skips computing the norm, this should only be used if you are using
+$   KSP_NORM_NO - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
-$                 You must also call KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL);
-$                 supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
-$   KSP_PRECONDITIONED_NORM - the default for left preconditioned solves, uses the l2 norm
+$                 Implicitly sets KSPSkipConverged as KSP convergence test.
+$                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
+$   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual
-$   KSP_UNPRECONDITIONED_NORM - uses the l2 norm of the true b - Ax residual, supported only by
-$                 CG, CHEBYCHEV, and RICHARDSON, automatically true for right (see KSPSetPreconditioningSide) 
+$   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
+$                 CG, CHEBYCHEV, and RICHARDSON, automatically true for right (see KSPSetPreconditioningSide()) 
 $                 preconditioning..
-$   KSP_NATURAL_NORM - supported  by cg, cr, and cgs 
+$   KSP_NORM_NATURAL - supported  by cg, cr, and cgs 
 
 
    Options Database Key:
@@ -136,13 +136,73 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->normtype = normtype;
-  if (normtype == KSP_NO_NORM) {
-    ierr = PetscInfo(ksp,"Warning seting KSPNormType to skip computing the norm\n\
-  make sure you set the KSP convergence test to KSPSkipConvergence\n");CHKERRQ(ierr);
+  if (normtype == KSP_NORM_NO) {
+    ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0,0);CHKERRQ(ierr);
+    ierr = PetscInfo(ksp,"Warning: setting KSPNormType to skip computing the norm\n\
+ KSP convergence test is implicitly set to KSPSkipConverged\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetCheckNormIteration"
+/*@
+   KSPSetCheckNormIteration - Sets the first iteration at which the norm of the residual will be 
+     computed and used in the convergence test. 
+
+   Collective on KSP
+
+   Input Parameter:
++  ksp - Krylov solver context
+-  it  - use -1 to check at all iterations
+
+   Notes: 
+   Currently only works with Bi-CG-stab
+
+   Use KSPSetNormType(ksp,KSP_NORM_NO) to never check the norm
+
+   Level: advanced
+
+.keywords: KSP, create, context, norms
+
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()                               
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP ksp,PetscInt it)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  ksp->chknorm = it;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetNormType"
+/*@
+   KSPGetNormType - Sets the norm that is used for convergence testing.
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - Krylov solver context
+
+   Output Parameter:
+.  normtype - norm that is used for convergence testing
+
+   Level: advanced
+
+.keywords: KSP, create, context, norms
+
+.seealso: KSPNormType, KSPSetNormType(), KSPSkipConverged()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNormType(KSP ksp, KSPNormType *normtype) {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(normtype, 2);
+  *normtype = ksp->normtype;
+  PetscFunctionReturn(0);
+}
+
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "KSPPublish_Petsc"
 static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
@@ -150,6 +210,7 @@ static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetOperators"
@@ -348,6 +409,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
 {
   KSP            ksp;
   PetscErrorCode ierr;
+  void           *ctx;
 
   PetscFunctionBegin;
   PetscValidPointer(inksp,2);
@@ -357,51 +419,43 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
 #endif
 
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,"KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
-  *inksp             = ksp;
-  ksp->bops->publish = KSPPublish_Petsc;
 
-  ksp->type          = -1;
   ksp->max_it        = 10000;
   ksp->pc_side       = PC_LEFT;
   ksp->rtol          = 1.e-5;
-  ksp->abstol          = 1.e-50;
+  ksp->abstol        = 1.e-50;
   ksp->divtol        = 1.e4;
-
-  ksp->normtype            = KSP_PRECONDITIONED_NORM;
+  
+  ksp->chknorm             = -1;
+  ksp->normtype            = KSP_NORM_PRECONDITIONED;
   ksp->rnorm               = 0.0;
   ksp->its                 = 0;
   ksp->guess_zero          = PETSC_TRUE;
   ksp->calc_sings          = PETSC_FALSE;
   ksp->res_hist            = PETSC_NULL;
+  ksp->res_hist_alloc      = PETSC_NULL;
   ksp->res_hist_len        = 0;
   ksp->res_hist_max        = 0;
   ksp->res_hist_reset      = PETSC_TRUE;
   ksp->numbermonitors      = 0;
-  ksp->converged           = KSPDefaultConverged;
+
+  ierr = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
+  ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr);
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
-
-  ksp->ops->setfromoptions = 0;
 
   ksp->vec_sol         = 0;
   ksp->vec_rhs         = 0;
   ksp->pc              = 0;
-
-  ksp->ops->solve      = 0;
-  ksp->ops->setup      = 0;
-  ksp->ops->destroy    = 0;
-
   ksp->data            = 0;
   ksp->nwork           = 0;
   ksp->work            = 0;
-
-  ksp->cnvP            = 0;
-
   ksp->reason          = KSP_CONVERGED_ITERATING;
-
   ksp->setupcalled     = 0;
+
   ierr = PetscPublishAll(ksp);CHKERRQ(ierr);
   ierr = PCCreate(comm,&ksp->pc);CHKERRQ(ierr);
+  *inksp = ksp;
   PetscFunctionReturn(0);
 }
  
@@ -455,15 +509,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, KSPType type)
   ierr = PetscTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  if (ksp->data) {
-    /* destroy the old private KSP context */
-    ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
-    ksp->data = 0;
-  }
-  /* Get the function pointers for the iterative method requested */
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr =  PetscFListFind(ksp->comm,KSPList,type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown KSP type given: %s",type);
+  ierr =  PetscFListFind(KSPList,((PetscObject)ksp)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
+  /* Destroy the previous private KSP context */
+  if (ksp->ops->destroy) { ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr); }
+  /* Reinitialize function pointers in KSPOps structure */
+  ierr = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
+  ksp->ops->buildsolution = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual = KSPDefaultBuildResidual;
+  /* Call the KSPCreate_XXX routine for this particular Krylov solver */
   ksp->setupcalled = 0;
   ierr = (*r)(ksp);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
@@ -489,10 +543,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (KSPList) {
-    ierr = PetscFListDestroy(&KSPList);CHKERRQ(ierr);
-    KSPList = 0;
-  }
+  ierr = PetscFListDestroy(&KSPList);CHKERRQ(ierr);
   KSPRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -521,7 +572,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP ksp,KSPType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidPointer(type,2);
-  *type = ksp->type_name;
+  *type = ((PetscObject)ksp)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -563,11 +614,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->nullsp) {
-    ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);
-  }
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_COOKIE,2);
+  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  if (ksp->nullsp) { ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr); }
   ksp->nullsp = nullsp;
-  ierr = PetscObjectReference((PetscObject)ksp->nullsp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -589,6 +640,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNullSpace(KSP ksp,MatNullSpace *nullsp)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(nullsp,2);
   *nullsp = ksp->nullsp;
   PetscFunctionReturn(0);
 }

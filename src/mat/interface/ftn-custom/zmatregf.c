@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscmat.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -37,7 +37,7 @@ void PETSC_STDCALL matgettype_(Mat *mm,CHAR name PETSC_MIXED_LEN(len),PetscError
     *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
   }
 #endif
-  FIXRETURNCHAR(name,len);
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
 
 }
 

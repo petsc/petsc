@@ -15,8 +15,8 @@ TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscGetCPUTime sizeof
 MANSEC        = Sys
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 PetscTime: PetscTime.o  chkopts 
 	-${CLINKER} -o PetscTime PetscTime.o ${PETSC_LIB}
@@ -71,33 +71,33 @@ test: ${TESTS}
 runtest: 
 	-@echo "Time Taken by some PETSc routines are as follows:"
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 ./PetscTime
-	-@${MPIRUN} -np 1 ./PetscGetTime
-	-@${MPIRUN} -np 1 ./PetscGetCPUTime
-	-@${MPIRUN} -np 1 ./MPI_Wtime
+	-@${MPIEXEC} -np 1 ./PetscTime
+	-@${MPIEXEC} -np 1 ./PetscGetTime
+	-@${MPIEXEC} -np 1 ./PetscGetCPUTime
+	-@${MPIEXEC} -np 1 ./MPI_Wtime
 	-@echo " "
 	-@echo "PLogEventBegin and PLogEventEnd together with options"
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 ./PLogEvent              > /dev/null
-	-@${MPIRUN} -np 1 ./PLogEvent -log_summary > /dev/null
-	-@${MPIRUN} -np 1 ./PLogEvent -log_mpe     > /dev/null
+	-@${MPIEXEC} -np 1 ./PLogEvent              > /dev/null
+	-@${MPIEXEC} -np 1 ./PLogEvent -log_summary > /dev/null
+	-@${MPIEXEC} -np 1 ./PLogEvent -log_mpe     > /dev/null
 	-@echo " "
 	-@echo "PetscMalloc and PetscFree together  with options"
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 ./PetscMalloc
-	-@${MPIRUN} -np 1 ./PetscMalloc -malloc
+	-@${MPIEXEC} -np 1 ./PetscMalloc
+	-@${MPIEXEC} -np 1 ./PetscMalloc -malloc
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 ./PetscMemcpy
-	-@${MPIRUN} -np 1 ./PetscMemzero
-	-@${MPIRUN} -np 1 ./PetscMemcmp
+	-@${MPIEXEC} -np 1 ./PetscMemcpy
+	-@${MPIEXEC} -np 1 ./PetscMemzero
+	-@${MPIEXEC} -np 1 ./PetscMemcmp
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 ./Index
+	-@${MPIEXEC} -np 1 ./Index
 	-@echo " "
 	-@echo "Datatype Sizes "
 	-@echo "------------------------------------------------"
-	-@${MPIRUN} -np 1 ./sizeof
+	-@${MPIEXEC} -np 1 ./sizeof
 	-@echo "------------------------------------------------"

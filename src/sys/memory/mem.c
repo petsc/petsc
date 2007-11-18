@@ -80,10 +80,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 #elif defined(PETSC_USE_SBREAK_FOR_SIZE)
   long                   *ii = sbreak(0); 
   int                    fd = ii - (long*)0; 
-#elif defined(PETSC_USE_PROC_FOR_SIZE)
+#elif defined(PETSC_USE_PROC_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
   FILE                   *file;
   char                   proc[PETSC_MAX_PATH_LEN];
-  int                    mm,rss;
+  int                    mm,rss,err;
 #elif defined(PETSC_HAVE_TASK_INFO)
   /*  task_basic_info_data_t ti;
       unsigned int           count; */
@@ -122,7 +122,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   }
   fscanf(file,"%d %d",&mm,&rss);
   *mem = ((PetscLogDouble)rss) * ((PetscLogDouble)getpagesize());
-  fclose(file);
+  err = fclose(file);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
 
 #elif defined(PETSC_HAVE_TASK_INFO)
   *mem = 0;
@@ -130,12 +131,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
    *mem = (PetscLogDouble) ti.resident_size; */
   
 #elif defined(PETSC_HAVE_GETRUSAGE)
-
   getrusage(RUSAGE_SELF,&temp);
 #if defined(PETSC_USE_KBYTES_FOR_SIZE)
   *mem = 1024.0 * ((PetscLogDouble)temp.ru_maxrss);
-#else
+#elif defined(PETSC_HAVE_GETPAGESIZE)
   *mem = ((PetscLogDouble)getpagesize())*((PetscLogDouble)temp.ru_maxrss);
+#else
+  *mem = 0.0;
 #endif
 
 #else

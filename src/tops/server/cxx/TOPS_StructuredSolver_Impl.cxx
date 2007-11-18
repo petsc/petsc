@@ -2,7 +2,7 @@
 // File:          TOPS_StructuredSolver_Impl.cxx
 // Symbol:        TOPS.StructuredSolver-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for TOPS.StructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -34,7 +34,7 @@
 // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._includes)
 
 #include <iostream>
-#include "TOPS_Structured_Matrix_Impl.hxx"
+#include "TOPS_StructuredMatrix_Impl.hxx"
 #include "TOPS_ParameterHandling.hxx"  // not from SIDL
   // This code is the same as DAVecGetArray() except instead of generating
   // raw C multidimensional arrays it gets a Babel array
@@ -148,36 +148,90 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
   TOPS::System::Compute::Matrix system;
 
-  TOPS::Structured::Matrix matrix1 = TOPS::Structured::Matrix::_create();
-  TOPS::Structured::Matrix matrix2 = TOPS::Structured::Matrix::_create();
+  // Replace following with ports
+  //TOPS::Structured::Matrix matrix1 = TOPS::Structured::Matrix::_create();
+  //TOPS::Structured::Matrix matrix2 = TOPS::Structured::Matrix::_create();
 
   PetscInt  xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,dof,mx,my,mz;
   DAGetCorners((DA)dmmg->dm,&xs,&ys,&zs,&xm,&ym,&zm);
   DAGetGhostCorners((DA)dmmg->dm,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,&dof,0,0,0);
-#define GetImpl(A,b) (!(A)b) ? 0 : reinterpret_cast<A ## _impl*>(((A) b)._get_ior()->d_data)
+  
+  // Jacobian settings
+  int32_t l[1] = {0}, u[1] = {2};
+  int32_t lower_data[3] = {xs, ys, zs}, glower_data[3] = {gxs, gys, gzs};	
+  int32_t length_data[3] = {xm, ym, zm}, glength_data[3] = {gxm, gym, gzm};
+    
+  sidl::array<int32_t> lower = sidl::array<int32_t>::createRow(1,l,u);
+  sidl::array<int32_t> length = sidl::array<int32_t>::createRow(1,l,u);
+  sidl::array<int32_t> glower = sidl::array<int32_t>::createRow(1,l,u);
+  sidl::array<int32_t> glength = sidl::array<int32_t>::createRow(1,l,u);
+  // Populate arrays
+  for (int i = l[0]; i < u[0]; ++i) {
+  	lower.set(i, lower_data[i]);
+  	length.set(i, length_data[i]);
+  	glower.set(i, glower_data[i]);
+  	glength.set(i, glength_data[i]);
+  }
+  
+  // Use the TOPS.Structured.Matrix port to configure J
+  TOPS::Structured::Matrix JMatrix;
+  JMatrix = ::babel_cast< TOPS::Structured::Matrix >(
+  	solver->getServices().getPort("JacobianMatrix"));
+  if (JMatrix._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
+	      << ": TOPS.Structured.Matrix port is nil, could not connect to Jacobian component." 
+	      << std::endl;
+    PetscFunctionReturn(1);
+  }
+  JMatrix.setDimen(dof);
+  JMatrix.setLower(lower);
+  JMatrix.setLength(length);
+  JMatrix.setGhostLower(glower);
+  JMatrix.setGhostLength(glength);
+  JMatrix.setMat(J);
+ 
+  // Use the TOPS.Structured.Matrix port to configure B
+  TOPS::Structured::Matrix BMatrix;
+  BMatrix = ::babel_cast< TOPS::Structured::Matrix >(
+  	solver->getServices().getPort("PreconditionerMatrix"));
+  if (BMatrix._is_nil()) {
+    std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
+	      << ": TOPS.Structured.Matrix port is nil, could not connect to matrix B component." 
+	      << std::endl;
+    PetscFunctionReturn(1);
+  }
+  BMatrix.setDimen(dof);
+  BMatrix.setLower(lower);
+  BMatrix.setLength(length);
+  BMatrix.setGhostLower(glower);
+  BMatrix.setGhostLength(glength);
+  BMatrix.setMat(B);
+   
+//#define GetImpl(A,b) (!(A)b) ? 0 : reinterpret_cast<A ## _impl*>(((A) b)._get_ior()->d_data)
+//
+//  // currently no support for dof > 1
+//  TOPS::Structured::Matrix_impl *imatrix1 = GetImpl(TOPS::Structured::Matrix,matrix1);
+//  imatrix1->vlength[0] = xm; imatrix1->vlength[1] = ym; imatrix1->vlength[2] = zm; 
+//  imatrix1->vlower[0] = xs; imatrix1->vlower[1] = ys; imatrix1->vlower[2] = zs; 
+//  imatrix1->gghostlength[0] = gxm; imatrix1->gghostlength[1] = gym; 
+//  imatrix1->gghostlength[2] = gzm; 
+//  imatrix1->gghostlower[0] = gxs; imatrix1->gghostlower[1] = gys; 
+//  imatrix1->gghostlower[2] = gzs; 
+//  imatrix1->vdimen = dof;
+//
+//  TOPS::Structured::Matrix_impl *imatrix2 = GetImpl(TOPS::Structured::Matrix,matrix2);
+//  imatrix2->vlength[0] = xm; imatrix2->vlength[1] = ym; imatrix2->vlength[2] = zm; 
+//  imatrix2->vlower[0] = xs; imatrix2->vlower[1] = ys; imatrix2->vlower[2] = zs; 
+//  imatrix2->gghostlength[0] = gxm; imatrix2->gghostlength[1] = gym; 
+//  imatrix2->gghostlength[2] = gzm; 
+//  imatrix2->gghostlower[0] = gxs; imatrix2->gghostlower[1] = gys; 
+//  imatrix2->gghostlower[2] = gzs; 
+//  imatrix2->vdimen = dof;
+//
+//  imatrix1->mat = J;
+//  imatrix2->mat = B;
 
-  // currently no support for dof > 1
-  TOPS::Structured::Matrix_impl *imatrix1 = GetImpl(TOPS::Structured::Matrix,matrix1);
-  imatrix1->vlength[0] = xm; imatrix1->vlength[1] = ym; imatrix1->vlength[2] = zm; 
-  imatrix1->vlower[0] = xs; imatrix1->vlower[1] = ys; imatrix1->vlower[2] = zs; 
-  imatrix1->gghostlength[0] = gxm; imatrix1->gghostlength[1] = gym; 
-  imatrix1->gghostlength[2] = gzm; 
-  imatrix1->gghostlower[0] = gxs; imatrix1->gghostlower[1] = gys; 
-  imatrix1->gghostlower[2] = gzs; 
-  imatrix1->vdimen = dof;
-
-  TOPS::Structured::Matrix_impl *imatrix2 = GetImpl(TOPS::Structured::Matrix,matrix2);
-  imatrix2->vlength[0] = xm; imatrix2->vlength[1] = ym; imatrix2->vlength[2] = zm; 
-  imatrix2->vlower[0] = xs; imatrix2->vlower[1] = ys; imatrix2->vlower[2] = zs; 
-  imatrix2->gghostlength[0] = gxm; imatrix2->gghostlength[1] = gym; 
-  imatrix2->gghostlength[2] = gzm; 
-  imatrix2->gghostlower[0] = gxs; imatrix2->gghostlower[1] = gys; 
-  imatrix2->gghostlower[2] = gzs; 
-  imatrix2->vdimen = dof;
-
-  imatrix1->mat = J;
-  imatrix2->mat = B;
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
   solver->setLength(0,mx);
   solver->setLength(1,my);
@@ -194,17 +248,21 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
 
   // Use the port
   if (system._not_nil()) {
-    system.computeMatrix(matrix1,matrix2);
+    system.computeMatrix(::babel_cast<  ::TOPS::Matrix>(JMatrix),
+    					::babel_cast< ::TOPS::Matrix>(BMatrix) );
   }
-
-  solver->getServices().releasePort("TOPS.System.Compute.Matrix");
-
+ 
   MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);
   MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);
   if (J != B) {
     MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);
     MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);
   }
+  
+  solver->getServices().releasePort("TOPS.System.Compute.Matrix");
+  solver->getServices().releasePort("JacobianMatrix");
+  solver->getServices().releasePort("PreconditionerMatrix");
+  
   PetscFunctionReturn(0);
 }
 
@@ -239,10 +297,9 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._includes)
 
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
-TOPS::StructuredSolver_impl::StructuredSolver_impl() : 
-  StubBase(reinterpret_cast< 
-  void*>(::TOPS::StructuredSolver::_wrapObj(reinterpret_cast< void*>(this))),
-  false) , _wrapped(true){ 
+TOPS::StructuredSolver_impl::StructuredSolver_impl() : StubBase(
+  reinterpret_cast< void*>(::TOPS::StructuredSolver::_wrapObj(reinterpret_cast< 
+  void*>(this))),false) , _wrapped(true){ 
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._ctor2)
   // Insert-Code-Here {TOPS.StructuredSolver._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._ctor2)
@@ -400,8 +457,8 @@ TOPS::StructuredSolver_impl::setLevels_impl (
  * Method:  Initialize[]
  */
 void
-TOPS::StructuredSolver_impl::Initialize_impl (
-  /* in array<string> */::sidl::array< ::std::string> args ) 
+TOPS::StructuredSolver_impl::Initialize_impl () 
+
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.Initialize)
 #undef __FUNCT__
@@ -413,17 +470,7 @@ TOPS::StructuredSolver_impl::Initialize_impl (
     return;
   }
   this->startedpetsc = 1;
-  int          argc = args.upper(0) + 1;
-  char       **argv = new char* [argc];
-  std::string  arg;
-
-  for(int i = 0; i < argc; i++) {
-    arg     = args[i];
-    argv[i] = new char [arg.length()+1];
-    arg.copy(argv[i], arg.length(), 0);
-    argv[i][arg.length()] = 0;
-  }
-  PetscInitialize(&argc,&argv,0,0); 
+  PetscInitializeNoArguments(); 
 
   // Process runtime parameters
   params = ::babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
@@ -575,6 +622,12 @@ TOPS::StructuredSolver_impl::setServices_impl (
 			   "TOPS.Structured.Solver", tm);
   
   // Uses ports
+  services.registerUsesPort("JacobianMatrix",
+			    "TOPS.Structured.Matrix", tm);
+
+  services.registerUsesPort("PreconditionerMatrix",
+			    "TOPS.Structured.Matrix", tm);
+
   services.registerUsesPort("TOPS.System.Initialize.Once",
 			    "TOPS.System.Initialize.Once", tm);
 

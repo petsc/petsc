@@ -1,7 +1,8 @@
 #define PETSCTS_DLL
 
-#include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
+#include "include/private/tsimpl.h"      /*I "petscts.h"  I*/
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "TSPublish_Petsc"
 static PetscErrorCode TSPublish_Petsc(PetscObject obj)
@@ -9,6 +10,7 @@ static PetscErrorCode TSPublish_Petsc(PetscObject obj)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef  __FUNCT__
 #define __FUNCT__ "TSCreate"
@@ -41,10 +43,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
 #endif
 
   ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_COOKIE, -1, "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(t, sizeof(struct _p_TS));CHKERRQ(ierr);
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));CHKERRQ(ierr);
-  t->bops->publish    = TSPublish_Petsc;
-  t->type_name        = PETSC_NULL;
 
   t->ops->prestep       = TSDefaultPreStep;
   t->ops->update        = TSDefaultUpdate;
@@ -60,8 +59,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
   t->ksp                = PETSC_NULL;
   t->A                  = PETSC_NULL;
   t->B                  = PETSC_NULL;
+  t->Arhs               = PETSC_NULL;
   t->Alhs               = PETSC_NULL;
-  t->Blhs               = PETSC_NULL;
+  t->matflg             = DIFFERENT_NONZERO_PATTERN;
   t->snes               = PETSC_NULL;
   t->funP               = PETSC_NULL;
   t->jacP               = PETSC_NULL;
@@ -94,22 +94,19 @@ PetscErrorCode TSScaleShiftMatrices(TS ts,Mat A,Mat B,MatStructure str)
   PetscScalar    mdt = 1.0/ts->time_step;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
+  /* this function requires additional work! */
+  ierr = PetscTypeCompare((PetscObject)A,MATMFFD,&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = MatScale(ts->A,-1.0);CHKERRQ(ierr);
+    ierr = MatScale(A,-1.0);CHKERRQ(ierr);
     if (ts->Alhs){
-      ierr = MatAXPY(ts->A,mdt,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatAXPY(A,mdt,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     } else {
-      ierr = MatShift(ts->A,mdt);CHKERRQ(ierr);
+      ierr = MatShift(A,mdt);CHKERRQ(ierr);
     }
   }
-  if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
-    ierr = MatScale(ts->B,-1.0);CHKERRQ(ierr);
-    if (ts->Blhs){
-      ierr = MatAXPY(ts->B,mdt,ts->Blhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    } else {
-      ierr = MatShift(ts->B,mdt);CHKERRQ(ierr);
-    }
+  if (B != A && str != SAME_PRECONDITIONER) {
+    ierr = MatScale(B,-1.0);CHKERRQ(ierr);
+    ierr = MatShift(B,mdt);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

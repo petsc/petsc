@@ -190,7 +190,7 @@ int main( int argc, char **argv )
 
   /* Create interpolation between the levels */
   ierr = FormInterpolation(&user);CHKERRQ(ierr);
-  ierr = PCMGSetInterpolate(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
+  ierr = PCMGSetInterpolation(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
   ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
 
   /* Set options, then solve nonlinear system */
@@ -456,8 +456,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
     /* form Jacobian on coarse grid */
     if (user->redundant_build) {
       /* get copy of coarse X onto each processor */
-      ierr = VecScatterBegin(user->coarse.x,user->localall,INSERT_VALUES,SCATTER_FORWARD,user->tolocalall);CHKERRQ(ierr);
-      ierr = VecScatterEnd(user->coarse.x,user->localall,INSERT_VALUES,SCATTER_FORWARD,user->tolocalall);CHKERRQ(ierr);
+      ierr = VecScatterBegin(user->tolocalall,user->coarse.x,user->localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(user->tolocalall,user->coarse.x,user->localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = FormJacobian_Coarse(user,&user->coarse,user->localall,&user->coarse.J,&user->coarse.J);CHKERRQ(ierr);
 
     } else {

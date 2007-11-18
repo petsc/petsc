@@ -15,7 +15,7 @@ PETSC_EXTERN_CXX_BEGIN
 
   Concepts: distributed array
 
-.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), DM, VecPack
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), DM, DMComposite
 S*/
 typedef struct _p_DA* DA;
 
@@ -52,11 +52,14 @@ M*/
 
    Level: beginner
 
+   DA_XYZGHOSTED means that ghost points are put around all the physical boundaries
+   in the local representation of the Vec (i.e. DACreate/GetLocalVector().
+
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DACreate()
 E*/
 typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
-               DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC} 
-               DAPeriodicType;
+               DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC,DA_XYZGHOSTED} DAPeriodicType;
+extern const char *DAPeriodicTypes[];
 
 /*E
     DAInterpolationType - Defines the type of interpolation that will be returned by 
@@ -126,6 +129,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetGhostCorners(DA,PetscInt*,PetscI
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetInfo(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,DAPeriodicType*,DAStencilType*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetProcessorSubset(DA,DADirection,PetscInt,MPI_Comm*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARefine(DA,MPI_Comm,DA*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACoarsen(DA,MPI_Comm,DA*);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGlobalToNaturalAllCreate(DA,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DANaturalAllToGlobalCreate(DA,VecScatter*);
@@ -250,8 +254,8 @@ M*/
 
       DAGetCoordinates(da,&vcoors); 
       DAGetCoordinateDA(da,&cda);
-      DAVecGetArray(dac,vcoors,&coors);
-      DAGetCorners(dac,&mstart,&nstart,0,&m,&n,0)
+      DAVecGetArray(cda,vcoors,&coors);
+      DAGetCorners(cda,&mstart,&nstart,0,&m,&n,0)
       for (i=mstart; i<mstart+m; i++) {
         for (j=nstart; j<nstart+n; j++) {
           x = coors[j][i].x;
@@ -277,8 +281,8 @@ typedef struct {PetscScalar x,y;} DACoor2d;
 
       DAGetCoordinates(da,&vcoors); 
       DAGetCoordinateDA(da,&cda);
-      DAVecGetArray(dac,vcoors,&coors);
-      DAGetCorners(dac,&mstart,&nstart,&pstart,&m,&n,&p)
+      DAVecGetArray(cda,vcoors,&coors);
+      DAGetCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p)
       for (i=mstart; i<mstart+m; i++) {
         for (j=nstart; j<nstart+n; j++) {
           for (k=pstart; k<pstart+p; k++) {
@@ -297,6 +301,8 @@ typedef struct {PetscScalar x,y,z;} DACoor3d;
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetLocalInfo(DA,DALocalInfo*);
 typedef PetscErrorCode (*DALocalFunction1)(DALocalInfo*,void*,void*,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctionLocal(DA, DALocalFunction1, Vec, Vec, void *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctionLocalGhost(DA, DALocalFunction1, Vec, Vec, void *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormJacobianLocal(DA, DALocalFunction1, Vec, Mat, void *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunction1(DA,Vec,Vec,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunction(DA,PetscErrorCode (*)(void),Vec,Vec,void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctioni1(DA,PetscInt,Vec,PetscScalar*,void*);
@@ -311,6 +317,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetLocalFunction(DA,DALocalFunction1*
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalFunction(DA,DALocalFunction1);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalFunctioni(DA,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalFunctionib(DA,PetscErrorCode (*)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetLocalJacobian(DA,DALocalFunction1*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalJacobian(DA,DALocalFunction1);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicFunction_Private(DA,DALocalFunction1);
 
@@ -378,6 +385,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetColoring(DA,ISColoringType,ISColor
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetMatrix(DA, MatType,Mat *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetGetMatrix(DA,PetscErrorCode (*)(DA, MatType,Mat *));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetInterpolation(DA,DA,Mat*,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAggregates(DA,DA,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetInjection(DA,DA,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetBlockFills(DA,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetMatPreallocateOnly(DA,PetscTruth);
@@ -402,8 +410,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  admf_DARestoreArray(DA,PetscTruth,void*
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DACreatePF(DA,PF*);
 
 /*S
-     VecPack - Abstract PETSc object that manages treating several distinct vectors as if they
-        were one.   The VecPack routines allow one to manage a nonlinear solver that works on a
+     DMComposite - Abstract PETSc object that manages treating several distinct vectors as if they
+        were one.   The DMComposite routines allow one to manage a nonlinear solver that works on a
         vector that consists of several distinct parts. This is mostly used for LNKS solvers, 
         that is design optimization problems that are written as a nonlinear system
 
@@ -411,26 +419,28 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DACreatePF(DA,PF*);
 
   Concepts: multi-component, LNKS solvers
 
-.seealso:  VecPackCreate(), VecPackDestroy(), DM
+.seealso:  DMCompositeCreate(), DMCompositeDestroy(), DM
 S*/
-typedef struct _p_VecPack* VecPack;
+typedef struct _p_DMComposite* DMComposite;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackCreate(MPI_Comm,VecPack*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackDestroy(VecPack);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddArray(VecPack,PetscInt);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddDA(VecPack,DA);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddVecScatter(VecPack,VecScatter);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackScatter(VecPack,Vec,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGather(VecPack,Vec,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetAccess(VecPack,Vec,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackRestoreAccess(VecPack,Vec,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetLocalVectors(VecPack,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetEntries(VecPack,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackRestoreLocalVectors(VecPack,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackCreateGlobalVector(VecPack,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetGlobalIndices(VecPack,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackRefine(VecPack,MPI_Comm,VecPack*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreate(MPI_Comm,DMComposite*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeDestroy(DMComposite);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddArray(DMComposite,PetscMPIInt,PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddDA(DMComposite,DA);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddVecScatter(DMComposite,VecScatter);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeScatter(DMComposite,Vec,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGather(DMComposite,Vec,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetAccess(DMComposite,Vec,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreAccess(DMComposite,Vec,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetLocalVectors(DMComposite,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetEntries(DMComposite,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreLocalVectors(DMComposite,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreateGlobalVector(DMComposite,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetGlobalIndices(DMComposite,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRefine(DMComposite,MPI_Comm,DMComposite*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetInterpolation(DMComposite,DMComposite,Mat*,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetMatrix(DMComposite,MatType,Mat*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetColoring(DMComposite,ISColoringType,ISColoring*);
 
 /*S
      Slice - Abstract PETSc object that manages distributed field data for a simple unstructured matrix
@@ -439,7 +449,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetInterpolation(VecPack,VecPack
 
   Concepts: distributed array
 
-.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), VecPackCreate(), VecPack
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), DMCompositeCreate(), DMComposite
 S*/
 typedef struct _p_Sliced* Sliced;
 
@@ -459,25 +469,35 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetGhosts(Sliced,PetscInt,PetscIn
 
   Concepts: grids, grid refinement
 
-   Notes: The DA object and the VecPack object are examples of DMs
+   Notes: The DA object and the DMComposite object are examples of DMs
 
           Though the DA objects require the petscsnes.h include files the DM library is
     NOT dependent on the SNES or KSP library. In fact, the KSP and SNES libraries depend on
     DM. (This is not great design, but not trivial to fix).
 
-.seealso:  VecPackCreate(), DA, VecPack
+.seealso:  DMCompositeCreate(), DA, DMComposite
 S*/
 typedef struct _p_DM* DM;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMView(DM,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDestroy(DM);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCreateGlobalVector(DM,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCreateLocalVector(DM,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetColoring(DM,ISColoringType,ISColoring*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetMatrix(DM, MatType,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolation(DM,DM,Mat*,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInjection(DM,DM,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefine(DM,MPI_Comm,DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCoarsen(DM,MPI_Comm,DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefineHierarchy(DM,PetscInt,DM**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCoarsenHierarchy(DM,PetscInt,DM**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolationScale(DM,DM,Mat,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetAggregates(DM,DM,Mat*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMLocalToGlobal(DM,Vec,InsertMode,Vec);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
 
 typedef struct NLF_DAAD* NLF;
 
@@ -488,6 +508,53 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabDestroy(PetscViewer
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputBag(PetscViewer, const char [], PetscBag);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputVec(PetscViewer, const char [], Vec);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DA);
+
+
+/*S
+  ADDA - Abstract PETSc object that manages distributed field data for a single structured grid
+         These are for any number of dimensions.
+
+  Level: advanced. 
+
+  Concepts: distributed array
+.seealso: DA, DACreate(), ADDACreate()
+S*/
+typedef struct _p_ADDA* ADDA;
+
+extern PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE;
+
+PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscTruth*,ADDA*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA);
+
+/* DM interface functions */
+PetscErrorCode PETSCDM_DLLEXPORT ADDAView(ADDA,PetscViewer);
+PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(ADDA,Vec*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA,ISColoringType,ISColoring*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA,MatType, Mat*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(ADDA,ADDA,Mat*,Vec*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(ADDA, MPI_Comm,ADDA *);
+PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA, MPI_Comm, ADDA*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(ADDA, ADDA, VecScatter*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA, ADDA, Mat *);
+
+/* functions only supported by ADDA */
+PetscErrorCode PETSCDM_DLLEXPORT ADDASetRefinement(ADDA, PetscInt *,PetscInt);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetCorners(ADDA, PetscInt **, PetscInt **);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetGhostCorners(ADDA, PetscInt **, PetscInt **);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(ADDA, ADDA, MatType , Mat *);
+
+/* functions to set values in vectors and matrices */
+struct _ADDAIdx_s {
+  PetscInt     *x;               /* the coordinates, user has to make sure it is the correct size! */
+  PetscInt     d;                /* indexes the dof */
+};
+typedef struct _ADDAIdx_s ADDAIdx;
+
+PetscErrorCode PETSCDM_DLLEXPORT ADDAMatSetValues(Mat, ADDA, PetscInt, const ADDAIdx[], ADDA, PetscInt,
+						  const ADDAIdx[], const PetscScalar[], InsertMode);
+
+PetscTruth ADDAHCiterStartup(const PetscInt, const PetscInt *const, const PetscInt *const, PetscInt *const);
+PetscTruth ADDAHCiter(const PetscInt, const PetscInt *const, const PetscInt *const, PetscInt *const);
 
 PETSC_EXTERN_CXX_END
 #endif

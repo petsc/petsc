@@ -3,6 +3,7 @@
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat);
@@ -29,6 +30,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Composite(Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CSRPERM(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqCSRPERM(Mat);
@@ -39,6 +41,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqCRL(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICRL(Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat);
 #if defined(PETSC_HAVE_SPOOLES)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJSpooles(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJSpooles(Mat);
@@ -70,7 +73,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJMUMPS(Mat);
 #if defined(PETSC_HAVE_DSCPACK)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DSCPACK(Mat);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Matlab(Mat);
 #endif
 #if defined(PETSC_HAVE_PLAPACK)
@@ -105,12 +108,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
   PetscFunctionBegin;
   MatRegisterAllCalled = PETSC_TRUE;
 
+  ierr = MatRegisterDynamic(MATMFFD,           path,"MatCreate_MFFD",    MatCreate_MFFD);CHKERRQ(ierr);
+
   ierr = MatRegisterDynamic(MATMPIMAIJ,        path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQMAIJ,        path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMAIJ,           path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
 
   ierr = MatRegisterDynamic(MATIS,             path,"MatCreate_IS",      MatCreate_IS);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSHELL,          path,"MatCreate_Shell",   MatCreate_Shell);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATCOMPOSITE,      path,"MatCreate_Composite",   MatCreate_Composite);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_BLOCKSOLVE95)
   ierr = MatRegisterDynamic(MATMPIROWBS,       path,"MatCreate_MPIRowbs",MatCreate_MPIRowbs);CHKERRQ(ierr);
 #endif
@@ -144,6 +150,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 
   ierr = MatRegisterDynamic(MATMPIADJ,         path,"MatCreate_MPIAdj",    MatCreate_MPIAdj);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSCATTER,        path,"MatCreate_Scatter",   MatCreate_Scatter);CHKERRQ(ierr);
+  ierr = MatRegisterDynamic(MATBLOCKMAT,       path,"MatCreate_BlockMat",   MatCreate_BlockMat);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPOOLES)
   ierr = MatRegisterDynamic(MATAIJSPOOLES,     path,"MatCreate_AIJSpooles",     MatCreate_AIJSpooles);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQAIJSPOOLES,  path,"MatCreate_SeqAIJSpooles",  MatCreate_SeqAIJSpooles);CHKERRQ(ierr);
@@ -175,7 +182,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 #if defined(PETSC_HAVE_DSCPACK)
   ierr = MatRegisterDynamic(MATDSCPACK,        path,"MatCreate_DSCPACK",MatCreate_DSCPACK);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = MatRegisterDynamic(MATMATLAB,         path,"MatCreate_Matlab",MatCreate_Matlab);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PLAPACK)

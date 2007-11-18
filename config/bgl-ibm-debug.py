@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 #
-# This version requires IBM's cross compilers mpxlc/mpxlf
-#
 # BGL has broken 'libc' dependencies. The option 'LIBS' is used to
-# workarround this problem. Another workarround is to modify
-# mpxlc/mpxlf [or mpicc/mpif77] scripts and make them link with these
-# additional libraries.
+# workarround this problem.
 #
-# Modifying mpicc [from using gcc to blrts_xlc] would require something like:
-# CC=" /soft/apps/ibmcmp-20050414/vac/7.0/bin/xlc -F /etc/opt/ibmcmp/vac/7.0/blrts-vac.cfg"
+# LIBS="-lc -lnss_files -lnss_dns -lresolv"
+#
+# Another workarround is to modify mpicc/mpif77 scripts and make them
+# link with the corresponding compilers, and these additional
+# libraries. The following tarball has the modified compiler scripts
+#
+# ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz 
 #
 configure_options = [
   '--with-cc=mpicc.ibm-8.0',
@@ -35,6 +36,7 @@ configure_options = [
   '--sizeof_short=2',
   '--sizeof_int=4',
   '--sizeof_long=4',
+  '--sizeof_size_t=4',  
   '--sizeof_long_long=8',
   '--sizeof_float=4',
   '--sizeof_double=8',

@@ -1,5 +1,5 @@
 
-#requirespackage 'PETSC_HAVE_F90_H'
+#requirespackage 'PETSC_USING_F90'
 ALL: lib
 
 CFLAGS   =
@@ -13,7 +13,7 @@ LIBBASE  = libpetscmat
 LOCDIR   = src/mat/interface/f90-custom/
 
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 

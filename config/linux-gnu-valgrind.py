@@ -4,7 +4,7 @@
 
 configure_options = [
   '--with-mpi-dir=/home/petsc/soft/linux-rh73-mpich2/mpich2-0.971-CVS-200408131639',
-  '--with-mpirun=/sandbox/petsc/petsc-dev/bin/mpiexec.valgrind',
+  '--with-mpiexec=/sandbox/petsc/petsc-dev/bin/mpiexec.valgrind',
   '--with-cxx=g++',
   '--with-matlab=0'
   ]

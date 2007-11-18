@@ -47,7 +47,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalBegin(DA da,Vec g,InsertMode mod
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidHeaderSpecific(g,VEC_COOKIE,2);
   PetscValidHeaderSpecific(l,VEC_COOKIE,4);
-  ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gtol);CHKERRQ(ierr);
+  ierr = VecScatterBegin(da->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -90,7 +90,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalBegin(DA da,Vec l,Vec g)
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidHeaderSpecific(l,VEC_COOKIE,2);
   PetscValidHeaderSpecific(g,VEC_COOKIE,3);
-  ierr = VecScatterBegin(l,g,ADD_VALUES,SCATTER_REVERSE,da->gtol);CHKERRQ(ierr);
+  ierr = VecScatterBegin(da->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -133,7 +133,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToGlobalEnd(DA da,Vec l,Vec g)
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidHeaderSpecific(l,VEC_COOKIE,2);
   PetscValidHeaderSpecific(g,VEC_COOKIE,3);
-  ierr = VecScatterEnd(l,g,ADD_VALUES,SCATTER_REVERSE,da->gtol);CHKERRQ(ierr);
+  ierr = VecScatterEnd(da->gtol,l,g,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -175,7 +175,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToLocalEnd(DA da,Vec g,InsertMode mode,
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidHeaderSpecific(g,VEC_COOKIE,2);
   PetscValidHeaderSpecific(l,VEC_COOKIE,4);
-  ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->gtol);CHKERRQ(ierr);
+  ierr = VecScatterEnd(da->gtol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -219,8 +219,8 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
 
   ierr = DAGetNatural_Private(da,&Nlocal,&to);CHKERRQ(ierr);
   if (Nlocal != m) SETERRQ2(PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
-  ierr = ISCreateStride(da->comm,m,start,1,&from);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(da->comm,da->Nlocal,PETSC_DETERMINE,0,&global);
+  ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&from);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,0,&global);
   ierr = VecSetBlockSize(global,da->w);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,da->natural,to,&da->gton);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
@@ -254,6 +254,8 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
 
+   You must call DACreateNaturalVector() before using this routine
+
 .keywords: distributed array, global to local, begin
 
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 
@@ -272,7 +274,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalBegin(DA da,Vec g,InsertMode m
     /* create the scatter context */
     ierr = DAGlobalToNatural_Create(da);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->gton);CHKERRQ(ierr);
+  ierr = VecScatterBegin(da->gton,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -314,7 +316,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalEnd(DA da,Vec g,InsertMode mod
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidHeaderSpecific(l,VEC_COOKIE,2);
   PetscValidHeaderSpecific(g,VEC_COOKIE,4);
-  ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->gton);CHKERRQ(ierr);
+  ierr = VecScatterEnd(da->gton,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +364,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalBegin(DA da,Vec g,InsertMode m
     /* create the scatter context */
     ierr = DAGlobalToNatural_Create(da);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(g,l,mode,SCATTER_REVERSE,da->gton);CHKERRQ(ierr);
+  ierr = VecScatterBegin(da->gton,g,l,mode,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -405,7 +407,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DANaturalToGlobalEnd(DA da,Vec g,InsertMode mod
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidHeaderSpecific(l,VEC_COOKIE,2);
   PetscValidHeaderSpecific(g,VEC_COOKIE,4);
-  ierr = VecScatterEnd(g,l,mode,SCATTER_REVERSE,da->gton);CHKERRQ(ierr);
+  ierr = VecScatterEnd(da->gton,g,l,mode,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

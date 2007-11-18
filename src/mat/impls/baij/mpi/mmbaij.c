@@ -65,8 +65,8 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   }
   B->nbs     = ec;
   baij->B->cmap.n = baij->B->cmap.N = ec*mat->rmap.bs;
-  ierr = PetscMapInitialize(baij->B->comm,&(baij->B->cmap));CHKERRQ(ierr);
-  ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&(baij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscTableDestroy(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
   /* Make an array as long as the number of columns */
@@ -102,7 +102,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   }
   B->nbs       = ec;
   baij->B->cmap.n =baij->B->cmap.N  = ec*mat->rmap.bs;
-  ierr = PetscMapInitialize(baij->B->comm,&(baij->B->cmap));CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&(baij->B->cmap));CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 #endif  
 
@@ -127,7 +127,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(mat->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(((PetscObject)mat)->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
 
@@ -175,7 +175,7 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
   ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr); baij->Mvctx = 0;
   if (baij->colmap) {
 #if defined (PETSC_USE_CTABLE)
-    ierr = PetscTableDelete(baij->colmap); baij->colmap = 0;CHKERRQ(ierr);
+    ierr = PetscTableDestroy(baij->colmap); baij->colmap = 0;CHKERRQ(ierr);
 #else
     ierr = PetscFree(baij->colmap);CHKERRQ(ierr);
     baij->colmap = 0;
@@ -192,11 +192,11 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
   for (i=0; i<mbs; i++) {
     nz[i] = Bbaij->i[i+1]-Bbaij->i[i];
   }
-  ierr = MatCreate(B->comm,&Bnew);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)B)->comm,&Bnew);CHKERRQ(ierr);
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(Bnew,B->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(Bnew,B->rmap.bs,0,nz);CHKERRQ(ierr);
-  ierr = MatSetOption(Bnew,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
+  ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscMalloc(bs2*sizeof(PetscScalar),&atmp);CHKERRQ(ierr);
@@ -212,7 +212,7 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
         ierr = MatSetValuesBlocked_SeqBAIJ(Bnew,1,&i,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
       }
     }
-  ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED);CHKERRQ(ierr);
+    ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscFree(atmp);CHKERRQ(ierr);

@@ -34,7 +34,7 @@ int MatCreate_Feti(Mat A)    /* Constructor for Mat_Feti() */
     PetscFunctionBegin;
     N=A->m;                  /* MatCreateFeti stored it there */
 
-    ierr=PetscNew(Mat_Feti, &matfeti);CHKERRQ(ierr);
+    ierr=PetscNewLog(A,Mat_Feti, &matfeti);CHKERRQ(ierr);
     A->data=(void*)matfeti;  /* that's actually me in data */
     ierr = PetscMemzero(matfeti,sizeof(Mat_Feti));CHKERRQ(ierr);      /* just for safety, everything to zero */
 
@@ -48,7 +48,7 @@ int MatCreate_Feti(Mat A)    /* Constructor for Mat_Feti() */
     A->ops->view                    = MatView_Feti;     
 
 #if 1
-    MatFetiBalance(A->comm,N,&start,&end);              /* determines local domains by a simple formula */
+    MatFetiBalance(((PetscObject)A)->comm,N,&start,&end);              /* determines local domains by a simple formula */
 
     matfeti->n_dom=end-start+1;
     for(int i=0;i<matfeti->n_dom;i++)
@@ -56,7 +56,7 @@ int MatCreate_Feti(Mat A)    /* Constructor for Mat_Feti() */
 	(matfeti->domains[i]).domain_num=start+i;       /* domain-numbers start at 1 */
     }
 #else
-    MPI_Comm_rank(A->comm, &rank);                      /* comm is hidden in PETSCHEADER (!) in struct _p_Mat */
+    MPI_Comm_rank(((PetscObject)A)->comm, &rank);                      /* comm is hidden in PETSCHEADER (!) in struct _p_Mat */
 
     for(int i=0;i<9;i++)
     {
@@ -510,7 +510,7 @@ int MatFetiCreateScatter(Mat A)         /* name may be misleading */
        even though lambda is shared/distributed (PETSC_COMM_WORLD).
        make sure you understand the difference */
 
-#if 0 /* The PetscScatterView can not view a scatter on only one processor => does not work for  mpirun -np 1 */
+#if 0 /* The PetscScatterView can not view a scatter on only one processor => does not work for  mpiexec -np 1 */
     {
     char a[256]={0};
     int rank;
@@ -662,7 +662,7 @@ int MatView_Feti(Mat A, PetscViewer)
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"MatView_Feti on processor %d\n",rank);
 
     PetscViewer view;
-    PetscViewerDrawOpen(matfeti->Kcc_ass->comm,FETIDP_VIEWER_XDISPLAY,"K",PETSC_DECIDE,PETSC_DECIDE,400,400,&view);  
+    PetscViewerDrawOpen(matfeti->((PetscObject)Kcc_ass)->comm,FETIDP_VIEWER_XDISPLAY,"K",PETSC_DECIDE,PETSC_DECIDE,400,400,&view);  
     MatView(matfeti->Kcc_ass,view);   
     WAIT("Kcc_ass");
 
@@ -724,7 +724,7 @@ int MatFetiSolveLocal(Mat A)
 	KSPSetType(ksp,KSPPREONLY); 
 	PCSetType(pc,PCLU);              
 	PCFactorSetUseInPlace(pc);           
-	PCFactorSetMatOrdering(pc,MATORDERING_NATURAL); /* MATORDERING_RCM, MATORDERING_QMD, MATORDERING_ND */
+	PCFactorSetMatOrderingType(pc,MATORDERING_NATURAL); /* MATORDERING_RCM, MATORDERING_QMD, MATORDERING_ND */
 
 	KSPSetTolerances(ksp,1e-7,1e-50,1e+5,10000); 
 	SLESAppendOptionsPrefix(*sles,"local_");    /* uses options with prefix -local_ */
@@ -1069,7 +1069,7 @@ int MatFetiConvertScc2Seq(Mat A) /* only internal use; anyway takes a generic Ma
     /* invert Scc; could also be done iteratively */
     SLES * sles=&matfeti->Sccinv;
 
-    SLESCreate(matfeti->Scc->comm,sles); 
+    SLESCreate(matfeti->((PetscObject)Scc)->comm,sles); 
 
     SLESSetOperators(*sles,
 		     matfeti->Scc,
@@ -1147,8 +1147,8 @@ int MatFetiScatter(Mat A, Vec lambda, FetiScatterMode mode) /* src the local seq
 
 		    /* VecScatter */
 	VecRestoreArray(matfeti->contrib,&contrib_array);
-	VecScatterBegin(matfeti->contrib,lambda,ADD_VALUES,SCATTER_FORWARD,matfeti->Br_scatter); 
-	VecScatterEnd  (matfeti->contrib,lambda,ADD_VALUES,SCATTER_FORWARD,matfeti->Br_scatter); 
+	VecScatterBegin(matfeti->Br_scatter,matfeti->contrib,lambda,ADD_VALUES,SCATTER_FORWARD);
+	VecScatterEnd  (matfeti->Br_scatter,matfeti->contrib,lambda,ADD_VALUES,SCATTER_FORWARD);
 
     }
     else
@@ -1165,8 +1165,8 @@ int MatFetiScatter(Mat A, Vec lambda, FetiScatterMode mode) /* src the local seq
 
 	            /* VecScatter */
 	    VecSet(matfeti->contrib,zero);  
-	    VecScatterBegin(lambda,matfeti->contrib,INSERT_VALUES,SCATTER_REVERSE,matfeti->Br_scatter); 
-	    VecScatterEnd  (lambda,matfeti->contrib,INSERT_VALUES,SCATTER_REVERSE,matfeti->Br_scatter); 
+	    VecScatterBegin(matfeti->Br_scatter,lambda,matfeti->contrib,INSERT_VALUES,SCATTER_REVERSE);
+	    VecScatterEnd  (matfeti->Br_scatter,lambda,matfeti->contrib,INSERT_VALUES,SCATTER_REVERSE);
 
 	    VecGetArray(matfeti->contrib,&contrib_array);
 
@@ -1237,8 +1237,8 @@ int MatFetiScatterBc(Mat A, Vec ucg, FetiScatterMode mode)  /* uc_ass/ucg here; 
 
 		    /* VecScatter */
 	VecRestoreArray(matfeti->BcT_contrib,&contrib_array);
-	VecScatterBegin(matfeti->BcT_contrib,ucg,ADD_VALUES,SCATTER_FORWARD,matfeti->BcT_scatter); 
-	VecScatterEnd  (matfeti->BcT_contrib,ucg,ADD_VALUES,SCATTER_FORWARD,matfeti->BcT_scatter); 
+	VecScatterBegin(matfeti->BcT_scatter,matfeti->BcT_contrib,ucg,ADD_VALUES,SCATTER_FORWARD);
+	VecScatterEnd  (matfeti->BcT_scatter,matfeti->BcT_contrib,ucg,ADD_VALUES,SCATTER_FORWARD);
 
     }
     else
@@ -1254,8 +1254,8 @@ int MatFetiScatterBc(Mat A, Vec ucg, FetiScatterMode mode)  /* uc_ass/ucg here; 
 	    }
 
 	            /* VecScatter */
-	    VecScatterBegin(ucg,matfeti->BcT_contrib,INSERT_VALUES,SCATTER_REVERSE,matfeti->BcT_scatter); 
-	    VecScatterEnd  (ucg,matfeti->BcT_contrib,INSERT_VALUES,SCATTER_REVERSE,matfeti->BcT_scatter); 
+	    VecScatterBegin(matfeti->BcT_scatter,ucg,matfeti->BcT_contrib,INSERT_VALUES,SCATTER_REVERSE);
+	    VecScatterEnd  (matfeti->BcT_scatter,ucg,matfeti->BcT_contrib,INSERT_VALUES,SCATTER_REVERSE);
 
 	    VecGetArray(matfeti->BcT_contrib,&contrib_array);
 
@@ -1782,7 +1782,7 @@ int MatlabInspect(Mat mat, char const * const name, int const domain_num)
     char fname[256]={};
 
     int rank;
-    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);  /*  not mat->comm; all processors would write to the same file
+    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);  /*  not ((PetscObject)mat)->comm; all processors would write to the same file
                                                  if mat was sequential; now if mat is mpi, only the first 
 						 processor will have a nonempty file  */
 
@@ -1792,7 +1792,7 @@ int MatlabInspect(Mat mat, char const * const name, int const domain_num)
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Writing %s (%d)\n",fname,rank); 
 
     PetscSynchronizedFlush(PETSC_COMM_WORLD);  /* PetscSynchronizedPrintf needs flush */
-    PetscViewerASCIIOpen(mat->comm,fname,&viewer);
+    PetscViewerASCIIOpen(((PetscObject)mat)->comm,fname,&viewer);
     PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);
 
     char oname[256]={};
@@ -1814,7 +1814,7 @@ int MatFetiMatlabInspect(Mat A)                /* write all data to files; not u
     int rank;
 
     PetscFunctionBegin;
-    MPI_Comm_rank(A->comm, &rank);             /* A->comm ist PETSC_COMM_WORLD anyway */
+    MPI_Comm_rank(((PetscObject)A)->comm, &rank);             /* ((PetscObject)A)->comm ist PETSC_COMM_WORLD anyway */
 #if 1
     PetscViewer viewer;
 
@@ -1889,7 +1889,7 @@ int MatlabInspectVecs(Vec v, int dom)
 
     PetscViewer viewer;
 
-    PetscViewerASCIIOpen(v->comm,fname,&viewer);
+    PetscViewerASCIIOpen(((PetscObject)v)->comm,fname,&viewer);
     PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);
 
     char oname[256]={};

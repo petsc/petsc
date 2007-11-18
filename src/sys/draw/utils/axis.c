@@ -66,11 +66,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisCreate(PetscDraw draw,PetscDrawAxis 
   PetscValidPointer(axis,2);
   ierr = PetscTypeCompare(obj,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) {
-    ierr = PetscDrawOpenNull(obj->comm,(PetscDraw*)axis);CHKERRQ(ierr);
+    ierr = PetscDrawOpenNull(((PetscObject)obj)->comm,(PetscDraw*)axis);CHKERRQ(ierr);
     (*axis)->win = draw;
     PetscFunctionReturn(0);
   }
-  ierr = PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"PetscDrawAxis",obj->comm,PetscDrawAxisDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(ad,_p_DrawAxis,int,DRAWAXIS_COOKIE,0,"PetscDrawAxis",((PetscObject)obj)->comm,PetscDrawAxisDestroy,0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(draw,ad);CHKERRQ(ierr);
   ad->xticks    = PetscADefTicks;
   ad->yticks    = PetscADefTicks;
@@ -107,7 +107,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisDestroy(PetscDrawAxis axis)
 
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
-  if (--axis->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)axis)->refct > 0) PetscFunctionReturn(0);
 
   ierr = PetscStrfree(axis->toplabel);CHKERRQ(ierr);
   ierr = PetscStrfree(axis->xlabel);CHKERRQ(ierr);
@@ -255,7 +255,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawAxisDraw(PetscDrawAxis axis)
 
   PetscFunctionBegin;
   if (!axis) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(axis->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)axis)->comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   if (axis->xlow == axis->xhigh) {axis->xlow -= .5; axis->xhigh += .5;}
@@ -544,7 +544,7 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
 {
   PetscErrorCode ierr;
   int            i,power;
-  PetscReal      x = 0.0,base;
+  PetscReal      x = 0.0,base=0.0;
 
   PetscFunctionBegin;
   /* patch if low == high */
@@ -585,7 +585,7 @@ PetscErrorCode PetscADefTicks(PetscReal low,PetscReal high,int num,int *ntick,Pe
 static PetscErrorCode PetscExp10(PetscReal d,PetscReal *result)
 {
   PetscFunctionBegin;
-  *result = pow(10.0,d);
+  *result = pow((PetscReal)10.0,d);
   PetscFunctionReturn(0);
 }
 

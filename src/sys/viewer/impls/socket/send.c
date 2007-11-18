@@ -79,7 +79,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 #else
     ierr = close(vmatlab->port);
 #endif
-    if (ierr) SETERRQ(PETSC_ERR_LIB,"System error closing socket");
+    if (ierr) SETERRQ(PETSC_ERR_SYS,"System error closing socket");
   }
   ierr = PetscFree(vmatlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -99,7 +99,7 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
   PetscFunctionBegin;
   if (!(hp=gethostbyname(hostname))) {
     perror("SEND: error gethostbyname: ");   
-    SETERRQ1(PETSC_ERR_LIB,"system error open connection to %s",hostname);
+    SETERRQ1(PETSC_ERR_SYS,"system error open connection to %s",hostname);
   }
   ierr = PetscMemzero(&sa,sizeof(sa));CHKERRQ(ierr);
   ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
   sa.sin_port = htons((u_short) portnum);
   while (flg) {
     if ((s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0) {
-      perror("SEND: error socket");  SETERRQ(PETSC_ERR_LIB,"system error");
+      perror("SEND: error socket");  SETERRQ(PETSC_ERR_SYS,"system error");
     }
     if (connect(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
 #if defined(PETSC_HAVE_WSAGETLASTERROR)
@@ -124,7 +124,7 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
         Sleep((unsigned) 1);
       } else {
-        perror(NULL); SETERRQ(PETSC_ERR_LIB,"system error");
+        perror(NULL); SETERRQ(PETSC_ERR_SYS,"system error");
       }
 #else
       if (errno == EADDRINUSE) {
@@ -138,7 +138,7 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
         sleep((unsigned) 1);
       } else {
-        perror(NULL); SETERRQ(PETSC_ERR_LIB,"system error");
+        perror(NULL); SETERRQ(PETSC_ERR_SYS,"system error");
       }
 #endif
       flg = PETSC_TRUE;
@@ -185,7 +185,7 @@ $    PetscViewerSocketOpen(MPI_Comm comm,char *machine,int port,PetscViewer &vie
 $    VecView(Vec vector,PetscViewer viewer)
 
    Options Database Keys:
-   For use with the default Matlab PetscViewer, PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF,
+   For use with  PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF,
    PETSC_VIEWER_SOCKET_() or if 
     PETSC_NULL is passed for machine or PETSC_DEFAULT is passed for port
 $    -viewer_socket_machine <machine>
@@ -198,12 +198,16 @@ $    -viewer_socket_port <port>
      Currently the only socket client available is Matlab. See 
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
+   Notes: The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
+          use PetscViewerBinaryRead/Write/GetDescriptor().
+
    Concepts: Matlab^sending data
    Concepts: sockets^sending data
 
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerSetType(),
           PetscViewerSocketSetConnection(), PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, 
-          PETSC_VIEWER_SOCKET_SELF
+          PETSC_VIEWER_SOCKET_SELF, PetscViewerBinaryWrite(), PetscViewerBinaryRead(), PetscViewerBinaryWriteStringArray(),
+          PetscBinaryViewerGetDescriptor()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
@@ -231,16 +235,16 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
     are listed here for the GUI to display
   */
   ierr = PetscOptionsHead("Socket PetscViewer Options");CHKERRQ(ierr);
-    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
       ierr = PetscOptionsAtoi(sdef,&def);CHKERRQ(ierr);
     } else {
-      def = DEFAULTPORT;
+      def = PETSCSOCKETDEFAULTPORT;
     }
     ierr = PetscOptionsInt("-viewer_socket_port","Port number to use for socket","PetscViewerSocketSetConnection",def,0,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsString("-viewer_socket_machine","Machine to use for socket","PetscViewerSocketSetConnection",sdef,0,0,0);CHKERRQ(ierr);
-    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
     if (!tflg) {
       ierr = PetscGetHostName(sdef,256);CHKERRQ(ierr);
     }
@@ -257,12 +261,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Socket(PetscViewer v)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr                   = PetscNew(PetscViewer_Socket,&vmatlab);CHKERRQ(ierr);
+  ierr                   = PetscNewLog(v,PetscViewer_Socket,&vmatlab);CHKERRQ(ierr);
   vmatlab->port          = 0;
   v->data                = (void*)vmatlab;
   v->ops->destroy        = PetscViewerDestroy_Socket;
   v->ops->flush          = 0;
   v->ops->setfromoptions = PetscViewerSetFromOptions_Socket;
+
+  /* lie and say this is a binary viewer; then all the XXXView_Binary() methods will work correctly on it */
+  ierr                   = PetscObjectChangeTypeName((PetscObject)v,PETSC_VIEWER_BINARY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -295,15 +302,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,cons
   PetscFunctionBegin;
   if (port <= 0) {
     char portn[16];
-    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
       ierr = PetscOptionsAtoi(portn,&port);CHKERRQ(ierr);
     } else {
-      port = DEFAULTPORT;
+      port = PETSCSOCKETDEFAULTPORT;
     }
   }
   if (!machine) {
-    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,256,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,256,&tflg);CHKERRQ(ierr);
     if (!tflg) {
       ierr = PetscGetHostName(mach,256);CHKERRQ(ierr);
     }
@@ -311,9 +318,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,cons
     ierr = PetscStrncpy(mach,machine,256);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)v)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscInfo2(0,"Connecting to socket process on port %D machine %s\n",port,mach);CHKERRQ(ierr);
+    ierr = PetscInfo2(v,"Connecting to socket process on port %D machine %s\n",port,mach);CHKERRQ(ierr);
     ierr = SOCKCall_Private(mach,(int)port,&vmatlab->port);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -330,8 +337,7 @@ static PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_SOCKET_"  
 /*@C
-     PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors 
-                     in a communicator.
+     PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 
      Collective on MPI_Comm
 
@@ -361,7 +367,8 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
      Connects to a waiting socket and stays connected until PetscViewerDestroy() is called.
 
 .seealso: PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF, PetscViewerSocketOpen(), PetscViewerCreate(),
-          PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_()
+          PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_(), PetscViewerBinaryWrite(), PetscViewerBinaryRead(),
+          PetscViewerBinaryWriteStringArray(), PetscBinaryViewerGetDescriptor()
 @*/
 PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {

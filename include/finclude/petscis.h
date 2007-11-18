@@ -18,13 +18,17 @@
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
-      PetscEnum IS_COLORING_LOCAL,IS_COLORING_GHOSTED
-      parameter (IS_COLORING_LOCAL = 0,IS_COLORING_GHOSTED = 1)
+      PetscEnum IS_COLORING_GLOBAL
+      PetscEnum IS_COLORING_GHOSTED
+      parameter (IS_COLORING_GLOBAL = 0,IS_COLORING_GHOSTED = 1)
 
-      PetscEnum IS_GENERAL,IS_STRIDE,IS_BLOCK
+      PetscEnum IS_GENERAL
+      PetscEnum IS_STRIDE
+      PetscEnum IS_BLOCK
       parameter (IS_GENERAL = 0,IS_STRIDE = 1,IS_BLOCK = 2)
 
-      PetscEnum IS_GTOLM_MASK,IS_GTOLM_DROP 
+      PetscEnum IS_GTOLM_MASK
+      PetscEnum IS_GTOLM_DROP 
       parameter (IS_GTOLM_MASK =0,IS_GTOLM_DROP = 1)
 
 !

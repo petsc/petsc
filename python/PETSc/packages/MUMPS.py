@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.6.3.tar.gz']
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.7.3.tar.gz']
     self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a'],
                       ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a','libpthread.a']]
     self.functions = ['dmumps_c']
@@ -26,18 +26,17 @@ class Configure(PETSc.package.Package):
     return
         
   def Install(self):
-    # Get the MUMPS directories
-    mumpsDir = self.getDir()
-    installDir = os.path.join(mumpsDir, self.arch.arch)
-    
-    # Configure and Build MUMPS
-    if os.path.isfile(os.path.join(mumpsDir,'Makefile.inc')):
-      output  = config.base.Configure.executeShellCommand('cd '+mumpsDir+'; rm -f Makefile.inc', timeout=2500, log = self.framework.log)[0]
-    g = open(os.path.join(mumpsDir,'Makefile.inc'),'w')
+
+    g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
     g.write('LPORDDIR   = ../PORD/lib/\n')
     g.write('IPORD      = -I../PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
-    g.write('ORDERINGSC = -Dpord\n')
+    # Disable threads on BGL
+    if self.libraryOptions.isBGL():
+      g.write('ORDERINGSC = -DWITHOUT_PTHREAD -Dpord\n')
+    else:
+      g.write('ORDERINGSC = -Dpord\n')
+
     # assume AIX if fortranPreprocess=0
     if self.compilers.fortranPreprocess:
       g.write('ORDERINGSF = -Dpord\n')
@@ -66,7 +65,7 @@ class Configure(PETSc.package.Package):
     elif self.compilers.fortranMangling == 'capitalize':
       g.write('CDEFS   = -DUPPPER\n')
 
-    g.write('AR      = ar vr\n')
+    g.write('AR      = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n') 
     g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+' '+self.libraries.toString(self.blacs.lib)+'\n')
     g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')
@@ -79,39 +78,21 @@ class Configure(PETSc.package.Package):
     g.write('LIB = $(LIBPAR)\n')
     g.write('LIBSEQNEEDED =\n')
     g.close()
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(installDir,'Makefile.inc')) or not (self.getChecksum(os.path.join(installDir,'Makefile.inc')) == self.getChecksum(os.path.join(mumpsDir,'Makefile.inc'))):
-      self.framework.log.write('Have to rebuild MUMPS, Makefile.inc != '+installDir+'/Makefile.inc\n')
+    if self.installNeeded('Makefile.inc'):
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+mumpsDir+';make clean', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling Mumps; this may take several minutes')
-        output = config.base.Configure.executeShellCommand('cd '+mumpsDir+'; make all',timeout=2500, log = self.framework.log)[0]
-        libDir     = os.path.join(installDir, self.libdir)
-        includeDir = os.path.join(installDir, self.includedir)
-        if not os.path.isdir(libDir):
-          os.mkdir(libDir)
-        if not os.path.isdir(includeDir):
-          os.mkdir(includeDir)        
-        output = config.base.Configure.executeShellCommand('cd '+mumpsDir+'; mv lib/*.* '+libDir+'/.; cp include/*.* '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
+        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make all',timeout=2500, log = self.framework.log)[0]
+        libDir     = os.path.join(self.installDir, self.libdir)
+        includeDir = os.path.join(self.installDir, self.includedir)
+        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; mv lib/*.* '+libDir+'/.; cp include/*.* '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))
-    else:
-      self.framework.log.write('Do not need to compile downloaded MUMPS\n')
-    if not os.path.isfile(os.path.join(installDir,self.libdir,'libdmumps.a')):
-      self.framework.log.write('Error running make on MUMPS   ******(libraries not installed)*******\n')
-      self.framework.log.write('********Output of running make on MUMPS follows *******\n')        
-      self.framework.log.write(output)
-      self.framework.log.write('********End of Output of running make on MUMPS *******\n')
-      raise RuntimeError('Error running make on MUMPS, libraries not installed')
-    
-    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(mumpsDir,'Makefile.inc')+' '+installDir, timeout=5, log = self.framework.log)[0]
-
-    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed MUMPS into '+installDir)
-    return self.getDir()
+      self.checkInstall(output,'Makefile.inc')
+    return self.installDir
 
 if __name__ == '__main__':
   import config.framework

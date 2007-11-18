@@ -6,7 +6,7 @@
   keeps the entire ordering on each processor.
 */
 
-#include "src/dm/ao/aoimpl.h"
+#include "src/dm/ao/aoimpl.h"          /*I  "petscao.h" I*/
 #include "petscsys.h"
 
 typedef struct {
@@ -41,7 +41,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(ao->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)ao)->comm, &rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   if (!viewer) {
@@ -201,7 +201,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasApplicationIndex(AO ao, PetscInt id
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOMappingHasPetscIndex"
-/*@C
+/*@
   AOMappingHasPetscIndex - Searches for the supplied petsc index.
 
   Input Parameters:
@@ -257,7 +257,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasPetscIndex(AO ao, PetscInt idex, Pe
 + comm    - MPI communicator that is to share AO
 . napp    - size of integer arrays
 . myapp   - integer array that defines an ordering
-- mypetsc - integer array that defines another ordering
+- mypetsc - integer array that defines another ordering (may be PETSC_NULL to indicate the identity ordering)
 
   Output Parameter:
 . aoout   - the new application mapping
@@ -291,8 +291,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
 #endif
 
   ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_MAPPING, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
-  ierr = PetscNew(AO_Mapping, &aomap);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Mapping));CHKERRQ(ierr);
+  ierr = PetscNewLog(ao, AO_Mapping, &aomap);CHKERRQ(ierr);
   ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void*) aomap;
 
@@ -395,7 +394,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
   Input Parameters:
 + comm    - MPI communicator that is to share AO
 . isapp   - index set that defines an ordering
-- ispetsc - index set that defines another ordering
+- ispetsc - index set that defines another ordering, maybe PETSC_NULL for identity IS
 
   Output Parameter:
 . aoout   - the new application ordering

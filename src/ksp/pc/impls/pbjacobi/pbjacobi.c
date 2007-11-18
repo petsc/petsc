@@ -139,7 +139,7 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   if (!seqbaij && !mpibaij && !baij) {
     SETERRQ(PETSC_ERR_SUP,"Currently only supports BAIJ matrices");
   }
-  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (mpibaij || (baij && (size > 1))) A = ((Mat_MPIBAIJ*)A->data)->A;
   if (A->rmap.n != A->cmap.n) SETERRQ(PETSC_ERR_SUP,"Supported only for square matrices and square storage");
 
@@ -210,14 +210,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_PBJacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNew(PC_PBJacobi,&jac);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,PC_PBJacobi,&jac);CHKERRQ(ierr);
   pc->data  = (void*)jac;
-
-  /*
-     Logs the memory usage; this is not needed but allows PETSc to 
-     monitor how much memory is being used for various purposes.
-  */
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_PBJacobi));CHKERRQ(ierr);
 
   /*
      Initialize the pointers to vectors to ZERO; these will be used to store

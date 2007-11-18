@@ -1,7 +1,7 @@
 #
 # This is the makefile for compiling PETSc. See 
 # http://www.mcs.anl.gov/petsc/petsc-as/documentation/installation.html for directions on installing PETSc.
-# See also bmake/common for additional commands.
+# See also conf for additional commands.
 #
 ALL: all
 LOCDIR	 = ./
@@ -9,8 +9,8 @@ DIRS	 = src include
 CFLAGS	 = 
 FFLAGS	 = 
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 #
 # Basic targets to build PETSc libraries.
@@ -23,10 +23,10 @@ all:
       echo "********************************************************************"; \
       exit 1; fi
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
-	-@${OMAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}
-	-@egrep -i "( error | error:)" make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = "0" ]; then \
+	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/make_log
+	-@egrep -i "( error | error:)" ${PETSC_ARCH}/make_log > /dev/null; if [ "$$?" = "0" ]; then \
            echo "********************************************************************"; \
-           echo "  Error during compile, check make_log_${PETSC_ARCH}"; \
+           echo "  Error during compile, check ${PETSC_ARCH}/make_log"; \
            echo "  Send it and configure.log to petsc-maint@mcs.anl.gov";\
            echo "********************************************************************"; \
            exit 1; fi
@@ -61,7 +61,7 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using configure Options: ${CONFIGURE_OPTIONS}"
 	-@echo "Using configuration flags:"
-	-@grep "\#define " ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h
+	-@grep "\#define " ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "------------------------------------------"
@@ -79,16 +79,20 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "------------------------------------------"
-	-@echo "Using mpirun: ${MPIRUN}"
+	-@echo "Using mpiexec: ${MPIEXEC}"
 	-@echo "=========================================="
 #
 #
-MINFO = ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscmachineinfo.h
+MINFO = ${PETSC_DIR}/${PETSC_ARCH}/include/petscmachineinfo.h
 info_h:
 	-@$(RM) -f ${MINFO} MINFO
 	-@echo  "static const char *petscmachineinfo = \"\__n__\"" >> MINFO
 	-@echo  "\"-----------------------------------------\__n__\"" >> MINFO
-	-@echo  "\"Libraries compiled on `date` on `hostname` \__n__\"" >> MINFO
+	-@if [ -f /usr/bin/cygcheck.exe ]; then \
+	  echo  "\"Libraries compiled on `date` on `hostname|/usr/bin/dos2unix` \__n__\"" >> MINFO; \
+          else \
+	  echo  "\"Libraries compiled on `date` on `hostname` \__n__\"" >> MINFO; \
+          fi
 	-@echo  "\"Machine characteristics: `uname -a` \__n__\"" >> MINFO
 	-@echo  "\"Using PETSc directory: ${PETSC_DIR}\__n__\"" >> MINFO
 	-@echo  "\"Using PETSc arch: ${PETSC_ARCH}\__n__\"" >> MINFO
@@ -136,7 +140,7 @@ python:
 #
 test: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
-	-@${OMAKE} test_build 2>&1 | tee test_log_${PETSC_ARCH}
+	-@${OMAKE} test_build 2>&1 | tee ${PETSC_ARCH}/test_log
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
@@ -193,7 +197,7 @@ ranlib:
 
 # Deletes PETSc libraries
 deletelibs: 
-	-${RM} -f ${PETSC_LIB_DIR}/lib*.*
+	-${RM} -f ${PETSC_LIB_DIR}/libpetsc*.*
 
 # Cleans up build
 allclean: deletelibs
@@ -222,24 +226,24 @@ install:
           if [ ! -d ${INSTALL_DIR} ]; then \
 	    ${MKDIR} ${INSTALL_DIR} ; \
           fi;\
-          cp -fr include ${INSTALL_DIR};\
-          if [ ! -d ${INSTALL_DIR}/bmake ]; then \
-	    ${MKDIR} ${INSTALL_DIR}/bmake ; \
+          ${CP} -fr include ${INSTALL_DIR};\
+          ${CP}  ${PETSC_ARCH}/include/* ${INSTALL_DIR}/include;\
+          if [ ! -d ${INSTALL_DIR}/conf ]; then \
+	    ${MKDIR} ${INSTALL_DIR}/conf ; \
           fi;\
-          cp -f bmake/adic* bmake/petscconf ${INSTALL_DIR}/bmake ; \
-          cp -fr bmake/common ${INSTALL_DIR}/bmake;\
-          cp -fr bmake/${PETSC_ARCH} ${INSTALL_DIR}/bmake;\
-          cp -fr bin ${INSTALL_DIR};\
-          if [ ! -d ${INSTALL_DIR}/lib ]; then \
-	    ${MKDIR} ${INSTALL_DIR}/lib ; \
-          fi;\
-          if [ -d lib/${PETSC_ARCH} ]; then \
-            cp -fr lib/${PETSC_ARCH} ${INSTALL_DIR}/lib;\
-            ${RANLIB} ${INSTALL_DIR}/lib/${PETSC_ARCH}/*.a ;\
-            ${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${INSTALL_DIR} shared; \
-          fi;\
+          ${CP} -fr conf ${INSTALL_DIR} ; \
+          ${RM} -fr ${INSTALL_DIR}/conf/docsonly ;\
+          sed -i "" 's?$${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
+          sed -i "" s?TMP_INSTALL_DIR?${INSTALL_DIR}?g ${INSTALL_DIR}/conf/* ;\
+          sed -i "" 's?/$${PETSC_ARCH}??g' ${INSTALL_DIR}/conf/* ;\
+          ${CP} -fr ${PETSC_ARCH}/conf/* ${INSTALL_DIR}/conf;\
+          ${CP} -fr ${PETSC_ARCH}/lib ${INSTALL_DIR} ;\
+          ${RANLIB} ${INSTALL_DIR}/lib/*.a ;\
+          ${OMAKE} PETSC_ARCH="" PETSC_DIR=${INSTALL_DIR} shared; \
           echo "sh/bash: PETSC_DIR="${INSTALL_DIR}"; export PETSC_DIR";\
-          echo "csh/tcsh: setenv PETSC_DIR "${INSTALL_DIR} ;\
+          echo "sh/bash: unset PETSC_ARCH" ;\
+          echo "csh/tcsh: setenv PETSC_DIR " ${INSTALL_DIR} ;\
+          echo "csh/tcsh: unsetenv PETSC_ARCH"; \
           echo "Then do make test to verify correct install";\
         fi;
 
@@ -254,7 +258,7 @@ install_src:
           if [ ! -d ${INSTALL_DIR} ]; then \
 	    ${MKDIR} ${INSTALL_DIR} ; \
           fi;\
-          cp -fr src ${INSTALL_DIR};\
+          ${CP} -fr src ${INSTALL_DIR};\
         fi;
 
 install_docs:
@@ -268,7 +272,7 @@ install_docs:
           if [ ! -d ${INSTALL_DIR} ]; then \
 	    ${MKDIR} ${INSTALL_DIR} ; \
           fi;\
-          cp -fr docs ${INSTALL_DIR};\
+          ${CP} -fr docs ${INSTALL_DIR};\
           ${RM} -fr docs/tex;\
         fi;
 # ------------------------------------------------------------------
@@ -297,8 +301,7 @@ deletefortranstubs:
 # These are here for the target allci and allco, and etags
 #
 
-BMAKEFILES = bmake/common/base bmake/common/test bmake/adic.init bmake/adicmf.init
-DOCS	   = bmake/readme
+BMAKEFILES = conf/base conf/test bmake/adic.init bmake/adicmf.init
 SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint/buildconfigtest maint/builddistlite \
              maint/buildtest maint/checkBuilds.py maint/copylognightly maint/copylognightly.tao maint/countfiles maint/findbadfiles \
              maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris  \
@@ -426,7 +429,7 @@ alladiclib:
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
 	-@echo "Using configuration flags:"
-	-@grep "define " bmake/${INLUDE_ARCH}/petscconf.h
+	-@grep "define " ${PETSC_ARCH}/include/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "-----------------------------------------"
@@ -490,7 +493,7 @@ checkbadfortranstubs:
 # The list of exercises is from TUTORIALS in each directory's makefile
 #
 # DO NOT EDIT the pageform.txt or *.htm files generated since they will be automatically replaced.
-# The pagemaker rule is in the file bmake/common (at the bottom)
+# The pagemaker rule is in the file conf (at the bottom)
 #
 # Eventually the line below will replace the two cd in the rule below, it is just this way now for speed
 #	-@${OMAKE} PETSC_DIR=${PETSC_DIR} pagemaker

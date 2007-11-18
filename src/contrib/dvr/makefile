@@ -11,7 +11,7 @@ EXAMPLESC	 =
 EXAMPLESF	 = dvr.F mxm44f2g.F basic.F
 DVR_OBJSF        = dvr.o mxm44f2g.o basic.o
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 
 dvr: $(DVR_OBJSF) chkopts
@@ -21,4 +21,4 @@ dvr: $(DVR_OBJSF) chkopts
 
 TESTEXAMPLES_FORTRAN	 = dvr.F
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

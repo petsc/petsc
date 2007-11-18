@@ -74,12 +74,12 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInf
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */  
-  ierr = MatCreate(A->comm,&B);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);
   ierr = MatSetSizes(B,m,n,m,n);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJSpooles;
+  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;
   B->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
   B->factor                      = FACTOR_CHOLESKY;  
 
@@ -103,16 +103,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,MatT
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
+  ierr = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
-
-  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
-  B->spptr                       = (void*)lu;
-
-  lu->basetype                   = MATSEQSBAIJ;
-  lu->CleanUpSpooles             = PETSC_FALSE;
   lu->MatDuplicate               = A->ops->duplicate;
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
@@ -120,8 +115,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,MatT
   lu->MatAssemblyEnd             = A->ops->assemblyend;
   lu->MatDestroy                 = A->ops->destroy;
 
+  B->spptr                       = (void*)lu;
+  lu->basetype                   = MATSEQSBAIJ;
+  lu->CleanUpSpooles             = PETSC_FALSE;
+
   B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJSpooles;
+  B->ops->view                   = MatView_Spooles;
   B->ops->assemblyend            = MatAssemblyEnd_SeqSBAIJSpooles;
   B->ops->destroy                = MatDestroy_SeqSBAIJSpooles;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaijspooles_seqsbaij_C",
@@ -141,11 +141,13 @@ EXTERN_C_END
   If Spooles is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes Spooles solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQSBAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQSBAIJSPOOLES), then 
+  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
+  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATSEQSBAIJ.  As a result, MatSeqSBAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSEQSBAIJ type without data copy.
+  This matrix inherits from MATSEQSBAIJ.  As a result, MatSeqSBAIJSetPreallocation() is 
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATSEQSBAIJ type without data copy, after the matrix values have been set.
 
   Options Database Keys:
 + -mat_type seqsbaijspooles - sets the matrix type to seqsbaijspooles during calls to MatSetFromOptions()
@@ -189,11 +191,13 @@ EXTERN_C_END
   If Spooles is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes Spooles solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJSPOOLES), then 
+  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
+  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATSBAIJ.  As a result, MatSeqSBAIJSetPreallocation and MatMPISBAIJSetPreallocation are 
+  This matrix inherits from MATSBAIJ.  As a result, MatSeqSBAIJSetPreallocation() and MatMPISBAIJSetPreallocation() are 
   supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSBAIJ type without data copy.
+  the MATSBAIJ type without data copy after the matrix values have been set.
 
   Options Database Keys:
 + -mat_type sbaijspooles - sets the matrix type to sbaijspooles during calls to MatSetFromOptions()
@@ -226,7 +230,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJSpooles(Mat A)
   int size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);

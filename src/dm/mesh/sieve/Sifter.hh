@@ -206,12 +206,13 @@ namespace ALE {
       set_type set;
       //
       void removePoint(const typename traits::rec_type::point_type& p) {
-        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
+        /*typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
           ::boost::multi_index::get<typename traits::pointTag>(this->set);
         typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type::iterator i = index.find(p);
         if (i != index.end()) { // Point exists
-          index.erase(i);
-        }
+          i = index.erase(i);
+        }*/
+        this->erase(p);
       };
       //
       void adjustDegree(const typename traits::rec_type::point_type& p, int delta) {
@@ -640,7 +641,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 
   public:
     // Debug level
-    int debug;
+    int _debug;
     //protected:
     typename traits::arrow_container_type _arrows;
     typename traits::base_container_type  _base;
@@ -662,7 +663,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
       ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+#ifdef USE_PETSC_OBJ
       ierr = PetscObjectCreateGeneric(this->_comm, sifterType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
+#endif
       //ALE::restoreClassName<T>(id_name);
     };
     // We store these sequence objects to avoid creating them each query
@@ -672,26 +675,31 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     // 
     // Basic interface
     //
-    ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : _petscObj(NULL) {
+    ASifter(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : _debug(debug), _petscObj(NULL) {
       __init(comm);
-      this->debug = debug;
       this->_coneSeq    = new typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), typename traits::target_type()); 
       this->_supportSeq = new typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), typename traits::source_type());
    }
     virtual ~ASifter() {
+#ifdef USE_PETSC_OBJ
       if (this->_petscObj) {
         PetscErrorCode ierr;
         ierr = PetscObjectDestroy(this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectDestroy");
         this->_petscObj = NULL;
       }
+#endif
     };
     //
     // Query methods
     //
+    int         debug()    const {return this->_debug;};
+    void        setDebug(const int debug) {this->_debug = debug;};
     MPI_Comm    comm()     const {return this->_comm;};
     int         commSize() const {return this->_commSize;};
     int         commRank() const {return this->_commRank;}
+#ifdef USE_PETSC_OBJ
     PetscObject petscObj() const {return this->_petscObj;};
+#endif
 
     // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
     Obj<typename traits::capSequence> cap() {
@@ -916,21 +924,14 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       PetscErrorCode ierr;
       ostringstream txt;
       PetscFunctionBegin;
-      if(debug) {
+      if(this->_debug) {
         std::cout << "viewing a Sifter, comm = " << this->comm() << ", PETSC_COMM_SELF = " << PETSC_COMM_SELF << ", commRank = " << this->commRank() << std::endl;
       }
       if(label != NULL) {
-        if(this->commRank() == 0) {
-          txt << "viewing Sifter :'" << label << "'" << std::endl;
-        }
-      } 
-      else {
-        if(this->commRank() == 0) {
-          txt << "viewing a Sifter" << std::endl;
-        }
+        PetscPrintf(this->comm(), "viewing Sifter: '%s'\n", label);
+      } else {
+        PetscPrintf(this->comm(), "viewing a Sifter: \n");
       }
-      ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-      ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       if(!raw) {
         ostringstream txt;
         if(this->commRank() == 0) {
@@ -1052,7 +1053,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->_base.set.insert(b);
     };
     void removeBasePoint(const typename traits::target_type t) {
-      if (debug) {std::cout << " Removing " << t << " from the base" << std::endl;}
+      if (this->_debug) {std::cout << " Removing " << t << " from the base" << std::endl;}
       // Clear the cone and remove the point from _base
       this->clearCone(t);
       this->_base.removePoint(t);
@@ -1066,7 +1067,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->_cap.set.insert(c);
     };
     void removeCapPoint(const typename traits::source_type s) {
-      if (debug) {std::cout << " Removing " << s << " from the cap" << std::endl;}
+      if (this->_debug) {std::cout << " Removing " << s << " from the cap" << std::endl;}
       // Clear the support and remove the point from _cap
       this->clearSupport(s);
       this->_cap.removePoint(s);
@@ -1096,17 +1097,17 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       typename traits::arrowSequence::traits::index_type::iterator i,ii,j;
       i = arrowIndex.lower_bound(::boost::make_tuple(a.source,a.target));
       ii = arrowIndex.upper_bound(::boost::make_tuple(a.source, a.target));
-      if(debug) { // if(debug)
+      if (this->_debug) {
         std::cout << "removeArrow: attempting to remove arrow:" << a << std::endl;
         std::cout << "removeArrow: candidate arrows are:" << std::endl;
       }
       for(j = i; j != ii; j++) {
-        if(debug) { // if(debug)
+        if (this->_debug) {
           std::cout << " " << *j;
         }
         // Find the arrow of right color and remove it
         if(j->color == a.color) {
-          if(debug) { // if(debug)
+          if (this->_debug) {
             std::cout << std::endl << "removeArrow: found:" << *j << std::endl;
           }
           /* this->_base.adjustDegree(a.target, -1); this->_cap.adjustDegree(a.source,-1); */
@@ -1129,9 +1130,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     template<class sourceInputSequence> 
     void 
     addCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target, const typename traits::color_type& color){
-      if (debug > 1) {std::cout << "Adding a cone " << std::endl;}
+      if (this->_debug > 1) {std::cout << "Adding a cone " << std::endl;}
       for(typename sourceInputSequence::iterator iter = sources->begin(); iter != sources->end(); ++iter) {
-        if (debug > 1) {std::cout << "Adding arrow from " << *iter << " to " << target << "(" << color << ")" << std::endl;}
+        if (this->_debug > 1) {std::cout << "Adding arrow from " << *iter << " to " << target << "(" << color << ")" << std::endl;}
         this->addArrow(*iter, target, color);
       }
     };
@@ -1144,7 +1145,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       typename traits::coneSequence::traits::index_type& coneIndex = 
         ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set);
       typename traits::coneSequence::traits::index_type::iterator i, ii, j;
-      if (debug > 20) {
+      if (this->_debug > 20) {
         std::cout << "clearCone: removing cone over " << t;
         if(useColor) {
           std::cout << " with color" << color << std::endl;
@@ -1174,7 +1175,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       }
       for(j = i; j != ii; j++){          
         // Adjust the degrees before removing the arrow; use a different iterator, since we'll need i,ii to do the arrow erasing.
-        if(debug) {
+        if (this->_debug) {
           std::cout << "clearCone: adjusting degrees for endpoints of arrow: " << *j << std::endl;
         }
         /* this->_cap.adjustDegree(j->source, -1);
@@ -1309,6 +1310,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       typedef Sifter<OtherSource_, OtherTarget_, OtherColor_, OtherSupportCompare_, OtherSourceCtnr_, OtherTargetCtnr_> type;
     };
     // Re-export some typedefs expected by CoSifter
+    typedef typename traits::source_type                                            source_type;
+    typedef typename traits::target_type                                            target_type;
     typedef typename traits::arrow_type                                             Arrow_;
     typedef typename traits::coneSequence                                           coneSequence;
     typedef typename traits::supportSequence                                        supportSequence;

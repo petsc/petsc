@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c
 EXAMPLESF       =
 MANSEC          = PC
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_KSP_LIB} 
@@ -21,5 +21,5 @@ ex2: ex2.o  chkopts
 TESTEXAMPLES_C	   = ex1.PETSc ex1.rm
 TESTEXAMPLES_C_X11 = ex2.PETSc ex2.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test
 

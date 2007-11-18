@@ -66,7 +66,7 @@
 */
 
 /*MC
-     PCPrometheus - Prometheus (i.e. diagonal scaling preconditioning)
+     PCPROMETHEUS - Prometheus (i.e. diagonal scaling preconditioning)
 
    Options Database Key:
 .    -pc_prometheus_rowmax - use the maximum absolute value in each row as the scaling factor,
@@ -153,7 +153,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC pc,PetscInt dim,PetscReal 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(pc,PCSetCoordinates_C,(PC,PetscInt,PetscReal*),(pc,dim,coords));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscReal*),(pc,dim,coords));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -181,6 +181,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSASetVectors(PC pc,PetscInt nvects,PetscReal
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(pc,PCSASetVectors_C,(PC,PetscInt,PetscReal*),(pc,nvects,vects));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCSASetVectors_C",(PC,PetscInt,PetscReal*),(pc,nvects,vects));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

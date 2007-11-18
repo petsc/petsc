@@ -55,11 +55,8 @@
      
       Mat A
       Vec x,y
-      PetscInt m
       PetscErrorCode ierr
  
-      m = 10
-
       call VecCopy(x,y,ierr)
 
       return 

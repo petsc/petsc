@@ -108,7 +108,7 @@ int main(int argc,char **args)
      Set user-defined monitoring routine for first linear system.
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = KSPSetMonitor(ksp1,MyKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);}
+  if (flg) {ierr = KSPMonitorSet(ksp1,MyKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);}
 
   /*
      Create data structures for second linear system.
@@ -198,7 +198,7 @@ int main(int argc,char **args)
       v = -1.0*(t+0.5); i = Ii/n;
       if (i>0)   {J = Ii - n; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     }
-    ierr = PetscLogFlops(2*(Istart-Iend));CHKERRQ(ierr);
+    ierr = PetscLogFlops(2*(Iend-Istart));CHKERRQ(ierr);
 
     /* 
        Assemble matrix, using the 2-step process:
@@ -212,7 +212,7 @@ int main(int argc,char **args)
     /* 
        Indicate same nonzero structure of successive linear system matrices
     */
-    ierr = MatSetOption(C1,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRQ(ierr);
+    ierr = MatSetOption(C1,MAT_NEW_NONZERO_LOCATIONS,PETSC_TRUE);CHKERRQ(ierr);
 
     /* 
        Compute right-hand-side vector
@@ -310,12 +310,12 @@ int main(int argc,char **args)
     }
     ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
-    ierr = PetscLogFlops(2*(Istart-Iend));CHKERRQ(ierr);
+    ierr = PetscLogFlops(2*(Iend-Istart));CHKERRQ(ierr);
 
     /* 
        Indicate same nonzero structure of successive linear system matrices
     */
-    ierr = MatSetOption(C2,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRQ(ierr);
+    ierr = MatSetOption(C2,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
 
     /*
        Compute right-hand-side vector 

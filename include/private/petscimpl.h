@@ -43,11 +43,9 @@ typedef struct {
    PetscErrorCode (*publish)(PetscObject);
 } PetscOps;
 
-#define PETSCHEADER(ObjectOps)                                  \
+#define PETSCHEADERBASE						\
   PetscCookie    cookie;                                        \
   PetscOps       *bops;                                         \
-  ObjectOps      *ops;                                          \
-  PetscDataType  precision;                                     \
   MPI_Comm       comm;                                          \
   PetscInt       type;                                          \
   PetscLogDouble flops,time,mem;                                \
@@ -78,15 +76,26 @@ typedef struct {
 
   /*  ... */                               
 
-#define  PETSCFREEDHEADER -1
+/*
+   All PETSc objects begin with the fields defined in PETSCHEADER.
+   The PetscObject is a way of examining these fields regardless of 
+   the specific object. In C++ this could be a base abstract class
+   from which all objects are derived.
+*/
+typedef struct _p_PetscObject {
+  PETSCHEADERBASE;
+} _p_PetscObject;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject,PetscCookie,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject);
+#define PETSCHEADER(ObjectOps) \
+  _p_PetscObject hdr;	       \
+  ObjectOps      *ops
+
+#define  PETSCFREEDHEADER -1
 
 typedef PetscErrorCode (*PetscObjectFunction)(PetscObject); /* force cast in next macro to NEVER use extern "C" style */
 typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
 
-/*
+/*@C
     PetscHeaderCreate - Creates a PETSc object
 
     Input Parameters:
@@ -101,18 +110,39 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 
     Output Parameter:
 .   h - the newly created object
-*/ 
-#define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie) \
-  (PetscNew(struct tp,&(h)) || \
-   PetscNew(PetscOps,&((h)->bops)) || \
-   PetscNew(pops,&((h)->ops)) || \
-   PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
-   PetscLogObjectCreate(h))
 
-#define PetscHeaderDestroy(h) \
-  (PetscLogObjectDestroy((PetscObject)(h)) || \
+    Level: developer
+
+.seealso: PetscHeaderDestroy(), PetscLogClassRegister()
+
+@*/ 
+#define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)	\
+  (PetscNew(struct tp,&(h)) ||						\
+   PetscNew(PetscOps,&(((PetscObject)(h))->bops)) ||			\
+   PetscNew(pops,&((h)->ops)) ||					\
+   PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
+   PetscLogObjectCreate(h) ||						\
+   PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
+
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject,PetscCookie,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
+
+/*@C
+    PetscHeaderDestroy - Final step in destroying a PetscObject
+
+    Input Parameters:
+.   h - the header created with PetscHeaderCreate()
+
+    Level: developer
+
+.seealso: PetscHeaderCreate()
+@*/ 
+#define PetscHeaderDestroy(h)			   \
+  (PetscLogObjectDestroy((PetscObject)(h)) ||	   \
+   PetscFree((h)->ops) ||			   \
    PetscHeaderDestroy_Private((PetscObject)(h)) || \
    PetscFree(h))
+
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject);
 
 /* ---------------------------------------------------------------------------------------*/
 
@@ -125,7 +155,7 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 #define PetscValidIntPointer(h,arg)
 #define PetscValidScalarPointer(h,arg)
 
-#elif !defined(PETSC_HAVE_CRAY90_POINTER)
+#elif !defined(PETSC_HAVE_UNALIGNED_POINTERS)
 /* 
     Macros to test if a PETSc object is valid and if pointers are
 valid
@@ -247,12 +277,12 @@ valid
   both vectors must be either Seq or MPI, not one of each 
 */
 #define PetscCheckSameType(a,arga,b,argb) \
-  if ((a)->type != (b)->type) SETERRQ2(PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb);
+  if (((PetscObject)a)->type != ((PetscObject)b)->type) SETERRQ2(PETSC_ERR_ARG_NOTSAMETYPE,"Objects not of same type: Argument # %d and %d",arga,argb);
 /* 
    Use this macro to check if the type is set
 */
 #define PetscValidType(a,arg) \
-  if (!(a)->type_name) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Object Type not set: Argument # %d",arg);
+  if (!((PetscObject)a)->type_name) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Object Type not set: Argument # %d",arg);
 /*
    Sometimes object must live on same communicator to inter-operate
 */
@@ -267,16 +297,6 @@ valid
   PetscCheckSameComm(a,arga,b,argb);}
 
 #endif
-
-/*
-   All PETSc objects begin with the fields defined in PETSCHEADER.
-   The PetscObject is a way of examining these fields regardless of 
-   the specific object. In C++ this could be a base abstract class
-   from which all objects are derived.
-*/
-struct _p_PetscObject {
-  PETSCHEADER(int);
-};
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseBegin(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseEnd(PetscObject);
@@ -307,7 +327,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseEnd(PetscObject);
 
    Level: developer
 
-   seealso: PetscObjectStateQuery, PetscObjectStateDecrease
+   seealso: PetscObjectStateQuery(), PetscObjectStateDecrease()
 
    Concepts: state
 
@@ -335,7 +355,7 @@ M*/
 
    Level: developer
 
-   seealso: PetscObjectStateQuery, PetscObjectStateIncrease
+   seealso: PetscObjectStateQuery(), PetscObjectStateIncrease()
 
    Concepts: state
 

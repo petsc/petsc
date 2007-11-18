@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
 #include "private/vecimpl.h"  
   
 #undef __FUNCT__  
@@ -15,7 +15,7 @@ PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *
   PetscScalar    *array,zero = 0.0,one = 1.0;
 
   PetscFunctionBegin;
-  comm = oldmat->comm;
+  comm = ((PetscObject)oldmat)->comm;
 
   ierr = MatGetOwnershipRange(oldmat,&start,&end);CHKERRQ(ierr);
   ierr = VecCreateMPI(comm,end-start,PETSC_DECIDE,&in);CHKERRQ(ierr);

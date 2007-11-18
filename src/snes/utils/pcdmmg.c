@@ -118,7 +118,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_DMMG(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr          = PetscNew(PC_DMMG,&pcdmmg);CHKERRQ(ierr);
+  ierr          = PetscNewLog(pc,PC_DMMG,&pcdmmg);CHKERRQ(ierr);
   pc->data      = (void*)pcdmmg;
   pcdmmg->dmmg  = 0;
 
@@ -146,6 +146,8 @@ EXTERN_C_END
    Input Parameters:
 +  pc - the preconditioner context
 -  dmmg - the DMMG object
+
+   Level: Intermediate
 
    Concepts: DMMG preconditioner
 

@@ -1,0 +1,33 @@
+Minimum eigenvalue of H^{dag} H is 0.062500
+Initialization stage
+Residual norm of starting guess: 44.642776
+Residual norm of relaxation after 0.0001 20 relaxations: 0.00297064 44.6428
+Initialization stage: creating level 2
+Level 2 can be treated directly.
+Algorithm will use 2 levels.
+After 1 iterations residual norm is 0.030667
+After 1 iterations Rayleigh quotient of residual is 0.040934
+After 2 iterations residual norm is 0.009152
+After 2 iterations Rayleigh quotient of residual is 0.040829
+General setup stage
+Adding candidate vector 2
+After 3 iterations residual norm is 0.028187
+After 3 iterations Rayleigh quotient of residual is 0.040749
+After 4 iterations residual norm is 0.013675
+After 4 iterations Rayleigh quotient of residual is 0.040688
+General setup stage
+Adding candidate vector 3
+After 5 iterations residual norm is 0.027250
+After 5 iterations Rayleigh quotient of residual is 0.040759
+After 6 iterations residual norm is 0.012604
+After 6 iterations Rayleigh quotient of residual is 0.040574
+General setup stage
+Adding candidate vector 4
+  0 KSP Residual norm 2.03538 
+  1 KSP Residual norm 0.376591 
+  2 KSP Residual norm 0.102033 
+  3 KSP Residual norm 0.0138867 
+  4 KSP Residual norm 0.00220604 
+  5 KSP Residual norm 0.000364285 
+  6 KSP Residual norm 8.68187e-05 
+  7 KSP Residual norm 1.32176e-05 

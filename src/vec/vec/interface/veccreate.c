@@ -26,7 +26,7 @@
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm comm, Vec *vec)
 {
-  Vec v;
+  Vec            v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -37,16 +37,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm comm, Vec *vec)
 #endif
 
   ierr = PetscHeaderCreate(v, _p_Vec, struct _VecOps, VEC_COOKIE, -1, "Vec", comm, VecDestroy, VecView);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(v, sizeof(struct _p_Vec));CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _VecOps));CHKERRQ(ierr);
-  v->bops->publish  = PETSC_NULL /* VecPublish_Petsc */;
-  v->type_name      = PETSC_NULL;
 
-  v->map.range    = PETSC_NULL;
-  v->data         = PETSC_NULL;
-  v->map.n        = -1;
-  v->map.N        = -1;
-  v->map.bs       = -1;
+  ierr            = PetscMapInitialize(comm,&v->map);CHKERRQ(ierr);
   v->mapping      = PETSC_NULL;
   v->bmapping     = PETSC_NULL;
   v->array_gotten = PETSC_FALSE;

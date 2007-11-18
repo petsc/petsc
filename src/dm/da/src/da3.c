@@ -15,7 +15,7 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
   PetscTruth     iascii,isdraw;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
@@ -141,7 +141,9 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if 0
 EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate3d"
@@ -176,6 +178,9 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
 .  -da_grid_x <nx> - number of grid points in x direction, if M < 0
 .  -da_grid_y <ny> - number of grid points in y direction, if N < 0
 .  -da_grid_z <nz> - number of grid points in z direction, if P < 0
+.  -da_processors_x <MX> number of processors in x direction
+.  -da_processors_y <MY> number of processors in y direction
+.  -da_processors_z <MZ> number of processors in z direction
 .  -da_refine_x - refinement ratio in x direction
 .  -da_refine_y - refinement ratio in y direction
 -  -da_refine_y - refinement ratio in z direction
@@ -195,7 +200,7 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d(), DAGlobalToLocalBegin(), DAGetRefinementFactor(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRange()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
@@ -250,14 +255,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   M = tM; N = tN; P = tP;
 
   ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
-  da->bops->publish           = DAPublish_Petsc;
+  da->ops->globaltolocalbegin = DAGlobalToLocalBegin;
+  da->ops->globaltolocalend   = DAGlobalToLocalEnd;
+  da->ops->localtoglobal      = DALocalToGlobal;
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->getinterpolation   = DAGetInterpolation;
   da->ops->getcoloring        = DAGetColoring;
   da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
+  da->ops->coarsen            = DACoarsen;
+  da->ops->getaggregates      = DAGetAggregates;
 
-  ierr = PetscLogObjectMemory(da,sizeof(struct _p_DA));CHKERRQ(ierr);
   da->dim        = 3;
   da->interptype = DA_Q1;
   da->refine_x   = refine_x;
@@ -324,7 +332,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
     if (N > P && n < p) {PetscInt _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (PetscInt)(0.5 + pow(((PetscReal)N*N)*((PetscReal)size)/((PetscReal)P*M),1./3.));
+    n = (PetscInt)(0.5 + pow(((PetscReal)N*N)*((PetscReal)size)/((PetscReal)P*M),(PetscReal)(1./3.)));
     if (!n) n = 1;
     while (n > 0) {
       pm = size/n;
@@ -1730,6 +1738,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DACreate"
 /*@C
    DACreate - Creates an object that will manage the communication of regular array data that is distributed across some processors
        in 1, 2 or 3 dimensions
@@ -1743,7 +1753,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
    
 .keywords: distributed array, create, three-dimensional
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DAGetOwnershipRange()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm,PetscInt dim,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,

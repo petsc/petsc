@@ -34,7 +34,8 @@
           <li><a href="../referencing.html"><strong>Referencing&nbsp; PETSc</strong></a></li>
           <li><a href="../tutorials/index.html"><strong>Tutorials</strong></a></li>
           <li><strong><a href="../installation.html">Installation</a> </strong></li>
-          <li><strong><a href="index.html">Changes</a></strong><ul>
+          <li><strong><a href="../zope.html">Zope</a></strong></li>
+	  <li><strong><a href="index.html">Changes</a></strong><ul>
               <li><a href="2028.html">2.0.28</a></li>
               <li><font color="#FF0000">2.0.24</font></li>
               <li><a href="2022.html">2.0.22</a></li>
@@ -245,7 +246,7 @@
       <li>Added <strong>TSSetTypeFromOptions().</strong></li>
     </ul>
     <p><font size="4"><strong><u>SNES (Nonlinear Solvers): </u></strong></font><ul>
-      <li>Added <strong>-snes_vecmonitor</strong> and <strong>SNESVecViewMonitor()</strong> to
+      <li>Added <strong>-snes_vecmonitor</strong> and <strong>SNESMonitorVec()</strong> to
         allow graphically monitoring the solution.</li>
       <li>Added <strong>SNESSetTypeFromOptions().</strong></li>
       <li>Added the routine <strong>SNESSetLineSearchCheck()</strong>, which sets a routine to
@@ -266,7 +267,7 @@
       <li>Added the KSP type of <strong>KSPBICG </strong>(contributed by Victor Eijkhout) and
         added support to some of the preconditioners to apply the preconditioner transpose
         (required by KSPBICG).</li>
-      <li>Added <strong>-ksp_vecmonitor</strong> and <strong>KSPVecViewMonitor()</strong> to allow
+      <li>Added <strong>-ksp_vecmonitor</strong> and <strong>KSPMonitorVec()</strong> to allow
         graphically monitoring the solution's convergence.</li>
       <li>Added <strong>KSPSetTypeFromOptions().</strong></li>
     </ul>
@@ -291,7 +292,7 @@
       <li>If the option <strong>MAT_IGNORE_OFF_PROC_ENTRIES</strong> is used, then the routines <strong>MatAssemblyBegin()</strong><br>
         and <strong>MatAssemblyEnd()</strong> will not cause any parallel communication or
         synchronization.</li>
-      <li>If the option <strong>MAT_NO_NEW_NONZERO_LOCATIONS</strong> is used, one less collective
+      <li>If the option <strong>MAT_NEW_NONZERO_LOCATIONS</strong> is used, one less collective
         call will be made in the <strong>MatAssemblyEnd()</strong> routines for MPIAIJ and
         MPIBAIJ.</li>
       <li>Fixed bugs in <strong>MatReorderForNonzeroDiagonal()</strong> and made it more robust. </li>

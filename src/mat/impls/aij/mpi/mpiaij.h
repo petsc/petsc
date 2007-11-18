@@ -38,30 +38,32 @@ typedef struct {
   PetscScalar   *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 
+  /* Used by MatDistribute_MPIAIJ() to allow reuse of previous matrix allocation  and nonzero pattern */
+  PetscInt      *ld;               /* number of entries per row left of diagona block */
 } Mat_MPIAIJ;
 
 typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ and MatPtAP_MPIAIJ_MPIAIJ for reusing symbolic mat product */
-  PetscInt    *startsj;
-  PetscScalar *bufa;
-  IS          isrowa,isrowb,iscolb; 
-  Mat         *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
-  Mat         A_loc,B_seq;
-  Mat         B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
-  PetscInt    brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
-  PetscInt    *abi,*abj; /* symbolic i and j arrays of the local product A_loc*B_seq */
-  PetscInt    abnz_max;  /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
-  MatReuse    reuse; 
+  PetscInt       *startsj;
+  PetscScalar    *bufa;
+  IS             isrowa,isrowb,iscolb; 
+  Mat            *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
+  Mat            A_loc,B_seq;
+  Mat            B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
+  PetscInt       brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
+  PetscInt       *abi,*abj; /* symbolic i and j arrays of the local product A_loc*B_seq */
+  PetscInt       abnz_max;  /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
+  MatReuse       reuse; 
   PetscErrorCode (*MatDestroy)(Mat);
   PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_MatMatMultMPI;
 
 typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
-  PetscMap     rowmap;
-  PetscInt     **buf_ri,**buf_rj;
-  PetscMPIInt  *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
-  PetscMPIInt  nsend,nrecv;  
-  PetscInt     *bi,*bj; /* i and j array of the local portion of mpi C=P^T*A*P */
-  PetscInt     *owners_co,*coi,*coj; /* i and j array of (p->B)^T*A*P - used in the communication */
+  PetscMap       rowmap;
+  PetscInt       **buf_ri,**buf_rj;
+  PetscMPIInt    *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
+  PetscMPIInt    nsend,nrecv;  
+  PetscInt       *bi,*bj; /* i and j array of the local portion of mpi C=P^T*A*P */
+  PetscInt       *owners_co,*coi,*coj; /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscErrorCode (*MatDestroy)(Mat);
   PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_Merge_SeqsToMPI; 
@@ -75,6 +77,8 @@ EXTERN PetscErrorCode MatDuplicate_MPIAIJ(Mat,MatDuplicateOption,Mat *);
 EXTERN PetscErrorCode MatIncreaseOverlap_MPIAIJ(Mat,PetscInt,IS [],PetscInt);
 EXTERN PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat,ISColoring,MatFDColoring);
 EXTERN PetscErrorCode MatGetSubMatrices_MPIAIJ (Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
+EXTERN PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat,MatGetSubMatrixOption,MatReuse,Mat *[]);
+
 EXTERN PetscErrorCode MatGetSubMatrix_MPIAIJ (Mat,IS,IS,PetscInt,MatReuse,Mat *);
 EXTERN PetscErrorCode MatLoad_MPIAIJ(PetscViewer, MatType,Mat*);
 EXTERN PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat,Mat,MatReuse,PetscReal,Mat*);
@@ -86,7 +90,9 @@ EXTERN PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
 EXTERN PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
-EXTERN PetscErrorCode PetscObjectContainerDestroy_Mat_MatMatMultMPI(void*);
+EXTERN PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void*);
+EXTERN PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
+EXTERN PetscErrorCode MatGetSeqNonzeroStructure_MPIAIJ(Mat,Mat*);
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);

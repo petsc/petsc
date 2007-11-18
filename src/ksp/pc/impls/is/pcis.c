@@ -37,10 +37,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
     ierr = MatGetVecs(pc->pmat,&counter,0);CHKERRQ(ierr); /* temporary auxiliar vector */
     ierr = VecSet(counter,0.0);CHKERRQ(ierr);
     ierr = VecSet(pcis->vec1_N,1.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE,matis->ctx);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE,matis->ctx);CHKERRQ(ierr);
-    ierr = VecScatterBegin(counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD,matis->ctx);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD,matis->ctx);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecDestroy(counter);CHKERRQ(ierr);
   }
   /*
@@ -113,8 +113,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
 
   /* Creating scaling "matrix" D, from information in vec1_N */
   ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecReciprocal(pcis->D);CHKERRQ(ierr);    
 
   /* See historical note 01, at the bottom of this file. */
@@ -151,21 +151,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
       PetscReal  fixed_factor,
                  floating_factor;
 
-      ierr = PetscOptionsGetReal(pc_ctx->prefix,"-pc_is_damp_fixed",&fixed_factor,&damp_fixed);CHKERRQ(ierr);
+      ierr = PetscOptionsGetReal(((PetscObject)pc_ctx)->prefix,"-pc_is_damp_fixed",&fixed_factor,&damp_fixed);CHKERRQ(ierr);
       if (!damp_fixed) { fixed_factor = 0.0; }
-      ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_damp_fixed",&damp_fixed);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(((PetscObject)pc_ctx)->prefix,"-pc_is_damp_fixed",&damp_fixed);CHKERRQ(ierr);
 
-      ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_remove_nullspace_fixed",&remove_nullspace_fixed);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(((PetscObject)pc_ctx)->prefix,"-pc_is_remove_nullspace_fixed",&remove_nullspace_fixed);CHKERRQ(ierr);
 
-      ierr = PetscOptionsGetReal(pc_ctx->prefix,"-pc_is_set_damping_factor_floating",
+      ierr = PetscOptionsGetReal(((PetscObject)pc_ctx)->prefix,"-pc_is_set_damping_factor_floating",
 			      &floating_factor,&set_damping_factor_floating);CHKERRQ(ierr);
       if (!set_damping_factor_floating) { floating_factor = 0.0; }
-      ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_set_damping_factor_floating",&set_damping_factor_floating);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(((PetscObject)pc_ctx)->prefix,"-pc_is_set_damping_factor_floating",&set_damping_factor_floating);CHKERRQ(ierr);
       if (!set_damping_factor_floating) { floating_factor = 1.e-12; }
 
-      ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_not_damp_floating",&not_damp_floating);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(((PetscObject)pc_ctx)->prefix,"-pc_is_not_damp_floating",&not_damp_floating);CHKERRQ(ierr);
 
-      ierr = PetscOptionsHasName(pc_ctx->prefix,"-pc_is_not_remove_nullspace_floating",&not_remove_nullspace_floating);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(((PetscObject)pc_ctx)->prefix,"-pc_is_not_remove_nullspace_floating",&not_remove_nullspace_floating);CHKERRQ(ierr);
 
       if (pcis->pure_neumann) {  /* floating subdomain */ 
 	if (!(not_damp_floating)) {
@@ -397,31 +397,35 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec ve
   */
   /* Setting the RHS vec1_N */
   ierr = VecSet(vec1_N,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(b,vec1_N,INSERT_VALUES,SCATTER_REVERSE,pcis->N_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (b,vec1_N,INSERT_VALUES,SCATTER_REVERSE,pcis->N_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->N_to_B,b,vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->N_to_B,b,vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   /* Checking for consistency of the RHS */
   {
     PetscTruth flg;
     ierr = PetscOptionsHasName(PETSC_NULL,"-pc_is_check_consistency",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscScalar average;
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIGetStdout(((PetscObject)pc)->comm,&viewer);CHKERRQ(ierr);
+
       ierr = VecSum(vec1_N,&average);CHKERRQ(ierr);
       average = average / ((PetscReal)pcis->n);
       if (pcis->pure_neumann) {
-        ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_(pc->comm),"Subdomain %04d is floating. Average = % 1.14e\n",
+
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is floating. Average = % 1.14e\n",
                                              PetscGlobalRank,PetscAbsScalar(average));CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_(pc->comm),"Subdomain %04d is fixed.    Average = % 1.14e\n",
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is fixed.    Average = % 1.14e\n",
                                              PetscGlobalRank,PetscAbsScalar(average));CHKERRQ(ierr);
       }
-      PetscViewerFlush(PETSC_VIEWER_STDOUT_(pc->comm));
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
   }
   /* Solving the system for vec2_N */
   ierr = KSPSolve(pcis->ksp_N,vec1_N,vec2_N);CHKERRQ(ierr);
   /* Extracting the local interface vector out of the solution */
-  ierr = VecScatterBegin(vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->N_to_B,vec2_N,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->N_to_B,vec2_N,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

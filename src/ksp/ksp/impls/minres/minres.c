@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"
 
 typedef struct {
   PetscReal haptol;
@@ -40,7 +40,7 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
@@ -218,7 +218,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_MINRES(KSP ksp)
   PetscFunctionBegin;
 
   ksp->pc_side   = PC_LEFT;
-  ierr           = PetscNew(KSP_MINRES,&minres);CHKERRQ(ierr);
+  ierr           = PetscNewLog(ksp,KSP_MINRES,&minres);CHKERRQ(ierr);
   minres->haptol = 1.e-18;
   ksp->data      = (void*)minres;
 

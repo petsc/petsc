@@ -22,7 +22,7 @@ EXTERN_C_END
 .keywords: Petsc, initialize, package, PLAPACK
 .seealso: PetscInitializePackage(), PetscInitialize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(char *path) 
+PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(const char path[]) 
 {
 #ifdef PETSC_HAVE_PLAPACK
   MPI_Comm comm;

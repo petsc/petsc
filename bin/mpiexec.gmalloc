@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+#  mpiexec.uni for Apple's Guard Malloc; used to find incorrect memory 
+#  accesses
+#
+if [ $1 !=  "-np" ]; then
+progname=$*
+elif  [ $2 =  "1" ]; then
+shift ; shift
+progname=$*
+else
+echo "Uniprocessor version of MPI can only use one processor"
+exit 1
+fi
+
+set DYLD_INSERT_LIBRARIES=/usr/lib/libgmalloc.dylib
+set DYLD_FORCE_FLAT_NAMESPACE=1
+
+# If relative path is used prepend a ./
+tail=`echo $progname | sed 's/\/.*//'` 
+if  [ "$tail" != "" ]; then
+  progname="./$progname"
+fi
+
+# Execute the program
+$progname
+exit 0
+

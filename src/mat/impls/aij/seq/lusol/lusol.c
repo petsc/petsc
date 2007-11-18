@@ -410,9 +410,9 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, 
   /* Create the factorization.                                            */
   /************************************************************************/
 
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
@@ -495,7 +495,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_LUSOL(Mat A,const MatType ty
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 		
-  ierr                       = PetscNew(Mat_LUSOL,&lusol);CHKERRQ(ierr);
+  ierr                       = PetscNewLog(B,Mat_LUSOL,&lusol);CHKERRQ(ierr);
   lusol->MatDuplicate        = A->ops->duplicate;
   lusol->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
   lusol->MatDestroy          = A->ops->destroy;
@@ -506,7 +506,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_LUSOL(Mat A,const MatType ty
   B->ops->lufactorsymbolic   = MatLUFactorSymbolic_LUSOL;
   B->ops->destroy            = MatDestroy_LUSOL;
 
-  ierr = PetscInfo(0,"Using LUSOL for LU factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using LUSOL for LU factorization and solves.\n");CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_lusol_C",
                                            "MatConvert_SeqAIJ_LUSOL",MatConvert_SeqAIJ_LUSOL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_lusol_seqaij_C",

@@ -2,7 +2,7 @@
 // File:          TOPS_UnstructuredSolver_Impl.cxx
 // Symbol:        TOPS.UnstructuredSolver-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for TOPS.UnstructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -129,10 +129,9 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._includes)
 
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
-TOPS::UnstructuredSolver_impl::UnstructuredSolver_impl() : 
-  StubBase(reinterpret_cast< 
-  void*>(::TOPS::UnstructuredSolver::_wrapObj(reinterpret_cast< void*>(this))),
-  false) , _wrapped(true){ 
+TOPS::UnstructuredSolver_impl::UnstructuredSolver_impl() : StubBase(
+  reinterpret_cast< void*>(::TOPS::UnstructuredSolver::_wrapObj(
+  reinterpret_cast< void*>(this))),false) , _wrapped(true){ 
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._ctor2)
   // Insert-Code-Here {TOPS.UnstructuredSolver._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._ctor2)
@@ -273,8 +272,8 @@ TOPS::UnstructuredSolver_impl::setPreallocation_impl (
  * Method:  Initialize[]
  */
 void
-TOPS::UnstructuredSolver_impl::Initialize_impl (
-  /* in array<string> */::sidl::array< ::std::string> args ) 
+TOPS::UnstructuredSolver_impl::Initialize_impl () 
+
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.Initialize)
 #undef __FUNCT__
@@ -287,17 +286,7 @@ TOPS::UnstructuredSolver_impl::Initialize_impl (
     return;
   }
   this->startedpetsc = 1;
-  int          argc = args.upper(0) + 1;
-  char       **argv = new char* [argc];
-  std::string  arg;
-
-  for(int i = 0; i < argc; i++) {
-    arg     = args[i];
-    argv[i] = new char [arg.length()+1];
-    arg.copy(argv[i], arg.length(), 0);
-    argv[i][arg.length()] = 0;
-  }
-  PetscInitialize(&argc,&argv,0,0);
+  PetscInitializeNoArguments();
   SlicedCreate(PETSC_COMM_WORLD,&this->slice);
 
   // Process runtime parameters

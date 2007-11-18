@@ -11,7 +11,6 @@ class Configure(PETSc.package.Package):
     # use the version from PETSc ftp site - it has lapack removed
     self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/scalapack.tgz']
     self.includes  = []
-    self.libdir    = ''
     self.liblist   = [['libscalapack.a']]
     self.functions = ['pssytrd']
     self.functionsFortran = 1
@@ -30,12 +29,7 @@ class Configure(PETSc.package.Package):
     if not hasattr(self.setCompilers, 'FC'):
       raise RuntimeError('SCALAPACK requires Fortran for automatic installation')
 
-    # Get the SCALAPACK directories
-    scalapackDir = self.getDir()
-    installDir   = os.path.join(scalapackDir, self.arch.arch)
-
-    # Configure and build SCALAPACK
-    g = open(os.path.join(scalapackDir,'SLmake.inc'),'w')
+    g = open(os.path.join(self.packageDir,'SLmake.inc'),'w')
     g.write('SHELL        = /bin/sh\n')
     g.write('home         = '+self.getDir()+'\n')
     g.write('USEMPI       = -DUsingMpiBlacs\n')
@@ -47,7 +41,7 @@ class Configure(PETSc.package.Package):
     g.write('BLACSDBGLVL  = -DBlacsDebugLvl=1\n')
     g.write('BLACSLIB     = '+self.libraries.toString(self.blacs.lib)+'\n') 
     g.write('SMPLIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('SCALAPACKLIB = '+os.path.join('$(home)',self.arch.arch,'libscalapack.a')+' \n')
+    g.write('SCALAPACKLIB = '+os.path.join(self.installDir,self.libdir,'libscalapack.a')+' \n')
     g.write('CBLACSLIB    = $(BLACSCINIT) $(BLACSLIB) $(BLACSCINIT)\n')
     g.write('FBLACSLIB    = $(BLACSFINIT) $(BLACSLIB) $(BLACSFINIT)\n')
     if self.compilers.fortranManglingDoubleUnderscore:
@@ -79,32 +73,19 @@ class Configure(PETSc.package.Package):
     g.write('ARCHFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')    
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')    
     g.close()
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(installDir,'SLmake.inc')) or not (self.getChecksum(os.path.join(installDir,'SLmake.inc')) == self.getChecksum(os.path.join(scalapackDir,'SLmake.inc'))):
-      self.framework.log.write('Have to rebuild SCALAPACK, SLmake.inc != '+installDir+'/SLmake.inc\n')
+
+    if self.installNeeded('SLmake.inc'):
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make cleanlib', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make cleanlib', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling Scalapack; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
-    else:
-      self.framework.log.write('Did not need to compile downloaded SCALAPACK\n')
-    if not os.path.isfile(os.path.join(installDir,'libscalapack.a')):
-      self.framework.log.write('Error running make on SCALAPACK   ******(libraries not installed)*******\n')
-      self.framework.log.write('********Output of running make on SCALAPACK follows *******\n')        
-      self.framework.log.write(output)
-      self.framework.log.write('********End of Output of running make on SCALAPACK *******\n')
-      raise RuntimeError('Error running make on SCALAPACK, libraries not installed')
-    
-    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(scalapackDir,'SLmake.inc')+' '+installDir, timeout=5, log = self.
-framework.log)[0]
-    self.framework.actions.addArgument('scalapack', 'Install', 'Installed scalapack into '+installDir)
-    return self.getDir()
+      self.checkInstall(output,'SLmake.inc')
+    return self.installDir
 
   def checkLib(self,lib,func,mangle,otherLibs = []):
     oldLibs = self.compilers.LIBS

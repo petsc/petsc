@@ -17,6 +17,7 @@ class Configure(PETSc.package.Package):
   def setupHelp(self, help):
     import nargs
     help.addArgument('Matlab', '-with-matlab=<bool>',         nargs.ArgBool(None, 0, 'Activate Matlab'))
+    help.addArgument('Matlab', '-with-matlab-engine=<bool>',  nargs.ArgBool(None, 0, 'Activate Matlab Engine '))    
     help.addArgument('Matlab', '-with-matlab-dir=<root dir>', nargs.ArgDir(None, None, 'Specify the root directory of the Matlab installation'))
     help.addArgument('Matlab', '-with-matlab-arch=<string>',  nargs.ArgString(None, None, 'Use Matlab Architecture (default use first-found)'))
     return
@@ -30,16 +31,19 @@ class Configure(PETSc.package.Package):
       # follow any symbolic link of this path
       self.matlab = os.path.realpath(self.matlab)
       yield os.path.dirname(os.path.dirname(self.matlab))
+    for dir in os.listdir('/Applications'):
+      if dir.startswith('MATLAB'):
+        if os.path.isfile(os.path.join('/Applications',dir,'bin','matlab')):
+          yield os.path.join('/Applications',dir)
     return
 
   def configureLibrary(self):
     '''Find a Matlab installation and check if it can work with PETSc'''
     import re
 
-    if config.setCompilers.Configure.isDarwin():
-      raise RuntimeError('Sorry, we have not been able to get Matlab working with PETSc on the Mac;\n messy Matlab dynamic libraries')
-    if self.setCompilers.staticLibraries:
-      raise RuntimeError('Matlab Interface requires shared library support. Please rerun with --with-shared=1\n')
+    if self.framework.argDB['with-matlab-engine']:
+      if self.setCompilers.staticLibraries:
+        raise RuntimeError('Matlab engine interface requires shared library support. Please rerun with --with-shared=1\n')
           
     reason = ''
     versionPattern = re.compile('Version ([0-9]*.[0-9]*)')
@@ -77,17 +81,20 @@ class Configure(PETSc.package.Package):
           self.cc = '${CC}'
           self.command = os.path.join(matlab,'bin','matlab')
           self.include = [os.path.join(matlab,'extern','include')]
-          if matlab_arch == 'mac':
-            matlab_dl = [' -L'+os.path.join(matlab,'sys','os','mac'),' -ldl']
-          else:
-            matlab_dl = ['']
-          # Matlab libraries require libstdc++-libc6.1-2.so.3 which they provide in the sys/os directory
-          if matlab_arch == 'glnx86':
-            matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
-          else:
-            matlab_sys = ''
-          matlab_sys += ':'+os.path.join(matlab,'bin',matlab_arch)+':'+os.path.join(matlab,'extern','lib',matlab_arch)
-          self.lib = [self.setCompilers.CSharedLinkerFlag+matlab_sys,'-L'+os.path.join(matlab,'bin',matlab_arch),'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-leng','-lmx','-lmat','-lut','-licudata','-licui18n','-licuuc','-lustdio'] + matlab_dl
+          if self.framework.argDB['with-matlab-engine']:          
+            if matlab_arch == 'mac':
+              matlab_dl = [' -L'+os.path.join(matlab,'sys','os','mac'),' -ldl']
+            else:
+              matlab_dl = ['']
+            # Matlab libraries require libstdc++-libc6.1-2.so.3 which they provide in the sys/os directory
+            if matlab_arch == 'glnx86':
+              matlab_sys = ':'+os.path.join(matlab,'sys','os',matlab_arch)
+            else:
+              matlab_sys = ''
+            matlab_sys += ':'+os.path.join(matlab,'bin',matlab_arch)+':'+os.path.join(matlab,'extern','lib',matlab_arch)
+            self.lib = [self.setCompilers.CSharedLinkerFlag+matlab_sys,'-L'+os.path.join(matlab,'bin',matlab_arch),'-L'+os.path.join(matlab,'extern','lib',matlab_arch),'-leng','-lmx','-lmat','-lut','-licudata','-licui18n','-licuuc','-lustdio'] + matlab_dl
+
+            self.addDefine('HAVE_MATLAB_ENGINE', 1)
           self.framework.packages.append(self)
           self.addMakeMacro('MATLAB_MEX',self.mex)
           self.addMakeMacro('MATLAB_COMMAND',self.command)        

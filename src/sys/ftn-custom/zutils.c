@@ -1,4 +1,4 @@
-#include "zpetsc.h" 
+#include "private/zpetsc.h" 
 
 void *PETSCNULLPOINTERADDRESS = PETSC_NULL;
 
@@ -32,6 +32,7 @@ void   *PETSC_NULL_Fortran           = 0;
 void   *PETSC_NULL_SCALAR_Fortran    = 0;
 void   *PETSC_NULL_DOUBLE_Fortran    = 0;
 void   *PETSC_NULL_REAL_Fortran      = 0;
+void   *PETSC_NULL_TRUTH_Fortran     = 0;
 EXTERN_C_BEGIN
 void   (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
@@ -118,7 +119,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     */
     PetscErrorCode       ierr;
     PetscScalar          *work;
-    PetscObjectContainer container;
+    PetscContainer container;
 
     ierr = PetscMalloc((N+align)*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
 
@@ -137,8 +138,8 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     /* store in the first location in addr how much you shift it */
     ((PetscInt*)addr)[0] = shift;
  
-    ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-    ierr = PetscObjectContainerSetPointer(container,addr);CHKERRQ(ierr);
+    ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+    ierr = PetscContainerSetPointer(container,addr);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",(PetscObject)container);CHKERRQ(ierr);
 
     tmp3 = (size_t) work;
@@ -159,7 +160,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
                          ((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
-    ierr = PetscInfo((void*)obj,"Efficiency warning, copying array in XXXGetArray() due\n\
+    ierr = PetscInfo(obj,"Efficiency warning, copying array in XXXGetArray() due\n\
     to alignment differences between C and Fortran\n");CHKERRQ(ierr);
   }
   *res = itmp2;
@@ -178,19 +179,19 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
 {
   PetscErrorCode       ierr;
   PetscInt             shift;
-  PetscObjectContainer container;
+  PetscContainer container;
   PetscScalar          *tlx;
 
   ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
+    ierr  = PetscContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
     tlx   = base + addr;
 
     shift = *(PetscInt*)*lx;
     ierr  = PetscMemcpy(*lx,tlx,N*sizeof(PetscScalar));CHKERRQ(ierr);
     tlx   = (PetscScalar*)(((char *)tlx) - shift);
     ierr = PetscFree(tlx);CHKERRQ(ierr);
-    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",0);CHKERRQ(ierr);
   } else {
     *lx = base + addr;

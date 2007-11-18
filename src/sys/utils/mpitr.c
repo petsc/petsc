@@ -31,17 +31,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE *fd)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   double         tsends,trecvs,work;
+  int            err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (!fd) fd = stdout;
+  if (!fd) fd = PETSC_STDOUT;
    
   /* Did we wait on all the non-blocking sends and receives? */
   ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   if (irecv_ct + isend_ct != sum_of_waits_ct) {
     ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]You have not waited on all non-blocking sends and receives",rank);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]Number non-blocking sends %g receives %g number of waits %g\n",rank,isend_ct,irecv_ct,sum_of_waits_ct);CHKERRQ(ierr);
-    fflush(fd);
+    err = fflush(fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
   }
   ierr = PetscSequentialPhaseEnd(PETSC_COMM_WORLD,1);CHKERRQ(ierr);
   /* Did we receive all the messages that we sent? */
@@ -51,7 +53,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE *fd)
   ierr = MPI_Reduce(&work,&tsends,1,MPI_DOUBLE,MPI_SUM,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
   if (!rank && tsends != trecvs) {
     ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"Total number sends %g not equal receives %g\n",tsends,trecvs);CHKERRQ(ierr);
-    fflush(fd);
+    err = fflush(fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
   }
   PetscFunctionReturn(0);
 }

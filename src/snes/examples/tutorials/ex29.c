@@ -75,7 +75,7 @@ typedef struct {
   PetscInt       ires,itstep;
   PetscInt       max_steps,print_freq;
   PetscReal      t;
-  PetscScalar    fnorm;
+  PetscReal      fnorm;
 
   PetscTruth     ts_monitor;           /* print information about each time step */
   PetscReal      dump_time;            /* time to dump solution to a file */
@@ -702,8 +702,8 @@ PetscErrorCode Update(DMMG *dmmg)
     if (ts_monitor)
     {
       ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
-      ierr = SNESGetNumberLinearIterations(snes, &lits);CHKERRQ(ierr);
-      ierr = SNESGetNumberUnsuccessfulSteps(snes, &nfails);CHKERRQ(ierr);
+      ierr = SNESGetLinearSolveIterations(snes, &lits);CHKERRQ(ierr);
+      ierr = SNESGetNonlinearStepFailures(snes, &nfails);CHKERRQ(ierr);
       ierr = SNESGetFunctionNorm(snes, &tsCtx->fnorm);CHKERRQ(ierr);
 
       nfailsCum += nfails;

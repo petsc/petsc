@@ -2,7 +2,7 @@
 #if !defined(__MPIROWBS_H)
 #define __MPIROWBS_H
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 EXTERN_C_BEGIN
 #include "BSsparse.h"

@@ -9,7 +9,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex9.c ex10.c ex11.c ex12.c \
 EXAMPLESF       = ex1f.F ex5f.F ex6f.F  ex17f.F
 MANSEC          = Sys
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
@@ -72,23 +72,23 @@ ex18: ex18.o chkopts
 	${RM} -f ex18.o
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1
+	-@${MPIEXEC} -np 1 ./ex1
 	-@echo "This is a contrived error to test error handling."
 
 runex1f:
-	-@${MPIRUN} -np 1 ./ex1f
+	-@${MPIEXEC} -np 1 ./ex1f
 	-@echo "This is a contrived error to test error handling."
 
 runex2:
-	-@${MPIRUN} -np 1 ./ex2
+	-@${MPIEXEC} -np 1 ./ex2
 	-@echo "This is a contrived error to test error handling."
 
 runex3:
-	-@${MPIRUN} -np 1 ./ex3 -fp_trap
+	-@${MPIEXEC} -np 1 ./ex3 -fp_trap
 	-@echo "This is a contrived error to test error handling of floating point exceptions."
 
 runex10:
-	-@${MPIRUN} -np 1 ./ex10 > ex10_1.tmp 2>&1;\
+	-@${MPIEXEC} -np 1 ./ex10 > ex10_1.tmp 2>&1;\
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Error in PetscMemmove."; fi; \
 	   ${RM} -f ex10_1.tmp ex10_1.tmp
@@ -103,4 +103,4 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc ex1.rm ex2.PETSc ex2.rm ex3.PETSc ex3
 TESTEXAMPLES_13		       = ex9.PETSc ex9.rm ex10.PETSc ex10.rm ex11.PETSc ex11.rm ex12.PETSc ex12.rm \
                                  ex14.PETSc ex14.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

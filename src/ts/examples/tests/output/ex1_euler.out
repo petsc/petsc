@@ -1,0 +1,11 @@
+timestep 0 time 0 norm of error 0.00000 0.00000
+timestep 1 time 0.000142922 norm of error 0.00059 0.00085
+timestep 2 time 0.000285845 norm of error 0.00113 0.00162
+timestep 3 time 0.000428767 norm of error 0.00160 0.00231
+timestep 4 time 0.000571689 norm of error 0.00203 0.00293
+timestep 5 time 0.000714611 norm of error 0.00241 0.00349
+timestep 6 time 0.000857534 norm of error 0.00275 0.00398
+timestep 7 time 0.00100046 norm of error 0.00305 0.00442
+timestep 8 time 0.00114338 norm of error 0.00331 0.00480
+timestep 9 time 0.0012863 norm of error 0.00354 0.00514
+timestep 10 time 0.00142922 norm of error 0.00374 0.00543

@@ -3,7 +3,7 @@
 /*
      Mechanism for register PETSc matrix types
 */
-#include "src/mat/matimpl.h"      /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
 PetscTruth MatRegisterAllCalled = PETSC_FALSE;
@@ -46,23 +46,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, MatType matype)
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   if (mat->rmap.n < 0 && mat->rmap.N < 0 && mat->cmap.n < 0 && mat->cmap.N < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetSizes() first");
   ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
-  if (!sametype) {
-    /* Get the function pointers for the matrix requested */
-    if (!MatRegisterAllCalled) {ierr = MatRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    ierr =  PetscFListFind(mat->comm,MatList,matype,(void(**)(void))&r);CHKERRQ(ierr);
-    if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
+  if (sametype) PetscFunctionReturn(0);
 
-    /* free the old data structure if it existed */
-    if (mat->ops->destroy) {
-      ierr = MatPreallocated(mat);CHKERRQ(ierr);
-      ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
-      mat->ops->destroy = PETSC_NULL;
-      mat->preallocated = PETSC_FALSE;
-    }
-
-    /* create the new data structure */
-    ierr = (*r)(mat);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MatList,((PetscObject)mat)->comm,matype,(void(**)(void))&r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
+  
+  /* free the old data structure if it existed */
+  if (mat->ops->destroy) {
+    ierr = MatPreallocated(mat);CHKERRQ(ierr);
+    ierr = (*mat->ops->destroy)(mat);CHKERRQ(ierr);
+    mat->ops->destroy = PETSC_NULL;
+    mat->preallocated = PETSC_FALSE;
   }
+
+  /* create the new data structure */
+  ierr = (*r)(mat);CHKERRQ(ierr);
   ierr = PetscPublishAll(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -87,10 +85,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (MatList) {
-    ierr = PetscFListDestroy(&MatList);CHKERRQ(ierr);
-    MatList = 0;
-  }
+  ierr = PetscFListDestroy(&MatList);CHKERRQ(ierr);
   MatRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
@@ -117,7 +112,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDestroy(void)
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat mat,MatType *type)
 {
   PetscFunctionBegin;
-  *type = mat->type_name;
+  *type = ((PetscObject)mat)->type_name;
   PetscFunctionReturn(0);
 }
 

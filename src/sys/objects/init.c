@@ -16,7 +16,7 @@
 #include <malloc.h>
 #endif
 #include "petscfix.h"
-
+#include "zope.h"
 /* ------------------------Nasty global variables -------------------------------*/
 /*
      Indicates if PETSc started up MPI, or it was 
@@ -42,6 +42,7 @@ MPI_Datatype  PETSC_DLLEXPORT MPIU_2INT = 0;
 /*
      These are needed by petscbt.h
 */
+#include "petscbt.h"
 char     PETSC_DLLEXPORT _BT_mask = ' ';
 char     PETSC_DLLEXPORT _BT_c = ' ';
 PetscInt PETSC_DLLEXPORT _BT_idx  = 0;
@@ -49,10 +50,9 @@ PetscInt PETSC_DLLEXPORT _BT_idx  = 0;
 /*
        Function that is called to display all error messages
 */
-EXTERN PetscErrorCode  PetscErrorPrintfDefault(const char [],...);
-EXTERN PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 PetscErrorCode PETSC_DLLEXPORT (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
 PetscErrorCode PETSC_DLLEXPORT (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
+PetscErrorCode PETSC_DLLEXPORT (*PetscVFPrintf)(FILE*,const char[],va_list)    = PetscVFPrintfDefault;
 
 /* ------------------------------------------------------------------------------*/
 /* 
@@ -73,6 +73,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FIL
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
     char arch[10];
+    int  err;
+
     ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
     ierr = PetscGetDate(date,64);CHKERRQ(ierr);
     ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
@@ -92,7 +94,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FIL
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);CHKERRQ(ierr);
     ierr = PetscOptionsPrint(*fd);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
-    fflush(*fd);
+    err = fflush(*fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
   }
   PetscFunctionReturn(0); 
 }
@@ -104,6 +107,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   char           date[64];
+  int            err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -112,8 +116,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"Finished at %s\n",date);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
-    fflush(*fd);
-    fclose(*fd);
+    err = fflush(*fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
+    err = fclose(*fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");        
   }
   PetscFunctionReturn(0); 
 }
@@ -215,7 +221,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscTruth     flg1,flg2,flg3,flag;
+  PetscTruth     flg1,flg2,flg3,flag,flgz,flgzout;
   PetscErrorCode ierr;
   PetscInt       si;
   int            i;
@@ -306,8 +312,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   if (flg1) { ierr = PetscSetFPTrap(PETSC_FP_TRAP_ON);CHKERRQ(ierr); }
   ierr = PetscOptionsHasName(PETSC_NULL,"-on_error_abort",&flg1);CHKERRQ(ierr);
   if (flg1) { ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr)} 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-on_error_stop",&flg1);CHKERRQ(ierr);
-  if (flg1) { ierr = PetscPushErrorHandler(PetscStopErrorHandler,0);CHKERRQ(ierr)}
+  ierr = PetscOptionsHasName(PETSC_NULL,"-on_error_mpiabort",&flg1);CHKERRQ(ierr);
+  if (flg1) { ierr = PetscPushErrorHandler(PetscMPIAbortErrorHandler,0);CHKERRQ(ierr)}
   ierr = PetscOptionsHasName(PETSC_NULL,"-mpi_return_on_error",&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = MPI_Errhandler_set(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
@@ -382,6 +388,33 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr)}
 
   /*
+    Activates new sockets for zope if needed
+  */
+  ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz); CHKERRQ(ierr);
+  ierr=PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout); CHKERRQ(ierr);
+  if(flgz){
+    extern FILE* PETSC_ZOPEFD;
+    int sockfd; 
+    char hostname[256];
+    char username[256];
+    int remoteport = 9999;
+    ierr=PetscOptionsGetString(PETSC_NULL, "-zope", hostname, 256, &flgz);CHKERRQ(ierr);
+    if(!hostname[0]){
+      ierr=PetscGetHostName(hostname,256); CHKERRQ(ierr);}
+    ierr=PetscOpenSocket(hostname, remoteport, &sockfd);CHKERRQ(ierr);
+    ierr = PetscGetUserName(username, 256);
+    PETSC_ZOPEFD = fdopen(sockfd, "w");
+    if(flgzout){
+      PETSC_STDOUT = PETSC_ZOPEFD;
+      fprintf(PETSC_STDOUT, "<<<user>>> %s\n",username);
+      fprintf(PETSC_STDOUT, "<<<start>>>");
+    }
+    else{
+      fprintf(PETSC_ZOPEFD, "<<<user>>> %s\n",username);
+      fprintf(PETSC_ZOPEFD, "<<<start>>>");
+    }}
+
+  /*
         Setup profiling and logging
   */
 #if defined (PETSC_USE_INFO)
@@ -428,7 +461,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
       }
     } else {
-      file = stdout;
+      file = PETSC_STDOUT;
     }
     ierr = PetscLogTraceBegin(file);CHKERRQ(ierr);
   }

@@ -66,8 +66,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
   }
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   ierr = PetscFree(h->bops);CHKERRQ(ierr);
-  ierr = PetscFree(h->ops);CHKERRQ(ierr);
-  ierr = PetscOListDestroy(&h->olist);CHKERRQ(ierr);
+  ierr = PetscOListDestroy(h->olist);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&h->qlist);CHKERRQ(ierr);
   ierr = PetscStrfree(h->type_name);CHKERRQ(ierr);
   ierr = PetscStrfree(h->name);CHKERRQ(ierr);
@@ -186,7 +185,7 @@ PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 {
   PetscErrorCode ierr;
-  char *tname;
+  char           *tname;
 
   PetscFunctionBegin;
   if (ptr) {
@@ -228,7 +227,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(obj->comm,obj->qlist,name,ptr);CHKERRQ(ierr);
+  ierr = PetscFListFind(obj->qlist,obj->comm,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -262,19 +261,22 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
 
    PetscObjectCompose() can be used with any PETSc object (such as
    Mat, Vec, KSP, SNES, etc.) or any user-provided object.  See 
-   PetscObjectContainerCreate() for info on how to create an object from a 
+   PetscContainerCreate() for info on how to create an object from a 
    user-provided pointer that may then be composed with PETSc objects.
    
    Concepts: objects^composing
    Concepts: composing objects
 
-.seealso: PetscObjectQuery(), PetscObjectContainerCreate()
+.seealso: PetscObjectQuery(), PetscContainerCreate()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectCompose(PetscObject obj,const char name[],PetscObject ptr)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidCharPointer(name,2);
+  if (ptr) PetscValidHeader(ptr,3);
   ierr = (*obj->bops->compose)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -308,6 +310,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectQuery(PetscObject obj,const char name[
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(ptr,3);
   ierr = (*obj->bops->query)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -319,6 +324,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeFunction(PetscObject obj,const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidCharPointer(name,2);
+  PetscValidCharPointer(fname,2);
   ierr = (*obj->bops->composefunction)(obj,name,fname,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -353,120 +361,128 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectQueryFunction(PetscObject obj,const ch
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidCharPointer(name,2);
   ierr = (*obj->bops->queryfunction)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-struct _p_PetscObjectContainer {
+struct _p_PetscContainer {
   PETSCHEADER(int);
   void   *ptr;
   PetscErrorCode (*userdestroy)(void*);
 };
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectContainerGetPointer"
+#define __FUNCT__ "PetscContainerGetPointer"
 /*@C
-   PetscObjectContainerGetPointer - Gets the pointer value contained in the container.
+   PetscContainerGetPointer - Gets the pointer value contained in the container.
 
-   Collective on PetscObjectContainer
+   Collective on PetscContainer
 
    Input Parameter:
-.  obj - the object created with PetscObjectContainerCreate()
+.  obj - the object created with PetscContainerCreate()
 
    Output Parameter:
 .  ptr - the pointer value
 
    Level: advanced
 
-.seealso: PetscObjectContainerCreate(), PetscObjectContainerDestroy(), 
-          PetscObjectContainerSetPointer()
+.seealso: PetscContainerCreate(), PetscContainerDestroy(), 
+          PetscContainerSetPointer()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerGetPointer(PetscObjectContainer obj,void **ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscContainerGetPointer(PetscContainer obj,void **ptr)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
+  PetscValidPointer(ptr,2);
   *ptr = obj->ptr;
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectContainerSetPointer"
+#define __FUNCT__ "PetscContainerSetPointer"
 /*@C
-   PetscObjectContainerSetPointer - Sets the pointer value contained in the container.
+   PetscContainerSetPointer - Sets the pointer value contained in the container.
 
-   Collective on PetscObjectContainer
+   Collective on PetscContainer
 
    Input Parameters:
-+  obj - the object created with PetscObjectContainerCreate()
++  obj - the object created with PetscContainerCreate()
 -  ptr - the pointer value
 
    Level: advanced
 
-.seealso: PetscObjectContainerCreate(), PetscObjectContainerDestroy(), 
-          PetscObjectContainerGetPointer()
+.seealso: PetscContainerCreate(), PetscContainerDestroy(), 
+          PetscContainerGetPointer()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetPointer(PetscObjectContainer obj,void *ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscContainerSetPointer(PetscContainer obj,void *ptr)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
+  if (ptr) PetscValidPointer(ptr,2);
   obj->ptr = ptr;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectContainerDestroy"
+#define __FUNCT__ "PetscContainerDestroy"
 /*@C
-   PetscObjectContainerDestroy - Destroys a PETSc container object.
+   PetscContainerDestroy - Destroys a PETSc container object.
 
-   Collective on PetscObjectContainer
+   Collective on PetscContainer
 
    Input Parameter:
-.  obj - an object that was created with PetscObjectContainerCreate()
+.  obj - an object that was created with PetscContainerCreate()
 
    Level: advanced
 
-.seealso: PetscObjectContainerCreate()
+.seealso: PetscContainerCreate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerDestroy(PetscObjectContainer obj)
+PetscErrorCode PETSC_DLLEXPORT PetscContainerDestroy(PetscContainer obj)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (--obj->refct > 0) PetscFunctionReturn(0);
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
+  if (--((PetscObject)obj)->refct > 0) PetscFunctionReturn(0);
   if (obj->userdestroy) (*obj->userdestroy)(obj->ptr);
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectContainerSetUserDestroy"
+#define __FUNCT__ "PetscContainerSetUserDestroy"
 /*@C
-   PetscObjectContainerSetUserDestroy - Sets name of the user destroy function.
+   PetscContainerSetUserDestroy - Sets name of the user destroy function.
 
-   Collective on PetscObjectContainer
+   Collective on PetscContainer
 
    Input Parameter:
-+  obj - an object that was created with PetscObjectContainerCreate()
++  obj - an object that was created with PetscContainerCreate()
 -  des - name of the user destroy function
 
    Level: advanced
 
-.seealso: PetscObjectContainerDestroy()
+.seealso: PetscContainerDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetUserDestroy(PetscObjectContainer obj, PetscErrorCode (*des)(void*))
+PetscErrorCode PETSC_DLLEXPORT PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void*))
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
   obj->userdestroy = des;
   PetscFunctionReturn(0);
 }
 
-PetscCookie PETSC_DLLEXPORT CONTAINER_COOKIE = 0;
+PetscCookie PETSC_DLLEXPORT PETSC_CONTAINER_COOKIE = 0;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectContainerCreate"
+#define __FUNCT__ "PetscContainerCreate"
 /*@C
-   PetscObjectContainerCreate - Creates a PETSc object that has room to hold
+   PetscContainerCreate - Creates a PETSc object that has room to hold
    a single pointer. This allows one to attach any type of data (accessible
    through a pointer) with the PetscObjectCompose() function to a PetscObject.
-   The data item itself is attached by a call to PetscObjectContainerSetPointer.
+   The data item itself is attached by a call to PetscContainerSetPointer.
 
    Collective on MPI_Comm
 
@@ -478,18 +494,19 @@ PetscCookie PETSC_DLLEXPORT CONTAINER_COOKIE = 0;
 
    Level: advanced
 
-.seealso: PetscObjectContainerDestroy(), PetscObjectContainerSetPointer(), PetscObjectContainerGetPointer()
+.seealso: PetscContainerDestroy(), PetscContainerSetPointer(), PetscContainerGetPointer()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *container)
+PetscErrorCode PETSC_DLLEXPORT PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 {
-  PetscErrorCode       ierr;
-  PetscObjectContainer contain;
+  PetscErrorCode ierr;
+  PetscContainer contain;
 
   PetscFunctionBegin;
-  if (!CONTAINER_COOKIE) {
-    ierr = PetscLogClassRegister(&CONTAINER_COOKIE,          "Container");CHKERRQ(ierr);
+  PetscValidPointer(container,2);
+  if (!PETSC_CONTAINER_COOKIE) {
+    ierr = PetscLogClassRegister(&PETSC_CONTAINER_COOKIE, "Container");CHKERRQ(ierr);
   }
-  ierr = PetscHeaderCreate(contain,_p_PetscObjectContainer,PetscInt,CONTAINER_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(contain,_p_PetscContainer,PetscInt,PETSC_CONTAINER_COOKIE,0,"PetscContainer",comm,PetscContainerDestroy,0);CHKERRQ(ierr);
   *container = contain;
   PetscFunctionReturn(0);
 }
@@ -517,7 +534,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerCreate(MPI_Comm comm,PetscObj
 PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject obj)
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
+  PetscValidHeader(obj,1);
   PetscFunctionReturn(0); 
 }
 
@@ -542,6 +559,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject obj)
 PetscErrorCode PETSC_DLLEXPORT PetscObjectSetUp(PetscObject obj)
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
+  PetscValidHeader(obj,1);
   PetscFunctionReturn(0);
 }

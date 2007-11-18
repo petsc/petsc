@@ -94,7 +94,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscSplitOwnership(MPI_Comm comm,PetscInt *n,Pet
     if (tmp != *N) SETERRQ3(PETSC_ERR_ARG_SIZ,"Sum of local lengths %D does not equal global length %D, my local length %D\n  likely a call to VecSetSizes() or MatSetSizes() is wrong.\nSee http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html#PetscSplitOwnership",tmp,*N,*n);
 #endif
   }
-
   PetscFunctionReturn(0);
 }
 

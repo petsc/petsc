@@ -3,6 +3,57 @@
 #include "petscvec.h"
 #include "petscpf.h"
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISInitializePackage"
+/*@C
+      ISInitializePackage - This function initializes everything in the IS package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to ISCreateXXXX()
+  when using static libraries.
+
+  Input Parameter:
+. path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Vec, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char path[]) 
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char              *className;
+  PetscTruth        opt;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&IS_COOKIE,          "Index Set");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,    "IS L to G Mapping");CHKERRQ(ierr);
+
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(IS_LTOGM_COOKIE);CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(IS_LTOGM_COOKIE);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 extern MPI_Op PetscSplitReduction_Op;
 extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
@@ -24,14 +75,14 @@ PetscInt   NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+. path - The dynamic library path, or PETSC_NULL
 
   Level: developer
 
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[]) 
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
@@ -44,19 +95,18 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&IS_COOKIE,          "Index Set");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_COOKIE,         "Vec");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_SCATTER_COOKIE, "Vec Scatter");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&PF_COOKIE,          "PointFunction");CHKERRQ(ierr);
   /* Register Constructors */
   ierr = VecRegisterAll(path);CHKERRQ(ierr);
-  ierr = PFRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&VEC_View,                "VecView",          VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_Max,                 "VecMax",           VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_Min,                 "VecMin",           VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_DotBarrier,          "VecDotBarrier",    VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_Dot,                 "VecDot",           VEC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&VEC_DotNormBarrier,      "VecDotNormBarrier",VEC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&VEC_DotNorm,             "VecDotNorm2",      VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_MDotBarrier,         "VecMDotBarrier",   VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_MDot,                "VecMDot",          VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_TDot,                "VecTDot",          VEC_COOKIE);CHKERRQ(ierr);
@@ -86,6 +136,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
   ierr = PetscLogEventRegister(&VEC_Normalize,           "VecNormalize",     VEC_COOKIE);CHKERRQ(ierr);
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(VEC_DotNormBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_MDotBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_NormBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_SetValues, PETSC_FALSE);CHKERRQ(ierr);
@@ -94,10 +145,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
-    }
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
@@ -106,10 +153,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
-    }
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
@@ -121,6 +164,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path)
     ierr = PetscLogEventActivate(VEC_ScatterBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_NormBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_DotBarrier);CHKERRQ(ierr);
+    ierr = PetscLogEventActivate(VEC_DotNormBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_MDotBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_ReduceBarrier);CHKERRQ(ierr);
   }
@@ -151,7 +195,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister_petscvec(char *path)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister_petscvec(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -161,7 +205,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister_petscvec(char *path)
   /*
       If we got here then PETSc was properly loaded
   */
+  ierr = ISInitializePackage(path);CHKERRQ(ierr);
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
+  ierr = PFInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

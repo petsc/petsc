@@ -71,7 +71,7 @@ class Configure(config.base.Configure):
     for (name, (petscDir, petscArch)) in self.getLocations():
       petscPythonDir = os.path.join(petscDir, 'python')
       sys.path.append(petscPythonDir)
-      confPath = os.path.join(petscDir, 'bmake', petscArch)
+      confPath = os.path.join(petscDir, petscArch,'conf')
       petscConf = framework.loadFramework(confPath)
       if petscConf:
         self.logPrint('Loaded PETSc-AS configuration ('+name+') from '+confPath)
@@ -105,13 +105,7 @@ class Configure(config.base.Configure):
     elif 'PETSC_ARCH' in os.environ:
       yield os.environ['PETSC_ARCH']
     else:
-      if os.path.isdir(os.path.join(petscDir, 'bmake')):
-        for d in os.listdir(os.path.join(petscDir, 'bmake')):
-          if not os.path.isdir(os.path.join(petscDir, 'bmake', d)):
-            continue
-          if d in ['common', 'docsonly', 'SCCS']:
-            continue
-          yield d
+      raise InvalidPETScError('Must set PETSC_ARCH or use --with-petsc-arch')
     return
 
   def getLocations(self):
@@ -315,7 +309,7 @@ class Configure(config.base.Configure):
       # since they are already copied into the PETSc dynamic library.
       self.setOtherLibs([])
     self.pushLanguage(self.languages.clanguage)
-    isShared = self.libraries.checkShared('#include <petsc.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscTruth', executor = self.mpi.mpirun)
+    isShared = self.libraries.checkShared('#include <petsc.h>\n', 'PetscInitialize', 'PetscInitialized', 'PetscFinalize', checkLink = self.checkPETScLink, libraries = libraries, initArgs = '&argc, &argv, 0, 0', boolType = 'PetscTruth', executor = self.mpi.mpiexec)
     self.popLanguage()
     return isShared
 
@@ -365,7 +359,7 @@ class Configure(config.base.Configure):
     while path:
       dir = os.path.join(path, 'include')
       if os.path.isdir(dir):
-        yield [dir, os.path.join(path, 'bmake', self.arch)]
+        yield [dir, os.path.join(path, self.arch,'include')]
       if path == '/':
         return
       path = os.path.dirname(path)

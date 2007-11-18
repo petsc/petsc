@@ -21,10 +21,10 @@ ex1: chkopts ${EXAMPLESO}
 	-$(RM) ${EXAMPLESO}
 
 run: 
-	mpirun -np 3 ex1 -N 27
+	mpiexec -np 3 ex1 -N 27
 
 # provide input files e.g. fetidp_data.tgz
 
-include $(PETSC_DIR)/bmake/common/base
+include $(PETSC_DIR)/conf/base
 
-include $(PETSC_DIR)/bmake/common/test
+include $(PETSC_DIR)/conf/test

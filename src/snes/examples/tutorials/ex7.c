@@ -1,4 +1,4 @@
-/* Program usage:  mpirun -np <procs> ex7 [-help] [all PETSc options] */
+/* Program usage:  mpiexec -np <procs> ex7 [-help] [all PETSc options] */
 
 static char help[] = "Nonlinear PDE in 2d.\n\
 We solve the Stokes equation in a 2D rectangular\n\
@@ -895,7 +895,7 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info, Field **x, Mat jac, AppCtx *
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

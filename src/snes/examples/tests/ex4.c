@@ -106,7 +106,7 @@ int main(int argc, char **argv)
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
   ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes,&nfails);CHKERRQ(ierr);
+  ierr = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %D, ",its);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of unsuccessful steps = %D\n\n",nfails);CHKERRQ(ierr);

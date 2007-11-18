@@ -6,7 +6,7 @@
 #if !defined(__LGMRES)
 #define __LGMRES
 
-#include "src/ksp/ksp/kspimpl.h" /*includes petscksp.h */
+#include "include/private/kspimpl.h" /*includes petscksp.h */
 
   typedef struct {
     /* Hessenberg matrix and orthogonalization information. */ 
@@ -69,6 +69,8 @@
     Vec         *augvecs;            /* holds the error approximation vectors for lgmres. */
     Vec         **augvecs_user_work; /* same purpose as user_work above, but this one is
                                          for our error approx vectors */
+          /* currently only augvecs_user_work[0] is used, not sure if this will be */
+          /* extended in the future to use more, or if this is a design bug */
     PetscInt    aug_vv_allocated;      /* aug_vv_allocated is the number of allocated lgmres 
                                           augmentation vectors */
     PetscInt    aug_vecs_allocated;    /* aug_vecs_allocated is the total number of augmentation vecs 

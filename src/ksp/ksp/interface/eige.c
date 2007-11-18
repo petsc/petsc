@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"   /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeExplicitOperator"
@@ -42,7 +42,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidPointer(mat,2);
-  comm = ksp->comm;
+  comm = ((PetscObject)ksp)->comm;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
@@ -114,7 +114,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
    problems, say n < 500.
 
    Many users may just want to use the monitoring routine
-   KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
+   KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
    to print the singular values at each iteration of the linear solve.
 
    The preconditoner operator, rhs vector, solution vectors should be
@@ -125,14 +125,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
 .keywords: KSP, compute, eigenvalues, explicitly
 
-.seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
+.seealso: KSPComputeEigenvalues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c) 
 {
   Mat                BA;
   PetscErrorCode     ierr;
   PetscMPIInt        size,rank;
-  MPI_Comm           comm = ksp->comm;
+  MPI_Comm           comm = ((PetscObject)ksp)->comm;
   PetscScalar        *array;
   Mat                A;
   PetscInt           m,row,nz,i,n,dummy;
@@ -146,7 +146,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscI
 
   ierr = MatGetSize(BA,&n,&n);CHKERRQ(ierr);
   if (size > 1) { /* assemble matrix on first processor */
-    ierr = MatCreate(ksp->comm,&A);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)ksp)->comm,&A);CHKERRQ(ierr);
     if (!rank) {
       ierr = MatSetSizes(A,n,n,n,n);CHKERRQ(ierr);
     } else {

@@ -2,7 +2,7 @@
 // File:          Ex3_System_Impl.cxx
 // Symbol:        Ex3.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for Ex3.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -39,9 +39,9 @@
 // DO-NOT-DELETE splicer.end(Ex3.System._includes)
 
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
-Ex3::System_impl::System_impl() : StubBase(reinterpret_cast< 
-  void*>(::Ex3::System::_wrapObj(reinterpret_cast< void*>(this))),false) ,
-  _wrapped(true){ 
+Ex3::System_impl::System_impl() : StubBase(reinterpret_cast< void*>(
+  ::Ex3::System::_wrapObj(reinterpret_cast< void*>(this))),false) , _wrapped(
+  true){ 
   // DO-NOT-DELETE splicer.begin(Ex3.System._ctor2)
   // Insert-Code-Here {Ex3.System._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(Ex3.System._ctor2)
@@ -80,14 +80,16 @@ Ex3::System_impl::computeMatrix_impl (
   /* in */::TOPS::Matrix B ) 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeMatrix)
+  // Use the TOPS.Structured.Matrix port for getting BB
+
   TOPS::Structured::Matrix BB = ::babel_cast< TOPS::Structured::Matrix >(B);
   TOPS::Structured::Solver solver = this->solver;
-  int xs = BB.lower(0);      // first grid point in X and Y directions on this process
-  int ys = BB.lower(1);
-  int zs = BB.lower(2);
-  int xm = BB.length(0);       // number of local grid points in X and Y directions on this process
-  int ym = BB.length(1);
-  int zm = BB.length(2);
+  int xs = BB.getLower(0);      // first grid point in X and Y directions on this process
+  int ys = BB.getLower(1);
+  int zs = BB.getLower(2);
+  int xm = BB.getLength(0);       // number of local grid points in X and Y directions on this process
+  int ym = BB.getLength(1);
+  int zm = BB.getLength(2);
   int i,j,k;
   int mx = solver.length(0);
   int my = solver.length(1);
@@ -266,10 +268,6 @@ Ex3::System_impl::go_impl ()
   
   // Parameter port stuff here (instead of argc, argv);
   // for now pass fake argc and argv to solver
-  int argc = 1; 
-  char *argv[1];
-  argv[0] = (char*) malloc(10*sizeof(char));
-  strcpy(argv[0],"ex3");
 
   TOPS::Structured::Solver solver = ::babel_cast< TOPS::Structured::Solver >( myServices.getPort("TOPS.Structured.Solver") );
   this->solver = solver;
@@ -279,7 +277,7 @@ Ex3::System_impl::go_impl ()
     return 1;
   }
 
-  solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
+  solver.Initialize();
   
   solver.solve();
 

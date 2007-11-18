@@ -8,15 +8,15 @@ ALL: lib
 
 CFLAGS   = ${HYPRE_INCLUDE}
 FFLAGS   =
-SOURCEC  = hyppilut.c
+SOURCEC  = hypre.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = hyppilut.o
+OBJSC    = hypre.o
 OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/hypre/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 

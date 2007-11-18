@@ -14,7 +14,7 @@ int main(int argc,char **args)
   Mat                sA,sB,sC;         /* symmetric part of the matrices */ 
   PetscInt           n,mbs=16,bs=1,nz=3,prob=1,i,j,col[3],lf,block, row,Ii,J,n1,inc; 
   PetscReal          norm1,norm2,rnorm,tol=1.e-10;
-  PetscScalar        neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
+  PetscScalar        neg_one = -1.0,four=4.0,value[3];  
   IS                 perm, iscol;
   PetscRandom        rdm;
   PetscTruth         doIcc=PETSC_TRUE,equal;
@@ -38,7 +38,7 @@ int main(int argc,char **args)
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)sA,MATSEQSBAIJ,&doIcc);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(sA,bs,nz,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(sA,MAT_IGNORE_LOWER_TRIANGULAR);CHKERRQ(ierr);
+  ierr = MatSetOption(sA,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
@@ -194,7 +194,6 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");CHKERRQ(ierr);
   }
 
-  /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);     
@@ -204,39 +203,38 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
 
+  /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
+#if !defined(PETSC_USE_COMPLEX)
+  /* Scaling matrix with complex numbers results non-spd matrix, 
+     causing crash of MatForwardSolve() and MatBackwardSolve() */
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr); 
   ierr = MatMultEqual(A,sB,10,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  
-  ierr = MatGetDiagonal(sB,s2);CHKERRQ(ierr);
-  
+  ierr = MatGetDiagonal(sB,s2);CHKERRQ(ierr);  
   ierr = VecAXPY(s2,neg_one,s1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&norm1);CHKERRQ(ierr);
   if ( norm1>tol) { 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal(), ||s1-s2||=%G\n",norm1);CHKERRQ(ierr);
   }
-  /*
+
+  {
+    PetscScalar alpha=0.1;
+    ierr = MatScale(A,alpha);CHKERRQ(ierr);
+    ierr = MatScale(sB,alpha);CHKERRQ(ierr);
+  }
+#endif
+
+  /* Test MatGetRowMaxAbs() */
+  ierr = MatGetRowMaxAbs(A,s1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetRowMaxAbs(sB,s2,PETSC_NULL);CHKERRQ(ierr); 
   ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol) { 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal() \n");CHKERRQ(ierr);
-  } 
-  */
-
-  ierr = MatScale(A,alpha);CHKERRQ(ierr);
-  ierr = MatScale(sB,alpha);CHKERRQ(ierr);
-
-  /* Test MatGetRowMax() */
-  ierr = MatGetRowMax(A,s1);CHKERRQ(ierr);
-  ierr = MatGetRowMax(sB,s2);CHKERRQ(ierr); 
-  ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
-  ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
-  norm1 -= norm2;
-  if (norm1<-tol || norm1>tol) { 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetRowMax() \n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetRowMaxAbs() \n");CHKERRQ(ierr);
   } 
 
   /* Test MatMult() */
@@ -299,9 +297,21 @@ int main(int argc,char **args)
     */
 
     ierr = MatMult(sB,x,b);CHKERRQ(ierr);
+
+    /* test MatForwardSolve() and MatBackwardSolve() */
+    if (lf == -1){
+      ierr = MatForwardSolve(sC,b,s1);CHKERRQ(ierr);
+      ierr = MatBackwardSolve(sC,s1,s2);CHKERRQ(ierr);      
+      ierr = VecAXPY(s2,neg_one,x);CHKERRQ(ierr);
+      ierr = VecNorm(s2,NORM_2,&norm2);CHKERRQ(ierr);
+      if (10*norm1 < norm2){
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G, bs=%d\n",norm2,bs);CHKERRQ(ierr); 
+      }
+    } 
+
+    /* test MatSolve() */
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr);
     ierr = MatDestroy(sC);CHKERRQ(ierr);
-      
     /* Check the error */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);

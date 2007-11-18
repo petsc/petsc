@@ -58,6 +58,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Plapack_Dense(Mat A,MatType type,Ma
   B->ops->assemblyend      = lu->MatAssemblyEnd;
   B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
   B->ops->destroy          = lu->MatDestroy;
+  ierr     = PetscFree(lu);CHKERRQ(ierr);
+  A->spptr = PETSC_NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_plapack_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_plapack_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -90,7 +92,7 @@ PetscErrorCode MatDestroy_Plapack(Mat A)
     ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(lu->ctx);CHKERRQ(ierr);
   }
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatConvert_Plapack_Dense(A,MATSEQDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
@@ -104,7 +106,7 @@ PetscErrorCode MatDestroy_Plapack(Mat A)
 #define __FUNCT__ "MatSolve_Plapack"
 PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
 {
-  MPI_Comm       comm = A->comm;
+  MPI_Comm       comm = ((PetscObject)A)->comm;
   Mat_Plapack    *lu = (Mat_Plapack*)A->spptr;
   PetscErrorCode ierr;
   PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,i,j,*idx_pla,*idx_petsc,loc_m,loc_stride;
@@ -183,8 +185,8 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
     ierr = PetscFree(idx_pla);CHKERRQ(ierr);
     ierr = VecScatterCreate(loc_x,lu->is_pla,x,lu->is_petsc,&lu->ctx);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(loc_x,x,INSERT_VALUES,SCATTER_FORWARD,lu->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(loc_x,x,INSERT_VALUES,SCATTER_FORWARD,lu->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(lu->ctx,loc_x,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(lu->ctx,loc_x,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   
   /* Free data */
   ierr = VecDestroy(loc_x);CHKERRQ(ierr);
@@ -288,15 +290,15 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
   Mat_Plapack    *lu;   
   PetscErrorCode ierr;
   PetscInt       M=A->rmap.N,N=A->cmap.N;
-  MPI_Comm       comm=A->comm,comm_2d;
+  MPI_Comm       comm=((PetscObject)A)->comm,comm_2d;
   PetscMPIInt    size;
   PetscInt       ierror;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
 
   B->ops->solve = MatSolve_Plapack;
   lu = (Mat_Plapack*)(B->spptr);
@@ -309,7 +311,7 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
   if (M - lu->nb*size) lu->nb++; /* without cyclic distribution */
  
   /* Set runtime options */
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"PLAPACK Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"PLAPACK Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_plapack_nprows","row dimension of 2D processor mesh","None",lu->nprows,&lu->nprows,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_plapack_npcols","column dimension of 2D processor mesh","None",lu->npcols,&lu->npcols,PETSC_NULL);CHKERRQ(ierr);
   
@@ -464,7 +466,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Dense_Plapack(Mat A,MatType type,Ma
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_Plapack,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_Plapack,&lu);CHKERRQ(ierr);
   lu->MatDuplicate         = A->ops->duplicate;
   lu->MatView              = A->ops->view;
   lu->MatAssemblyEnd       = A->ops->assemblyend;
@@ -480,7 +482,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Dense_Plapack(Mat A,MatType type,Ma
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Plapack;
   B->ops->destroy          = MatDestroy_Plapack;
   
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) { 
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqdense_plapack_C",
                                              "MatConvert_Dense_Plapack",MatConvert_Dense_Plapack);CHKERRQ(ierr);
@@ -492,7 +494,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Dense_Plapack(Mat A,MatType type,Ma
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_plapack_mpidense_C",
                                              "MatConvert_Plapack_Dense",MatConvert_Plapack_Dense);CHKERRQ(ierr);
   }   
-  ierr = PetscInfo(0,"Using Plapack for dense LU factorization and solves.\n");CHKERRQ(ierr); 
+  ierr = PetscInfo(A,"Using Plapack for dense LU factorization and solves.\n");CHKERRQ(ierr); 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATPLAPACK);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -516,8 +518,7 @@ PetscErrorCode MatDuplicate_Plapack(Mat A, MatDuplicateOption op, Mat *M)
   MATPLAPACK - MATPLAPACK = "plapack" - A matrix type providing direct solvers (LU, Cholesky, and QR) 
   for parallel dense matrices via the external package PLAPACK.
 
-  If PLAPACK is installed (see the manual for
-  instructions on how to declare the existence of external packages),
+  If PLAPACK is installed (run config/configure.py with the option --download-plapack)
   a matrix type can be constructed which invokes PLAPACK solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATPLAPACK).
 
@@ -548,7 +549,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Plapack(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
   } else {

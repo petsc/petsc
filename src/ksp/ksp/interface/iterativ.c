@@ -7,7 +7,7 @@
    the registry system, we provide a way to load only the truely necessary
    files) 
  */
-#include "src/ksp/ksp/kspimpl.h"   /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultFreeWork"
@@ -91,9 +91,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSingularValueMonitor"
+#define __FUNCT__ "KSPMonitorSingularValue"
 /*@C
-    KSPSingularValueMonitor - Prints the two norm of the true residual and
+    KSPMonitorSingularValue - Prints the two norm of the true residual and
     estimation of the extreme singular values of the preconditioned problem
     at each iteration.
  
@@ -105,7 +105,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
 -   rnorm - the two norm of the residual
 
     Options Database Key:
-.   -ksp_singmonitor - Activates KSPSingularValueMonitor()
+.   -ksp_monitor_singular_value - Activates KSPMonitorSingularValue()
 
     Notes:
     The CG solver uses the Lanczos technique for eigenvalue computation, 
@@ -118,29 +118,30 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
 
 .seealso: KSPComputeExtremeSingularValues()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSingularValueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
-  PetscReal      emin,emax,c;
-  PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscReal               emin,emax,c;
+  PetscErrorCode          ierr;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
   if (!ksp->calc_sings) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   } else {
     ierr = KSPComputeExtremeSingularValues(ksp,&emax,&emin);CHKERRQ(ierr);
     c = emax/emin;
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e %% max %G min %G max/min %G\n",n,rnorm,emax,emin,c);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e %% max %G min %G max/min %G\n",n,rnorm,emax,emin,c);CHKERRQ(ierr);
   }
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPVecViewMonitor"
+#define __FUNCT__ "KSPMonitorSolution"
 /*@C
-   KSPVecViewMonitor - Monitors progress of the KSP solvers by calling 
+   KSPMonitorSolution - Monitors progress of the KSP solvers by calling 
    VecView() for the approximate solution at each iteration.
 
    Collective on KSP
@@ -159,9 +160,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSingularValueMonitor(KSP ksp,PetscInt n,Pet
 
 .keywords: KSP, nonlinear, vector, monitor, view
 
-.seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView()
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPVecViewMonitor(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -180,9 +181,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPVecViewMonitor(KSP ksp,PetscInt its,PetscRe
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDefaultMonitor"
+#define __FUNCT__ "KSPMonitorDefault"
 /*@C
-   KSPDefaultMonitor - Print the residual norm at each iteration of an
+   KSPMonitorDefault - Print the residual norm at each iteration of an
    iterative solver.
 
    Collective on KSP
@@ -197,23 +198,24 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPVecViewMonitor(KSP ksp,PetscInt its,PetscRe
 
 .keywords: KSP, default, monitor, residual
 
-.seealso: KSPSetMonitor(), KSPTrueMonitor(), KSPLGMonitorCreate()
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
-  PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscErrorCode          ierr;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPTrueMonitor"
+#define __FUNCT__ "KSPMonitorTrueResidualNorm"
 /*@C
-   KSPTrueMonitor - Prints the true residual norm as well as the preconditioned
+   KSPMonitorTrueResidualNorm - Prints the true residual norm as well as the preconditioned
    residual norm at each iteration of an iterative solver.
 
    Collective on KSP
@@ -225,7 +227,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal
 -  dummy - unused monitor context 
 
    Options Database Key:
-.  -ksp_truemonitor - Activates KSPTrueMonitor()
+.  -ksp_monitor_true_residual - Activates KSPMonitorTrueResidualNorm()
 
    Notes:
    When using right preconditioning, these values are equivalent.
@@ -239,19 +241,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal
 
 .keywords: KSP, default, monitor, residual
 
-.seealso: KSPSetMonitor(), KSPDefaultMonitor(), KSPLGMonitorCreate()
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
-  PetscErrorCode ierr;
-  Vec            resid,work;
-  PetscReal      scnorm,bnorm;
-  PC             pc;
-  Mat            A,B;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscErrorCode          ierr;
+  Vec                     resid,work;
+  PetscReal               scnorm,bnorm;
+  PC                      pc;
+  Mat                     A,B;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
   
   PetscFunctionBegin;
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
   ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
   ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
 
@@ -269,41 +271,44 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rn
   ierr = VecNorm(work,NORM_2,&scnorm);CHKERRQ(ierr);
   ierr = VecDestroy(work);CHKERRQ(ierr);
   ierr = VecNorm(ksp->vec_rhs,NORM_2,&bnorm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||Ae||/||Ax|| %14.12e\n",n,rnorm,scnorm,scnorm/bnorm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e true resid norm %14.12e ||Ae||/||Ax|| %14.12e\n",n,rnorm,scnorm,scnorm/bnorm);CHKERRQ(ierr);
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDefaultSMonitor"
+#define __FUNCT__ "KSPMonitorDefaultShort"
 /*
-  Default (short) KSP Monitor, same as KSPDefaultMonitor() except
+  Default (short) KSP Monitor, same as KSPMonitorDefault() except
   it prints fewer digits of the residual as the residual gets smaller.
   This is because the later digits are meaningless and are often 
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultSMonitor(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
 {
-  PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscErrorCode          ierr;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
 
   if (fnorm > 1.e-9) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %G \n",its,fnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %G \n",its,fnorm);CHKERRQ(ierr);
   } else if (fnorm > 1.e-11){
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm %5.3e \n",its,fnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %5.3e \n",its,fnorm);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D KSP Residual norm < 1.e-11\n",its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm < 1.e-11\n",its);CHKERRQ(ierr);
   }
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSkipConverged"
 /*@C
-   KSPSkipConverged - Convergence test that NEVER returns as converged.
+   KSPSkipConverged - Convergence test that do not return as converged
+   until the maximum number of iterations is reached.
 
    Collective on KSP
 
@@ -314,13 +319,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultSMonitor(KSP ksp,PetscInt its,PetscR
 -  dummy - unused convergence context 
 
    Returns:
-.  reason - always KSP_CONVERGED_ITERATING
+.  reason - KSP_CONVERGED_ITERATING, KSP_CONVERGED_ITS
 
-   Notes:
-   This is used as the convergence test with the option KSPSetNormType(ksp,KSP_NO_NORM),
-   since norms of the residual are not computed. Convergence is then declared 
-   after a fixed number of iterations have been used. Useful when one is 
-   using CG or Bi-CG-stab as a smoother.
+   Notes: 
+   This should be used as the convergence test with the option
+   KSPSetNormType(ksp,KSP_NORM_NO), since norms of the residual are
+   not computed. Convergence is then declared after the maximum number
+   of iterations have been reached. Useful when one is using CG or
+   BiCGStab as a smoother.
                     
    Level: advanced
 
@@ -332,14 +338,51 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(reason,4);
+  *reason = KSP_CONVERGED_ITERATING;
+  if (n >= ksp->max_it) *reason = KSP_CONVERGED_ITS;
+  PetscFunctionReturn(0);
+}
+
+typedef struct {
+  PetscTruth initialrtol;    /* default relative residual decrease is computing from initial residual, not rhs */
+  PetscTruth mininitialrtol; /* default relative residual decrease is computing from min of initial residual and rhs */
+  Vec        work;
+} KSPDefaultConvergedCtx;
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDefaultConvergedCreate"
+/*@C
+   KSPDefaultConvergedCreate - Creates and initializes the space used by the KSPDefaultConverged() function context
+
+   Collective on KSP
+
+   Output Parameter:
+.  ctx - convergence context 
+
+   Level: intermediate
+
+.keywords: KSP, default, convergence, residual
+
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
+          KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedDestroy()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedCreate(void **ctx)
+{
+  PetscErrorCode         ierr;
+  KSPDefaultConvergedCtx *cctx;
+
+  PetscFunctionBegin;
+  ierr = PetscNew(KSPDefaultConvergedCtx,&cctx);CHKERRQ(ierr);
+  *ctx = cctx;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultConvergedSetUIRNorm"
-/*@C
+/*@
    KSPDefaultConvergedSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
-      instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_UNPRECONDIITONED_NORM)
+      instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
 
    Collective on KSP
@@ -355,6 +398,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
    The precise values of reason are macros such as KSP_CONVERGED_RTOL, which
    are defined in petscksp.h.
 
+   If the convergence test is not KSPDefaultConverged() then this is ignored.
    Level: intermediate
 
 .keywords: KSP, default, convergence, residual
@@ -363,18 +407,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
 {
+  KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) ksp->cnvP;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (ksp->defaultconvergedmininitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
-  ksp->defaultconvergedinitialrtol = PETSC_TRUE;
+  if (ksp->converged != KSPDefaultConverged) PetscFunctionReturn(0);
+  if (ctx->mininitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
+  ctx->initialrtol = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultConvergedSetUMIRNorm"
-/*@C
+/*@
    KSPDefaultConvergedSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
-      In the case of right preconditioner or if KSPSetNormType(ksp,KSP_UNPRECONDIITONED_NORM)
+      In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.
 
    Collective on KSP
@@ -398,11 +445,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP ksp)
 {
+  KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) ksp->cnvP;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (ksp->defaultconvergedinitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
-  ksp->defaultconvergedmininitialrtol = PETSC_TRUE;
-  PetscFunctionReturn(0);
+  if (ksp->converged != KSPDefaultConverged) PetscFunctionReturn(0);
+  if (ctx->initialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
+  ctx->mininitialrtol = PETSC_TRUE;
+   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -419,7 +469,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP ksp)
 .  rnorm - 2-norm residual value (may be estimated)
 -  dummy - unused convergence context 
 
-   Returns:
+   reason is set to:
 +   positive - if the iteration has converged;
 .   negative - if residual norm exceeds divergence threshold;
 -   0 - otherwise.
@@ -448,45 +498,53 @@ $      rnorm > dtol * rnorm_0,
 .keywords: KSP, default, convergence, residual
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
-          KSPDefaultConvergedSetUIRNorm().
+          KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedCreate(), KSPDefaultConvergedDestroy()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode         ierr;
+  KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) dummy;
+  KSPNormType            normtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidPointer(reason,4);
   *reason = KSP_CONVERGED_ITERATING;
+  
+  ierr = KSPGetNormType(ksp,&normtype);CHKERRQ(ierr);
+  if (normtype == KSP_NORM_NO) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Use KSPSkipConverged() with KSPNormType of KSP_NORM_NO");
 
+  if (!ctx) SETERRQ(PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPDefaultConvergedCreate()");
   if (!n) {
     /* if user gives initial guess need to compute norm of b */
-    if (!ksp->guess_zero && !ksp->defaultconvergedinitialrtol) {
+    if (!ksp->guess_zero && !ctx->initialrtol) {
       PetscReal      snorm;
-      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM || ksp->pc_side == PC_RIGHT) {
+      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->pc_side == PC_RIGHT) {
         ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing 2-norm of RHS\n");CHKERRQ(ierr);
         ierr = VecNorm(ksp->vec_rhs,NORM_2,&snorm);CHKERRQ(ierr);        /*     <- b'*b */
       } else {
         Vec z;
-        ierr = VecDuplicate(ksp->vec_rhs,&z);CHKERRQ(ierr);
+        if (!ctx->work) {
+          ierr = VecDuplicate(ksp->vec_rhs,&ctx->work);CHKERRQ(ierr);
+        }
+        z = ctx->work;
         ierr = KSP_PCApply(ksp,ksp->vec_rhs,z);CHKERRQ(ierr);
-        if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+        if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
           ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing 2-norm of preconditioned RHS\n");CHKERRQ(ierr);
           ierr = VecNorm(z,NORM_2,&snorm);CHKERRQ(ierr);                 /*    dp <- b'*B'*B*b */
-        } else if (ksp->normtype == KSP_NATURAL_NORM) {
+        } else if (ksp->normtype == KSP_NORM_NATURAL) {
           PetscScalar norm;
           ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing natural norm of RHS\n");CHKERRQ(ierr);
           ierr  = VecDot(ksp->vec_rhs,z,&norm);
           snorm = sqrt(PetscAbsScalar(norm));                            /*    dp <- b'*B*b */
         }
-        ierr = VecDestroy(z);CHKERRQ(ierr);
       }
       /* handle special case of zero RHS and nonzero guess */
       if (!snorm) {
         ierr = PetscInfo(ksp,"Special case, user has provided nonzero initial guess and zero RHS\n");CHKERRQ(ierr);
         snorm = rnorm;
       }
-      if (ksp->defaultconvergedmininitialrtol) {
+      if (ctx->mininitialrtol) {
         ksp->rnorm0 = PetscMin(snorm,rnorm);
       } else {
         ksp->rnorm0 = snorm;
@@ -497,6 +555,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
     ksp->ttol   = PetscMax(ksp->rtol*ksp->rnorm0,ksp->abstol);
   }
 
+  if (n <= ksp->chknorm) PetscFunctionReturn(0);
+
   if (rnorm != rnorm) {
     ierr = PetscInfo(ksp,"Linear solver has created a not a number (NaN) as the residual norm, declaring divergence \n");CHKERRQ(ierr);
     *reason = KSP_DIVERGED_NAN;
@@ -505,13 +565,45 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
       ierr = PetscInfo3(ksp,"Linear solver has converged. Residual norm %G is less than absolute tolerance %G at iteration %D\n",rnorm,ksp->abstol,n);CHKERRQ(ierr);
       *reason = KSP_CONVERGED_ATOL;
     } else {
-      ierr = PetscInfo4(ksp,"Linear solver has converged. Residual norm %G is less than relative tolerance %G times initial right hand side norm %G at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);CHKERRQ(ierr);
+      if (ctx->initialrtol) {
+        ierr = PetscInfo4(ksp,"Linear solver has converged. Residual norm %G is less than relative tolerance %G times initial residual norm %G at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);CHKERRQ(ierr);
+      } else {
+        ierr = PetscInfo4(ksp,"Linear solver has converged. Residual norm %G is less than relative tolerance %G times initial right hand side norm %G at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);CHKERRQ(ierr);
+      }
       *reason = KSP_CONVERGED_RTOL;
     }
   } else if (rnorm >= ksp->divtol*ksp->rnorm0) {
     ierr = PetscInfo3(ksp,"Linear solver is diverging. Initial right hand size norm %G, current residual norm %G at iteration %D\n",ksp->rnorm0,rnorm,n);CHKERRQ(ierr);
     *reason = KSP_DIVERGED_DTOL;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDefaultConvergedDestroy"
+/*@C
+   KSPDefaultConvergedDestroy - Frees the space used by the KSPDefaultConverged() function context
+
+   Collective on KSP
+
+   Input Parameters:
+.  ctx - convergence context 
+
+   Level: intermediate
+
+.keywords: KSP, default, convergence, residual
+
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
+          KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedCreate()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedDestroy(void *ctx)
+{
+  PetscErrorCode         ierr;
+  KSPDefaultConvergedCtx *cctx = (KSPDefaultConvergedCtx*) ctx;
+
+  PetscFunctionBegin;
+  if (cctx->work) {ierr = VecDestroy(cctx->work);CHKERRQ(ierr);}
+  ierr = PetscFree(cctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -691,10 +783,10 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
-
   /* free work vectors */
   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
+  /* free private data structure */
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

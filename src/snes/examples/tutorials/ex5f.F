@@ -6,7 +6,7 @@
 !    -par <param>, where <param> indicates the nonlinearity of the problem
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
 !
-!  Program usage:  mpirun -np <procs> ex5f [-help] [all PETSc options]
+!  Program usage:  mpiexec -np <procs> ex5f [-help] [all PETSc options]
 !
 !/*T
 !  Concepts: SNES^parallel Bratu example

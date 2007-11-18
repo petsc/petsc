@@ -7,7 +7,7 @@ LOCDIR          = src/vec/is/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c
 EXAMPLESF       = ex1f.F ex2f.F
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_VEC_LIB}
@@ -39,20 +39,20 @@ ex5: ex5.o chkopts
 
 #-------------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1  ./ex1 
+	-@${MPIEXEC} -np 1  ./ex1 
 
 runex1f:
-	-@${MPIRUN} -np 1  ./ex1f 
+	-@${MPIEXEC} -np 1  ./ex1f 
 
 
 runex2:
-	-@${MPIRUN} -np 1  ./ex2 
+	-@${MPIEXEC} -np 1  ./ex2 
 
 runex2f:
-	-@${MPIRUN} -np 1  ./ex2f 
+	-@${MPIEXEC} -np 1  ./ex2f 
 
 runex5:
-	-@${MPIRUN} -np 3  ./ex5 
+	-@${MPIEXEC} -np 3  ./ex5 
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 ex5.rm 
 TESTEXAMPLES_C_X11	    = 
@@ -61,4 +61,4 @@ TESTEXAMPLES_FORTRAN_MPIUNI =
 TESTEXAMPLES_C_X11_MPIUNI   = 
 TESTEXAMPLES_13		    = ex3.PETSc ex3.rm ex4.PETSc ex4.rm 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

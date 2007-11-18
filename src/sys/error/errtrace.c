@@ -31,7 +31,7 @@ $     SETERRQ(number,p,mess)
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
-   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscStopErrorHandler()
+   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscMPIAbortErrorHandler()
 
    Concepts: error handler^traceback
    Concepts: traceback^generating
@@ -60,6 +60,7 @@ static char version[256];
 PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
 {
   PetscErrorCode ierr;
+  PetscTruth     use_stdout,use_none;
 
   PetscFunctionBegin;
   ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
@@ -68,11 +69,63 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
   ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetDate(date,64);CHKERRQ(ierr);
   ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stdout",&use_stdout);CHKERRQ(ierr);
+  if (use_stdout) {
+    PETSC_STDERR = PETSC_STDOUT;
+  }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_none",&use_none);CHKERRQ(ierr);
+  if (use_none) {
+    PetscErrorPrintf = PetscErrorPrintfNone;
+  }
   PetscErrorPrintfInitializeCalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscErrorPrintfNone" 
+PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfNone(const char format[],...)
+{
+  return 0;
+}
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscErrorPrintfDefault" 
+PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
+{
+  va_list           Argp;
+  static PetscTruth PetscErrorPrintfCalled = PETSC_FALSE;
+
+  /*
+      This function does not call PetscFunctionBegin and PetscFunctionReturn() because
+    it may be called by PetscStackView().
+
+      This function does not do error checking because it is called by the error handlers.
+  */
+
+  if (!PetscErrorPrintfCalled) {
+    PetscErrorPrintfCalled = PETSC_TRUE;
+
+    /*
+        On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
+      different processors, the messages are printed all jumbled up; to try to 
+      prevent this we have each processor wait based on their rank
+    */
+#if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
+    {
+      PetscMPIInt rank;
+      if (PetscGlobalRank > 8) rank = 8; else rank = PetscGlobalRank;
+      PetscSleep(rank);
+    }
+#endif
+  }
+    
+  PetscFPrintf(PETSC_COMM_SELF,PETSC_STDERR,"[%d]PETSC ERROR: ",PetscGlobalRank);
+  va_start(Argp,format);
+  (*PetscVFPrintf)(PETSC_STDERR,format,Argp);
+  va_end(Argp);
+  return 0;
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTraceBackErrorHandler" 
@@ -104,7 +157,7 @@ $     SETERRQ(number,p,mess)
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
-   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscStopErrorHandler()
+   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscMPIAbortErrorHandler()
 
    Concepts: error handler^traceback
    Concepts: traceback^generating

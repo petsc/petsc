@@ -12,7 +12,7 @@ TESTS      = test_IRIX
 CLEANFILES =
 MANSEC     = Sys
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1f90: ex1.o ex1f90.o chkopts
 	-${FLINKER} -o ex1f90 ex1f90.o ex1.o ${PETSC_SYS_LIB}
@@ -34,4 +34,4 @@ runex1f90:
 
 TESTEXAMPLES_F90 = ex1f90.PETSc runex1f90 ex1f90.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

@@ -11,11 +11,11 @@ class Configure(PETSc.package.Package,config.autoconf.Configure):
     PETSc.package.Package.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.foundX11     = 0
+    self.found        = 0
     return
 
   def __str__(self):
-    if self.foundX11:
+    if self.found:
       desc = ['X11:']	
       desc.append('  Includes: '+str(self.include))
       desc.append('  Library: '+str(self.lib))
@@ -25,8 +25,9 @@ class Configure(PETSc.package.Package,config.autoconf.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('X11', '-with-x=<bool>',                nargs.ArgBool(None, 1,   'Activate X11'))
+    help.addArgument('X11', '-with-x11=<bool>',              nargs.ArgBool(None, 1,   'Activate X11'))
     help.addArgument('X11', '-with-x-include=<include dir>', nargs.ArgDir(None, None, 'Specify an include directory for X11'))
-    help.addArgument('X11', '-with-x-lib=<X11 lib>',         nargs.Arg(None, None,    'Specify X11 library file'))
+    help.addArgument('X11', '-with-x-lib=<libraries: e.g. [/Users/..../libX11.a,...]>',nargs.ArgLibrary(None, None,    'Specify X11 library file'))
     help.addArgument('X11', '-with-xt=<bool>',               nargs.ArgBool(None, 0,   'Activate Xt'))
     return
 
@@ -70,10 +71,8 @@ acfindx:
         if not ('X_INCLUDE_ROOT' in results and 'X_USR_LIB_DIR' in results and 'X_LIB_DIR' in results):
           raise RuntimeError('Invalid output: '+str(output))
         # Open Windows xmkmf reportedly sets LIBDIR instead of USRLIBDIR.
-        for ext in ['.a', '.so', '.sl']:
-          if not os.path.isfile(os.path.join(results['X_USR_LIB_DIR'])) and os.path.isfile(os.path.join(results['X_LIB_DIR'])):
-            results['X_USR_LIB_DIR'] = results['X_LIB_DIR']
-            break
+        if not os.path.isfile(os.path.join(results['X_USR_LIB_DIR'])) and os.path.isfile(os.path.join(results['X_LIB_DIR'])):
+          results['X_USR_LIB_DIR'] = results['X_LIB_DIR']
         # Screen out bogus values from the imake configuration.  They are
         # bogus both because they are the default anyway, and because
         # using them would break gcc on systems where it needs fixed includes.
@@ -93,7 +92,9 @@ acfindx:
     '''Checks for X windows, sets PETSC_HAVE_X11 if found, and defines X_CFLAGS, X_PRE_LIBS, X_LIBS, and X_EXTRA_LIBS'''
     # This needs to be rewritten to use generateGuesses()
     foundInclude = 0
-    includeDirs  = ['/usr/X11/include',
+    includeDirs  = ['/Developer/SDKs/MacOSX10.5.sdk/usr/X11/include',
+                    '/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include',
+                    '/usr/X11/include',
                    '/usr/X11R6/include',
                    '/usr/X11R5/include',
                    '/usr/X11R4/include',
@@ -167,7 +168,7 @@ acfindx:
       # Check guess
       for testLibrary, testFunction in testLibraries:
         if libraryDirGuess:
-          for ext in ['.a', '.so', '.sl', '.dll.a']:
+          for ext in ['.a', '.so', '.sl', '.dll.a','.dylib']:
             if os.path.isfile(os.path.join(libraryDirGuess, 'lib'+testLibrary+ext)):
               foundLibrary = 1
               libraryDir   = libraryDirGuess
@@ -184,7 +185,7 @@ acfindx:
         # Check standard paths
         if not foundLibrary:
           for dir in libraryDirs:
-            for ext in ['.a', '.so', '.sl']:
+            for ext in ['.a', '.so', '.sl', '.dll.a','.dylib']:
               if os.path.isfile(os.path.join(dir, 'lib'+testLibrary+ext)):
                 foundLibrary = 1
                 libraryDir   = dir
@@ -204,7 +205,7 @@ acfindx:
           
     if foundInclude and foundLibrary:
       self.logPrint('Found X11 includes and libraries')
-      self.foundX11  = 1
+      self.found     = 1
       if includeDir:
         self.include = '-I'+includeDir
       else:

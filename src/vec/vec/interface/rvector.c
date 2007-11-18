@@ -55,7 +55,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *m
 .  x, y - the vectors
 
    Output Parameter:
-.  alpha - the dot product
+.  val - the dot product
 
    Performance Issues:
 +    per-processor memory bandwidth
@@ -93,9 +93,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDot(Vec x,Vec y,PetscScalar *val)
   if (x->map.N != y->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->map.n != y->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -158,9 +158,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)
     if (flg) PetscFunctionReturn(0);
   }
 
-  ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
 
   if (type!=NORM_1_AND_2) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[type],*val);CHKERRQ(ierr);
@@ -438,7 +438,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
  {
    PetscReal alpha_local,alpha_max;
    alpha_local = PetscAbsScalar(alpha);
-   ierr = MPI_Allreduce(&alpha_local,&alpha_max,1,MPIU_REAL,MPI_MAX,x->comm);CHKERRQ(ierr);
+   ierr = MPI_Allreduce(&alpha_local,&alpha_max,1,MPIU_REAL,MPI_MAX,((PetscObject)x)->comm);CHKERRQ(ierr);
    if (alpha_local != alpha_max) SETERRQ(PETSC_ERR_ARG_WRONG,"Same value should be used across all processors");
  }
 #endif
@@ -661,7 +661,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
 
    VecSetValues() uses 0-based indices in Fortran as well as in C.
 
-   Negative indices may be passed in ix, these rows are 
+   If you call VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE), 
+   negative indices may be passed in ix. These rows are 
    simply ignored. This allows easily inserting element load matrices
    with homogeneous Dirchlet boundary conditions that you don't want represented
    in the vector.
@@ -713,6 +714,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValues(Vec x,PetscInt ni,const PetscInt 
    VecAssemblyBegin() and VecAssemblyEnd()  MUST be called before calling this
 
    VecGetValues() uses 0-based indices in Fortran as well as in C.
+
+   If you call VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE),
+   negative indices may be passed in ix. These rows are
+   simply ignored.
 
    Level: beginner
 
@@ -1017,7 +1022,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscS
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
+  if (!nv) PetscFunctionReturn(0);
+  if (nv < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
   PetscValidPointer(y,3);
   PetscValidHeaderSpecific(*y,VEC_COOKIE,3);
   PetscValidScalarPointer(val,4);
@@ -1027,9 +1034,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscS
   if (x->map.N != (*y)->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->map.n != (*y)->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   ierr = (*x->ops->mdot)(x,nv,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1057,8 +1064,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec y,PetscInt nv,const PetscScalar a
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidScalarPointer(alpha,3);
   PetscValidHeaderSpecific(y,VEC_COOKIE,1);
+  if (!nv) PetscFunctionReturn(0);
+  if (nv < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
+  PetscValidScalarPointer(alpha,3);
   PetscValidPointer(x,4);
   PetscValidHeaderSpecific(*x,VEC_COOKIE,4);
   PetscValidType(y,1);

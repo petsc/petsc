@@ -52,8 +52,8 @@ int main(int argc,char **argv)
   ierr = VecView(y,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(y,is2,x,is1,&ctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(y,x,ADD_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(y,x,ADD_VALUES,SCATTER_FORWARD,ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(ctx,y,x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx,y,x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
   
   if (!rank) 

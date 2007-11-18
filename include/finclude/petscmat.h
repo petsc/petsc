@@ -10,7 +10,7 @@
 #define MatPartitioning PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr
 #define MatType character*(80)
-#define MatOption PetscEnum 
+#define MatOption PetscEnum
 #define MatAssemblyType PetscEnum
 #define MatOrderingType character*(80)
 #define MatSORType PetscEnum
@@ -18,9 +18,9 @@
 #define MatReuse PetscEnum
 #define MatOperation PetscEnum
 #define MatColoringType character*(80)
-#define MatInfo double precision
-#define MatFactorInfo double precision
-#define MatDuplicateOption PetscEnum      
+#define MatInfo PetscLogDouble
+#define MatFactorInfo PetscReal
+#define MatDuplicateOption PetscEnum
 #define MatStructure PetscEnum
 #define MatPartitioningType character*(80)
 #define MatNullSpace PetscFortranAddr
@@ -101,66 +101,61 @@
 !
 !  Flag for matrix assembly
 !
-      PetscEnum MAT_FLUSH_ASSEMBLY,MAT_FINAL_ASSEMBLY
+      PetscEnum MAT_FLUSH_ASSEMBLY
+      PetscEnum MAT_FINAL_ASSEMBLY
 
       parameter(MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
 !
 !  Matrix options; must match those in include/petscmat.h
 !
-      PetscEnum MAT_ROW_ORIENTED,MAT_COLUMN_ORIENTED,MAT_ROWS_SORTED
-      PetscEnum MAT_COLUMNS_SORTED,MAT_NO_NEW_NONZERO_LOCATIONS
-      PetscEnum MAT_YES_NEW_NONZERO_LOCATIONS,MAT_SYMMETRIC
-      PetscEnum MAT_STRUCTURALLY_SYMMETRIC,MAT_NO_NEW_DIAGONALS
-      PetscEnum MAT_YES_NEW_DIAGONALS,MAT_INODE_LIMIT_1
-      PetscEnum MAT_INODE_LIMIT_2,MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4
-      PetscEnum MAT_INODE_LIMIT_5,MAT_IGNORE_OFF_PROC_ENTRIES
-      PetscEnum MAT_ROWS_UNSORTED,MAT_COLUMNS_UNSORTED
+      PetscEnum MAT_ROW_ORIENTED
+      PetscEnum MAT_NEW_NONZERO_LOCATIONS
+      PetscEnum MAT_SYMMETRIC
+      PetscEnum MAT_STRUCTURALLY_SYMMETRIC
+      PetscEnum MAT_NEW_DIAGONALS
+      PetscEnum MAT_IGNORE_OFF_PROC_ENTRIES
       PetscEnum MAT_NEW_NONZERO_LOCATION_ERR
-      PetscEnum MAT_NEW_NONZERO_ALLOCATION_ERR,MAT_USE_HASH_TABLE
-      PetscEnum MAT_KEEP_ZEROED_ROWS,MAT_IGNORE_ZERO_ENTRIES
-      PetscEnum MAT_USE_INODES,MAT_DO_NOT_USE_INODES
-      PetscEnum MAT_NOT_SYMMETRIC,MAT_HERMITIAN
-      PetscEnum MAT_NOT_STRUCTURALLY_SYMMETRIC,MAT_NOT_HERMITIAN
-      PetscEnum MAT_SYMMETRY_ETERNAL,MAT_NOT_SYMMETRY_ETERNAL
-      PetscEnum MAT_USE_COMPRESSEDROW,MAT_DO_NOT_USE_COMPRESSEDROW
-      PetscEnum MAT_IGNORE_LOWER_TRIANGULAR,MAT_ERROR_LOWER_TRIANGULAR
+      PetscEnum MAT_NEW_NONZERO_ALLOCATION_ERR
+      PetscEnum MAT_USE_HASH_TABLE
+      PetscEnum MAT_KEEP_ZEROED_ROWS
+      PetscEnum MAT_IGNORE_ZERO_ENTRIES
+      PetscEnum MAT_USE_INODES
+      PetscEnum MAT_HERMITIAN
+      PetscEnum MAT_SYMMETRY_ETERNAL
+      PetscEnum MAT_USE_COMPRESSEDROW
+      PetscEnum MAT_IGNORE_LOWER_TRIANGULAR
+      PetscEnum MAT_ERROR_LOWER_TRIANGULAR
       PetscEnum MAT_GETROW_UPPERTRIANGULAR
 
-      parameter (MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2)
-      parameter (MAT_ROWS_SORTED=4,MAT_COLUMNS_SORTED=8)
-      parameter (MAT_NO_NEW_NONZERO_LOCATIONS=16)
-      parameter (MAT_YES_NEW_NONZERO_LOCATIONS=32)
-      parameter (MAT_SYMMETRIC=64,MAT_STRUCTURALLY_SYMMETRIC=65)
-      parameter (MAT_NO_NEW_DIAGONALS=66,MAT_YES_NEW_DIAGONALS=67)
-      parameter (MAT_INODE_LIMIT_1=68,MAT_INODE_LIMIT_2=69)
-      parameter (MAT_INODE_LIMIT_3=70,MAT_INODE_LIMIT_4=71)
-      parameter (MAT_INODE_LIMIT_5=72,MAT_IGNORE_OFF_PROC_ENTRIES=73)
-      parameter (MAT_ROWS_UNSORTED=74,MAT_COLUMNS_UNSORTED=75)
-      parameter (MAT_NEW_NONZERO_LOCATION_ERR=76)
-      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=77)
-      parameter (MAT_USE_HASH_TABLE=78)
-      parameter (MAT_KEEP_ZEROED_ROWS=79)
-      parameter (MAT_IGNORE_ZERO_ENTRIES=80)
-      parameter (MAT_USE_INODES=81,MAT_DO_NOT_USE_INODES=82)
-      parameter (MAT_NOT_SYMMETRIC=83,MAT_HERMITIAN=84)
-      parameter (MAT_NOT_STRUCTURALLY_SYMMETRIC=85)
-      parameter (MAT_NOT_HERMITIAN=86)
-      parameter (MAT_SYMMETRY_ETERNAL=87,MAT_NOT_SYMMETRY_ETERNAL=88)
-      parameter (MAT_USE_COMPRESSEDROW=89)
-      parameter (MAT_DO_NOT_USE_COMPRESSEDROW=90)
-      parameter (MAT_IGNORE_LOWER_TRIANGULAR=91)
-      parameter (MAT_ERROR_LOWER_TRIANGULAR=92)
-      parameter (MAT_GETROW_UPPERTRIANGULAR=93)
+      parameter (MAT_ROW_ORIENTED=0)
+      parameter (MAT_NEW_NONZERO_LOCATIONS=1)
+      parameter (MAT_SYMMETRIC=2,MAT_STRUCTURALLY_SYMMETRIC=3)
+      parameter (MAT_NEW_DIAGONALS=4)
+      parameter (MAT_IGNORE_OFF_PROC_ENTRIES=5)
+      parameter (MAT_NEW_NONZERO_LOCATION_ERR=6)
+      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=7)
+      parameter (MAT_USE_HASH_TABLE=8)
+      parameter (MAT_KEEP_ZEROED_ROWS=9)
+      parameter (MAT_IGNORE_ZERO_ENTRIES=10)
+      parameter (MAT_USE_INODES=11)
+      parameter (MAT_HERMITIAN=12)
+      parameter (MAT_SYMMETRY_ETERNAL=13)
+      parameter (MAT_USE_COMPRESSEDROW=14)
+      parameter (MAT_IGNORE_LOWER_TRIANGULAR=15)
+      parameter (MAT_ERROR_LOWER_TRIANGULAR=16)
+      parameter (MAT_GETROW_UPPERTRIANGULAR=17)
 
 !
 !  MatDuplicateOption
 !
-      PetscEnum MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES
+      PetscEnum MAT_DO_NOT_COPY_VALUES
+      PetscEnum MAT_COPY_VALUES
       parameter (MAT_DO_NOT_COPY_VALUES=0,MAT_COPY_VALUES=1)
 !
 !  Flags for PCSetOperators()
 !
-      PetscEnum SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN
+      PetscEnum SAME_NONZERO_PATTERN
+      PetscEnum DIFFERENT_NONZERO_PATTERN
       PetscEnum SAME_PRECONDITIONER
 
       parameter (SAME_NONZERO_PATTERN = 0,DIFFERENT_NONZERO_PATTERN = 1)
@@ -170,17 +165,24 @@
 !  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
 !  (See petsc/include/petscmat.h)
 !
-      PetscEnum   MAT_INFO_SIZE
+      PetscEnum MAT_INFO_SIZE
 
       parameter (MAT_INFO_SIZE=14)
 
-      PetscEnum MAT_INFO_ROWS_GLOBAL,MAT_INFO_COLUMNS_GLOBAL
-      PetscEnum MAT_INFO_ROWS_LOCAL,MAT_INFO_COLUMNS_LOCAL
-      PetscEnum MAT_INFO_BLOCK_SIZE,MAT_INFO_NZ_ALLOCATED
-      PetscEnum MAT_INFO_NZ_USED,MAT_INFO_NZ_UNNEEDED
-      PetscEnum MAT_INFO_MEMORY,MAT_INFO_ASSEMBLIES
-      PetscEnum MAT_INFO_MALLOCS,MAT_INFO_FILL_RATIO_GIVEN
-      PetscEnum MAT_INFO_FILL_RATIO_NEEDED,MAT_INFO_FACTOR_MALLOCS
+      PetscEnum MAT_INFO_ROWS_GLOBAL
+      PetscEnum MAT_INFO_COLUMNS_GLOBAL
+      PetscEnum MAT_INFO_ROWS_LOCAL
+      PetscEnum MAT_INFO_COLUMNS_LOCAL
+      PetscEnum MAT_INFO_BLOCK_SIZE
+      PetscEnum MAT_INFO_NZ_ALLOCATED
+      PetscEnum MAT_INFO_NZ_USED
+      PetscEnum MAT_INFO_NZ_UNNEEDED
+      PetscEnum MAT_INFO_MEMORY
+      PetscEnum MAT_INFO_ASSEMBLIES
+      PetscEnum MAT_INFO_MALLOCS
+      PetscEnum MAT_INFO_FILL_RATIO_GIVEN
+      PetscEnum MAT_INFO_FILL_RATIO_NEEDED
+      PetscEnum MAT_INFO_FACTOR_MALLOCS
 
       parameter (MAT_INFO_ROWS_GLOBAL=1,MAT_INFO_COLUMNS_GLOBAL=2)
       parameter (MAT_INFO_ROWS_LOCAL=3,MAT_INFO_COLUMNS_LOCAL=4)
@@ -193,14 +195,17 @@
 !
 !  MatReuse
 !
-      PetscEnum MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX
+      PetscEnum MAT_INITIAL_MATRIX
+      PetscEnum MAT_REUSE_MATRIX
 
       parameter (MAT_INITIAL_MATRIX=0,MAT_REUSE_MATRIX=1)
 
 !
 !  MatInfoType
 !
-      PetscEnum MAT_LOCAL,MAT_GLOBAL_MAX,MAT_GLOBAL_SUM
+      PetscEnum MAT_LOCAL
+      PetscEnum MAT_GLOBAL_MAX
+      PetscEnum MAT_GLOBAL_SUM
 
       parameter (MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
 
@@ -208,7 +213,7 @@
 !  Note: MAT_FACTORINFO_SIZE must equal # elements in MatFactorInfo structure
 !  (See petsc/include/petscmat.h)
 !
-      PetscEnum   MAT_FACTORINFO_SIZE
+      PetscEnum MAT_FACTORINFO_SIZE
 
       parameter (MAT_FACTORINFO_SIZE=11)
 
@@ -241,10 +246,16 @@
 !  Options for SOR and SSOR
 !  MatSorType may be bitwise ORd together, so do not change the numbers
 !
-      PetscEnum SOR_FORWARD_SWEEP,SOR_BACKWARD_SWEEP,SOR_SYMMETRIC_SWEEP
-      PetscEnum SOR_LOCAL_FORWARD_SWEEP,SOR_LOCAL_BACKWARD_SWEEP
-      PetscEnum SOR_LOCAL_SYMMETRIC_SWEEP,SOR_ZERO_INITIAL_GUESS
-      PetscEnum SOR_EISENSTAT,SOR_APPLY_UPPER,SOR_APPLY_LOWER
+      PetscEnum SOR_FORWARD_SWEEP
+      PetscEnum SOR_BACKWARD_SWEEP
+      PetscEnum SOR_SYMMETRIC_SWEEP
+      PetscEnum SOR_LOCAL_FORWARD_SWEEP
+      PetscEnum SOR_LOCAL_BACKWARD_SWEEP
+      PetscEnum SOR_LOCAL_SYMMETRIC_SWEEP
+      PetscEnum SOR_ZERO_INITIAL_GUESS
+      PetscEnum SOR_EISENSTAT
+      PetscEnum SOR_APPLY_UPPER
+      PetscEnum SOR_APPLY_LOWER
 
       parameter (SOR_FORWARD_SWEEP=1,SOR_BACKWARD_SWEEP=2)
       parameter (SOR_SYMMETRIC_SWEEP=3,SOR_LOCAL_FORWARD_SWEEP=4)
@@ -364,6 +375,7 @@
       PetscEnum MATOP_GET_ROW_UTRIANGULAR
       PetscEnum MATOP_RESTORE_ROW_UTRIANGULAR
       PetscEnum MATOP_MATSOLVE
+      PetscEnum MATOP_MATGETSEQNONZEROSTRUCTURE
   
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
@@ -472,6 +484,7 @@
       parameter(MATOP_GET_ROW_UTRIANGULAR=108)  
       parameter(MATOP_RESTORE_ROW_UTRIANGULAR=109) 
       parameter(MATOP_MATSOLVE=110)
+      parameter(MATOP_MATGETSEQNONZEROSTRUCTURE=115)
 !
 !  
 !

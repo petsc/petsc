@@ -68,7 +68,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoAllow(PetscTruth flag, const char filena
     ierr = PetscFOpen(MPI_COMM_SELF, fname, "w", &PetscInfoFile);CHKERRQ(ierr);
     if (!PetscInfoFile) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
   } else if (flag) {
-    PetscInfoFile = stdout;
+    PetscInfoFile = PETSC_STDOUT;
   }
   PetscLogPrintInfo     = flag;
   PetscLogPrintInfoNull = flag;
@@ -183,6 +183,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, c
   PetscObject    obj = (PetscObject)vobj;
   char           string[8*1024];
   PetscErrorCode ierr;
+  int            err;
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj,1);
@@ -199,13 +200,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, c
 
   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &urank);CHKERRQ(ierr);
   va_start(Argp, message);
-  sprintf(string, "[%d] %s", urank,func); 
+  sprintf(string, "[%d] %s(): ", urank,func); 
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
   ierr = PetscVSNPrintf(string+len, 8*1024-len,message, Argp);
   ierr = PetscFPrintf(PETSC_COMM_SELF,PetscInfoFile, "%s", string);CHKERRQ(ierr);
-  fflush(PetscInfoFile);
+  err = fflush(PetscInfoFile);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
   if (petsc_history) {
-    PetscVFPrintf(petsc_history, message, Argp);CHKERRQ(ierr);
+    (*PetscVFPrintf)(petsc_history, message, Argp);CHKERRQ(ierr);
   }
   va_end(Argp);
   PetscFunctionReturn(0);

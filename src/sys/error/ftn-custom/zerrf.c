@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petsc.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -107,12 +107,12 @@ void PETSC_STDCALL petscpusherrorhandler_(void (PETSC_STDCALL *handler)(int*,con
   }
 }
 
-void PETSC_STDCALL petscerror_(int *number,int *p,CHAR message PETSC_MIXED_LEN(len),
+void PETSC_STDCALL petscerror_(int *number,int *line,int *p,CHAR message PETSC_MIXED_LEN(len),
                                PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t1;
   FIXCHAR(message,len,t1);
-  *ierr = PetscError(-1,0,0,0,*number,*p,t1);
+  *ierr = PetscError(*line,0,0,0,*number,*p,t1);
   FREECHAR(message,t1);
 }
 

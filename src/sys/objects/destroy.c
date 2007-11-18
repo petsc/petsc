@@ -4,16 +4,18 @@
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-struct _p_Object {
+typedef struct _p_GenericObject* GenericObject;
+
+struct _p_GenericObject {
   PETSCHEADER(int);
 };
 
-PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject obj)
+PetscErrorCode PetscObjectDestroy_GenericObject(GenericObject obj)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (--obj->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)obj)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -33,7 +35,7 @@ PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject obj)
 
    Level: developer
 
-   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_PetscObject()
+   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_GenericObject()
           to make new object classes.
 
     Concepts: destroying object
@@ -43,21 +45,20 @@ PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject obj)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj)
 {
-  PetscObject    o;
+  GenericObject  o;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(obj,2);
-
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(o,_p_PetscObject,-1,PETSC_OBJECT_COOKIE,0,"PetscObject",comm,PetscObjectDestroy_PetscObject,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(o,_p_GenericObject,-1,PETSC_OBJECT_COOKIE,0,"PetscObject",comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
   /* records not yet defined in PetscObject 
   o->data        = 0;
   o->setupcalled = 0;
   */
-  *obj = o;
+  *obj = (PetscObject)o;
   PetscFunctionReturn(0);
 }
 
@@ -78,7 +79,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 
    Level: developer
 
-   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_PetscObject()
+   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_GenericObject()
           to make new object classes.
 
     Concepts: destroying object
@@ -88,21 +89,20 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscCookie cookie, const char name[], PetscObject *obj)
 {
-  PetscObject    o;
+  GenericObject  o;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(obj,2);
-
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(o,_p_PetscObject,-1,cookie,0,name,comm,PetscObjectDestroy_PetscObject,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(o,_p_GenericObject,-1,cookie,0,name,comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
   /* records not yet defined in PetscObject 
   o->data        = 0;
   o->setupcalled = 0;
   */
-  *obj = o;
+  *obj = (PetscObject)o;
   PetscFunctionReturn(0);
 }
 
@@ -131,7 +131,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroy(PetscObject obj)
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
   } else {
@@ -162,7 +161,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectView(PetscObject obj,PetscViewer viewe
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(obj->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(obj->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   if (obj->bops->view) {
@@ -218,8 +219,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscTypeCompare(PetscObject obj,const char type_
   PetscFunctionReturn(0);
 }
 
+#define MAXREGDESOBJS 256
 static int         PetscObjectRegisterDestroy_Count = 0;
-static PetscObject PetscObjectRegisterDestroy_Objects[256];
+static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectRegisterDestroy"
@@ -246,7 +248,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroy(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
+  if (PetscObjectRegisterDestroy_Count < MAXREGDESOBJS) {
+    PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
+  } else {
+    SETERRQ1(PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS\n",MAXREGDESOBJS);
+    
+  }
   PetscFunctionReturn(0);
 }
 
@@ -255,7 +262,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroy(PetscObject obj)
 /*@C
    PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
      with PetscObjectRegisterDestroy(). Called by PetscFinalize()
-     PetscFinalize() is called.
 
    Collective on individual PetscObjects
 
@@ -272,7 +278,65 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroyAll(void)
   for (i=0; i<PetscObjectRegisterDestroy_Count; i++) {
     ierr = PetscObjectDestroy(PetscObjectRegisterDestroy_Objects[i]);CHKERRQ(ierr);
   }
+  PetscObjectRegisterDestroy_Count = 0;
   PetscFunctionReturn(0);
 }
 
 
+#define MAXREGFIN 256
+static int         PetscRegisterFinalize_Count = 0;
+static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRegisterFinalize"
+/*@C
+   PetscRegisterFinalize - Registers a function that is to be called in PetscFinalize()
+
+   Not Collective
+
+   Input Parameter:
+.  PetscErrorCode (*fun)(void) - 
+
+   Level: developer
+
+   Notes:
+      This is used by, for example, DMPackageInitialize() to have DMPackageFinalize() called 
+
+.seealso: PetscRegisterFinalizeAll()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalize(PetscErrorCode (*f)(void))
+{
+  PetscFunctionBegin;
+
+  if (PetscRegisterFinalize_Count < MAXREGFIN) {
+    PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
+  } else {
+    SETERRQ1(PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
+    
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetsRegisterFinalizeAll"
+/*@C
+   PetscRegisterFinalizeAll - Runs all the finalize functions set with PetscRegisterFinalize()
+
+   Not Collective unless registered functions are collective
+
+   Level: developer
+
+.seealso: PetscRegisterFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalizeAll(void)
+{
+  PetscErrorCode ierr;
+  int i;
+
+  PetscFunctionBegin;
+  for (i=0; i<PetscRegisterFinalize_Count; i++) {
+    ierr = (*PetscRegisterFinalize_Functions[i])();CHKERRQ(ierr);
+  }
+  PetscRegisterFinalize_Count = 0;
+  PetscFunctionReturn(0);
+}

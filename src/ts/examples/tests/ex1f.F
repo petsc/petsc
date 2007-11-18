@@ -44,6 +44,7 @@
       character*(5)    etype
       PetscInt         i1,i60
       PetscTruth flg
+      PetscSizeT five
 
       external Monitor,RHSFunctionHeat,RHSMatrixFree,Initial
       external RHSMatrixHeat,RHSJacobianHeat
@@ -146,7 +147,7 @@
 
       call TSCreate(PETSC_COMM_WORLD,ts,ierr) 
       call TSSetProblemType(ts,tsproblem,ierr) 
-      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,                   &
+      call TSMonitorSet(ts,Monitor,PETSC_NULL_OBJECT,                   &
      &                  PETSC_NULL_FUNCTION, ierr) 
 
       dt = h*h/2.01
@@ -158,8 +159,9 @@
          call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,                  &
      &        PETSC_NULL_OBJECT,A,ierr)
          call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
-         call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,                &
-     &        PETSC_NULL_OBJECT,ierr) 
+         call TSSetMatrices(ts,A,PETSC_NULL_FUNCTION,                    &
+     &           PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,                  &
+     &           DIFFERENT_NONZERO_PATTERN,PETSC_NULL_OBJECT,ierr) 
       else if (problem .eq. linear_no_time) then
 !    
 !         The user provides the RHS as a matrix
@@ -169,8 +171,9 @@
          call MatSetFromOptions(A,ierr)
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
      &        ierr)  
-         call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,                &
-     &        PETSC_NULL_OBJECT,ierr) 
+         call TSSetMatrices(ts,A,PETSC_NULL_FUNCTION,                    &
+     &           PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,                  &
+     &           DIFFERENT_NONZERO_PATTERN,PETSC_NULL_OBJECT,ierr) 
       else if (problem .eq. linear) then
 !    
 !         The user provides the RHS as a time dependent matrix
@@ -180,8 +183,9 @@
          call MatSetFromOptions(A,ierr)
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
      &        ierr)  
-         call TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,PETSC_NULL_OBJECT,    &
-     &        ierr) 
+         call TSSetMatrices(ts,A,RHSMatrixHeat,                          &
+     &           PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,                  &
+     &           DIFFERENT_NONZERO_PATTERN,PETSC_NULL_OBJECT,ierr) 
       else if (problem .eq. nonlinear_no_jacobian) then
 !    
 !         The user provides the RHS and a Shell Jacobian
@@ -227,8 +231,9 @@
 !   
 !         copy type to string of length 5 to ensure equality test        
 !         is done correctly
-!
-        call PetscStrncpy(etype,type,5,ierr)
+!     
+        five = 5
+        call PetscStrncpy(etype,type,five,ierr)
         if (etype .eq. TS_EULER) then
           if (abs(nrm_2/steps - 0.00257244) .gt. 1.e-4) then
             print*,'Error in Euler method: 2-norm ',nrm_2/steps,        &

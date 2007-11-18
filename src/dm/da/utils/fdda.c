@@ -132,7 +132,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
 
     Input Parameter:
 +   da - the distributed array
--   ctype - IS_COLORING_LOCAL or IS_COLORING_GHOSTED
+-   ctype - IS_COLORING_GLOBAL or IS_COLORING_GHOSTED
 
     Output Parameters:
 .   coloring - matrix coloring for use in computing Jacobians (or PETSC_NULL if not needed)
@@ -140,7 +140,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
     Level: advanced
 
     Notes: These compute the graph coloring of the graph of A^{T}A. The coloring used 
-   for efficient (parallel or thread based) triangular solves etc is NOT yet 
+   for efficient (parallel or thread based) triangular solves etc is NOT
    available. 
 
 
@@ -150,7 +150,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
 PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
-  PetscInt       dim;
+  PetscInt       dim,m,n,p;
+  DAPeriodicType wrap;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   /*
@@ -174,8 +177,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,ISColo
          nc - number of components per grid point 
          col - number of colors needed in one direction for single component problem
   
-  */
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  */  
+  ierr = DAGetInfo(da,&dim,0,0,0,&m,&n,&p,0,0,&wrap,0);CHKERRQ(ierr);
+
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (ctype == IS_COLORING_GHOSTED){
+    if (size == 1) {
+      ctype = IS_COLORING_GLOBAL;
+    } else if (dim > 1){
+      if ((m==1 && DAXPeriodic(wrap)) || (n==1 && DAYPeriodic(wrap)) || (p==1 && DAZPeriodic(wrap))){
+        SETERRQ(PETSC_ERR_SUP,"IS_COLORING_GHOSTED cannot be used for periodic boundary condition having both ends of the domain  on the same process");
+      }
+    }
+  }
+
 
   /*
      We do not provide a getcoloring function in the DA operations because 
@@ -226,14 +242,14 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   } else {
 
     if (DAXPeriodic(wrap) && (m % col)){ 
-      SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 2*stencil_width + 1\n");
+      SETERRQ2(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X (%d) is divisible\n\
+                 by 2*stencil_width + 1 (%d)\n", m, col);
     }
     if (DAYPeriodic(wrap) && (n % col)){ 
-      SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 2*stencil_width + 1\n");
+      SETERRQ2(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y (%d) is divisible\n\
+                 by 2*stencil_width + 1 (%d)\n", n, col);
     }
-    if (ctype == IS_COLORING_LOCAL) {
+    if (ctype == IS_COLORING_GLOBAL) {
       if (!da->localcoloring) {
 	ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
 	ii = 0;
@@ -262,6 +278,8 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	}
         ncolors = nc + nc*(col - 1 + col*(col-1));
 	ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+        /* PetscIntView(ncolors,(PetscInt *)colors,0); */
+
 	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
       *coloring = da->ghostedcoloring;
@@ -311,7 +329,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   /* create the coloring */
-  if (ctype == IS_COLORING_LOCAL) {
+  if (ctype == IS_COLORING_GLOBAL) {
     if (!da->localcoloring) {
       ierr = PetscMalloc(nc*nx*ny*nz*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
@@ -384,7 +402,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   /* create the coloring */
-  if (ctype == IS_COLORING_LOCAL) {
+  if (ctype == IS_COLORING_GLOBAL) {
     if (!da->localcoloring) {
       ierr = PetscMalloc(nc*nx*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       i1 = 0;
@@ -449,7 +467,7 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
   }
 
   /* create the coloring */
-  if (ctype == IS_COLORING_LOCAL) {
+  if (ctype == IS_COLORING_GLOBAL) {
     if (!da->localcoloring) {
       ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
@@ -596,15 +614,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, MatType mtype,Mat *J)
       ierr = DAGetMatrix1d_MPIAIJ(da,A);CHKERRQ(ierr);
     } else if (dim == 2) {
       if (da->ofill) {
-        DAGetMatrix2d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
+        ierr = DAGetMatrix2d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-        DAGetMatrix2d_MPIAIJ(da,A);CHKERRQ(ierr);
+        ierr = DAGetMatrix2d_MPIAIJ(da,A);CHKERRQ(ierr);
       }
     } else if (dim == 3) {
       if (da->ofill) {
-        DAGetMatrix3d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
+        ierr = DAGetMatrix3d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-        DAGetMatrix3d_MPIAIJ(da,A);CHKERRQ(ierr);
+        ierr = DAGetMatrix3d_MPIAIJ(da,A);CHKERRQ(ierr);
       }
     }
   } else if (baij) {
@@ -1002,7 +1020,7 @@ PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
   ierr = DAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
 
   ierr = MatSeqAIJSetPreallocation(J,col*nc,0);CHKERRQ(ierr);  
-  ierr = MatMPIAIJSetPreallocation(J,col*nc,0,0,0);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(J,col*nc,0,col*nc,0);CHKERRQ(ierr);
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = PetscMalloc2(nc,PetscInt,&rows,col*nc*nc,PetscInt,&cols);CHKERRQ(ierr);
   

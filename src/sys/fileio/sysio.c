@@ -153,7 +153,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
    Concepts: files^reading binary
    Concepts: binary files^reading
 
-.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor()
+.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(),
+          PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 {
@@ -192,7 +193,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
     err = read(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
     if (!err && wsize > 0) SETERRQ(PETSC_ERR_FILE_READ,"Read past end of file");
-    if (err < 0) SETERRQ(PETSC_ERR_FILE_READ,"Error reading from file");
+    if (err < 0) SETERRQ1(PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
     m  -= err;
     pp += err;
   }
@@ -256,7 +257,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
    Concepts: files^writing binary
    Concepts: binary files^writing
 
-.seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor()
+.seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(), 
+          PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
 {
@@ -314,9 +316,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
     pp += wsize;
   }
 
-#if !defined(PETSC_WORDS_BIGENDIAN) && !(PETSC_SIZEOF_INT == 8) && !defined(PETSC_USE_64BIT_INDICES)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   if (!istemp) {
     if      (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
@@ -355,7 +358,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
    big-endian format. This means the file can be accessed using PetscBinaryOpen() and
    PetscBinaryRead() and PetscBinaryWrite() on any machine.
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscFileMode, PetscViewerFileSetMode(), PetscViewerBinaryGetDescriptor()
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscFileMode, PetscViewerFileSetMode(), PetscViewerBinaryGetDescriptor(), 
+          PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
@@ -405,7 +409,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char name[],PetscFileMode m
 
    Level: advanced
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
+          PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int fd)
 {
@@ -424,11 +429,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int fd)
 
    Input Parameters:
 +  fd - the file
-.  whence - if PETSC_BINARY_SEEK_SET then size is an absolute location in the file
-            if PETSC_BINARY_SEEK_CUR then size is offset from current location
-            if PETSC_BINARY_SEEK_END then size is offset from end of file
--  size - number of bytes to move. Use PETSC_BINARY_INT_SIZE, PETSC_BINARY_SCALAR_SIZE,
+.  off - number of bytes to move. Use PETSC_BINARY_INT_SIZE, PETSC_BINARY_SCALAR_SIZE,
             etc. in your calculation rather than sizeof() to compute byte lengths.
+-  whence - if PETSC_BINARY_SEEK_SET then off is an absolute location in the file
+            if PETSC_BINARY_SEEK_CUR then off is an offset from the current location
+            if PETSC_BINARY_SEEK_END then off is an offset from the end of file
 
    Output Parameter:
 .   offset - new offset in file
@@ -444,7 +449,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int fd)
    Concepts: files^binary seeking
    Concepts: binary files^seeking
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
+          PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
 {
@@ -471,9 +477,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekT
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSynchronizedBinaryRead"
+#define __FUNCT__ "PetscBinarySynchronizedRead"
 /*@C
-   PetscSynchronizedBinaryRead - Reads from a binary file.
+   PetscBinarySynchronizedRead - Reads from a binary file.
 
    Collective on MPI_Comm
 
@@ -496,7 +502,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekT
    Notes: 
    Does a PetscBinaryRead() followed by an MPI_Bcast()
 
-   PetscSynchronizedBinaryRead() uses byte swapping to work on all machines.
+   PetscBinarySynchronizedRead() uses byte swapping to work on all machines.
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
@@ -504,9 +510,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekT
    Concepts: files^synchronized reading of binary files
    Concepts: binary files^reading, synchronized
 
-.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
+.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedWrite(), 
+          PetscBinarySynchronizedSeek()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
+PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -523,9 +530,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSynchronizedBinaryWrite"
+#define __FUNCT__ "PetscBinarySynchronizedWrite"
 /*@C
-   PetscSynchronizedBinaryWrite - writes to a binary file.
+   PetscBinarySynchronizedWrite - writes to a binary file.
 
    Collective on MPI_Comm
 
@@ -542,17 +549,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,
    Notes: 
    Process 0 does a PetscBinaryWrite()
 
-   PetscSynchronizedBinaryWrite() uses byte swapping to work on all machines.
+   PetscBinarySynchronizedWrite() uses byte swapping to work on all machines.
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
 
+   WARNING: This is NOT like PetscSynchronizedFPrintf()! This routine ignores calls on all but process 0,
+   while PetscSynchronizedFPrintf() has all processes print their strings in order.
+
    Concepts: files^synchronized writing of binary files
    Concepts: binary files^reading, synchronized
 
-.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
+.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedRead(),
+          PetscBinarySynchronizedSeek()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
+PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -566,9 +577,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryWrite(MPI_Comm comm,int fd
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSynchronizedBinarySeek" 
+#define __FUNCT__ "PetscBinarySynchronizedSeek" 
 /*@C
-   PetscSynchronizedBinarySeek - Moves the file pointer on a PETSc binary file.
+   PetscBinarySynchronizedSeek - Moves the file pointer on a PETSc binary file.
 
 
    Input Parameters:
@@ -593,9 +604,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryWrite(MPI_Comm comm,int fd
    Concepts: binary files^seeking
    Concepts: files^seeking in binary 
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
+          PetscBinarySynchronizedSeek()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinarySeek(MPI_Comm comm,int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
+PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedSeek(MPI_Comm comm,int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;

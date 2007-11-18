@@ -2,6 +2,9 @@
 %   Papers that we reference, BUT NOT any paper that uses PETSc or is about PETSc
 % those belong in petscapps.bib
 %
+%   do NOT!! use the abbreviations below!!!! Just type the damn words out. Abbreviations are a
+%   huge pain when you share entries and what do they give you? Confusion.
+%
 @string(AJ="Astrophysics J.")
 @string{PC="Parallel Computing"}
 @string(AIAAJ="AIAA J.")
@@ -24,6 +27,154 @@
 @string(CPC="Computer Physics Communications")
 @string(jota = "J. Optimization Theory and Applications")
 @string(ZaMM = "Zeitschrift f\:{u}r angewandte Mathematik und Mechanik")
+
+
+@ARTICLE{imex,
+        AUTHOR = "Uri M. Ascher and Steven J. Ruuth and Brian T. R. Wetton",
+        TITLE = "Implicit-Explicit Methods for Time-Dependent Partial Differential Equations",
+        JOURNAL = "SIAM Journel on Numerical Analysis",
+        VOLUME = "32",
+        NUMBER = 3,
+        PAGES = "797--823",
+        YEAR = "1995" 
+}
+
+@ARTICLE{ow1,
+        AUTHOR = "T. Washio and C. W. Oosterlee",
+        TITLE = "Krylov Subspace Acceleration for Nonlinear Multigrid Schemes",
+        JOURNAL = "Electron. Trans. Numer. Anal.",
+        VOLUME = "6",
+        PAGES = "271--290",
+        YEAR = "1997" 
+}
+
+@ARTICLE{vm1,
+        AUTHOR = "V. A. Mousseau",
+        TITLE = "Implicitly Balanced Solution of the Two-Phase Flow Equations Coupled to Nonlinear Heat Conduction",
+        JOURNAL = "Journal Of Computational Physics",
+        VOLUME = "200",
+        PAGES = "104--132",
+        YEAR = "2004" 
+}
+@ARTICLE{vm2,
+        AUTHOR = "V. A. Mousseau",
+        TITLE = "A Fully Implicit Hybrid Solution Method for a Two-Phase Thermal-Hydraulic Model",
+        JOURNAL = "Journal Of Heat Transfer",
+        VOLUME = "127",
+        PAGES = "531--539",
+        YEAR = "2005" 
+}
+
+@Misc{salome1,
+  author =       "Laurent Dada and Daniel Caruge",
+  title =        "The {SALOME} Open Source {CAE} Platform Application to Reactor Physics Simulation",
+  year = 2005,
+  url = "http://conferences.esa.int/05c26/Seminar-2005-09-28-SALOME.pdf",
+  Note = "Presentation at an ESA/ESTEC conference"
+}
+
+@INPROCEEDINGS{downar1,
+        AUTHOR = "D. A. Barber and W. Wang and R. M. Miller and T. J. Downar and H. G. Joe and V. A. Mousseau and D. E. Ebert",
+        TITLE = "Application of a generalized interface module to the coupling of {PARCS} with both {RELAP5} and {TRAC-M}",
+        BOOKTITLE = "Proceedings of 1999 annual meeting of the American Nuclear Society",
+        YEAR = "1999"
+} 
+
+@ARTICLE{lopez1,
+        AUTHOR = "A. P. Lopez and J. B. Sandova",
+        TITLE = "A methodology for the coupling of {RAMONA-3B} neutron kinetics and {TRAC-BF1} thermal-hydraulics",
+        JOURNAL = "Annals of Nuclear Energy",
+        VOLUME = "32(6)",
+        PAGES = "621--634",
+        YEAR = "2005" 
+}
+
+@INPROCEEDINGS{OG-1996,  
+        AUTHOR = "C. R. E. de Oliveira and A. J. H. Goddard",
+        TITLE = "{EVENT}: A Multidimensional Finite Element-Spherical Harmonics Radiation Transport Code",
+        BOOKTITLE = "Proceedings of the OECD International Seminar on 3D Deterministic Radiation Transport Codes",
+        EDITOR = "",
+        PUBLISHER = "",
+	PAGES = "",
+        NOTE = "Paris, France",
+        MONTH = "December 01--02,",
+        YEAR = "1996" 
+} 
+
+@ARTICLE{WO-2000,
+        AUTHOR = "P. Warner and C. R. E. de Oliveira",
+        TITLE = "Verification and Validation of the 3D Finite Element Transport Theory 
+                 Code {EVENT} for Shielding Applications",
+        JOURNAL = "J. Nucl. Sci. and Tech.",
+        VOLUME = "Supplement 1",
+        PAGES = "466--470",
+        YEAR = "2000" 
+}
+
+@unpublished{GNEP-WEB,
+        AUTHOR = "{U.S. Department of Energy}",
+        TITLE = "Global Nuclear Energy Partnership ({GNEP})",
+        NOTE = "\url{ http://www.gnep.energy.gov}", 
+        YEAR = "2007" 
+}
+
+@Book{LEWIS-MILLER-1984,
+  AUTHOR    = "E. E. Lewis and W. F. Miller, Jr.",
+  TITLE	    = "Computational Methods of Neutron Transport",
+  ADDRESS   = "",
+  PUBLISHER = "Wiley",
+  YEAR	    = "1984"
+}
+
+@Article{couple1,
+  author    = "J. M. Cook and D. Okrent and D. Satkus and R. B. Lazarus and M. B. Wells",
+  title     = "{AX-1}, A COMPUTING PROGRAM FOR COUPLED NEUTRONICS-HYDRODYNAMICS CALCULATIONS ON THE {IBM-704}",
+  journal =   "Nuclear Sci. and Eng.",
+  year      = 1959,
+  pages = "113--115",
+  volume = "2(1)"
+}
+
+@inproceedings{weber1,
+        AUTHOR = "D. P. Weber and S. S. Chen and C. Y. Wang and T. Y. C. Wei and S. Jansson",
+        TITLE = "Coupled {CFD/CSM} vibration design methodology for generation {IV} long-life fuel and component design",
+        BOOKTITLE = "4th International Conference on Supercomputing in Nuclear Applications",
+        YEAR = "2000"
+}
+
+@Misc{gnep:report,
+  author =       "Phillip Finck and David Keyes and Rick Stevens",
+  title =        "{Report on the {DOE} joint {NE/SC} Workshop Simulation and Modeling for Advanced Nuclear Energy Systems}",
+  year = 2006
+}
+
+@Misc{subsurface-workshop-ref,
+  author =       "{David Zachman (Chair)}", 
+  title =        "{Computational Subsurface Sciences Workshop}",
+  note = "January 9--12, 2007, Bethesda, MD, see \url{http://subsurface2007.labworks.org/}",
+}
+
+@Misc{fusion:report,
+  title =  "{Report of the Fusion Energy Sciences Advisory Committee Burning Plasma Strategy Panel}",
+  author = "{Fusion Energy Sciences Advisory Committee}",
+  year = 2002,
+  note = "see \url{http://www.ofes.fusion.doe.gov/More_HTML/FESAC/Austinfinal.pdf}"
+}
+
+@Misc{hecrtf:report,
+  title = "{Report of the High End Computing Revitalization Task Force (HECRTF)}",
+  key = "HECRTF",
+  year = 2004,
+  howpublished = "see \url{http://www.ostp.gov/nstc/html/HECRTF-FINAL_051004.pdf}"
+}
+
+@Misc{doesc20years,
+  title = "{Facilities for the Future of Science: A Twenty-Year Outlook}",
+  key = "Office of Science, U.S. Department of Energy",
+  year = 2003,
+  howpublished = "Office of Science, U.S. Department of Energy,
+     see \url{http://www.sc.doe.gov/Scientific_User_Facilities/History/20-Year-Outlook-screen.pdf}"
+}
 
 @phdthesis{karpeev-thesis,
   author = "D. A. Karpeyev",
@@ -187,20 +338,36 @@
 }
 
 @Unpublished{petsc:coloringuse,
-  title = 	 "Code for computing sparse Jacobian",
-  note = 	 "http://www..mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html",
+  title = 	 "Code for computing sparse {J}acobians",
+  note = 	 "\url{http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html}",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:external,
-  title = 	 "External Software Used by PETSc",
-  note = 	 "http://www..mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html",
+  author =       {B. {Smith et al.}},
+  title =        "{External Software Used by PETSc}",
+  note =         "\url{http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html}",
+  Institution = "Argonne National Laboratory"
+}
+
+@Unpublished{petsc:use-by-external-packages,
+  author =       {B. {Smith et al.}},
+  title =        "{Software Packages that Use or Interface to PETSc}",
+  note =         "\url{http://www-unix.mcs.anl.gov/petsc/petsc-as/publications/petscapps.html#packages}",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:prizes,
-  title = 	 "Prizes Won Using PETSc",
-  note = 	 "http://www..mcs.anl.gov/petsc/petsc-as/publications/prizes.html",
+  author =       {B. {Smith et al.}},
+  title =        "{Prizes Won Using PETSc}",
+  note =         "\url{http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html}",
+  Institution = "Argonne National Laboratory"
+}
+
+@Unpublished{petsc:csgf,
+  author =       {B. {Smith et al.}},
+  title =        "{DOE Computational Science Graduate Fellowship (CSGF) Users of PETSc}",
+  note =         "\url{http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html}",
   Institution = "Argonne National Laboratory"
 }
 
@@ -649,7 +816,7 @@ University of Colorado-Boulder",
 	KEY = "jones" }
 
 @incollection{jp:ima,
-  AUTHOR = jp,
+  AUTHOR = "Mark Jones and Paul Plassmann",
   title = "The Efficient Parallel Iterative Solution
   of Large Sparse Linear Systems",
   booktitle = "Graph Theory and Sparse Matrix Computation",
@@ -663,7 +830,7 @@ University of Colorado-Boulder",
 
 @Article{ pw98,
   AUTHOR = "M. Pernice and H. F. Walker",
-  TITLE = "{NITSOL}: A Newton Iterative Solver for Nonlinear Systems",
+  TITLE = "{NITSOL}: A {Newton} Iterative Solver for Nonlinear Systems",
   journal =	 "SIAM J. Sci. Stat. Comput.",
   year =	 1998,
   volume =	 19,
@@ -1003,7 +1170,7 @@ Producing {F}ortran interfaces to {C} source code",
     }
 
 @inproceedings{jp:bell_prize,
-    AUTHOR = jp,
+  AUTHOR = "Mark Jones and Paul Plassmann",
     TITLE = "Solution of Large, Sparse Systems of Linear Equations
     in Massively Parallel Applications",
     booktitle = "Proceedings of Supercomputing '92",
@@ -1036,7 +1203,7 @@ Producing {F}ortran interfaces to {C} source code",
 @Unpublished{ cweb-code,
   author = 	 "Silvio Levy and Donald E. Knuth",
   title = 	 "CWEB",
-  note = 	 "CWEB is available at ftp://pip.shsu.edu/tex-archive/web/c_cpp/cweb"
+  note = 	 "CWEB is available at ftp://pip.shsu.edu/tex-archive/web/c\_cpp/cweb"
 }
 
 @Article( componentware:94,
@@ -1050,7 +1217,7 @@ Producing {F}ortran interfaces to {C} source code",
     )
 
 @article{jp:scalable,
-  AUTHOR = jp,
+  AUTHOR = "Mark Jones and Paul Plassmann",
   TITLE = "Scalable Iterative Solution of Sparse Linear Systems",
   Journal = "Parallel Computing",
   Volume = "20",
@@ -1337,7 +1504,6 @@ year = {1977}
 
 @inbook{DPoverview,
  author = "Bruaset, A. M. and Langtangen, H. P.",
- editor = "D{\ae}hlen, M. and Tveito, A.",
  booktitle = "Mathematical Models and Software Tools in Industrial 
            Mathematics",
  title = "A Comprehensive Set of Tools for Solving Partial Differential 
@@ -1390,10 +1556,10 @@ year = {1977}
 }
 
 @misc{DPURL,
-      author  = "{{Diffpack} {W}eb page}",
-      note = "See {\tt http://\-www.nobjects.com/\-Diffpack/}",
+      author  = "{Diffpack: Software for Finite Element Analysis and Partial Differential Equations}",
+      note = "See \url{http://www.diffpack.com}"
 }
-%      note = "\\ {URL:}~$<${\em http://www.nobjects.com/Diffpack/}$>$"}
+
 
 % *****  General intro to object-oriented numerics for "FORTRAN programmers"
 
@@ -1578,12 +1744,6 @@ pages="16--32"
         YEAR = "1999",
 }
 
-@misc {
-   cca-web-page,
-   author = "{Common Component Architecture Forum}",
-   note   = "\url{http://www.cca-forum.org}"
-}
-
 
 @inproceedings{pooma-atlas,
 author = "S. Atlas and S. Banerjee and J. C. Cummings and P. J. Hinker and
@@ -1747,10 +1907,10 @@ Booktitle = "Supercomputing '95 Proceedings",
 }
 
 
-@Unpublished{ overture-web-page,
-  Author = "D. L. Brown and W. D. Henshaw and D. J. Quinlan",
-  title = 	 "{Overture} {W}eb page",
-  note = 	 "See {\tt http://www.llnl.gov\-/CASC\-/Overture}"
+@Misc{overture-web-page,
+  author = "William Henshaw and Kyle Chand",
+  title  = "{Overture} {W}eb page",
+  note   = "Lawrence Livermore National Laboratory, see \url{http://www.llnl.gov/CASC/Overture}"
 }
 
 @INPROCEEDINGS{ overture99,
@@ -1864,6 +2024,14 @@ Booktitle = "Supercomputing '95 Proceedings",
   annote =	 {fast FFT.  Parallel versions with MPI and Cilk}
 }
 
+@BOOK{Kelley95,
+      AUTHOR="C. T. Kelley",
+      TITLE="Iterative Methods for Linear and Nonlinear Equations",
+      YEAR="1995",
+      PUBLISHER="SIAM",
+      address="Philadelphia"
+      }
+
 @BOOK{NW99,
       AUTHOR="Jorge Nocedal and Stephen J. Wright",
       TITLE="Numerical Optimization",
@@ -1960,11 +2128,21 @@ Booktitle = "Supercomputing '95 Proceedings",
   institution = "Cornell University and Argonne National Laboratory"
 }
 
-@misc{sundials-web-page,
-  title       = "{SUNDIALS} {W}eb Page",
-  note        =	"\url{http://www.llnl.gov/CASC/sundials}",
-  author      = "Allan Hindmarsh and Radu Serban and Carol Woodward",
-  institution = "Lawrence Livermore National Laboratory"
+@misc{sundials-user-ref,
+  title       = "{SUNDIALS}: Suite of Nonlinear and Differential/Algebraic Equation Solvers",
+  note        =	"See \url{http://www.llnl.gov/CASC/sundials}",
+  author      = "Allan Hindmarsh and Peter Brown and Keith Grant and Steven Lee and Radu Serban and Dan Shumaker and Carol Woodward",
+  institution = "Center for Applied Scientific Computing, Lawrence Livermore National Laboratory",
+  number = "UCRL-JP-200037",
+  year = 2003
+}
+
+@techreport{kinsol-user-ref,
+  title       = "User Documentation for {KINSOL}, A Nonlinear Solver for Sequential and Parallel Computers",
+  author      = "Allan Taylor and Alan Hindmarsh",
+  institution = "Center for Applied Scientific Computing, Lawrence Livermore National Laboratory",
+  number      = "UCRL-ID-131185",
+  year = 1998
 }
 
 @article{FiardManteuffelMcCormick98,
@@ -2143,7 +2321,7 @@ mesh refinement",
 
 @Misc{tops:homepage,
   author =	 {David {Keyes (PI)}},
-  title =	 {{Terascale Optimal PDE Simulations (TOPS) Center}},
+  title =	 {{Towards Optimal Petascale Simulations (TOPS) Center}},
   howpublished = {\url{http://tops-scidac.org}}
 }
 
@@ -2157,7 +2335,7 @@ mesh refinement",
 @Misc{petsc:applications,
   author =	 {B. {Smith et al.}},
   title =	 {{Scientific Applications Using {PETSc}}},
-  howpublished = {http://www.mcs.anl.gov/petsc/petsc-as/publications}
+  howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-as/publications}}
 }
 
 @Misc{petsc:users,
@@ -2175,7 +2353,7 @@ mesh refinement",
 @Misc{m3d:homepage,
   author =	 {Steve {Jardin et al.}},
   title =	 {{M3D Web page}},
-  howpublished = {\url{http://w3.pppl.gov/~jchen}}
+  howpublished = {\url{http://w3.pppl.gov/m3d}}
 }
 
 @Misc{nimrod:homepage,
@@ -2214,6 +2392,26 @@ mesh refinement",
    title = "{SuperLU Web page}",
    howpublished  = "http://crd.lbl.gov/\~xiaoye/SuperLU"
 }
+
+@inproceedings{ccf98,
+ author=     "E. Chow and A. Cleary and R. Falgout",
+ title=      "Design of the hypre Preconditioner Library",
+ booktitle = "Proceedings of the SIAM Workshop on Object Oriented Methods for
+              Inter-operable Scientific and Engineering Computing",
+ publisher = "SIAM",
+ year=       1999,
+}
+
+
+@TechReport{hypre-users-manual,
+  author      = "R. Falgout and others",
+  title       = "{hypre} Users Manual",
+  number      = "Revision 2.0.0",
+  institution = "Lawrence Livermore National Laboratory",
+  year        = 2006,
+  note =        "\url{http://www.llnl.gov/CASC/hypre/}"
+}
+
 
 @misc{hypre:homepage,
    author = "R. {Falgout et al.}",
@@ -2286,7 +2484,7 @@ mesh refinement",
 
 @article{more:coloring,
   author  = "Thomas F. Coleman and Jorge J. More",
-  title   = "Estimation of Sparse Jacobian Matrices and Graph Coloring Problems",
+  title   = "Estimation of Sparse {J}acobian Matrices and Graph Coloring Problems",
   journal = "SIAM Journal on Numerical Analysis",
   year    = "1983",
   month   = "Feb.",
@@ -2446,7 +2644,7 @@ mesh refinement",
 }
 
 @Unpublished{ mtwm03,
-  author =       "G. G. Maisuradze, D. L. Thompson, A. F. Wagner, and M. Minkoff", 
+  author =       "G. G. Maisuradze and D. L. Thompson and A. F. Wagner and M. Minkoff", 
   title =        "Interpolating moving least squares methods for fitting 
                   potential energy surfaces:  Detailed analysis of one-dimensional applications",
   note =         "to appear in the Journal of Chemical Physics",
@@ -2566,14 +2764,43 @@ mesh refinement",
   year = {2001}
 }
 
-@techreport{SuperLU,
-  author = {James~W. Demmel and John~R. Gilbert and Xiaoye~S. Li},
-  title = {{SuperLU} User's Guide},
-  institution = {Lawrence Berkeley National Laboratory},
-  number = {LBNL-44289},
-  month = {October},
-  year = {2003}
+
+@article{lidemmel03,
+     AUTHOR = {Xiaoye S. Li and James W. Demmel},
+     TITLE = {{SuperLU\_DIST}: A Scalable Distributed-Memory Sparse Direct
+              Solver for Unsymmetric Linear Systems},
+     JOURNAL = {ACM Trans. Mathematical Software},
+     YEAR = 2003,
+     MONTH = {June},
+     VOLUME = {29},
+     NUMBER = {2},
+     PAGES = {110--140}
 }
+
+@TechReport{SuperLU,
+  author      = "James W. Demmel and John R. Gilbert and Xiaoye S. Li",
+  title       = "{SuperLU} Users' Guide",
+  number      = "LBNL-44289",
+  institution = "Lawrence Berkeley National Laboratory",
+  year        = 2003,
+  note =        "\url{http://crd.lbl.gov/\~xiaoye/SuperLU/}"
+}
+
+@techreport{Trilinos-Overview03, 
+title = "{An Overview of Trilinos}", 
+author = "Michael Heroux and Roscoe Bartlett and Vicki Howle Robert Hoekstra and Jonathan Hu and Tamara Kolda and Richard Lehoucq and Kevin Long and Roger Pawlowski and Eric Phipps and Andrew Salinger and Heidi Thornquist and Ray Tuminaro and James Willenbring and Alan Williams", 
+institution = "Sandia National Laboratories", 
+number = "SAND2003-2927", 
+year = 2003} 
+
+@techreport{Trilinos-Users-Guide, 
+title = "{Trilinos} Users Guide", 
+author = "Michael A. Heroux and James M. Willenbring", 
+institution = "Sandia National Laboratories", 
+number = "SAND2003-2952", 
+note =  "\url{http://software.sandia.gov/Trilinos}",
+year = 2003} 
+
 
 @article{PILUT01,
   author = {David Hysom and Alex Pothen},
@@ -2590,4 +2817,658 @@ mesh refinement",
   institution = {Lawrence Livermore National Laboratory},
   number = {UCRL-JC-133948},
   year = {2000}
+}
+
+@article{knollkeyes:04,
+  author  = "D. A. Knoll and D. E. Keyes", 
+  year    = 2004, 
+  title   = "Jacobian-free {Newton-Krylov} Methods: A Survey of Approaches and Applications", 
+  journal = "J. Comp. Phys.",
+  volume  = 193,
+  pages   = "357-397"
+} 
+
+@article{chacon02,
+  author = "L. Chacon and D. A. Knoll and J. M. Finn",
+  title = "An Implicit Nonlinear Reduced Resistive {MHD} Solver",
+  journal = "J. Comput. Phys",
+  volume = 188,
+  year = 2002,
+  pages = "15--36"
+}
+
+@article{mousseau03,
+  author = "V. A. Mousseau and D. A. Knoll",
+  title = "New Physics-based Preconditioning of Implicit Methods for 
+           Non-Equilibrium Radiation Diffusion",
+  journal = "J. Comput. Physics",
+  year = 2003
+}
+
+@article{mousseau00,
+  author = "V. A. Mousseau and D. A. Knoll and W. J. Rider",
+  title = "Physics-based Preconditioning and the {Newton-Krylov} Method
+           for Non-Equilibrium Radiation Diffusion",
+  journal = "J. Comput. Physics",
+  year = 2000,
+  pages = "743--765",
+  volume = 160
+}
+
+@unpublished{facets:homepage,
+  author =	 "John {Cary (PI)}",
+  title =	 "{Framework Application for Core-Edge Transport Simulations (FACETS)}",
+  note = "SciDAC2 project, see \url{http://www.facetsproject.org}"
+}
+
+@unpublished{groundwater-scidac2:web,
+  author =	 "Peter {Lichtner (PI)}",
+  title =	 "{Modeling Multiscale-Multiphase-Multicomponent Subsurface Reactive Flows 
+                  using Advanced Computing}",
+  note = "SciDAC2 project, see \url{http://www.scidac.gov/groundwater/gwflow.html}"
+}
+
+@Misc{accel-scidac2-solicitation,
+  author       = {{DOE Office of Science}},
+  title        = {{Program Announcement LAB 07-09, SciDAC: Accelerator Science and Simulation}},
+  year         = 2006,
+  note = {\url{http://www.science.doe.gov/grants/LAB07_09.html}}
+}
+
+@ARTICLE{Nieter04,
+   author = "C. Nieter and J. R. Cary",
+   title = "{VORPAL}: A Versatile Plasma Simulation Code",
+   journal = "J. Comp. Phys.",
+   year = "2004",
+   volume = "196",
+   pages = "448"
+}
+
+@Article{Synergia06,
+  author = "J. Amundson and P. Spentzouris and J. Qiang and R. Ryne",
+  title = "Synergia: An accelerator modeling tool with {3-D} space charge",
+  journal = "J. Comp. Phys.",
+  year = 2006,
+  volume = "211",
+  pages = "229-248"
+}
+
+@unpublished{stoltz07,
+  author = "P. H. Stoltz",
+  title = "Maps of {RF} cavities generated from electromagnetic simulations",
+  year = 2007,
+  note = "to appear in Proceedings of the 2007 Particle Accelerator
+          Conference (PAC07), Albuquerque, NM, 2007"
+}
+
+@Misc{iter:homepage,
+  key = "{International Thermonuclear Experimental Reactor (ITER) homepage}",
+  year = 2007,
+  title = "{International Thermonuclear Experimental Reactor (ITER) homepage}",
+  howpublished = {\url{http://www.iter.org}}
+}
+
+@misc{epp2010,
+  author = {{Committee on Elementary Particle Physics in the 21st Century, National Research Council}},
+  title = {Revealing the Hidden Nature of Space and Time: Charting the Course for Elementary 
+           Particle Physics},
+  year = {2006},
+  howpublished = {The National Academies Press, ISBN: 0309101948}
+}
+
+@misc{post-fsp-report,
+author= "D.~E.~Post and D.~B.~Batchelor and R.~B.~Bramley and J.~R.~Cary and R.~H.~Cohen and P.~Colella and S.~C.~Jardin",
+title=  "{Report of Fusion Simulation Project Steering Committee}",
+month=  "August",
+year =  2004,
+note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
+}
+
+@BOOK{hazeltine-meiss-book,
+      AUTHOR="R.~D.~Hazeltine and J.~D.~Meiss",
+      TITLE="Plasma Confinement",
+      YEAR="1991",
+      PUBLISHER="Addison-Wesley, Redwood City, CA",
+}
+
+@article{falgout05a,
+  author = "R. D. Falgout and J. E. Jones and U. M. Yang", 
+  title = "Conceptual Interfaces in hypre", 
+  journal = "Future Generation Computer Systems", 
+  note = "Special issue on PDE software",
+  volume = 22,
+  year = 2005, 
+  pages = "239--251" 
+}
+
+@article{falgout05b,
+  author = "R. D. Falgout and J. E. Jones and U. M. Yang", 
+  title = "Pursuing Scalability for hypre's Conceptual Interfaces",
+  journal = "ACM Trans. Math. Softw.",
+  volume = 31,
+  year = 2005, 
+  pages = "326--350" 
+}
+
+@unpublished{compass07:proposal,
+  author = {Panagiotis {Spentzouris (PI)}},
+  title  = {Community Petascale Project for Accelerator Science and Simulation},
+  note   = {SciDAC2 accelerator sciences proposal, submitted January, 2007},
+}
+
+@Misc{scidac:homepage,
+  author       = {{DOE Office of Science}},
+  title        = {{Scientific Discovery through Advanced Computing}},
+  year         = 2007,
+  howpublished = {\url{http://www.scidac.gov}}
+}
+
+@misc{corba,
+    author = "{Object Management Group}",
+    year = 2007,
+    title="{Common Object Request Broker Architecture (CORBA)}",
+    howpublished="\url{http://www.corba.org}"
+}
+
+@Article{         uedge,
+  author        = "T.~D. Rognlien and D.~D. Ryutov and N. Mattor and G.~D. Porter",
+  title         = "Two-Dimensional Electric Fields and Drifts near the Magnetic Separatrix in Divertor Tokamak",
+  journal       = "J. Plasma Physics",
+  year          = "1999",
+  volume        = "6",
+  pages         = "1851",
+  note          = "also see user manual at http://www.mfescience.org, then UEDGE link"
+}
+
+@Article{         bout,
+  author        = "X.~Q. Xu and R.~H. Cohen and T.~D. Rognlien and J.~R. Myra",
+  title         = "Low-to-High Confinement Transition Simulations in
+    Divertor Geometry",
+  journal       = "J. Plasma Physics",
+  year          = "2000",
+  volume        = "7",
+  pages         = "1951",
+  note          = ""
+}
+
+@Article{         tempest,
+  author        = "Z. Xiong and X.Q. Xu and B.I. Cohen and R. Cohen and
+	  M.R. Dorr and J.A. Hittinger and G.  Kerbel and W.M. Nevins and
+	  T. Rognlien", 
+  title         = "Simulation of Plasma Transport in a Toroidal Annulus with TEMPEST",
+  journal       = "Bull. Am. Phys. Soc. ",
+  year          = "2005",
+  volume        = "50",
+  number        = "86",
+  pages         = "CP1",
+  note          = ""
+}
+
+@Article{ccahpc,
+  author = {David E. Bernholdt and Benjamin A. Allan and Robert
+                  Armstrong and Felipe Bertrand and Kenneth Chiu and
+                  Tamara L. Dahlgren and Kostadin Damevski and Wael
+                  R. Elwasif and Thomas G. W. Epperly and Madhusudhan
+                  Govindaraju and Daniel S. Katz and James A. Kohl and
+                  Manoj Krishnan and Gary Kumfert and J. Walter Larson
+                  and Sophia Lefantzi and Michael J. Lewis and Allen
+                  D. Malony and Lois C. McInnes and Jarek Nieplocha
+                  and Boyana Norris and Steven G. Parker and Jaideep
+                  Ray and Sameer Shende and Theresa L. Windus and
+                  Shujia Zhou},
+  title = {A Component Architecture for High-Performance Scientific
+                  Computing},
+  journal = {Intl. J. High-Perf. Computing Appl.},
+  volume        = 20,
+  pages         = {163--202},
+  year		= 2006,
+  note		= {ACTS Collection special issue},
+}
+
+@misc{cca-forum:homepage,
+   author = "{Common Component Architecture Forum}",
+   note   = "\url{http://www.cca-forum.org}",
+   year   = 2007
+}
+
+@misc{petsc:driven-cavity-example,
+  title =    {{PETSc Driven Cavity Example Code}},
+  author =	 {B. {Smith et al.}},
+  howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/snes/examples/tutorials/ex19.c.html}}
+}
+
+@misc{unic-ref,
+  author = "Giuseppe Palmiotti",
+  title  = "{UNIC} Neutronics Software",
+  note   = "Nuclear Engineering Division, Argonne National Laboratory"
+}
+
+% -----------------------------------------------------------------------
+% Model coupling refs
+
+http://csdrm.caltech.edu/
+
+@Misc{mct-website,
+  key = {MCT},
+  title ="{M}odel {C}oupling {T}oolkit ({MCT}) {W}eb {S}ite",
+  howpublished="\url{http://www.mcs.anl.gov/mct}"
+}
+
+@article{larson:05,
+  author="Jay Larson and Robert Jacob and Everest Ong",
+  title="The Model Coupling Toolkit: A New {Fortran90} Toolkit for
+  Building Multi-Physics Parallel Coupled Models",
+  journal="Int. J. High Perf. Comp. App.",
+  year=2005,
+  pages="277--292"
+}
+
+@inproceedings{bettge01,
+  author = "T. Bettge and A. Craig and R. James and V. Wayland and G. Strand",
+  year = 2001,
+  title = "The {DOE} Parallel Climate Model {(PCM)}: The Computational Highway
+           and Backroads",
+  booktitle = "Proc. International Conference on Computational Science (ICCS) 2001",
+  editors = "V. N. Alexandrow and J. J. Dongarra and C. J. K. Tan",
+  pages = "148 -- 156",
+  series = "Lecture Notes in Computer Science",
+  volume = 2073,
+  publisher = "Springer-Verlag",
+}
+
+@inproceedings{jacob01,
+  author = "R. Jacob and C. Schafer and I. Foster and M. Tobis and J. Anderson",
+  year = 2001,
+  title = "Computational Design and Performance of the {Gast} Ocean Atmosphere Model",
+  booktitle = "Proc. International Conference on Computational Science (ICCS) 2001",
+  editors = "V. N. Alexandrow and J. J. Dongarra and C. J. K. Tan",
+  series = "Lecture Notes in Computer Science",
+  volume = 2073,
+  publisher = "Springer-Verlag",
+}
+
+@inproceedings{baum01,
+  author = "J. Baum and H. Luo and E. Mestreau and D. Sharov and R. Loehner and D. Pelessone and C. Charman",
+  year = 2001,
+  title = "Recent Developments of a Coupled {CFD/CSD} Methodology",
+  booktitle = "Proc. International Conference on Computational Science (ICCS) 2001",
+  editors = "V. N. Alexandrow and J. J. Dongarra and C. J. K. Tan",
+  series = "Lecture Notes in Computer Science",
+  volume = 2073,
+  publisher = "Springer-Verlag",
+}
+
+@inproceedings{lefantzi03,
+  author = "S. Lefantzi and J. Ray",
+  year = 2003,
+  title = "A Component-based Scientific Toolkit for Reacting Flows",
+  booktitle = "Proc. Second MIT Conference on Computational Fluid and Solid Mechanics",
+  volume = 2,
+  publisher = "Elsevier"
+}
+
+@article{boville98,
+  author = "B. A. Boville and P. R. Gent",
+  title = "The {NCAR} Climate System Model, Version One",
+  journal = "Journal of Climate",
+  volume = 11,
+  year = 1998,
+  pages = "1115--1130"
+}
+
+@misc{paraschivoiu99,
+  author = "M. Paraschivoiu and X.-C. Cai and M. Sarkis and D. P. Young and D. Keyes", 
+  title = "Multi-domain multi-model formulation for compressible flows: Conservative interface 
+           coupling and parallel implicit solvers for {3D} unstructured meshes", 
+  note = "AIAA Paper 99-0784", 
+  year = 1999
+}
+
+@article{peszynska,
+  author = "M. Peszynska and M. F. Wheeler and I. Yotov",
+  title = "Mortar upscaling for multiphysics flow in porous media",
+  journal = "Computational Geosciences"
+}
+
+@techreport{wheeler00,
+  author = "M. F. Wheeler and J. Wheeler and M. Peszynska",
+  title = "A distributed computing portal for coupling multi-physics and multiple domains 
+          in porous media",
+  institution = "University of Texas at Austin",
+  number = "TICAM 00-03",
+  year = 2000,
+}
+
+@techreport{peszynska00,
+  author = "M. Peszynska and Q. Lu and M. F. Wheeler",
+  title = "Multiphysics Coupling of Codes",
+  institution = "University of Texas at Austin",
+  number = "TICAM 00-02",
+  year = 2000,
+}
+
+@inproceedings{cai99,
+  author = "X.-C. Cai and M. Paraschivoiu and M. Sarkis", 
+  title = "An explicit multi-model compressible flow formulation based on the full potential 
+            equation and the {Euler} equations on {3D} unstructured meshes", 
+  booktitle = "Proceedings of the 11th International Conference on Domain Decomposition Methods", 
+  editor = "C-H. Lai and P. Bjorstad and M. Cross and O. Widlund",
+  year = 1999
+}
+
+@article{he05,
+  author = "Yun He and Chris H. Q. Ding",
+  title = "Coupling Multi-Component Models with {MPH} on Distributed Memory Computer Architectures",
+  year = 2005,
+  volume = 19,
+  pages = "329--240",
+  number = 3,
+  journal = "Int. Journal of High Performance Computing Applications"
+}
+  
+@inproceedings{uiuc-rocket-center02,
+  author = "W. A. Dick and M. T. Heath",
+  title = "Whole System Simulation of Solid Propellant Rockets",
+  booktitle = "Proceedings of the AIAA Joint Propulsion Conference, AIAA2002-4345",
+  month = "July",
+  year = 2002,
+}
+
+@inproceedings{toth04,
+  AUTHOR = "G. Toth and O. Volberg and A. J. Ridley and T. I Gombosi and D. DeZeeuw and
+            K. W. Hansen and D. R. Chesney and Q. F. Stout and K. G. Powell and K. Kane and
+            R. Oehmke",
+  TITLE = "A Physics-Based Software Framework for Sun-Earth Connection Modeling",
+  editor = "A. T. Y. Lui and Y. Kamide and G. Consolini",
+  booktitle = "Multiscale Coupling of Sun-Earth Processes, Proceedings of the Conference 
+            on the Sun-Earth Connection",
+  YEAR="2004",
+  PUBLISHER="Elsevier",
+  PAGES="383--397"
+}
+
+
+@Misc{csdrm:web,
+  author = "M. Aivazis and B. Goddard and D. Meiron and M. Ortiz and J. Pool and J. Shepherd",
+  title ="{Center for Simulation of Dynamic Response of Materials}",
+  note = "California Institute of Technology, see \url{http://csdrm.caltech.edu}"
+}
+
+@Misc{csar:web,
+  author = "M. {Heath (Director)}",
+  title ="{Center for Simulation of Advanced Rockets}",
+  note = "University of Illinois at Urbana-Champaign, see \url{http://www.csar.uiuc.edu}"
+}
+
+@Misc{csafe:web,
+  author = "D. {Pershing (Director)}",
+  title ="{Center for Simulation of Accidental Fires and Explosions}",
+  note = "University of Utah, see \url{http://www.csafe.utah.edu}"
+}
+
+@Misc{cits:web,
+  author = "P. {Moin (Director)}",
+  title ="{Center for Integrated Turbulence Simulations}",
+  note = "Stanford University, see \url{http://www.stanford.edu/group/cits}"
+}
+
+@Misc{flash:web,
+  author = "D. {Lamb (Director)}",
+  title ="{Center for Integrated Turbulence Simulations}",
+  note = "University of Chicago, see \url{http://flash.uchicago.edu}"
+}
+
+@techreport{utah-csafe03,
+  author = "J. Guilkey and T. Harman and A. Xia and B. Kashiwa and P. McMurtry",
+  title = "An Eulerian-Lagrangian Approach for Large Deformation Fluid Structure Interaction 
+           Problems, Part 1: Algorithm Development",
+  institution = "University of Utah, Center for the Simulation of Accidental Fires and Explosions",
+  year = 2003
+}
+
+@inbook{shepherd07,
+  author = "M. Shepherd and E. Seol and B. FrantzDale",
+  title = "Toward a Multi-Model Hierarchy to Support Multiscale Simulations",
+  year = 2007,
+  booktitle = "CRC Handbook of Dynamic System Modeling",
+  publisher = "Wiley",
+  pages = "1--41",
+  note = "also available as SCOREC Report 2007-2, Rensselaer Polytechnic Institute",
+}
+
+@INPROCEEDINGS{cactus02,
+  author = {Tom Goodale and Gabrielle Allen and Gerd Lanfermann and Joan Masso and Thomas Radke 
+          and Edward Seidel and John Shalf},
+  title = {The {Cactus} Framework and Toolkit: Design and Applications},
+  booktitle = {VECPAR'2002, 5th International Conference, Lecture Notes in Computer Science},
+  year = {2002},
+  url = {http://www.cactuscode.org/Papers/VecPar_2002.pdf}
+}
+
+@Misc{open-grid-forum:web,
+  key = "{Open Grid Forum}",
+  title = "{Open Grid Forum}",
+  note = "See \url{http://www.ogf.org}"
+}
+
+@Misc{nox:web,
+  author = "Tamara Kolda and Roger {Pawlowski et al.}",
+  title = "Nonlinear Object-Oriented Solutions {(NOX)}",
+  note = "See \url{http://software.sandia.gov/nox}"
+}
+
+@Misc{chombo:web,
+  author = "P. {Colella (PI)}",
+  title = "{Chombo}",
+  note = "See \url{http://seesar.lbl.gov/anag/chombo}"
+}
+
+@article{lanzkron96,
+  author = "P. J. Kanzkron and D. J. Rose and J. T. Wilkes",
+  title = "An Analysis of Approximate Nonlinear Elimination",
+  journal = "SIAM J. Sci. Comput.",
+  volume = 17,
+  year = 1996,
+  pages = "538--559"
+}
+
+@article{jiang95,
+  author  = "J. Jiang and P. Forsyth",
+  title   = "Robust Linear and Nonlinear Strategies for Solution of the Transonic {Euler} Equations",
+  journal = "Computers and Fluids",
+  volume  = "24",
+  pages   = "753--770",
+  year    = "1995"
+}
+
+@article{young90,
+  author  = "D. Young and R. Melbin and M. Bieterman and F. Johnson and S. Samant",
+  title   = "Global Convergence of Inexact {Newton} Methods for Transonic Flow",
+  journal = "Int. J. Numer. Methods Fluids",
+  volume  = "11",
+  pages   = "1075--1095",
+  year    = "1990"
+}
+
+@article{fishwick04,
+  author = "Paul A. Fishwick",
+  title = "Toward an Integrated Multimodeling Interface: A Human-Computer
+           Interface Approach to Interrelating Model Structures", 
+  journal = "SCS Trans. on Simulation", 
+  note = "Special Issue in Grand Challenges in Computer Simulation", 
+  year = 2004,
+}
+
+@article{fishwick03,
+  author = "Paul Fishwick and Jinho Lee and Minho Park and Jyunju Shim",
+  title = "{RUBE}: A Customized {2D} and {3D} Modeling Framework for Simulation",
+  booktitle = "Proceedings of the 2003 Winter Simulation Conference",
+  editor = "S. Chick and P. J. Sanchez and D. Ferrin and D. J. Morrice",
+  year = 2003,
+}
+
+@inproceedings{kirner00,
+  author = "T. G. Kirner and V. F. Martins",
+  title = "Development of an Information Visualization Tool Using Virtual Reality",
+  booktitle = "Proceedings of the 2000 ACM Symposium on Applied Computing",
+  year = 2000,
+  pages = "604--606"
+}
+
+@inproceedings{orso03,
+  author = "A. Orso and J. Jones and M. J. Harrold",
+  title = "Visualization of Program-Execution Data for Deployed Software",
+  booktitle = "Proceedings of the 2003 ACM Symposium on Software Visualization",
+  year = 2003,
+  pages = "67--76"
+}
+
+@book{tiller01,
+  author = "M. Tiller",
+  title = "Introduction to Physical System Modeling with Modelica",
+  series = "Kluwer International Series inEngineering and Computer Science",
+  volume = 615,
+  publisher = "Kluwer",
+  year = 2001
+}
+
+@article{buck94,
+ author = "J. Buck and S. Ha and E. Lee and D. Messerschmitt",
+ title = "Ptolemy: A Framework for Simulating and Prototyping Heterogeneous Systems",
+ journal = "Int. Journal of Computer Simulation",
+ volume = 4,
+ pages = "155--182",
+ year = 1994
+}
+
+@article{mu95,
+  author = "M. Mu and J.R. Rice",
+  title = "Modeling with collaborating {PDE} solvers - Theory and practice",
+  journal = "Comp. Syst. Engr.",
+  volume = 6, 
+  year = 1995, 
+  pages = "87--95"
+}
+
+@techreport{drashansky96,
+  title = "Multidisciplinary Problem Solving using Agents in a Cluster Environment",
+  author = "R. Drashansky and A. Joshi and J. R. Rice",
+  institution = "Emory Universtity, Department of Mathematics and Computer Science",
+  year = 1996
+}
+
+@article{michopoulos05,
+  title = "Survey on Modeling and Simulation of Multiphysics Systems",
+  author = "John G. Michopoulos and Charbel Farhat and Jacob Fish",
+  journal = "Journal of Computing and Information Science in Engineering",
+  volume = 5, 
+  issue = 3, 
+  pages = "198--213",
+  year = 2005
+}
+
+@Book{BottLoring95,
+  AUTHOR    = "Raoul Bott and Loring W. Tu",
+  TITLE	    = "Differential Forms in Algebraic Topology",
+  PUBLISHER = "Springer",
+  YEAR	    = "1995"
+}
+
+@Book{KobayashiNomizu96,
+  AUTHOR    = "Shoshichi Kobayashi and Katsumi Nomizu",
+  TITLE	    = "Foundations of Differential Geometry",
+  PUBLISHER = "Wiley-Interscience",
+  YEAR	    = "1996"
+}
+
+@Article{HornungKohn02,
+  author  = {Richard D. Hornung and Scott R. Kohn},
+  title   = {Managing Application Complexity in the SAMRAI Object-Oriented Framework},
+  journal = {Concurrency and Computation: Practice and Experience},
+  volume  = 14,
+  pages   = {347--368},
+  year    = 2002,
+}
+
+@inproceedings{concepts06,
+  author    = "Douglas Gregor and Jaakko J{\"a}rvi and Jeremy Siek and Bjarne Stroustrup and Gabriel Dos Reis and Andrew Lumsdaine",
+  title     = "Concepts: Linguistic Support for Generic Programming in C++",
+  booktitle = "Proceedings of OOPSLA 2006",
+  year      = 2006,
+  pages     = "???--???"
+}
+
+@BOOK{Hatcher02,
+  AUTHOR = {Hatcher, Allen},
+  TITLE = {Algebraic Topology},
+  PUBLISHER = {Cambridge University Press},
+  YEAR = 2002
+}
+
+@book{GammaHelmJohnsonVlissides95,
+	abstract = {{Design Patterns is a modern classic in the literature of object-oriented development, offering timeless and elegant solutions to common problems in software design. It describes patterns for managing object creation, composing objects into larger structures, and coordinating control flow between objects. The book provides numerous examples where using composition rather than inheritance can improve the reusability and flexibility of code. Note, though, that it's not a tutorial but a catalog that you can use to find an object-oriented design pattern that's appropriate for the needs of your particular application--a selection for virtuoso programmers who appreciate (or require) consistent, well-engineered object-oriented designs.} {Now on CD, this internationally acclaimed bestseller is more valuable than ever! 
+
+Use the contents of the CD to create your own design documents and reusable components. The CD contains: 23 patterns you can cut and paste into your own design documents; sample code demonstrating pattern implementation; complete Design Patterns content in standard HTML format, with numerous hyperlinked cross-references; accessed through a standard web browser; Java-based dynamic search mechanism, enhancing online seach capabilities; graphical user environment, allowing ease of navigation.
+
+First published in 1995, this landmark work on object-oriented software design presents a catalog of simple and succinct solutions to common design problems. Created by four experienced designers, the 23 patterns contained herein have become an essential resource for anyone developing reusable object-oriented software. In response to reader demand, the complete text and pattern catalog are now available on CD-ROM. This electronic version of Design Patterns enables programmers to install the book directly onto a computer or network for use as an online reference for creating reusable object-oriented software.
+
+The authors first describe what patterns are and how they can help you in the design process. They then systematically name, explain, evaluate, and catalog recurring designs in object-oriented systems. All patterns are compiled from real-world examples and include code that demonstrates how they may be implemented in object-oriented programming languages such as C++ and Smalltalk. Readers who already own the book will want the CD to take advantage of its dynamic search mechanism and ready-to-install patterns.}},
+  author = {Gamma, Erich and Helm, Richard and Johnson, Ralph and Vlissides, John},
+  citeulike-article-id = {115158},
+  howpublished = {Hardcover},
+  isbn = {0201633612},
+  keywords = {1995 algorithms architecture book books computer computing design design-pattern design-patterns design_patterns designpatterns development diplom entwurfsmuster four gang gof java mathgamespatterns no-tag object object-orientation object-oriented of oo-patterns oop oriented pattern patterns programming se software software-development software-engineering software_design softwareengineering standard},
+  month = {January},
+  publisher = {{Addison-Wesley Professional}},
+  title = {Design Patterns},
+  url = {http://www.amazon.ca/exec/obidos/redirect?tag=citeulike04-20{\&}path=ASIN/0201633612},
+  year = {1995}
+}
+
+@inproceedings{Chaco95,
+ author = {Bruce Hendrickson and Robert Leland},
+ title = {A multilevel algorithm for partitioning graphs},
+ booktitle = {Supercomputing '95: Proceedings of the 1995 ACM/IEEE Conference on Supercomputing (CDROM)},
+ year = {1995},
+ isbn = {0-89791-816-9},
+ pages = {28},
+ location = {San Diego, California, United States},
+ doi = {http://doi.acm.org/10.1145/224170.224228},
+ publisher = {ACM Press},
+ address = {New York},
+}
+
+@BOOK{Aleksandrov98,
+  AUTHOR = {Aleksandrov, Pavel S.},
+  TITLE = {Combinatorial Topology},
+  PUBLISHER = {Dover},
+  VOLUME = 3,
+  YEAR = 1998
+}
+
+@book{Steenrod99,
+	abstract = {{
+Fibre bundles, now an integral part of differential geometry, are also of great importance in modern physics--such as in gauge theory. This book, a succinct introduction to the subject by renown mathematician Norman Steenrod, was the first to present the subject systematically.
+
+It begins with a general introduction to bundles, including such topics as differentiable manifolds and covering spaces. The author then provides brief surveys of advanced topics, such as homotopy theory and cohomology theory, before using them to study further properties of fibre bundles. The result is a classic and timeless work of great utility that will appeal to serious mathematicians and theoretical physicists alike.
+}},
+	author = {Steenrod, Norman},
+	citeulike-article-id = {712999},
+	howpublished = {Paperback},
+	isbn = {0691005486},
+	keywords = {fibre_bundles topology},
+	month = {April},
+	publisher = {{Princeton University Press}},
+	title = {The Topology of Fibre Bundles. (PMS-14)},
+	url = {http://www.amazon.ca/exec/obidos/redirect?tag=citeulike04-20{\&}path=ASIN/0691005486},
+	year = {1999}
+}
+
+@BOOK{Bredon97,
+  AUTHOR = {Bredon, Glen E.},
+  TITLE = {Sheaf Theory},
+  PUBLISHER = {Springer},
+  PAGES = {524},
+  SERIES = {Graduate Texts in Mathematics},
+  YEAR = 1997
 }

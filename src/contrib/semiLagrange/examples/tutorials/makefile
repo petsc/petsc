@@ -6,7 +6,7 @@ CFLAGS		   =
 FFLAGS		   =
 CPPFLAGS       =
 FPPFLAGS       =
-LOCDIR		   = src/contrib/semiLegrange/examples/tutorials/
+LOCDIR		   = src/contrib/semiLagrange/examples/tutorials/
 MANSEC         = SemiLagrange
 EXAMPLESC	   = ex1.c ex2.c ex4.c
 EXAMPLESF	   =
@@ -15,7 +15,7 @@ EXAMPLESFH     =
 EXAMPLESMATLAB =
 DIRS		   =
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB} ${PETSC_CONTRIB}
@@ -30,23 +30,23 @@ ex4: ex4.o  chkopts
 	${RM} ex4.o
 #--------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1 > ex1.tmp 2>&1;   \
+	-@${MPIEXEC} -np 1 ./ex1 > ex1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1.out ex1.tmp) then true; \
 	   else echo "Possible problem with ex1, diffs above"; fi; \
 	   ${RM} -f ex1.tmp
 
 runex2:
-	-@${MPIRUN} -np 1 ./ex2 > ex2.tmp 2>&1;   \
+	-@${MPIEXEC} -np 1 ./ex2 > ex2.tmp 2>&1;   \
 	   if (${DIFF} output/ex2.out ex2.tmp) then true; \
 	   else echo "Possible problem with ex2, diffs above"; fi; \
 	   ${RM} -f ex2.tmp
 
 runex4:
-	-@${MPIRUN} -np 1 ./ex4 > ex4.tmp 2>&1;   \
+	-@${MPIEXEC} -np 1 ./ex4 > ex4.tmp 2>&1;   \
 	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
 	   else echo "Possible problem with ex4, diffs above"; fi; \
 	   ${RM} -f ex4.tmp
 
 TESTEXAMPLES_C_NOCOMPLEX = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

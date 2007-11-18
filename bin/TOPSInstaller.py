@@ -42,8 +42,6 @@ __all__ = ['ynbox'
 	, 'diropenbox'
 	, 'fileopenbox'
 	, 'filesavebox'
-	, 'passwordbox'
-	, 'multpasswordbox'
 	, 'multchoicebox'
 	]
 
@@ -302,26 +300,6 @@ def multenterbox(message="Fill in values for the fields."
 	Returns a list of the values of the fields,
 	or None if the user cancels the operation.
 
-	Here is some example code, that shows how values returned from
-	multenterbox can be checked for validity before they are accepted.
-	----------------------------------------------------------------------
-		msg = "Enter your personal information"
-		title = "Credit Card Application"
-		fieldNames = ["Name","Street Address","City","State","ZipCode"]
-		fieldValues = []  # we start with blanks for the values
-		fieldValues = multenterbox(msg,title, fieldNames)
-
-		# make sure that none of the fields was left blank
-		while 1:
-			if fieldValues == None: break
-			errmsg = ""
-			for i in range(len(fieldNames)):
-				if fieldValues[i].strip() == "":
-					errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
-			if errmsg == "": break # no problems found
-			fieldValues = multenterbox(errmsg, title, fieldNames, fieldValues)
-
-		print "Reply was:", fieldValues
 	----------------------------------------------------------------------
 	"""
         if not argListOfFieldNames: 
@@ -330,40 +308,6 @@ def multenterbox(message="Fill in values for the fields."
                        argListOfFieldNames.append('')
 	return __multfillablebox(
 		message,title,argListOfFieldNames,argListOfFieldValues,None)
-
-def multpasswordbox(message="Fill in values for the fields."
-	, title=""
-	, argListOfFieldNames  = []
-	, argListOfFieldValues = []
-	):
-	"""Same interface as multenterbox.  But in multpassword box,
-	the last of the fields is assumed to be a password, and
-	is masked with asterisks.
-
-	Here is some example code, that shows how values returned from
-	multpasswordbox can be checked for validity before they are accepted.
-	----------------------------------------------------------------------
-	msg = "Enter logon information"
-	title = "Demo of multpasswordbox"
-	fieldNames = ["Server ID", "User ID", "Password"]
-	fieldValues = []  # we start with blanks for the values
-	fieldValues = multpasswordbox(msg,title, fieldNames)
-
-	# make sure that none of the fields was left blank
-	while 1:
-		if fieldValues == None: break
-		errmsg = ""
-		for i in range(len(fieldNames)):
-			if fieldValues[i].strip() == "":
-				errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
-		if errmsg == "": break # no problems found
-		fieldValues = multpasswordbox(errmsg, title, fieldNames, fieldValues)
-
-	print "Reply was:", fieldValues
-	----------------------------------------------------------------------
-	"""
-	return __multfillablebox(
-		message,title,argListOfFieldNames,argListOfFieldValues,"*")
 
 def __multfillablebox(message="Fill in values for the fields."
 	, title=""
@@ -426,12 +370,6 @@ def __multfillablebox(message="Fill in values for the fields."
 		entryWidgets[widgetIndex].bind("<Return>", __multenterboxGetText)
 		entryWidgets[widgetIndex].bind("<Escape>", __multenterboxCancel)
 
-		# for the last entryWidget, if this is a multpasswordbox,
-		# show the contents as just asterisks
-		if widgetIndex == lastWidgetIndex:
-			if argMaskCharacter:
-				entryWidgets[widgetIndex].configure(show=argMaskCharacter)
-
 		# put text into the entryWidget
 		entryWidgets[widgetIndex].insert(0,argFieldValue)
 		widgetIndex += 1
@@ -488,15 +426,6 @@ def enterbox(message="Enter something.", title="", argDefaultText=""):
 	Returns the text that the user entered, or None if he cancels the operation.
 	"""
 	return __fillablebox(message, title, argDefaultText, None)
-
-
-def passwordbox(message="Enter your password.", title="", argDefaultPassword=""):
-	"""Show a box in which a user can enter a password.
-	The text is masked with asterisks, so the password is not displayed.
-	Returns the text that the user entered, or None if he cancels the operation.
-		"""
-	return __fillablebox(message, title, argDefaultPassword, "*")
-
 
 def __fillablebox(message, title, argDefaultText, argMaskCharacter):
 	"""Show a box in which a user can enter some text.
@@ -1214,9 +1143,7 @@ for someItem in myListOfStuff:
 			"indexbox",
 			"filesavebox",
 			"fileopenbox",
-			"passwordbox",
 			"multenterbox",
-			"multpasswordbox",
 			"diropenbox"
 
 			]
@@ -1275,60 +1202,12 @@ for someItem in myListOfStuff:
 			reply = indexbox(msg, title, choices)
 			print "Reply was:", reply
 
-		elif reply[0] == "passwordbox":
-			reply = passwordbox("Demo of password box WITHOUT default"
-				+ "\n\nEnter your secret password", "Member Logon")
-			print "Reply was:", str(reply)
-
-			reply = passwordbox("Demo of password box WITH default"
-				+ "\n\nEnter your secret password", "Member Logon", "alfie")
-			print "Reply was:", str(reply)
-
 		elif reply[0] == "enterbox":
 			reply = enterbox("Enter the name of your best friend:", "Love!", "Suzy Smith")
 			print "Reply was:", str(reply)
 
 			reply = enterbox("Enter the name of your worst enemy:", "Hate!")
 			print "Reply was:", str(reply)
-
-		elif reply[0] == "multenterbox":
-			msg = "Enter your personal information"
-			title = "Credit Card Application"
-			fieldNames = ["Name","Street Address","City","State","ZipCode"]
-			fieldValues = []  # we start with blanks for the values
-			fieldValues = multenterbox(msg,title, fieldNames)
-
-			# make sure that none of the fields was left blank
-			while 1:
-				if fieldValues == None: break
-				errmsg = ""
-				for i in range(len(fieldNames)):
-					if fieldValues[i].strip() == "":
-						errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
-				if errmsg == "": break # no problems found
-				fieldValues = multenterbox(errmsg, title, fieldNames, fieldValues)
-
-			print "Reply was:", fieldValues
-
-		elif reply[0] == "multpasswordbox":
-			msg = "Enter logon information"
-			title = "Demo of multpasswordbox"
-			fieldNames = ["Server ID", "User ID", "Password"]
-			fieldValues = []  # we start with blanks for the values
-			fieldValues = multpasswordbox(msg,title, fieldNames)
-
-			# make sure that none of the fields was left blank
-			while 1:
-				if fieldValues == None: break
-				errmsg = ""
-				for i in range(len(fieldNames)):
-					if fieldValues[i].strip() == "":
-						errmsg = errmsg + ('"%s" is a required field.\n\n' % fieldNames[i])
-				if errmsg == "": break # no problems found
-				fieldValues = multpasswordbox(errmsg, title, fieldNames, fieldValues)
-
-			print "Reply was:", fieldValues
-
 
 		elif reply[0] == "ynbox":
 			reply = ynbox(message, title)

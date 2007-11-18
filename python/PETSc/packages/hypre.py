@@ -8,9 +8,10 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-1.11.1b.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.0.0.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
+    self.liblist   = [['libHYPRE.a']]
     self.license   = 'http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html'
     return
 
@@ -23,40 +24,16 @@ class Configure(PETSc.package.Package):
 
   def generateLibList(self,dir):
     '''Normally the one in package.py is used, but hypre requires the extra C++ library'''
-    libs = ['DistributedMatrix',
-            'DistributedMatrixPilutSolver',
-            'Euclid',
-            'IJ_mv',
-            'LSI',
-            'MatrixMatrix',
-            'ParaSails',
-            'krylov',
-            'parcsr_ls',
-            'parcsr_mv',
-            'seq_mv',
-            'sstruct_ls',
-            'sstruct_mv',
-            'struct_ls',
-            'struct_mv'
-            ]
-    alllibs = []
-    for l in libs:
-      alllibs.append('libHYPRE_'+l+'.a')
-    # Now specify -L hypre-lib-path only to the first library
-    alllibs[0] = os.path.join(dir,alllibs[0])
+    alllibs = PETSc.package.Package.generateLibList(self,dir)
     import config.setCompilers
     if self.languages.clanguage == 'C':
-      alllibs.extend(self.compilers.cxxlibs)
-    return [alllibs]
+      alllibs[0].extend(self.compilers.cxxlibs)
+    return alllibs
         
   def Install(self):
-    hypreDir = self.getDir()
 
-    # Get the HYPRE directories
-    installDir = os.path.join(hypreDir, self.arch.arch)
-    # Configure and Build HYPRE
     self.framework.pushLanguage('C')
-    args = ['--prefix='+installDir, 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
@@ -84,49 +61,42 @@ class Configure(PETSc.package.Package):
       libs.append(ll[3:-2])
     libs = ' '.join(libs)
     args.append('--with-MPI-libs="'+libs+'"')
-    args.append('--without-babel')
-    args.append('--without-mli')    
-    args.append('--without-FEI')
+
+    # tell hypre configure not to look for blas/lapack [and not use hypre-internal blas]
+    args.append('--with-blas-libs=')
+    args.append('--with-blas-lib-dir=')
+    args.append('--with-lapack-libs=')
+    args.append('--with-lapack-lib-dir=')
     args.append('--with-blas=yes')
     args.append('--with-lapack=yes')
+    
+    args.append('--without-babel')
+    args.append('--without-mli')
+    args.append('--without-fei')
+    args.append('--without-superlu')
     args = ' '.join(args)
+    fd = file(os.path.join(self.packageDir,'hypre'), 'w')
+    fd.write(args)
+    fd.close()
 
-    try:
-      fd      = file(os.path.join(installDir,'config.args'))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild HYPRE oldargs = '+oldargs+'\n new args ='+args+'\n')
+    if self.installNeeded('hypre'):
       try:
         self.logPrintBox('Configuring hypre; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';make distclean;./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+';make distclean;./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
         self.logPrintBox('Compiling hypre; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+';HYPRE_INSTALL_DIR='+self.installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))
-      if not os.path.isdir(os.path.join(installDir,'lib')):
-        self.framework.log.write('Error running make on HYPRE   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on HYPRE follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on HYPRE *******\n')
-        raise RuntimeError('Error running make on HYPRE, libraries not installed')
-      
-      fd = file(os.path.join(installDir,'config.args'), 'w')
-      fd.write(args)
-      fd.close()
-
       #need to run ranlib on the libraries using the full path
       try:
-        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on HYPRE libraries: '+str(e))
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed HYPRE into '+installDir)
-    return self.getDir()
+      self.checkInstall(output,'hypre')
+    return self.installDir
   
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by hypre'''

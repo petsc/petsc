@@ -26,8 +26,8 @@
 $        VecScatterCreateToAll(vin,&ctx,&vout);
 $
 $        // scatter as many times as you need 
-$        VecScatterBegin(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
-$        VecScatterEnd(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+$        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
+$        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $
 $        // destroy scatter context and local vector when no longer needed
 $        VecScatterDestroy(ctx);
@@ -89,8 +89,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
 $        VecScatterCreateToZero(vin,&ctx,&vout);
 $
 $        // scatter as many times as you need 
-$        VecScatterBegin(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
-$        VecScatterEnd(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+$        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
+$        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $
 $        // destroy scatter context and local vector when no longer needed
 $        VecScatterDestroy(ctx);
@@ -117,7 +117,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx
 
   /* Create vec on each proc, with the same size of the original mpi vec (all on process 0)*/
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(vin->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)vin)->comm,&rank);CHKERRQ(ierr);
   if (rank) N = 0;
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,vout);CHKERRQ(ierr);
   /* Create the VecScatter ctx with the communication info */

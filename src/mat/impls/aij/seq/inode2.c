@@ -36,6 +36,7 @@ PetscErrorCode MatView_Inode(Mat A,PetscViewer viewer)
 #define __FUNCT__ "MatAssemblyEnd_Inode"
 PetscErrorCode MatAssemblyEnd_Inode(Mat A, MatAssemblyType mode)
 {
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscTruth     samestructure;
 
@@ -44,6 +45,7 @@ PetscErrorCode MatAssemblyEnd_Inode(Mat A, MatAssemblyType mode)
   samestructure = (PetscTruth)(!A->info.nz_unneeded);
   /* check for identical nodes. If found, use inode functions */
   ierr = Mat_CheckInode(A,samestructure);CHKERRQ(ierr);
+  a->inode.ibdiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -52,10 +54,11 @@ PetscErrorCode MatAssemblyEnd_Inode(Mat A, MatAssemblyType mode)
 PetscErrorCode MatDestroy_Inode(Mat A)
 {
   PetscErrorCode ierr;
-  Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
   ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
+  ierr = PetscFree2(a->inode.ibdiag,a->inode.bdiag);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeAdjustForInodes_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeGetInodeSizes_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -72,21 +75,27 @@ PetscErrorCode MatCreate_Inode(Mat B)
 {
   Mat_SeqAIJ     *b=(Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
+  PetscTruth     no_inode,no_unroll;
 
   PetscFunctionBegin;
-  b->inode.use         = PETSC_TRUE;
+  no_inode             = PETSC_FALSE;
+  no_unroll            = PETSC_FALSE;
   b->inode.node_count  = 0;
   b->inode.size        = 0;
   b->inode.limit       = 5;
   b->inode.max_limit   = 5;
+  b->inode.ibdiagvalid = PETSC_FALSE;
+  b->inode.ibdiag      = 0;
+  b->inode.bdiag       = 0;
 
-  ierr = PetscOptionsBegin(B->comm,B->prefix,"Options for SEQAIJ matrix","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,b->inode.use,&b->inode.use,PETSC_NULL);CHKERRQ(ierr);
-    if (!b->inode.use) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);}
-    ierr = PetscOptionsTruth("-mat_no_inode","Do not optimize for inodes (slower)",PETSC_NULL,b->inode.use,&b->inode.use,PETSC_NULL);CHKERRQ(ierr);
-    if (!b->inode.use) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);}
+  ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for SEQAIJ matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,no_unroll,&no_unroll,PETSC_NULL);CHKERRQ(ierr);
+    if (no_unroll) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);}
+    ierr = PetscOptionsTruth("-mat_no_inode","Do not optimize for inodes (slower)",PETSC_NULL,no_inode,&no_inode,PETSC_NULL);CHKERRQ(ierr);
+    if (no_inode) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,b->inode.limit,&b->inode.limit,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  b->inode.use = (PetscTruth)(!(no_unroll || no_inode));
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatInodeAdjustForInodes_C",
@@ -100,34 +109,14 @@ PetscErrorCode MatCreate_Inode(Mat B)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetOption_Inode"
-PetscErrorCode MatSetOption_Inode(Mat A,MatOption op)
+PetscErrorCode MatSetOption_Inode(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch(op) {
     case MAT_USE_INODES:
-      a->inode.use         = PETSC_TRUE;
-      break;
-    case MAT_DO_NOT_USE_INODES:
-      a->inode.use         = PETSC_FALSE;
-      ierr = PetscInfo(A,"Not using Inode routines due to MatSetOption(MAT_DO_NOT_USE_INODES\n");CHKERRQ(ierr);
-      break;
-    case MAT_INODE_LIMIT_1:
-      a->inode.limit  = 1;
-      break;
-    case MAT_INODE_LIMIT_2:
-      a->inode.limit  = 2;
-      break;
-    case MAT_INODE_LIMIT_3:
-      a->inode.limit  = 3;
-      break;
-    case MAT_INODE_LIMIT_4:
-      a->inode.limit  = 4;
-      break;
-    case MAT_INODE_LIMIT_5:
-      a->inode.limit  = 5;
+      a->inode.use         = flg;
       break;
     default:
       break;
@@ -140,7 +129,7 @@ PetscErrorCode MatSetOption_Inode(Mat A,MatOption op)
 PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
 {
   Mat            B=*C;
-  Mat_SeqAIJ      *c=(Mat_SeqAIJ*)B->data,*a=(Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *c=(Mat_SeqAIJ*)B->data,*a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       m=A->rmap.n;
 
@@ -157,6 +146,9 @@ PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
     c->inode.size       = 0;
     c->inode.node_count = 0;
   }
+  c->inode.ibdiagvalid = PETSC_FALSE;
+  c->inode.ibdiag      = 0;
+  c->inode.bdiag       = 0;
   PetscFunctionReturn(0);
 }
 

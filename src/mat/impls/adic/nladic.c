@@ -639,8 +639,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT NLFDAADSetDA_DAAD(NLF A,DA da)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  A->da = da;
   ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
+  if (A->da) {ierr = DADestroy(A->da);CHKERRQ(ierr);}
+  A->da = da;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

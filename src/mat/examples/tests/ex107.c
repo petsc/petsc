@@ -1,7 +1,7 @@
 static char help[] = "Tests PLAPACK interface.\n\n";
 
 /* Usage:
-     mpirun -np 4 ex107 -M 50 -mat_plapack_nprows 2 -mat_plapack_npcols 2 -mat_plapack_nb 1 
+     mpiexec -np 4 ex107 -M 50 -mat_plapack_nprows 2 -mat_plapack_npcols 2 -mat_plapack_nb 1 
  */
 
 #include "petscmat.h"
@@ -52,8 +52,8 @@ int main(int argc,char **args)
   ierr = MatSetType(Cpetsc,MATDENSE);CHKERRQ(ierr); 
   ierr = MatMPIDenseSetPreallocation(Cpetsc,PETSC_NULL);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(Cpetsc);CHKERRQ(ierr);
-  ierr = MatSetOption(Cpetsc,MAT_COLUMN_ORIENTED);CHKERRQ(ierr); 
-  ierr = MatSetOption(C,MAT_COLUMN_ORIENTED);CHKERRQ(ierr); 
+  ierr = MatSetOption(Cpetsc,MAT_COLUMN_ORIENTED,PETSC_TRUE);CHKERRQ(ierr); 
+  ierr = MatSetOption(C,MAT_COLUMN_ORIENTED,PETSC_TRUE);CHKERRQ(ierr); 
 
   /* Assembly */
   /* PLAPACK doesn't support INSERT_VALUES mode, zero all entries before calling MatSetValues() */
@@ -167,9 +167,9 @@ int main(int argc,char **args)
   ierr = MatSetSizes(Csymm,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
   ierr = MatSetType(Csymm,MATPLAPACK);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(Csymm);CHKERRQ(ierr);
-  ierr = MatSetOption(Csymm,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
-  ierr = MatSetOption(Csymm,MAT_SYMMETRIC);CHKERRQ(ierr);
-  ierr = MatSetOption(Csymm,MAT_SYMMETRY_ETERNAL);CHKERRQ(ierr);
+  ierr = MatSetOption(Csymm,MAT_COLUMN_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(Csymm,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(Csymm,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = MatZeroEntries(Csymm);CHKERRQ(ierr);
   ierr = MatZeroEntries(Cpetsc);CHKERRQ(ierr);

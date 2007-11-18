@@ -82,7 +82,7 @@ int main(int Argc,char **Args)
     ierr = MatCreateShell(PETSC_COMM_WORLD,N[i+1],N[i],N[i+1],N[i],(void*)0,&mat[i]);CHKERRQ(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT,(void(*)(void))restrct);CHKERRQ(ierr);
     ierr = MatShellSetOperation(mat[i],MATOP_MULT_TRANSPOSE_ADD,(void(*)(void))interpolate);CHKERRQ(ierr);
-    ierr = PCMGSetInterpolate(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
+    ierr = PCMGSetInterpolation(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
     ierr = PCMGSetRestriction(pcmg,levels - 1 - i,mat[i]);CHKERRQ(ierr);
     ierr = PCMGSetCyclesOnLevel(pcmg,levels - 1 - i,cycles);CHKERRQ(ierr);
 

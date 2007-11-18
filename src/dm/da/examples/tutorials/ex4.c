@@ -1,5 +1,5 @@
 
-/* Program usage:  mpirun ex1 [-help] [all PETSc options] */
+/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
 
 static char help[] = "Demonstrates various vector routines.\n\n";
 
@@ -59,6 +59,7 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
+  ierr = VecDestroy(xy);CHKERRQ(ierr);
   ierr = PFDestroy(pf);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);

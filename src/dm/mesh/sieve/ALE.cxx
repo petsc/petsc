@@ -37,7 +37,7 @@ namespace ALE {
   // Error/exception handling helper functions (ALE_exception.hh).
   //
 
-  // A helper function that throws an ALE::Exception with a message identifying the function that returned the given error code, 
+  // A helper function for converting PETSc errors to exception
   // including the function and the line where the error occured.
   void ERROR(PetscErrorCode ierr, const char *func, int line, const char *msg) {
     if(ierr) {
@@ -54,7 +54,7 @@ namespace ALE {
   void MPIERROR(PetscErrorCode ierr, const char *func, int line, const char *msg) {
     if(ierr) {
       char mpi_error[MPI_MAX_ERROR_STRING+1];
-      int32_t len = MPI_MAX_ERROR_STRING;
+      int len = MPI_MAX_ERROR_STRING;
       PetscErrorCode ie = MPI_Error_string(ierr, mpi_error, &len);
       char *mess;
       if(!ie) {
@@ -100,7 +100,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "LogStageRegister"
   LogStage LogStageRegister(const char *name){
-    int stage;
+    int stage = 0;
     std::string stage_name(name);
     if(_log_stage.find(stage_name) == _log_stage.end()) {    
       // stage by that name not yet registered, so we register it and store its registration number.
@@ -134,7 +134,8 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "LogEventRegister"
   LogEvent LogEventRegister(LogCookie cookie, const char *name){
-    LogEvent event;
+    LogEvent event = 0;
+#if 0
     std::string event_name(name);
     if(_log_event.find(event_name) == _log_event.end()) {    
       PetscErrorCode ierr = PetscLogEventRegister(&event, name, cookie);
@@ -147,7 +148,8 @@ namespace ALE {
     else {                                                   
       // event by that name already registered, so we retrieve its registration number.
       event = _log_event[event_name];                   
-    }                                                        
+    }
+#endif                                                        
     return event;
   }
 

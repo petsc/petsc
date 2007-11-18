@@ -8,10 +8,9 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['bk://petsc.bkbits.net/blacs-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/blacs-dev.tar.gz']
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/blacs-dev.tar.gz']
     self.liblist   = [['libblacs.a']]
     self.includes  = []
-    self.libdir    = ''
     self.fc        = 1
     self.functions = ['blacs_pinfo']
     self.functionsFortran = 1
@@ -27,14 +26,8 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    # Get the BLACS directories
-    blacsDir   = self.getDir()
-    installDir = os.path.join(blacsDir, self.arch.arch)
 
-    # Configure and build BLACS
-    if os.path.isfile(os.path.join(blacsDir,'Bmake.Inc')):
-      output  = config.base.Configure.executeShellCommand('cd '+blacsDir+'; rm -f Bmake.Inc', timeout=2500, log = self.framework.log)[0]
-    g = open(os.path.join(blacsDir,'Bmake.Inc'),'w')
+    g = open(os.path.join(self.packageDir,'Bmake.Inc'),'w')
     g.write('SHELL     = /bin/sh\n')
     g.write('COMMLIB   = MPI\n')
     g.write('SENDIS    = -DSndIsLocBlk\n')
@@ -43,19 +36,10 @@ class Configure(PETSc.package.Package):
     else:
       g.write('WHATMPI      = -DCSAMEF77\n')
     g.write('DEBUGLVL  = -DBlacsDebugLvl=1\n')
-    g.write('BLACSdir  = '+blacsDir+'\n')
-    g.write('BLACSLIB  = '+os.path.join(installDir,'libblacs.a')+'\n')
-    # look for the correct dir which has mpif.h [if not found error]
-    found = 0
-    for mpiincdir in self.mpi.include:
-      if os.path.isfile(os.path.join(mpiincdir,'mpif.h')):
-        g.write('MPIINCdir = '+mpiincdir+'\n')
-        found =1
-        break
-    if found == 0: raise RuntimeError('mpif.h could not be located in paths :' + str(self.mpi.include))
-
+    g.write('BLACSdir  = '+self.packageDir+'\n')
+    g.write('BLACSLIB  = '+os.path.join(self.installDir,self.libdir,'libblacs.a')+'\n')
     g.write('MPILIB    = '+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('SYSINC    = -I$(MPIINCdir)\n')
+    g.write('SYSINC    = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('BTLIBS    = $(BLACSLIB)  $(MPILIB) \n')
     if self.compilers.fortranManglingDoubleUnderscore:
       blah = 'f77IsF2C'
@@ -70,7 +54,7 @@ class Configure(PETSc.package.Package):
     g.write('BLACSDEFS = $(DEFS1) $(SENDIS) $(BUFF) $(TRANSCOMM) $(WHATMPI) $(SYSERRORS)\n')
     self.setCompilers.pushLanguage('FC')  
     g.write('F77       = '+self.setCompilers.getCompiler()+'\n')
-    g.write('F77FLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')+'\n')
+    g.write('F77FLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')+'$(SYSINC)\n')
     g.write('F77LOADER = '+self.setCompilers.getLinker()+'\n')      
     g.write('F77LOADFLAGS ='+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()     
@@ -84,27 +68,15 @@ class Configure(PETSc.package.Package):
     g.write('ARCHFLAGS   = '+self.setCompilers.AR_FLAGS+'\n')    
     g.write('RANLIB      = '+self.setCompilers.RANLIB+'\n')    
     g.close()
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(installDir,'Bmake.Inc')) or not (self.getChecksum(os.path.join(installDir,'Bmake.Inc')) == self.getChecksum(os.path.join(blacsDir,'Bmake.Inc'))):
-      self.framework.log.write('Have to rebuild blacs, Bmake.Inc != '+installDir+'/Bmake.Inc\n')
+
+    if self.installNeeded('Bmake.Inc'):
       try:
         self.logPrintBox('Compiling Blacs; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
-    else:
-      self.framework.log.write('Do NOT need to compile BLACS downloaded libraries\n')
-    if not os.path.isfile(os.path.join(installDir,'libblacs.a')):
-      self.framework.log.write('Error running make on BLACS   ******(libraries not installed)*******\n')
-      self.framework.log.write('********Output of running make on BLACS follows *******\n')        
-      self.framework.log.write(output)
-      self.framework.log.write('********End of Output of running make on BLACS *******\n')
-      raise RuntimeError('Error running make on BLACS, libraries not installed')
-    
-    output = config.base.Configure.executeShellCommand('cp -f '+os.path.join(blacsDir,'Bmake.Inc')+' '+installDir, timeout=5, log = self.framework.log)[0]
-    self.framework.actions.addArgument('blacs', 'Install', 'Installed blacs into '+installDir)
-    return self.getDir()
+      self.checkInstall(output,'Bmake.Inc')
+    return self.installDir
 
   def checkLib(self,lib,func,mangle,otherLibs = []):
     oldLibs = self.compilers.LIBS

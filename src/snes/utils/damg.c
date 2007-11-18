@@ -4,7 +4,7 @@
 #include "petscksp.h"           /*I "petscksp.h"  I*/
 #include "petscmg.h"            /*I "petscmg.h"   I*/
 #include "petscdmmg.h"          /*I "petscdmmg.h" I*/
-#include "private/pcimpl.h"  /*I "petscpc.h"   I*/
+#include "private/pcimpl.h"     /*I "petscpc.h"   I*/
 
 /*
    Code for almost fully managing multigrid/multi-level linear solvers for DA grids
@@ -26,13 +26,19 @@
     Output Parameters:
 .    - the context
 
+    Options Database:
++     -dmmg_nlevels <levels> - number of levels to use
+.     -dmmg_galerkin - use Galerkin approach to compute coarser matrices
+-     -dmmg_mat_type <type> - matrix type that DMMG should create, defaults to MATAIJ
+
     Notes:
       To provide a different user context for each level call DMMGSetUser() after calling
       this routine
 
     Level: advanced
 
-.seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser()
+.seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser(), DMMGSetMatType(), DMMGSetUseGalerkin(), DMMGSetNullSpace(), DMMGSetInitialGuess(),
+         DMMGSetISColoringType()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,void *user,DMMG **dmmg)
@@ -40,10 +46,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
   PetscErrorCode ierr;
   PetscInt       i;
   DMMG           *p;
-  PetscTruth     galerkin;
+  PetscTruth     galerkin,ftype;
+  char           mtype[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
+  if (nlevels < 0) {
+    nlevels = -nlevels;
+  } else {
+    ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsHasName(0,"-dmmg_galerkin",&galerkin);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nlevels*sizeof(DMMG),&p);CHKERRQ(ierr);
@@ -53,9 +64,71 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
     p[i]->comm     = comm;
     p[i]->user     = user;
     p[i]->galerkin = galerkin;
+    p[i]->mtype    = MATAIJ;
+    p[i]->isctype  = IS_COLORING_GHOSTED;   /* default to faster version, requires DMMGSetSNESLocal() */
   }
   p[nlevels-1]->galerkin = PETSC_FALSE;
   *dmmg = p;
+
+  ierr = PetscOptionsGetString(PETSC_NULL,"-dmmg_mat_type",mtype,256,&ftype);CHKERRQ(ierr);
+  if (ftype) {
+    ierr = DMMGSetMatType(*dmmg,mtype);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetMatType"
+/*@C
+    DMMGSetMatType - Sets the type of matrices that DMMG will create for its solvers.
+
+    Collective on MPI_Comm 
+
+    Input Parameters:
++    dmmg - the DMMG object created with DMMGCreate()
+-    mtype - the matrix type, defaults to MATAIJ
+
+    Level: intermediate
+
+.seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser(), DMMGCreate(), DMMGSetNullSpace()
+
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,MatType mtype)
+{
+  PetscInt i;
+  
+  PetscFunctionBegin;
+  for (i=0; i<dmmg[0]->nlevels; i++) {
+    dmmg[i]->mtype  = mtype;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetPrefix"
+/*@C
+    DMMGSetPrefix - Sets the prefix used for the solvers inside a DMMG
+
+    Collective on MPI_Comm 
+
+    Input Parameters:
++    dmmg - the DMMG object created with DMMGCreate()
+-    prefix - the prefix string
+
+    Level: intermediate
+
+.seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser(), DMMGCreate(), DMMGSetNullSpace()
+
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetPrefix(DMMG *dmmg,const char* prefix)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  for (i=0; i<dmmg[0]->nlevels; i++) {
+    ierr = PetscStrallocpy(prefix,&dmmg[i]->prefix);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -68,7 +141,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
     Collective on DMMG
 
     Input Parameter:
-.    - the context
+.    dmmg - the context
 
     Options Database Keys:
 .    -dmmg_galerkin 
@@ -83,7 +156,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
        more potential flexibility since you can select exactly which levels are done via
        Galerkin and which are done via user provided function.
 
-.seealso DMMGCreate(), PCMGSetGalerkin()
+.seealso DMMGCreate(), PCMGSetUseGalerkin(), DMMGSetMatType(), DMMGSetNullSpace()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseGalerkinCoarse(DMMG* dmmg)
@@ -126,6 +199,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
     if (dmmg[i]->R) {ierr = MatDestroy(dmmg[i]->R);CHKERRQ(ierr);}
   }
   for (i=0; i<nlevels; i++) {
+    ierr = PetscStrfree(dmmg[i]->prefix);CHKERRQ(ierr);
     if (dmmg[i]->dm)      {ierr = DMDestroy(dmmg[i]->dm);CHKERRQ(ierr);}
     if (dmmg[i]->x)       {ierr = VecDestroy(dmmg[i]->x);CHKERRQ(ierr);}
     if (dmmg[i]->b)       {ierr = VecDestroy(dmmg[i]->b);CHKERRQ(ierr);}
@@ -134,7 +208,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
     if (dmmg[i]->w)       {ierr = VecDestroy(dmmg[i]->w);CHKERRQ(ierr);}
     if (dmmg[i]->work2)   {ierr = VecDestroy(dmmg[i]->work2);CHKERRQ(ierr);}
     if (dmmg[i]->lwork1)  {ierr = VecDestroy(dmmg[i]->lwork1);CHKERRQ(ierr);}
-    if (dmmg[i]->B && dmmg[i]->B != dmmg[i]->J) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);}
+    if (dmmg[i]->B)         {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);}
     if (dmmg[i]->J)         {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr);}
     if (dmmg[i]->Rscale)    {ierr = VecDestroy(dmmg[i]->Rscale);CHKERRQ(ierr);}
     if (dmmg[i]->fdcoloring){ierr = MatFDColoringDestroy(dmmg[i]->fdcoloring);CHKERRQ(ierr);}
@@ -156,26 +230,67 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
 
     Input Parameter:
 +   dmmg - the context
--   dm - the DA or VecPack object
+-   dm - the DA or DMComposite object
+
+    Options Database Keys:
++   -dmmg_refine: Use the input problem as the coarse level and refine. Otherwise, use it as the fine level and coarsen.
+-   -dmmg_hierarchy: Construct all grids at once
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy()
+.seealso DMMGCreate(), DMMGDestroy(), DMMGSetUseGalerkin(), DMMGSetMatType()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg,DM dm)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
 {
+  PetscInt       nlevels     = dmmg[0]->nlevels;
+  PetscTruth     doRefine    = PETSC_TRUE;
+  PetscTruth     doHierarchy = PETSC_FALSE;
+  PetscInt       i;
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
-  /* Create DA data structure for all the levels */
-  dmmg[0]->dm = dm;
-  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-  for (i=1; i<nlevels; i++) {
-    ierr = DMRefine(dmmg[i-1]->dm,dmmg[i]->comm,&dmmg[i]->dm);CHKERRQ(ierr);
+  /* Create DM data structure for all the levels */
+  ierr = PetscOptionsGetTruth(PETSC_NULL, "-dmmg_refine", &doRefine, PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_hierarchy", &doHierarchy);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+  if (doRefine) {
+    dmmg[0]->dm = dm;
+    if (doHierarchy) {
+/*       DM *hierarchy; */
+
+/*       ierr = DMRefineHierarchy(dm, nlevels-1, &hierarchy);CHKERRQ(ierr); */
+/*       for(i = 1; i < nlevels; ++i) { */
+/*         dmmg[i]->dm = hierarchy[i-1]; */
+/*       } */
+      SETERRQ(PETSC_ERR_SUP, "Refinement hierarchy not yet implemented");
+    } else {
+      for(i = 1; i < nlevels; ++i) {
+        ierr = DMRefine(dmmg[i-1]->dm, dmmg[i]->comm, &dmmg[i]->dm);CHKERRQ(ierr);
+      }
+    }
+  } else {
+    dmmg[nlevels-1]->dm = dm;
+    if (doHierarchy) {
+      DM *hierarchy;
+
+      ierr = DMCoarsenHierarchy(dm, nlevels-1, &hierarchy);CHKERRQ(ierr);
+      for(i = 0; i < nlevels-1; ++i) {
+        dmmg[nlevels-2-i]->dm = hierarchy[i];
+      }
+    } else {
+/*       for(i = nlevels-2; i >= 0; --i) { */
+/*         ierr = DMCoarsen(dmmg[i+1]->dm, dmmg[i]->comm, &dmmg[i]->dm);CHKERRQ(ierr); */
+/*       } */
+      SETERRQ(PETSC_ERR_SUP, "Sequential coarsening not yet implemented");
+    }
+  }
+  /* Cleanup old structures (should use some private Destroy() instead) */
+  for(i = 0; i < nlevels; ++i) {
+    if (dmmg[i]->B) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr); dmmg[i]->B = PETSC_NULL;}
+    if (dmmg[i]->J) {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr); dmmg[i]->J = PETSC_NULL;}
   }
   ierr = DMMGSetUp(dmmg);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
@@ -193,7 +308,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg,DM dm)
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSolve()
+.seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSolve(), DMMGSetMatType()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
@@ -232,13 +347,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
 
     Options Database:
 +   -dmmg_grid_sequence - use grid sequencing to get the initial solution for each level from the previous
--   -dmmg_vecmonitor - display the solution at each iteration
+-   -dmmg_monitor_solution - display the solution at each iteration
 
      Notes: For linear (KSP) problems may be called more than once, uses the same 
     matrices but recomputes the right hand side for each new solve. Call DMMGSetKSP()
     to generate new matrices.
  
-.seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSetUp()
+.seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSetUp(), DMMGSetMatType()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
@@ -249,7 +364,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(0,"-dmmg_grid_sequence",&gridseq);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(0,"-dmmg_vecmonitor",&vecmonitor);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(0,"-dmmg_monitor_solution",&vecmonitor);CHKERRQ(ierr);
   if (gridseq) {
     if (dmmg[0]->initialguess) {
       ierr = (*dmmg[0]->initialguess)(dmmg[0],dmmg[0]->x);CHKERRQ(ierr);
@@ -263,7 +378,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
         ierr = VecView(dmmg[i]->x,PETSC_VIEWER_DRAW_(dmmg[i]->comm));CHKERRQ(ierr);
       }
       ierr = MatInterpolate(dmmg[i+1]->R,dmmg[i]->x,dmmg[i+1]->x);CHKERRQ(ierr);
-      if (dmmg[i+1]->ksp && !dmmg[i+1]->ksp) {
+      if (dmmg[i+1]->ksp && !dmmg[i+1]->snes) {
         ierr = KSPSetInitialGuessNonzero(dmmg[i+1]->ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
@@ -272,6 +387,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
       ierr = (*dmmg[nlevels-1]->initialguess)(dmmg[nlevels-1],dmmg[nlevels-1]->x);CHKERRQ(ierr);
     }
   }
+
+  /*ierr = VecView(dmmg[nlevels-1]->x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);*/
+
   ierr = (*DMMGGetFine(dmmg)->solve)(dmmg,nlevels-1);CHKERRQ(ierr);
   if (vecmonitor) {
      ierr = VecView(dmmg[nlevels-1]->x,PETSC_VIEWER_DRAW_(dmmg[nlevels-1]->comm));CHKERRQ(ierr);
@@ -279,7 +397,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_view",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
-    ierr = DMMGView(dmmg,PETSC_VIEWER_STDOUT_(dmmg[0]->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(dmmg[0]->comm,&viewer);CHKERRQ(ierr);
+    ierr = DMMGView(dmmg,viewer);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_view_binary",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
@@ -300,38 +420,43 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
     ierr = (*dmmg[level]->rhs)(dmmg[level],dmmg[level]->b);CHKERRQ(ierr); 
     CHKMEMQ;
   }
-  if (dmmg[level]->matricesset) {
-    ierr = KSPSetOperators(dmmg[level]->ksp,dmmg[level]->J,dmmg[level]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    dmmg[level]->matricesset = PETSC_FALSE;
-  }
   ierr = KSPSolve(dmmg[level]->ksp,dmmg[level]->b,dmmg[level]->x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
-    Sets each of the linear solvers to use multigrid 
+    For each level (of grid sequencing) this sets the interpolation/restriction and 
+    work vectors needed by the multigrid preconditioner within the KSP 
+    (for nonlinear problems the KSP inside the SNES) of that level.
+
+    Also sets the KSP monitoring on all the levels if requested by user.
+
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetUpLevel"
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PC             pc;
-  PetscTruth     ismg,monitor,ismf,isshell,ismffd;
-  KSP            lksp; /* solver internal to the multigrid preconditioner */
-  MPI_Comm       *comms,comm;
-  PetscViewer    ascii;
+  PetscErrorCode          ierr;
+  PetscInt                i;
+  PC                      pc;
+  PetscTruth              ismg,monitor,monitor_short,ismf,isshell,ismffd;
+  KSP                     lksp; /* solver internal to the multigrid preconditioner */
+  MPI_Comm                *comms,comm;
+  PetscViewerASCIIMonitor ascii;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_ksp_monitor",&monitor);CHKERRQ(ierr);
-  if (monitor) {
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_ksp_monitor_short",&monitor_short);CHKERRQ(ierr);
+  if (monitor || monitor_short) {
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-nlevels);CHKERRQ(ierr);
-    ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",1+dmmg[0]->nlevels-nlevels,&ascii);CHKERRQ(ierr);
+    if (monitor) {
+      ierr = KSPMonitorSet(ksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+    } else {
+      ierr = KSPMonitorSet(ksp,KSPMonitorDefaultShort,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+    }
   }
 
   /* use fgmres on outer iteration by default */
@@ -350,10 +475,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   if (ismg) {
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
-      ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
-      if (1) {
-        ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-      }
       if (i < nlevels-1) { /* don't set for finest level, they are set in PCApply_MG()*/
 	ierr = PCMGSetX(pc,i,dmmg[i]->x);CHKERRQ(ierr); 
 	ierr = PCMGSetRhs(pc,i,dmmg[i]->b);CHKERRQ(ierr); 
@@ -361,11 +482,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
       if (i > 0) {
         ierr = PCMGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
       }
-      if (monitor) {
+      if (monitor || monitor_short) {
+        ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
         ierr = PetscObjectGetComm((PetscObject)lksp,&comm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-i);CHKERRQ(ierr);
-        ierr = KSPSetMonitor(lksp,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",1+dmmg[0]->nlevels-i,&ascii);CHKERRQ(ierr);
+	if (monitor) {
+	  ierr = KSPMonitorSet(lksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+	} else {
+	  ierr = KSPMonitorSet(lksp,KSPMonitorDefaultShort,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+	}
       }
       /* If using a matrix free multiply and did not provide an explicit matrix to build
          the preconditioner then must use no preconditioner 
@@ -375,6 +500,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
       ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATMFFD,&ismffd);CHKERRQ(ierr);
       if (isshell || ismf || ismffd) {
         PC  lpc;
+        ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
         ierr = KSPGetPC(lksp,&lpc);CHKERRQ(ierr);
         ierr = PCSetType(lpc,PCNONE);CHKERRQ(ierr);
       }
@@ -382,7 +508,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 
     /* Set interpolation/restriction between levels */
     for (i=1; i<nlevels; i++) {
-      ierr = PCMGSetInterpolate(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
+      ierr = PCMGSetInterpolation(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
       ierr = PCMGSetRestriction(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
     }
   }
@@ -408,30 +534,36 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
        than once. Call DMMGSolve() directly several times to solve with the same matrix but different 
        right hand sides.
    
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve(), DMMGSetMatType()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorCode (*func)(DMMG,Mat,Mat))
 {
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels;
-  PetscTruth     galerkin;
+  PetscInt       i,nlevels = dmmg[0]->nlevels,level;
+  PetscTruth     galerkin,ismg;
+  PC             pc;
+  KSP            lksp;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
   galerkin = dmmg[nlevels - 2 > 0 ? nlevels - 2 : 0]->galerkin;  
 
   if (galerkin) {
-    ierr = DMGetMatrix(dmmg[nlevels-1]->dm,MATAIJ,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
+    ierr = DMGetMatrix(dmmg[nlevels-1]->dm,dmmg[nlevels-1]->mtype,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
     if (!dmmg[nlevels-1]->J) {
       dmmg[nlevels-1]->J = dmmg[nlevels-1]->B;
+      ierr = PetscObjectReference((PetscObject) dmmg[nlevels-1]->J);CHKERRQ(ierr);
     }
-    ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->J,dmmg[nlevels-1]->B);CHKERRQ(ierr);
+    if (func) {
+      ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->J,dmmg[nlevels-1]->B);CHKERRQ(ierr);
+    }
     for (i=nlevels-2; i>-1; i--) {
       if (dmmg[i]->galerkin) {
         ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,MAT_INITIAL_MATRIX,1.0,&dmmg[i]->B);CHKERRQ(ierr);
         if (!dmmg[i]->J) {
           dmmg[i]->J = dmmg[i]->B;
+          ierr = PetscObjectReference((PetscObject) dmmg[i]->J);CHKERRQ(ierr);
         }
       }
     }
@@ -442,13 +574,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
     for (i=0; i<nlevels; i++) {
 
       if (!dmmg[i]->B && !dmmg[i]->galerkin) {
-        ierr = DMGetMatrix(dmmg[i]->dm,MATAIJ,&dmmg[i]->B);CHKERRQ(ierr);
+        ierr = DMGetMatrix(dmmg[i]->dm,dmmg[nlevels-1]->mtype,&dmmg[i]->B);CHKERRQ(ierr);
       } 
       if (!dmmg[i]->J) {
         dmmg[i]->J = dmmg[i]->B;
+        ierr = PetscObjectReference((PetscObject) dmmg[i]->J);CHKERRQ(ierr);
       }
 
       ierr = KSPCreate(dmmg[i]->comm,&dmmg[i]->ksp);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(dmmg[i]->ksp,dmmg[i]->prefix);CHKERRQ(ierr);
       ierr = DMMGSetUpLevel(dmmg,dmmg[i]->ksp,i+1);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(dmmg[i]->ksp);CHKERRQ(ierr);
       dmmg[i]->solve = DMMGSolveKSP;
@@ -459,13 +593,26 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
   /* evalute matrix on each level */
   for (i=0; i<nlevels; i++) {
     if (!dmmg[i]->galerkin) {
-      ierr = (*func)(dmmg[i],dmmg[i]->J,dmmg[i]->B);CHKERRQ(ierr);
+      if (func) {
+        ierr = (*func)(dmmg[i],dmmg[i]->J,dmmg[i]->B);CHKERRQ(ierr);
+      }
     }
-    dmmg[i]->matricesset = PETSC_TRUE;
   }
 
   for (i=0; i<nlevels-1; i++) {
     ierr = KSPSetOptionsPrefix(dmmg[i]->ksp,"dmmg_");CHKERRQ(ierr);
+  }
+
+  for (level=0; level<nlevels; level++) {
+    ierr = KSPSetOperators(dmmg[level]->ksp,dmmg[level]->J,dmmg[level]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPGetPC(dmmg[level]->ksp,&pc);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+    if (ismg) {
+      for (i=0; i<=level; i++) {
+        ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
+        ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      }
+    }
   }
 
   PetscFunctionReturn(0);
@@ -484,7 +631,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy
+.seealso DMMGCreate(), DMMGDestroy(), DMMGSetMatType(), DMMGSetUseGalerkin()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
@@ -527,6 +674,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
       if (dmmg[nlevels-2 > 0 ? nlevels-2 : 0]->galerkin) {
 	ierr = PetscViewerASCIIPrintf(viewer,"Using Galerkin R^T*A*R process to compute coarser matrices\n");CHKERRQ(ierr);
       }
+      ierr = PetscViewerASCIIPrintf(viewer,"Using matrix type %s\n",dmmg[nlevels-1]->mtype);CHKERRQ(ierr);
     }
     if (dmmg[nlevels-1]->ksp) {
       ierr = KSPView(dmmg[nlevels-1]->ksp,viewer);CHKERRQ(ierr);
@@ -553,7 +701,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGView(DMMG *dmmg,PetscViewer viewer)
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve(), MatNullSpaceCreate(), KSPSetNullSpace()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetDM(), DMMGSolve(), MatNullSpaceCreate(), KSPSetNullSpace(), DMMGSetUseGalerkin(), DMMGSetMatType()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cnst,PetscInt n,PetscErrorCode (*func)(DMMG,Vec[]))
@@ -613,7 +761,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cn
 #define __FUNCT__ "DMMGInitialGuessCurrent"
 /*@C
     DMMGInitialGuessCurrent - Use with DMMGSetInitialGuess() to use the current value in the 
-       solution vector (obtainable with DMMGGetx() as the initial guess)
+       solution vector (obtainable with DMMGGetx()) as the initial guess. Otherwise for linear
+       problems zero is used for the initial guess (unless grid sequencing is used). For nonlinear 
+       problems this is not needed; it always uses the previous solution as the initial guess.
 
     Collective on DMMG
 
@@ -656,7 +806,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
     Level: intermediate
 
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGInitialGuessCurrent()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGInitialGuessCurrent(), DMMGSetGalekin(), DMMGSetMatType(), DMMGSetNullSpace()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(DMMG,Vec))

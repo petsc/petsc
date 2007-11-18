@@ -60,6 +60,28 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreElements(DA da,PetscInt *n,const Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetOwnershipRange"
+/*@C
+      DAGetOwnershipRange - Gets the ranges of indices in the x, y and z direction that are owned by each process
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DA object
+
+   Output Parameter:
++     lx - ownership along x direction (optional)
+.     ly - ownership along y direction (optional)
+-     lz - ownership along z direction (optional)
+
+   Level: intermediate
+
+    Note: these correspond to the optional final arguments passed to DACreate(), DACreate2d(), DACreate3d()
+
+    In Fortran one must pass in arrays lx, ly, and lz that are long enough to hold the values; the sixth, seventh and
+    eighth arguments from DAGetInfo()
+
+.seealso: DAGetCorners(), DAGetGhostCorners(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d()
+@*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRange(DA da,PetscInt **lx,PetscInt **ly,PetscInt **lz)
 {
   PetscFunctionBegin;
@@ -79,7 +101,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
   PetscTruth     iascii,isdraw;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
@@ -159,6 +181,7 @@ PetscErrorCode DAView_2d(DA da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "DAPublish_Petsc"
 PetscErrorCode DAPublish_Petsc(PetscObject obj)
@@ -166,6 +189,7 @@ PetscErrorCode DAPublish_Petsc(PetscObject obj)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetElements_2d_P1"
@@ -252,7 +276,7 @@ PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d(), DAGlobalToLocalBegin(), DAGetRefinementFactor(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRange()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
@@ -298,17 +322,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   M = tM; N = tN;
 
   ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
-  da->bops->publish           = DAPublish_Petsc;
   da->ops->createglobalvector = DACreateGlobalVector;
+  da->ops->globaltolocalbegin = DAGlobalToLocalBegin;
+  da->ops->globaltolocalend   = DAGlobalToLocalEnd;
+  da->ops->localtoglobal      = DALocalToGlobal;
   da->ops->getinterpolation   = DAGetInterpolation;
   da->ops->getcoloring        = DAGetColoring;
   da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
+  da->ops->coarsen            = DACoarsen;
   da->ops->getinjection       = DAGetInjection;
+  da->ops->getaggregates      = DAGetAggregates;
   da->ops->getelements        = DAGetElements_2d_P1;
   da->elementtype             = DA_ELEMENT_P1;
 
-  ierr = PetscLogObjectMemory(da,sizeof(struct _p_DA));CHKERRQ(ierr);
   da->dim        = 2;
   da->interptype = DA_Q1;
   da->refine_x   = refine_x;
@@ -329,27 +356,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   }
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
-    /* try for squarish distribution */
-    /* This should use MPI_Dims_create instead */
-    m = (PetscInt)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
-    if (!m) m = 1;
-    while (m > 0) {
+    if (n != PETSC_DECIDE) {
+      m = size/n;
+    } else if (m != PETSC_DECIDE) {
       n = size/m;
-      if (m*n == size) break;
-      m--;
+    } else {
+      /* try for squarish distribution */
+      m = (PetscInt)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
+      if (!m) m = 1;
+      while (m > 0) {
+	n = size/m;
+	if (m*n == size) break;
+	m--;
+      }
+      if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
     }
-    if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
-    if (m*n != size) SETERRQ(PETSC_ERR_PLIB,"Internally Created Bad Partition");
+    if (m*n != size) SETERRQ(PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
   } else if (m*n != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
 
   if (M < m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
   if (N < n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
-
-  /*
-     We should create an MPI Cartesian topology here, with reorder
-     set to true.  That would create a NEW communicator that we would
-     need to use for operations on this distributed array 
-  */
 
   /* 
      Determine locally owned region 
@@ -403,6 +429,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   }
 #endif
 
+  if (x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local x-width of domain x %D is smaller than stencil width s %D",x,s);
+  if (y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local y-width of domain y %D is smaller than stencil width s %D",y,s);
   xe = xs + x;
   ye = ys + y;
 
@@ -816,7 +844,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 
 .keywords:  distributed array, refine
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetOwnershipRange()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
 {
@@ -843,7 +871,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   } else {
     P = 1 + da->refine_z*(da->P - 1);
   }
-  ierr = DACreate(da->comm,da->dim,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
+  ierr = DACreate(((PetscObject)da)->comm,da->dim,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
 
   /* allow overloaded (user replaced) operations to be inherited by refinement clones */
   da2->ops->getmatrix        = da->ops->getmatrix;
@@ -868,7 +896,100 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   PetscFunctionReturn(0);
 }
 
-/*@C
+#undef __FUNCT__  
+#define __FUNCT__ "DACoarsen"
+/*@
+   DACoarsen - Creates a new distributed array that is a coarsenment of a given
+   distributed array.
+
+   Collective on DA
+
+   Input Parameter:
++  da - initial distributed array
+-  comm - communicator to contain coarsend DA. Currently ignored
+
+   Output Parameter:
+.  daref - coarsend distributed array
+
+   Level: advanced
+
+   Note:
+   Currently, coarsenment consists of just dividing the number of grid spaces
+   in each dimension of the DA by refinex_x, refinex_y, ....
+
+.keywords:  distributed array, coarsen
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetOwnershipRange()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
+{
+  PetscErrorCode ierr;
+  PetscInt       M,N,P;
+  DA             da2;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(daref,3);
+
+  if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0){
+    if(da->refine_x)
+      M = da->M / da->refine_x;
+    else
+      M = da->M;
+  } else {
+    if(da->refine_x)
+      M = 1 + (da->M - 1) / da->refine_x;
+    else
+      M = da->M;
+  }
+  if (DAYPeriodic(da->wrap) || da->interptype == DA_Q0){
+    if(da->refine_y)
+      N = da->N / da->refine_y;
+    else
+      N = da->N;
+  } else {
+    if(da->refine_y)
+      N = 1 + (da->N - 1) / da->refine_y;
+    else
+      N = da->M;
+  }
+  if (DAZPeriodic(da->wrap) || da->interptype == DA_Q0){
+    if(da->refine_z)
+      P = da->P / da->refine_z;
+    else
+      P = da->P;
+  } else {
+    if(da->refine_z)
+      P = 1 + (da->P - 1) / da->refine_z;
+    else
+      P = da->P;
+  }
+  ierr = DACreate(((PetscObject)da)->comm,da->dim,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
+
+  /* allow overloaded (user replaced) operations to be inherited by refinement clones */
+  da2->ops->getmatrix        = da->ops->getmatrix;
+  da2->ops->getinterpolation = da->ops->getinterpolation;
+  da2->ops->getcoloring      = da->ops->getcoloring;
+  da2->interptype            = da->interptype;
+  
+  /* copy fill information if given */
+  if (da->dfill) {
+    ierr = PetscMalloc((da->dfill[da->w]+da->w+1)*sizeof(PetscInt),&da2->dfill);CHKERRQ(ierr);
+    ierr = PetscMemcpy(da2->dfill,da->dfill,(da->dfill[da->w]+da->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  if (da->ofill) {
+    ierr = PetscMalloc((da->ofill[da->w]+da->w+1)*sizeof(PetscInt),&da2->ofill);CHKERRQ(ierr);
+    ierr = PetscMemcpy(da2->ofill,da->ofill,(da->ofill[da->w]+da->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  /* copy the refine information */
+  da2->refine_x = da->refine_x;
+  da2->refine_y = da->refine_y;
+  da2->refine_z = da->refine_z;
+  *daref = da2;
+  PetscFunctionReturn(0);
+}
+
+/*@
      DASetRefinementFactor - Set the ratios that the DA grid is refined
 
     Collective on DA
@@ -1280,20 +1401,47 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalJacobian(DA da,DALocalFunction1 lj)
    Input Parameter:
 .  da - initial distributed array
 
-   Output Parameters:
+   Output Parameter:
 .  lf - the local function
 
    Level: intermediate
 
 .keywords:  distributed array, refine
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DASetLocalFunction()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalJacobian(), DASetLocalFunction()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (lf)       *lf = da->lf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetLocalJacobian"
+/*@C
+       DAGetLocalJacobian - Gets from a DA a local jacobian
+
+   Collective on DA
+
+   Input Parameter:
+.  da - initial distributed array
+
+   Output Parameter:
+.  lj - the local jacobian
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalJacobian()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalJacobian(DA da,DALocalFunction1 *lj)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  if (lj) *lj = da->lj;
   PetscFunctionReturn(0);
 }
 
@@ -1399,6 +1547,69 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionLocal(DA da, DALocalFunction1 fun
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DAFormFunctionLocalGhost"
+/*@C 
+   DAFormFunctionLocalGhost - This is a universal function evaluation routine for
+   a local DA function, but the ghost values of the output are communicated and added.
+
+   Collective on DA
+
+   Input Parameters:
++  da - the DA context
+.  func - The local function
+.  X - input vector
+.  F - function vector
+-  ctx - A user context
+
+   Level: intermediate
+
+.seealso: DASetLocalFunction(), DASetLocalJacobian(), DASetLocalAdicFunction(), DASetLocalAdicMFFunction(),
+          SNESSetFunction(), SNESSetJacobian()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionLocalGhost(DA da, DALocalFunction1 func, Vec X, Vec F, void *ctx)
+{
+  Vec            localX, localF;
+  DALocalInfo    info;
+  void          *u;
+  void          *fu;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAGetLocalVector(da,&localF);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
+  ierr = VecSet(localF, 0.0);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,localX,&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,localF,&fu);CHKERRQ(ierr);
+  ierr = (*func)(&info,u,fu,ctx);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
+    pierr = DAVecRestoreArray(da,localF,&fu);CHKERRQ(pierr);
+  }
+  CHKERRQ(ierr);
+  ierr = DALocalToGlobalBegin(da,localF,F);CHKERRQ(ierr);
+  ierr = DALocalToGlobalEnd(da,localF,F);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localF,&fu);CHKERRQ(ierr);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DARestoreLocalVector(da,&localX);CHKERRQ(pierr);
+  ierr = DARestoreLocalVector(da,&localF);CHKERRQ(ierr);
+  }
+  CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localF);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DAFormFunction1"
 /*@
     DAFormFunction1 - Evaluates a user provided function on each processor that 
@@ -1475,7 +1686,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctioniTest1(DA da,void *w)
 
   ierr = VecAXPY(fui,-1.0,fu);CHKERRQ(ierr);
   ierr = VecNorm(fui,NORM_2,&norm);CHKERRQ(ierr);
-  ierr = PetscPrintf(da->comm,"Norm of difference in vectors %G\n",norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(((PetscObject)da)->comm,"Norm of difference in vectors %G\n",norm);CHKERRQ(ierr);
   ierr = VecView(fu,0);CHKERRQ(ierr);
   ierr = VecView(fui,0);CHKERRQ(ierr);
 
@@ -1852,6 +2063,58 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DAFormJacobianLocal"
+/*@C 
+   DAFormjacobianLocal - This is a universal Jacobian evaluation routine for
+   a local DA function.
+
+   Collective on DA
+
+   Input Parameters:
++  da - the DA context
+.  func - The local function
+.  X - input vector
+.  J - Jacobian matrix
+-  ctx - A user context
+
+   Level: intermediate
+
+.seealso: DASetLocalFunction(), DASetLocalJacobian(), DASetLocalAdicFunction(), DASetLocalAdicMFFunction(),
+          SNESSetFunction(), SNESSetJacobian()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAFormJacobianLocal(DA da, DALocalFunction1 func, Vec X, Mat J, void *ctx)
+{
+  Vec            localX;
+  DALocalInfo    info;
+  void          *u;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,localX,&u);CHKERRQ(ierr);
+  ierr = (*func)(&info,u,J,ctx);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
+  }
+  CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DARestoreLocalVector(da,&localX);CHKERRQ(pierr);
+  }
+  CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DAMultiplyByJacobian1WithAD"
 /*@C
     DAMultiplyByJacobian1WithAD - Applies a Jacobian function supplied by ADIFOR or ADIC
@@ -1944,7 +2207,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetInterpolationType"
-/*@C
+/*@
        DASetInterpolationType - Sets the type of interpolation that will be 
           returned by DAGetInterpolation()
 

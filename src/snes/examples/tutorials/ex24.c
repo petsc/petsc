@@ -63,12 +63,12 @@ PetscErrorCode myPCApply(DMMG dmmg,Vec x,Vec y)
   Vec            xu,xlambda,yu,ylambda;
   PetscScalar    *xw,*yw;
   PetscErrorCode ierr;
-  VecPack        packer = (VecPack)dmmg->dm;
+  DMComposite        packer = (DMComposite)dmmg->dm;
   AppCtx         *appctx = (AppCtx*)dmmg->user;
 
   PetscFunctionBegin;
-  ierr = VecPackGetAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);
-  ierr = VecPackGetAccess(packer,y,&yw,&yu,&ylambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(packer,y,&yw,&yu,&ylambda);CHKERRQ(ierr);
   if (yw && xw) {
     yw[0] = xw[0];
   }
@@ -77,8 +77,8 @@ PetscErrorCode myPCApply(DMMG dmmg,Vec x,Vec y)
   ierr = KSPSolveTranspose(appctx->ksp,xlambda,ylambda);CHKERRQ(ierr);
   /*  ierr = VecCopy(xu,yu);CHKERRQ(ierr);
       ierr = VecCopy(xlambda,ylambda);CHKERRQ(ierr); */
-  ierr = VecPackRestoreAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);
-  ierr = VecPackRestoreAccess(packer,y,&yw,&yu,&ylambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(packer,x,&xw,&xu,&xlambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(packer,y,&yw,&yu,&ylambda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -102,7 +102,7 @@ int main(int argc,char **argv)
   PetscInt       nlevels,i,j;
   DA             da;
   DMMG           *dmmg;
-  VecPack        packer;
+  DMComposite        packer;
   AppCtx         *appctx;
   ISColoring     iscoloring;
   PetscTruth     bdp;
@@ -125,24 +125,24 @@ int main(int argc,char **argv)
   /* ierr = PetscOptionsSetValue("-snes_ls","basicnonorms");CHKERRQ(ierr); */
   ierr = PetscOptionsInsert(&argc,&argv,PETSC_NULL);CHKERRQ(ierr);   
 
-  /* create VecPack object to manage composite vector */
-  ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
-  ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
+  /* create DMComposite object to manage composite vector */
+  ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
+  ierr = DMCompositeAddArray(packer,0,1);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
-  ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
+  ierr = DMCompositeAddDA(packer,da);CHKERRQ(ierr);
+  ierr = DMCompositeAddDA(packer,da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
   /* create nonlinear multi-level solver */
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
-  ierr = VecPackDestroy(packer);CHKERRQ(ierr);
+  ierr = DMCompositeDestroy(packer);CHKERRQ(ierr);
 
   /* Create Jacobian of PDE function for each level */
   nlevels = DMMGGetLevels(dmmg);
   for (i=0; i<nlevels; i++) {
-    packer = (VecPack)dmmg[i]->dm;
-    ierr   = VecPackGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
+    packer = (DMComposite)dmmg[i]->dm;
+    ierr   = DMCompositeGetEntries(packer,PETSC_NULL,&da,PETSC_NULL);CHKERRQ(ierr);
     ierr   = PetscNew(AppCtx,&appctx);CHKERRQ(ierr);
     ierr   = DAGetColoring(da,IS_COLORING_GHOSTED,&iscoloring);CHKERRQ(ierr);
     ierr   = DAGetMatrix(da,MATAIJ,&appctx->J);CHKERRQ(ierr);
@@ -227,8 +227,8 @@ PetscErrorCode PDEFormFunctionLocal(DALocalInfo *info,PetscScalar *u,PetscScalar
       This is the function that is usually passed to the SNESSetJacobian() or DMMGSetSNES() and
     defines the nonlinear set of equations that are to be solved.
 
-     This local function acts on the ghosted version of U (accessed via VecPackGetLocalVectors() and
-   VecPackScatter()) BUT the global, nonghosted version of FU (via VecPackAccess()).
+     This local function acts on the ghosted version of U (accessed via DMCompositeGetLocalVectors() and
+   DMCompositeScatter()) BUT the global, nonghosted version of FU (via DMCompositeAccess()).
 
      This function uses PDEFormFunction() to enforce the PDE constraint equations and its adjoint
    for the Lagrange multiplier equations
@@ -244,7 +244,7 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscScalar    *u,*w,*fw,*fu,*lambda,*flambda,d,h,h2;
   Vec            vu,vlambda,vfu,vflambda,vglambda;
   DA             da;
-  VecPack        packer = (VecPack)dmmg->dm;
+  DMComposite        packer = (DMComposite)dmmg->dm;
   PetscTruth     useadic = PETSC_TRUE;
 #if defined(PETSC_HAVE_ADIC)
   AppCtx         *appctx = (AppCtx*)dmmg->user;
@@ -256,17 +256,17 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = PetscOptionsHasName(0,"-useadic",&skipadic);CHKERRQ(ierr);
 #endif
 
-  ierr = VecPackGetEntries(packer,&nredundant,&da,PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(packer,&nredundant,&da,PETSC_IGNORE);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   d    = (N-1.0);
   h    = 1.0/d;
   h2   = 2.0*h;
 
-  ierr = VecPackGetLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
-  ierr = VecPackScatter(packer,U,w,vu,vlambda);CHKERRQ(ierr);
-  ierr = VecPackGetAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
-  ierr = VecPackGetAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(packer,U,w,vu,vlambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
   /* G() */
   ierr = DAFormFunction1(da,vu,vfu,w);CHKERRQ(ierr);
@@ -317,9 +317,9 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   ierr = DAVecRestoreArray(da,vlambda,&lambda);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vflambda,&flambda);CHKERRQ(ierr);
 
-  ierr = VecPackRestoreLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
-  ierr = VecPackRestoreAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
-  ierr = VecPackRestoreAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(packer,&w,&vu,&vlambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(packer,FU,&fw,&vfu,&vflambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(packer,U,0,0,&vglambda);CHKERRQ(ierr);
 
   ierr = PetscLogFlops(9*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -26,21 +26,24 @@
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,PetscReal xmax,PetscReal ymin,PetscReal ymax,PetscReal zmin,PetscReal zmax)
 {
-  PetscErrorCode ierr;
-  PetscInt            i,j,k,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;
-  PetscReal      hx,hy,hz_;
-  Vec            xcoor;
+  MPI_Comm       comm;
+  DA             cda;
   DAPeriodicType periodic;
-  PetscScalar    *coors;
+  Vec            xcoor;
+  PetscScalar   *coors;
+  PetscReal      hx,hy,hz_;
+  PetscInt       i,j,k,M,N,P,istart,isize,jstart,jsize,kstart,ksize,dim,cnt;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (xmax <= xmin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"xmax must be larger than xmin %G %G",xmin,xmax);
 
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = DAGetInfo(da,&dim,&M,&N,&P,0,0,0,0,0,&periodic,0);CHKERRQ(ierr);
   ierr = DAGetCorners(da,&istart,&jstart,&kstart,&isize,&jsize,&ksize);CHKERRQ(ierr);
-
+  ierr = DAGetCoordinateDA(da, &cda);CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(cda, &xcoor);CHKERRQ(ierr);
   if (dim == 1) {
-    ierr = VecCreateMPI(PETSC_COMM_WORLD,isize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
     if (periodic == DA_NONPERIODIC) hx = (xmax-xmin)/(M-1);
     else                            hx = (xmax-xmin)/M;
     ierr = VecGetArray(xcoor,&coors);CHKERRQ(ierr);
@@ -50,8 +53,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
     ierr = VecRestoreArray(xcoor,&coors);CHKERRQ(ierr);
   } else if (dim == 2) {
     if (ymax <= ymin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
-    ierr = VecCreateMPI(PETSC_COMM_WORLD,2*isize*jsize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(xcoor,2);CHKERRQ(ierr);
     if (DAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
     else                       hx = (xmax-xmin)/(M-1);
     if (DAYPeriodic(periodic)) hy = (ymax-ymin)/(N);
@@ -68,8 +69,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
   } else if (dim == 3) {
     if (ymax <= ymin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"ymax must be larger than ymin %G %G",ymin,ymax);
     if (zmax <= zmin) SETERRQ2(PETSC_ERR_ARG_INCOMP,"zmax must be larger than zmin %G %G",zmin,zmax);
-    ierr = VecCreateMPI(PETSC_COMM_WORLD,3*isize*jsize*ksize,PETSC_DETERMINE,&xcoor);CHKERRQ(ierr);
-    ierr = VecSetBlockSize(xcoor,3);CHKERRQ(ierr);
     if (DAXPeriodic(periodic)) hx = (xmax-xmin)/(M);
     else                       hx = (xmax-xmin)/(M-1);
     if (DAYPeriodic(periodic)) hy = (ymax-ymin)/(N);
@@ -93,7 +92,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetUniformCoordinates(DA da,PetscReal xmin,Pe
   }
   ierr = DASetCoordinates(da,xcoor);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,xcoor);CHKERRQ(ierr);
-
+  ierr = DADestroy(cda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -202,7 +201,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
       ierr = MPI_Send(&array[j+(n-1)*step],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
       ierr = MPI_Send(&xg[n-1],1,MPIU_REAL,rank+1,tag1,comm);CHKERRQ(ierr);
     }
-    if (!rank && periodic) { /* first processor sends first value to last */
+    if (!rank && periodic && size > 1) { /* first processor sends first value to last */
       ierr = MPI_Send(&array[j],1,MPIU_REAL,size-1,tag2,comm);CHKERRQ(ierr);
     }
 
@@ -231,7 +230,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
         ierr = PetscDrawPoint(draw,xgtmp,tmp,PETSC_DRAW_BLACK);CHKERRQ(ierr);
       }
     }
-    if (rank == size-1 && periodic) {
+    if (rank == size-1 && periodic && size > 1) {
       ierr = MPI_Recv(&tmp,1,MPIU_REAL,0,tag2,comm,&status);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
       ierr = PetscDrawLine(draw,xg[n-2],array[j+step*(n-1)],xg[n-1],tmp,PETSC_DRAW_RED);CHKERRQ(ierr);
@@ -248,6 +247,7 @@ PetscErrorCode VecView_MPI_Draw_DA1d(Vec xin,PetscViewer v)
   }
   ierr = VecRestoreArray(xcoor,&xg);CHKERRQ(ierr);
   ierr = VecRestoreArray(xin,&array);CHKERRQ(ierr);
+  ierr = VecDestroy(xcoor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

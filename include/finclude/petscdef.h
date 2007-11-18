@@ -12,20 +12,6 @@
 !
 #include "petscconf.h"
 !
-#define MPI_Comm integer
-!
-#define PetscEnum integer
-!
-#define PetscTruth PetscEnum
-#define PetscDataType PetscEnum
-#define PetscFPTrap PetscEnum
-
-#define PetscErrorCode integer
-#define PetscCookie integer
-#define PetscEvent integer
-#define PetscMPIInt integer
-!
-!
 ! The real*8,complex*16 notatiton is used so that the 
 ! PETSc double/complex variables are not affected by 
 ! compiler options like -r4,-r8, sometimes invoked 
@@ -53,14 +39,45 @@
 #define PetscInt integer4
 #endif
 
+#if (PETSC_SIZEOF_INT == 4)
+#define PetscFortranInt integer4
+#elif (PETSC_SIZEOF_INT == 8)
+#define PetscFortranInt integer8
+#endif
+!
+#if (PETSC_SIZEOF_SIZE_T == 8)
+#define PetscSizeT integer8
+#else
+#define PetscSizeT integer4
+#endif
+!
+#if defined(PETSC_HAVE_MPIUNI)
+#define MPI_Comm PetscFortranInt
+#define PetscMPIInt PetscFortranInt
+#else
+#define MPI_Comm integer
+#define PetscMPIInt integer
+#endif
+!
+#define PetscEnum PetscFortranInt
+#define PetscErrorCode PetscFortranInt
+#define PetscCookie PetscFortranInt
+#define PetscEvent PetscFortranInt
+!
+#define PetscTruth PetscEnum
+#define PetscDataType PetscEnum
+#define PetscFPTrap PetscEnum
+!
 #if defined (PETSC_USE_FORTRANKIND)
 #define PetscFortranFloat real(kind=selected_real_kind(5))
 #define PetscFortranDouble real(kind=selected_real_kind(10))
+#define PetscFortranLongDouble real(kind=selected_real_kind(16))
 #define PetscFortranComplex complex(kind=selected_real_kind(10))
 #define PetscChar(a) character(len = a) ::
 #else
 #define PetscFortranFloat real*4
 #define PetscFortranDouble real*8
+#define PetscFortranLongDouble real*16
 #define PetscFortranComplex complex*16
 #define PetscChar(a) character*(a)
 #endif
@@ -70,6 +87,8 @@
 #else
 #if defined(PETSC_USE_SINGLE)
 #define PETSC_SCALAR PETSC_FLOAT
+#elif defined(PETSC_USE_LONG_DOUBLE)
+#define PETSC_SCALAR PETSC_LONG_DOUBLE
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif     
@@ -95,17 +114,23 @@
 #else
 #if defined (PETSC_USE_SINGLE)
 #define PetscScalar PetscFortranFloat
+#define MPIU_SCALAR MPI_REAL
+#elif defined(PETSC_USE_LONG_DOUBLE)
+#define PetscScalar PetscFortranLongDouble
+#define MPIU_SCALAR MPI_2DOUBLE_PRECISION
 #else
 #define PetscScalar PetscFortranDouble
+#define MPIU_SCALAR MPI_DOUBLE_PRECISION
 #endif
 #define PetscRealPart(a) a
 #define PetscConj(a) a
 #define PetscImaginaryPart(a) a
-#define MPIU_SCALAR MPI_DOUBLE_PRECISION
 #endif
 
 #if defined (PETSC_USE_SINGLE)
 #define PetscReal PetscFortranFloat
+#elif defined(PETSC_USE_LONG_DOUBLE)
+#define PetscReal PetscFortranLongDouble
 #else
 #define PetscReal PetscFortranDouble
 #endif
@@ -131,7 +156,7 @@
 !
 !     Macros for error checking
 !
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_ERRORCHECKING)
 #define SETERRQ(n,s,ierr) call MPI_Abort(PETSC_COMM_WORLD,n,ierr)
 #define CHKERRQ(n) if (n .ne. 0) call MPI_Abort(PETSC_COMM_WORLD,n,n)
 #define CHKMEMQ call chkmemfortran(__LINE__,__FILE__,ierr)
@@ -147,6 +172,16 @@
 #define PETSC_DEC_ATTRIBUTES(A,B) DEC$ ATTRIBUTESC, ALIAS:B ::A
 #else
 #define PETSC_DEC_ATTRIBUTES(A,B)
+#endif
+
+#if !defined(PetscFlush)
+#if defined(PETSC_HAVE_FLUSH)
+#define PetscFlush(a)    call flush(a)
+#elif defined(PETSC_HAVE_FLUSH_)
+#define PetscFlush(a)    call flush_(a)
+#else
+#define PetscFlush(a)
+#endif
 #endif
 
 #endif

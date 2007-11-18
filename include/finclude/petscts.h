@@ -23,18 +23,21 @@
 !
 !  TSProblemType
 !
-      PetscEnum TS_LINEAR,TS_NONLINEAR
+      PetscEnum TS_LINEAR
+      PetscEnum TS_NONLINEAR
       parameter (TS_LINEAR = 0,TS_NONLINEAR = 1)
 !
 !  TSSundialsType
 !
-      PetscEnum SUNDIALS_ADAMS,SUNDIALS_BDF
-      parameter (SUNDIALS_ADAMS=0,SUNDIALS_BDF=1)
+      PetscEnum SUNDIALS_ADAMS
+      PetscEnum SUNDIALS_BDF
+      parameter (SUNDIALS_ADAMS=1,SUNDIALS_BDF=2)
 !
 !  TSSundialsGramSchmidtType
 !
-      PetscEnum SUNDIALS_MODIFIED_GS,SUNDIALS_CLASSICAL_GS
-      parameter (SUNDIALS_MODIFIED_GS=0,SUNDIALS_CLASSICAL_GS=1)
+      PetscEnum SUNDIALS_MODIFIED_GS
+      PetscEnum SUNDIALS_CLASSICAL_GS
+      parameter (SUNDIALS_MODIFIED_GS=1,SUNDIALS_CLASSICAL_GS=2)
 #define SUNDIALS_UNMODIFIED_GS SUNDIALS_CLASSICAL_GS
 !
 !  Some PETSc fortran functions that the user might pass as arguments

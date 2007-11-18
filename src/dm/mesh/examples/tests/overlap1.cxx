@@ -11,6 +11,7 @@ typedef ALE::Test::OverlapTest::send_overlap_type send_overlap_type;
 typedef ALE::Test::OverlapTest::send_section_type send_section_type;
 typedef ALE::Test::OverlapTest::recv_overlap_type recv_overlap_type;
 typedef ALE::Test::OverlapTest::recv_section_type recv_section_type;
+typedef ALE::Test::SupportSizer                   SupportSizer;
 
 typedef struct {
   int debug; // The debugging level
@@ -34,32 +35,31 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
   if (sendSection->commSize() != 2) SETERRQ(PETSC_ERR_SUP, "DoubletTest can only be run with 2 processes");
   // Make the sieve
   ALE::Test::OverlapTest::constructDoublet(topology);
-  Obj<sieve_type> sieve = topology->getPatch(0);
+  Obj<sieve_type>   sieve = topology->getPatch(0);
+  Obj<SupportSizer> sizer = new ALE::Test::SupportSizer(sieve);
   // Make overlap
   ALE::Test::OverlapTest::constructDoubletOverlap(sendOverlap, recvOverlap);
   // Make discrete sieve
   if (sieve->commRank() == 0) {
     cone->insert(0);cone->insert(2);
     dSieve->addPoints(cone);
-    sendSection->getAtlas()->getTopology()->setPatch(1, dSieve);
-    recvSection->getAtlas()->getTopology()->setPatch(1, dSieve);
+    sendSection->getTopology()->setPatch(1, dSieve);
+    recvSection->getTopology()->setPatch(1, dSieve);
   } else {
     cone->insert(1);cone->insert(2);
     dSieve->addPoints(cone);
-    sendSection->getAtlas()->getTopology()->setPatch(0, dSieve);
-    recvSection->getAtlas()->getTopology()->setPatch(0, dSieve);
+    sendSection->getTopology()->setPatch(0, dSieve);
+    recvSection->getTopology()->setPatch(0, dSieve);
   }
-  sendSection->getAtlas()->getTopology()->stratify();
-  recvSection->getAtlas()->getTopology()->stratify();
+  sendSection->getTopology()->stratify();
+  recvSection->getTopology()->stratify();
   // Setup sections
-  sendSection->construct(sendOverlap, ALE::Test::SupportSizer(sieve));
-  recvSection->construct(recvOverlap, ALE::Test::SupportSizer(sieve));
-  sendSection->getAtlas()->orderPatches();
-  recvSection->getAtlas()->orderPatches();
+  sendSection->construct(sizer);
+  recvSection->construct(sizer);
   sendSection->allocate();
   recvSection->allocate();
-  sendSection->constructCommunication();
-  recvSection->constructCommunication();
+  sendSection->constructCommunication(send_section_type::SEND);
+  recvSection->constructCommunication(recv_section_type::RECEIVE);
   // Fill up sections
   Obj<send_overlap_type::traits::capSequence> sendPoints = sendOverlap->cap();
 
@@ -155,6 +155,8 @@ PetscErrorCode PartitionTest(const Obj<send_section_type>& sendSection, const Ob
   // Fill up with values
   // Communicate
   // Combine values into application
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -185,8 +187,8 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
-    Obj<send_section_type> sendSection = new send_section_type(comm, send_section_type::SEND, options.debug);
-    Obj<recv_section_type> recvSection = new recv_section_type(comm, recv_section_type::RECEIVE, sendSection->getTag(), options.debug);
+    Obj<send_section_type> sendSection = new send_section_type(comm, options.debug);
+    Obj<recv_section_type> recvSection = new recv_section_type(comm, sendSection->getTag(), options.debug);
 
     ierr = DoubletTest(sendSection, recvSection, &options);CHKERRQ(ierr);
     ierr = PartitionTest(sendSection, recvSection, &options);CHKERRQ(ierr);

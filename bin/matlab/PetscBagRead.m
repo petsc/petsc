@@ -7,41 +7,41 @@ function bag = PetscBagRead(fd)
 
 [name_len help_len] = ParsePetscBagDotH;
 
-bagsizecount = fread(fd,2,'int32');
+bagsizecount = read(fd,2,'int32');
 count        = bagsizecount(2);
 
-bag.bag_name      = deblank(char(fread(fd,name_len,'uchar')'));
-bag.help.bag_help = deblank(char(fread(fd,help_len,'uchar')'));
+bag.bag_name      = deblank(char(read(fd,name_len,'uchar')'));
+bag.help.bag_help = deblank(char(read(fd,help_len,'uchar')'));
 
 for lcv = 1:count
-  offsetdtype = fread(fd,2,'int32');
+  offsetdtype = read(fd,2,'int32');
   dtype = offsetdtype(2);
-  name  = strclean(deblank(char(fread(fd,name_len,'uchar')')));
-  help  = deblank(char(fread(fd,help_len,'uchar')'));
-  msize = fread(fd,1,'int32');
+  name  = strclean(deblank(char(read(fd,name_len,'uchar')')));
+  help  = deblank(char(read(fd,help_len,'uchar')'));
+  msize = read(fd,1,'int32');
 
   if dtype == 0     % integer
-    val = fread(fd,1,'int32');
+    val = read(fd,1,'int32');
   elseif dtype == 1 % double
-    val = fread(fd,1,'double');
+    val = read(fd,1,'double');
   elseif dtype == 6 % char
-    val = deblank(char(fread(fd,msize,'uchar')'));
+    val = deblank(char(read(fd,msize,'uchar')'));
   elseif dtype == 9 % truth
-    val = fread(fd,1,'int32');
+    val = read(fd,1,'int32');
 % PETSC_LOGICAL is a bit boolean and not currently handled
 %  elseif dtype == 7 % boolean
-%    val = fread(fd,1,'bit1');
+%    val = read(fd,1,'bit1');
   elseif dtype == 8 % Enum
-    val   = fread(fd,1,'int32');
-    n     = fread(fd,1,'int32');
-    sizes = fread(fd,n,'int32');
+    val   = read(fd,1,'int32');
+    n     = read(fd,1,'int32');
+    sizes = read(fd,n,'int32');
     enumnames = {'  '};
     for i=1:n-2,
-      enumnames{i} = deblank(char(fread(fd,sizes(i),'uchar')));
+      enumnames{i} = deblank(char(read(fd,sizes(i),'uchar')));
     end
     val  = char(enumnames{val+1})';
-    enumname   = deblank(char(fread(fd,sizes(n-1),'uchar')));
-    enumprefix = deblank(char(fread(fd,sizes(n),'uchar')));
+    enumname   = deblank(char(read(fd,sizes(n-1),'uchar')));
+    enumprefix = deblank(char(read(fd,sizes(n),'uchar')));
   else 
     val = [];
     warning('Bag entry %s could not be read',name);

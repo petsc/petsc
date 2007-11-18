@@ -3,7 +3,7 @@
        Index sets of evenly space integers, defined by a 
     start, stride and length.
 */
-#include "src/vec/is/isimpl.h"             /*I   "petscis.h"   I*/
+#include "include/private/isimpl.h"             /*I   "petscis.h"   I*/
 #include "petscvec.h"
 
 typedef struct {
@@ -34,7 +34,7 @@ PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
   IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateStride(is->comm,sub->n,sub->first,sub->step,newIS);CHKERRQ(ierr);
+  ierr = ISCreateStride(((PetscObject)is)->comm,sub->n,sub->first,sub->step,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -52,7 +52,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
     IS  tmp;
     PetscInt *indices,n = isstride->n;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(is->comm,n,indices,&tmp);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)is)->comm,n,indices,&tmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(tmp); CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISInvertPermutation(tmp,nlocal,perm);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt
   if (step) PetscValidIntPointer(step,3);
 
   sub = (IS_Stride*)is->data;
-  if (is->type != IS_STRIDE) PetscFunctionReturn(0);
+  if (((PetscObject)is)->type != IS_STRIDE) PetscFunctionReturn(0);
   if (first) *first = sub->first; 
   if (step)  *step  = sub->step;
   PetscFunctionReturn(0);
@@ -129,7 +129,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStride(IS is,PetscTruth *flag)
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
   PetscValidIntPointer(flag,2);
 
-  if (is->type != IS_STRIDE) *flag = PETSC_FALSE;
+  if (((PetscObject)is)->type != IS_STRIDE) *flag = PETSC_FALSE;
   else                       *flag = PETSC_TRUE;
 
   PetscFunctionReturn(0);
@@ -214,8 +214,8 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) { 
-    ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)is)->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
       if (is->isperm) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
@@ -320,12 +320,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscI
   *is = PETSC_NULL;
   if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Number of indices < 0");
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_STRIDE,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(Nindex,sizeof(IS_Stride) + sizeof(struct _p_IS));CHKERRQ(ierr);
-  ierr           = PetscNew(IS_Stride,&sub);CHKERRQ(ierr);
+  ierr = PetscNewLog(Nindex,IS_Stride,&sub);CHKERRQ(ierr);
   sub->n         = n;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   sub->first     = first;
@@ -345,7 +344,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscI
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(Nindex,PETSC_VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)Nindex)->comm,&viewer);CHKERRQ(ierr);
+    ierr = ISView(Nindex,viewer);CHKERRQ(ierr);
   }
   *is = Nindex; 
   PetscFunctionReturn(0);

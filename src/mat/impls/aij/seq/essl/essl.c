@@ -117,7 +117,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F) {
   essl->iparm[3] = 0;
   essl->rparm[0] = 1.e-12;
   essl->rparm[1] = 1.0;
-  ierr = PetscOptionsGetReal(A->prefix,"-matessl_lu_threshold",&essl->rparm[1],PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],PETSC_NULL);CHKERRQ(ierr);
 
   dgsf(&one,&A->rmap.n,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,
                essl->rparm,essl->oparm,essl->aux,&essl->naux);
@@ -138,9 +138,9 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat 
 
   PetscFunctionBegin;
   if (A->cmap.N != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->solve           = MatSolve_Essl;
@@ -163,7 +163,7 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat 
   essl->ja          = essl->ia + essl->lna;
   essl->CleanUpESSL = PETSC_TRUE;
 
-  ierr = PetscLogObjectMemory(B,len+sizeof(Mat_Essl));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(B,len);CHKERRQ(ierr);
   *F = B;
   PetscFunctionReturn(0);
 }
@@ -180,7 +180,7 @@ PetscErrorCode MatAssemblyEnd_Essl(Mat A,MatAssemblyType mode)
 
   essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
   A->ops->lufactorsymbolic  = MatLUFactorSymbolic_Essl;
-  ierr = PetscInfo(0,"Using ESSL for LU factorization and solves\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using ESSL for LU factorization and solves\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -198,7 +198,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Essl(Mat A,MatType type,MatR
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr                      = PetscNew(Mat_Essl,&essl);CHKERRQ(ierr);
+  ierr                      = PetscNewLog(B,Mat_Essl,&essl);CHKERRQ(ierr);
   essl->MatDuplicate        = A->ops->duplicate;
   essl->MatAssemblyEnd      = A->ops->assemblyend;
   essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;

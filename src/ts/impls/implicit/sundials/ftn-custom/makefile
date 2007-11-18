@@ -10,5 +10,5 @@ SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscts
 LOCDIR   = src/ts/impls/implicit/sundials/ftn-custom/
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test

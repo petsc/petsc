@@ -71,8 +71,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSplitViewPort(PetscDraw draw)
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
-  ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)draw)->comm,&size);CHKERRQ(ierr);
 
   n = (int)(.1 + sqrt((double)size));
   while (n*n < size) {n++;}
@@ -108,11 +108,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSplitViewPort(PetscDraw draw)
 
    Collective on PetscDraw
 
-   Input Parameter:
-.  draw - the drawing context
+   Input Parameters:
++  draw - the drawing context
+-  nports - the number of ports
 
    Output Parameter:
-.  divide - a PetscDrawViewPorts context (C structure)
+.  ports - a PetscDrawViewPorts context (C structure)
 
    Level: advanced
 
@@ -121,7 +122,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSplitViewPort(PetscDraw draw)
 .seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw draw,int nports,PetscDrawViewPorts **ports)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw draw,PetscInt nports,PetscDrawViewPorts **ports)
 {
   int        i,n;
   PetscErrorCode ierr;
@@ -171,6 +172,82 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw draw,int nport
   }
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscDrawViewPortsCreateRect" 
+/*@C
+   PetscDrawViewPortsCreateRect - Splits a window into smaller
+       view ports. Each processor shares all the viewports. The number
+       of views in the x- and y-directions is specified.
+
+   Collective on PetscDraw
+
+   Input Parameters:
++  draw - the drawing context
+.  nx - the number of x divisions
+-  ny - the number of y divisions
+
+   Output Parameter:
+.  ports - a PetscDrawViewPorts context (C structure)
+
+   Level: advanced
+
+   Concepts: drawing^in subset of window
+
+.seealso: PetscDrawSplitViewPort(), PetscDrawSetViewPort(), PetscDrawViewPortsSet(), PetscDrawViewPortsDestroy()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreateRect(PetscDraw draw,PetscInt nx,PetscInt ny,PetscDrawViewPorts **ports)
+{
+  PetscReal     *xl, *xr, *yl, *yr, hx, hy;
+  PetscTruth     isnull;
+  PetscInt       i, j, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  if ((nx < 1) || (ny < 1)) {
+    SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Number of divisions must be positive: %d x %d", nx, ny);
+  }
+  ierr = PetscTypeCompare((PetscObject) draw, PETSC_DRAW_NULL, &isnull);CHKERRQ(ierr);
+  if (isnull) {
+    *ports = PETSC_NULL;
+    PetscFunctionReturn(0);
+  }
+  n  = nx*ny;
+  hx = 1.0/nx;
+  hy = 1.0/ny;
+  ierr = PetscNew(PetscDrawViewPorts, ports);CHKERRQ(ierr);
+  (*ports)->draw   = draw;
+  (*ports)->nports = n;
+  ierr = PetscObjectReference((PetscObject) draw);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscReal), &xl);CHKERRQ(ierr);(*ports)->xl = xl; 
+  ierr = PetscMalloc(n*sizeof(PetscReal), &xr);CHKERRQ(ierr);(*ports)->xr = xr; 
+  ierr = PetscMalloc(n*sizeof(PetscReal), &yl);CHKERRQ(ierr);(*ports)->yl = yl; 
+  ierr = PetscMalloc(n*sizeof(PetscReal), &yr);CHKERRQ(ierr);(*ports)->yr = yr; 
+  for(i = 0; i < nx; i++) {
+    for(j = 0; j < ny; j++) {
+      PetscInt k = j*nx+i;
+
+      xl[k] = i*hx;
+      xr[k] = xl[k] + hx;
+      yl[k] = j*hy;
+      yr[k] = yl[k] + hy;
+
+      ierr = PetscDrawLine(draw,xl[k],yl[k],xl[k],yr[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,xl[k],yr[k],xr[k],yr[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,xr[k],yr[k],xr[k],yl[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+      ierr = PetscDrawLine(draw,xr[k],yl[k],xl[k],yl[k],PETSC_DRAW_BLACK);CHKERRQ(ierr);
+
+      xl[k] += .1*hx;
+      xr[k] -= .1*hx;
+      yl[k] += .1*hy;
+      yr[k] -= .1*hy;
+    }
+  }
+  ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -21,7 +21,7 @@ extern PetscEvent PETSC_DLLEXPORT PETSC_Barrier;
 .keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
@@ -34,16 +34,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *path)
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&PETSC_OBJECT_COOKIE, "Object");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&PETSC_VIEWER_COOKIE, "Viewer");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&PETSC_DRAW_COOKIE,   "Draw");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWAXIS_COOKIE,     "Axis");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWLG_COOKIE,       "Line Graph");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWHG_COOKIE,       "Histogram");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWSP_COOKIE,       "Scatter Plot");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&PETSC_RANDOM_COOKIE, "Random Number Generator");CHKERRQ(ierr);
-  /* Register Constructors */
-  ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
-  ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);
+
   /* Register Events */
   ierr = PetscLogEventRegister(&PETSC_Barrier, "PetscBarrier", PETSC_SMALLEST_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
@@ -62,10 +53,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *path)
       ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
     }
   }
-  /* Setup auxiliary packages */
-#if defined(PETSC_HAVE_MATHEMATICA)
-  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -80,7 +67,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(const char path[])
 {
   PetscErrorCode ierr;
 
@@ -90,6 +77,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(char *path)
       If we got here then PETSc was properly loaded
   */
   ierr = PetscInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATHEMATICA)
+  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+  ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

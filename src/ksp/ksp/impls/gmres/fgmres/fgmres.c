@@ -339,7 +339,8 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  if (ksp->normtype != KSP_NORM_UNPRECONDITIONED) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can only use FGMRES with unpreconditioned residual (it is coded with right preconditioning)");
 
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
@@ -361,7 +362,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
     ierr     = FGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
   }
   /* mark lack of convergence */
-  if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (ksp->its >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
 
   PetscFunctionReturn(0);
 }
@@ -407,7 +408,14 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
   if (fgmres->modifydestroy) {
     ierr = (*fgmres->modifydestroy)(fgmres->modifyctx);CHKERRQ(ierr);
   }
-  ierr = PetscFree(fgmres);CHKERRQ(ierr);
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
+
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPFGMRESSetModifyPC_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -448,7 +456,11 @@ static PetscErrorCode BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
 
   /* solve the upper triangular system - RS is the right side and HH is 
      the upper triangular matrix  - put soln in nrs */
-  nrs[it] = *RS(it) / *HH(it,it);
+  if (*HH(it,it) != 0.0) {
+    nrs[it] = *RS(it) / *HH(it,it);
+  } else {
+    nrs[it] = 0.0;
+  }
   for (ii=1; ii<=it; ii++) {
     k   = it - ii;
     tt  = *RS(k);
@@ -778,7 +790,7 @@ EXTERN_C_END
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
            KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
-           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESKrylovMonitor(), KSPFGMRESSetModifyPC(),
+           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPFGMRESSetModifyPC(),
            KSPFGMRESModifyPCKSP()
 
 M*/
@@ -792,11 +804,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_FGMRES,&fgmres);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_FGMRES));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_FGMRES,&fgmres);CHKERRQ(ierr);
   ksp->data                              = (void*)fgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_FGMRES;
-
   ksp->ops->setup                        = KSPSetUp_FGMRES;
   ksp->ops->solve                        = KSPSolve_FGMRES;
   ksp->ops->destroy                      = KSPDestroy_FGMRES;
@@ -840,8 +850,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP ksp)
      but there is no left preconditioning in the FGMRES
   */
   ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for FGMRES to right!\n");CHKERRQ(ierr);
-  ksp->pc_side                = PC_RIGHT;
-
+  ksp->pc_side  = PC_RIGHT;
+  ksp->normtype = KSP_NORM_UNPRECONDITIONED;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

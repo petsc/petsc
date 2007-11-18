@@ -24,17 +24,27 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortRealWithPermutation(PetscInt,cons
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 
-extern PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE;
+/*E
+    PetscRandomType - String with the name of a PETSc randomizer
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:myrandcreate()
 
-#define PETSCRAND               "petscrand"
-#define PETSCRAND48             "petscrand48"
-#define SPRNG                   "sprng"          
+   Level: beginner
+
+   Notes: to use the SPRNG you must have config/configure.py PETSc
+   with the option --download-sprng
+
+.seealso: PetscRandomSetType(), PetscRandom
+E*/
 #define PetscRandomType const char*
+#define PETSCRAND               "rand"
+#define PETSCRAND48             "rand48"
+#define PETSCSPRNG              "sprng"          
 
 /* Logging support */
-extern PETSCVEC_DLLEXPORT PetscCookie PETSC_RANDOM_COOKIE;
+extern PETSC_DLLEXPORT PetscCookie PETSC_RANDOM_COOKIE;
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomInitializePackage(char *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(const char[]);
 
 /*S
      PetscRandom - Abstract PETSc object that manages generating random numbers
@@ -43,7 +53,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomInitializePackage(char *);
 
   Concepts: random numbers
 
-.seealso:  PetscRandomCreate(), PetscRandomGetValue()
+.seealso:  PetscRandomCreate(), PetscRandomGetValue(), PetscRandomType
 S*/
 typedef struct _p_PetscRandom*   PetscRandom;
 
@@ -75,7 +85,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom,PetscViewer);
 - create_func - The creation routine itself
 
   Notes:
-  PetscRandomRegisterDynamic() may be called multiple times to add several user-defined vectors
+  PetscRandomRegisterDynamic() may be called multiple times to add several user-defined randome number generators
 
   If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
 
@@ -95,7 +105,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom,PetscViewer);
 .ve
 
   Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use PetscRandomRegister() instead
+
+         For an example of the code needed to interface your own random number generator see
+         src/sys/random/impls/rand/rand.c
         
   Level: advanced
 
@@ -128,16 +140,16 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTestFile(const char[],char,PetscTruth
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTestDirectory(const char[],char,PetscTruth*);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int,void*,PetscInt,PetscDataType);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryRead(MPI_Comm,int,void*,PetscInt,PetscDataType);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryWrite(MPI_Comm,int,void*,PetscInt,PetscDataType,PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedRead(MPI_Comm,int,void*,PetscInt,PetscDataType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedWrite(MPI_Comm,int,void*,PetscInt,PetscDataType,PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int,void*,PetscInt,PetscDataType,PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char[],PetscFileMode,int *); 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm,PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm,PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetTmp(MPI_Comm,char *,size_t);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm,const char *,char *,size_t,PetscTruth*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm,const char[],char*,size_t,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetTmp(MPI_Comm,char[],size_t);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm,const char[],char[],size_t,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm,const char[],char[],size_t,PetscTruth*);
 
 /*
    In binary files variables are stored using the following lengths,
@@ -157,11 +169,11 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm,const char[],char*,size_t
 
   Level: advanced
 
-.seealso: PetscBinarySeek(), PetscSynchronizedBinarySeek()
+.seealso: PetscBinarySeek(), PetscBinarySynchronizedSeek()
 E*/
 typedef enum {PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1,PETSC_BINARY_SEEK_END = 2} PetscBinarySeekType;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int,off_t,PetscBinarySeekType,off_t*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinarySeek(MPI_Comm,int,off_t,PetscBinarySeekType,off_t*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedSeek(MPI_Comm,int,off_t,PetscBinarySeekType,off_t*);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetDebugger(const char[],PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetDefaultDebugger(void);
@@ -273,6 +285,25 @@ M*/
 
 M*/
 
+/*S
+   PetscSubcomm - Context of MPI subcommunicators, used by PCREDUNDANT
+
+   Level: advanced
+
+   Concepts: communicator, create
+S*/
+typedef struct _n_PetscSubcomm* PetscSubcomm;
+
+struct _n_PetscSubcomm { 
+  MPI_Comm   parent;      /* parent communicator */
+  MPI_Comm   dupparent;   /* duplicate parent communicator, under which the processors of this subcomm have contiguous rank */
+  MPI_Comm   comm;        /* this communicator */
+  PetscInt   n;           /* num of subcommunicators under the parent communicator */
+  PetscInt   color;       /* color of processors belong to this communicator */
+};
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm,PetscInt,PetscSubcomm*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm);
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */

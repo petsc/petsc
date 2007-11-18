@@ -28,10 +28,10 @@ T*/
     is used to discretize the boundary value problem to obtain a nonlinear 
     system of equations.
 
-    Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] 
+    Program usage:  mpiexec -np <procs> ex5 [-help] [all PETSc options] 
      e.g.,
       ./ex5 -fd_jacobian -mat_fd_coloring_view_draw -draw_pause -1
-      mpirun -np 2 ./ex5 -fd_jacobian_ghosted -log_summary
+      mpiexec -np 2 ./ex5 -fd_jacobian_ghosted -log_summary
 
   ------------------------------------------------------------------------- */
 
@@ -147,7 +147,7 @@ int main(int argc,char **argv)
 #endif
 
   if (fd_jacobian) {
-    ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
+    ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))SNESDAFormFunction,&user);CHKERRQ(ierr);
@@ -183,7 +183,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
 
   ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (matlab_function) {
     ierr = SNESSetFunction(snes,r,FormFunctionMatlab,&user);CHKERRQ(ierr);
   }
@@ -201,7 +201,19 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+
+  {
+    PetscTruth test_appctx = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-test_appctx",&test_appctx,0);CHKERRQ(ierr);
+    if (test_appctx) {
+      AppCtx *puser;
+      ierr = SNESSetApplicationContext(snes,&user);CHKERRQ(ierr);
+      ierr = SNESGetApplicationContext(snes,(void **)&puser);CHKERRQ(ierr);
+      ierr = FormInitialGuess(puser,x);CHKERRQ(ierr);
+    } else {
+      ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+    }
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
@@ -406,14 +418,14 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*
       Variant of FormFunction() that computes the function in Matlab
 */
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;

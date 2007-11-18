@@ -7,6 +7,59 @@
 PetscCookie PETSC_DRAW_COOKIE = 0;
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscDrawInitializePackage" 
+/*@C
+  PetscInitializeDrawPackage - This function initializes everything in the PetscDraw package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
+  when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Petsc, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscDrawInitializePackage(const char path[])
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char              *className;
+  PetscTruth        opt;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&PETSC_DRAW_COOKIE,   "Draw");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWAXIS_COOKIE,     "Axis");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWLG_COOKIE,       "Line Graph");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWHG_COOKIE,       "Histogram");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWSP_COOKIE,       "Scatter Plot");CHKERRQ(ierr);
+  /* Register Constructors */
+  ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "draw", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "draw", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscDrawResizeWindow" 
 /*@
    PetscDrawResizeWindow - Allows one to resize a window from a program.
@@ -182,7 +235,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawDestroy(PetscDraw draw)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
-  if (--draw->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)draw)->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published then destroy it */
   ierr = PetscObjectDepublish(draw);CHKERRQ(ierr);
@@ -338,14 +391,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawGetSingleton(PetscDraw draw,PetscDraw *s
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
   PetscValidPointer(sdraw,2);
 
-  ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)draw)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     *sdraw = draw;
   } else {
     if (draw->ops->getsingleton) {
       ierr = (*draw->ops->getsingleton)(draw,sdraw);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP,"Cannot get singleton for this type %s of draw object",draw->type_name);
+      SETERRQ1(PETSC_ERR_SUP,"Cannot get singleton for this type %s of draw object",((PetscObject)draw)->type_name);
     }
   }
   PetscFunctionReturn(0);
@@ -378,12 +431,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawRestoreSingleton(PetscDraw draw,PetscDra
   PetscValidPointer(sdraw,2);
   PetscValidHeaderSpecific(*sdraw,PETSC_DRAW_COOKIE,2);
 
-  ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)draw)->comm,&size);CHKERRQ(ierr);
   if (size != 1) {
     if (draw->ops->restoresingleton) {
       ierr = (*draw->ops->restoresingleton)(draw,sdraw);CHKERRQ(ierr);
     } else {
-      SETERRQ1(PETSC_ERR_SUP,"Cannot restore singleton for this type %s of draw object",draw->type_name);
+      SETERRQ1(PETSC_ERR_SUP,"Cannot restore singleton for this type %s of draw object",((PetscObject)draw)->type_name);
     }
   }
   PetscFunctionReturn(0);

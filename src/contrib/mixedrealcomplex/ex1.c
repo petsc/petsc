@@ -2,7 +2,7 @@
 static char vcid[] = "$Id: ex1.c,v 1.1 1999/04/22 21:25:46 bsmith Exp bsmith $";
 #endif
 
-/* Program usage:  mpirun ex1 [-help] [all PETSc options] */
+/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
 
 static char help[] = "Demonstrates various vector routines.\n\n";
 

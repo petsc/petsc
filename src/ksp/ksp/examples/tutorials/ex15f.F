@@ -3,7 +3,7 @@
 !   use of a user-provided preconditioner.  Input parameters include:
 !      -user_defined_pc : Activate a user-defined preconditioner
 !
-!  Program usage: mpirun ex15f [-help] [all PETSc options]
+!  Program usage: mpiexec ex15f [-help] [all PETSc options]
 !
 !/*T
 !   Concepts: KSP^basic parallel example
@@ -89,7 +89,11 @@
 
       call MatCreate(PETSC_COMM_WORLD,A,ierr)
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
+      call MatSetType(A, MATAIJ,ierr)
       call MatSetFromOptions(A,ierr)
+      call MatMPIAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,5,
+     &                     PETSC_NULL_CHARACTER,ierr)
+      call MatSeqAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which

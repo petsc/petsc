@@ -6,7 +6,7 @@
  * round-off buildup.
  */
 #include "petscblaslapack.h"
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"              /*I   "petscksp.h" I*/
 #include "bcgsl.h"
 
 
@@ -56,6 +56,10 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
   ierr = (*ksp->converged)(ksp, 0, zeta0, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) {
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ksp->its   = 0;
+    ksp->rnorm = zeta0;
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     ierr = PetscFree(AY0c);CHKERRQ(ierr);
     ierr = PetscFree(AYlc);CHKERRQ(ierr);
     ierr = PetscFree(AYtc);CHKERRQ(ierr);
@@ -298,7 +302,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPBCGSLSetXRes"
-/*@C
+/*@
    KSPBCGSLSetXRes - Sets the parameter governing when
    exact residuals will be used instead of computed residuals.
 
@@ -336,7 +340,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetXRes(KSP ksp, PetscReal delta)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPBCGSLSetPol"
-/*@C
+/*@
    KSPBCGSLSetPol - Sets the type of polynomial part will
    be used in the BiCGSTab(L) solver.
 
@@ -378,7 +382,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetPol(KSP ksp, PetscTruth uMROR)
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPBCGSLSetEll"
-/*@C
+/*@
    KSPBCGSLSetEll - Sets the number of search directions in BiCGStab(L).
 
    Collective on KSP
@@ -538,7 +542,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP ksp)
 
   PetscFunctionBegin;
   /* allocate BiCGStab(L) context */
-  ierr = PetscNew(KSP_BiCGStabL, &bcgsl);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp, KSP_BiCGStabL, &bcgsl);CHKERRQ(ierr);
   ksp->data = (void*)bcgsl;
 
   ksp->pc_side              = PC_LEFT;

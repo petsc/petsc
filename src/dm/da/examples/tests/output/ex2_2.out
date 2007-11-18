@@ -1,0 +1,42 @@
+
+Global Vector:
+Process [0]
+1
+1
+1
+1
+1
+Process [1]
+2
+2
+2
+2
+Process [2]
+3
+3
+3
+3
+
+
+Local Vector: processor 0
+1
+1
+1
+1
+1
+2
+
+Local Vector: processor 1
+1
+2
+2
+2
+2
+3
+
+Local Vector: processor 2
+2
+3
+3
+3
+3

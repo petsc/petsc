@@ -35,14 +35,8 @@ int main(int argc,char **args)
       ierr = MatCreateMPIBAIJ(PETSC_COMM_WORLD,bs,m*bs,n*bs,PETSC_DECIDE,PETSC_DECIDE,1,
                             PETSC_NULL,1,PETSC_NULL,&A);CHKERRQ(ierr);
     }
-  }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRQ(ierr);
-  if (flg) { 
-    ierr = MatSetOption(A,MAT_COLUMN_ORIENTED);CHKERRQ(ierr); 
-    eval = 6;
-  } else {
-    eval = 9;
-  }
+  }  
+  eval = 9;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-ass_extern",&flg);CHKERRQ(ierr);
   if (flg && (size != 1))    rstart = m*((rank+1)%size);
@@ -63,7 +57,7 @@ int main(int argc,char **args)
 
   /*
   This option does not work for rectangular matrices
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   */
   
   ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES);CHKERRQ(ierr);

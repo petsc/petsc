@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "src/snes/snesimpl.h"
+#include "include/private/snesimpl.h"
 
 typedef struct {
   PetscTruth complete_print;
@@ -28,11 +28,11 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");
   }
 
-  ierr = PetscPrintf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(snes->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(((PetscObject)snes)->comm,"Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(((PetscObject)snes)->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
   if (!neP->complete_print) {
-    ierr = PetscPrintf(snes->comm,"Run with -snes_test_display to show difference\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"Run with -snes_test_display to show difference\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
   }
 
   for (i=0; i<3; i++) {
@@ -44,22 +44,27 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (!i) {ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);}
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
     if (neP->complete_print) {
-      MPI_Comm comm;
-      ierr = PetscPrintf(snes->comm,"Finite difference Jacobian\n");CHKERRQ(ierr);
+      MPI_Comm    comm;
+      PetscViewer viewer;
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Finite difference Jacobian\n");CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
-      ierr = MatView(B,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
+      ierr = MatView(B,viewer);CHKERRQ(ierr);
     }
     /* compare */
     ierr = MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
     if (neP->complete_print) {
-      MPI_Comm comm;
-      ierr = PetscPrintf(snes->comm,"Hand-coded Jacobian\n");CHKERRQ(ierr);
+      MPI_Comm    comm;
+      PetscViewer viewer;
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Hand-coded Jacobian\n");CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
-      ierr = MatView(A,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
+      ierr = MatView(A,viewer);CHKERRQ(ierr);
     }
-    ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %G difference %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);
+    if (!gnorm) gnorm = 1; /* just in case */
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of matrix ratio %G difference %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);
   }
   ierr = MatDestroy(B);CHKERRQ(ierr);
   /*
@@ -72,7 +77,9 @@ PetscErrorCode SNESSolve_Test(SNES snes)
 #define __FUNCT__ "SNESDestroy_Test"
 PetscErrorCode SNESDestroy_Test(SNES snes)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -92,6 +99,17 @@ static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
 }
 
 /* ------------------------------------------------------------ */
+/*MC
+      SNESTEST - Test hand-coded Jacobian against finite difference Jacobian
+
+   Options Database:
+.    -snes_test_display  Display difference between approximate and hand-coded Jacobian
+
+   Level: intermediate
+
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_Test"
@@ -104,17 +122,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES  snes)
   snes->ops->setup	     = 0;
   snes->ops->solve	     = SNESSolve_Test;
   snes->ops->destroy	     = SNESDestroy_Test;
-  snes->ops->converged	     = SNESConverged_LS;
   snes->ops->setfromoptions  = SNESSetFromOptions_Test;
+  snes->ops->view            = 0;
 
-  ierr			= PetscNew(SNES_Test,&neP);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(snes,sizeof(SNES_Test));CHKERRQ(ierr);
+  ierr			= PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
   snes->data    	= (void*)neP;
   neP->complete_print   = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-
-
-

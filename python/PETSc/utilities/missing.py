@@ -85,7 +85,7 @@ class Configure(config.base.Configure):
     return
   
 
-  def configureMissingPrototypes(self):
+  def configureMissingGetdomainnamePrototype(self):
     head ='''
 #ifdef PETSC_HAVE_UNISTD_H
 #include <unistd.h>
@@ -104,6 +104,30 @@ int err = getdomainname(test,10);
       self.pushLanguage('C++')
       if not self.checkLink(head,code):
         self.addPrototype('int getdomainname(char *, int);', 'extern C')
+      self.popLanguage()  
+    return
+
+  def configureMissingSrandPrototype(self):
+    head ='''
+#ifdef PETSC_HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+'''
+    code = '''
+double a;
+long   b=10;
+srand(b);
+a=drand48();
+
+'''
+    if not self.checkPrototype(head,code):
+      self.addPrototype('double drand48();', 'C')
+      self.addPrototype('void   srand48(long);', 'C')
+    if hasattr(self.compilers, 'CXX'):
+      self.pushLanguage('C++')
+      if not self.checkLink(head,code):
+        self.addPrototype('double drand48();', 'extern C')
+        self.addPrototype('void   srand48(long);', 'extern C')
       self.popLanguage()  
     return
 
@@ -127,6 +151,7 @@ int err = getdomainname(test,10);
     self.executeTest(self.configureMissingUtypeTypedefs)
     self.executeTest(self.configureMissingFunctions)
     self.executeTest(self.configureMissingSignals)
-    self.executeTest(self.configureMissingPrototypes)
+    self.executeTest(self.configureMissingGetdomainnamePrototype)
+    self.executeTest(self.configureMissingSrandPrototype)
     self.executeTest(self.configureMissingIntelFastPrototypes)
     return

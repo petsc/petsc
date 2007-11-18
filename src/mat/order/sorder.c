@@ -4,7 +4,7 @@
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
 */
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
 PetscFList      MatOrderingList = 0;
@@ -35,8 +35,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Natural(Mat mat,const MatOrderingT
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
-  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,PETSC_NULL,PETSC_NULL,&done);CHKERRQ(ierr);
   if (done) { /* matrix may be "compressed" in symbolic factorization, due to i-nodes or block storage */
     /*
       We actually create general index sets because this avoids mallocs to
@@ -77,7 +77,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat mat,const MatOrderin
   PetscTruth     done;
 
   PetscFunctionBegin;
-  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Cannot get rows for matrix");
 
   ierr  = PetscMalloc(2*n*sizeof(PetscInt),&lens);CHKERRQ(ierr);
@@ -86,7 +86,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat mat,const MatOrderin
     lens[i]  = ia[i+1] - ia[i];
     permr[i] = i;
   }
-  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,&n,&ia,&ja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,0,PETSC_FALSE,PETSC_TRUE,&n,&ia,&ja,&done);CHKERRQ(ierr);
 
   ierr = PetscSortIntWithPermutation(n,lens,permr);CHKERRQ(ierr);
 
@@ -128,10 +128,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (MatOrderingList) {
-    ierr = PetscFListDestroy(&MatOrderingList);CHKERRQ(ierr);
-    MatOrderingList = 0;
-  }
+  ierr = PetscFListDestroy(&MatOrderingList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -166,7 +163,7 @@ $      MATORDERING_QMD - Quotient Minimum Degree
    Notes:
       This DOES NOT actually reorder the matrix; it merely returns two index sets
    that define a reordering. This is usually not used directly, rather use the 
-   options PCFactorSetMatOrdering()
+   options PCFactorSetMatOrderingType()
 
    The user can define additional orderings; see MatOrderingRegisterDynamic().
 
@@ -175,12 +172,12 @@ $      MATORDERING_QMD - Quotient Minimum Degree
            One-way Dissection, Cholesky, Reverse Cuthill-McKee, 
            Quotient Minimum Degree
 
-.seealso:   MatOrderingRegisterDynamic(), PCFactorSetMatOrdering()
+.seealso:   MatOrderingRegisterDynamic(), PCFactorSetMatOrderingType()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
 {
-  PetscErrorCode  ierr;
-  PetscInt        mmat,nmat,mis,m;
+  PetscErrorCode ierr;
+  PetscInt       mmat,nmat,mis,m;
   PetscErrorCode (*r)(Mat,const MatOrderingType,IS*,IS*);
   PetscTruth     flg,isseqdense,ismpidense;
 
@@ -222,7 +219,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   }
 
   ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
-  ierr =  PetscFListFind(mat->comm,MatOrderingList,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind(MatOrderingList,((PetscObject)mat)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
 
   ierr = (*r)(mat,type,rperm,cperm);CHKERRQ(ierr);
@@ -246,12 +243,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
     Mat tmat;
     ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
     }
     ierr = MatPermute(mat,*rperm,*cperm,&tmat);CHKERRQ(ierr);
-    ierr = MatView(tmat,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+    ierr = MatView(tmat,PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm));CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerPopFormat(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm));CHKERRQ(ierr);
     }
     ierr = MatDestroy(tmat);CHKERRQ(ierr);
   }

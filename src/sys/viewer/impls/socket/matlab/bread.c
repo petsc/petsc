@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "petscsys.h"
 #include "src/sys/viewer/impls/socket/socket.h"
-#include "mex.h"
 
 
 /*
@@ -75,10 +74,12 @@ void SYByteSwapScalar(PetscScalar *buff,int n)
 }
 #endif
 
+#define PETSC_MEX_ERROR(a) {fprintf(stdout,"sread: %s \n",a); return PETSC_ERR_SYS;}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBinaryRead"
 /*
-    PetscBinaryRead - Reads from a binary file.
+    PetscBinaryRead - Reads from a socket, called from Matlab
 
   Input Parameters:
 .   fd - the file
@@ -104,7 +105,8 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   if (type == PETSC_INT)         n *= sizeof(int);
   else if (type == PETSC_SCALAR) n *= sizeof(PetscScalar);
   else if (type == PETSC_SHORT)  n *= sizeof(short);
-  else printf("PetscBinaryRead: Unknown type");
+  else if (type == PETSC_CHAR)   n *= sizeof(char);
+  else PETSC_MEX_ERROR("PetscBinaryRead: Unknown type");
   
   while (n) {
     wsize = (n < maxblock) ? n : maxblock;
@@ -114,8 +116,7 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 #endif
     if (!err && wsize > 0) return 1;
     if (err < 0) {
-      perror("error reading");
-      return err;
+      PETSC_MEX_ERR("Error reading from socket\n");
     }
     n  -= err;
     pp += err;

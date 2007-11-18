@@ -37,6 +37,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidHeaderSpecific(c,VEC_COOKIE,2);
+  if (da->coordinates) {
+    ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);
+  }
   da->coordinates = c;
   ierr = VecSetBlockSize(c,da->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -62,20 +65,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
     For two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
     and (x_0,y_0,z_0,x_1,y_1,z_1...)
 
-    You should not destroy or keep around this vector after the DA is destroyed.
+    The user is responsible for destroying this vector.
 
   Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
+.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetGhostedCoordinates(), DAGetCoordinateDA()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
- 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidPointer(c,2);
+  if (da->coordinates) {ierr = PetscObjectReference((PetscObject) da->coordinates);CHKERRQ(ierr);}
   *c = da->coordinates;
   PetscFunctionReturn(0);
 }
@@ -93,7 +98,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
    Output Parameter:
 .  dac - coordinate DA
 
-   Note: You should not destroy or keep around this vector after the DA is destroyed.
+  Note: The user is responsible for destroying this DA when finished
 
   Level: intermediate
 
@@ -103,34 +108,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
 {
-  DAStencilType  st;
-  PetscErrorCode ierr;
   PetscMPIInt    size;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (da->da_coordinates) {
-    *cda = da->da_coordinates;
-    PetscFunctionReturn(0);
-  }
-  ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
-  if (da->dim == 1) {
-    if (da->w == 1) {
-      da->da_coordinates = da;
-    } else {
+  if (!da->da_coordinates) {
+    ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
+    if (da->dim == 1) {
       PetscInt            s,m,*lc,l;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
-      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,da->comm);CHKERRQ(ierr);
-      ierr = DACreate1d(da->comm,pt,m,1,s,lc,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
+      ierr = DACreate1d(((PetscObject)da)->comm,pt,m,1,s,lc,&da->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
-    }
-  } else if (da->dim == 2) {
-    ierr = DAGetInfo(da,0,0,0,0,0,0,0,0,0,0,&st);CHKERRQ(ierr);
-    if (da->w == 2 && st == DA_STENCIL_BOX) {
-      da->da_coordinates = da;
-    } else {
+    } else if (da->dim == 2) {
       PetscInt            i,s,m,*lc,*ld,l,k,n,M,N;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,&n,0,&M,&N,0,0,&s,&pt,0);CHKERRQ(ierr);
@@ -138,21 +131,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
       ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(PetscInt),&ld);CHKERRQ(ierr);
       /* only first M values in lc matter */
-      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       /* every Mth value in ld matters */
-      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       for ( i=0; i<N; i++) {
         ld[i] = ld[M*i];
       }
-      ierr = DACreate2d(da->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = DACreate2d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&da->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
       ierr = PetscFree(ld);CHKERRQ(ierr);
-    }
-  } else if (da->dim == 3) {
-    ierr = DAGetInfo(da,0,0,0,0,0,0,0,0,0,0,&st);CHKERRQ(ierr);
-    if (da->w == 3 && st == DA_STENCIL_BOX) {
-      da->da_coordinates = da;
-    } else {
+    } else if (da->dim == 3) {
       PetscInt            i,s,m,*lc,*ld,*le,l,k,q,n,M,N,P,p;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,&n,&p,&M,&N,&P,0,&s,&pt,0);CHKERRQ(ierr);
@@ -161,22 +149,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
       ierr = PetscMalloc(size*sizeof(PetscInt),&ld);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(PetscInt),&le);CHKERRQ(ierr);
       /* only first M values in lc matter */
-      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       /* every Mth value in ld matters */
-      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       for ( i=0; i<N; i++) {
         ld[i] = ld[M*i];
       }
-      ierr = MPI_Allgather(&q,1,MPIU_INT,le,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&q,1,MPIU_INT,le,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       for ( i=0; i<P; i++) {
         le[i] = le[M*N*i];
       }
-      ierr = DACreate3d(da->comm,pt,DA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = DACreate3d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&da->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
       ierr = PetscFree(ld);CHKERRQ(ierr);
       ierr = PetscFree(le);CHKERRQ(ierr);
     }
   }
+  ierr = PetscObjectReference((PetscObject) da->da_coordinates);CHKERRQ(ierr);
   *cda = da->da_coordinates;
   PetscFunctionReturn(0);
 }
@@ -201,7 +190,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
     For two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
     and (x_0,y_0,z_0,x_1,y_1,z_1...)
 
-    You should not destroy or keep around this vector after the DA is destroyed.
+    The user is responsible for destroying this vector.
 
   Level: intermediate
 
@@ -211,20 +200,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DA da,Vec *c)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
- 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidPointer(c,2);
   if (!da->coordinates) SETERRQ(PETSC_ERR_ORDER,"You must call DASetCoordinates() before this call");
   if (!da->ghosted_coordinates) {
-    DA  dac;
-    PetscErrorCode ierr;
+    DA dac;
     ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
     ierr = DACreateLocalVector(dac,&da->ghosted_coordinates);CHKERRQ(ierr);
     if (dac == da) {ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);}
     ierr = DAGlobalToLocalBegin(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
     ierr = DAGlobalToLocalEnd(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
+    ierr = DADestroy(dac);CHKERRQ(ierr);
   }
+  ierr = PetscObjectReference((PetscObject) da->ghosted_coordinates);CHKERRQ(ierr);
   *c = da->ghosted_coordinates;
   PetscFunctionReturn(0);
 }
@@ -324,7 +315,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,char **name)
 
 .keywords: distributed array, get, corners, nodes, local indices
 
-.seealso: DAGetGhostCorners()
+.seealso: DAGetGhostCorners(), DAGetOwnershipRange()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {

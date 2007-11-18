@@ -3,29 +3,28 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 EXTERN PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
-EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
-EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_MPIAIJ"
 PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
-  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
-  PetscErrorCode ierr;
-  PetscMPIInt    size,*ncolsonproc,*disp,nn;
-  PetscInt       i,*is,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
-  PetscInt       nis = iscoloring->n,nctot,*cols,*B_ci,*B_cj;
-  PetscInt       *rowhit,M = mat->rmap.n,cstart = mat->cmap.rstart,cend = mat->cmap.rend,colb;
-  PetscInt       *columnsforrow,l;
-  IS             *isa;
-  PetscTruth     done,flg;
+  Mat_MPIAIJ            *aij = (Mat_MPIAIJ*)mat->data;
+  PetscErrorCode        ierr;
+  PetscMPIInt           size,*ncolsonproc,*disp,nn;
+  PetscInt              i,*is,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
+  PetscInt              nis = iscoloring->n,nctot,*cols,*B_ci,*B_cj;
+  PetscInt              *rowhit,M = mat->rmap.n,cstart = mat->cmap.rstart,cend = mat->cmap.rend,colb;
+  PetscInt              *columnsforrow,l;
+  IS                    *isa;
+  PetscTruth             done,flg;
   ISLocalToGlobalMapping map = mat->mapping;
-  PetscInt       *ltog = map->indices,ctype=c->ctype;
+  PetscInt               *ltog = (map ? map->indices : PETSC_NULL) ,ctype=c->ctype;
 
   PetscFunctionBegin;
   if (!mat->assembled) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be assembled first; MatAssemblyBegin/End();");
   }
+  if (ctype == IS_COLORING_GHOSTED && !map) SETERRQ(PETSC_ERR_ARG_INCOMP,"When using ghosted differencing matrix must have local to global mapping provided with MatSetLocalToGlobalMapping");
 
   ierr = ISColoringGetIS(iscoloring,PETSC_IGNORE,&isa);CHKERRQ(ierr);
   c->M             = mat->rmap.N;  /* set the global rows and columns and local rows */
@@ -49,8 +48,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       Calls the _SeqAIJ() version of these routines to make sure it does not 
      get the reduced (by inodes) version of I and J
   */
-  ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
-  ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
   
   ierr = PetscMalloc((M+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
   ierr = PetscMalloc((M+1)*sizeof(PetscInt),&columnsforrow);CHKERRQ(ierr);
@@ -67,14 +66,14 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       c->columns[i]  = 0;
     }
 
-    if (ctype == IS_COLORING_LOCAL){
+    if (ctype == IS_COLORING_GLOBAL){
       /* Determine the total (parallel) number of columns of this color */
-      ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr); 
+      ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr); 
       ierr = PetscMalloc(2*size*sizeof(PetscInt*),&ncolsonproc);CHKERRQ(ierr);
       disp = ncolsonproc + size;
 
       nn   = (PetscMPIInt)n;
-      ierr = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,mat->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
       nctot = 0; for (j=0; j<size; j++) {nctot += ncolsonproc[j];}
       if (!nctot) {
         ierr = PetscInfo(mat,"Coloring of matrix has some unneeded colors with no corresponding rows\n");CHKERRQ(ierr);
@@ -87,7 +86,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
       /* Get complete list of columns for color on each processor */
       ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-      ierr = MPI_Allgatherv(is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,mat->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgatherv(is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
       ierr = PetscFree(ncolsonproc);CHKERRQ(ierr);
     } else if (ctype == IS_COLORING_GHOSTED){
       /* Determine local number of columns of this color on this process, including ghost points */
@@ -228,8 +227,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   /*
        vscale will contain the "diagonal" on processor scalings followed by the off processor
   */
-  if (ctype == IS_COLORING_LOCAL) {
-    ierr = VecCreateGhost(mat->comm,aij->A->rmap.n,PETSC_DETERMINE,aij->B->cmap.n,aij->garray,&c->vscale);CHKERRQ(ierr);
+  if (ctype == IS_COLORING_GLOBAL) {
+    ierr = VecCreateGhost(((PetscObject)mat)->comm,aij->A->rmap.n,PETSC_DETERMINE,aij->B->cmap.n,aij->garray,&c->vscale);CHKERRQ(ierr);
     ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
     for (k=0; k<c->ncolors; k++) { 
       ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);
@@ -273,8 +272,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
-  ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

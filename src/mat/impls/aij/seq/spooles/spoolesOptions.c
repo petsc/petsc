@@ -42,7 +42,7 @@ PetscErrorCode SetSpoolesOptions(Mat A, Spooles_options *options)
   } 
 
   /* get runtime input parameters */
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"Spooles Options","Mat");CHKERRQ(ierr); 
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Spooles Options","Mat");CHKERRQ(ierr); 
 
     ierr = PetscOptionsReal("-mat_spooles_tau","tau (used for pivoting; \n\
            all entries in L and U have magnitude no more than tau)","None",
@@ -102,8 +102,14 @@ PetscErrorCode MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   int            size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr); 
+  /* check if matrix is spooles type */
+  if (size == 1){
+    if (A->ops->solve != MatSolve_SeqSpooles) PetscFunctionReturn(0);
+  } else {
+    if (A->ops->solve != MatSolve_MPISpooles) PetscFunctionReturn(0);
+  }
+
   ierr = PetscViewerASCIIPrintf(viewer,"Spooles run parameters:\n");CHKERRQ(ierr);
   switch (lu->options.symflag) {
   case 0: 

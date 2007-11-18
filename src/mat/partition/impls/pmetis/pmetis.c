@@ -40,7 +40,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   float                    *tpwgts,*ubvec;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) {
@@ -51,7 +51,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   vtxdist = mat->rmap.range;
   xadj    = adj->i;
   adjncy  = adj->j;
-  ierr    = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
+  ierr    = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
   if (!(vtxdist[rank+1] - vtxdist[rank])) {
     SETERRQ(PETSC_ERR_LIB,"Does not support any processor with no entries");
   }
@@ -93,7 +93,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   ierr = PetscFree(ubvec);CHKERRQ(ierr);
   if (PetscLogPrintInfo) {parmetis->printout = itmp;}
 
-  ierr = ISCreateGeneral(part->comm,mat->rmap.n,locals,partitioning);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)part)->comm,mat->rmap.n,locals,partitioning);CHKERRQ(ierr);
   ierr = PetscFree(locals);CHKERRQ(ierr);
 
   if (!flg) {
@@ -113,7 +113,7 @@ PetscErrorCode MatPartitioningView_Parmetis(MatPartitioning part,PetscViewer vie
   PetscTruth               iascii;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(part->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (parmetis->parallel == 2) {
@@ -185,10 +185,7 @@ PetscErrorCode MatPartitioningDestroy_Parmetis(MatPartitioning part)
 }
 
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatPartitioningCreate_Parmetis" 
-/*@C
+/*MC
    MAT_PARTITIONING_PARMETIS - Creates a partitioning context via the external package PARMETIS.
 
    Collective on MPI_Comm
@@ -207,14 +204,19 @@ EXTERN_C_BEGIN
 
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
-@*/
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningCreate_Parmetis" 
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning part)
 {
   PetscErrorCode ierr;
   MatPartitioning_Parmetis *parmetis;
 
   PetscFunctionBegin;
-  ierr  = PetscNew(MatPartitioning_Parmetis,&parmetis);CHKERRQ(ierr);
+  ierr  = PetscNewLog(part,MatPartitioning_Parmetis,&parmetis);CHKERRQ(ierr);
+  part->data                = (void*)parmetis;
 
   parmetis->cuts       = 0;   /* output variable */
   parmetis->foldfactor = 150; /*folding factor */
@@ -222,13 +224,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning
   parmetis->indexing   = 0;   /* index numbering starts from 0 */
   parmetis->printout   = 0;   /* print no output while running */
 
-  ierr = MPI_Comm_dup(part->comm,&(parmetis->comm_pmetis));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)part)->comm,&(parmetis->comm_pmetis));CHKERRQ(ierr);
 
   part->ops->apply          = MatPartitioningApply_Parmetis;
   part->ops->view           = MatPartitioningView_Parmetis;
   part->ops->destroy        = MatPartitioningDestroy_Parmetis;
   part->ops->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
-  part->data                = (void*)parmetis;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

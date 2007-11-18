@@ -91,6 +91,9 @@ static PetscErrorCode LocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xout)
   ierr = VecPlaceArray(tfs->xo,xin+tfs->nd);CHKERRQ(ierr);
   ierr = MatMult(a->A,tfs->xd,tfs->b);CHKERRQ(ierr);
   ierr = MatMultAdd(a->B,tfs->xo,tfs->b,tfs->b);CHKERRQ(ierr);
+  ierr = VecResetArray(tfs->b);CHKERRQ(ierr);
+  ierr = VecResetArray(tfs->xd);CHKERRQ(ierr);
+  ierr = VecResetArray(tfs->xo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -174,8 +177,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC pc)
   PC_TFS         *tfs;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_TFS,&tfs);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_TFS));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_TFS,&tfs);CHKERRQ(ierr);
 
   tfs->xxt = 0;
   tfs->xyt = 0;

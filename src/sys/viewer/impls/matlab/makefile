@@ -1,5 +1,5 @@
 
-#requirespackage  'PETSC_HAVE_MATLAB'
+#requirespackage  'PETSC_HAVE_MATLAB_ENGINE'
 #requiresscalar real 
 #requiresprecision  double
 
@@ -18,7 +18,7 @@ LIBBASE	  = libpetsc
 LOCDIR	  = src/sys/viewer/impls/matlab/
 DIRS      = 
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 

@@ -1,5 +1,5 @@
 
-/* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
+/* Program usage:  mpiexec -np <procs> ex5 [-help] [all PETSc options] */
 
 static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 
@@ -76,8 +76,8 @@ int main(int argc,char **argv)
                          products within Newton-Krylov method
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DAGetColoring(da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
-  ierr = DAGetMatrix(da,MATMPIAIJ,&J);CHKERRQ(ierr);
+  ierr = DAGetColoring(da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
+  ierr = DAGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,da);CHKERRQ(ierr);
@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TS_BEULER);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetMonitor(ts,Monitor,0,0);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,0,0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

@@ -28,9 +28,7 @@ PetscErrorCode CharacteristicInitializePackage(const char path[]) {
   /* Register Classes */
   ierr = PetscLogClassRegister(&CHARACTERISTIC_COOKIE,  "Method of Characteristics");CHKERRQ(ierr);
   /* Register Constructors */
-#if 0
   ierr = CharacteristicRegisterAll(path);CHKERRQ(ierr);
-#endif
   /* Register Events */
   ierr = PetscLogEventRegister(&CHARACTERISTIC_SetUp,            "MOCSetUp",         CHARACTERISTIC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&CHARACTERISTIC_Solve,            "MOCSolve",         CHARACTERISTIC_COOKIE);CHKERRQ(ierr);
@@ -74,7 +72,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PetscDLLibraryRegister_petsccontrib(char *path)
+PetscErrorCode PetscDLLibraryRegister_petsccontrib(const char path[])
 {
   PetscErrorCode ierr;
 

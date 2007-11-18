@@ -14,7 +14,6 @@ The flow can be driven with the lid or with bouyancy or both:\n\
    Concepts: multicomponent
    Processors: n
 T*/
-
 /* ------------------------------------------------------------------------
 
     We thank David E. Keyes for contributing the driven cavity discretization
@@ -88,18 +87,18 @@ int main(int argc,char **argv)
 {
   DMMG           *dmmg;               /* multilevel grid structure */
   AppCtx         user;                /* user-defined work context */
-  PetscInt       mx,my,its;
+  PetscInt       mx,my,its,nlevels=2;
   PetscErrorCode ierr;
   MPI_Comm       comm;
   SNES           snes;
   DA             da;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return(1);
   comm = PETSC_COMM_WORLD;
 
-
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-nlevels",&nlevels,PETSC_NULL);CHKERRQ(ierr);
   PreLoadBegin(PETSC_TRUE,"SetUp");
-    ierr = DMMGCreate(comm,2,&user,&dmmg);CHKERRQ(ierr);
+    ierr = DMMGCreate(comm,nlevels,&user,&dmmg);CHKERRQ(ierr);
 
     /*
       Create distributed array multigrid object (DMMG) to manage parallel grid and vectors

@@ -16,7 +16,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim(KSP ksp, PetscInt dim)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),KSPLGMRESSetAugDim_C,(KSP,PetscInt),(ksp,dim));CHKERRQ(ierr);
+  ierr = PetscTryMethod((ksp),"KSPLGMRESSetAugDim_C",(KSP,PetscInt),(ksp,dim));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -27,7 +27,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),KSPLGMRESSetConstant_C,(KSP),(ksp));CHKERRQ(ierr);
+  ierr = PetscTryMethod((ksp),"KSPLGMRESSetConstant_C",(KSP),(ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -436,7 +436,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
     ierr     = LGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
     itcount += cycle_its;  
     if (itcount >= ksp->max_it) {
-      ksp->reason = KSP_DIVERGED_ITS;
+      if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       break;
     }
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
@@ -476,7 +476,9 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
 
   /*LGMRES_MOD - free aug work vectors also */
   /*this was all allocated as one "chunk" */
-  ierr = VecDestroyVecs(lgmres->augvecs_user_work[0],lgmres->augwork_alloc);CHKERRQ(ierr);
+  if (lgmres->augwork_alloc) {
+    ierr = VecDestroyVecs(lgmres->augvecs_user_work[0],lgmres->augwork_alloc);CHKERRQ(ierr);
+  }
   ierr = PetscFree(lgmres->augvecs_user_work);CHKERRQ(ierr);
   ierr = PetscFree(lgmres->aug_order);CHKERRQ(ierr);
   ierr = PetscFree(lgmres->mwork_alloc);CHKERRQ(ierr);
@@ -484,7 +486,14 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
   if (lgmres->sol_temp) {ierr = VecDestroy(lgmres->sol_temp);CHKERRQ(ierr);}
   ierr = PetscFree(lgmres->Rsvd);CHKERRQ(ierr);
   ierr = PetscFree(lgmres->Dsvd);CHKERRQ(ierr);
-  ierr = PetscFree(lgmres);CHKERRQ(ierr);
+  ierr = PetscFree(lgmres->orthogwork);CHKERRQ(ierr);
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetHapTol_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -913,7 +922,7 @@ EXTERN_C_END
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPGMRES,
           KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
           KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
-          KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESKrylovMonitor(), KSPLGMRESSetAugDim(),
+          KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPLGMRESSetAugDim(),
           KSPGMRESSetConstant()
 
 M*/
@@ -927,8 +936,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_LGMRES,&lgmres);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_LGMRES));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_LGMRES,&lgmres);CHKERRQ(ierr);
   ksp->data                              = (void*)lgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_LGMRES;
 

@@ -1,5 +1,5 @@
 
-/* Program usage:  mpirun -np <procs> ex4 [-help] [all PETSc options] */
+/* Program usage:  mpiexec -np <procs> ex4 [-help] [all PETSc options] */
 
 static char help[] ="Solves a simple time-dependent linear PDE (the heat equation).\n\
 Input parameters include:\n\
@@ -31,7 +31,7 @@ Input parameters include:\n\
        u_xx = (u_{i+1} - 2u_{i} + u_{i-1})/(h^2)
    We then demonstrate time evolution using the various TS methods by
    running the program via
-       mpirun -np <procs> ex3 -ts_type <timestepping solver>
+       mpiexec -np <procs> ex3 -ts_type <timestepping solver>
 
    We compare the approximate solution with the exact solution, given by
        u_exact(x,t) = exp(-36*pi*pi*t) * sin(6*pi*x) +
@@ -168,7 +168,7 @@ int main(int argc,char **argv)
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -186,7 +186,7 @@ int main(int argc,char **argv)
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
-    ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
+    ierr = TSSetMatrices(ts,A,RHSMatrixHeat,PETSC_NULL,PETSC_NULL,DIFFERENT_NONZERO_PATTERN,&appctx);CHKERRQ(ierr);
   } else {
     /*
        For linear problems with a time-independent f(u) in the equation 
@@ -196,7 +196,7 @@ int main(int argc,char **argv)
     */
     MatStructure A_structure;
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
-    ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);
+    ierr = TSSetMatrices(ts,A,PETSC_NULL,PETSC_NULL,PETSC_NULL,DIFFERENT_NONZERO_PATTERN,&appctx);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -556,7 +556,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str
      Set and option to indicate that we will never add a new nonzero location 
      to the matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   return 0;
 }

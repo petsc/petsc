@@ -12,6 +12,7 @@ EXTERN PetscErrorCode PetscViewerCreate_VU(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_Mathematica(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_Netcdf(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_HDF4(PetscViewer);
+EXTERN PetscErrorCode PetscViewerCreate_HDF5(PetscViewer);
 EXTERN PetscErrorCode PetscViewerCreate_Matlab(PetscViewer);
 EXTERN_C_END
   
@@ -46,9 +47,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterAll(const char *path)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_NETCDF,     path,"PetscViewerCreate_Netcdf",     PetscViewerCreate_Netcdf);CHKERRQ(ierr); 
 #endif
 #if defined(PETSC_HAVE_HDF4)
-  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_HDF4,       path,"PetscViewerCreate_HDF4",       PetscViewerCreate_HDF4);CHKERRQ(ierr); 
+  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_HDF4,       path,"PetscViewerCreate_HDF4",       PetscViewerCreate_HDF4);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_HDF5)
+  ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_HDF5,       path,"PetscViewerCreate_HDF5",       PetscViewerCreate_HDF5);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_MATLAB,     path,"PetscViewerCreate_Matlab",     PetscViewerCreate_Matlab);CHKERRQ(ierr); 
 #endif
   PetscFunctionReturn(0);

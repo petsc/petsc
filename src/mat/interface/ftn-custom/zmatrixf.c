@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscmat.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -9,7 +9,6 @@
 #define matview_                         MATVIEW
 #define matgetarray_                     MATGETARRAY
 #define matrestorearray_                 MATRESTOREARRAY
-#define mattranspose_                    MATTRANSPOSE
 #define matconvert_                      MATCONVERT
 #define matgetsubmatrices_               MATGETSUBMATRICES
 #define matzerorows_                     MATZEROROWS
@@ -25,7 +24,6 @@
 #define matview_                         matview
 #define matgetarray_                     matgetarray
 #define matrestorearray_                 matrestorearray
-#define mattranspose_                    mattranspose
 #define matconvert_                      matconvert
 #define matgetsubmatrices_               matgetsubmatrices
 #define matzerorows_                     matzerorows
@@ -37,20 +35,20 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt *n,PetscInt *ia,size_t *iia,PetscInt *ja,size_t *jja,
-                                PetscTruth *done,PetscErrorCode *ierr)
+void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed,PetscInt *n,PetscInt *ia,size_t *iia,
+                                PetscInt *ja,size_t *jja,PetscTruth *done,PetscErrorCode *ierr)
 {
   PetscInt *IA,*JA;
-  *ierr = MatGetRowIJ(*B,*shift,*sym,n,&IA,&JA,done);if (*ierr) return;
+  *ierr = MatGetRowIJ(*B,*shift,*sym,*blockcompressed,n,&IA,&JA,done);if (*ierr) return;
   *iia  = PetscIntAddressToFortran(ia,IA);
   *jja  = PetscIntAddressToFortran(ja,JA);
 }
 
-void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt *n,PetscInt *ia,size_t *iia,PetscInt *ja,size_t *jja,
-                                    PetscTruth *done,PetscErrorCode *ierr)
+void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed, PetscInt *n,PetscInt *ia,size_t *iia,
+                                    PetscInt *ja,size_t *jja,PetscTruth *done,PetscErrorCode *ierr)
 {
   PetscInt *IA = PetscIntAddressFromFortran(ia,*iia),*JA = PetscIntAddressFromFortran(ja,*jja);
-  *ierr = MatRestoreRowIJ(*B,*shift,*sym,n,&IA,&JA,done);
+  *ierr = MatRestoreRowIJ(*B,*shift,*sym,*blockcompressed,n,&IA,&JA,done);
 }
 
 /*
@@ -130,12 +128,6 @@ void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErr
   *ierr = MatGetSize(*mat,&m,&n); if (*ierr) return;
   *ierr = PetscScalarAddressFromFortran((PetscObject)*mat,fa,*ia,m*n,&lx);if (*ierr) return;
   *ierr = MatRestoreArray(*mat,&lx);if (*ierr) return;
-}
-
-void PETSC_STDCALL mattranspose_(Mat *mat,Mat *B,PetscErrorCode *ierr)
-{
-  CHKFORTRANNULLOBJECT(B);
-  *ierr = MatTranspose(*mat,B);
 }
 
 void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatReuse *reuse,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))

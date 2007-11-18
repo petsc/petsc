@@ -1,6 +1,6 @@
 #define PETSCTS_DLL
 
-#include "src/ts/tsimpl.h"
+#include "include/private/tsimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSInitializePackage"
@@ -67,7 +67,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister_petscts(char *path)
+PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister_petscts(const char path[])
 {
   PetscErrorCode ierr;
 

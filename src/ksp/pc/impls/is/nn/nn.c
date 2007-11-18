@@ -60,8 +60,8 @@ static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
     Solving $ B_I^{(i)}r_I^{(i)} $ at each processor.
     Storing the local results at vec2_D
   */
-  ierr = VecScatterBegin(r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_D);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_D);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_D,r,pcis->vec1_D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = KSPSolve(pcis->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
   
   /*
@@ -71,8 +71,8 @@ static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
   ierr = MatMult(pcis->A_BI,pcis->vec2_D,pcis->vec1_B);CHKERRQ(ierr);
   ierr = VecScale(pcis->vec1_B,m_one);CHKERRQ(ierr);
   ierr = VecCopy(r,w);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->vec1_B,w,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->vec1_B,w,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,pcis->vec1_B,w,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_B,pcis->vec1_B,w,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   /*
     Apply the interface preconditioner
@@ -84,8 +84,8 @@ static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
     Computing $ t_I^{(i)} = A_{IB}^{(i)} \tilde R_i z_B $
     The result is stored in vec1_D.
   */
-  ierr = VecScatterBegin(z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_B,z,pcis->vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = MatMult(pcis->A_IB,pcis->vec1_B,pcis->vec1_D);CHKERRQ(ierr);
 
   /*
@@ -93,12 +93,12 @@ static PetscErrorCode PCApply_NN(PC pc,Vec r,Vec z)
     Computing $ B_I^{(i)}t_I^{(i)} $ and sticking into the global vector the blocks
     $ B_I^{(i)}r_I^{(i)} - B_I^{(i)}t_I^{(i)} $.
   */
-  ierr = VecScatterBegin(pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_D,pcis->vec2_D,z,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = KSPSolve(pcis->ksp_D,pcis->vec1_D,pcis->vec2_D);CHKERRQ(ierr);
   ierr = VecScale(pcis->vec2_D,m_one);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_D);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_D,pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_D,pcis->vec2_D,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -167,7 +167,7 @@ static PetscErrorCode PCDestroy_NN(PC pc)
 
    Contributed by Paulo Goldfeld
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,  MatIS
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,  MATIS
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -182,14 +182,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNew(PC_NN,&pcnn);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,PC_NN,&pcnn);CHKERRQ(ierr);
   pc->data  = (void*)pcnn;
-
-  /*
-     Logs the memory usage; this is not needed but allows PETSc to 
-     monitor how much memory is being used for various purposes.
-  */
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_NN)+sizeof(PC_IS));CHKERRQ(ierr); /* Is this the right thing to do? */
 
   ierr = PCISCreate(pc);CHKERRQ(ierr);
   pcnn->coarse_mat  = 0;
@@ -282,8 +276,8 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
     ierr = PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request),&send_request);CHKERRQ(ierr);
     recv_request = send_request + (n_neigh);
     for (i=1; i<n_neigh; i++) {
-      ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,pc->comm,&(send_request[i]));CHKERRQ(ierr);
-      ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,pc->comm,&(recv_request[i]));CHKERRQ(ierr);
+      ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,((PetscObject)pc)->comm,&(send_request[i]));CHKERRQ(ierr);
+      ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,((PetscObject)pc)->comm,&(recv_request[i]));CHKERRQ(ierr);
     }
   }
 
@@ -341,12 +335,12 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 
   {
     PetscMPIInt size;
-    ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
     /* Create the global coarse vectors (rhs and solution). */
-    ierr = VecCreateMPI(pc->comm,1,size,&(pcnn->coarse_b));CHKERRQ(ierr);
+    ierr = VecCreateMPI(((PetscObject)pc)->comm,1,size,&(pcnn->coarse_b));CHKERRQ(ierr);
     ierr = VecDuplicate(pcnn->coarse_b,&(pcnn->coarse_x));CHKERRQ(ierr);
     /* Create and set the global coarse AIJ matrix. */
-    ierr = MatCreate(pc->comm,&(pcnn->coarse_mat));CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)pc)->comm,&(pcnn->coarse_mat));CHKERRQ(ierr);
     ierr = MatSetSizes(pcnn->coarse_mat,1,1,size,size);CHKERRQ(ierr);
     ierr = MatSetType(pcnn->coarse_mat,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,PETSC_NULL);CHKERRQ(ierr);
@@ -359,7 +353,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   {
     PetscMPIInt rank;
     PetscScalar one = 1.0; 
-    ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     /* "Zero out" rows of not-purely-Neumann subdomains */
     if (pcis->pure_neumann) {  /* does NOT zero the row; create an empty index set. The reason is that MatZeroRows() is collective. */
       ierr = MatZeroRows(pcnn->coarse_mat,0,PETSC_NULL,one);CHKERRQ(ierr);
@@ -372,7 +366,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   /* Create the coarse linear solver context */
   {
     PC  pc_ctx, inner_pc;
-    ierr = KSPCreate(pc->comm,&pcnn->ksp_coarse);CHKERRQ(ierr);
+    ierr = KSPCreate(((PetscObject)pc)->comm,&pcnn->ksp_coarse);CHKERRQ(ierr);
     ierr = KSPSetOperators(pcnn->ksp_coarse,pcnn->coarse_mat,pcnn->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
     ierr = KSPGetPC(pcnn->ksp_coarse,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCREDUNDANT);CHKERRQ(ierr);                
@@ -490,8 +484,8 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
   /*
     Extract the local interface part of z and scale it by D 
   */
-  ierr = VecScatterBegin(z,vec1_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (z,vec1_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,z,vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_B,z,vec1_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecPointwiseMult(vec2_B,pcis->D,vec1_B);CHKERRQ(ierr);
 
   /* Neumann Solver */
@@ -508,8 +502,8 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
     } else {
       ierr = VecPointwiseMult(vec2_B,pcis->D,vec1_B);CHKERRQ(ierr);
       ierr = VecSet(z,0.0);CHKERRQ(ierr);
-      ierr = VecScatterBegin(vec2_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
-      ierr = VecScatterEnd  (vec2_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
+      ierr = VecScatterBegin(pcis->global_to_B,vec2_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd  (pcis->global_to_B,vec2_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -556,26 +550,26 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
     if (!vec3_B) { vec3_B = u; }
     ierr = VecPointwiseMult(vec1_B,pcis->D,u);CHKERRQ(ierr);
     ierr = VecSet(z,0.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
-    ierr = VecScatterBegin(z,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (z,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->global_to_B,vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->global_to_B,vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->global_to_B,z,vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->global_to_B,z,vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PCISApplySchur(pc,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D);CHKERRQ(ierr);
     ierr = VecScale(vec3_B,-1.0);CHKERRQ(ierr);
     ierr = VecCopy(r,z);CHKERRQ(ierr);
-    ierr = VecScatterBegin(vec3_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (vec3_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->global_to_B,vec3_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->global_to_B,vec3_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   } else {
     ierr = VecCopy(r,z);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(z,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (z,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,z,vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_B,z,vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = PCISScatterArrayNToVecB(work_N,vec2_B,INSERT_VALUES,SCATTER_REVERSE,pc);CHKERRQ(ierr);
   for (k=0, value=0.0; k<pcis->n_shared[0]; k++) { value += pcnn->DZ_IN[0][k] * work_N[pcis->shared[0][k]]; }
   value *= pcnn->factor_coarse_rhs;  /* This factor is set in CreateCoarseMatrix(). */
   {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     ierr = VecSetValue(pcnn->coarse_b,rank,value,INSERT_VALUES);CHKERRQ(ierr);
     /*
        Since we are only inserting local values (one value actually) we don't need to do the 
@@ -591,16 +585,16 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
   ierr = VecRestoreArray(pcnn->coarse_x,&lambda);CHKERRQ(ierr);
   ierr = PCISScatterArrayNToVecB(work_N,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pc);CHKERRQ(ierr);
   ierr = VecSet(z,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(vec2_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (vec2_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,vec2_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_B,vec2_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   if (!u) {
-    ierr = VecScatterBegin(z,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (z,vec2_B,INSERT_VALUES,SCATTER_FORWARD,pcis->global_to_B);CHKERRQ(ierr);
+    ierr = VecScatterBegin(pcis->global_to_B,z,vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (pcis->global_to_B,z,vec2_B,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = PCISApplySchur(pc,vec2_B,vec1_B,(Vec)0,vec1_D,vec2_D);CHKERRQ(ierr);
     ierr = VecCopy(r,z);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (vec1_B,z,ADD_VALUES,SCATTER_REVERSE,pcis->global_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->global_to_B,vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->global_to_B,vec1_B,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplyCoarse,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

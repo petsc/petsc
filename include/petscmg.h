@@ -14,7 +14,8 @@ PETSC_EXTERN_CXX_BEGIN
    Values:
 +  PC_MG_MULTIPLICATIVE (default) - traditional V or W cycle as determined by PCMGSetCycles()
 .  PC_MG_ADDITIVE - the additive multigrid preconditioner where all levels are
-                smoothed before updating the residual
+                smoothed before updating the residual. This only uses the 
+                down smoother, in the preconditioner the upper smoother is ignored
 .  PC_MG_FULL - same as multiplicative except one also performs grid sequencing, 
             that is starts on the coarsest grid, performs a cycle, interpolates
             to the next, performs a cycle etc
@@ -28,8 +29,20 @@ typedef enum { PC_MG_MULTIPLICATIVE,PC_MG_ADDITIVE,PC_MG_FULL,PC_MG_KASKADE } PC
 extern const char *PCMGTypes[];
 #define PC_MG_CASCADE PC_MG_KASKADE;
 
-#define PC_MG_V_CYCLE     1
-#define PC_MG_W_CYCLE     2
+/*E
+    PCMGCyleType - Use V-cycle or W-cycle
+
+   Level: beginner
+
+   Values:
++  PC_MG_V_CYCLE
+-  PC_MG_W_CYCLE
+
+.seealso: PCMGSetCycleType()
+
+E*/
+typedef enum { PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2 } PCMGCycleType;
+extern const char *PCMGCycleTypes[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetType(PC,PCMGType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC,PetscInt,MPI_Comm*);
@@ -37,8 +50,10 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetLevels(PC,PetscInt*);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothUp(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothDown(PC,PetscInt);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycles(PC,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleType(PC,PCMGCycleType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleTypeOnLevel(PC,PetscInt,PCMGCycleType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCyclesOnLevel(PC,PetscInt,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGMultiplicativeSetCycles(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetGalerkin(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetGalerkin(PC,PetscTruth*);
 
@@ -53,9 +68,12 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetX(PC,PetscInt,Vec);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetR(PC,PetscInt,Vec);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRestriction(PC,PetscInt,Mat);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolate(PC,PetscInt,Mat);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolation(PC,PetscInt,Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat,Vec,Vec,Vec);
+
+#include "petscda.h"
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDMMGSetDM(PC,DM);
 
 PETSC_EXTERN_CXX_END
 #endif

@@ -12,8 +12,8 @@ Input parameters include:\n\
    Concepts: TS^time-dependent linear problems
    Concepts: TS^heat equation
    Concepts: TS^diffusion equation
-   Routines: TSCreate(); TSSetSolution(); TSSetRHSMatrix();
-   Routines: TSSetInitialTimeStep(); TSSetDuration(); TSSetMonitor();
+   Routines: TSCreate(); TSSetSolution(); TSSetMatrices();
+   Routines: TSSetInitialTimeStep(); TSSetDuration(); TSMonitorSet();
    Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
    Routines: TSSetTimeStep(); TSGetTimeStep();
    Processors: 1
@@ -153,7 +153,7 @@ int main(int argc,char **argv)
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -171,7 +171,7 @@ int main(int argc,char **argv)
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
-    ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
+    ierr = TSSetMatrices(ts,A,RHSMatrixHeat,PETSC_NULL,PETSC_NULL,DIFFERENT_NONZERO_PATTERN,&appctx);CHKERRQ(ierr);
   } else {
     /*
        For linear problems with a time-independent f(u) in the equation 
@@ -181,7 +181,7 @@ int main(int argc,char **argv)
     */
     MatStructure A_structure;
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
-    ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);
+    ierr = TSSetMatrices(ts,A,PETSC_NULL,PETSC_NULL,PETSC_NULL,DIFFERENT_NONZERO_PATTERN,&appctx);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -520,7 +520,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str
      Set and option to indicate that we will never add a new nonzero location 
      to the matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   return 0;
 }

@@ -147,9 +147,9 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     }
 
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in LU","PCFactorSetMatOrdering",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in LU","PCFactorSetMatOrderingType",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetMatOrdering(pc,tname);CHKERRQ(ierr);
+      ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
@@ -212,8 +212,8 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCGetFactoredMatrix_LU"
-static PetscErrorCode PCGetFactoredMatrix_LU(PC pc,Mat *mat)
+#define __FUNCT__ "PCFactorGetMatrix_LU"
+static PetscErrorCode PCFactorGetMatrix_LU(PC pc,Mat *mat)
 {
   PC_LU *dir = (PC_LU*)pc->data;
 
@@ -356,8 +356,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetMatOrdering_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrdering_LU(PC pc,MatOrderingType ordering)
+#define __FUNCT__ "PCFactorSetMatOrderingType_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_LU(PC pc,MatOrderingType ordering)
 {
   PC_LU          *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;
@@ -517,9 +517,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetMatOrdering"
+#define __FUNCT__ "PCFactorSetMatOrderingType"
 /*@C
-    PCFactorSetMatOrdering - Sets the ordering routine (to reduce fill) to 
+    PCFactorSetMatOrderingType - Sets the ordering routine (to reduce fill) to 
     be used in the LU factorization.
 
     Collective on PC
@@ -535,14 +535,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC pc)
 
     Notes: nested dissection is used by default
 
-.seealso: PCILUSetMatOrdering()
+    For Cholesky and ICC and the SBAIJ format reorderings are not available,
+    since only the upper triangular part of the matrix is stored. You can use the
+    SeqAIJ format in this case to get reorderings.
+
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrdering(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)
 {
   PetscErrorCode ierr,(*f)(PC,MatOrderingType);
 
   PetscFunctionBegin;
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetMatOrdering_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,ordering);CHKERRQ(ierr);
   } 
@@ -626,8 +629,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC pc,PetscTruth pivo
 .  -pc_factor_pivot_in_blocks <true,false> - allow pivoting within the small blocks during factorization (may increase
                                          stability of factorization.
 .  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
--  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
-   is optional with PETSC_TRUE being the default
+.  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
+        is optional with PETSC_TRUE being the default
+-   -pc_factor_nonzeros_along_diagonal - permutes the rows and columns to try to put nonzero value along the
+        diagonal.
 
    Notes: Not all options work for all matrix formats
           Run with -help to see additional options for particular matrix formats or factorization
@@ -642,9 +647,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC pc,PetscTruth pivo
           KSPSetType(ksp,KSPPREONLY) for the Krylov method
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCILU, PCCHOLESKY, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCGetFactoredMatrix(),
-           PCFactorSetFill(), PCFactorSetUseInPlace(), PCFactorSetMatOrdering(), PCFactorSetPivoting(),
-           PCFactorSetPivotingInBlocks(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
+           PCILU, PCCHOLESKY, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCFactorGetMatrix(),
+           PCFactorSetFill(), PCFactorSetUseInPlace(), PCFactorSetMatOrderingType(), PCFactorSetPivoting(),
+           PCFactorSetPivotingInBlocks(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd(), PCFactorReorderForNonzeroDiagonal()
 M*/
 
 EXTERN_C_BEGIN
@@ -657,8 +662,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   PC_LU          *dir;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_LU,&dir);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_LU));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_LU,&dir);CHKERRQ(ierr);
 
   ierr = MatFactorInfoInitialize(&dir->info);CHKERRQ(ierr);
   dir->fact                  = 0;
@@ -674,7 +678,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   dir->info.shift_fraction = 0.0;
   dir->col                 = 0;
   dir->row                 = 0;
-  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
   } else {
@@ -691,7 +695,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   pc->ops->setfromoptions    = PCSetFromOptions_LU;
   pc->ops->view              = PCView_LU;
   pc->ops->applyrichardson   = 0;
-  pc->ops->getfactoredmatrix = PCGetFactoredMatrix_LU;
+  pc->ops->getfactoredmatrix = PCFactorGetMatrix_LU;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_LU",
                     PCFactorSetZeroPivot_LU);CHKERRQ(ierr);
@@ -704,8 +708,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
                     PCFactorSetFill_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseInPlace_C","PCFactorSetUseInPlace_LU",
                     PCFactorSetUseInPlace_LU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrdering_C","PCFactorSetMatOrdering_LU",
-                    PCFactorSetMatOrdering_LU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_LU",
+                    PCFactorSetMatOrderingType_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetReuseOrdering_C","PCFactorSetReuseOrdering_LU",
                     PCFactorSetReuseOrdering_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetReuseFill_C","PCFactorSetReuseFill_LU",

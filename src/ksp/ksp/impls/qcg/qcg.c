@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"             /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"             /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/qcg/qcg.h"
 
 static PetscErrorCode QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);
@@ -128,8 +128,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetQuadratic(KSP ksp,PetscReal *quadrati
      D is a scaling matrix.
 
    KSPConvergedReason may be 
-$  KSP_CONVERGED_STCG_NEG_CURVE if convergence is reached along a negative curvature direction,
-$  KSP_CONVERGED_STCG_CONSTRAINED if convergence is reached along a constrained step,
+$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
+$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
 $  other KSP converged/diverged reasons
 
 
@@ -169,7 +169,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   if (ksp->transpose_solve) {
     SETERRQ(PETSC_ERR_SUP,"Currently does not support transpose solve");
   }
@@ -270,7 +270,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 #endif
        }
        pcgP->ltsnrm = pcgP->delta;                       /* convergence in direction of */
-       ksp->reason  = KSP_CONVERGED_STCG_NEG_CURVE;  /* negative curvature */
+       ksp->reason  = KSP_CONVERGED_CG_NEG_CURVE;  /* negative curvature */
        if (!i) {
          ierr = PetscInfo1(ksp,"negative curvature: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
        } else {
@@ -307,7 +307,7 @@ PetscErrorCode KSPSolve_QCG(KSP ksp)
 #endif
          }
          pcgP->ltsnrm = pcgP->delta;
-         ksp->reason  = KSP_CONVERGED_STCG_CONSTRAINED;	/* convergence along constrained step */
+         ksp->reason  = KSP_CONVERGED_CG_CONSTRAINED;	/* convergence along constrained step */
          if (!i) {
            ierr = PetscInfo1(ksp,"constrained step: delta=%G\n",pcgP->delta);CHKERRQ(ierr);
          } else {
@@ -391,14 +391,13 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
 #define __FUNCT__ "KSPDestroy_QCG" 
 PetscErrorCode KSPDestroy_QCG(KSP ksp)
 {
-  KSP_QCG        *cgP = (KSP_QCG*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-  
-  /* Free the context variable */
-  ierr = PetscFree(cgP);CHKERRQ(ierr);
+  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGGetQuadratic_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -482,9 +481,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_QCG(KSP ksp)
   KSP_QCG        *cgP;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(KSP_QCG),&cgP);CHKERRQ(ierr);
-  ierr = PetscMemzero(cgP,sizeof(KSP_QCG));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_QCG));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_QCG,&cgP);CHKERRQ(ierr);
   ksp->data                      = (void*)cgP;
   ksp->pc_side                   = PC_SYMMETRIC;
   ksp->ops->setup                = KSPSetUp_QCG;

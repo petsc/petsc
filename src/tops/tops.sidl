@@ -10,7 +10,7 @@ package TOPS version 0.0.0 {
   interface Solver extends gov.cca.Port {
 
       // Pass in command line arguments to Solver
-      void          Initialize(in array<string,1> args);
+      void          Initialize();
       void          solve();
 
       void          setBlockSize(in int bs);
@@ -69,19 +69,27 @@ package TOPS version 0.0.0 {
     // essentially one can think of the sparse matrix as having
     // a variable number of doubles at each grid point (while 
     // Babel/SIDL arrays have a fixed number)
-    class Matrix implements-all TOPS.Matrix {
+    interface Matrix extends TOPS.Matrix, gov.cca.Port {
       // local ownership of grid
-      int    dimen();
-      int    lower(in int a);
-      int    length(in int a);
-
+      int    getDimen();
+      int    getLower(in int dimen);   
+      int    getLength(in int dimen);
+      
+      // set various matrix characteristics
+      void   setDimen(in int dim);
+      void   setLower(in array<int,3> values);
+      void   setLength(in array<int,3> values);
+      void   setGhostLower(in array<int,3> values);
+      void   setGhostLength(in array<int,3> values);
+      void   setMat(in opaque m);
+      
       // set a (block) row of nonzeros
       void   set[D1](in int i,in array<double,2> values);
       void   set[D2](in int i,in int j,in array<double,2> values);
       void   set[D3](in int i,in int j,in int k,in array<double,2> values);
       void   set[D4](in int i,in int j,in int k,in int l,in array<double,2> values);
     }
-
+   
     //   The data lives on a structured grid 
     interface Solver extends TOPS.Solver {
       int  dimen();
@@ -94,7 +102,12 @@ package TOPS version 0.0.0 {
       void setLevels(in int levels);
     }
   }
-  class StructuredSolver implements-all TOPS.Structured.Solver, gov.cca.Component, gov.cca.ports.ParameterGetListener, gov.cca.ports.ParameterSetListener {
+
+  class StructuredMatrix implements-all TOPS.Structured.Matrix, gov.cca.Component {}
+  class StructuredSolver implements-all TOPS.Structured.Solver, 
+                                        gov.cca.Component, 
+                                        gov.cca.ports.ParameterGetListener, 
+                                        gov.cca.ports.ParameterSetListener {
     gov.cca.Services getServices();
   }
 
@@ -120,7 +133,10 @@ package TOPS version 0.0.0 {
       void         setPreallocation[s](in array<int,1> d,in array<int,1> od);
     }
   }
-  class UnstructuredSolver implements-all TOPS.Unstructured.Solver, gov.cca.Component, gov.cca.ports.ParameterGetListener, gov.cca.ports.ParameterSetListener {  
+  class UnstructuredSolver implements-all TOPS.Unstructured.Solver, 
+                                          gov.cca.Component, 
+                                          gov.cca.ports.ParameterGetListener, 
+                                          gov.cca.ports.ParameterSetListener {  
     gov.cca.Services getServices();
   }
 

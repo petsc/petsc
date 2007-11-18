@@ -18,6 +18,7 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
   PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
+  ierr      = KSPSetInitialGuessNonzero(jac->ksp,pc->nonzero_guess);CHKERRQ(ierr);
   ierr      = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;
@@ -256,8 +257,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC pc)
   PC_KSP         *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_KSP,&jac);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_KSP));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_KSP,&jac);CHKERRQ(ierr);
   pc->ops->apply              = PCApply_KSP;
   pc->ops->applytranspose     = PCApplyTranspose_KSP;
   pc->ops->setup              = PCSetUp_KSP;
@@ -267,7 +267,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC pc)
   pc->ops->applyrichardson    = 0;
 
   pc->data               = (void*)jac;
-  ierr                   = KSPCreate(pc->comm,&jac->ksp);CHKERRQ(ierr);
+  ierr                   = KSPCreate(((PetscObject)pc)->comm,&jac->ksp);CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(jac->ksp,prefix);CHKERRQ(ierr);

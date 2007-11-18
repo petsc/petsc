@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_Basic"
@@ -24,7 +24,7 @@ PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *new
 
   if (ln == n) ln = PETSC_DECIDE; /* try to preserve column ownership */
   
-  ierr = MatCreate(mat->comm,&M);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)mat)->comm,&M);CHKERRQ(ierr);
   ierr = MatSetSizes(M,lm,ln,m,n);CHKERRQ(ierr);
   ierr = MatSetType(M,newtype);CHKERRQ(ierr);
 

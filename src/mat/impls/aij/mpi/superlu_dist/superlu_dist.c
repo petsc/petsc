@@ -6,7 +6,7 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
-#if defined(PETSC_HAVE_STDLIB_H) /* This is to get arround weird problem with SuperLU on cray */
+#if defined(PETSC_HAVE_STDLIB_H) /* This is to get around weird problem with SuperLU on cray */
 #include "stdlib.h"
 #endif
 
@@ -18,8 +18,7 @@ EXTERN_C_BEGIN
 #endif
 EXTERN_C_END 
 
-typedef enum { GLOBAL,DISTRIBUTED
-} SuperLU_MatInputMode;
+typedef enum {GLOBAL,DISTRIBUTED} SuperLU_MatInputMode;
 
 typedef struct {
   int_t                   nprow,npcol,*row,*col;
@@ -79,6 +78,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_DIST_AIJ(Mat A,MatType type
   B->ops->assemblyend      = lu->MatAssemblyEnd;
   B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
   B->ops->destroy          = lu->MatDestroy;
+  ierr     = PetscFree(lu);CHKERRQ(ierr);
+  A->spptr = PETSC_NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_superlu_dist_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_superlu_dist_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -124,7 +125,7 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatConvert_SuperLU_DIST_AIJ(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
@@ -151,7 +152,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   VecScatter       scat;
   
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {  
     if (lu->MatInputMode == GLOBAL) { /* global mat input, convert b to x_seq */
       ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);CHKERRQ(ierr);
@@ -159,8 +160,8 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
       ierr = VecScatterCreate(b_mpi,iden,x_seq,iden,&scat);CHKERRQ(ierr);
       ierr = ISDestroy(iden);CHKERRQ(ierr);
 
-      ierr = VecScatterBegin(b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD,scat);CHKERRQ(ierr);
-      ierr = VecScatterEnd(b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD,scat);CHKERRQ(ierr);
+      ierr = VecScatterBegin(scat,b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(scat,b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = VecGetArray(x_seq,&bptr);CHKERRQ(ierr); 
     } else { /* distributed mat input */
       ierr = VecCopy(b_mpi,x);CHKERRQ(ierr);
@@ -171,8 +172,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     ierr = VecGetArray(x,&bptr);CHKERRQ(ierr); 
   }
  
-  if (lu->options.Fact != FACTORED) 
-    SETERRQ(PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
+  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
 
   PStatInit(&stat);        /* Initialize the statistics variables. */
   if (lu->MatInputMode == GLOBAL) { 
@@ -202,8 +202,8 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   if (size > 1) {    
     if (lu->MatInputMode == GLOBAL){ /* convert seq x to mpi x */
       ierr = VecRestoreArray(x_seq,&bptr);CHKERRQ(ierr);
-      ierr = VecScatterBegin(x_seq,x,INSERT_VALUES,SCATTER_REVERSE,scat);CHKERRQ(ierr);
-      ierr = VecScatterEnd(x_seq,x,INSERT_VALUES,SCATTER_REVERSE,scat);CHKERRQ(ierr);
+      ierr = VecScatterBegin(scat,x_seq,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(scat,x_seq,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
       ierr = VecDestroy(x_seq);CHKERRQ(ierr);
     } else {
@@ -238,11 +238,11 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
 #endif
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)A)->comm,&rank);CHKERRQ(ierr);
   
   if (lu->options.PrintStat) { /* collect time for mat conversion */
-    ierr = MPI_Barrier(A->comm);CHKERRQ(ierr);
+    ierr = MPI_Barrier(((PetscObject)A)->comm);CHKERRQ(ierr);
     ierr = PetscGetTime(&time0);CHKERRQ(ierr);  
   }
 
@@ -393,18 +393,16 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
 
   if (lu->options.PrintStat) {
     if (size > 1){
-      ierr = MPI_Reduce(&time0,&time_max,1,MPI_DOUBLE,MPI_MAX,0,A->comm);
-      ierr = MPI_Reduce(&time0,&time_min,1,MPI_DOUBLE,MPI_MIN,0,A->comm);
-      ierr = MPI_Reduce(&time0,&time,1,MPI_DOUBLE,MPI_SUM,0,A->comm);
+      ierr = MPI_Reduce(&time0,&time_max,1,MPI_DOUBLE,MPI_MAX,0,((PetscObject)A)->comm);
+      ierr = MPI_Reduce(&time0,&time_min,1,MPI_DOUBLE,MPI_MIN,0,((PetscObject)A)->comm);
+      ierr = MPI_Reduce(&time0,&time,1,MPI_DOUBLE,MPI_SUM,0,((PetscObject)A)->comm);
       time = time/size; /* average time */
-      if (!rank)
-        ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time (max/min/avg): \n \
-                              %g / %g / %g\n",time_max,time_min,time);
+      if (!rank) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time (max/min/avg): \n                              %g / %g / %g\n",time_max,time_min,time);CHKERRQ(ierr);
+      }
     } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time: \n \
-                              %g\n",time0);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time: \n    %g\n",time0);CHKERRQ(ierr);
     }
-    
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
   PStatFree(&stat);  
@@ -435,9 +433,9 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
@@ -461,13 +459,18 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   */
   set_default_options_dist(&options);
 
-  ierr = MPI_Comm_dup(A->comm,&(lu->comm_superlu));CHKERRQ(ierr);
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_superlu));CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  /* Default num of process columns and rows */
+  lu->npcol = (PetscMPIInt)(0.5 + sqrt((PetscReal)size)); 
+  if (!lu->npcol) lu->npcol = 1;
+  while (lu->npcol > 0) {
+    lu->nprow = (PetscMPIInt)(size/lu->npcol);  
+    if (size == lu->nprow * lu->npcol) break;
+    lu->npcol --;
+  }    
   
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
-    lu->npcol = (PetscMPIInt)(sqrt((PetscReal)size)); /* Default num of process columns */
-    if (!lu->npcol) lu->npcol = 1;
-    lu->nprow = (PetscMPIInt)(size/lu->npcol);        /* Default num of process rows */
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,&lu->npcol,PETSC_NULL);CHKERRQ(ierr);
     if (size != lu->nprow * lu->npcol) 
@@ -583,6 +586,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 
   options = lu->options;
   ierr = PetscViewerASCIIPrintf(viewer,"SuperLU_DIST run parameters:\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Process grid nprow %D x npcol %D \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",PetscTruths[options.Equil != NO]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Matrix input mode %d \n",lu->MatInputMode);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",PetscTruths[options.ReplaceTinyPivot != NO]);CHKERRQ(ierr);
@@ -645,18 +649,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SuperLU_DIST(Mat A,MatType type
   Mat_SuperLU_DIST *lu;
 
   PetscFunctionBegin;
+  ierr = PetscNewLog(B,Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    lu->MatDuplicate         = B->ops->duplicate;
+    lu->MatView              = B->ops->view;
+    lu->MatAssemblyEnd       = B->ops->assemblyend;
+    lu->MatLUFactorSymbolic  = B->ops->lufactorsymbolic;
+    lu->MatDestroy           = B->ops->destroy;
+  } else {
+    lu->MatDuplicate         = A->ops->duplicate;
+    lu->MatView              = A->ops->view;
+    lu->MatAssemblyEnd       = A->ops->assemblyend;
+    lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
+    lu->MatDestroy           = A->ops->destroy;
   }
-
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscNew(Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);
-
-  lu->MatDuplicate         = A->ops->duplicate;
-  lu->MatView              = A->ops->view;
-  lu->MatAssemblyEnd       = A->ops->assemblyend;
-  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
-  lu->MatDestroy           = A->ops->destroy;
   lu->CleanUpSuperLU_Dist  = PETSC_FALSE;
 
   B->spptr                 = (void*)lu;
@@ -665,6 +672,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SuperLU_DIST(Mat A,MatType type
   B->ops->assemblyend      = MatAssemblyEnd_SuperLU_DIST;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
   B->ops->destroy          = MatDestroy_SuperLU_DIST;
+
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_superlu_dist_C",
@@ -677,7 +686,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SuperLU_DIST(Mat A,MatType type
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_dist_mpiaij_C",
                                              "MatConvert_SuperLU_DIST_AIJ",MatConvert_SuperLU_DIST_AIJ);CHKERRQ(ierr);
   }
-  ierr = PetscInfo(0,"Using SuperLU_DIST for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using SuperLU_DIST for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU_DIST);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -703,15 +712,19 @@ PetscErrorCode MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
   If SuperLU_DIST is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SuperLU_DIST solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU_DIST).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU_DIST) then 
+  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() DO NOT
+  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
 
   This matrix inherits from MATSEQAIJ when constructed with a single process communicator,
   and from MATMPIAIJ otherwise.  As a result, for single process communicators, 
-  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
+  MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.  One can also call MatConvert for an inplace
+  the above preallocation routines for simplicity.  One can also call MatConvert() for an inplace
   conversion to or from the MATSEQAIJ or MATMPIAIJ type (depending on the communicator size)
-  without data copy.
+  without data copy; but this MUST be called AFTER the matrix values are set. 
+
+  
 
   Options Database Keys:
 + -mat_type superlu_dist - sets the matrix type to "superlu_dist" during a call to MatSetFromOptions()
@@ -740,7 +753,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU_DIST(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   } else {

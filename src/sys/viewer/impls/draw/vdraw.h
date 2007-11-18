@@ -7,12 +7,14 @@
 
 #include "src/sys/viewer/viewerimpl.h"
 typedef struct {
-  int            draw_max;
+  PetscInt       draw_max;
+  PetscInt       draw_base;
   PetscDraw      *draw;
   PetscDrawLG    *drawlg;
   PetscDrawAxis  *drawaxis;
   int            w,h;        /* These are saved in case additional windows are opened */
   char           *display;
+  char           *title;
   PetscTruth     singleton_made;
 } PetscViewer_Draw;
 

@@ -7,8 +7,8 @@
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 #undef __FUNCT__
-#define __FUNCT__ "MatView_SeqAIJSpooles"
-PetscErrorCode MatView_SeqAIJSpooles(Mat A,PetscViewer viewer)
+#define __FUNCT__ "MatView_Spooles"
+PetscErrorCode MatView_Spooles(Mat A,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscTruth        iascii;
@@ -60,12 +60,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */  
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric  = MatFactorNumeric_SeqAIJSpooles;
+  B->ops->lufactornumeric  = MatFactorNumeric_SeqSpooles;
   B->factor                = FACTOR_LU;  
 
   lu                        = (Mat_Spooles*)(B->spptr);
@@ -94,12 +94,12 @@ PetscErrorCode MatQRFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"QR Factorization is unsupported as the Spooles implementation of QR is invalid.");
   /* Create the factorization matrix */  
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric  = MatFactorNumeric_SeqAIJSpooles;
+  B->ops->lufactornumeric  = MatFactorNumeric_SeqSpooles;
   B->factor                = FACTOR_LU;  
 
   lu                        = (Mat_Spooles*)(B->spptr);
@@ -124,12 +124,12 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat A,IS r,MatFactorInfo 
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJSpooles;
+  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;
   B->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
   B->factor                      = FACTOR_CHOLESKY;  
 

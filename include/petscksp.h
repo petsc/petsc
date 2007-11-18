@@ -28,11 +28,14 @@ typedef struct _p_KSP*     KSP;
 
 .seealso: KSPSetType(), KSP
 E*/
+#define KSPType const char*
 #define KSPRICHARDSON "richardson"
 #define KSPCHEBYCHEV  "chebychev"
 #define KSPCG         "cg"
 #define   KSPCGNE       "cgne"
+#define   KSPNASH       "nash"
 #define   KSPSTCG       "stcg"
+#define   KSPGLTR       "gltr"
 #define KSPGMRES      "gmres"
 #define   KSPFGMRES     "fgmres" 
 #define   KSPLGMRES     "lgmres"
@@ -49,7 +52,6 @@ E*/
 #define KSPMINRES     "minres"
 #define KSPSYMMLQ     "symmlq"
 #define KSPLCD        "lcd"
-#define KSPType const char*
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;
@@ -140,8 +142,8 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPC(KSP,PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPC(KSP,PC*);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetMonitor(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPClearMonitor(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSet(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorCancel(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetMonitorContext(KSP,void **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualHistory(KSP,PetscReal*[],PetscInt *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetResidualHistory(KSP,PetscReal[],PetscInt,PetscTruth);
@@ -244,12 +246,12 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPBCGSLSetEll(KSP,int);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPAddOptionsChecker(PetscErrorCode (*)(KSP));
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSingularValueMonitor(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultSMonitor(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPVecViewMonitor(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESKrylovMonitor(KSP,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSolution(KSP,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPUnwindPreconditioner(KSP,Vec,Vec);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultBuildSolution(KSP,Vec,Vec*);
@@ -284,10 +286,10 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec(KSP,Vec*);
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest()
 E*/
-typedef enum {KSP_NO_NORM = 0,KSP_PRECONDITIONED_NORM = 1,KSP_UNPRECONDITIONED_NORM = 2,KSP_NATURAL_NORM = 3} KSPNormType;
+typedef enum {KSP_NORM_NO = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
 extern const char *KSPNormTypes[];
 /*MC
-    KSP_NO_NORM - Do not compute a norm during the Krylov process. This will 
+    KSP_NORM_NO - Do not compute a norm during the Krylov process. This will 
           possibly save some computation but means the convergence test cannot
           be based on a norm of a residual etc.
 
@@ -295,37 +297,39 @@ extern const char *KSPNormTypes[];
 
     Note: Some Krylov methods need to compute a residual norm and then this option is ignored
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_PRECONDITIONED_NORM, KSP_UNPRECONDITIONED_NORM, KSP_NATURAL_NORM
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_PRECONDITIONED, KSP_NORM_UNPRECONDITIONED, KSP_NORM_NATURAL
 M*/
 
 /*MC
-    KSP_PRECONDITIONED_NORM - Compute the norm of the preconditioned residual and pass that to the 
+    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual and pass that to the 
        convergence test routine.
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_UNPRECONDITIONED_NORM, KSP_NATURAL_NORM, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_UNPRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
 M*/
 
 /*MC
-    KSP_UNPRECONDITIONED_NORM - Compute the norm of the true residual (b - A*x) and pass that to the 
+    KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual (b - A*x) and pass that to the 
        convergence test routine.
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_PRECONDITIONED_NORM, KSP_NATURAL_NORM, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_PRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
 M*/
 
 /*MC
-    KSP_NATURAL_NORM - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the 
+    KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the 
        convergence test routine.
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_PRECONDITIONED_NORM, KSP_UNPRECONDITIONED_NORM, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_PRECONDITIONED, KSP_NORM_UNPRECONDITIONED, KSPSetConvergenceTest()
 M*/
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP,KSPNormType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNormType(KSP,KSPNormType*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP,PetscInt);
 
 /*E
     KSPConvergedReason - reason a Krylov method was said to 
@@ -345,8 +349,8 @@ typedef enum {/* converged */
               KSP_CONVERGED_RTOL               =  2,
               KSP_CONVERGED_ATOL               =  3,
               KSP_CONVERGED_ITS                =  4,
-              KSP_CONVERGED_STCG_NEG_CURVE     =  5,
-              KSP_CONVERGED_STCG_CONSTRAINED   =  6,
+              KSP_CONVERGED_CG_NEG_CURVE       =  5,
+              KSP_CONVERGED_CG_CONSTRAINED     =  6,
               KSP_CONVERGED_STEP_LENGTH        =  7,
               KSP_CONVERGED_HAPPY_BREAKDOWN    =  8,
               /* diverged */
@@ -417,8 +421,9 @@ M*/
 M*/
 
 /*MC
-     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of the
-           preconditioner is applied.
+     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of 
+           the preconditioner is applied. Also used when the KSPSkipConverged() convergence 
+           test rutine is set in KSP.
 
 
    Level: beginner
@@ -484,9 +489,11 @@ M*/
 
 M*/
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP,void **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedDestroy(void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedCreate(void **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
@@ -505,21 +512,35 @@ typedef enum {KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1} KSPCGType;
 extern const char *KSPCGTypes[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP,KSPCGType);
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHSetRadius(KSP,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetNormD(KSP,PetscReal *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetObjFcn(KSP,PetscReal *);
+
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP,PetscReal);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetQuadratic(KSP,PetscReal*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP,PetscReal *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP,PetscReal *);
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP,PetscReal *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP,PetscReal *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP,PetscReal *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP,PetscReal *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPreSolve(PC,KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC,KSP);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMonitorCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMonitor(KSP,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMonitorDestroy(PetscDrawLG);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGTrueMonitorCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGTrueMonitor(KSP,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLGTrueMonitorDestroy(PetscDrawLG);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLG(KSP,PetscInt,PetscReal,void*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGDestroy(PetscDrawLG);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNorm(KSP,PetscInt,PetscReal,void*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatMFFDKSPMonitor(KSP,PetscInt,PetscReal,void *);
 
 PETSC_EXTERN_CXX_END
 #endif

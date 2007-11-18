@@ -112,7 +112,7 @@ class Package(config.base.Configure):
     if self.download and not self.download[0] == 'redefine':
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
-    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../libparmetis.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
+    help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
     return
 
   # by default, just check for all the libraries in self.liblist 
@@ -139,35 +139,56 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    if self.archIndependent:
-      return os.path.abspath(self.Install())
-    return os.path.abspath(os.path.join(self.Install(),self.arch.arch))
+    self.installDir  = os.path.join(self.petscdir.dir,self.arch.arch)
+    self.confDir     = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
+    self.packageDir  = self.getDir()
+    if not os.path.isdir(self.installDir): os.mkdir(self.installDir)
+    if not os.path.isdir(os.path.join(self.installDir,'lib')): os.mkdir(os.path.join(self.installDir,'lib'))
+    if not os.path.isdir(os.path.join(self.installDir,'include')): os.mkdir(os.path.join(self.installDir,'include'))
+    if not os.path.isdir(os.path.join(self.installDir,'conf')): os.mkdir(os.path.join(self.installDir,'conf'))                
+    return os.path.abspath(self.Install())
+
+  def installNeeded(self,mkfile):
+    if not os.path.isfile(os.path.join(self.confDir,self.name)) or not (self.getChecksum(os.path.join(self.confDir,self.name)) == self.getChecksum(os.path.join(self.packageDir,mkfile))):
+      self.framework.log.write('Have to rebuild '+self.name+', '+mkfile+' != '+os.path.join(self.confDir,self.name))
+      return 1
+    else:
+      self.framework.log.write('Do not need to rebuild '+self.name)
+      return 0
+                         
+  def checkInstall(self,output,mkfile):
+    '''Did the install process actually create a library?'''
+    if not os.path.isfile(os.path.join(self.installDir,self.libdir,self.liblist[0][0])):
+      self.framework.log.write('Error running make on '+self.name+'   ******(libraries not installed)*******\n')
+      self.framework.log.write('********Output of running make on '+self.name+' follows *******\n')        
+      self.framework.log.write(output)
+      self.framework.log.write('********End of Output of running make on '+self.name+' *******\n')
+      raise RuntimeError('Error running make on '+self.name+', libraries not installed')
+    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir,mkfile)+' '+os.path.join(self.confDir,self.name), timeout=5, log = self.framework.log)[0]            
+    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
 
   def checkDownload(self,preOrPost):
     '''Check if we should download the package'''
     if not self.download : return ''
-    dowork=0
-    if preOrPost==1 and isinstance(self.framework.argDB['download-'+self.downloadname.lower()], str):
+    dowork = 0
+    if preOrPost == 1 and isinstance(self.framework.argDB['download-'+self.downloadname.lower()], str):
       self.download = ['file://'+os.path.abspath(self.framework.argDB['download-'+self.downloadname.lower()])]
-      dowork=1
+      dowork = 1
     elif self.framework.argDB['download-'+self.downloadname.lower()] == preOrPost:
-      dowork=1
+      dowork = 1
 
-    if not self.download:
-      raise RuntimeError('URL missing for package'+self.package+'. perhaps a PETSc bug\n')
-    
-    if dowork:
-      if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
-        self.framework.logClear()
-        self.logPrint("**************************************************************************************************", debugSection='screen')
-        self.logPrint('You must register to use '+self.downloadname+' at '+self.license, debugSection='screen')
-        self.logPrint('    Once you have registered, config/configure.py will continue and download and install '+self.downloadname+' for you', debugSection='screen')
-        self.logPrint("**************************************************************************************************\n", debugSection='screen')
-        fd = open(os.path.expanduser(os.path.join('~','.'+self.package+'_license')),'w')
-        fd.close()
-      return self.getInstallDir()
-    else:
+    if not dowork:
       return ''
+    
+    if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
+      self.framework.logClear()
+      self.logPrint("**************************************************************************************************", debugSection='screen')
+      self.logPrint('You must register to use '+self.downloadname+' at '+self.license, debugSection='screen')
+      self.logPrint('    Once you have registered, config/configure.py will continue and download and install '+self.downloadname+' for you', debugSection='screen')
+      self.logPrint("**************************************************************************************************\n", debugSection='screen')
+      fd = open(os.path.expanduser(os.path.join('~','.'+self.package+'_license')),'w')
+      fd.close()
+    return self.getInstallDir()
 
   def generateGuesses(self):
     d = self.checkDownload(1)
@@ -176,34 +197,46 @@ class Package(config.base.Configure):
         yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+d+'\n')
 
-    if 'with-'+self.package+'-dir' in self.framework.argDB:     
-      dir = self.framework.argDB['with-'+self.package+'-dir']
-      for l in self.generateLibList(os.path.join(dir, self.libdir)):
-        yield('User specified root directory '+self.PACKAGE, dir,l, os.path.join(dir,self.includedir))
+    if 'with-'+self.package+'-dir' in self.framework.argDB:
       if 'with-'+self.package+'-include' in self.framework.argDB:
         raise RuntimeError('Do not set --with-'+self.package+'-include if you set --with-'+self.package+'-dir')
       if 'with-'+self.package+'-lib' in self.framework.argDB:
         raise RuntimeError('Do not set --with-'+self.package+'-lib if you set --with-'+self.package+'-dir')
-      raise RuntimeError('--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+' did not work')
 
     if 'with-'+self.package+'-include-dir' in self.framework.argDB:
         raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir') 
 
-    if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
-      # hope that package root is one level above include directory
-      dir = os.path.dirname(self.framework.argDB['with-'+self.package+'-include'])
-      libs = self.framework.argDB['with-'+self.package+'-lib']
-      if not isinstance(libs, list): libs = [libs]
-      libs = [os.path.abspath(l) for l in libs]
-      yield('User specified '+self.PACKAGE+' libraries', dir,libs, os.path.abspath(self.framework.argDB['with-'+self.package+'-include']))
-      raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
-        '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work') 
-
     if 'with-'+self.package+'-include' in self.framework.argDB and not 'with-'+self.package+'-lib' in self.framework.argDB:
       raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
                          
-    if 'with-'+self.package+'-lib' in self.framework.argDB and not 'with-'+self.package+'-include' in self.framework.argDB:
+    if 'with-'+self.package+'-lib' in self.framework.argDB and not 'with-'+self.package+'-include' in self.framework.argDB and self.includes:
       raise RuntimeError('If you provide --with-'+self.package+'-lib you must also supply with-'+self.package+'-include\n')
+
+    if 'with-'+self.package+'-dir' in self.framework.argDB:
+      dir = self.framework.argDB['with-'+self.package+'-dir']
+      for l in self.generateLibList(os.path.join(dir, self.libdir)):
+        yield('User specified root directory '+self.PACKAGE, dir,l, os.path.join(dir,self.includedir))
+      raise RuntimeError('--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+' did not work')
+
+    if 'with-'+self.package+'-lib' in self.framework.argDB:
+      # hope that package root is one level above lib directory
+      if 'with-'+self.package+'-include' in self.framework.argDB:
+        package_include = self.framework.argDB['with-'+self.package+'-include']
+        dir = os.path.dirname(package_include)
+        inc_path = os.path.abspath(package_include)
+      else:
+        dir             = None
+        inc_path        = ''
+
+      libs = self.framework.argDB['with-'+self.package+'-lib']
+      if not isinstance(libs, list): libs = [libs]
+      libs = [os.path.abspath(l) for l in libs]
+      yield('User specified '+self.PACKAGE+' libraries', dir,libs, inc_path)
+      if 'with-'+self.package+'-include' in self.framework.argDB:
+        raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
+                           '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work')
+      else:
+        raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' did not work')
 
     for d in self.getSearchDirectories():
       for l in self.generateLibList(os.path.join(d, self.libdir)):
@@ -230,7 +263,6 @@ class Package(config.base.Configure):
 
     retriever = install.retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
     retriever.setup()
-    failureMessage = []
     self.framework.log.write('Downloading '+self.name+'\n')
     for url in self.download:
       try:
@@ -238,9 +270,8 @@ class Package(config.base.Configure):
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
       except RuntimeError, e:
-        failureMessage.append('  Failed to download '+url+'\n'+str(e))
-    failureMessage = 'Unable to download '+self.package+' from locations '+str(self.download)+'\n'+'\n'.join(failureMessage)
-    raise RuntimeError(failureMessage)
+        pass
+    raise RuntimeError(e)
 
   # Check is the dir matches something in the excludename list
   def matchExcludeDir(self,dir):
@@ -266,9 +297,6 @@ class Package(config.base.Configure):
         raise RuntimeError('Unable to download '+self.downloadname)
       self.downLoad()
       return self.getDir(retry = 0)
-    if not self.archIndependent:
-      if not os.path.isdir(os.path.join(packages,Dir,self.arch.arch)):
-        os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
 
   def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):
@@ -391,6 +419,7 @@ class NewPackage(config.package.Package):
     self.languages      = framework.require('PETSc.utilities.languages', self)
     self.scalartypes    = self.framework.require('PETSc.utilities.scalarTypes',self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    self.petscdir      = framework.require('PETSc.utilities.petscdir', self.setCompilers)
     return
 
   def consistencyChecks(self):

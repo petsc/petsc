@@ -9,7 +9,7 @@ EXAMPLESF       = ex1f.F ex2f.F
 EXAMPLESFH      = ex2f.h
 MANSEC          = TS
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}
@@ -48,40 +48,40 @@ ex7: ex7.o  chkopts
 	${RM} ex7.o
 #---------------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always  > ex1_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always  > ex1_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 
 runex1f:
-	-@${MPIRUN} -np 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 
 runex2f:
-	-@${MPIRUN} -np 1 ./ex2f 
+	-@${MPIEXEC} -np 1 ./ex2f 
 
 runex6:
-	-@${MPIRUN} -np 1 ./ex6 -nox -time_steps_max 4   > ex6_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex6 -nox -time_steps_max 4   > ex6_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 
 runex7:
-	-@${MPIRUN} -np 1 ./ex7 -snes_smonitor -max_steps 5   > ex7_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex7 -snes_monitor_short -max_steps 5   > ex7_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   ${RM} -f ex7_1.tmp
 
 runex7_2:
-	-@${MPIRUN} -np 1 ./ex7 -snes_smonitor -max_steps 5  -snes_mf_operator > ex7_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex7 -snes_monitor_short -max_steps 5  -snes_mf_operator > ex7_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_2.out ex7_2.tmp) then true; \
 	   else echo "Possible problem with ex7_2, diffs above"; fi; \
 	   ${RM} -f ex7_2.tmp
 
 runex7_3:
-	-@${MPIRUN} -np 1 ./ex7 -snes_smonitor -max_steps 5  -snes_mf > ex7_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex7 -snes_monitor_short -max_steps 5  -snes_mf > ex7_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex7_3.out ex7_3.tmp) then true; \
 	   else echo "Possible problem with ex7_3, diffs above"; fi; \
 	   ${RM} -f ex7_3.tmp
@@ -94,4 +94,4 @@ TESTEXAMPLES_C_X11_MPIUNI =
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex3.PETSc ex3.rm ex4.PETSc ex4.rm \
                             ex5.PETSc ex5.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

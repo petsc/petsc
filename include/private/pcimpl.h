@@ -1,6 +1,6 @@
 
-#ifndef _PCIMPL
-#define _PCIMPL
+#ifndef _PCIMPL_H
+#define _PCIMPL_H
 
 #include "petscksp.h"
 #include "petscpc.h"
@@ -30,16 +30,18 @@ struct _PCOps {
 struct _p_PC {
   PETSCHEADER(struct _PCOps);
   PetscInt       setupcalled;
+  PetscInt       setfromoptionscalled;
   MatStructure   flag;
   Mat            mat,pmat;
   Vec            diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */
   PetscTruth     diagonalscale;
+  PetscTruth     nonzero_guess; /* used by PCKSP, PCREDUNDANT and PCOPENMP */
   PetscErrorCode (*modifysubmatrices)(PC,PetscInt,const IS[],const IS[],Mat[],void*); /* user provided routine */
   void           *modifysubmatricesP; /* context for user routine */
   void           *data;
 };
 
 extern PetscEvent  PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
-extern PetscEvent  PC_ApplySymmetricRight, PC_ModifySubMatrices;
+extern PetscEvent  PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks;
 
 #endif

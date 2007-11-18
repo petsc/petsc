@@ -5,7 +5,7 @@
   used for finite difference computations of Jacobians using coloring.
 */
 
-#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
 
 /* Logging support */
 PetscCookie PETSCMAT_DLLEXPORT MAT_FDCOLORING_COOKIE = 0;
@@ -104,7 +104,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(c->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)c)->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
   PetscCheckSameComm(c,1,viewer,2);
 
@@ -330,7 +332,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring matfd,P
            of relative error in the function)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 .  -mat_fd_coloring_freq <freq> - Sets frequency of computing a new Jacobian
-.  -mat_fd_type - "wp" or "ds" (see MATSNESMF_WP or MATSNESMF_DS)
+.  -mat_fd_type - "wp" or "ds" (see MATMFFD_WP or MATMFFD_DS)
 .  -mat_fd_coloring_view - Activates basic viewing
 .  -mat_fd_coloring_view_info - Activates viewing info
 -  -mat_fd_coloring_view_draw - Activates drawing
@@ -351,7 +353,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matf
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
 
-  ierr = PetscOptionsBegin(matfd->comm,matfd->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)matfd)->comm,((PetscObject)matfd)->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_fd_coloring_freq","How often Jacobian is recomputed","MatFDColoringSetFrequency",matfd->freq,&matfd->freq,0);CHKERRQ(ierr);
@@ -375,22 +377,24 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
+  ierr = PetscViewerASCIIGetStdout(((PetscObject)fd)->comm,&viewer);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatFDColoringView(fd,PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(fd->comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-    ierr = MatFDColoringView(fd,PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatFDColoringView(fd,PETSC_VIEWER_DRAW_(fd->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(fd->comm));CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,PETSC_VIEWER_DRAW_(((PetscObject)fd)->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(((PetscObject)fd)->comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -481,7 +485,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringDestroy(MatFDColoring c)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (--c->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)c)->refct > 0) PetscFunctionReturn(0);
 
   for (i=0; i<c->ncolors; i++) {
     ierr = PetscFree(c->columns[i]);CHKERRQ(ierr);
@@ -558,7 +562,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDColoring
 
     Options Database Keys:
 +    -mat_fd_coloring_freq <freq> - Sets coloring frequency
-.    -mat_fd_type - "wp" or "ds"  (see MATSNESMF_WP or MATSNESMF_DS)
+.    -mat_fd_type - "wp" or "ds"  (see MATMFFD_WP or MATMFFD_DS)
 .    -mat_fd_coloring_view - Activates basic viewing or coloring
 .    -mat_fd_coloring_view_draw - Activates drawing of coloring
 -    -mat_fd_coloring_view_info - Activates viewing of coloring info
@@ -656,7 +660,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   if (ctype == IS_COLORING_GHOSTED){
     col_start = 0; col_end = N;
-  } else if (ctype == IS_COLORING_LOCAL){
+  } else if (ctype == IS_COLORING_GLOBAL){
     xx = xx - start;
     vscale_array = vscale_array - start;
     col_start = start; col_end = N + start;
@@ -679,9 +683,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     dx               *= epsilon;
     vscale_array[col] = 1.0/dx;
   } 
-  if (ctype == IS_COLORING_LOCAL)  vscale_array = vscale_array + start;      
+  if (ctype == IS_COLORING_GLOBAL)  vscale_array = vscale_array + start;      
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  if (ctype == IS_COLORING_LOCAL){
+  if (ctype == IS_COLORING_GLOBAL){
     ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
@@ -700,7 +704,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     coloring->currentcolor = k;
     ierr = VecCopy(x1_tmp,w3);CHKERRQ(ierr);
     ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
-    if (ctype == IS_COLORING_LOCAL) w3_array = w3_array - start;
+    if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array - start;
     /*
       Loop over each column associated with color 
       adding the perturbation to the vector w3.
@@ -724,7 +728,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
       if (!PetscAbsScalar(dx)) SETERRQ(PETSC_ERR_PLIB,"Computed 0 differencing parameter");
       w3_array[col] += dx;
     } 
-    if (ctype == IS_COLORING_LOCAL) w3_array = w3_array + start;
+    if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array + start;
     ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
 
     /*
@@ -749,7 +753,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   } /* endof for each color */
-  if (ctype == IS_COLORING_LOCAL) xx = xx + start; 
+  if (ctype == IS_COLORING_GLOBAL) xx = xx + start; 
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x1_tmp,&xx);CHKERRQ(ierr);
    

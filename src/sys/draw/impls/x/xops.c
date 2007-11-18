@@ -226,20 +226,20 @@ static PetscErrorCode PetscDrawSynchronizedFlush_X(PetscDraw draw)
   PetscFunctionBegin;
   XFlush(XiWin->disp);
   if (XiWin->drw) {
-    ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
     /* make sure data has actually arrived at server */
     XSync(XiWin->disp,False);
-    ierr = MPI_Barrier(draw->comm);CHKERRQ(ierr);
+    ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
     if (!rank) {
       XCopyArea(XiWin->disp,XiWin->drw,XiWin->win,XiWin->gc.set,0,0,XiWin->w,XiWin->h,0,0);
       XFlush(XiWin->disp);
     }
     XSync(XiWin->disp,False);
-    ierr = MPI_Barrier(draw->comm);CHKERRQ(ierr);
+    ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Barrier(draw->comm);CHKERRQ(ierr);
+    ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
     XSync(XiWin->disp,False);
-    ierr = MPI_Barrier(draw->comm);CHKERRQ(ierr);
+    ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -284,15 +284,15 @@ static PetscErrorCode PetscDrawSynchronizedClear_X(PetscDraw draw)
   PetscDraw_X*   XiWin = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
-  ierr = MPI_Barrier(draw->comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscDrawClear_X(draw);CHKERRQ(ierr);
   }
   XFlush(XiWin->disp);
-  ierr = MPI_Barrier(draw->comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
   XSync(XiWin->disp,False);
-  ierr = MPI_Barrier(draw->comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(((PetscObject)draw)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -307,13 +307,13 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_X(PetscDraw draw)
   PetscFunctionBegin;
   if (win->drw) PetscFunctionReturn(0);
 
-  ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     win->drw = XCreatePixmap(win->disp,win->win,win->w,win->h,win->depth);
   }
   /* try to make sure it is actually done before passing info to all */
   XSync(win->disp,False);
-  ierr = MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,draw->comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -390,12 +390,12 @@ static PetscErrorCode PetscDrawPause_X(PetscDraw draw)
   else if (draw->pause < 0) {
     PetscDrawButton button;
     PetscMPIInt     rank;
-    ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
     if (!rank) {
       ierr = PetscDrawGetMouseButton(draw,&button,0,0,0,0);CHKERRQ(ierr);
       if (button == BUTTON_CENTER) draw->pause = 0;
     }
-    ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,draw->comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&draw->pause,1,MPI_INT,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -408,7 +408,7 @@ static PetscErrorCode PetscDrawGetPopup_X(PetscDraw draw,PetscDraw *popup)
   PetscDraw_X*   win = (PetscDraw_X*)draw->data;
 
   PetscFunctionBegin;
-  ierr = PetscDrawOpenX(draw->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,150,220,popup);CHKERRQ(ierr);
+  ierr = PetscDrawOpenX(((PetscObject)draw)->comm,PETSC_NULL,PETSC_NULL,win->x,win->y+win->h+36,150,220,popup);CHKERRQ(ierr);
   draw->popup = *popup;
   PetscFunctionReturn(0);
 }
@@ -462,12 +462,12 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
   XRectangle     box;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     XSync(win->disp,False);
     XGetGeometry(win->disp,win->win,&root,&x,&y,geo,geo+1,&border,&depth);
   }
-  ierr = MPI_Bcast(geo,2,MPI_INT,0,draw->comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(geo,2,MPI_INT,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
   w = geo[0]; 
   h = geo[1];
   if (w == (unsigned int) win->w && h == (unsigned int) win->h) PetscFunctionReturn(0);
@@ -489,7 +489,7 @@ static PetscErrorCode PetscDrawCheckResizedWindow_X(PetscDraw draw)
 
   /* try to make sure it is actually done before passing info to all */
   XSync(win->disp,False);
-  ierr = MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,draw->comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&win->drw,1,MPI_UNSIGNED_LONG,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -729,17 +729,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate_X(PetscDraw draw)
 
   /* actually create and open the window */
   ierr = PetscNew(PetscDraw_X,&Xwin);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_X)+sizeof(struct _p_PetscDraw));CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_X));CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
 
   if (!rank) {
     if (x < 0 || y < 0)   SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative corner of window");
     if (w <= 0 || h <= 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative window width or height");
     ierr = XiQuickWindow(Xwin,draw->display,draw->title,x,y,w,h);CHKERRQ(ierr);
-    ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,draw->comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&Xwin->win,1,MPI_UNSIGNED_LONG,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
   } else {
     unsigned long win = 0;
-    ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,draw->comm);CHKERRQ(ierr);
+    ierr = MPI_Bcast(&win,1,MPI_UNSIGNED_LONG,0,((PetscObject)draw)->comm);CHKERRQ(ierr);
     ierr = XiQuickWindowFromWindow(Xwin,draw->display,win);CHKERRQ(ierr);
   }
 

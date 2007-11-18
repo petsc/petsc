@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = damg.c damgsnes.c pcdmmg.c
+SOURCEC  = damg.c damgsnes.c pcdmmg.c meshmgsnes.c
 SOURCEF  =
 SOURCEH  = ../../../include/petscdmmg.h
-OBJSC    = damg.o damgsnes.o pcdmmg.o
+OBJSC    = damg.o damgsnes.o pcdmmg.o meshmgsnes.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = DA
@@ -14,6 +14,6 @@ DIRS     = adutils
 EDIRS    = 
 LOCDIR   = src/snes/utils/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 

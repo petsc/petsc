@@ -65,7 +65,9 @@ PETSc</strong></a></li>
 
             <li><strong><a href="installation.html">Installation</a></strong></li>
 
-            <li><strong><a href="changes/index.html">Changes</a></strong></li>
+            <li><strong><a href="zope.html">Zope</a> </strong></li>
+
+	    <li><strong><a href="changes/index.html">Changes</a></strong></li>
 
             <li><strong><font color="#ff0000">Troubleshooting</font></strong></li>
 
@@ -225,20 +227,20 @@ PETSC_ARCH=sun4 example4 </font></p>
   <font face="Terminal"> <li><font face="Terminal"><strong>Symptom:
 alder&gt; make</strong>&nbsp;</font>
     <p><font face="Terminal"> makefile:12:
-/bmake/common/base: No such file or directory<br>
+/conf/base: No such file or directory<br>
 
-makefile:13: /bmake/common/test: No such file or directory<br>
+makefile:13: /conf/test: No such file or directory<br>
 
-make: *** No rule to make target `/bmake/common/test'.&nbsp; Stop.</font>
+make: *** No rule to make target `/conf/test'.&nbsp; Stop.</font>
     </p>
 
 or makefile:12:
-home/joe/bmake/common/base: No such file or directory<br>
+home/joe/conf/base: No such file or directory<br>
 
-makefile:13: home/joe/bmake/common/test: No such file or directory<br>
+makefile:13: home/joe/conf/test: No such file or directory<br>
 
 make: *** No rule to make target
-`home/joe/bmake/common/test'.&nbsp; Stop.<br>
+`home/joe/conf/test'.&nbsp; Stop.<br>
 
     <p><font color="#ff0000"><strong>Problem: </strong></font>The
 variable&nbsp; PETSC_DIR is not set or does not point to the PETSc
@@ -336,7 +338,7 @@ the nodes are IDENTICAL to those on the compiler server. </p>
     </font>using
 Fortran While using VecGetArray(), MatGetArray(), ISGetArray() <br>
 
-/usr/local/mpi/bin/mpirun.ch_p4: 17545 Breakpoint then program stops
+/usr/local/mpi/bin/mpiexec.ch_p4: 17545 Breakpoint then program stops
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 You
 have compiled some of your code with the option to check for
@@ -352,7 +354,7 @@ bounds; this is done safely. -</p>
   <li><font color="#ff0000"><strong>Symptom:</strong>
     </font>You
 create Draw windows or ViewerDraw windows or use options
--ksp_xmonitor or -snes_xmonitor and the program seems to run OK
+-ksp_monitor or_draw -snes_monitor_draw and the program seems to run OK
 but windows never open.
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 The
@@ -429,9 +431,9 @@ please let use know so we can add it to PETSc. </p>
 rs6000 machines, the program encounters a segmentation fault
 when initializing MPI. <br>
 
-[light] mpirun ex1 <br>
+[light] mpiexec ex1 <br>
 
-/light_home2/lmcinnes/mpich/lib/rs6000/ch_p4/mpirun: 23817 Memory fault
+/light_home2/lmcinnes/mpich/lib/rs6000/ch_p4/mpiexec: 23817 Memory fault
     <br>
 
 See, e.g., the following debugger session:<br>
@@ -713,7 +715,7 @@ while running program<br>
 
     <br>
 
-&gt; mpirun ex1<br>
+&gt; mpiexec ex1<br>
 
 p0_27137: p4_error: semget failed for setnum=%d: 0<br>
 
@@ -722,7 +724,7 @@ p0_27137: p4_error: semget failed for setnum=%d: 0<br>
     <strong><font color="#ff0000">Problem:</font></strong>
 Inproperly installed or configured MPICH. Often this results
 from compiling the socket based version of MPICH, with device ch_p4 but
-using the mpirun associated with the shared memory version or
+using the mpiexec associated with the shared memory version or
 the other way around.<br>
 
     <br>
@@ -731,7 +733,7 @@ the other way around.<br>
     </font>First,
 make sure that you can run plain old MPI programs (those
 without PETSC). Make sure you are using the correct version of
-mpirun for the installed version of MPICH or reinstall MPICH<br>
+mpiexec for the installed version of MPICH or reinstall MPICH<br>
 
 .<br>
 
@@ -917,11 +919,18 @@ be at MPI_DIR/bin/mpdboot].<br>
 
   </li>
 
-  <li><font color="#ff0000"><strong>Symptom: </strong></font>
-    <p><font color="#ff0000"><strong>Problem: </strong></font>
+  <li><font color="#ff0000"><strong>Symptom: </strong></font>On Windows, <font face="Terminal"><b>make test</b></font> fails to
+      launch programs with the error "<font face="Terminal">Logon failure: unknown user name or bad password</font>"
+    <p><font color="#ff0000"><strong>Problem: </strong></font>You have not 
     </p>
 
-    <p><font color="#ff0000"><strong>Cure: </strong></font>
+    <p><font color="#ff0000"><strong>Cure: </strong></font>You must have the same account credentials on all the nodes
+        participating in the mpich job.  If your cluster is set up with a domain controller then you can use a domain
+        account to launch an mpich job.  If you do not have a domain controller then you must set up user accounts on
+        all the nodes individually with the same credentials on each node.  Each user can have whatever password they
+        choose, but they must use the same password on all the nodes.  In other words, UserA-PasswordA must be the same
+        on all the nodes and UserB-PasswordB must be the same on all the nodes, etc. In addition, you must pus the
+        username/password in the registry or make it available in the environment.
     </p>
 
   </li>

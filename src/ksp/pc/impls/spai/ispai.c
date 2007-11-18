@@ -25,6 +25,7 @@
     These are the SPAI include files
 */
 EXTERN_C_BEGIN
+#define MPI /* required for setting SPAI_Comm correctly in basics.h */
 #include "spai.h"
 #include "matrix.h"
 EXTERN_C_END
@@ -104,7 +105,7 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
 		   ispai->cache_size,
 	       ispai->verbose); CHKERRQ(ierr);
 
-  ierr = ConvertMatrixToMat(pc->comm,ispai->M,&ispai->PM);CHKERRQ(ierr);
+  ierr = ConvertMatrixToMat(((PetscObject)pc)->comm,ispai->M,&ispai->PM);CHKERRQ(ierr);
 
   /* free the SPAI matrices */
   sp_free_matrix(ispai->B);
@@ -631,7 +632,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr               = PetscNew(PC_SPAI,&ispai);CHKERRQ(ierr);
+  ierr               = PetscNewLog(pc,PC_SPAI,&ispai);CHKERRQ(ierr);
   pc->data           = (void*)ispai;
 
   pc->ops->destroy         = PCDestroy_SPAI;
@@ -641,7 +642,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC pc)
   pc->ops->view            = PCView_SPAI;
   pc->ops->setfromoptions  = PCSetFromOptions_SPAI;
 
-  pc->name          = 0;
   ispai->epsilon    = .4;  
   ispai->nbsteps    = 5;        
   ispai->max        = 5000;            
@@ -651,7 +651,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC pc)
   ispai->verbose    = 0;     
 
   ispai->sp         = 1;     
-  ierr = MPI_Comm_dup(pc->comm,&(ispai->comm_spai));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)pc)->comm,&(ispai->comm_spai));CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetEpsilon_C",
                     "PCSPAISetEpsilon_SPAI",
@@ -714,7 +714,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
   */
 
-  M = new_matrix((void*)comm);
+  M = new_matrix((SPAI_Comm)comm);
 							      
   M->n = n;
   M->bs = 1;

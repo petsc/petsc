@@ -4,7 +4,7 @@
   between Fortran and C.
 */
 
-#include "zpetsc.h" 
+#include "private/zpetsc.h" 
 #include "petscsys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
@@ -83,10 +83,12 @@ void PETSC_STDCALL petscoptionsgetint_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name 
                     PetscInt *ivalue,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
+  PetscTruth flag;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetInt(c1,c2,ivalue,flg);
+  *ierr = PetscOptionsGetInt(c1,c2,ivalue,&flag);
+  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -95,10 +97,12 @@ void PETSC_STDCALL petscoptionsgettruth_(CHAR pre PETSC_MIXED_LEN(len1),CHAR nam
                     PetscTruth *ivalue,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
+  PetscTruth flag;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetTruth(c1,c2,ivalue,flg);
+  *ierr = PetscOptionsGetTruth(c1,c2,ivalue,&flag);
+  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -107,10 +111,12 @@ void PETSC_STDCALL petscoptionsgetreal_(CHAR pre PETSC_MIXED_LEN(len1),CHAR name
                     PetscReal *dvalue,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
+  PetscTruth flag;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetReal(c1,c2,dvalue,flg);
+  *ierr = PetscOptionsGetReal(c1,c2,dvalue,&flag);
+  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -119,10 +125,12 @@ void PETSC_STDCALL petscoptionsgetrealarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR
                 PetscReal *dvalue,PetscInt *nmax,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
+  PetscTruth flag;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetRealArray(c1,c2,dvalue,nmax,flg);
+  *ierr = PetscOptionsGetRealArray(c1,c2,dvalue,nmax,&flag);
+  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -131,10 +139,12 @@ void PETSC_STDCALL petscoptionsgetintarray_(CHAR pre PETSC_MIXED_LEN(len1),CHAR 
                    PetscInt *dvalue,PetscInt *nmax,PetscTruth *flg,PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2))
 {
   char *c1,*c2;
+  PetscTruth flag;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-  *ierr = PetscOptionsGetIntArray(c1,c2,dvalue,nmax,flg);
+  *ierr = PetscOptionsGetIntArray(c1,c2,dvalue,nmax,&flag);
+  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
 }
@@ -144,7 +154,8 @@ void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR na
                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len))
 {
   char *c1,*c2,*c3;
-  int  len3;
+  size_t len3;
+  PetscTruth flag;
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
@@ -156,16 +167,17 @@ void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR na
     len3 = len - 1;
 #endif
 
-  *ierr = PetscOptionsGetString(c1,c2,c3,len3,flg);
+  *ierr = PetscOptionsGetString(c1,c2,c3,len3,&flag);
+  if (!FORTRANNULLTRUTH(flg)) *flg = flag;
   FREECHAR(pre,c1);
   FREECHAR(name,c2);
-  FIXRETURNCHAR(string,len);
+  FIXRETURNCHAR(flag,string,len);
 }
 
 void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),PetscErrorCode *ierr PETSC_END_LEN(len_in))
 {
   char *tmp;
-  int  len;
+  size_t len;
 #if defined(PETSC_USES_CPTOFCD)
   tmp = _fcdtocp(name);
   len = _fcdlen(name) - 1;
@@ -174,7 +186,7 @@ void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),PetscE
   len = len_in - 1;
 #endif
   *ierr = PetscGetProgramName(tmp,len);
-  FIXRETURNCHAR(name,len_in);
+  FIXRETURNCHAR(PETSC_TRUE,name,len_in);
 }
 
 EXTERN_C_END

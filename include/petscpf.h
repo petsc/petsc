@@ -7,10 +7,10 @@
 PETSC_EXTERN_CXX_BEGIN
 
 /*
-    PPetscFList contains the list of preconditioners currently registered
+    PFList contains the list of preconditioners currently registered
    These are added with the PFRegisterDynamic() macro
 */
-extern PetscFList PPetscFList;
+extern PetscFList PFList;
 
 /*E
     PFType - Type of PETSc mathematical function, a string name
@@ -19,7 +19,7 @@ extern PetscFList PPetscFList;
 
 .seealso: PFSetType(), PF
 E*/
-#define PFType char*
+#define PFType const char*
 #define PFCONSTANT      "constant"
 #define PFMAT           "mat"
 #define PFSTRING        "string"
@@ -41,13 +41,14 @@ typedef struct _p_PF* PF;
 extern PetscCookie PF_COOKIE;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate(MPI_Comm,PetscInt,PetscInt,PF*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF,const PFType,void*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF,PFType,void*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF,PetscErrorCode(*)(void*,PetscInt,PetscScalar*,PetscScalar*),PetscErrorCode(*)(void*,Vec,Vec),PetscErrorCode(*)(void*,PetscViewer),PetscErrorCode(*)(void*),void*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF,PetscInt,PetscScalar*,PetscScalar*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF,Vec,Vec);
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT        PFRegisterDestroy(void);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT        PFRegisterAll(const char[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFRegisterDestroy(void);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFRegisterAll(const char[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFInitializePackage(const char[]);
 extern PetscTruth PFRegisterAllCalled;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char[],const char[],const char[],PetscErrorCode (*)(PF,void*));

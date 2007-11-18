@@ -33,26 +33,26 @@ S*/
 typedef struct _n_PetscBag*     PetscBag;
 typedef struct _n_PetscBagItem* PetscBagItem;
 
-extern PetscErrorCode PetscBagCreate(MPI_Comm,size_t,PetscBag*);
-extern PetscErrorCode PetscBagDestroy(PetscBag);
-extern PetscErrorCode PetscBagGetData(PetscBag,void **);
-extern PetscErrorCode PetscBagRegisterReal(PetscBag,void*,PetscReal, const char*, const char*);
-extern PetscErrorCode PetscBagRegisterString(PetscBag,void*,PetscInt,const char*, const char*, const char*);
-extern PetscErrorCode PetscBagRegisterScalar(PetscBag,void*,PetscScalar,const  char*,const  char*);
-extern PetscErrorCode PetscBagRegisterInt(PetscBag,void*,PetscInt,const  char*,const  char*);
-extern PetscErrorCode PetscBagRegisterEnum(PetscBag,void*,const  char*[],PetscEnum,const char*,const  char*);
-extern PetscErrorCode PetscBagRegisterTruth(PetscBag,void*,PetscTruth,const  char*,const  char*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagCreate(MPI_Comm,size_t,PetscBag*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagDestroy(PetscBag);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagGetData(PetscBag,void **);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagRegisterReal(PetscBag,void*,PetscReal, const char*, const char*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagRegisterString(PetscBag,void*,PetscInt,const char*, const char*, const char*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagRegisterScalar(PetscBag,void*,PetscScalar,const  char*,const  char*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagRegisterInt(PetscBag,void*,PetscInt,const  char*,const  char*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagRegisterEnum(PetscBag,void*,const  char*[],PetscEnum,const char*,const  char*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagRegisterTruth(PetscBag,void*,PetscTruth,const  char*,const  char*);
 
-extern PetscErrorCode PetscBagSetFromOptions(PetscBag);
-extern PetscErrorCode PetscBagGetName(PetscBag, char **name);
-extern PetscErrorCode PetscBagSetName(PetscBag, const char *, const char *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagGetName(PetscBag, char **name);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagSetName(PetscBag, const char *, const char *);
 
-extern PetscErrorCode PetscBagView(PetscBag,PetscViewer);
-extern PetscErrorCode PetscBagLoad(PetscViewer,PetscBag*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag,PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer,PetscBag*);
 
-extern PetscErrorCode PetscBagSetViewer(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
-extern PetscErrorCode PetscBagSetLoader(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
-extern PetscErrorCode PetscBagSetDestroy(PetscBag,PetscErrorCode (*)(PetscBag));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagSetViewer(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagSetLoader(PetscBag,PetscErrorCode (*)(PetscBag,PetscViewer));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagSetDestroy(PetscBag,PetscErrorCode (*)(PetscBag));
 
 PETSC_EXTERN_CXX_END
 #endif

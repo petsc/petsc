@@ -1,8 +1,9 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"       /*I "petscmat.h"  I*/
+#include "include/private/matimpl.h"       /*I "petscmat.h"  I*/
 #include "petscsys.h"
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "MatPublish_Base"
 static PetscErrorCode MatPublish_Base(PetscObject obj)
@@ -10,7 +11,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate"
@@ -56,7 +57,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 
 .keywords: matrix, create
 
-.seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
+.seealso: MatCreateSeqAIJ(), MatCreateMPIAIJ(), 
           MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIDense(), 
           MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
@@ -77,14 +78,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
 #endif
 
   ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
-  B->rmap.n             = -1;
-  B->rmap.N             = -1;
-  B->cmap.n             = -1;
-  B->cmap.N             = -1;
-  B->rmap.bs            = 1;
-  B->cmap.bs            = 1;
+  ierr = PetscMapInitialize(comm,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,&B->cmap);CHKERRQ(ierr);
   B->preallocated  = PETSC_FALSE;
-  B->bops->publish = MatPublish_Base;
   *A               = B;
   PetscFunctionReturn(0);
 }
@@ -189,11 +185,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetString(B->prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)B)->prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetType(B,mtype);CHKERRQ(ierr);
   }
-  if (!B->type_name) {
+  if (!((PetscObject)B)->type_name) {
     ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -201,7 +197,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation"
-/*@C
+/*@
    MatSetUpPreallocation
 
    Collective on Mat
@@ -248,16 +244,16 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   void           *spptr;
 
   PetscFunctionBegin;
+  /* save the parts of A we need */
+  Abops = ((PetscObject)A)->bops;
+  Aops  = A->ops;
+  refct = ((PetscObject)A)->refct;
+  mtype = ((PetscObject)A)->type_name; ((PetscObject)A)->type_name = 0;
+  mname = ((PetscObject)A)->name; ((PetscObject)A)->name = 0;
+  spptr = A->spptr;
+
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-
-  /* save the parts of A we need */
-  Abops = A->bops;
-  Aops  = A->ops;
-  refct = A->refct;
-  mtype = A->type_name;
-  mname = A->name;
-  spptr = A->spptr;
 
   ierr = PetscFree(C->spptr);CHKERRQ(ierr);
 
@@ -268,12 +264,12 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   /* return the parts of A we saved */
-  A->bops      = Abops;
-  A->ops       = Aops;
-  A->qlist     = 0;
-  A->refct     = refct;
-  A->type_name = mtype;
-  A->name      = mname;
+  ((PetscObject)A)->bops      = Abops;
+  A->ops                      = Aops;
+  ((PetscObject)A)->qlist     = 0;
+  ((PetscObject)A)->refct     = refct;
+  ((PetscObject)A)->type_name = mtype;
+  ((PetscObject)A)->name      = mname;
   A->spptr     = spptr;
 
   ierr = PetscHeaderDestroy(C);CHKERRQ(ierr);
@@ -293,6 +289,7 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
+  ierr = PetscFree(A->ops);CHKERRQ(ierr);
   ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
   ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);

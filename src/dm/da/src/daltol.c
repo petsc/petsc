@@ -107,7 +107,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalBegin(DA da,Vec g,InsertMode mode
   if (!da->ltol) {
     ierr = DALocalToLocalCreate(da);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(g,l,mode,SCATTER_FORWARD,da->ltol);CHKERRQ(ierr);
+  ierr = VecScatterBegin(da->ltol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -149,7 +149,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DALocalToLocalEnd(DA da,Vec g,InsertMode mode,V
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidHeaderSpecific(g,VEC_COOKIE,2);
   PetscValidHeaderSpecific(g,VEC_COOKIE,4);
-  ierr = VecScatterEnd(g,l,mode,SCATTER_FORWARD,da->ltol);CHKERRQ(ierr);
+  ierr = VecScatterEnd(da->ltol,g,l,mode,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

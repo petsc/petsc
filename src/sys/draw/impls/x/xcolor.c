@@ -74,11 +74,11 @@ static PixVal    gCmapping[256];
 #define __FUNCT__ "PetscDrawSetUpColormap_Shared" 
 PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual *visual,Colormap colormap)
 {
-  XColor        colordef,ecolordef;
+  XColor         colordef,ecolordef;
   unsigned char *red,*green,*blue;
-  int           i,ncolors;
+  int            i,ncolors;
   PetscErrorCode ierr;
-  PetscTruth    fast;
+  PetscTruth     fast;
 
   PetscFunctionBegin;
   if (colormap) {

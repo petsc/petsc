@@ -3,7 +3,7 @@
 /*
        Code for Timestepping with explicit Euler.
 */
-#include "src/ts/tsimpl.h"                /*I   "petscts.h"   I*/
+#include "include/private/tsimpl.h"                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec update;     /* work vector where F(t[i],u[i]) is stored */
@@ -104,7 +104,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Euler(TS ts)
   ts->ops->setfromoptions  = TSSetFromOptions_Euler;
   ts->ops->view            = TSView_Euler;
 
-  ierr = PetscNew(TS_Euler,&euler);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,TS_Euler,&euler);CHKERRQ(ierr);
   ts->data = (void*)euler;
 
   PetscFunctionReturn(0);

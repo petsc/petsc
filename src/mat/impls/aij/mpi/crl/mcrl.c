@@ -42,6 +42,7 @@ PetscErrorCode MatDestroy_MPICRL(Mat A)
   }
   ierr = PetscFree(crl->array);CHKERRQ(ierr);
   ierr = PetscFree(crl);CHKERRQ(ierr);
+  A->spptr = 0;
 
   /* Change the type of A back to MPIAIJ and use MatDestroy_MPIAIJ() 
    * to destroy everything that remains. */
@@ -95,7 +96,7 @@ PetscErrorCode MPICRL_create_crl(Mat A)
 
   ierr = PetscMalloc((a->B->cmap.n+nd)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   /* xwork array is actually B->n+nd long, but we define xwork this length so can copy into it */
-  ierr = VecCreateMPIWithArray(A->comm,nd,PETSC_DECIDE,array,&crl->xwork);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,nd,PETSC_DECIDE,array,&crl->xwork);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->cmap.n,array+nd,&crl->fwork);CHKERRQ(ierr);
   crl->array = array;
   crl->xscat = a->Mvctx;
@@ -152,7 +153,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat A,MatType type,Ma
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_CRL,&crl);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_CRL,&crl);CHKERRQ(ierr);
   B->spptr = (void *) crl;
 
   crl->AssemblyEnd  = A->ops->assemblyend;

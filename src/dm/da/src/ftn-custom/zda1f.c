@@ -1,5 +1,5 @@
 
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscda.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -16,6 +16,5 @@ void PETSC_STDCALL dacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,PetscInt *M,P
   CHKFORTRANNULLINTEGER(lc);
   *ierr = DACreate1d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*M,*w,*s,lc,inra);
 }
-
-
 EXTERN_C_END
+

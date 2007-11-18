@@ -29,7 +29,7 @@ class Configure(config.base.Configure):
     help.addArgument('Jostle', '-with-jostle=<bool>',                nargs.ArgBool(None, 0, 'Activate Jostle'))
     help.addArgument('Jostle', '-with-jostle-dir=<root dir>',        nargs.ArgDir(None, None, 'Specify the root directory of the Jostle installation'))
     help.addArgument('Jostle', '-with-jostle-include=<dir>',         nargs.ArgDir(None, None, 'The directory containing jostle_lib.h'))
-    help.addArgument('Jostle', '-with-jostle-lib=<lib>',             nargs.Arg(None, None, 'The Jostle library or list of libraries'))
+    help.addArgument('Jostle', '-with-jostle-lib=<libraries: e.g. [/Users/..../libjostle.a,...]>',nargs.ArgLibrary(None, None, 'The Jostle library or list of libraries'))
     help.addArgument('Jostle', '-download-jostle=<no,yes,ifneeded>', nargs.ArgFuzzyBool(None, 0, 'Automatically install Jostle'))
     return
 
@@ -101,10 +101,6 @@ class Configure(config.base.Configure):
 
   def getDir(self):
     '''Find the directory containing Jostle'''
-    packages = self.petscdir.externalPackagesDir 
-    if not os.path.isdir(packages):
-      os.mkdir(packages)
-      self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
     jostleDir = None
     for dir in os.listdir(packages):
       if dir.startswith('jostle') and os.path.isdir(os.path.join(packages, dir)):

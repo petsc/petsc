@@ -46,6 +46,8 @@ typedef struct {
 
 static PetscOptionsTable *options = 0;
 
+extern PetscOptionsObjectType PetscOptionsObject;
+
 /*
     Options events monitor
 */
@@ -176,6 +178,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char name[])
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsValidKey"
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsValidKey(const char in_str[],PetscTruth *key)
+{
+  PetscFunctionBegin;
+  *key = PETSC_FALSE;
+  if (!in_str) PetscFunctionReturn(0);
+  if (in_str[0] != '-') PetscFunctionReturn(0);
+  if ((in_str[1] < 'A') || (in_str[1] > 'z')) PetscFunctionReturn(0);
+  *key = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsInsertString"
 /*@C
      PetscOptionsInsertString - Inserts options into the database from a string
@@ -201,38 +216,31 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char name[])
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
 {
-  char           *str,*first,*second,*third,*final;
-  size_t         len;
+  char           *first,*second;
   PetscErrorCode ierr;
   PetscToken     *token;
+  PetscTruth     key;
 
   PetscFunctionBegin;
-  ierr = PetscStrallocpy(in_str, &str);CHKERRQ(ierr);
-  ierr = PetscTokenCreate(str,' ',&token);CHKERRQ(ierr);
+  ierr = PetscTokenCreate(in_str,' ',&token);CHKERRQ(ierr);
   ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
-  ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
-  if (first && first[0] == '-') {
-    if (second) {final = second;} else {final = first;}
-    ierr = PetscStrlen(final,&len);CHKERRQ(ierr);
-    while (len > 0 && (final[len-1] == ' ' || final[len-1] == 'n')) {
-      len--; final[len] = 0;
-    }
-    ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
-  } else if (first) {
-    PetscTruth match;
-    
-    ierr = PetscStrcasecmp(first,"alias",&match);CHKERRQ(ierr);
-    if (match) {
-      ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
-      if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options string:alias missing (%s)",second);
-      ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
-      if (third[len-1] == 'n') third[len-1] = 0;
-      ierr = PetscOptionsSetAlias(second,third);CHKERRQ(ierr);
+  while (first) {
+    ierr = PetscOptionsValidKey(first,&key);CHKERRQ(ierr);
+    if (key) {
+      ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
+      ierr = PetscOptionsValidKey(second,&key);CHKERRQ(ierr);
+      if (!key) {
+        ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
+        ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);        
+      } else {
+        ierr  = PetscOptionsSetValue(first,PETSC_NULL);CHKERRQ(ierr);
+        first = second;
+      }
+    } else {
+      ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);        
     }
   }
   ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
-  ierr = PetscFree(str);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -265,6 +273,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
   size_t         i,len,startIndex;
   FILE           *fd;
   PetscToken     *token;
+  int            err;
 
   PetscFunctionBegin;
   ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
@@ -311,7 +320,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
       }
       ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
     }
-    fclose(fd);
+    err = fclose(fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
   } else {
     SETERRQ1(PETSC_ERR_USER,"Unable to open Options File %s",fname);
   }
@@ -341,41 +351,46 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
 
    Concepts: options database^adding
 
-.seealso: PetscOptionsDestroy_Private(), PetscOptionsPrint()
+.seealso: PetscOptionsDestroy_Private(), PetscOptionsPrint(), PetscOptionsInsertString(), PetscOptionsInsertFile(),
+          PetscInitialize()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const char file[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   char           pfile[PETSC_MAX_PATH_LEN];
-  PetscToken     *token;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   options->argc     = (argc) ? *argc : 0;
-  options->args     = (args) ? *args : 0;
+  options->args     = (args) ? *args : PETSC_NULL;
 
   if (file) {
     ierr = PetscOptionsInsertFile(file);CHKERRQ(ierr);
-  } else {
+  }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-skip_petscrc",&flag);CHKERRQ(ierr);
+  if (!flag) {
     ierr = PetscGetHomeDirectory(pfile,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
     if (pfile[0]) {
-      PetscTruth flag;
       ierr = PetscStrcat(pfile,"/.petscrc");CHKERRQ(ierr);
       ierr = PetscTestFile(pfile,'r',&flag);CHKERRQ(ierr);
       if (flag) {
 	ierr = PetscOptionsInsertFile(pfile);CHKERRQ(ierr);
+	ierr = PetscInfo(0,"Loading ~/.petscrc\n");CHKERRQ(ierr);
       }
-    } else {
-      ierr = PetscInfo(0,"Unable to determine home directory; skipping loading ~/.petscrc\n");CHKERRQ(ierr);
     }
-
+    ierr = PetscTestFile(".petscrc",'r',&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = PetscOptionsInsertFile(".petscrc");CHKERRQ(ierr);
+      ierr = PetscInfo(0,"Loading local directory file .petscrc\n");CHKERRQ(ierr);
+    }
   }
 
   /* insert environmental options */
   {
-    char   *eoptions = 0,*second,*first;
+    char   *eoptions = 0;
     size_t len = 0;
     if (!rank) {
       eoptions = (char*)getenv("PETSC_OPTIONS");
@@ -389,21 +404,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
     }
     if (len) {
       ierr          = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-      eoptions[len] = 0;
-      ierr          =  PetscTokenCreate(eoptions,' ',&token);CHKERRQ(ierr);
-      ierr          =  PetscTokenFind(token,&first);CHKERRQ(ierr);
-      while (first) {
-        if (first[0] != '-') {ierr = PetscTokenFind(token,&first);CHKERRQ(ierr); continue;}
-        ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
-        if ((!second) || ((second[0] == '-') && (second[1] > '9'))) {
-          ierr = PetscOptionsSetValue(first,(char *)0);CHKERRQ(ierr);
-          first = second;
-        } else {
-          ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
-          ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
-        }
-      }
-      ierr =  PetscTokenDestroy(token);CHKERRQ(ierr);
+      if (rank) eoptions[len] = 0;
+      ierr = PetscOptionsInsertString(eoptions);CHKERRQ(ierr);
       if (rank) {ierr = PetscFree(eoptions);CHKERRQ(ierr);}
     }
   }
@@ -451,7 +453,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
       }
     }
   }
-  
   PetscFunctionReturn(0);
 }
 
@@ -481,7 +482,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrint(FILE *fd)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (!fd) fd = stdout;
+  if (!fd) fd = PETSC_STDOUT;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
   for (i=0; i<options->N; i++) {
     if (options->values[i]) {
@@ -639,6 +640,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
         options->values[i] = (char*)malloc((len+1)*sizeof(char));
         ierr = PetscStrcpy(options->values[i],value);CHKERRQ(ierr);
       } else { options->values[i] = 0;}
+      PetscOptionsMonitor(name,value);
       PetscFunctionReturn(0);
     } else if (gt) {
       n = i;
@@ -1379,8 +1381,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
 {
   char           *value;
   PetscErrorCode ierr;
-  PetscInt       n = 0;
-  PetscTruth     flag;
+  PetscInt       n = 0,i,start,end;
+  size_t         len;
+  PetscTruth     flag,foundrange;
   PetscToken     *token;
 
   PetscFunctionBegin;
@@ -1396,10 +1399,33 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
   ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
   while (n < *nmax) {
     if (!value) break;
-    ierr      = PetscOptionsAtoi(value,dvalue);CHKERRQ(ierr);
-    dvalue++;
+    
+    /* look for form  d-D where d and D are integers */
+    foundrange = PETSC_FALSE;
+    ierr      = PetscStrlen(value,&len);CHKERRQ(ierr); 
+    if (value[0] == '-') i=2;
+    else i=1;
+    for (;i<(int)len; i++) {
+      if (value[i] == '-') {
+        if (i == (int)len-1) SETERRQ2(PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
+        value[i] = 0;
+        ierr     = PetscOptionsAtoi(value,&start);CHKERRQ(ierr);        
+        ierr     = PetscOptionsAtoi(value+i+1,&end);CHKERRQ(ierr);        
+        if (end <= start) SETERRQ3(PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
+        if (n + end - start - 1 >= *nmax) SETERRQ4(PETSC_ERR_USER,"Error in %D-th array entry, not enough space in left in array (%D) to contain entire range from %D to %D",n,*nmax-n,start,end);
+        for (;start<end; start++) {
+          *dvalue = start; dvalue++;n++;
+        }
+        foundrange = PETSC_TRUE;
+        break;
+      }
+    }
+    if (!foundrange) {
+      ierr      = PetscOptionsAtoi(value,dvalue);CHKERRQ(ierr);
+      dvalue++;
+      n++;
+    }
     ierr      = PetscTokenFind(token,&value);CHKERRQ(ierr);
-    n++;
   }
   ierr      = PetscTokenDestroy(token);CHKERRQ(ierr);
   *nmax = n;
@@ -1612,6 +1638,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
   options->N         		= 0;
   options->Naliases  		= 0;
   options->numbermonitors 	= 0;
+
+  PetscOptionsObject.prefix = PETSC_NULL;
+  PetscOptionsObject.title  = PETSC_NULL;
   
   PetscFunctionReturn(0);
 }
@@ -1629,7 +1658,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
                 available for options set through a file, environment variable, or on 
                 the command line. Only options set after PetscInitialize completes will 
                 be monitored.
-.  -options_cancelmonitors - cancel all options database monitors    
+.  -options_monitor_cancel - cancel all options database monitors    
 
    Notes:
    To see all options, run your program with the -help option or consult
@@ -1639,7 +1668,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
 
 .keywords: set, options, database
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions()
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void)
 {
   PetscTruth          flg;
   PetscErrorCode      ierr;
@@ -1649,14 +1678,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions()
   PetscFunctionBegin;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options database options","PetscOptions");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg && (!options->numbermonitors)) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = PetscOptionsSetMonitor(PetscOptionsDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = PetscOptionsMonitorSet(PetscOptionsMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
   }
      
-  ierr = PetscOptionsName("-options_cancelmonitors","Cancel all options database monitors","PetscOptionsClearMonitor",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = PetscOptionsClearMonitor();CHKERRQ(ierr); }
+  ierr = PetscOptionsName("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = PetscOptionsMonitorCancel();CHKERRQ(ierr); }
   
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -1665,9 +1694,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions()
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsDefaultMonitor"
+#define __FUNCT__ "PetscOptionsMonitorDefault"
 /*@C
-   PetscOptionsDefaultMonitor - Print all options set value events.
+   PetscOptionsMonitorDefault - Print all options set value events.
 
    Collective on PETSC_COMM_WORLD
 
@@ -1680,23 +1709,25 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions()
 
 .keywords: PetscOptions, default, monitor
 
-.seealso: PetscOptionsSetMonitor()
+.seealso: PetscOptionsMonitorSet()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsDefaultMonitor(const char name[], const char value[], void *dummy)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorDefault(const char name[], const char value[], void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+  }
   ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsSetMonitor"
+#define __FUNCT__ "PetscOptionsMonitorSet"
 /*@C
-   PetscOptionsSetMonitor - Sets an ADDITIONAL function to be called at every method that
+   PetscOptionsMonitorSet - Sets an ADDITIONAL function to be called at every method that
    modified the PETSc options database.
       
    Not collective
@@ -1713,32 +1744,32 @@ $     monitor (const char name[], const char value[], void *mctx)
 
 +  name - option name string
 .  value - option value string
--  mctx  - optional monitoring context, as set by PetscOptionsSetMonitor()
+-  mctx  - optional monitoring context, as set by PetscOptionsMonitorSet()
 
    Options Database Keys:
-+    -options_monitor    - sets PetscOptionsDefaultMonitor()
--    -options_cancelmonitors - cancels all monitors that have
++    -options_monitor    - sets PetscOptionsMonitorDefault()
+-    -options_monitor_cancel - cancels all monitors that have
                           been hardwired into a code by 
-                          calls to PetscOptionsSetMonitor(), but
+                          calls to PetscOptionsMonitorSet(), but
                           does not cancel those set via
                           the options database.
 
    Notes:  
    The default is to do nothing.  To print the name and value of options 
-   being inserted into the database, use PetscOptionsDefaultMonitor() as the monitoring routine, 
+   being inserted into the database, use PetscOptionsMonitorDefault() as the monitoring routine, 
    with a null monitoring context. 
 
    Several different monitoring routines may be set by calling
-   PetscOptionsSetMonitor() multiple times; all will be called in the 
+   PetscOptionsMonitorSet() multiple times; all will be called in the 
    order in which they were set.
 
    Level: beginner
 
 .keywords: PetscOptions, set, monitor
 
-.seealso: PetscOptionsDefaultMonitor(), PetscOptionsClearMonitor()
+.seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorCancel()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetMonitor(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   if (options->numbermonitors >= MAXOPTIONSMONITORS) {
@@ -1751,24 +1782,24 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetMonitor(PetscErrorCode (*monitor)(
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsClearMonitor"
+#define __FUNCT__ "PetscOptionsMonitorCancel"
 /*@
-   PetscOptionsClearMonitor - Clears all monitors for a PetscOptions object.
+   PetscOptionsMonitorCancel - Clears all monitors for a PetscOptions object.
 
    Not collective 
 
    Options Database Key:
-.  -options_cancelmonitors - Cancels all monitors that have
-    been hardwired into a code by calls to PetscOptionsSetMonitor(), 
+.  -options_monitor_cancel - Cancels all monitors that have
+    been hardwired into a code by calls to PetscOptionsMonitorSet(), 
     but does not cancel those set via the options database.
 
    Level: intermediate
 
 .keywords: PetscOptions, set, monitor
 
-.seealso: PetscOptionsDefaultMonitor(), PetscOptionsSetMonitor()
+.seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorSet()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearMonitor()
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorCancel(void)
 {
   PetscErrorCode ierr;
   PetscInt       i;

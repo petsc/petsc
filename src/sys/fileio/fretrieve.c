@@ -62,7 +62,7 @@ EXTERN_C_END
   as the "/tmp" directory.
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetTmp(MPI_Comm comm,char *dir,size_t len)
+PetscErrorCode PETSC_DLLEXPORT PetscGetTmp(MPI_Comm comm,char dir[],size_t len)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
@@ -125,6 +125,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
   PetscTruth         flg,iflg;
   FILE               *fd;
   static PetscMPIInt Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
+  int                err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -176,14 +177,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
         if (!fd) {
           SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         }
-        fclose(fd);
+        err = fclose(fd);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
       }
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
       if (rank >= i) {
         fd = fopen(filename,"r");
         if (fd) cnt = 1; else cnt = 0;
         if (fd) {
-          fclose(fd);
+          err = fclose(fd);
+          if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
         }
       } else {
         cnt = 0;
@@ -253,6 +256,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,PetscTr
   PetscTruth         flg,iflg;
   FILE               *fd;
   static PetscMPIInt Petsc_WD_keyval = MPI_KEYVAL_INVALID;
+  int                err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -295,17 +299,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,PetscTr
     for (i=0; i<size-1; i++) {
       if (rank == i) {
         fd = fopen(filename,"w");
-        if (!fd) {
-          SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
-        }
-        fclose(fd);
+        if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
+        err = fclose(fd);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
       }
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
       if (rank >= i) {
         fd = fopen(filename,"r");
         if (fd) cnt = 1; else cnt = 0;
         if (fd) {
-          fclose(fd);
+          err = fclose(fd);
+          if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
         }
       } else {
         cnt = 0;
@@ -351,7 +355,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,PetscTr
     Level: developer
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char *libname,char *llibname,size_t llen,PetscTruth *found)
+PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char libname[],char llibname[],size_t llen,PetscTruth *found)
 {
   char              buf[1024],tmpdir[PETSC_MAX_PATH_LEN],urlget[PETSC_MAX_PATH_LEN],*par;
   const char        *pdir;
@@ -374,6 +378,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char *libna
   if (!flg1 && !flg2 && (!par || len != 3)) {
     ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
     ierr = PetscTestFile(libname,'r',found);CHKERRQ(ierr);
+    if (*found) {
+      ierr = PetscInfo1(PETSC_NULL,"Found file %s\n",libname);
+    } else {
+      ierr = PetscInfo1(PETSC_NULL,"Did not find file %s\n",libname);
+    }
     PetscFunctionReturn(0);
   }
 

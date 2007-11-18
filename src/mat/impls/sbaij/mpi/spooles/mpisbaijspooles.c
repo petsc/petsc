@@ -58,7 +58,7 @@ PetscErrorCode MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npo
   PetscFunctionBegin;
   FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos);
   sbuf[0] = neg; sbuf[1] = zero; sbuf[2] = pos;
-  ierr = MPI_Allreduce(sbuf,rbuf,3,MPI_INT,MPI_SUM,F->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(sbuf,rbuf,3,MPI_INT,MPI_SUM,((PetscObject)F)->comm);CHKERRQ(ierr);
   *nneg  = rbuf[0]; *nzero = rbuf[1]; *npos  = rbuf[2];
   PetscFunctionReturn(0);
 }
@@ -75,12 +75,12 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   PetscFunctionBegin;	
 
   /* Create the factorization matrix */  
-  ierr = MatCreate(A->comm,&B);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   
-  B->ops->choleskyfactornumeric = MatFactorNumeric_MPIAIJSpooles;
+  B->ops->choleskyfactornumeric = MatFactorNumeric_MPISpooles;
   B->ops->getinertia            = MatGetInertia_MPISBAIJSpooles;
   B->factor                     = FACTOR_CHOLESKY;  
 
@@ -90,7 +90,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   lu->options.useQR        = PETSC_FALSE;
   lu->options.symflag      = SPOOLES_SYMMETRIC;  /* default */
 
-  ierr = MPI_Comm_dup(A->comm,&(lu->comm_spooles));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
   *F = B;
   PetscFunctionReturn(0); 
 }
@@ -132,24 +132,26 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,MatT
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
+  ierr = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
-  B->spptr                       = (void*)lu;
-
-  lu->basetype                   = MATMPISBAIJ;
   lu->MatDuplicate               = A->ops->duplicate;
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
   lu->MatView                    = A->ops->view;
   lu->MatAssemblyEnd             = A->ops->assemblyend;
   lu->MatDestroy                 = A->ops->destroy;
+
+  lu->basetype                   = MATMPISBAIJ;
+  lu->CleanUpSpooles             = PETSC_FALSE;
  
+  B->spptr                       = (void*)lu;
   B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;
+  B->ops->view                   = MatView_Spooles;
   B->ops->assemblyend            = MatAssemblyEnd_MPISBAIJSpooles;
   B->ops->destroy                = MatDestroy_MPISBAIJSpooles;
 
@@ -181,11 +183,13 @@ EXTERN_C_END
   If Spooles is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes Spooles solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATMPISBAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATMPISBAIJSPOOLES), then 
+  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
+  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATMPISBAIJ.  As a result, MatMPISBAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATMPISBAIJ type without data copy.
+  This matrix inherits from MATMPISBAIJ.  As a result, MatMPISBAIJSetPreallocation() is 
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATMPISBAIJ type without data copy AFTER the matrix values have been set.
 
   Options Database Keys:
 + -mat_type mpisbaijspooles - sets the matrix type to mpisbaijspooles during a call to MatSetFromOptions()

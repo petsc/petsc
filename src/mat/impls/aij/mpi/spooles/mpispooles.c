@@ -47,8 +47,8 @@ PetscErrorCode MatDestroy_MPIAIJSpooles(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_MPIAIJSpooles"
-PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatSolve_MPISpooles"
+PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
 {
   Mat_Spooles   *lu = (Mat_Spooles*)A->spptr;
   PetscErrorCode ierr;
@@ -61,8 +61,8 @@ PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
 #endif
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)A)->comm,&rank);CHKERRQ(ierr);
   
   /* copy b into spooles' rhs mtxY */
   DenseMtx_init(lu->mtxY, lu->options.typeflag, 0, 0, m, 1, 1, m);    
@@ -81,20 +81,24 @@ PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
   ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);   
   
   if ( lu->options.msglvl > 2 ) {
+    int err;
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n 1 matrix in original ordering");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
   
   /* permute and redistribute Y if necessary */
   DenseMtx_permuteRows(lu->mtxY, lu->oldToNewIV);
   if ( lu->options.msglvl > 2 ) {
+    int err;
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n rhs matrix in new ordering");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile);
-   fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
-  MPI_Barrier(A->comm); /* for initializing firsttag, because the num. of tags used
+  MPI_Barrier(((PetscObject)A)->comm); /* for initializing firsttag, because the num. of tags used
                                    by FrontMtx_MPI_split() is unknown */
   lu->firsttag = 0;
   newY = DenseMtx_MPI_splitByRows(lu->mtxY, lu->vtxmapIV, lu->stats, lu->options.msglvl, 
@@ -103,9 +107,11 @@ PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
   lu->mtxY = newY ;
   lu->firsttag += size ;
   if ( lu->options.msglvl > 2 ) {
+    int err;
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n split DenseMtx Y");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   if ( FRONTMTX_IS_PIVOTING(lu->frontmtx) ) {
@@ -122,9 +128,11 @@ PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
     lu->firsttag += size;
   }
   if ( lu->options.msglvl > 2 ) {
+    int err;
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n rhs matrix after split");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   if ( lu->nmycol > 0 ) IVcopy(lu->nmycol,lu->rowindX,IV_entries(lu->ownedColumnsIV)); /* must do for each solve */
@@ -143,9 +151,11 @@ PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
   /* permute the solution into the original ordering */
   DenseMtx_permuteRows(lu->mtxX, lu->newToOldIV);
   if ( lu->options.msglvl > 2 ) {
+    int err;
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n solution in old ordering");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(lu->mtxX, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
   
   /* scatter local solution mtxX into mpi vector x */ 
@@ -168,14 +178,14 @@ PetscErrorCode MatSolve_MPIAIJSpooles(Mat A,Vec b,Vec x)
     }
     ierr = VecRestoreArray(lu->vec_spooles,&array);CHKERRQ(ierr);
 #endif 
-  ierr = VecScatterBegin(lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD,lu->scat);CHKERRQ(ierr);
-  ierr = VecScatterEnd(lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD,lu->scat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(lu->scat,lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(lu->scat,lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__   
-#define __FUNCT__ "MatFactorNumeric_MPIAIJSpooles"
-PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatFactorNumeric_MPISpooles"
+PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat_Spooles     *lu = (Mat_Spooles*)(*F)->spptr;
   PetscErrorCode  ierr;
@@ -197,14 +207,14 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
   Mat             F_diag;
   
   PetscFunctionBegin;	
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)A)->comm,&rank);CHKERRQ(ierr);
 
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */ 
     /* get input parameters */
     ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
 
-    (*F)->ops->solve   = MatSolve_MPIAIJSpooles;
+    (*F)->ops->solve   = MatSolve_MPISpooles;
     (*F)->ops->destroy = MatDestroy_MPIAIJSpooles;  
     (*F)->assembled    = PETSC_TRUE;
     if ((*F)->factor == FACTOR_LU){
@@ -307,10 +317,12 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
 #endif
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
   if ( lu->options.msglvl > 0 ) {
+    int err;
     printf("[%d] input matrix\n",rank);
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n [%d] input matrix\n",rank);CHKERRQ(ierr);
     InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
@@ -327,9 +339,11 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
     nedges = IVL_tsize(adjIVL);
     Graph_init2(graph, 0, M, 0, nedges, M, nedges, adjIVL, NULL, NULL);
     if ( lu->options.msglvl > 2 ) {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n graph of the input matrix");CHKERRQ(ierr);
+      int err;
+      err = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n graph of the input matrix");CHKERRQ(ierr);
       Graph_writeForHumanEye(graph, lu->options.msgFile);
       fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file"); 
     }
 
     switch (lu->options.ordering) {
@@ -351,24 +365,28 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
 
     Graph_free(graph);
     if ( lu->options.msglvl > 2 ) {
+      int err;
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n front tree from ordering");CHKERRQ(ierr);
       ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }
 
     opcounts = DVinit(size, 0.0);
     opcounts[rank] = ETree_nFactorOps(lu->frontETree, lu->options.typeflag, lu->options.symflag);
     MPI_Allgather((void*) &opcounts[rank], 1, MPI_DOUBLE,
-              (void*) opcounts, 1, MPI_DOUBLE, A->comm);
+              (void*) opcounts, 1, MPI_DOUBLE, ((PetscObject)A)->comm);
     minops = DVmin(size, opcounts, &root);
     DVfree(opcounts);
     
     lu->frontETree = ETree_MPI_Bcast(lu->frontETree, root, 
                              lu->options.msglvl, lu->options.msgFile, lu->comm_spooles);
     if ( lu->options.msglvl > 2 ) {
+      int err;
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n best front tree");CHKERRQ(ierr);
       ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }
   
     /* get the permutations, permute the front tree, permute the matrix */
@@ -396,11 +414,14 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
     IVgather(M, IV_entries(lu->vtxmapIV), 
              IV_entries(lu->ownersIV), ETree_vtxToFront(lu->frontETree));
     if ( lu->options.msglvl > 2 ) {
+      int err;
+
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n map from fronts to owning processes");CHKERRQ(ierr);
       IV_writeForHumanEye(lu->ownersIV, lu->options.msgFile);
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n map from vertices to owning processes");CHKERRQ(ierr);
       IV_writeForHumanEye(lu->vtxmapIV, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }
 
     /* redistribute the matrix */
@@ -413,9 +434,11 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
     lu->mtxA = newA ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
     if ( lu->options.msglvl > 2 ) {
+      int err;
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n split InpMtx");CHKERRQ(ierr);
       InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }
  
     /* compute the symbolic factorization */
@@ -423,9 +446,11 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
                      lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, lu->comm_spooles);
     lu->firsttag += lu->frontETree->nfront ;
     if ( lu->options.msglvl > 2 ) {
+      int err;
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n local symbolic factorization");CHKERRQ(ierr);
       IVL_writeForHumanEye(lu->symbfacIVL, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }
 
     lu->mtxmanager = SubMtxManager_new();
@@ -450,7 +475,7 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
 
     /* redistribute the matrix */
-    MPI_Barrier(A->comm);
+    MPI_Barrier(((PetscObject)A)->comm);
     lu->firsttag = 0;
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
                         lu->options.msglvl, lu->options.msgFile, lu->firsttag,lu->comm_spooles);
@@ -460,9 +485,11 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
     lu->mtxA = newA ;
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
     if ( lu->options.msglvl > 2 ) {
+      int err;
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n split InpMtx");CHKERRQ(ierr);
       InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }
   } /* end of if ( lu->flg == DIFFERENT_NONZERO_PATTERN) */
 
@@ -499,9 +526,11 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
   ChvManager_free(chvmanager);
   lu->firsttag = lasttag;
   if ( lu->options.msglvl > 2 ) {
+    int err;
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n numeric factorization");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
@@ -540,9 +569,11 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
                          lu->options.msgFile, lu->firsttag, lu->comm_spooles);
   lu->firsttag += 5*size ;
   if ( lu->options.msglvl > 2 ) {
+    int err;
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n numeric factorization after post-processing");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
   
   /* create the solve map object */
@@ -553,17 +584,21 @@ PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
                size, lu->ownersIV, FrontMtx_frontTree(lu->frontmtx), 
                lu->options.seed, lu->options.msglvl, lu->options.msgFile);
   if ( lu->options.msglvl > 2 ) {
+    int err;
     SolveMap_writeForHumanEye(lu->solvemap, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   /* redistribute the submatrices of the factors */
   FrontMtx_MPI_split(lu->frontmtx, lu->solvemap, 
                    lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, lu->comm_spooles);
   if ( lu->options.msglvl > 2 ) {
+    int err;
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n numeric factorization after split");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   /* create a solution DenseMtx object */  
@@ -603,25 +638,30 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,MatType 
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
+  ierr     = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    lu->MatDuplicate              = B->ops->duplicate;
+    lu->MatLUFactorSymbolic       = B->ops->lufactorsymbolic;
+    lu->MatCholeskyFactorSymbolic = B->ops->choleskyfactorsymbolic;
+    lu->MatView                   = B->ops->view;
+    lu->MatAssemblyEnd            = B->ops->assemblyend;
+    lu->MatDestroy                = B->ops->destroy;
+  } else {
+    lu->MatDuplicate              = A->ops->duplicate;
+    lu->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
+    lu->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
+    lu->MatView                   = A->ops->view;
+    lu->MatAssemblyEnd            = A->ops->assemblyend;
+    lu->MatDestroy                = A->ops->destroy;
   }
-
-  ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
-  B->spptr = (void*)lu;
-
   lu->basetype                  = MATMPIAIJ;
   lu->CleanUpSpooles            = PETSC_FALSE;
-  lu->MatDuplicate              = A->ops->duplicate;
-  lu->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
-  lu->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
-  lu->MatView                   = A->ops->view;
-  lu->MatAssemblyEnd            = A->ops->assemblyend;
-  lu->MatDestroy                = A->ops->destroy;
 
+  B->spptr = (void*)lu;
   B->ops->duplicate             = MatDuplicate_Spooles;
   B->ops->lufactorsymbolic      = MatLUFactorSymbolic_MPIAIJSpooles;  
-  B->ops->view                  = MatView_SeqAIJSpooles;
+  B->ops->view                  = MatView_Spooles;
   B->ops->assemblyend           = MatAssemblyEnd_MPIAIJSpooles;
   B->ops->destroy               = MatDestroy_MPIAIJSpooles;
 
@@ -642,11 +682,13 @@ EXTERN_C_END
   If MPIAIJSPOOLES is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SPOOLES solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATMPIAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATMPIAIJSPOOLES), then 
+  optionally call MatMPIAIJSetPreallocation() etc DO NOT
+  call MatCreateMPIAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATMPIAIJ.  As a result, MatMPIAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATMPIAIJ type without data copy.
+  This matrix inherits from MATMPIAIJ.  As a result, MatMPIAIJSetPreallocation() is 
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATMPIAIJ type without data copy AFTER the matrix values have been set.
 
   Consult Spooles documentation for more information about the options database keys below.
 

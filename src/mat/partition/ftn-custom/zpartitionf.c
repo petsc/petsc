@@ -1,5 +1,5 @@
 #include "src/mat/impls/adj/mpi/mpiadj.h"
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscmat.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

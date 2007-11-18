@@ -84,7 +84,7 @@ int main(int argc,char **argv)
   Vec            x,r,U,F;              /* vectors */
   MonitorCtx     monP;                 /* monitoring context */
   StepCheckCtx   checkP;               /* step-checking context */
-  PetscTruth     step_check;           /* flag indicating whether we're checking
+  PetscTruth     pre_check,post_check; /* flag indicating whether we're checking
                                           candidate iterates */
   PetscScalar    xp,*FF,*UU,none = -1.0;
   PetscErrorCode ierr;
@@ -157,7 +157,7 @@ int main(int argc,char **argv)
      Set an optional user-defined monitoring routine
   */
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRQ(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,&monP,0);CHKERRQ(ierr); 
+  ierr = SNESMonitorSet(snes,Monitor,&monP,0);CHKERRQ(ierr); 
 
   /*
      Set names for some vectors to facilitate monitoring (optional)
@@ -175,8 +175,8 @@ int main(int argc,char **argv)
      Set an optional user-defined routine to check the validity of candidate 
      iterates that are determined by line search methods
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-post_check_iterates",&step_check);CHKERRQ(ierr);
-  if (step_check) {
+  ierr = PetscOptionsHasName(PETSC_NULL,"-post_check_iterates",&post_check);CHKERRQ(ierr);
+  if (post_check) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating post step checking routine\n");CHKERRQ(ierr);
     ierr = SNESLineSearchSetPostCheck(snes,PostCheck,&checkP);CHKERRQ(ierr); 
     ierr = VecDuplicate(x,&(checkP.last_step));CHKERRQ(ierr); 
@@ -185,8 +185,8 @@ int main(int argc,char **argv)
     ierr = PetscOptionsGetReal(PETSC_NULL,"-check_tol",&checkP.tolerance,PETSC_NULL);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-pre_check_iterates",&step_check);CHKERRQ(ierr);
-  if (step_check) {
+  ierr = PetscOptionsHasName(PETSC_NULL,"-pre_check_iterates",&pre_check);CHKERRQ(ierr);
+  if (pre_check) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Activating pre step checking routine\n");CHKERRQ(ierr);
     ierr = SNESLineSearchSetPreCheck(snes,PreCheck,&checkP);CHKERRQ(ierr); 
   }
@@ -263,7 +263,7 @@ int main(int argc,char **argv)
      are no longer needed.
   */
   ierr = PetscViewerDestroy(monP.viewer);CHKERRQ(ierr);
-  if (step_check) {ierr = VecDestroy(checkP.last_step);CHKERRQ(ierr);}
+  if (post_check) {ierr = VecDestroy(checkP.last_step);CHKERRQ(ierr);}
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(r);CHKERRQ(ierr);
   ierr = VecDestroy(U);CHKERRQ(ierr);
@@ -466,14 +466,14 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
 #define __FUNCT__ "Monitor"
 /*
    Monitor - Optional user-defined monitoring routine that views the
-   current iterate with an x-window plot. Set by SNESSetMonitor().
+   current iterate with an x-window plot. Set by SNESMonitorSet().
 
    Input Parameters:
    snes - the SNES context
    its - iteration number
    norm - 2-norm function value (may be estimated)
    ctx - optional user-defined context for private data for the 
-         monitor routine, as set by SNESSetMonitor()
+         monitor routine, as set by SNESMonitorSet()
 
    Note:
    See the manpage for PetscViewerDrawOpen() for useful runtime options,

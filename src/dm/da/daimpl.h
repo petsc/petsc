@@ -5,37 +5,11 @@
 #if !defined(_DAIMPL_H)
 #define _DAIMPL_H
 
-#include "petscda.h"
-
-/*
-   The DM interface is shared by DA, VecPack, and any other object that may 
-  be used with the DMMG class. If you change this MAKE SURE you change
-  struct _DAOps and struct _VecPackOps!
-*/
-typedef struct _DMOps *DMOps;
-struct _DMOps {
-  PetscErrorCode (*view)(DM,PetscViewer);
-  PetscErrorCode (*createglobalvector)(DM,Vec*);
-  PetscErrorCode (*getcoloring)(DM,ISColoringType,ISColoring*);
-  PetscErrorCode (*getmatrix)(DM, MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
-  PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
-  PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
-};
-
-struct _p_DM {
-  PETSCHEADER(struct _DMOps);
-};
+#include "src/dm/dmimpl.h"
 
 typedef struct _DAOps *DAOps;
 struct _DAOps {
-  PetscErrorCode (*view)(DA,PetscViewer);
-  PetscErrorCode (*createglobalvector)(DA,Vec*);
-  PetscErrorCode (*getcoloring)(DA,ISColoringType,ISColoring*);
-  PetscErrorCode (*getmatrix)(DA, MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(DA,DA,Mat*,Vec*);
-  PetscErrorCode (*refine)(DA,MPI_Comm,DA*);
-  PetscErrorCode (*getinjection)(DA,DA,VecScatter*);
+  DMOPS(DA)
   PetscErrorCode (*getelements)(DA,PetscInt*,const PetscInt*[]);
   PetscErrorCode (*restoreelements)(DA,PetscInt*,const PetscInt*[]);
 };
@@ -144,6 +118,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer,Vec);
 EXTERN_C_END
 EXTERN PetscErrorCode DAView_Private(DA);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA,DA,Mat*);
 
 extern PetscEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 

@@ -6,6 +6,9 @@
 
 #include "src/dm/da/daimpl.h"     /*I  "petscda.h"   I*/
 
+const char *DAPeriodicTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIODIC",
+                                 "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC","XYZGHOSTED","DAPeriodicType","DA_",0};
+
 #undef __FUNCT__  
 #define __FUNCT__ "DAView_1d"
 PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
@@ -15,7 +18,7 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
   PetscTruth     iascii,isdraw;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
@@ -25,9 +28,9 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",da->xs,da->xe);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
-    PetscDraw       draw;
+    PetscDraw  draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
-    PetscInt        base;
+    PetscInt   base;
     char       node[10];
     PetscTruth isnull;
 
@@ -77,7 +80,9 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if 0
 EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate1d"
@@ -94,9 +99,9 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
 .  M - global dimension of the array (use -M to indicate that it may be set to a different value 
             from the command line with -da_grid_x <M>)
 .  dof - number of degrees of freedom per node
-.  lc - array containing number of nodes in the X direction on each processor, 
+.  s - stencil width
+-  lc - array containing number of nodes in the X direction on each processor, 
         or PETSC_NULL. If non-null, must be of length as m.
--  s - stencil width  
 
    Output Parameter:
 .  inra - the resulting distributed array object
@@ -118,7 +123,7 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
 
 .seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(), DASetRefinementFactor(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRange()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt dof,PetscInt s,PetscInt *lc,DA *inra)
@@ -152,16 +157,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   M = tM;
 
   ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
-  da->bops->publish           = DAPublish_Petsc;
+  da->ops->globaltolocalbegin = DAGlobalToLocalBegin;
+  da->ops->globaltolocalend   = DAGlobalToLocalEnd;
+  da->ops->localtoglobal      = DALocalToGlobal;
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->getinterpolation   = DAGetInterpolation;
   da->ops->getcoloring        = DAGetColoring;
   da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
-  ierr = PetscLogObjectMemory(da,sizeof(struct _p_DA));CHKERRQ(ierr);
-  da->dim        = 1;
-  da->interptype = DA_Q1;
-  da->refine_x   = refine_x;
+  da->ops->coarsen            = DACoarsen;
+  da->ops->getaggregates      = DAGetAggregates;
+  da->dim                     = 1;
+  da->interptype              = DA_Q1;
+  da->refine_x                = refine_x;
   ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
@@ -215,7 +223,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   xe = xs + x;
 
   /* determine ghost region */
-  if (wrap == DA_XPERIODIC) {
+  if (wrap == DA_XPERIODIC || wrap == DA_XYZGHOSTED) {
     Xs = xs - s; 
     Xe = xe + s;
   } else {
@@ -245,7 +253,19 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
 
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
-  ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
+  if  (wrap == DA_XYZGHOSTED) {
+    if (size == 1) {
+      ierr = ISCreateStride(comm,(xe-xs),s,1,&to);CHKERRQ(ierr);
+    } else if (!rank) {
+      ierr = ISCreateStride(comm,(Xe-xs),s,1,&to);CHKERRQ(ierr);
+    } else if (rank == size-1) {
+      ierr = ISCreateStride(comm,(xe-Xs),0,1,&to);CHKERRQ(ierr);
+    } else {
+      ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
+  }
  
   ierr = PetscMalloc((x+2*s)*sizeof(PetscInt),&idx);CHKERRQ(ierr);  
   ierr = PetscLogObjectMemory(da,(x+2*s)*sizeof(PetscInt));CHKERRQ(ierr);
@@ -262,8 +282,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
     
     for (i=0; i<s; i++) { /* Right ghost points */
       if ((xe+i)<M*dof) { idx [nn++] =  xe+i; }
-      else            { idx [nn++] = (xe+i) - M*dof;}
+      else              { idx [nn++] = (xe+i) - M*dof;}
     }
+  } else if (wrap == DA_XYZGHOSTED) { 
+
+    if (s <= xs) {for (i=0; i<s; i++) {idx[nn++] = xs - s + i;}}
+
+    for (i=0; i<x; i++) { idx [nn++] = xs + i;}
+    
+    if ((xe+s)<=M*dof) {for (i=0;  i<s;     i++) {idx[nn++]=xe+i;}}
+
   } else {      /* Now do all cases with no wrapping */
 
     if (s <= xs) {for (i=0; i<s; i++) {idx[nn++] = xs - s + i;}}
@@ -272,7 +300,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}
     
     if ((xe+s)<=M*dof) {for (i=0;  i<s;     i++) {idx[nn++]=xe+i;}}
-    else             {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;   }}
+    else               {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;}}
   }
 
   ierr = ISCreateGeneral(comm,nn,idx,&from);CHKERRQ(ierr);
@@ -292,8 +320,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
 
   da->gtol         = gtol;
   da->ltog         = ltog;
-  da->idx          = idx;
-  da->Nl           = nn;
   da->base         = xs;
   da->ops->view    = DAView_1d;
   da->wrap         = wrap;
@@ -303,9 +329,38 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
      Set the local to global ordering in the global vector, this allows use
      of VecSetValuesLocal().
   */
+  if (wrap == DA_XYZGHOSTED) {
+    PetscInt *tmpidx;
+    if (size == 1) {
+      ierr = PetscMalloc((nn+2*s)*sizeof(PetscInt),&tmpidx);CHKERRQ(ierr);
+      for (i=0; i<s; i++) tmpidx[i] = -1;
+      ierr = PetscMemcpy(tmpidx+s,idx,nn*sizeof(PetscInt));CHKERRQ(ierr);
+      for (i=nn+s; i<nn+2*s; i++) tmpidx[i] = -1;
+      ierr = PetscFree(idx);CHKERRQ(ierr);
+      idx  = tmpidx;
+      nn  += 2*s;
+    } else if (!rank) { /* must preprend -1 marker for ghost location that have no global value */
+      ierr = PetscMalloc((nn+s)*sizeof(PetscInt),&tmpidx);CHKERRQ(ierr);
+      for (i=0; i<s; i++) tmpidx[i] = -1;
+      ierr = PetscMemcpy(tmpidx+s,idx,nn*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscFree(idx);CHKERRQ(ierr);
+      idx  = tmpidx;
+      nn  += s;
+    } else if (rank  == size-1) { /* must postpend -1 marker for ghost location that have no global value */
+      ierr = PetscMalloc((nn+s)*sizeof(PetscInt),&tmpidx);CHKERRQ(ierr);
+      ierr = PetscMemcpy(tmpidx,idx,nn*sizeof(PetscInt));CHKERRQ(ierr);
+      for (i=nn; i<nn+s; i++) tmpidx[i] = -1;
+      ierr = PetscFree(idx);CHKERRQ(ierr);
+      idx  = tmpidx;
+      nn  += s;
+    }
+  }
   ierr = ISLocalToGlobalMappingCreateNC(comm,nn,idx,&da->ltogmap);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingBlock(da->ltogmap,da->w,&da->ltogmapb);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(da,da->ltogmap);CHKERRQ(ierr);
+
+  da->idx = idx;
+  da->Nl  = nn;
 
   da->ltol = PETSC_NULL;
   da->ao   = PETSC_NULL;
@@ -326,13 +381,17 @@ PetscErrorCode DAView_Private(DA da)
 {
   PetscErrorCode ierr;
   PetscTruth     flg1;
+  PetscViewer    view;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(da->comm,da->prefix,"Distributed array (DA) options","DA");CHKERRQ(ierr); 
+  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"Distributed array (DA) options","DA");CHKERRQ(ierr); 
     ierr = PetscOptionsTruth("-da_view","Print information about the DA's distribution","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
-    if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
+    if (flg1) {
+      ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&view);CHKERRQ(ierr);
+      ierr = DAView(da,view);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsTruth("-da_view_draw","Draw how the DA is distributed","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
-    if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
+    if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(((PetscObject)da)->comm));CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

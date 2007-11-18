@@ -1,5 +1,5 @@
 
-/* Program usage:  mpirun -np <procs> ex14 [-help] [all PETSc options] */
+/* Program usage:  mpiexec -np <procs> ex14 [-help] [all PETSc options] */
 
 static char help[] = "Bratu nonlinear PDE in 3d.\n\
 We solve the  Bratu (SFI - solid fuel ignition) problem in a 3D rectangular\n\
@@ -133,7 +133,7 @@ int main(int argc,char **argv)
     if (coloring) {
       ISColoring    iscoloring;
 
-      ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
+      ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
       ierr = DAGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
@@ -493,7 +493,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

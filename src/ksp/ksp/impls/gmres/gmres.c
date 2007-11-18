@@ -228,6 +228,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
   if (ksp->calc_sings && !gmres->Rsvd) {
     SETERRQ(PETSC_ERR_ORDER,"Must call KSPSetComputeSingularValues() before KSPSetUp() is called");
   }
+  if (ksp->normtype != KSP_NORM_PRECONDITIONED) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Currently can use GMRES with only preconditioned residual (right preconditioning not coded)");
 
   ierr     = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->its = 0;
@@ -240,7 +241,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
     ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
     itcount += its;  
     if (itcount >= ksp->max_it) {
-      ksp->reason = KSP_DIVERGED_ITS;
+      if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       break;
     }
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
@@ -288,12 +289,17 @@ PetscErrorCode KSPDestroy_GMRES_Internal(KSP ksp)
 #define __FUNCT__ "KSPDestroy_GMRES" 
 PetscErrorCode KSPDestroy_GMRES(KSP ksp)
 {
-  KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
-  ierr = PetscFree(gmres);CHKERRQ(ierr);
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetRestart_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetHapTol_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetCGSRefinementType_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*
@@ -520,9 +526,9 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPGMRESKrylovMonitor"
+#define __FUNCT__ "KSPGMRESMonitorKrylov"
 /*@C
-   KSPGMRESKrylovMonitor - Calls VecView() for each direction in the 
+   KSPGMRESMonitorKrylov - Calls VecView() for each direction in the 
    GMRES accumulated Krylov space.
 
    Collective on KSP
@@ -537,9 +543,9 @@ PetscErrorCode KSPView_GMRES(KSP ksp,PetscViewer viewer)
 
 .keywords: KSP, nonlinear, vector, monitor, view, Krylov space
 
-.seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView(), PetscViewersCreate(), PetscViewersDestroy()
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView(), PetscViewersCreate(), PetscViewersDestroy()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESKrylovMonitor(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESMonitorKrylov(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscViewers   viewers = (PetscViewers)dummy;
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
@@ -581,11 +587,11 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
     if (flg) {ierr = KSPGMRESSetOrthogonalization(ksp,KSPGMRESModifiedGramSchmidtOrthogonalization);CHKERRQ(ierr);}
     ierr = PetscOptionsEnum("-ksp_gmres_cgs_refinement_type","Type of iterative refinement for classical (unmodified) Gram-Schmidt","KSPGMRESSetCGSRefinementType",
                             KSPGMRESCGSRefinementTypes,(PetscEnum)gmres->cgstype,(PetscEnum*)&gmres->cgstype,&flg);CHKERRQ(ierr);    
-    ierr = PetscOptionsName("-ksp_gmres_krylov_monitor","Plot the Krylov directions","KSPSetMonitor",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ksp_gmres_krylov_monitor","Plot the Krylov directions","KSPMonitorSet",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewers viewers;
-      ierr = PetscViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(ksp,KSPGMRESKrylovMonitor,viewers,(PetscErrorCode (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
+      ierr = PetscViewersCreate(((PetscObject)ksp)->comm,&viewers);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPGMRESMonitorKrylov,viewers,(PetscErrorCode (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -733,7 +739,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart(KSP ksp, PetscInt restart)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ksp,KSPGMRESSetRestart_C,(KSP,PetscInt),(ksp,restart));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ksp,"KSPGMRESSetRestart_C",(KSP,PetscInt),(ksp,restart));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -766,7 +772,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),KSPGMRESSetHapTol_C,(KSP,PetscReal),((ksp),(tol)));CHKERRQ(ierr);
+  ierr = PetscTryMethod((ksp),"KSPGMRESSetHapTol_C",(KSP,PetscReal),((ksp),(tol)));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -792,7 +798,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPLGMRES,
            KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
            KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
-           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESKrylovMonitor()
+           KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESMonitorKrylov()
 
 M*/
 
@@ -805,11 +811,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_GMRES,&gmres);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_GMRES));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_GMRES,&gmres);CHKERRQ(ierr);
   ksp->data                              = (void*)gmres;
-  ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
 
+
+  ksp->normtype                          = KSP_NORM_PRECONDITIONED;
+  ksp->pc_side                           = PC_LEFT;
+
+  ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
   ksp->ops->setup                        = KSPSetUp_GMRES;
   ksp->ops->solve                        = KSPSolve_GMRES;
   ksp->ops->destroy                      = KSPDestroy_GMRES;

@@ -114,9 +114,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)R);CHKERRQ(ierr);
   if (jac->R) {ierr = MatDestroy(jac->R);CHKERRQ(ierr);}
   jac->R = R;
-  ierr = PetscObjectReference((PetscObject)R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -130,9 +130,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetInterpolation_Galerkin(PC pc,Mat 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
   if (jac->P) {ierr = MatDestroy(jac->P);CHKERRQ(ierr);}
   jac->P = P;
-  ierr = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -268,14 +268,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Galerkin(PC pc)
   PC_Galerkin    *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_Galerkin,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_Galerkin,&jac);CHKERRQ(ierr);
   pc->ops->apply              = PCApply_Galerkin;
   pc->ops->setup              = PCSetUp_Galerkin;
   pc->ops->destroy            = PCDestroy_Galerkin;
   pc->ops->view               = PCView_Galerkin;
   pc->ops->applyrichardson    = 0;
 
-  ierr = KSPCreate(pc->comm,&jac->ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(((PetscObject)pc)->comm,&jac->ksp);CHKERRQ(ierr);
 
   pc->data               = (void*)jac;
 

@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = ao.c aodata.c aodataalias.c dlregisdm.c
+SOURCEC  = ao.c dlregisdm.c
 SOURCEF  = 
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}
@@ -12,5 +12,5 @@ LIBBASE  = libpetscdm
 MANSEC   = AO
 LOCDIR   = src/dm/ao/interface/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test

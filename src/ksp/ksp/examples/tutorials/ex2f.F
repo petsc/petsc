@@ -2,7 +2,7 @@
 !  Description: Solves a linear system in parallel with KSP (Fortran code).
 !               Also shows how to set a user-defined monitoring routine.
 !
-!  Program usage: mpirun -np <procs> ex2f [-help] [all PETSc options]
+!  Program usage: mpiexec -np <procs> ex2f [-help] [all PETSc options]
 !
 !/*T
 !  Concepts: KSP^basic parallel example
@@ -256,7 +256,7 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',  &
      &                    flg,ierr)
       if (flg .eq. 1) then
-        call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
+        call KSPMonitorSet(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
      &                     PETSC_NULL_FUNCTION,ierr)
       endif
 

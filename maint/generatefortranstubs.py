@@ -67,8 +67,8 @@ def FixDir(dir):
     outbuf +=  'DIRS     =\n'
     outbuf +=  libbase + '\n'
     outbuf +=  locdir + '\n'
-    outbuf +=  'include ${PETSC_DIR}/bmake/common/base\n'
-    outbuf +=  'include ${PETSC_DIR}/bmake/common/test\n'
+    outbuf +=  'include ${PETSC_DIR}/conf/base\n'
+    outbuf +=  'include ${PETSC_DIR}/conf/test\n'
     
     ff = open(os.path.join(dir, 'makefile'), 'w')
     ff.write(outbuf)
@@ -108,9 +108,16 @@ def processDir(arg,dirname,names):
     if status:
       raise RuntimeError('Error running bfort '+output)
     FixDir(outdir)
-  for name in ['SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran']:
+  for name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint']:
     if name in names:
       names.remove(name)
+  # check for configure generated PETSC_ARCHes
+  rmnames=[]
+  for name in names:
+    if os.path.isdir(os.path.join(name,'conf')):
+      rmnames.append(name)
+  for rmname in rmnames:
+    names.remove(rmname)
   return
 
 def main(bfort):

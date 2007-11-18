@@ -76,7 +76,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   IS             garray_local,garray_gl;
 
   PetscFunctionBegin;
-  comm = C->comm;
+  comm = ((PetscObject)C)->comm;
   size = c->size;
   rank = c->rank;
   Mbs  = c->Mbs;

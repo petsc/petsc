@@ -12,15 +12,19 @@ int main(int argc,char **args)
   PetscInt       i,j,m = 4,n = 4,Ii,J,Istart,Iend;
   PetscMPIInt    rank,size;
   PetscErrorCode ierr;
+  PetscTruth     equal=PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
+  n    = m;
   
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,
          m*n,m*n,5,PETSC_NULL,5,PETSC_NULL,&C);CHKERRQ(ierr);
 
-  /* create the matrix for the five point stencil, YET AGAIN*/
+  /* create the symmetric matrix for the five point stencil */
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);
   for (Ii=Istart; Ii<Iend; Ii++) { 
     v = -1.0; i = Ii/n; j = Ii - i*n;  
@@ -32,10 +36,11 @@ int main(int argc,char **args)
   }
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-
+ 
   ierr = MatTranspose(C,&A);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  ierr = MatEqual(C,A,&equal);CHKERRQ(ierr);
+  if (!equal) SETERRQ(PETSC_ERR_SUP,"C != C^T");
 
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);

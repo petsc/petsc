@@ -1,5 +1,5 @@
-#include "petsc.h"
-#include "petscfix.h"
+#include "private/zpetsc.h"
+#include "petscmesh.h"
 /* mesh.c */
 /* Fortran interface file */
 
@@ -26,39 +26,109 @@ extern void PetscRmPointer(void*);
 #define PetscRmPointer(a)
 #endif
 
-#include "petscmat.h"
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define restrictvector_ RESTRICTVECTOR
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define restrictvector_ restrictvector
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
+#define meshcreatepflotran_     MESHCREATEPFLOTRAN
+#define meshcreatepcice_        MESHCREATEPCICE
+#define meshdistribute_         MESHDISTRIBUTE
+#define meshview_               MESHVIEW
+#define meshgetvertexsectionreal_   MESHGETVERTEXSECTIONREAL
+#define vertexsectionrealcreate_ VERTEXSECTIONREALCREATE
+#define vertexsectionintcreate_  VERTEXSECTIONINTCREATE
+#define cellsectionrealcreate_   CELLSECTIONREALCREATE
+#define bcsectionrealcreate_     BCSECTIONREALCREATE
+#define restrictvector_         RESTRICTVECTOR
 #define assemblevectorcomplete_ ASSEMBLEVECTORCOMPLETE
+#define assemblevector_         ASSEMBLEVECTOR
+#define assemblematrix_         ASSEMBLEMATRIX
+#define writepcicerestart_      WRITEPCICERESTART
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define meshcreatepflotran_     meshcreatepflotran_
+#define meshcreatepcice_        meshcreatepcice
+#define meshdistribute_         meshdistribute
+#define meshview_               meshview
+#define meshgetvertexsectionreal_   meshgetvertexsectionreal
+#define vertexsectionrealcreate_ vertexsectionrealcreate
+#define vertexsectionintcreate_  vertexsectionintcreate
+#define cellsectionrealcreate_   cellsectionrealcreate
+#define bcsectionrealcreate_     bcsectionrealcreate
+#define restrictvector_         restrictvector
 #define assemblevectorcomplete_ assemblevectorcomplete
+#define assemblevector_         assemblevector
+#define assemblematrix_         assemblematrix
+#define writepcicerestart_      writepcicerestart
 #endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define assemblevector_ ASSEMBLEVECTOR
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define assemblevector_ assemblevector
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
-#define assemblematrix_ ASSEMBLEMATRIX
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define assemblematrix_ assemblematrix
-#endif
-
-PETSC_EXTERN_CXX_BEGIN
-PetscErrorCode restrictVector(Vec, Vec, InsertMode);
-PetscErrorCode assembleVectorComplete(Vec, Vec, InsertMode);
-PetscErrorCode assembleVector(Vec, PetscInt, PetscScalar [], InsertMode);
-PetscErrorCode assembleMatrix(Mat, PetscInt, PetscScalar [], InsertMode);
-PETSC_EXTERN_CXX_END
 
 /* Definitions of Fortran Wrapper routines */
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
+
+void PETSC_STDCALL  meshcreatepflotran(MPI_Fint * comm, int *dim, CHAR hdf5Filename PETSC_MIXED_LEN(lenG), PetscTruth *interpolate, Mesh *mesh, PetscErrorCode *ierr PETSC_END_LEN(lenG))
+{
+  char *gF;
+  FIXCHAR(hdf5Filename,lenG,gF);
+  *ierr = MeshCreatePFLOTRAN(MPI_Comm_f2c( *(comm) ),*dim,gF,*interpolate,mesh);
+  FREECHAR(hdf5Filename,gF);
+}
+void PETSC_STDCALL  meshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFilename PETSC_MIXED_LEN(lenC), CHAR adjFilename PETSC_MIXED_LEN(lenA), PetscTruth *interpolate, CHAR bcFilename PETSC_MIXED_LEN(lenB), Mesh *mesh, PetscErrorCode *ierr PETSC_END_LEN(lenC) PETSC_END_LEN(lenA) PETSC_END_LEN(lenB))
+{
+  char *cF, *aF, *bF;
+  FIXCHAR(coordFilename,lenC,cF);
+  FIXCHAR(adjFilename,lenA,aF);
+  FIXCHAR(bcFilename,lenB,bF);
+  *ierr = MeshCreatePCICE(MPI_Comm_f2c( *(comm) ),*dim,cF,aF,*interpolate,bF,mesh);
+  FREECHAR(coordFilename,cF);
+  FREECHAR(adjFilename,aF);
+  FREECHAR(bcFilename,bF);
+}
+void PETSC_STDCALL  meshdistribute_(Mesh serialMesh, CHAR partitioner PETSC_MIXED_LEN(lenP), Mesh *parallelMesh, PetscErrorCode *ierr PETSC_END_LEN(lenP))
+{
+  char *pF;
+  FIXCHAR(partitioner,lenP,pF);
+  *ierr = MeshDistribute((Mesh) PetscToPointer(serialMesh),pF,parallelMesh);
+  FREECHAR(partitioner,pF);
+}
+void PETSC_STDCALL  meshview_(Mesh mesh, PetscViewer viewer, PetscErrorCode *ierr)
+{
+  *ierr = MeshView((Mesh) PetscToPointer(mesh),(PetscViewer) PetscToPointer(viewer));
+}
+void PETSC_STDCALL  meshgetvertexsectionreal_(Mesh mesh, PetscInt *fiberDim, SectionReal *section, int *ierr){
+  *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, section);
+}
+void PETSC_STDCALL  vertexsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+  SectionReal section;
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, &section);
+  *ierr = PetscObjectSetName((PetscObject) section, pN);
+  *ierr = MeshSetSectionReal((Mesh) PetscToPointer(mesh), section);
+  *ierr = SectionRealDestroy(section);
+  FREECHAR(name,pN);
+}
+void PETSC_STDCALL  vertexsectionintcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+  SectionInt section;
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetVertexSectionInt((Mesh) PetscToPointer(mesh), *fiberDim, &section);
+  *ierr = PetscObjectSetName((PetscObject) section, pN);
+  *ierr = MeshSetSectionInt((Mesh) PetscToPointer(mesh), section);
+  *ierr = SectionIntDestroy(section);
+  FREECHAR(name,pN);
+}
+void PETSC_STDCALL  cellsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+  SectionReal section;
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetCellSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, &section);
+  *ierr = PetscObjectSetName((PetscObject) section, pN);
+  *ierr = MeshSetSectionReal((Mesh) PetscToPointer(mesh), section);
+  *ierr = SectionRealDestroy(section);
+  FREECHAR(name,pN);
+}
+void PETSC_STDCALL  bcsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = BCSectionRealCreate((Mesh) PetscToPointer(mesh),pN, *fiberDim);
+  FREECHAR(name,pN);
+}
 void PETSC_STDCALL  restrictvector_(Vec g,Vec l,InsertMode *mode, int *__ierr ){
 *__ierr = restrictVector(
 	(Vec)PetscToPointer((g) ),
@@ -77,6 +147,8 @@ void PETSC_STDCALL  assemblematrix_(Mat A,PetscInt *e,PetscScalar v[],InsertMode
 *__ierr = assembleMatrix(
 	(Mat)PetscToPointer((A) ),*e,v,*mode);
 }
-#if defined(__cplusplus)
+void PETSC_STDCALL  writepcicerestart_(Mesh mesh, PetscViewer viewer, int *ierr){
+  *ierr = WritePCICERestart((Mesh) PetscToPointer(mesh), (PetscViewer) PetscToPointer(viewer));
 }
-#endif
+
+EXTERN_C_END

@@ -16,9 +16,12 @@
 
    Level: intermediate
 
-    Notes:
-       You must call PetscMapSetBlockSize() and either PetscMapSetSize() or PetscMapSetLocalSize()
-       before calling this routine.
+    Notes: Typical calling sequence
+       PetscMapInitialize(MPI_Comm,PetscMap *);
+       PetscMapSetBlockSize(PetscMap*,1);
+       PetscMapSetSize(PetscMap*,n) or PetscMapSetLocalSize(PetscMap*,N);
+       PetscMapInitialize(PetscMap*);
+       PetscMapGetSize(PetscMap*,PetscInt *);
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
@@ -26,31 +29,74 @@
     Fortran Notes: 
       Not available from Fortran
 
-.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(),
-          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
+.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap,
+          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize(), PetscMapSetUp()
 
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapInitialize"
 PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscMap *map)
 {
+  PetscFunctionBegin;
+  map->comm   = comm;
+  map->bs     = -1;
+  map->n      = -1;
+  map->N      = -1;
+  map->range  = 0;
+  map->rstart = 0;
+  map->rend   = 0;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+     PetscMapSetUp - given a map where you have set either the global or local
+           size sets up the map so that it may be used.
+
+    Collective on MPI_Comm
+
+   Input Parameters:
+.    map - pointer to the map
+
+   Level: intermediate
+
+    Notes: Typical calling sequence
+       PetscMapInitialize(MPI_Comm,PetscMap *);
+       PetscMapSetBlockSize(PetscMap*,1);
+       PetscMapSetSize(PetscMap*,n) or PetscMapSetLocalSize(PetscMap*,N);
+       PetscMapInitialize(PetscMap*);
+       PetscMapGetSize(PetscMap*,PetscInt *);
+
+       Unlike regular PETSc objects you work with a pointer to the object instead of 
+     the object directly.
+
+    Fortran Notes: 
+      Not available from Fortran
+
+.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap,
+          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize(), PetscMapInitialize()
+
+@*/
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapSetUp"
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetUp(PetscMap *map)
+{
   PetscMPIInt    rank,size;
   PetscInt       p;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr); 
+  ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(map->comm, &rank);CHKERRQ(ierr); 
   if (map->bs <=0) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"BlockSize not yet set");}
   if (map->n > 0) map->n = map->n/map->bs;
   if (map->N > 0) map->N = map->N/map->bs;
-  ierr = PetscSplitOwnership(comm,&map->n,&map->N);CHKERRQ(ierr);
+  ierr = PetscSplitOwnership(map->comm,&map->n,&map->N);CHKERRQ(ierr);
   map->n = map->n*map->bs;
   map->N = map->N*map->bs;
   if (!map->range) {
     ierr = PetscMalloc((size+1)*sizeof(PetscInt), &map->range);CHKERRQ(ierr);
   }
-  ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&map->n, 1, MPIU_INT, map->range+1, 1, MPIU_INT, map->comm);CHKERRQ(ierr);
 
   map->range[0] = 0;
   for(p = 2; p <= size; p++) {
@@ -102,7 +148,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCopy(MPI_Comm comm,PetscMap *in,PetscM
     Fortran Notes: 
       Not available from Fortran
 
-.seealso: PetscMapInitialize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(),
+.seealso: PetscMapInitialize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMapSetUp()
           PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
 
 @*/
@@ -129,7 +175,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap *map,PetscInt n)
    Level: intermediate
 
     Notes:
-       Call this after the call to PetscMapInitialize()
+       Call this after the call to PetscMapSetUp()
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
@@ -137,7 +183,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap *map,PetscInt n)
     Fortran Notes: 
       Not available from Fortran
 
-.seealso: PetscMapInitialize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(),
+.seealso: PetscMapInitialize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMapSetUp()
           PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
 
 @*/
@@ -170,7 +216,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap *map,PetscInt *n
     Fortran Notes: 
       Not available from Fortran
 
-.seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapGetSize(),
+.seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapGetSize(), PetscMapSetUp()
           PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
 
 @*/
@@ -197,7 +243,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap *map,PetscInt n)
    Level: intermediate
 
     Notes:
-       Call this after the call to PetscMapInitialize()
+       Call this after the call to PetscMapSetUp()
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
@@ -205,7 +251,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap *map,PetscInt n)
     Fortran Notes: 
       Not available from Fortran
 
-.seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapSetSize(),
+.seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapSetSize(), PetscMapSetUp()
           PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
 
 @*/
@@ -214,7 +260,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap *map,PetscInt n)
 PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap *map,PetscInt *n)
 {
   PetscFunctionBegin;
-  *n = map->n;
+  *n = map->N;
   PetscFunctionReturn(0);
 }
 
@@ -239,7 +285,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap *map,PetscInt *n)
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapGetBlockSize(),
-          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetSize(), PetscMapGetSize()
+          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetSize(), PetscMapGetSize(), PetscMapSetUp()
 
 @*/
 #undef __FUNCT__  
@@ -265,7 +311,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap *map,PetscInt bs
    Level: intermediate
 
     Notes:
-       Call this after the call to PetscMapInitialize()
+       Call this after the call to PetscMapSetUp()
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
@@ -273,7 +319,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap *map,PetscInt bs
     Fortran Notes: 
       Not available from Fortran
 
-.seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapSetSize(),
+.seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapSetSize(), PetscMapSetUp()
           PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetSize()
 
 @*/
@@ -302,7 +348,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetBlockSize(PetscMap *map,PetscInt *b
    Level: intermediate
 
     Notes:
-       Call this after the call to PetscMapInitialize()
+       Call this after the call to PetscMapSetUp()
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
@@ -311,7 +357,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetBlockSize(PetscMap *map,PetscInt *b
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapSetSize(),
-          PetscMapGetSize(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetSize()
+          PetscMapGetSize(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetSize(), PetscMapSetUp()
 
 @*/
 #undef __FUNCT__  
@@ -339,7 +385,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap *map,PetscInt *
    Level: intermediate
 
     Notes:
-       Call this after the call to PetscMapInitialize()
+       Call this after the call to PetscMapSetUp()
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
@@ -348,12 +394,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap *map,PetscInt *
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapSetSize(),
-          PetscMapGetSize(), PetscMapGetLocalRange(), PetscMapSetBlockSize(), PetscMapGetSize()
+          PetscMapGetSize(), PetscMapGetLocalRange(), PetscMapSetBlockSize(), PetscMapGetSize(), PetscMapSetUp()
 
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetGlobalRange"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap *map,PetscInt *range[])
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap *map,const PetscInt *range[])
 {
   PetscFunctionBegin;
   *range = map->range;

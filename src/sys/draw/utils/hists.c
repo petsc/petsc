@@ -52,9 +52,9 @@ struct _p_DrawHG {
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
-  PetscDrawHG h;
-  MPI_Comm    comm;
-  PetscTruth  isnull;
+  PetscDrawHG    h;
+  MPI_Comm       comm;
+  PetscTruth     isnull;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -109,7 +109,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, Petsc
    Concepts: histogram^setting number of bins
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) 
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -175,7 +176,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDestroy(PetscDrawHG hist)
   PetscFunctionBegin;
   PetscValidHeader(hist,1);
 
-  if (--hist->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)hist)->refct > 0) PetscFunctionReturn(0);
   if (hist->axis) {
     ierr = PetscDrawAxisDestroy(hist->axis);CHKERRQ(ierr);
   }
@@ -274,12 +275,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGAddValue(PetscDrawHG hist, PetscReal v
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
 {
-  PetscDraw  draw = hist->win;
-  PetscTruth isnull;
-  PetscReal  xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight,mean,var;
-  char       title[256];
-  char       xlabel[256];
-  int        numBins,numBinsOld,numValues,initSize,i,p,bcolor,color;
+  PetscDraw      draw = hist->win;
+  PetscTruth     isnull;
+  PetscReal      xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight,mean,var;
+  char           title[256];
+  char           xlabel[256];
+  int            numBins,numBinsOld,numValues,initSize,i,p,bcolor,color;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -290,7 +291,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
   if (hist->numValues < 1) PetscFunctionReturn(0);
 
 #if 0
-  ierr = MPI_Comm_rank(hist->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)hist)->comm,&rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 #endif
 
@@ -419,9 +420,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
 {
-  PetscReal xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
+  PetscReal      xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
   PetscErrorCode ierr;
-  int       numBins,numBinsOld,numValues,initSize,i,p;
+  int            numBins,numBinsOld,numValues,initSize,i,p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
@@ -444,7 +445,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
       var  += values[p]*values[p];
     }
     /* Draw bins */
-    PetscPrintf(hist->comm, "Bin %2d (%6.2g - %6.2g): %.0g\n", 0, xmin, xmax, bins[0]);
+    PetscPrintf(((PetscObject)hist)->comm, "Bin %2d (%6.2g - %6.2g): %.0g\n", 0, xmin, xmax, bins[0]);
   } else {
     numBins    = hist->numBins;
     numBinsOld = hist->numBins;
@@ -478,7 +479,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
     for (i = 0; i < numBins; i++) {
       binLeft   = xmin + binSize*i;
       binRight  = xmin + binSize*(i+1);
-      PetscPrintf(hist->comm, "Bin %2d (%6.2g - %6.2g): %.0g\n", i, binLeft, binRight, bins[i]);
+      PetscPrintf(((PetscObject)hist)->comm, "Bin %2d (%6.2g - %6.2g): %.0g\n", i, binLeft, binRight, bins[i]);
     }
     ierr = PetscDrawHGSetNumberBins(hist, numBinsOld);CHKERRQ(ierr);
   }
@@ -490,8 +491,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
     } else {
       var = 0.0;
     }
-    PetscPrintf(hist->comm, "Mean: %G  Var: %G\n", mean, var);
-    PetscPrintf(hist->comm, "Total: %d\n", numValues);
+    PetscPrintf(((PetscObject)hist)->comm, "Mean: %G  Var: %G\n", mean, var);
+    PetscPrintf(((PetscObject)hist)->comm, "Total: %d\n", numValues);
   }
   PetscFunctionReturn(0);
 } 

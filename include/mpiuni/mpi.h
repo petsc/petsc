@@ -133,6 +133,8 @@ extern int MPIUNI_Memcpy(void*,const void*,int);
 typedef int MPI_Op;
 
 #define MPI_SUM           0
+#define MPI_MAX           0
+#define MPI_MIN           0
 #define MPI_ANY_TAG     (-1)
 #define MPI_DATATYPE_NULL 0
 
@@ -156,9 +158,12 @@ extern int    Petsc_MPI_Attr_put(MPI_Comm,int,void *);
 extern int    Petsc_MPI_Attr_delete(MPI_Comm,int);
 extern int    Petsc_MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
 extern int    Petsc_MPI_Comm_free(MPI_Comm*);
-extern int    Petsc_MPI_Initialized(int*);
 extern int    Petsc_MPI_Comm_dup(MPI_Comm,MPI_Comm *);
+
+extern int    Petsc_MPI_Init(int *, char ***);
 extern int    Petsc_MPI_Finalize(void);
+extern int    Petsc_MPI_Initialized(int*);
+extern int    Petsc_MPI_Finalized(int*);
 
 #define MPI_Abort         Petsc_MPI_Abort
 #define MPI_Attr_get      Petsc_MPI_Attr_get
@@ -167,9 +172,12 @@ extern int    Petsc_MPI_Finalize(void);
 #define MPI_Attr_delete   Petsc_MPI_Attr_delete
 #define MPI_Keyval_create Petsc_MPI_Keyval_create
 #define MPI_Comm_free     Petsc_MPI_Comm_free
-#define MPI_Initialized   Petsc_MPI_Initialized
 #define MPI_Comm_dup      Petsc_MPI_Comm_dup
+
+#define MPI_Init          Petsc_MPI_Init
 #define MPI_Finalize      Petsc_MPI_Finalize
+#define MPI_Initialized   Petsc_MPI_Initialized
+#define MPI_Finalized     Petsc_MPI_Finalized
 
 #define MPI_Aint int
 /* 
@@ -180,10 +188,6 @@ extern int    Petsc_MPI_Finalize(void);
 #define MPI_Comm_f2c(comm) (MPI_Comm)(comm)
 #define MPI_Comm_c2f(comm) (MPI_Fint)(comm)
 
-#define MPI_Init(argc,argv) \
-     (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (argc),\
-      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (argv),\
-      MPI_SUCCESS)
 #define MPI_Send(buf,count,datatype,dest,tag,comm)  \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\

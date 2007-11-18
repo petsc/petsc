@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscScalar    *array,*a;
   PetscErrorCode ierr;
   PetscRandom    r;
-  PetscTruth     equal;
+  PetscTruth     equal=PETSC_FALSE;
   PetscReal      fill = 1.0;
   PetscMPIInt    size;
   PetscInt       rstart,rend,nza,col,am,an,bm,bn;
@@ -20,6 +20,7 @@ int main(int argc,char **argv)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-fill",&fill,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
@@ -71,19 +72,10 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Used for testing with Matlab as checker 
-  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
-  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  */
-
   /* Test MatMatMult() */
   ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
 
-  /* Used for testing with Matlab as checker 
-  ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);  
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"max(max(abs(Mat_3 - Mat_1*Mat_2)))\n");*/
-
-  ierr = MatMatMultSymbolic(A,B,1.0,&D);CHKERRQ(ierr);
+  ierr = MatMatMultSymbolic(A,B,fill,&D);CHKERRQ(ierr);
   for (i=0; i<2; i++){    
     ierr = MatMatMultNumeric(A,B,D);CHKERRQ(ierr);
   }  

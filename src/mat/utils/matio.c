@@ -4,7 +4,7 @@
    This file contains simple binary read/write routines for matrices.
  */
 
-#include "src/mat/matimpl.h"             /*I  "petscmat.h"  I*/
+#include "include/private/matimpl.h"             /*I  "petscmat.h"  I*/
 #include "petscsys.h"
 
 #undef __FUNCT__  
@@ -133,8 +133,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, MatType outtype,Ma
 
   ierr = PetscOptionsHasName(prefix,"-matload_symmetric",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatSetOption(*newmat,MAT_SYMMETRIC);CHKERRQ(ierr);
-    ierr = MatSetOption(*newmat,MAT_SYMMETRY_ETERNAL);CHKERRQ(ierr);
+    ierr = MatSetOption(*newmat,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatSetOption(*newmat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

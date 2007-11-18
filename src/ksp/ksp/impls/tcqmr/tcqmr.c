@@ -7,7 +7,7 @@
     complex numbers version, so most probably some are incorrect.
 */
 
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"
 #include "src/ksp/ksp/impls/tcqmr/tcqmrp.h"
 
 #undef __FUNCT__  
@@ -134,8 +134,11 @@ static PetscErrorCode KSPSolve_TCQMR(KSP ksp)
 #else
     rnorm = rnorm0 * sqrt((double)ksp->its+2.0) * sprod;     
 #endif
-    if (ksp->its >= ksp->max_it) {ksp->reason = KSP_DIVERGED_ITS; break;}
     ierr = (*ksp->converged)(ksp,ksp->its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+    if (ksp->its >= ksp->max_it) {
+      if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
+      break;
+    }
   }
   KSPMonitor(ksp,ksp->its,rnorm);
   ierr = KSPUnwindPreconditioner(ksp,x,vtmp);CHKERRQ(ierr);

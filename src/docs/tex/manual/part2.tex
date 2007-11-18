@@ -130,8 +130,9 @@ thus resulting in different values at the particular location. Since
 PETSc does not allow the simultaneous use of INSERT\_VALUES and
 ADD\_VALUES this nondeterministic behavior will not occur in PETSc.)
 
-There is no routine called VecGetValues(), since we provide 
-an alternative method for extracting some components of a vector using
+You can called VecGetValues() to pull local values from a vector (but
+not off-process values),
+an alternative method for extracting some components of a vector are
 the vector scatter routines.  See Section~\ref{sec_scatter} for details; see also
 below for VecGetArray().
 
@@ -372,7 +373,7 @@ the application ordering correspond, respectively, to nodes 2, 1, 4, and 0 of
 the PETSc ordering.
 We can write this correspondence as
 \[
- { 0, 1, 2, 3, 4 }  \rightarrow  { 3, 2, 1, 4, 0 }. 
+ { 0, 1, 2, 3, 4 }  \to  { 3, 2, 1, 4, 0 }. 
 \]
 The user can create the PETSc-AO mappings in a number of ways.  For example,
 if using two processes, one could call
@@ -929,8 +930,8 @@ To copy selected components from one vector
 to another, one uses the following set of commands:
 \begin{tabbing}
   VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);\\
-  VecScatterBegin(Vec x,Vec y,INSERT\_VALUES,SCATTER\_FORWARD,VecScatter ctx);\\
-  VecScatterEnd(Vec x,Vec y,INSERT\_VALUES,SCATTER\_FORWARD,VecScatter ctx);\\
+  VecScatterBegin(VecScatter ctx,Vec x,Vec y,INSERT\_VALUES,SCATTER\_FORWARD);\\
+  VecScatterEnd(VecScatter ctx,Vec x,Vec y,INSERT\_VALUES,SCATTER\_FORWARD);\\
   VecScatterDestroy(VecScatter ctx);
 \end{tabbing} 
 Here \trl{ix} denotes the index set of the first vector, while \trl{
@@ -968,8 +969,8 @@ In some cases one may wish to ``undo'' a scatter, that is perform the
 scatter backwards switching the roles of the sender and receiver. This is 
 done by using 
 \begin{tabbing}
-  VecScatterBegin(Vec y,Vec x,INSERT\_VALUES,SCATTER\_REVERSE,VecScatter ctx);\\
-  VecScatterEnd(Vec y,Vec x,INSERT\_VALUES,SCATTER\_REVERSE,VecScatter ctx);
+  VecScatterBegin(VecScatter ctx,Vec y,Vec x,INSERT\_VALUES,SCATTER\_REVERSE);\\
+  VecScatterEnd(VecScatter ctx,Vec y,Vec x,INSERT\_VALUES,SCATTER\_REVERSE);
 \end{tabbing} 
 \findex{SCATTER_REVERSE} Note that the roles of the first 
 two arguments to these routines must be swapped whenever the \trl{SCATTER_REVERSE}
@@ -985,9 +986,10 @@ VecDuplicate() from the original vectors used in the call to
 VecScatterCreate().
 
 \sindex{vector values, getting} \findex{VecGetValues()}
-There is no PETSc routine that is the opposite of VecSetValues()
-\findex{VecSetValues()}, that is, VecGetValues(). \findex{VecGetValues()}
-Instead, the user should create a new vector where
+There is a PETSc routine that is nearly the opposite of VecSetValues()
+\findex{VecSetValues()}, that is, VecGetValues(), but it can only get
+local values from the vector. \findex{VecGetValues()}
+To get off process values, the user should create a new vector where
 the components are to be stored and perform the appropriate vector 
 scatter. For example, if one desires to obtain the values of the 
 100th and 200th entries of a parallel vector, \trl{p}, one could use 
@@ -1010,8 +1012,8 @@ elements it needed, or none by creating an index set with no entries.
    ISCreateGeneral(PETSC\_COMM\_SELF,2,idx\_from,\&from);\\
    ISCreateGeneral(PETSC\_COMM\_SELF,2,idx\_to,\&to);\\
    VecScatterCreate(p,from,x,to,\&scatter);\\
-   VecScatterBegin(p,x,INSERT\_VALUES,SCATTER\_FORWARD,scatter);\\
-   VecScatterEnd(p,x,INSERT\_VALUES,SCATTER\_FORWARD,scatter);\\
+   VecScatterBegin(scatter,p,x,INSERT\_VALUES,SCATTER\_FORWARD);\\
+   VecScatterEnd(scatter,p,x,INSERT\_VALUES,SCATTER\_FORWARD);\\
    VecGetArray(x,\&values);\\
    ISDestroy(from);\\
    ISDestroy(to); \\
@@ -1039,15 +1041,15 @@ vector. In the simplest case this may be written as
 \begin{tabbing}
    Function: (Input Vec globalin, Output Vec globalout)\\
 \\
-  VecScatterBegin(\=Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
-                 \>         ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
-  VecScatterEnd(Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
-                 \>       ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
+  VecScatterBegin(\=VecScatter scatter,Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
+                 \>         ScatterMode SCATTER\_FORWARD);\\
+  VecScatterEnd(VecScatter scatter,Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
+                 \>       ScatterMode SCATTER\_FORWARD);\\
   \trl{/*} For example, do local calculations from localin to localout \trl{*/} \\
-  VecScatterBegin(Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
-                 \>         ScatterMode SCATTER\_REVERSE,VecScatter scatter);\\
-  VecScatterEnd(Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
-                 \>       ScatterMode SCATTER\_REVERSE,VecScatter scatter);
+  VecScatterBegin(VecScatter scatter,Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
+                 \>         ScatterMode SCATTER\_REVERSE);\\
+  VecScatterEnd(VecScatter scatter,Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
+                 \>       ScatterMode SCATTER\_REVERSE);
 \end{tabbing}
 
 % -------------------------------------------------------------------------------
@@ -1197,7 +1199,7 @@ opposite of the Fortran convention, meaning that the value to be put in row
 allow the insertion of values in column major order, one can call the command
 \findex{MatSetOption()}
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED);
+  MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED,PETSC\_TRUE);
 \end{tabbing}
 {\bf Warning}: Several of the sparse implementations do {\em not} currently
 support the column-oriented option.
@@ -1213,21 +1215,7 @@ MATMPIBAIJ), one can insert elements more efficiently using the block
 variant, MatSetValuesBlocked(). \findex{MatSetValuesBlocked()}
 
 The function MatSetOption() accepts several other inputs; see
-the manual page for details. We
-discuss two of these options, which are related to the efficiency of the
-assembly process.  To indicate to PETSc that the row (\trl{im}) or
-column (\trl{in}) indices set with MatSetValues() are sorted (in increasing order),
-one uses the command \findex{MAT_ROWS_SORTED} \findex{MAT_COLUMNS_SORTED}
-\begin{tabbing}
-  MatSetOption(Mat A,MAT\_ROWS\_SORTED);
-\end{tabbing}
-or 
-\begin{tabbing}
-  MatSetOption(Mat A,MAT\_COLUMNS\_SORTED);
-\end{tabbing}
-Note that these flags indicate the format of the data passed in with 
-MatSetValues(); they do not have anything to do with how the sparse
-matrix data is stored internally in PETSc.
+the manual page for details.
 
 After the matrix elements have been inserted or added into the matrix, 
 they must be processed (also called assembled) before they can be used. The routines for matrix
@@ -1272,7 +1260,7 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
@@ -1555,19 +1543,19 @@ efficiency for matrix assembly will remain.
 
 As described above, the option \trl{-info} \findex{-info}
 will print information about the success of preallocation during
-matrix assembly.  For the MATMPIAIJ format, PETSc will also list
+matrix assembly.  For the MATMPIAIJ and MATMPIBAIJ formats, PETSc will also list
 the number of elements owned by on each process that were generated
 on a different process.  For example, the statements
 \begin{tabbing}
-   MatAssemblyBegin\_MPIAIJ:Number of off processor values 10\\
-   MatAssemblyBegin\_MPIAIJ:Number of off processor values 7\\
-   MatAssemblyBegin\_MPIAIJ:Number of off processor values 5
+   MatAssemblyBegin\_MPIAIJ:Stash has 10 entries, uses 0 mallocs
+   MatAssemblyBegin\_MPIAIJ:Stash has 3 entries, uses 0 mallocs 
+   MatAssemblyBegin\_MPIAIJ:Stash has 5 entries, uses 0 mallocs 
 \end{tabbing}
 indicate that very few values have been generated on different processes.
 On the other hand, the statements
 \begin{tabbing}
-   MatAssemblyBegin\_MPIAIJ:Number of off processor values 100000\\
-   MatAssemblyBegin\_MPIAIJ:Number of off processor values 77777
+   MatAssemblyBegin\_MPIAIJ:Stash has 100000 entries, uses 100 mallocs
+   MatAssemblyBegin\_MPIAIJ:Stash has 77777 entries, uses 70 mallocs
 \end{tabbing}
 indicate that many values have been generated on the ``wrong'' processes.
 This situation can be very inefficient, since the transfer of values
@@ -1739,11 +1727,11 @@ matrix operations as well.  The file
 \trl{${PETSC_DIR}/include/petscmat.h} provides a complete list of matrix
 operations, which have the form \trl{MATOP_<OPERATION>}, where \trl{
 <OPERATION>} is the name (in all capital letters) of the user
-interface routine (for example, MatMult() $ \rightarrow $ \trl{MATOP_MULT}).  All
+interface routine (for example, MatMult() $ \to $ \trl{MATOP_MULT}).  All
 user-provided functions have the same calling sequence as the
 usual matrix interface routines, since the user-defined functions are
 intended to be accessed through the same interface, e.g., 
-\trl{MatMult(Mat,Vec,Vec)} $ \rightarrow$ \trl{UserMult(Mat,Vec,Vec)}.
+\trl{MatMult(Mat,Vec,Vec)} $ \to$ \trl{UserMult(Mat,Vec,Vec)}.
 The final argument for MatShellSetOperation() needs to be cast
 to a \trl{void *}, since the final argument could (depending on the 
 MatOperation) be a variety of different functions.
@@ -1784,7 +1772,7 @@ previously existed, space will be allocated for the new entries.
 To prevent the allocation of additional memory and simply discard those 
 new entries, one can use the option \findex{MatSetOption()}
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
 Once the matrix has been assembled, one can factor it numerically
 without repeating the ordering or the symbolic factorization. 
@@ -1827,11 +1815,11 @@ same positions and the matrix retains the same nonzero structure, the user
 can call MatZeroRows() in the first iteration. Then, before generating 
 the matrix in the second iteration the user should call
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
 From that point, \findex{MatSetOption()}
 no new values will be inserted into those (boundary) rows of 
-the matrix. \findex{MAT_NO_NEW_NONZERO_LOCATIONS} 
+the matrix. \findex{MAT_NEW_NONZERO_LOCATIONS} 
 
 Another matrix routine of interest is \findex{MatConvert()}
 \begin{tabbing}
@@ -1849,7 +1837,7 @@ In certain applications it may be necessary for application codes
 to directly access elements of a matrix. This may be done by using the 
 the command (for local rows only)
 \begin{tabbing}
-  MatGetRow(Mat A,int row, int *ncols,const PetscErrorCode (*cols)[],const PetscScalar (*vals)[]);
+  MatGetRow(Mat A,int row, int *ncols,const PetscInt (*cols)[],const PetscScalar (*vals)[]);
 \end{tabbing}
 The argument \trl{ncols} returns the number of nonzeros in that row, 
 while \trl{cols} and \trl{vals} returns the column indices (with indices
@@ -2269,7 +2257,7 @@ methods. For the conjugate gradient, Richardson, and
 Chebyshev methods the true residual can be used by
 the options database command \trl{ksp_norm_type unpreconditioned } or by calling the routine
 \begin{tabbing}
-  KSPSetNormType(KSP ksp,KSP\_UNPRECONDITIONED\_NORM);
+  KSPSetNormType(KSP ksp,KSP\_NORM\_UNPRECONDITIONED);
 \end{tabbing}
 
 \begin{table}
@@ -2360,12 +2348,12 @@ about the iterations. The user can indicate that the norms of the residuals
 should be displayed by using \findex{-ksp_monitor}
 \trl{-ksp_monitor} within the options database.  
 To display the residual norms in a graphical window (running under X Windows),
-one should use \trl{-ksp_xmonitor} \trl{[x,y,w,h]}, where either all or none of 
-the options must be specified. \findex{-ksp_xmonitor}
+one should use \trl{-ksp_monitor_draw} \trl{[x,y,w,h]}, where either all or none of 
+the options must be specified. \findex{-ksp_monitor_draw}
 Application programmers can also provide their own routines to perform 
-the monitoring by using the command \findex{KSPSetMonitor()}
+the monitoring by using the command \findex{KSPMonitorSet()}
 \begin{tabbing}
-  KSPSetMonitor(\=KSP ksp,PetscErrorCode (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
+  KSPMonitorSet(\=KSP ksp,PetscErrorCode (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
                 \>        void *ctx,PetscErrorCode (*mondestroy)(void*));
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
@@ -2379,52 +2367,52 @@ MPI communicator for the KSP context.  See section ~\ref{sec_writing}
 for more discussion of the use of MPI communicators within PETSc.
 
 Several monitoring routines are supplied with PETSc, 
-including \findex{KSPDefaultMonitor()} \findex{KSPSingularValueMonitor()}
+including \findex{KSPMonitorDefault()} \findex{KSPMonitorSingularValue()}
 \begin{tabbing}
-  KSPDefaultMonitor(KSP,int,double, void *);\\
-  KSPSingularValueMonitor(KSP,int,double, void *);\\
-  KSPTrueMonitor(KSP,int,double, void *);
+  KSPMonitorDefault(KSP,int,double, void *);\\
+  KSPMonitorSingularValue(KSP,int,double, void *);\\
+  KSPMonitorTrueResidualNorm(KSP,int,double, void *);
 \end{tabbing}
 The default monitor simply prints an estimate of the $l_2$-norm of the 
 residual at each iteration. The routine
-KSPSingularValueMonitor() is appropriate only for use with the conjugate 
+KSPMonitorSingularValue() is appropriate only for use with the conjugate 
 gradient method or GMRES, since it prints estimates of the extreme singular 
 values of the preconditioned operator at each iteration. Since
-KSPTrueMonitor() prints \findex{KSPTrueMonitor()}
+KSPMonitorTrueResidualNorm() prints \findex{KSPMonitorTrueResidualNorm()}
 the true residual at each iteration by 
 actually computing the residual using the formula $ r = b - Ax $, the routine
 is slow and should be used only for testing or convergence studies,
 not for timing. These monitors may be accessed with the command line options
-\trl{-ksp_monitor}, \trl{-ksp_singmonitor}, and \trl{-ksp_truemonitor}.
-\findex{-ksp_monitor} \findex{-ksp_singmonitor} \findex{-ksp_truemonitor}
+\trl{-ksp_monitor}, \trl{-ksp_monitor_singular_value}, and \trl{-ksp_monitor_true_residual}.
+\findex{-ksp_monitor} \findex{-ksp_monitor_singular_value} \findex{-ksp_monitor_true_residual}
 
 To employ the default graphical monitor, one should use the 
-commands \findex{KSPLGMonitorCreate()} \findex{KSPLGMonitorDestroy()}
+commands \findex{KSPMonitorLGCreate()} \findex{KSPMonitorLGDestroy()}
 \begin{tabbing}
    PetscDrawLG lg;\\
-  KSPLGMonitorCreate(char *display,char *title,int x,int y,int w,int h,PetscDrawLG *lg);\\
-  KSPSetMonitor(KSP ksp,KSPLGMonitor,lg,0);
+  KSPMonitorLGCreate(char *display,char *title,int x,int y,int w,int h,PetscDrawLG *lg);\\
+  KSPMonitorSet(KSP ksp,KSPMonitorLG,lg,0);
 \end{tabbing}
 When no longer needed, the line graph should be destroyed 
 with the command
 \begin{tabbing}
-  KSPLGMonitorDestroy(PetscDrawLG lg);
+  KSPMonitorLGDestroy(PetscDrawLG lg);
 \end{tabbing}
 The user can change aspects of the graphs with the \trl{PetscDrawLG*()} and 
 \trl{PetscDrawAxis*()} routines. \findex{PetscDrawAxis*()} \findex{PetscDrawLG*()}
 One can also access this functionality from the options database 
-with the command \trl{-ksp_xmonitor} \trl{[x,y,w,h]}. \findex{-ksp_xmonitor}, 
+with the command \trl{-ksp_monitor_draw} \trl{[x,y,w,h]}. \findex{-ksp_monitor_draw}, 
 where \trl{x, y, w, h} are the optional location and size of the window.
 
 One can cancel hardwired monitoring routines for KSP at runtime with 
-\trl{-ksp_cancelmonitors}. \findex{-ksp_cancelmonitors}
+\trl{-ksp_monitor_cancel}. \findex{-ksp_monitor_cancel}
 
 Unless the Krylov method converges so that the residual norm is small,
 say $ 10^{-10} $, many of the final digits printed with the \trl{-ksp_monitor}
 option are meaningless. Worse, they are different on different 
 machines; due to different round-off rules used by, say, the IBM RS6000
 and the Sun Sparc. This makes testing between different machines
-difficult. The option \trl{-ksp_smonitor} \findex{-ksp_smonitor}
+difficult. The option \trl{-ksp_monitor_short} \findex{-ksp_monitor_short}
 causes PETSc to print fewer of the digits of the residual norm 
 as it gets smaller; thus on most of the machines it will always
 print the same numbers making cross system testing easier.
@@ -2604,8 +2592,8 @@ such tuning can significantly enhance performance.
 % --------------------------------------------------------------------
 \label{sec_blocksolve}
 PETSc supports incomplete factorization preconditioners for several matrix
-types for the uniprocess case.  \sindex{ILU, parallel}
-\sindex{ICC, parallel} In addition, for the parallel case
+types for the uniprocess case.\sindex{ILU, parallel}\sindex{ICC, parallel}
+In addition, for the parallel case
 we provide an interface to the ILU and ICC preconditioners
 of BlockSolve95 \cite{bs-user-ref}.   PETSc enables users
 to employ the preconditioners within
@@ -2641,7 +2629,7 @@ allocation.
 
 If the matrix is symmetric, one {\em may} call
 \begin{tabbing}
-  MatSetOption(Mat mat,MAT\_SYMMETRIC);
+  MatSetOption(Mat mat,MAT\_SYMMETRIC,PETSC\_TRUE);
 \end{tabbing}
 to improve efficiency, but in this case one cannot use the ILU 
 preconditioner, only ICC.
@@ -2668,7 +2656,7 @@ D^{-1/2} b$ .  PETSc handles the internal scaling and permutation of
 $ x $ and $ b $, so the user does {\em not} deal with these conversions, 
 but instead always works with the original linear system.  In
 this case, by default the scaled residual norm is monitored; one must use the
-option \trl{-ksp_truemonitor} \findex{-ksp_truemonitor} to print both the
+option \trl{-ksp_monitor_true_residual} \findex{-ksp_monitor_true_residual} to print both the
 scaled and unscaled residual norms. {\em Note}: If one is using ILU/ICC via
 BlockSolve95 and the \trl{MATMPIROWBS} matrix format for the 
 preconditioner matrix, but using a different format for a different
@@ -2770,8 +2758,7 @@ These orderings can also be set through the options database by specifying
 one of the following:  \trl{-pc_factor_ordering_type} \trl{natural}, \trl{-pc_factor_ordering_type}
 \trl{nd}, \trl{-pc_factor_ordering_type} \trl{1wd}, \trl{-pc_factor_ordering_type} \trl{rcm},
 \trl{-pc_factor_ordering_type} \trl{qmd}.
-In addition, see 
-\break MatGetOrdering(), discussed in Section~\ref{sec_matfactor}.
+In addition, see MatGetOrdering(), discussed in Section~\ref{sec_matfactor}.
 
 The sparse LU factorization provided in PETSc does not perform pivoting for 
 numerical stability (since they are designed to preserve nonzero 
@@ -2781,7 +2768,7 @@ pivot when, in fact, the matrix is non-singular. The option
 will often help eliminate the zero pivot, by preprocessing the the 
 column ordering to remove small values from the diagonal. Here, \trl{tol}
 is an optional tolerance to decide if a value is nonzero; by default it
-is $ 1.e-10.$ 
+is~$ 1.e-10.$ 
 
 
 In addition, Section~\ref{sec_symbolfactor} provides information on
@@ -3224,18 +3211,20 @@ For eg: \trl{-mat_type superlu_dist} \trl{-ksp_type preonly} \trl{-pc_type lu}
 {\bf Package}    &{\bf Base Class}  & {\bf PCType} & {\bf MatType} & {\bf Runtime Options}\\
 \hline
 DSCPACK          & baij         & cholesky     &  MATDSCPACK         & \trl{-mat_type dscpack}\\
-MUMPS            & aij          & lu           &  MATAIJMUMPS        & \trl{-mat_type aijmumps}\\
-                 & sbaij        & cholesky     &  MATSBAIJMUMPS      & \trl{-mat_type sbaijmumps}\\
-SPOOLES          & seqaij       & lu           &  MATSEQAIJSPOOLES   & \trl{-mat_type seqaijspooles}\\
-                 & mpiaij       & lu           &  MATMPIAIJSPOOLES   & \trl{-mat_type mpiaijspooles}\\
-                 & seqsbaij     & cholesky     &  MATSEQSBAIJSPOOLES & \trl{-mat_type seqsbaijspooles}\\
-                 & mpisbaij     & cholesky     &  MATMPISBAIJSPOOLES & \trl{-mat_type mpisbaijspooles}\\
-SUPERLU          & seqaij       & lu           &  MATSUPERLU         & \trl{-mat_type superlu} \\
-SUPERLU\_DIST    & aij          & lu           &  MATSUPERLU\_DIST   & \trl{-mat_type superlu_dist}\\
-UMFPACK          & seqaij       & lu           &  MATUMFPACK         & \trl{-mat_type umfpack}\\
 ESSL             & seqaij       & lu           &  MATESSL            & \trl{-mat_type essl}\\
 LUSOL            & seqaij       & lu           &  MATLUSOL           & \trl{-mat_type lusol}\\
 MATLAB           & seqaij       & lu           &  MATMATLAB          & \trl{-mat_type matlab}\\
+MUMPS            & aij          & lu           &  MATAIJMUMPS        & \trl{-mat_type aijmumps}\\
+                 & sbaij        & cholesky     &  MATSBAIJMUMPS      & \trl{-mat_type sbaijmumps}\\
+PLAPACK          & plapack      & lu           &  MATPLAPACK         & \trl{-mat_type plapack}\\
+                 & plapack      & cholesky     &  MATPLAPACK         & \trl{-mat_type plapack}\\
+SPOOLES          & aij          & lu           &  MATAIJSPOOLES      & \trl{-mat_type aijspooles}\\                
+                 & sbaij        & cholesky     &  MATSBAIJSPOOLES    & \trl{-mat_type sbaijspooles}\\
+SUPERLU          & seqaij       & lu           &  MATSUPERLU         & \trl{-mat_type superlu} \\
+SUPERLU\_DIST    & aij          & lu           &  MATSUPERLU\_DIST   & \trl{-mat_type superlu_dist}\\
+UMFPACK          & seqaij       & lu           &  MATUMFPACK         & \trl{-mat_type umfpack}\\
+
+
 \hline
 \end{tabular}
 \end{center}
@@ -3262,7 +3251,7 @@ In \ref{tab_externaloptions}, the base class aij refers to the fact
 that inheritance is based on MATSEQAIJ when constructed with a single
 process communicator, and from MATMPIAIJ otherwise.  The same holds
 for baij and sbaij.  For codes that are intended to be run as both a
-single process or with multiple processes, depending on the mpirun
+single process or with multiple processes, depending on the mpiexec
 command, it is recommended that both sets of preallocation routines
 are called for these communicator morphing types.  The call for the
 incorrect type will simply be ignored without any harm or message.
@@ -3291,7 +3280,7 @@ The SNES class includes methods for solving systems of nonlinear equations of th
 \F(\x) = 0,
 \label{eq_F=0}
 \end{equation}
-where $\F: \, \Re^n \rightarrow \Re^n$.
+where $\F: \, \Re^n \to \Re^n$.
 Newton-like methods provide the core of the package, including
 \sindex{Newton-like methods} both line search \sindex{line search} 
 and trust region \sindex{trust region} techniques, which are discussed
@@ -3505,8 +3494,8 @@ Test Jacobian   & SNESTEST        & test  & \\
 \hline
 \end{tabular}
 \end{center}
-\label{tab_snesdefaults}
 \caption{PETSc Nonlinear Solvers}
+\label{tab_snesdefaults}
 \end{table}
 
 \subsection{Line Search Techniques} \sindex{line search}
@@ -3619,9 +3608,9 @@ for a list of values for SNESConvergedReason. \findex{SNESConvergedReason}
 
 By default the SNES solvers run silently without displaying information
 about the iterations. The user can initiate monitoring with the
-command \findex{SNESSetMonitor()} 
+command \findex{SNESMonitorSet()} 
 \begin{tabbing}
-  SNESSetMonitor(\=SNES snes,PetscErrorCode (*mon)(SNES,int its,double norm,void* mctx),\\
+  SNESMonitorSet(\=SNES snes,PetscErrorCode (*mon)(SNES,int its,double norm,void* mctx),\\
                  \>        void *mctx,PetscErrorCode (*monitordestroy)(void*));
 \end{tabbing}
 The routine, \trl{mon}, indicates a user-defined monitoring routine,
@@ -3629,24 +3618,24 @@ where \trl{its} and \trl{mctx} respectively denote the iteration
 number and an optional user-defined context for private data for the
 monitor routine.  The argument \trl{norm} is the function norm.
 
-The routine set by SNESSetMonitor() is called once after every
+The routine set by SNESMonitorSet() is called once after every
 successful step computation within the nonlinear solver.  Hence, the
 user can employ this routine for any application-specific computations
 that should be done after the solution update. The option
 \trl{-snes_monitor} \findex{-snes_monitor} activates the default
-SNES monitor routine, SNESDefaultMonitor(), \findex{SNESDefaultMonitor()}
-while \trl{-snes_xmonitor} \findex{-snes_xmonitor} draws
+SNES monitor routine, SNESMonitorDefault(), \findex{SNESMonitorDefault()}
+while \trl{-snes_monitor_draw} \findex{-snes_monitor_draw} draws
 a simple line graph of the residual norm's convergence.
 
 Once can cancel hardwired monitoring routines for SNES at runtime with 
-\trl{-snes_cancelmonitors}. \findex{-snes_cancelmonitors}
+\trl{-snes_monitor_cancel}. \findex{-snes_monitor_cancel}
 
 As the Newton method converges so that the residual norm is small,
 say $ 10^{-10} $, many of the final digits printed with the \trl{-snes_monitor}
 option are meaningless. Worse, they are different on different 
 machines; due to different round-off rules used by, say, the IBM RS6000
 and the Sun Sparc. This makes testing between different machines
-difficult. The option \trl{-snes_smonitor} \findex{-snes_smonitor}
+difficult. The option \trl{-snes_monitor_short} \findex{-snes_monitor_short}
 causes PETSc to print fewer of the digits of the residual norm 
 as it gets smaller; thus on most of the machines it will always
 print the same numbers making cross process testing easier.
@@ -3760,7 +3749,7 @@ be employed. \sindex{matrix-free Jacobians} \findex{PCSHELL}
 The user can create a matrix-free context for use within SNES with 
 the routine
 \begin{tabbing}
-  MatCreateSNESMF(SNES snes,Vec x, Mat *mat);
+  MatCreateSNESMF(SNES snes,Mat *mat);
 \end{tabbing}
 \findex{MatCreateSNESMF()}
 This routine creates the data structures needed for the matrix-vector 
@@ -3774,16 +3763,16 @@ option \trl{-snes_mf_operator}. \findex{-snes_mf_operator}
 
 See also
 \begin{tabbing}
-  MatCreateMF(Vec x, Mat *mat);
+  MatCreateMFFD(Vec x, Mat *mat);
 \end{tabbing}
 for users who need a matrix-free matrix but are not using SNES.
 
 The user can set one parameter to control the Jacobian-vector
 product approximation with the command
 \begin{tabbing}
-  MatSNESMFSetFunctionError(Mat mat,double rerror);
+  MatMFFDSetFunctionError(Mat mat,double rerror);
 \end{tabbing}
-\findex{MatSNESMFSetFunctionError()}
+\findex{MatMFFDSetFunctionError()}
 The parameter \trl{rerror} should be set to the square root of the 
 relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $, 
 which assumes that the functions are evaluated to full double precision accuracy. 
@@ -3794,16 +3783,16 @@ This parameter can also be set from the options database with
 \findex{-snes_mf_err}
 
 In addition, SNES provides a way to register new routines to compute the differencing parameter ($h$);
-see the manual page for MatSNESMFSetType() and MatSNESMFRegisterDynamic) \findex{MatSNESMFSetType()}
-\findex{MatSNESMFRegisterDynamic)}. We currently provide two default routines accessible via
+see the manual page for MatMFFDSetType() and MatMFFDRegisterDynamic) \findex{MatMFFDSetType()}
+\findex{MatMFFDRegisterDynamic)}. We currently provide two default routines accessible via
 \begin{tabbing}
   -snes\_mf\_type \trl{<default or wp>}
 \end{tabbing}
 For the default approach there is one ``tuning'' parameter, set with 
 \begin{tabbing}
-  MatSNESMFDefaultSetUmin(Mat mat,PetscReal umin);
+  MatMFFDDefaultSetUmin(Mat mat,PetscReal umin);
 \end{tabbing}
-\findex{MatSNESMFDefaultSetUmin()}
+\findex{MatMFFDDefaultSetUmin()}
 This parameter, \trl{umin} (or $u_{min}$), is a bit involved; its default is 
 $ 10^{-6} $ . The Jacobian-vector product is approximated via the formula
 \[
@@ -3830,13 +3819,13 @@ $ ||a|| = 1 $ and (b) for the entire {\bf linear} iterative process $ u $ does n
 $\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the 
 options
 \begin{tabbing}
-  MatSNESMFWPSetComputeNormA(Mat mat,PetscTruth);\\
-  MatSNESMFWPSetComputeNormU(Mat mat,PetscTruth);
+  MatMFFDWPSetComputeNormA(Mat mat,PetscTruth);\\
+  MatMFFDWPSetComputeNormU(Mat mat,PetscTruth);
 \end{tabbing}
 or 
 \begin{tabbing}
-   -snes\_mf\_compute\_norma\trl{ <true or false>}\\
-   -snes\_mf\_compute\_normu \trl{<true or false>}
+   -mat\_mffd\_compute\_norma\trl{ <true or false>}\\
+   -mat\_mffd\_compute\_normu \trl{<true or false>}
 \end{tabbing}
 This information is used to eliminate the redundant computation of these parameters,
 therefor reducing the number of collective operations and improving the efficiency of the 
@@ -3845,12 +3834,11 @@ application code.
 It is also possible to monitor the differencing parameters h that are computed
 via the routines
 \begin{tabbing}
-   MatSNESMFSetHHistory(Mat,PetscScalar *,int);\\
-   MatSNESMFResetHHistory(Mat,PetscScalar *,int);\\
-   MatSNESMFGetH(Mat,PetscScalar *);\\
-   MatSNESMFKSPMonitor(KSP,int,double,void *);
+   MatMFFDSetHHistory(Mat,PetscScalar *,int);\\
+   MatMFFDResetHHistory(Mat,PetscScalar *,int);\\
+   MatMFFDGetH(Mat,PetscScalar *);\\
+   MatMFFDKSPMonitor(KSP,int,double,void *);
 \end{tabbing}
-and the runtime option  \trl{-snes_mf_ksp_monitor}. \findex{snes_mf_ksp_monitor}
 
 We include an example in Figure~\ref{fig_snesexample2} that explicitly
 uses a matrix-free approach.  Note that by using the option 
@@ -3878,7 +3866,7 @@ possible, as demonstrated by the example,
 Jacobian        & Create matrix with MatCreate(). $ ^* $ & Create matrix with MatCreateShell().\\
                & Assemble matrix with user-defined     & Use MatShellSetOperation() to set\\
 Matrix          & routine. $ ^\dagger $                         & various matrix actions.\\
-                &                                    & Or use MatCreateSNESMF().\\
+                &                                    & Or use MatCreateMFFD() or MatCreateSNESMF().\\
 & & \\ \hline
 & & \\
 Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Use SNESGetKSP() and KSPGetPC() \\
@@ -4058,14 +4046,32 @@ steady-state problems using pseudo-timestepping.
 \]
 where $ u $ is a finite-dimensional vector, usually obtained from
 discretizing a PDE with finite differences, finite elements, etc.
-For example, discretizing the heat equation 
+For example, in the backward Euler method, discretizing the heat equation 
 \[
           u_t = u_{xx} 
 \]
 with centered finite differences results in 
 \[
-          (u_i)_t = \frac{u_{i+1} - 2 u_{i} + u_{i-1}}{h^2}.
+          (u_i)_t = \frac{u_{i+1} - 2 u_{i} + u_{i-1}}{h^2};
 \]
+or with piecewise linear finite elements approximation
+$ u(x,t) \doteq \sum_i \xi_i(t) \phi_i(x)$ yeilds semi-discrete equation
+\[
+          B {\xi}'(t) = A \xi(t)
+\]
+and discrete equation
+\[
+        ( B - dt^n A  ) u^{n+1} = A u^n, 
+\]
+in which 
+\[
+         {u^n}_i = \xi_i(t_n) \doteq u(x_i,t_n),
+\]
+\[  
+         {\xi}'(t_{n+1}) \doteq \frac{{u^{n+1}}_i - {u^{n}}_i }{dt^{n}},
+\]
+$A$ is the stiffness matrix and $B$ is the mass matrix.
+
 The TS library provides code to solve these equations (currently 
 using the forward or backward Euler method) as well as an interface to 
 other sophisticated ODE solvers, in a clean and easy manner,
@@ -4086,18 +4092,20 @@ we can use pseudo-transient continuation by solving
 \[
            u_t = F(u).
 \]
-By using time differencing with the backward Euler method, we obtain
+Using time differencing 
 \[
-           \frac{u^{n+1} - u^{n}}{dt^{n}} = F(u^{n+1}).
+   u_t \doteq \frac{{u^{n+1}} - {u^{n}} }{dt^{n}}
 \]
-More generally we can consider a diagonal matrix $ Dt^{n} $ that has a
-pseudo-timestep for each node point to obtain the series of nonlinear equations
+with the backward Euler method, we obtain
+nonlinear equations at a series of pseudo-timesteps
 \[
-        Dt^{n^{-1}}(u^{n+1} - u^{n}) =  F(u^{n+1}).
+           \frac{1}{dt^n} B (u^{n+1} - u^{n} ) = F(u^{n+1}).
 \]
-For this problem the user must provide $ F(u) $ and the diagonal 
-matrix $ Dt^{n} $, (or optionally, if the timestep is position independent,
-a scalar timestep) as well as optionally the Jacobian of $ F(u).$ 
+For this problem the user must provide $F(u)$,
+the time steps $dt^{n}$ and the left-hand-side matrix $B$
+(or optionally, if the timestep is position independent and $B$ is the
+identity matrix,
+a scalar timestep), as well as optionally the Jacobian of $F(u)$. 
 
 \section{Basic Usage}
 
@@ -4115,10 +4123,14 @@ One can set the solution method with the routine
  TSSetType(TS ts,TSType type);
 \end{tabbing}
 \findex{TSSetType()} Currently supported types are \trl{TS_EULER},
-\trl{TS_BEULER}, and \trl{TS_PSEUDO}
+\trl{TS_BEULER},  \trl{TS_PSEUDO}, \trl{TS_CRANK_NICHOLSON},
+\trl{TS_SUNDIALS} (only if the Sundials package is installed),
+and \trl{TS_RK}
 \findex{TS_EULER} \findex{TS_BEULER} \findex{TS_PSEUDO}
+\findex{TS_CRANK_NICHOLSON} \findex{TS_SUNDIALS} \findex{TS_RUNGE_KUTTA}
 or the command line option
-\trl{-ts_type euler, beuler, pseudo}. \findex{-ts_type} \sindex{Euler}
+\trl{-ts_type euler, beuler, pseudo, crank-nicholson, sundials, runge-kutta}.
+\findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
 
 
@@ -4143,11 +4155,16 @@ One sets the total number of timesteps to run or the total time to run
 \begin{tabbing}
  TSSetDuration(TS ts,int maxsteps,double maxtime);
 \end{tabbing}
-One sets up the timestep context with \findex{TSSetUp()}
+One performs the request number of time steps with\findex{TSSolve()}
+\begin{tabbing}
+  TSSolve(TS ts);
+\end{tabbing}
+The solve call implicitly sets up the timestep context;
+this can be done explicitly with \findex{TSSetUp()}
 \begin{tabbing}
  TSSetUp(TS ts);
 \end{tabbing}
-destroys it with \findex{TSDestroy()}
+One destroys the context with \findex{TSDestroy()}
 \begin{tabbing}
  TSDestroy(TS ts);
 \end{tabbing}
@@ -4171,20 +4188,21 @@ for the ODE. \findex{TSSetSolution()}
 \subitem $ \bullet $ For linear functions (solved with implicit timestepping),
  the user must call 
 \begin{tabbing}
- TSSetRHSMatrix(TS ts,Mat A, Mat B,\\
- PetscErrorCode (*f)(TS,double,Mat*,Mat*,MatStructure*,void*),void *fP);
+TSSetMatrices(TS ts,\\
+Mat A,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),\\
+Mat B,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),\\
+MatStructure flag,void *ctx)
 \end{tabbing}
-The matrix \trl{B} (although usually the same as \trl{A}) allows one to 
-provide \findex{TSSetRHSMatrix()}
-a different matrix to be used in the construction of the preconditioner.
-The function \trl{f} is used to form the matrices \trl{A} and \trl{B} 
+The matrices \trl{A} and \trl{B} are right and left hand-side matrix respectively.
+The functions \trl{frhs} and \trl{flhs} are used to form the matrices \trl{A} and \trl{B} 
 at each timestep if the matrices are time dependent.
-If the matrix does not depend on time, the user should 
-pass in \trl{PETSC_NULL} for \trl{f}.  The variable \trl{fP} allows 
-users to pass in an application context that is passed to the \trl{f()} function 
-whenever it is called, as the final argument. The user must provide the matrices
-\trl{A} and \trl{B}; if they have the right-hand side only as a linear
-function, they must construct a \trl{MatShell} matrix. Note that this is 
+If the matrices do not depend on time, the user should 
+pass in \trl{PETSC_NULL}.  The variable \trl{ctx} allows 
+users to pass in an application context that is passed to the \trl{frhs()} or \trl{flhs()} function 
+whenever they are called, as the final argument. The user must provide the matrices
+\trl{A}. If \trl{B} is an indentity matrix, the user should pass in \trl{PETSC_NULL}. 
+If the right-hand side is provided only as a linear
+function, the user must construct a \trl{MatShell} matrix. Note that this is 
 the same interface as that for SNESSetJacobian(). \findex{SNESSetJacobian()}
 
 \subitem $ \bullet $  For nonlinear problems (or linear problems solved using
@@ -4203,7 +4221,7 @@ variable \trl{fP}.
 (approximate) Jacobian matrix of \trl{F(u,t)} and a function to
 compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat A, Mat B,PetscErrorCode (*fjac)(TS,double,Vec,Mat*,Mat*,\\
+ TSSetRHSJacobian(\=TS ts,Mat A, Mat P,PetscErrorCode (*fjac)(TS,double,Vec,Mat*,Mat*,\\
                   \>        MatStructure*,void*),void *fP);
 \end{tabbing}
 The \findex{TSSetRHSJacobian} arguments for the function \trl{fjac()} are
@@ -4386,7 +4404,7 @@ http://www.parallab.uib.no/projects/molecul/matrix/
 \label{chapter_dmmg}
 
 PETSc provides an easy to use high-level interface for multigrid on a
-single structured grid using the PETSc DA object (or the VecPack
+single structured grid using the PETSc DA object (or the DMComposite
 object) to decompose the grid across the processes.  This DMMG code
 \findex{DMMG} is built on top of the lower level PETSc multigrid
 interface provided in the \trl{PCType} of MG, see Section
@@ -4610,20 +4628,15 @@ and then sends matrices or vectors via
   VecView(Vec A,v);\\
   MatView(Mat B,v);
 \end{tabbing}
-One can also send arrays or integer arrays via
-\begin{tabbing}
-  PetscViewerSocketPutScalar(v,int m,int n,PetscScalar *array);\\
-  PetscViewerSocketPutReal(v,int m,int n,double *array);\\
-  PetscViewerSocketPutInt(v,int m,int *array);
-\end{tabbing}
+One can also send arrays or integer arrays via PetscIntView(), PetscRealView() and PetscScalarView().
 One may start the Matlab program manually or use the PETSc command
 \trl{PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp);} where machine and script may be \trl{PETSC_NULL}.
 
 To receive the objects in Matlab you must first make sure that \trl{${PETSC_DIR}/bin/matlab}
-is in your Matlab path. Use \trl{p = openport;} (or \trl{p = openport(portnum)} if you provided a port number in
-your call to PetscViewerSocketOpen()), then \trl{a = receive(p);} returns the object you have passed from PETSc.
-\trl{receive()} may be called any number of times. Each call should correspond on the PETSc side with
-viewing a single vector or matrix. You many call \trl{closeport()} to close the connection from Matlab.
+is in your Matlab path. Use \trl{p = sopen;} (or \trl{p = sopen(portnum)} if you provided a port number in
+your call to PetscViewerSocketOpen()), then \trl{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
+\trl{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
+viewing a single vector or matrix. You many call \trl{sclose()} to close the connection from Matlab.
 It is also possible to start your PETSc program from Matlab via \trl{launch()}.
 
 \section{Using the Matlab Compute Engine}
@@ -5296,7 +5309,7 @@ is presented.
 \begin{figure}[tb]
 {\tiny
 \begin{verbatim}
-mpirun ex21 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_summary -mat_mpibaij \
+mpiexec ex21 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_summary -mat_mpibaij \
             -matload_block_size 3 -pc_type bjacobi -options_left
 
 Number of iterations =  19
@@ -5372,7 +5385,7 @@ the average message length, and the number of global reductions.
 \begin{figure}[tb]
 {\tiny
 \begin{verbatim}
-mpirun ex21 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_summary -mat_mpibaij \
+mpiexec ex21 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_summary -mat_mpibaij \
             -matload_block_size 3 -pc_type bjacobi -options_left
 
 ---------------------------------------------- PETSc Performance Summary: ----------------------------------------------
@@ -5818,11 +5831,6 @@ at a time can significantly enhance performance.
    access elements in of vector repeatedly, employ {VecGetArray()} to allow 
    direct manipulation of the vector elements. \findex{VecGetArray()}
 
-\item When using MatSetValues(), if the column indices of the values being
-   inserted have been sorted in monotonically increasing order, call
-   the routine \trl{MatSetOption(mat,MAT_COLUMNS_SORTED)} before setting the values
-   to reduce the insertion time significantly.
-
 \item When possible, use VecMDot() rather than a series of calls to VecDot().
 \end{itemize}
 
@@ -5986,7 +5994,7 @@ program.
 %\section{Machine-Specific Optimizations}
 %
 %\begin{itemize}
-%\item On the IBM SP, using the mpirun option \trl{-nopoll} may
+%\item On the IBM SP, using the mpiexec option \trl{-nopoll} may
 %      improve the performance of some PETSc programs.
 %\end{itemize}
 %
@@ -6066,7 +6074,7 @@ mechanism to enable such customization.  To print a list of
 available options for a given program, simply specify the option 
 \trl{-help} (or \trl{-h}) at runtime, e.g., \findex{-help} \findex{-h}
 \begin{tabbing}
-    mpirun -np 1 ./ex1 -help
+    mpiexec -np 1 ./ex1 -help
 \end{tabbing}
 
 Note that all runtime options correspond to particular PETSc routines
@@ -6177,9 +6185,9 @@ blocks can be controlled via the options \trl{-sub_ksp_type} and \trl{
 \subsection{Keeping Track of Options}
 
 One useful means of keeping track of user-specified runtime options is
-use of \trl{-optionstable}, which prints to \trl{stdout} during \trl{
+use of \trl{-options_table}, which prints to \trl{stdout} during \trl{
 PetscFinalize()} a table of all runtime options that the user has
-specified.  \findex{-optionstable} A related option is \trl{-options_left},
+specified.  \findex{-options_table} A related option is \trl{-options_left},
 \findex{-options_left} which prints the options table and indicates
 any options that have {\em not} been requested upon a call to \trl{
 PetscFinalize()}.  This feature is useful to check whether an option
@@ -6226,15 +6234,15 @@ predefined viewers:
 \item Vector and matrix objects can be passed to a running Matlab process
       with a viewer created by 
 \begin{tabbing}
-     PetscViewerMatlabOpen(MPI\_Comm comm,char *machine,int port,PetscViewer *viewer). \findex{PetscViewerMatlabOpen()}
+     PetscViewerSocketOpen(MPI\_Comm comm,char *machine,int port,PetscViewer *viewer). \findex{PetscViewerSocketOpen()}
 \end{tabbing} 
-      On the Matlab side, one must first run \trl{v = openport(int port)}
-      and then \trl{A = receive(v)} to obtain the matrix or vector. Once all
+      On the Matlab side, one must first run \trl{v = sreader(int port)}
+      and then \trl{A = PetscBinaryRead(v)} to obtain the matrix or vector. Once all
       objects have been received, the port can be closed from the Matlab end
-      with \trl{closeport(v)}. On the PETSc side, one should destroy
+      with \trl{close(v)}. On the PETSc side, one should destroy
       the viewer object with \findex{PetscViewerDestroy()} \trl{
       PetscViewerDestroy()}. The corresponding Matlab \trl{mex}
-      files are located in \trl{${PETSC_DIR}/src/viewer/impls/matlab}.
+      files are located in \trl{${PETSC_DIR}/src/sys/viewer/impls/socket/matlab}.
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers 
@@ -6469,7 +6477,7 @@ following contents:
 (Of course, workstation1, etc. can be the same machine.) Then, one can
 execute the command
 \begin{tabbing}
-   mpirun -p4pg \trl{<}procgroup\_filemame\trl{>} old -compare \trl{<}tolerance\trl{>} [options]
+   mpiexec -p4pg \trl{<}procgroup\_filemame\trl{>} old -compare \trl{<}tolerance\trl{>} [options]
 \end{tabbing}
 Note that the same runtime options must be used for the two programs.
 The first time an inner product or norm detects an inconsistency larger
@@ -6634,7 +6642,7 @@ use the command \findex{PetscDrawSetViewPort()}
 \end{tabbing}
 These arguments, which indicate the fraction of the window in which the 
 drawing should be done, must satisfy 
-$ 0 \le {\tt xl} \le {\tt xr} \le 1 $ and $ 0 \le {\tt yl} \le {\tt yr} \le 1.$ 
+$ 0 \leq {\tt xl} \leq {\tt xr} \leq 1 $ and $ 0 \leq {\tt yl} \leq {\tt yr} \leq 1.$ 
 
 To draw a line, one uses
  the command \findex{PetscDrawLine()} \sindex{lines, drawing}
@@ -6754,12 +6762,12 @@ large, or for timing.
 For both the linear and nonlinear solvers default routines
 allow one to graphically monitor convergence of the iterative method.
 These are accessed via the command line with 
-\trl{-ksp_xmonitor} and \trl{-snes_xmonitor}. \findex{-ksp_xmonitor}
-\findex{-snes_xmonitor} See also Sections \ref{sec_kspmonitor} and
+\trl{-ksp_monitor_draw} and \trl{-snes_monitor_draw}. \findex{-ksp_monitor_draw}
+\findex{-snes_monitor_draw} See also Sections \ref{sec_kspmonitor} and
 \ref{sec_snesmonitor}. 
 
-The two functions used are KSPLGMonitor() \findex{KSPLGMonitor()}
-and KSPLGMonitorCreate()  \findex{KSPLGMonitorCreate()}. These 
+The two functions used are KSPMonitorLG() \findex{KSPMonitorLG()}
+and KSPMonitorLGCreate()  \findex{KSPMonitorLGCreate()}. These 
 can easily be modified to serve specialized needs.
 
 
@@ -6801,7 +6809,7 @@ with the C++ compiler, one should use the config/configure.py option \trl{--with
 The directory \trl{${PETSC_DIR}/bmake} contains virtually all
 makefile commands and customizations to enable portability across
 different architectures.  Most makefile commands for maintaining the
-PETSc system are defined in the file \trl{${PETSC_DIR}/bmake/common}.  
+PETSc system are defined in the file \trl{${PETSC_DIR}/conf}.  
 These commands, which process all appropriate files within the
 directory of execution, include
 \begin{itemize}
@@ -6842,7 +6850,7 @@ three makefiles:
 \end{itemize}
 
 The architecture independent makefiles, are located in
-\trl{${PETSC_DIR}/bmake/common}, and the machine-spcecific
+\trl{${PETSC_DIR}/conf}, and the machine-spcecific
 makefiles get included from here.
 
 \section{PETSc Flags}
@@ -6872,7 +6880,7 @@ The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraires.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{tabbing}
-   include \$\trl{{PETSC_DIR}/bmake/common/base}
+   include \$\trl{{PETSC_DIR}/conf/base}
 \end{tabbing}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
@@ -6892,7 +6900,7 @@ within the makefile.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/bmake/common/base
+   include ${PETSC_DIR}/conf/base
 
    ex2: ex2.o chkopts
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
@@ -6925,7 +6933,7 @@ controls the generation of several example programs.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/bmake/common/base
+   include ${PETSC_DIR}/conf/base
 
    ex1: ex1.o 
         -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -6941,13 +6949,13 @@ controls the generation of several example programs.
         ${RM} ex4.o
 
    runex1:
-        -@${MPIRUN} ex1
+        -@${MPIEXEC} ex1
    runex2:
-        -@${MPIRUN} -np 2 ./ex2 -mat_seqdense -options_left
+        -@${MPIEXEC} -np 2 ./ex2 -mat_seqdense -options_left
    runex3:
-        -@${MPIRUN} ex3 -v -log_summary
+        -@${MPIEXEC} ex3 -v -log_summary
    runex4:
-        -@${MPIRUN} -np 4 ./ex4 -trdump
+        -@${MPIEXEC} -np 4 ./ex4 -trdump
 
    RUNEXAMPLES_1 = runex1 runex2
    RUNEXAMPLES_2 = runex4
@@ -6958,7 +6966,7 @@ controls the generation of several example programs.
    EXAMPLES_2    = ex4
    EXAMPLES_3    = ex3
 
-   include ${PETSC_DIR}/bmake/common/test
+   include ${PETSC_DIR}/conf/test
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Several Example Programs}
@@ -7023,7 +7031,7 @@ makefiles, they are also easily used.
    LIBBASE  = libpetscmat\\
    MANSEC   = Mat\\
 
-   include \$\trl{{PETSC_DIR}/bmake/common/base}
+   include \$\trl{{PETSC_DIR}/conf/base}
 \end{tabbing}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}

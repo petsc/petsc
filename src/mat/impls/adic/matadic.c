@@ -4,7 +4,7 @@
     ADIC matrix-free matrix implementation
 */
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 #include "petscda.h"          /*I   "petscda.h"    I*/
 #include "petscsnes.h"        /*I   "petscsnes.h"  I*/
 #include "petscsys.h"
@@ -231,7 +231,8 @@ PetscErrorCode MatDestroy_DAAD(Mat A)
   ierr = VecDestroy(a->localu);CHKERRQ(ierr);
   if (a->diagonal) {ierr = VecDestroy(a->diagonal);CHKERRQ(ierr);}
   ierr = PetscFree(a);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSNESMFSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatDAADSetDA_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatDAADSetSNES_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatDAADSetCtx_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -343,11 +344,11 @@ static struct _MatOps MatOps_Values = {0,
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFSetBase_AD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatSNESMFSetBase_AD(Mat J,Vec U)
+#define __FUNCT__ "MatMFFDSetBase_AD"
+PetscErrorCode PETSCMAT_DLLEXPORT MatSNESMFSetBase_AD(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
-  Mat_DAAD *a = (Mat_DAAD*)J->data;
+  Mat_DAAD       *a = (Mat_DAAD*)J->data;
 
   PetscFunctionBegin;
   a->diagonalvalid = PETSC_FALSE;
@@ -362,13 +363,14 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatDAADSetDA_AD"
 PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA_AD(Mat A,DA da)
 {
-  Mat_DAAD *a = (Mat_DAAD*)A->data;
+  Mat_DAAD       *a = (Mat_DAAD*)A->data;
   PetscErrorCode ierr;
-  int nc,nx,ny,nz,Nx,Ny,Nz;
+  PetscInt       nc,nx,ny,nz,Nx,Ny,Nz;
 
   PetscFunctionBegin;
-  a->da = da;
   ierr  = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
+  if (a->da) { ierr = DADestroy(a->da);CHKERRQ(ierr); }
+  a->da = da;
   ierr  = DAGetInfo(da,0,&Nx,&Ny,&Nz,0,0,0,&nc,0,0,0);CHKERRQ(ierr);
   ierr  = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   A->rmap.n  = A->cmap.n = nc*nx*ny*nz;
@@ -422,15 +424,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DAAD(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr    = PetscNew(Mat_DAAD,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,Mat_DAAD,&b);CHKERRQ(ierr);
   B->data = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   
-  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(B->comm,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(&B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(&B->cmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATDAAD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSNESMFSetBase_C","MatSNESMFSetBase_AD",MatSNESMFSetBase_AD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMFFDSetBase_C","MatMFFDSetBase_AD",MatMFFDSetBase_AD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDAADSetDA_C","MatDAADSetDA_AD",MatDAADSetDA_AD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDAADSetSNES_C","MatDAADSetSNES_AD",MatDAADSetSNES_AD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDAADSetCtx_C","MatDAADSetCtx_AD",MatDAADSetCtx_AD);CHKERRQ(ierr);

@@ -11,7 +11,7 @@ configure_options = [
   '--with-f90-interface=IRIX',
   '--with-mpi-include=/home/petsc/software/mpich-1.2.0/IRIX/include',
   '--with-mpi-lib=/home/petsc/software/mpich-1.2.0/IRIX/lib/libmpich.a',
-  '--with-mpirun=mpirun',
+  '--with-mpiexec=mpiexec',
   '--with-lapack-lib=/home/petsc/software/blaslapack/IRIX/libflapack.a'
   ]
 

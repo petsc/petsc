@@ -65,7 +65,7 @@ def badWebIndex(dirname,file):
 
 def processDir(tagfile,dirname,names):
   newls = []
-  gsfx = ['.py','.c','.F','.h','.tex','.cxx','.hh','makefile']
+  gsfx = ['.py','.c','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile']
   hsfx = ['.html']
   bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html']
   for l in names:
@@ -81,7 +81,7 @@ def processDir(tagfile,dirname,names):
     if exname in names and dirname.find('src') <0:
       names.remove(exname)
   # One-level unique dirs
-  for exname in ['SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','bmake','bin','maint']:
+  for exname in ['.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','bmake','bin','maint']:
     if exname in names:
       names.remove(exname)
   #  Multi-level unique dirs - specify from toplevel
@@ -90,13 +90,20 @@ def processDir(tagfile,dirname,names):
       filename=os.path.join(dirname,name)
       if filename.find(exname) >=0:
         names.remove(name)
+  # check for configure generated PETSC_ARCHes
+  rmnames=[]
+  for name in names:
+    if os.path.isdir(os.path.join(name,'conf')):
+      rmnames.append(name)
+  for rmname in rmnames:
+    names.remove(rmname)
   return
 
 def processFiles(dirname,tagfile):
   # list files that can't be done with global match [as above] with complete paths
   import glob
   files= []
-  lists=['bmake/adic*','bmake/common/*','bin/*','bin/*','maint/*','maint/confignightly/*']
+  lists=['conf/*','bin/*','maint/*','maint/confignightly/*']
 
   for glist in lists:
     gfiles = glob.glob(glist)

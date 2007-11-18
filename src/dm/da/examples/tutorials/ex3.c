@@ -26,8 +26,11 @@ PetscErrorCode SetCoordinates1d(DA da)
     }
   }
   ierr = DAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = VecDestroy(gc);CHKERRQ(ierr);
   ierr = DAGetCoordinates(da,&global);CHKERRQ(ierr);
   ierr = DALocalToGlobal(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
+  ierr = DADestroy(cda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -58,8 +61,11 @@ PetscErrorCode SetCoordinates2d(DA da)
     }
   }
   ierr = DAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = VecDestroy(gc);CHKERRQ(ierr);
   ierr = DAGetCoordinates(da,&global);CHKERRQ(ierr);
   ierr = DALocalToGlobal(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
+  ierr = DADestroy(cda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -95,8 +101,11 @@ PetscErrorCode SetCoordinates3d(DA da)
     }
   }
   ierr = DAVecRestoreArray(cda,gc,&coors);CHKERRQ(ierr);
+  ierr = VecDestroy(gc);CHKERRQ(ierr);
   ierr = DAGetCoordinates(da,&global);CHKERRQ(ierr);
   ierr = DALocalToGlobal(cda,gc,INSERT_VALUES,global);CHKERRQ(ierr);
+  ierr = VecDestroy(global);CHKERRQ(ierr);
+  ierr = DADestroy(cda);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

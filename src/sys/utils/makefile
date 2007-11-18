@@ -1,7 +1,7 @@
 
 ALL: lib 
 
-CFLAGS    = -DPETSC_LIB_DIR='"${INSTALL_DIR}/lib/${PETSC_ARCH}"' -DPETSC_ARCH='"${PETSC_ARCH}"' \
+CFLAGS    = -DPETSC_LIB_DIR='"${INSTALL_DIR}/lib"' -DPETSC_ARCH='"${PETSC_ARCH}"' \
             -DPETSC_SLSUFFIX='"${SLSUFFIX}"' -DPETSC_DIR='"${PETSC_DIR}"' 
 FFLAGS    =
 SOURCEC	  = arch.c fhost.c fuser.c memc.c mpiu.c psleep.c sortd.c sorti.c \
@@ -13,9 +13,9 @@ OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
-DIRS	  = random
+DIRS	  =
 LOCDIR	  = src/sys/utils/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 

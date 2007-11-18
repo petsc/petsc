@@ -1,6 +1,7 @@
 #define PETSCSNES_DLL
 
-#include "src/snes/snesimpl.h"   /*I  "petscsnes.h"   I*/
+#include "include/private/snesimpl.h"   /*I  "petscsnes.h"   I*/
+#include "include/private/matimpl.h"
 
 EXTERN PetscErrorCode DiffParameterCreate_More(SNES,Vec,void**);
 EXTERN PetscErrorCode DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
@@ -96,7 +97,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  ierr = PetscLogEventBegin(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
@@ -160,7 +161,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = VecScale(y,1.0/hs);CHKERRQ(ierr);
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr = PetscLogEventEnd(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -197,7 +198,7 @@ $   Alternatively, the differencing parameter, h, can be set using
 $   Jorge's nifty new strategy if one specifies the option 
 $          -snes_mf_jorge
 
-   The user can set these parameters via MatSNESMFSetFunctionError().
+   The user can set these parameters via MatMFFDSetFunctionError().
    See the nonlinear solvers chapter of the users manual for details.
 
    The user should call MatDestroy() when finished with the matrix-free
@@ -212,7 +213,7 @@ $  -snes_mf_jorge
 
 .keywords: SNES, default, matrix-free, create, matrix
 
-.seealso: MatDestroy(), MatSNESMFSetFunctionError()
+.seealso: MatDestroy(), MatMFFDSetFunctionError()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 {
@@ -224,8 +225,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,
   char           p[64];
 
   PetscFunctionBegin;
-  ierr = PetscNew(MFCtx_Private,&mfctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(snes,sizeof(MFCtx_Private));CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,MFCtx_Private,&mfctx);CHKERRQ(ierr);
   mfctx->sp   = 0;
   mfctx->snes = snes;
   mfctx->error_rel        = PETSC_SQRT_MACHINE_EPSILON;
@@ -236,11 +236,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,
   mfctx->compute_err      = PETSC_FALSE;
   mfctx->compute_err_freq = 0;
   mfctx->compute_err_iter = -1;
-  ierr = PetscOptionsGetReal(snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(snes->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_jorge",&mfctx->jorge);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->compute_err);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(snes->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_mf_jorge",&mfctx->jorge);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_mf_compute_err",&mfctx->compute_err);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)snes)->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
   if (flg) {
     if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
     mfctx->compute_err = PETSC_TRUE; 
@@ -252,15 +252,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-  if (snes->prefix) PetscStrcat(p,snes->prefix);
+  if (((PetscObject)snes)->prefix) PetscStrcat(p,((PetscObject)snes)->prefix);
   if (flg) {
-    ierr = PetscPrintf(snes->comm," Matrix-free Options (via SNES):\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %G)\n",p,mfctx->error_rel);CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_umin <umin>: see users manual (default %G)\n",p,mfctx->umin);CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_jorge: use Jorge More's method\n",p);CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p);CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_freq_err <freq>: frequency to recompute this (default only once)\n",p);CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_noise_file <file>: set file for printing noise info\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm," Matrix-free Options (via SNES):\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %G)\n",p,mfctx->error_rel);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_umin <umin>: see users manual (default %G)\n",p,mfctx->umin);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_jorge: use Jorge More's method\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_freq_err <freq>: frequency to recompute this (default only once)\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_noise_file <file>: set file for printing noise info\n",p);CHKERRQ(ierr);
   }
   ierr = VecDuplicate(x,&mfctx->w);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);

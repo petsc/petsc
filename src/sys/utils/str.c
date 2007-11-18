@@ -314,15 +314,30 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcasecmp(const char a[],const char b[],Pet
   PetscFunctionBegin;
   if (!a && !b) c = 0;
   else if (!a || !b) c = 1;
-#if defined(PETSC_HAVE_STRICMP)
+#if defined(PETSC_HAVE_STRCASECMP)
+  else c = strcasecmp(a,b);
+#elif defined(PETSC_HAVE_STRICMP)
   else c = stricmp(a,b);
 #else
-  else c = strcasecmp(a,b);
+  else {
+    char *aa,*bb;
+    PetscErrorCode ierr;
+    ierr = PetscStrallocpy(a,&aa);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(b,&bb);CHKERRQ(ierr);
+    ierr = PetscStrtolower(aa);CHKERRQ(ierr);
+    ierr = PetscStrtolower(bb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(aa,bb,t);CHKERRQ(ierr);
+    ierr = PetscStrfree(aa);CHKERRQ(ierr);
+    ierr = PetscStrfree(bb);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 #endif
   if (!c) *t = PETSC_TRUE;
   else    *t = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrncmp"
@@ -499,11 +514,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenFind(PetscToken *a,char *result[])
 PetscErrorCode PETSC_DLLEXPORT PetscTokenCreate(const char a[],const char b,PetscToken **t)
 {
   PetscErrorCode ierr;
-  size_t         len;
 
   PetscFunctionBegin;
   ierr = PetscNew(PetscToken,t);CHKERRQ(ierr);
-  ierr = PetscStrlen(a,&len);CHKERRQ(ierr);
   ierr = PetscStrallocpy(a,&(*t)->array);CHKERRQ(ierr);
   (*t)->current = (*t)->array;   
   (*t)->token   = b;
@@ -636,7 +649,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
   size_t         l,l1,l2,l3;
   char           *work,*par,*epar,env[1024],*tfree,*a = (char*)aa;
   const char     *s[] = {"${PETSC_ARCH}","${PETSC_DIR}","${PETSC_LIB_DIR}","${DISPLAY}","${HOMEDIRECTORY}","${WORKINGDIRECTORY}","${USERNAME}",0};
-  const char     *r[] = {PETSC_ARCH,PETSC_DIR,PETSC_LIB_DIR,0,0,0,0,0};
+  const char     *r[] = {0,0,0,0,0,0,0,0};
   PetscTruth     flag;
 
   PetscFunctionBegin;
@@ -647,14 +660,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
   ierr = PetscMalloc(len*sizeof(char*),&work);CHKERRQ(ierr);
 
   /* get values for replaced variables */
-  ierr = PetscMalloc(256*sizeof(char),&r[4]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_ARCH,(char**)&r[0]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_DIR,(char**)&r[1]);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_LIB_DIR,(char**)&r[2]);CHKERRQ(ierr);
+  ierr = PetscMalloc(256*sizeof(char),&r[3]);CHKERRQ(ierr);
+  ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[4]);CHKERRQ(ierr);
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[5]);CHKERRQ(ierr);
-  ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&r[6]);CHKERRQ(ierr);
-  ierr = PetscMalloc(256*sizeof(char),&r[7]);CHKERRQ(ierr);
-  ierr = PetscGetDisplay((char*)r[4],256);CHKERRQ(ierr);
-  ierr = PetscGetHomeDirectory((char*)r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetWorkingDirectory((char*)r[6],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscGetUserName((char*)r[7],256);CHKERRQ(ierr);
+  ierr = PetscMalloc(256*sizeof(char),&r[6]);CHKERRQ(ierr);
+  ierr = PetscGetDisplay((char*)r[3],256);CHKERRQ(ierr);
+  ierr = PetscGetHomeDirectory((char*)r[4],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetWorkingDirectory((char*)r[5],PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscGetUserName((char*)r[6],256);CHKERRQ(ierr);
+
+  /* replace that are in environment */
+  ierr = PetscOptionsGetenv(comm,"PETSC_LIB_DIR",env,1024,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = PetscStrallocpy(env,(char**)&r[2]);CHKERRQ(ierr);
+  }
 
   /* replace the requested strings */
   ierr = PetscStrncpy(b,a,len);CHKERRQ(ierr);  
@@ -679,9 +701,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrreplace(MPI_Comm comm,const char aa[],cha
     }
     i++;
   }
-  for ( i=4; i<8; i++){
+  i = 0;
+  while (r[i]) {
     tfree = (char*)r[i];
     ierr = PetscFree(tfree);CHKERRQ(ierr);
+    i++;
   }
 
   /* look for any other ${xxx} strings to replace from environmental variables */

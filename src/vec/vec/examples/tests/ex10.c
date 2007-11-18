@@ -71,8 +71,8 @@ int main(int argc,char **argv)
   ierr = VecScatterCopy(ctx,&newctx);CHKERRQ(ierr);
   ierr = VecScatterDestroy(ctx);CHKERRQ(ierr);
 
-  ierr = VecScatterBegin(y,x,INSERT_VALUES,SCATTER_REVERSE,newctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(y,x,INSERT_VALUES,SCATTER_REVERSE,newctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(newctx,y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(newctx,y,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterDestroy(newctx);CHKERRQ(ierr);
 
   ierr = VecView(x,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

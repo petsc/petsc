@@ -1,0 +1,92 @@
+[GENERAL]
+	type_prefix = admf_
+	prefix = admf_
+
+[INACTIVE_FUNCTIONS]
+	PetscLogFlops
+	CHKERRQ
+        PetscFunctionReturn
+        DAVecGetArray
+        DAVecRestoreArray
+
+[NO_PREFIX_FUNCTIONS]
+
+[UNEXPANDED_MACROS]
+        PetscErrorCode = "typedef int PetscErrorCode;"
+        PetscBLASInt   = "typedef int PetscBLASInt;"
+        PetscInt       = "typedef int PetscInt;"
+	PetscViewer    = "typedef int PetscViewer;"
+	Vec            = "typedef int Vec;"
+	Mat            = "typedef int Mat;"
+	DA             = "typedef int DA;"
+	DMMG           = "typedef int DMMG;"
+	PC             = "typedef int PC;"
+	KSP           = "typedef int KSP;"
+	SNES           = "typedef int SNES;"
+	SNESConvergedReason           = "typedef int SNESConvergedReason;"
+	DAPeriodicType = "typedef int DAPeriodicType;"
+	DAStencilType  = "typedef int DAStencilType;"
+        ISColoring     = "typedef int ISColoring;"
+	PetscTruth     = "typedef int PetscTruth;"
+	PetscReal      = "typedef double PetscReal;"
+	PetscScalar    = "typedef double PetscScalar;"
+        DALocalInfo    = "typedef struct {int dim,dof,sw;DAPeriodicType pt;DAStencilType st;int mx,my,mz;int xs,ys,zs;int xm,ym,zm;int gxs,gys,gzs;int gxm,gym,gzm; DA da;} DALocalInfo;"
+        MatStencil     = "typedef struct {int k,j,i,c;} MatStencil;"
+        PassiveReal    = "typedef double PassiveReal;"
+        PassiveScalar  = "typedef double PassiveScalar;"
+        MPI_COMM_WORLD = "static int MPI_COMM_WORLD;"
+        MPI_COMM_SELF  = "static int MPI_COMM_SELF;"
+        PETSC_COMM_WORLD = "static int PETSC_COMM_WORLD;"
+        PETSC_COMM_SELF  = "static int PETSC_COMM_SELF;"
+        CHKMEMQ          = "CHKMEMQ;"
+        DMComposite          = "typedef int DMComposite;"
+
+[DEFINES]
+	PetscAbsScalar = fabs
+	PetscExpScalar = exp
+        PetscFunctionBegin = 
+	PetscPowScalar = pow
+	PetscSqrtScalar = sqrt
+        PETSC_TRUE         = 1
+        PETSC_FALSE        = 0
+        PETSC_NULL         = 0
+        PETSC_IGNORE       = -1
+        PETSC_PI                 = 3.1415926535897932384626
+
+[ACTIVE_FUNCTIONS]
+
+[INACTIVE_FUNCTIONS]
+	erf
+	HorizVelocity 
+	VertVelocity 
+	Pressure  
+	CalcJunk
+        PetscExpScalarPassive
+        WSlab
+        USlab
+
+[INACTIVE_VARIABLES]
+
+[INACTIVE_TYPES]
+        PassiveReal
+	PassiveScalar
+        PetscReal
+        PetscTruth
+        DALocalInfo
+        MatStencil
+        Mat
+        Vec
+        ISColoring
+        DA
+        DMMG
+        PC
+        KSP
+        SNES
+        CHKMEMQ
+        DMComposite
+        PetscViewer
+        SNESConvergedReason
+        PetscErrorCode
+        PetscBLASInt
+        PetscInt
+

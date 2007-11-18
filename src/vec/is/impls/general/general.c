@@ -13,7 +13,7 @@ PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
   IS_General     *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateGeneral(is->comm,sub->n,sub->idx,newIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)is)->comm,sub->n,sub->idx,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +110,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -127,11 +127,11 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
     ierr = ISInvertPermutation(istmp,PETSC_DECIDE,&nistmp);CHKERRQ(ierr);
     ierr = ISDestroy(istmp);CHKERRQ(ierr);
     /* get the part we need */
-    ierr    = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,is->comm);CHKERRQ(ierr);
+    ierr    = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
     {
       PetscMPIInt rank;
-      ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(((PetscObject)is)->comm,&rank);CHKERRQ(ierr);
       if (rank == size-1) {
         if (nstart != sub->N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Sum of nlocal lengths %d != total IS length %d",nstart,sub->N);
       }
@@ -139,7 +139,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
 #endif
     nstart -= nlocal;
     ierr    = ISGetIndices(nistmp,&idx);CHKERRQ(ierr);
-    ierr    = ISCreateGeneral(is->comm,nlocal,idx+nstart,isout);CHKERRQ(ierr);    
+    ierr    = ISCreateGeneral(((PetscObject)is)->comm,nlocal,idx+nstart,isout);CHKERRQ(ierr);    
     ierr    = ISRestoreIndices(nistmp,&idx);CHKERRQ(ierr);
     ierr    = ISDestroy(nistmp);CHKERRQ(ierr);
   }
@@ -227,7 +227,7 @@ static struct _ISOps myops = { ISGetSize_General,
                                ISIdentity_General };
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISCreateGeneral" 
+#define __FUNCT__ "ISCreateGeneral_Private" 
 PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
 {
   PetscErrorCode ierr;
@@ -244,7 +244,7 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
   if (n) {PetscValidIntPointer(idx,3);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
@@ -264,12 +264,17 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
   Nindex->isidentity = PETSC_FALSE;
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(Nindex,PETSC_VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)Nindex)->comm,&viewer);CHKERRQ(ierr);
+    ierr = ISView(Nindex,viewer);CHKERRQ(ierr);
   }
   *is = Nindex;
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISCreateGeneral" 
 /*@
    ISCreateGeneral - Creates a data structure for an index set 
    containing a list of integers.
@@ -286,7 +291,8 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
 
    Notes:
    The index array is copied to internally allocated storage. After the call,
-   the user can free the index array.
+   the user can free the index array. Use ISCreateGeneralNC() to use the pointers
+   passed in and NOT make a copy of the index array.
 
    When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
    conceptually the same as MPI_Group operations. The IS are then
@@ -298,7 +304,7 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
   Concepts: index sets^creating
   Concepts: IS^creating
 
-.seealso: ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISCreateGeneralNC()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS *is)
 {
@@ -312,17 +318,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
   if (n) {PetscValidIntPointer(idx,3);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
-  ierr           = PetscNew(IS_General,&sub);CHKERRQ(ierr);
-  ierr           = PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(PetscInt)+sizeof(struct _p_IS));CHKERRQ(ierr);
+  ierr           = PetscNewLog(Nindex,IS_General,&sub);CHKERRQ(ierr);
+  Nindex->data   = (void*)sub;
   ierr           = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
+  ierr           = PetscLogObjectMemory(Nindex,n*sizeof(PetscInt));CHKERRQ(ierr);
   ierr           = PetscMemcpy(sub->idx,idx,n*sizeof(PetscInt));CHKERRQ(ierr);
   sub->n         = n;
   sub->allocated = PETSC_TRUE;
-  Nindex->data   = (void*)sub;
 
   *is = Nindex;
   ierr = ISCreateGeneral_Private(comm,is); CHKERRQ(ierr);
@@ -330,6 +336,71 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISCreateGeneralNC"
+/*@C
+   ISCreateGeneralNC - Creates a data structure for an index set 
+   containing a list of integers.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - the MPI communicator
+.  n - the length of the index set
+-  idx - the list of integers
+
+   Output Parameter:
+.  is - the new index set
+
+   Notes: This routine does not copy the indices, just keeps the pointer to the
+   indices. The ISDestroy() will free the space so it must be obtained
+   with PetscMalloc() and it must not be freed nor modified elsewhere.
+   Use ISCreateGeneral() if you wish to copy the indices passed into the routine.
+   Use ISCreateGeneralWithArray() to NOT copy the indices and NOT free the space when
+   ISDestroy() is called.
+
+   When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
+   conceptually the same as MPI_Group operations. The IS are then
+   distributed sets of indices and thus certain operations on them are
+   collective.
+
+   Level: beginner
+
+  Concepts: index sets^creating
+  Concepts: IS^creating
+
+.seealso: ISCreateGeneral(), ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralNC(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS *is)
+{
+  PetscErrorCode ierr;
+  IS             Nindex;
+  IS_General     *sub;
+
+  PetscFunctionBegin;
+  PetscValidPointer(is,4);
+  if (n < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"length < 0");
+  if (n) {PetscValidIntPointer(idx,3);}
+  *is = PETSC_NULL;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+
+  ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
+  ierr           = PetscNewLog(Nindex,IS_General,&sub);CHKERRQ(ierr);
+  Nindex->data   = (void*)sub;
+  sub->n         = n;
+  sub->idx       = (PetscInt*)idx;
+  sub->allocated = PETSC_TRUE;
+
+  *is = Nindex;
+  ierr = ISCreateGeneral_Private(comm,is); CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISCreateGeneralWithArray"
 /*@C
    ISCreateGeneralWithArray - Creates a data structure for an index set 
    containing a list of integers.
@@ -371,16 +442,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneralWithArray(MPI_Comm comm,PetscIn
   if (n) {PetscValidIntPointer(idx,3);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   ierr           = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_GENERAL,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
-  ierr           = PetscNew(IS_General,&sub);CHKERRQ(ierr);
-  ierr           = PetscLogObjectMemory(Nindex,sizeof(IS_General)+n*sizeof(PetscInt)+sizeof(struct _p_IS));CHKERRQ(ierr);
-  sub->idx       = idx;
-  sub->n         = n;
-  sub->allocated = PETSC_FALSE;
+  ierr           = PetscNewLog(Nindex,IS_General,&sub);CHKERRQ(ierr);
   Nindex->data   = (void*)sub;
+  sub->n         = n;
+  sub->idx       = idx;
+  sub->allocated = PETSC_FALSE;
 
   *is = Nindex;
   ierr = ISCreateGeneral_Private(comm,is); CHKERRQ(ierr);

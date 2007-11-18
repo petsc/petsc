@@ -16,15 +16,17 @@
 !
 !     Random numbers
 !
-#define PETSCRAND 'petscrand'
-#define PETSCRAND48 'petscrand48'
-#define SPRNG 'sprng'          
+#define PETSCRAND 'rand'
+#define PETSCRAND48 'rand48'
+#define PETSCSPRNG 'sprng'          
 !
 !
 !
-      PetscEnum PETSC_BINARY_INT_SIZE,PETSC_BINARY_FLOAT_SIZE
+      PetscEnum PETSC_BINARY_INT_SIZE
+      PetscEnum PETSC_BINARY_FLOAT_SIZE
       PetscEnum PETSC_BINARY_CHAR_SIZE
-      PetscEnum PETSC_BINARY_SHORT_SIZE,PETSC_BINARY_DOUBLE_SIZE
+      PetscEnum PETSC_BINARY_SHORT_SIZE
+      PetscEnum PETSC_BINARY_DOUBLE_SIZE
       PetscEnum PETSC_BINARY_SCALAR_SIZE
 
       parameter (PETSC_BINARY_INT_SIZE = 4)
@@ -38,7 +40,8 @@
       parameter (PETSC_BINARY_SCALAR_SIZE = 8)
 #endif
 
-      PetscEnum PETSC_BINARY_SEEK_SET,PETSC_BINARY_SEEK_CUR
+      PetscEnum PETSC_BINARY_SEEK_SET
+      PetscEnum PETSC_BINARY_SEEK_CUR
       PetscEnum PETSC_BINARY_SEEK_END
 
       parameter (PETSC_BINARY_SEEK_SET = 0,PETSC_BINARY_SEEK_CUR = 1)

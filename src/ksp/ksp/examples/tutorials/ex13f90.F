@@ -56,8 +56,10 @@
 
       PetscScalar  hx,hy,x,y
       PetscFortranAddr userctx(6)
-      integer ierr,m,n,t,tmax,flg,i,j,Ntot
-      integer size,rank
+      PetscErrorCode ierr
+      PetscInt m,n,t,tmax,i,j
+      PetscTruth flg
+      PetscMPIInt size,rank
       double precision  enorm
       PetscScalar,ALLOCATABLE :: userx(:,:)
       PetscScalar,ALLOCATABLE :: userb(:,:)
@@ -94,7 +96,6 @@
 !  Create the empty sparse matrix and linear solver data structures
 
       call UserInitializeLinearSolver(m,n,userctx,ierr)
-      Ntot = m*n
 
 !  Allocate arrays to hold the solution to the linear system.  This
 !  approach is not normally done in PETSc programs, but in this case, 
@@ -173,7 +174,8 @@
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
 
-      integer          m,n,ierr
+      PetscInt m,n
+      PetscErrorCode ierr
       PetscFortranAddr userctx(*)
 
       common /param/ hx2,hy2
@@ -183,7 +185,7 @@
       Mat     A
       Vec     b,x
       KSP    ksp
-      integer Ntot
+      PetscInt Ntot
 
 
 !  Here we assume use of a grid of size m x n, with all points on the
@@ -238,7 +240,7 @@
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
 
-      integer ierr
+      PetscErrorCode ierr
       PetscFortranAddr userctx(*)
       PetscScalar rho(*),userb(*),userx(*)
 
@@ -250,18 +252,19 @@
       KSP ksp
       Vec  b,x
       Mat  A
-      integer m,n
-      integer i,j,II,JJ
+      PetscInt m,n,one
+      PetscInt i,j,II,JJ
       PetscScalar  v
 
 !      PetscScalar tmpx(*),tmpb(*)
 
+      one  = 1
       x    = userctx(1)
       b    = userctx(2)
       A    = userctx(3)
-      ksp = userctx(4)
-      m    = userctx(5)
-      n    = userctx(6)
+      ksp  = userctx(4)
+      m    = int(userctx(5))
+      n    = int(userctx(6))
 
 !  This is not the most efficient way of generating the matrix,
 !  but let's not worry about it.  We should have separate code for
@@ -281,25 +284,25 @@
             if (j .gt. 1) then
                JJ = II - m
                v = -0.5*(rho(II+1) + rho(JJ+1))*hy2
-               call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr)
             endif
             if (j .lt. n) then
                JJ = II + m
                v = -0.5*(rho(II+1) + rho(JJ+1))*hy2
-               call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr)
             endif
             if (i .gt. 1) then
                JJ = II - 1
                v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
-               call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr)
             endif
             if (i .lt. m) then
                JJ = II + 1
                v = -0.5*(rho(II+1) + rho(JJ+1))*hx2
-               call MatSetValues(A,1,II,1,JJ,v,INSERT_VALUES,ierr)
+               call MatSetValues(A,one,II,one,JJ,v,INSERT_VALUES,ierr)
             endif
             v = 2*rho(II+1)*(hx2+hy2)
-            call MatSetValues(A,1,II,1,II,v,INSERT_VALUES,ierr)
+            call MatSetValues(A,one,II,one,II,v,INSERT_VALUES,ierr)
             II = II+1
  100     continue
  110  continue
@@ -372,7 +375,7 @@
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
 
-      integer ierr
+      PetscErrorCode ierr
       PetscFortranAddr userctx(*)
 
 !  Local variable declararions

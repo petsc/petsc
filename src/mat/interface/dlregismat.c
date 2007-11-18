@@ -1,6 +1,21 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
+
+const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
+              "SYMMETRIC",
+              "STRUCTURALLY_SYMMETRIC",
+              "NEW_DIAGONALS",
+              "IGNORE_OFF_PROC_ENTRIES",
+              "NEW_NONZERO_LOCATION_ERR",
+              "NEW_NONZERO_ALLOCATION_ERR","USE_HASH_TABLE",
+              "KEEP_ZEROED_ROWS","IGNORE_ZERO_ENTRIES","USE_INODES",
+              "HERMITIAN",
+              "SYMMETRY_ETERNAL",
+              "USE_COMPRESSEDROW",
+              "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","MatOption","MAT_",0};
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatInitializePackage"
@@ -17,7 +32,7 @@
 .keywords: Mat, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[]) 
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
@@ -26,6 +41,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  /* Inialize subpackage */
+  ierr = MatMFFDInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
@@ -68,6 +85,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path)
   ierr = PetscLogEventRegister(&MAT_SetValues,                "MatSetValues",     MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetValues,                "MatGetValues",     MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetRow,                   "MatGetRow",        MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_GetRowIJ,                 "MatGetRowIJ",      MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetSubMatrices,           "MatGetSubMatrice", MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetColoring,              "MatGetColoring",   MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetOrdering,              "MatGetOrdering",   MAT_COOKIE);CHKERRQ(ierr);
@@ -90,6 +108,26 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path)
   ierr = PetscLogEventRegister(&MAT_MatMultTranspose,         "MatMatMultTrans",  MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MatMultTransposeSymbolic, "MatMatMultTrnSym" ,MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MatMultTransposeNumeric,  "MatMatMultTrnNum", MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_GetRedundantMatrix,       "MAT_GetRedundantMatrix",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_GetSequentialNonzeroStructure, "MAT_GetSequentialNonzeroStructure",MAT_COOKIE);CHKERRQ(ierr);
+
+  /* these may be specific to MPIAIJ matrices */
+  ierr = PetscLogEventRegister(&MAT_Seqstompinum,             "MatMerge_SeqsToMPINumeric",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_Seqstompisym,             "MatMerge_SeqsToMPISymbolic",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_Seqstompi,                "MatMerge_SeqsToMPI",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_Getlocalmat,              "MatGetLocalMat",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_Getlocalmatcondensed,     "MatGetLocalMatCondensed",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_GetBrowsOfAcols,          "MatGetBrowsOfAcols",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_GetBrowsOfAocols,         "MatGetBrAoCol",MAT_COOKIE);
+
+  ierr = PetscLogEventRegister(&MAT_Applypapt_symbolic,       "MatApplyPAPt_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_Applypapt_numeric,        "MatApplyPAPt_Numeric",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_Applypapt,                "MatApplyPAPt",MAT_COOKIE);CHKERRQ(ierr);
+
+  ierr = PetscLogEventRegister(&MAT_Getsymtranspose,          "MatGetSymbolicTranspose",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_Getsymtransreduced,       "MatGetSymbolicTransposeReduced",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_Transpose_SeqAIJ,         "MatTranspose_SeqAIJ_FAST",MAT_COOKIE);CHKERRQ(ierr);
+
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */
@@ -123,7 +161,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCMAT_DLLEXPORT PetscDLLibraryRegister_petscmat(char *path)
+PetscErrorCode PETSCMAT_DLLEXPORT PetscDLLibraryRegister_petscmat(const char path[])
 {
   PetscErrorCode ierr;
 

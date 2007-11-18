@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_BCGS"
@@ -41,7 +41,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
  ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  if (ksp->normtype != KSP_NO_NORM) {
+  if (ksp->normtype != KSP_NORM_NO) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -77,8 +77,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
     alpha = rho / d1;                 /*   a <- rho / (v,rp)  */
     ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);      /*   s <- r - a v       */
     ierr = KSP_PCApplyBAorAB(ksp,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
-    ierr = VecDot(S,T,&d1);CHKERRQ(ierr);
-    ierr = VecDot(T,T,&d2);CHKERRQ(ierr);
+    ierr = VecDotNorm2(S,T,&d1,&d2);CHKERRQ(ierr);
     if (d2 == 0.0) {
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
@@ -101,7 +100,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
     ierr  = VecAXPY(X,alpha,P);CHKERRQ(ierr);     /*   x <- x + a p       */
     ierr  = VecAXPY(X,omega,S);CHKERRQ(ierr);     /*   x <- x + w s       */
     ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
-    if (ksp->normtype != KSP_NO_NORM) {
+    if (ksp->normtype != KSP_NORM_NO && ksp->chknorm < i+2) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }
 

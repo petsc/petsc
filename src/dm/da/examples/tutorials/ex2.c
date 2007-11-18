@@ -54,8 +54,8 @@ int main(int argc,char **argv)
   ierr = DAGlobalToNaturalAllCreate(da,&tolocalall);CHKERRQ(ierr);
   ierr = DANaturalAllToGlobalCreate(da,&fromlocalall);CHKERRQ(ierr);
 
-  ierr = VecScatterBegin(global,localall,INSERT_VALUES,SCATTER_FORWARD,tolocalall);CHKERRQ(ierr);
-  ierr = VecScatterEnd(global,localall,INSERT_VALUES,SCATTER_FORWARD,tolocalall);CHKERRQ(ierr);
+  ierr = VecScatterBegin(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(tolocalall,global,localall,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   ierr = VecGetArray(localall,&vlocal);CHKERRQ(ierr);
   for (j=0; j<N; j++) {
@@ -66,8 +66,8 @@ int main(int argc,char **argv)
   ierr = VecRestoreArray(localall,&vlocal);CHKERRQ(ierr);
 
   /* scatter back to global vector */
-  ierr = VecScatterBegin(localall,global,INSERT_VALUES,SCATTER_FORWARD,fromlocalall);CHKERRQ(ierr);
-  ierr = VecScatterEnd(localall,global,INSERT_VALUES,SCATTER_FORWARD,fromlocalall);CHKERRQ(ierr);
+  ierr = VecScatterBegin(fromlocalall,localall,global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(fromlocalall,localall,global,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 

@@ -9,7 +9,7 @@ configure_options = [
   '-ignoreWarnings',
   '-LDFLAGS=-Wl,-woff,84,-woff,85,-woff,113',
   '--with-f90-interface=IRIX',
-  '--with-mpirun=mpirun'
+  '--with-mpiexec=mpiexec'
   ]
 
 if __name__ == '__main__':

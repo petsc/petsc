@@ -48,9 +48,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetenv(MPI_Comm,const char[],
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsAtoi(const char[],PetscInt*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsAtod(const char[],PetscReal*);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetMonitor(PetscErrorCode (*)(const char[], const char[], void*), void *, PetscErrorCode (*)(void*));
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearMonitor();
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsDefaultMonitor(const char[], const char[], void *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*)(const char[], const char[], void*), void *, PetscErrorCode (*)(void*));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorCancel(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorDefault(const char[], const char[], void *);
 
 extern PETSC_DLLEXPORT PetscTruth PetscOptionsPublish;
 extern PETSC_DLLEXPORT PetscInt   PetscOptionsPublishCount;
@@ -129,6 +129,12 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsHead(const char[]);
 
           Must be preceded by a call to PetscOptionsHead() in the same function.
 
+          This needs to be used only if the code below PetscOptionsTail() can be run ONLY once.
+      See, for example, PCSetFromOptions_Composite(). This is a return(0) in it for early exit
+      from the function.
+
+          This is only for use with the PETSc options GUI; which does not currently exist.
+
    Concepts: options database^subheading
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  
@@ -156,6 +162,37 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsRealArray(const char[],const c
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsStringArray(const char[],const char[],const char[],char*[],PetscInt*,PetscTruth*);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions();
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void);
 PETSC_EXTERN_CXX_END
+
+typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_REAL,OPTION_LIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD} PetscOptionType;
+typedef struct _p_PetscOptions* PetscOptions;
+struct _p_PetscOptions {
+  char            *option;
+  char            *text;
+  void            *data;
+  void            *edata;
+  char            *man;
+  int             arraylength;
+  PetscTruth      set;
+  PetscOptionType type;
+  PetscOptions    next;
+};
+
+typedef struct _p_PetscOptionsHelp* PetscOptionsHelp;
+struct _p_PetscOptionsHelp {
+  char             *prefix;
+  char             *title;
+  char             *mansec;
+  PetscOptionsHelp next;
+};
+
+typedef struct {
+  PetscOptions     next;
+  char             *prefix,*mprefix;  
+  char             *title;
+  MPI_Comm         comm;
+  PetscTruth       printhelp,changedmethod,alreadyprinted;
+  PetscOptionsHelp help;
+} PetscOptionsObjectType;
 #endif

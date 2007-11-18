@@ -162,7 +162,7 @@ static PetscErrorCode PCSetUp_Eisenstat(PC pc)
   if (!pc->setupcalled) {
     ierr = MatGetSize(pc->mat,&M,&N);CHKERRQ(ierr);
     ierr = MatGetLocalSize(pc->mat,&m,&n);CHKERRQ(ierr);
-    ierr = MatCreate(pc->comm,&eis->shell);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)pc)->comm,&eis->shell);CHKERRQ(ierr);
     ierr = MatSetSizes(eis->shell,m,N,M,N);CHKERRQ(ierr);
     ierr = MatSetType(eis->shell,MATSHELL);CHKERRQ(ierr);
     ierr = MatShellSetContext(eis->shell,(void*)pc);CHKERRQ(ierr);
@@ -322,8 +322,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Eisenstat(PC pc)
   PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_Eisenstat,&eis);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_Eisenstat));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_Eisenstat,&eis);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_Eisenstat;
   pc->ops->presolve        = PCPreSolve_Eisenstat;

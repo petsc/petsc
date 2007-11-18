@@ -268,8 +268,8 @@ int main(int argc,char **argv)
       Vec energy, locU;
 
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, u->getSize(patch), u->restrict(patch), &locU);CHKERRQ(ierr);
-      ierr = VecScatterBegin(DMMGGetx(dmmg), locU, INSERT_VALUES, SCATTER_REVERSE, user.injection);CHKERRQ(ierr);
-      ierr = VecScatterEnd(DMMGGetx(dmmg), locU, INSERT_VALUES, SCATTER_REVERSE, user.injection);CHKERRQ(ierr);
+      ierr = VecScatterBegin(user.injection, DMMGGetx(dmmg), locU, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+      ierr = VecScatterEnd(user.injection, DMMGGetx(dmmg), locU, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
       ierr = VecDestroy(locU);CHKERRQ(ierr);
 
       ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
@@ -847,8 +847,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 
   Vec locB;
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locB);CHKERRQ(ierr);
-  ierr = VecScatterBegin(locB, b, ADD_VALUES, SCATTER_FORWARD, user->injection);CHKERRQ(ierr);
-  ierr = VecScatterEnd(locB, b, ADD_VALUES, SCATTER_FORWARD, user->injection);CHKERRQ(ierr);
+  ierr = VecScatterBegin(user.injection, locB, b, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(user.injection, locB, b, ADD_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecDestroy(locB);CHKERRQ(ierr);
 
   {
@@ -1273,8 +1273,8 @@ PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Mesh> mesh, ALE::Obj<ALE::Mesh:
 
   Vec locEnergy;
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, e2->getSize(patch), e2->restrict(patch), &locEnergy);CHKERRQ(ierr);
-  ierr = VecScatterBegin(locEnergy, *energy, INSERT_VALUES, SCATTER_FORWARD, injection);CHKERRQ(ierr);
-  ierr = VecScatterEnd(locEnergy, *energy, INSERT_VALUES, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+  ierr = VecScatterBegin(injection, locEnergy, *energy, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(injection, locEnergy, *energy, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecDestroy(locEnergy);CHKERRQ(ierr);
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);

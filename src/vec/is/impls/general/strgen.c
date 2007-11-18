@@ -51,8 +51,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   ierr = ISStride(inis,&stride);CHKERRQ(ierr);
   if (!stride) SETERRQ(PETSC_ERR_SUP,"Can only convert stride index sets");
 
-  ierr = PetscNew(IS_General,&sub);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(inis,sizeof(IS_General));CHKERRQ(ierr);
+  ierr = PetscNewLog(inis,IS_General,&sub);CHKERRQ(ierr);
   
   ierr   = ISGetIndices(inis,&sub->idx);CHKERRQ(ierr);
   /* Note: we never restore the indices, since we need to keep the copy generated */
@@ -65,13 +64,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   /* Remove the old stride data set */
   ierr = PetscFree(inis->data);CHKERRQ(ierr);
 
-  inis->type         = IS_GENERAL;
+  ((PetscObject)inis)->type         = IS_GENERAL;
   inis->data         = (void*)sub;
   inis->isperm       = PETSC_FALSE;
   ierr = PetscMemcpy(inis->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(inis,PETSC_VIEWER_STDOUT_(inis->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)inis)->comm,&viewer);CHKERRQ(ierr);
+    ierr = ISView(inis,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

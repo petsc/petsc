@@ -1,13 +1,12 @@
 #define PETSCTS_DLL
 
 /*
-    Provides a PETSc interface to SUNDIALS. Alan Hindmarsh's parallel ODE
-    solver.
+    Provides a PETSc interface to SUNDIALS/CVODE solver.
     The interface to PVODE (old version of CVODE) was originally contributed 
     by Liyang Xu. It has been redone by Hong Zhang and Dinesh Kaushik.
+    Reference: sundials-2.3.0/examples/cvode/parallel/cvkryx_p.c
 */
-
-#include "src/ts/impls/implicit/sundials/sundials.h"  /*I "petscts.h" I*/    
+#include "sundials.h"  /*I "petscts.h" I*/
 
 /*
       TSPrecond_Sundials - function that we provide to SUNDIALS to
@@ -105,7 +104,7 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N
 int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 {
   TS              ts = (TS) ctx;
-  MPI_Comm        comm = ts->comm;
+  MPI_Comm        comm = ((PetscObject)ts)->comm;
   TS_Sundials     *cvode = (TS_Sundials*)ts->data;
   Vec             yy = cvode->w1,yyd = cvode->w2;
   PetscScalar     *y_data,*ydot_data;
@@ -148,12 +147,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   void         *mem;
 
   PetscFunctionBegin;
-  /* 
-     Call CVodeCreate to create the solver memory:
-     CV_ADAMS   specifies the Adams Method
-     CV_FUNCTIONAL  specifies functional iteration  
-     A pointer to the integrator memory is returned and stored in cvode_mem.
-  */
+  /* Call CVodeCreate to create the solver memory */
   mem = CVodeCreate(cvode->cvode_type, CV_NEWTON); 
   if (!mem) SETERRQ(1,"CVodeCreate() fails");
   flag = CVodeSetFdata(mem,ts);
@@ -280,12 +274,17 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
     allocated with zero space arrays because the actual array space is provided 
     by Sundials and set using VecPlaceArray().
   */
-  ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)ts)->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)ts)->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->w1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->w2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/* type of CVODE linear multistep method */
+const char *TSSundialsLmmTypes[] = {"","adams","bdf","TSSundialsLmmType","SUNDIALS_",0};
+/* type of G-S orthogonalization used by CVODE linear solver */
+const char *TSSundialsGramSchmidtTypes[] = {"","modified","classical","TSSundialsGramSchmidtType","SUNDIALS_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_Sundials_Nonlinear"
@@ -294,16 +293,15 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
   int            indx;
-  const char     *btype[] = {"bdf","adams"},*otype[] = {"modified","unmodified"};
   PetscTruth     flag;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SUNDIALS ODE solver options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",btype,2,"bdf",&indx,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsLmmTypes,3,TSSundialsLmmTypes[cvode->cvode_type],&indx,&flag);CHKERRQ(ierr);
     if (flag) {
-      ierr = TSSundialsSetType(ts,(TSSundialsType)indx);CHKERRQ(ierr);
+      ierr = TSSundialsSetType(ts,(TSSundialsLmmType)indx);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEList("-ts_sundials_gramschmidt_type","Type of orthogonalization","TSSundialsSetGramSchmidtType",otype,2,"unmodified",&indx,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_sundials_gramschmidt_type","Type of orthogonalization","TSSundialsSetGramSchmidtType",TSSundialsGramSchmidtTypes,3,TSSundialsGramSchmidtTypes[cvode->gtype],&indx,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = TSSundialsSetGramSchmidtType(ts,(TSSundialsGramSchmidtType)indx);CHKERRQ(ierr);
     }
@@ -361,7 +359,7 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetType_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType_Sundials(TS ts,TSSundialsType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType_Sundials(TS ts,TSSundialsLmmType type)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
   
@@ -526,9 +524,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations(TS ts,int *nonlin,int *
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
           TSSundialsSetExactFinalTime()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType(TS ts,TSSundialsType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType(TS ts,TSSundialsLmmType type)
 {
-  PetscErrorCode ierr,(*f)(TS,TSSundialsType);
+  PetscErrorCode ierr,(*f)(TS,TSSundialsLmmType);
   
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -788,18 +786,18 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
   ts->ops->step            = TSStep_Sundials_Nonlinear;
   ts->ops->setfromoptions  = TSSetFromOptions_Sundials_Nonlinear;
 
-  ierr = PetscNew(TS_Sundials,&cvode);CHKERRQ(ierr);
-  ierr = PCCreate(ts->comm,&cvode->pc);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
+  ierr = PCCreate(((PetscObject)ts)->comm,&cvode->pc);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->pc);CHKERRQ(ierr);
   ts->data          = (void*)cvode;
-  cvode->cvode_type = CV_BDF;
-  cvode->gtype      = SUNDIALS_UNMODIFIED_GS;
+  cvode->cvode_type = SUNDIALS_BDF;
+  cvode->gtype      = SUNDIALS_CLASSICAL_GS;
   cvode->restart    = 5;
   cvode->linear_tol = .05;
 
   cvode->exact_final_time = PETSC_FALSE;
 
-  ierr = MPI_Comm_dup(ts->comm,&(cvode->comm_sundials));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)ts)->comm,&(cvode->comm_sundials));CHKERRQ(ierr);
   /* set tolerance for Sundials */
   cvode->abstol = 1e-6;
   cvode->reltol = 1e-6;

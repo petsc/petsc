@@ -33,12 +33,12 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
   PetscFunctionBegin;	
 
   /* Create the factorization matrix F */  
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric = MatFactorNumeric_MPIAIJSpooles;
+  B->ops->lufactornumeric = MatFactorNumeric_MPISpooles;
   B->factor               = FACTOR_LU;  
 
   lu                       = (Mat_Spooles *)(B->spptr);
@@ -47,7 +47,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
   lu->flg                  = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR        = PETSC_FALSE;
 
-  ierr = MPI_Comm_dup(A->comm,&(lu->comm_spooles));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
 
   if (!info->dtcol) {
     lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;

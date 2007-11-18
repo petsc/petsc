@@ -34,6 +34,8 @@ PetscErrorCode MatDestroy_SeqBDiag(Mat A)
   ierr = PetscFree(a->dvalue);CHKERRQ(ierr);
   ierr = PetscFree(a->solvework);CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
+
+  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqBDiagSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -77,49 +79,31 @@ PetscErrorCode MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_SeqBDiag"
-PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op)
+PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (op) {
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
-    a->nonew       = 1;
+  case MAT_NEW_NONZERO_LOCATIONS:
+    a->nonew       = (flg ? 0 : 1);
     break;
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
-    a->nonew       = 0;
-    break;
-  case MAT_NO_NEW_DIAGONALS:
-    a->nonew_diag  = 1;
-    break;
-  case MAT_YES_NEW_DIAGONALS:
-    a->nonew_diag  = 0;
-    break;
-  case MAT_COLUMN_ORIENTED:
-    a->roworiented = PETSC_FALSE;
+  case MAT_NEW_DIAGONALS:
+    a->nonew_diag  = (flg ? 1 : 0);
     break;
   case MAT_ROW_ORIENTED:
-    a->roworiented = PETSC_TRUE;
+    a->roworiented = flg;
     break;
-  case MAT_ROWS_SORTED:
-  case MAT_ROWS_UNSORTED:
-  case MAT_COLUMNS_SORTED:
-  case MAT_COLUMNS_UNSORTED:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_USE_HASH_TABLE:
-    ierr = PetscInfo1(A,"Option %d ignored\n",op);CHKERRQ(ierr);
-    break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-  case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_NOT_SYMMETRY_ETERNAL:
+    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
@@ -252,9 +236,9 @@ PetscErrorCode MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,M
 
   /* Determine diagonals; then create submatrix */
   bs = A->rmap.bs; /* Default block size remains the same */
-  ierr = MatCreate(A->comm,&newmat);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&newmat);CHKERRQ(ierr);
   ierr = MatSetSizes(newmat,newr,newc,newr,newc);CHKERRQ(ierr);
-  ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(newmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(newmat,0,bs,PETSC_NULL,PETSC_NULL);
 
   /* Fill new matrix */
@@ -557,8 +541,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBDiagSetPreallocation_SeqBDiag(Mat B,Pet
   }
 
   B->rmap.bs = B->cmap.bs = bs;
-  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(B->comm,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
 
   if ((B->cmap.n%bs) || (B->rmap.N%bs)) SETERRQ(PETSC_ERR_ARG_SIZ,"Invalid block size");
   if (!nd) nda = nd + 1;
@@ -672,9 +656,9 @@ static PetscErrorCode MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Ma
   Mat            mat;
 
   PetscFunctionBegin;
-  ierr = MatCreate(A->comm,matout);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,matout);CHKERRQ(ierr);
   ierr = MatSetSizes(*matout,A->rmap.N,A->cmap.n,A->rmap.N,A->cmap.n);CHKERRQ(ierr);
-  ierr = MatSetType(*matout,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(*matout,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(*matout,a->nd,bs,a->diag,PETSC_NULL);CHKERRQ(ierr);
 
   /* Copy contents of diagonals */
@@ -733,7 +717,7 @@ PetscErrorCode MatLoad_SeqBDiag(PetscViewer viewer, MatType type,Mat *A)
   extra_rows = bs - M + bs*(M/bs);
   if (extra_rows == bs) extra_rows = 0;
   if (extra_rows) {
-    ierr = PetscInfo(0,"Padding loaded matrix to match blocksize\n");CHKERRQ(ierr);
+    ierr = PetscInfo(viewer,"Padding loaded matrix to match blocksize\n");CHKERRQ(ierr);
   }
 
   /* read row lengths */
@@ -802,11 +786,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBDiag(Mat B)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
 
-  ierr            = PetscNew(Mat_SeqBDiag,&b);CHKERRQ(ierr);
+  ierr            = PetscNewLog(B,Mat_SeqBDiag,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;

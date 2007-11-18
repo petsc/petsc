@@ -1,0 +1,14 @@
+
+package TOPS version 0.0.0 {
+
+  // This is an experimental C implementation of the StructuredSolver for 
+  // testing contract-based CQoS support
+
+  class CStructuredSolver implements-all TOPS.Structured.Solver, 
+                                         gov.cca.Component, 
+  										 gov.cca.ports.ParameterGetListener, 
+  										 gov.cca.ports.ParameterSetListener {
+    gov.cca.Services getServices();
+  }
+
+}

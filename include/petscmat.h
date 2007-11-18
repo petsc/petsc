@@ -26,6 +26,7 @@ typedef struct _p_Mat*           Mat;
 
 .seealso: MatSetType(), Mat
 E*/
+#define MatType const char*
 #define MATSAME            "same"
 #define MATSEQMAIJ         "seqmaij"
 #define MATMPIMAIJ         "mpimaij"
@@ -76,7 +77,9 @@ E*/
 #define MATCRL             "crl"
 #define MATPLAPACK         "plapack"
 #define MATSCATTER         "scatter"
-#define MatType const char*
+#define MATBLOCKMAT        "blockmat"
+#define MATCOMPOSITE       "composite"
+#define MATSEQFFTW         "seqfftw"
 
 /* Logging support */
 #define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
@@ -84,6 +87,7 @@ extern PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE;
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_FDCOLORING_COOKIE;
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE;
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
+extern PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE;
 
 /*E
     MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices()
@@ -97,7 +101,17 @@ extern PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
 E*/
 typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *);
+/*E
+    MatGetSubMatrixOption - Indicates if matrices obtained from a call to MatGetSubMatrices()
+     include the matrix values. Currently it is only used by MatGetSeqNonzerostructure().
+
+    Level: beginner
+
+.seealso: MatGetSeqNonzerostructure()
+E*/
+typedef enum {MAT_DO_NOT_GET_VALUES,MAT_GET_VALUES} MatGetSubMatrixOption;
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char[]);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm,Mat*);
 PetscPolymorphicFunction(MatCreate,(MPI_Comm comm),(comm,&A),Mat,A)
@@ -160,6 +174,7 @@ M*/
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
 #endif
 
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char[]);
 extern PetscTruth MatRegisterAllCalled;
 extern PetscFList MatList;
 
@@ -188,7 +203,9 @@ PetscPolymorphicFunction(MatCreateMPIAIJ,(PetscInt m,PetscInt n,PetscInt M,Petsc
 PetscPolymorphicSubroutine(MatCreateMPIAIJ,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt nz,PetscInt nnz,Mat *A),(PETSC_COMM_WORLD,m,n,M,N,nz,PETSC_NULL,nnz,PETSC_NULL,A))
 PetscPolymorphicSubroutine(MatCreateMPIAIJ,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt nnz[],const PetscInt onz[],Mat *A),(PETSC_COMM_WORLD,m,n,M,N,0,nnz,0,onz,A))
 PetscPolymorphicSubroutine(MatCreateMPIAIJ,(PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *A),(PETSC_COMM_WORLD,m,n,M,N,0,PETSC_NULL,0,PETSC_NULL,A))
-  EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[],Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscInt[],PetscInt[],PetscScalar[],Mat*);
+
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIRowbs(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*); 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqBDiag(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscScalar*[],Mat*); 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIBDiag(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscScalar*[],Mat*); 
@@ -252,7 +269,11 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPICRL(MPI_Comm,PetscInt,Petsc
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateScatter(MPI_Comm,VecScatter,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat,VecScatter);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScatterGetVecScatter(Mat,VecScatter*);
-
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateBlockMat(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat,Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,const Mat*,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat);
@@ -302,44 +323,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyBegin(Mat,MatAssemblyType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat,MatAssemblyType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAssembled(Mat,PetscTruth*);
 
-extern PETSCMAT_DLLEXPORT PetscInt    MatSetValue_Row;
-extern PETSCMAT_DLLEXPORT PetscInt    MatSetValue_Column;
-extern PETSCMAT_DLLEXPORT PetscScalar MatSetValue_Value;
 
-/*MC
-   MatSetValue - Set a single entry into a matrix.
-
-   Synopsis:
-   PetscErrorCode MatSetValue(Mat m,PetscInt row,PetscInt col,PetscScalar value,InsertMode mode);
-
-   Not collective
-
-   Input Parameters:
-+  m - the matrix
-.  row - the row location of the entry
-.  col - the column location of the entry
-.  value - the value to insert
--  mode - either INSERT_VALUES or ADD_VALUES
-
-   Notes: 
-   For efficiency one should use MatSetValues() and set several or many
-   values simultaneously if possible.
-
-   Level: beginner
-
-.seealso: MatSetValues(), MatSetValueLocal()
-M*/
-#define MatSetValue(v,i,j,va,mode) \
-  ((MatSetValue_Row = i,MatSetValue_Column = j,MatSetValue_Value = va,0) || \
-   MatSetValues(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&MatSetValue_Value,mode))
-
-#define MatGetValue(v,i,j,va) \
-  ((MatSetValue_Row = i,MatSetValue_Column = j,0) || \
-   MatGetValues(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&va))
-
-#define MatSetValueLocal(v,i,j,va,mode) \
-  ((MatSetValue_Row = i,MatSetValue_Column = j,MatSetValue_Value = va,0) || \
-   MatSetValuesLocal(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&MatSetValue_Value,mode))
 
 /*E
     MatOption - Options that may be set for a matrix and its behavior or storage
@@ -350,22 +334,21 @@ M*/
 
 .seealso: MatSetOption()
 E*/
-typedef enum {MAT_ROW_ORIENTED=1,MAT_COLUMN_ORIENTED=2,MAT_ROWS_SORTED=4,
-              MAT_COLUMNS_SORTED=8,MAT_NO_NEW_NONZERO_LOCATIONS=16,
-              MAT_YES_NEW_NONZERO_LOCATIONS=32,MAT_SYMMETRIC=64,
-              MAT_STRUCTURALLY_SYMMETRIC=65,MAT_NO_NEW_DIAGONALS=66,
-              MAT_YES_NEW_DIAGONALS=67,MAT_INODE_LIMIT_1=68,MAT_INODE_LIMIT_2=69,
-              MAT_INODE_LIMIT_3=70,MAT_INODE_LIMIT_4=71,MAT_INODE_LIMIT_5=72,
-              MAT_IGNORE_OFF_PROC_ENTRIES=73,MAT_ROWS_UNSORTED=74,
-              MAT_COLUMNS_UNSORTED=75,MAT_NEW_NONZERO_LOCATION_ERR=76,
-              MAT_NEW_NONZERO_ALLOCATION_ERR=77,MAT_USE_HASH_TABLE=78,
-              MAT_KEEP_ZEROED_ROWS=79,MAT_IGNORE_ZERO_ENTRIES=80,MAT_USE_INODES=81,
-              MAT_DO_NOT_USE_INODES=82,MAT_NOT_SYMMETRIC=83,MAT_HERMITIAN=84,
-              MAT_NOT_STRUCTURALLY_SYMMETRIC=85,MAT_NOT_HERMITIAN=86,
-              MAT_SYMMETRY_ETERNAL=87,MAT_NOT_SYMMETRY_ETERNAL=88,
-              MAT_USE_COMPRESSEDROW=89,MAT_DO_NOT_USE_COMPRESSEDROW=90,
-              MAT_IGNORE_LOWER_TRIANGULAR=91,MAT_ERROR_LOWER_TRIANGULAR=92,MAT_GETROW_UPPERTRIANGULAR=93} MatOption;
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat,MatOption);
+typedef enum {MAT_ROW_ORIENTED,MAT_NEW_NONZERO_LOCATIONS,      
+              MAT_SYMMETRIC,          
+              MAT_STRUCTURALLY_SYMMETRIC,
+              MAT_NEW_DIAGONALS,MAT_IGNORE_OFF_PROC_ENTRIES,
+              MAT_NEW_NONZERO_LOCATION_ERR,
+              MAT_NEW_NONZERO_ALLOCATION_ERR,MAT_USE_HASH_TABLE,
+              MAT_KEEP_ZEROED_ROWS,MAT_IGNORE_ZERO_ENTRIES,
+              MAT_USE_INODES,
+              MAT_HERMITIAN,
+              MAT_SYMMETRY_ETERNAL,
+              MAT_USE_COMPRESSEDROW,
+              MAT_IGNORE_LOWER_TRIANGULAR,MAT_ERROR_LOWER_TRIANGULAR,
+              MAT_GETROW_UPPERTRIANGULAR} MatOption;
+extern const char *MatOptions[];
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat,MatOption,PetscTruth);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat,MatType*);
 PetscPolymorphicFunction(MatGetType,(Mat mat),(mat,&t),MatType,t)
 
@@ -384,6 +367,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetBlockSize(Mat,PetscInt *);
 PetscPolymorphicFunction(MatGetBlockSize,(Mat mat),(mat,&a),PetscInt,a)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat,PetscInt);
 
+
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMult(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatMultAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
@@ -391,6 +375,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTranspose(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose(Mat,Mat,PetscReal,PetscTruth*);
 PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B,PetscReal tol),(A,B,tol,&t),PetscTruth,t)
 PetscPolymorphicFunction(MatIsTranspose,(Mat A,Mat B),(A,B,0,&t),PetscTruth,t)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianTranspose(Mat,Mat,PetscReal,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatMultTransposeAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat,Vec,Vec);
@@ -433,17 +418,18 @@ PetscPolymorphicFunction(MatIsSymmetric,(Mat A,PetscReal tol),(A,tol,&t),PetscTr
 PetscPolymorphicFunction(MatIsSymmetric,(Mat A),(A,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsStructurallySymmetric(Mat,PetscTruth*);
 PetscPolymorphicFunction(MatIsStructurallySymmetric,(Mat A),(A,&t),PetscTruth,t)
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat,PetscTruth*);
-PetscPolymorphicFunction(MatIsHermitian,(Mat A),(A,&t),PetscTruth,t)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat,PetscReal,PetscTruth*);
+PetscPolymorphicFunction(MatIsHermitian,(Mat A),(A,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat,PetscTruth*,PetscTruth*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat,PetscTruth *,PetscInt *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,MatType,Mat*);
 PetscPolymorphicFunction(MatLoad,(PetscViewer v,MatType t),(v,t,&a),Mat,a)
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat,PetscInt,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat,PetscInt,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
 
 /*S
      MatInfo - Context of matrix information, used with MatGetInfo()
@@ -482,7 +468,10 @@ typedef enum {MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3} MatInfoType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetInfo(Mat,MatInfoType,MatInfo*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatValid(Mat,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonal(Mat,Vec);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat,Vec,PetscInt[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMin(Mat,Vec,PetscInt[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMaxAbs(Mat,Vec,PetscInt[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat,Mat*);
 PetscPolymorphicFunction(MatTranspose,(Mat A),(A,&t),Mat,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPermute(Mat,IS,IS,Mat *);
@@ -512,11 +501,16 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatUnScaleSystem(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSize(Mat,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat,const PetscInt**);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangeColumn(Mat,PetscInt*,PetscInt*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroyMatrices(PetscInt,Mat *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat,IS,IS,PetscInt,MatReuse,Mat *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrixRaw(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscInt,MatReuse,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSeqNonzeroStructure(Mat,Mat *[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroySeqNonzeroStructure(Mat *[]); 
+
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMerge(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPI(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
@@ -569,6 +563,33 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInterpolateAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatInterpolateAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestrict(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat,Vec*,Vec*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
+
+/*MC
+   MatSetValue - Set a single entry into a matrix.
+
+   Not collective
+
+   Input Parameters:
++  m - the matrix
+.  row - the row location of the entry
+.  col - the column location of the entry
+.  value - the value to insert
+-  mode - either INSERT_VALUES or ADD_VALUES
+
+   Notes: 
+   For efficiency one should use MatSetValues() and set several or many
+   values simultaneously if possible.
+
+   Level: beginner
+
+.seealso: MatSetValues(), MatSetValueLocal()
+M*/
+PETSC_STATIC_INLINE PetscErrorCode MatSetValue(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValues(v,1,&i,1,&j,&va,mode);}
+
+PETSC_STATIC_INLINE PetscErrorCode MatGetValue(Mat v,PetscInt i,PetscInt j,PetscScalar *va) {return MatGetValues(v,1,&i,1,&j,va);}
+
+PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValuesLocal(v,1,&i,1,&j,&va,mode);}
 
 /*MC
    MatPreallocateInitialize - Begins the block of code that will count the number of nonzeros per
@@ -597,6 +618,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat,Vec*,Vec*);
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
    Use MatPreallocateInitializeSymmetric() for symmetric matrices (MPISBAIJ matrices)
+
+   This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
 
   Concepts: preallocation^Matrix
 
@@ -636,6 +659,8 @@ M*/
    See the chapter in the users manual on performance for more details
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
+
+   This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
 
   Concepts: preallocation^Matrix
 
@@ -742,8 +767,7 @@ M*/
    Not Collective
 
    Input Parameters:
-+  nrows - the number of rows indicated
-.  rows - the indices of the rows 
++  row - the row
 .  ncols - the number of columns in the matrix
 -  cols - the columns indicated
 
@@ -759,6 +783,8 @@ M*/
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
+   This is a MACRO not a function because it uses variables declared in MatPreallocateInitialize().
+
   Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
@@ -766,10 +792,12 @@ M*/
 M*/
 #define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
 { PetscInt __i; \
+  if (row < __rstart) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D less than first local row %D",row,__rstart);\
+  if (row >= __rstart+__tmp) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D greater than last local row %D",row,__rstart+__tmp-1);\
   for (__i=0; __i<nc; __i++) {\
-    if (cols[__i] < __start || cols[__i] >= __end) onz[row - __rstart]++; \
+    if ((cols)[__i] < __start || (cols)[__i] >= __end) onz[row - __rstart]++; \
+    else dnz[row - __rstart]++;\
   }\
-  dnz[row - __rstart] = nc - onz[row - __rstart];\
 }
 
 /*MC
@@ -796,6 +824,8 @@ M*/
    See the chapter in the users manual on performance for more details
 
    Do not malloc or free dnz and onz that is handled internally by these routines
+
+   This is a MACRO not a function because it uses variables declared in MatPreallocateInitialize().
 
   Concepts: preallocation^Matrix
 
@@ -830,6 +860,8 @@ M*/
    See the chapter in the users manual on performance for more details
 
    Do not malloc or free dnz and onz that is handled internally by these routines
+
+   This is a MACRO not a function because it closes the { started in MatPreallocateInitialize().
 
   Concepts: preallocation^Matrix
 
@@ -872,7 +904,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation(Mat,PetscInt,
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR(Mat,const PetscInt [],const PetscInt [],const PetscScalar []);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDensePreallocation(Mat,PetscScalar[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[],PetscScalar*[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation(Mat,PetscInt[],PetscInt[],PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation(Mat,PetscScalar[]);
@@ -901,6 +932,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat,void*);
        http://www.mcs.anl.gov/petsc/lib.a:orderingcreate()
 
    Level: beginner
+
+   Cannot use const because the PC objects manipulate the string
 
 .seealso: MatGetOrdering()
 E*/
@@ -975,9 +1008,12 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal(Mat,PetscR
 /*S 
    MatFactorInfo - Data passed into the matrix factorization routines
 
-   In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE
+   In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE, that is use
+$     MatFactorInfo  info(MAT_FACTORINFO_SIZE)
 
    Notes: These are not usually directly used by users, instead use PC type of LU, ILU, CHOLESKY or ICC.
+
+      You can use MatFactorInfoInitialize() to set default values.
 
    Level: developer
 
@@ -993,7 +1029,7 @@ typedef struct {
   PetscReal     dt;             /* drop tolerance */
   PetscReal     dtcol;          /* tolerance for pivoting */
   PetscReal     dtcount;        /* maximum nonzeros to be allowed per row */
-  PetscReal     fill;           /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
+  PetscReal     fill;           /* expected fill, nonzeros in factored matrix/nonzeros in original matrix */
   PetscReal     levels;         /* ICC/ILU(levels) */ 
   PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
                                    factorization may be faster if do not pivot */
@@ -1056,14 +1092,14 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPBRelax(Mat,Vec,PetscReal,MatSORType
 
 .seealso: MatGetColoring()
 E*/
-#define MatColoringType char*
+#define MatColoringType const char*
 #define MATCOLORING_NATURAL "natural"
 #define MATCOLORING_SL      "sl"
 #define MATCOLORING_LF      "lf"
 #define MATCOLORING_ID      "id"
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat,const MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,const MatColoringType,ISColoring *));
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat,MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
 
 /*MC
    MatColoringRegisterDynamic - Adds a new sparse matrix coloring to the 
@@ -1165,7 +1201,7 @@ typedef struct _p_MatPartitioning* MatPartitioning;
 
 .seealso: MatPartitioningCreate(), MatPartitioning
 E*/
-#define MatPartitioningType char*
+#define MatPartitioningType const char*
 #define MAT_PARTITIONING_CURRENT  "current"
 #define MAT_PARTITIONING_SQUARE   "square"
 #define MAT_PARTITIONING_PARMETIS "parmetis"
@@ -1176,7 +1212,7 @@ E*/
 
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm,MatPartitioning*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning,const MatPartitioningType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning,MatPartitioningType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetNParts(MatPartitioning,PetscInt);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning,Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
@@ -1390,7 +1426,9 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_VALUES_ROW = 105,
                MATOP_GET_ROW_UTRIANGULAR=108,
                MATOP_RESTORE_ROW_UTRIANGULAR=109,
-               MATOP_MATSOLVE=110
+               MATOP_MATSOLVE=110,
+               MATOP_GET_REDUNDANTMATRIX=111,
+               MATOP_MATGETSEQNONZEROSTRUCTURE=115
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));
@@ -1444,6 +1482,88 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJGetAIJ(Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat,Mat*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal(Mat,Vec);
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat,Vec,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat,PetscErrorCode(*)(void*,Vec,Vec),void*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni(Mat,PetscErrorCode (*)(void*,PetscInt,Vec,PetscScalar*));
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase(Mat,PetscErrorCode (*)(void*,Vec));
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDAddNullSpace(Mat,MatNullSpace);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetHHistory(Mat,PetscScalar[],PetscInt);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctionError(Mat,PetscReal);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetPeriod(Mat,PetscInt);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat,PetscScalar *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCheckPositivity(void*,Vec,Vec,PetscScalar*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat,PetscReal);
+
+
+typedef struct _p_MatMFFD* MatMFFD;
+
+/*E
+    MatMFFDType - algorithm used to compute the h used in computing matrix-vector products via differencing of the function
+
+   Level: beginner
+
+.seealso: MatMFFDSetType(), MatMFFDRegister()
+E*/
+#define MatMFFDType const char*
+#define MATMFFD_DS  "ds"
+#define MATMFFD_WP  "wp"
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat,MatMFFDType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatMFFD));
+
+/*MC
+   MatMFFDRegisterDynamic - Adds a method to the MatMFFD registry.
+
+   Synopsis:
+   PetscErrorCode MatMFFDRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(MatMFFD))
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined compute-h module
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Level: developer
+
+   Notes:
+   MatMFFDRegisterDynamic() may be called multiple times to add several user-defined solvers.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatMFFDRegisterDynamic("my_h",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyHCreate",MyHCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     MatMFFDSetType(mfctx,"my_h")
+   or at runtime via the option
+$     -snes_mf_type my_h
+
+.keywords: MatMFFD, register
+
+.seealso: MatMFFDRegisterAll(), MatMFFDRegisterDestroy()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define MatMFFDRegisterDynamic(a,b,c,d) MatMFFDRegister(a,b,c,0)
+#else
+#define MatMFFDRegisterDynamic(a,b,c,d) MatMFFDRegister(a,b,c,d)
+#endif
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterAll(const char[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterDestroy(void);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDefaultSetUmin(Mat,PetscReal);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat,PetscTruth);
+
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutMatrix(PetscViewer, PetscInt, PetscInt, PetscReal *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutCSRMatrix(PetscViewer, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscReal *);

@@ -1,6 +1,6 @@
 #define PETSCTS_DLL
 
-#include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
+#include "include/private/tsimpl.h"      /*I "petscts.h"  I*/
 
 PetscFList TSList                       = PETSC_NULL;
 PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
@@ -43,7 +43,7 @@ PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
 .keywords: TS, set, type
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts, const TSType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,TSType type)
 {
   PetscErrorCode (*r)(TS);
   PetscTruth     match;
@@ -54,11 +54,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts, const TSType type)
   ierr = PetscTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  /* Get the function pointers for the method requested */
-  if (!TSRegisterAllCalled) {
-    ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
-  ierr = PetscFListFind(ts->comm, TSList, type, (void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind( TSList,((PetscObject)ts)->comm, type, (void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   if (ts->ksp) {
     ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);
@@ -104,7 +100,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetType(TS ts, TSType *type)
   if (!TSRegisterAllCalled) {
     ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  *type = ts->type_name;
+  *type = ((PetscObject)ts)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -148,10 +144,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (TSList) {
-    ierr = PetscFListDestroy(&TSList);CHKERRQ(ierr);
-    TSList = PETSC_NULL;
-  }
+  ierr = PetscFListDestroy(&TSList);CHKERRQ(ierr);
   TSRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

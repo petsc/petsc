@@ -11,7 +11,7 @@
 #define T3DMPI_FORTRAN
 #define T3EMPI_FORTRAN
 
-#include "zpetsc.h" 
+#include "private/zpetsc.h" 
 #include "petscsys.h"
 
 extern PETSC_DLL_IMPORT PetscTruth PetscBeganMPI;
@@ -233,6 +233,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 
   /* this must be initialized in a routine, not as a constant declaration*/
   PETSC_STDOUT = stdout;
+  PETSC_STDERR = stderr;
   
   *ierr = PetscOptionsCreate(); 
   if (*ierr) return;
@@ -271,7 +272,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscSetProgramName()");return;}
 
   /* check if PETSC_COMM_WORLD is initialized by the user in fortran */
-    petscgetcommoncomm_(&f_petsc_comm_world);
+  petscgetcommoncomm_(&f_petsc_comm_world);
   MPI_Initialized(&flag);
   if (!flag) {
     PetscMPIInt mierr;
@@ -347,7 +348,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 
   /*
      PetscInitializeFortran() is called twice. Here it initializes
-     PETSC_NULLCHARACTER_Fortran. Below it initializes the PETSC_VIEWERs.
+     PETSC_NULL_CHARACTER_Fortran. Below it initializes the PETSC_VIEWERs.
      The PETSC_VIEWERs have not been created yet, so they must be initialized
      below.
   */

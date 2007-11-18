@@ -3,15 +3,15 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = aopart.c aosetlocal.c
+SOURCEC  = aosetlocal.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = aopart.o aosetlocal.o
+OBJSC    = aosetlocal.o
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = AO
 LOCDIR   = src/dm/ao/utils/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 

@@ -5,17 +5,17 @@
 
  
 typedef struct {
-  long mult;    /* stride in no of datatype units */
-  long lower;   /* starting index of the fortran array */
-  long upper;  /*  ending index of the array */
+  int  mult;    /* stride in no of datatype units */
+  int  lower;   /* starting index of the fortran array */
+  int  upper;  /*  ending index of the array */
 } tripple;
 
 
 
 #define f90_header() \
 void*   addr_d;      /* addr -sumof(lower*mult) */ \
-long    ndim;        /* number of dimentions */\
-long    sd;          /* sizeof datatype */ \
+int     ndim;        /* number of dimentions */\
+int     sd;          /* sizeof datatype */ \
 void*   addr;        /* Pointer to the data */
 
 typedef struct {
