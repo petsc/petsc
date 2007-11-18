@@ -5402,6 +5402,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
 
            Use MatRestoreRowIJ() when you are finished accessing the ia[] and ja[] values
 
+    Fortran Node
+
+           In Fortran use
+$           PetscInt ia(1), ja(1)
+$           PetscOffset iia, jja
+$      call MatGetRowIJ(mat,shift,symmetric,blockcompressed,n,ia,iia,ja,jja,done,ierr)
+ 
+       Acess the ith and jth entries via ia(iia + i) and ja(jja + j)
+
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ(), MatGetArray()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)

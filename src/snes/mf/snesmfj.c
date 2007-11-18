@@ -60,20 +60,19 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
   PetscErrorCode ierr;
   MatMFFD        j = (MatMFFD)J->data;
   SNES           snes = (SNES)j->funcctx;
+  Vec            u,f;
 
   PetscFunctionBegin;
   ierr = MatAssemblyEnd_MFFD(J,mt);CHKERRQ(ierr);
 
-  ierr = SNESGetSolution(snes,&j->current_u);CHKERRQ(ierr);
-  ierr = SNESGetFunction(snes,&j->current_f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  if (!j->w) {
-    ierr = VecDuplicate(j->current_u, &j->w);CHKERRQ(ierr);
-  }
+  ierr = SNESGetSolution(snes,&u);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase(J,u,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_FD(Mat,Vec,Vec);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_MFFD(Mat,Vec,Vec);
 /*
     This routine resets the MatAssemblyEnd() for the MatMFFD created from MatCreateSNESMF() so that it NO longer
   uses the solution in the SNES object to update the base. See the warning in MatCreateSNESMF().
@@ -85,7 +84,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMFFDSetBase_FD(J,U,F);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase_MFFD(J,U,F);CHKERRQ(ierr);
   J->ops->assemblyend = MatAssemblyEnd_MFFD;
   PetscFunctionReturn(0);
 }

@@ -42,6 +42,7 @@ MPI_Datatype  PETSC_DLLEXPORT MPIU_2INT = 0;
 /*
      These are needed by petscbt.h
 */
+#include "petscbt.h"
 char     PETSC_DLLEXPORT _BT_mask = ' ';
 char     PETSC_DLLEXPORT _BT_c = ' ';
 PetscInt PETSC_DLLEXPORT _BT_idx  = 0;

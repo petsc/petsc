@@ -1,4 +1,4 @@
-static char help[] = "Basic ALE::Component::ArgDB functionality.\n\n";
+static char help[] = "Basic ArgDB functionality test.\n\n";
 
 #include <ALE.hh>
 #include <iostream>
@@ -24,8 +24,8 @@ int main(int argc, char** argv){
   //   T1 t1 = argDB["arg1"]; 
   //   T  t  = argDB["arg2"]; // ok if T2 can be cast to T, otherwise, an error
   try{
-    ALE::Component::ArgDB argDB("General options");
-    argDB("debug", "debugging level", ALE::Component::Arg<int>().DEFAULT(0));
+    ALE::ArgDB argDB("General options");
+    argDB("debug", "debugging level", ALE::Arg<int>().DEFAULT(0));
     std::cout << argDB << "\n";
     argDB.parse(argc,argv);
     int    idebug = argDB["debug"];

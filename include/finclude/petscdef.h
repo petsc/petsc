@@ -174,13 +174,14 @@
 #define PETSC_DEC_ATTRIBUTES(A,B)
 #endif
 
+#if !defined(PetscFlush)
 #if defined(PETSC_HAVE_FLUSH)
 #define PetscFlush(a)    call flush(a)
 #elif defined(PETSC_HAVE_FLUSH_)
 #define PetscFlush(a)    call flush_(a)
 #else
-#define PETSCFLUSH(a)
+#define PetscFlush(a)
 #endif
-
+#endif
 
 #endif

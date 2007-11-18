@@ -49,6 +49,7 @@
         PetscMPIInt rank
         double precision lambda
       end type userctx
+
       contains
 ! ---------------------------------------------------------------------
 !
@@ -82,9 +83,7 @@
 #include "include/finclude/petscksp.h"
 #include "include/finclude/petscpc.h"
 #include "include/finclude/petscsnes.h"
-
 #include "include/finclude/petscvec.h90"
-
 
 !  Input/output variables:
       SNES           snes
@@ -100,10 +99,9 @@
 !     DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
 !  By placing code between these two statements, computations can
 !  be done while messages are in transition.
-
       call DAGetLocalVector(user%da,localX,ierr)
       call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,                &
-     &     localX,ierr)
+     &     localX,ierr)                
       call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
 
 !  Get a pointer to vector data.
@@ -118,11 +116,9 @@
       call VecGetArrayF90(F,lf_v,ierr)
 
 !  Compute function over the locally owned part of the grid
-
       call FormFunctionLocal(lx_v,lf_v,user,ierr)
 
 !  Restore vectors
-
       call VecRestoreArrayF90(localX,lx_v,ierr)
       call VecRestoreArrayF90(F,lf_v,ierr)
 
@@ -133,17 +129,36 @@
 
 !      call VecView(X,PETSC_VIEWER_STDOUT_WORLD,ierr)
 !      call VecView(F,PETSC_VIEWER_STDOUT_WORLD,ierr)
-
       return 
       end subroutine formfunction
       end module f90module
 
+      module f90moduleinterfaces
+        use f90module
+ 
+      Interface SNESSetApplicationContext
+        Subroutine SNESSetApplicationContext(snes,ctx,ierr)
+        use f90module
+          SNES snes
+          type(userctx) ctx
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface SNESSetApplicationContext
 
+      Interface SNESGetApplicationContext
+        Subroutine SNESGetApplicationContext(snes,ctx,ierr)
+        use f90module
+          SNES snes
+          type(userctx), pointer :: ctx
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface SNESGetApplicationContext
+      end module f90moduleinterfaces
 
       program main
       use f90module
+      use f90moduleinterfaces
       implicit none
-!
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
@@ -168,32 +183,28 @@
 !     Nx, Ny      - number of preocessors in x- and y- directions
 !     matrix_free - flag - 1 indicates matrix-free version
 !
-!
-      SNES                   snes
-      Vec                    x,r
-      Mat                    J
-      PetscErrorCode ierr
-      PetscInt its
-      PetscTruth flg,matrix_free
-      PetscInt ione,nfour
-      double precision       lambda_max,lambda_min
-      type (userctx)         user
+      SNES             snes
+      Vec              x,r
+      Mat              J
+      PetscErrorCode   ierr
+      PetscInt         its
+      PetscTruth       flg,matrix_free
+      PetscInt         ione,nfour
+      double precision lambda_max,lambda_min
+      type (userctx)   user
       type(userctx), pointer:: puser
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
-
       external FormInitialGuess,FormJacobian
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Initialize program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,user%rank,ierr)
 
 !  Initialize problem parameters
-
       lambda_max  = 6.81
       lambda_min  = 0.0
       user%lambda = 6.0
@@ -207,11 +218,9 @@
          SETERRQ(1,' ',ierr)
       endif
 
-
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Create nonlinear solver context
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
       call SNESCreate(PETSC_COMM_WORLD,snes,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -239,12 +248,10 @@
 
 !  Extract global and local vectors from DA; then duplicate for remaining
 !  vectors that are the same types
-
       call DACreateGlobalVector(user%da,x,ierr)
       call VecDuplicate(x,r,ierr)
 
 !  Get local grid boundaries (for 2-dimensional DA)
-
       call DAGetCorners(user%da,user%xs,user%ys,PETSC_NULL_INTEGER,     &
      &     user%xm,user%ym,PETSC_NULL_INTEGER,ierr)
       call DAGetGhostCorners(user%da,user%gxs,user%gys,                 &
@@ -253,7 +260,6 @@
 
 !  Here we shift the starting indices up by one so that we can easily
 !  use the Fortran convention of 1-based indices (rather 0-based indices).
-
       user%xs  = user%xs+1
       user%ys  = user%ys+1
       user%gxs = user%gxs+1
@@ -265,7 +271,6 @@
       user%gxe = user%gxs+user%gxm-1
 
 !  Set function evaluation routine and vector
-
       call SNESSetFunction(snes,r,FormFunction,user,ierr)
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -291,7 +296,7 @@
 !     Note: Here we only approximately preallocate storage space for the
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
-
+      
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
@@ -302,18 +307,25 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Customize nonlinear solver; set runtime options
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
       call SNESSetFromOptions(snes,ierr)
 
-      call SNESSetApplicationContext(snes,user,ierr)
-      call SNESGetApplicationContext(snes,puser,ierr)
-!      write(*,*) puser%xs  - crash!
-     
+!     Test Fortran90 wrapper for SNESSet/Get ApplicationContext()
+      call PetscOptionsGetTruth(PETSC_NULL_CHARACTER,'-test_appctx',             &
+     &     flg,PETSC_NULL_CHARACTER,ierr)
+      if (flg .eq. 1) then
+        call SNESSetApplicationContext(snes,user,ierr)
+        call SNESGetApplicationContext(snes,puser,ierr)
+        if (user%da .ne. puser%da) then
+          write(*,*) "Error: uesr != puesr"
+          write(*,*) "user: ", user
+          write(*,*) "puesr: ", puser
+        endif
+      endif
+
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 !  Note: The user should initialize the vector, x, with the initial guess
 !  for the nonlinear solver prior to calling SNESSolve().  In particular,
 !  to employ an initial guess of zero, the user should explicitly set
@@ -331,12 +343,12 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
       if (matrix_free .eq. 0) call MatDestroy(J,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
       call SNESDestroy(snes,ierr)
       call DADestroy(user%da,ierr)
+
       call PetscFinalize(ierr)
       end
 
@@ -619,12 +631,10 @@
       call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
 
 !  Get a pointer to vector data
-
       call VecGetArrayF90(localX,lx_v,ierr)
 
-!  Compute entries for the locally owned part of the Jacobian.
-
-      call FormJacobianLocal(lx_v,jac,jac_prec,user,ierr)
+!  Compute entries for the locally owned part of the Jacobian preconditioner.
+      call FormJacobianLocal(lx_v,jac_prec,user,ierr)
 
 !  Assemble matrix, using the 2-step process:
 !     MatAssemblyBegin(), MatAssemblyEnd()
@@ -632,10 +642,16 @@
 !  by placing code between these two statements.
 
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
+      if (jac .ne. jac_prec) then
+         call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+      endif
       call VecRestoreArrayF90(localX,lx_v,ierr)
       call DARestoreLocalVector(user%da,localX,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
-
+      if (jac .ne. jac_prec) then
+        call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+      endif
+        
 !  Set flag to indicate that the Jacobian matrix retains an identical
 !  nonzero structure throughout all nonlinear iterations (although the
 !  values of the entries change). Thus, we can save some work in setting
@@ -665,15 +681,14 @@
 
 ! ---------------------------------------------------------------------
 !
-!  FormJacobianLocal - Computes Jacobian matrix, called by
-!  the higher level routine FormJacobian().
+!  FormJacobianLocal - Computes Jacobian preconditioner matrix, 
+!  called by the higher level routine FormJacobian().
 !
 !  Input Parameters:
 !  x        - local vector data
 !
 !  Output Parameters:
-!  jac      - Jacobian matrix
-!  jac_prec - optionally different preconditioning matrix (not used here)
+!  jac_prec - Jacobian preconditioner matrix
 !  ierr     - error code 
 !
 !  Notes:
@@ -703,7 +718,7 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine FormJacobianLocal(x,jac,jac_prec,user,ierr)
+      subroutine FormJacobianLocal(x,jac_prec,user,ierr)
       use f90module
       implicit none
 
@@ -718,14 +733,14 @@
 
 !  Input/output variables:
       type (userctx) user
-      PetscScalar  x(user%gxs:user%gxe,                                         &
-     &              user%gys:user%gye)
-      Mat      jac,jac_prec
+      PetscScalar    x(user%gxs:user%gxe,                                      &
+     &               user%gys:user%gye)
+      Mat            jac_prec
       PetscErrorCode ierr
 
 !  Local variables:
-      PetscInt row,col(5),i,j
-      PetscInt ione,ifive
+      PetscInt      row,col(5),i,j
+      PetscInt      ione,ifive
       PetscScalar   two,one,hx,hy,hxdhy
       PetscScalar   hydhx,sc,v(5)
 
@@ -761,7 +776,7 @@
      &             .or. i .eq. user%mx .or. j .eq. user%my) then
                col(1) = row
                v(1)   = one
-               call MatSetValuesLocal(jac,ione,row,ione,col,v,          &
+               call MatSetValuesLocal(jac_prec,ione,row,ione,col,v,          &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else
@@ -776,7 +791,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + user%gxm
-               call MatSetValuesLocal(jac,ione,row,ifive,col,v,         &
+               call MatSetValuesLocal(jac_prec,ione,row,ifive,col,v,         &
      &                                INSERT_VALUES,ierr)
             endif
  10      continue

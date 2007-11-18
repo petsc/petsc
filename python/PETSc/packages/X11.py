@@ -71,10 +71,8 @@ acfindx:
         if not ('X_INCLUDE_ROOT' in results and 'X_USR_LIB_DIR' in results and 'X_LIB_DIR' in results):
           raise RuntimeError('Invalid output: '+str(output))
         # Open Windows xmkmf reportedly sets LIBDIR instead of USRLIBDIR.
-        for ext in ['.a', '.so', '.sl']:
-          if not os.path.isfile(os.path.join(results['X_USR_LIB_DIR'])) and os.path.isfile(os.path.join(results['X_LIB_DIR'])):
-            results['X_USR_LIB_DIR'] = results['X_LIB_DIR']
-            break
+        if not os.path.isfile(os.path.join(results['X_USR_LIB_DIR'])) and os.path.isfile(os.path.join(results['X_LIB_DIR'])):
+          results['X_USR_LIB_DIR'] = results['X_LIB_DIR']
         # Screen out bogus values from the imake configuration.  They are
         # bogus both because they are the default anyway, and because
         # using them would break gcc on systems where it needs fixed includes.
@@ -187,7 +185,7 @@ acfindx:
         # Check standard paths
         if not foundLibrary:
           for dir in libraryDirs:
-            for ext in ['.a', '.so', '.sl']:
+            for ext in ['.a', '.so', '.sl', '.dll.a','.dylib']:
               if os.path.isfile(os.path.join(dir, 'lib'+testLibrary+ext)):
                 foundLibrary = 1
                 libraryDir   = dir

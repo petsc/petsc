@@ -191,10 +191,7 @@ void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
 
 void PETSC_STDCALL snesgetapplicationcontext_(SNES *snes,void **ctx,PetscErrorCode *ierr)
 {
-  void *pctx;
-  CHKFORTRANNULLINTEGER(ctx);
-  *ierr = SNESGetApplicationContext(*snes,&pctx);
-  ctx = &pctx;
+  *ierr = SNESGetApplicationContext(*snes,ctx);
 } 
 /* ---------------------------------------------------------*/
 
