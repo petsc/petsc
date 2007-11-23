@@ -176,10 +176,8 @@ class Package(config.base.Configure):
       dowork = 1
     elif self.framework.argDB['download-'+self.downloadname.lower()] == preOrPost:
       dowork = 1
-
     if not dowork:
       return ''
-    
     if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
       self.framework.logClear()
       self.logPrint("**************************************************************************************************", debugSection='screen')
