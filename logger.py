@@ -6,8 +6,10 @@ import os
 # new Configure object created (and flashing the screen)
 global LineWidth
 global RemoveDirectory
+global backupRemoveDirectory
 LineWidth = -1
 RemoveDirectory = os.path.join(os.getcwd(),'')
+backupRemoveDirectory = ''
 
 # Compatibility fixes
 try:
@@ -215,6 +217,18 @@ class Logger(args.ArgumentProcessor):
     self.logPrintDivider(debugLevel = debugLevel, debugSection = debugSection)
     self.logPrint('', debugLevel = debugLevel, debugSection = debugSection)
     return
+
+  def logClearRemoveDirectory(self):
+    global RemoveDirectory
+    global backupRemoveDirectory
+    backupRemoveDirectory = RemoveDirectory
+    RemoveDirectory = ''
+          
+  def logResetRemoveDirectory(self):
+    global RemoveDirectory
+    global backupRemoveDirectory
+    RemoveDirectory = backupRemoveDirectory
+
 
   def logWrite(self, msg, debugLevel = -1, debugSection = None, forceScroll = 0):
     '''Write the message to the log streams'''
