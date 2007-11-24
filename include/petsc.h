@@ -6,9 +6,9 @@
 #define __PETSC_H
 /* ========================================================================== */
 /* 
-   petscconf.h is contained in ${PETSC_ARCH}/conf/petscconf.h it is 
+   petscconf.h is contained in ${PETSC_ARCH}/include/petscconf.h it is 
    found automatically by the compiler due to the -I${PETSC_DIR}/${PETSC_ARCH}/include
-   in the bmake/common/variables definition of PETSC_INCLUDE
+   in the conf/variables definition of PETSC_INCLUDE
 */
 #include "petscconf.h"
 
@@ -42,31 +42,31 @@
     petsc-maint@mcs.anl.gov\n\
  http://www.mcs.anl.gov/petsc/\n"
 #if (PETSC_VERSION_RELEASE == 1)
-#define PetscGetVersion(version,len) (PetscSNPrintf(*(version),len,"Petsc Release Version %d.%d.%d, Patch %d, ", \
+#define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(*(version)," HG revision: "),PetscStrcat(*(version),PETSC_VERSION_HG),0)
+                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE), \
+                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG))
 #else
-#define PetscGetVersion(version,len) (PetscSNPrintf(*(version),len,"Petsc Development Version %d.%d.%d, Patch %d, ", \
+#define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Development Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(*(version)," HG revision: "),PetscStrcat(*(version),PETSC_VERSION_HG),0)
+                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE), \
+                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG))
 #endif
 
 /*MC
-    PetscGetVersion - Gets the Petsc Version information in a string.
-
-    Output Parameter:
-.   version - version string
+    PetscGetVersion - Gets the PETSc version information in a string.
 
     Input Parameter:
 .   len - length of the string
+
+    Output Parameter:
+.   version - version string
 
     Level: developer
 
     Usage:
     char version[256];
-    PetscGetVersion(&version,256);
+    ierr = PetscGetVersion(version,256);CHKERRQ(ierr)
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -87,7 +87,7 @@ M*/
 #define PETSC_FPRINTF_FORMAT_CHECK(a,b)
 
 /*
-   Fixes for configure time choices which impact our interface. Currently only
+   Fixes for config/configure.py time choices which impact our interface. Currently only
    calling conventions and extra compiler checking falls under this category.
 */
 #if !defined(PETSC_STDCALL)
@@ -138,7 +138,7 @@ M*/
 #include "mpi.h"
 /*
     Yuck, we need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler 
-    see the top of mpicxx.h
+    see the top of mpicxx.h in the MPICH2 distribution.
 
     The MPI STANDARD HAS TO BE CHANGED to prevent this nonsense.
 */
@@ -171,14 +171,20 @@ typedef int PetscCookie;
 
     Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin() PetscLogEventEnd()
+.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
 M*/
 typedef int PetscEvent;
 
 /*MC
-    PetscBLASInt - datatype used to represent 'int' parameters to blas functions.
+    PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
 
     Level: intermediate
+
+    Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but 
+           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt
+
+.seealso: PetscMPIInt, PetscInt
+
 M*/
 typedef int PetscBLASInt;
 
@@ -186,6 +192,12 @@ typedef int PetscBLASInt;
     PetscMPIInt - datatype used to represent 'int' parameters to MPI functions.
 
     Level: intermediate
+
+    Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but 
+           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt
+
+.seealso: PetscBLASInt, PetscInt
+
 M*/
 typedef int PetscMPIInt;
 
@@ -205,7 +217,7 @@ typedef enum { ENUM_DUMMY } PetscEnum;
 
    Level: intermediate
 
-.seealso: PetscScalar
+.seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef long long PetscInt;
@@ -1645,7 +1657,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscReal, PassiveReal, PassiveScalar
+.seealso: PetscReal, PassiveReal, PassiveScalar, MPIU_SCALAR, PetscInt
 M*/
 
 /*MC
@@ -1685,7 +1697,7 @@ M*/
     Note: In MPI calls that require an MPI datatype that matches a PetscScalar or array of PetscScalars
           pass this value
 
-.seealso: PetscReal, PassiveReal, PassiveScalar, PetscScalar
+.seealso: PetscReal, PassiveReal, PassiveScalar, PetscScalar, MPIU_INT
 M*/
 
 /*
