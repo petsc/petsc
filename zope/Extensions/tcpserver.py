@@ -111,7 +111,10 @@ class RecHandler(SocketServer.StreamRequestHandler):
 		#Checks to see if this is the first time the strings are used
 		if curr.getgs() == startmsg: 
 			curr.replacegs("")
-		alias = gethostbyaddr(peer[0])
+		try:
+			alias = gethostbyaddr(peer[0])
+		except:
+			alias = peer[0]
 		#Used to distingush between seperate communications
 		start = "\n======= %s %s ======\n\n" % (alias[0], peer[1])
 		curr.addgs(start)
