@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download          = ['svn://petsc4py.googlecode.com/svn/trunk/']
+    self.download          = ['svn://mpi4py.scipy.org/svn/mpi4py/mpi4py/trunk mpi4py']
     self.functions         = []
     self.includes          = []
     self.liblist           = []
@@ -27,11 +27,14 @@ class Configure(PETSc.package.Package):
   def configureLibrary(self):
     self.checkDownload(1)
     pp = os.path.join(self.installDir,'lib','python*','site-packages')
+    self.setCompilers.pushLanguage('C')    
+    dd = self.setCompilers.getCompiler()
+    self.setCompilers.popLanguage()    
     if self.setCompilers.isDarwin():
       apple = 'You may first need to (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) set  MACOSX_DEPLOYMENT_TARGET=10.X;export MACOSX_DEPLOYMENT_TARGET\n'
     else:
       apple = ''
     self.logClearRemoveDirectory()
-    self.logPrintBox('After installing PETSc run:\ncd '+os.path.join(self.petscdir.externalPackagesDir,'petsc4py')+'\n python setup.py install --prefix='+self.installDir+'\n'+apple+'then add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) set PYTHONPATH=${PYTHONPATH}:'+pp+';export PYTHONPATH' )
+    self.logPrintBox('After installing PETSc run:\n (csh/tcsh) setenv MPICC '+dd+'\n (sh/bash) set MPICC='+dd+';export MPICC \ncd '+os.path.join(self.petscdir.externalPackagesDir,'mpi4py','trunk')+'\n python setup.py install --prefix='+self.installDir+'\n'+apple+'then add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) set PYTHONPATH=${PYTHONPATH}:'+pp+';export PYTHONPATH' )
     self.logResetRemoveDirectory()
 
