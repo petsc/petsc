@@ -998,9 +998,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat A)
   A->preallocated  = PETSC_FALSE;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATBLOCKMAT);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"Matrix Option","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
-
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatBlockMatSetPreallocation_C",
                                      "MatBlockMatSetPreallocation_BlockMat",
                                       MatBlockMatSetPreallocation_BlockMat);CHKERRQ(ierr);
