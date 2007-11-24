@@ -69,6 +69,7 @@ shared_libtool:
 	${LIBTOOL} --mode=install ${PETSC_DIR}/bin/config/install-sh ${LIBNAME}.la ${INSTALL_LIB_DIR}
 
 shared_darwin8: shared_darwin7
+shared_darwin9: shared_darwin7
 
 shared_darwin7: 
 	-cd ${SHARED_LIBRARY_TMPDIR}; \
@@ -82,8 +83,8 @@ shared_darwin7:
         if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
-        if [ "${MACOSX_DEPLOYMENT_TARGET}" = "" ]; then MACOSX_DEPLOYMENT_TARGET=10.3; export MACOSX_DEPLOYMENT_TARGET; fi;\
-        ${CC}  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  ${OTHERSHAREDLIBS} ${SL_LINKER_LIBS} $$OTHERLIBS
+        if [ "${MACOSX_DEPLOYMENT_TARGET}" = "" ]; then MACOSX_DEPLOYMENT_TARGET=10.5; export MACOSX_DEPLOYMENT_TARGET; fi;\
+        ${PCC}  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  ${OTHERSHAREDLIBS} ${SL_LINKER_LIBS} $$OTHERLIBS
 
 shared_cygwin:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \

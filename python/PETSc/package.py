@@ -264,7 +264,7 @@ class Package(config.base.Configure):
     self.framework.log.write('Downloading '+self.name+'\n')
     for url in self.download:
       try:
-        retriever.genericRetrieve(url, self.petscdir.externalPackagesDir, self.downloadname)
+        retriever.retrieve(url, self.petscdir.externalPackagesDir, self.downloadname)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
       except RuntimeError, e:
