@@ -3,8 +3,9 @@ import logger
 import os
 import urllib
 import urlparse
+import config.base
 # Fix parsing for nonstandard schemes
-urlparse.uses_netloc.extend(['bk', 'ssh'])
+urlparse.uses_netloc.extend(['bk', 'ssh', 'svn'])
 
 class Retriever(logger.Logger):
   def __init__(self, sourceControl, clArgs = None, argDB = None):
@@ -43,7 +44,6 @@ class Retriever(logger.Logger):
   def genericRetrieve(self, url, root, name):
     '''Fetch the gzipped tarfile indicated by url and expand it into root
        - All the logic for removing old versions, updating etc. must move'''
-    import config.base
 
     archive    = '_d_'+name+'.tar'
     archiveZip = archive+'.gz'
@@ -90,17 +90,32 @@ Unable to download package %s from: %s
     os.unlink(localFile)
     return
 
-  def ftpRetrieve(self, url, root, name):
+  def ftpRetrieve(self, url, root, name,force):
     self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via ftp', 3, 'install')
     return self.genericRetrieve(url, root, name)
 
-  def httpRetrieve(self, url, root, name):
+  def httpRetrieve(self, url, root, name,force):
     self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via http', 3, 'install')
     return self.genericRetrieve(url, root, name)
 
-  def fileRetrieve(self, url, root, name):
+  def fileRetrieve(self, url, root, name,force):
     self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via cp', 3, 'install')
     return self.genericRetrieve(url, root, name)
+
+  def svnRetrieve(self, url, root, name,force):
+    if not hasattr(self.sourceControl, 'svn'):
+      raise RuntimeError('Cannot retrieve a SVN repository since svn was not found')
+    self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via svn', 3, 'install')
+    try:
+      print url
+      print url[3:]
+      print root
+      print name
+      config.base.Configure.executeShellCommand(self.sourceControl.svn+' checkout http'+url[3:]+' '+os.path.join(root, name))
+
+    except RuntimeError:
+      pass
+
 
   # This is the old code for updating a BK repository
   # Stamp used to be stored with a url
@@ -187,9 +202,12 @@ and if that succeeds then rerun config/configure.py
     if root is None:
       root = self.getInstallRoot(url)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-    try:
+    print scheme
+    print location
+    print path
+    if hasattr(self,scheme+'Retrieve'):
       getattr(self, scheme+'Retrieve')(url, os.path.abspath(root), canExist, force)
-    except AttributeError:
+    else:
       raise RuntimeError('Invalid transport for retrieval: '+scheme)
     return
 
