@@ -107,12 +107,7 @@ Unable to download package %s from: %s
       raise RuntimeError('Cannot retrieve a SVN repository since svn was not found')
     self.logPrint('Retrieving '+url+' --> '+os.path.join(root, name)+' via svn', 3, 'install')
     try:
-      print url
-      print url[3:]
-      print root
-      print name
       config.base.Configure.executeShellCommand(self.sourceControl.svn+' checkout http'+url[3:]+' '+os.path.join(root, name))
-
     except RuntimeError:
       pass
 
