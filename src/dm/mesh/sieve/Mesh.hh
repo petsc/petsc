@@ -307,6 +307,14 @@ namespace ALE {
     virtual const Obj<label_sequence>& heightStratum(int height) {
       return this->getLabelStratum("height", height);
     };
+    void setHeight(const Obj<label_type>& label) {
+      this->_labels["height"] = label;
+      const Obj<typename label_type::traits::capSequence> cap = label->cap();
+
+      for(typename label_type::traits::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+        this->_maxHeight = std::max(this->_maxHeight, *c_iter);
+      }
+    };
     template<class InputPoints>
     void computeDepth(const Obj<label_type>& depth, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxDepth) {
       this->_modifiedPoints->clear();

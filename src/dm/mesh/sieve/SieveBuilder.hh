@@ -16,7 +16,7 @@ namespace ALE {
     typedef std::pair<typename sieve_type::point_type, int> oPoint_type;
     typedef std::vector<oPoint_type>                        oPointArray;
   public:
-    static void buildHexFaces(Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
+    static void buildHexFaces(Obj<sieve_type> sieve, Obj<arrow_section_type> orientation, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,oPointArray>& faces, typename sieve_type::point_type& cell, int& cellOrientation) {
       int debug = sieve->debug();
 
       if (debug > 1) {std::cout << "  Building hex faces for boundary of " << cell << " (size " << bdVertices[dim].size() << "), dim " << dim << std::endl;}
@@ -29,21 +29,23 @@ namespace ALE {
 
         for(int b = 0; b < 6; b++) {
           typename sieve_type::point_type face;
+          int o = 1;
 
           bdVertices[dim-1].clear();
           for(int c = 0; c < 4; c++) {
             bdVertices[dim-1].push_back(bdVertices[dim][nodes[b*4+c]]);
           }
           if (debug > 1) {std::cout << "    boundary hex face " << b << std::endl;}
-          buildHexFaces(sieve, dim-1, curElement, bdVertices, faces, face);
+          buildHexFaces(sieve, orientation, dim-1, curElement, bdVertices, faces, face, o);
           if (debug > 1) {std::cout << "    added face " << face << std::endl;}
-          faces[dim].push_back(face);
+          faces[dim].push_back(oPoint_type(face, o));
         }
       } else if (dim > 1) {
         int boundarySize = bdVertices[dim].size();
 
         for(int b = 0; b < boundarySize; b++) {
           typename sieve_type::point_type face;
+          int o = 1;
 
           bdVertices[dim-1].clear();
           for(int c = 0; c < 2; c++) {
@@ -57,35 +59,88 @@ namespace ALE {
             }
             std::cout << std::endl;
           }
-          buildHexFaces(sieve, dim-1, curElement, bdVertices, faces, face);
+          buildHexFaces(sieve, orientation, dim-1, curElement, bdVertices, faces, face, o);
           if (debug > 1) {std::cout << "    added face " << face << std::endl;}
-          faces[dim].push_back(face);
+          faces[dim].push_back(oPoint_type(face, o));
         }
       } else {
         if (debug > 1) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
-        faces[dim].insert(faces[dim].end(), bdVertices[dim].begin(), bdVertices[dim].end());
+        typename PointArray::iterator bd_iter = bdVertices[dim].begin();
+        faces[dim].push_back(oPoint_type(*bd_iter, 0));++bd_iter;
+        faces[dim].push_back(oPoint_type(*bd_iter, 0));
+        //faces[dim].insert(faces[dim].end(), bdVertices[dim].begin(), bdVertices[dim].end());
       }
       if (debug > 1) {
-        for(typename PointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
-          std::cout << "  face point " << *f_iter << std::endl;
+        for(typename oPointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+          std::cout << "  face point " << f_iter->first << " orientation " << f_iter->second << std::endl;
         }
       }
       // We always create the toplevel, so we could short circuit somehow
       // Should not have to loop here since the meet of just 2 boundary elements is an element
-      typename PointArray::iterator          f_itor = faces[dim].begin();
-      const typename sieve_type::point_type& start  = *f_itor;
-      const typename sieve_type::point_type& next   = *(++f_itor);
+      typename oPointArray::iterator         f_itor = faces[dim].begin();
+      const typename sieve_type::point_type& start  = f_itor->first;
+      const typename sieve_type::point_type& next   = (++f_itor)->first;
       Obj<typename sieve_type::supportSet> preElement = sieve->nJoin(start, next, 1);
 
       if (preElement->size() > 0) {
         cell = *preElement->begin();
-        if (debug > 1) {std::cout << "  Found old cell " << cell << std::endl;}
+
+        const int size = faces[dim].size();
+        const Obj<typename sieve_type::traits::coneSequence>& cone = sieve->cone(cell);
+        int       wrap = size > 2 ? size-1 : 0;
+        int       indA = 0, indB = 0;
+
+        for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++indA) {
+          if (start == *c_iter) break;
+        }
+        if (debug > 1) {std::cout << "    pointA " << start << " indA " << indA << std::endl;}
+        for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++indB) {
+          if (next  == *c_iter) break;
+        }
+        if (debug > 1) {std::cout << "    pointB " << next  << " indB " << indB << std::endl;}
+        if ((indB - indA == 1) || (indA - indB == wrap)) {
+          if (cellOrientation > 0) {
+            cellOrientation = indA+1;
+          } else {
+            if (dim == 1) {
+              cellOrientation = -2;
+            } else {
+              cellOrientation = -(indA+1);
+            }
+          }
+        } else if ((indA - indB == 1) || (indB - indA == wrap)) {
+          if (debug > 1) {std::cout << "      reversing cell orientation" << std::endl;}
+          if (cellOrientation > 0) {
+            cellOrientation = -(indA+1);
+          } else {
+            if (dim == 1) {
+              cellOrientation = 1;
+            } else {
+              cellOrientation = indA+1;
+            }
+          }
+        } else {
+          throw ALE::Exception("Inconsistent orientation");
+        }
+        if (debug > 1) {std::cout << "  Found old cell " << cell << " orientation " << cellOrientation << std::endl;}
       } else {
         int color = 0;
 
         cell = typename sieve_type::point_type((*curElement[dim])++);
-        for(typename PointArray::iterator f_itor = faces[dim].begin(); f_itor != faces[dim].end(); ++f_itor) {
-          sieve->addArrow(*f_itor, cell, color++);
+        for(typename oPointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+          MinimalArrow<typename sieve_type::point_type,typename sieve_type::point_type> arrow(f_iter->first, cell);
+
+          sieve->addArrow(f_iter->first, cell, color++);
+          if (f_iter->second) {
+            orientation->addPoint(arrow);
+            orientation->updatePoint(arrow, &(f_iter->second));
+            if (debug > 1) {std::cout << "    Orienting arrow (" << f_iter->first << ", " << cell << ") to " << f_iter->second << std::endl;}
+          }
+        }
+        if (cellOrientation > 0) {
+          cellOrientation = 1;
+        } else {
+          cellOrientation = -(dim+1);
         }
         if (debug > 1) {std::cout << "  Added cell " << cell << " dim " << dim << std::endl;}
       }
@@ -100,6 +155,7 @@ namespace ALE {
           std::cout << "  Building faces for boundary of undetermined cell (size " << bdVertices[dim].size() << "), dim " << dim << std::endl;
         }
       }
+      if (dim == 0) return;
       faces[dim].clear();
       if (dim > 1) {
         int b = 0;
@@ -284,7 +340,7 @@ namespace ALE {
           if (debug) {std::cout << "cell " << cell << " num boundary vertices " << bdVertices[dim].size() << std::endl;}
 
           if (corners != dim+1) {
-            buildHexFaces(sieve, dim, curElement, bdVertices, faces, cell);
+            buildHexFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
           } else {
             buildFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
           }
@@ -436,7 +492,7 @@ namespace ALE {
           if (debug) {std::cout << "cell " << cell << " num boundary vertices " << bdVertices[dim].size() << std::endl;}
 
           if (corners != dim+1) {
-            buildHexFaces(sieve, dim, curElement, bdVertices, faces, cell);
+            buildHexFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
           } else {
             buildFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
           }
