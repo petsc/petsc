@@ -176,10 +176,8 @@ class Package(config.base.Configure):
       dowork = 1
     elif self.framework.argDB['download-'+self.downloadname.lower()] == preOrPost:
       dowork = 1
-
     if not dowork:
       return ''
-    
     if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
       self.framework.logClear()
       self.logPrint("**************************************************************************************************", debugSection='screen')
@@ -266,7 +264,7 @@ class Package(config.base.Configure):
     self.framework.log.write('Downloading '+self.name+'\n')
     for url in self.download:
       try:
-        retriever.genericRetrieve(url, self.petscdir.externalPackagesDir, self.downloadname)
+        retriever.retrieve(url, self.petscdir.externalPackagesDir, self.downloadname)
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
       except RuntimeError, e:

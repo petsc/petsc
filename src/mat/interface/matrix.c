@@ -4261,9 +4261,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
 
    Input Parameters:
 +  mat - the matrix 
--  option - the option, one of those listed below (and possibly others),
+.  option - the option, one of those listed below (and possibly others),
+-  flg - turn the option on (PETSC_TRUE) or off (PETSC_FALSE)
 
-   Options Describing Matrix Structure:
+  Options Describing Matrix Structure:
 +    MAT_SYMMETRIC - symmetric in terms of both structure and value
 .    MAT_HERMITIAN - transpose is the complex conjugation
 .    MAT_STRUCTURALLY_SYMMETRIC - symmetric nonzero structure

@@ -181,17 +181,29 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
 {
   PetscErrorCode ierr;
-  char           mtype[256];
+  const char     *deft = MATAIJ;
+  char           type[256];
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetString(((PetscObject)B)->prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatSetType(B,mtype);CHKERRQ(ierr);
-  }
-  if (!((PetscObject)B)->type_name) {
-    ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
-  }
+  PetscValidHeaderSpecific(B,MAT_COOKIE,1);
+
+  ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Matrix options","Mat");CHKERRQ(ierr); 
+
+    if (((PetscObject)B)->type_name) { deft = ((PetscObject)B)->type_name; }
+    ierr = PetscOptionsList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatSetType(B,type);CHKERRQ(ierr);
+    } else if (!((PetscObject)B)->type_name) {
+      ierr = MatSetType(B,deft);CHKERRQ(ierr);
+    }
+
+    if (B->ops->setfromoptions) {
+      ierr = (*B->ops->setfromoptions)(B);CHKERRQ(ierr);
+    }
+
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 

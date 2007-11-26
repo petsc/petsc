@@ -68,7 +68,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
   ierr = PetscGetUserName(username,16);CHKERRQ(ierr);
   ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetDate(date,64);CHKERRQ(ierr);
-  ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
+  ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stdout",&use_stdout);CHKERRQ(ierr);
   if (use_stdout) {

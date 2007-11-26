@@ -90,7 +90,7 @@ $     -characteristic_type my_solver
 
    Level: advanced
 
-   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, ${BOPT},
+   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
           and others of the form ${any_environmental_variable} occuring in pathname will be 
           replaced with appropriate values.
          If your function is not being put into a shared library then use CharacteristicRegister() instead

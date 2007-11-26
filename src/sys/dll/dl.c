@@ -108,7 +108,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
 
   PetscFunctionBegin;
   /* 
-     make copy of library name and replace $PETSC_ARCH and 
+     make copy of library name and replace $PETSC_ARCH etc
      so we can add to the end of it to look for something like .so.1.0 etc.
   */
   ierr = PetscStrlen(libname,&len);CHKERRQ(ierr);
@@ -198,17 +198,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libna
   *handle = NULL;
   ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&par2);CHKERRQ(ierr);
   ierr = PetscDLLibraryRetrieve(comm,libname,par2,PETSC_MAX_PATH_LEN,&foundlibrary);CHKERRQ(ierr);
-  if (!foundlibrary) {
-    SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to locate dynamic library:\n  %s\n",libname);
-  }
+  if (!foundlibrary) SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to locate dynamic library:\n  %s\n",libname);
 
   /* Eventually config/configure.py should determine if the system needs an executable dynamic library */
 #define PETSC_USE_NONEXECUTABLE_SO
 #if !defined(PETSC_USE_NONEXECUTABLE_SO)
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
-  if (!foundlibrary) {
-    SETERRQ2(PETSC_ERR_FILE_OPEN,"Dynamic library is not executable:\n  %s\n  %s\n",libname,par2);
-  }
+  if (!foundlibrary) SETERRQ2(PETSC_ERR_FILE_OPEN,"Dynamic library is not executable:\n  %s\n  %s\n",libname,par2);
 #endif
 
   /*
@@ -613,7 +609,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary next)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
   while (next) {
     prev = next;
     next = next->next;

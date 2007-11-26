@@ -270,6 +270,8 @@
       user%gye = user%gys+user%gym-1
       user%gxe = user%gxs+user%gxm-1
 
+      call SNESSetApplicationContext(snes,user,ierr)
+
 !  Set function evaluation routine and vector
       call SNESSetFunction(snes,r,FormFunction,user,ierr)
 
@@ -314,7 +316,6 @@
       call PetscOptionsGetTruth(PETSC_NULL_CHARACTER,'-test_appctx',             &
      &     flg,PETSC_NULL_CHARACTER,ierr)
       if (flg .eq. 1) then
-        call SNESSetApplicationContext(snes,user,ierr)
         call SNESGetApplicationContext(snes,puser,ierr)
         if (user%da .ne. puser%da) then
           write(*,*) "Error: uesr != puesr"
@@ -331,7 +332,7 @@
 !  to employ an initial guess of zero, the user should explicitly set
 !  this vector to zero by calling VecSet().
 
-      call FormInitialGuess(user,x,ierr)
+      call FormInitialGuess(snes,x,ierr)
       call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr) 
       call SNESGetIterationNumber(snes,its,ierr);
       if (user%rank .eq. 0) then
@@ -370,8 +371,9 @@
 !  This routine merely handles ghost point scatters and accesses
 !  the local vector data via VecGetArrayF90() and VecRestoreArrayF90().
 !
-      subroutine FormInitialGuess(user,X,ierr)
+      subroutine FormInitialGuess(snes,X,ierr)
       use f90module
+      use f90moduleinterfaces
       implicit none
 
 #include "include/finclude/petscvec.h90"
@@ -385,8 +387,9 @@
 #include "include/finclude/petscsnes.h"
 
 !  Input/output variables:
-      type (userctx)         user
-      Vec      X
+      SNES           snes
+      type(userctx), pointer:: puser
+      Vec            X
       PetscErrorCode ierr
       
 !  Declarations for use with local arrays:
@@ -394,7 +397,7 @@
       Vec               localX
 
       ierr = 0
-
+      call SNESGetApplicationContext(snes,puser,ierr)
 !  Get a pointer to vector data.
 !    - For default PETSc vectors, VecGetArray90() returns a pointer to
 !      the data array. Otherwise, the routine is implementation dependent.
@@ -403,21 +406,18 @@
 !    - Note that the interface to VecGetArrayF90() differs from VecGetArray(),
 !      and is useable from Fortran-90 Only.
 
-      call DAGetLocalVector(user%da,localX,ierr)
+      call DAGetLocalVector(puser%da,localX,ierr)
       call VecGetArrayF90(localX,lx_v,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
-
-      call InitialGuessLocal(user,lx_v,ierr)
+      call InitialGuessLocal(puser,lx_v,ierr)
 
 !  Restore vector
-
       call VecRestoreArrayF90(localX,lx_v,ierr)
 
 !  Insert values into global vector
-
-      call DALocalToGlobal(user%da,localX,INSERT_VALUES,X,ierr)
-      call DARestoreLocalVector(user%da,localX,ierr)
+      call DALocalToGlobal(puser%da,localX,INSERT_VALUES,X,ierr)
+      call DARestoreLocalVector(puser%da,localX,ierr)
 
       return 
       end
@@ -452,7 +452,7 @@
 
 !  Input/output variables:
       type (userctx)         user
-      PetscScalar  x(user%gxs:user%gxe,                                         &
+      PetscScalar  x(user%gxs:user%gxe,                                 &                         
      &              user%gys:user%gye)
       PetscErrorCode ierr
 
