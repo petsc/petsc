@@ -490,6 +490,80 @@ PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* 
   PetscFunctionReturn(ierr);
 }
 
+#ifdef PETSC_CLANGUAGE_CXX
+#undef __FUNCT__  
+#define __FUNCT__ "PetscErrorCxx" 
+/*@C
+   PetscErrorCxx - Routine that is called when an error has been detected, 
+   usually called through the macro SETERROR().
+
+   Not Collective
+
+   Input Parameters:
++  line - the line number of the error (indicated by __LINE__)
+.  func - the function where the error occured (indicated by __FUNCT__)
+.  dir - the directory of file (indicated by __SDIR__)
+.  file - the file in which the error was detected (indicated by __FILE__)
+.  n - the generic error number
+.  p - 1 indicates the error was initially detected, 0 indicates this is a traceback from a 
+   previously detected error
+
+  Level: intermediate
+
+   Notes:
+   Most users need not directly use this routine and the error handlers, but
+   can instead use the simplified interface SETERRQ, which has the calling 
+   sequence
+$     SETERRQ(n,mess)
+
+   Experienced users can set the error handler with PetscPushErrorHandler().
+
+   Concepts: error^setting condition
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), SETERRQ(), CHKERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2()
+@*/
+void PETSC_DLLEXPORT PetscErrorCxx(int line,const char *func,const char* file,const char *dir,PetscErrorCode n,int p)
+{
+  PetscTruth ismain, isunknown;
+#if 0
+#if defined(PETSC_USE_ERRORCHECKING)
+  PetscInt   i;
+#endif
+#endif
+
+  if (!func) func = "User provided function";
+  if (!file) file = "User file";
+  if (!dir)  dir  = " ";
+
+#if 0
+#if defined(PETSC_USE_ERRORCHECKING)
+  /* check if user is catching this exception */
+  for (i=0; i<PetscExceptionsCount; i++) {
+    if (n == PetscExceptions[i])  PetscFunctionReturn(n);
+  }
+#endif
+#endif
+
+  std::ostringstream msg;
+
+  PetscTraceBackErrorHandlerCxx(line, func, file, dir, n, p, msg);
+
+  /* 
+      If this is called from the main() routine we call MPI_Abort() instead of 
+    return to allow the parallel program to be properly shutdown.
+
+    Since this is in the error handler we don't check the errors below. Of course,
+    PetscStrncmp() does its own error checking which is problamatic
+  */
+  PetscStrncmp(func,"main",4,&ismain);
+  PetscStrncmp(func,"unknown",7,&isunknown);
+  if (ismain || isunknown) {
+    MPI_Abort(PETSC_COMM_WORLD, (int) n);
+  }
+  throw PetscException(msg.str().c_str());
+}
+#endif
+
 /* -------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
