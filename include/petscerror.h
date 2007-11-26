@@ -516,7 +516,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(int,const char*,con
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscError(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorCxx(int,const char*,const char*,const char*,PetscErrorCode,int);
+EXTERN void           PETSC_DLLEXPORT PetscErrorCxx(int,const char*,const char*,const char*,PetscErrorCode,int);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*),void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int,void*);
