@@ -636,7 +636,6 @@ namespace ALE {
       }
     };
     static Obj<mesh_type> boundary_interpolated(const Obj<mesh_type>& mesh, const int faceHeight = 1) {
-      std::cout << "Constructing boundary for height " << faceHeight << std::endl;
       Obj<mesh_type>                                     newMesh  = new mesh_type(mesh->comm(), mesh->getDimension(), mesh->debug());
       Obj<sieve_type>                                    newSieve = new sieve_type(mesh->comm(), mesh->debug());
       const Obj<sieve_type>&                             sieve    = mesh->getSieve();
@@ -646,14 +645,11 @@ namespace ALE {
       const int                                          depth    = faceHeight - mesh->depth();
 
       for(typename mesh_type::label_sequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
-        std::cout << "  Considering face " << *f_iter << std::endl;
         const Obj<typename sieve_type::traits::supportSequence>& support = sieve->support(*f_iter);
 
-        std::cout << "    with support size " << support->size() << std::endl;
         if (support->size() == 1) {
           addClosure(sieve, newSieve, *f_iter, depth);
         }
-        newSieve->view("Partial Boundary Sieve");
       }
       newMesh->setSieve(newSieve);
       newMesh->stratify();
