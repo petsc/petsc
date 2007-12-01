@@ -53,6 +53,11 @@ static char help[] = "This example uses a Grade 2 Fluid model on a journal beari
  *                   -\mu\Delta u + z\times u + \nabla p = f
  *                                        \nabla \cdot u = 0
  *
+ * However, we would like the iterated penalty formulation
+ *
+ *    <\nabla v, \nabla u^n> + r <\nabla\cdot v, \nabla\cdot u^n> = <v, f> - <\nabla\cdot v, \nabla\cdot w^n>
+ *        w^{n+1} = w^n + \rho u^n
+ *
  *  STEP 2:
  *  --------------------------------------------------------------------
  *    Solve the transport equation:
@@ -240,7 +245,7 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
 #define __FUNCT__ "IterateStokes"
 PetscErrorCode IterateStokes(DMMG *dmmg, Options *options)
 {
-  PetscErrorCode ierr;
+  //PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Do nothing so far */
@@ -254,7 +259,7 @@ PetscErrorCode IterateStokes(DMMG *dmmg, Options *options)
 #define __FUNCT__ "CheckStokesConvergence"
 PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscTruth *iterate, Options *options)
 {
-  PetscErrorCode ierr;
+  //PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Do nothing so far */
@@ -316,11 +321,10 @@ PetscErrorCode SolveTransport(DM dm, Options *options)
 #define __FUNCT__ "CheckStoppingCriteria"
 PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *options)
 {
-  PetscErrorCode ierr;
+  //PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Do nothing so far */
-
   PetscFunctionReturn(0);
 }
 
@@ -629,6 +633,10 @@ PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options)
   ierr = CreateProblem_gen_1(stokesDM, "u1", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(stokesDM, "w0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(stokesDM, "w1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  options->funcs[0] = zero;
+  options->funcs[1] = zero;
+  options->funcs[2] = zero;
+  options->funcs[3] = zero;
   // Create the default Stokes section
   Obj<ALE::Mesh> m;
 
@@ -675,6 +683,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
   \param[out] section
   \param[out] ctx
 
+  <\nabla v, \nabla u^n> + r <\nabla\cdot v, \nabla\cdot u^n> = <v, f> - <\nabla\cdot v, \nabla\cdot w^n>
 
   \returns
     PetscErrorCode
@@ -687,15 +696,17 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
   Options       *options = (Options *) ctx;
   double      (**funcs)(const double *) = options->funcs;
   Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> sX;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
-  const int                                dim         = m->getDimension();
-  const Obj<std::set<std::string> >&       discs       = m->getDiscretizations();
-  int          totBasisFuncs = 0;
+  ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
+  const int                                dim           = m->getDimension();
+  const Obj<std::set<std::string> >&       discs         = m->getDiscretizations();
+  int                                      totBasisFuncs = 0;
   double      *t_der, *b_der, *coords, *v0, *J, *invJ, detJ;
   PetscScalar *elemVec, *elemMat;
 
@@ -707,17 +718,10 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
   ierr = PetscMalloc6(dim,double,&t_der,dim,double,&b_der,dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-    PetscScalar *x;
-    int          field = 0;
+    const PetscScalar *x     = m->restrictNew(sX, *c_iter);
+    int                field = 0;
 
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-    //ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
-    {
-      Obj<ALE::Mesh::real_section_type> sX;
-
-      ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
-      x = (PetscScalar *) m->restrictNew(sX, *c_iter);
-    }
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemVec, totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
@@ -729,7 +733,13 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       const double                   *basis         = disc->getBasis();
       const double                   *basisDer      = disc->getBasisDerivatives();
       const int                      *indices       = disc->getIndices();
+      double scale;
 
+      if (field < 2) {
+        scale = options->r;
+      } else {
+        scale = 1.0;
+      }
       ierr = PetscMemzero(elemMat, numBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
       // Loop over quadrature points
       for(int q = 0; q < numQuadPoints; ++q) {
@@ -746,33 +756,26 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
           // Constant part
           elemVec[indices[f]] -= basis[q*numBasisFuncs+f]*funcVal*quadWeights[q]*detJ;
           // Linear part
-          //if (*f_iter == "pressure") {
-          if (field == 0) {
-            // Divergence of u
-            const Obj<ALE::Discretization>& u         = m->getDiscretization("u0");
-            const int                       numUFuncs = u->getBasisSize();
-            const double                   *uBasisDer = u->getBasisDerivatives();
-            const int                      *uIndices  = u->getIndices();
+          // The div-div term
+          PetscScalar tDiv = 0.0;
 
-            for(int g = 0; g < numUFuncs; ++g) {
-              PetscScalar uDiv = 0.0;
-
-              for(int e = 0; e < dim; ++e) uDiv += invJ[e*dim+0]*uBasisDer[(q*numUFuncs+g)*dim+e];
-              elemMat[f*totBasisFuncs+uIndices[g]] += basis[q*numBasisFuncs+f]*uDiv*quadWeights[q]*detJ;
+          for(int d = 0; d < dim; ++d) {
+            for(int e = 0; e < dim; ++e) {
+              tDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
             }
-            // Divergence of v
-            const Obj<ALE::Discretization>& v         = m->getDiscretization("u1");
-            const int                       numVFuncs = v->getBasisSize();
-            const double                   *vBasisDer = v->getBasisDerivatives();
-            const int                      *vIndices  = v->getIndices();
+          }
+          for(int g = 0; g < numBasisFuncs; ++g) {
+            PetscScalar bDiv = 0.0;
 
-            for(int g = 0; g < numVFuncs; ++g) {
-              PetscScalar vDiv = 0.0;
-
-              for(int e = 0; e < dim; ++e) vDiv += invJ[e*dim+1]*vBasisDer[(q*numVFuncs+g)*dim+e];
-              elemMat[f*totBasisFuncs+vIndices[g]] += basis[q*numBasisFuncs+f]*vDiv*quadWeights[q]*detJ;
+            for(int d = 0; d < dim; ++d) {
+              for(int e = 0; e < dim; ++e) {
+                bDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
+              }
             }
-          } else {
+            elemMat[f*totBasisFuncs+indices[g]] += scale*tDiv*bDiv*quadWeights[q]*detJ;
+          }
+          // Just the velocity
+          if (field < 2) {
             // Laplacian of u or v
             for(int d = 0; d < dim; ++d) {
               t_der[d] = 0.0;
@@ -787,19 +790,6 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
 
               for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
               elemMat[f*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
-            }
-            // Gradient of pressure
-            const Obj<ALE::Discretization>& pres         = m->getDiscretization("p");
-            const int                       numPresFuncs = pres->getBasisSize();
-            const double                   *presBasisDer = pres->getBasisDerivatives();
-            const int                      *presIndices  = pres->getIndices();
-
-            for(int g = 0; g < numPresFuncs; ++g) {
-              PetscScalar presGrad = 0.0;
-              const int   d        = field-1;
-
-              for(int e = 0; e < dim; ++e) presGrad -= invJ[e*dim+d]*presBasisDer[(q*numPresFuncs+g)*dim+e];
-              elemMat[f*totBasisFuncs+presIndices[g]] += basis[q*numBasisFuncs+f]*presGrad*quadWeights[q]*detJ;
             }
           }
         }
@@ -852,6 +842,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
   \param[out] A The operator matrix
   \param[in] *ctx The current context
 
+  <\nabla v, \nabla u^n> + r <\nabla\cdot v, \nabla\cdot u^n> = <v, f> - <\nabla\cdot v, \nabla\cdot w^n>
 
   \returns
     PetscErrorCode
@@ -859,22 +850,22 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
 /* ______________________________________________________________________ */
 #undef __FUNCT__
 #define __FUNCT__ "Stokes_Jac_Unstructured"
-PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx)
+PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ctx)
 {
   Options       *options = (Options *) ctx;
-  Obj<ALE::Mesh::real_section_type> s;
   Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> sX;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
-  const Obj<ALE::Mesh::order_type>&        order       = m->getFactory()->getGlobalOrder(m, "default", s);
-  const int                                dim         = m->getDimension();
-  const Obj<std::set<std::string> >&       discs       = m->getDiscretizations();
-  int          totBasisFuncs = 0;
+  ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
+  const Obj<ALE::Mesh::order_type>&        order         = m->getFactory()->getGlobalOrder(m, "default", sX);
+  const int                                dim           = m->getDimension();
+  const Obj<std::set<std::string> >&       discs         = m->getDiscretizations();
+  int                                      totBasisFuncs = 0;
   double      *t_der, *b_der, *v0, *J, *invJ, detJ;
   PetscScalar *elemMat;
 
@@ -886,54 +877,49 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, vo
   ierr = PetscMalloc5(dim,double,&t_der,dim,double,&b_der,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-    PetscScalar *x;
-    int          field = 0;
+    int field = 0;
 
-    x = (PetscScalar *) m->restrictNew(s, *c_iter);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemMat, totBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
       const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
       const int                       numQuadPoints = disc->getQuadratureSize();
-      const double                   *quadPoints    = disc->getQuadraturePoints();
       const double                   *quadWeights   = disc->getQuadratureWeights();
       const int                       numBasisFuncs = disc->getBasisSize();
-      const double                   *basis         = disc->getBasis();
       const double                   *basisDer      = disc->getBasisDerivatives();
       const int                      *indices       = disc->getIndices();
+      double scale;
 
+      if (field < 2) {
+        scale = options->r;
+      } else {
+        scale = 1.0;
+      }
       // Loop over quadrature points
       for(int q = 0; q < numQuadPoints; ++q) {
         // Loop over trial functions
         for(int f = 0; f < numBasisFuncs; ++f) {
-          //if (*f_iter == "pressure") {
-          if (field == 0) {
-            // Divergence of u
-            const Obj<ALE::Discretization>& u         = m->getDiscretization("u0");
-            const int                       numUFuncs = u->getBasisSize();
-            const double                   *uBasisDer = u->getBasisDerivatives();
-            const int                      *uIndices  = u->getIndices();
+          // The div-div term
+          PetscScalar tDiv = 0.0;
 
-            for(int g = 0; g < numUFuncs; ++g) {
-              PetscScalar uDiv = 0.0;
-
-              for(int e = 0; e < dim; ++e) uDiv += invJ[e*dim+0]*uBasisDer[(q*numUFuncs+g)*dim+e];
-              elemMat[indices[f]*totBasisFuncs+uIndices[g]] += basis[q*numBasisFuncs+f]*uDiv*quadWeights[q]*detJ;
+          for(int d = 0; d < dim; ++d) {
+            for(int e = 0; e < dim; ++e) {
+              tDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
             }
-            // Divergence of v
-            const Obj<ALE::Discretization>& v         = m->getDiscretization("u1");
-            const int                       numVFuncs = v->getBasisSize();
-            const double                   *vBasisDer = v->getBasisDerivatives();
-            const int                      *vIndices  = v->getIndices();
+          }
+          for(int g = 0; g < numBasisFuncs; ++g) {
+            PetscScalar bDiv = 0.0;
 
-            for(int g = 0; g < numVFuncs; ++g) {
-              PetscScalar vDiv = 0.0;
-
-              for(int e = 0; e < dim; ++e) vDiv += invJ[e*dim+1]*vBasisDer[(q*numVFuncs+g)*dim+e];
-              elemMat[indices[f]*totBasisFuncs+vIndices[g]] += basis[q*numBasisFuncs+f]*vDiv*quadWeights[q]*detJ;
+            for(int d = 0; d < dim; ++d) {
+              for(int e = 0; e < dim; ++e) {
+                bDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
+              }
             }
-          } else {
+            elemMat[indices[f]*totBasisFuncs+indices[g]] += scale*tDiv*bDiv*quadWeights[q]*detJ;
+          }
+          // Just the velocity
+          if (field < 2) {
             // Laplacian of u or v
             for(int d = 0; d < dim; ++d) {
               t_der[d] = 0.0;
@@ -949,24 +935,11 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, vo
               for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
               elemMat[indices[f]*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
             }
-            // Gradient of pressure
-            const Obj<ALE::Discretization>& pres         = m->getDiscretization("p");
-            const int                       numPresFuncs = pres->getBasisSize();
-            const double                   *presBasisDer = pres->getBasisDerivatives();
-            const int                      *presIndices  = pres->getIndices();
-
-            for(int g = 0; g < numPresFuncs; ++g) {
-              PetscScalar presGrad = 0.0;
-              const int   d        = field-1;
-
-              for(int e = 0; e < dim; ++e) presGrad -= invJ[e*dim+d]*presBasisDer[(q*numPresFuncs+g)*dim+e];
-              elemMat[indices[f]*totBasisFuncs+presIndices[g]] += basis[q*numBasisFuncs+f]*presGrad*quadWeights[q]*detJ;
-            }
           }
         }
       }
     }
-    ierr = updateOperator(A, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
+    ierr = updateOperator(A, m, sX, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree(elemMat);CHKERRQ(ierr);
   ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
@@ -975,19 +948,16 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, vo
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "Transport_Rhs_Unstructured"
 PetscErrorCode Transport_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx)
 {
-  Options       *options = (Options *) ctx;
-  double      (**funcs)(const double *) = options->funcs;
+  //Options       *options = (Options *) ctx;
   Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -995,14 +965,13 @@ PetscErrorCode Transport_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal 
 #define __FUNCT__ "Transport_Jac_Unstructured"
 PetscErrorCode Transport_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx)
 {
-  Options       *options = (Options *) ctx;
+  //Options       *options = (Options *) ctx;
   Obj<ALE::Mesh::real_section_type> s;
   Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 // ---------------------------------------------------------------------------------------------------------------------
