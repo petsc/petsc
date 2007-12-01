@@ -1035,7 +1035,7 @@ namespace ALE {
       ((typename atlas_type::value_type *) this->_atlas->restrictPoint(p))->index = index;
     };
     void setIndexBC(const point_type& p, const typename index_type::index_type& index) {};
-    void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
+    void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = true) {
       this->getIndices(p, this->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
     };
     template<typename Order_>
