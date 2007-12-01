@@ -380,8 +380,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->debug            = 0;
   options->generateMesh     = PETSC_TRUE;
   options->interpolate      = PETSC_TRUE;
-  options->refinementLimit  = 0.001;
-  options->r                = 1e+3;
+  options->refinementLimit  = 0.0;
+  options->r                = 0.5;
   options->rho              = -1e+3;
   options->mu               = 1;
   options->alpha            = 1;
@@ -525,11 +525,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options 
 
   PetscFunctionBegin;
   if (options->generateMesh) {
-    double lower[2] = {0.0, 0.0};
-    double upper[2] = {1.0, 1.0};
-    int    edges[2] = {2, 2};
+    double centers[4] = {0.0, 0.0, 0.0, 0.0};
+    double radii[2]   = {1.0, options->r};
 
-    Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+    Obj<ALE::Mesh> mB = ALE::MeshBuilder::createAnnularBoundary(comm, 10, centers, radii, options->debug);
     Obj<ALE::Mesh> sM = ALE::Generator::generateMesh(mB, options->interpolate);
     ierr = MeshCreate(sM->comm(), &stokesMesh);CHKERRQ(ierr);
     ierr = MeshSetMesh(stokesMesh, sM);CHKERRQ(ierr);

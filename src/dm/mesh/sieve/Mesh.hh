@@ -1158,10 +1158,12 @@ namespace ALE {
     typedef base_type::sieve_alg_type        sieve_alg_type;
     typedef std::set<std::string>            names_type;
     typedef std::map<std::string, Obj<Discretization> > discretizations_type;
+    typedef std::vector<PETSc::Point<3> >    holes_type;
   protected:
     int                  _dim;
     discretizations_type _discretizations;
     std::map<int,double> _periodicity;
+    holes_type           _holes;
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       ///this->_factory = NumberingFactory::singleton(debug);
@@ -1183,6 +1185,17 @@ namespace ALE {
     };
     bool getPeriodicity(const int d) {return this->_periodicity[d];};
     void setPeriodicity(const int d, const double length) {this->_periodicity[d] = length;};
+    const holes_type& getHoles() const {return this->_holes;};
+    void addHole(const double hole[]) {
+      this->_holes.push_back(hole);
+    };
+    void copyHoles(const Obj<Mesh>& m) {
+      const holes_type& holes = m->getHoles();
+
+      for(holes_type::const_iterator h_iter = holes.begin(); h_iter != holes.end(); ++h_iter) {
+        this->_holes.push_back(*h_iter);
+      }
+    };
   public: // Mesh geometry
     void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
       const double *coords = this->restrict(coordinates, e);
@@ -2338,6 +2351,44 @@ namespace ALE {
         }
         mesh->stratify();
       }
+      delete [] vertices;
+      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
+      return mesh;
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "createAnnularBoundary"
+    static Obj<ALE::Mesh> createAnnularBoundary(const MPI_Comm comm, const int segments, const double centers[4], const double radii[2], const int debug = 0) {
+      Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
+      int       numVertices = segments*2;
+      int       numEdges    = numVertices;
+      double   *coords      = new double[numVertices*2];
+      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
+      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+
+      mesh->setSieve(sieve);
+      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      if (mesh->commRank() == 0) {
+        for (int e = 0; e < segments; ++e) {
+          sieve->addArrow(numEdges+e,              e);
+          sieve->addArrow(numEdges+(e+1)%segments, e);
+          sieve->addArrow(numEdges+segments+e,              e+segments);
+          sieve->addArrow(numEdges+segments+(e+1)%segments, e+segments);
+          mesh->setValue(markers, e,          1);
+          mesh->setValue(markers, e+segments, 1);
+          mesh->setValue(markers, e+numEdges,          1);
+          mesh->setValue(markers, e+numEdges+segments, 1);
+        }
+        const double anglestep = 2.0*M_PI/segments;
+
+        for (int v = 0; v < segments; ++v) {
+          coords[v*2]              = centers[0] + radii[0]*cos(anglestep*v);
+          coords[v*2+1]            = centers[1] + radii[0]*sin(anglestep*v);
+          coords[(v+segments)*2]   = centers[2] + radii[1]*cos(anglestep*v);
+          coords[(v+segments)*2+1] = centers[3] + radii[1]*sin(anglestep*v);
+        }
+        mesh->addHole(&centers[2]);
+      }
+      mesh->stratify();
       delete [] vertices;
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;

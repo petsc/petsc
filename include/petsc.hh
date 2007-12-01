@@ -41,6 +41,7 @@ namespace PETSc {
     static bool lessThan(const Point& a, const Point &b) {
       return a.x[d] < b.x[d];
     };
+    double operator[](const int i) const {return this->x[i];};
     friend std::ostream& operator<<(std::ostream& stream, const Point& p) {
       for(int d = 0; d < dim; ++d) {
         if (d > 0) stream << ",";
