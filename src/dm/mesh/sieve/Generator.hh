@@ -107,7 +107,7 @@ namespace ALE {
 
         in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(int), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
           for(int h = 0; h < in.numberofholes; ++h) {
             for(int d = 0; d < dim; ++d) {
               in.holelist[h*dim+d] = holes[h][d];
