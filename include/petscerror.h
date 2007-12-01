@@ -481,32 +481,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int,const char*[],char *
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 #ifdef PETSC_CLANGUAGE_CXX
 #include <sstream>
-
-class PetscException : public std::exception {
-  std::ostringstream _txt;
- public:
-  PetscException() : std::exception() {};
-  explicit PetscException(const std::string& msg) : std::exception() {this->_txt << msg;};
-  explicit PetscException(const std::ostringstream& txt) : std::exception() {this->_txt << txt.str();};
-  PetscException(const PetscException& e) : std::exception() {this->_txt << e._txt.str();};
-  ~PetscException() throw () {};
- public:
-  const std::string msg() const {return this->_txt.str();};
-  const char *message() const {return this->_txt.str().c_str();};
-  // Message input
-  template<typename Input>
-  PetscException& operator<<(const Input& in) {
-    this->_txt << in;
-    return *this;
-  };
-  // Printing
-  template<typename Stream>
-  friend Stream& operator<<(Stream& os, const PetscException& e) {
-    os << e.message() << std::endl;
-    return os;
-  };
-};
-
 EXTERN void           PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(int,const char *,const char *,const char *,PetscErrorCode,int, std::ostringstream&);
 #endif
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);

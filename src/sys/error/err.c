@@ -560,7 +560,7 @@ void PETSC_DLLEXPORT PetscErrorCxx(int line,const char *func,const char* file,co
   if (ismain || isunknown) {
     MPI_Abort(PETSC_COMM_WORLD, (int) n);
   }
-  throw PetscException(msg.str().c_str());
+  throw PETSc::Exception(msg.str().c_str());
 }
 #endif
 

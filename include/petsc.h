@@ -1730,5 +1730,8 @@ M*/
 #  define PETSC_MAX_PATH_LEN     4096
 #endif
 
+/* Special support for C++ */
+#include "petsc.hh"
+
 PETSC_EXTERN_CXX_END
 #endif
