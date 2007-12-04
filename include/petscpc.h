@@ -66,6 +66,7 @@ E*/
 #define PCOPENMP          "openmp"
 #define PCSUPPORTGRAPH    "supportgraph"
 #define PCASA             "asa"
+#define PCCP              "cp"
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT PC_COOKIE;
