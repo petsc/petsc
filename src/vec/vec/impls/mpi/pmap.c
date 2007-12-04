@@ -5,8 +5,7 @@
 
 #include "private/vecimpl.h"   /*I  "petscvec.h"   I*/
 /*@C
-     PetscMapInitialize - given a map where you have set either the global or local
-           size sets up the map so that it may be used.
+     PetscMapInitialize - Sets the map contents to the default.
 
     Collective on MPI_Comm
 
@@ -20,7 +19,7 @@
        PetscMapInitialize(MPI_Comm,PetscMap *);
        PetscMapSetBlockSize(PetscMap*,1);
        PetscMapSetSize(PetscMap*,n) or PetscMapSetLocalSize(PetscMap*,N);
-       PetscMapInitialize(PetscMap*);
+       PetscMapSetUp(PetscMap*);
        PetscMapGetSize(PetscMap*,PetscInt *);
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
@@ -63,7 +62,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscMap *map
        PetscMapInitialize(MPI_Comm,PetscMap *);
        PetscMapSetBlockSize(PetscMap*,1);
        PetscMapSetSize(PetscMap*,n) or PetscMapSetLocalSize(PetscMap*,N);
-       PetscMapInitialize(PetscMap*);
+       PetscMapSetUp(PetscMap*);
        PetscMapGetSize(PetscMap*,PetscInt *);
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
