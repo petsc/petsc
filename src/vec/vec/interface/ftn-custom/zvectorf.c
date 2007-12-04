@@ -12,6 +12,7 @@
 #define vecdestroyvecs_           VECDESTROYVECS
 #define vecmax_                   VECMAX
 #define vecgetownershiprange_     VECGETOWNERSHIPRANGE
+#define vecgetownershipranges_    VECGETOWNERSHIPRANGES
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define vecgetarrayaligned_       vecgetarrayaligned
 #define vecsetvalue_              vecsetvalue
@@ -24,6 +25,7 @@
 #define vecdestroyvecs_           vecdestroyvecs
 #define vecmax_                   vecmax
 #define vecgetownershiprange_     vecgetownershiprange
+#define vecgetownershipranges_    vecgetownershipranges
 #endif
 
 EXTERN_C_BEGIN
@@ -155,5 +157,14 @@ void PETSC_STDCALL vecgetownershiprange_(Vec *x,PetscInt *low,PetscInt *high, Pe
   *ierr = VecGetOwnershipRange(*x,low,high);
 }
 
+void PETSC_STDCALL vecgetownershipranges_(Vec *x,PetscInt *range,PetscErrorCode *ierr)
+{
+  PetscMPIInt    size;
+  const PetscInt *r;
+
+  *ierr = MPI_Comm_size((*x)->map.comm,&size);if (*ierr) return;
+  *ierr = VecGetOwnershipRanges(*x,&r);if (*ierr) return;
+  *ierr = PetscMemcpy(range,r,(size+1)*sizeof(PetscInt));
+}
 
 EXTERN_C_END

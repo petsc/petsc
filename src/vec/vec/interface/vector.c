@@ -789,6 +789,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetLocalSize(Vec x,PetscInt *size)
    Concepts: ownership^of vectors
    Concepts: vector^ownership of elements
 
+.seealso:   MatGetOwnershipRange(), MatGetOwnershipRanges(), VecGetOwnershipRanges()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,PetscInt *high)
 {
@@ -799,6 +800,46 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,Petsc
   if (high) PetscValidIntPointer(high,3);
   if (low)  *low  = x->map.rstart;
   if (high) *high = x->map.rend;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecGetOwnershipRanges"
+/*@C
+   VecGetOwnershipRanges - Returns the range of indices owned by EACH processor, 
+   assuming that the vectors are laid out with the
+   first n1 elements on the first processor, next n2 elements on the
+   second, etc.  For certain parallel layouts this range may not be 
+   well defined. 
+
+   Not Collective
+
+   Input Parameter:
+.  x - the vector
+
+   Output Parameters:
+.  range - array of length size+1 with the start and end+1 for each process
+
+   Note:
+   The high argument is one more than the last element stored locally.
+
+   Fortran: You must PASS in an array of length size+1
+
+   Level: beginner
+
+   Concepts: ownership^of vectors
+   Concepts: vector^ownership of elements
+
+.seealso:   MatGetOwnershipRange(), MatGetOwnershipRanges(), VecGetOwnershipRange()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRanges(Vec x,const PetscInt *ranges[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidType(x,1);
+  ierr = PetscMapGetGlobalRange(&x->map,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -13,6 +13,7 @@ class Configure(PETSc.package.Package):
     self.includes  = ['ml_include.h']
     self.liblist   = [['libml.a']]
     self.license   = 'http://trilinos.sandia.gov/'
+    self.fc        = 1
     return
 
   def setupDependencies(self, framework):
