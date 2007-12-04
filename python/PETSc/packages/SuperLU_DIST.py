@@ -8,31 +8,32 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.0-Jan_5_2006.tar.gz']
+    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.1-Nov_15_2007.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
-    self.liblist    = [['libsuperlu_dist_2.0.a']]
+    self.liblist    = [['libsuperlu_dist_2.1.a']]
     self.complex    = 1
     return
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
     self.mpi        = framework.require('config.packages.MPI',self)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)
-    self.deps       = [self.mpi,self.blasLapack]
+    self.blasLapack = framework.require('config.packages.BlasLapack',self)    
+    self.parmetis = framework.require('PETSc.packages.ParMetis',self)
+    self.deps       = [self.mpi,self.blasLapack,self.parmetis]
     return
 
   def Install(self):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_2.0.a\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_2.1.a\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('IMPI         = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('MPILIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('SYS_LIB      = \n')
-    g.write('LIBS         = $(DSUPERLULIB) $(BLASLIB) $(PERFLIB) $(MPILIB) $(SYS_LIB)\n')
+    g.write('PMETISLIB    = '+self.libraries.toString(self.parmetis.lib)+'\n')
+    g.write('LIBS         = $(DSUPERLULIB) $(BLASLIB) $(PMETISLIB) $(MPILIB)\n')
     g.write('ARCH         = '+self.setCompilers.AR+'\n')
     g.write('ARCHFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
