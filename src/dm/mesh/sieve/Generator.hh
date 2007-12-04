@@ -103,10 +103,16 @@ namespace ALE {
             in.segmentmarkerlist[idx] = boundary->getValue(markers, *e_iter);
           }
         }
+        const Mesh::holes_type& holes = boundary->getHoles();
 
-        in.numberofholes = 0;
+        in.numberofholes = holes.size();
         if (in.numberofholes > 0) {
-          ierr = PetscMalloc(in.numberofholes*dim * sizeof(int), &in.holelist);
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          for(int h = 0; h < in.numberofholes; ++h) {
+            for(int d = 0; d < dim; ++d) {
+              in.holelist[h*dim+d] = holes[h][d];
+            }
+          }
         }
         if (mesh->commRank() == 0) {
           std::string args("pqezQ");
@@ -121,6 +127,7 @@ namespace ALE {
         if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
         if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
         if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
+        if (in.holelist)          {ierr = PetscFree(in.holelist);}
         const Obj<Mesh::sieve_type> newSieve = new Mesh::sieve_type(mesh->comm(), mesh->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
@@ -152,6 +159,7 @@ namespace ALE {
             }
           }
         }
+        mesh->copyHoles(boundary);
         finiOutput(&out);
         return mesh;
       };

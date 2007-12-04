@@ -3,6 +3,7 @@
 */
 #if !defined(__PETSCMESH_H)
 #define __PETSCMESH_H
+#include "petsc.h"
 #include <Mesh.hh>
 #include <CartesianSieve.hh>
 #include <Distribution.hh>
