@@ -197,9 +197,6 @@ and if that succeeds then rerun config/configure.py
     if root is None:
       root = self.getInstallRoot(url)
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-    print scheme
-    print location
-    print path
     if hasattr(self,scheme+'Retrieve'):
       getattr(self, scheme+'Retrieve')(url, os.path.abspath(root), canExist, force)
     else:
