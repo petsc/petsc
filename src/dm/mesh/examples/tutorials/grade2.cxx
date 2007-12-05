@@ -350,10 +350,69 @@ PetscErrorCode SolveTransport(DM dm, Options *options)
 #define __FUNCT__ "CheckStoppingCriteria"
 PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *options)
 {
-  //PetscErrorCode ierr;
+  Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
+  PetscReal error;
 
   PetscFunctionBegin;
-  /* Do nothing so far */
+  printf("Checking Stopping Criteria: 0\n");
+  ierr = MeshGetMesh((Mesh) dm, m);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
+  const int                                dim         = m->getDimension();
+  const Obj<std::set<std::string> >&       discs       = m->getDiscretizations();
+  const Obj<ALE::Mesh::real_section_type>& X = m->getRealSection("default");
+
+  double *coords, *v0, *J, *invJ, detJ;
+  double  localError = 0.0;
+
+  ierr = PetscMalloc4(dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
+  // Loop over cells
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    PetscScalar *x;
+    double       elemError = 0.0;
+
+    m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+    //ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
+    {
+      x = (PetscScalar *) m->restrictNew(X, *c_iter);
+    }
+    for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+      const Obj<ALE::Discretization>&    disc          = m->getDiscretization(*f_iter);
+      const int                          numQuadPoints = disc->getQuadratureSize();
+      const double                      *quadPoints    = disc->getQuadraturePoints();
+      const double                      *quadWeights   = disc->getQuadratureWeights();
+      const int                          numBasisFuncs = disc->getBasisSize();
+      const double                      *basisDer      = disc->getBasisDerivatives();
+      const int                         *indices       = disc->getIndices();
+
+      // Loop over quadrature points
+      for(int q = 0; q < numQuadPoints; ++q) {
+        for(int d = 0; d < dim; d++) {
+          coords[d] = v0[d];
+          for(int e = 0; e < dim; e++) {
+            coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
+          }
+        }
+        PetscScalar interpolant = 0.0;
+
+        for(int f = 0; f < numBasisFuncs; ++f) {
+          interpolant += x[indices[f]]*basisDer[q*numBasisFuncs+f];
+        }
+        elemError += interpolant*interpolant*quadWeights[q];
+      }
+    }    
+    if (m->debug()) {
+      std::cout << "Element " << *c_iter << " error: " << elemError << std::endl;
+    }
+    localError += elemError;
+  }
+  ierr = MPI_Allreduce(&localError, &error, 1, MPI_DOUBLE, MPI_SUM, m->comm());CHKERRQ(ierr);
+  ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
+  error = sqrt(error);
+  printf("Checking Stopping Criteria: div_error = %f\n",error);
+  if (error < 1e-5)
+    *iterate = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
