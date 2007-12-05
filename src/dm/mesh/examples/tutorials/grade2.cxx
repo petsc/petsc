@@ -281,6 +281,63 @@ PetscErrorCode IterateStokes(DMMG *dmmg, Options *options)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "DivNorm_L2"
+PetscErrorCode DivNorm_L2(Mesh mesh, SectionReal X, PetscReal *norm, Options *options)
+{
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> sX;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
+  const int                                dim         = m->getDimension();
+  const Obj<std::set<std::string> >&       discs       = m->getDiscretizations();
+  double                                   localNorm   = 0.0;
+  double *v0, *J, *invJ, detJ;
+
+  ierr = PetscMalloc3(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
+  // Loop over cells
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    const PetscScalar *x = m->restrictNew(sX, *c_iter);
+    double elemNorm = 0.0;
+
+    m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+      const Obj<ALE::Discretization>&    disc          = m->getDiscretization(*f_iter);
+      const int                          numQuadPoints = disc->getQuadratureSize();
+      const double                      *quadWeights   = disc->getQuadratureWeights();
+      const int                          numBasisFuncs = disc->getBasisSize();
+      const double                      *basisDer      = disc->getBasisDerivatives();
+      const int                         *indices       = disc->getIndices();
+
+      // Loop over quadrature points
+      for(int q = 0; q < numQuadPoints; ++q) {
+        PetscScalar div = 0.0;
+
+        for(int f = 0; f < numBasisFuncs; ++f) {
+          for(int d = 0; d < dim; ++d) {
+            div += x[indices[f]]*basisDer[(q*numBasisFuncs+f)*dim+d];
+          }
+        }
+        elemNorm += div*div*quadWeights[q];
+      }
+    }    
+    if (m->debug()) {
+      std::cout << "Element " << *c_iter << " norm^2: " << elemNorm << std::endl;
+    }
+    localNorm += elemNorm*detJ;
+  }
+  ierr = MPI_Allreduce(&localNorm, norm, 1, MPI_DOUBLE, MPI_SUM, m->comm());CHKERRQ(ierr);
+  ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
+  *norm = sqrt(*norm);
+  PetscFunctionReturn(0);
+}
+
 /* 
  * check div(u) < tol
  */
@@ -288,10 +345,23 @@ PetscErrorCode IterateStokes(DMMG *dmmg, Options *options)
 #define __FUNCT__ "CheckStokesConvergence"
 PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscTruth *iterate, Options *options)
 {
-  //PetscErrorCode ierr;
+  Mesh            mesh = (Mesh) DMMGGetFine(dmmg);
+  const PetscReal tol  = 1.0e-5;
+  SectionReal     u;
+  PetscReal       error;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  /* Do nothing so far */
+  ierr = MeshGetSectionReal(mesh, "default", &u);CHKERRQ(ierr);
+  PetscPrintf(dmmg[0]->comm, "Checking Stopping Criteria: 0\n");
+  ierr = DivNorm_L2(mesh, u, &error, options);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(u);CHKERRQ(ierr);
+  PetscPrintf(dmmg[0]->comm, "Checking Stopping Criteria: div_error = %g\n", error);
+  if (error < tol) {
+    *iterate = PETSC_FALSE;
+  } else {
+    *iterate = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -351,12 +421,12 @@ PetscErrorCode SolveTransport(DM dm, Options *options)
 PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *options)
 {
   Obj<ALE::Mesh> m;
+  PetscReal      error;
   PetscErrorCode ierr;
-  PetscReal error;
 
   PetscFunctionBegin;
-  printf("Checking Stopping Criteria: 0\n");
   ierr = MeshGetMesh((Mesh) dm, m);CHKERRQ(ierr);
+  PetscPrintf(m->comm(), "Checking Stopping Criteria: 0\n");
   const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
   const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
   const int                                dim         = m->getDimension();
@@ -437,8 +507,8 @@ PetscErrorCode WriteSolution(DM dm, Options *options)
   if (flag) {sol->view("Solution");}
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_fibrated", &flag);CHKERRQ(ierr);
   if (flag) {
-    Obj<ALE::Mesh::real_section_type> velocityX = sol->getFibration(1);
-    Obj<ALE::Mesh::real_section_type> velocityY = sol->getFibration(2);
+    Obj<ALE::Mesh::real_section_type> velocityX = sol->getFibration(0);
+    Obj<ALE::Mesh::real_section_type> velocityY = sol->getFibration(1);
 
     velocityX->view("X-Velocity Solution");
     velocityY->view("Y-Velocity Solution");
