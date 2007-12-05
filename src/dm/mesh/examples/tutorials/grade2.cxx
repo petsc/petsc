@@ -92,7 +92,8 @@ typedef struct {
   PetscTruth    interpolate;                                  // Generate intermediate mesh elements
   PetscReal     refinementLimit;                              // The largest allowable cell volume
   char          baseFilename[2048];                           // The base filename for mesh files
-  double        (*funcs[4])(const double []);                 // The function to project
+  PetscReal     radius;                                       // The inner radius
+  double        (*funcs[2])(const double []);                 // The function to project
   PetscReal     r,rho;                                        // IP parameters
   PetscReal     mu,alpha;                                     // Transport parameters
 } Options;
@@ -103,6 +104,28 @@ double zero(const double x[]) {
 
 double constant(const double x[]) {
   return -3.0;
+}
+
+double radius = 0.0;
+
+// Assuming center (0.0,0.0)
+double uAnnulus(const double x[]) {
+  const double r = sqrt(x[0]*x[0] + x[1]*x[1]);
+
+  if (r <= 1.000001*radius) {
+    return x[1];
+  }
+  return 0.0;
+}
+
+// Assuming center (0.0,0.0)
+double vAnnulus(const double x[]) {
+  const double r = sqrt(x[0]*x[0] + x[1]*x[1]);
+
+  if (r <= 1.000001*radius) {
+    return -x[0];
+  }
+  return 0.0;
 }
 
 #include "grade2_quadrature.h"
@@ -246,10 +269,15 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
 #define __FUNCT__ "IterateStokes"
 PetscErrorCode IterateStokes(DMMG *dmmg, Options *options)
 {
-  //PetscErrorCode ierr;
+  Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Do nothing so far */
+  ierr = MeshGetMesh((Mesh) DMMGGetFine(dmmg)->dm, m);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::real_section_type>& u = m->getRealSection("default");
+  const Obj<ALE::Mesh::real_section_type>& w = m->getRealSection("w");
+
+  w->axpy(options->rho, u);
   PetscFunctionReturn(0);
 }
 
@@ -386,7 +414,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->generateMesh     = PETSC_TRUE;
   options->interpolate      = PETSC_TRUE;
   options->refinementLimit  = 0.0;
-  options->r                = 0.5;
+  options->radius           = 0.5;
+  options->r                =  1e+3;
   options->rho              = -1e+3;
   options->mu               = 1;
   options->alpha            = 1;
@@ -399,6 +428,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   ierr = PetscOptionsTruth("-square", "Use the unit square test problem", "grade2.cxx", options->square, &options->square, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "grade2.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "grade2.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-radius", "The inner radius ", "grade2.cxx", options->radius, &options->radius, PETSC_NULL);CHKERRQ(ierr);
+  radius = options->radius;
   ierr = PetscOptionsReal("-r", "The IP parameter r", "grade2.cxx", options->r, &options->r, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-rho", "The IP parameter rho", "grade2.cxx", options->rho, &options->rho, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mu", "The transport parameter mu", "grade2.cxx", options->mu, &options->mu, PETSC_NULL);CHKERRQ(ierr);
@@ -543,7 +574,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options 
       ierr = MeshSetMesh(stokesMesh, sM);CHKERRQ(ierr);
     } else {
       double centers[4] = {0.0, 0.0, 0.0, 0.0};
-      double radii[2]   = {1.0, options->r};
+      double radii[2]   = {1.0, options->radius};
       
       Obj<ALE::Mesh> mB = ALE::MeshBuilder::createAnnularBoundary(comm, 10, centers, radii, options->debug);
       Obj<ALE::Mesh> sM = ALE::Generator::generateMesh(mB, options->interpolate);
@@ -641,16 +672,20 @@ PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options)
   int      velMarkers[1] = {1};
   double (*velFuncs[1])(const double *coords);
   // Create the Stokes problem (assumes 2D)
-  velFuncs[0] = constant;
+  if (options->square) {
+    velFuncs[0] = constant;
+  } else {
+    velFuncs[0] = uAnnulus;
+  }
   ierr = CreateProblem_gen_1(stokesDM, "u0", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
-  velFuncs[0] = zero;
+  if (options->square) {
+    velFuncs[0] = zero;
+  } else {
+    velFuncs[0] = uAnnulus;
+  }
   ierr = CreateProblem_gen_1(stokesDM, "u1", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(stokesDM, "w0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(stokesDM, "w1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   options->funcs[0] = zero;
   options->funcs[1] = zero;
-  options->funcs[2] = zero;
-  options->funcs[3] = zero;
   // Create the default Stokes section
   Obj<ALE::Mesh> m;
 
@@ -660,6 +695,10 @@ PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options)
   m->calculateIndices();
   m->setupField(s, 2);
   if (options->debug) {s->view("Default Stokes field");}
+  // Create the Stokes w field
+  const ALE::Obj<ALE::Mesh::real_section_type> w = m->getRealSection("w");
+  w->setDebug(options->debug);
+  m->setupField(w, 2);
   // Create the Transport problem (assumes 2D)
   ierr = CreateProblem_gen_1(transportDM, "z0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(transportDM, "z1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
@@ -716,10 +755,12 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::real_section_type>& sW            = m->getRealSection("w");
   const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
   const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
   const int                                dim           = m->getDimension();
   const Obj<std::set<std::string> >&       discs         = m->getDiscretizations();
+  const double                             r             = options->r;
   int                                      totBasisFuncs = 0;
   double      *t_der, *b_der, *coords, *v0, *J, *invJ, detJ;
   PetscScalar *elemVec, *elemMat, *div_elemMat;
@@ -733,7 +774,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
   // Loop over cells
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     const PetscScalar *x     = m->restrictNew(sX, *c_iter);
-    const PetscScalar *w     = m->restrictNew(sX, *c_iter);
+    const PetscScalar *w     = m->restrictNew(sW, *c_iter);
     int                field = 0;
 
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
@@ -748,7 +789,6 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       const double                   *basis         = disc->getBasis();
       const double                   *basisDer      = disc->getBasisDerivatives();
       const int                      *indices       = disc->getIndices();
-      double scale = options->r;
 
       ierr = PetscMemzero(elemMat, numBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
       // Loop over quadrature points
@@ -782,25 +822,23 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
                 bDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
               }
             }
-            elemMat[f*totBasisFuncs+indices[g]] += scale*tDiv*bDiv*quadWeights[q]*detJ;
+            elemMat[f*totBasisFuncs+indices[g]]     += r*tDiv*bDiv*quadWeights[q]*detJ;
+            div_elemMat[f*totBasisFuncs+indices[g]] +=   tDiv*bDiv*quadWeights[q]*detJ;
           }
-          // Just the velocity
-          if (field < 2) {
-            // Laplacian of u or v
+          // Laplacian of u or v
+          for(int d = 0; d < dim; ++d) {
+            t_der[d] = 0.0;
+            for(int e = 0; e < dim; ++e) t_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+          }
+          for(int g = 0; g < numBasisFuncs; ++g) {
             for(int d = 0; d < dim; ++d) {
-              t_der[d] = 0.0;
-              for(int e = 0; e < dim; ++e) t_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+              b_der[d] = 0.0;
+              for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
             }
-            for(int g = 0; g < numBasisFuncs; ++g) {
-              for(int d = 0; d < dim; ++d) {
-                b_der[d] = 0.0;
-                for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
-              }
-              PetscScalar product = 0.0;
+            PetscScalar product = 0.0;
 
-              for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
-              elemMat[f*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
-            }
+            for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
+            elemMat[f*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
           }
         }
       }
@@ -813,7 +851,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       // Add linear contribution
       for(int f = 0; f < numBasisFuncs; ++f) {
         for(int g = 0; g < totBasisFuncs; ++g) {
-          elemVec[indices[f]] += elemMat[f*totBasisFuncs+g]*x[g] + scale*div_elemMat[f*totBasisFuncs+g]*x[g]+div_elemMat[f*totBasisFuncs+g]*w[g];
+          elemVec[indices[f]] += elemMat[f*totBasisFuncs+g]*x[g] + div_elemMat[f*totBasisFuncs+g]*w[g];
         }
       }
       if (options->debug) {
@@ -875,6 +913,7 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
   const Obj<ALE::Mesh::order_type>&        order         = m->getFactory()->getGlobalOrder(m, "default", sX);
   const int                                dim           = m->getDimension();
   const Obj<std::set<std::string> >&       discs         = m->getDiscretizations();
+  const double                             r             = options->r;
   int                                      totBasisFuncs = 0;
   double      *t_der, *b_der, *v0, *J, *invJ, detJ;
   PetscScalar *elemMat;
@@ -899,18 +938,12 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
       const int                       numBasisFuncs = disc->getBasisSize();
       const double                   *basisDer      = disc->getBasisDerivatives();
       const int                      *indices       = disc->getIndices();
-      double scale;
 
-      if (field < 2) {
-        scale = options->r;
-      } else {
-        scale = 1.0;
-      }
       // Loop over quadrature points
       for(int q = 0; q < numQuadPoints; ++q) {
         // Loop over trial functions
         for(int f = 0; f < numBasisFuncs; ++f) {
-          // The div-div term
+          // The div-div term for u or v
           PetscScalar tDiv = 0.0;
 
           for(int d = 0; d < dim; ++d) {
@@ -926,25 +959,22 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
                 bDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
               }
             }
-            elemMat[indices[f]*totBasisFuncs+indices[g]] += scale*tDiv*bDiv*quadWeights[q]*detJ;
+            elemMat[indices[f]*totBasisFuncs+indices[g]] += r*tDiv*bDiv*quadWeights[q]*detJ;
           }
-          // Just the velocity
-          if (field < 2) {
-            // Laplacian of u or v
+          // Laplacian of u or v
+          for(int d = 0; d < dim; ++d) {
+            t_der[d] = 0.0;
+            for(int e = 0; e < dim; ++e) t_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+          }
+          for(int g = 0; g < numBasisFuncs; ++g) {
             for(int d = 0; d < dim; ++d) {
-              t_der[d] = 0.0;
-              for(int e = 0; e < dim; ++e) t_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+              b_der[d] = 0.0;
+              for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
             }
-            for(int g = 0; g < numBasisFuncs; ++g) {
-              for(int d = 0; d < dim; ++d) {
-                b_der[d] = 0.0;
-                for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
-              }
-              PetscScalar product = 0.0;
-
-              for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
-              elemMat[indices[f]*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
-            }
+            PetscScalar product = 0.0;
+            
+            for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
+            elemMat[indices[f]*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
           }
         }
       }
