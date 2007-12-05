@@ -18,29 +18,29 @@ static char help[] = "This example uses a Grade 2 Fluid model on a journal beari
  *  which we give a radius (r) and center(X) with u = 0 on outer boundary and u \cdot t = 1 on bearing
  *
  *
- *                                         (0,1)
+ *                      (0,1)
  *                  -------------
  *             ----/             \----
  *               -/               \-
  *              -/                 \-
  *             -/     -------       \-
- *			   /    -/       \-      \
- *			  /     /      r  \       \
- *			 /      |   X-----|        \
- *			/       \         /         \
- *			|       -\       /-         |
+ *             /    -/       \-      \
+ *            /     /      r  \       \
+ *           /      |   X-----|        \
+ *          /       \         /         \
+ *          |       -\       /-         |
  * (-1,0)-->|         -------           |<---(1,0)
- *			|      u \cdot t = 1        |
- *			\                           /
- *			 \     	                   /
- *			  \                       /
- *			   \                     /
+ *          |      u \cdot t = 1        |
+ *          \      u \cdot n = 0        /
+ *           \                         /
+ *            \                       /
+ *             \                     /
  *             -\                   /-
  *              -\                 /-
  *               -\               /-
  *             ----\     u = 0   /----
  *                  -------------
- *                                         (0,-1)
+ *                      (0,-1)
  *
  *
  *
@@ -88,6 +88,7 @@ using ALE::Obj;
 typedef struct {
   PetscInt      debug;                                        // The debugging level
   PetscTruth    generateMesh;                                 // Generate the unstructure mesh
+  PetscTruth    square;                                       // Use the square mesh test problem
   PetscTruth    interpolate;                                  // Generate intermediate mesh elements
   PetscReal     refinementLimit;                              // The largest allowable cell volume
   char          baseFilename[2048];                           // The base filename for mesh files
@@ -389,11 +390,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->rho              = -1e+3;
   options->mu               = 1;
   options->alpha            = 1;
+  options->square           = PETSC_FALSE;
 
 
   ierr = PetscOptionsBegin(comm, "", "Grade 2 journal bearing Options", "DMMG");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "grade2.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "grade2.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-square", "Use the unit square test problem", "grade2.cxx", options->square, &options->square, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "grade2.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "grade2.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-r", "The IP parameter r", "grade2.cxx", options->r, &options->r, PETSC_NULL);CHKERRQ(ierr);
@@ -529,13 +532,24 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options 
 
   PetscFunctionBegin;
   if (options->generateMesh) {
-    double centers[4] = {0.0, 0.0, 0.0, 0.0};
-    double radii[2]   = {1.0, options->r};
-
-    Obj<ALE::Mesh> mB = ALE::MeshBuilder::createAnnularBoundary(comm, 10, centers, radii, options->debug);
-    Obj<ALE::Mesh> sM = ALE::Generator::generateMesh(mB, options->interpolate);
-    ierr = MeshCreate(sM->comm(), &stokesMesh);CHKERRQ(ierr);
-    ierr = MeshSetMesh(stokesMesh, sM);CHKERRQ(ierr);
+    if (options->square){
+      double lower[2] = {0.0, 0.0};
+      double upper[2] = {1.0, 1.0};
+      int    edges[2] = {2, 2};
+            
+      Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+      Obj<ALE::Mesh> sM = ALE::Generator::generateMesh(mB, options->interpolate);
+      ierr = MeshCreate(sM->comm(), &stokesMesh);CHKERRQ(ierr);
+      ierr = MeshSetMesh(stokesMesh, sM);CHKERRQ(ierr);
+    } else {
+      double centers[4] = {0.0, 0.0, 0.0, 0.0};
+      double radii[2]   = {1.0, options->r};
+      
+      Obj<ALE::Mesh> mB = ALE::MeshBuilder::createAnnularBoundary(comm, 10, centers, radii, options->debug);
+      Obj<ALE::Mesh> sM = ALE::Generator::generateMesh(mB, options->interpolate);
+      ierr = MeshCreate(sM->comm(), &stokesMesh);CHKERRQ(ierr);
+      ierr = MeshSetMesh(stokesMesh, sM);CHKERRQ(ierr);
+    }
   } else {
     throw ALE::Exception("Mesh Reader currently removed");
   }
@@ -708,17 +722,18 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
   const Obj<std::set<std::string> >&       discs         = m->getDiscretizations();
   int                                      totBasisFuncs = 0;
   double      *t_der, *b_der, *coords, *v0, *J, *invJ, detJ;
-  PetscScalar *elemVec, *elemMat;
+  PetscScalar *elemVec, *elemMat, *div_elemMat;
 
   ierr = SectionRealZero(section);CHKERRQ(ierr);
   for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
     totBasisFuncs += m->getDiscretization(*f_iter)->getBasisSize();
   }
-  ierr = PetscMalloc2(totBasisFuncs,PetscScalar,&elemVec,totBasisFuncs*totBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
+  ierr = PetscMalloc3(totBasisFuncs,PetscScalar,&elemVec,totBasisFuncs*totBasisFuncs,PetscScalar,&elemMat,totBasisFuncs*totBasisFuncs,PetscScalar,&div_elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc6(dim,double,&t_der,dim,double,&b_der,dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     const PetscScalar *x     = m->restrictNew(sX, *c_iter);
+    const PetscScalar *w     = m->restrictNew(sX, *c_iter);
     int                field = 0;
 
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
@@ -733,13 +748,8 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       const double                   *basis         = disc->getBasis();
       const double                   *basisDer      = disc->getBasisDerivatives();
       const int                      *indices       = disc->getIndices();
-      double scale;
+      double scale = options->r;
 
-      if (field < 2) {
-        scale = options->r;
-      } else {
-        scale = 1.0;
-      }
       ierr = PetscMemzero(elemMat, numBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
       // Loop over quadrature points
       for(int q = 0; q < numQuadPoints; ++q) {
@@ -803,7 +813,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       // Add linear contribution
       for(int f = 0; f < numBasisFuncs; ++f) {
         for(int g = 0; g < totBasisFuncs; ++g) {
-          elemVec[indices[f]] += elemMat[f*totBasisFuncs+g]*x[g];
+          elemVec[indices[f]] += elemMat[f*totBasisFuncs+g]*x[g] + scale*div_elemMat[f*totBasisFuncs+g]*x[g]+div_elemMat[f*totBasisFuncs+g]*w[g];
         }
       }
       if (options->debug) {
@@ -826,7 +836,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       ierr = SectionRealView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
   }
-  ierr = PetscFree2(elemVec,elemMat);CHKERRQ(ierr);
+  ierr = PetscFree3(elemVec,elemMat,div_elemMat);CHKERRQ(ierr);
   ierr = PetscFree6(t_der,b_der,coords,v0,J,invJ);CHKERRQ(ierr);
   // Exchange neighbors
   ierr = SectionRealComplete(section);CHKERRQ(ierr);
