@@ -345,7 +345,7 @@ PetscErrorCode DivNorm_L2(Mesh mesh, SectionReal X, PetscReal *norm, Options *op
 #define __FUNCT__ "CheckStokesConvergence"
 PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscTruth *iterate, Options *options)
 {
-  Mesh            mesh = (Mesh) DMMGGetFine(dmmg);
+  Mesh            mesh = (Mesh) DMMGGetFine(dmmg)->dm;
   const PetscReal tol  = 1.0e-5;
   SectionReal     u;
   PetscReal       error;
