@@ -108,7 +108,7 @@
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-my',my,flg,ierr)
       N = mx*my
 
-      nooutput = 0
+      nooutput = .false.
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-no_output',       &
      &     nooutput,ierr)
 
@@ -170,9 +170,9 @@
 !     vector product and not call MatMult()
 !     Note: we put B into a common block so it will be visible to the
 !     mymult() routine
-      usemf = 0
+      usemf = .false.
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-mf',usemf,ierr)
-      if (usemf .eq. 1) then
+      if (usemf) then
          call MatCreateShell(comm,m,m,N,N,PETSC_NULL_INTEGER,J,ierr)
          call MatShellSetOperation(J,MATOP_MULT,mymult,ierr)
       else 
@@ -197,7 +197,7 @@
        call ComputeFunction(X,F,ierr)
        call VecNorm(F,NORM_2,fnorm,ierr)
        ttol = fnorm*rtol
-       if (nooutput .eq. 0) then
+       if (.not. nooutput) then
          print*, 'Initial function norm ',fnorm
        endif
 
@@ -238,7 +238,7 @@
          call VecCopy(Y,X,ierr)
          call VecNorm(X,NORM_2,xnorm,ierr)
          call KSPGetIterationNumber(ksp,lin_its,ierr)
-         if (nooutput .eq. 0) then
+         if (.not. nooutput) then
            print*,'linear solve iterations = ',lin_its,' xnorm = ',     &
      &         xnorm,' ynorm = ',ynorm
          endif
@@ -247,14 +247,14 @@
 
          call ComputeFunction(X,F,ierr)
          call VecNorm(F,NORM_2,fnorm,ierr)
-         if (nooutput .eq. 0) then
+         if (.not. nooutput) then
            print*, 'Iteration ',i+1,' function norm',fnorm
          endif
 
 !  Test for convergence
 
        if (fnorm .le. ttol) then
-         if (nooutput .eq. 0) then
+         if (.not. nooutput) then
            print*,'Converged: function norm ',fnorm,' tolerance ',ttol
          endif
          goto 20
@@ -271,7 +271,7 @@
 !  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
        call MatDestroy(B,ierr)
-       if (usemf .ne. 0) then
+       if (usemf) then
          call MatDestroy(J,ierr)
        endif
        call VecDestroy(localX,ierr)

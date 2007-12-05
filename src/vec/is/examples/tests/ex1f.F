@@ -57,13 +57,13 @@
   
       call ISPermutation(is,flag,ierr) 
            CHKERRQ(ierr)
-      if (flag .eq. PETSC_TRUE) then
+      if (flag) then
          print*, 'Error checking permutation'
          stop
       endif
       call ISIdentity(is,flag,ierr) 
            CHKERRQ(ierr)
-      if (flag .eq. PETSC_TRUE) then
+      if (flag) then
          print*, 'Error checking identity'
          stop
       endif
@@ -73,13 +73,13 @@
            CHKERRQ(ierr)
       call ISPermutation(is,flag,ierr) 
            CHKERRQ(ierr)
-      if (flag .ne. PETSC_TRUE) then
+      if (.not. flag) then
          print*, 'Error checking permutation second time'
          stop
       endif
       call ISIdentity(is,flag,ierr) 
            CHKERRQ(ierr)
-      if (flag .ne. PETSC_TRUE) then
+      if (.not. flag) then
          print*, 'Error checking identity second time'
          stop
       endif
@@ -88,7 +88,7 @@
 
       call ISEqual(is,is,flag,ierr) 
            CHKERRQ(ierr)
-      if (flag .ne. PETSC_TRUE) then
+      if (.not. flag) then
          print*, 'Error checking equal'
          stop
       endif
@@ -99,7 +99,7 @@
            CHKERRQ(ierr)
       call ISSorted(is,flag,ierr) 
            CHKERRQ(ierr)
-      if (flag .ne. PETSC_TRUE) then
+      if (.not. flag) then
          print*, 'Error checking sorted'
          stop
       endif
@@ -108,13 +108,13 @@
 
       call ISStride(is,flag,ierr) 
            CHKERRQ(ierr)
-      if (flag .eq. PETSC_TRUE) then
+      if (flag) then
          print*, 'Error checking stride'
          stop
       endif
       call ISBlock(is,flag,ierr) 
            CHKERRQ(ierr)
-      if (flag .eq. PETSC_TRUE) then
+      if (flag) then
          print*, 'Error checking block'
          stop
       endif

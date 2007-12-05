@@ -207,7 +207,7 @@
 !  routine) not needed in most application codes.
 
       call VecValid(x,flg,ierr)
-      if (flg .ne. PETSC_TRUE) then
+      if (.not. flg) then
          if (rank .eq. 0) then
             write(6,*) 'Corrupted vector!'
          endif

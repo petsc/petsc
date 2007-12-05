@@ -17,12 +17,12 @@
 !    
 !     Flags
 !
-      PetscEnum PETSC_TRUE
-      PetscEnum PETSC_FALSE
-      PetscEnum PETSC_YES
-      PetscEnum PETSC_NO
-      parameter (PETSC_TRUE = 1,PETSC_FALSE = 0)
-      parameter (PETSC_YES=1, PETSC_NO=0)
+      PetscTruth PETSC_TRUE
+      PetscTruth PETSC_FALSE
+      PetscTruth PETSC_YES
+      PetscTruth PETSC_NO
+      parameter (PETSC_TRUE = .true.,PETSC_FALSE = .false.)
+      parameter (PETSC_YES=.true., PETSC_NO=.false.)
 
       PetscInt   PETSC_DECIDE,PETSC_DETERMINE
       parameter (PETSC_DECIDE=-1,PETSC_DETERMINE=-1)

@@ -83,7 +83,7 @@
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-allocate',flag,    &
      &                         ierr)
-      if (flag .ne. 0) then
+      if (flag) then
         call VecCreateGhostBlockWithArray(PETSC_COMM_WORLD,bs,nlocal,    &
      &        PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr)
       else 

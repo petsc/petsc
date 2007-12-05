@@ -80,7 +80,7 @@
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-allocate',         &
      &     flag,ierr)
-      if (flag .ne. 0) then
+      if (flag) then
         call VecCreateGhostWithArray(PETSC_COMM_WORLD,nlocal,            &
      &        PETSC_DECIDE,nghost,ifrom,tarray,gxs,ierr)
       else 

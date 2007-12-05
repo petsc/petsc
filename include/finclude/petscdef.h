@@ -20,9 +20,11 @@
 #if defined(PETSC_USE_FORTRANKIND)
 #define integer8 integer(kind=selected_int_kind(10))
 #define integer4 integer(kind=selected_int_kind(5))
+#define PetscTruth logical(kind=4)
 #else
 #define integer8 integer*8
 #define integer4 integer*4
+#define PetscTruth logical*4
 #endif
 
 #if (PETSC_SIZEOF_VOID_P == 8)
@@ -64,7 +66,6 @@
 #define PetscCookie PetscFortranInt
 #define PetscEvent PetscFortranInt
 !
-#define PetscTruth PetscEnum
 #define PetscDataType PetscEnum
 #define PetscFPTrap PetscEnum
 !

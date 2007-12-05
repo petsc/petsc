@@ -150,7 +150,7 @@
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-setls',setls,ierr)
 
-      if (setls .eq. PETSC_TRUE) then
+      if (setls) then
         call SNESLineSearchSet(snes,MyLineSearch,                       &
      &                         PETSC_NULL_OBJECT,ierr)
       endif
@@ -329,7 +329,7 @@
       PetscScalar       mone
 
       mone = -1.0d0
-      flag = 0
+      flag = .false.
       call VecNorm(y,NORM_2,ynorm,ierr)
       call VecAYPX(y,mone,x,ierr)
       call SNESComputeFunction(snes,y,g,ierr)

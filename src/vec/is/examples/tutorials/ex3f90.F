@@ -67,7 +67,7 @@
 !    Check if this is really a block index set
 !
       call ISBlock(set,isablock,ierr) 
-      if (isablock .ne. PETSC_TRUE) then
+      if (.not. isablock) then
         write(6,*) 'Index set is not blocked!'
       endif
 
