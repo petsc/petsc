@@ -1062,13 +1062,15 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& sW            = m->getRealSection("w");
-  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
-  const int                                dim           = m->getDimension();
-  const Obj<std::set<std::string> >&       discs         = m->getDiscretizations();
-  const double                             r             = options->r;
-  int                                      totBasisFuncs = 0;
+  const Obj<ALE::Mesh::real_section_type>&  sW            = m->getRealSection("w");
+  const Obj<ALE::Mesh::real_section_type>&  coordinates   = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&     cells         = m->heightStratum(0);
+  const int                                 dim           = m->getDimension();
+  const Obj<std::set<std::string> >&        discs         = m->getDiscretizations();
+  const int                                 localDof      = m->sizeWithBC(sW, *cells->begin());
+  ALE::Mesh::real_section_type::value_type *values        = new ALE::Mesh::real_section_type::value_type[localDof];
+  const double                              r             = options->r;
+  int                                       totBasisFuncs = 0;
   double      *t_der, *b_der, *coords, *v0, *J, *invJ, detJ;
   PetscScalar *elemVec, *elemMat, *div_elemMat;
 
@@ -1082,8 +1084,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     const PetscScalar *x     = m->restrictNew(sX, *c_iter);
-    // TODO: This is a problem since it will overwrite the array
-    const PetscScalar *w     = m->restrictNew(sW, *c_iter);
+    const PetscScalar *w     = m->restrictNew(sW, *c_iter, values, localDof);
     int                field = 0;
 
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
@@ -1182,6 +1183,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       ierr = SectionRealView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
   }
+  delete [] values;
   ierr = PetscFree3(elemVec,elemMat,div_elemMat);CHKERRQ(ierr);
   ierr = PetscFree6(t_der,b_der,coords,v0,J,invJ);CHKERRQ(ierr);
   // Exchange neighbors

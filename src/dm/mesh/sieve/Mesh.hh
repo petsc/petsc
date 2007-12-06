@@ -631,11 +631,16 @@ namespace ALE {
     };
     template<typename Section_>
     const typename Section_::value_type *restrictNew(const Obj<Section_>& section, const point_type& p) {
-      const int                       size    = this->sizeWithBC(section, p);
-      typename Section_::value_type  *values  = section->getRawArray(size);
-      const Obj<oConeArray>           closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
-      typename oConeArray::iterator   end     = closure->end();
-      int                             j       = -1;
+      const int size = this->sizeWithBC(section, p);
+      return this->restrictNew(section, p, section->getRawArray(size), size);
+    };
+    template<typename Section_>
+    const typename Section_::value_type *restrictNew(const Obj<Section_>& section, const point_type& p, typename Section_::value_type  *values, const int valuesSize) {
+      const int                     size    = this->sizeWithBC(section, p);
+      const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+      typename oConeArray::iterator end     = closure->end();
+      int                           j       = -1;
+      if (valuesSize < size) throw ALE::Exception("Input array too small");
 
       for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
         const typename Section_::value_type *array = section->restrictPoint(p_iter->first);
