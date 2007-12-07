@@ -133,7 +133,7 @@
             v(1) = 2.d0*(HxHydHz + HxHzdHy + HyHzdHx)
             call MatSetValuesStencil(jac,i1,row,i1,row,v,INSERT_VALUES,    &
      &                               ierr)
-	  else 
+          else 
             v(1) = -HxHydHz
              col(MatStencil_i,1) = i
              col(MatStencil_j,1) = j
@@ -173,5 +173,3 @@
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
       return 
       end
-
-

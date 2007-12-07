@@ -32,7 +32,7 @@
         SETERRQ(1,0,ierr)
       endif
       call ISStride(is,flag,ierr)
-      if (flag .ne. PETSC_TRUE) then 
+      if (.not. flag) then 
         SETERRQ(1,0,ierr) 
       endif
       call ISGetIndices(is,ii,iis,ierr)

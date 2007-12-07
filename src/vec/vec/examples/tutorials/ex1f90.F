@@ -58,6 +58,7 @@
       three = 3.0
       n     = 20
       ithree = 3
+
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
@@ -207,7 +208,7 @@
 !  routine) not needed in most application codes.
 
       call VecValid(x,flg,ierr)
-      if (flg .ne. PETSC_TRUE) then
+      if (.not. flg) then
          if (rank .eq. 0) then
             write(6,*) 'Corrupted vector!'
          endif

@@ -66,7 +66,7 @@
      &     flg,ierr)
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-nox',flg,ierr) 
-      if (flg .eq. 1) then
+      if (flg) then
         nox = 1 
       else
         nox = 0
@@ -114,31 +114,31 @@
 !
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-linear_no_matrix',&
      &                    flg,ierr) 
-      if (flg .eq. 1) then
+      if (flg) then
         tsproblem = TS_LINEAR
         problem   = linear_no_matrix
       endif
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &     '-linear_constant_matrix',flg,ierr) 
-      if (flg .eq. 1) then
+      if (flg) then
         tsproblem = TS_LINEAR
         problem   = linear_no_time
       endif
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &     '-linear_variable_matrix',flg,ierr) 
-      if (flg .eq. 1) then
+      if (flg) then
         tsproblem = TS_LINEAR
         problem   = linear
       endif
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &     '-nonlinear_no_jacobian',flg,ierr) 
-      if (flg .eq. 1) then
+      if (flg) then
         tsproblem = TS_NONLINEAR
         problem   = nonlinear_no_jacobian
       endif
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &     '-nonlinear_jacobian',flg,ierr) 
-      if (flg .eq. 1) then
+      if (flg) then
         tsproblem = TS_NONLINEAR
         problem   = nonlinear
       endif
@@ -227,7 +227,7 @@
       call TSGetType(ts,type,ierr)
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-test',flg,ierr) 
-      if (flg .eq. 1) then
+      if (flg) then
 !   
 !         copy type to string of length 5 to ensure equality test        
 !         is done correctly

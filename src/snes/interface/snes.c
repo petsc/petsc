@@ -10,6 +10,31 @@ PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE = 0;
 PetscEvent  SNES_Solve = 0, SNES_LineSearch = 0, SNES_FunctionEval = 0, SNES_JacobianEval = 0;
 
 #undef __FUNCT__  
+#define __FUNCT__ "SNESSetFunctionDomainError"
+/*@C
+   SNESSetFunctionDomainError - tells SNES that the input vector to your FormFunction is not
+     in the functions domain. For example, negative pressure.
+
+   Collective on SNES
+
+   Input Parameters:
+.  SNES - the SNES context
+
+   Level: advanded
+
+.keywords: SNES, view
+
+.seealso: SNESCreate(), SNESSetFunction()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionDomainError(SNES snes)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  snes->domainerror = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SNESView"
 /*@C
    SNESView - Prints the SNES data structure.
@@ -1870,18 +1895,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
   snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
 
   ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
-  
-  ierr = PetscExceptionTry1((*(snes)->ops->solve)(snes),PETSC_ERR_ARG_DOMAIN);
-  if (PetscExceptionValue(ierr)) {
-    /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-    PetscErrorCode pierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(pierr);
-  } else if (PetscExceptionCaught(ierr,PETSC_ERR_ARG_DOMAIN)) {
-    /* translate exception into SNES not converged reason */
-    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
-    ierr = 0;
-  } 
-  CHKERRQ(ierr);
+  ierr = (*snes->ops->solve)(snes);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
+  if (snes->domainerror){
+    snes->reason      = SNES_DIVERGED_FUNCTION_DOMAIN;
+    snes->domainerror = PETSC_FALSE;
+  } 
 
   if (!snes->reason) {
     SETERRQ(PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");

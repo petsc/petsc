@@ -301,7 +301,7 @@
       
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
-      if (matrix_free .eq. 0) then
+      if (.not. matrix_free) then
         call DAGetMatrix(user%da,MATAIJ,J,ierr)
         call SNESSetJacobian(snes,J,J,FormJacobian,user,ierr)
       endif
@@ -315,7 +315,7 @@
 !     Test Fortran90 wrapper for SNESSet/Get ApplicationContext()
       call PetscOptionsGetTruth(PETSC_NULL_CHARACTER,'-test_appctx',             &
      &     flg,PETSC_NULL_CHARACTER,ierr)
-      if (flg .eq. 1) then
+      if (flg) then
         call SNESGetApplicationContext(snes,puser,ierr)
         if (user%da .ne. puser%da) then
           write(*,*) "Error: uesr != puesr"
@@ -344,7 +344,7 @@
 !  Free work space.  All PETSc objects should be destroyed when they
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      if (matrix_free .eq. 0) call MatDestroy(J,ierr)
+      if (.not. matrix_free) call MatDestroy(J,ierr)
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)
       call SNESDestroy(snes,ierr)

@@ -42,7 +42,7 @@ options are:\n\
 /* User-defined application contexts */
 
 typedef struct {
-   PetscInt        mx,my;            /* number grid points in x and y direction */
+   PetscInt   mx,my;            /* number grid points in x and y direction */
    Vec        localX,localF;    /* local vectors with ghost region */
    DA         da;
    Vec        x,b,r;            /* global vectors */

@@ -152,9 +152,6 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPGetUseEW(SNES,PetscTruth*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetParametersEW(SNES,PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPGetParametersEW(SNES,PetscInt*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
-/*
-     Reuse the default KSP monitor routines for SNES
-*/
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLG(SNES,PetscInt,PetscReal,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGDestroy(PetscDrawLG);
@@ -162,6 +159,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGDestroy(PetscDrawLG);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetApplicationContext(SNES,void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetApplicationContext(SNES,void **);
 
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionDomainError(SNES);
 /*E
     SNESConvergedReason - reason a SNES method was said to 
          have converged or diverged
