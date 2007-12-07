@@ -385,10 +385,9 @@ PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscTruth *iterate, Options *
 
   PetscFunctionBegin;
   ierr = MeshGetSectionReal(mesh, "default", &u);CHKERRQ(ierr);
-  PetscPrintf(dmmg[0]->comm, "Checking Stopping Criteria: 0\n");
   ierr = DivNorm_L2(mesh, u, &error, options);CHKERRQ(ierr);
   ierr = SectionRealDestroy(u);CHKERRQ(ierr);
-  PetscPrintf(dmmg[0]->comm, "Checking Stopping Criteria: div_error = %g\n", error);
+  PetscPrintf(dmmg[0]->comm, "Checking Stokes convergence: div_error = %g\n", error);
   if (error < tol) {
     *iterate = PETSC_FALSE;
   } else {
@@ -458,7 +457,6 @@ PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *option
 
   PetscFunctionBegin;
   ierr = MeshGetMesh((Mesh) dm, m);CHKERRQ(ierr);
-  PetscPrintf(m->comm(), "Checking Stopping Criteria: 0\n");
   const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
   const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
   const int                                dim         = m->getDimension();
@@ -508,7 +506,7 @@ PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *option
   ierr = MPI_Allreduce(&localError, &error, 1, MPI_DOUBLE, MPI_SUM, m->comm());CHKERRQ(ierr);
   ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
   error = sqrt(error);
-  printf("Checking Stopping Criteria: div_error = %f\n",error);
+  printf("Checking grade 2 convergence: div_error = %f\n",error);
   if (error < 1e-5)
     *iterate = PETSC_FALSE;
   PetscFunctionReturn(0);
