@@ -3337,8 +3337,11 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat)
 {
   PetscErrorCode ierr;
-  PetscInt       ii,jj;
+  PetscInt       ii;
   Mat_SeqAIJ     *aij;
+#if defined(PETSC_USE_DEBUG)
+  PetscInt       jj;
+#endif
 
   PetscFunctionBegin;
   if (i[0]) {
