@@ -1201,6 +1201,16 @@ namespace ALE {
         this->_holes.push_back(*h_iter);
       }
     };
+    void copy(const Obj<Mesh>& m) {
+      this->setSieve(m->getSieve());
+      this->setLabel("height", m->getLabel("height"));
+      this->_maxHeight = m->height();
+      this->setLabel("depth", m->getLabel("depth"));
+      this->_maxDepth  = m->depth();
+      this->setLabel("marker", m->getLabel("marker"));
+      this->setRealSection("coordinates", m->getRealSection("coordinates"));
+      this->setArrowSection("orientation", m->getArrowSection("orientation"));
+    };
   public: // Mesh geometry
     void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
       const double *coords = this->restrict(coordinates, e);
@@ -1687,7 +1697,7 @@ namespace ALE {
           const Obj<label_type>&         label     = this->getLabel(labelName);
           const Obj<label_sequence>&     exclusion = this->getLabelStratum(labelName, 1);
           const label_sequence::iterator end       = exclusion->end();
-          if (debug) {label->view(labelName.c_str());}
+          if (debug > 1) {label->view(labelName.c_str());}
 
           for(label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
             const Obj<coneArray>      closure = ALE::SieveAlg<ALE::Mesh>::closure(this, this->getArrowSection("orientation"), *e_iter);
@@ -1699,7 +1709,7 @@ namespace ALE {
                 seen.insert(*c_iter);
                 s->setFiberDimension(*c_iter, 0, f);
                 s->addFiberDimension(*c_iter, -disc->getNumDof(this->depth(*c_iter)));
-                if (debug) {std::cout << "  cell: " << *c_iter << " dim: " << disc->getNumDof(this->depth(*c_iter)) << std::endl;}
+                if (debug > 1) {std::cout << "  cell: " << *c_iter << " dim: " << disc->getNumDof(this->depth(*c_iter)) << std::endl;}
               }
             }
           }
@@ -1755,22 +1765,22 @@ namespace ALE {
       const coneArray::iterator  end     = closure->end();
       int                        offset  = 0;
 
-      if (debug) {std::cout << "Closure for first element" << std::endl;}
+      if (debug > 1) {std::cout << "Closure for first element" << std::endl;}
       for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
         const int dim = this->depth(*cl_iter);
 
-        if (debug) {std::cout << "  point " << *cl_iter << " depth " << dim << std::endl;}
+        if (debug > 1) {std::cout << "  point " << *cl_iter << " depth " << dim << std::endl;}
         for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
           const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
           const int                  num  = disc->getNumDof(dim);
 
-          if (debug) {std::cout << "    disc " << disc->getName() << " numDof " << num << std::endl;}
+          if (debug > 1) {std::cout << "    disc " << disc->getName() << " numDof " << num << std::endl;}
           for(int o = 0; o < num; ++o) {
             indices[*d_iter].second[indices[*d_iter].first++] = offset++;
           }
         }
       }
-      if (debug) {
+      if (debug > 1) {
         for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
           const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
 
@@ -1810,22 +1820,22 @@ namespace ALE {
           const Obj<label_sequence>&     exclusion = this->getLabelStratum(labelName, 1);
           const label_sequence::iterator end       = exclusion->end();
 
-          if (debug) {std::cout << "Processing exclusion " << labelName << std::endl;}
+          if (debug > 1) {std::cout << "Processing exclusion " << labelName << std::endl;}
           for(label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
             if (this->height(*e_iter)) continue;
             const Obj<coneArray>      closure = ALE::SieveAlg<ALE::Mesh>::closure(this, this->getArrowSection("orientation"), *e_iter);
             const coneArray::iterator clEnd   = closure->end();
             int                       offset  = 0;
 
-            if (debug) {std::cout << "  Closure for cell " << *e_iter << std::endl;}
+            if (debug > 1) {std::cout << "  Closure for cell " << *e_iter << std::endl;}
             for(coneArray::iterator cl_iter = closure->begin(); cl_iter != clEnd; ++cl_iter) {
               int g = 0;
 
-              if (debug) {std::cout << "    point " << *cl_iter << std::endl;}
+              if (debug > 1) {std::cout << "    point " << *cl_iter << std::endl;}
               for(names_type::const_iterator g_iter = dBegin; g_iter != dEnd; ++g_iter, ++g) {
                 const int fDim = s->getFiberDimension(*cl_iter, g);
 
-                if (debug) {std::cout << "      disc " << *g_iter << " numDof " << fDim << std::endl;}
+                if (debug > 1) {std::cout << "      disc " << *g_iter << " numDof " << fDim << std::endl;}
                 for(int d = 0; d < fDim; ++d) {
                   indices[*g_iter].second[indices[*g_iter].first++] = offset++;
                 }
@@ -1833,7 +1843,7 @@ namespace ALE {
             }
             const std::map<indices_type, int>::iterator entry = indexMap.find(indices);
 
-            if (debug) {
+            if (debug > 1) {
               for(std::map<indices_type, int>::iterator i_iter = indexMap.begin(); i_iter != indexMap.end(); ++i_iter) {
                 for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
                   std::cout << "Discretization (" << i_iter->second << ") " << *g_iter << " indices:";
@@ -1854,11 +1864,11 @@ namespace ALE {
             }
             if (entry != indexMap.end()) {
               this->setValue(indexLabel, *e_iter, entry->second);
-              if (debug) {std::cout << "  Found existing indices with marker " << entry->second << std::endl;}
+              if (debug > 1) {std::cout << "  Found existing indices with marker " << entry->second << std::endl;}
             } else {
               indexMap[indices] = ++marker;
               this->setValue(indexLabel, *e_iter, marker);
-              if (debug) {std::cout << "  Created new indices with marker " << marker << std::endl;}
+              if (debug > 1) {std::cout << "  Created new indices with marker " << marker << std::endl;}
             }
             for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
               indices[*g_iter].first  = 0;
@@ -1867,19 +1877,19 @@ namespace ALE {
           }
         }
       }
-      if (debug) {indexLabel->view("cellExclusion");}
+      if (debug > 1) {indexLabel->view("cellExclusion");}
       for(std::map<indices_type, int>::iterator i_iter = indexMap.begin(); i_iter != indexMap.end(); ++i_iter) {
-        if (debug) {std::cout << "Setting indices for marker " << i_iter->second << std::endl;}
+        if (debug > 1) {std::cout << "Setting indices for marker " << i_iter->second << std::endl;}
         for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
           const Obj<Discretization>& disc = this->getDiscretization(*g_iter);
           const indexSet  indSet   = ((indices_type) i_iter->first)[*g_iter].second;
           const int       size     = indSet.size();
           int            *_indices = new int[size];
 
-          if (debug) {std::cout << "  field " << *g_iter << std::endl;}
+          if (debug > 1) {std::cout << "  field " << *g_iter << std::endl;}
           for(int i = 0; i < size; ++i) {
             _indices[i] = indSet[i];
-            if (debug) {std::cout << "    indices["<<i<<"] = " << _indices[i] << std::endl;}
+            if (debug > 1) {std::cout << "    indices["<<i<<"] = " << _indices[i] << std::endl;}
           }
           disc->setIndices(_indices, i_iter->second);
         }
@@ -1898,7 +1908,7 @@ namespace ALE {
       s->defaultConstraintDof();
       const Obj<label_type>& cellExclusion = this->getLabel("cellExclusion");
 
-      if (debug) {std::cout << "Setting boundary values" << std::endl;}
+      if (debug > 1) {std::cout << "Setting boundary values" << std::endl;}
       for(names_type::const_iterator n_iter = bcLabels.begin(); n_iter != bcLabels.end(); ++n_iter) {
         const Obj<label_sequence>&     boundaryCells = this->getLabelStratum(*n_iter, cellMarker);
         const Obj<real_section_type>&  coordinates   = this->getRealSection("coordinates");
@@ -1916,7 +1926,7 @@ namespace ALE {
           const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
           const coneArray::iterator end     = closure->end();
 
-          if (debug) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
+          if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
           this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
           for(int f = 0; f < numFields; ++f) v[f] = 0;
           for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
@@ -1925,9 +1935,9 @@ namespace ALE {
             int       f    = 0;
             int       i    = -1;
 
-            if (debug) {std::cout << "    point " << *cl_iter << std::endl;}
+            if (debug > 1) {std::cout << "    point " << *cl_iter << std::endl;}
             if (cDim) {
-              if (debug) {std::cout << "      constrained excMarker: " << this->getValue(cellExclusion, *c_iter) << std::endl;}
+              if (debug > 1) {std::cout << "      constrained excMarker: " << this->getValue(cellExclusion, *c_iter) << std::endl;}
               for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
                 const Obj<ALE::Discretization>& disc    = this->getDiscretization(*f_iter);
                 const Obj<names_type>           bcs     = disc->getBoundaryConditions();
@@ -1941,28 +1951,28 @@ namespace ALE {
 
                   if (b > 0) v[f] -= fDim;
                   if (value == bc->getMarker()) {
-                    if (debug) {std::cout << "      field " << *f_iter << " marker " << value << std::endl;}
+                    if (debug > 1) {std::cout << "      field " << *f_iter << " marker " << value << std::endl;}
                     for(int d = 0; d < fDim; ++d, ++v[f]) {
                       dofs[++i] = off+d;
                       if (!noUpdate) values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
-                      if (debug) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                      if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
                     }
                     // Allow only one condition per point
                     ++b;
                     break;
                   } else {
-                    if (debug) {std::cout << "      field " << *f_iter << std::endl;}
+                    if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
                     for(int d = 0; d < fDim; ++d, ++v[f]) {
                       values[indices[v[f]]] = 0.0;
-                      if (debug) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                      if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
                     }
                   }
                 }
                 if (b == 0) {
-                  if (debug) {std::cout << "      field " << *f_iter << std::endl;}
+                  if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
                   for(int d = 0; d < fDim; ++d, ++v[f]) {
                     values[indices[v[f]]] = 0.0;
-                    if (debug) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                    if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
                   }
                 }
                 off += fDim;
@@ -1970,21 +1980,21 @@ namespace ALE {
               if (i != cDim-1) {throw ALE::Exception("Invalid constraint initialization");}
               s->setConstraintDof(*cl_iter, dofs);
             } else {
-              if (debug) {std::cout << "      unconstrained" << std::endl;}
+              if (debug > 1) {std::cout << "      unconstrained" << std::endl;}
               for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
                 const Obj<ALE::Discretization>& disc    = this->getDiscretization(*f_iter);
                 const int                       fDim    = s->getFiberDimension(*cl_iter, f);//disc->getNumDof(this->depth(*cl_iter));
                 const int                      *indices = disc->getIndices(this->getValue(cellExclusion, *c_iter));
 
-                if (debug) {std::cout << "      field " << *f_iter << std::endl;}
+                if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
                 for(int d = 0; d < fDim; ++d, ++v[f]) {
                   values[indices[v[f]]] = 0.0;
-                  if (debug) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                  if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
                 }
               }
             }
           }
-          if (debug) {
+          if (debug > 1) {
             const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
             const coneArray::iterator end     = closure->end();
 
@@ -2011,7 +2021,7 @@ namespace ALE {
         delete [] v0;
         delete [] J;
       }
-      if (debug) {s->view("");}
+      if (debug > 1) {s->view("");}
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {

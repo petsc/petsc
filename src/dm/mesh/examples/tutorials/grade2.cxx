@@ -95,7 +95,10 @@ typedef struct {
   double        (*funcs[2])(const double []);                 // The function to project
   PetscReal     r,rho;                                        // IP parameters
   PetscReal     mu,alpha;                                     // Transport parameters
-  SectionReal   exactSol;                                     // The discrete exact solution
+  DM            paramDM;                                      // Parameter DM which holds w
+  std::string   paramName;                                    // Name of the parameter section
+  SectionReal   exactU;                                       // Discrete exact Stokes velocity solution
+  SectionReal   exactW;                                       // Discrete exact Stokes pressure potential solution
 } Options;
 
 double zero(const double x[]) {
@@ -136,6 +139,19 @@ double quadratic_2d_v(const double x[]) {
   return x[1]*x[1] - 2.0*x[0]*x[1];
 }
 
+// \nabla\cdot w = p
+double quadratic_2d_w0(const double x[]) {
+  return 0.5*(x[0]*x[0] - x[0]);
+}
+
+double quadratic_2d_w1(const double x[]) {
+  return 0.5*(x[1]*x[1] - x[1]);
+}
+
+double quadratic_2d_p(const double x[]) {
+  return x[0] + x[1] - 1.0;
+}
+
 #include "grade2_quadrature.h"
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -145,13 +161,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options);
 PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition);
 PetscErrorCode ViewMesh(Mesh mesh, const char filename[]);
 PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]);
-PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options *options);
+PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *paramDM, DM *transportDM, Options *options);
 PetscErrorCode DestroyMesh(DM stokesDM, DM transportDM, Options *options);
-PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options);
+PetscErrorCode CreateProblem(DM stokesDM, DM paramDM, DM transportDM, Options *options);
 PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options);
 PetscErrorCode CreateExactSolution(DM dm, SectionReal *sol, Options *options);
 PetscErrorCode CheckError(DM dm, SectionReal sol, Options *options);
-PetscErrorCode CheckResidual(DM dm, SectionReal sol, Options *options);
+PetscErrorCode CheckStokesResidual(DM dm, SectionReal sol, const std::string& paramName, Options *options);
 
 PetscErrorCode SolveStokes(DMMG *dmmg, Options *options);
 PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx);
@@ -189,7 +205,7 @@ int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
   Options        options;
-  DM             stokesDM, transportDM;
+  DM             stokesDM, paramDM, transportDM;
   PetscErrorCode ierr;
   PetscTruth     iterate = PETSC_TRUE;
   PetscInt       iter = 0, max_iter = 1;
@@ -201,11 +217,13 @@ int main(int argc, char *argv[])
   try {
     DMMG *stokes;
 
-    ierr = CreateMesh(comm, &stokesDM, &transportDM, &options);CHKERRQ(ierr);
-    ierr = CreateProblem(stokesDM, transportDM, &options);CHKERRQ(ierr);
-    ierr = CreateExactSolution(stokesDM, &options.exactSol, &options);CHKERRQ(ierr);
-    ierr = CheckError(stokesDM, options.exactSol, &options);CHKERRQ(ierr);
-    ierr = CheckResidual(stokesDM, options.exactSol, &options);CHKERRQ(ierr);
+    ierr = CreateMesh(comm, &stokesDM, &paramDM, &transportDM, &options);CHKERRQ(ierr);
+    ierr = CreateProblem(stokesDM, paramDM, transportDM, &options);CHKERRQ(ierr);
+    ierr = CreateExactSolution(stokesDM, &options.exactU, &options);CHKERRQ(ierr);
+    ierr = CreateExactSolution(paramDM,  &options.exactW, &options);CHKERRQ(ierr);
+    ierr = CheckError(stokesDM, options.exactU, &options);CHKERRQ(ierr);
+    ierr = CheckError(paramDM, options.exactW, &options);CHKERRQ(ierr);
+    ierr = CheckStokesResidual(stokesDM, options.exactU, "exactSolution", &options);CHKERRQ(ierr);
     ierr = CreateSolver(stokesDM, &stokes, &options);CHKERRQ(ierr)
 
     while (iterate and max_iter >= ++iter){
@@ -555,8 +573,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->interpolate      = PETSC_TRUE;
   options->refinementLimit  = 0.0;
   options->radius           = 0.5;
-  options->r                =  1e+3;
-  options->rho              = -1e+3;
+  options->r                =  1.0e-3;
+  options->rho              = -1.0e-3;
   options->mu               = 1;
   options->alpha            = 1;
   options->square           = PETSC_FALSE;
@@ -694,9 +712,9 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
 /* ______________________________________________________________________ */
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options *options)
+PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *paramDM, DM *transportDM, Options *options)
 {
-  Mesh           stokesMesh, transportMesh;
+  Mesh           stokesMesh, paramMesh, transportMesh;
   PetscTruth     view;
   PetscMPIInt    size;
   PetscErrorCode ierr;
@@ -741,12 +759,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options 
   }
   Obj<ALE::Mesh> sM;
   ierr = MeshGetMesh(stokesMesh, sM);CHKERRQ(ierr);
-  Obj<ALE::Mesh> tM = ALE::Mesh(comm, 2, sM->debug());
-  tM->setSieve(sM->getSieve());
-  tM->setLabel("height", sM->getLabel("height"));
-  tM->setLabel("depth", sM->getLabel("depth"));
-  tM->setLabel("marker", sM->getLabel("marker"));
-  tM->setRealSection("coordinates", sM->getRealSection("coordinates"));
+  Obj<ALE::Mesh> pM = ALE::Mesh(sM->comm(), sM->getDimension(), sM->debug());
+  pM->copy(sM);
+  ierr = MeshCreate(pM->comm(), &paramMesh);CHKERRQ(ierr);
+  ierr = MeshSetMesh(paramMesh, pM);CHKERRQ(ierr);
+  Obj<ALE::Mesh> tM = ALE::Mesh(sM->comm(), sM->getDimension(), sM->debug());
+  tM->copy(sM);
   ierr = MeshCreate(tM->comm(), &transportMesh);CHKERRQ(ierr);
   ierr = MeshSetMesh(transportMesh, tM);CHKERRQ(ierr);
 
@@ -755,6 +773,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options 
    */
   Obj<ALE::Mesh> m;
   ierr = MeshGetMesh(stokesMesh, m);CHKERRQ(ierr);
+  m->markBoundaryCells("marker");
+  ierr = MeshGetMesh(paramMesh, m);CHKERRQ(ierr);
   m->markBoundaryCells("marker");
   ierr = MeshGetMesh(transportMesh, m);CHKERRQ(ierr);
   m->markBoundaryCells("marker");
@@ -771,6 +791,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options 
     m->view("Mesh");
   }
   *stokesDM    = (DM) stokesMesh;
+  *paramDM     = (DM) paramMesh;
   *transportDM = (DM) transportMesh;
   PetscFunctionReturn(0);
 }
@@ -793,6 +814,7 @@ PetscErrorCode DestroyMesh(DM stokesDM, DM transportDM, Options *options)
 // CreateProblem
 /*!
   \param[out] stokesDM  The Stokes DM object
+  \param[out] paramDM  The Parameter DM object
   \param[out] transportDM  The Transport DM object
   \param[in] options The options table
 
@@ -804,7 +826,7 @@ PetscErrorCode DestroyMesh(DM stokesDM, DM transportDM, Options *options)
 /* ______________________________________________________________________ */
 #undef __FUNCT__
 #define __FUNCT__ "CreateProblem"
-PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options)
+PetscErrorCode CreateProblem(DM stokesDM, DM paramDM, DM transportDM, Options *options)
 {
   PetscErrorCode ierr;
 
@@ -834,21 +856,29 @@ PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options)
   s->setDebug(options->debug);
   m->calculateIndices();
   m->setupField(s, 2);
-  if (options->debug) {s->view("Default Stokes field");}
-  // Create the Stokes w field
-  const ALE::Obj<ALE::Mesh::real_section_type> w = m->getRealSection("w");
+  if (options->debug) {s->view("Default Stokes velocity");}
+  // Create the w parameter field
+  ierr = CreateProblem_gen_1(paramDM, "w0", 0, PETSC_NULL, PETSC_NULL, quadratic_2d_w0);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(paramDM, "w1", 0, PETSC_NULL, PETSC_NULL, quadratic_2d_w1);CHKERRQ(ierr);
+  // Create the default parameter section
+  ierr = MeshGetMesh((Mesh) paramDM, m);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::real_section_type> w = m->getRealSection("default");
   w->setDebug(options->debug);
+  m->calculateIndices();
   m->setupField(w, 2);
+  options->paramDM   = paramDM;
+  options->paramName = "default";
+  if (options->debug) {w->view("Default Stokes pressure potential");}
   // Create the Transport problem (assumes 2D)
   ierr = CreateProblem_gen_1(transportDM, "z0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(transportDM, "z1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   // Create the default Transport section
   ierr = MeshGetMesh((Mesh) transportDM, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::real_section_type> t = m->getRealSection("default");
-  t->setDebug(options->debug);
+  const ALE::Obj<ALE::Mesh::real_section_type> z = m->getRealSection("default");
+  z->setDebug(options->debug);
   m->calculateIndices();
-  m->setupField(t, 2);
-  if (options->debug) {t->view("Default Transport field");}
+  m->setupField(z, 2);
+  if (options->debug) {z->view("Default Transport field");}
   PetscFunctionReturn(0);
 }
 
@@ -1009,13 +1039,14 @@ PetscErrorCode CheckError(DM dm, SectionReal sol, Options *options)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CheckResidual"
-PetscErrorCode CheckResidual(DM dm, SectionReal sol, Options *options)
+#define __FUNCT__ "CheckStokesResidual"
+PetscErrorCode CheckStokesResidual(DM dm, SectionReal sol, const std::string& paramName, Options *options)
 {
   MPI_Comm       comm;
   const char    *name;
   PetscScalar    norm;
   PetscTruth     flag;
+  std::string    oldParamName = options->paramName;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1025,7 +1056,9 @@ PetscErrorCode CheckResidual(DM dm, SectionReal sol, Options *options)
 
   ierr = SectionRealDuplicate(sol, &residual);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) residual, "residual");CHKERRQ(ierr);
+  options->paramName = paramName;
   ierr = Stokes_Rhs_Unstructured(mesh, sol, residual, options);CHKERRQ(ierr);
+  options->paramName = oldParamName;
   if (flag) {ierr = SectionRealView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   ierr = SectionRealNorm(residual, mesh, NORM_2, &norm);CHKERRQ(ierr);
   ierr = SectionRealDestroy(residual);CHKERRQ(ierr);
@@ -1053,23 +1086,27 @@ PetscErrorCode CheckResidual(DM dm, SectionReal sol, Options *options)
 #define __FUNCT__ "Stokes_Rhs_Unstructured"
 PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx)
 {
-  Options       *options = (Options *) ctx;
+  Options       *options   = (Options *) ctx;
+  Mesh           paramMesh = (Mesh) options->paramDM;
   double      (**funcs)(const double *) = options->funcs;
   Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh> pM;
   Obj<ALE::Mesh::real_section_type> sX;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(paramMesh, pM);CHKERRQ(ierr);
   ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>&  sW            = m->getRealSection("w");
+  const Obj<ALE::Mesh::real_section_type>&  sW            = pM->getRealSection(options->paramName);
   const Obj<ALE::Mesh::real_section_type>&  coordinates   = m->getRealSection("coordinates");
   const Obj<ALE::Mesh::label_sequence>&     cells         = m->heightStratum(0);
   const int                                 dim           = m->getDimension();
   const Obj<std::set<std::string> >&        discs         = m->getDiscretizations();
+  const double                              r             = options->r;
+  const int                                 debug         = options->debug;
   const int                                 localDof      = m->sizeWithBC(sW, *cells->begin());
   ALE::Mesh::real_section_type::value_type *values        = new ALE::Mesh::real_section_type::value_type[localDof];
-  const double                              r             = options->r;
   int                                       totBasisFuncs = 0;
   double      *t_der, *b_der, *coords, *v0, *J, *invJ, detJ;
   PetscScalar *elemVec, *elemMat, *div_elemMat;
@@ -1082,9 +1119,10 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
   ierr = PetscMalloc6(dim,double,&t_der,dim,double,&b_der,dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    if (debug) {std::cout << "Cell " << *c_iter << std::endl;}
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     const PetscScalar *x     = m->restrictNew(sX, *c_iter);
-    const PetscScalar *w     = m->restrictNew(sW, *c_iter, values, localDof);
+    const PetscScalar *w     = pM->restrictNew(sW, *c_iter, values, localDof);
     int                field = 0;
 
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
@@ -1099,7 +1137,8 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       const double                   *basisDer      = disc->getBasisDerivatives();
       const int                      *indices       = disc->getIndices();
 
-      ierr = PetscMemzero(elemMat, numBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscMemzero(elemMat,     numBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscMemzero(div_elemMat, numBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
       // Loop over quadrature points
       for(int q = 0; q < numQuadPoints; ++q) {
         for(int d = 0; d < dim; d++) {
@@ -1118,10 +1157,8 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
           // The div-div term
           PetscScalar tDiv = 0.0;
 
-          for(int d = 0; d < dim; ++d) {
-            for(int e = 0; e < dim; ++e) {
-              tDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
-            }
+          for(int e = 0; e < dim; ++e) {
+            tDiv += invJ[e*dim+field]*basisDer[(q*numBasisFuncs+f)*dim+e];
           }
           for(int g = 0; g < numBasisFuncs; ++g) {
             PetscScalar bDiv = 0.0;
@@ -1151,7 +1188,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
           }
         }
       }
-      if (options->debug) {
+      if (debug) {
         std::cout << "Constant element vector for field " << *f_iter << ":" << std::endl;
         for(int f = 0; f < numBasisFuncs; ++f) {
           std::cout << "  " << elemVec[indices[f]] << std::endl;
@@ -1163,23 +1200,25 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
           elemVec[indices[f]] += elemMat[f*totBasisFuncs+g]*x[g] + div_elemMat[f*totBasisFuncs+g]*w[g];
         }
       }
-      if (options->debug) {
+      if (debug) {
         ostringstream label; label << "Element Matrix for field " << *f_iter;
         std::cout << ALE::Mesh::printMatrix(label.str(), numBasisFuncs, totBasisFuncs, elemMat, m->commRank()) << std::endl;
+        ostringstream label2; label2 << "Div-Element Matrix for field " << *f_iter;
+        std::cout << ALE::Mesh::printMatrix(label2.str(), numBasisFuncs, totBasisFuncs, div_elemMat, m->commRank()) << std::endl;
         std::cout << "Linear element vector for field " << *f_iter << ":" << std::endl;
         for(int f = 0; f < numBasisFuncs; ++f) {
           std::cout << "  " << elemVec[indices[f]] << std::endl;
         }
       }
     }
-    if (options->debug) {
+    if (debug) {
       std::cout << "Element vector:" << std::endl;
       for(int f = 0; f < totBasisFuncs; ++f) {
         std::cout << "  " << elemVec[f] << std::endl;
       }
     }
     ierr = SectionRealUpdateAdd(section, *c_iter, elemVec);CHKERRQ(ierr);
-    if (options->debug) {
+    if (debug) {
       ierr = SectionRealView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
   }
