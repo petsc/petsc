@@ -42,7 +42,7 @@ options are:\n\
 /* User-defined application contexts */
 
 typedef struct {
-   PetscInt        mx,my;            /* number grid points in x and y direction */
+   PetscInt   mx,my;            /* number grid points in x and y direction */
    Vec        localX,localF;    /* local vectors with ghost region */
    DA         da;
    Vec        x,b,r;            /* global vectors */
@@ -483,7 +483,7 @@ PetscErrorCode FormInterpolation(AppCtx *user)
   PetscInt       i,j,i_start,m_fine,j_start,m,n,*idx;
   PetscInt       m_ghost,n_ghost,*idx_c,m_ghost_c,n_ghost_c,m_coarse;
   PetscInt       row,i_start_ghost,j_start_ghost,cols[4], m_c;
-  PetscInt       nc,ratio = user->ratio,m_c_local,m_fine_locaol;
+  PetscInt       nc,ratio = user->ratio,m_c_local,m_fine_local;
   PetscInt       i_c,j_c,i_start_c,j_start_c,n_c,i_start_ghost_c,j_start_ghost_c,col;
   PetscScalar    v[4],x,y, one = 1.0;
   Mat            mat;

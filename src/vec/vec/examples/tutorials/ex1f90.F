@@ -58,6 +58,7 @@
       three = 3.0
       n     = 20
       ithree = 3
+
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 

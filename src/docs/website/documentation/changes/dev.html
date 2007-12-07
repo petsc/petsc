@@ -1115,6 +1115,10 @@ passed&nbsp;KSPSetConvergenceTest() and the destroy to be passed in. </li>
       
       <p><u><b>Fortran:</b></u><br>
 
+  <li>PetscTruth is now logical*4 or logical(kind=4) an unsigned int of 4 bytes. To get back PetscTruth as an integer*4 put a #define PETSC_FORTRAN_PETSCTRUTH_INT 1 into 
+      $PETSC_ARCH/conf/petscconf.h
+  </li>
+
 
 
 
