@@ -157,6 +157,10 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   snes->norm = 0;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);
+  if (snes->domainerror) {
+    snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+    PetscFunctionReturn(0);
+  }
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
   if (fnorm != fnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
@@ -212,6 +216,10 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",fnorm,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
+    if (snes->domainerror) {
+      snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
+      PetscFunctionReturn(0);
+    }
     if (!lssucceed) {
       if (++snes->numFailures >= snes->maxFailures) {
 	PetscTruth ismin;
@@ -366,14 +374,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNo(SNES snes,void *lsctx,Vec x,
   if (changed_y) {
     ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);            /* w <- x - y   */
   }
-  ierr = SNESComputeFunction(snes,w,g);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(pierr);
+  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+  if (!snes->domainerror) {
+    ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
+    if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   }
-  CHKERRQ(ierr);
-
-  ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);  /* gnorm = || g || */
-  if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -452,11 +457,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchNoNorms(SNES snes,void *lsctx,V
   
   /* don't evaluate function the last time through */
   if (snes->iter < snes->max_its-1) {
-    ierr = SNESComputeFunction(snes,w,g);
-    if (PetscExceptionValue(ierr)) {
-      PetscErrorCode pierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(pierr);
-    }
-    CHKERRQ(ierr);
+    ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -559,11 +560,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
     goto theend1;
   }
-  ierr = SNESComputeFunction(snes,w,g);    
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(pierr);
+  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+  if (snes->domainerror) {
+    ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
-  CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
   if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + alpha*initslope) { /* Sufficient reduction */
@@ -592,10 +593,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
     goto theend1;
   }
   ierr = SNESComputeFunction(snes,w,g);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(pierr);
+  if (snes->domainerror) {
+    ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
-  CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
   if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
@@ -642,10 +643,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
       break;
     }
     ierr = SNESComputeFunction(snes,w,g);
-    if (PetscExceptionValue(ierr)) {
-      PetscErrorCode pierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(pierr);
+    if (snes->domainerror) {
+      ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
     }
-    CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
     if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*alpha*initslope) { /* is reduction enough? */
@@ -668,10 +669,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
     }
     if (changed_y || changed_w) { /* recompute the function if the step has changed */
       ierr = SNESComputeFunction(snes,w,g);
-      if (PetscExceptionValue(ierr)) {
-        PetscErrorCode pierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(pierr);
+      if (snes->domainerror) {
+        ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
       }
-      CHKERRQ(ierr);
       ierr = VecNormBegin(g,NORM_2,gnorm);CHKERRQ(ierr);
       if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
       ierr = VecNormBegin(w,NORM_2,ynorm);CHKERRQ(ierr);
@@ -780,11 +781,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
     snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
     goto theend2;
   }
-  ierr = SNESComputeFunction(snes,w,g);
-  if (PetscExceptionValue(ierr)) {
-    PetscErrorCode pierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(pierr);
+  ierr = SNESComputeFunction(snes,w,g);CHKERRQ(ierr);
+  if (snes->domainerror) {
+    ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
   }
-  CHKERRQ(ierr);
   ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
   if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   if (.5*(*gnorm)*(*gnorm) <= .5*fnorm*fnorm + alpha*initslope) { /* Sufficient reduction */
@@ -821,10 +822,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
       break;
     }
     ierr = SNESComputeFunction(snes,w,g);
-    if (PetscExceptionValue(ierr)) {
-      PetscErrorCode pierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(pierr);
+    if (snes->domainerror) {
+      ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
     }
-    CHKERRQ(ierr);
     ierr = VecNorm(g,NORM_2,gnorm);CHKERRQ(ierr);
     if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     if (.5*(*gnorm)*(*gnorm) < .5*fnorm*fnorm + lambda*alpha*initslope) { /* sufficient reduction */
@@ -842,10 +843,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
     }
     if (changed_y || changed_w) { /* recompute the function if the step has changed */
       ierr = SNESComputeFunction(snes,w,g);
-      if (PetscExceptionValue(ierr)) {
-        PetscErrorCode pierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(pierr);
+      if (snes->domainerror) {
+        ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
+        PetscFunctionReturn(0);
       }
-      CHKERRQ(ierr);
       ierr = VecNormBegin(g,NORM_2,gnorm);CHKERRQ(ierr);
       ierr = VecNormBegin(w,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(g,NORM_2,gnorm);CHKERRQ(ierr);

@@ -66,6 +66,11 @@
 #define PetscCookie PetscFortranInt
 #define PetscEvent PetscFortranInt
 !
+#if defined(PETSC_FORTRAN_PETSCTRUTH_INT)
+#undef PetscTruth
+#define PetscTruth PetscEnum
+#endif
+!
 #define PetscDataType PetscEnum
 #define PetscFPTrap PetscEnum
 !
