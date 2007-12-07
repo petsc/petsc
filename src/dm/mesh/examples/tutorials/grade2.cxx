@@ -1295,10 +1295,8 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
           // The div-div term for u or v
           PetscScalar tDiv = 0.0;
 
-          for(int d = 0; d < dim; ++d) {
-            for(int e = 0; e < dim; ++e) {
-              tDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
-            }
+          for(int e = 0; e < dim; ++e) {
+            tDiv += invJ[e*dim+field]*basisDer[(q*numBasisFuncs+f)*dim+e];
           }
           for(int g = 0; g < numBasisFuncs; ++g) {
             PetscScalar bDiv = 0.0;
