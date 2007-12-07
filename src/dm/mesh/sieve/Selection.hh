@@ -636,7 +636,7 @@ namespace ALE {
       }
     };
     static Obj<mesh_type> boundary_interpolated(const Obj<mesh_type>& mesh, const int faceHeight = 1) {
-      Obj<mesh_type>                                     newMesh  = new mesh_type(mesh->comm(), mesh->getDimension(), mesh->debug());
+      Obj<mesh_type>                                     newMesh  = new mesh_type(mesh->comm(), mesh->getDimension()-1, mesh->debug());
       Obj<sieve_type>                                    newSieve = new sieve_type(mesh->comm(), mesh->debug());
       const Obj<sieve_type>&                             sieve    = mesh->getSieve();
       const Obj<typename mesh_type::label_sequence>&     faces    = mesh->heightStratum(faceHeight);
@@ -666,6 +666,13 @@ namespace ALE {
         return boundary_interpolated(mesh, 2);
       } else if (depth == 1) {
         return boundary_uninterpolated(mesh);
+      } else if (depth == -1) {
+        Obj<mesh_type>  newMesh  = new mesh_type(mesh->comm(), mesh->getDimension()-1, mesh->debug());
+        Obj<sieve_type> newSieve = new sieve_type(mesh->comm(), mesh->debug());
+
+        newMesh->setSieve(newSieve);
+        newMesh->stratify();
+        return newMesh;
       }
       throw ALE::Exception("Cannot handle partially interpolated meshes");
     };
