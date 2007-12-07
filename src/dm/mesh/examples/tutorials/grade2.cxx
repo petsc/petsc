@@ -18,29 +18,29 @@ static char help[] = "This example uses a Grade 2 Fluid model on a journal beari
  *  which we give a radius (r) and center(X) with u = 0 on outer boundary and u \cdot t = 1 on bearing
  *
  *
- *                                         (0,1)
+ *                      (0,1)
  *                  -------------
  *             ----/             \----
  *               -/               \-
  *              -/                 \-
  *             -/     -------       \-
- *			   /    -/       \-      \
- *			  /     /      r  \       \
- *			 /      |   X-----|        \
- *			/       \         /         \
- *			|       -\       /-         |
+ *             /    -/       \-      \
+ *            /     /      r  \       \
+ *           /      |   X-----|        \
+ *          /       \         /         \
+ *          |       -\       /-         |
  * (-1,0)-->|         -------           |<---(1,0)
- *			|      u \cdot t = 1        |
- *			\                           /
- *			 \     	                   /
- *			  \                       /
- *			   \                     /
+ *          |      u \cdot t = 1        |
+ *          \      u \cdot n = 0        /
+ *           \                         /
+ *            \                       /
+ *             \                     /
  *             -\                   /-
  *              -\                 /-
  *               -\               /-
  *             ----\     u = 0   /----
  *                  -------------
- *                                         (0,-1)
+ *                      (0,-1)
  *
  *
  *
@@ -79,21 +79,23 @@ static char help[] = "This example uses a Grade 2 Fluid model on a journal beari
 #include <petscmesh.h>
 #include <petscdmmg.h>
 
-
 using ALE::Obj;
-
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Top level data definitions
 typedef struct {
   PetscInt      debug;                                        // The debugging level
+  PetscInt      dim;                                          // The dimension
   PetscTruth    generateMesh;                                 // Generate the unstructure mesh
+  PetscTruth    square;                                       // Use the square mesh test problem
   PetscTruth    interpolate;                                  // Generate intermediate mesh elements
   PetscReal     refinementLimit;                              // The largest allowable cell volume
   char          baseFilename[2048];                           // The base filename for mesh files
-  double        (*funcs[4])(const double []);                 // The function to project
+  PetscReal     radius;                                       // The inner radius
+  double        (*funcs[2])(const double []);                 // The function to project
   PetscReal     r,rho;                                        // IP parameters
   PetscReal     mu,alpha;                                     // Transport parameters
+  SectionReal   exactSol;                                     // The discrete exact solution
 } Options;
 
 double zero(const double x[]) {
@@ -102,6 +104,36 @@ double zero(const double x[]) {
 
 double constant(const double x[]) {
   return -3.0;
+}
+
+double radius = 0.0;
+
+// Assuming center (0.0,0.0)
+double uAnnulus(const double x[]) {
+  const double r = sqrt(x[0]*x[0] + x[1]*x[1]);
+
+  if (r <= 1.000001*radius) {
+    return x[1];
+  }
+  return 0.0;
+}
+
+// Assuming center (0.0,0.0)
+double vAnnulus(const double x[]) {
+  const double r = sqrt(x[0]*x[0] + x[1]*x[1]);
+
+  if (r <= 1.000001*radius) {
+    return -x[0];
+  }
+  return 0.0;
+}
+
+double quadratic_2d_u(const double x[]) {
+  return x[0]*x[0] - 2.0*x[0]*x[1];
+}
+
+double quadratic_2d_v(const double x[]) {
+  return x[1]*x[1] - 2.0*x[0]*x[1];
 }
 
 #include "grade2_quadrature.h"
@@ -117,6 +149,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options 
 PetscErrorCode DestroyMesh(DM stokesDM, DM transportDM, Options *options);
 PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options);
 PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options);
+PetscErrorCode CreateExactSolution(DM dm, SectionReal *sol, Options *options);
+PetscErrorCode CheckError(DM dm, SectionReal sol, Options *options);
+PetscErrorCode CheckResidual(DM dm, SectionReal sol, Options *options);
 
 PetscErrorCode SolveStokes(DMMG *dmmg, Options *options);
 PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx);
@@ -157,7 +192,7 @@ int main(int argc, char *argv[])
   DM             stokesDM, transportDM;
   PetscErrorCode ierr;
   PetscTruth     iterate = PETSC_TRUE;
-  PetscInt       iter=0,max_iter=2;
+  PetscInt       iter = 0, max_iter = 1;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
@@ -168,12 +203,15 @@ int main(int argc, char *argv[])
 
     ierr = CreateMesh(comm, &stokesDM, &transportDM, &options);CHKERRQ(ierr);
     ierr = CreateProblem(stokesDM, transportDM, &options);CHKERRQ(ierr);
+    ierr = CreateExactSolution(stokesDM, &options.exactSol, &options);CHKERRQ(ierr);
+    ierr = CheckError(stokesDM, options.exactSol, &options);CHKERRQ(ierr);
+    ierr = CheckResidual(stokesDM, options.exactSol, &options);CHKERRQ(ierr);
     ierr = CreateSolver(stokesDM, &stokes, &options);CHKERRQ(ierr)
 
     while (iterate and max_iter >= ++iter){
       ierr = SolveStokes(stokes, &options);CHKERRQ(ierr);
-      ierr = SolveTransport(transportDM, &options);CHKERRQ(ierr);
-      ierr = CheckStoppingCriteria(stokesDM, &iterate, &options);CHKERRQ(ierr);
+      //ierr = SolveTransport(transportDM, &options);CHKERRQ(ierr);
+      //ierr = CheckStoppingCriteria(stokesDM, &iterate, &options);CHKERRQ(ierr);
     }
     ierr = WriteSolution(stokesDM, &options);CHKERRQ(ierr);
     ierr = DMMGDestroy(stokes);CHKERRQ(ierr);
@@ -245,10 +283,72 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
 #define __FUNCT__ "IterateStokes"
 PetscErrorCode IterateStokes(DMMG *dmmg, Options *options)
 {
-  //PetscErrorCode ierr;
+  Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Do nothing so far */
+  ierr = MeshGetMesh((Mesh) DMMGGetFine(dmmg)->dm, m);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::real_section_type>& u = m->getRealSection("default");
+  const Obj<ALE::Mesh::real_section_type>& w = m->getRealSection("w");
+
+  w->axpy(options->rho, u);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DivNorm_L2"
+PetscErrorCode DivNorm_L2(Mesh mesh, SectionReal X, PetscReal *norm, Options *options)
+{
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> sX;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
+  const int                                dim         = m->getDimension();
+  const Obj<std::set<std::string> >&       discs       = m->getDiscretizations();
+  double                                   localNorm   = 0.0;
+  double *v0, *J, *invJ, detJ;
+
+  ierr = PetscMalloc3(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
+  // Loop over cells
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+    const PetscScalar *x = m->restrictNew(sX, *c_iter);
+    double elemNorm = 0.0;
+
+    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+      const Obj<ALE::Discretization>&    disc          = m->getDiscretization(*f_iter);
+      const int                          numQuadPoints = disc->getQuadratureSize();
+      const double                      *quadWeights   = disc->getQuadratureWeights();
+      const int                          numBasisFuncs = disc->getBasisSize();
+      const double                      *basisDer      = disc->getBasisDerivatives();
+      const int                         *indices       = disc->getIndices();
+
+      // Loop over quadrature points
+      for(int q = 0; q < numQuadPoints; ++q) {
+        PetscScalar div = 0.0;
+
+        for(int f = 0; f < numBasisFuncs; ++f) {
+          for(int d = 0; d < dim; ++d) {
+            div += x[indices[f]]*basisDer[(q*numBasisFuncs+f)*dim+d];
+          }
+        }
+        elemNorm += div*div*quadWeights[q];
+      }
+    }    
+    if (m->debug()) {
+      std::cout << "Element " << *c_iter << " norm^2: " << elemNorm << std::endl;
+    }
+    localNorm += elemNorm*detJ;
+  }
+  ierr = MPI_Allreduce(&localNorm, norm, 1, MPI_DOUBLE, MPI_SUM, m->comm());CHKERRQ(ierr);
+  ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
+  *norm = sqrt(*norm);
   PetscFunctionReturn(0);
 }
 
@@ -259,10 +359,23 @@ PetscErrorCode IterateStokes(DMMG *dmmg, Options *options)
 #define __FUNCT__ "CheckStokesConvergence"
 PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscTruth *iterate, Options *options)
 {
-  //PetscErrorCode ierr;
+  Mesh            mesh = (Mesh) DMMGGetFine(dmmg)->dm;
+  const PetscReal tol  = 1.0e-5;
+  SectionReal     u;
+  PetscReal       error;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  /* Do nothing so far */
+  ierr = MeshGetSectionReal(mesh, "default", &u);CHKERRQ(ierr);
+  PetscPrintf(dmmg[0]->comm, "Checking Stopping Criteria: 0\n");
+  ierr = DivNorm_L2(mesh, u, &error, options);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(u);CHKERRQ(ierr);
+  PetscPrintf(dmmg[0]->comm, "Checking Stopping Criteria: div_error = %g\n", error);
+  if (error < tol) {
+    *iterate = PETSC_FALSE;
+  } else {
+    *iterate = PETSC_TRUE;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -321,10 +434,65 @@ PetscErrorCode SolveTransport(DM dm, Options *options)
 #define __FUNCT__ "CheckStoppingCriteria"
 PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *options)
 {
-  //PetscErrorCode ierr;
+  Obj<ALE::Mesh> m;
+  PetscReal      error;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Do nothing so far */
+  ierr = MeshGetMesh((Mesh) dm, m);CHKERRQ(ierr);
+  PetscPrintf(m->comm(), "Checking Stopping Criteria: 0\n");
+  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
+  const int                                dim         = m->getDimension();
+  const Obj<std::set<std::string> >&       discs       = m->getDiscretizations();
+  const Obj<ALE::Mesh::real_section_type>& X = m->getRealSection("default");
+
+  double *coords, *v0, *J, *invJ, detJ;
+  double  localError = 0.0;
+
+  ierr = PetscMalloc4(dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
+  // Loop over cells
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+    const PetscScalar *x = m->restrictNew(X, *c_iter);
+    double elemError = 0.0;
+
+    for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+      const Obj<ALE::Discretization>&    disc          = m->getDiscretization(*f_iter);
+      const int                          numQuadPoints = disc->getQuadratureSize();
+      const double                      *quadPoints    = disc->getQuadraturePoints();
+      const double                      *quadWeights   = disc->getQuadratureWeights();
+      const int                          numBasisFuncs = disc->getBasisSize();
+      const double                      *basisDer      = disc->getBasisDerivatives();
+      const int                         *indices       = disc->getIndices();
+
+      // Loop over quadrature points
+      for(int q = 0; q < numQuadPoints; ++q) {
+        for(int d = 0; d < dim; d++) {
+          coords[d] = v0[d];
+          for(int e = 0; e < dim; e++) {
+            coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
+          }
+        }
+        PetscScalar interpolant = 0.0;
+
+        for(int f = 0; f < numBasisFuncs; ++f) {
+          interpolant += x[indices[f]]*basisDer[q*numBasisFuncs+f];
+        }
+        elemError += interpolant*interpolant*quadWeights[q];
+      }
+    }    
+    if (m->debug()) {
+      std::cout << "Element " << *c_iter << " error: " << elemError << std::endl;
+    }
+    localError += elemError;
+  }
+  ierr = MPI_Allreduce(&localError, &error, 1, MPI_DOUBLE, MPI_SUM, m->comm());CHKERRQ(ierr);
+  ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
+  error = sqrt(error);
+  printf("Checking Stopping Criteria: div_error = %f\n",error);
+  if (error < 1e-5)
+    *iterate = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -349,8 +517,8 @@ PetscErrorCode WriteSolution(DM dm, Options *options)
   if (flag) {sol->view("Solution");}
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_fibrated", &flag);CHKERRQ(ierr);
   if (flag) {
-    Obj<ALE::Mesh::real_section_type> velocityX = sol->getFibration(1);
-    Obj<ALE::Mesh::real_section_type> velocityY = sol->getFibration(2);
+    Obj<ALE::Mesh::real_section_type> velocityX = sol->getFibration(0);
+    Obj<ALE::Mesh::real_section_type> velocityY = sol->getFibration(1);
 
     velocityX->view("X-Velocity Solution");
     velocityY->view("Y-Velocity Solution");
@@ -382,20 +550,26 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   PetscFunctionBegin;
   options->debug            = 0;
+  options->dim              = 2;
   options->generateMesh     = PETSC_TRUE;
   options->interpolate      = PETSC_TRUE;
   options->refinementLimit  = 0.0;
-  options->r                = 0.5;
+  options->radius           = 0.5;
+  options->r                =  1e+3;
   options->rho              = -1e+3;
   options->mu               = 1;
   options->alpha            = 1;
+  options->square           = PETSC_FALSE;
 
 
   ierr = PetscOptionsBegin(comm, "", "Grade 2 journal bearing Options", "DMMG");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "grade2.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "grade2.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-square", "Use the unit square test problem", "grade2.cxx", options->square, &options->square, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "grade2.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "grade2.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-radius", "The inner radius ", "grade2.cxx", options->radius, &options->radius, PETSC_NULL);CHKERRQ(ierr);
+  radius = options->radius;
   ierr = PetscOptionsReal("-r", "The IP parameter r", "grade2.cxx", options->r, &options->r, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-rho", "The IP parameter rho", "grade2.cxx", options->rho, &options->rho, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-mu", "The transport parameter mu", "grade2.cxx", options->mu, &options->mu, PETSC_NULL);CHKERRQ(ierr);
@@ -529,13 +703,24 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options 
 
   PetscFunctionBegin;
   if (options->generateMesh) {
-    double centers[4] = {0.0, 0.0, 0.0, 0.0};
-    double radii[2]   = {1.0, options->r};
-
-    Obj<ALE::Mesh> mB = ALE::MeshBuilder::createAnnularBoundary(comm, 10, centers, radii, options->debug);
-    Obj<ALE::Mesh> sM = ALE::Generator::generateMesh(mB, options->interpolate);
-    ierr = MeshCreate(sM->comm(), &stokesMesh);CHKERRQ(ierr);
-    ierr = MeshSetMesh(stokesMesh, sM);CHKERRQ(ierr);
+    if (options->square){
+      double lower[2] = {0.0, 0.0};
+      double upper[2] = {1.0, 1.0};
+      int    edges[2] = {2, 2};
+            
+      Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+      Obj<ALE::Mesh> sM = ALE::Generator::generateMesh(mB, options->interpolate);
+      ierr = MeshCreate(sM->comm(), &stokesMesh);CHKERRQ(ierr);
+      ierr = MeshSetMesh(stokesMesh, sM);CHKERRQ(ierr);
+    } else {
+      double centers[4] = {0.0, 0.0, 0.0, 0.0};
+      double radii[2]   = {1.0, options->radius};
+      
+      Obj<ALE::Mesh> mB = ALE::MeshBuilder::createAnnularBoundary(comm, 10, centers, radii, options->debug);
+      Obj<ALE::Mesh> sM = ALE::Generator::generateMesh(mB, options->interpolate);
+      ierr = MeshCreate(sM->comm(), &stokesMesh);CHKERRQ(ierr);
+      ierr = MeshSetMesh(stokesMesh, sM);CHKERRQ(ierr);
+    }
   } else {
     throw ALE::Exception("Mesh Reader currently removed");
   }
@@ -627,16 +812,20 @@ PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options)
   int      velMarkers[1] = {1};
   double (*velFuncs[1])(const double *coords);
   // Create the Stokes problem (assumes 2D)
-  velFuncs[0] = constant;
-  ierr = CreateProblem_gen_1(stokesDM, "u0", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
-  velFuncs[0] = zero;
-  ierr = CreateProblem_gen_1(stokesDM, "u1", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(stokesDM, "w0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(stokesDM, "w1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  options->funcs[0] = zero;
-  options->funcs[1] = zero;
-  options->funcs[2] = zero;
-  options->funcs[3] = zero;
+  if (options->square) {
+    velFuncs[0] = quadratic_2d_u;
+  } else {
+    velFuncs[0] = uAnnulus;
+  }
+  ierr = CreateProblem_gen_1(stokesDM, "u0", 1, velMarkers, velFuncs, velFuncs[0]);CHKERRQ(ierr);
+  if (options->square) {
+    velFuncs[0] = quadratic_2d_v;
+  } else {
+    velFuncs[0] = vAnnulus;
+  }
+  ierr = CreateProblem_gen_1(stokesDM, "u1", 1, velMarkers, velFuncs, velFuncs[0]);CHKERRQ(ierr);
+  options->funcs[0] = constant;
+  options->funcs[1] = constant;
   // Create the default Stokes section
   Obj<ALE::Mesh> m;
 
@@ -646,6 +835,10 @@ PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options)
   m->calculateIndices();
   m->setupField(s, 2);
   if (options->debug) {s->view("Default Stokes field");}
+  // Create the Stokes w field
+  const ALE::Obj<ALE::Mesh::real_section_type> w = m->getRealSection("w");
+  w->setDebug(options->debug);
+  m->setupField(w, 2);
   // Create the Transport problem (assumes 2D)
   ierr = CreateProblem_gen_1(transportDM, "z0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(transportDM, "z1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
@@ -674,6 +867,173 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "CreateExactSolution"
+PetscErrorCode CreateExactSolution(DM dm, SectionReal *exactSol, Options *options)
+{
+  Mesh           mesh = (Mesh) dm;
+  const int      dim  = options->dim;
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> s;
+  PetscTruth     flag;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = MeshGetSectionReal(mesh, "exactSolution", exactSol);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(*exactSol, s);CHKERRQ(ierr);
+  m->setupField(s, 2);
+  const Obj<ALE::Mesh::label_sequence>&     cells       = m->heightStratum(0);
+  const Obj<ALE::Mesh::real_section_type>&  coordinates = m->getRealSection("coordinates");
+  const int                                 localDof    = m->sizeWithBC(s, *cells->begin());
+  ALE::Mesh::real_section_type::value_type *values      = new ALE::Mesh::real_section_type::value_type[localDof];
+  double                                   *v0          = new double[dim];
+  double                                   *J           = new double[dim*dim];
+  double                                    detJ;
+  const Obj<std::set<std::string> >&        discs       = m->getDiscretizations();
+  const int                                 numFields   = discs->size();
+  int                                      *v           = new int[numFields];
+
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    const Obj<ALE::Mesh::coneArray>      closure = ALE::SieveAlg<ALE::Mesh>::closure(m, *c_iter);
+    const ALE::Mesh::coneArray::iterator end     = closure->end();
+
+    m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+    for(int f = 0; f < numFields; ++f) v[f] = 0;
+    for(ALE::Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+      int f = 0;
+
+      for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+        const Obj<ALE::Discretization>&    disc     = m->getDiscretization(*f_iter);
+        const Obj<ALE::BoundaryCondition>& bc       = disc->getExactSolution();
+        const int                          pointDim = disc->getNumDof(m->depth(*cl_iter));
+        const int                         *indices  = disc->getIndices();
+
+        for(int d = 0; d < pointDim; ++d, ++v[f]) {
+          values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+        }
+      }
+    }
+    m->updateAll(s, *c_iter, values);
+  }
+  delete [] values;
+  delete [] v0;
+  delete [] J;
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
+  if (flag) {s->view("Exact Solution");}
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
+  if (flag) {ierr = ViewSection(mesh, *exactSol, "exact_sol.vtk");CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CalculateError"
+PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx)
+{
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> sX;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
+  const int                                dim         = m->getDimension();
+  const Obj<std::set<std::string> >&       discs       = m->getDiscretizations();
+  double *coords, *v0, *J, *invJ, detJ;
+  double  localError = 0.0;
+
+  ierr = PetscMalloc4(dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
+  // Loop over cells
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+    const PetscScalar *x = m->restrictNew(sX, *c_iter);
+    double elemError = 0.0;
+
+    for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+      const Obj<ALE::Discretization>&    disc          = m->getDiscretization(*f_iter);
+      const Obj<ALE::BoundaryCondition>& bc            = disc->getExactSolution();
+      const int                          numQuadPoints = disc->getQuadratureSize();
+      const double                      *quadPoints    = disc->getQuadraturePoints();
+      const double                      *quadWeights   = disc->getQuadratureWeights();
+      const int                          numBasisFuncs = disc->getBasisSize();
+      const double                      *basis         = disc->getBasis();
+      const int                         *indices       = disc->getIndices();
+
+      // Loop over quadrature points
+      for(int q = 0; q < numQuadPoints; ++q) {
+        for(int d = 0; d < dim; d++) {
+          coords[d] = v0[d];
+          for(int e = 0; e < dim; e++) {
+            coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
+          }
+        }
+        PetscScalar funcVal     = (*bc->getFunction())(coords);
+        PetscScalar interpolant = 0.0;
+
+        for(int f = 0; f < numBasisFuncs; ++f) {
+          interpolant += x[indices[f]]*basis[q*numBasisFuncs+f];
+        }
+        elemError += (interpolant - funcVal)*(interpolant - funcVal)*quadWeights[q];
+      }
+    }    
+    if (m->debug()) {
+      std::cout << "Element " << *c_iter << " error: " << elemError << std::endl;
+    }
+    localError += elemError;
+  }
+  ierr = MPI_Allreduce(&localError, error, 1, MPI_DOUBLE, MPI_SUM, m->comm());CHKERRQ(ierr);
+  ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
+  *error = sqrt(*error);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CheckError"
+PetscErrorCode CheckError(DM dm, SectionReal sol, Options *options)
+{
+  MPI_Comm       comm;
+  const char    *name;
+  PetscScalar    norm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  Mesh mesh = (Mesh) dm;
+
+  ierr = CalculateError(mesh, sol, &norm, options);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) sol, &name);CHKERRQ(ierr);
+  PetscPrintf(comm, "Error for trial solution %s: %g\n", name, norm);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CheckResidual"
+PetscErrorCode CheckResidual(DM dm, SectionReal sol, Options *options)
+{
+  MPI_Comm       comm;
+  const char    *name;
+  PetscScalar    norm;
+  PetscTruth     flag;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
+  Mesh        mesh = (Mesh) dm;
+  SectionReal residual;
+
+  ierr = SectionRealDuplicate(sol, &residual);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) residual, "residual");CHKERRQ(ierr);
+  ierr = Stokes_Rhs_Unstructured(mesh, sol, residual, options);CHKERRQ(ierr);
+  if (flag) {ierr = SectionRealView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  ierr = SectionRealNorm(residual, mesh, NORM_2, &norm);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(residual);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) sol, &name);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) sol, &comm);CHKERRQ(ierr);
+  PetscPrintf(comm, "Residual for trial solution %s: %g\n", name, norm);
+  PetscFunctionReturn(0);
+}
 
 /* ______________________________________________________________________ */
 // Stoke_Rhs_Unstructured
@@ -702,26 +1062,31 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
-  const int                                dim           = m->getDimension();
-  const Obj<std::set<std::string> >&       discs         = m->getDiscretizations();
-  int                                      totBasisFuncs = 0;
+  const Obj<ALE::Mesh::real_section_type>&  sW            = m->getRealSection("w");
+  const Obj<ALE::Mesh::real_section_type>&  coordinates   = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&     cells         = m->heightStratum(0);
+  const int                                 dim           = m->getDimension();
+  const Obj<std::set<std::string> >&        discs         = m->getDiscretizations();
+  const int                                 localDof      = m->sizeWithBC(sW, *cells->begin());
+  ALE::Mesh::real_section_type::value_type *values        = new ALE::Mesh::real_section_type::value_type[localDof];
+  const double                              r             = options->r;
+  int                                       totBasisFuncs = 0;
   double      *t_der, *b_der, *coords, *v0, *J, *invJ, detJ;
-  PetscScalar *elemVec, *elemMat;
+  PetscScalar *elemVec, *elemMat, *div_elemMat;
 
   ierr = SectionRealZero(section);CHKERRQ(ierr);
   for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
     totBasisFuncs += m->getDiscretization(*f_iter)->getBasisSize();
   }
-  ierr = PetscMalloc2(totBasisFuncs,PetscScalar,&elemVec,totBasisFuncs*totBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
+  ierr = PetscMalloc3(totBasisFuncs,PetscScalar,&elemVec,totBasisFuncs*totBasisFuncs,PetscScalar,&elemMat,totBasisFuncs*totBasisFuncs,PetscScalar,&div_elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc6(dim,double,&t_der,dim,double,&b_der,dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     const PetscScalar *x     = m->restrictNew(sX, *c_iter);
+    const PetscScalar *w     = m->restrictNew(sW, *c_iter, values, localDof);
     int                field = 0;
 
-    m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemVec, totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
@@ -733,13 +1098,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       const double                   *basis         = disc->getBasis();
       const double                   *basisDer      = disc->getBasisDerivatives();
       const int                      *indices       = disc->getIndices();
-      double scale;
 
-      if (field < 2) {
-        scale = options->r;
-      } else {
-        scale = 1.0;
-      }
       ierr = PetscMemzero(elemMat, numBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
       // Loop over quadrature points
       for(int q = 0; q < numQuadPoints; ++q) {
@@ -772,25 +1131,23 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
                 bDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
               }
             }
-            elemMat[f*totBasisFuncs+indices[g]] += scale*tDiv*bDiv*quadWeights[q]*detJ;
+            elemMat[f*totBasisFuncs+indices[g]]     += r*tDiv*bDiv*quadWeights[q]*detJ;
+            div_elemMat[f*totBasisFuncs+indices[g]] +=   tDiv*bDiv*quadWeights[q]*detJ;
           }
-          // Just the velocity
-          if (field < 2) {
-            // Laplacian of u or v
+          // Laplacian of u or v
+          for(int d = 0; d < dim; ++d) {
+            t_der[d] = 0.0;
+            for(int e = 0; e < dim; ++e) t_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+          }
+          for(int g = 0; g < numBasisFuncs; ++g) {
             for(int d = 0; d < dim; ++d) {
-              t_der[d] = 0.0;
-              for(int e = 0; e < dim; ++e) t_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+              b_der[d] = 0.0;
+              for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
             }
-            for(int g = 0; g < numBasisFuncs; ++g) {
-              for(int d = 0; d < dim; ++d) {
-                b_der[d] = 0.0;
-                for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
-              }
-              PetscScalar product = 0.0;
+            PetscScalar product = 0.0;
 
-              for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
-              elemMat[f*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
-            }
+            for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
+            elemMat[f*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
           }
         }
       }
@@ -803,7 +1160,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       // Add linear contribution
       for(int f = 0; f < numBasisFuncs; ++f) {
         for(int g = 0; g < totBasisFuncs; ++g) {
-          elemVec[indices[f]] += elemMat[f*totBasisFuncs+g]*x[g];
+          elemVec[indices[f]] += elemMat[f*totBasisFuncs+g]*x[g] + div_elemMat[f*totBasisFuncs+g]*w[g];
         }
       }
       if (options->debug) {
@@ -826,7 +1183,8 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
       ierr = SectionRealView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     }
   }
-  ierr = PetscFree2(elemVec,elemMat);CHKERRQ(ierr);
+  delete [] values;
+  ierr = PetscFree3(elemVec,elemMat,div_elemMat);CHKERRQ(ierr);
   ierr = PetscFree6(t_der,b_der,coords,v0,J,invJ);CHKERRQ(ierr);
   // Exchange neighbors
   ierr = SectionRealComplete(section);CHKERRQ(ierr);
@@ -865,6 +1223,7 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
   const Obj<ALE::Mesh::order_type>&        order         = m->getFactory()->getGlobalOrder(m, "default", sX);
   const int                                dim           = m->getDimension();
   const Obj<std::set<std::string> >&       discs         = m->getDiscretizations();
+  const double                             r             = options->r;
   int                                      totBasisFuncs = 0;
   double      *t_der, *b_der, *v0, *J, *invJ, detJ;
   PetscScalar *elemMat;
@@ -889,18 +1248,12 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
       const int                       numBasisFuncs = disc->getBasisSize();
       const double                   *basisDer      = disc->getBasisDerivatives();
       const int                      *indices       = disc->getIndices();
-      double scale;
 
-      if (field < 2) {
-        scale = options->r;
-      } else {
-        scale = 1.0;
-      }
       // Loop over quadrature points
       for(int q = 0; q < numQuadPoints; ++q) {
         // Loop over trial functions
         for(int f = 0; f < numBasisFuncs; ++f) {
-          // The div-div term
+          // The div-div term for u or v
           PetscScalar tDiv = 0.0;
 
           for(int d = 0; d < dim; ++d) {
@@ -916,25 +1269,22 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
                 bDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
               }
             }
-            elemMat[indices[f]*totBasisFuncs+indices[g]] += scale*tDiv*bDiv*quadWeights[q]*detJ;
+            elemMat[indices[f]*totBasisFuncs+indices[g]] += r*tDiv*bDiv*quadWeights[q]*detJ;
           }
-          // Just the velocity
-          if (field < 2) {
-            // Laplacian of u or v
+          // Laplacian of u or v
+          for(int d = 0; d < dim; ++d) {
+            t_der[d] = 0.0;
+            for(int e = 0; e < dim; ++e) t_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+          }
+          for(int g = 0; g < numBasisFuncs; ++g) {
             for(int d = 0; d < dim; ++d) {
-              t_der[d] = 0.0;
-              for(int e = 0; e < dim; ++e) t_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+              b_der[d] = 0.0;
+              for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
             }
-            for(int g = 0; g < numBasisFuncs; ++g) {
-              for(int d = 0; d < dim; ++d) {
-                b_der[d] = 0.0;
-                for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
-              }
-              PetscScalar product = 0.0;
-
-              for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
-              elemMat[indices[f]*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
-            }
+            PetscScalar product = 0.0;
+            
+            for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
+            elemMat[indices[f]*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
           }
         }
       }
