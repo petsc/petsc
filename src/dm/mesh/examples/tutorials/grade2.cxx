@@ -305,14 +305,18 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
 PetscErrorCode IterateStokes(DMMG *dmmg, Options *options)
 {
   Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh> pM;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh((Mesh) DMMGGetFine(dmmg)->dm, m);CHKERRQ(ierr);
+  ierr = MeshGetMesh((Mesh) options->paramDM, pM);CHKERRQ(ierr);
   const Obj<ALE::Mesh::real_section_type>& u = m->getRealSection("default");
-  const Obj<ALE::Mesh::real_section_type>& w = m->getRealSection("w");
+  const Obj<ALE::Mesh::real_section_type>& w = pM->getRealSection(options->paramName);
 
+  w->view("w before");
   w->axpy(options->rho, u);
+  w->view("w after");
   PetscFunctionReturn(0);
 }
 
