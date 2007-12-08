@@ -174,6 +174,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
 PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx);
 PetscErrorCode IterateStokes(DMMG *dmmg, Options *options);
 PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscTruth *iterate, Options *options);
+PetscErrorCode DivNorm_L2(Mesh mesh, SectionReal X, PetscReal *norm, Options *options);
 
 PetscErrorCode SolveTransport(DM dm, Options *options);
 PetscErrorCode Transport_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx);
@@ -216,6 +217,7 @@ int main(int argc, char *argv[])
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
     DMMG *stokes;
+    PetscReal error;
 
     ierr = CreateMesh(comm, &stokesDM, &paramDM, &transportDM, &options);CHKERRQ(ierr);
     ierr = CreateProblem(stokesDM, paramDM, transportDM, &options);CHKERRQ(ierr);
@@ -223,6 +225,7 @@ int main(int argc, char *argv[])
     ierr = CreateExactSolution(paramDM,  &options.exactW, &options);CHKERRQ(ierr);
     ierr = CheckError(stokesDM, options.exactU, &options);CHKERRQ(ierr);
     ierr = CheckError(paramDM, options.exactW, &options);CHKERRQ(ierr);
+    ierr = DivNorm_L2((Mesh) stokesDM, options.exactU, &error, &options);CHKERRQ(ierr);
     ierr = CheckStokesResidual(stokesDM, options.exactU, "exactSolution", &options);CHKERRQ(ierr);
     ierr = CreateSolver(stokesDM, &stokes, &options);CHKERRQ(ierr)
 
@@ -324,11 +327,13 @@ PetscErrorCode DivNorm_L2(Mesh mesh, SectionReal X, PetscReal *norm, Options *op
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
-  const int                                dim         = m->getDimension();
-  const Obj<std::set<std::string> >&       discs       = m->getDiscretizations();
-  double                                   localNorm   = 0.0;
+  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
+  const int                                dim           = m->getDimension();
+  const Obj<std::set<std::string> >&       discs         = m->getDiscretizations();
+  const int                                numQuadPoints = m->getDiscretization(*discs->begin())->getQuadratureSize();
+  const double                            *quadWeights   = m->getDiscretization(*discs->begin())->getQuadratureWeights();
+  double                                   localNorm     = 0.0;
   double *v0, *J, *invJ, detJ;
 
   ierr = PetscMalloc3(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
@@ -339,30 +344,31 @@ PetscErrorCode DivNorm_L2(Mesh mesh, SectionReal X, PetscReal *norm, Options *op
     double elemNorm = 0.0;
 
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
-    for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
-      const Obj<ALE::Discretization>&    disc          = m->getDiscretization(*f_iter);
-      const int                          numQuadPoints = disc->getQuadratureSize();
-      const double                      *quadWeights   = disc->getQuadratureWeights();
-      const int                          numBasisFuncs = disc->getBasisSize();
-      const double                      *basisDer      = disc->getBasisDerivatives();
-      const int                         *indices       = disc->getIndices();
+    // Loop over quadrature points
+    for(int q = 0; q < numQuadPoints; ++q) {
+      PetscScalar divU  = 0.0;
+      int         field = 0;
 
-      // Loop over quadrature points
-      for(int q = 0; q < numQuadPoints; ++q) {
-        PetscScalar div = 0.0;
+      for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
+        const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
+        const int                       numBasisFuncs = disc->getBasisSize();
+        const double                   *basisDer      = disc->getBasisDerivatives();
+        const int                      *indices       = disc->getIndices();
 
         for(int f = 0; f < numBasisFuncs; ++f) {
-          for(int d = 0; d < dim; ++d) {
-            div += x[indices[f]]*basisDer[(q*numBasisFuncs+f)*dim+d];
-          }
+          PetscScalar deriv = 0.0;
+          for(int e = 0; e < dim; ++e) deriv += invJ[e*dim+field]*basisDer[(q*numBasisFuncs+f)*dim+e];
+          divU += x[indices[f]]*deriv;
         }
-        elemNorm += div*div*quadWeights[q];
       }
+      elemNorm += divU*divU*quadWeights[q];
     }    
-    if (m->debug()) {
+    elemNorm *= detJ;
+    //if (m->debug()) {
+    if (1) {
       std::cout << "Element " << *c_iter << " norm^2: " << elemNorm << std::endl;
     }
-    localNorm += elemNorm*detJ;
+    localNorm += elemNorm;
   }
   ierr = MPI_Allreduce(&localNorm, norm, 1, MPI_DOUBLE, MPI_SUM, m->comm());CHKERRQ(ierr);
   ierr = PetscFree3(v0,J,invJ);CHKERRQ(ierr);
