@@ -26,6 +26,7 @@ typedef struct {
   PetscReal  coarseFactor;       // The maximum coarsening factor
   PetscReal  zScale;             // The relative spread of levels for visualization
   PetscTruth outputVTK;          // Output the mesh in VTK
+  PetscTruth generate;           // Generate the mesh rather than reading it in
   PetscReal  curvatureCutoff;     // the cutoff for the curvature
 } Options;
 
@@ -45,6 +46,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->zScale       = 1.0;
   options->outputVTK    = PETSC_TRUE;
   options->curvatureCutoff = 1.5;
+  options->generate = PETSC_TRUE;
 
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex_coarsen_3.c", options->dim, &options->dim, PETSC_NULL);    
     ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "DMMG");CHKERRQ(ierr);
@@ -54,6 +56,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen_3.c", options->levels, &options->levels, PETSC_NULL);    
     ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen_3.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);   
     ierr = PetscOptionsReal("-curvature", "The automatic inclusion threshhold for the curvature", "ex_coarsen_3.c", options->curvatureCutoff, &options->curvatureCutoff, PETSC_NULL); 
+    ierr = PetscOptionsTruth("-generate", "Generate the mesh rather than reading it in.", "ex_coarsen.c", options->generate, &options->generate, PETSC_NULL);
     ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen_3.c", options->zScale, &options->zScale, PETSC_NULL);    
     ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex_coarsen_3.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -69,7 +72,24 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
   ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
-  mesh = ALE::PCICE::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, true, options->debug);
+  if (options->generate) {
+    if (options->dim == 3) {
+      double lower[3] = {0.0, 0.0, 0.0};
+      double upper[3] = {1.0, 1.0, 1.0};
+      double offset[3] = {0.5, 0.5, 0.5};
+      ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createKyoceraCornerBoundary(comm, lower, upper, offset);
+      mesh = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, PETSC_TRUE), 0.0001, PETSC_TRUE);
+    } else if (options->dim == 2) {
+      double lower[2] = {0.0, 0.0};
+      double upper[2] = {1.0, 1.0};
+      double offset[2] = {0.5, 0.5};
+      ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createReentrantBoundary(comm, lower, upper, offset);
+      mesh = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->debug), 0.001, PETSC_TRUE);
+      //mesh = ALE::Generator::generateMesh(mb, options->debug);
+    }
+  } else {
+    mesh = ALE::PCICE::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, true, options->debug);
+  }
   //ALE::Coarsener::IdentifyBoundary(mesh, 2);
   //ALE::Coarsener::make_coarsest_boundary(mesh, 2, options->levels + 1);
   ALE::LogStagePop(stage);
@@ -129,7 +149,7 @@ int main(int argc, char *argv[])
     m = new ALE::Mesh(comm, options.debug);
     ierr = CreateMesh(comm, m, &options);CHKERRQ(ierr);
     ierr = MeshSetMesh(mesh, m);
-    ierr = MeshIDBoundary(mesh);
+    //ierr = MeshIDBoundary(mesh);
     //create the spacing function on the original mesh
     
     m->markBoundaryCells("marker");

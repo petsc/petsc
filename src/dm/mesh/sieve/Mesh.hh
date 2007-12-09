@@ -2318,15 +2318,15 @@ namespace ALE {
     /*
       Circular boundary with reentrant singularity:
 
-       ___--1
-      |     |
-      |     |
-      |     |
-      -     0-----n
-       -          |
-        -         |
-         -___  _|
-             --
+         ---1
+      --    |
+     -      |
+     |      |
+     |      0-----n
+     |            |
+     -           -
+      --       --
+        -------
     */
     static Obj<ALE::Mesh> createCircularReentrantBoundary(const MPI_Comm comm, const int segments, const double radius, const double arc_percent, const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
@@ -2535,6 +2535,183 @@ namespace ALE {
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
     };
+
+    #undef __FUNCT__
+    #define __FUNCT__ "createKyoceraCornerBoundary"
+    /*    v0
+         / \
+        /   \
+    2  /  4  \  1
+      /       \
+     /   v12   \
+  v6|\   /|\   /|v5
+    | \v8 | v7/ |          z  
+    |  |7 |8 |  |          | 
+    |  |v13\ |  |  <-v4   / \
+    | v9/ 9 \v10|        x   y
+ v1 | 5 \   / 6 |v2
+     \   \ /   /
+      \  v11  /
+       \  |  /
+     3  \ | /
+         \|/
+          v3
+    */
+    static Obj<Mesh> createKyoceraCornerBoundary(const MPI_Comm comm, const double lower[], const double upper[], const double offset[], const int debug = 0) {
+      Obj<Mesh> mesh            = new Mesh(comm, 2, debug);
+      int nVertices = 14;
+      int nFaces = 12;
+      double ilower[3];
+      ilower[0] = lower[0]*(1. - offset[0]) + upper[0]*offset[0];
+      ilower[1] = lower[1]*(1. - offset[1]) + upper[1]*offset[1];
+      ilower[2] = lower[2]*(1. - offset[2]) + upper[2]*offset[2];
+      double coords[nVertices*3];
+      //outer square-triplet
+      coords[0*3+0] = lower[0];
+      coords[0*3+1] = lower[1];
+      coords[0*3+2] = upper[2];
+      coords[1*3+0] = upper[0];
+      coords[1*3+1] = lower[1];
+      coords[1*3+2] = lower[2];
+      coords[2*3+0] = lower[0];
+      coords[2*3+1] = upper[1];
+      coords[2*3+2] = lower[2];
+      coords[3*3+0] = upper[0];
+      coords[3*3+1] = upper[1];
+      coords[3*3+2] = lower[2];
+      coords[4*3+0] = lower[0];
+      coords[4*3+1] = lower[1];
+      coords[4*3+2] = lower[2];
+      coords[5*3+0] = lower[0];
+      coords[5*3+1] = upper[1];
+      coords[5*3+2] = upper[2];
+      coords[6*3+0] = upper[0];
+      coords[6*3+1] = lower[1];
+      coords[6*3+2] = upper[2];
+
+      //inner square-triplet
+      coords[7*3+0] = ilower[0];
+      coords[7*3+1] = upper[1];
+      coords[7*3+2] = upper[2];
+      coords[8*3+0] = upper[0];
+      coords[8*3+1] = ilower[1];
+      coords[8*3+2] = upper[2];
+      coords[9*3+0] = upper[0];
+      coords[9*3+1] = ilower[1];
+      coords[9*3+2] = ilower[2];
+      coords[10*3+0] = ilower[0];
+      coords[10*3+1] = upper[1];
+      coords[10*3+2] = ilower[2];
+      coords[11*3+0] = upper[0];
+      coords[11*3+1] = upper[1];
+      coords[11*3+2] = ilower[2];
+      coords[12*3+0] = ilower[0];
+      coords[12*3+1] = ilower[1];
+      coords[12*3+2] = upper[2];
+      coords[13*3+0] = ilower[0];
+      coords[13*3+1] = ilower[1];
+      coords[13*3+2] = ilower[2];
+
+ 
+      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
+      mesh->setSieve(sieve);
+      Mesh::point_type p[nVertices];
+      Mesh::point_type f[nFaces];
+      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      for (int i = 0; i < nVertices; i++) {
+        p[i] = Mesh::point_type(i+nFaces);
+        mesh->setValue(markers, p[i], 1);
+      }
+      for (int i = 0; i < nFaces; i++) {
+        f[i] = Mesh::point_type(i);
+      }
+      int order = 0; 
+     //assemble the larger square sides
+      sieve->addArrow(p[0], f[0], order++);
+      sieve->addArrow(p[5], f[0], order++);
+      sieve->addArrow(p[2], f[0], order++);
+      sieve->addArrow(p[4], f[0], order++);
+      mesh->setValue(markers, f[0], 1);      
+
+      sieve->addArrow(p[0], f[1], order++);
+      sieve->addArrow(p[4], f[1], order++);
+      sieve->addArrow(p[1], f[1], order++);
+      sieve->addArrow(p[6], f[1], order++);
+      mesh->setValue(markers, f[1], 1);      
+
+      sieve->addArrow(p[4], f[2], order++);
+      sieve->addArrow(p[1], f[2], order++);
+      sieve->addArrow(p[3], f[2], order++);
+      sieve->addArrow(p[2], f[2], order++);
+      mesh->setValue(markers, f[2], 1);
+     
+      //assemble the L-shaped sides
+
+      sieve->addArrow(p[0], f[3], order++);
+      sieve->addArrow(p[12], f[3], order++);
+      sieve->addArrow(p[7], f[3], order++);
+      sieve->addArrow(p[5], f[3], order++);
+      mesh->setValue(markers, f[3], 1);
+
+      sieve->addArrow(p[0], f[4], order++);
+      sieve->addArrow(p[12],f[4], order++);
+      sieve->addArrow(p[8], f[4], order++);
+      sieve->addArrow(p[6], f[4], order++);
+      mesh->setValue(markers, f[4], 1);
+
+      sieve->addArrow(p[9], f[5], order++);
+      sieve->addArrow(p[1], f[5], order++);
+      sieve->addArrow(p[3], f[5], order++);
+      sieve->addArrow(p[11], f[5], order++);
+      mesh->setValue(markers, f[5], 1);
+
+      sieve->addArrow(p[9], f[6], order++);
+      sieve->addArrow(p[1], f[6], order++);
+      sieve->addArrow(p[6], f[6], order++);
+      sieve->addArrow(p[8], f[6], order++);
+      mesh->setValue(markers, f[6], 1);
+
+      sieve->addArrow(p[10], f[7], order++);
+      sieve->addArrow(p[2], f[7], order++);
+      sieve->addArrow(p[5], f[7], order++);
+      sieve->addArrow(p[7], f[7], order++);
+      mesh->setValue(markers, f[7], 1);
+
+      sieve->addArrow(p[10], f[8], order++);
+      sieve->addArrow(p[2], f[8], order++);
+      sieve->addArrow(p[3], f[8], order++);
+      sieve->addArrow(p[11], f[8], order++);
+      mesh->setValue(markers, f[8], 1);
+
+      //assemble the smaller square sides
+
+      sieve->addArrow(p[13], f[9], order++);
+      sieve->addArrow(p[10], f[9], order++);
+      sieve->addArrow(p[11], f[9], order++);
+      sieve->addArrow(p[9], f[9], order++);
+      mesh->setValue(markers, f[9], 1);
+
+      sieve->addArrow(p[12], f[10], order++);
+      sieve->addArrow(p[7], f[10], order++);
+      sieve->addArrow(p[10], f[10], order++);
+      sieve->addArrow(p[13], f[10], order++);
+      mesh->setValue(markers, f[10], 1);
+
+      sieve->addArrow(p[8], f[11], order++);
+      sieve->addArrow(p[12], f[11], order++);
+      sieve->addArrow(p[13], f[11], order++);
+      sieve->addArrow(p[9], f[11], order++);
+      mesh->setValue(markers, f[11], 1);
+
+      mesh->stratify();
+      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
+      Obj<Mesh::real_section_type> coordinates = mesh->getRealSection("coordinates");
+      //coordinates->view("coordinates");
+      return mesh;
+
+    }
+
+
     #undef __FUNCT__
     #define __FUNCT__ "createParticleInCubeBoundary"
     /*
