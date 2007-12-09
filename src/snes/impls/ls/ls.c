@@ -773,6 +773,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
 #endif
   if (initslope > 0.0)  initslope = -initslope;
   if (initslope == 0.0) initslope = -1.0;
+  ierr = PetscInfo1(snes,"Initslope %G \n",initslope);CHKERRQ(ierr);
 
   ierr = VecWAXPY(w,-1.0,y,x);CHKERRQ(ierr);
   if (snes->nfuncs >= snes->max_funcs) {

@@ -30,15 +30,16 @@ class Configure(config.base.Configure):
     self.arch          = framework.require('PETSc.utilities.arch',     self.setCompilers)
     self.petscdir      = framework.require('PETSc.utilities.petscdir', self.setCompilers)
     self.languages     = framework.require('PETSc.utilities.languages',self.setCompilers)
-    self.debugging     = framework.require('PETSc.utilities.debugging',self.setCompilers)        
+    self.debugging     = framework.require('PETSc.utilities.debugging',self.setCompilers)
+    self.debugging     = framework.require('PETSc.utilities.Make',     self)        
     self.compilers     = framework.require('config.compilers',         self)
     self.types         = framework.require('config.types',             self)
     self.headers       = framework.require('config.headers',           self)
     self.functions     = framework.require('config.functions',         self)
     self.libraries     = framework.require('config.libraries',         self)
-    if os.path.isdir(os.path.join('python', 'PETSc')):
+    if os.path.isdir(os.path.join('config', 'PETSc')):
       for d in ['utilities', 'packages']:
-        for utility in os.listdir(os.path.join('python', 'PETSc', d)):
+        for utility in os.listdir(os.path.join('config', 'PETSc', d)):
           (utilityName, ext) = os.path.splitext(utility)
           if not utilityName.startswith('.') and not utilityName.startswith('#') and ext == '.py' and not utilityName == '__init__':
             utilityObj              = self.framework.require('PETSc.'+d+'.'+utilityName, self)

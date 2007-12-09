@@ -801,15 +801,15 @@ checkTestCoverage:
 
 citool:
 	-@cd ${PETSC_DIR}; hg ct
-	-@cd ${PETSC_DIR}/python/BuildSystem; hg ct
+	-@cd ${PETSC_DIR}/config/BuildSystem; hg ct
 
 pull:
 	-@cd ${PETSC_DIR}; hg pull; hg update
-	-@cd ${PETSC_DIR}/python/BuildSystem; hg pull; hg update
+	-@cd ${PETSC_DIR}/config/BuildSystem; hg pull; hg update
 
 push:
 	-@cd ${PETSC_DIR}; hg push
-	-@cd ${PETSC_DIR}/python/BuildSystem; hg push
+	-@cd ${PETSC_DIR}/config/BuildSystem; hg push
 
 
 include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscrules

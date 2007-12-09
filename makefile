@@ -126,15 +126,6 @@ build:
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
-# Builds the Python wrappers
-python:
-	-@if [ -d "${PETSC_DIR}/src/python/PETSc" ]; then \
-	  echo "COMPILING PYTHON WRAPPERS"; \
-	  echo "========================================="; \
-	  PYTHONPATH=${PYTHONPATH}:${PETSC_DIR}/python/BuildSystem ./make.py --with-petsc-arch=${PETSC_ARCH} --ignoreWarnings 0; \
-	  echo "Completed building Python wrappers"; \
-	  echo "========================================="; \
-	fi
 #
 # Builds PETSc test examples for a given architecture
 #
@@ -307,8 +298,8 @@ SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint
              maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris  \
              maint/lex.py  maint/mapnameslatex.py maint/startnightly maint/startnightly.tao maint/submitPatch.py \
              maint/update-docs.py  maint/wwwindex.py maint/xcludebackup maint/xcludecblas maint/zap maint/zapall \
-             python/PETSc/Configure.py python/PETSc/Options.py \
-             python/PETSc/packages/*.py python/PETSc/utilities/*.py
+             config/PETSc/Configure.py config/PETSc/Options.py \
+             config/PETSc/packages/*.py config/PETSc/utilities/*.py
 
 
 # Builds all the documentation - should be done every night
@@ -516,16 +507,10 @@ exercises:
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
-# Make a tarball of all the Python code
-#   This is currently used to release to the Teragrid
-petscPython.tgz:
-	@tar cvzf $@ --exclude SCCS --exclude BitKeeper --dereference python/
-	-@scp $@ tg-login2.uc.teragrid.org:./
-
 .PHONY: info info_h all all_build build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml  allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
-        start_configure configure_petsc configure_clean python
+        start_configure configure_petsc configure_clean
 
 getsigs:
 	-@if [ ! -d src/sigs ]; then mkdir -p sigs; fi

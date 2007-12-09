@@ -169,9 +169,9 @@ def petsc_configure(configure_options):
 ================================================================================''')
           
   # Should be run from the toplevel
-  pythonDir = os.path.abspath(os.path.join('python'))
-  bsDir     = os.path.join(pythonDir, 'BuildSystem')
-  if not os.path.isdir(pythonDir):
+  configDir = os.path.abspath(os.path.join('config'))
+  bsDir     = os.path.join(configDir, 'BuildSystem')
+  if not os.path.isdir(configDir):
     raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
   if not os.path.isdir(bsDir):
     print '================================================================================='
@@ -199,7 +199,7 @@ def petsc_configure(configure_options):
       sys.exit(3)
       
   sys.path.insert(0, bsDir)
-  sys.path.insert(0, pythonDir)
+  sys.path.insert(0, configDir)
   import config.base
   import config.framework
   import cPickle
