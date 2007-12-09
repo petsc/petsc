@@ -55,7 +55,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "generateMesh_Triangle"
-      static Obj<Mesh> generateMesh(const Obj<Mesh>& boundary, const bool interpolate = false) {
+      static Obj<Mesh> generateMesh(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
         int                          dim   = 2;
         Obj<Mesh>                    mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
         const Obj<Mesh::sieve_type>& sieve = boundary->getSieve();
@@ -119,6 +119,9 @@ namespace ALE {
 
           if (createConvexHull) {
             args += "c";
+          }
+          if (constrained) {
+	    args = "zepQ";
           }
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
@@ -535,7 +538,7 @@ namespace ALE {
   namespace TetGen {
     class Generator {
     public:
-      static Obj<Mesh> generateMesh(const Obj<Mesh>& boundary, const bool interpolate = false) {
+      static Obj<Mesh> generateMesh(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
         typedef ALE::SieveAlg<Mesh> sieve_alg_type;
         const int         dim   = 3;
         Obj<Mesh>         mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
@@ -599,6 +602,10 @@ namespace ALE {
         if (rank == 0) {
           // Normal operation
           std::string args("pqezQ");
+          //constrained operation
+          if (constrained) {
+            args = "pezQ";
+          }
           // Just make tetrahedrons
 //           std::string args("efzV");
           // Adds a center point
@@ -868,12 +875,12 @@ namespace ALE {
   class Generator {
     typedef ALE::Mesh Mesh;
   public:
-    static Obj<Mesh> generateMesh(const Obj<Mesh>& boundary, const bool interpolate = false) {
+    static Obj<Mesh> generateMesh(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
       int dim = boundary->getDimension();
 
       if (dim == 1) {
 #ifdef PETSC_HAVE_TRIANGLE
-        return ALE::Triangle::Generator::generateMesh(boundary, interpolate);
+        return ALE::Triangle::Generator::generateMesh(boundary, interpolate, constrained);
 #else
         throw ALE::Exception("Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif

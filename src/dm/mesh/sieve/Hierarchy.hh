@@ -11,6 +11,7 @@
 #include <Distribution.hh>
 #include <Generator.hh>
 #include <SieveAlgorithms.hh>
+#include <Selection.hh>
 //helper functions:
 
 bool PointIsInElement(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type element, double * point);
@@ -107,7 +108,7 @@ double Curvature(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type v) {
         ALE::Mesh::sieve_type::coneSequence::iterator t_iter = tips->begin();
         ALE::Mesh::sieve_type::coneSequence::iterator t_iter_exclude = tips->begin();
         ALE::Mesh::sieve_type::coneSequence::iterator t_iter_end = tips->end();
-        ALE::Obj<ALE::Mesh::sieve_type::supportSet> face;
+        ALE::Obj<ALE::Mesh::sieve_type::supportSet> face = new ALE::Mesh::sieve_type::supportSet();
         while (t_iter_exclude != t_iter_end) {
           face->clear();
           if (*t_iter_exclude != v) {
@@ -758,6 +759,7 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
 
 #endif
 
+
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateHierarchyLabel_Link"
 PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLevels, Mesh * outmeshes, Mat * outmats = PETSC_NULL, double curvatureCutoff = 1.0) {
@@ -779,7 +781,7 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
   int v_bound;
   
   std::list<ALE::Mesh::point_type> comparison_list;
-
+  std::list<ALE::Mesh::point_type> coarsen_candidates;
   std::list<ALE::Mesh::point_type> support_list;
   
   ierr = MeshGetMesh(finemesh, m);CHKERRQ(ierr);
@@ -826,13 +828,16 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
     v_iter++;
   }
   for (int curLevel = nLevels-1; curLevel > 0; curLevel--) {
+    coarsen_candidates.clear();
     nComparisons = 0;
     current_beta = pow(beta, curLevel);
     //recopy the first two levels of the sieve into a new sieve.
     ALE::Obj<ALE::Mesh::sieve_type> coarsen_sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
     ALE::Obj<ALE::Mesh> coarsen_mesh = new ALE::Mesh(m->comm(), m->debug());
     coarsen_mesh->setSieve(coarsen_sieve);
-    ALE::Obj<ALE::Mesh::label_type> coarsen_candidates = m->createLabel("candidates");
+    //INEFFICIENT!
+    coarsen_candidates.clear();
+    //ALE::Obj<ALE::Mesh::label_type> coarsen_candidates = m->createLabel("candidates");
     v_iter = vertices->begin();
     v_iter_end = vertices->end();
     if (interplevels > 1) { //interpolated case; merely copy the edges out
@@ -886,7 +891,8 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
         }
       }
       if (m->getValue(hdepth, *v_iter) == 0 && (m->getValue(boundary, *v_iter) == 0)) {
-        m->setValue(coarsen_candidates, *v_iter, 1);
+        //m->setValue(coarsen_candidates, *v_iter, 1);
+        coarsen_candidates.push_front(*v_iter);
       } 
       v_iter++;
     }
@@ -932,7 +938,7 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
         dist = sqrt(dist);
         if (dist < current_beta*(n_space + c_space)) {
           //remove the point and this edge from existence and link its neighbors up with the eliminating point, adding the neighboring edges to THE LIST.
-          m->setValue(coarsen_candidates, c_point, 0);
+          //m->setValue(coarsen_candidates, c_point, 0);
 
           //Replace this with a more intelligent topology reconnection eventually.
 
@@ -965,12 +971,19 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
       }
     }
 
-    ALE::Obj<ALE::Mesh::label_sequence> new_candidate_options = m->getLabelStratum("candidates", 1);
-    ALE::Mesh::point_type new_candidate_point = *new_candidate_options->begin();
-    if (new_candidate_options->size() == 0) {
+
+    //KILL THIS IT'S INEFFICENT  
+    //ALE::Obj<ALE::Mesh::label_sequence> new_candidate_options = m->getLabelStratum("candidates", 1);
+    ALE::Mesh::point_type new_candidate_point = *coarsen_candidates.begin();
+    coarsen_candidates.pop_front();
+    while (coarsen_sieve->hasPoint(new_candidate_point) != PETSC_TRUE && coarsen_candidates.size() > 0) {
+      new_candidate_point = *coarsen_candidates.begin();
+      coarsen_candidates.pop_front();
+    }
+    if (coarsen_candidates.size() == 0) {
       notDone = false;
     } else { //add this point to the mesh, adding its neighbors to the comparison queue.
-      m->setValue(coarsen_candidates, new_candidate_point, 0);
+      //m->setValue(coarsen_candidates, new_candidate_point, 0);
       m->setValue(hdepth, new_candidate_point, curLevel);
       ALE::Obj<ALE::Mesh::sieve_type::supportSequence> neighbor_edges = coarsen_sieve->support(new_candidate_point);
       ALE::Mesh::sieve_type::supportSequence::iterator ne_iter = neighbor_edges->begin();
@@ -1000,7 +1013,8 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
         }
       }
       if ((m->getValue(hdepth, *v_iter) == 0) && (m->getValue(boundary, *v_iter) == 1) && (m->depth(*v_iter) == 0)) {
-        m->setValue(coarsen_candidates, *v_iter, 1);
+        //m->setValue(coarsen_candidates, *v_iter, 1);
+        coarsen_candidates.push_front(*v_iter);
       }  
       v_iter++;
     }
@@ -1044,7 +1058,7 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
         dist = sqrt(dist);
         if (dist < current_beta*(n_space + c_space)) {
           //remove the point and this edge from existence and link its neighbors up with the eliminating point, adding the neighboring edges to THE LIST.
-          m->setValue(coarsen_candidates, c_point, 0);
+          //m->setValue(coarsen_candidates, c_point, 0);
           ALE::Obj<ALE::Mesh::sieve_type::supportSequence> move_these_edges = coarsen_sieve->support(c_point);
           ALE::Mesh::sieve_type::supportSequence::iterator mte_iter = move_these_edges->begin();
           ALE::Mesh::sieve_type::supportSequence::iterator mte_iter_end = move_these_edges->end();
@@ -1073,14 +1087,20 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
       }
     }
 
-    ALE::Obj<ALE::Mesh::label_sequence> new_candidate_options = m->getLabelStratum("candidates", 1);
-    ALE::Mesh::label_sequence::iterator new_candidate = new_candidate_options->begin();
-    if (new_candidate_options->size() == 0) {
+    //ALE::Obj<ALE::Mesh::label_sequence> new_candidate_options = m->getLabelStratum("candidates", 1);
+
+    ALE::Mesh::point_type new_candidate_point = *coarsen_candidates.begin();
+    coarsen_candidates.pop_front();
+    while (coarsen_sieve->hasPoint(new_candidate_point) && coarsen_candidates.size() > 0) {
+      new_candidate_point = *coarsen_candidates.begin();
+      coarsen_candidates.pop_front();
+    }
+    if (coarsen_candidates.size() == 0) {
       notDone = false;
     } else { //add this point to the mesh, adding its neighbors to the comparison queue.
-      m->setValue(coarsen_candidates, *new_candidate, 0);
-      m->setValue(hdepth, *new_candidate, curLevel);
-      ALE::Obj<ALE::Mesh::sieve_type::supportSequence> neighbor_edges = coarsen_sieve->support(*new_candidate);
+      //m->setValue(coarsen_candidates, *new_candidate, 0);
+      m->setValue(hdepth, new_candidate_point, curLevel);
+      ALE::Obj<ALE::Mesh::sieve_type::supportSequence> neighbor_edges = coarsen_sieve->support(new_candidate_point);
       ALE::Mesh::sieve_type::supportSequence::iterator ne_iter = neighbor_edges->begin();
       ALE::Mesh::sieve_type::supportSequence::iterator ne_iter_end = neighbor_edges->end();
       while (ne_iter != ne_iter_end) {

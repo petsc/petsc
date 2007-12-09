@@ -11,6 +11,7 @@ typedef struct {
   char baseFilename[2048];
   PetscInt flips;
   PetscTruth dolfin;
+  PetscTruth generate;
 } Options;
 
 #undef  __FUNCT__ 
@@ -21,11 +22,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options * options) {
   PetscFunctionBegin;
   options->dolfin = PETSC_FALSE;
   options->dim = 2;
+  options->generate = PETSC_FALSE;
   options->debug = false;
-  options->useZeroBase = PETSC_TRUE;
-  options->flips = 1000000;
-  ierr = PetscStrcpy(options->baseFilename, "data/texas");CHKERRQ(ierr);
-
+  options->useZeroBase = PETSC_FALSE;
+  options->flips = 100000000;
+  ierr = PetscStrcpy(options->baseFilename, "data/flip_test");CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-generate", "generates a basic mesh for testing.", "mesh_surgery.cxx", options->generate, &options->generate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(comm, "", "Options:", "mesh_surgery.cxx");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-dim", "The Mesh Dimension", "mesh_surgery.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTruth("-use_zero_base", "Use zero-base feature indexing", "mesh_surgery.cxx", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
@@ -44,15 +46,33 @@ int main (int argc, char * argv[]) {
   MPI_Comm comm;
   Options options;
   PetscErrorCode ierr;
-
+  Mesh mesh;
   PetscFunctionBegin;
   try {
     ierr = PetscInitialize(&argc, &argv, (char *) 0, NULL);CHKERRQ(ierr);
     comm = PETSC_COMM_WORLD;
-
+    double upper_coords[3] = {1.0, 1.0, 1.0};
+    double lower_coords[3] = {0.0, 0.0, 0.0};
+    int faces[3] = {1, 1, 1};
     ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
-    ALE::Obj<ALE::Mesh> m = ALE::PCICE::Builder::readMesh(comm, options.dim, options.baseFilename, options.useZeroBase, false, options.debug);
-    Mesh mesh;
+    ALE::Obj<ALE::Mesh> m;
+    ALE::Obj<ALE::Mesh> bound_m;
+    double refinementLimit;
+    if (!options.generate) {
+      m = ALE::PCICE::Builder::readMesh(comm, options.dim, options.baseFilename, options.useZeroBase, false, options.debug);
+    } else {
+      refinementLimit = 0.125;
+      if (options.dim == 2) {
+        bound_m = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, upper_coords, lower_coords, faces);
+      } else if (options.dim == 3) {
+        refinementLimit = 0.01;
+        bound_m = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, upper_coords, lower_coords, faces);
+      }
+      
+      m = ALE::Generator::refineMesh(ALE::Generator::generateMesh(bound_m, PETSC_FALSE), refinementLimit, PETSC_FALSE);
+      
+    }
+
     MeshCreate(comm, &mesh);CHKERRQ(ierr);
     MeshSetMesh(mesh, m);
     ierr = MeshIDBoundary(mesh);
@@ -69,7 +89,9 @@ int main (int argc, char * argv[]) {
       if (m->getValue(boundary, *v_iter) != 1) {
         int_vertices.insert(*v_iter);
       } else {
-        if (Curvature(m, *v_iter) < 0.5 && m->getDimension() == 2) {
+        double curvature = Curvature(m, *v_iter);
+        if (curvature < 0.5 && options.dim == 2) {
+          //PetscPrintf(m->comm(), "Curvature: %f\n", curvature);
           int_vertices.insert(*v_iter);
         }
       }
@@ -102,16 +124,19 @@ int main (int argc, char * argv[]) {
     }
     //next: the boundary! check the curvature and go from there
     m->stratify();
+    PetscPrintf(m->comm(), "Size of the mesh: %d vertices, %d faces\n", m->depthStratum(0)->size(), m->heightStratum(0)->size());
     //check consistency:
     cells = m->heightStratum(0);
     c_iter = cells->begin();
     c_iter_end = cells->end();
+    PetscPrintf(m->comm(), "Checking Consistency\n");
     while (c_iter != c_iter_end) {
-      if (m->getSieve()->cone(*c_iter)->size() != 3) {
+      if ((int)m->getSieve()->cone(*c_iter)->size() != m->getDimension() + 1) {
         PetscPrintf(m->comm(), "Bad Cell: %d\n", *c_iter);
       }
       c_iter++;
     }
+    PetscPrintf(m->comm(), "Writing VTK\n");
     PetscViewer viewer;
     PetscViewerCreate(m->comm(), &viewer);
     PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
