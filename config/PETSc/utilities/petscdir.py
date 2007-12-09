@@ -135,7 +135,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
     else:
       self.logPrint('This is a tarball installation')
       self.isClone = 0
-    if self.isClone and not os.path.exists(os.path.join(self.dir, 'maint')):
+    if self.isClone and not os.path.exists(os.path.join(self.dir, 'bin', 'maint')):
       raise RuntimeError('Your petsc-dev directory is broken, remove the entire directory and start all over again')
     return
 

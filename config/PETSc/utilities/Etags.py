@@ -34,7 +34,7 @@ class Configure(config.base.Configure):
         if pd[-1]=='/': pd = pd[:-1] # etags chokes if there's a trailing /
         self.framework.log.write('           Running '+self.framework.etags+' to generate TAGS files\n')
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand('maint/generateetags.py', timeout = 15*60.0, log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand('bin/maint/generateetags.py', timeout = 15*60.0, log = self.framework.log)
           self.framework.actions.addArgument('PETSc', 'File creation', 'Generated etags files in '+pd)
         except RuntimeError, e:
           self.framework.log.write('*******Error generating etags files: '+str(e)+'*******\n')

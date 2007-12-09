@@ -69,7 +69,7 @@ class Configure(PETSc.package.Package):
         self.framework.log.write('           Running '+self.bfort+' to generate fortran stubs\n')
         try:
           import sys
-          sys.path.insert(0, os.path.abspath('maint'))
+          sys.path.insert(0, os.path.abspath(os.path.join('bin','maint')))
           import generatefortranstubs
           del sys.path[0]
           generatefortranstubs.main(self.bfort)
