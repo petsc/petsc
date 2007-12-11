@@ -279,6 +279,7 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
     PetscTruth          flag;
 
     //ierr = SectionRealToVec(options->exactSol.section, mesh, SCATTER_FORWARD, DMMGGetx(dmmg));CHKERRQ(ierr);
+    // CHECK options->paramName = "exactSolution";
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
     snes = DMMGGetSNES(dmmg);
     ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
