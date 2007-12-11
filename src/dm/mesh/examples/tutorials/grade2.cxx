@@ -289,8 +289,17 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
     if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
     if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
+    SectionReal sol;
 
+    ierr = MeshGetSectionReal(mesh, "default", &sol);CHKERRQ(ierr);
+    ierr = SectionRealView(sol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = CheckError((DM) mesh, sol, options);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(sol);CHKERRQ(ierr);
     ierr = IterateStokes(dmmg, options);CHKERRQ(ierr);
+    ierr = MeshGetSectionReal((Mesh) options->paramDM, "default", &sol);CHKERRQ(ierr);
+    ierr = SectionRealView(sol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = CheckError(options->paramDM, sol, options);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(sol);CHKERRQ(ierr);
     ierr = CheckStokesConvergence(dmmg, &iterate, options);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -581,8 +590,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->interpolate      = PETSC_TRUE;
   options->refinementLimit  = 0.0;
   options->radius           = 0.5;
-  options->r                =  1.0e-3;
-  options->rho              = -1.0e-3;
+  options->r                = -1.0e-3;
+  options->rho              =  1.0e-3;
   options->mu               = 1;
   options->alpha            = 1;
   options->square           = PETSC_FALSE;
