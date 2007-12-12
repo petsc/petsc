@@ -234,6 +234,7 @@ int main(int argc, char *argv[])
       //ierr = SolveTransport(transportDM, &options);CHKERRQ(ierr);
       //ierr = CheckStoppingCriteria(stokesDM, &iterate, &options);CHKERRQ(ierr);
     }
+    PetscPrintf(comm, "Writing stokesDM");
     ierr = WriteSolution(stokesDM, &options);CHKERRQ(ierr);
     ierr = DMMGDestroy(stokes);CHKERRQ(ierr);
     ierr = DestroyMesh(stokesDM, transportDM, &options);CHKERRQ(ierr);
@@ -591,8 +592,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->interpolate      = PETSC_TRUE;
   options->refinementLimit  = 0.0;
   options->radius           = 0.5;
-  options->r                = -1.0e-3;
-  options->rho              =  1.0e-3;
+  options->r                = -1.0e5;
+  options->rho              =  1.0e5;
   options->mu               = 1;
   options->alpha            = 1;
   options->square           = PETSC_FALSE;

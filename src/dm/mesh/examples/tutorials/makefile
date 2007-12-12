@@ -9,6 +9,7 @@ EXAMPLESF       = ex12f90.F90 mex12f90.F90
 MANSEC          = DA
 NP              = 1
 DISPLAY         = :0.0
+ORDER           = 4
 EXTRA_ARGS      = -mesh_view_vtk -vec_view_vtk -mat_type umfpack -pc_type lu
 
 include ${PETSC_DIR}/conf/base
@@ -137,7 +138,7 @@ rungrade2test:
 	${MPIEXEC} -np ${NP} ./grade2test ${EXTRA_ARGS}
 
 rungrade2:
-	-@${MPIEXEC} -np ${NP} ./grade2 ${EXTRA_ARGS}
+	${MPIEXEC} -np ${NP} ./grade2 ${EXTRA_ARGS}
 
 debuggrade2:
 	-@${MPIEXEC} -np ${NP} ./grade2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
