@@ -178,12 +178,12 @@ def petsc_configure(configure_options):
     print '''++ Could not locate BuildSystem in %s/python.''' % os.getcwd()
     print '''++ Downloading it using "hg clone http://hg.mcs.anl.gov/petsc/BuildSystem %s/python/BuildSystem"''' % os.getcwd()
     print '================================================================================='
-    (status,output) = commands.getstatusoutput('hg clone http://hg.mcs.anl.gov/petsc/BuildSystem python/BuildSystem')
+    (status,output) = commands.getstatusoutput('hg clone http://hg.mcs.anl.gov/petsc/BuildSystem config/BuildSystem')
     if status:
       if output.find('ommand not found') >= 0:
         print '================================================================================='
         print '''** Unable to locate hg (Mercurial) to download BuildSystem; make sure hg is in your path'''
-        print '''** or manually copy BuildSystem to $PETSC_DIR/python/BuildSystem from a machine where'''
+        print '''** or manually copy BuildSystem to $PETSC_DIR/config/BuildSystem from a machine where'''
         print '''** you do have hg installed and can clone BuildSystem. '''
         print '================================================================================='
       elif output.find('Cannot resolve host') >= 0:
