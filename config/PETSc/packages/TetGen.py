@@ -173,7 +173,7 @@ class Configure(PETSc.package.Package):
 
     # Configure ParMetis 
     g = open(makeinc,'w')
-    g.write('include '+os.path.join(self.petscdir.dir, 'conf', 'rules.shared.basic')+'\n')
+    g.write('include '+os.path.join(self.petscdir.dir, 'conf', 'rules')+'\n')
     g.write('SHELL            = '+self.programs.SHELL+'\n')
     g.write('CP               = '+self.programs.cp+'\n')
     g.write('RM               = '+self.programs.RM+'\n')
