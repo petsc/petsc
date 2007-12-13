@@ -675,9 +675,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
       }
       ierr = VecNormBegin(g,NORM_2,gnorm);CHKERRQ(ierr);
       if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
-      ierr = VecNormBegin(w,NORM_2,ynorm);CHKERRQ(ierr);
+      ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(g,NORM_2,gnorm);CHKERRQ(ierr);
-      ierr = VecNormEnd(w,NORM_2,ynorm);CHKERRQ(ierr);
+      ierr = VecNormEnd(y,NORM_2,ynorm);CHKERRQ(ierr);
     }
   }
   ierr = PetscLogEventEnd(SNES_LineSearch,snes,x,f,g);CHKERRQ(ierr);
@@ -849,9 +849,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchQuadratic(SNES snes,void *lsctx
         PetscFunctionReturn(0);
       }
       ierr = VecNormBegin(g,NORM_2,gnorm);CHKERRQ(ierr);
-      ierr = VecNormBegin(w,NORM_2,ynorm);CHKERRQ(ierr);
+      ierr = VecNormBegin(y,NORM_2,ynorm);CHKERRQ(ierr);
       ierr = VecNormEnd(g,NORM_2,gnorm);CHKERRQ(ierr);
-      ierr = VecNormEnd(w,NORM_2,ynorm);CHKERRQ(ierr);
+      ierr = VecNormEnd(y,NORM_2,ynorm);CHKERRQ(ierr);
       if (*gnorm != *gnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
     }
   }
