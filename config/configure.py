@@ -169,16 +169,16 @@ def petsc_configure(configure_options):
 ================================================================================''')
           
   # Should be run from the toplevel
-  configDir = os.path.abspath(os.path.join('config'))
+  configDir = os.path.abspath('config')
   bsDir     = os.path.join(configDir, 'BuildSystem')
   if not os.path.isdir(configDir):
     raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
   if not os.path.isdir(bsDir):
     print '================================================================================='
-    print '''++ Could not locate BuildSystem in %s/python.''' % os.getcwd()
-    print '''++ Downloading it using "hg clone http://hg.mcs.anl.gov/petsc/BuildSystem %s/config/BuildSystem"''' % os.getcwd()
+    print '''++ Could not locate BuildSystem in %s.''' % configDir
+    print '''++ Downloading it using "hg clone http://hg.mcs.anl.gov/petsc/BuildSystem %s"''' % bsDir
     print '================================================================================='
-    (status,output) = commands.getstatusoutput('hg clone http://hg.mcs.anl.gov/petsc/BuildSystem config/BuildSystem')
+    (status,output) = commands.getstatusoutput('hg clone http://petsc.cs.iit.edu/petsc/BuildSystem '+ bsDir)
     if status:
       if output.find('ommand not found') >= 0:
         print '================================================================================='
