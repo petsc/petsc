@@ -33,7 +33,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArchType(char str[],size_t slen)
   ierr = PetscStrncpy(str,PETSC_ARCH_NAME,slen-1);CHKERRQ(ierr);
   str[slen-1] = 0;
 #else
-#error "bmake/$PETSC_ARCH/petscconf.h is missing PETSC_ARCH_NAME"
+#error "$PETSC_ARCH/include/petscconf.h is missing PETSC_ARCH_NAME"
 #endif
   PetscFunctionReturn(0);
 }

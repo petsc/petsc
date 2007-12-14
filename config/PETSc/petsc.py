@@ -69,7 +69,7 @@ class Configure(config.base.Configure):
 
     petscConf = None
     for (name, (petscDir, petscArch)) in self.getLocations():
-      petscPythonDir = os.path.join(petscDir, 'python')
+      petscPythonDir = os.path.join(petscDir, 'config')
       sys.path.append(petscPythonDir)
       confPath = os.path.join(petscDir, petscArch,'conf')
       petscConf = framework.loadFramework(confPath)

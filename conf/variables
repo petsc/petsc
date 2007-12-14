@@ -115,4 +115,4 @@ SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes 
 # The following include files set customized site, optimization, and version
 # options.
 #
-include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscconf
+include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables
