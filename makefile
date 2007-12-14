@@ -282,7 +282,7 @@ install_docs:
 # Builds all etags files
 alletags:
 	-@bin/maint/generateetags.py
-	-@find python -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
+	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
 
 allfortranstubs:
 	-@bin/maint/generatefortranstubs.py ${BFORT}

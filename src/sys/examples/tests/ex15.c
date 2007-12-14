@@ -10,8 +10,8 @@
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  int  ierr,choice;
-  char *choices[] = {"Say hello","Say goodbye"};
+  int        ierr,choice;
+  const char *choices[] = {"Say hello","Say goodbye"};
 
   PetscInitialize(&argc,&argv,(char *)0,0);
   ierr = PetscPopUpSelect(PETSC_COMM_WORLD,PETSC_NULL,"Select one of ",2,choices,&choice);CHKERRQ(ierr);
