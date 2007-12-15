@@ -23,10 +23,10 @@ all:
       echo "********************************************************************"; \
       exit 1; fi
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
-	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/make_log
-	-@egrep -i "( error | error:)" ${PETSC_ARCH}/make_log > /dev/null; if [ "$$?" = "0" ]; then \
+	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/conf/make_log
+	-@egrep -i "( error | error:)" ${PETSC_ARCH}/conf/make_log > /dev/null; if [ "$$?" = "0" ]; then \
            echo "********************************************************************"; \
-           echo "  Error during compile, check ${PETSC_ARCH}/make_log"; \
+           echo "  Error during compile, check ${PETSC_ARCH}/conf/make_log"; \
            echo "  Send it and configure.log to petsc-maint@mcs.anl.gov";\
            echo "********************************************************************"; \
            exit 1; fi
