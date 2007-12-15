@@ -78,16 +78,10 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
 
     import sys
 
-    auxDir = None
-    searchDirs = [os.path.join(self.dir, 'config'), os.path.join(self.dir, 'bin', 'config')] + sys.path
-    for dir in searchDirs:
-      if os.path.isfile(os.path.join(dir, 'config.sub')):
-        auxDir      = dir
-        configSub   = os.path.join(auxDir, 'config.sub')
-        configGuess = os.path.join(auxDir, 'config.guess')
-        break
-    if auxDir is None:
-      raise RuntimeError('Unable to locate config.sub in '+str(searchDirs)+'.\nYour PETSc directory is incomplete.\n Get PETSc again')
+    auxDir      = os.path.join(self.dir,'config','configarch')
+    configSub   = os.path.join(auxDir, 'config.sub')
+    configGuess = os.path.join(auxDir, 'config.guess')
+    
     try:
       host   = config.base.Configure.executeShellCommand(self.shell+' '+configGuess, log = self.framework.log)[0]
       output = config.base.Configure.executeShellCommand(self.shell+' '+configSub+' '+host, log = self.framework.log)[0]
