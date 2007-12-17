@@ -133,6 +133,10 @@ class Logger(args.ArgumentProcessor):
       log = Logger.defaultLog
     return log
 
+  def closeLog(self):
+    '''Closes the log file'''
+    self.log.close()
+
   def getLinewidth(self):
     global LineWidth
     if not hasattr(self, '_linewidth'):
