@@ -155,7 +155,6 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
   for(i = 0; i < maxits; i++) {
     /* Update guess */
     ierr = VecCopy(F, X);CHKERRQ(ierr);
-    ierr = VecCopy(X, snes->vec_sol_update);CHKERRQ(ierr);
     /* Compute F(X^{new}) */
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);CHKFPQ(fnorm);
