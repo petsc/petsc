@@ -17,6 +17,9 @@ PetscErrorCode SNESDestroy_Picard(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (snes->vec_sol_update) {
+    ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
+  }
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -35,7 +38,10 @@ PetscErrorCode SNESDestroy_Picard(SNES snes)
 #define __FUNCT__ "SNESSetUp_Picard"
 PetscErrorCode SNESSetUp_Picard(SNES snes)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = VecDuplicate(snes->vec_sol, &snes->vec_sol_update);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -118,7 +124,8 @@ static PetscErrorCode SNESView_Picard(SNES snes, PetscViewer viewer)
 PetscErrorCode SNESSolve_Picard(SNES snes)
 { 
   /* SNES_Picard   *neP = (SNES_Picard *) snes->data; */
-  Vec            X, F;
+  Vec            X, Y, F;
+  PetscReal      alpha = 1.0;
   PetscReal      fnorm;
   PetscInt       maxits, i;
   PetscErrorCode ierr;
@@ -126,9 +133,10 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
   PetscFunctionBegin;
   snes->reason = SNES_CONVERGED_ITERATING;
 
-  maxits = snes->max_its;	/* maximum number of iterations */
-  X      = snes->vec_sol;	/* solution vector */
-  F      = snes->vec_func;	/* residual vector */
+  maxits = snes->max_its;	     /* maximum number of iterations */
+  X      = snes->vec_sol;	     /* X^n */
+  Y      = snes->vec_sol_update; /* \tilde X */
+  F      = snes->vec_func;       /* residual vector */
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -154,7 +162,9 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
 
   for(i = 0; i < maxits; i++) {
     /* Update guess */
-    ierr = VecCopy(F, X);CHKERRQ(ierr);
+    ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
+    /* X^{n+1} = (1 - \alpha) X^n + \alpha Y */
+    ierr = VecAXPBY(X, alpha, 1 - alpha, Y);CHKERRQ(ierr);
     /* Compute F(X^{new}) */
     ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);CHKFPQ(fnorm);
