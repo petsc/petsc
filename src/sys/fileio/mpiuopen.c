@@ -139,7 +139,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPClose(MPI_Comm comm,FILE *fd)
     char buf[1024];
     while (fgets(buf,1024,fd)) {;} /* wait till it prints everything */
     err = pclose(fd);
-    if (err) SETERRQ(PETSC_ERR_SYS,"pclose() failed on process");    
+    if (err) SETERRQ1(PETSC_ERR_SYS,"pclose() failed on process %D",err);    
   }
   PetscFunctionReturn(0);
 }

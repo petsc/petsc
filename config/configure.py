@@ -222,6 +222,9 @@ def petsc_configure(configure_options):
       if hasattr(i,'postProcess'):
         i.postProcess()
     framework.logClear()
+    framework.closeLog()
+    import shutil
+    shutil.move(framework.logName,os.path.join(framework.arch,'conf',framework.logName))
     return 0
   except (RuntimeError, config.base.ConfigureSetupError), e:
     emsg = str(e)
