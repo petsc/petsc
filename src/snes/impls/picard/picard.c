@@ -123,7 +123,7 @@ static PetscErrorCode SNESView_Picard(SNES snes, PetscViewer viewer)
 #define __FUNCT__ "SNESSolve_Picard"
 PetscErrorCode SNESSolve_Picard(SNES snes)
 { 
-  /* SNES_Picard   *neP = (SNES_Picard *) snes->data; */
+  SNES_Picard   *neP = (SNES_Picard *) snes->data;
   Vec            X, Y, F;
   PetscReal      alpha = 1.0;
   PetscReal      fnorm;
@@ -161,13 +161,26 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   for(i = 0; i < maxits; i++) {
-    /* Update guess */
-    ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
-    /* X^{n+1} = (1 - \alpha) X^n + \alpha Y */
-    ierr = VecAXPBY(X, alpha, 1 - alpha, Y);CHKERRQ(ierr);
-    /* Compute F(X^{new}) */
-    ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
-    ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);CHKFPQ(fnorm);
+    PetscTruth lsSuccess = PETSC_TRUE;
+    PetscReal  dummyNorm;
+
+    if (0) {
+      /* Update guess Y = X^n - F(X^n) */
+      ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
+      /* X^{n+1} = (1 - \alpha) X^n + \alpha Y */
+      ierr = VecAXPBY(X, alpha, 1 - alpha, Y);CHKERRQ(ierr);
+      /* Compute F(X^{new}) */
+      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);CHKFPQ(fnorm);
+    } else {
+      ierr = (*neP->LineSearch)(snes, PETSC_NULL/*neP->lsP*/,  X,  F,  F,  F,  X,  fnorm,  &dummyNorm,  &fnorm,  &lsSuccess);CHKERRQ(ierr);
+    }
+    if (!lsSuccess) {
+      if (++snes->numFailures >= snes->maxFailures) {
+        snes->reason = SNES_DIVERGED_LS_FAILURE;
+        break;
+      }
+    }
     if (snes->nfuncs >= snes->max_funcs) {
       snes->reason = SNES_DIVERGED_FUNCTION_COUNT;
       break;
@@ -194,6 +207,45 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
   PetscFunctionReturn(0);
 }
 
+typedef PetscErrorCode (*FCN1)(SNES,Vec,Vec,void*,PetscTruth*);                 /* force argument to next function to not be extern C*/
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "SNESLineSearchSetPreCheck_Picard"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck_Picard(SNES snes, FCN1 func, void *checkctx)
+{
+  PetscFunctionBegin;
+  ((SNES_Picard *)(snes->data))->precheckstep = func;
+  ((SNES_Picard *)(snes->data))->precheck     = checkctx;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscTruth*); /* force argument to next function to not be extern C*/
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "SNESLineSearchSet_Picard"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSet_Picard(SNES snes, FCN2 func, void *lsctx)
+{
+  PetscFunctionBegin;
+  ((SNES_Picard *)(snes->data))->LineSearch = func;
+  ((SNES_Picard *)(snes->data))->lsP        = lsctx;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+typedef PetscErrorCode (*FCN3)(SNES,Vec,Vec,Vec,void*,PetscTruth*,PetscTruth*); /* force argument to next function to not be extern C*/
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "SNESLineSearchSetPostCheck_Picard"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPostCheck_Picard(SNES snes, FCN3 func, void *checkctx)
+{
+  PetscFunctionBegin;
+  ((SNES_Picard *)(snes->data))->postcheckstep = func;
+  ((SNES_Picard *)(snes->data))->postcheck     = checkctx;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /*MC
   SNESPICARD - Picard nonlinear solver that uses successive substitutions
 
@@ -217,9 +269,27 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Picard(SNES snes)
   snes->ops->solve	        = SNESSolve_Picard;
 
   ierr = PetscNewLog(snes, SNES_Picard, &neP);CHKERRQ(ierr);
-  snes->data = (void*)neP;
+  snes->data = (void*) neP;
   neP->type  = 0;
+  neP->alpha		 = 1.e-4;
+  neP->maxstep		 = 1.e8;
+  neP->steptol       = 1.e-12;
+  neP->LineSearch    = SNESLineSearchNo;
+  neP->lsP           = PETSC_NULL;
+  neP->postcheckstep = PETSC_NULL;
+  neP->postcheck     = PETSC_NULL;
+  neP->precheckstep  = PETSC_NULL;
+  neP->precheck      = PETSC_NULL;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C",
+					   "SNESLineSearchSet_Picard",
+					   SNESLineSearchSet_Picard);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPostCheck_C",
+					   "SNESLineSearchSetPostCheck_Picard",
+					   SNESLineSearchSetPostCheck_Picard);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPreCheck_C",
+					   "SNESLineSearchSetPreCheck_Picard",
+					   SNESLineSearchSetPreCheck_Picard);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
