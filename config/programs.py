@@ -63,7 +63,10 @@ class Configure(config.base.Configure):
       f = file('diff2', 'w')
       f.write('diff  \n')
       f.close()
-      (out,err,status) = Configure.executeShellCommand(self.diff+' -w diff1 diff2')
+      try:
+        (out,err,status) = Configure.executeShellCommand(self.diff+' -w diff1 diff2')
+      except RuntimeError:
+        status = 1
       os.unlink('diff1')
       os.unlink('diff2')
       if not status:    
