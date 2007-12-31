@@ -15,6 +15,7 @@
    1) get rid of all memory bleeding
    2) fix PETSc/interface so that it gets if the matrix is symmetric from the matrix
       rather than having the sp flag for PC_SPAI
+   3) fix to set the block size based on the matrix block size 
 
 */
 
@@ -167,7 +168,6 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"    cache_size %d\n",ispai->cache_size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    verbose %d\n",   ispai->verbose);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    sp %d\n",        ispai->sp);CHKERRQ(ierr);
-
   }
   PetscFunctionReturn(0);
 }
@@ -633,7 +633,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC pc)
 
   PetscFunctionBegin;
   ierr               = PetscNewLog(pc,PC_SPAI,&ispai);CHKERRQ(ierr);
-  pc->data           = (void*)ispai;
+  pc->data           = ispai;
 
   pc->ops->destroy         = PCDestroy_SPAI;
   pc->ops->apply           = PCApply_SPAI;
@@ -699,7 +699,8 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   PetscErrorCode          ierr;
   const int               *cols;
   const double            *vals;
-  int                     *num_ptr,n,mnl,nnl,rank,size,nz,rstart,rend;
+  int                     *num_ptr,n,mnl,nnl,nz,rstart,rend;
+  PetscMPIInt             size,rank;
   struct compressed_lines *rows;
 
   PetscFunctionBegin;
@@ -748,7 +749,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     M->lines = new_compressed_lines(M->mnls[rank],0);CHKERRQ(ierr);
   }
 
-  rows     = M->lines;
+  rows = M->lines;
 
   /* Determine the mapping from global indices to pointers */
   ierr       = PetscMalloc(M->n*sizeof(int),&mapping);CHKERRQ(ierr);
@@ -826,7 +827,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     for (i=rstart; i<rend; i++) {
       row_indx = i-rstart;
       len      = num_ptr[row_indx];
-      rows->rptrs[row_indx]     = (int*)malloc(len*sizeof(int));
+      rows->rptrs[row_indx] = (int*)malloc(len*sizeof(int));
     }
 
     /* copy the matrix (i.e., the structure) */
@@ -838,7 +839,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 	len = rows->rlen[row_indx]++;
 	rows->rptrs[row_indx][len] = mapping[col];
       }
-      ierr     = MatRestoreRow(AT,i,&nz,&cols,&vals);CHKERRQ(ierr);
+      ierr = MatRestoreRow(AT,i,&nz,&cols,&vals);CHKERRQ(ierr);
     }
   }
 
@@ -880,8 +881,8 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
   d_nz = o_nz = 0;
 
   /* Determine preallocation for MatCreateMPIAIJ */
-  ierr = PetscMalloc(m*sizeof(int),&d_nnz);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(int),&o_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&o_nnz);CHKERRQ(ierr);
   for (i=0; i<m; i++) d_nnz[i] = o_nnz[i] = 0;
   first_diag_col = B->start_indices[rank];
   last_diag_col = first_diag_col + B->mnls[rank];
@@ -945,7 +946,7 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
   ierr = VecCreateMPI(comm,m,M,Pv);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(int),&mnls);CHKERRQ(ierr);
-  ierr = MPI_Allgather((void*)&v->mnl,1,MPI_INT,(void*)mnls,1,MPI_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&v->mnl,1,MPI_INT,mnls,1,MPI_INT,comm);CHKERRQ(ierr);
   
   ierr = PetscMalloc(size*sizeof(int),&start_indices);CHKERRQ(ierr);
   start_indices[0] = 0;

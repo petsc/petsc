@@ -26,7 +26,7 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('c2html'):
       try:
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
-      except:
+      except RuntimeError, e:
         raise RuntimeError('Error running configure on C2html: '+str(e))
       try:
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
