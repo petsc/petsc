@@ -160,9 +160,7 @@ $    -info : activates printing of PetscInfo() messages
 
     Level: intermediate
 
-    Note: Since this is a macro you must wrap the arguments in TWO sets of (())
-
-    Fortran Note: This routine is not supported in Fortran.
+    Fortran Note: This function does not take the vobj argument
 
     Example of Usage:
 $
