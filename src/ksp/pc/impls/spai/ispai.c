@@ -15,6 +15,7 @@
    1) get rid of all memory bleeding
    2) fix PETSc/interface so that it gets if the matrix is symmetric from the matrix
       rather than having the sp flag for PC_SPAI
+   3) fix to set the block size based on the matrix block size 
 
 */
 
@@ -37,21 +38,21 @@ EXTERN PetscErrorCode MM_to_PETSC(char *,char *,char *);
 
 typedef struct {
 
-  matrix *B;              /* matrix in SPAI format */
-  matrix *BT;             /* transpose of matrix in SPAI format */
-  matrix *M;              /* the approximate inverse in SPAI format */
+  matrix   *B;              /* matrix in SPAI format */
+  matrix   *BT;             /* transpose of matrix in SPAI format */
+  matrix   *M;              /* the approximate inverse in SPAI format */
 
-  Mat    PM;              /* the approximate inverse PETSc format */
+  Mat      PM;              /* the approximate inverse PETSc format */
 
-  double epsilon;         /* tolerance */
-  int    nbsteps;         /* max number of "improvement" steps per line */
-  int    max;             /* max dimensions of is_I, q, etc. */
-  int    maxnew;          /* max number of new entries per step */
-  int    block_size;      /* constant block size */
-  int    cache_size;      /* one of (1,2,3,4,5,6) indicting size of cache */
-  int    verbose;         /* SPAI prints timing and statistics */
+  double   epsilon;         /* tolerance */
+  int      nbsteps;         /* max number of "improvement" steps per line */
+  int      max;             /* max dimensions of is_I, q, etc. */
+  int      maxnew;          /* max number of new entries per step */
+  int      block_size;      /* constant block size */
+  int      cache_size;      /* one of (1,2,3,4,5,6) indicting size of cache */
+  int      verbose;         /* SPAI prints timing and statistics */
 
-  int    sp;              /* symmetric nonzero pattern */
+  int      sp;              /* symmetric nonzero pattern */
   MPI_Comm comm_spai;     /* communicator to be used with spai */
 } PC_SPAI;
 
@@ -61,9 +62,9 @@ typedef struct {
 #define __FUNCT__ "PCSetUp_SPAI"
 static PetscErrorCode PCSetUp_SPAI(PC pc)
 {
-  PC_SPAI *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI        *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
-  Mat      AT;
+  Mat            AT;
 
   PetscFunctionBegin;
 
@@ -120,7 +121,7 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
 #define __FUNCT__ "PCApply_SPAI"
 static PetscErrorCode PCApply_SPAI(PC pc,Vec xx,Vec y)
 {
-  PC_SPAI *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI        *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -136,7 +137,7 @@ static PetscErrorCode PCApply_SPAI(PC pc,Vec xx,Vec y)
 static PetscErrorCode PCDestroy_SPAI(PC pc)
 {
   PetscErrorCode ierr;
-  PC_SPAI *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI        *ispai = (PC_SPAI*)pc->data;
 
   PetscFunctionBegin;
   if (ispai->PM) {ierr = MatDestroy(ispai->PM);CHKERRQ(ierr);}
@@ -151,9 +152,9 @@ static PetscErrorCode PCDestroy_SPAI(PC pc)
 #define __FUNCT__ "PCView_SPAI"
 static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
 {
-  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI        *ispai = (PC_SPAI*)pc->data;
   PetscErrorCode ierr;
-  PetscTruth iascii;
+  PetscTruth     iascii;
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -167,7 +168,6 @@ static PetscErrorCode PCView_SPAI(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"    cache_size %d\n",ispai->cache_size);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    verbose %d\n",   ispai->verbose);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"    sp %d\n",        ispai->sp);CHKERRQ(ierr);
-
   }
   PetscFunctionReturn(0);
 }
@@ -177,7 +177,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCSPAISetEpsilon_SPAI"
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetEpsilon_SPAI(PC pc,double epsilon1)
 {
-  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->epsilon = epsilon1;
   PetscFunctionReturn(0);
@@ -191,7 +191,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCSPAISetNBSteps_SPAI"
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetNBSteps_SPAI(PC pc,int nbsteps1)
 {
-  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->nbsteps = nbsteps1;
   PetscFunctionReturn(0);
@@ -206,7 +206,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCSPAISetMax_SPAI"
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetMax_SPAI(PC pc,int max1)
 {
-  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->max = max1;
   PetscFunctionReturn(0);
@@ -220,7 +220,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCSPAISetMaxNew_SPAI"
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetMaxNew_SPAI(PC pc,int maxnew1)
 {
-  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->maxnew = maxnew1;
   PetscFunctionReturn(0);
@@ -234,7 +234,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCSPAISetBlockSize_SPAI"
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetBlockSize_SPAI(PC pc,int block_size1)
 {
-  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->block_size = block_size1;
   PetscFunctionReturn(0);
@@ -248,7 +248,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCSPAISetCacheSize_SPAI"
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetCacheSize_SPAI(PC pc,int cache_size)
 {
-  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->cache_size = cache_size;
   PetscFunctionReturn(0);
@@ -276,7 +276,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCSPAISetSp_SPAI"
 PetscErrorCode PETSCKSP_DLLEXPORT PCSPAISetSp_SPAI(PC pc,int sp)
 {
-  PC_SPAI    *ispai = (PC_SPAI*)pc->data;
+  PC_SPAI *ispai = (PC_SPAI*)pc->data;
   PetscFunctionBegin;
   ispai->sp = sp;
   PetscFunctionReturn(0);
@@ -628,12 +628,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_SPAI"
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC pc)
 {
-  PC_SPAI *ispai;
+  PC_SPAI        *ispai;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr               = PetscNewLog(pc,PC_SPAI,&ispai);CHKERRQ(ierr);
-  pc->data           = (void*)ispai;
+  pc->data           = ispai;
 
   pc->ops->destroy         = PCDestroy_SPAI;
   pc->ops->apply           = PCApply_SPAI;
@@ -696,10 +696,11 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
   int                     row_indx;
   int                     len,pe,local_indx,start_indx;
   int                     *mapping;
-  PetscErrorCode ierr;
+  PetscErrorCode          ierr;
   const int               *cols;
   const double            *vals;
-  int                     *num_ptr,n,mnl,nnl,rank,size,nz,rstart,rend;
+  int                     *num_ptr,n,mnl,nnl,nz,rstart,rend;
+  PetscMPIInt             size,rank;
   struct compressed_lines *rows;
 
   PetscFunctionBegin;
@@ -748,7 +749,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     M->lines = new_compressed_lines(M->mnls[rank],0);CHKERRQ(ierr);
   }
 
-  rows     = M->lines;
+  rows = M->lines;
 
   /* Determine the mapping from global indices to pointers */
   ierr       = PetscMalloc(M->n*sizeof(int),&mapping);CHKERRQ(ierr);
@@ -826,7 +827,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
     for (i=rstart; i<rend; i++) {
       row_indx = i-rstart;
       len      = num_ptr[row_indx];
-      rows->rptrs[row_indx]     = (int*)malloc(len*sizeof(int));
+      rows->rptrs[row_indx] = (int*)malloc(len*sizeof(int));
     }
 
     /* copy the matrix (i.e., the structure) */
@@ -838,7 +839,7 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 	len = rows->rlen[row_indx]++;
 	rows->rptrs[row_indx][len] = mapping[col];
       }
-      ierr     = MatRestoreRow(AT,i,&nz,&cols,&vals);CHKERRQ(ierr);
+      ierr = MatRestoreRow(AT,i,&nz,&cols,&vals);CHKERRQ(ierr);
     }
   }
 
@@ -864,13 +865,13 @@ PetscErrorCode ConvertMatToMatrix(MPI_Comm comm, Mat A,Mat AT,matrix **B)
 #define __FUNCT__ "ConvertMatrixToMat"
 PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
 {
-  int         size,rank;
+  PetscMPIInt    size,rank;
   PetscErrorCode ierr;
-  int         m,n,M,N;
-  int         d_nz,o_nz;
-  int         *d_nnz,*o_nnz;
-  int         i,k,global_row,global_col,first_diag_col,last_diag_col;
-  PetscScalar val;
+  int            m,n,M,N;
+  int            d_nz,o_nz;
+  int            *d_nnz,*o_nnz;
+  int            i,k,global_row,global_col,first_diag_col,last_diag_col;
+  PetscScalar    val;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -880,8 +881,8 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
   d_nz = o_nz = 0;
 
   /* Determine preallocation for MatCreateMPIAIJ */
-  ierr = PetscMalloc(m*sizeof(int),&d_nnz);CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(int),&o_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&o_nnz);CHKERRQ(ierr);
   for (i=0; i<m; i++) d_nnz[i] = o_nnz[i] = 0;
   first_diag_col = B->start_indices[rank];
   last_diag_col = first_diag_col + B->mnls[rank];
@@ -931,7 +932,8 @@ PetscErrorCode ConvertMatrixToMat(MPI_Comm comm,matrix *B,Mat *PB)
 PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
 {
   PetscErrorCode ierr;
-  int size,rank,m,M,i,*mnls,*start_indices,*global_indices;
+  PetscMPIInt    size,rank;
+  int            m,M,i,*mnls,*start_indices,*global_indices;
   
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -944,7 +946,7 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
   ierr = VecCreateMPI(comm,m,M,Pv);CHKERRQ(ierr);
 
   ierr = PetscMalloc(size*sizeof(int),&mnls);CHKERRQ(ierr);
-  ierr = MPI_Allgather((void*)&v->mnl,1,MPI_INT,(void*)mnls,1,MPI_INT,comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&v->mnl,1,MPI_INT,mnls,1,MPI_INT,comm);CHKERRQ(ierr);
   
   ierr = PetscMalloc(size*sizeof(int),&start_indices);CHKERRQ(ierr);
   start_indices[0] = 0;
@@ -959,12 +961,10 @@ PetscErrorCode ConvertVectorToVec(MPI_Comm comm,vector *v,Vec *Pv)
   ierr = PetscFree(start_indices);CHKERRQ(ierr);
   
   ierr = VecSetValues(*Pv,v->mnl,global_indices,v->v,INSERT_VALUES);CHKERRQ(ierr);
-
-  ierr = PetscFree(global_indices);CHKERRQ(ierr);
-
   ierr = VecAssemblyBegin(*Pv);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(*Pv);CHKERRQ(ierr);
- 
+
+  ierr = PetscFree(global_indices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

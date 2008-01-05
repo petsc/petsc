@@ -27,9 +27,9 @@ class Configure(PETSc.package.Package):
   def Install(self):
 
     self.framework.pushLanguage('C')
-    if self.compilers.fortranMangling == 'underscore':  FTNOPT = ''
-    elif self.compilers.fortranMangling == 'capitalize':FTNOPT = ''
-    else:                                               FTNOPT = '-DSP2'
+    if self.compilers.fortranMangling == 'underscore' or self.blasLapack.f2c:  FTNOPT = ''
+    elif self.compilers.fortranMangling == 'capitalize':                       FTNOPT = ''
+    else:                                                                      FTNOPT = '-DSP2'
     
     args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+FTNOPT+' '+self.framework.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+'\n'
     args = args+'AR         = '+self.setCompilers.AR+'\n'
@@ -55,7 +55,7 @@ class Configure(PETSc.package.Package):
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by SPAI'''
     '''Normally you do not need to provide this method'''
-    if self.blasLapack.f2c:
+    if self.blasLapack.f2cpkg:
       raise RuntimeError('SPAI requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
     # SPAI requires dormqr() LAPACK routine
     if not self.blasLapack.checkForRoutine('dormqr'): 
