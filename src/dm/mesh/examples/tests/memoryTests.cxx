@@ -3,6 +3,8 @@ static char help[] = "Sieve Package Memory Tests.\n\n";
 #include <petscmesh.hh>
 #include <set>
 
+#include <aleAlloc.hh>
+
 using ALE::Obj;
 
 typedef struct {
@@ -16,11 +18,13 @@ typedef struct {
   // Run flags
   PetscInt   number;      // Number of each class to create
   // Mesh flags
+  PetscInt   numCells;    // If possible, set the total number of cells
   PetscTruth interpolate; // Interpolate the mesh
   PetscReal  refine;      // The refinement limit
   // Section flags
   PetscInt   components;  // Number of section components
   PetscTruth shareAtlas;  // Share the atlas among the sections
+  PetscTruth distribute;  // Distribute the section
 } Options;
 
 #undef __FUNCT__
@@ -37,10 +41,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->mesh        = PETSC_FALSE;
   options->section     = PETSC_FALSE;
   options->number      = 0;
+  options->numCells    = 8;
   options->interpolate = PETSC_FALSE;
   options->refine      = 0.0;
   options->components  = 3;
   options->shareAtlas  = PETSC_FALSE;
+  options->distribute  = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-set", "Run set tests", "memTests", options->set, &options->set, PETSC_NULL);CHKERRQ(ierr);
@@ -50,10 +56,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-mesh", "Run Mesh tests", "memTests", options->mesh, &options->mesh, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-section", "Run Section tests", "memTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-num", "Number of each class to create", "memTests", options->number, &options->number, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-numCells", "Number of mesh cells", "memTests", options->numCells, &options->numCells, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "memTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refine", "The refinement limit", "memTests", options->refine, &options->refine, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-components", "Number of section components", "memTests", options->components, &options->components, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-share_atlas", "Share section atlases", "memTests", options->shareAtlas, &options->shareAtlas, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-distribute", "Distribute the section", "memTests", options->distribute, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -79,16 +87,28 @@ PetscErrorCode CreateSquareMesh(Obj<ALE::Mesh>& mesh, const Options *options)
 #define __FUNCT__ "SetTest"
 PetscErrorCode SetTest(const Options *options)
 {
-  const PetscInt numCells = 8;
-  const PetscInt num      = options->number;
+  ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
+  const PetscInt     num    = options->number;
 
   PetscFunctionBegin;
   for(PetscInt i = 0; i < num; ++i) {
-    std::set<int> s;
+    std::set<int, std::less<int>, ALE::malloc_allocator<int> > s;
 
-    for(PetscInt c = 0; c < numCells; ++c) {
+    for(PetscInt c = 0; c < options->numCells; ++c) {
       s.insert(c);
     }
+  }
+  if (logger.getNumAllocations() != options->numCells*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations(), options->numCells*num);
+  }
+  if (logger.getNumDeallocations() != options->numCells*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations(), options->numCells*num);
+  }
+  if (logger.getAllocationTotal() != 20*options->numCells*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal(), 20*options->numCells*num);
+  }
+  if (logger.getDeallocationTotal() != 20*options->numCells*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal(), 20*options->numCells*num);
   }
   PetscFunctionReturn(0);
 }
@@ -142,6 +162,7 @@ PetscErrorCode MeshTest(const Options *options)
 PetscErrorCode SectionTest(const Options *options)
 {
   Obj<ALE::Mesh> mesh;
+  Obj<ALE::Mesh> parallelMesh;
   Obj<ALE::Mesh::real_section_type::atlas_type> firstAtlas;
   const PetscInt num = options->number;
   double        *values;
@@ -149,6 +170,9 @@ PetscErrorCode SectionTest(const Options *options)
 
   PetscFunctionBegin;
   ierr = CreateSquareMesh(mesh, options);CHKERRQ(ierr);
+  if (options->distribute) {
+    parallelMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(mesh);
+  }
   ierr = PetscMalloc(options->components * sizeof(double), &values);CHKERRQ(ierr);
   for(PetscInt c = 0; c < options->components; ++c) {values[c] = 1.0;}
   for(PetscInt i = 0; i < num; ++i) {
@@ -168,6 +192,11 @@ PetscErrorCode SectionTest(const Options *options)
       section->updatePoint(*c_iter, values);
     }
     if (i == 0) {firstAtlas = section->getAtlas();}
+    if (options->distribute) {
+      Obj<ALE::Mesh::real_section_type> distSection;
+
+      distSection = ALE::Distribution<ALE::Mesh>::distributeSection(section, parallelMesh, parallelMesh->getDistSendOverlap(), parallelMesh->getDistRecvOverlap());
+    }
   }
   ierr = PetscFree(values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
