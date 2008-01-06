@@ -28,6 +28,9 @@ typedef struct {
   PetscTruth outputVTK;          // Output the mesh in VTK
   PetscTruth generate;           // Generate the mesh rather than reading it in
   PetscReal  curvatureCutoff;     // the cutoff for the curvature
+  PetscReal  refinementLimit;    // the maximum cell volume used in the finest mesh 
+  PetscTruth refinementGrading;  //grade the L-shaped and Fichera corner meshes as C0r^-2 \leq h \leq C1r^-2
+  PetscTruth interpolate;        //construct the subdimensional elements of the mesh
 } Options;
 
 #undef __FUNCT__
@@ -37,28 +40,36 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "DMMG");CHKERRQ(ierr);
   options->dim          = 2;
+  ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex_coarsen_3.c", options->dim, &options->dim, PETSC_NULL);    
   options->debug        = 0;
   options->useZeroBase  = PETSC_TRUE;
   ierr = PetscStrcpy(options->baseFilename, "data/coarsen_mesh");CHKERRQ(ierr);
   options->levels       = 3;
-  options->coarseFactor = 2.;
+  options->coarseFactor = 1.45;
   options->zScale       = 1.0;
   options->outputVTK    = PETSC_TRUE;
   options->curvatureCutoff = 1.5;
   options->generate = PETSC_TRUE;
+  options->interpolate = PETSC_TRUE;  
 
-    ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex_coarsen_3.c", options->dim, &options->dim, PETSC_NULL);    
-    ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "DMMG");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen_3", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex_coarsen_3.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen_3.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen_3.c", options->levels, &options->levels, PETSC_NULL);    
-    ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen_3.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);   
-    ierr = PetscOptionsReal("-curvature", "The automatic inclusion threshhold for the curvature", "ex_coarsen_3.c", options->curvatureCutoff, &options->curvatureCutoff, PETSC_NULL); 
-    ierr = PetscOptionsTruth("-generate", "Generate the mesh rather than reading it in.", "ex_coarsen.c", options->generate, &options->generate, PETSC_NULL);
-    ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen_3.c", options->zScale, &options->zScale, PETSC_NULL);    
-    ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex_coarsen_3.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
+  if (options->dim == 2) {
+    options->refinementLimit = 0.001;
+  } else {
+    options->refinementLimit = 0.0001;
+  }
+  ierr = PetscOptionsTruth("-interpolate", "construct additional elements of the sieve", "ex_coarsen.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinementlimit", "The maximum cell volume in the finest mesh", "ex_coarsen.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen_3", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex_coarsen_3.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen_3.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen_3.c", options->levels, &options->levels, PETSC_NULL);    
+  ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen_3.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);   
+  ierr = PetscOptionsReal("-curvature", "The automatic inclusion threshhold for the curvature", "ex_coarsen_3.c", options->curvatureCutoff, &options->curvatureCutoff, PETSC_NULL); 
+  ierr = PetscOptionsTruth("-generate", "Generate the mesh rather than reading it in.", "ex_coarsen.c", options->generate, &options->generate, PETSC_NULL);
+  ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen_3.c", options->zScale, &options->zScale, PETSC_NULL);    
+  ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex_coarsen_3.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -77,18 +88,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
       double lower[3] = {0.0, 0.0, 0.0};
       double upper[3] = {1.0, 1.0, 1.0};
       double offset[3] = {0.5, 0.5, 0.5};
-      ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createKyoceraCornerBoundary(comm, lower, upper, offset);
-      mesh = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, PETSC_TRUE), 0.0001, PETSC_TRUE);
+      ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createFicheraCornerBoundary(comm, lower, upper, offset);
+      mesh = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->interpolate), options->refinementLimit, options->interpolate);
     } else if (options->dim == 2) {
       double lower[2] = {0.0, 0.0};
       double upper[2] = {1.0, 1.0};
       double offset[2] = {0.5, 0.5};
       ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createReentrantBoundary(comm, lower, upper, offset);
-      mesh = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->debug), 0.001, PETSC_TRUE);
+      mesh = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->interpolate), options->refinementLimit, options->interpolate);
       //mesh = ALE::Generator::generateMesh(mb, options->debug);
     }
   } else {
-    mesh = ALE::PCICE::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, true, options->debug);
+    mesh = ALE::PCICE::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
   }
   //ALE::Coarsener::IdentifyBoundary(mesh, 2);
   //ALE::Coarsener::make_coarsest_boundary(mesh, 2, options->levels + 1);
@@ -155,13 +166,16 @@ int main(int argc, char *argv[])
     m->markBoundaryCells("marker");
     PetscPrintf(m->comm(), "marked the boundary cells\n");
 
- 
-  Obj<ALE::Mesh> coarsened_mesh = Hierarchy_coarsenMesh(m, 1.4);
+    int nMeshes;
+    Obj<ALE::Mesh> * coarsened_mesh = Hierarchy_createHierarchy_adaptive(m, 100, 10, options.coarseFactor, &nMeshes);
  
     char vtkfilename[256];
-    sprintf(vtkfilename, "testMesh.vtk");
-    ierr = OutputVTK(coarsened_mesh, &options, vtkfilename);CHKERRQ(ierr);
- 
+    sprintf(vtkfilename, "fine_mesh.vtk");
+    ierr = OutputVTK(m, &options, vtkfilename);CHKERRQ(ierr);
+    for (int i = 1; i < nMeshes; i++) {
+      sprintf(vtkfilename, "coarse_mesh%d.vtk", i);
+      ierr = OutputVTK(coarsened_mesh[i], &options, vtkfilename);CHKERRQ(ierr);
+    } 
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

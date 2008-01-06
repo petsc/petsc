@@ -163,7 +163,7 @@ d = vertices[3];
   }
 
   PetscTruth Surgery_2D_22Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
-    double pi = 3.14159;
+    double pi = 3.14159265358979;
     //VALIDITY CONDITION FOR THIS FLIP: cad and cbd must be (much) less than 180. 
     //we could probably have some angle heuristic for local delaunay approximation, but whatever.
     //must compute it in terms of acb + bad etc.
@@ -176,7 +176,7 @@ d = vertices[3];
     PetscMemcpy(d_coords, coordinates->restrictPoint(vertices[3]), dim*sizeof(double));
     double current_angle = corner_angle(dim, a_coords, c_coords, b_coords) + corner_angle(dim, a_coords, d_coords, b_coords);
     //PetscPrintf(m->comm(), "%f angle\n", current_angle);
-    if (current_angle > pi) return PETSC_FALSE;
+    if (current_angle > pi) return PETSC_FALSE; //give this vertex some "wiggle" as it's likely to just disappear anyways
     current_angle = corner_angle(dim, b_coords, c_coords, a_coords) + corner_angle(dim, b_coords, d_coords, a_coords);
     //PetscPrintf(m->comm(), "%f angle\n", current_angle);
     if (current_angle > pi) return PETSC_FALSE;
@@ -461,7 +461,8 @@ c-----------d      c-----------d
     // 1. bac and bdc must be < 180 degrees
     //    if this isn't true, we can reorient the flip here and make it true. (a four-sided figure may have one concave vertex)
     //    a->c b->a d->b c->d, 1->3, 3->4, 4->2, 2->1
-    double pi = 3.14158;
+    double pi = 3.14159265358979;
+    //    double pi = 3.141592653589793238;
     int dim = m->getDimension();
     double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim], e_coords[dim];
     const Obj<Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
@@ -647,8 +648,79 @@ b------a------c ->  b-------------c
     vertices[1] = b;
   }
 
+  //in the case where we have an interior vertex, we may have it find b such that it can contract from a (nearest-neighbor).  The criterion should be the LARGEST angle
+  void Surgery_2D_LineContract_Direction(Obj<Mesh> m, Mesh::point_type a, Mesh::point_type * cells, Mesh::point_type * vertices) {
+    Obj<Mesh::real_section_type> coordinates = m->getRealSection("coordinates");
+    Obj<Mesh::sieve_type::supportSet> line = new Mesh::sieve_type::supportSet();
+    vertices[0] = a;
+    int dim = m->getDimension();
+    double v_coords[dim], n_coords[dim], e1_coords[dim], e2_coords[dim];
+    PetscMemcpy(v_coords, coordinates->restrictPoint(a), dim*sizeof(double));
+    //go through the neighbors of the vertex and find the nearest one
+    Obj<Mesh::sieve_type> s = m->getSieve();
+    Obj<Mesh::sieve_type::coneSet> neighbors = s->cone(s->support(a));
+    Mesh::sieve_type::coneSet::iterator n_iter = neighbors->begin();
+    Mesh::sieve_type::coneSet::iterator n_iter_end = neighbors->end();
+    Mesh::point_type p;
+    //    bool first = true;
+    double p_angle = 0.0;
+    while (n_iter != n_iter_end) {
+      /*
+      if (*n_iter != a) {
+        const double * tmpcoords = coordinates->restrictPoint(*n_iter);
+        double dist = 0;
+        for (int i = 0; i < dim; i++) {
+          dist += (tmpcoords[i] - coords[i])*(tmpcoords[i] - coords[i]);
+        }
+        dist = sqrt(dist);
+        if (first) {
+          first = false;
+          p_dist = dist;
+          p = *n_iter;
+        } else {
+          if (dist < p_dist) { p_dist = dist;
+            p = *n_iter;
+          }
+        }
+      }
+      */
+      //treat each like a doublet, and find the maximum angle
+      if (*n_iter != a) {
+        PetscMemcpy(n_coords, coordinates->restrictPoint(*n_iter), dim*sizeof(double));
+        line->clear();
+        line->insert(*n_iter);
+        line->insert(vertices[0]);
+        Obj<Mesh::sieve_type::supportSet> join = s->nJoin1(line);
+        Obj<Mesh::sieve_type::coneSet> corners = s->cone(join);
+        Mesh::sieve_type::coneSet::iterator c_iter = corners->begin();
+        Mesh::sieve_type::coneSet::iterator c_iter_end = corners->end();
+        Mesh::point_type earpoints[2];
+        int index = 0;
+        while (c_iter != c_iter_end) {
+          if (*c_iter != vertices[0] && *c_iter != *n_iter) {
+            earpoints[index] = *c_iter;
+            index++;
+          }
+          c_iter++;
+        }
+        PetscMemcpy(e1_coords, coordinates->restrictPoint(earpoints[0]), dim*sizeof(double));
+        PetscMemcpy(e2_coords, coordinates->restrictPoint(earpoints[1]), dim*sizeof(double));
+        double cur_angle = corner_angle(dim, n_coords, v_coords, e1_coords) + 
+                           corner_angle(dim, n_coords, v_coords, e2_coords);
+        if (cur_angle > p_angle) {
+          p = *n_iter;
+          p_angle = cur_angle;
+        }
+      }
+      n_iter++;
+    }
+    vertices[1] = p;
+    return;
+  }
+
   PetscTruth Surgery_2D_LineContract_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     //for now this is last-ditch for 3D... do this to form the exterior and let tetgen deal with collisions
+    //TODO: Tetgen flakes out; fix this
     return PETSC_TRUE;
   }
 
@@ -726,7 +798,8 @@ a------d------c   a-------------c
 
   PetscTruth Surgery_2D_21BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     //criterion for this flip: abc must be convex, otherwise the interior point would be exposed
-    double pi = 3.14158;
+    double pi = 3.14159265358979;
+    //    double pi = 3.14159265359;
     const Obj<Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     int dim = m->getDimension();
     double coords_a[dim], coords_b[dim], coords_c[dim], coords_d[dim];
@@ -1476,7 +1549,8 @@ a, b, c, and d are on the boundary in question
 
     //criterion for success:  both new volumes are less than the old volume. (they don't overlap)
     int dim = m->getDimension();
-    double pi = 3.14159;
+    double pi = 3.14159265358979;
+    //    double pi = 3.141592653589793238;
     const Obj<Mesh::real_section_type> coordinates = m->getRealSection("coordinates");
     double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim], e_coords[dim];
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
@@ -1580,17 +1654,21 @@ a, b, c, and d are on the boundary in question
       Mesh::sieve_type::coneSet::iterator n_iter = neighbors->begin();
       Mesh::sieve_type::coneSet::iterator n_iter_end = neighbors->end();
       if (changed_neighbors) neighbors = s->cone(s->support(vertex));
-  /*
-      if (neighbor_size == 4 && !on_boundary) {
+
+      if (neighbor_size == 4 && !on_boundary) { //this is the ONLY safe time to use this
+        Surgery_2D_LineContract_Direction(m, vertex, cells, vertices);
+        if (Surgery_2D_LineContract_Possible(m, cells, vertices) == PETSC_TRUE) {
+          Surgery_2D_LineContract(m, cells, vertices, maxIndex);
+        }
+        /*
         //CHANGE: 4-2 is a last resort; 
           //PetscPrintf(m->comm(), "flip: 4-2\n");
           Surgery_2D_42Flip_Setup(m, vertex, cells, vertices);
           if (Surgery_2D_42Flip_Possible(m, cells, vertices) == PETSC_TRUE) {
             Surgery_2D_42Flip(m, cells, vertices, maxIndex);
         }
-      } else 
-  */
-      if (neighbor_size == 3 && !on_boundary) {
+        */
+      } else if (neighbor_size == 3 && !on_boundary) {
          
   	//PetscPrintf(m->comm(), "flip: 3-1\n");      
         Surgery_2D_31Flip_Setup(m, vertex, cells, vertices);
@@ -1630,13 +1708,8 @@ a, b, c, and d are on the boundary in question
         }
         n_iter++;
       }
-      if (n_iter == n_iter_end && neighbors->size() == 4 && !on_boundary) {  //last ditch 4-2 flip
-        Surgery_2D_42Flip_Setup(m, vertex, cells, vertices);
-        if (Surgery_2D_42Flip_Possible(m, cells, vertices) == PETSC_TRUE) {
-          Surgery_2D_42Flip(m, cells, vertices, maxIndex);    
-        }
-      }
-
+      //SEEMS TO BE CAUSING PROBLEMS
+      
       if (n_iter == n_iter_end && on_boundary) { //last-ditch, forced in edges exist.
   	//PetscPrintf(m->comm(), "flip: Contract\n"); 
 	Mesh::point_type other_line_end = *neighbors->begin();  //if it's an isolated vertex just contract along a single line
@@ -1808,6 +1881,7 @@ a, b, c, and d are on the boundary in question
   }
 
   void Surgery_2D_Improve_Mesh(Obj<Mesh> m, Obj<Mesh> bound_m = PETSC_NULL) {
+    //we SHOULD be traversing; starting from the BEST triangle in the mesh and moving outwards as we know we can improve angles.
     if (m->depth() != 1) throw Exception("uninterpolated meshes only");
     //improve the edges of a vertex and traverse outwards to its neighbors; do until all vertices are done.  
     //DO NOT do edges that are in the boundary.

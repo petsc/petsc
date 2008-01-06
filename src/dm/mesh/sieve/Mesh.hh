@@ -2537,7 +2537,7 @@ namespace ALE {
     };
 
     #undef __FUNCT__
-    #define __FUNCT__ "createKyoceraCornerBoundary"
+    #define __FUNCT__ "createFicheraCornerBoundary"
     /*    v0
          / \
         /   \
@@ -2557,7 +2557,7 @@ namespace ALE {
          \|/
           v3
     */
-    static Obj<Mesh> createKyoceraCornerBoundary(const MPI_Comm comm, const double lower[], const double upper[], const double offset[], const int debug = 0) {
+    static Obj<Mesh> createFicheraCornerBoundary(const MPI_Comm comm, const double lower[], const double upper[], const double offset[], const int debug = 0) {
       Obj<Mesh> mesh            = new Mesh(comm, 2, debug);
       int nVertices = 14;
       int nFaces = 12;
@@ -2711,6 +2711,186 @@ namespace ALE {
 
     }
 
+    #undef __FUNCT__
+    #define __FUNCT__ "createSphereBoundary"
+    /*
+      //"sphere" out a cube 
+
+    */
+#if 0
+    static Obj<Mesh> createSphereBoundary(const MPI_Comm comm, const double radius, const int refinement, const int debug = 0) {
+      Obj<Mesh> m = new Mesh(comm, 2, debug);
+      Obj<Mesh::sieve_type> s = new Mesh::sieve_type(comm, debug);
+      m->setSieve(s);
+      Mesh::point_type p = 0;
+      int nVertices = 8+12*(refinement)+6*(refinement)*(refinement);
+      Mesh::point_type vertices[nVertices];
+      double coords[3*nVertices];
+      int nCells = 6*2*(refinement+1)*(refinement+1);
+      double delta = 2./((double)(refinement+1));
+      Mesh::point_type cells[nCells];
+      for (int i = 0; i < nCells; i++) {
+        cells[i] = p;
+        p++;
+      }
+      for (int i = 0; i < nVertices; i++) {
+        vertices[i] = p;
+        p++;
+      }
+      //set up the corners;
+      //lll
+      coords[0*3+0] = -1.;
+      coords[0*3+1] = -1.;
+      coords[0*3+2] = -1.;
+      //llh
+      coords[1*3+0] = -1.;
+      coords[1*3+1] = -1.;
+      coords[1*3+2] = 1.;
+      //lhh
+      coords[2*3+0] = -1.;
+      coords[2*3+1] = 1.;
+      coords[2*3+2] = 1.;
+      //lhl
+      coords[3*3+0] = -1.;
+      coords[3*3+1] = 1.;
+      coords[3*3+2] = -1.;
+      //hhl
+      coords[4*3+0] = 1.;
+      coords[4*3+1] = 1.;
+      coords[4*3+2] = -1.;
+      //hhh
+      coords[5*3+0] = 1.;
+      coords[5*3+1] = 1.;
+      coords[5*3+2] = 1.;
+      //hlh
+      coords[6*3+0] = 1.;
+      coords[6*3+1] = -1.;
+      coords[6*3+2] = 1.;
+      //hll
+      coords[7*3+0] = 1.;
+      coords[7*3+1] = -1.;
+      coords[7*3+2] = -1.;
+      //set up the edges (always go low to high)
+      //xll
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+0*refinement+i)+0] = -1. + delta*i;
+	coords[3*(8+0*refinement+i)+1] = -1.;
+        coords[3*(8+0*refinement+i)+2] = -1.;
+      }
+      //xlh
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+1*refinement+i)+0] = -1. + delta*i;
+	coords[3*(8+1*refinement+i)+1] = -1.;
+        coords[3*(8+1*refinement+i)+2] = 1.;
+      }
+      //xhh
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+2*refinement+i)+0] = -1. + delta*i;
+	coords[3*(8+2*refinement+i)+1] = 1.;
+        coords[3*(8+2*refinement+i)+2] = 1.;
+      }
+      //xhl
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+3*refinement+i)+0] = -1. + delta*i;
+	coords[3*(8+3*refinement+i)+1] = 1.;
+        coords[3*(8+3*refinement+i)+2] = -1.;
+      }
+      //lxl
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+4*refinement+i)+0] = -1.;
+	coords[3*(8+4*refinement+i)+1] = -1. + delta*i;
+        coords[3*(8+4*refinement+i)+2] = -1.;
+      }
+      //lxh
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+5*refinement+i)+0] = -1.;
+	coords[3*(8+5*refinement+i)+1] = -1. + delta*i;
+        coords[3*(8+5*refinement+i)+2] = 1.;
+      }
+      //hxh
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+6*refinement+i)+0] = 1.;
+	coords[3*(8+6*refinement+i)+1] = -1. + delta*i;
+        coords[3*(8+6*refinement+i)+2] = 1.;
+      }
+      //hxl
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+7*refinement+i)+0] = 1.;
+	coords[3*(8+7*refinement+i)+1] = -1. + delta*i;
+        coords[3*(8+7*refinement+i)+2] = -1.;
+      }
+      //llx
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+8*refinement+i)+0] = -1.;
+	coords[3*(8+8*refinement+i)+1] = -1.;
+        coords[3*(8+8*refinement+i)+2] = -1. + delta*i;
+      }
+      //lhx
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+9*refinement+i)+0] = -1.;
+	coords[3*(8+9*refinement+i)+1] = 1.;
+        coords[3*(8+9*refinement+i)+2] = -1. + delta*i;
+      }
+      //hhx
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+10*refinement+i)+0] = 1.;
+	coords[3*(8+10*refinement+i)+1] = 1.;
+        coords[3*(8+10*refinement+i)+2] = -1. + delta*i;
+      }
+      //hlx
+      for (int i = 0; i < refinement; i++) {
+        coords[3*(8+11*refinement+i)+0] = 1.;
+	coords[3*(8+11*refinement+i)+1] = -1.;
+        coords[3*(8+11*refinement+i)+2] = -1. + delta*i;
+      }
+      //set up the faces
+      //lxx
+      for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
+        coords[3*(8+12*refinement+0*refinement*refinement+i*refinement+j)+0] = -1.;
+	coords[3*(8+12*refinement+0*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
+        coords[3*(8+12*refinement+0*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
+      }
+      //hxx 
+      for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
+        coords[3*(8+12*refinement+1*refinement*refinement+i*refinement+j)+0] = 1.;
+	coords[3*(8+12*refinement+1*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
+        coords[3*(8+12*refinement+1*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
+      }
+      //xlx
+      for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
+        coords[3*(8+12*refinement+2*refinement*refinement+i*refinement+j)+0] = -1. + delta*j;
+	coords[3*(8+12*refinement+2*refinement*refinement+i*refinement+j)+1] = -1.;
+        coords[3*(8+12*refinement+2*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
+      }
+      //xhx
+      for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
+        coords[3*(8+12*refinement+3*refinement*refinement+i*refinement+j)+0] = -1. + delta*j;
+	coords[3*(8+12*refinement+3*refinement*refinement+i*refinement+j)+1] = 1.;
+        coords[3*(8+12*refinement+3*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
+      }
+      //xxl
+      for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
+        coords[3*(8+12*refinement+4*refinement*refinement+i*refinement+j)+0] = -1.;
+	coords[3*(8+12*refinement+4*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
+        coords[3*(8+12*refinement+4*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
+      }
+      //xxh
+      for (int i = 0; i < refinement; i++) for (int j = 0; j < refinement; j++) {
+        coords[3*(8+12*refinement+5*refinement*refinement+i*refinement+j)+0] = 1.;
+	coords[3*(8+12*refinement+5*refinement*refinement+i*refinement+j)+1] = -1. + delta*j;
+        coords[3*(8+12*refinement+5*refinement*refinement+i*refinement+j)+2] = -1. + delta*i;
+      }
+      //stitch the corners up with the edges and the faces
+      
+      //stitch the edges to the faces
+      //fill in the faces
+      int face_offset = 8 + 12*refinement;
+      for (int i = 0; i < 6; i++) for (int j = 0; j < refinement; j++) for (int k = 0; k < refinement; k++) {
+        //build each square doublet
+      }
+    }
+
+#endif
 
     #undef __FUNCT__
     #define __FUNCT__ "createParticleInCubeBoundary"

@@ -62,7 +62,8 @@ ALE::Obj<ALE::Mesh::sieve_type::supportSet> Hierarchy_CoarsenVertexSet(ALE::Obj<
                                                                        ALE::Obj<ALE::Mesh::sieve_type::supportSet> interior_set, 
                                                                        ALE::Obj<ALE::Mesh::sieve_type::supportSet> boundary_set, 
                                                                        double beta, 
-                                                                       ALE::Mesh::point_type maxIndex) {
+                                                                       ALE::Mesh::point_type maxIndex,
+                                                                       int * comparisons = PETSC_NULL) {
   
   PetscErrorCode ierr;
 
@@ -230,7 +231,7 @@ ALE::Obj<ALE::Mesh::sieve_type::supportSet> Hierarchy_CoarsenVertexSet(ALE::Obj<
       }
     }  //end of candidate_vertices.empty() if for adding a new vertex
   }  //end of !candidate_vertices.empty() while
-  PetscPrintf(original_mesh->comm(), "%d vertices included in coarse set\n", output_vertices->size());
+  //PetscPrintf(original_mesh->comm(), "%d vertices included in coarse set\n", output_vertices->size());
   return output_vertices;
 }
 /*
@@ -279,7 +280,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective2DBoundary (ALE::Obj<ALE::Mesh> ori
   output_mesh->setSieve(output_sieve);
 
   if (depth == 1) { //noninterpolated case; for each cell look at the associated vertex subsets and assume simplicial
-    PetscPrintf(original_mesh->comm(), "Uninterpolated case\n");
+    //PetscPrintf(original_mesh->comm(), "Uninterpolated case\n");
     ALE::Obj<ALE::Mesh::label_sequence> cells = original_mesh->heightStratum(0);
     ALE::Mesh::label_sequence::iterator c_iter = cells->begin();
     ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
@@ -287,15 +288,19 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective2DBoundary (ALE::Obj<ALE::Mesh> ori
       ALE::Obj<ALE::Mesh::sieve_type::coneSequence> cell_corners = original_sieve->cone(*c_iter);
       ALE::Mesh::sieve_type::coneSequence::iterator cc_iter = cell_corners->begin();
       ALE::Mesh::sieve_type::coneSequence::iterator cc_iter_end = cell_corners->end();
+      line->clear();
       while (cc_iter != cc_iter_end) {
         line->insert(*cc_iter);
         cc_iter++;
       }
+      //PetscPrintf(original_mesh->comm(), "%d vertices in the cone\n", cell_corners->size());
       //assumed simplicial; each n-1 subset is a valid face
       cc_iter = cell_corners->begin();
       while (cc_iter != cc_iter_end) {
         line->erase(line->find(*cc_iter));
         link = original_sieve->nJoin1(line);
+	// PetscPrintf(original_mesh->comm(), "%d vertices in the face\n", line->size());
+        if (line->size() != 3) throw ALE::Exception("bad line");
         if (link->size() == 1) {
           for (ALE::Mesh::sieve_type::supportSet::iterator f_iter = line->begin(); f_iter != line->end(); f_iter++) {
             output_sieve->addArrow(*f_iter, cur_available_index);
@@ -328,7 +333,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective2DBoundary (ALE::Obj<ALE::Mesh> ori
       f_iter++;
     }
   }
-  PetscPrintf(original_mesh->comm(), "Done with finding the boundary\n");
+  //PetscPrintf(original_mesh->comm(), "Done with finding the boundary\n");
   //force in the forced_bound_mesh, which will include any included faults
 
   if (forced_bound_mesh) {
@@ -351,7 +356,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective2DBoundary (ALE::Obj<ALE::Mesh> ori
   }
   output_mesh->stratify();
   output_mesh->setRealSection("coordinates", original_mesh->getRealSection("coordinates"));
-  PetscPrintf(output_mesh->comm(), "done with 2D boundary find.\n");
+  //PetscPrintf(output_mesh->comm(), "done with 2D boundary find.\n");
   return output_mesh;
 }
 
@@ -400,7 +405,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective1DBoundary (ALE::Obj<ALE::Mesh> ori
 
   //force in the forced boundary mesh (2D)
   if (forced_bound_mesh) {
-    PetscPrintf(original_mesh->comm(), "forcing in the boundary mesh\n");
+    //PetscPrintf(original_mesh->comm(), "forcing in the boundary mesh\n");
     if (forced_bound_mesh->depth() != 1) throw ALE::Exception("Needs noninterpolated boundary mesh"); //haha doesn't matter, but still
     ALE::Obj<ALE::Mesh::label_sequence> bound_edges = forced_bound_mesh->heightStratum(0);
     ALE::Mesh::label_sequence::iterator be_iter = bound_edges->begin(); 
@@ -417,11 +422,11 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective1DBoundary (ALE::Obj<ALE::Mesh> ori
       be_iter++;
     }
   }
-  PetscPrintf(original_mesh->comm(), "Forcing in edges\n");
+  //PetscPrintf(original_mesh->comm(), "Forcing in edges\n");
   //find topologically needed edges -- interpolated means support != 2; noninterpolated means njoin1 != 2
   //find geometrically attractive edges (3D); doublet-normals above a certain threshhold.
   if (depth == 1) { //uninterpolated case
-    PetscPrintf(original_mesh->comm(), "Uninterpolated\n");
+    //PetscPrintf(original_mesh->comm(), "Uninterpolated\n");
     ALE::Mesh::sieve_type::supportSet seen;
     seen.clear();
     ALE::Obj<ALE::Mesh::label_sequence> vertices = original_mesh->depthStratum(0);
@@ -482,7 +487,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective1DBoundary (ALE::Obj<ALE::Mesh> ori
       v_iter++;
     }
   } else { //interpolated case
-    PetscPrintf(original_mesh->comm(), "Interpolated\n");
+    //PetscPrintf(original_mesh->comm(), "Interpolated\n");
     ALE::Obj<ALE::Mesh::label_sequence> edges = original_mesh->depthStratum(1);
     ALE::Mesh::label_sequence::iterator e_iter = edges->begin();
     ALE::Mesh::label_sequence::iterator e_iter_end = edges->end();
@@ -534,7 +539,7 @@ A set of vertices from the 1D simplicial mesh that are topologically necessary
 
 ALE::Obj<ALE::Mesh::sieve_type::supportSet> Hierarchy_createEffective0DBoundary(ALE::Obj<ALE::Mesh> original_mesh) {
   ALE::Obj<ALE::Mesh::real_section_type> coordinates = original_mesh->getRealSection("coordinates");
-  PetscPrintf(original_mesh->comm(), "In 0D Boundary Building\n");
+  //PetscPrintf(original_mesh->comm(), "In 0D Boundary Building\n");
   int dim = original_mesh->getDimension();
   double a_coords[dim], b_coords[dim], c_coords[dim];
   //create a set of "essential" vertices from the 1D boundary meshes given
@@ -568,7 +573,7 @@ ALE::Obj<ALE::Mesh::sieve_type::supportSet> Hierarchy_createEffective0DBoundary(
     v_iter++;
   }
   //we can't do curvatures here; leave this to another thing we'll include in this set later
-  PetscPrintf(original_mesh->comm(), "leaving 0D Boundary Building\n");
+  //PetscPrintf(original_mesh->comm(), "leaving 0D Boundary Building\n");
   return output_set;
 }
 
@@ -704,7 +709,7 @@ void Hierarchy_insertVerticesIntoMesh(ALE::Obj<ALE::Mesh> bound_mesh, ALE::Obj<A
     vs_iter++;
   }
   bound_mesh->stratify();
-  PetscPrintf(bound_mesh->comm(), "%d is the depth of the inserted points\n", bound_mesh->depth(*vertex_set->begin()));
+  //PetscPrintf(bound_mesh->comm(), "%d is the depth of the inserted points\n", bound_mesh->depth(*vertex_set->begin()));
 }
 
 /*
@@ -778,7 +783,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
     ALE::Obj<ALE::Mesh::sieve_type::supportSet> bound_1_vertices = new ALE::Mesh::sieve_type::supportSet();
     if (!boundary_mesh) {
       bound_1 = Hierarchy_createEffective1DBoundary(original_mesh, maxIndex);
-      PetscPrintf(original_mesh->comm(), "%d vertices, %d edges on the boundary\n", bound_1->depthStratum(0)->size(), bound_1->depthStratum(1)->size());
+      //PetscPrintf(original_mesh->comm(), "%d vertices, %d edges on the boundary\n", bound_1->depthStratum(0)->size(), bound_1->depthStratum(1)->size());
     }
     ALE::Obj<ALE::Mesh::label_sequence> bound_1_vert_label = bound_1->depthStratum(0);
     ALE::Mesh::label_sequence::iterator bv_iter = bound_1_vert_label->begin();
@@ -788,7 +793,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
       bv_iter++;
     }
     bound_0 = Hierarchy_createEffective0DBoundary(bound_1);
-    PetscPrintf(comm, "%d vertices in the 0D effective boundary\n", bound_0->size());
+    //PetscPrintf(comm, "%d vertices in the 0D effective boundary\n", bound_0->size());
     //coarsen the interior
     //come up with the interior set:
     ALE::Obj<ALE::Mesh::sieve_type::supportSet> interior_set = new ALE::Mesh::sieve_type::supportSet();
@@ -801,10 +806,10 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
       }
       v_iter++;
     }
-    PetscPrintf(original_mesh->comm(), "%d interior vertices\n", interior_set->size());
+    //PetscPrintf(original_mesh->comm(), "%d interior vertices\n", interior_set->size());
     ALE::Obj<ALE::Mesh::sieve_type::supportSet> coarse_interior = Hierarchy_CoarsenVertexSet(original_mesh, spacing, interior_set, bound_1_vertices, coarsen_factor, maxIndex);
     //coarsen the boundary
-    PetscPrintf(original_mesh->comm(), "%d vertices in coarsened interior\n", coarse_interior->size());
+    //PetscPrintf(original_mesh->comm(), "%d vertices in coarsened interior\n", coarse_interior->size());
     ALE::Obj<ALE::Mesh::sieve_type::supportSet> coarse_bound_set = Hierarchy_CoarsenVertexSet(original_mesh, spacing, bound_1_vertices, bound_0, coarsen_factor, maxIndex);		     //coarsen the boundary mesh
     //insert bound_0 into the coarse bound set
     ALE::Mesh::sieve_type::supportSet::iterator b0_iter = bound_0->begin();
@@ -814,9 +819,9 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
       b0_iter++;
     }
     ALE::Obj<ALE::Mesh> coarse_bound = ALE::Surgery_1D_Coarsen_Mesh(bound_1, coarse_bound_set);
-    PetscPrintf(original_mesh->comm(), "%d v, %d e in new coarse boundary\n", coarse_bound->depthStratum(0)->size(), coarse_bound->depthStratum(1)->size());			
+    //PetscPrintf(original_mesh->comm(), "%d v, %d e in new coarse boundary\n", coarse_bound->depthStratum(0)->size(), coarse_bound->depthStratum(1)->size());			
     Hierarchy_insertVerticesIntoMesh(coarse_bound, coarse_interior);
-    PetscPrintf(original_mesh->comm(), "%d v, %d e in the thing we feed triangle\n", coarse_bound->depthStratum(0)->size(), coarse_bound->depthStratum(1)->size());
+    //PetscPrintf(original_mesh->comm(), "%d v, %d e in the thing we feed triangle\n", coarse_bound->depthStratum(0)->size(), coarse_bound->depthStratum(1)->size());
     //copy over the "marker" label
     ALE::Obj<ALE::Mesh::label_type> bound_marker_label = coarse_bound->createLabel("marker");
     ALE::Obj<ALE::Mesh::label_type> marker = original_mesh->getLabel("marker");
@@ -832,7 +837,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
     coarse_bound->setDimension(1);
     output_mesh = ALE::Generator::generateMesh(coarse_bound, (original_mesh->depth() != 1), true);
     output_mesh->stratify();
-    PetscPrintf(original_mesh->comm(), "%d v, %d cells in the output mesh\n", output_mesh->depthStratum(0)->size(), output_mesh->heightStratum(0)->size());
+    //PetscPrintf(original_mesh->comm(), "%d v, %d cells in the output mesh\n", output_mesh->depthStratum(0)->size(), output_mesh->heightStratum(0)->size());
   }
   if (dim == 3) {
     ALE::Obj<ALE::Mesh::sieve_type::supportSet> bound_0;
@@ -847,7 +852,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
       bound_2 = boundary_mesh;
     } 
    //build the boundary and interior vertex sets from this
-    PetscPrintf(original_mesh->comm(), "%d vertices, %d cells in 2D boundary\n", bound_2->depthStratum(0)->size(), bound_2->heightStratum(0)->size());
+   //PetscPrintf(original_mesh->comm(), "%d vertices, %d cells in 2D boundary\n", bound_2->depthStratum(0)->size(), bound_2->heightStratum(0)->size());
     ALE::Obj<ALE::Mesh::label_sequence> bound_2_vert_label = bound_2->depthStratum(0);
     ALE::Mesh::label_sequence::iterator bv_iter = bound_2_vert_label->begin();
     ALE::Mesh::label_sequence::iterator bv_iter_end = bound_2_vert_label->end();
@@ -863,9 +868,9 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
       }
       v_iter++;
     }
-    PetscPrintf(original_mesh->comm(), "%d vertices on the interior\n", interior_vertices->size());
+    //PetscPrintf(original_mesh->comm(), "%d vertices on the interior\n", interior_vertices->size());
     bound_1 = Hierarchy_createEffective1DBoundary(bound_2, maxIndex);
-    PetscPrintf(original_mesh->comm(), "%d vertices, %d edges in 1D boundary\n", bound_1->depthStratum(0)->size(), bound_1->heightStratum(0)->size());
+    //PetscPrintf(original_mesh->comm(), "%d vertices, %d edges in 1D boundary\n", bound_1->depthStratum(0)->size(), bound_1->heightStratum(0)->size());
     ALE::Obj<ALE::Mesh::label_sequence> bound_1_vert_label = bound_1->depthStratum(0);
     bv_iter = bound_1_vert_label->begin();
     bv_iter_end = bound_1_vert_label->end();
@@ -874,16 +879,16 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
       bv_iter++;
     }
     bound_0 = Hierarchy_createEffective0DBoundary(bound_1);
-    PetscPrintf(comm, "%d vertices in the 0D effective boundary\n", bound_0->size());
+    //PetscPrintf(comm, "%d vertices in the 0D effective boundary\n", bound_0->size());
     //ok.  Coarsen the interior set.
     ALE::Obj<ALE::Mesh::sieve_type::supportSet> coarse_interior_set = Hierarchy_CoarsenVertexSet(original_mesh, spacing, interior_vertices, bound_2_vertices, coarsen_factor, maxIndex);	
-    PetscPrintf(original_mesh->comm(), "%d vertices in new interior\n", coarse_interior_set->size());
+    //PetscPrintf(original_mesh->comm(), "%d vertices in new interior\n", coarse_interior_set->size());
     //coarsen the boundary mesh    
     ALE::Obj<ALE::Mesh::sieve_type::supportSet> coarse_bound_2_set = Hierarchy_CoarsenVertexSet(original_mesh, spacing, bound_2_vertices, bound_1_vertices, coarsen_factor, maxIndex);
-    PetscPrintf(original_mesh->comm(), "%d vertices in new boundary interior\n", coarse_bound_2_set->size());
+    //PetscPrintf(original_mesh->comm(), "%d vertices in new boundary interior\n", coarse_bound_2_set->size());
     //coarsen the boundary skeleton    
     ALE::Obj<ALE::Mesh::sieve_type::supportSet> coarse_bound_1_set = Hierarchy_CoarsenVertexSet(original_mesh, spacing, bound_1_vertices, bound_0, coarsen_factor, maxIndex);
-    PetscPrintf(original_mesh->comm(), "%d vertices in new boundary skeleton\n", coarse_bound_1_set->size());
+    //PetscPrintf(original_mesh->comm(), "%d vertices in new boundary skeleton\n", coarse_bound_1_set->size());
     //merge the coarse_bound_1, bound_0, and coarse_bound_2 sets
     ALE::Mesh::sieve_type::supportSet::iterator av_iter = coarse_bound_1_set->begin();
     ALE::Mesh::sieve_type::supportSet::iterator av_iter_end = coarse_bound_1_set->end();
@@ -897,12 +902,12 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
       coarse_bound_2_set->insert(*av_iter);
       av_iter++;
     }
-    PetscPrintf(original_mesh->comm(), "%d total vertices in the coarse boundary: coarsening by flip.\n", coarse_bound_2_set->size());
+    //PetscPrintf(original_mesh->comm(), "%d total vertices in the coarse boundary: coarsening by flip.\n", coarse_bound_2_set->size());
     //ok.  Moment of truth; use the FLIPPING to coarsen the boundary mesh
     ALE::Obj<ALE::Mesh> coarse_bound_mesh = ALE::Surgery_2D_Coarsen_Mesh(bound_2, coarse_bound_2_set, bound_1);
-    PetscPrintf(original_mesh->comm(), "%d vertices, %d faces in new exterior boundary\n", coarse_bound_mesh->depthStratum(0)->size(), coarse_bound_mesh->heightStratum(0)->size());
+    //PetscPrintf(original_mesh->comm(), "%d vertices, %d faces in new exterior boundary\n", coarse_bound_mesh->depthStratum(0)->size(), coarse_bound_mesh->heightStratum(0)->size());
     Hierarchy_insertVerticesIntoMesh(coarse_bound_mesh, coarse_interior_set);
-    PetscPrintf(original_mesh->comm(), "%d vertices, %d faces to tetgen\n", coarse_bound_mesh->depthStratum(0)->size(), coarse_bound_mesh->heightStratum(0)->size());
+    //PetscPrintf(original_mesh->comm(), "%d vertices, %d faces to tetgen\n", coarse_bound_mesh->depthStratum(0)->size(), coarse_bound_mesh->heightStratum(0)->size());
     ALE::Obj<ALE::Mesh::label_type> bound_marker_label = coarse_bound_mesh->createLabel("marker");
     ALE::Obj<ALE::Mesh::label_type> marker = original_mesh->getLabel("marker");
     vertices = coarse_bound_mesh->depthStratum(0);
@@ -917,125 +922,85 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
     coarse_bound_mesh->setDimension(2);
     output_mesh = ALE::Generator::generateMesh(coarse_bound_mesh, (original_mesh->depth() != 1), true);
     output_mesh->stratify();
-    PetscPrintf(original_mesh->comm(), "%d v, %d cells in the output mesh\n", output_mesh->depthStratum(0)->size(), output_mesh->heightStratum(0)->size());
+    //PetscPrintf(original_mesh->comm(), "%d v, %d cells in the output mesh\n", output_mesh->depthStratum(0)->size(), output_mesh->heightStratum(0)->size());
   }
-  PetscPrintf(comm, "leaving overall coarsening\n");
+  //PetscPrintf(comm, "leaving overall coarsening\n");
   return output_mesh;
 }
 
-#if 0
+/*
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
+Hierarchy_createHierarchy:
 
-ALE::Obj<ALE::Mesh> Hierarchy_createCoarsenStructure(ALE::Obj<ALE::Mesh> original_mesh, ALE::Obj<ALE::Mesh::sieve_type::supportSet> boundary_cells) {
-  /*
-  Assumptions:
-    - original_mesh is simplicial
-    - original_mesh is 2D or 3D
-    - an additional copy of original_mesh can fit in memory (sans coordinates/discretization/other labels)
-    - the boundary_cells set contains internal cells that are on an internal OR external boundary in uninterpolated, or internal OR external boundary faces in interpolated.
-  */
-  
-  //deterimine the maximum vertex index existing in the mesh; other parts are inconsequential
-  ALE::Obj<ALE::Mesh::label_sequence> vertices = original_mesh->depthStratum(0);
-  bool first_vertex = true;
-  ALE::Mesh::point_type max_index;
-  ALE::Mesh::label_sequence::iterator l_iter = vertices->begin();
-  ALE::Mesh::label_sequence::iterator l_iter_end = vertices->end();
-  while (l_iter != l_iter_end) {
-    if (first) {
-      first = false;
-      max_index = *v_iter;
-    } else if (*l_iter > max_index) max_index = *l_iter;
-    l_iter++;
+Use:
+
+Returns a coarser hierarchy of a 1D, 2D, or 3D mesh
+
+Inputs:
+
+original_mesh: an effectively 1D simplicial mesh
+nLevels: the number of levels (including the fine level)
+coarsen_factor: the expansion of the spacing function
+boundary_mesh: an optional boundary mesh
+CtF: do coarse-to-fine hierarchy building (O(ln)) instead of fine-to-coarse (O(n))
+
+Output:
+
+A coarsened mesh hierarchy
+
+Remarks:
+
+Uses routines dependent on having triangle and tetgen installed
+
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
+*/
+
+ALE::Obj<ALE::Mesh> * Hierarchy_createHierarchy(ALE::Obj<ALE::Mesh> original_mesh, 
+                                                int nLevels,
+                                                double beta, 
+                                                ALE::Obj<ALE::Mesh> boundary_mesh = PETSC_NULL,
+                                                PetscTruth CtF = PETSC_FALSE) {
+
+    ALE::Obj<ALE::Mesh> * meshes = new ALE::Obj<ALE::Mesh>[nLevels];
+    if (CtF) {
+      throw ALE::Exception("Coarse-to-Fine not yet implemented.");
+    } else {
+      //fine-to-coarse hierarchy creation
+      meshes[0] = original_mesh;
+      for (int i = 1; i < nLevels; i++) {
+        meshes[i] = Hierarchy_coarsenMesh(meshes[i-1], beta);
+      }
+    }
+    return meshes;
   }
-  
-  //create the necessarily uninterpolated BOUNDARY MESH
 
-  int mesh_depth = original_mesh->depth();
-  bool interpolated = (mesh_depth != 1);
-
-  if (interpolated) {
-    //copy over the boundary_cells set
-    ALE::Obj<ALE::Mesh::sieve_type::coneSet> mesh_vertices = 
-  } else {
+  ALE::Obj<ALE::Mesh> * Hierarchy_createHierarchy_adaptive(ALE::Obj<ALE::Mesh> original_mesh,
+                                                unsigned int nVertices,
+						unsigned int max_meshes,
+                                                double beta,
+						int * nMeshes,
+                                                ALE::Obj<ALE::Mesh> boundary_mesh = PETSC_NULL,
+                                                PetscTruth CtF = PETSC_FALSE) {
+    ALE::Obj<ALE::Mesh> * meshes;
+    if (CtF) {
+      throw ALE::Exception ("Coarse-to-Fine not yet implemented.");
+    } else {
+      //fine to coarse hierarchy creation AS LONG AS the mesh size is over nVertices.
+      std::list<ALE::Obj<ALE::Mesh> > meshes_list;
+      meshes_list.clear();
+      meshes_list.push_front(original_mesh);
+      ALE::Obj<ALE::Mesh> current_mesh = original_mesh;
+      while (current_mesh->depthStratum(0)->size() > nVertices && meshes_list.size() <= max_meshes) {
+         current_mesh = Hierarchy_coarsenMesh(current_mesh, beta);
+         meshes_list.push_back(current_mesh);
+      }
+      meshes = new ALE::Obj<ALE::Mesh>[meshes_list.size()];
+      *nMeshes = meshes_list.size();
+      int i = 0;
+      for (std::list<ALE::Obj<ALE::Mesh> >::iterator m_iter = meshes_list.begin(); m_iter != meshes_list.end(); m_iter++) {
+        meshes[i] = *m_iter;
+        i++;
+      } 
+    }
+    return meshes;
   }
-
-  boundary_mesh->stratify();
-  //put in the additional CONNECTIVITY GRAPH
-
-  //ALE::Obj<ALE::Mesh::sieve_type> s = new_mesh->getSieve();
-
-  //find the maximum index in this mesh;
-  
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "Hierarchy_cleanCoarsenStructure"
-
-//takes the coarsen structure and removes the internal edges, leaving the vertices and the boundaries intact.
-
-void Hierarchy_cleanCoarsenStructure(ALE::Obj<ALE::Mesh> original_mesh) {
-  
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "Hierarchy_2D_Coarsen"
-
-void Hierarchy_2D_Coarsen(ALE::Obj<ALE::Mesh> original_mesh, double beta, double curvatureCutoff = 1.0,  ALE::Obj<ALE::Mesh::sieve_type::supportSet> consideredVertices = PETSC_NULL) {
-
-  //pass this function the mesh you want modified; we are not going to make a copy here.
-
-  int dim = original_mesh->getDimension();
-  ALE::Obj<ALE::Mesh> new_mesh = ALE::Mesh(original_mesh->comm(), original_mesh->debug());
-  new_mesh->setDimension(dim);
-
-  //see if the mesh is interpolated or not.. if it is NOT we cannot handle internal boundaries without risking massive nastiness unless the internal boundary is split.
-
-  
-
-  //  if (!consideredVertices->isNull()) {
-      
-  //}
-
-  //see if there's a spacing function on the old mesh; if not build it.
-
-  //do an initial curvature analysis on the boundary, INCLUDING embedded boundaries, including things of higher curvature than the curvatureCutoff in the finemesh;
-
-  //remove the internal points adjacent to the included points AND boundary points s.t. the spacing on the already included points is satistied
-
-  //randomly pick a new internal point that hasn't been demolished to include, make the spacing function satisfied until we can't do it anymore.
-
-  //do the same for the boundary
-
-  //optimize with flips (if necessary)
-
-}
-
-
-#undef __FUNCT__
-#define __FUNCT__ "Hierarchy_Coarsen"
-
-ALE::Obj<ALE::Mesh> Hierarchy_Coarsen(ALE::Obj<ALE::Mesh> original_mesh, double beta, double curvatureCutoff = 1.0) {
-  
-  //create the a CONNECTION mesh containing external/internal boundaries and the connectivity of the nodes in the original_mesh.
-
-  //see if there's a spacing function on the old mesh; if there isn't build it.
-
-  //do a analysis on the boundary, INCLUDING internal boundaries, including things of higher curvature than the curvatureCutoff.
-  
-  //remove the internal poitns adjacent to the included points and boundary points s.t. the spacing is satisfied BY shrinking along edges.
-
-  //pick an internal point not demolished to include, satisfy the spacing function around it.  Do this until we can't anymore.
-
-  //remove the internal edges -- now we have points and 2D (embedded in 3D) boundaries
-
-  //FLIP to coarsen the INTERNAL boundaries in a similar fashion.
-
-  //FLIP to coarsen the EXTERNAL boundaries in a similar fashion.
-
-  //feed the resulting BOUNDARY MESH into triangle/tetgen via the Generator
-
-  //
-
-}
-
-#endif

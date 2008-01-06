@@ -886,7 +886,7 @@ namespace ALE {
 #endif
       } else if (dim == 2) {
 #ifdef PETSC_HAVE_TETGEN
-        return ALE::TetGen::Generator::generateMesh(boundary, interpolate);
+        return ALE::TetGen::Generator::generateMesh(boundary, interpolate, constrained);
 #else
         throw ALE::Exception("Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif
