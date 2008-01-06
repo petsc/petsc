@@ -255,7 +255,7 @@ namespace ALE {
 
     // The specialized ArrowContainer types distinguish the cases of unique and multiple colors of arrows on 
     // for each (source,target) pair (i.e., a single arrow, or multiple arrows between each pair of points).
-    template<typename Source_, typename Target_>
+    template<typename Source_, typename Target_, typename Alloc_ = ALE_ALLOCATOR<typename ArrowContainerTraits<Source_, Target_>::arrow_type> >
     struct ArrowContainer {
       // Define container's encapsulated types
       typedef ArrowContainerTraits<Source_, Target_> traits;
@@ -283,20 +283,20 @@ namespace ALE {
             >
           >
         >,
-        ALE_ALLOCATOR<typename traits::arrow_type>
+        Alloc_
       > set_type;      
       // multi-index set of arrow records 
       set_type set;
     }; // class ArrowContainer
   }; // namespace NewSifterDef
 
-  template<typename Source_, typename Target_>
+  template<typename Source_, typename Target_, typename Alloc_ = ALE_ALLOCATOR<typename NewSifterDef::ArrowContainer<Source_, Target_>::traits::arrow_type> >
   class LabelSifter { // class Sifter
   public:
     typedef struct {
-      typedef LabelSifter<Source_, Target_> graph_type;
+      typedef LabelSifter<Source_, Target_, Alloc_> graph_type;
       // Encapsulated container types
-      typedef NewSifterDef::ArrowContainer<Source_, Target_>                         arrow_container_type;
+      typedef NewSifterDef::ArrowContainer<Source_, Target_, Alloc_>                 arrow_container_type;
       // Types associated with records held in containers
       typedef typename arrow_container_type::traits::arrow_type                      arrow_type;
       typedef typename arrow_container_type::traits::source_type                     source_type;
@@ -374,9 +374,9 @@ namespace ALE {
         };
       };// struct supportSequence
 
-      typedef std::set<source_type>   coneSet;
+      typedef std::set<source_type, std::less<source_type>, typename Alloc_::template rebind<source_type>::other> coneSet;
       typedef ALE::array<source_type> coneArray;
-      typedef std::set<target_type>   supportSet;
+      typedef std::set<target_type, std::less<target_type>, typename Alloc_::template rebind<source_type>::other> supportSet;
       typedef ALE::array<target_type> supportArray;
     } traits;
 

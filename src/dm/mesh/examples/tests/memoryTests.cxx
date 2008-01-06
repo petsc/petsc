@@ -91,6 +91,7 @@ PetscErrorCode SetTest(const Options *options)
   const PetscInt     num    = options->number;
 
   PetscFunctionBegin;
+  logger.stagePush("Set");
   for(PetscInt i = 0; i < num; ++i) {
     std::set<int, std::less<int>, ALE::malloc_allocator<int> > s;
 
@@ -98,17 +99,18 @@ PetscErrorCode SetTest(const Options *options)
       s.insert(c);
     }
   }
-  if (logger.getNumAllocations() != options->numCells*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations(), options->numCells*num);
+  logger.stagePop();
+  if (logger.getNumAllocations("Set") != options->numCells*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Set"), options->numCells*num);
   }
-  if (logger.getNumDeallocations() != options->numCells*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations(), options->numCells*num);
+  if (logger.getNumDeallocations("Set") != options->numCells*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Set"), options->numCells*num);
   }
-  if (logger.getAllocationTotal() != 20*options->numCells*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal(), 20*options->numCells*num);
+  if (logger.getAllocationTotal("Set") != 20*options->numCells*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Set"), 20*options->numCells*num);
   }
-  if (logger.getDeallocationTotal() != 20*options->numCells*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal(), 20*options->numCells*num);
+  if (logger.getDeallocationTotal("Set") != 20*options->numCells*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Set"), 20*options->numCells*num);
   }
   PetscFunctionReturn(0);
 }
@@ -117,22 +119,30 @@ PetscErrorCode SetTest(const Options *options)
 #define __FUNCT__ "LabelTest"
 PetscErrorCode LabelTest(const Options *options)
 {
-  Obj<ALE::Mesh> mesh;
-  const PetscInt num = options->number;
-  PetscErrorCode ierr;
+  ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
+  const PetscInt     num    = options->number;
 
   PetscFunctionBegin;
-  ierr = CreateSquareMesh(mesh, options);CHKERRQ(ierr);
+  logger.stagePush("Label");
   for(PetscInt i = 0; i < num; ++i) {
-    ostringstream                             name;
-    name << "label: " << i;
-    const Obj<ALE::Mesh::label_type>&         label = mesh->createLabel(name.str());
-    const Obj<ALE::Mesh::label_sequence>&     cells = mesh->heightStratum(0);
-    const ALE::Mesh::label_sequence::iterator end   = cells->end();
+    ALE::LabelSifter<int, int, ALE::malloc_allocator<ALE::NewSifterDef::ArrowContainer<int, int>::traits::arrow_type> > label;
 
-    for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
-      mesh->setValue(label, *c_iter, 1);
+    for(PetscInt c = 0; c < options->numCells; ++c) {
+      label.setCone(1, c);
     }
+  }
+  logger.stagePop();
+  if (logger.getNumAllocations("Label") != (options->numCells+1)*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Label"), (options->numCells+1)*num);
+  }
+  if (logger.getNumDeallocations("Label") != (options->numCells+1)*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Label"), (options->numCells+1)*num);
+  }
+  if (logger.getAllocationTotal("Label") != 40*(options->numCells+1)*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Label"), 40*(options->numCells+1)*num);
+  }
+  if (logger.getDeallocationTotal("Label") != 40*(options->numCells+1)*num) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Label"), 40*(options->numCells+1)*num);
   }
   PetscFunctionReturn(0);
 }

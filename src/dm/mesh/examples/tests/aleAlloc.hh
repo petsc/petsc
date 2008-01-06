@@ -1,5 +1,7 @@
 #define ALE_HAVE_CXX_ABI
 
+#include <deque>
+
 #ifdef ALE_HAVE_CXX_ABI
 #include <cxxabi.h>
 #endif
@@ -15,10 +17,13 @@ namespace ALE {
       Log(): num(0), total(0) {};
     };
     typedef std::map<std::string, std::pair<Log, Log> > stageLog;
+    typedef std::deque<std::string>                     names;
   protected:
+    int      _debug;
+    names    stageNames;
     stageLog stages;
   protected:
-    MemoryLogger() {};
+    MemoryLogger(): _debug(0) {stageNames.push_front("default");};
   public:
     ~MemoryLogger() {};
     static MemoryLogger& singleton() {
@@ -26,27 +31,33 @@ namespace ALE {
 
       return singleton;
     };
+    int  debug() {return _debug;};
+    void setDebug(int debug) {_debug = debug;};
   public:
-    void logAllocation(const std::string& className, int bytes) {logAllocation("default", className, bytes);};
+    void stagePush(const std::string& name) {stageNames.push_front(name);};
+    void stagePop() {stageNames.pop_front();};
+    void logAllocation(const std::string& className, int bytes) {logAllocation(stageNames.front(), className, bytes);};
     void logAllocation(const std::string& stage, const std::string& className, int bytes) {
+      if (_debug) {std::cout << "Allocating " << bytes << " bytes for class " << className << std::endl;}
       stages[stage].first.num++;
       stages[stage].first.total += bytes;
       stages[stage].first.items[className] += bytes;
     };
-    void logDeallocation(const std::string& className, int bytes) {logDeallocation("default", className, bytes);};
+    void logDeallocation(const std::string& className, int bytes) {logDeallocation(stageNames.front(), className, bytes);};
     void logDeallocation(const std::string& stage, const std::string& className, int bytes) {
+      if (_debug) {std::cout << "Deallocating " << bytes << " bytes for class " << className << std::endl;}
       stages[stage].second.num++;
       stages[stage].second.total += bytes;
       stages[stage].second.items[className] += bytes;
     };
   public:
-    int getNumAllocations() {return getNumAllocations("default");};
+    int getNumAllocations() {return getNumAllocations(stageNames.front());};
     int getNumAllocations(const std::string& stage) {return stages[stage].first.num;};
-    int getNumDeallocations() {return getNumDeallocations("default");};
+    int getNumDeallocations() {return getNumDeallocations(stageNames.front());};
     int getNumDeallocations(const std::string& stage) {return stages[stage].second.num;};
-    int getAllocationTotal() {return getAllocationTotal("default");};
+    int getAllocationTotal() {return getAllocationTotal(stageNames.front());};
     int getAllocationTotal(const std::string& stage) {return stages[stage].first.total;};
-    int getDeallocationTotal() {return getDeallocationTotal("default");};
+    int getDeallocationTotal() {return getDeallocationTotal(stageNames.front());};
     int getDeallocationTotal(const std::string& stage) {return stages[stage].second.total;};
   public:
     template<typename T>
