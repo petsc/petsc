@@ -362,16 +362,21 @@ namespace ALE {
   };
 
   // This is the main smart pointer class.
-  template<class X> 
+  template<class X, typename A = malloc_allocator<X> > 
   class Obj {
   public:
-    // Types 
+    // Types
+#if 1
+    typedef A                                               Allocator;
+    typedef typename Allocator::template rebind<int>::other Allocator_int;
+#else
 #ifdef ALE_USE_LOGGING
     typedef logged_allocator<X,true>      Allocator;
     typedef logged_allocator<int,true>    Allocator_int;
 #else
     typedef polymorphic_allocator<X>      Allocator;
     typedef polymorphic_allocator<int>    Allocator_int;
+#endif
 #endif
     typedef typename Allocator::size_type size_type;
   public:
@@ -390,6 +395,7 @@ namespace ALE {
     Obj() : objPtr((X *)NULL), refCnt((int*)NULL), sz(0) {this->createAllocators();};
     Obj(const X& x);
     Obj(X *xx);
+    Obj(X *xx, size_type sz);
     Obj(const Obj& obj);
     virtual ~Obj();
 
@@ -434,16 +440,16 @@ namespace ALE {
 
   // Constructors 
   // New reference
-  template <class X>
-  Obj<X>::Obj(const X& x) {
+  template <class X, typename A>
+  Obj<X,A>::Obj(const X& x) {
     this->createAllocators();
     this->refCnt = NULL;
     this->create(x);
   }
   
   // Stolen reference
-  template <class X>
-  Obj<X>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer 
+  template <class X, typename A>
+  Obj<X,A>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer 
                      // (e.g., we assume the pointer was obtained with new)
     this->createAllocators();
     if (xx) {
@@ -457,9 +463,24 @@ namespace ALE {
       this->sz = 0;
     }
   }
+
+  // Work around for thing allocated with an allocator
+  template <class X, typename A>
+  Obj<X,A>::Obj(X *xx, size_type sz){// such an object will be destroyed by the allocator
+    this->createAllocators();
+    if (xx) {
+      this->objPtr = xx; 
+      this->refCnt = this->int_allocator->create(1);
+      this->sz     = sz;
+    } else {
+      this->objPtr = NULL; 
+      this->refCnt = NULL;
+      this->sz = 0;
+    }
+  }
   
-  template <class X>
-  Obj<X>::Obj(X *_xx, int *_refCnt, size_type _sz) {  // This is intended to be private.
+  template <class X, typename A>
+  Obj<X,A>::Obj(X *_xx, int *_refCnt, size_type _sz) {  // This is intended to be private.
     this->createAllocators();
     if (!_xx) {
       throw ALE::Exception("Making an Obj with a NULL objPtr");
@@ -473,8 +494,8 @@ namespace ALE {
     //}
   }
   
-  template <class X>
-  Obj<X>::Obj(const Obj& obj) {
+  template <class X, typename A>
+  Obj<X,A>::Obj(const Obj& obj) {
     this->createAllocators();
     this->objPtr = obj.objPtr;
     this->refCnt = obj.refCnt;
@@ -488,24 +509,24 @@ namespace ALE {
   }
 
   // Destructor
-  template <class X>
-  Obj<X>::~Obj(){
+  template <class X, typename A>
+  Obj<X,A>::~Obj(){
     this->destroy();
     this->destroyAllocators();
   }
 
-  template <class X>
-  void Obj<X>::createAllocators() {
+  template <class X, typename A>
+  void Obj<X,A>::createAllocators() {
     this->handleAllocators(true);
   }
 
-  template <class X>
-  void Obj<X>::destroyAllocators() {
+  template <class X, typename A>
+  void Obj<X,A>::destroyAllocators() {
     this->handleAllocators(false);
   }
 
-  template <class X>
-  void Obj<X>::handleAllocators(const bool create) {
+  template <class X, typename A>
+  void Obj<X,A>::handleAllocators(const bool create) {
     static Allocator_int *s_int_allocator = NULL;
     static Allocator     *s_allocator     = NULL;
     static int            s_allocRefCnt   = 0;
@@ -528,8 +549,8 @@ namespace ALE {
     }
   }
 
-  template <class X>
-  Obj<X>& Obj<X>::create(const X& x) {
+  template <class X, typename A>
+  Obj<X,A>& Obj<X,A>::create(const X& x) {
     // Destroy the old state
     this->destroy();
     // Create the new state
@@ -542,8 +563,8 @@ namespace ALE {
     return *this;
   }
 
-  template <class X>
-  void Obj<X>::destroy() {
+  template <class X, typename A>
+  void Obj<X,A>::destroy() {
     if(ALE::getVerbosity() > 3) {
 #ifdef ALE_USE_DEBUGGING
       const char *id_name = ALE::getClassName<X>();
@@ -590,8 +611,8 @@ namespace ALE {
   }
 
   // assignment operator
-  template <class X>
-  Obj<X>& Obj<X>::operator=(const Obj<X>& obj) {
+  template <class X, typename A>
+  Obj<X,A>& Obj<X,A>::operator=(const Obj<X,A>& obj) {
     if(this->objPtr == obj.objPtr) {return *this;}
     // Destroy 'this' Obj -- it will properly release the underlying object if the reference count is exhausted.
     if(this->objPtr) {
@@ -608,8 +629,8 @@ namespace ALE {
   }
 
   // conversion operator, preserves 'this'
-  template<class X> template<class Y> 
-  Obj<X>::operator Obj<Y> const() {
+  template<class X, typename A> template<class Y> 
+  Obj<X,A>::operator Obj<Y> const() {
     // We attempt to cast X* objPtr to Y* using dynamic_
 #ifdef ALE_USE_DEBUGGING
     if(ALE::getVerbosity() > 1) {
@@ -635,8 +656,8 @@ namespace ALE {
   }
 
   // assignment-conversion operator
-  template<class X> template<class Y> 
-  Obj<X>& Obj<X>::operator=(const Obj<Y>& obj) {
+  template<class X, typename A> template<class Y> 
+  Obj<X,A>& Obj<X,A>::operator=(const Obj<Y>& obj) {
     // We attempt to cast Y* obj.objPtr to X* using dynamic_cast
     X* xObjPtr = dynamic_cast<X*>(obj.objPtr);
     // If the cast failed, throw an exception
@@ -665,8 +686,8 @@ namespace ALE {
   }
  
   // copy operator (USE WITH CAUTION)
-  template<class X> template<class Y> 
-  Obj<X>& Obj<X>::copy(const Obj<Y>& obj) {
+  template<class X, typename A> template<class Y> 
+  Obj<X,A>& Obj<X,A>::copy(const Obj<Y>& obj) {
     if(this->isNull() || obj.isNull()) {
       throw(Exception("Copying to or from a null Obj"));
     }

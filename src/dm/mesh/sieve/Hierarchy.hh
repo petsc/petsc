@@ -149,10 +149,10 @@ double Curvature(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type v) {
       ALE::Mesh::sieve_type::supportArray::iterator f_iter_end = faces->end();
       while (f_iter != f_iter_end) {
         if (s->support(*f_iter)->size() == 1) { //boundary edge
-          ALE::Obj<ALE::Mesh::sieve_type::coneSequence> tips = s->cone(*f_iter);
+          ALE::Obj<ALE::Mesh::sieve_type::coneArray> tips = s->nCone(*f_iter, 2);
           if (tips->size() != 3) throw ALE::Exception("Curvature: wrong size face");
-          ALE::Mesh::sieve_type::coneSequence::iterator tf_iter = tips->begin();
-          ALE::Mesh::sieve_type::coneSequence::iterator tf_iter_end = tips->end();
+          ALE::Mesh::sieve_type::coneArray::iterator tf_iter = tips->begin();
+          ALE::Mesh::sieve_type::coneArray::iterator tf_iter_end = tips->end();
           int index = 0;
           ALE::Mesh::point_type v_op[2];
           while (tf_iter != tf_iter_end) {

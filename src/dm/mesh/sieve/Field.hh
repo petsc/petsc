@@ -833,7 +833,7 @@ namespace ALE {
   //     We must eliminate restrict() since it does not correspond to the constrained system
   //   Numbering will have to be rewritten to calculate correct mappings
   //     I think we can just generate multiple tuples per point
-  template<typename Point_, typename Value_>
+  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_> >
   class GeneralSection : public ALE::ParallelObject {
   public:
     typedef Point_                                 point_type;
@@ -845,6 +845,9 @@ namespace ALE {
     typedef value_type *                           values_type;
     typedef std::pair<const int *, const int *>    customAtlasInd_type;
     typedef std::pair<customAtlasInd_type, bool>   customAtlas_type;
+    typedef Alloc_                                                  alloc_type;
+    typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
+    typedef typename atlas_alloc_type::pointer                      atlas_ptr;
   protected:
     Obj<atlas_type> _atlas;
     Obj<atlas_type> _atlasNew;
@@ -852,6 +855,7 @@ namespace ALE {
     bool            _sharedStorage;
     int             _sharedStorageSize;
     Obj<bc_type>    _bc;
+    alloc_type      _allocator;
     std::vector<Obj<atlas_type> > _spaces;
     std::vector<Obj<bc_type> >    _bcs;
     // Optimization
@@ -859,18 +863,25 @@ namespace ALE {
     std::vector<customAtlas_type> _customUpdateAtlas;
   public:
     GeneralSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
-      this->_atlas         = new atlas_type(comm, debug);
+      atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
+      atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
+      this->_atlas         = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
+      ///this->_atlas         = new atlas_type(comm, debug);
       this->_atlasNew      = NULL;
       this->_array         = NULL;
       this->_sharedStorage = false;
       this->_bc            = new bc_type(comm, debug);
     };
     GeneralSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL), _sharedStorage(false), _sharedStorageSize(0) {
-      this->_bc       = new bc_type(comm, debug);
+      this->_bc = new bc_type(comm, debug);
     };
     virtual ~GeneralSection() {
       if (this->_array && !this->_sharedStorage) {
-        delete [] this->_array;
+        const int totalSize = this->sizeWithBC();
+
+        for(int i = 0; i < totalSize; ++i) {this->_allocator.destroy(this->_array+i);}
+        this->_allocator.deallocate(this->_array, totalSize);
+        ///delete [] this->_array;
         this->_array = NULL;
       }
       for(std::vector<customAtlas_type>::iterator a_iter = this->_customRestrictAtlas.begin(); a_iter != this->_customRestrictAtlas.end(); ++a_iter) {
@@ -893,9 +904,17 @@ namespace ALE {
       static int         maxSize = 0;
 
       if (size > maxSize) {
+        const value_type dummy = 0.0;
+
+        if (array) {
+          for(int i = 0; i < maxSize; ++i) {this->_allocator.destroy(array+i);}
+          this->_allocator.deallocate(array, maxSize);
+          ///delete [] array;
+        }
         maxSize = size;
-        if (array) delete [] array;
-        array = new value_type[maxSize];
+        array   = this->_allocator.allocate(maxSize);
+        for(int i = 0; i < maxSize; ++i) {this->_allocator.construct(array+i, dummy);}
+        ///array = new value_type[maxSize];
       };
       return array;
     };
@@ -968,6 +987,7 @@ namespace ALE {
           this->_bc->updatePoint(*p_iter, dofs);
         }
       }
+      delete [] dofs;
     };
   public: // Sizes
     void clear() {
@@ -1123,15 +1143,24 @@ namespace ALE {
   public: // Allocation
     void allocateStorage() {
       const int totalSize = this->sizeWithBC();
+      const value_type dummy = 0.0;
 
-      this->_array             = new value_type[totalSize];
+      this->_array             = this->_allocator.allocate(totalSize);
+      ///this->_array             = new value_type[totalSize];
       this->_sharedStorage     = false;
       this->_sharedStorageSize = 0;
-      PetscMemzero(this->_array, totalSize * sizeof(value_type));
+      for(int i = 0; i < totalSize; ++i) {this->_allocator.construct(this->_array+i, dummy);}
+      ///PetscMemzero(this->_array, totalSize * sizeof(value_type));
       this->_bc->allocatePoint();
     };
     void replaceStorage(value_type *newArray, const bool sharedStorage = false, const int sharedStorageSize = 0) {
-      if (this->_array && !this->_sharedStorage) {delete [] this->_array;}
+      if (this->_array && !this->_sharedStorage) {
+        const int totalSize = this->sizeWithBC();
+
+        for(int i = 0; i < totalSize; ++i) {this->_allocator.destroy(this->_array+i);}
+        this->_allocator.deallocate(this->_array, totalSize);
+        ///delete [] this->_array;
+      }
       this->_array             = newArray;
       this->_sharedStorage     = sharedStorage;
       this->_sharedStorageSize = sharedStorageSize;
