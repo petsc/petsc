@@ -1,6 +1,8 @@
 #define ALE_HAVE_CXX_ABI
 
 #include <deque>
+#include <map>
+#include <iostream>
 
 #ifdef ALE_HAVE_CXX_ABI
 #include <cxxabi.h>
@@ -108,11 +110,16 @@ namespace ALE {
     struct rebind {typedef malloc_allocator<U> other;};
   protected:
     const char *className;
+    //
+    // Dmitry's crap that has to be sorted out
+    //
   public:
-    malloc_allocator() {className = ALE::MemoryLogger::getClassName<T>();}
-    malloc_allocator(const malloc_allocator&) {className = ALE::MemoryLogger::getClassName<T>();}
+    int sz;
+  public:
+    malloc_allocator() {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
+    malloc_allocator(const malloc_allocator&) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
     template <class U> 
-    malloc_allocator(const malloc_allocator<U>&) {className = ALE::MemoryLogger::getClassName<T>();}
+    malloc_allocator(const malloc_allocator<U>&) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
     ~malloc_allocator() {ALE::MemoryLogger::restoreClassName(className);}
   public:
     pointer address(reference x) const {return &x;}
@@ -135,6 +142,28 @@ namespace ALE {
     void construct(pointer p, const value_type& x) {new(p) value_type(x);}
 
     void destroy(pointer p) {p->~value_type();}
+
+    //
+    // Dmitry's crap that has to be sorted out
+    //
+  public:
+    pointer create(const value_type& x = value_type()) {
+      pointer p = (pointer) allocate(1);
+      construct(p, x);
+      return p;
+    };
+
+    void del(pointer p) {
+      destroy(p);
+      deallocate(p, 1);
+    };
+
+    // This is just to be compatible with Dmitry's weird crap for now
+    void del(pointer p, size_type size) {
+      if (size != sizeof(value_type)) throw std::exception();
+      destroy(p);
+      deallocate(p, 1);
+    };
   private:
     void operator=(const malloc_allocator&);
   };

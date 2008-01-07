@@ -845,6 +845,9 @@ namespace ALE {
     typedef value_type *                           values_type;
     typedef std::pair<const int *, const int *>    customAtlasInd_type;
     typedef std::pair<customAtlasInd_type, bool>   customAtlas_type;
+    typedef Alloc_                                                  alloc_type;
+    typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
+    typedef typename atlas_alloc_type::pointer                      atlas_ptr;
   protected:
     Obj<atlas_type> _atlas;
     Obj<atlas_type> _atlasNew;
@@ -852,7 +855,7 @@ namespace ALE {
     bool            _sharedStorage;
     int             _sharedStorageSize;
     Obj<bc_type>    _bc;
-    Alloc_          _allocator;
+    alloc_type      _allocator;
     std::vector<Obj<atlas_type> > _spaces;
     std::vector<Obj<bc_type> >    _bcs;
     // Optimization
@@ -860,7 +863,10 @@ namespace ALE {
     std::vector<customAtlas_type> _customUpdateAtlas;
   public:
     GeneralSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
-      this->_atlas         = new atlas_type(comm, debug);
+      atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
+      atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
+      this->_atlas         = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
+      ///this->_atlas         = new atlas_type(comm, debug);
       this->_atlasNew      = NULL;
       this->_array         = NULL;
       this->_sharedStorage = false;
@@ -898,9 +904,17 @@ namespace ALE {
       static int         maxSize = 0;
 
       if (size > maxSize) {
+        const value_type dummy = 0.0;
+
+        if (array) {
+          for(int i = 0; i < maxSize; ++i) {this->_allocator.destroy(array+i);}
+          this->_allocator.deallocate(array, maxSize);
+          ///delete [] array;
+        }
         maxSize = size;
-        if (array) delete [] array;
-        array = new value_type[maxSize];
+        array   = this->_allocator.allocate(maxSize);
+        for(int i = 0; i < maxSize; ++i) {this->_allocator.construct(array+i, dummy);}
+        ///array = new value_type[maxSize];
       };
       return array;
     };

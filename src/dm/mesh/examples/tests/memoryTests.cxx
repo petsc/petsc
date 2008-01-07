@@ -1,9 +1,9 @@
 static char help[] = "Sieve Package Memory Tests.\n\n";
 
+#include <aleAlloc.hh>
+
 #include <petscmesh.hh>
 #include <set>
-
-#include <aleAlloc.hh>
 
 using ALE::Obj;
 
@@ -153,12 +153,21 @@ PetscErrorCode SectionTest(const Options *options)
 {
   ALE::MemoryLogger& logger   = ALE::MemoryLogger::singleton();
   const PetscInt     num      = options->number;
-  const PetscInt     numAlloc = options->number;
-  const PetscInt     numBytes = 8*options->components*options->numCells*options->number;
+  // Allocs:
+  //   Atlas
+  //   Atlas Obj
+  //     Atlas Obj
+  //   BC Obj
+  //     Atlas Obj
+  //       Atlas Obj
+  //   Data
+  const PetscInt     numAlloc = 7*options->number;
+  const PetscInt     numBytes = (84+4*5+8*options->components*options->numCells)*options->number;
   double            *values;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  logger.setDebug(1);
   logger.stagePush("Section");
   ierr = PetscMalloc(options->components * sizeof(double), &values);CHKERRQ(ierr);
   for(PetscInt c = 0; c < options->components; ++c) {values[c] = 1.0;}
