@@ -148,6 +148,49 @@ PetscErrorCode LabelTest(const Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SectionTest"
+PetscErrorCode SectionTest(const Options *options)
+{
+  ALE::MemoryLogger& logger   = ALE::MemoryLogger::singleton();
+  const PetscInt     num      = options->number;
+  const PetscInt     numAlloc = options->number;
+  const PetscInt     numBytes = 8*options->components*options->numCells*options->number;
+  double            *values;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  logger.stagePush("Section");
+  ierr = PetscMalloc(options->components * sizeof(double), &values);CHKERRQ(ierr);
+  for(PetscInt c = 0; c < options->components; ++c) {values[c] = 1.0;}
+  for(PetscInt i = 0; i < num; ++i) {
+    ALE::GeneralSection<int, double, ALE::malloc_allocator<double> > section(PETSC_COMM_SELF);
+
+    for(PetscInt c = 0; c < options->numCells; ++c) {
+      section.setFiberDimension(c, options->components);
+    }
+    section.allocatePoint();
+    for(PetscInt c = 0; c < options->numCells; ++c) {
+      section.updatePoint(c, values);
+    }
+  }
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  logger.stagePop();
+  if (logger.getNumAllocations("Section") != numAlloc) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Section"), numAlloc);
+  }
+  if (logger.getNumDeallocations("Section") != numAlloc) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Section"), numAlloc);
+  }
+  if (logger.getAllocationTotal("Section") != numBytes) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Section"), numBytes);
+  }
+  if (logger.getDeallocationTotal("Section") != numBytes) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Section"), numBytes);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MeshTest"
 PetscErrorCode MeshTest(const Options *options)
 {
@@ -168,8 +211,8 @@ PetscErrorCode MeshTest(const Options *options)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SectionTest"
-PetscErrorCode SectionTest(const Options *options)
+#define __FUNCT__ "SectionTest2"
+PetscErrorCode SectionTest2(const Options *options)
 {
   Obj<ALE::Mesh> mesh;
   Obj<ALE::Mesh> parallelMesh;
@@ -221,8 +264,8 @@ PetscErrorCode RunUnitTests(const Options *options)
   PetscFunctionBegin;
   if (options->set)     {ierr = SetTest(options);CHKERRQ(ierr);}
   if (options->label)   {ierr = LabelTest(options);CHKERRQ(ierr);}
-  if (options->mesh)    {ierr = MeshTest(options);CHKERRQ(ierr);}
   if (options->section) {ierr = SectionTest(options);CHKERRQ(ierr);}
+  if (options->mesh)    {ierr = MeshTest(options);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
