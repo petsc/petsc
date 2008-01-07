@@ -44,7 +44,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagRegisterEnum(PetscBag,void*,const 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagRegisterTruth(PetscBag,void*,PetscTruth,const  char*,const  char*);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagGetName(PetscBag, char **name);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagGetName(PetscBag, char **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagSetName(PetscBag, const char *, const char *);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag,PetscViewer);

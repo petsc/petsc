@@ -868,7 +868,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
    memory was not freed.
 
 */
-  ierr = PetscClearMalloc();CHKERRQ(ierr);
+  ierr = PetscMallocClear();CHKERRQ(ierr);
   PetscInitializeCalled = PETSC_FALSE;
   PetscFinalizeCalled   = PETSC_TRUE;
   PetscFunctionReturn(ierr);

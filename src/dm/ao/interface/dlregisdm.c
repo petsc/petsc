@@ -45,7 +45,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage() {
 .keywords: AO, DA, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
+PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) 
+{
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char             *className;

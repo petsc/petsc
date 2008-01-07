@@ -443,6 +443,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrtolower(char a[])
   PetscFunctionReturn(0);
 }
 
+struct _p_PetscToken {char token;char *array;char *current;};
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTokenFind"
 /*@C
@@ -465,7 +468,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrtolower(char a[])
 
 .seealso: PetscTokenCreate(), PetscTokenDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscTokenFind(PetscToken *a,char *result[])
+PetscErrorCode PETSC_DLLEXPORT PetscTokenFind(PetscToken a,char *result[])
 {
   char *ptr = a->current;
 
@@ -511,12 +514,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenFind(PetscToken *a,char *result[])
 
 .seealso: PetscTokenFind(), PetscTokenDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscTokenCreate(const char a[],const char b,PetscToken **t)
+PetscErrorCode PETSC_DLLEXPORT PetscTokenCreate(const char a[],const char b,PetscToken *t)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PetscToken,t);CHKERRQ(ierr);
+  ierr = PetscNew(struct _p_PetscToken,t);CHKERRQ(ierr);
   ierr = PetscStrallocpy(a,&(*t)->array);CHKERRQ(ierr);
   (*t)->current = (*t)->array;   
   (*t)->token   = b;
@@ -537,7 +540,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenCreate(const char a[],const char b,Pets
 
 .seealso: PetscTokenCreate(), PetscTokenFind()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscTokenDestroy(PetscToken *a)
+PetscErrorCode PETSC_DLLEXPORT PetscTokenDestroy(PetscToken a)
 {
   PetscErrorCode ierr;
 

@@ -152,7 +152,7 @@ extern FILE *petsc_history;
        PetscErrorCode PetscInfo(void *vobj, const char message[], ...))  
 
     Input Parameter:
-+   vobj - object most closely associated with the logging statement
++   vobj - object most closely associated with the logging statement or PETSC_NULL
 -   message - logging message, using standard "printf" format
 
     Options Database Key:

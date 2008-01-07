@@ -29,7 +29,7 @@ PetscErrorCode PetscSetUseTrMalloc_Private(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscSetMalloc(PetscTrMallocDefault,PetscTrFreeDefault);CHKERRQ(ierr);
+  ierr         = PetscMallocSet(PetscTrMallocDefault,PetscTrFreeDefault);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
