@@ -601,7 +601,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryLoadInfo(PetscViewer viewer)
   char               string[256],*first,*second,*final;
   size_t             len;
   PetscErrorCode     ierr;
-  PetscToken         *token;  
+  PetscToken         token;  
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
   PetscFunctionBegin;
