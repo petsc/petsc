@@ -270,7 +270,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4WriteSDS(PetscViewer,float 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5Open(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 #ifdef PETSC_HAVE_HDF5
 #include <hdf5.h>
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5GetFileId(PetscViewer viewer, hid_t *file_id);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5GetFileId(PetscViewer,hid_t*);
 #endif
 
 /*

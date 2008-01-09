@@ -61,7 +61,12 @@ def getenums(filename):
             for i in range(len(values)):
               values[i] = values[i] + " = " + str(i)
             
-	  enums[name] = values
+          ivalues = []
+          for i in values:
+            if i[0] == " ": i = i[1:]
+            ivalues.append(i)
+
+	  enums[name] = ivalues
           break
         line = f.readline()
         struct = struct + line
@@ -117,7 +122,11 @@ def getstructs(filename):
           values = struct[struct.find("{")+1:struct.find(";}")]
           if not values.find('#') == -1: break
           values = values.split(";")
-	  structs[name] = values
+          ivalues = []
+          for i in values:
+            if i[0] == " ": i = i[1:]
+            ivalues.append(i)
+	  structs[name] = ivalues
           break
         line = f.readline()
         struct = struct + line
@@ -215,7 +224,9 @@ def getaliases():
   aliases['PetscLogDouble']     = 'double'
   aliases['PetscTablePosition'] = 'int*'
   aliases['ISColoringValue']    = 'ushort'
-  aliases['PetscEvent']         = 'int'              
+  aliases['PetscEvent']         = 'int'
+  # for HDF5
+  aliases['hid_t']              = 'int'
   
 def main(args):
   for i in args:
@@ -225,12 +236,16 @@ def main(args):
   getaliases()
   for i in args:
     getstructs(i)
+  # this classes ONLY have static methods
   classes['Petsc'] = {}
   classes['PetscLog'] = {}
   classes['PetscSort'] = {}
   classes['PetscStr'] = {}
   classes['PetscBinary'] = {}
-  classes['PetscOptions'] = {}      
+  classes['PetscOptions'] = {}
+  classes['PetscMalloc'] = {}
+  classes['PetscOpenMP'] = {}
+  classes['PetscToken'] = {}        
   for i in args:
     getclasses(i)
   for i in args:

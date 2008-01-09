@@ -424,7 +424,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary
   size_t         len;
   PetscTruth     match,dir;
   char           program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
-  PetscToken     *token;
+  PetscToken     token;
 
   PetscFunctionBegin;
 

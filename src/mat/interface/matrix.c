@@ -5342,7 +5342,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBlockSize(Mat mat,PetscInt *bs)
    MatSetBlockSize - Sets the matrix block size; for many matrix types you 
      cannot use this and MUST set the blocksize when you preallocate the matrix
    
-   Not Collective
+   Collective on Mat
 
    Input Parameters:
 +  mat - the matrix

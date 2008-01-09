@@ -26,10 +26,10 @@ def main(args):
   structs = pickle.load(file)
   aliases = pickle.load(file)
   classes = pickle.load(file)
-  outfile = open('petsc.hh','w')
+  outfile = open('petsc.cpp','w')
 
   def ClassToPointer(a):
-    if a in classes: return a+"*"
+    if a in classes: return a+"_*"
     else: return a
     
   for i in aliases:
@@ -59,17 +59,18 @@ def main(args):
   skeys = classes.keys()
   skeys.sort()
   for i in skeys:
-    outfile.write("class "+i+";\n")
+    outfile.write("class "+i+"_;\n")
   outfile.write("\n")
   
   skeys = structs.keys()
   skeys.sort()
   for i in skeys:
-    outfile.write("struct "+i+"\n")
+    outfile.write("struct "+i+"_\n")
     outfile.write("{\n")
     for j in structs[i]:
       l = j[:j.find(" ")]
-      if l in classes: j = l+"* "+j[j.find(" "):]
+      if l in classes:
+        j = l+"* "+j[j.find(" "):]
       outfile.write("    "+ClassToPointer(j)+";\n")
     outfile.write("};\n")      
   outfile.write("\n")
@@ -82,7 +83,7 @@ def main(args):
     sskeys = classes[i].keys()
     sskeys.sort()
     for j in sskeys:
-      if not classes[i][j][0] == i:
+      if not classes[i][j] or not classes[i][j][0] == i:
         outfile.write("  static ")
         outfile.write("  int "+j+"(")
         cnt = 0
@@ -93,7 +94,7 @@ def main(args):
           cnt = cnt + 1
         outfile.write("){return 0;};\n")
     for j in sskeys:
-      if classes[i][j][0] == i and not j == 'Destroy':
+      if classes[i][j] and (classes[i][j][0] == i and not j == 'Destroy'):
         outfile.write("  int "+j+"(")
         cnt = 0
         for k in classes[i][j]:

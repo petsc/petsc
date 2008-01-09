@@ -111,7 +111,7 @@
       call PetscSleep(1,ierr)
       call PetscLogEventEnd(USER_EVENT1,ierr)
 
-      call PetscInfo('PETSc info message\n',ierr)
+      call PetscInfo('PETSc info message\n'//'Another line\n',ierr)
       call PetscFinalize(ierr)
 
       end

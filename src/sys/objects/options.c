@@ -218,7 +218,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
 {
   char           *first,*second;
   PetscErrorCode ierr;
-  PetscToken     *token;
+  PetscToken     token;
   PetscTruth     key;
 
   PetscFunctionBegin;
@@ -272,7 +272,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
   PetscErrorCode ierr;
   size_t         i,len,startIndex;
   FILE           *fd;
-  PetscToken     *token;
+  PetscToken     token;
   int            err;
 
   PetscFunctionBegin;
@@ -1263,7 +1263,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetScalar(const char pre[],const char
       ierr = PetscOptionsAtod(value,dvalue);CHKERRQ(ierr);
 #else
       PetscReal  re=0.0,im=0.0;
-      PetscToken *token;
+      PetscToken token;
       char       *tvalue = 0;
 
       ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
@@ -1323,7 +1323,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetRealArray(const char pre[],const c
   PetscErrorCode ierr;
   PetscInt       n = 0;
   PetscTruth     flag;
-  PetscToken     *token;
+  PetscToken     token;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
@@ -1384,7 +1384,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
   PetscInt       n = 0,i,start,end;
   size_t         len;
   PetscTruth     flag,foundrange;
-  PetscToken     *token;
+  PetscToken     token;
 
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);
@@ -1536,7 +1536,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetStringArray(const char pre[],const
   PetscErrorCode ierr;
   PetscInt       n;
   PetscTruth     flag;
-  PetscToken     *token;
+  PetscToken     token;
  
   PetscFunctionBegin;
   PetscValidCharPointer(name,2);

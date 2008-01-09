@@ -985,8 +985,8 @@ M*/
 
 EXTERN PETSC_DLLEXPORT PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
 EXTERN PETSC_DLLEXPORT PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSetMalloc(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscClearMalloc(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscMallocClear(void);
 
 /*
    Routines for tracing memory corruption/bleeding with default PETSc 
@@ -1090,11 +1090,11 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrreplace(MPI_Comm,const char[],ch
 
 .seealso: PetscTokenCreate(), PetscTokenFind(), PetscTokenDestroy()
 S*/
-typedef struct {char token;char *array;char *current;} PetscToken;
+typedef struct _p_PetscToken* PetscToken;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenCreate(const char[],const char,PetscToken**);
-EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenFind(PetscToken*,char *[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenDestroy(PetscToken*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenCreate(const char[],const char,PetscToken*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenFind(PetscToken,char *[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenDestroy(PetscToken);
 
 /*
    These are  MPI operations for MPI_Allreduce() etc
@@ -1179,8 +1179,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFinalized(PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void);
 EXTERN PetscErrorCode PetscInitializeFortran(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int*,char ***);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***args);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEnd(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char[]); 
