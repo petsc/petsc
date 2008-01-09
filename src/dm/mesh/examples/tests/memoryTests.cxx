@@ -8,6 +8,7 @@ static char help[] = "Sieve Package Memory Tests.\n\n";
 using ALE::Obj;
 
 typedef struct {
+  PetscInt   debug;
   // Classes
   PetscTruth set;         // Run the set tests
   PetscTruth sifter;      // Run the Sifter tests
@@ -31,9 +32,11 @@ typedef struct {
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
-  PetscErrorCode ierr;
+  ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  options->debug       = 0;
   options->set         = PETSC_FALSE;
   options->sifter      = PETSC_FALSE;
   options->label       = PETSC_FALSE;
@@ -49,6 +52,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->distribute  = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "Debugging flag", "memTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-set", "Run set tests", "memTests", options->set, &options->set, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-sifter", "Run Sifter tests", "memTests", options->sifter, &options->sifter, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-label", "Run Label tests", "memTests", options->label, &options->label, PETSC_NULL);CHKERRQ(ierr);
@@ -63,6 +67,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-share_atlas", "Share section atlases", "memTests", options->shareAtlas, &options->shareAtlas, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-distribute", "Distribute the section", "memTests", options->distribute, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
+
+  logger.setDebug(options->debug);
   PetscFunctionReturn(0);
 }
 
@@ -121,6 +127,12 @@ PetscErrorCode LabelTest(const Options *options)
 {
   ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
   const PetscInt     num    = options->number;
+  // Allocs:
+  //  coneSeq Obj
+  //  supportSeq Obj
+  //  arrows
+  const PetscInt     numAlloc = (2 + options->numCells+1)*options->number;
+  const PetscInt     numBytes = (4*2+40*(options->numCells+1))*options->number;
 
   PetscFunctionBegin;
   logger.stagePush("Label");
@@ -132,17 +144,17 @@ PetscErrorCode LabelTest(const Options *options)
     }
   }
   logger.stagePop();
-  if (logger.getNumAllocations("Label") != (options->numCells+1)*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Label"), (options->numCells+1)*num);
+  if (logger.getNumAllocations("Label") != numAlloc) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Label"), numAlloc);
   }
-  if (logger.getNumDeallocations("Label") != (options->numCells+1)*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Label"), (options->numCells+1)*num);
+  if (logger.getNumDeallocations("Label") != numAlloc) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Label"), numAlloc);
   }
-  if (logger.getAllocationTotal("Label") != 40*(options->numCells+1)*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Label"), 40*(options->numCells+1)*num);
+  if (logger.getAllocationTotal("Label") != numBytes) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Label"), numBytes);
   }
-  if (logger.getDeallocationTotal("Label") != 40*(options->numCells+1)*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Label"), 40*(options->numCells+1)*num);
+  if (logger.getDeallocationTotal("Label") != numBytes) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Label"), numBytes);
   }
   PetscFunctionReturn(0);
 }
@@ -154,20 +166,21 @@ PetscErrorCode SectionTest(const Options *options)
   ALE::MemoryLogger& logger   = ALE::MemoryLogger::singleton();
   const PetscInt     num      = options->number;
   // Allocs:
-  //   Atlas
-  //   Atlas Obj
-  //     Atlas Obj
-  //   BC Obj
-  //     Atlas Obj
-  //       Atlas Obj
+  //   Atlas (UniformSection) + Obj
+  //     Atlas (ConstantSection) + Obj
+  //       Atlas (points)
+  //     Data (sizes)
+  //   BC (Section) + Obj
+  //     Atlas (UniformSection) + Obj
+  //       Atlas (ConstantSection) + Obj
+  //     Data
   //   Data
-  const PetscInt     numAlloc = 7*options->number;
-  const PetscInt     numBytes = (84+4*5+8*options->components*options->numCells)*options->number;
+  const PetscInt     numAlloc = (12 + 2*options->numCells)*options->number;
+  const PetscInt     numBytes = ((100+4)+(68+4)+20*options->numCells+28*options->numCells+(88+4)+(100+4)+(68+4)+8*options->components*options->numCells)*options->number;
   double            *values;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  logger.setDebug(1);
   logger.stagePush("Section");
   ierr = PetscMalloc(options->components * sizeof(double), &values);CHKERRQ(ierr);
   for(PetscInt c = 0; c < options->components; ++c) {values[c] = 1.0;}
