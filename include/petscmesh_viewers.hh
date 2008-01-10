@@ -28,11 +28,16 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteVertices"
   static PetscErrorCode writeVertices(const Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
     const Obj<ALE::Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
-    const Obj<ALE::Mesh::numbering_type>&    vNumbering  = mesh->getFactory()->getNumbering(mesh, 0);
-    const int      embedDim = coordinates->getFiberDimension(*mesh->depthStratum(0)->begin());
+    const int                                embedDim    = coordinates->getFiberDimension(*mesh->depthStratum(0)->begin());
+    Obj<ALE::Mesh::numbering_type>           vNumbering;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
+    if (mesh->hasLabel("censored depth")) {
+      vNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", 0);
+    } else {
+      vNumbering = mesh->getFactory()->getNumbering(mesh, 0);
+    }
     ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", vNumbering->getGlobalSize());CHKERRQ(ierr);
     ierr = writeSection(coordinates, embedDim, vNumbering, viewer, 3);CHKERRQ(ierr);
     PetscFunctionReturn(0);

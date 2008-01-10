@@ -1,7 +1,6 @@
 static char help[] = "Sieve Package Memory Tests.\n\n";
 
-#include <aleAlloc.hh>
-
+#define ALE_HAVE_CXX_ABI
 #include <petscmesh.hh>
 #include <set>
 
