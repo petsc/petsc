@@ -520,7 +520,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrar
   size_t         len;
   PetscTruth     match,dir;
   char           program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
-  PetscToken     *token;
+  PetscToken     token;
 
   PetscFunctionBegin;
  
@@ -645,7 +645,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibr
   char           program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*libname1,fbuf[PETSC_MAX_PATH_LEN],*found,suffix[16],*f2;
   char           *func,*funcname,libname[PETSC_MAX_PATH_LEN],*lib;
   FILE           *fp;
-  PetscToken     *token1,*token2;
+  PetscToken     token1, token2;
   int            err;
 
   PetscFunctionBegin;

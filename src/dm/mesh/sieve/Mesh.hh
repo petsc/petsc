@@ -1154,6 +1154,7 @@ namespace ALE {
 #endif
     typedef base_type::sieve_type            sieve_type;
     typedef sieve_type::point_type           point_type;
+    typedef malloc_allocator<point_type>     alloc_type;
     typedef base_type::label_sequence        label_sequence;
     typedef base_type::real_section_type     real_section_type;
     typedef base_type::numbering_type        numbering_type;

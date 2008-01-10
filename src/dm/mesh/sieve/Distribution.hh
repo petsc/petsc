@@ -70,6 +70,7 @@ namespace ALE {
     typedef Bundle_                                                                     bundle_type;
     typedef typename bundle_type::sieve_type                                            sieve_type;
     typedef typename bundle_type::point_type                                            point_type;
+    typedef typename bundle_type::alloc_type                                            alloc_type;
     typedef typename ALE::New::Completion<bundle_type, typename sieve_type::point_type>                            sieveCompletion;
     typedef typename ALE::New::SectionCompletion<bundle_type, typename bundle_type::real_section_type::value_type> sectionCompletion;
     typedef typename sectionCompletion::send_overlap_type                               send_overlap_type;
@@ -334,8 +335,9 @@ namespace ALE {
       if (serialSection->debug()) {
         serialSection->view("Serial Section");
       }
-      typedef ALE::Field<send_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > send_section_type;
-      typedef ALE::Field<recv_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > recv_section_type;
+      typedef typename alloc_type::template rebind<typename Section::value_type>::other value_alloc_type;
+      typedef ALE::Field<send_overlap_type, int, ALE::Section<point_type, typename Section::value_type, value_alloc_type> > send_section_type;
+      typedef ALE::Field<recv_overlap_type, int, ALE::Section<point_type, typename Section::value_type, value_alloc_type> > recv_section_type;
       typedef ALE::New::SizeSection<Section> SectionSizer;
       Obj<Section>                 parallelSection = new Section(serialSection->comm(), serialSection->debug());
       const Obj<send_section_type> sendSection     = new send_section_type(serialSection->comm(), serialSection->debug());

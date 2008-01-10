@@ -17,6 +17,7 @@ namespace ALE {
       typedef int                                                                     point_type;
       typedef Value_                                                                  value_type;
       typedef Topology_                                                               mesh_topology_type;
+      typedef typename mesh_topology_type::alloc_type                                 alloc_type;
       typedef typename mesh_topology_type::sieve_type                                 sieve_type;
       typedef typename ALE::DiscreteSieve<point_type>                                 dsieve_type;
       typedef typename ALE::Topology<int, dsieve_type>                                topology_type;
@@ -102,8 +103,9 @@ namespace ALE {
       };
       template<typename SizerFiller, typename Filler, typename SendSection, typename RecvSection>
       static void completeSection(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<SizerFiller>& sizerFiller, const Filler& filler, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
-        typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, int> > send_sizer_type;
-        typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, int> > recv_sizer_type;
+        typedef typename alloc_type::template rebind<int>::other int_alloc_type;
+        typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, int, int_alloc_type> > send_sizer_type;
+        typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, int, int_alloc_type> > recv_sizer_type;
         Obj<send_sizer_type> sendSizer      = new send_sizer_type(sendSection->comm(), sendSection->debug());
         Obj<recv_sizer_type> recvSizer      = new recv_sizer_type(recvSection->comm(), sendSizer->getTag(), recvSection->debug());
         Obj<constant_sizer>  constSendSizer = new constant_sizer(sendSection->comm(), sendSection->debug());
