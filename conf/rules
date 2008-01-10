@@ -917,7 +917,8 @@ shared_cygwin:
 #   c) Checks that the corresponding archive or its libtool counterpart exists
 #   d) Checks whether an existing archive is newer than the shared library
 #   e) Executes target 'shared_arch' for any out-of-date library (The library basename is passed as LIBNAME)
-#   c) Removes 'tmp-petsc-shlib'
+#   f) If SELINUX is enabled, makes the sharedlibs selinux compatible
+#   g) Removes 'tmp-petsc-shlib'
 # The 'shared_arch' target is passed
 #   a) LIBNAME (the library basename)
 #   b) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
@@ -948,7 +949,10 @@ shared:
 	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \
                   cd $$cwd;\
 	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-petsc-shlib shared_arch; \
-	 	  if [ -x /usr/bin/chcon ]; then /usr/bin/chcon -t texrel_shlib_t  ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; fi; \
+	 	  if [ -x /usr/sbin/sestatus -a -x /usr/bin/chcon ]; then \
+                    seenabled=`/usr/sbin/sestatus  |grep 'SELinux status' | grep enabled`; \
+                    if [ "$$?" = 0 ]; then /usr/bin/chcon -t texrel_shlib_t  ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; fi; \
+                  fi; \
 	        fi; \
 	      fi; \
 	    done; \
