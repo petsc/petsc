@@ -16,6 +16,7 @@ typedef struct {
   PetscTruth sieve;       // Run the Sieve tests
   PetscTruth mesh;        // Run the Mesh tests
   PetscTruth section;     // Run the Section tests
+  PetscTruth sectionDist; // Run the Section distribution tests
   // Run flags
   PetscInt   number;      // Number of each class to create
   // Mesh flags
@@ -43,6 +44,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->sieve       = PETSC_FALSE;
   options->mesh        = PETSC_FALSE;
   options->section     = PETSC_FALSE;
+  options->sectionDist = PETSC_FALSE;
   options->number      = 0;
   options->numCells    = 8;
   options->interpolate = PETSC_FALSE;
@@ -59,6 +61,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-sieve", "Run Sieve tests", "memTests", options->sieve, &options->sieve, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-mesh", "Run Mesh tests", "memTests", options->mesh, &options->mesh, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-section", "Run Section tests", "memTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-sectionDist", "Run Section distribution tests", "memTests", options->sectionDist, &options->sectionDist, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-num", "Number of each class to create", "memTests", options->number, &options->number, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-numCells", "Number of mesh cells", "memTests", options->numCells, &options->numCells, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "memTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
@@ -185,7 +188,7 @@ PetscErrorCode SectionTest(const Options *options)
   ierr = PetscMalloc(options->components * sizeof(double), &values);CHKERRQ(ierr);
   for(PetscInt c = 0; c < options->components; ++c) {values[c] = 1.0;}
   for(PetscInt i = 0; i < num; ++i) {
-    ALE::GeneralSection<int, double, ALE::malloc_allocator<double> > section(PETSC_COMM_SELF);
+    ALE::GeneralSection<int, double, ALE::malloc_allocator<double> > section(PETSC_COMM_WORLD);
 
     for(PetscInt c = 0; c < options->numCells; ++c) {
       section.setFiberDimension(c, options->components);
@@ -208,6 +211,140 @@ PetscErrorCode SectionTest(const Options *options)
   }
   if (logger.getDeallocationTotal("Section") != numBytes) {
     SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Section"), numBytes);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SectionDistributionTest"
+PetscErrorCode SectionDistributionTest(const Options *options)
+{
+  typedef ALE::GeneralSection<int, double, ALE::malloc_allocator<double> > TestSection;
+  ALE::MemoryLogger& logger   = ALE::MemoryLogger::singleton();
+  const PetscInt     num      = options->number;
+  // Allocs:
+  //   Atlas (UniformSection) + Obj
+  //     Atlas (ConstantSection) + Obj
+  //       Atlas (points)
+  //     Data (sizes)
+  //   BC (Section) + Obj
+  //     Atlas (UniformSection) + Obj
+  //       Atlas (ConstantSection) + Obj
+  //     Data
+  //   Data
+  const PetscInt     numAlloc = (12 + 2*options->numCells)*options->number;
+  const PetscInt     numBytes = ((100+4)+(68+4)+20*options->numCells+28*options->numCells+(88+4)+(100+4)+(68+4)+8*options->components*options->numCells)*options->number;
+  const PetscInt     numDistAlloc = (52 + 4*options->numCells)*options->number;
+  const PetscInt     numDistBytes = (4+4*10+4*5+4*3+4*3+
+                                     4+(100+4)+(68+4)+20*options->numCells+28*options->numCells+(88+4)+(100+4)+(68+4)+8*options->components*options->numCells+
+                                     4+4+4+4+4+4+4+(8+4)+4*options->numCells+(8+4)+4*options->numCells+(8+4)+(8+4)+(8+4))*options->number;
+  double            *values;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(options->components * sizeof(double), &values);CHKERRQ(ierr);
+  for(PetscInt c = 0; c < options->components; ++c) {values[c] = 1.0;}
+  logger.stagePush("SectionII");
+  for(PetscInt i = 0; i < num; ++i) {
+    TestSection section(PETSC_COMM_WORLD);
+
+    for(PetscInt c = 0; c < options->numCells; ++c) {
+      section.setFiberDimension(c, options->components);
+    }
+    section.allocatePoint();
+    for(PetscInt c = 0; c < options->numCells; ++c) {
+      section.updatePoint(c, values);
+    }
+    logger.stagePush("Distribution");
+    {
+      // Allocs:
+      //   Section Obj
+      //   Mesh Obj + 9 Obj
+      //   Sieve Obj + 4 Obj
+      //   Send Overlap Obj + 2 Obj
+      //   Recv Overlap Obj + 2 Obj
+      //   Parallel Section Obj
+      //     Atlas (UniformSection) + Obj
+      //       Atlas (ConstantSection) + Obj
+      //         Atlas (points)
+      //       Data (sizes)
+      //     BC (Section) + Obj
+      //       Atlas (UniformSection) + Obj
+      //         Atlas (ConstantSection) + Obj
+      //       Data
+      //     Data
+      //   Send Section Obj
+      //   Recv Section Obj
+      //   Sizer Obj
+      //   Send Sizer Obj
+      //   Recv Sizer Obj
+      //   Const Send Sizer Obj
+      //   Const Recv Sizer Obj
+      //   Send Chart + Obj
+      //     Data (points)
+      //   Recv Chart + Obj
+      //     Data (points)
+      //   Mystery PointSequence + Obj
+      //   Mystery PointSequence + Obj
+      //   Mystery PointSequence + Obj
+      Obj<TestSection>                  objSection(&section);
+      objSection.addRef();
+      Obj<ALE::Mesh>                    parallelMesh = new ALE::Mesh(PETSC_COMM_WORLD, 1);
+      Obj<ALE::Mesh::sieve_type>        sieve        = new ALE::Mesh::sieve_type(PETSC_COMM_WORLD);
+      Obj<ALE::Mesh::send_overlap_type> sendOverlap  = new ALE::Mesh::send_overlap_type(PETSC_COMM_WORLD);
+      Obj<ALE::Mesh::recv_overlap_type> recvOverlap  = new ALE::Mesh::recv_overlap_type(PETSC_COMM_WORLD);
+      const PetscInt block = options->numCells/section.commSize();
+      const PetscInt rank  = section.commRank();
+
+      parallelMesh->setSieve(sieve);
+      if (!rank) {
+        for(PetscInt r = 1; r < section.commSize(); ++r) {
+          const PetscInt start = r*block     + PetscMin(r, options->numCells%section.commSize());
+          const PetscInt end   = (r+1)*block + PetscMin(r+1, options->numCells%section.commSize());
+
+          for(PetscInt c = start; c < end; ++c) {
+            sendOverlap->addArrow(c, r, c);
+          }
+        }
+      }
+      const PetscInt start = rank*block     + PetscMin(rank, options->numCells%section.commSize());
+      const PetscInt end   = (rank+1)*block + PetscMin(rank+1, options->numCells%section.commSize());
+
+      for(PetscInt c = start; c < end; ++c) {
+        sieve->addCone(c, -(rank+1));
+        if (rank) {recvOverlap->addArrow(0, c, c);}
+      }
+      // This implies that distribution should be templated over all the arguments
+      //   and not take so much from the Bundle
+      Obj<TestSection> distSection = ALE::Distribution<ALE::Mesh>::distributeSection(objSection, parallelMesh, sendOverlap, recvOverlap);
+    }
+    logger.stagePop();
+  }
+  logger.stagePop();
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  if (logger.getNumAllocations("SectionII") != numAlloc) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("SectionII"), numAlloc);
+  }
+  if (logger.getNumDeallocations("SectionII") != numAlloc) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("SectionII"), numAlloc);
+  }
+  if (logger.getAllocationTotal("SectionII") != numBytes) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("SectionII"), numBytes);
+  }
+  if (logger.getDeallocationTotal("SectionII") != numBytes) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("SectionII"), numBytes);
+  }
+  if (logger.getNumAllocations("Distribution") != numDistAlloc) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Distribution"), numDistAlloc);
+  }
+  if (logger.getNumDeallocations("Distribution") != numDistAlloc-2) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Distribution"), numDistAlloc);
+  }
+  if (logger.getAllocationTotal("Distribution") != numDistBytes) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Distribution"), numDistBytes);
+  }
+  if (logger.getDeallocationTotal("Distribution") != numDistBytes-8) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Distribution"), numDistBytes);
   }
   PetscFunctionReturn(0);
 }
@@ -284,10 +421,11 @@ PetscErrorCode RunUnitTests(const Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (options->set)     {ierr = SetTest(options);CHKERRQ(ierr);}
-  if (options->label)   {ierr = LabelTest(options);CHKERRQ(ierr);}
-  if (options->section) {ierr = SectionTest(options);CHKERRQ(ierr);}
-  if (options->mesh)    {ierr = MeshTest(options);CHKERRQ(ierr);}
+  if (options->set)         {ierr = SetTest(options);CHKERRQ(ierr);}
+  if (options->label)       {ierr = LabelTest(options);CHKERRQ(ierr);}
+  if (options->section)     {ierr = SectionTest(options);CHKERRQ(ierr);}
+  if (options->sectionDist) {ierr = SectionDistributionTest(options);CHKERRQ(ierr);}
+  if (options->mesh)        {ierr = MeshTest(options);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

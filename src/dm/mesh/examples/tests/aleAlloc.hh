@@ -8,6 +8,8 @@
 #include <cxxabi.h>
 #endif
 
+#include <petsc.h>
+
 namespace ALE {
   class MemoryLogger {
   public:
@@ -22,10 +24,15 @@ namespace ALE {
     typedef std::deque<std::string>                     names;
   protected:
     int      _debug;
+    MPI_Comm comm;
+    int      rank;
     names    stageNames;
     stageLog stages;
   protected:
-    MemoryLogger(): _debug(0) {stageNames.push_front("default");};
+    MemoryLogger(): _debug(0), comm(PETSC_COMM_WORLD) {
+      MPI_Comm_rank(comm, &rank);
+      stageNames.push_front("default");
+    };
   public:
     ~MemoryLogger() {};
     static MemoryLogger& singleton() {
@@ -40,14 +47,14 @@ namespace ALE {
     void stagePop() {stageNames.pop_front();};
     void logAllocation(const std::string& className, int bytes) {logAllocation(stageNames.front(), className, bytes);};
     void logAllocation(const std::string& stage, const std::string& className, int bytes) {
-      if (_debug) {std::cout << "Allocating " << bytes << " bytes for class " << className << std::endl;}
+      if (_debug) {std::cout << "["<<rank<<"]Allocating " << bytes << " bytes for class " << className << std::endl;}
       stages[stage].first.num++;
       stages[stage].first.total += bytes;
       stages[stage].first.items[className] += bytes;
     };
     void logDeallocation(const std::string& className, int bytes) {logDeallocation(stageNames.front(), className, bytes);};
     void logDeallocation(const std::string& stage, const std::string& className, int bytes) {
-      if (_debug) {std::cout << "Deallocating " << bytes << " bytes for class " << className << std::endl;}
+      if (_debug) {std::cout << "["<<rank<<"]Deallocating " << bytes << " bytes for class " << className << std::endl;}
       stages[stage].second.num++;
       stages[stage].second.total += bytes;
       stages[stage].second.items[className] += bytes;

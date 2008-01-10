@@ -180,9 +180,13 @@ namespace ALE {
     void addPoint(const Obj<Points>& points) {
       this->_chart.insert(points->begin(), points->end());
     };
-    void addPoint(const std::set<point_type>& points) {
+    template<typename Points>
+    void addPoint(const Points& points) {
       this->_chart.insert(points.begin(), points.end());
     };
+//     void addPoint(const std::set<point_type>& points) {
+//       this->_chart.insert(points.begin(), points.end());
+//     };
     value_type getDefaultValue() {return this->_defaultValue;};
     void setDefaultValue(const value_type value) {this->_defaultValue = value;};
     void copy(const Obj<ConstantSection>& section) {
