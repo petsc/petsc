@@ -3,6 +3,7 @@
 // This should be included indirectly -- only by including ALE.hh
 
 #include <deque>
+#include <iostream>
 #include <map>
 #include <memory>
 #include <typeinfo>
@@ -528,7 +529,11 @@ namespace ALE {
 #ifdef ALE_USE_LOGGING
 #define ALE_ALLOCATOR ::ALE::logged_allocator
 #else
+#if 1
+#define ALE_ALLOCATOR ::ALE::malloc_allocator
+#else
 #define ALE_ALLOCATOR ::ALE::polymorphic_allocator
+#endif
 #endif
 
   //
