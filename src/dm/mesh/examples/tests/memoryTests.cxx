@@ -233,10 +233,15 @@ PetscErrorCode SectionDistributionTest(const Options *options)
   //   Data
   const PetscInt     numAlloc = (12 + 2*options->numCells)*options->number;
   const PetscInt     numBytes = ((100+4)+(68+4)+20*options->numCells+28*options->numCells+(88+4)+(100+4)+(68+4)+8*options->components*options->numCells)*options->number;
-  const PetscInt     numDistAlloc = (52 + 4*options->numCells)*options->number;
-  const PetscInt     numDistBytes = (4+4*10+4*5+4*3+4*3+
-                                     4+(100+4)+(68+4)+20*options->numCells+28*options->numCells+(88+4)+(100+4)+(68+4)+8*options->components*options->numCells+
-                                     4+4+4+4+4+4+4+(8+4)+4*options->numCells+(8+4)+4*options->numCells+(8+4)+(8+4)+(8+4))*options->number;
+  const PetscInt     numDistAlloc = (1+16+20+13+7+16+16+6 + 5*options->numCells)*options->number;
+  const PetscInt     numDistBytes = (4+
+                                     4*4+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
+                                     (60+4)+(84+4+84*options->numCells)+(84+4+84*options->numCells)+4+4+60*options->numCells+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
+                                     4+(100+4)+(68+4)+20*options->numCells+28*options->numCells+(88+4)+(100+4)+(68+4)+0+8*options->components*options->numCells+
+                                     4+4+4+4+4+4+4+
+                                     (8+4)+4+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+4+
+                                     (8+4)+4+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+4+
+                                     (8+4)+(8+4)+(8+4));
   double            *values;
   PetscErrorCode     ierr;
 
@@ -258,10 +263,28 @@ PetscErrorCode SectionDistributionTest(const Options *options)
     {
       // Allocs:
       //   Section Obj
-      //   Mesh Obj + 9 Obj
-      //   Sieve Obj + 4 Obj
-      //   Send Overlap Obj + 2 Obj
-      //   Recv Overlap Obj + 2 Obj
+      //   Mesh Obj
+      //     indexArray Obj
+      //     modifiedPoints Obj
+      //     numberingFactory Obj
+      //     Send Overlap + Obj
+      //       Base + Obj
+      //       Cap  + Obj
+      //     Recv Overlap + Obj
+      //       Base + Obj
+      //       Cap  + Obj
+      //   Sieve + Obj
+      //     Base (just one cell) + Obj
+      //     Cap (points) + Obj
+      //     Markers Obj
+      //     ConeSet Obj
+      //     Data (arrows)
+      //     Send Overlap + Obj
+      //       Base + Obj
+      //       Cap  + Obj
+      //     Recv Overlap + Obj
+      //       Base + Obj
+      //       Cap  + Obj
       //   Parallel Section Obj
       //     Atlas (UniformSection) + Obj
       //       Atlas (ConstantSection) + Obj
@@ -279,13 +302,27 @@ PetscErrorCode SectionDistributionTest(const Options *options)
       //   Recv Sizer Obj
       //   Const Send Sizer Obj
       //   Const Recv Sizer Obj
-      //   Send Chart + Obj
-      //     Data (points)
-      //   Recv Chart + Obj
-      //     Data (points)
-      //   Mystery PointSequence + Obj
-      //   Mystery PointSequence + Obj
-      //   Mystery PointSequence + Obj
+      //   BaseSequence + Obj
+      //   SendTopology Obj
+      //     Send Overlap + Obj
+      //       Base + Obj
+      //       Cap  + Obj
+      //     Recv Overlap + Obj
+      //       Base + Obj
+      //       Cap  + Obj
+      //     modifiedPoints Obj
+      //   CapSequence + Obj
+      //   RecvTopology Obj
+      //     Send Overlap + Obj
+      //       Base + Obj
+      //       Cap  + Obj
+      //     Recv Overlap + Obj
+      //       Base + Obj
+      //       Cap  + Obj
+      //     modifiedPoints Obj
+      //   CapSequence + Obj
+      //   CapSequence + Obj
+      //   CapSequence + Obj
       Obj<TestSection>                  objSection(&section);
       objSection.addRef();
       Obj<ALE::Mesh>                    parallelMesh = new ALE::Mesh(PETSC_COMM_WORLD, 1);
