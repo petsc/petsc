@@ -138,7 +138,7 @@ namespace ALE {
   //   All fibers are dimension 1
   //   All values are equal to a constant
   //     We need no value storage and no communication for completion
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_> >
+  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Point_> >
   class ConstantSection : public ALE::ParallelObject {
   public:
     typedef Point_                                                  point_type;
@@ -277,8 +277,8 @@ namespace ALE {
     typedef Point_                                           point_type;
     typedef Value_                                           value_type;
     typedef Alloc_                                           alloc_type;
-    typedef typename alloc_type::template rebind<int>::other int_alloc_type;
-    typedef ConstantSection<point_type, int, int_alloc_type> atlas_type;
+    typedef typename alloc_type::template rebind<point_type>::other point_alloc_type;
+    typedef ConstantSection<point_type, int, point_alloc_type> atlas_type;
     typedef typename atlas_type::chart_type                  chart_type;
     typedef struct {value_type v[fiberDim];}                 fiber_type;
     typedef typename alloc_type::template rebind<std::pair<const point_type, fiber_type> >::other pair_alloc_type;
