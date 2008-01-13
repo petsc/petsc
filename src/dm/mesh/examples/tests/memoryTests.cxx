@@ -233,15 +233,15 @@ PetscErrorCode SectionDistributionTest(const Options *options)
   //   Data
   const PetscInt     numAlloc = (12 + 2*options->numCells)*options->number;
   const PetscInt     numBytes = ((100+4)+(68+4)+20*options->numCells+28*options->numCells+(88+4)+(100+4)+(68+4)+8*options->components*options->numCells)*options->number;
-  const PetscInt     numDistAlloc = (1+16+20+13+7+16+16+6 + 5*options->numCells)*options->number;
+  const PetscInt     numDistAlloc = (1+15+20+13+7+16+16+6 + 5*options->numCells)*options->number+1;
   const PetscInt     numDistBytes = (4+
-                                     4*4+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
+                                     4*3+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
                                      (60+4)+(84+4+84*options->numCells)+(84+4+84*options->numCells)+4+4+60*options->numCells+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
                                      4+(100+4)+(68+4)+20*options->numCells+28*options->numCells+(88+4)+(100+4)+(68+4)+0+8*options->components*options->numCells+
                                      4+4+4+4+4+4+4+
                                      (8+4)+4+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+4+
                                      (8+4)+4+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+4+
-                                     (8+4)+(8+4)+(8+4));
+                                     (8+4)+(8+4)+(8+4))*options->number+4;
   double            *values;
   PetscErrorCode     ierr;
 
@@ -266,7 +266,7 @@ PetscErrorCode SectionDistributionTest(const Options *options)
       //   Mesh Obj
       //     indexArray Obj
       //     modifiedPoints Obj
-      //     numberingFactory Obj
+      //     numberingFactory Obj (only once)
       //     Send Overlap + Obj
       //       Base + Obj
       //       Cap  + Obj
@@ -373,13 +373,13 @@ PetscErrorCode SectionDistributionTest(const Options *options)
   if (logger.getNumAllocations("Distribution") != numDistAlloc) {
     SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Distribution"), numDistAlloc);
   }
-  if (logger.getNumDeallocations("Distribution") != numDistAlloc-2) {
+  if (logger.getNumDeallocations("Distribution") != numDistAlloc-options->number-1) {
     SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Distribution"), numDistAlloc);
   }
   if (logger.getAllocationTotal("Distribution") != numDistBytes) {
     SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Distribution"), numDistBytes);
   }
-  if (logger.getDeallocationTotal("Distribution") != numDistBytes-8) {
+  if (logger.getDeallocationTotal("Distribution") != numDistBytes-4*options->number-4) {
     SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Distribution"), numDistBytes);
   }
   PetscFunctionReturn(0);
