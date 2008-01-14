@@ -74,7 +74,21 @@ def main(args):
     for j in classes[i]:
       if not classes[i][j] or not classes[i][j][0] == i:
         outfile.write("  static ")      
-      outfile.write("native void _"+j+"();\n")
+        outfile.write("native void _"+j+"();\n")
+      else:
+        outfile.write("native void _"+j+"(int ptr")
+        cnt = 0
+        for k in classes[i][j]:
+          if cnt > 0:
+            k = replace(enums,senums,structs,aliases,classes,k)
+            if k in classes: k = 'int'
+            outfile.write(","+k+" a"+str(cnt))
+          cnt = cnt + 1
+        outfile.write(");\n")        
+        
+    outfile.write("  static native int _"+i+"Create();\n")
+    outfile.write("    "+i+"() {this.ptr = _"+i+"Create();}\n")
+    
     for j in classes[i]:
       if not classes[i][j] or not classes[i][j][0] == i:
         outfile.write("  static ")      
@@ -83,11 +97,15 @@ def main(args):
       for k in classes[i][j]:
         k = replace(enums,senums,structs,aliases,classes,k)
         if cnt > 0:
-          outfile.write(k)
-          outfile.write(" a"+str(cnt))
+          outfile.write(k+" a"+str(cnt))
           if cnt < len(classes[i][j])-1: outfile.write(",")
         cnt = cnt + 1
       outfile.write("){_"+j+"(")
+      if classes[i][j] and classes[i][j][0] == i:
+        outfile.write("this.ptr")
+        for l in range(1,cnt):
+          if replace(enums,senums,structs,aliases,classes,classes[i][j][l]) in classes: outfile.write(",a"+str(l)+".ptr")
+          else: outfile.write(",a"+str(l))
       outfile.write(");}\n")      
     outfile.write("    int ptr;\n")
     if i == "Petsc":
@@ -103,15 +121,31 @@ def main(args):
     f = open('src/java/'+i+".c","r")
     w = f.read()
     f.close()
-#    w = w.replace("  (JNIEnv *, jobject);","  (JNIEnv *a1, jobject a2) {;}; ")
-#    w = w.replace("  (JNIEnv *, jclass);","  (JNIEnv *a1, jclass a2) {;}; ")    
     w = w.replace("#include <jni.h>",'#include "'+i+'.h"')
     w = w.replace("#ifndef _Included_","#ifndef _string_that_does_not_exist_")
     w = w.replace("#define _Included_","#define _another_string_that_does_not_exist_")
     w = w.replace("#include <jni.h>","#include <JavaVM/jni.h>")
-    for j in classes[i]:    
-#      w = re.sub('JNIEXPORT void JNICALL Java_'+i+'([_0-9]*)'+j+'\n','JNIEXPORT void JNICALL Java_'+i+'\\1'+j+' ',w)
-      w = re.sub('JNIEXPORT void JNICALL Java_'+i+'([_0-9]*)'+j+'\n [ ]* \(JNIEnv \*, ([a-z]*)\)','JNIEXPORT void JNICALL Java_'+i+'\\1'+j+' (JNIEnv *a1,\\2 a2) {'+i+j+'();}',w)
+    for j in classes[i]:
+      t = re.search('JNIEXPORT void JNICALL Java_'+i+'[_0-9]*'+j+'\n [ ]* \(JNIEnv \*([, A-Za-z]*)\)',w)
+      if t:
+        t = t.group(0).split('\n')[1].replace('(JNIEnv *,','').replace(')','').split(',')
+        cnt = 1
+        t1  = ''
+        t2  = 'a2'
+        for k in t:
+          t1 = t1 + ','+k+' a'+str(cnt)
+          if cnt > 2:
+            if k.strip() == 'jstring':
+              t2 = t2 +', (*a0)->GetStringUTFChars(a0, a'+str(cnt)+',0)'              
+            else:
+              t2 = t2 +', a'+str(cnt)
+          cnt = cnt + 1
+        if cnt == 2:
+          w = re.sub('JNIEXPORT void JNICALL Java_'+i+'([_0-9]*)'+j+'\n [ ]* \(JNIEnv \*, ([a-z]*)\)','JNIEXPORT void JNICALL Java_'+i+'\\1'+j+' (JNIEnv *a0,\\2 a1) {'+i+j+'();}',w)
+        else:
+          w = re.sub('JNIEXPORT void JNICALL Java_'+i+'([_0-9]*)'+j+'\n [ ]* \(JNIEnv \*([, A-Za-z]*)\)','JNIEXPORT void JNICALL Java_'+i+'\\1'+j+' (JNIEnv *a0'+t1+') {'+i+j+'('+t2+');}',w)
+
+    w = re.sub('JNIEXPORT jint JNICALL Java_'+i+'([_0-9]*)'+i+'Create\n [ ]* \(JNIEnv \*, ([a-z]*)\)','JNIEXPORT jint JNICALL Java_'+i+'\\1'+i+'Create(JNIEnv *a1,\\2 a2) {int ptr; '+i+'Create(0,&ptr); return ptr;}',w)      
     f = open('src/java/'+i+".c","w")    
     f.write(w)
     f.close()
