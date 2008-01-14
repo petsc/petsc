@@ -17,16 +17,29 @@ namespace ALE {
     typedef Patch_                                                patch_type;
     typedef Sieve_                                                sieve_type;
     typedef Alloc_                                                alloc_type;
+    typedef typename alloc_type::template rebind<int>::other      int_alloc_type;
     typedef typename sieve_type::point_type                       point_type;
-    typedef typename std::map<patch_type, Obj<sieve_type> >       sheaf_type;
-    typedef typename ALE::Sifter<int, point_type, int>            patch_label_type;
-    typedef typename std::map<patch_type, Obj<patch_label_type> > label_type;
-    typedef typename std::map<patch_type, int>                    max_label_type;
-    typedef typename std::map<const std::string, label_type>      labels_type;
-    typedef typename patch_label_type::supportSequence            label_sequence;
+    typedef typename alloc_type::template rebind<std::pair<const patch_type, Obj<sieve_type> > >::other       pair1_alloc_type;
+    typedef typename std::map<patch_type, Obj<sieve_type>, std::less<patch_type>, pair1_alloc_type>           sheaf_type;
+    typedef typename ALE::Sifter<int, point_type, int>                                                        patch_label_type;
+    typedef typename alloc_type::template rebind<patch_label_type>::other                                     patch_label_alloc_type;
+    typedef typename patch_label_alloc_type::pointer                                                          patch_label_ptr;
+    typedef typename alloc_type::template rebind<std::pair<const patch_type, Obj<patch_label_type> > >::other pair2_alloc_type;
+    typedef typename std::map<patch_type, Obj<patch_label_type>, std::less<patch_type>, pair2_alloc_type>     label_type;
+    typedef typename alloc_type::template rebind<std::pair<const patch_type, int> >::other                    pair3_alloc_type;
+    typedef typename std::map<patch_type, int, std::less<patch_type>, pair3_alloc_type>                       max_label_type;
+    typedef typename alloc_type::template rebind<std::pair<const std::string, label_type> >::other            pair4_alloc_type;
+    typedef typename std::map<const std::string, label_type, std::less<const std::string>, pair4_alloc_type>  labels_type;
+    typedef typename patch_label_type::supportSequence                       label_sequence;
     typedef typename std::set<point_type, std::less<point_type>, alloc_type> point_set_type;
-    typedef typename ALE::Sifter<int,point_type,point_type>       send_overlap_type;
-    typedef typename ALE::Sifter<point_type,int,point_type>       recv_overlap_type;
+    typedef typename alloc_type::template rebind<point_set_type>::other      point_set_alloc_type;
+    typedef typename point_set_alloc_type::pointer                           point_set_ptr;
+    typedef typename ALE::Sifter<int,point_type,point_type>                  send_overlap_type;
+    typedef typename alloc_type::template rebind<send_overlap_type>::other   send_overlap_alloc_type;
+    typedef typename send_overlap_alloc_type::pointer                        send_overlap_ptr;
+    typedef typename ALE::Sifter<point_type,int,point_type>                  recv_overlap_type;
+    typedef typename alloc_type::template rebind<recv_overlap_type>::other   recv_overlap_alloc_type;
+    typedef typename recv_overlap_alloc_type::pointer                        recv_overlap_ptr;
   protected:
     sheaf_type     _sheaf;
     labels_type    _labels;
@@ -41,11 +54,22 @@ namespace ALE {
     Obj<recv_overlap_type> _distRecvOverlap;
     // Work space
     Obj<point_set_type>    _modifiedPoints;
+    alloc_type             _allocator;
+    int_alloc_type         _int_allocator;
   public:
     Topology(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1), _calculatedOverlap(false) {
-      this->_sendOverlap    = new send_overlap_type(this->comm(), this->debug());
-      this->_recvOverlap    = new recv_overlap_type(this->comm(), this->debug());
-      this->_modifiedPoints = new point_set_type();
+      send_overlap_ptr pSendOverlap = send_overlap_alloc_type(this->_allocator).allocate(1);
+      send_overlap_alloc_type(this->_allocator).construct(pSendOverlap, send_overlap_type(this->comm(), this->debug()));
+      this->_sendOverlap = Obj<send_overlap_type>(pSendOverlap, sizeof(send_overlap_type));
+      ///this->_sendOverlap    = new send_overlap_type(this->comm(), this->debug());
+      recv_overlap_ptr pRecvOverlap = recv_overlap_alloc_type(this->_allocator).allocate(1);
+      recv_overlap_alloc_type(this->_allocator).construct(pRecvOverlap, recv_overlap_type(this->comm(), this->debug()));
+      this->_recvOverlap = Obj<recv_overlap_type>(pRecvOverlap, sizeof(recv_overlap_type));
+      ///this->_recvOverlap    = new recv_overlap_type(this->comm(), this->debug());
+      point_set_ptr pModPoints = point_set_alloc_type(this->_allocator).allocate(1);
+      point_set_alloc_type(this->_allocator).construct(pModPoints, point_set_type());
+      this->_modifiedPoints = Obj<point_set_type>(pModPoints, sizeof(point_set_type));
+      ///this->_modifiedPoints = new point_set_type();
     };
     virtual ~Topology() {};
   public: // Verifiers
@@ -104,6 +128,9 @@ namespace ALE {
     };
     const Obj<patch_label_type>& createLabel(const patch_type& patch, const std::string& name) {
       this->checkPatch(patch);
+      ///patch_label_ptr pLabel = patch_label_alloc_type(this->_allocator).allocate(1);
+      ///patch_label_alloc_type(this->_allocator).construct(pLabel, patch_label_type(this->comm(), this->debug()));
+      ///this->_labels[name][patch] = Obj<patch_label_type>(pLabel, sizeof(patch_label_type));
       this->_labels[name][patch] = new patch_label_type(this->comm(), this->debug());
       return this->_labels[name][patch];
     };
@@ -269,14 +296,24 @@ namespace ALE {
     };
     template<typename Sequence>
     void constructOverlap(const Obj<Sequence>& points, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
-      point_type *sendBuf = new point_type[points->size()];
+      point_type *sendBuf = this->_allocator.allocate(points->size());
+      for(unsigned int i = 0; i < points->size(); ++i) {this->_allocator.construct(sendBuf+i, point_type());}
+      ///point_type *sendBuf = new point_type[points->size()];
       int         size    = 0;
       for(typename Sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
         sendBuf[size++] = *l_iter;
       }
-      int *sizes   = new int[this->commSize()];   // The number of points coming from each process
-      int *offsets = new int[this->commSize()+1]; // Prefix sums for sizes
-      int *oldOffs = new int[this->commSize()+1]; // Temporary storage
+      int *sizes   = this->_int_allocator.allocate(this->commSize()+1);   // The number of points coming from each process
+      int *offsets = this->_int_allocator.allocate(this->commSize()+1); // Prefix sums for sizes
+      int *oldOffs = this->_int_allocator.allocate(this->commSize()+1); // Temporary storage
+      for(int i = 0; i < this->commSize()+1; ++i) {
+        this->_int_allocator.construct(sizes+i,   0);
+        this->_int_allocator.construct(offsets+i, 0);
+        this->_int_allocator.construct(oldOffs+i, 0);
+      }
+      ///int *sizes   = new int[this->commSize()];
+      ///int *offsets = new int[this->commSize()+1];
+      ///int *oldOffs = new int[this->commSize()+1];
       point_type *remotePoints = NULL;            // The points from each process
       int        *remoteRanks  = NULL;            // The rank and number of overlap points of each process that overlaps another
 
@@ -287,7 +324,9 @@ namespace ALE {
         for(int p = 1; p <= this->commSize(); p++) {
           offsets[p] = offsets[p-1] + sizes[p-1];
         }
-        remotePoints = new point_type[offsets[this->commSize()]];
+        remotePoints = this->_allocator.allocate(offsets[this->commSize()]);
+        for(int i = 0; i < offsets[this->commSize()]; ++i) {this->_allocator.construct(remotePoints+i, point_type());}
+        ///remotePoints = new point_type[offsets[this->commSize()]];
       }
       MPI_Gatherv(sendBuf, size, MPI_INT, remotePoints, sizes, offsets, MPI_INT, 0, this->comm());
       std::map<int, std::map<int, std::set<point_type> > > overlapInfo; // Maps (p,q) to their set of overlap points
@@ -309,7 +348,9 @@ namespace ALE {
           sizes[p]     = overlapInfo[p].size()*2;
           offsets[p+1] = offsets[p] + sizes[p];
         }
-        remoteRanks = new int[offsets[this->commSize()]];
+        remoteRanks = this->_int_allocator.allocate(offsets[this->commSize()]);
+        for(int i = 0; i < offsets[this->commSize()]; ++i) {this->_int_allocator.construct(remoteRanks+i, 0);}
+        ///remoteRanks = new int[offsets[this->commSize()]];
         int       k = 0;
         for(int p = 0; p < this->commSize(); p++) {
           for(typename std::map<int, std::set<point_type> >::iterator r_iter = overlapInfo[p].begin(); r_iter != overlapInfo[p].end(); ++r_iter) {
@@ -321,7 +362,9 @@ namespace ALE {
       }
       int numOverlaps;                          // The number of processes overlapping this process
       MPI_Scatter(sizes, 1, MPI_INT, &numOverlaps, 1, MPI_INT, 0, this->comm());
-      int *overlapRanks = new int[numOverlaps]; // The rank and overlap size for each overlapping process
+      int *overlapRanks = this->_int_allocator.allocate(numOverlaps);
+      for(int i = 0; i < numOverlaps; ++i) {this->_int_allocator.construct(overlapRanks+i, 0);}
+      ///int *overlapRanks = new int[numOverlaps]; // The rank and overlap size for each overlapping process
       MPI_Scatterv(remoteRanks, sizes, offsets, MPI_INT, overlapRanks, numOverlaps, MPI_INT, 0, this->comm());
       point_type *sendPoints = NULL;            // The points to send to each process
       if (this->commRank() == 0) {
@@ -333,7 +376,9 @@ namespace ALE {
           }
           offsets[p+1] = offsets[p] + sizes[p];
         }
-        sendPoints = new point_type[offsets[this->commSize()]];
+        sendPoints = this->_allocator.allocate(offsets[this->commSize()]);
+        for(int i = 0; i < offsets[this->commSize()]; ++i) {this->_allocator.construct(sendPoints+i, point_type());}
+        ///sendPoints = new point_type[offsets[this->commSize()]];
         for(int p = 0, k = 0; p < this->commSize(); p++) {
           for(typename std::map<int, std::set<point_type> >::iterator r_iter = overlapInfo[p].begin(); r_iter != overlapInfo[p].end(); ++r_iter) {
             int rank = r_iter->first;
@@ -347,7 +392,9 @@ namespace ALE {
       for(int r = 0; r < numOverlaps/2; r++) {
         numOverlapPoints += overlapRanks[r*2+1];
       }
-      point_type *overlapPoints = new point_type[numOverlapPoints];
+      point_type *overlapPoints = this->_allocator.allocate(numOverlapPoints);
+      for(int i = 0; i < numOverlapPoints; ++i) {this->_allocator.construct(overlapPoints+i, point_type());}
+      ///point_type *overlapPoints = new point_type[numOverlapPoints];
       MPI_Scatterv(sendPoints, sizes, offsets, MPI_INT, overlapPoints, numOverlapPoints, MPI_INT, 0, this->comm());
 
       for(int r = 0, k = 0; r < numOverlaps/2; r++) {

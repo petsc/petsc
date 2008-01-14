@@ -29,27 +29,42 @@ extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_v
 //     This means restrict to a provided overlap, and exchange in the restricted sections
 //     Completion does not use hierarchy, so we see the Topology as a DiscreteTopology
 namespace ALE {
-  template<typename Point_>
+  template<typename Point_, typename Alloc_ = std::allocator<Point_> >
   class DiscreteSieve {
   public:
-    typedef Point_                  point_type;
-    typedef std::vector<point_type> coneSequence;
-    typedef std::vector<point_type> coneSet;
-    typedef std::vector<point_type> coneArray;
-    typedef std::vector<point_type> supportSequence;
-    typedef std::vector<point_type> supportSet;
-    typedef std::vector<point_type> supportArray;
-    typedef std::set<point_type>    points_type;
-    typedef points_type             baseSequence;
-    typedef points_type             capSequence;
+    typedef Point_                              point_type;
+    typedef Alloc_                              alloc_type;
+    typedef std::vector<point_type, alloc_type> coneSequence;
+    typedef std::vector<point_type, alloc_type> coneSet;
+    typedef std::vector<point_type, alloc_type> coneArray;
+    typedef std::vector<point_type, alloc_type> supportSequence;
+    typedef std::vector<point_type, alloc_type> supportSet;
+    typedef std::vector<point_type, alloc_type> supportArray;
+    typedef std::set<point_type, std::less<point_type>, alloc_type>   points_type;
+    typedef points_type                                               baseSequence;
+    typedef points_type                                               capSequence;
+    typedef typename alloc_type::template rebind<points_type>::other  points_alloc_type;
+    typedef typename points_alloc_type::pointer                       points_ptr;
+    typedef typename alloc_type::template rebind<coneSequence>::other coneSequence_alloc_type;
+    typedef typename coneSequence_alloc_type::pointer                 coneSequence_ptr;
   protected:
     Obj<points_type>  _points;
     Obj<coneSequence> _empty;
     Obj<coneSequence> _return;
+    alloc_type        _allocator;
     void _init() {
-      this->_points = new points_type();
-      this->_empty  = new coneSequence();
-      this->_return = new coneSequence();
+      points_ptr pPoints = points_alloc_type(this->_allocator).allocate(1);
+      points_alloc_type(this->_allocator).construct(pPoints, points_type());
+      this->_points = Obj<points_type>(pPoints, sizeof(points_type));
+      ///this->_points = new points_type();
+      coneSequence_ptr pEmpty = coneSequence_alloc_type(this->_allocator).allocate(1);
+      coneSequence_alloc_type(this->_allocator).construct(pEmpty, coneSequence());
+      this->_empty = Obj<coneSequence>(pEmpty, sizeof(coneSequence));
+      ///this->_empty  = new coneSequence();
+      coneSequence_ptr pReturn = coneSequence_alloc_type(this->_allocator).allocate(1);
+      coneSequence_alloc_type(this->_allocator).construct(pReturn, coneSequence());
+      this->_return = Obj<coneSequence>(pReturn, sizeof(coneSequence));
+      ///this->_return = new coneSequence();
     };
   public:
     DiscreteSieve() {

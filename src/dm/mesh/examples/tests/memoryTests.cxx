@@ -8,6 +8,8 @@ using ALE::Obj;
 
 typedef struct {
   PetscInt   debug;
+  PetscInt   rank;
+  PetscInt   size;
   // Classes
   PetscTruth set;         // Run the set tests
   PetscTruth sifter;      // Run the Sifter tests
@@ -70,6 +72,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-distribute", "Distribute the section", "memTests", options->distribute, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
+  ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &options->size);CHKERRQ(ierr);
   logger.setDebug(options->debug);
   PetscFunctionReturn(0);
 }
@@ -221,7 +225,16 @@ PetscErrorCode SectionDistributionTest(const Options *options)
   typedef ALE::GeneralSection<int, double, ALE::malloc_allocator<double> > TestSection;
   ALE::MemoryLogger& logger   = ALE::MemoryLogger::singleton();
   const PetscInt     num      = options->number;
-  // Allocs:
+  const PetscInt     block    = options->numCells/options->size;
+  const PetscInt     rank     = options->rank;
+  const PetscInt     start    = rank*block     + PetscMin(rank, options->numCells%options->size);
+  const PetscInt     end      = (rank+1)*block + PetscMin(rank+1, options->numCells%options->size);
+  const PetscInt     numCells = options->numCells;
+  const PetscInt     locCells = end - start;
+  const PetscInt     remCells = numCells - locCells;
+  const PetscInt     remRanks = options->size-1;
+  const PetscInt     rotRanks = 1; 
+ // Allocs:
   //   Atlas (UniformSection) + Obj
   //     Atlas (ConstantSection) + Obj
   //       Atlas (points)
@@ -231,32 +244,64 @@ PetscErrorCode SectionDistributionTest(const Options *options)
   //       Atlas (ConstantSection) + Obj
   //     Data
   //   Data
-  const PetscInt     numAlloc = (12 + 2*options->numCells)*options->number;
-  const PetscInt     numBytes = ((100+4)+(68+4)+20*options->numCells+28*options->numCells+(88+4)+(100+4)+(68+4)+8*options->components*options->numCells)*options->number;
-  const PetscInt     numDistAlloc = (1+15+20+13+7+16+16+6 + 5*options->numCells)*options->number+1;
-  const PetscInt     numDistBytes = (4+
-                                     4*3+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
-                                     (60+4)+(84+4+84*options->numCells)+(84+4+84*options->numCells)+4+4+60*options->numCells+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
-                                     4+(100+4)+(68+4)+20*options->numCells+28*options->numCells+(88+4)+(100+4)+(68+4)+0+8*options->components*options->numCells+
-                                     4+4+4+4+4+4+4+
-                                     (8+4)+4+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+4+
-                                     (8+4)+4+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+4+
-                                     (8+4)+(8+4)+(8+4))*options->number+4;
+  const PetscInt     numAlloc = (12 + 2*numCells)*options->number;
+  const PetscInt     numBytes = ((100+4)+(68+4)+20*numCells+28*numCells+(88+4)+(100+4)+(68+4)+8*options->components*numCells)*options->number;
+  PetscInt           numDistAlloc;
+  PetscInt           numDistBytes;
   double            *values;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
+  if (!rank) {
+    numDistAlloc = (1+15+8+3*locCells+6+3*remCells+6+13+2*locCells+7+2*remCells+1+1+7+2*remCells+1+2+1+2+50+9*remCells+1*remRanks+2+
+                    23+2+2+2)*options->number+1;
+    numDistBytes = (4+
+                    4*3+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
+                    (60+4+60*locCells)+(84+4+84*locCells)+(84+4+84*locCells)+4+4+
+                    (60+4+60*remCells)+(24+4+24*remCells)+(24+4+24*remCells)+(60+4)+(24+4)+(24+4)+
+                    4+(100+4+28*locCells)+(68+4+20*locCells)+(88+4+0)+(100+4)+(68+4)+8*options->components*locCells+
+                    4+4+(100+4+28*remCells)+(68+4+20*remCells)+8*options->components*locCells+
+                    4+
+                    4+
+                    4+4+(100+4+28*remCells)+(68+4+20*remCells)+4*locCells+
+                    4+
+                    4+4+
+                    4+
+                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4+20*remCells*2)+4+(32+4+20*remCells)+(20+4+0)+(20+4+0)+44*remRanks+(50+44+24)+(60+4+60*remCells)+(24+4+24*remCells)+(24+4+24*remCells)+(50+44+24)+(60+4+60*remCells)+(24+4+24*remCells)+(24+4+24*remCells)+
+                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+
+                    (8+4)+(8+4)+(8+4)+
+                    4)*options->number+4;
+  } else {
+    numDistAlloc = (1+15+8+3*locCells+6+6+3*locCells+17+4*locCells+1+7+2*locCells+1+1+7+2*locCells+1+2+2+23+2+
+                    50+9*locCells+1*rotRanks+2+2+2)*options->number+1;
+    numDistBytes = (4+
+                    4*3+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
+                    (60+4+60*locCells)+(84+4+84*locCells)+(84+4+84*locCells)+4+4+
+                    (60+4)+(24+4)+(24+4)+(60+4+60*locCells)+(24+4+24*locCells)+(24+4+24*locCells)+
+                    4+(100+4+28*locCells)+(68+4+20*locCells)+(88+4+0)+(100+4)+(68+4)+8*options->components*locCells+4+28*locCells+(68+4+20*locCells)+8*options->components*locCells+
+                    4+
+                    4+4+(100+4+28*remCells)+(68+4+20*remCells)+8*options->components*locCells+
+                    4+
+                    4+
+                    4+4+(100+4+28*remCells)+(68+4+20*remCells)+4*locCells+
+                    4+
+                    4+4+
+                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+
+                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4+20*locCells*2)+4+(32+4+20*locCells)+(20+4+0)+(20+4+0)+44*rotRanks+(50+44+24)+(60+4+60*locCells)+(24+4+24*locCells)+(24+4+24*locCells)+(50+44+24)+(60+4+60*locCells)+(24+4+24*locCells)+(24+4+24*locCells)+
+                    (8+4)+(8+4)+(8+4)+
+                    4)*options->number+4;
+  }
   ierr = PetscMalloc(options->components * sizeof(double), &values);CHKERRQ(ierr);
   for(PetscInt c = 0; c < options->components; ++c) {values[c] = 1.0;}
   logger.stagePush("SectionII");
   for(PetscInt i = 0; i < num; ++i) {
     TestSection section(PETSC_COMM_WORLD);
 
-    for(PetscInt c = 0; c < options->numCells; ++c) {
+    for(PetscInt c = 0; c < numCells; ++c) {
       section.setFiberDimension(c, options->components);
     }
     section.allocatePoint();
-    for(PetscInt c = 0; c < options->numCells; ++c) {
+    for(PetscInt c = 0; c < numCells; ++c) {
       section.updatePoint(c, values);
     }
     logger.stagePush("Distribution");
@@ -279,12 +324,18 @@ PetscErrorCode SectionDistributionTest(const Options *options)
       //     Markers Obj
       //     ConeSet Obj
       //     Data (arrows)
-      //     Send Overlap + Obj
-      //       Base + Obj
-      //       Cap  + Obj
-      //     Recv Overlap + Obj
-      //       Base + Obj
-      //       Cap  + Obj
+      //   Send Overlap + Obj
+      //     Base + Obj
+      //       Data (remote ranks)
+      //     Cap  + Obj
+      //       Data (remote points)
+      //     Data (arrows)
+      //   Recv Overlap + Obj
+      //     Base + Obj
+      //       Data (remote points)
+      //     Cap  + Obj
+      //       Data (remote ranks)
+      //     Data (arrows)
       //   Parallel Section Obj
       //     Atlas (UniformSection) + Obj
       //       Atlas (ConstantSection) + Obj
@@ -295,57 +346,133 @@ PetscErrorCode SectionDistributionTest(const Options *options)
       //         Atlas (ConstantSection) + Obj
       //       Data
       //     Data
+      //     NewAtlas Obj only for p_k
+      //       Atlas (ConstantSection) + Obj
+      //         Data (points)
+      //       Data (sizes)
+      //     NewData only for p_k
       //   Send Section Obj
+      //     Section Obj only p_0
+      //       Atlas (UniformSection) + Obj
+      //         Atlas (ConstantSection) + Obj
+      //           Data (point)
+      //         Data (sizes)
+      //       Data (8*comp*points)
       //   Recv Section Obj
-      //   Sizer Obj
+      //     Section Obj only p_k
+      //       Atlas (UniformSection) + Obj
+      //         Atlas (ConstantSection) + Obj
+      //           Data (point)
+      //         Data (sizes)
+      //       Data (8*comp*points)
+      //   Sizer Obj (sizerFiller)
       //   Send Sizer Obj
+      //     Section Obj only p_0
+      //       Atlas (UniformSection) + Obj
+      //         Atlas (ConstantSection) + Obj
+      //           Data (point)
+      //         Data (sizes)
+      //       Data (4*points)
       //   Recv Sizer Obj
+      //     Section Obj only p_k
+      //       Atlas (UniformSection) + Obj
+      //         Atlas (ConstantSection) + Obj
+      //           Data (point)
+      //         Data (sizes)
+      //       Data (4*points)
       //   Const Send Sizer Obj
+      //     Section Obj only p_0
       //   Const Recv Sizer Obj
+      //     Section Obj only p_k
       //   BaseSequence + Obj
       //   SendTopology Obj
-      //     Send Overlap + Obj
+      //     Send Overlap + Obj (148+60)
+      //       LOOKS LIKE AN ARROW IS INSERTED THEN DELETED TO START
       //       Base + Obj
       //       Cap  + Obj
-      //     Recv Overlap + Obj
+      //     Recv Overlap + Obj (148+60)
+      //       LOOKS LIKE AN ARROW IS INSERTED THEN DELETED TO START
       //       Base + Obj
       //       Cap  + Obj
-      //     modifiedPoints Obj
+      //     modifiedPoints (32) + Obj
+      //       Data (points) 20
+      //     DiscreteSieve Obj only p_0
+      //       Domain (points) 32 + Obj
+      //         Data (sendPoints) 20
+      //       EmptySeq 20 + Obj
+      //         Data (0)
+      //       ReturnSeq 20 + Obj
+      //         Data (0)
+      //     Data (sieves) 44
+      //     50+44+24 for height label
+      //     Height Label + Obj only p_0
+      //       Base + Obj
+      //         Data (height)
+      //       Cap  + Obj
+      //         Data (points)
+      //       Data (arrows)
+      //     50+44+24 for depth label
+      //     Depth Label + Obj only p_0
+      //       Base + Obj
+      //         Data (height)
+      //       Cap  + Obj
+      //         Data (points)
+      //       Data (arrows)
       //   CapSequence + Obj
       //   RecvTopology Obj
-      //     Send Overlap + Obj
+      //     Send Overlap + Obj (148+60)
+      //       LOOKS LIKE AN ARROW IS INSERTED THEN DELETED TO START
       //       Base + Obj
       //       Cap  + Obj
-      //     Recv Overlap + Obj
+      //     Recv Overlap + Obj (148+60)
+      //       LOOKS LIKE AN ARROW IS INSERTED THEN DELETED TO START
       //       Base + Obj
       //       Cap  + Obj
-      //     modifiedPoints Obj
-      //   CapSequence + Obj
-      //   CapSequence + Obj
-      //   CapSequence + Obj
+      //     modifiedPoints (32) + Obj
+      //       Data (points) 20
+      //     DiscreteSieve Obj only p_k
+      //       Domain (points) 32 + Obj
+      //         Data (sendPoints) 20
+      //       EmptySeq 20 + Obj
+      //         Data (0)
+      //       ReturnSeq 20 + Obj
+      //         Data (0)
+      //     Data (sieves) 44 only p_k
+      //     50+44+24 for height label
+      //     Height Label + Obj only p_k
+      //       Base + Obj
+      //         Data (height)
+      //       Cap  + Obj
+      //         Data (points)
+      //       Data (arrows)
+      //     50+44+24 for depth label
+      //     Depth Label + Obj only p_k
+      //       Base + Obj
+      //         Data (height)
+      //       Cap  + Obj
+      //         Data (points)
+      //       Data (arrows)
+      //   CapSequence + Obj (for setupReceive() sizes)
+      //   CapSequence + Obj (for setupReceive() data)
+      //   BaseSequence + Obj (for updateRemote())
       Obj<TestSection>                  objSection(&section);
       objSection.addRef();
       Obj<ALE::Mesh>                    parallelMesh = new ALE::Mesh(PETSC_COMM_WORLD, 1);
       Obj<ALE::Mesh::sieve_type>        sieve        = new ALE::Mesh::sieve_type(PETSC_COMM_WORLD);
       Obj<ALE::Mesh::send_overlap_type> sendOverlap  = new ALE::Mesh::send_overlap_type(PETSC_COMM_WORLD);
       Obj<ALE::Mesh::recv_overlap_type> recvOverlap  = new ALE::Mesh::recv_overlap_type(PETSC_COMM_WORLD);
-      const PetscInt block = options->numCells/section.commSize();
-      const PetscInt rank  = section.commRank();
 
       parallelMesh->setSieve(sieve);
       if (!rank) {
         for(PetscInt r = 1; r < section.commSize(); ++r) {
-          const PetscInt start = r*block     + PetscMin(r, options->numCells%section.commSize());
-          const PetscInt end   = (r+1)*block + PetscMin(r+1, options->numCells%section.commSize());
+          const PetscInt rStart = r*block     + PetscMin(r, numCells%options->size);
+          const PetscInt rEnd   = (r+1)*block + PetscMin(r+1, numCells%options->size);
 
-          for(PetscInt c = start; c < end; ++c) {
+          for(PetscInt c = rStart; c < rEnd; ++c) {
             sendOverlap->addArrow(c, r, c);
           }
         }
       }
-      const PetscInt start = rank*block     + PetscMin(rank, options->numCells%section.commSize());
-      const PetscInt end   = (rank+1)*block + PetscMin(rank+1, options->numCells%section.commSize());
-
       for(PetscInt c = start; c < end; ++c) {
         sieve->addCone(c, -(rank+1));
         if (rank) {recvOverlap->addArrow(0, c, c);}

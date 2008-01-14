@@ -79,6 +79,7 @@ namespace ALE {
     typedef ArrowSection_                                             arrow_section_type;
     typedef Bundle<Sieve_,RealSection_,IntSection_,ArrowSection_>     this_type;
     typedef typename sieve_type::point_type                           point_type;
+    typedef malloc_allocator<point_type>                              alloc_type;
 #define NEW_LABEL
 #ifdef NEW_LABEL
     typedef typename ALE::LabelSifter<int, point_type>                label_type;
@@ -902,7 +903,11 @@ namespace ALE {
       section->setAtlas(newAtlas);
       this->_factory->orderPatch(section, this->getSieve());
       // Copy over existing values
-      typename Section_::value_type                   *newArray = new typename Section_::value_type[newSize];
+      typedef typename alloc_type::template rebind<typename Section_::value_type>::other value_alloc_type;
+      value_alloc_type value_allocator;
+      typename Section_::value_type                   *newArray = value_allocator.allocate(newSize);
+      for(int i = 0; i < newSize; ++i) {value_allocator.construct(newArray+i, typename Section_::value_type());}
+      ///typename Section_::value_type                   *newArray = new typename Section_::value_type[newSize];
       const typename Section_::value_type             *array    = section->restrict();
 
       for(typename Section_::atlas_type::chart_type::const_iterator c_iter = oldChart.begin(); c_iter != oldChart.end(); ++c_iter) {
@@ -1154,7 +1159,7 @@ namespace ALE {
 #endif
     typedef base_type::sieve_type            sieve_type;
     typedef sieve_type::point_type           point_type;
-    typedef malloc_allocator<point_type>     alloc_type;
+    typedef base_type::alloc_type            alloc_type;
     typedef base_type::label_sequence        label_sequence;
     typedef base_type::real_section_type     real_section_type;
     typedef base_type::numbering_type        numbering_type;

@@ -18,9 +18,10 @@ namespace ALE {
       typedef Value_                                                                  value_type;
       typedef Topology_                                                               mesh_topology_type;
       typedef typename mesh_topology_type::alloc_type                                 alloc_type;
+      typedef typename alloc_type::template rebind<point_type>::other                 point_alloc_type;
       typedef typename mesh_topology_type::sieve_type                                 sieve_type;
-      typedef typename ALE::DiscreteSieve<point_type>                                 dsieve_type;
-      typedef typename ALE::Topology<int, dsieve_type>                                topology_type;
+      typedef typename ALE::DiscreteSieve<point_type, point_alloc_type>               dsieve_type;
+      typedef typename ALE::Topology<int, dsieve_type, alloc_type>                    topology_type;
       typedef typename ALE::Sifter<int, point_type, point_type>                       send_overlap_type;
       typedef typename ALE::Sifter<point_type, int, point_type>                       recv_overlap_type;
       typedef typename ALE::Field<send_overlap_type, int, ALE::ConstantSection<point_type, int> > constant_sizer;
@@ -92,7 +93,7 @@ namespace ALE {
 
           // Want to replace this loop with a slice through color
           for(recv_overlap_type::supportSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
-            const dsieve_type::point_type& point = p_iter.color();
+            const typename dsieve_type::point_type& point = p_iter.color();
 
             section->setFiberDimension(point, 1);
           }
