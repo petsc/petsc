@@ -11,13 +11,13 @@
 
 namespace ALE {
   namespace New {
-    template<typename Topology_, typename Value_>
+    template<typename Topology_, typename Value_, typename Alloc_ = typename Topology_::alloc_type>
     class SectionCompletion {
     public:
       typedef int                                                                     point_type;
-      typedef Value_                                                                  value_type;
       typedef Topology_                                                               mesh_topology_type;
-      typedef typename mesh_topology_type::alloc_type                                 alloc_type;
+      typedef Value_                                                                  value_type;
+      typedef Alloc_                                                                  alloc_type;
       typedef typename alloc_type::template rebind<point_type>::other                 point_alloc_type;
       typedef typename mesh_topology_type::sieve_type                                 sieve_type;
       typedef typename ALE::DiscreteSieve<point_type, point_alloc_type>               dsieve_type;
@@ -25,8 +25,8 @@ namespace ALE {
       typedef typename ALE::Sifter<int, point_type, point_type>                       send_overlap_type;
       typedef typename ALE::Sifter<point_type, int, point_type>                       recv_overlap_type;
       typedef typename ALE::Field<send_overlap_type, int, ALE::ConstantSection<point_type, int> > constant_sizer;
-      typedef typename ALE::New::SectionCompletion<mesh_topology_type, int>           int_completion;
-      typedef typename ALE::New::SectionCompletion<mesh_topology_type, value_type>    completion;
+      typedef typename ALE::New::SectionCompletion<mesh_topology_type, int, alloc_type>           int_completion;
+      typedef typename ALE::New::SectionCompletion<mesh_topology_type, value_type, alloc_type>    completion;
     public:
       // Creates a DiscreteTopology with the overlap information
       static Obj<topology_type> createSendTopology(const Obj<send_overlap_type>& sendOverlap) {
@@ -37,6 +37,7 @@ namespace ALE {
           Obj<dsieve_type> sendSieve = new dsieve_type(sendOverlap->cone(*r_iter));
           topology->setPatch(*r_iter, sendSieve);
         }
+        //CAN ELIMINATE
         topology->stratify();
         return topology;
       };
@@ -53,6 +54,7 @@ namespace ALE {
           }
           topology->setPatch(*r_iter, recvSieve);
         }
+        //CAN ELIMINATE
         topology->stratify();
         return topology;
       };

@@ -414,8 +414,9 @@ namespace ALE {
       if (serialSection->debug()) {
         serialSection->view("Serial ArrowSection");
       }
-      typedef ALE::Field<send_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > send_section_type;
-      typedef ALE::Field<recv_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > recv_section_type;
+      typedef typename alloc_type::template rebind<typename Section::value_type>::other value_alloc_type;
+      typedef ALE::Field<send_overlap_type, int, ALE::Section<point_type, typename Section::value_type, value_alloc_type> > send_section_type;
+      typedef ALE::Field<recv_overlap_type, int, ALE::Section<point_type, typename Section::value_type, value_alloc_type> > recv_section_type;
       typedef ALE::New::ConeSizeSection<bundle_type, sieve_type> SectionSizer;
       typedef ALE::New::ArrowSection<sieve_type, Section>        ArrowFiller;
       Obj<Section>                 parallelSection = new Section(serialSection->comm(), serialSection->debug());
@@ -598,8 +599,9 @@ namespace ALE {
       typedef typename bundle_type::send_overlap_type             send_overlap_type;
       typedef typename bundle_type::recv_overlap_type             recv_overlap_type;
       typedef typename Section::value_type                        value_type;
-      typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type> > send_section_type;
-      typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type> > recv_section_type;
+      typedef typename alloc_type::template rebind<typename Section::value_type>::other value_alloc_type;
+      typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > send_section_type;
+      typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > recv_section_type;
       typedef ALE::New::SizeSection<Section>                                SectionSizer;
       const int debug = section->debug();
 

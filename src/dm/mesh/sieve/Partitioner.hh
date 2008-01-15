@@ -52,10 +52,11 @@ extern "C" {
 
 namespace ALE {
   namespace New {
-    template<typename Bundle_>
+    template<typename Bundle_, typename Alloc_ = typename Bundle_::alloc_type>
     class Partitioner {
     public:
       typedef Bundle_                          bundle_type;
+      typedef Alloc_                           alloc_type;
       typedef typename bundle_type::sieve_type sieve_type;
       typedef typename bundle_type::point_type point_type;
     public:
@@ -68,7 +69,7 @@ namespace ALE {
       //     the iterator order, but we can fix it later.
       static void buildDualCSR(const Obj<bundle_type>& bundle, const int dim, int **offsets, int **adjacency) {
         ALE_LOG_EVENT_BEGIN;
-        typedef typename ALE::New::Completion<bundle_type, point_type> completion;
+        typedef typename ALE::New::Completion<bundle_type, point_type, alloc_type> completion;
         const Obj<sieve_type>&                           sieve        = bundle->getSieve();
         const Obj<typename bundle_type::label_sequence>& elements     = bundle->heightStratum(0);
         Obj<sieve_type>                                  overlapSieve = new sieve_type(bundle->comm(), bundle->debug());
