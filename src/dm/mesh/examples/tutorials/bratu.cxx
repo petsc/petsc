@@ -1697,6 +1697,7 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
   if (options->structured) {
     DA  da = (DA) dm;

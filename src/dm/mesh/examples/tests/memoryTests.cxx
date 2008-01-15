@@ -253,6 +253,17 @@ PetscErrorCode SectionDistributionTest(const Options *options)
 
   PetscFunctionBegin;
   if (!rank) {
+    // There are 3 main sources of savings:
+    //   1) Get rid of labels in Topology
+    //   2) Get rid of base/cap in Overlap
+    //   3) Share domain information between UniformSection and ConstantSection
+    // We may be able to
+    //   1) Share domain information between Topology and Overlap
+    //   2) Share domain information between sizer and section
+    // Synopsis:
+    //   remRanks: 44
+    //   locCells: (60+84+84)+(20+28+8*comp) = 228 (Sieve) + 48+8*comp (Section)
+    //   remCells: (60+24+24)+(20+28+8*comp)+(20+28+4)+(20*2+20+60+24+24+60+24+24) = 108 (Overlap) + 48+8*comp (OSection) + 52 (Sizer) + 276 (Topology)
     numDistAlloc = (1+15+8+3*locCells+6+3*remCells+6+13+2*locCells+7+2*remCells+1+1+7+2*remCells+1+2+1+2+50+9*remCells+1*remRanks+2+
                     23+2+2+2)*options->number+1;
     numDistBytes = (4+
@@ -260,10 +271,10 @@ PetscErrorCode SectionDistributionTest(const Options *options)
                     (60+4+60*locCells)+(84+4+84*locCells)+(84+4+84*locCells)+4+4+
                     (60+4+60*remCells)+(24+4+24*remCells)+(24+4+24*remCells)+(60+4)+(24+4)+(24+4)+
                     4+(100+4+28*locCells)+(68+4+20*locCells)+(88+4+0)+(100+4)+(68+4)+8*options->components*locCells+
-                    4+4+(100+4+28*remCells)+(68+4+20*remCells)+8*options->components*locCells+
+                    4+4+(100+4+28*remCells)+(68+4+20*remCells)+8*options->components*remCells+
                     4+
                     4+
-                    4+4+(100+4+28*remCells)+(68+4+20*remCells)+4*locCells+
+                    4+4+(100+4+28*remCells)+(68+4+20*remCells)+4*remCells+
                     4+
                     4+4+
                     4+
