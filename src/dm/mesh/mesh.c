@@ -524,11 +524,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
   ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
 
-  p->m             = PETSC_NULL;
+  new(&p->m) ALE::Obj<ALE::Mesh>(PETSC_NULL);
   p->globalScatter = PETSC_NULL;
   p->lf            = PETSC_NULL;
   p->lj            = PETSC_NULL;
-  p->mcompat       = PETSC_NULL;
+  new(&p->mcompat) ALE::Obj<ALECompat::Mesh>(PETSC_NULL);
   p->data          = PETSC_NULL;
   *mesh = p;
   PetscFunctionReturn(0);
