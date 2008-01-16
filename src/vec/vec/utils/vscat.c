@@ -1463,7 +1463,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter ctx,PetscTruth 
    You cannot change the values in the input vector between the calls to VecScatterBegin()
    and VecScatterEnd().
 
-   If you use SCATTER_REVERSE the first two arguments should be reversed, from 
+   If you use SCATTER_REVERSE the two arguments x and y should be reversed, from 
    the SCATTER_FORWARD.
    
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
@@ -1543,8 +1543,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(VecScatter inctx,Vec x,Vec y,I
    Level: intermediate
 
    Notes:
-   If you use SCATTER_REVERSE the first two arguments should be reversed, from 
-   the SCATTER_FORWARD.
+   If you use SCATTER_REVERSE the arguments x and y should be reversed, from the SCATTER_FORWARD.
+
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
 .seealso: VecScatterBegin(), VecScatterCreate()
