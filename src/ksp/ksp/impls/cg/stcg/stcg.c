@@ -681,8 +681,7 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
 
   if (ksp->pc_side == PC_RIGHT) {
     SETERRQ(PETSC_ERR_SUP, "No right preconditioning for KSPSTCG");
-  }
-  else if (ksp->pc_side == PC_SYMMETRIC) {
+  } else if (ksp->pc_side == PC_SYMMETRIC) {
     SETERRQ(PETSC_ERR_SUP, "No symmetric preconditioning for KSPSTCG");
   }
 
