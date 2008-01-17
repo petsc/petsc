@@ -150,7 +150,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
 
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
-    KSPLogResidualHistory(ksp,res);
+    if (it) KSPLogResidualHistory(ksp,res);
     gmres->it = (it - 1);
     KSPMonitor(ksp,ksp->its,res); 
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
