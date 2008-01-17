@@ -1,6 +1,8 @@
 // This example will solve the Bratu problem eventually
 static char help[] = "This example solves the Bratu problem.\n\n";
 
+#define ALE_HAVE_CXX_ABI
+
 #include <petscmesh.hh>
 #include <petscmesh_viewers.hh>
 #include <petscmesh_formats.hh>
