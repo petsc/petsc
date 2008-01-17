@@ -6,10 +6,21 @@ import RDict
 
 class MemoryTests(script.Script):
   def __init__(self):
-    script.Script.__init__(self, clArgs = ['-log=memory.log'], argDB = RDict.RDict())
+    script.Script.__init__(self, clArgs = ['-log=memory.log']+sys.argv[1:], argDB = RDict.RDict())
     self.executable = './memoryTests'
     self.debug      = 0
     return
+
+  def setupHelp(self, help):
+    '''This method should be overidden to provide help for arguments'''
+    import nargs
+
+    script.Script.setupHelp(self, help)
+    help.addArgument('MemoryTests', '-tests', nargs.Arg(None, ['set', 'label', 'section', 'sectionDist'], 'Tests to run', isTemporary = 1))
+    help.addArgument('MemoryTests', '-procs', nargs.Arg(None, [1, 2], 'Communicator sizes to test', isTemporary = 1))
+    help.addArgument('MemoryTests', '-iters', nargs.Arg(None, [1, 2, 10], 'Iterations to test', isTemporary = 1))
+    help.addArgument('MemoryTests', '-cells', nargs.Arg(None, [8, 17], 'Cell sizes to test', isTemporary = 1))
+    return help
 
   def createCmdLine(self, numProcs, test, num, numCells):
     args = ['$MPIEXEC']
@@ -24,10 +35,10 @@ class MemoryTests(script.Script):
   def run(self):
     self.setup()
     #for test in ['set', 'label', 'section', 'sectionDist']:
-    for test in ['set', 'label', 'section']:
-      for numProcs in [1, 2]:
-        for num in [1, 2, 10]:
-          for numCells in [8, 17]:
+    for test in self.argDB['tests']:
+      for numProcs in map(int, self.argDB['procs']):
+        for num in map(int, self.argDB['iters']):
+          for numCells in map(int, self.argDB['cells']):
             self.logPrint('Running test for %s on %d procs for %d cells and %d iterations' % (test, numProcs, numCells, num))
             cmdLine = self.createCmdLine(numProcs, test, num, numCells)
             try:
