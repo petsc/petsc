@@ -210,7 +210,7 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
   /* keep iterating until we have converged OR generated the max number
      of directions OR reached the max number of iterations for the method */ 
   while (!ksp->reason && loc_it < max_k && ksp->its < ksp->max_it) {
-    KSPLogResidualHistory(ksp,res_norm);
+    if (loc_it) KSPLogResidualHistory(ksp,res_norm);
     fgmres->it = (loc_it - 1);
     KSPMonitor(ksp,ksp->its,res_norm); 
 
