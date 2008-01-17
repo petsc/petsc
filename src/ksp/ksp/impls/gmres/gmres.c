@@ -143,6 +143,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   gmres->it = (it - 1);
   KSPLogResidualHistory(ksp,res);
+  KSPMonitor(ksp,ksp->its,res); 
   if (!res) {
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
@@ -152,9 +153,11 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
 
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
-    if (it) KSPLogResidualHistory(ksp,res);
+    if (it) {
+      KSPLogResidualHistory(ksp,res);
+      KSPMonitor(ksp,ksp->its,res); 
+    }
     gmres->it = (it - 1);
-    KSPMonitor(ksp,ksp->its,res); 
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
       ierr = GMRESGetNewVectors(ksp,it+1);CHKERRQ(ierr);
     }
