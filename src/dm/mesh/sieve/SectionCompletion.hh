@@ -38,7 +38,7 @@ namespace ALE {
           topology->setPatch(*r_iter, sendSieve);
         }
         //CAN ELIMINATE
-        topology->stratify();
+        //topology->stratify();
         return topology;
       };
       static Obj<topology_type> createRecvTopology(const Obj<send_overlap_type>& recvOverlap) {
@@ -55,7 +55,7 @@ namespace ALE {
           topology->setPatch(*r_iter, recvSieve);
         }
         //CAN ELIMINATE
-        topology->stratify();
+        //topology->stratify();
         return topology;
       };
       template<typename Sizer, typename Section>

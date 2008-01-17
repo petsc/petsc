@@ -263,8 +263,8 @@ PetscErrorCode SectionDistributionTest(const Options *options)
     // Synopsis:
     //   remRanks: 44
     //   locCells: (60+84+84)+(20+28+8*comp) = 228 (Sieve) + 48+8*comp (Section)
-    //   remCells: (60+24+24)+(20+28+8*comp)+(20+28+4)+(20*2+20+60+24+24+60+24+24) = 108 (Overlap) + 48+8*comp (OSection) + 52 (Sizer) + 276 (Topology)
-    numDistAlloc = (1+15+8+3*locCells+6+3*remCells+6+13+2*locCells+7+2*remCells+1+1+7+2*remCells+1+2+1+2+50+9*remCells+//32+3*remCells+
+    //   remCells: (60+24+24)+(20+28+8*comp)+(20+28+4)+(20) = 108 (Overlap) + 48+8*comp (OSection) + 52 (Sizer) + 20 (Topology)
+    numDistAlloc = (1+15+8+3*locCells+6+3*remCells+6+13+2*locCells+7+2*remCells+1+1+7+2*remCells+1+2+1+2+32+1*remCells+//50+9*remCells+
                     1*remRanks+2+23+2+2+2)*options->number+1;
     numDistBytes = (4+
                     4*3+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
@@ -278,13 +278,12 @@ PetscErrorCode SectionDistributionTest(const Options *options)
                     4+
                     4+4+
                     4+
-                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4+20*remCells*2)+4+(32+4+20*remCells)+(20+4+0)+(20+4+0)+44*remRanks+(50+44+24)+(60+4+60*remCells)+(24+4+24*remCells)+(24+4+24*remCells)+(50+44+24)+(60+4+60*remCells)+(24+4+24*remCells)+(24+4+24*remCells)+
+                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+4+(32+4+20*remCells)+(20+4+0)+(20+4+0)+44*remRanks+
                     (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+
-                    (8+4)+(8+4)+(8+4)+
-                    4)*options->number+4;
+                    (8+4)+(8+4)+(8+4))*options->number+4;
   } else {
-    numDistAlloc = (1+15+8+3*locCells+6+6+3*locCells+17+4*locCells+1+7+2*locCells+1+1+7+2*locCells+1+2+2+23+2+
-                    50+9*locCells+1*rotRanks+2+2+2)*options->number+1;
+    numDistAlloc = (1+15+8+3*locCells+6+6+3*locCells+17+4*locCells+1+7+2*locCells+1+1+7+2*locCells+1+2+2+23+2+32+1*locCells+//50+9*locCells+
+                    1*rotRanks+2+2+2)*options->number+1;
     numDistBytes = (4+
                     4*3+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
                     (60+4+60*locCells)+(84+4+84*locCells)+(84+4+84*locCells)+4+4+
@@ -298,9 +297,8 @@ PetscErrorCode SectionDistributionTest(const Options *options)
                     4+
                     4+4+
                     (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+
-                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4+20*locCells*2)+4+(32+4+20*locCells)+(20+4+0)+(20+4+0)+44*rotRanks+(50+44+24)+(60+4+60*locCells)+(24+4+24*locCells)+(24+4+24*locCells)+(50+44+24)+(60+4+60*locCells)+(24+4+24*locCells)+(24+4+24*locCells)+
-                    (8+4)+(8+4)+(8+4)+
-                    4)*options->number+4;
+                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+4+(32+4+20*locCells)+(20+4+0)+(20+4+0)+44*rotRanks+
+                    (8+4)+(8+4)+(8+4))*options->number+4;
   }
   ierr = PetscMalloc(options->components * sizeof(double), &values);CHKERRQ(ierr);
   for(PetscInt c = 0; c < options->components; ++c) {values[c] = 1.0;}
