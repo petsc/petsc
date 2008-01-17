@@ -491,7 +491,6 @@ PetscErrorCode KSPSetUp_BCGSL(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Support left preconditioners only */
   if (ksp->pc_side == PC_SYMMETRIC) {
     SETERRQ(PETSC_ERR_SUP, "no symmetric preconditioning for KSPBCGSL");
   } else if (ksp->pc_side == PC_RIGHT) {

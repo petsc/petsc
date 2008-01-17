@@ -11,10 +11,6 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
   PetscInt        restart = lcd->restart;
 
   PetscFunctionBegin;
-  /* 
-       This implementation of LCD only handles left preconditioning
-     so generate an error otherwise.
-  */
   if (ksp->pc_side == PC_RIGHT) {
     SETERRQ(2,"No right preconditioning for KSPLCD");
   } else if (ksp->pc_side == PC_SYMMETRIC) {

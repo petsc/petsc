@@ -3,10 +3,10 @@
 #include "src/snes/impls/ls/ls.h"
 
 /*
-     Checks if J^T F = 0 which implies we've found a local minimum of the function,
-    but not a zero. In the case when one cannot compute J^T F we use the fact that
+     Checks if J^T F = 0 which implies we've found a local minimum of the norm of the function,
+    || F(u) ||_2 but not a zero, F(u) = 0. In the case when one cannot compute J^T F we use the fact that
     0 = (J^T F)^T W = F^T J W iff W not in the null space of J. Thanks for Jorge More 
-    for this trick.
+    for this trick. One assumes that the probability that W is in the null space of J is very, very small.
 */ 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLSCheckLocalMin_Private"

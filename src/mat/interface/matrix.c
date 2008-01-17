@@ -4279,7 +4279,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
    Insert a logically dense subblock, which can be
 .    MAT_ROW_ORIENTED - row-oriented (default)
 
-   Not these options reflect the data you pass in with MatSetValues(); it has 
+   Note these options reflect the data you pass in with MatSetValues(); it has 
    nothing to do with how the data is stored internally in the matrix 
    data structure.
 
