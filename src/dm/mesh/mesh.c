@@ -1722,6 +1722,12 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
 }
 
 
+#include "Hierarchy_New.hh"
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshCoarsenHierarchy_New"
+
+
 #include "Hierarchy.hh"
 
 #undef __FUNCT__  

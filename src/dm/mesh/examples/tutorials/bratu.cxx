@@ -68,11 +68,18 @@ PetscScalar singularity_exact_2d(const double x[]) {
     return 0.;
   } else theta = asin(x[1]/r);
   if (x[0] < 0) {
-    theta = 2*3.14159265358979323846264338327950288419716939937510582097494459230 - theta;
+    theta = 2*M_PI - theta;
   }
   return pow(r, 2./3.)*sin((2./3.)*theta);
 }
 
+PetscScalar singularity_exact_3d(const double x[]) {
+  return sin(x[0] + x[1] + x[2]);  
+}
+
+PetscScalar singularity_3d(const double x[]) {
+  return (3)*sin(x[0] + x[1] + x[2]);
+}
 
 PetscScalar linear_2d(const double x[]) {
   return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5);
@@ -1531,12 +1538,17 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     }
   } else if (options->dim == 3) {
     if (options->bcType == DIRICHLET) {
-      if (options->lambda > 0.0) {
-        options->func    = nonlinear_3d;
+      if (options->reentrantMesh) {
+        options->func = singularity_3d;
+        options->exactFunc = singularity_exact_3d;
       } else {
-        options->func    = constant;
+        if (options->lambda > 0.0) {
+          options->func    = nonlinear_3d;
+        } else {
+          options->func    = constant;
+        }
+        options->exactFunc = quadratic_3d;
       }
-      options->exactFunc = quadratic_3d;
     } else {
       options->func      = linear_3d;
       options->exactFunc = cubic_3d;
@@ -1831,7 +1843,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "mesh_hierarchy.vtk");CHKERRQ(ierr);
-      double offset[3] = {0.7, 0.0, 0.25};
+      double offset[3] = {2.0, 0.0, 0.25};
       ierr = PetscOptionsReal("-hierarchy_vtk", PETSC_NULL, "bratu.cxx", *offset, offset, PETSC_NULL);CHKERRQ(ierr);
       ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeHierarchyVertices(dmmg, viewer, offset);CHKERRQ(ierr);

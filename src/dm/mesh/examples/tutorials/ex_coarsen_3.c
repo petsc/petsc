@@ -68,6 +68,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   mesh = ALE::PCICE::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, true, options->debug);
+  //MeshIDBoundary(mesh);
+  //mesh->markBoundaryCells("marker");
   //ALE::Coarsener::IdentifyBoundary(mesh, 2);
   //ALE::Coarsener::make_coarsest_boundary(mesh, 2, options->levels + 1);
   ALE::LogStagePop(stage);
