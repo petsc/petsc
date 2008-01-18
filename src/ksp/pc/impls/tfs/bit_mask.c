@@ -61,32 +61,6 @@ bm_to_proc( char *ptr, int p_mask,  int *msg_list)
 	    {*msg_list = tmp+7; msg_list++;}
 	  ptr --;
 	}
-
-      /* high to low */
-      /*
-      for (i=0;i<p_mask;i++)
-	{
-	  tmp = BYTE*(p_mask-i-1);
-	  if (*ptr&128) 
-	    {*msg_list = tmp+7; msg_list++;}
-	  if (*ptr&64)
-	    {*msg_list = tmp+6; msg_list++;}
-	  if (*ptr&32)
-	    {*msg_list = tmp+5; msg_list++;}
-	  if (*ptr&16)
-	    {*msg_list = tmp+4; msg_list++;}
-	  if (*ptr&8) 
-	    {*msg_list = tmp+3; msg_list++;}
-	  if (*ptr&4) 
-	    {*msg_list = tmp+2; msg_list++;}
-	  if (*ptr&2) 
-	    {*msg_list = tmp+1; msg_list++;}
-	  if (*ptr&1) 
-	    {*msg_list = tmp; msg_list++;}
-	  ptr ++;
-	}
-      */
-
     }
 }
 

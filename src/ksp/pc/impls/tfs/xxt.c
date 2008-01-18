@@ -396,10 +396,8 @@ xxt_generate(xxt_ADT xxt_handle)
       /* time to move to the next level? */
       while (i==segs[dim])
 	{
-#ifdef SAFE	  
 	  if (dim==level)
 	    {error_msg_fatal("dim about to exceed level\n"); break;}
-#endif
 
 	  stages[dim++]=i;
 	  end+=lnsep[dim];
@@ -671,22 +669,17 @@ static
 void 
 check_handle(xxt_ADT xxt_handle)
 {
-#ifdef SAFE
   int vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
-#endif
 
 
   if (xxt_handle==NULL)
     {error_msg_fatal("check_handle() :: bad handle :: NULL %d\n",xxt_handle);}
 
-#ifdef SAFE
   vals[0]=vals[1]=xxt_handle->id;
   giop(vals,work,sizeof(op)/sizeof(op[0])-1,op);
   if ((vals[0]!=vals[1])||(xxt_handle->id<=0))
     {error_msg_fatal("check_handle() :: bad handle :: id mismatch min/max %d/%d %d\n",
 		     vals[0],vals[1], xxt_handle->id);}
-#endif
-
 }
 
 

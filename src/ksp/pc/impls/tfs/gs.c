@@ -343,7 +343,6 @@ gsi_check_args(int *in_elms, int nel, int level)
 
 
 
-#ifdef SAFE
   if (!in_elms)
     {error_msg_fatal("elms point to nothing!!!\n");}
 
@@ -352,7 +351,6 @@ gsi_check_args(int *in_elms, int nel, int level)
 
   if (nel==0)
     {error_msg_warning("I don't have any elements!!!\n");}
-#endif
 
   /* get space for gs template */
   gs = gsi_new();
@@ -381,7 +379,6 @@ gsi_check_args(int *in_elms, int nel, int level)
   if (j!=nel)
     {error_msg_fatal("nel j mismatch!\n");}
 
-#ifdef SAFE
   /* pre-pass ... check to see if sorted */
   elms[nel] = INT_MAX;
   iptr = elms;
@@ -401,9 +398,6 @@ gsi_check_args(int *in_elms, int nel, int level)
     }
   else
     {error_msg_warning("gsi_check_args() :: elm list sorted!\n");}
-#else
-  SMI_sort((void*)elms, (void*)companion, nel, SORT_INTEGER);
-#endif
   elms[nel] = INT_MIN;
 
   /* first pass */
@@ -740,11 +734,7 @@ get_ngh_buf(gs_id *gs)
 
 
   /* convert buf sizes from #bytes to #ints - 32 bit only! */
-#ifdef SAFE  
   p_mask_size/=sizeof(PetscInt); ngh_buf_size/=sizeof(PetscInt); buf_size/=sizeof(PetscInt);
-#else  
-  p_mask_size>>=2; ngh_buf_size>>=2; buf_size>>=2;
-#endif
   
   /* find giop work space */
   buf2 = buf1+buf_size;
@@ -792,11 +782,7 @@ get_ngh_buf(gs_id *gs)
           if (j==*ptr2)
             {
               /* do i share it w/anyone? */
-#ifdef SAFE
               ct1 = ct_bits((char *)ptr3,p_mask_size*sizeof(PetscInt));
-#else
-              ct1 = ct_bits((char *)ptr3,p_mask_size<<2);
-#endif
               /* guess not */
               if (ct1<2)
                 {ptr2++; ptr1+=p_mask_size; continue;}
@@ -827,11 +813,7 @@ get_ngh_buf(gs_id *gs)
             {
 
               /* shared by how many? */
-#ifdef SAFE
               ct1 = ct_bits((char *)ptr3,p_mask_size*sizeof(PetscInt));
-#else
-              ct1 = ct_bits((char *)ptr3,p_mask_size<<2); 
-#endif
 
               /* none! */
               if (ct1<2)
@@ -916,11 +898,7 @@ set_pairwise(gs_id *gs)
   /* set mask to my my_id's bit mask */
   set_bit_mask(p_mask,p_mask_size,my_id);
 
-#ifdef SAFE
   p_mask_size /= sizeof(PetscInt);
-#else
-  p_mask_size >>= 2;
-#endif
           
   len_pair_list=gs->len_pw_list;
   gs->pw_elm_list=pairwise_elm_list=(int*)malloc((len_pair_list+1)*sizeof(PetscInt));

@@ -5,7 +5,7 @@
 
 ALL: lib
 
-CPPFLAGS = -DSAFE
+CPPFLAGS = 
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = bit_mask.c comm.c error.c gs.c ivec.c queue.c  xxt.c xyt.c tfs.c

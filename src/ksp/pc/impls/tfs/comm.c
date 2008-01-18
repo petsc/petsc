@@ -106,7 +106,6 @@ giop(int *vals, int *work, int n, int *oprs)
   int ierr;
 
 
-#ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
     {error_msg_fatal("giop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
@@ -118,7 +117,6 @@ giop(int *vals, int *work, int n, int *oprs)
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n))
@@ -218,7 +216,6 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
   int ierr;
 
 
-#ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
     {error_msg_fatal("grop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
@@ -230,7 +227,6 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n))
@@ -332,7 +328,6 @@ grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim)
   MPI_Status  status;
   int ierr;
 
-#ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
     {error_msg_fatal("grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
@@ -344,7 +339,6 @@ grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim)
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n)||(dim<=0))
@@ -421,7 +415,6 @@ void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type
   MPI_Op op;
   int ierr;
 
-#ifdef SAFE
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
@@ -429,7 +422,6 @@ void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!fp)
     {error_msg_fatal("gop() :: v=%D, w=%D, f=%D",vals,work,fp);}
-#endif
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n))
@@ -533,11 +525,9 @@ ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level,
   MPI_Status  status;
   int ierr;
 
-#ifdef SAFE
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
 
   /* all msgs are *NOT* the same length */
@@ -608,7 +598,6 @@ grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *segs, int *oprs, int dim)
 
   error_msg_fatal("grop_hc_vvl() :: is not working!\n");
 
-#ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs||!segs)
     {error_msg_fatal("grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
@@ -618,7 +607,6 @@ grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *segs, int *oprs, int dim)
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(dim<=0))
@@ -696,11 +684,9 @@ void new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, int *segs
   MPI_Status  status;
   int ierr;
 
-#ifdef SAFE
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
   /* all msgs are *NOT* the same length */
   /* implement the mesh fan in/out exchange algorithm */
@@ -767,7 +753,6 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
   MPI_Status  status;
   int ierr;
 
-#ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
     {error_msg_fatal("giop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
@@ -779,7 +764,6 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n)||(dim<=0))
