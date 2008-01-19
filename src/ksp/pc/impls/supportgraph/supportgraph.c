@@ -56,10 +56,10 @@
    Private context (data structure) for the SupportGraph preconditioner.  
 */
 typedef struct {
-  Mat         pre;      /* Cholesky factored preconditioner matrix */
-  PetscTruth  augment;  /* whether to augment the spanning tree */
-  PetscScalar maxCong;  /* create subgraph with at most this much congestion (only used with augment) */
-  PetscScalar tol;      /* throw out entries smaller than this */
+  Mat        pre;      /* Cholesky factored preconditioner matrix */
+  PetscTruth augment;  /* whether to augment the spanning tree */
+  PetscReal  maxCong;  /* create subgraph with at most this much congestion (only used with augment) */
+  PetscReal  tol;      /* throw out entries smaller than this */
 } PC_SupportGraph;
 
 #undef __FUNCT__  
@@ -89,7 +89,7 @@ static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscTruth augment,PetscScalar tol,PetscScalar& maxCong);
+EXTERN PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscTruth augment,PetscReal tol,PetscReal& maxCong);
 
 /* -------------------------------------------------------------------------- */
 /*
