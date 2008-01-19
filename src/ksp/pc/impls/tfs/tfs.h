@@ -291,26 +291,14 @@ Return:
 Description: 
 Usage: 
 ***********************************ivec.h*************************************/
-extern PetscErrorCode ivec_dump(int *v, int n, int tag, int tag2, char * s);
-extern PetscErrorCode ivec_lb_ub(int *arg1, int n, int *lb, int *ub);
 extern int *ivec_copy(int *arg1, int *arg2, int n);
 
-extern PetscErrorCode ivec_comp(int *arg1, int n);
-
-extern int ivec_reduce_and(int *arg1, int n);
-extern int ivec_reduce_or(int *arg1, int n);
-
 extern PetscErrorCode ivec_zero(int *arg1, int n);
-extern PetscErrorCode ivec_pos_one(int *arg1, int n);
-extern PetscErrorCode ivec_neg_one(int *arg1, int n);
 extern PetscErrorCode ivec_set(int *arg1, int arg2, int n);
-extern int ivec_cmp(int *arg1, int *arg2, int n);
 
 extern int ivec_lb(int *work, int n);
 extern int ivec_ub(int *work, int n);
 extern int ivec_sum(int *arg1, int n);
-extern int ivec_u_sum(unsigned *arg1, int n);
-extern int ivec_prod(int *arg1, int n);
 
 extern vfp ivec_fct_addr(int type);
 
@@ -325,12 +313,7 @@ extern PetscErrorCode ivec_and(int *arg1, int *arg2, int len);
 extern PetscErrorCode ivec_lxor(int *arg1, int *arg2, int n);
 extern PetscErrorCode ivec_lor(int *arg1, int *arg2, int len);
 extern PetscErrorCode ivec_land(int *arg1, int *arg2, int len);
-
-extern PetscErrorCode ivec_or3 (int *arg1, int *arg2, int *arg3, int len);
-extern PetscErrorCode ivec_and3(int *arg1, int *arg2, int *arg3, int n);
-
-extern int ivec_split_buf(int *buf1, int **buf2, int size);
-
+extern PetscErrorCode ivec_and3( int *arg1,  int *arg2,  int *arg3, int n);
 
 extern PetscErrorCode ivec_sort_companion(int *ar, int *ar2, int size);
 extern PetscErrorCode ivec_sort(int *ar, int size);
@@ -338,17 +321,13 @@ extern PetscErrorCode SMI_sort(void *ar1, void *ar2, int size, int type);
 extern int ivec_binary_search(int item, int *list, int n);
 extern int ivec_linear_search(int item, int *list, int n);
 
-extern PetscErrorCode ivec_c_index(int *arg1, int n);
 extern PetscErrorCode ivec_sort_companion_hack(int *ar, int **ar2, int size);
 
 
-extern PetscErrorCode rvec_dump(PetscScalar *v, int n, int tag, int tag2, char * s);
 extern PetscErrorCode rvec_zero(PetscScalar *arg1, int n);
 extern PetscErrorCode rvec_one(PetscScalar *arg1, int n);
-extern PetscErrorCode rvec_neg_one(PetscScalar *arg1, int n);
 extern PetscErrorCode rvec_set(PetscScalar *arg1, PetscScalar arg2, int n);
 extern PetscErrorCode rvec_copy(PetscScalar *arg1, PetscScalar *arg2, int n);
-extern PetscErrorCode rvec_lb_ub(PetscScalar *arg1, int n, PetscScalar *lb, PetscScalar *ub);
 extern PetscErrorCode rvec_scale(PetscScalar *arg1, PetscScalar arg2, int n);
 
 extern vfp rvec_fct_addr(int type);
@@ -359,16 +338,6 @@ extern PetscErrorCode rvec_max_abs(PetscScalar *arg1, PetscScalar *arg2, int n);
 extern PetscErrorCode rvec_min(PetscScalar *arg1, PetscScalar *arg2, int n);
 extern PetscErrorCode rvec_min_abs(PetscScalar *arg1, PetscScalar *arg2, int n);
 extern PetscErrorCode vec_exists(PetscScalar *arg1, PetscScalar *arg2, int n);
-
-
-extern PetscErrorCode rvec_sort(PetscScalar *ar, int size);
-extern PetscErrorCode rvec_sort_companion(PetscScalar *ar, int *ar2, int size);
-
-extern PetscScalar rvec_dot(PetscScalar *arg1, PetscScalar *arg2, int n);
-
-extern PetscErrorCode rvec_axpy(PetscScalar *arg1, PetscScalar *arg2, PetscScalar scale, int n);
-
-extern int  rvec_binary_search(PetscScalar item, PetscScalar *list, int rh);
 
 
 /**********************************queue.h*************************************

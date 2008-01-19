@@ -131,13 +131,6 @@ typedef struct gather_scatter_id {
 
 } gs_id;
 
-
-/* to be made public */
-
-/* PRIVATE - and definitely not exported */
-/*static void gs_print_template( gs_id* gs, int who);*/
-/*static void gs_print_stemplate( gs_id* gs, int who);*/
-
 static gs_id *gsi_check_args(int *elms, int nel, int level);
 static PetscErrorCode gsi_via_bit_mask(gs_id *gs);
 static PetscErrorCode get_ngh_buf(gs_id *gs);
@@ -363,8 +356,7 @@ static gs_id * gsi_check_args(int *in_elms, int nel, int level)
   /* copy over in_elms list and create inverse map */
   elms = (int*) malloc((nel+1)*sizeof(PetscInt));
   companion = (int*) malloc(nel*sizeof(PetscInt));
-  /* ivec_c_index(companion,nel); */
-  /* ivec_copy(elms,in_elms,nel); */
+
   for (i=j=0;i<k;i++)
     {
       if (in_elms[i]!=0)
@@ -466,13 +458,13 @@ static gs_id * gsi_check_args(int *in_elms, int nel, int level)
   vals[2] = vals[1] = vals[0] = nel;
   if (gs->nel>0)
     {
-       vals[3] = unique[0];           /* ivec_lb(elms,nel); */
-       vals[4] = unique[gs->nel-1];   /* ivec_ub(elms,nel); */       
+       vals[3] = unique[0];           
+       vals[4] = unique[gs->nel-1];   
     }
   else
     {
-       vals[3] = INT_MAX;             /* ivec_lb(elms,nel); */
-       vals[4] = INT_MIN;             /* ivec_ub(elms,nel); */       
+       vals[3] = INT_MAX;             
+       vals[4] = INT_MIN;             
     }
   vals[5] = level;
   vals[6] = num_gs_ids;
