@@ -186,26 +186,6 @@ PetscErrorCode ivec_c_index( int *arg1,  int n)
 }
 
 
-
-/**********************************ivec.c**************************************
-Function ivec_fortran_index()
-
-Input : 
-Output: 
-Return: 
-Description: 
-***********************************ivec.c*************************************/
-PetscErrorCode ivec_fortran_index( int *arg1,  int n)
-{
-   int i=0;
-
-  PetscFunctionBegin;
-  while (n--)  {*arg1++ = ++i;}
-  PetscFunctionReturn(0);
-}
-
-
-
 /**********************************ivec.c**************************************
 Function ivec_set()
 

@@ -49,9 +49,6 @@ File Description:
 /*4096 8192 32768 65536 1048576 */
 #define MAX_MSG_BUF     32768
 
-/* fortran gs limit */
-#define MAX_GS_IDS      100
-
 #define FULL          2
 #define PARTIAL       1
 #define NONE          0
@@ -72,7 +69,6 @@ File Description:
 #define TRUE		1
 
 #define C		0
-#define FORTRAN 	1
 
 
 #define MAX_VEC		1674
@@ -343,7 +339,6 @@ extern int ivec_binary_search(int item, int *list, int n);
 extern int ivec_linear_search(int item, int *list, int n);
 
 extern PetscErrorCode ivec_c_index(int *arg1, int n);
-extern PetscErrorCode ivec_fortran_index(int *arg1, int n);
 extern PetscErrorCode ivec_sort_companion_hack(int *ar, int **ar2, int size);
 
 
@@ -630,7 +625,6 @@ Usage:
 XXT_solve(xxt_handle, double *x, double *b)
 XXT_solve(xxt_handle, double *x, NULL)
 assumes x has been initialized to be b
-impl. issue for FORTRAN interface ... punt for now and disallow NULL opt.
 **************************************xxt.h***********************************/
 extern int XXT_solve(xxt_ADT xxt_handle, double *x, double *b);
 

@@ -213,7 +213,6 @@ static PetscErrorCode gs_gop_tree_binary(gs_id *gs, PetscScalar *vals, rbfp fct)
 /* global vars */
 /* from comm.c module */
 
-/* module state inf and fortran interface */
 static int num_gs_ids = 0;
 
 /* should make this dynamic ... later */

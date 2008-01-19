@@ -28,7 +28,6 @@ NOTES ON USAGE:
 #define LEFT  -1
 #define RIGHT  1
 #define BOTH   0
-#define MAX_FORTRAN_HANDLES  10
 
 typedef struct xxt_solver_info {
   int n, m, n_global, m_global;
