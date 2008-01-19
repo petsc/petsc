@@ -288,6 +288,7 @@ PetscInt       PETSC_DLLEXPORT PetscErrorUncatchableCount                  = 0;
 PetscErrorCode PETSC_DLLEXPORT PetscExceptions[PETSC_EXCEPTIONS_MAX]       = {0};
 PetscInt       PETSC_DLLEXPORT PetscExceptionsCount                        = 0;
 PetscErrorCode PETSC_DLLEXPORT PetscExceptionTmp                           = 0;
+PetscErrorCode PETSC_DLLEXPORT PetscExceptionTmp1                          = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorIsCatchable" 
