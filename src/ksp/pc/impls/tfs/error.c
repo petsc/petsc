@@ -30,7 +30,7 @@ Output: prints message to stdout.
 Return: na.
 Description: prints error message and terminates program.
 ***********************************error.c************************************/
-void error_msg_fatal(const char msg[], ...)
+PetscErrorCode error_msg_fatal(const char msg[], ...)
 {
   va_list    ap;
   const char *p;
@@ -39,6 +39,7 @@ void error_msg_fatal(const char msg[], ...)
   PetscScalar       dval;
 
 
+   PetscFunctionBegin;
   /* print error message along w/node identifier */
   va_start(ap,msg);
   printf("%d :: FATAL :: ", my_id);
@@ -87,6 +88,7 @@ void error_msg_fatal(const char msg[], ...)
   /* Try with MPI_Finalize() as well _only_ if all procs call this routine */
   /* Choose a more meaningful error code than -12 */
   MPI_Abort(MPI_COMM_WORLD, -12);
+  PetscFunctionReturn(0);
 }
 
 
@@ -99,9 +101,10 @@ Output: conversion printed to stdout.
 Return: na.
 Description: prints error message.
 ***********************************error.c************************************/
-void 
+PetscErrorCode 
 error_msg_warning(const char msg[], ...)
 {
+   PetscFunctionBegin;
   /* print error message along w/node identifier */
 #if   defined V
   va_list ap;
@@ -212,7 +215,7 @@ error_msg_warning(const char msg[], ...)
   fflush(stdout);
   /*  fflush(NULL); */
 #endif
-
+  PetscFunctionReturn(0);
 }
 
 

@@ -60,11 +60,11 @@ static int n_xxt=0;
 static int n_xxt_handles=0;
 
 /* prototypes */
-static void do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *rhs);
-static void check_init(void);
-static void check_handle(xxt_ADT xxt_handle);
-static void det_separators(xxt_ADT xxt_handle);
-static void do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
+static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *rhs);
+static PetscErrorCode check_init(void);
+static PetscErrorCode check_handle(xxt_ADT xxt_handle);
+static PetscErrorCode det_separators(xxt_ADT xxt_handle);
+static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
 static int xxt_generate(xxt_ADT xxt_handle);
 static int do_xxt_factor(xxt_ADT xxt_handle);
 static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data);
@@ -598,7 +598,7 @@ Return:
 Description:  
 **************************************xxt.c***********************************/
 static
-void
+PetscErrorCode
 do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 {
    int off, len, *iptr;
@@ -649,7 +649,7 @@ Return:
 Description:
 **************************************xxt.c***********************************/
 static
-void
+PetscErrorCode
 check_init(void)
 {
   comm_init();
@@ -666,7 +666,7 @@ Return:
 Description:
 **************************************xxt.c***********************************/
 static
-void 
+PetscErrorCode 
 check_handle(xxt_ADT xxt_handle)
 {
   int vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
@@ -693,7 +693,7 @@ Description:
   det_separators(xxt_handle, local2global, n, m, mylocmatvec, grid_data);
 **************************************xxt.c***********************************/
 static 
-void 
+PetscErrorCode 
 det_separators(xxt_ADT xxt_handle)
 {
   int i, ct, id;
@@ -1021,7 +1021,7 @@ Description:
       do_matvec(xxt_handle->mvi,v,u);
 **************************************xxt.c***********************************/
 static
-void do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
+PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
 {
   A->matvec((mv_info*)A->grid_data,v,u);
 }

@@ -73,7 +73,7 @@ Description: This function frees the storage associated with queue but not any
 pointer contained w/in.
 Usage: free_queue(queue);
 **********************************queue.c*************************************/
-void free_queue(queue_ADT q)
+PetscErrorCode free_queue(queue_ADT q)
 {
   struct node *hold, *rremove;
 
@@ -99,7 +99,7 @@ Return: na
 Description: This function adds obj to the end of the queue.
 Usage: enqueue(queue, obj);
 **********************************queue.c*************************************/
-void enqueue(queue_ADT q, void *obj)
+PetscErrorCode enqueue(queue_ADT q, void *obj)
 {
   if (q->len++)
     {q->tail= q->tail->next = (struct node *) malloc(sizeof(struct node));}
@@ -122,7 +122,7 @@ Description: This function removes the data value at the head of the queue
 and returns it to the client.  dequeueing an empty queue is an error
 Usage: obj = dequeue(queue);
 **********************************queue.c*************************************/
-void *dequeue(queue_ADT q)
+PetscErrorCode *dequeue(queue_ADT q)
 {
   struct node *hold;
   void *obj;

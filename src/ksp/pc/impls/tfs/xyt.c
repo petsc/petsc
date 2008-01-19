@@ -63,11 +63,11 @@ static int n_xyt=0;
 static int n_xyt_handles=0;
 
 /* prototypes */
-static void do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *rhs);
-static void check_init(void);
-static void check_handle(xyt_ADT xyt_handle);
-static void det_separators(xyt_ADT xyt_handle);
-static void do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
+static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *rhs);
+static PetscErrorCode check_init(void);
+static PetscErrorCode check_handle(xyt_ADT xyt_handle);
+static PetscErrorCode det_separators(xyt_ADT xyt_handle);
+static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
 static int xyt_generate(xyt_ADT xyt_handle);
 static int do_xyt_factor(xyt_ADT xyt_handle);
 static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data);
@@ -681,7 +681,7 @@ Return:
 Description:  
 **************************************xyt.c***********************************/
 static
-void
+PetscErrorCode
 do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
 {
   int off, len, *iptr;
@@ -735,7 +735,7 @@ Return:
 Description:
 **************************************xyt.c***********************************/
 static
-void
+PetscErrorCode
 check_init(void)
 {
   comm_init();
@@ -753,7 +753,7 @@ Return:
 Description:
 **************************************xyt.c***********************************/
 static
-void 
+PetscErrorCode 
 check_handle(xyt_ADT xyt_handle)
 {
   int vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
@@ -780,7 +780,7 @@ Description:
   det_separators(xyt_handle, local2global, n, m, mylocmatvec, grid_data);
 **************************************xyt.c***********************************/
 static 
-void 
+PetscErrorCode 
 det_separators(xyt_ADT xyt_handle)
 {
   int i, ct, id;
@@ -1112,7 +1112,7 @@ Description:
       computes u = A.v 
       do_matvec(xyt_handle->mvi,v,u);
 **************************************xyt.c***********************************/
-static void do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
+static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
 {
   A->matvec((mv_info*)A->grid_data,v,u);
 }

@@ -31,12 +31,13 @@ Output:
 Return: 
 Description: 
 *********************************bit_mask.c***********************************/
-void 
-bm_to_proc( char *ptr, int p_mask,  int *msg_list)
+PetscErrorCode 
+bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list)
 {
-   int i, tmp;
+   PetscInt i, tmp;
 
-  if (msg_list)
+   PetscFunctionBegin;
+   if (msg_list)
     {
       /* low to high */
       ptr+=(p_mask-1);
@@ -61,7 +62,8 @@ bm_to_proc( char *ptr, int p_mask,  int *msg_list)
 	    {*msg_list = tmp+7; msg_list++;}
 	  ptr --;
 	}
-    }
+  }
+  PetscFunctionReturn(0);
 }
 
 
@@ -74,11 +76,11 @@ Output:
 Return: 
 Description: 
 *********************************bit_mask.c***********************************/
-int ct_bits( char *ptr, int n)
+PetscInt ct_bits( char *ptr, PetscInt n)
 {
-   int i, tmp=0;
+   PetscInt i, tmp=0;
 
-
+   PetscFunctionBegin;
   for(i=0;i<n;i++)
     {
       if (*ptr&128) {tmp++;}
@@ -105,10 +107,10 @@ Output:
 Return: 
 Description:
 *********************************bit_mask.c***********************************/ 
-int
-div_ceil( int numer,  int denom)
+PetscInt
+div_ceil( PetscInt numer,  PetscInt denom)
 {
-   int rt_val;
+   PetscInt rt_val;
 
   if ((numer<0)||(denom<=0))
     {error_msg_fatal("div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);}
@@ -131,10 +133,10 @@ Output:
 Return: 
 Description:
 *********************************bit_mask.c***********************************/ 
-int
-len_bit_mask( int num_items)
+PetscInt
+len_bit_mask( PetscInt num_items)
 {
-   int rt_val, tmp;
+   PetscInt rt_val, tmp;
 
   if (num_items<0)
     {error_msg_fatal("Value Sent To len_bit_mask() Must be >= 0!");}
@@ -161,10 +163,10 @@ Output:
 Return:
 Description: 
 *********************************bit_mask.c***********************************/
-void
-set_bit_mask( int *bm, int len, int val)
+PetscErrorCode
+set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
 {
-   int i, offset;
+   PetscInt i, offset;
    char mask = 1;
   char *cptr;
 
@@ -184,6 +186,7 @@ set_bit_mask( int *bm, int len, int val)
 
   offset = len - val/BYTE - 1;
   cptr[offset] = mask;
+  PetscFunctionReturn(0);
 }
 
 
@@ -196,15 +199,16 @@ Output:
 Return: 
 Description: 
 *********************************bit_mask.c***********************************/
-int
-len_buf(int item_size, int num_items)
+PetscInt
+len_buf(PetscInt item_size, PetscInt num_items)
 {
-   int rt_val, tmp;
+   PetscInt rt_val, tmp;
 
+   PetscFunctionBegin;
   rt_val = item_size * num_items;
 
   /*  double precision align for now ... consider page later */
-  if ((tmp = (rt_val%(int)sizeof(double))))
+  if ((tmp = (rt_val%(PetscInt)sizeof(double))))
     {rt_val += (sizeof(double) - tmp);}
 
   return(rt_val);

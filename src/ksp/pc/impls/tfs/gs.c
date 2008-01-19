@@ -139,74 +139,74 @@ typedef struct gather_scatter_id {
 /*static void gs_print_stemplate( gs_id* gs, int who);*/
 
 static gs_id *gsi_check_args(int *elms, int nel, int level);
-static void gsi_via_bit_mask(gs_id *gs);
-static void get_ngh_buf(gs_id *gs);
-static void set_pairwise(gs_id *gs);
+static PetscErrorCode gsi_via_bit_mask(gs_id *gs);
+static PetscErrorCode get_ngh_buf(gs_id *gs);
+static PetscErrorCode set_pairwise(gs_id *gs);
 static gs_id * gsi_new(void);
-static void set_tree(gs_id *gs);
+static PetscErrorCode set_tree(gs_id *gs);
 
 /* same for all but vector flavor */
-static void gs_gop_local_out(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_local_out(gs_id *gs, PetscScalar *vals);
 /* vector flavor */
-static void gs_gop_vec_local_out(gs_id *gs, PetscScalar *vals, int step);
+static PetscErrorCode gs_gop_vec_local_out(gs_id *gs, PetscScalar *vals, int step);
 
-static void gs_gop_vec_plus(gs_id *gs, PetscScalar *in_vals, int step);
-static void gs_gop_vec_pairwise_plus(gs_id *gs, PetscScalar *in_vals, int step);
-static void gs_gop_vec_local_plus(gs_id *gs, PetscScalar *vals, int step);
-static void gs_gop_vec_local_in_plus(gs_id *gs, PetscScalar *vals, int step);
-static void gs_gop_vec_tree_plus(gs_id *gs, PetscScalar *vals, int step);
+static PetscErrorCode gs_gop_vec_plus(gs_id *gs, PetscScalar *in_vals, int step);
+static PetscErrorCode gs_gop_vec_pairwise_plus(gs_id *gs, PetscScalar *in_vals, int step);
+static PetscErrorCode gs_gop_vec_local_plus(gs_id *gs, PetscScalar *vals, int step);
+static PetscErrorCode gs_gop_vec_local_in_plus(gs_id *gs, PetscScalar *vals, int step);
+static PetscErrorCode gs_gop_vec_tree_plus(gs_id *gs, PetscScalar *vals, int step);
 
 
-static void gs_gop_plus(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_pairwise_plus(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_local_plus(gs_id *gs, PetscScalar *vals);
-static void gs_gop_local_in_plus(gs_id *gs, PetscScalar *vals);
-static void gs_gop_tree_plus(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_plus(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_pairwise_plus(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_local_plus(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_local_in_plus(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_tree_plus(gs_id *gs, PetscScalar *vals);
 
-static void gs_gop_plus_hc(gs_id *gs, PetscScalar *in_vals, int dim);
-static void gs_gop_pairwise_plus_hc(gs_id *gs, PetscScalar *in_vals, int dim);
-static void gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, int dim);
+static PetscErrorCode gs_gop_plus_hc(gs_id *gs, PetscScalar *in_vals, int dim);
+static PetscErrorCode gs_gop_pairwise_plus_hc(gs_id *gs, PetscScalar *in_vals, int dim);
+static PetscErrorCode gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, int dim);
 
-static void gs_gop_times(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_pairwise_times(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_local_times(gs_id *gs, PetscScalar *vals);
-static void gs_gop_local_in_times(gs_id *gs, PetscScalar *vals);
-static void gs_gop_tree_times(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_times(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_pairwise_times(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_local_times(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_local_in_times(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_tree_times(gs_id *gs, PetscScalar *vals);
 
-static void gs_gop_min(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_pairwise_min(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_local_min(gs_id *gs, PetscScalar *vals);
-static void gs_gop_local_in_min(gs_id *gs, PetscScalar *vals);
-static void gs_gop_tree_min(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_min(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_pairwise_min(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_local_min(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_local_in_min(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_tree_min(gs_id *gs, PetscScalar *vals);
 
-static void gs_gop_min_abs(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_pairwise_min_abs(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_local_min_abs(gs_id *gs, PetscScalar *vals);
-static void gs_gop_local_in_min_abs(gs_id *gs, PetscScalar *vals);
-static void gs_gop_tree_min_abs(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_min_abs(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_pairwise_min_abs(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_local_min_abs(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_local_in_min_abs(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_tree_min_abs(gs_id *gs, PetscScalar *vals);
 
-static void gs_gop_max(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_pairwise_max(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_local_max(gs_id *gs, PetscScalar *vals);
-static void gs_gop_local_in_max(gs_id *gs, PetscScalar *vals);
-static void gs_gop_tree_max(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_max(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_pairwise_max(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_local_max(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_local_in_max(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_tree_max(gs_id *gs, PetscScalar *vals);
 
-static void gs_gop_max_abs(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_pairwise_max_abs(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_local_max_abs(gs_id *gs, PetscScalar *vals);
-static void gs_gop_local_in_max_abs(gs_id *gs, PetscScalar *vals);
-static void gs_gop_tree_max_abs(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_max_abs(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_pairwise_max_abs(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_local_max_abs(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_local_in_max_abs(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_tree_max_abs(gs_id *gs, PetscScalar *vals);
 
-static void gs_gop_exists(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_pairwise_exists(gs_id *gs, PetscScalar *in_vals);
-static void gs_gop_local_exists(gs_id *gs, PetscScalar *vals);
-static void gs_gop_local_in_exists(gs_id *gs, PetscScalar *vals);
-static void gs_gop_tree_exists(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_exists(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_pairwise_exists(gs_id *gs, PetscScalar *in_vals);
+static PetscErrorCode gs_gop_local_exists(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_local_in_exists(gs_id *gs, PetscScalar *vals);
+static PetscErrorCode gs_gop_tree_exists(gs_id *gs, PetscScalar *vals);
 
-static void gs_gop_pairwise_binary(gs_id *gs, PetscScalar *in_vals, rbfp fct);
-static void gs_gop_local_binary(gs_id *gs, PetscScalar *vals, rbfp fct);
-static void gs_gop_local_in_binary(gs_id *gs, PetscScalar *vals, rbfp fct);
-static void gs_gop_tree_binary(gs_id *gs, PetscScalar *vals, rbfp fct);
+static PetscErrorCode gs_gop_pairwise_binary(gs_id *gs, PetscScalar *in_vals, rbfp fct);
+static PetscErrorCode gs_gop_local_binary(gs_id *gs, PetscScalar *vals, rbfp fct);
+static PetscErrorCode gs_gop_local_in_binary(gs_id *gs, PetscScalar *vals, rbfp fct);
+static PetscErrorCode gs_gop_tree_binary(gs_id *gs, PetscScalar *vals, rbfp fct);
 
 
 
@@ -232,11 +232,11 @@ Output:
 Return: 
 Description:  
 ******************************************************************************/
-void gs_init_vec_sz(int size)
+PetscErrorCode gs_init_vec_sz(int size)
 {
-  /*  vec_ch = TRUE; */
-
+  PetscFunctionBegin;
   vec_sz = size;
+  PetscFunctionReturn(0);
 }
 
 /******************************************************************************
@@ -247,11 +247,11 @@ Output:
 Return: 
 Description:  
 ******************************************************************************/
-void gs_init_msg_buf_sz(int buf_size)
+PetscErrorCode gs_init_msg_buf_sz(int buf_size)
 {
-  /*  msg_ch = TRUE; */
-
+  PetscFunctionBegin;
   msg_buf = buf_size;
+  PetscFunctionReturn(0);
 }
 
 /******************************************************************************
@@ -272,6 +272,7 @@ gs_init( int *elms, int nel, int level)
   MPI_Group gs_group;
   MPI_Comm  gs_comm;
 
+  PetscFunctionBegin;
   /* ensure that communication package has been initialized */
   comm_init();
 
@@ -525,7 +526,7 @@ Description:
 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gsi_via_bit_mask(gs_id *gs)
 {
    int i, nel, *elms;
@@ -620,6 +621,7 @@ gsi_via_bit_mask(gs_id *gs)
   free((void*) gs->elms);
   free((void*) gs->ngh_buf);
   gs->local_elms = gs->companion = gs->elms = gs->ngh_buf = NULL;
+  PetscFunctionReturn(0);
 }
 
 
@@ -635,12 +637,12 @@ Description:
 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 place_in_tree( int elm)
 {
    int *tp, n;
 
-
+  PetscFunctionBegin;
   if (ntree==tree_buf_sz)
     {
       if (tree_buf_sz)
@@ -660,6 +662,7 @@ place_in_tree( int elm)
     }
 
   tree_buf[ntree++] = elm;
+  PetscFunctionReturn(0);
 }
 
 
@@ -675,7 +678,7 @@ Description:
 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 get_ngh_buf(gs_id *gs)
 {
    int i, j, npw=0, ntree_map=0;
@@ -687,6 +690,7 @@ get_ngh_buf(gs_id *gs)
   int oper=GL_B_OR;
   int *ptr3, *t_mask, level, ct1, ct2;
 
+  PetscFunctionBegin;
   /* to make life easier */
   nel   = gs->nel;
   elms  = gs->elms;
@@ -851,7 +855,7 @@ get_ngh_buf(gs_id *gs)
 
   free((void*)p_mask);
   free((void*)sh_proc_mask);
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -869,7 +873,7 @@ Description:
 if an element is shared by fewer that level# of nodes do pairwise exch 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 set_pairwise(gs_id *gs)
 {
    int i, j;
@@ -883,7 +887,7 @@ set_pairwise(gs_id *gs)
   int ct;
 
 
-
+  PetscFunctionBegin;
   /* to make life easier */
   nel  = gs->nel;
   elms = gs->elms;
@@ -992,7 +996,7 @@ set_pairwise(gs_id *gs)
   /* reset malloc pool */
   free((void*)p_mask);
   free((void*)tmp_proc_mask);
-
+  PetscFunctionReturn(0);
 }    
 
 
@@ -1008,13 +1012,13 @@ Description:
 to do pruned tree just save ngh buf copy for each one and decode here!
 ******************************************************************************/
 static
-void
+PetscErrorCode
 set_tree(gs_id *gs)
 {
    int i, j, n, nel;
    int *iptr_in, *iptr_out, *tree_elms, *elms;
 
-
+  PetscFunctionBegin;
   /* local work ptrs */
   elms = gs->elms;
   nel     = gs->nel;
@@ -1050,7 +1054,7 @@ set_tree(gs_id *gs)
 
   /* sentinel */
   *iptr_in = *iptr_out = -1;
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -1063,13 +1067,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_out( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
 
-
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
   while ((map = *reduce++))
@@ -1101,6 +1105,7 @@ gs_gop_local_out( gs_id *gs,  PetscScalar *vals)
             {*(vals + *map++) = tmp;}
         }
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1113,9 +1118,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-void
+PetscErrorCode
 gs_gop_binary(gs_ADT gs, PetscScalar *vals, rbfp fct)
 {
+  PetscFunctionBegin;
   /* local only operations!!! */
   if (gs->num_local)
     {gs_gop_local_binary(gs,vals,fct);}
@@ -1146,6 +1152,7 @@ gs_gop_binary(gs_ADT gs, PetscScalar *vals, rbfp fct)
       else if (gs->max_left_over)
         {gs_gop_tree_binary(gs,vals,fct);}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1159,13 +1166,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct)
 {
    int *num, *map, **reduce;
   PetscScalar tmp;
 
-
+  PetscFunctionBegin;
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
   while ((map = *reduce))
@@ -1181,6 +1188,7 @@ gs_gop_local_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct)
       while (*map >= 0)
         {*(vals + *map++) = tmp;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1194,13 +1202,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_in_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct) 
 {
    int *num, *map, **reduce;
    PetscScalar *base;
 
-
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
 
   reduce = gs->gop_local_reduce;  
@@ -1211,6 +1219,7 @@ gs_gop_local_in_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct)
       while (*map >= 0)
         {(*fct)(base,(vals + *map),1); map++;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1226,7 +1235,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
                         rbfp fct)
 {
@@ -1235,9 +1244,9 @@ gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  int ierr;
+  PetscErrorCode ierr;
 
-
+  PetscFunctionBegin;
   /* strip and load s */
   msg_list =list         = gs->pair_list;
   msg_size =size         = gs->msg_sizes;
@@ -1255,8 +1264,7 @@ gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
-                gs->gs_comm, msg_ids_in++); 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr); 
       in1 += *size++;
     }
   while (*++msg_nodes);
@@ -1274,8 +1282,7 @@ gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
-                MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
     }
 
   if (gs->max_left_over)
@@ -1287,7 +1294,7 @@ gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0)
         {(*fct)((dptr1 + *iptr),in2,1); iptr++; in2++;}
       /* {*(dptr1 + *iptr) = (*fct)(*(dptr1 + *iptr),*in2); iptr++; in2++;} */
@@ -1302,7 +1309,8 @@ gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1316,13 +1324,14 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_tree_binary(gs_id *gs, PetscScalar *vals,  rbfp fct)
 {
   int size;
   int *in, *out;  
   PetscScalar *buf, *work;
 
+  PetscFunctionBegin;
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
   buf  = gs->tree_buf;
@@ -1342,7 +1351,7 @@ gs_gop_tree_binary(gs_id *gs, PetscScalar *vals,  rbfp fct)
   out  = gs->tree_map_out;
   while (*in >= 0)
     {(*fct)((vals + *in++),(buf + *out++),-1);}
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -1356,9 +1365,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-void
+PetscErrorCode
 gs_gop( gs_id *gs,  PetscScalar *vals,  const char *op)
 {
+  PetscFunctionBegin;
   switch (*op) {
   case '+':
     gs_gop_plus(gs,vals);
@@ -1394,6 +1404,7 @@ gs_gop( gs_id *gs,  PetscScalar *vals,  const char *op)
     gs_gop_plus(gs,vals);    
     break;
   }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1405,9 +1416,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
+static PetscErrorCode
 gs_gop_exists( gs_id *gs,  PetscScalar *vals)
 {
+  PetscFunctionBegin;
   /* local only operations!!! */
   if (gs->num_local)
     {gs_gop_local_exists(gs,vals);}
@@ -1438,6 +1450,7 @@ gs_gop_exists( gs_id *gs,  PetscScalar *vals)
       else if (gs->max_left_over)
         {gs_gop_tree_exists(gs,vals);}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1451,13 +1464,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_exists( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
 
-
+  PetscFunctionBegin;
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
   while ((map = *reduce))
@@ -1471,6 +1484,7 @@ gs_gop_local_exists( gs_id *gs,  PetscScalar *vals)
       while (*map >= 0)
         {*(vals + *map++) = tmp;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1484,13 +1498,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_in_exists( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
 
-
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
   while ((map = *reduce++))
@@ -1500,6 +1514,7 @@ gs_gop_local_in_exists( gs_id *gs,  PetscScalar *vals)
       while (*map >= 0)
         {*base = EXISTS(*base,*(vals + *map)); map++;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1515,7 +1530,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -1523,9 +1538,9 @@ gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  int ierr;
+  PetscErrorCode ierr;
 
-
+  PetscFunctionBegin;
   /* strip and load s */
   msg_list =list         = gs->pair_list;
   msg_size =size         = gs->msg_sizes;
@@ -1543,8 +1558,7 @@ gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
-                gs->gs_comm, msg_ids_in++); 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr);
       in1 += *size++;
     }
   while (*++msg_nodes);
@@ -1562,8 +1576,7 @@ gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
-                MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
     }
 
   if (gs->max_left_over)
@@ -1575,7 +1588,7 @@ gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0)
         {*(dptr1 + *iptr) = EXISTS(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
@@ -1589,7 +1602,8 @@ gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1603,7 +1617,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_tree_exists(gs_id *gs, PetscScalar *vals)
 {
   int size;
@@ -1611,7 +1625,7 @@ gs_gop_tree_exists(gs_id *gs, PetscScalar *vals)
   PetscScalar *buf, *work;
   int op[] = {GL_EXISTS,0};
 
-
+  PetscFunctionBegin;
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
   buf  = gs->tree_buf;
@@ -1636,7 +1650,7 @@ gs_gop_tree_exists(gs_id *gs, PetscScalar *vals)
 
   while (*in >= 0)
     {*(vals + *in++) = *(buf + *out++);}
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -1649,9 +1663,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
+static PetscErrorCode
 gs_gop_max_abs( gs_id *gs,  PetscScalar *vals)
 {
+  PetscFunctionBegin;
   /* local only operations!!! */
   if (gs->num_local)
     {gs_gop_local_max_abs(gs,vals);}
@@ -1682,6 +1697,7 @@ gs_gop_max_abs( gs_id *gs,  PetscScalar *vals)
       else if (gs->max_left_over)
         {gs_gop_tree_max_abs(gs,vals);}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1695,13 +1711,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_max_abs( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
 
-
+  PetscFunctionBegin;
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
   while ((map = *reduce))
@@ -1715,6 +1731,7 @@ gs_gop_local_max_abs( gs_id *gs,  PetscScalar *vals)
       while (*map >= 0)
         {*(vals + *map++) = tmp;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1728,13 +1745,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_in_max_abs( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
 
-
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
   while ((map = *reduce++))
@@ -1744,6 +1761,7 @@ gs_gop_local_in_max_abs( gs_id *gs,  PetscScalar *vals)
       while (*map >= 0)
         {*base = MAX_FABS(*base,*(vals + *map)); map++;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1759,7 +1777,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -1767,8 +1785,9 @@ gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  int ierr;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   /* strip and load s */
   msg_list =list         = gs->pair_list;
   msg_size =size         = gs->msg_sizes;
@@ -1786,8 +1805,7 @@ gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
-                gs->gs_comm, msg_ids_in++); 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr);
       in1 += *size++;
     }
   while (*++msg_nodes);
@@ -1805,8 +1823,7 @@ gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
-                MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
     }
 
   if (gs->max_left_over)
@@ -1818,7 +1835,7 @@ gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0)
         {*(dptr1 + *iptr) = MAX_FABS(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
@@ -1832,7 +1849,8 @@ gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1846,7 +1864,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_tree_max_abs(gs_id *gs, PetscScalar *vals)
 {
   int size;
@@ -1854,7 +1872,7 @@ gs_gop_tree_max_abs(gs_id *gs, PetscScalar *vals)
   PetscScalar *buf, *work;
   int op[] = {GL_MAX_ABS,0};
 
-
+  PetscFunctionBegin;
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
   buf  = gs->tree_buf;
@@ -1879,7 +1897,7 @@ gs_gop_tree_max_abs(gs_id *gs, PetscScalar *vals)
 
   while (*in >= 0)
     {*(vals + *in++) = *(buf + *out++);}
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -1892,10 +1910,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
+static PetscErrorCode
 gs_gop_max( gs_id *gs,  PetscScalar *vals)
 {
-
+  PetscFunctionBegin;
   /* local only operations!!! */
   if (gs->num_local)
     {gs_gop_local_max(gs,vals);}
@@ -1926,6 +1944,7 @@ gs_gop_max( gs_id *gs,  PetscScalar *vals)
       else if (gs->max_left_over)
         {gs_gop_tree_max(gs,vals);}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1939,13 +1958,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_max( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
 
-
+  PetscFunctionBegin;
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
   while ((map = *reduce))
@@ -1959,6 +1978,7 @@ gs_gop_local_max( gs_id *gs,  PetscScalar *vals)
       while (*map >= 0)
         {*(vals + *map++) = tmp;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1972,13 +1992,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_in_max( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
 
-
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
   while ((map = *reduce++))
@@ -1988,6 +2008,7 @@ gs_gop_local_in_max( gs_id *gs,  PetscScalar *vals)
       while (*map >= 0)
         {*base = PetscMax(*base,*(vals + *map)); map++;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2003,7 +2024,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -2011,8 +2032,9 @@ gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  int ierr;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   /* strip and load s */
   msg_list =list         = gs->pair_list;
   msg_size =size         = gs->msg_sizes;
@@ -2030,8 +2052,7 @@ gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
-                gs->gs_comm, msg_ids_in++); 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr); 
       in1 += *size++;
     }
   while (*++msg_nodes);
@@ -2049,8 +2070,7 @@ gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
-                MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
     }
 
   if (gs->max_left_over)
@@ -2062,7 +2082,7 @@ gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0)
         {*(dptr1 + *iptr) = PetscMax(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
@@ -2076,7 +2096,8 @@ gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -2090,14 +2111,15 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_tree_max(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
   PetscScalar *buf, *work;
-  int ierr;
+  PetscErrorCode ierr;
   
+  PetscFunctionBegin;
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
   buf  = gs->tree_buf;
@@ -2111,10 +2133,10 @@ gs_gop_tree_max(gs_id *gs, PetscScalar *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_MAX,gs->gs_comm);
+  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_MAX,gs->gs_comm);CHKERRQ(ierr);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -2127,10 +2149,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
+static PetscErrorCode
 gs_gop_min_abs( gs_id *gs,  PetscScalar *vals)
 {
-
+  PetscFunctionBegin;
   /* local only operations!!! */
   if (gs->num_local)
     {gs_gop_local_min_abs(gs,vals);}
@@ -2161,6 +2183,7 @@ gs_gop_min_abs( gs_id *gs,  PetscScalar *vals)
       else if (gs->max_left_over)
         {gs_gop_tree_min_abs(gs,vals);}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2174,13 +2197,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_min_abs( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
 
-
+  PetscFunctionBegin;
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
   while ((map = *reduce))
@@ -2194,6 +2217,7 @@ gs_gop_local_min_abs( gs_id *gs,  PetscScalar *vals)
       while (*map >= 0)
         {*(vals + *map++) = tmp;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2207,12 +2231,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_in_min_abs( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
 
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
   while ((map = *reduce++))
@@ -2222,6 +2247,7 @@ gs_gop_local_in_min_abs( gs_id *gs,  PetscScalar *vals)
       while (*map >= 0)
         {*base = MIN_FABS(*base,*(vals + *map)); map++;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2237,7 +2263,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -2245,8 +2271,9 @@ gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  int ierr;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   /* strip and load s */
   msg_list =list         = gs->pair_list;
   msg_size =size         = gs->msg_sizes;
@@ -2264,8 +2291,7 @@ gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
-                gs->gs_comm, msg_ids_in++); 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr);
       in1 += *size++;
     }
   while (*++msg_nodes);
@@ -2283,8 +2309,7 @@ gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
-                MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
     }
 
   if (gs->max_left_over)
@@ -2296,7 +2321,7 @@ gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0)
         {*(dptr1 + *iptr) = MIN_FABS(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
@@ -2310,7 +2335,8 @@ gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -2324,7 +2350,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_tree_min_abs(gs_id *gs, PetscScalar *vals)
 {
   int size;
@@ -2332,7 +2358,7 @@ gs_gop_tree_min_abs(gs_id *gs, PetscScalar *vals)
   PetscScalar *buf, *work;
   int op[] = {GL_MIN_ABS,0};
 
-
+  PetscFunctionBegin;
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
   buf  = gs->tree_buf;
@@ -2349,7 +2375,7 @@ gs_gop_tree_min_abs(gs_id *gs, PetscScalar *vals)
   grop(buf,work,size,op);
   while (*in >= 0)
     {*(vals + *in++) = *(buf + *out++);}
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -2362,10 +2388,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
+static PetscErrorCode
 gs_gop_min( gs_id *gs,  PetscScalar *vals)
 {
-
+  PetscFunctionBegin;
   /* local only operations!!! */
   if (gs->num_local)
     {gs_gop_local_min(gs,vals);}
@@ -2396,6 +2422,7 @@ gs_gop_min( gs_id *gs,  PetscScalar *vals)
       else if (gs->max_left_over)
         {gs_gop_tree_min(gs,vals);}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2409,12 +2436,12 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_min( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
-
+  PetscFunctionBegin;
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
   while ((map = *reduce))
@@ -2428,6 +2455,7 @@ gs_gop_local_min( gs_id *gs,  PetscScalar *vals)
       while (*map >= 0)
         {*(vals + *map++) = tmp;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2441,12 +2469,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_in_min( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
 
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
   while ((map = *reduce++))
@@ -2456,6 +2485,7 @@ gs_gop_local_in_min( gs_id *gs,  PetscScalar *vals)
       while (*map >= 0)
         {*base = PetscMin(*base,*(vals + *map)); map++;}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2471,7 +2501,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -2479,8 +2509,9 @@ gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  int ierr;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   /* strip and load s */
   msg_list =list         = gs->pair_list;
   msg_size =size         = gs->msg_sizes;
@@ -2498,8 +2529,7 @@ gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
-                gs->gs_comm, msg_ids_in++); 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr);
       in1 += *size++;
     }
   while (*++msg_nodes);
@@ -2517,8 +2547,7 @@ gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
-                MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
     }
 
   /* process the received data */
@@ -2530,7 +2559,7 @@ gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0)
         {*(dptr1 + *iptr) = PetscMin(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
@@ -2544,7 +2573,8 @@ gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -2558,14 +2588,15 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_tree_min(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
   PetscScalar *buf, *work;
-  int ierr;
+  PetscErrorCode ierr;
   
+  PetscFunctionBegin;
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
   buf  = gs->tree_buf;
@@ -2579,9 +2610,10 @@ gs_gop_tree_min(gs_id *gs, PetscScalar *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_MIN,gs->gs_comm);
+  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_MIN,gs->gs_comm);CHKERRQ(ierr);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -2594,10 +2626,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
+static PetscErrorCode
 gs_gop_times( gs_id *gs,  PetscScalar *vals)
 {
-
+  PetscFunctionBegin;
   /* local only operations!!! */
   if (gs->num_local)
     {gs_gop_local_times(gs,vals);}
@@ -2628,6 +2660,7 @@ gs_gop_times( gs_id *gs,  PetscScalar *vals)
       else if (gs->max_left_over)
         {gs_gop_tree_times(gs,vals);}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2641,12 +2674,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_times( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
 
+  PetscFunctionBegin;
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
   while ((map = *reduce))
@@ -2683,6 +2717,7 @@ gs_gop_local_times( gs_id *gs,  PetscScalar *vals)
             {*(vals + *map++) = tmp;}
         }
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2696,12 +2731,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_in_times( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
 
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
   while ((map = *reduce++))
@@ -2733,6 +2769,7 @@ gs_gop_local_in_times( gs_id *gs,  PetscScalar *vals)
             {*base *= *(vals + *map++);}
         }
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2748,7 +2785,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -2756,8 +2793,9 @@ gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  int ierr;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   /* strip and load s */
   msg_list =list         = gs->pair_list;
   msg_size =size         = gs->msg_sizes;
@@ -2775,8 +2813,7 @@ gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
-                gs->gs_comm, msg_ids_in++); 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr); 
       in1 += *size++;
     }
   while (*++msg_nodes);
@@ -2794,8 +2831,7 @@ gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
-                MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
     }
 
   if (gs->max_left_over)
@@ -2807,7 +2843,7 @@ gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0)
         {*(dptr1 + *iptr++) *= *in2++;}
     }
@@ -2821,7 +2857,8 @@ gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -2835,14 +2872,15 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_tree_times(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
   PetscScalar *buf, *work;
-  int ierr;
+  PetscErrorCode ierr;
   
+  PetscFunctionBegin;
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
   buf  = gs->tree_buf;
@@ -2856,10 +2894,10 @@ gs_gop_tree_times(gs_id *gs, PetscScalar *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_PROD,gs->gs_comm);
+  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_PROD,gs->gs_comm);CHKERRQ(ierr);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -2873,10 +2911,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
+static PetscErrorCode
 gs_gop_plus( gs_id *gs,  PetscScalar *vals)
 {
-
+  PetscFunctionBegin;
   /* local only operations!!! */
   if (gs->num_local)
     {gs_gop_local_plus(gs,vals);}
@@ -2907,7 +2945,7 @@ gs_gop_plus( gs_id *gs,  PetscScalar *vals)
       if (gs->max_left_over)
         {gs_gop_tree_plus(gs,vals);}
     }
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -2921,13 +2959,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_plus( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
 
-
+  PetscFunctionBegin;
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
   while ((map = *reduce))
@@ -2964,6 +3002,7 @@ gs_gop_local_plus( gs_id *gs,  PetscScalar *vals)
             {*(vals + *map++) = tmp;}
         }
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -2977,13 +3016,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_local_in_plus( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
 
-
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
   while ((map = *reduce++))
@@ -3015,6 +3054,7 @@ gs_gop_local_in_plus( gs_id *gs,  PetscScalar *vals)
             {*base += *(vals + *map++);}
         }
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -3030,7 +3070,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -3038,8 +3078,9 @@ gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  int ierr;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   /* strip and load s */
   msg_list =list         = gs->pair_list;
   msg_size =size         = gs->msg_sizes;
@@ -3057,8 +3098,7 @@ gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
-                gs->gs_comm, msg_ids_in++); 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr);
       in1 += *size++;
     }
   while (*++msg_nodes);
@@ -3076,8 +3116,7 @@ gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
-                MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
     }
 
   /* do the tree while we're waiting */
@@ -3090,7 +3129,7 @@ gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0)
         {*(dptr1 + *iptr++) += *in2++;}
     }
@@ -3104,8 +3143,8 @@ gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);}
-
+    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -3119,14 +3158,15 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_tree_plus(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
   PetscScalar *buf, *work;
-  int ierr;
+  PetscErrorCode ierr;
   
+  PetscFunctionBegin;
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
   buf  = gs->tree_buf;
@@ -3140,10 +3180,10 @@ gs_gop_tree_plus(gs_id *gs, PetscScalar *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_SUM,gs->gs_comm);
+  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_SUM,gs->gs_comm);CHKERRQ(ierr);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
-
+  PetscFunctionReturn(0);
 }
 
 /******************************************************************************
@@ -3158,12 +3198,12 @@ Return:
 Description:  
   if (gs->sss) {free((void*) gs->sss);}
 ******************************************************************************/
-void
+PetscErrorCode
 gs_free( gs_id *gs)
 {
    int i;
 
-
+  PetscFunctionBegin;
   if (gs->nghs) {free((void*) gs->nghs);}
   if (gs->pw_nghs) {free((void*) gs->pw_nghs);}
 
@@ -3220,6 +3260,7 @@ gs_free( gs_id *gs)
   if (gs->num_gop_local_reduce) {free((void*) gs->num_gop_local_reduce);}
 
   free((void*) gs);
+  PetscFunctionReturn(0);
 }
 
 
@@ -3235,10 +3276,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-void
+PetscErrorCode
 gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  int step)
 {
-
+  PetscFunctionBegin;
   switch (*op) {
   case '+':
     gs_gop_vec_plus(gs,vals,step);
@@ -3249,6 +3290,7 @@ gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  int step)
     gs_gop_vec_plus(gs,vals,step);    
     break;
   }
+  PetscFunctionReturn(0);
 }
 
 
@@ -3261,9 +3303,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
+static PetscErrorCode
 gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  int step)
 {
+  PetscFunctionBegin;
   if (!gs) {error_msg_fatal("gs_gop_vec() passed NULL gs handle!!!");}
 
   /* local only operations!!! */
@@ -3296,6 +3339,7 @@ gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  int step)
       else if (gs->max_left_over)
         {gs_gop_vec_tree_plus(gs,vals,step);}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -3309,14 +3353,14 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_vec_local_plus( gs_id *gs,  PetscScalar *vals, 
                        int step)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
 
-
+  PetscFunctionBegin;
   num    = gs->num_local_reduce;  
   reduce = gs->local_reduce;  
   while ((map = *reduce))
@@ -3364,6 +3408,7 @@ gs_gop_vec_local_plus( gs_id *gs,  PetscScalar *vals,
           reduce++;
         }
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -3377,13 +3422,13 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_vec_local_in_plus( gs_id *gs,  PetscScalar *vals, 
                           int step)
 {
    int  *num, *map, **reduce;
    PetscScalar *base;
-
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
   while ((map = *reduce++))
@@ -3419,6 +3464,7 @@ gs_gop_vec_local_in_plus( gs_id *gs,  PetscScalar *vals,
             {rvec_add(base,vals+*map*step,step);}
         }
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -3431,14 +3477,14 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_vec_local_out( gs_id *gs,  PetscScalar *vals, 
                       int step)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
 
-
+  PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
   reduce = gs->gop_local_reduce;  
   while ((map = *reduce++))
@@ -3474,6 +3520,7 @@ gs_gop_vec_local_out( gs_id *gs,  PetscScalar *vals,
             {rvec_copy(vals+*map*step,base,step);}
         }
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -3489,7 +3536,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
                           int step)
 {
@@ -3499,8 +3546,9 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
   PetscBLASInt i1;
-  int ierr;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   /* strip and load s */
   msg_list =list         = gs->pair_list;
   msg_size =size         = gs->msg_sizes;
@@ -3518,8 +3566,7 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size *step, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
-                gs->gs_comm, msg_ids_in++); 
+      ierr = MPI_Irecv(in1, *size *step, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr);
       in1 += *size++ *step;
     }
   while (*++msg_nodes);
@@ -3543,8 +3590,7 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
           dptr2+=step;
           iptr++;
         }
-      ierr = MPI_Isend(dptr3, *msg_size++ *step, MPIU_SCALAR, *msg_list++,
-                MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
+      ierr = MPI_Isend(dptr3, *msg_size++ *step, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
     }
 
   /* tree */
@@ -3557,7 +3603,7 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
     PetscScalar d1 = 1.0;
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0) {
           BLASaxpy_(&step,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
           in2+=step;
@@ -3578,9 +3624,9 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
 
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -3594,7 +3640,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int step) 
 {
   int size, *in, *out;  
@@ -3602,7 +3648,7 @@ gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int step)
   int op[] = {GL_ADD,0};
   PetscBLASInt i1 = 1;
 
-
+  PetscFunctionBegin;
   /* copy over to local variables */
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
@@ -3633,7 +3679,7 @@ gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int step)
     {
       BLAScopy_(&step,buf + *out++*step,&i1,vals + *in++*step,&i1);
     }
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -3646,10 +3692,10 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-void
+PetscErrorCode
 gs_gop_hc( gs_id *gs,  PetscScalar *vals,  const char *op,  int dim)
 {
-
+  PetscFunctionBegin;
   switch (*op) {
   case '+':
     gs_gop_plus_hc(gs,vals,dim);
@@ -3660,6 +3706,7 @@ gs_gop_hc( gs_id *gs,  PetscScalar *vals,  const char *op,  int dim)
     gs_gop_plus_hc(gs,vals,dim);    
     break;
   }
+  PetscFunctionReturn(0);
 }
 
 
@@ -3672,12 +3719,13 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static void
+static PetscErrorCode
 gs_gop_plus_hc( gs_id *gs,  PetscScalar *vals, int dim)
 {
+  PetscFunctionBegin;
   /* if there's nothing to do return */
   if (dim<=0)
-    {return;}
+    {  PetscFunctionReturn(0);}
 
   /* can't do more dimensions then exist */
   dim = PetscMin(dim,i_log2_num_nodes);
@@ -3712,7 +3760,7 @@ gs_gop_plus_hc( gs_id *gs,  PetscScalar *vals, int dim)
       else if (gs->max_left_over)
         {gs_gop_tree_plus_hc(gs,vals,dim);}
     }
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -3725,7 +3773,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -3734,8 +3782,9 @@ gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
   int i, mask=1;
-  int ierr;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   for (i=1; i<dim; i++)
     {mask<<=1; mask++;}
 
@@ -3759,8 +3808,7 @@ gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
          second one *list and do list++ afterwards */
       if ((my_id|mask)==(*list|mask))
         {
-          ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
-                    gs->gs_comm, msg_ids_in++); 
+          ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr);
           in1 += *size++;
         }
       else
@@ -3784,8 +3832,7 @@ gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
             {*dptr2++ = *(dptr1 + *iptr++);}
           /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
           /* is msg_ids_out++ correct? */
-          ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *list++,
-                    MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
+          ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
         }
       else
         {list++; msg_size++;}
@@ -3804,7 +3851,7 @@ gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
         {
           /* Should I check the return value of MPI_Wait() or status? */
           /* Can this loop be replaced by a call to MPI_Waitall()? */
-          ierr = MPI_Wait(ids_in++, &status);
+          ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
           while (*iptr >= 0)
             {*(dptr1 + *iptr++) += *in2++;}
         }
@@ -3823,12 +3870,12 @@ gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
         {
           /* Should I check the return value of MPI_Wait() or status? */
           /* Can this loop be replaced by a call to MPI_Waitall()? */
-          ierr = MPI_Wait(ids_out++, &status);
+          ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);
         }
       msg_list++;
     }
 
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -3842,7 +3889,7 @@ Return:
 Description: 
 ******************************************************************************/
 static
-void
+PetscErrorCode
 gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, int dim)
 {
   int size;
@@ -3850,6 +3897,7 @@ gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, int dim)
   PetscScalar *buf, *work;
   int op[] = {GL_ADD,0};
 
+  PetscFunctionBegin;
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
   buf  = gs->tree_buf;
@@ -3868,7 +3916,7 @@ gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, int dim)
 
   while (*in >= 0)
     {*(vals + *in++) = *(buf + *out++);}
-
+  PetscFunctionReturn(0);
 }
 
 

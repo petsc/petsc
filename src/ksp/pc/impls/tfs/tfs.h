@@ -139,8 +139,8 @@ File Description:
 -----------------
 
 ***********************************types.h************************************/
-typedef void (*vfp)(void*,void*,int,...);
-typedef void (*rbfp)(PetscScalar *, PetscScalar *, int len);
+typedef PetscErrorCode (*vfp)(void*,void*,int,...);
+typedef PetscErrorCode (*rbfp)(PetscScalar *, PetscScalar *, int len);
 #define vbfp MPI_User_function *
 typedef int (*bfp)(void*, void *, int *len, MPI_Datatype *dt); 
 
@@ -174,19 +174,19 @@ Return:
 Description: 
 Usage: 
 ***********************************comm.h*************************************/
-extern int my_id;
-extern int num_nodes;
-extern int floor_num_nodes;
-extern int i_log2_num_nodes;
+extern PetscMPIInt my_id;
+extern PetscMPIInt num_nodes;
+extern PetscMPIInt floor_num_nodes;
+extern PetscMPIInt i_log2_num_nodes;
 
-extern void giop(int *vals, int *work, int n, int *oprs);
-extern void grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs);
-extern void gfop(void *vals, void *wk, int n, vbfp fp, MPI_Datatype dt, int comm_type);
-extern void comm_init(void);
-extern void giop_hc(int *vals, int *work, int n, int *oprs, int dim);
-extern void grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim);
-extern void grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *n, int *oprs, int dim);
-extern void ssgl_radd(PetscScalar *vals, PetscScalar *work, int level, int *segs);
+extern PetscErrorCode giop(int *vals, int *work, int n, int *oprs);
+extern PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs);
+extern PetscErrorCode gfop(void *vals, void *wk, int n, vbfp fp, MPI_Datatype dt, int comm_type);
+extern PetscErrorCode comm_init(void);
+extern PetscErrorCode giop_hc(int *vals, int *work, int n, int *oprs, int dim);
+extern PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim);
+extern PetscErrorCode grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *n, int *oprs, int dim);
+extern PetscErrorCode ssgl_radd(PetscScalar *vals, PetscScalar *work, int level, int *segs);
 
 #define MSGTAG0 101
 #define MSGTAG1 1001
@@ -227,7 +227,7 @@ Return: na.
 Description: prints error message and terminates program.
 Usage: error_msg_fatal("this is my %d'st test",test_num)
 **********************************error.h*************************************/
-extern void error_msg_fatal(const char msg[], ...);
+extern PetscErrorCode error_msg_fatal(const char msg[], ...);
 
 
 
@@ -240,7 +240,7 @@ Return: na.
 Description: prints error message.
 Usage: error_msg_warning("this is my %d'st test",test_num)
 **********************************error.h*************************************/
-extern void error_msg_warning(const char msg[], ...);
+extern PetscErrorCode error_msg_warning(const char msg[], ...);
 
 /*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /**********************************ivec.h**************************************
@@ -295,20 +295,20 @@ Return:
 Description: 
 Usage: 
 ***********************************ivec.h*************************************/
-extern void ivec_dump(int *v, int n, int tag, int tag2, char * s);
-extern void ivec_lb_ub(int *arg1, int n, int *lb, int *ub);
+extern PetscErrorCode ivec_dump(int *v, int n, int tag, int tag2, char * s);
+extern PetscErrorCode ivec_lb_ub(int *arg1, int n, int *lb, int *ub);
 extern int *ivec_copy(int *arg1, int *arg2, int n);
 /*void ivec_copy(int *arg1, int *arg2, int n); */
 
-extern void ivec_comp(int *arg1, int n);
+extern PetscErrorCode ivec_comp(int *arg1, int n);
 
 extern int ivec_reduce_and(int *arg1, int n);
 extern int ivec_reduce_or(int *arg1, int n);
 
-extern void ivec_zero(int *arg1, int n);
-extern void ivec_pos_one(int *arg1, int n);
-extern void ivec_neg_one(int *arg1, int n);
-extern void ivec_set(int *arg1, int arg2, int n);
+extern PetscErrorCode ivec_zero(int *arg1, int n);
+extern PetscErrorCode ivec_pos_one(int *arg1, int n);
+extern PetscErrorCode ivec_neg_one(int *arg1, int n);
+extern PetscErrorCode ivec_set(int *arg1, int arg2, int n);
 extern int ivec_cmp(int *arg1, int *arg2, int n);
 
 extern int ivec_lb(int *work, int n);
@@ -319,60 +319,60 @@ extern int ivec_prod(int *arg1, int n);
 
 extern vfp ivec_fct_addr(int type);
 
-extern void ivec_non_uniform(int *arg1, int *arg2, int n, int *arg3);
-extern void ivec_max(int *arg1, int *arg2, int n);
-extern void ivec_min(int *arg1, int *arg2, int n);
-extern void ivec_mult(int *arg1, int *arg2, int n);
-extern void ivec_add(int *arg1, int *arg2, int n);
-extern void ivec_xor(int *arg1, int *arg2, int n);
-extern void ivec_or(int *arg1, int *arg2, int len);
-extern void ivec_and(int *arg1, int *arg2, int len);
-extern void ivec_lxor(int *arg1, int *arg2, int n);
-extern void ivec_lor(int *arg1, int *arg2, int len);
-extern void ivec_land(int *arg1, int *arg2, int len);
+extern PetscErrorCode ivec_non_uniform(int *arg1, int *arg2, int n, int *arg3);
+extern PetscErrorCode ivec_max(int *arg1, int *arg2, int n);
+extern PetscErrorCode ivec_min(int *arg1, int *arg2, int n);
+extern PetscErrorCode ivec_mult(int *arg1, int *arg2, int n);
+extern PetscErrorCode ivec_add(int *arg1, int *arg2, int n);
+extern PetscErrorCode ivec_xor(int *arg1, int *arg2, int n);
+extern PetscErrorCode ivec_or(int *arg1, int *arg2, int len);
+extern PetscErrorCode ivec_and(int *arg1, int *arg2, int len);
+extern PetscErrorCode ivec_lxor(int *arg1, int *arg2, int n);
+extern PetscErrorCode ivec_lor(int *arg1, int *arg2, int len);
+extern PetscErrorCode ivec_land(int *arg1, int *arg2, int len);
 
-extern void ivec_or3 (int *arg1, int *arg2, int *arg3, int len);
-extern void ivec_and3(int *arg1, int *arg2, int *arg3, int n);
+extern PetscErrorCode ivec_or3 (int *arg1, int *arg2, int *arg3, int len);
+extern PetscErrorCode ivec_and3(int *arg1, int *arg2, int *arg3, int n);
 
 extern int ivec_split_buf(int *buf1, int **buf2, int size);
 
 
-extern void ivec_sort_companion(int *ar, int *ar2, int size);
-extern void ivec_sort(int *ar, int size);
-extern void SMI_sort(void *ar1, void *ar2, int size, int type);
+extern PetscErrorCode ivec_sort_companion(int *ar, int *ar2, int size);
+extern PetscErrorCode ivec_sort(int *ar, int size);
+extern PetscErrorCode SMI_sort(void *ar1, void *ar2, int size, int type);
 extern int ivec_binary_search(int item, int *list, int n);
 extern int ivec_linear_search(int item, int *list, int n);
 
-extern void ivec_c_index(int *arg1, int n);
-extern void ivec_fortran_index(int *arg1, int n);
-extern void ivec_sort_companion_hack(int *ar, int **ar2, int size);
+extern PetscErrorCode ivec_c_index(int *arg1, int n);
+extern PetscErrorCode ivec_fortran_index(int *arg1, int n);
+extern PetscErrorCode ivec_sort_companion_hack(int *ar, int **ar2, int size);
 
 
-extern void rvec_dump(PetscScalar *v, int n, int tag, int tag2, char * s);
-extern void rvec_zero(PetscScalar *arg1, int n);
-extern void rvec_one(PetscScalar *arg1, int n);
-extern void rvec_neg_one(PetscScalar *arg1, int n);
-extern void rvec_set(PetscScalar *arg1, PetscScalar arg2, int n);
-extern void rvec_copy(PetscScalar *arg1, PetscScalar *arg2, int n);
-extern void rvec_lb_ub(PetscScalar *arg1, int n, PetscScalar *lb, PetscScalar *ub);
-extern void rvec_scale(PetscScalar *arg1, PetscScalar arg2, int n);
+extern PetscErrorCode rvec_dump(PetscScalar *v, int n, int tag, int tag2, char * s);
+extern PetscErrorCode rvec_zero(PetscScalar *arg1, int n);
+extern PetscErrorCode rvec_one(PetscScalar *arg1, int n);
+extern PetscErrorCode rvec_neg_one(PetscScalar *arg1, int n);
+extern PetscErrorCode rvec_set(PetscScalar *arg1, PetscScalar arg2, int n);
+extern PetscErrorCode rvec_copy(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern PetscErrorCode rvec_lb_ub(PetscScalar *arg1, int n, PetscScalar *lb, PetscScalar *ub);
+extern PetscErrorCode rvec_scale(PetscScalar *arg1, PetscScalar arg2, int n);
 
 extern vfp rvec_fct_addr(int type);
-extern void rvec_add(PetscScalar *arg1, PetscScalar *arg2, int n);
-extern void rvec_mult(PetscScalar *arg1, PetscScalar *arg2, int n);
-extern void rvec_max(PetscScalar *arg1, PetscScalar *arg2, int n);
-extern void rvec_max_abs(PetscScalar *arg1, PetscScalar *arg2, int n);
-extern void rvec_min(PetscScalar *arg1, PetscScalar *arg2, int n);
-extern void rvec_min_abs(PetscScalar *arg1, PetscScalar *arg2, int n);
-extern void vec_exists(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern PetscErrorCode rvec_add(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern PetscErrorCode rvec_mult(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern PetscErrorCode rvec_max(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern PetscErrorCode rvec_max_abs(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern PetscErrorCode rvec_min(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern PetscErrorCode rvec_min_abs(PetscScalar *arg1, PetscScalar *arg2, int n);
+extern PetscErrorCode vec_exists(PetscScalar *arg1, PetscScalar *arg2, int n);
 
 
-extern void rvec_sort(PetscScalar *ar, int size);
-extern void rvec_sort_companion(PetscScalar *ar, int *ar2, int size);
+extern PetscErrorCode rvec_sort(PetscScalar *ar, int size);
+extern PetscErrorCode rvec_sort_companion(PetscScalar *ar, int *ar2, int size);
 
 extern PetscScalar rvec_dot(PetscScalar *arg1, PetscScalar *arg2, int n);
 
-extern void rvec_axpy(PetscScalar *arg1, PetscScalar *arg2, PetscScalar scale, int n);
+extern PetscErrorCode rvec_axpy(PetscScalar *arg1, PetscScalar *arg2, PetscScalar scale, int n);
 
 extern int  rvec_binary_search(PetscScalar item, PetscScalar *list, int rh);
 
@@ -432,7 +432,7 @@ Description: This function frees the storage associated with queue but not any
 pointer contained w/in.
 Usage: free_queue(queue);
 **********************************queue.h*************************************/
-extern void free_queue(queue_ADT queue);
+extern PetscErrorCode free_queue(queue_ADT queue);
 
 
 
@@ -445,7 +445,7 @@ Return: na
 Description: This function adds obj to the end of the queue.
 Usage: enqueue(queue, obj);
 **********************************queue.h*************************************/
-extern void enqueue(queue_ADT queue, void *obj);
+extern PetscErrorCode enqueue(queue_ADT queue, void *obj);
 
 
 
@@ -459,7 +459,7 @@ Description: This function removes the data value at the head of the queue
 and returns it to the client.  dequeueing an empty queue is an error
 Usage: obj = dequeue(queue);
 **********************************queue.h*************************************/
-extern void *dequeue(queue_ADT queue);
+extern PetscErrorCode *dequeue(queue_ADT queue);
 
 
 
@@ -505,7 +505,7 @@ Type: gs_ADT
 ************************************gs.h**************************************/
 
 typedef struct gather_scatter_id *gs_ADT;
-typedef void (*Rbfp)(PetscScalar *, PetscScalar *, int len);
+typedef PetscErrorCode (*Rbfp)(PetscScalar *, PetscScalar *, int len);
 
 /***********************************gs.h***************************************
 Function:
@@ -517,13 +517,13 @@ Description:
 Usage: 
 ************************************gs.h**************************************/
 extern gs_ADT gs_init(int *elms, int nel, int level);
-extern void   gs_gop(gs_ADT gs_handle, PetscScalar *vals, const char *op);
-extern void   gs_gop_vec(gs_ADT gs_handle, PetscScalar *vals, const char *op, int step);
-extern void   gs_gop_binary(gs_ADT gs, PetscScalar *vals, Rbfp fct);
-extern void   gs_gop_hc(gs_ADT gs_handle, PetscScalar *vals, const char *op, int dim);
-extern void   gs_free(gs_ADT gs_handle);
-extern void   gs_init_msg_buf_sz(int buf_size);
-extern void   gs_init_vec_sz(int size);
+extern PetscErrorCode   gs_gop(gs_ADT gs_handle, PetscScalar *vals, const char *op);
+extern PetscErrorCode   gs_gop_vec(gs_ADT gs_handle, PetscScalar *vals, const char *op, int step);
+extern PetscErrorCode   gs_gop_binary(gs_ADT gs, PetscScalar *vals, Rbfp fct);
+extern PetscErrorCode   gs_gop_hc(gs_ADT gs_handle, PetscScalar *vals, const char *op, int dim);
+extern PetscErrorCode   gs_free(gs_ADT gs_handle);
+extern PetscErrorCode   gs_init_msg_buf_sz(int buf_size);
+extern PetscErrorCode   gs_init_vec_sz(int size);
 
 
 
@@ -788,7 +788,7 @@ Return:
 Description: sets xyt parameter 1 in xyt_handle
 Usage: implement later
 
-void XYT_sp_1(xyt_handle,parameter 1 value)
+PetscErrorCode XYT_sp_1(xyt_handle,parameter 1 value)
 **************************************xyt.h***********************************/
 
 /********************************bit_mask.h************************************
@@ -823,10 +823,10 @@ Description:
 Usage: 
 *********************************bit_mask.h***********************************/
 extern int div_ceil(int numin, int denom);
-extern void set_bit_mask(int *bm, int len, int val);
+extern PetscErrorCode set_bit_mask(int *bm, int len, int val);
 extern int len_bit_mask(int num_items);
 extern int ct_bits(char *ptr, int n);
-extern void bm_to_proc(char *ptr, int p_mask, int *msg_list);
+extern PetscErrorCode bm_to_proc(char *ptr, int p_mask, int *msg_list);
 extern int len_buf(int item_size, int num_items);
 
 #endif

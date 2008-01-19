@@ -42,15 +42,17 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void
+PetscErrorCode
 ivec_dump(int *v, int n, int tag, int tag2, char * s)
 {
   int i;
+  PetscFunctionBegin;
   printf("%2d %2d %s %2d :: ",tag,tag2,s,my_id);
   for (i=0;i<n;i++)
     {printf("%2d ",v[i]);}
   printf("\n");
   fflush(stdout);
+  PetscFunctionReturn(0);
 }
 
 
@@ -63,12 +65,13 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void
+PetscErrorCode
 ivec_lb_ub( int *arg1,  int n, int *lb, int *ub)
 {
    int min = INT_MAX;
    int max = INT_MIN;
 
+  PetscFunctionBegin;
   while (n--)  
     {
      min = PetscMin(min,*arg1);
@@ -78,6 +81,7 @@ ivec_lb_ub( int *arg1,  int n, int *lb, int *ub)
 
   *lb=min;
   *ub=max;
+  PetscFunctionReturn(0);
 }
 
 
@@ -106,10 +110,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_zero( int *arg1,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = 0;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -122,10 +128,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_comp( int *arg1,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1 = ~*arg1; arg1++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -138,10 +146,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_neg_one( int *arg1,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = -1;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -154,10 +164,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_pos_one( int *arg1,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = 1;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -170,13 +182,14 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_c_index( int *arg1,  int n)
 {
    int i=0;
 
-
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = i++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -189,13 +202,14 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_fortran_index( int *arg1,  int n)
 {
    int i=0;
 
-
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = ++i;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -208,10 +222,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_set( int *arg1,  int arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = arg2;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -227,6 +243,7 @@ Description:
 int
 ivec_cmp( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {if (*arg1++ != *arg2++)  {return(FALSE);}}
   return(TRUE);
 }
@@ -241,10 +258,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_max( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1 = PetscMax(*arg1,*arg2); arg1++; arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -257,10 +276,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_min( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*(arg1) = PetscMin(*arg1,*arg2); arg1++; arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -273,10 +294,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_mult( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ *= *arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -289,10 +312,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_add( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ += *arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -305,10 +330,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_lxor( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--) {*arg1=((*arg1 || *arg2) && !(*arg1 && *arg2)); arg1++; arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -321,10 +348,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_xor( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ ^= *arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -337,10 +366,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_or( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ |= *arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -353,10 +384,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_lor( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1 = (*arg1 || *arg2); arg1++; arg2++;} 
+  PetscFunctionReturn(0);
 }
 
 
@@ -369,11 +402,13 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_or3( int *arg1,  int *arg2,  int *arg3, 
 	  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = (*arg2++ | *arg3++);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -386,10 +421,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_and( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ &= *arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -402,10 +439,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_land( int *arg1,  int *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--) {*arg1 = (*arg1 && *arg2); arg1++; arg2++;} 
+  PetscFunctionReturn(0);
 }
 
 
@@ -418,11 +457,13 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_and3( int *arg1,  int *arg2,  int *arg3, 
 	   int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = (*arg2++ & *arg3++);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -589,12 +630,13 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 ivec_non_uniform(int *arg1, int *arg2,  int n,  int *arg3)
 {
    int i, j, type;
 
 
+  PetscFunctionBegin;
   /* LATER: if we're really motivated we can sort and then unsort */
   for (i=0;i<n;)
     {
@@ -633,6 +675,7 @@ ivec_non_uniform(int *arg1, int *arg2,  int n,  int *arg3)
 
       arg1+=j; arg2+=j; i+=j;
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -647,28 +690,29 @@ Description:
 ***********************************ivec.c*************************************/
 vfp ivec_fct_addr( int type)
 {
+  PetscFunctionBegin;
   if (type == NON_UNIFORM)
-    {return((void (*)(void*, void *, int, ...))&ivec_non_uniform);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_non_uniform);}
   else if (type == GL_MAX)
-    {return((void (*)(void*, void *, int, ...))&ivec_max);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_max);}
   else if (type == GL_MIN)
-    {return((void (*)(void*, void *, int, ...))&ivec_min);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_min);}
   else if (type == GL_MULT)
-    {return((void (*)(void*, void *, int, ...))&ivec_mult);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_mult);}
   else if (type == GL_ADD)
-    {return((void (*)(void*, void *, int, ...))&ivec_add);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_add);}
   else if (type == GL_B_XOR)
-    {return((void (*)(void*, void *, int, ...))&ivec_xor);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_xor);}
   else if (type == GL_B_OR)
-    {return((void (*)(void*, void *, int, ...))&ivec_or);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_or);}
   else if (type == GL_B_AND)  
-    {return((void (*)(void*, void *, int, ...))&ivec_and);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_and);}
   else if (type == GL_L_XOR)
-    {return((void (*)(void*, void *, int, ...))&ivec_lxor);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_lxor);}
   else if (type == GL_L_OR)
-    {return((void (*)(void*, void *, int, ...))&ivec_lor);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_lor);}
   else if (type == GL_L_AND)   
-    {return((void (*)(void*, void *, int, ...))&ivec_land);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&ivec_land);}
 
   /* catch all ... not good if we get here */
   return(NULL);
@@ -718,7 +762,7 @@ Output: sorted list (in ascending order).
 Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
-void
+PetscErrorCode
 ivec_sort( int *ar,  int size)
 {
    int *pi, *pj, temp;
@@ -808,13 +852,14 @@ ivec_sort( int *ar,  int size)
 	    }
 
 	  /* check to see if stack is exhausted ==> DONE */
-	  if (top_s==bottom_s) return;
+	  if (top_s==bottom_s)   PetscFunctionReturn(0);
 	  
 	  /* else pop another list from the stack */
 	  ar = *(--top_a);
 	  size = *(--top_s);
 	}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -827,7 +872,7 @@ Output: sorted list (in ascending order).
 Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
-void
+PetscErrorCode
 ivec_sort_companion( int *ar,  int *ar2,  int size)
 {
    int *pi, *pj, temp, temp2;
@@ -836,7 +881,7 @@ ivec_sort_companion( int *ar,  int *ar2,  int size)
    int *pi2, *pj2;
    int mid;
 
-
+  PetscFunctionBegin;
   /* we're really interested in the offset of the last element */
   /* ==> length of the list is now size + 1                    */
   size--;
@@ -932,7 +977,7 @@ ivec_sort_companion( int *ar,  int *ar2,  int size)
 	    }
 
 	  /* check to see if stack is exhausted ==> DONE */
-	  if (top_s==bottom_s) return;
+	  if (top_s==bottom_s)   PetscFunctionReturn(0);
 	  
 	  /* else pop another list from the stack */
 	  ar2 = *(--top_a);
@@ -940,6 +985,7 @@ ivec_sort_companion( int *ar,  int *ar2,  int size)
 	  size = *(--top_s);
 	}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -952,7 +998,7 @@ Output: sorted list (in ascending order).
 Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
-void
+PetscErrorCode
 ivec_sort_companion_hack( int *ar,  int **ar2, 
 			  int size)
 {
@@ -962,7 +1008,7 @@ ivec_sort_companion_hack( int *ar,  int **ar2,
    int **pi2, **pj2;
    int mid;
 
-
+  PetscFunctionBegin;
   /* we're really interested in the offset of the last element */
   /* ==> length of the list is now size + 1                    */
   size--;
@@ -1058,7 +1104,7 @@ ivec_sort_companion_hack( int *ar,  int **ar2,
 	    }
 
 	  /* check to see if stack is exhausted ==> DONE */
-	  if (top_s==bottom_s) return;
+	  if (top_s==bottom_s)   PetscFunctionReturn(0);
 	  
 	  /* else pop another list from the stack */
 	  ar2 = (int **)*(--top_a);
@@ -1066,6 +1112,7 @@ ivec_sort_companion_hack( int *ar,  int **ar2,
 	  size = *(--top_s);
 	}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1077,9 +1124,10 @@ Output: sorted list (in ascending order).
 Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
-void
+PetscErrorCode
 SMI_sort(void *ar1, void *ar2, int size, int type)
 {
+  PetscFunctionBegin;
   if (type == SORT_INTEGER)
     {
       if (ar2)
@@ -1099,15 +1147,7 @@ SMI_sort(void *ar1, void *ar2, int size, int type)
     {
       error_msg_fatal("SMI_sort only does SORT_INTEGER!");
     }
-/*
-  if (type == SORT_REAL)
-    {
-      if (ar2)
-	{rvec_sort_companion(ar2,ar1,size);}
-      else
-	{rvec_sort(ar1,size);}
-    }
-*/
+  PetscFunctionReturn(0);
 }
 
 
@@ -1124,7 +1164,7 @@ int
 ivec_linear_search( int item,  int *list,  int n)
 {
    int tmp = n-1;
-
+  PetscFunctionBegin;
   while (n--)  {if (*list++ == item) {return(tmp-n);}}
   return(-1);
 }
@@ -1168,15 +1208,17 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void
+PetscErrorCode
 rvec_dump(PetscScalar *v, int n, int tag, int tag2, char * s)
 {
   int i;
+  PetscFunctionBegin;
   printf("%2d %2d %s %2d :: ",tag,tag2,s,my_id);
   for (i=0;i<n;i++)
     {printf("%f ",v[i]);}
   printf("\n");
   fflush(stdout);
+  PetscFunctionReturn(0);
 }
 
 
@@ -1189,12 +1231,13 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void
+PetscErrorCode
 rvec_lb_ub( PetscScalar *arg1,  int n, PetscScalar *lb, PetscScalar *ub)
 {
    PetscScalar min =  REAL_MAX;
    PetscScalar max = -REAL_MAX;
 
+  PetscFunctionBegin;
   while (n--)  
     {
      min = PetscMin(min,*arg1);
@@ -1204,6 +1247,7 @@ rvec_lb_ub( PetscScalar *arg1,  int n, PetscScalar *lb, PetscScalar *ub)
 
   *lb=min;
   *ub=max;
+  PetscFunctionReturn(0);
 }
 
 
@@ -1216,10 +1260,12 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_copy( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = *arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1232,10 +1278,12 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_zero( PetscScalar *arg1,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = 0.0;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1248,10 +1296,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_one( PetscScalar *arg1,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = 1.0;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1264,10 +1314,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_neg_one( PetscScalar *arg1,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = -1.0;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1280,10 +1332,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void
+PetscErrorCode
 rvec_set( PetscScalar *arg1,  PetscScalar arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ = arg2;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1296,10 +1350,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void
+PetscErrorCode
 rvec_scale( PetscScalar *arg1,  PetscScalar arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ *= arg2;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1312,10 +1368,12 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_add( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ += *arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1348,11 +1406,13 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-void
+PetscErrorCode
 rvec_axpy( PetscScalar *arg1,  PetscScalar *arg2,  PetscScalar scale, 
 	   int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ += scale * *arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1364,10 +1424,12 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_mult( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1++ *= *arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1380,10 +1442,12 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_max( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1 = PetscMax(*arg1,*arg2); arg1++; arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1396,10 +1460,12 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_max_abs( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1 = MAX_FABS(*arg1,*arg2); arg1++; arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1412,10 +1478,12 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_min( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1 = PetscMin(*arg1,*arg2); arg1++; arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1428,10 +1496,12 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_min_abs( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1 = MIN_FABS(*arg1,*arg2); arg1++; arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1444,10 +1514,12 @@ Output:
 Return: 
 Description: 
 *********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_exists( PetscScalar *arg1,  PetscScalar *arg2,  int n)
 {
+  PetscFunctionBegin;
   while (n--)  {*arg1 = EXISTS(*arg1,*arg2); arg1++; arg2++;}
+  PetscFunctionReturn(0);
 }
 
 
@@ -1460,12 +1532,12 @@ Output:
 Return: 
 Description: 
 ***********************************ivec.c*************************************/
-void 
+PetscErrorCode 
 rvec_non_uniform(PetscScalar *arg1, PetscScalar *arg2,  int n,  int *arg3)
 {
    int i, j, type;
 
-
+  PetscFunctionBegin;
   /* LATER: if we're really motivated we can sort and then unsort */
   for (i=0;i<n;)
     {
@@ -1498,6 +1570,7 @@ rvec_non_uniform(PetscScalar *arg1, PetscScalar *arg2,  int n,  int *arg3)
 
       arg1+=j; arg2+=j; i+=j;
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1513,21 +1586,21 @@ Description:
 vfp rvec_fct_addr( int type)
 {
   if (type == NON_UNIFORM)
-    {return((void (*)(void*, void *, int, ...))&rvec_non_uniform);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&rvec_non_uniform);}
   else if (type == GL_MAX)
-    {return((void (*)(void*, void *, int, ...))&rvec_max);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&rvec_max);}
   else if (type == GL_MIN)
-    {return((void (*)(void*, void *, int, ...))&rvec_min);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&rvec_min);}
   else if (type == GL_MULT)
-    {return((void (*)(void*, void *, int, ...))&rvec_mult);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&rvec_mult);}
   else if (type == GL_ADD)
-    {return((void (*)(void*, void *, int, ...))&rvec_add);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&rvec_add);}
   else if (type == GL_MAX_ABS)
-    {return((void (*)(void*, void *, int, ...))&rvec_max_abs);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&rvec_max_abs);}
   else if (type == GL_MIN_ABS)
-    {return((void (*)(void*, void *, int, ...))&rvec_min_abs);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&rvec_min_abs);}
   else if (type == GL_EXISTS)
-    {return((void (*)(void*, void *, int, ...))&rvec_exists);}
+    {return((PetscErrorCode (*)(void*, void *, int, ...))&rvec_exists);}
 
   /* catch all ... not good if we get here */
   return(NULL);
@@ -1541,7 +1614,7 @@ Output: sorted list (in ascending order).
 Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
-void
+PetscErrorCode
 rvec_sort( PetscScalar *ar,  int Size)
 {
    PetscScalar *pi, *pj, temp;
@@ -1549,6 +1622,7 @@ rvec_sort( PetscScalar *ar,  int Size)
    long *top_s = psize_stack, *bottom_s = psize_stack; 
    long size = (long) Size;
 
+  PetscFunctionBegin;
   /* we're really interested in the offset of the last element */
   /* ==> length of the list is now size + 1                    */
   size--;
@@ -1633,13 +1707,14 @@ rvec_sort( PetscScalar *ar,  int Size)
 	    }
 
 	  /* check to see if stack is exhausted ==> DONE */
-	  if (top_s==bottom_s) return;
+	  if (top_s==bottom_s)   PetscFunctionReturn(0);
 	  
 	  /* else pop another list from the stack */
 	  ar = *(--top_a);
 	  size = *(--top_s);
 	}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1651,7 +1726,7 @@ Output: sorted list (in ascending order).
 Return: none.
 Description: stack based (nonrecursive) quicksort w/brute-shell bottom. 
 ******************************************************************************/
-void
+PetscErrorCode
 rvec_sort_companion( PetscScalar *ar,  int *ar2,  int Size)
 {
    PetscScalar *pi, *pj, temp;
@@ -1663,7 +1738,7 @@ rvec_sort_companion( PetscScalar *ar,  int *ar2,  int Size)
    int ptr;
    long mid;
 
-
+  PetscFunctionBegin;
   /* we're really interested in the offset of the last element */
   /* ==> length of the list is now size + 1                    */
   size--;
@@ -1759,7 +1834,7 @@ rvec_sort_companion( PetscScalar *ar,  int *ar2,  int Size)
 	    }
 
 	  /* check to see if stack is exhausted ==> DONE */
-	  if (top_s==bottom_s) return;
+	  if (top_s==bottom_s)   PetscFunctionReturn(0);
 	  
 	  /* else pop another list from the stack */
 	  ar2 = (int*) *(--top_a);
@@ -1767,6 +1842,7 @@ rvec_sort_companion( PetscScalar *ar,  int *ar2,  int Size)
 	  size = *(--top_s);
 	}
     }
+  PetscFunctionReturn(0);
 }
 
 
@@ -1785,7 +1861,7 @@ int
 rvec_binary_search( PetscScalar item,  PetscScalar *list,  int rh)
 {
   int mid, lh=0;
-
+  PetscFunctionBegin;
   rh--;
   while (lh<=rh)
     {
