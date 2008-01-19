@@ -101,8 +101,7 @@ Output: conversion printed to stdout.
 Return: na.
 Description: prints error message.
 ***********************************error.c************************************/
-PetscErrorCode 
-error_msg_warning(const char msg[], ...)
+PetscErrorCode error_msg_warning(const char msg[], ...)
 {
    PetscFunctionBegin;
   /* print error message along w/node identifier */

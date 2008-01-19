@@ -680,9 +680,7 @@ Output:
 Return: 
 Description:  
 **************************************xyt.c***********************************/
-static
-PetscErrorCode
-do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
+static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
 {
   int off, len, *iptr;
   int level       =xyt_handle->level;
@@ -698,7 +696,7 @@ do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
   PetscScalar *y       =xyt_handle->info->y;
   PetscBLASInt i1 = 1;
 
-
+  PetscFunctionBegin;
   uu_ptr=solve_uu;
   rvec_zero(uu_ptr,m);
 
@@ -722,7 +720,7 @@ do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
       off=*iptr++; len=*iptr++;
       BLASaxpy_(&len,uu_ptr++,x_ptr,&i1,uc+off,&i1);
     }
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -734,12 +732,11 @@ Output:
 Return:
 Description:
 **************************************xyt.c***********************************/
-static
-PetscErrorCode
-check_init(void)
+static PetscErrorCode check_init(void)
 {
+  PetscFunctionBegin;
   comm_init();
-
+  PetscFunctionReturn(0);
 
 }
 
@@ -752,12 +749,11 @@ Output:
 Return:
 Description:
 **************************************xyt.c***********************************/
-static
-PetscErrorCode 
-check_handle(xyt_ADT xyt_handle)
+static PetscErrorCode check_handle(xyt_ADT xyt_handle)
 {
   int vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
 
+  PetscFunctionBegin;
   if (xyt_handle==NULL)
     {error_msg_fatal("check_handle() :: bad handle :: NULL %d\n",xyt_handle);}
 
@@ -766,7 +762,7 @@ check_handle(xyt_ADT xyt_handle)
   if ((vals[0]!=vals[1])||(xyt_handle->id<=0))
     {error_msg_fatal("check_handle() :: bad handle :: id mismatch min/max %d/%d %d\n",
 		     vals[0],vals[1], xyt_handle->id);}
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -779,9 +775,7 @@ Return:
 Description:
   det_separators(xyt_handle, local2global, n, m, mylocmatvec, grid_data);
 **************************************xyt.c***********************************/
-static 
-PetscErrorCode 
-det_separators(xyt_ADT xyt_handle)
+static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 {
   int i, ct, id;
   int mask, edge, *iptr; 
@@ -798,6 +792,7 @@ det_separators(xyt_ADT xyt_handle)
   int level=xyt_handle->level;
   int shared=FALSE; 
 
+  PetscFunctionBegin;
   dir  = (int*)malloc(sizeof(PetscInt)*(level+1));
   nsep = (int*)malloc(sizeof(PetscInt)*(level+1));
   lnsep= (int*)malloc(sizeof(PetscInt)*(level+1));
@@ -1065,7 +1060,7 @@ det_separators(xyt_ADT xyt_handle)
   free(lhs);
   free(rhs);
   free(used);
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -1114,7 +1109,9 @@ Description:
 **************************************xyt.c***********************************/
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
 {
+  PetscFunctionBegin;
   A->matvec((mv_info*)A->grid_data,v,u);
+  PetscFunctionReturn(0);
 }
 
 

@@ -298,7 +298,6 @@ Usage:
 extern PetscErrorCode ivec_dump(int *v, int n, int tag, int tag2, char * s);
 extern PetscErrorCode ivec_lb_ub(int *arg1, int n, int *lb, int *ub);
 extern int *ivec_copy(int *arg1, int *arg2, int n);
-/*void ivec_copy(int *arg1, int *arg2, int n); */
 
 extern PetscErrorCode ivec_comp(int *arg1, int n);
 

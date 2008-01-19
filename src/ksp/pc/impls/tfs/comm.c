@@ -44,8 +44,7 @@ Output:
 Return: 
 Description: 
 ***********************************comm.c*************************************/
-PetscErrorCode
-comm_init (void)
+PetscErrorCode comm_init (void)
 {
 
   if (p_init++)   PetscFunctionReturn(0);
@@ -91,8 +90,7 @@ Output:
 Return: 
 Description: fan-in/out version
 ***********************************comm.c*************************************/
-PetscErrorCode
-giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
+PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 {
    PetscInt mask, edge;
   PetscInt type, dest;
@@ -198,8 +196,7 @@ Output:
 Return: 
 Description: fan-in/out version
 ***********************************comm.c*************************************/
-PetscErrorCode
-grop(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs)
+PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs)
 {
    PetscInt mask, edge;
   PetscInt type, dest;
@@ -306,8 +303,7 @@ Description: fan-in/out version
 note good only for num_nodes=2^k!!!
 
 ***********************************comm.c*************************************/
-PetscErrorCode
-grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs, PetscInt dim)
+PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs, PetscInt dim)
 {
    PetscInt mask, edge;
   PetscInt type, dest;
@@ -330,7 +326,7 @@ grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs, PetscInt di
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n)||(dim<=0))
-    {CHKERRQ(ierr);}
+    {PetscFunctionReturn(0);}
 
   /* the error msg says it all!!! */
   if (modfl_num_nodes)
@@ -499,9 +495,7 @@ Description:
 ii+1 entries in seg :: 0 .. ii
 
 ******************************************************************************/
-PetscErrorCode 
-ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, 
-	   PetscInt *segs)
+PetscErrorCode ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
 {
    PetscInt edge, type, dest, mask;
    PetscInt stage_n;
@@ -568,8 +562,7 @@ Description: fan-in/out version
 note good only for num_nodes=2^k!!!
 
 ***********************************comm.c*************************************/
-PetscErrorCode
-grop_hc_vvl(PetscScalar *vals, PetscScalar *work, PetscInt *segs, PetscInt *oprs, PetscInt dim)
+PetscErrorCode grop_hc_vvl(PetscScalar *vals, PetscScalar *work, PetscInt *segs, PetscInt *oprs, PetscInt dim)
 {
    PetscInt mask, edge, n;
   PetscInt type, dest;

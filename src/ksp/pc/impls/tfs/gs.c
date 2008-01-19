@@ -265,8 +265,7 @@ RETURN:
 
 Description:  
 ******************************************************************************/
-gs_id *
-gs_init( int *elms, int nel, int level)
+gs_id *gs_init( int *elms, int nel, int level)
 {
    gs_id *gs;
   MPI_Group gs_group;
@@ -306,9 +305,7 @@ Description:
 elm list must >= 0!!!
 elm repeats allowed
 ******************************************************************************/
-static
-gs_id *
-gsi_new(void)
+static gs_id *gsi_new(void)
 {
   gs_id *gs;
   gs = (gs_id *) malloc(sizeof(gs_id));
@@ -330,9 +327,7 @@ elm list must >= 0!!!
 elm repeats allowed
 local working copy of elms is sorted
 ******************************************************************************/
-static
-gs_id *
-gsi_check_args(int *in_elms, int nel, int level)
+static gs_id * gsi_check_args(int *in_elms, int nel, int level)
 {
    int i, j, k, t2;
   int *companion, *elms, *unique, *iptr;
@@ -525,9 +520,7 @@ Description:
 
 
 ******************************************************************************/
-static
-PetscErrorCode
-gsi_via_bit_mask(gs_id *gs)
+static PetscErrorCode gsi_via_bit_mask(gs_id *gs)
 {
    int i, nel, *elms;
   int t1;
@@ -636,9 +629,7 @@ Description:
 
 
 ******************************************************************************/
-static
-PetscErrorCode
-place_in_tree( int elm)
+static PetscErrorCode place_in_tree( int elm)
 {
    int *tp, n;
 
@@ -677,9 +668,7 @@ Description:
 
 
 ******************************************************************************/
-static
-PetscErrorCode
-get_ngh_buf(gs_id *gs)
+static PetscErrorCode get_ngh_buf(gs_id *gs)
 {
    int i, j, npw=0, ntree_map=0;
   int p_mask_size, ngh_buf_size, buf_size;
@@ -872,9 +861,7 @@ Description:
 
 if an element is shared by fewer that level# of nodes do pairwise exch 
 ******************************************************************************/
-static
-PetscErrorCode
-set_pairwise(gs_id *gs)
+static PetscErrorCode set_pairwise(gs_id *gs)
 {
    int i, j;
   int p_mask_size;
@@ -1011,9 +998,7 @@ Description:
 
 to do pruned tree just save ngh buf copy for each one and decode here!
 ******************************************************************************/
-static
-PetscErrorCode
-set_tree(gs_id *gs)
+static PetscErrorCode set_tree(gs_id *gs)
 {
    int i, j, n, nel;
    int *iptr_in, *iptr_out, *tree_elms, *elms;
@@ -1066,9 +1051,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_out( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_out( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
@@ -1118,8 +1101,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-PetscErrorCode
-gs_gop_binary(gs_ADT gs, PetscScalar *vals, rbfp fct)
+PetscErrorCode gs_gop_binary(gs_ADT gs, PetscScalar *vals, rbfp fct)
 {
   PetscFunctionBegin;
   /* local only operations!!! */
@@ -1165,9 +1147,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct)
+static PetscErrorCode gs_gop_local_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct)
 {
    int *num, *map, **reduce;
   PetscScalar tmp;
@@ -1201,9 +1181,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_in_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct) 
+static PetscErrorCode gs_gop_local_in_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct) 
 {
    int *num, *map, **reduce;
    PetscScalar *base;
@@ -1234,9 +1212,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
+static PetscErrorCode gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
                         rbfp fct)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -1323,9 +1299,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_tree_binary(gs_id *gs, PetscScalar *vals,  rbfp fct)
+static PetscErrorCode gs_gop_tree_binary(gs_id *gs, PetscScalar *vals,  rbfp fct)
 {
   int size;
   int *in, *out;  
@@ -1365,8 +1339,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-PetscErrorCode
-gs_gop( gs_id *gs,  PetscScalar *vals,  const char *op)
+PetscErrorCode gs_gop( gs_id *gs,  PetscScalar *vals,  const char *op)
 {
   PetscFunctionBegin;
   switch (*op) {
@@ -1416,8 +1389,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static PetscErrorCode
-gs_gop_exists( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_exists( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
   /* local only operations!!! */
@@ -1463,9 +1435,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_exists( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_exists( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
@@ -1497,9 +1467,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_in_exists( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_in_exists( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
@@ -1529,9 +1497,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
+static PetscErrorCode gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
    int *iptr, *msg_list, *msg_size, **msg_nodes;
@@ -1616,9 +1582,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_tree_exists(gs_id *gs, PetscScalar *vals)
+static PetscErrorCode gs_gop_tree_exists(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
@@ -1663,8 +1627,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static PetscErrorCode
-gs_gop_max_abs( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_max_abs( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
   /* local only operations!!! */
@@ -1710,9 +1673,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_max_abs( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_max_abs( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
@@ -1744,9 +1705,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_in_max_abs( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_in_max_abs( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
@@ -1776,9 +1735,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
+static PetscErrorCode gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
    int *iptr, *msg_list, *msg_size, **msg_nodes;
@@ -1863,9 +1820,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_tree_max_abs(gs_id *gs, PetscScalar *vals)
+static PetscErrorCode gs_gop_tree_max_abs(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
@@ -1910,8 +1865,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static PetscErrorCode
-gs_gop_max( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_max( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
   /* local only operations!!! */
@@ -1957,9 +1911,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_max( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_max( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
@@ -1991,9 +1943,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_in_max( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_in_max( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
@@ -2023,9 +1973,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
+static PetscErrorCode gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
    int *iptr, *msg_list, *msg_size, **msg_nodes;
@@ -2110,9 +2058,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_tree_max(gs_id *gs, PetscScalar *vals)
+static PetscErrorCode gs_gop_tree_max(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
@@ -2149,8 +2095,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static PetscErrorCode
-gs_gop_min_abs( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_min_abs( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
   /* local only operations!!! */
@@ -2196,9 +2141,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_min_abs( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_min_abs( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
@@ -2230,9 +2173,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_in_min_abs( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_in_min_abs( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
@@ -2262,9 +2203,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
+static PetscErrorCode gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
    int *iptr, *msg_list, *msg_size, **msg_nodes;
@@ -2349,9 +2288,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_tree_min_abs(gs_id *gs, PetscScalar *vals)
+static PetscErrorCode gs_gop_tree_min_abs(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
@@ -2388,8 +2325,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static PetscErrorCode
-gs_gop_min( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_min( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
   /* local only operations!!! */
@@ -2435,9 +2371,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_min( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_min( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
@@ -2468,9 +2402,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_in_min( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_in_min( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
@@ -2500,9 +2432,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
+static PetscErrorCode gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
    int *iptr, *msg_list, *msg_size, **msg_nodes;
@@ -2587,9 +2517,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_tree_min(gs_id *gs, PetscScalar *vals)
+static PetscErrorCode gs_gop_tree_min(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
@@ -2626,8 +2554,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static PetscErrorCode
-gs_gop_times( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_times( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
   /* local only operations!!! */
@@ -2673,9 +2600,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_times( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_times( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
@@ -2730,9 +2655,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_in_times( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_in_times( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
@@ -2784,9 +2707,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
+static PetscErrorCode gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
    int *iptr, *msg_list, *msg_size, **msg_nodes;
@@ -2871,9 +2792,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_tree_times(gs_id *gs, PetscScalar *vals)
+static PetscErrorCode gs_gop_tree_times(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
@@ -2911,8 +2830,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static PetscErrorCode
-gs_gop_plus( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_plus( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
   /* local only operations!!! */
@@ -2958,9 +2876,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_plus( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_plus( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar tmp;
@@ -3015,9 +2931,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_local_in_plus( gs_id *gs,  PetscScalar *vals)
+static PetscErrorCode gs_gop_local_in_plus( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
@@ -3069,9 +2983,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
+static PetscErrorCode gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
    int *iptr, *msg_list, *msg_size, **msg_nodes;
@@ -3157,9 +3069,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_tree_plus(gs_id *gs, PetscScalar *vals)
+static PetscErrorCode gs_gop_tree_plus(gs_id *gs, PetscScalar *vals)
 {
   int size;
   int *in, *out;  
@@ -3198,8 +3108,7 @@ Return:
 Description:  
   if (gs->sss) {free((void*) gs->sss);}
 ******************************************************************************/
-PetscErrorCode
-gs_free( gs_id *gs)
+PetscErrorCode gs_free( gs_id *gs)
 {
    int i;
 
@@ -3276,8 +3185,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-PetscErrorCode
-gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  int step)
+PetscErrorCode gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  int step)
 {
   PetscFunctionBegin;
   switch (*op) {
@@ -3303,8 +3211,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static PetscErrorCode
-gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  int step)
+static PetscErrorCode gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  int step)
 {
   PetscFunctionBegin;
   if (!gs) {error_msg_fatal("gs_gop_vec() passed NULL gs handle!!!");}
@@ -3352,10 +3259,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_vec_local_plus( gs_id *gs,  PetscScalar *vals, 
-                       int step)
+static PetscErrorCode gs_gop_vec_local_plus( gs_id *gs,  PetscScalar *vals, int step)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
@@ -3421,10 +3325,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_vec_local_in_plus( gs_id *gs,  PetscScalar *vals, 
-                          int step)
+static PetscErrorCode gs_gop_vec_local_in_plus( gs_id *gs,  PetscScalar *vals, int step)
 {
    int  *num, *map, **reduce;
    PetscScalar *base;
@@ -3476,10 +3377,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_vec_local_out( gs_id *gs,  PetscScalar *vals, 
-                      int step)
+static PetscErrorCode gs_gop_vec_local_out( gs_id *gs,  PetscScalar *vals, int step)
 {
    int *num, *map, **reduce;
    PetscScalar *base;
@@ -3535,10 +3433,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
-                          int step)
+static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals, int step)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
    int *iptr, *msg_list, *msg_size, **msg_nodes;
@@ -3639,9 +3534,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int step) 
+static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int step) 
 {
   int size, *in, *out;  
   PetscScalar *buf, *work;
@@ -3692,8 +3585,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-PetscErrorCode
-gs_gop_hc( gs_id *gs,  PetscScalar *vals,  const char *op,  int dim)
+PetscErrorCode gs_gop_hc( gs_id *gs,  PetscScalar *vals,  const char *op,  int dim)
 {
   PetscFunctionBegin;
   switch (*op) {
@@ -3719,8 +3611,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static PetscErrorCode
-gs_gop_plus_hc( gs_id *gs,  PetscScalar *vals, int dim)
+static PetscErrorCode gs_gop_plus_hc( gs_id *gs,  PetscScalar *vals, int dim)
 {
   PetscFunctionBegin;
   /* if there's nothing to do return */
@@ -3772,9 +3663,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
+static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
    int *iptr, *msg_list, *msg_size, **msg_nodes;
@@ -3888,9 +3777,7 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static
-PetscErrorCode
-gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, int dim)
+static PetscErrorCode gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, int dim)
 {
   int size;
   int *in, *out;  

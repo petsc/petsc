@@ -77,6 +77,7 @@ PetscErrorCode free_queue(queue_ADT q)
 {
   struct node *hold, *rremove;
 
+  PetscFunctionBegin;
   /* should use other queue fcts but what's the point */
   hold = q->head;
   while ((rremove = hold))
@@ -86,6 +87,7 @@ PetscErrorCode free_queue(queue_ADT q)
     }
 
   free(q);
+  PetscFunctionReturn(0);
 }
 
 
@@ -101,6 +103,7 @@ Usage: enqueue(queue, obj);
 **********************************queue.c*************************************/
 PetscErrorCode enqueue(queue_ADT q, void *obj)
 {
+  PetscFunctionBegin;
   if (q->len++)
     {q->tail= q->tail->next = (struct node *) malloc(sizeof(struct node));}
   else
@@ -108,6 +111,7 @@ PetscErrorCode enqueue(queue_ADT q, void *obj)
 
   q->tail->next = NULL;
   q->tail->obj  = obj;
+  PetscFunctionReturn(0);
 }
 
 

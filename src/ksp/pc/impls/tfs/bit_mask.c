@@ -31,8 +31,7 @@ Output:
 Return: 
 Description: 
 *********************************bit_mask.c***********************************/
-PetscErrorCode 
-bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list)
+PetscErrorCode bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list)
 {
    PetscInt i, tmp;
 
@@ -163,8 +162,7 @@ Output:
 Return:
 Description: 
 *********************************bit_mask.c***********************************/
-PetscErrorCode
-set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
+PetscErrorCode set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
 {
    PetscInt i, offset;
    char mask = 1;

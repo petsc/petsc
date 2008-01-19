@@ -597,9 +597,7 @@ Output:
 Return: 
 Description:  
 **************************************xxt.c***********************************/
-static
-PetscErrorCode
-do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
+static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 {
    int off, len, *iptr;
   int level       =xxt_handle->level;
@@ -613,6 +611,7 @@ do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
   PetscScalar *x       =xxt_handle->info->x;
   PetscBLASInt i1 = 1;
 
+  PetscFunctionBegin;
   uu_ptr=solve_uu;
   rvec_zero(uu_ptr,m);
 
@@ -636,7 +635,7 @@ do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
       off=*iptr++; len=*iptr++;
       BLASaxpy_(&len,uu_ptr++,x_ptr,&i1,uc+off,&i1);
     }
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -648,11 +647,11 @@ Output:
 Return:
 Description:
 **************************************xxt.c***********************************/
-static
-PetscErrorCode
-check_init(void)
+static PetscErrorCode check_init(void)
 {
+  PetscFunctionBegin;
   comm_init();
+  PetscFunctionReturn(0);
 
 }
 
@@ -665,13 +664,11 @@ Output:
 Return:
 Description:
 **************************************xxt.c***********************************/
-static
-PetscErrorCode 
-check_handle(xxt_ADT xxt_handle)
+static PetscErrorCode check_handle(xxt_ADT xxt_handle)
 {
   int vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
 
-
+  PetscFunctionBegin;
   if (xxt_handle==NULL)
     {error_msg_fatal("check_handle() :: bad handle :: NULL %d\n",xxt_handle);}
 
@@ -680,6 +677,7 @@ check_handle(xxt_ADT xxt_handle)
   if ((vals[0]!=vals[1])||(xxt_handle->id<=0))
     {error_msg_fatal("check_handle() :: bad handle :: id mismatch min/max %d/%d %d\n",
 		     vals[0],vals[1], xxt_handle->id);}
+  PetscFunctionReturn(0);
 }
 
 
@@ -692,9 +690,7 @@ Return:
 Description:
   det_separators(xxt_handle, local2global, n, m, mylocmatvec, grid_data);
 **************************************xxt.c***********************************/
-static 
-PetscErrorCode 
-det_separators(xxt_ADT xxt_handle)
+static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 {
   int i, ct, id;
   int mask, edge, *iptr; 
@@ -711,6 +707,7 @@ det_separators(xxt_ADT xxt_handle)
   int level=xxt_handle->level;
   int shared=FALSE; 
 
+  PetscFunctionBegin;
   dir  = (int*)malloc(sizeof(PetscInt)*(level+1));
   nsep = (int*)malloc(sizeof(PetscInt)*(level+1));
   lnsep= (int*)malloc(sizeof(PetscInt)*(level+1));
@@ -973,7 +970,7 @@ det_separators(xxt_ADT xxt_handle)
   free(lhs);
   free(rhs);
   free(used);
-
+  PetscFunctionReturn(0);
 }
 
 
@@ -1020,10 +1017,11 @@ Description:
       computes u = A.v 
       do_matvec(xxt_handle->mvi,v,u);
 **************************************xxt.c***********************************/
-static
-PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
+static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
 {
+  PetscFunctionBegin;
   A->matvec((mv_info*)A->grid_data,v,u);
+  PetscFunctionReturn(0);
 }
 
 
