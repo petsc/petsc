@@ -735,12 +735,6 @@ static PetscErrorCode get_ngh_buf(gs_id *gs)
   tree_buf=NULL;
   tree_buf_sz=ntree=0;
 
-  /* queue the tree elements for now */
-  /* elms_q = new_queue(); */
-  
-  /* can also queue tree info for pruned or forest implememtation */
-  /*  mask_q = new_queue(); */
-
   /* ok do it */
   for (ptr1=ngh_buf,ptr2=elms,end=gs->gl_min,or_ct=i=0; or_ct<num_loads; or_ct++)
     {
