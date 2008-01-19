@@ -61,7 +61,6 @@ static int n_xxt_handles=0;
 
 /* prototypes */
 static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *rhs);
-static PetscErrorCode check_init(void);
 static PetscErrorCode check_handle(xxt_ADT xxt_handle);
 static PetscErrorCode det_separators(xxt_ADT xxt_handle);
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
@@ -113,7 +112,7 @@ XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
 	   void *grid_data     /* grid data for matvec        */
 	   )
 {
-  check_init();
+  comm_init();
   check_handle(xxt_handle);
 
   /* only 2^k for now and all nodes participating */
@@ -149,7 +148,7 @@ int
 XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
 {
 
-  check_init();
+  comm_init();
   check_handle(xxt_handle);
 
   /* need to copy b into x? */
@@ -173,7 +172,7 @@ int
 XXT_free(xxt_ADT xxt_handle)
 {
 
-  check_init();
+  comm_init();
   check_handle(xxt_handle);
   n_xxt_handles--;
 
@@ -221,7 +220,7 @@ XXT_stats(xxt_ADT xxt_handle)
 
 
 
-  check_init();
+  comm_init();
   check_handle(xxt_handle);
 
   /* if factorization not done there are no stats */
@@ -282,9 +281,7 @@ is a row dist. nxm matrix w/ n<m.
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
 mylocmatvec (void :: void *data, double *in, double *out)
 **************************************xxt.c***********************************/
-static
-int
-do_xxt_factor(xxt_ADT xxt_handle)
+static int do_xxt_factor(xxt_ADT xxt_handle)
 {
   int flag;
 
@@ -303,9 +300,7 @@ Output:
 Return: 
 Description:  
 **************************************xxt.c***********************************/
-static
-int
-xxt_generate(xxt_ADT xxt_handle)
+static int xxt_generate(xxt_ADT xxt_handle)
 {
   int i,j,k,idex;
   int dim, col;
@@ -637,24 +632,6 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
     }
   PetscFunctionReturn(0);
 }
-
-
-/*************************************Xxt.c************************************
-Function: check_init
-
-Input :
-Output:
-Return:
-Description:
-**************************************xxt.c***********************************/
-static PetscErrorCode check_init(void)
-{
-  PetscFunctionBegin;
-  comm_init();
-  PetscFunctionReturn(0);
-
-}
-
 
 /*************************************xxt.c************************************
 Function: check_handle()

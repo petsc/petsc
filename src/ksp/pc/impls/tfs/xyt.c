@@ -64,7 +64,6 @@ static int n_xyt_handles=0;
 
 /* prototypes */
 static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle, PetscScalar *rhs);
-static PetscErrorCode check_init(void);
 static PetscErrorCode check_handle(xyt_ADT xyt_handle);
 static PetscErrorCode det_separators(xyt_ADT xyt_handle);
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
@@ -117,7 +116,7 @@ XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
 	   )
 {
 
-  check_init();
+  comm_init();
   check_handle(xyt_handle);
 
   /* only 2^k for now and all nodes participating */
@@ -152,7 +151,7 @@ Description:
 int
 XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
 {
-  check_init();
+  comm_init();
   check_handle(xyt_handle);
 
   /* need to copy b into x? */
@@ -175,7 +174,7 @@ Description:
 int
 XYT_free(xyt_ADT xyt_handle)
 {
-  check_init();
+  comm_init();
   check_handle(xyt_handle);
   n_xyt_handles--;
 
@@ -225,7 +224,7 @@ XYT_stats(xyt_ADT xyt_handle)
   PetscScalar fvals[3], fwork[3];
 
 
-  check_init();
+  comm_init();
   check_handle(xyt_handle);
 
   /* if factorization not done there are no stats */
@@ -721,23 +720,6 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
       BLASaxpy_(&len,uu_ptr++,x_ptr,&i1,uc+off,&i1);
     }
   PetscFunctionReturn(0);
-}
-
-
-/*************************************Xyt.c************************************
-Function: check_init
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
-static PetscErrorCode check_init(void)
-{
-  PetscFunctionBegin;
-  comm_init();
-  PetscFunctionReturn(0);
-
 }
 
 
