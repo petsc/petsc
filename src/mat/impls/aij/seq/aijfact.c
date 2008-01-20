@@ -743,17 +743,18 @@ PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 #define __FUNCT__ "MatSolve_SeqAIJ"
 PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  IS             iscol = a->col,isrow = a->row;
-  PetscErrorCode ierr;
-  PetscInt       *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt       nz,*rout,*cout;
-  PetscScalar    *x,*b,*tmp,*tmps,*aa = a->a,sum,*v;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  PetscInt          *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
+  PetscInt          nz,*rout,*cout;
+  PetscScalar       *x,*tmp,*tmps,*aa = a->a,sum,*v;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
@@ -784,7 +785,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);

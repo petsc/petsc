@@ -396,11 +396,12 @@ static PetscErrorCode MatRestoreColumnIJ_Inode(Mat A,PetscInt oshift,PetscTruth 
 #define __FUNCT__ "MatMult_Inode"
 static PetscErrorCode MatMult_Inode(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data; 
-  PetscScalar    sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
-  PetscScalar    *v1,*v2,*v3,*v4,*v5,*x,*y;
-  PetscErrorCode ierr;
-  PetscInt       *idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz,nonzerorow=0;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data; 
+  PetscScalar       sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
+  PetscScalar       *y;
+  const PetscScalar *x,*v1,*v2,*v3,*v4,*v5;
+  PetscErrorCode    ierr;
+  PetscInt          *idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz,nonzerorow=0;
   
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*v1,*v2,*v3,*v4,*v5)
@@ -410,7 +411,7 @@ static PetscErrorCode MatMult_Inode(Mat A,Vec xx,Vec yy)
   if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;                
   ns       = a->inode.size;     /* Node Size array */
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   idx  = a->j;
   v1   = a->a;
@@ -572,7 +573,7 @@ static PetscErrorCode MatMult_Inode(Mat A,Vec xx,Vec yy)
       SETERRQ(PETSC_ERR_COR,"Node size not yet supported");
     }
   }
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscLogFlops(2*a->nz - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -775,13 +776,14 @@ static PetscErrorCode MatMultAdd_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatSolve_Inode"
 PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  IS             iscol = a->col,isrow = a->row;
-  PetscErrorCode ierr;
-  PetscInt       *r,*c,i,j,n = A->rmap.n,*ai = a->i,nz,*a_j = a->j;
-  PetscInt       node_max,*ns,row,nsz,aii,*vi,*ad,*aj,i0,i1,*rout,*cout;
-  PetscScalar    *x,*b,*a_a = a->a,*tmp,*tmps,*aa,tmp0,tmp1;
-  PetscScalar    sum1,sum2,sum3,sum4,sum5,*v1,*v2,*v3,*v4,*v5;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  PetscInt          *r,*c,i,j,n = A->rmap.n,*ai = a->i,nz,*a_j = a->j;
+  PetscInt          node_max,*ns,row,nsz,aii,*vi,*ad,*aj,i0,i1,*rout,*cout;
+  PetscScalar       *x,*tmp,*tmps,tmp0,tmp1;
+  PetscScalar       sum1,sum2,sum3,sum4,sum5;
+  const PetscScalar *v1,*v2,*v3,*v4,*v5,*b,*a_a = a->a,*aa;
 
   PetscFunctionBegin;  
   if (A->factor!=FACTOR_LU) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unfactored matrix");
@@ -789,7 +791,7 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
   
@@ -1158,7 +1160,7 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   }
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1168,19 +1170,20 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatLUFactorNumeric_Inode"
 PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 {
-  Mat            C = *B;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)C->data;
-  IS             iscol = b->col,isrow = b->row,isicol = b->icol;
-  PetscErrorCode ierr;
-  PetscInt       *r,*ic,*c,n = A->rmap.n,*bi = b->i; 
-  PetscInt       *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,nz_tmp,row,prow;
-  PetscInt       *ics,i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nodesz;
-  PetscInt       *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
-  PetscScalar    *rtmp1,*rtmp2,*rtmp3,*v1,*v2,*v3,*pc1,*pc2,*pc3,mul1,mul2,mul3;
-  PetscScalar    tmp,*ba = b->a,*aa = a->a,*pv;
-  PetscReal      rs=0.0;
-  LUShift_Ctx    sctx;
-  PetscInt       newshift;
+  Mat               C = *B;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)C->data;
+  IS                iscol = b->col,isrow = b->row,isicol = b->icol;
+  PetscErrorCode    ierr;
+  PetscInt          *r,*ic,*c,n = A->rmap.n,*bi = b->i; 
+  PetscInt          *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,nz_tmp,row,prow;
+  PetscInt          *ics,i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nodesz;
+  PetscInt          *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
+  PetscScalar       *pc1,*pc2,*pc3,mul1,mul2,mul3;
+  PetscScalar       tmp,*ba = b->a,*pv,*rtmp11,*rtmp22,*rtmp33;
+  const PetscScalar *v1,*v2,*v3,*aa = a->a,*rtmp1;
+  PetscReal         rs=0.0;
+  LUShift_Ctx       sctx;
+  PetscInt          newshift;
 
   PetscFunctionBegin;  
   sctx.shift_top  = 0;
@@ -1220,11 +1223,11 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(iscol,&c);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr  = PetscMalloc((3*n+1)*sizeof(PetscScalar),&rtmp1);CHKERRQ(ierr);
-  ierr  = PetscMemzero(rtmp1,(3*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr  = PetscMalloc((3*n+1)*sizeof(PetscScalar),&rtmp11);CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp11,(3*n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ics   = ic ; 
-  rtmp2 = rtmp1 + n;  
-  rtmp3 = rtmp2 + n;  
+  rtmp22 = rtmp11 + n;  
+  rtmp33 = rtmp22 + n;  
   
   node_max = a->inode.node_count; 
   ns       = a->inode.size ;
@@ -1280,7 +1283,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
       case 1:
         for  (j=0; j<nz; j++){
           idx        = bjtmp[j];
-          rtmp1[idx] = 0.0;
+          rtmp11[idx] = 0.0;
         }
       
         /* load in initial (unfactored row) */
@@ -1291,13 +1294,13 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 
         for (j=0; j<nz_tmp; j++) {
           idx        = ics[ajtmp[j]];
-          rtmp1[idx] = v1[j];
+          rtmp11[idx] = v1[j];
         }
-        rtmp1[ics[r[row]]] += sctx.shift_amount;
+        rtmp11[ics[r[row]]] += sctx.shift_amount;
 
         prow = *bjtmp++ ;
         while (prow < row) {
-          pc1 = rtmp1 + prow;
+          pc1 = rtmp11 + prow;
           if (*pc1 != 0.0){
             pv   = ba + bd[prow];
             pj   = nbj + bd[prow];
@@ -1308,7 +1311,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
             for (j=0; j<nz_tmp; j++) {
               tmp = pv[j];
               idx = pj[j];
-              rtmp1[idx] -= mul1 * tmp;
+              rtmp11[idx] -= mul1 * tmp;
             }
           }
           prow = *bjtmp++ ;
@@ -1316,12 +1319,12 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         pj  = bj + bi[row];
         pc1 = ba + bi[row];
 
-        sctx.pv    = rtmp1[row]; 
-        rtmp1[row] = 1.0/rtmp1[row]; /* invert diag */
+        sctx.pv    = rtmp11[row]; 
+        rtmp11[row] = 1.0/rtmp11[row]; /* invert diag */
         rs         = 0.0;
         for (j=0; j<nz; j++) {
           idx    = pj[j];
-          pc1[j] = rtmp1[idx]; /* rtmp1 -> ba */
+          pc1[j] = rtmp11[idx]; /* rtmp11 -> ba */
           if (idx != row) rs += PetscAbsScalar(pc1[j]);
         }
         sctx.rs  = rs; 
@@ -1332,8 +1335,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
       case 2:
         for (j=0; j<nz; j++) {
           idx        = bjtmp[j];
-          rtmp1[idx] = 0.0;
-          rtmp2[idx] = 0.0;
+          rtmp11[idx] = 0.0;
+          rtmp22[idx] = 0.0;
         }
       
         /* load in initial (unfactored row) */
@@ -1344,16 +1347,16 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         v2     = aa + ai[idx+1];     
         for (j=0; j<nz_tmp; j++) {
           idx        = ics[ajtmp[j]];
-          rtmp1[idx] = v1[j];
-          rtmp2[idx] = v2[j];
+          rtmp11[idx] = v1[j];
+          rtmp22[idx] = v2[j];
         }
-        rtmp1[ics[r[row]]]   += sctx.shift_amount; 
-        rtmp2[ics[r[row+1]]] += sctx.shift_amount;
+        rtmp11[ics[r[row]]]   += sctx.shift_amount; 
+        rtmp22[ics[r[row+1]]] += sctx.shift_amount;
 
         prow = *bjtmp++ ;
         while (prow < row) {
-          pc1 = rtmp1 + prow;
-          pc2 = rtmp2 + prow;
+          pc1 = rtmp11 + prow;
+          pc2 = rtmp22 + prow;
           if (*pc1 != 0.0 || *pc2 != 0.0){
             pv   = ba + bd[prow];
             pj   = nbj + bd[prow];
@@ -1367,8 +1370,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
             for (j=0; j<nz_tmp; j++) {
               tmp = pv[j];
               idx = pj[j];
-              rtmp1[idx] -= mul1 * tmp;
-              rtmp2[idx] -= mul2 * tmp;
+              rtmp11[idx] -= mul1 * tmp;
+              rtmp22[idx] -= mul2 * tmp;
             }
             ierr = PetscLogFlops(4*nz_tmp);CHKERRQ(ierr);
           }
@@ -1376,15 +1379,15 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         }
 
         /* Now take care of diagonal 2x2 block. Note: prow = row here */
-        pc1 = rtmp1 + prow;
-        pc2 = rtmp2 + prow;
+        pc1 = rtmp11 + prow;
+        pc2 = rtmp22 + prow;
 
         sctx.pv = *pc1;
         pj      = bj + bi[prow];
         rs      = 0.0;
         for (j=0; j<nz; j++){
           idx = pj[j]; 
-          if (idx != prow) rs += PetscAbsScalar(rtmp1[idx]);
+          if (idx != prow) rs += PetscAbsScalar(rtmp11[idx]);
         }
         sctx.rs = rs;  
         ierr = MatLUCheckShift_inline(info,sctx,row,newshift);CHKERRQ(ierr);
@@ -1397,8 +1400,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           nz_tmp = bi[prow+1] - bd[prow] - 1;
           for (j=0; j<nz_tmp; j++) {
             idx = pj[j] ;
-            tmp = rtmp1[idx];
-            rtmp2[idx] -= mul2 * tmp;
+            tmp = rtmp11[idx];
+            rtmp22[idx] -= mul2 * tmp;
           }
           ierr = PetscLogFlops(2*nz_tmp);CHKERRQ(ierr);
         }
@@ -1407,15 +1410,15 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         pc1 = ba + bi[row];
         pc2 = ba + bi[row+1];
 
-        sctx.pv = rtmp2[row+1];
+        sctx.pv = rtmp22[row+1];
         rs = 0.0;
-        rtmp1[row]   = 1.0/rtmp1[row];
-        rtmp2[row+1] = 1.0/rtmp2[row+1];
+        rtmp11[row]   = 1.0/rtmp11[row];
+        rtmp22[row+1] = 1.0/rtmp22[row+1];
         /* copy row entries from dense representation to sparse */
         for (j=0; j<nz; j++) {
           idx    = pj[j];
-          pc1[j] = rtmp1[idx];
-          pc2[j] = rtmp2[idx];
+          pc1[j] = rtmp11[idx];
+          pc2[j] = rtmp22[idx];
           if (idx != row+1) rs += PetscAbsScalar(pc2[j]);
         }
         sctx.rs = rs;
@@ -1426,9 +1429,9 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
       case 3:
         for  (j=0; j<nz; j++) {
           idx        = bjtmp[j];
-          rtmp1[idx] = 0.0;
-          rtmp2[idx] = 0.0;
-          rtmp3[idx] = 0.0;
+          rtmp11[idx] = 0.0;
+          rtmp22[idx] = 0.0;
+          rtmp33[idx] = 0.0;
         }
         /* copy the nonzeros for the 3 rows from sparse representation to dense in rtmp*[] */
         idx    = r[row];
@@ -1439,20 +1442,20 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         v3    = aa + ai[idx+2];
         for (j=0; j<nz_tmp; j++) {
           idx        = ics[ajtmp[j]];
-          rtmp1[idx] = v1[j];
-          rtmp2[idx] = v2[j];
-          rtmp3[idx] = v3[j];
+          rtmp11[idx] = v1[j];
+          rtmp22[idx] = v2[j];
+          rtmp33[idx] = v3[j];
         }
-        rtmp1[ics[r[row]]]   += sctx.shift_amount; 
-        rtmp2[ics[r[row+1]]] += sctx.shift_amount;
-        rtmp3[ics[r[row+2]]] += sctx.shift_amount;
+        rtmp11[ics[r[row]]]   += sctx.shift_amount; 
+        rtmp22[ics[r[row+1]]] += sctx.shift_amount;
+        rtmp33[ics[r[row+2]]] += sctx.shift_amount;
 
         /* loop over all pivot row blocks above this row block */
         prow = *bjtmp++ ;
         while (prow < row) {
-          pc1 = rtmp1 + prow;
-          pc2 = rtmp2 + prow;
-          pc3 = rtmp3 + prow;
+          pc1 = rtmp11 + prow;
+          pc2 = rtmp22 + prow;
+          pc3 = rtmp33 + prow;
           if (*pc1 != 0.0 || *pc2 != 0.0 || *pc3 !=0.0){
             pv   = ba  + bd[prow];
             pj   = nbj + bd[prow];
@@ -1469,9 +1472,9 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
             for (j=0; j<nz_tmp; j++) {
               tmp = pv[j];
               idx = pj[j];
-              rtmp1[idx] -= mul1 * tmp;
-              rtmp2[idx] -= mul2 * tmp;
-              rtmp3[idx] -= mul3 * tmp;
+              rtmp11[idx] -= mul1 * tmp;
+              rtmp22[idx] -= mul2 * tmp;
+              rtmp33[idx] -= mul3 * tmp;
             }
             ierr = PetscLogFlops(6*nz_tmp);CHKERRQ(ierr);
           }
@@ -1480,16 +1483,16 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
 
         /* Now take care of diagonal 3x3 block in this set of rows */
         /* note: prow = row here */
-        pc1 = rtmp1 + prow;
-        pc2 = rtmp2 + prow;
-        pc3 = rtmp3 + prow;
+        pc1 = rtmp11 + prow;
+        pc2 = rtmp22 + prow;
+        pc3 = rtmp33 + prow;
 
         sctx.pv = *pc1;
         pj      = bj + bi[prow];
         rs      = 0.0;
         for (j=0; j<nz; j++){
           idx = pj[j]; 
-          if (idx != row) rs += PetscAbsScalar(rtmp1[idx]);
+          if (idx != row) rs += PetscAbsScalar(rtmp11[idx]);
         }
         sctx.rs = rs;    
         ierr = MatLUCheckShift_inline(info,sctx,row,newshift);CHKERRQ(ierr);
@@ -1504,22 +1507,22 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           pj     = nbj + bd[prow];       
           for (j=0; j<nz_tmp; j++) {
             idx = pj[j] ;
-            tmp = rtmp1[idx];
-            rtmp2[idx] -= mul2 * tmp;
-            rtmp3[idx] -= mul3 * tmp;
+            tmp = rtmp11[idx];
+            rtmp22[idx] -= mul2 * tmp;
+            rtmp33[idx] -= mul3 * tmp;
           }
           ierr = PetscLogFlops(4*nz_tmp);CHKERRQ(ierr);  
         }
         ++prow;
 
-        pc2 = rtmp2 + prow;
-        pc3 = rtmp3 + prow;
+        pc2 = rtmp22 + prow;
+        pc3 = rtmp33 + prow;
         sctx.pv = *pc2;
         pj      = bj + bi[prow];
         rs      = 0.0;
         for (j=0; j<nz; j++){
           idx = pj[j]; 
-          if (idx != prow) rs += PetscAbsScalar(rtmp2[idx]);
+          if (idx != prow) rs += PetscAbsScalar(rtmp22[idx]);
         }
         sctx.rs = rs;    
         ierr = MatLUCheckShift_inline(info,sctx,row+1,newshift);CHKERRQ(ierr);
@@ -1532,8 +1535,8 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           nz_tmp = bi[prow+1] - bd[prow] - 1;
           for (j=0; j<nz_tmp; j++) {
             idx = pj[j] ;
-            tmp = rtmp2[idx];
-            rtmp3[idx] -= mul3 * tmp;
+            tmp = rtmp22[idx];
+            rtmp33[idx] -= mul3 * tmp;
           }
           ierr = PetscLogFlops(4*nz_tmp);CHKERRQ(ierr);
         }
@@ -1543,17 +1546,17 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         pc2 = ba + bi[row+1];
         pc3 = ba + bi[row+2];
 
-        sctx.pv = rtmp3[row+2];
+        sctx.pv = rtmp33[row+2];
         rs = 0.0;
-        rtmp1[row]   = 1.0/rtmp1[row];
-        rtmp2[row+1] = 1.0/rtmp2[row+1];
-        rtmp3[row+2] = 1.0/rtmp3[row+2];
+        rtmp11[row]   = 1.0/rtmp11[row];
+        rtmp22[row+1] = 1.0/rtmp22[row+1];
+        rtmp33[row+2] = 1.0/rtmp33[row+2];
         /* copy row entries from dense representation to sparse */
         for (j=0; j<nz; j++) {
           idx    = pj[j]; 
-          pc1[j] = rtmp1[idx];
-          pc2[j] = rtmp2[idx];
-          pc3[j] = rtmp3[idx];
+          pc1[j] = rtmp11[idx];
+          pc2[j] = rtmp22[idx];
+          pc3[j] = rtmp33[idx];
           if (idx != row+2) rs += PetscAbsScalar(pc3[j]);
         }
 
@@ -1569,7 +1572,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
     } 
     endofwhile:;
   } while (sctx.lushift);
-  ierr = PetscFree(rtmp1);CHKERRQ(ierr);
+  ierr = PetscFree(rtmp11);CHKERRQ(ierr);
   ierr = PetscFree(tmp_vec2);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
@@ -1636,13 +1639,14 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
 #define __FUNCT__ "MatRelax_Inode"
 PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar     *x,*xs,*ibdiag,*bdiag,sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3,*v1,*v2,*v3,*v4,*v5;
-  PetscScalar     *v = a->a,*b,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
-  PetscReal       zeropivot = 1.0e-15;
-  PetscErrorCode  ierr;
-  PetscInt        n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row,i1,i2;
-  PetscInt        *idx,*diag = a->diag,*ii = a->i,sz,k;
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar        *x,*xs,*ibdiag,*bdiag,sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
+  PetscScalar        *b,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
+  const PetscScalar  *v = a->a,*v1,*v2,*v3,*v4,*v5;
+  PetscReal          zeropivot = 1.0e-15;
+  PetscErrorCode     ierr;
+  PetscInt           n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row,i1,i2;
+  PetscInt           *idx,*diag = a->diag,*ii = a->i,sz,k;
 
   PetscFunctionBegin;
   if (omega != 1.0) SETERRQ(PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");

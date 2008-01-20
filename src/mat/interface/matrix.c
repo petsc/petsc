@@ -2901,7 +2901,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
 .  omega - the relaxation factor
 .  flag - flag indicating the type of SOR (see below)
 .  shift -  diagonal shift
--  its - the number of iterations
+.  its - the number of iterations
 -  lits - the number of local iterations 
 
    Output Parameters:

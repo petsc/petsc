@@ -883,15 +883,16 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMult_SeqAIJ"
 PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *x,*y,*aa;
-  PetscErrorCode ierr;
-  PetscInt       m=A->rmap.n,*aj,*ii;
-  PetscInt       n,i,j,nonzerorow=0,*ridx=PETSC_NULL;
-  PetscScalar    sum;
-  PetscTruth     usecprow=a->compressedrow.use;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar       *y;
+  const PetscScalar *x,*aa;
+  PetscErrorCode    ierr;
+  PetscInt          m=A->rmap.n,*aj,*ii;
+  PetscInt          n,i,j,nonzerorow=0,*ridx=PETSC_NULL;
+  PetscScalar       sum;
+  PetscTruth        usecprow=a->compressedrow.use;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  PetscInt       jrow;
+  PetscInt         jrow;
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
@@ -899,7 +900,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   aj  = a->j;
   aa  = a->a;
@@ -934,7 +935,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
   }
   ierr = PetscLogFlops(2*a->nz - nonzerorow);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
