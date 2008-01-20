@@ -74,10 +74,100 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "Coarsen_RefineSingularity_Fichera"
+PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm comm, double * singularity, double factor, ALE::Obj<ALE::Mesh> *refinedMesh, PetscTruth interpolate = PETSC_FALSE)
+{
+  ALE::Obj<ALE::Mesh> oldMesh = mesh;
+  double              oldLimit;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  //ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+  //ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
+  int dim = oldMesh->getDimension();
+  oldLimit = oldMesh->getMaxVolume();
+  //double oldLimInv = 1./oldLimit;
+  double curLimit, tmpLimit;
+  double minLimit = oldLimit/16384.;             //arbitrary;
+  const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = oldMesh->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::real_section_type>& volume_limits = oldMesh->getRealSection("volume_limits");
+  volume_limits->setFiberDimension(oldMesh->heightStratum(0), 1);
+  oldMesh->allocate(volume_limits);
+  const ALE::Obj<ALE::Mesh::label_sequence>& cells = oldMesh->heightStratum(0);
+  ALE::Mesh::label_sequence::iterator c_iter = cells->begin();
+  ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
+  double centerCoords[dim];
+  while (c_iter != c_iter_end) {
+    const double * coords = oldMesh->restrict(coordinates, *c_iter);
+    for (int i = 0; i < dim; i++) {
+      centerCoords[i] = 0;
+      for (int j = 0; j < dim+1; j++) {
+        centerCoords[i] += coords[j*dim+i];
+      }
+      centerCoords[i] = centerCoords[i]/(dim+1);
+      //PetscPrintf(oldMesh->comm(), "%f, ", centerCoords[i]);
+    }
+    //PetscPrintf(oldMesh->comm(), "\n");
+    double dist = 0.;
+    double cornerdist = 0.;
+    //HERE'S THE DIFFERENCE: if centercoords is less than the singularity coordinate for each direction, include that direction in the distance
+    /*
+    for (int i = 0; i < dim; i++) {
+      if (centerCoords[i] <= singularity[i]) {
+        dist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
+      }
+    }
+    */
+    //determine: the per-dimension distance: cases
+    for (int i = 0; i < dim; i++) {
+      cornerdist = 0.;
+      if (centerCoords[i] > singularity[i]) {
+        for (int j = 0; j < dim; j++) {
+          if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
+        }
+        if (cornerdist < dist || dist == 0.) dist = cornerdist; 
+      }
+    }
+    //patch up AROUND the corner by minimizing between the distance from the relevant axis and the singular vertex
+    double singdist = 0.;
+    for (int i = 0; i < dim; i++) {
+      singdist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
+    }
+    if (singdist < dist || dist == 0.) dist = singdist;
+    if (dist > 0.) {
+      dist = sqrt(dist);
+      double mu = pow(dist, factor);
+      //PetscPrintf(oldMesh->comm(), "%f, %f\n", mu, dist);
+      tmpLimit = oldLimit*pow(mu, dim);
+      if (tmpLimit > minLimit) {
+        curLimit = tmpLimit;
+      } else curLimit = minLimit;
+    } else curLimit = minLimit;
+    //PetscPrintf(oldMesh->comm(), "%f, %f\n", dist, tmpLimit);
+    volume_limits->updatePoint(*c_iter, &curLimit);
+    c_iter++;
+  }
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, volume_limits, interpolate);
+  //ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
+  *refinedMesh = newMesh;
+  const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+  const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
+
+  for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+    newMesh->setDiscretization(*f_iter, oldMesh->getDiscretization(*f_iter));
+  }
+  newMesh->setupField(s);
+  //  PetscPrintf(newMesh->comm(), "refined\n");
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
 {
+  ALE::Obj<ALE::Mesh> mesh2;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
@@ -89,7 +179,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
       double upper[3] = {1.0, 1.0, 1.0};
       double offset[3] = {0.5, 0.5, 0.5};
       ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createFicheraCornerBoundary(comm, lower, upper, offset);
-      mesh = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->interpolate), options->refinementLimit, options->interpolate);
+      mesh2 = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->interpolate), options->refinementLimit, options->interpolate);
+      ierr = MeshRefineSingularity_Fichera(mesh2, comm, offset, 0.75, &mesh);CHKERRQ(ierr);
     } else if (options->dim == 2) {
       double lower[2] = {0.0, 0.0};
       double upper[2] = {1.0, 1.0};
@@ -136,6 +227,7 @@ PetscErrorCode OutputVTK(ALE::Obj<ALE::Mesh> mesh, Options *options, std::string
 //    ierr = VTKViewer::writeHierarchyElements(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     //const ALE::Mesh::topology_type::sheaf_type& patches = mesh->getTopology()->getPatches();
+    ALE::LogStagePop(stage);
   }
   PetscFunctionReturn(0);
 }
@@ -164,10 +256,10 @@ int main(int argc, char *argv[])
     //create the spacing function on the original mesh
     
     m->markBoundaryCells("marker");
-    PetscPrintf(m->comm(), "marked the boundary cells\n");
+    //    PetscPrintf(m->comm(), "marked the boundary cells\n");
 
     int nMeshes;
-    Obj<ALE::Mesh> * coarsened_mesh = Hierarchy_createHierarchy_adaptive(m, 100, 10, options.coarseFactor, &nMeshes);
+    Obj<ALE::Mesh> * coarsened_mesh = Hierarchy_createHierarchy_adaptive(m, 40, 10, options.coarseFactor, &nMeshes);
  
     char vtkfilename[256];
     sprintf(vtkfilename, "fine_mesh.vtk");

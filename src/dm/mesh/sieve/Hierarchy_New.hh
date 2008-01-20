@@ -313,7 +313,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective2DBoundary (ALE::Obj<ALE::Mesh> ori
       c_iter++;
     }
   } else { //interpolated case; we have the faces, just add them
-    PetscPrintf(original_mesh->comm(), "Interpolated case\n");
+    //PetscPrintf(original_mesh->comm(), "Interpolated case\n");
     ALE::Obj<ALE::Mesh::label_sequence> outward_faces = original_mesh->heightStratum(1); //assume wlog the faces are heightstratum 1
     ALE::Mesh::label_sequence::iterator f_iter = outward_faces->begin();
     ALE::Mesh::label_sequence::iterator f_iter_end = outward_faces->end();
@@ -510,7 +510,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective1DBoundary (ALE::Obj<ALE::Mesh> ori
   }
   output_mesh->stratify();
   output_mesh->setRealSection("coordinates", original_mesh->getRealSection("coordinates"));
-  PetscPrintf(output_mesh->comm(), "leaving 1D Boundary Building\n");
+  //PetscPrintf(output_mesh->comm(), "leaving 1D Boundary Building\n");
   return output_mesh;
 }
 
@@ -743,7 +743,7 @@ Uses routines dependent on having triangle and tetgen installed
 ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, double coarsen_factor, ALE::Obj<ALE::Mesh> boundary_mesh = PETSC_NULL) {
   int dim = original_mesh->getDimension();
   ALE::Obj<ALE::Mesh::real_section_type> spacing = Hierarchy_defineSpacingFunction(original_mesh);
-  MPI_Comm comm = original_mesh->comm();
+  //MPI_Comm comm = original_mesh->comm();
   ALE::Obj<ALE::Mesh::label_sequence> vertices = original_mesh->depthStratum(0);
   ALE::Mesh::label_sequence::iterator v_iter = vertices->begin();
   ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();

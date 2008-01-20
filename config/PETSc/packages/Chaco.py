@@ -12,6 +12,7 @@ class Configure(PETSc.package.Package):
     self.functions    = ['interface']
     self.includes     = [] #Chaco does not have an include file
     self.needsMath    = 1
+    self.complex      = 1
     self.liblist      = [['libchaco.a']]
     self.license      = 'http://www.cs.sandia.gov/~web9200/9200_download.html'
     return

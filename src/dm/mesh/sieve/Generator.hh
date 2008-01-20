@@ -543,7 +543,7 @@ namespace ALE {
         const int         dim   = 3;
         Obj<Mesh>         mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
         const PetscMPIInt rank  = mesh->commRank();
-        const bool        createConvexHull = false;
+        bool        createConvexHull = false;
         ::tetgenio        in;
         ::tetgenio        out;
 
@@ -567,35 +567,40 @@ namespace ALE {
             in.pointmarkerlist[idx] = boundary->getValue(markers, *v_iter);
           }
         }
+  
+	if (boundary->depth() != 0) {  //our boundary mesh COULD be just a pointset; in which case depth = height = 0;
+          const Obj<Mesh::label_sequence>& facets     = boundary->depthStratum(boundary->depth());
+          //PetscPrintf(boundary->comm(), "%d facets on the boundary\n", facets->size());
+          const Obj<Mesh::numbering_type>& fNumbering = boundary->getFactory()->getLocalNumbering(boundary, boundary->depth());
 
-        const Obj<Mesh::label_sequence>& facets     = boundary->depthStratum(boundary->depth());
-        const Obj<Mesh::numbering_type>& fNumbering = boundary->getFactory()->getLocalNumbering(boundary, boundary->depth());
+          in.numberoffacets = facets->size();
+          if (in.numberoffacets > 0) {
+            in.facetlist       = new tetgenio::facet[in.numberoffacets];
+            in.facetmarkerlist = new int[in.numberoffacets];
+            for(Mesh::label_sequence::iterator f_iter = facets->begin(); f_iter != facets->end(); ++f_iter) {
+              const Obj<sieve_alg_type::coneArray>& cone = sieve_alg_type::nCone(boundary, *f_iter, boundary->depth());
+              const int                             idx  = fNumbering->getIndex(*f_iter);
+  
+              in.facetlist[idx].numberofpolygons = 1;
+              in.facetlist[idx].polygonlist      = new tetgenio::polygon[in.facetlist[idx].numberofpolygons];
+              in.facetlist[idx].numberofholes    = 0;
+              in.facetlist[idx].holelist         = NULL;
+  
+              tetgenio::polygon *poly = in.facetlist[idx].polygonlist;
+              int                c    = 0;
 
-        in.numberoffacets = facets->size();
-        if (in.numberoffacets > 0) {
-          in.facetlist       = new tetgenio::facet[in.numberoffacets];
-          in.facetmarkerlist = new int[in.numberoffacets];
-          for(Mesh::label_sequence::iterator f_iter = facets->begin(); f_iter != facets->end(); ++f_iter) {
-            const Obj<sieve_alg_type::coneArray>& cone = sieve_alg_type::nCone(boundary, *f_iter, boundary->depth());
-            const int                             idx  = fNumbering->getIndex(*f_iter);
-
-            in.facetlist[idx].numberofpolygons = 1;
-            in.facetlist[idx].polygonlist      = new tetgenio::polygon[in.facetlist[idx].numberofpolygons];
-            in.facetlist[idx].numberofholes    = 0;
-            in.facetlist[idx].holelist         = NULL;
-
-            tetgenio::polygon *poly = in.facetlist[idx].polygonlist;
-            int                c    = 0;
-
-            poly->numberofvertices = cone->size();
-            poly->vertexlist       = new int[poly->numberofvertices];
-            for(sieve_alg_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-              const int vIdx = vNumbering->getIndex(*c_iter);
-
-              poly->vertexlist[c++] = vIdx;
-            }
-            in.facetmarkerlist[idx] = boundary->getValue(markers, *f_iter);
+              poly->numberofvertices = cone->size();
+              poly->vertexlist       = new int[poly->numberofvertices];
+              for(sieve_alg_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                const int vIdx = vNumbering->getIndex(*c_iter);
+  
+                poly->vertexlist[c++] = vIdx;
+              }
+              in.facetmarkerlist[idx] = boundary->getValue(markers, *f_iter);
+            } 
           }
+        }else {
+          createConvexHull = true;
         }
 
         in.numberofholes = 0;
@@ -605,6 +610,10 @@ namespace ALE {
           //constrained operation
           if (constrained) {
             args = "pezQ";
+            if (createConvexHull) { 
+              args = "ezQ";
+              //PetscPrintf(boundary->comm(), "createConvexHull\n");
+            }
           }
           // Just make tetrahedrons
 //           std::string args("efzV");
@@ -616,7 +625,7 @@ namespace ALE {
 //           in.addpointlist[1]   = 0.5;
 //           in.addpointlist[2]   = 0.5;
 
-          if (createConvexHull) args += "c";
+          //if (createConvexHull) args += "c";  NOT SURE, but this was basically unused before, and the convex hull should be filled in if "p" isn't included.
           ::tetrahedralize((char *) args.c_str(), &in, &out);
         }
         const Obj<Mesh::sieve_type> newSieve = new Mesh::sieve_type(mesh->comm(), mesh->debug());

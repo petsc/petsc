@@ -163,7 +163,7 @@ d = vertices[3];
   }
 
   PetscTruth Surgery_2D_22Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
-    double pi = 3.14159265358979;
+    double pi = M_PI;
     //VALIDITY CONDITION FOR THIS FLIP: cad and cbd must be (much) less than 180. 
     //we could probably have some angle heuristic for local delaunay approximation, but whatever.
     //must compute it in terms of acb + bad etc.
@@ -176,10 +176,10 @@ d = vertices[3];
     PetscMemcpy(d_coords, coordinates->restrictPoint(vertices[3]), dim*sizeof(double));
     double current_angle = corner_angle(dim, a_coords, c_coords, b_coords) + corner_angle(dim, a_coords, d_coords, b_coords);
     //PetscPrintf(m->comm(), "%f angle\n", current_angle);
-    if (current_angle > pi) return PETSC_FALSE; //give this vertex some "wiggle" as it's likely to just disappear anyways
+    if (current_angle >= pi) return PETSC_FALSE; //give this vertex some "wiggle" as it's likely to just disappear anyways
     current_angle = corner_angle(dim, b_coords, c_coords, a_coords) + corner_angle(dim, b_coords, d_coords, a_coords);
     //PetscPrintf(m->comm(), "%f angle\n", current_angle);
-    if (current_angle > pi) return PETSC_FALSE;
+    if (current_angle >= pi) return PETSC_FALSE;
     return PETSC_TRUE;
   }
 
@@ -187,6 +187,7 @@ d = vertices[3];
 
   PetscTruth Surgery_2D_22Flip_Preferable(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     //does a BASIC test to see if this edge would do better flipped
+    //change of plan: ALWAYS chuck the maximum angle
     //if abc + abd + bac + bad < cda + cdb + dca + dcb then flip (divide the larger angle)
     const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     int dim = m->getDimension();
@@ -195,11 +196,14 @@ d = vertices[3];
     PetscMemcpy(b_coords, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));
     PetscMemcpy(c_coords, coordinates->restrictPoint(vertices[2]), dim*sizeof(double));
     PetscMemcpy(d_coords, coordinates->restrictPoint(vertices[3]), dim*sizeof(double));
-    double angle_a = corner_angle(dim, a_coords, b_coords, c_coords) + corner_angle(dim, a_coords, b_coords, d_coords) + 
-      corner_angle(dim, b_coords, a_coords, c_coords) + corner_angle(dim, b_coords, a_coords, d_coords);
-    double angle_b = corner_angle(dim, c_coords, d_coords, a_coords) + corner_angle(dim, c_coords, d_coords, b_coords) +
-      corner_angle(dim, d_coords, c_coords, a_coords) + corner_angle(dim, d_coords, c_coords, b_coords);
-    if (angle_a < angle_b){
+    double angle_a = corner_angle(dim, a_coords, b_coords, c_coords) + corner_angle(dim, a_coords, b_coords, d_coords); 
+    double angle_b = corner_angle(dim, b_coords, a_coords, c_coords) + corner_angle(dim, b_coords, a_coords, d_coords);
+    double angle_c = corner_angle(dim, c_coords, d_coords, a_coords) + corner_angle(dim, c_coords, d_coords, b_coords);
+    double angle_d = corner_angle(dim, d_coords, c_coords, a_coords) + corner_angle(dim, d_coords, c_coords, b_coords);
+    //double ang_threshhold = M_PI - 0.01;
+    //if (angle_c > ang_threshhold && angle_a < ang_threshhold && angle_b < ang_threshhold) return PETSC_TRUE;
+    //if (angle_d > ang_threshhold && angle_a < ang_threshhold && angle_b < ang_threshhold) return PETSC_TRUE;
+    if (angle_a + angle_b < angle_c + angle_d){
       return PETSC_TRUE;
     }
     return PETSC_FALSE;
@@ -461,7 +465,7 @@ c-----------d      c-----------d
     // 1. bac and bdc must be < 180 degrees
     //    if this isn't true, we can reorient the flip here and make it true. (a four-sided figure may have one concave vertex)
     //    a->c b->a d->b c->d, 1->3, 3->4, 4->2, 2->1
-    double pi = 3.14159265358979;
+    double pi = M_PI;
     //    double pi = 3.141592653589793238;
     int dim = m->getDimension();
     double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim], e_coords[dim];
@@ -471,8 +475,8 @@ c-----------d      c-----------d
     PetscMemcpy(c_coords, coordinates->restrictPoint(vertices[2]), dim*sizeof(double));
     PetscMemcpy(d_coords, coordinates->restrictPoint(vertices[3]), dim*sizeof(double));
     PetscMemcpy(e_coords, coordinates->restrictPoint(vertices[4]), dim*sizeof(double));
-    if (corner_angle(dim, a_coords, b_coords, e_coords) + corner_angle(dim, a_coords, c_coords, e_coords) > pi ||
-        corner_angle(dim, d_coords, b_coords, e_coords) + corner_angle(dim, d_coords, c_coords, e_coords) > pi) {
+    if (corner_angle(dim, a_coords, b_coords, e_coords) + corner_angle(dim, a_coords, c_coords, e_coords) >= pi ||
+        corner_angle(dim, d_coords, b_coords, e_coords) + corner_angle(dim, d_coords, c_coords, e_coords) >= pi) {
       //rotate the ear
       //PetscPrintf(m->comm(), "rotating the ear.\n");
       Mesh::point_type temp_point = cells[0];
@@ -798,7 +802,7 @@ a------d------c   a-------------c
 
   PetscTruth Surgery_2D_21BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     //criterion for this flip: abc must be convex, otherwise the interior point would be exposed
-    double pi = 3.14159265358979;
+    double pi = M_PI;
     //    double pi = 3.14159265359;
     const Obj<Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     int dim = m->getDimension();
@@ -808,7 +812,7 @@ a------d------c   a-------------c
     PetscMemcpy(coords_c, coordinates->restrictPoint(vertices[2]), dim*sizeof(double));
     PetscMemcpy(coords_d, coordinates->restrictPoint(vertices[3]), dim*sizeof(double));
     if (corner_angle(dim, coords_b, coords_a, coords_d) + 
-        corner_angle(dim, coords_b, coords_c, coords_d) > pi) return PETSC_FALSE;
+        corner_angle(dim, coords_b, coords_c, coords_d) >= pi) return PETSC_FALSE;
     return PETSC_TRUE;
   }
 
@@ -1549,7 +1553,7 @@ a, b, c, and d are on the boundary in question
 
     //criterion for success:  both new volumes are less than the old volume. (they don't overlap)
     int dim = m->getDimension();
-    double pi = 3.14159265358979;
+    double pi = M_PI;
     //    double pi = 3.141592653589793238;
     const Obj<Mesh::real_section_type> coordinates = m->getRealSection("coordinates");
     double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim], e_coords[dim];
@@ -1566,10 +1570,10 @@ a, b, c, and d are on the boundary in question
     //if (volume_1 < old_volume && volume_2 < old_volume) return PETSC_TRUE;
     double curvature_1 = corner_angle(dim, a_coords, c_coords, b_coords) + corner_angle(dim, a_coords, d_coords, b_coords) +
       corner_angle(dim, a_coords, c_coords, e_coords) + corner_angle(dim, a_coords, d_coords, e_coords);
-    if (curvature_1 > 2*pi) return PETSC_FALSE;
+    if (curvature_1 >= 2*pi) return PETSC_FALSE;
     double curvature_2 = corner_angle(dim, b_coords, c_coords, a_coords) + corner_angle(dim, b_coords, d_coords, a_coords) +
       corner_angle(dim, b_coords, c_coords, e_coords) + corner_angle(dim, b_coords, d_coords, e_coords);
-    if (curvature_2 > 2*pi) return PETSC_FALSE;
+    if (curvature_2 >= 2*pi) return PETSC_FALSE;
     return PETSC_TRUE;
   }
 
@@ -1655,20 +1659,7 @@ a, b, c, and d are on the boundary in question
       Mesh::sieve_type::coneSet::iterator n_iter_end = neighbors->end();
       if (changed_neighbors) neighbors = s->cone(s->support(vertex));
 
-      if (neighbor_size == 4 && !on_boundary) { //this is the ONLY safe time to use this
-        Surgery_2D_LineContract_Direction(m, vertex, cells, vertices);
-        if (Surgery_2D_LineContract_Possible(m, cells, vertices) == PETSC_TRUE) {
-          Surgery_2D_LineContract(m, cells, vertices, maxIndex);
-        }
-        /*
-        //CHANGE: 4-2 is a last resort; 
-          //PetscPrintf(m->comm(), "flip: 4-2\n");
-          Surgery_2D_42Flip_Setup(m, vertex, cells, vertices);
-          if (Surgery_2D_42Flip_Possible(m, cells, vertices) == PETSC_TRUE) {
-            Surgery_2D_42Flip(m, cells, vertices, maxIndex);
-        }
-        */
-      } else if (neighbor_size == 3 && !on_boundary) {
+      if (neighbor_size == 3 && !on_boundary) {
          
   	//PetscPrintf(m->comm(), "flip: 3-1\n");      
         Surgery_2D_31Flip_Setup(m, vertex, cells, vertices);
@@ -1709,7 +1700,14 @@ a, b, c, and d are on the boundary in question
         n_iter++;
       }
       //SEEMS TO BE CAUSING PROBLEMS
-      
+      /*
+      if (n_iter == n_iter_end && neighbor_size == 4 && !on_boundary) { //this is the ONLY safe time to use this
+        Surgery_2D_LineContract_Direction(m, vertex, cells, vertices);
+        if (Surgery_2D_LineContract_Possible(m, cells, vertices) == PETSC_TRUE) {
+          Surgery_2D_LineContract(m, cells, vertices, maxIndex);
+        }
+      }
+      */
       if (n_iter == n_iter_end && on_boundary) { //last-ditch, forced in edges exist.
   	//PetscPrintf(m->comm(), "flip: Contract\n"); 
 	Mesh::point_type other_line_end = *neighbors->begin();  //if it's an isolated vertex just contract along a single line
@@ -1876,7 +1874,7 @@ a, b, c, and d are on the boundary in question
       v_iter++;
     }
     m->stratify();
-    PetscPrintf(m->comm(), "%d vertices left\n", m->depthStratum(0)->size());
+    //PetscPrintf(m->comm(), "%d vertices left\n", m->depthStratum(0)->size());
     return cur_maxIndex;
   }
 
@@ -2031,4 +2029,10 @@ a, b, c, and d are on the boundary in question
     new_mesh->setRealSection("coordinates", m->getRealSection("coordinates"));
     return new_mesh;
   }
+}
+
+PetscTruth Surgery_2D_CheckConsistency(Obj<Mesh> m) {
+
+  //debugging function for all of this in order to allow 
+  return PETSC_FALSE;
 }

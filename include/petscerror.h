@@ -388,8 +388,8 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
 M*/
-extern PetscErrorCode PetscExceptionTmp;
-#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a, (PetscExceptionPop(b) || PetscExceptionTmp))
+extern PetscErrorCode PetscExceptionTmp,PetscExceptionTmp1;
+#define PetscExceptionTry1(a,b) (PetscExceptionTmp1 = PetscExceptionPush(b)) ? PetscExceptionTmp1 : (PetscExceptionTmp1 = a, (PetscExceptionTmp = PetscExceptionPop(b)) ? PetscExceptionTmp : PetscExceptionTmp1)
 
 /*
    Used by PetscExceptionTrySync(). Returns zierr on ALL processes in comm iff xierr is zierr on at least one process and zero on all others.
