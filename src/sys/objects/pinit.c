@@ -847,9 +847,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
 
   ierr = PetscInfo(0,"PETSc successfully ended!\n");CHKERRQ(ierr);
   if (PetscBeganMPI) {
+#if defined(PETSC_HAVE_MPI_FINALIZED)
     PetscMPIInt flag;
     ierr = MPI_Finalized(&flag);CHKERRQ(ierr);
     if (flag) SETERRQ(PETSC_ERR_LIB,"MPI_Finalize() has already been called, even though MPI_Init() was called by PetscInitialize()");
+#endif
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
 
