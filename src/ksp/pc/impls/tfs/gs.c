@@ -35,63 +35,63 @@ Type: struct gather_scatter_id
 
 ************************************gs.c**************************************/
 typedef struct gather_scatter_id {
-  int id;
-  int nel_min;
-  int nel_max;
-  int nel_sum;
-  int negl;
-  int gl_max;
-  int gl_min;
-  int repeats;
-  int ordered;
-  int positive;
+  PetscInt id;
+  PetscInt nel_min;
+  PetscInt nel_max;
+  PetscInt nel_sum;
+  PetscInt negl;
+  PetscInt gl_max;
+  PetscInt gl_min;
+  PetscInt repeats;
+  PetscInt ordered;
+  PetscInt positive;
   PetscScalar *vals;
 
   /* bit mask info */
-  int *my_proc_mask;
-  int mask_sz;
-  int *ngh_buf;
-  int ngh_buf_sz;
-  int *nghs;
-  int num_nghs;
-  int max_nghs;
-  int *pw_nghs;
-  int num_pw_nghs;
-  int *tree_nghs;
-  int num_tree_nghs;
+  PetscInt *my_proc_mask;
+  PetscInt mask_sz;
+  PetscInt *ngh_buf;
+  PetscInt ngh_buf_sz;
+  PetscInt *nghs;
+  PetscInt num_nghs;
+  PetscInt max_nghs;
+  PetscInt *pw_nghs;
+  PetscInt num_pw_nghs;
+  PetscInt *tree_nghs;
+  PetscInt num_tree_nghs;
 
-  int num_loads;
+  PetscInt num_loads;
 
   /* repeats == true -> local info */
-  int nel;         /* number of unique elememts */
-  int *elms;       /* of size nel */
-  int nel_total;
-  int *local_elms; /* of size nel_total */
-  int *companion;  /* of size nel_total */
+  PetscInt nel;         /* number of unique elememts */
+  PetscInt *elms;       /* of size nel */
+  PetscInt nel_total;
+  PetscInt *local_elms; /* of size nel_total */
+  PetscInt *companion;  /* of size nel_total */
 
   /* local info */
-  int num_local_total;
-  int local_strength;
-  int num_local;
-  int *num_local_reduce;
-  int **local_reduce;
-  int num_local_gop;
-  int *num_gop_local_reduce;
-  int **gop_local_reduce;
+  PetscInt num_local_total;
+  PetscInt local_strength;
+  PetscInt num_local;
+  PetscInt *num_local_reduce;
+  PetscInt **local_reduce;
+  PetscInt num_local_gop;
+  PetscInt *num_gop_local_reduce;
+  PetscInt **gop_local_reduce;
 
   /* pairwise info */
-  int level;
-  int num_pairs;
-  int max_pairs;
-  int loc_node_pairs;
-  int max_node_pairs;
-  int min_node_pairs;
-  int avg_node_pairs;
-  int *pair_list;
-  int *msg_sizes;
-  int **node_list;
-  int len_pw_list;
-  int *pw_elm_list;
+  PetscInt level;
+  PetscInt num_pairs;
+  PetscInt max_pairs;
+  PetscInt loc_node_pairs;
+  PetscInt max_node_pairs;
+  PetscInt min_node_pairs;
+  PetscInt avg_node_pairs;
+  PetscInt *pair_list;
+  PetscInt *msg_sizes;
+  PetscInt **node_list;
+  PetscInt len_pw_list;
+  PetscInt *pw_elm_list;
   PetscScalar *pw_vals;
 
   MPI_Request *msg_ids_in;
@@ -99,39 +99,39 @@ typedef struct gather_scatter_id {
 
   PetscScalar *out;
   PetscScalar *in;
-  int msg_total;
+  PetscInt msg_total;
 
   /* tree - crystal accumulator info */
-  int max_left_over;
-  int *pre;
-  int *in_num;
-  int *out_num;
-  int **in_list;
-  int **out_list;
+  PetscInt max_left_over;
+  PetscInt *pre;
+  PetscInt *in_num;
+  PetscInt *out_num;
+  PetscInt **in_list;
+  PetscInt **out_list;
 
   /* new tree work*/
-  int  tree_nel;
-  int *tree_elms;
+  PetscInt  tree_nel;
+  PetscInt *tree_elms;
   PetscScalar *tree_buf;
   PetscScalar *tree_work;
 
-  int  tree_map_sz;
-  int *tree_map_in;
-  int *tree_map_out;
+  PetscInt  tree_map_sz;
+  PetscInt *tree_map_in;
+  PetscInt *tree_map_out;
 
   /* current memory status */
-  int gl_bss_min;
-  int gl_perm_min;
+  PetscInt gl_bss_min;
+  PetscInt gl_perm_min;
 
   /* max segment size for gs_gop_vec() */
-  int vec_sz;
+  PetscInt vec_sz;
 
   /* hack to make paul happy */
   MPI_Comm gs_comm;
 
 } gs_id;
 
-static gs_id *gsi_check_args(int *elms, int nel, int level);
+static gs_id *gsi_check_args(PetscInt *elms, PetscInt nel, PetscInt level);
 static PetscErrorCode gsi_via_bit_mask(gs_id *gs);
 static PetscErrorCode get_ngh_buf(gs_id *gs);
 static PetscErrorCode set_pairwise(gs_id *gs);
@@ -141,13 +141,13 @@ static PetscErrorCode set_tree(gs_id *gs);
 /* same for all but vector flavor */
 static PetscErrorCode gs_gop_local_out(gs_id *gs, PetscScalar *vals);
 /* vector flavor */
-static PetscErrorCode gs_gop_vec_local_out(gs_id *gs, PetscScalar *vals, int step);
+static PetscErrorCode gs_gop_vec_local_out(gs_id *gs, PetscScalar *vals, PetscInt step);
 
-static PetscErrorCode gs_gop_vec_plus(gs_id *gs, PetscScalar *in_vals, int step);
-static PetscErrorCode gs_gop_vec_pairwise_plus(gs_id *gs, PetscScalar *in_vals, int step);
-static PetscErrorCode gs_gop_vec_local_plus(gs_id *gs, PetscScalar *vals, int step);
-static PetscErrorCode gs_gop_vec_local_in_plus(gs_id *gs, PetscScalar *vals, int step);
-static PetscErrorCode gs_gop_vec_tree_plus(gs_id *gs, PetscScalar *vals, int step);
+static PetscErrorCode gs_gop_vec_plus(gs_id *gs, PetscScalar *in_vals, PetscInt step);
+static PetscErrorCode gs_gop_vec_pairwise_plus(gs_id *gs, PetscScalar *in_vals, PetscInt step);
+static PetscErrorCode gs_gop_vec_local_plus(gs_id *gs, PetscScalar *vals, PetscInt step);
+static PetscErrorCode gs_gop_vec_local_in_plus(gs_id *gs, PetscScalar *vals, PetscInt step);
+static PetscErrorCode gs_gop_vec_tree_plus(gs_id *gs, PetscScalar *vals, PetscInt step);
 
 
 static PetscErrorCode gs_gop_plus(gs_id *gs, PetscScalar *in_vals);
@@ -156,9 +156,9 @@ static PetscErrorCode gs_gop_local_plus(gs_id *gs, PetscScalar *vals);
 static PetscErrorCode gs_gop_local_in_plus(gs_id *gs, PetscScalar *vals);
 static PetscErrorCode gs_gop_tree_plus(gs_id *gs, PetscScalar *vals);
 
-static PetscErrorCode gs_gop_plus_hc(gs_id *gs, PetscScalar *in_vals, int dim);
-static PetscErrorCode gs_gop_pairwise_plus_hc(gs_id *gs, PetscScalar *in_vals, int dim);
-static PetscErrorCode gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, int dim);
+static PetscErrorCode gs_gop_plus_hc(gs_id *gs, PetscScalar *in_vals, PetscInt dim);
+static PetscErrorCode gs_gop_pairwise_plus_hc(gs_id *gs, PetscScalar *in_vals, PetscInt dim);
+static PetscErrorCode gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, PetscInt dim);
 
 static PetscErrorCode gs_gop_times(gs_id *gs, PetscScalar *in_vals);
 static PetscErrorCode gs_gop_pairwise_times(gs_id *gs, PetscScalar *in_vals);
@@ -206,14 +206,14 @@ static PetscErrorCode gs_gop_tree_binary(gs_id *gs, PetscScalar *vals, rbfp fct)
 /* global vars */
 /* from comm.c module */
 
-static int num_gs_ids = 0;
+static PetscInt num_gs_ids = 0;
 
 /* should make this dynamic ... later */
-static int msg_buf=MAX_MSG_BUF;
-static int vec_sz=GS_VEC_SZ;
-static int *tree_buf=NULL;
-static int tree_buf_sz=0;
-static int ntree=0;
+static PetscInt msg_buf=MAX_MSG_BUF;
+static PetscInt vec_sz=GS_VEC_SZ;
+static PetscInt *tree_buf=NULL;
+static PetscInt tree_buf_sz=0;
+static PetscInt ntree=0;
 
 
 /******************************************************************************
@@ -224,7 +224,7 @@ Output:
 Return: 
 Description:  
 ******************************************************************************/
-PetscErrorCode gs_init_vec_sz(int size)
+PetscErrorCode gs_init_vec_sz(PetscInt size)
 {
   PetscFunctionBegin;
   vec_sz = size;
@@ -239,7 +239,7 @@ Output:
 Return: 
 Description:  
 ******************************************************************************/
-PetscErrorCode gs_init_msg_buf_sz(int buf_size)
+PetscErrorCode gs_init_msg_buf_sz(PetscInt buf_size)
 {
   PetscFunctionBegin;
   msg_buf = buf_size;
@@ -257,7 +257,7 @@ RETURN:
 
 Description:  
 ******************************************************************************/
-gs_id *gs_init( int *elms, int nel, int level)
+gs_id *gs_init( PetscInt *elms, PetscInt nel, PetscInt level)
 {
    gs_id *gs;
   MPI_Group gs_group;
@@ -319,14 +319,14 @@ elm list must >= 0!!!
 elm repeats allowed
 local working copy of elms is sorted
 ******************************************************************************/
-static gs_id * gsi_check_args(int *in_elms, int nel, int level)
+static gs_id * gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
 {
-   int i, j, k, t2;
-  int *companion, *elms, *unique, *iptr;
-  int num_local=0, *num_to_reduce, **local_reduce;
-  int oprs[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_MIN,GL_B_AND};
-  int vals[sizeof(oprs)/sizeof(oprs[0])-1];
-  int work[sizeof(oprs)/sizeof(oprs[0])-1];
+   PetscInt i, j, k, t2;
+  PetscInt *companion, *elms, *unique, *iptr;
+  PetscInt num_local=0, *num_to_reduce, **local_reduce;
+  PetscInt oprs[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_MIN,GL_B_AND};
+  PetscInt vals[sizeof(oprs)/sizeof(oprs[0])-1];
+  PetscInt work[sizeof(oprs)/sizeof(oprs[0])-1];
   gs_id *gs;
 
 
@@ -354,8 +354,8 @@ static gs_id * gsi_check_args(int *in_elms, int nel, int level)
   k=nel; nel=j;
 
   /* copy over in_elms list and create inverse map */
-  elms = (int*) malloc((nel+1)*sizeof(PetscInt));
-  companion = (int*) malloc(nel*sizeof(PetscInt));
+  elms = (PetscInt*) malloc((nel+1)*sizeof(PetscInt));
+  companion = (PetscInt*) malloc(nel*sizeof(PetscInt));
 
   for (i=j=0;i<k;i++)
     {
@@ -410,10 +410,10 @@ static gs_id * gsi_check_args(int *in_elms, int nel, int level)
   /* number of repeats? */
   gs->num_local = num_local;
   num_local+=2;
-  gs->local_reduce=local_reduce=(int **)malloc(num_local*sizeof(PetscInt*));
-  gs->num_local_reduce=num_to_reduce=(int*) malloc(num_local*sizeof(PetscInt));
+  gs->local_reduce=local_reduce=(PetscInt **)malloc(num_local*sizeof(PetscInt*));
+  gs->num_local_reduce=num_to_reduce=(PetscInt*) malloc(num_local*sizeof(PetscInt));
 
-  unique = (int*) malloc((gs->nel+1)*sizeof(PetscInt));
+  unique = (PetscInt*) malloc((gs->nel+1)*sizeof(PetscInt));
   gs->elms = unique; 
   gs->nel_total = nel;
   gs->local_elms = elms;
@@ -432,7 +432,7 @@ static gs_id * gsi_check_args(int *in_elms, int nel, int level)
         {
           /* number together */
           num_to_reduce[num_local] = t2++;
-          iptr = local_reduce[num_local++] = (int*)malloc(t2*sizeof(PetscInt));
+          iptr = local_reduce[num_local++] = (PetscInt*)malloc(t2*sizeof(PetscInt));
 
           /* to use binary searching don't remap until we check intersection */
           *iptr++ = i;
@@ -513,10 +513,10 @@ Description:
 ******************************************************************************/
 static PetscErrorCode gsi_via_bit_mask(gs_id *gs)
 {
-   int i, nel, *elms;
-  int t1;
-  int **reduce;
-  int *map;
+   PetscInt i, nel, *elms;
+  PetscInt t1;
+  PetscInt **reduce;
+  PetscInt *map;
 
   /* totally local removes ... ct_bits == 0 */
   get_ngh_buf(gs);
@@ -620,9 +620,9 @@ Description:
 
 
 ******************************************************************************/
-static PetscErrorCode place_in_tree( int elm)
+static PetscErrorCode place_in_tree( PetscInt elm)
 {
-   int *tp, n;
+   PetscInt *tp, n;
 
   PetscFunctionBegin;
   if (ntree==tree_buf_sz)
@@ -632,14 +632,14 @@ static PetscErrorCode place_in_tree( int elm)
           tp = tree_buf;
           n = tree_buf_sz;
           tree_buf_sz<<=1;
-          tree_buf = (int*)malloc(tree_buf_sz*sizeof(PetscInt));
+          tree_buf = (PetscInt*)malloc(tree_buf_sz*sizeof(PetscInt));
           ivec_copy(tree_buf,tp,n);
           free(tp);
         }
       else
         {
           tree_buf_sz = TREE_BUF_SZ;
-          tree_buf = (int*)malloc(tree_buf_sz*sizeof(PetscInt));
+          tree_buf = (PetscInt*)malloc(tree_buf_sz*sizeof(PetscInt));
         }
     }
 
@@ -661,14 +661,14 @@ Description:
 ******************************************************************************/
 static PetscErrorCode get_ngh_buf(gs_id *gs)
 {
-   int i, j, npw=0, ntree_map=0;
-  int p_mask_size, ngh_buf_size, buf_size;
-  int *p_mask, *sh_proc_mask, *pw_sh_proc_mask;
-  int *ngh_buf, *buf1, *buf2;
-  int offset, per_load, num_loads, or_ct, start, end;
-  int *ptr1, *ptr2, i_start, negl, nel, *elms;
-  int oper=GL_B_OR;
-  int *ptr3, *t_mask, level, ct1, ct2;
+   PetscInt i, j, npw=0, ntree_map=0;
+  PetscInt p_mask_size, ngh_buf_size, buf_size;
+  PetscInt *p_mask, *sh_proc_mask, *pw_sh_proc_mask;
+  PetscInt *ngh_buf, *buf1, *buf2;
+  PetscInt offset, per_load, num_loads, or_ct, start, end;
+  PetscInt *ptr1, *ptr2, i_start, negl, nel, *elms;
+  PetscInt oper=GL_B_OR;
+  PetscInt *ptr3, *t_mask, level, ct1, ct2;
 
   PetscFunctionBegin;
   /* to make life easier */
@@ -677,15 +677,15 @@ static PetscErrorCode get_ngh_buf(gs_id *gs)
   level = gs->level;
   
   /* det #bytes needed for processor bit masks and init w/mask cor. to my_id */
-  p_mask = (int*) malloc(p_mask_size=len_bit_mask(num_nodes));
+  p_mask = (PetscInt*) malloc(p_mask_size=len_bit_mask(num_nodes));
   set_bit_mask(p_mask,p_mask_size,my_id);
 
   /* allocate space for masks and info bufs */
-  gs->nghs = sh_proc_mask = (int*) malloc(p_mask_size);
-  gs->pw_nghs = pw_sh_proc_mask = (int*) malloc(p_mask_size);
+  gs->nghs = sh_proc_mask = (PetscInt*) malloc(p_mask_size);
+  gs->pw_nghs = pw_sh_proc_mask = (PetscInt*) malloc(p_mask_size);
   gs->ngh_buf_sz = ngh_buf_size = p_mask_size*nel;
-  t_mask = (int*) malloc(p_mask_size);
-  gs->ngh_buf = ngh_buf = (int*) malloc(ngh_buf_size);
+  t_mask = (PetscInt*) malloc(p_mask_size);
+  gs->ngh_buf = ngh_buf = (PetscInt*) malloc(ngh_buf_size);
 
   /* comm buffer size ... memory usage bounded by ~2*msg_buf */
   /* had thought I could exploit rendezvous threshold */
@@ -706,7 +706,7 @@ static PetscErrorCode get_ngh_buf(gs_id *gs)
     {error_msg_fatal("get_ngh_buf() :: buf<pms :: %d>%d\n",p_mask_size,buf_size);}
 
   /* get giop buf space ... make *only* one malloc */
-  buf1 = (int*) malloc(buf_size<<1);
+  buf1 = (PetscInt*) malloc(buf_size<<1);
 
   /* more than one gior exchange needed? */
   if (buf_size!=i)
@@ -814,7 +814,7 @@ static PetscErrorCode get_ngh_buf(gs_id *gs)
   gs->num_nghs = ct_bits((char *)sh_proc_mask,p_mask_size*sizeof(PetscInt));
 
   /* expand from bit mask list to int list and save ngh list */
-  gs->nghs = (int*) malloc(gs->num_nghs * sizeof(PetscInt));
+  gs->nghs = (PetscInt*) malloc(gs->num_nghs * sizeof(PetscInt));
   bm_to_proc((char *)sh_proc_mask,p_mask_size*sizeof(PetscInt),gs->nghs);
 
   gs->num_pw_nghs = ct_bits((char *)pw_sh_proc_mask,p_mask_size*sizeof(PetscInt));
@@ -848,15 +848,15 @@ if an element is shared by fewer that level# of nodes do pairwise exch
 ******************************************************************************/
 static PetscErrorCode set_pairwise(gs_id *gs)
 {
-   int i, j;
-  int p_mask_size;
-  int *p_mask, *sh_proc_mask, *tmp_proc_mask;
-  int *ngh_buf, *buf2;
-  int offset;
-  int *msg_list, *msg_size, **msg_nodes, nprs;
-  int *pairwise_elm_list, len_pair_list=0;
-  int *iptr, t1, i_start, nel, *elms;
-  int ct;
+   PetscInt i, j;
+  PetscInt p_mask_size;
+  PetscInt *p_mask, *sh_proc_mask, *tmp_proc_mask;
+  PetscInt *ngh_buf, *buf2;
+  PetscInt offset;
+  PetscInt *msg_list, *msg_size, **msg_nodes, nprs;
+  PetscInt *pairwise_elm_list, len_pair_list=0;
+  PetscInt *iptr, t1, i_start, nel, *elms;
+  PetscInt ct;
 
 
   PetscFunctionBegin;
@@ -868,8 +868,8 @@ static PetscErrorCode set_pairwise(gs_id *gs)
 
   /* need a few temp masks */
   p_mask_size   = len_bit_mask(num_nodes);
-  p_mask        = (int*) malloc(p_mask_size);
-  tmp_proc_mask = (int*) malloc(p_mask_size);
+  p_mask        = (PetscInt*) malloc(p_mask_size);
+  tmp_proc_mask = (PetscInt*) malloc(p_mask_size);
 
   /* set mask to my my_id's bit mask */
   set_bit_mask(p_mask,p_mask_size,my_id);
@@ -877,16 +877,16 @@ static PetscErrorCode set_pairwise(gs_id *gs)
   p_mask_size /= sizeof(PetscInt);
           
   len_pair_list=gs->len_pw_list;
-  gs->pw_elm_list=pairwise_elm_list=(int*)malloc((len_pair_list+1)*sizeof(PetscInt));
+  gs->pw_elm_list=pairwise_elm_list=(PetscInt*)malloc((len_pair_list+1)*sizeof(PetscInt));
 
   /* how many processors (nghs) do we have to exchange with? */
   nprs=gs->num_pairs=ct_bits((char *)sh_proc_mask,p_mask_size*sizeof(PetscInt));
 
 
   /* allocate space for gs_gop() info */
-  gs->pair_list = msg_list = (int*)  malloc(sizeof(PetscInt)*nprs);
-  gs->msg_sizes = msg_size  = (int*)  malloc(sizeof(PetscInt)*nprs);
-  gs->node_list = msg_nodes = (int **) malloc(sizeof(PetscInt*)*(nprs+1));
+  gs->pair_list = msg_list = (PetscInt *)  malloc(sizeof(PetscInt)*nprs);
+  gs->msg_sizes = msg_size  = (PetscInt *)  malloc(sizeof(PetscInt)*nprs);
+  gs->node_list = msg_nodes = (PetscInt **) malloc(sizeof(PetscInt*)*(nprs+1));
 
   /* init msg_size list */
   ivec_zero(msg_size,nprs);  
@@ -926,7 +926,7 @@ static PetscErrorCode set_pairwise(gs_id *gs)
       i_start = PetscMax(i_start,ct);
 
       /*space to hold nodes in message to first neighbor */
-      msg_nodes[i] = iptr = (int*) malloc(sizeof(PetscInt)*(ct+1));
+      msg_nodes[i] = iptr = (PetscInt*) malloc(sizeof(PetscInt)*(ct+1));
 
       for (j=0;j<len_pair_list;j++)
         {
@@ -985,8 +985,8 @@ to do pruned tree just save ngh buf copy for each one and decode here!
 ******************************************************************************/
 static PetscErrorCode set_tree(gs_id *gs)
 {
-   int i, j, n, nel;
-   int *iptr_in, *iptr_out, *tree_elms, *elms;
+   PetscInt i, j, n, nel;
+   PetscInt *iptr_in, *iptr_out, *tree_elms, *elms;
 
   PetscFunctionBegin;
   /* local work ptrs */
@@ -999,8 +999,8 @@ static PetscErrorCode set_tree(gs_id *gs)
   gs->tree_buf  = (PetscScalar *) malloc(sizeof(PetscScalar)*n*vec_sz);
   gs->tree_work = (PetscScalar *) malloc(sizeof(PetscScalar)*n*vec_sz);
   j=gs->tree_map_sz;
-  gs->tree_map_in = iptr_in  = (int*) malloc(sizeof(PetscInt)*(j+1));
-  gs->tree_map_out = iptr_out = (int*) malloc(sizeof(PetscInt)*(j+1));
+  gs->tree_map_in = iptr_in  = (PetscInt*) malloc(sizeof(PetscInt)*(j+1));
+  gs->tree_map_out = iptr_out = (PetscInt*) malloc(sizeof(PetscInt)*(j+1));
 
   /* search the longer of the two lists */
   /* note ... could save this info in get_ngh_buf and save searches */
@@ -1038,7 +1038,7 @@ Description:
 ******************************************************************************/
 static PetscErrorCode gs_gop_local_out( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar tmp;
 
   PetscFunctionBegin;
@@ -1134,7 +1134,7 @@ Description:
 ******************************************************************************/
 static PetscErrorCode gs_gop_local_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
   PetscScalar tmp;
 
   PetscFunctionBegin;
@@ -1168,7 +1168,7 @@ Description:
 ******************************************************************************/
 static PetscErrorCode gs_gop_local_in_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct) 
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar *base;
 
   PetscFunctionBegin;
@@ -1200,8 +1200,8 @@ Description:
 static PetscErrorCode gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,rbfp fct)
 {
   PetscScalar    *dptr1, *dptr2, *dptr3, *in1, *in2;
-  int            *iptr, *msg_list, *msg_size, **msg_nodes;
-  int            *pw, *list, *size, **nodes;
+  PetscInt            *iptr, *msg_list, *msg_size, **msg_nodes;
+  PetscInt            *pw, *list, *size, **nodes;
   MPI_Request    *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status     status;
   PetscErrorCode ierr;
@@ -1285,8 +1285,8 @@ Description:
 ******************************************************************************/
 static PetscErrorCode gs_gop_tree_binary(gs_id *gs, PetscScalar *vals,  rbfp fct)
 {
-  int         size;
-  int         *in,    *out;  
+  PetscInt         size;
+  PetscInt         *in,    *out;  
   PetscScalar *buf, *work;
 
   PetscFunctionBegin;
@@ -1416,7 +1416,7 @@ Description:
 ******************************************************************************/
 static PetscErrorCode gs_gop_local_exists( gs_id *gs,  PetscScalar *vals)
 {
-   int         *num, *map, **reduce;
+   PetscInt         *num, *map, **reduce;
    PetscScalar tmp;
 
   PetscFunctionBegin;
@@ -1439,7 +1439,7 @@ static PetscErrorCode gs_gop_local_exists( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_in_exists( gs_id *gs,  PetscScalar *vals)
 {
-  int         *num, *map, **reduce;
+  PetscInt         *num, *map, **reduce;
   PetscScalar *base;
 
   PetscFunctionBegin;
@@ -1458,8 +1458,8 @@ static PetscErrorCode gs_gop_local_in_exists( gs_id *gs,  PetscScalar *vals)
 static PetscErrorCode gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
 {
   PetscScalar    *dptr1, *dptr2, *dptr3, *in1, *in2;
-  int            *iptr, *msg_list, *msg_size, **msg_nodes;
-  int            *pw, *list, *size, **nodes;
+  PetscInt            *iptr, *msg_list, *msg_size, **msg_nodes;
+  PetscInt            *pw, *list, *size, **nodes;
   MPI_Request    *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status     status;
   PetscErrorCode ierr;
@@ -1531,10 +1531,10 @@ static PetscErrorCode gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_tree_exists(gs_id *gs, PetscScalar *vals)
 {
-  int         size;
-  int         *in, *out;  
+  PetscInt         size;
+  PetscInt         *in, *out;  
   PetscScalar *buf, *work;
-  int         op[] = {GL_EXISTS,0};
+  PetscInt         op[] = {GL_EXISTS,0};
 
   PetscFunctionBegin;
   in   = gs->tree_map_in;
@@ -1604,7 +1604,7 @@ static PetscErrorCode gs_gop_max_abs( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_max_abs( gs_id *gs,  PetscScalar *vals)
 {
-  int         *num, *map, **reduce;
+  PetscInt         *num, *map, **reduce;
   PetscScalar tmp;
 
   PetscFunctionBegin;
@@ -1627,7 +1627,7 @@ static PetscErrorCode gs_gop_local_max_abs( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_in_max_abs( gs_id *gs,  PetscScalar *vals)
 {
-  int         *num, *map, **reduce;
+  PetscInt         *num, *map, **reduce;
   PetscScalar *base;
 
   PetscFunctionBegin;
@@ -1647,8 +1647,8 @@ static PetscErrorCode gs_gop_local_in_max_abs( gs_id *gs,  PetscScalar *vals)
 static PetscErrorCode gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
 {
   PetscScalar    *dptr1, *dptr2, *dptr3, *in1, *in2;
-  int            *iptr, *msg_list, *msg_size, **msg_nodes;
-  int            *pw, *list, *size, **nodes;
+  PetscInt            *iptr, *msg_list, *msg_size, **msg_nodes;
+  PetscInt            *pw, *list, *size, **nodes;
   MPI_Request    *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status     status;
   PetscErrorCode ierr;
@@ -1722,10 +1722,10 @@ static PetscErrorCode gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_tree_max_abs(gs_id *gs, PetscScalar *vals)
 {
-  int         size;
-  int         *in, *out;  
+  PetscInt         size;
+  PetscInt         *in, *out;  
   PetscScalar *buf, *work;
-  int         op[] = {GL_MAX_ABS,0};
+  PetscInt         op[] = {GL_MAX_ABS,0};
 
   PetscFunctionBegin;
   in   = gs->tree_map_in;
@@ -1795,7 +1795,7 @@ static PetscErrorCode gs_gop_max( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_max( gs_id *gs,  PetscScalar *vals)
 {
-  int         *num, *map, **reduce;
+  PetscInt         *num, *map, **reduce;
   PetscScalar tmp;
 
   PetscFunctionBegin;
@@ -1818,7 +1818,7 @@ static PetscErrorCode gs_gop_local_max( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_in_max( gs_id *gs,  PetscScalar *vals)
 {
-  int         *num, *map, **reduce;
+  PetscInt         *num, *map, **reduce;
   PetscScalar *base;
 
   PetscFunctionBegin;
@@ -1838,8 +1838,8 @@ static PetscErrorCode gs_gop_local_in_max( gs_id *gs,  PetscScalar *vals)
 static PetscErrorCode gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
 {
   PetscScalar    *dptr1, *dptr2, *dptr3, *in1, *in2;
-  int            *iptr, *msg_list, *msg_size, **msg_nodes;
-  int            *pw, *list, *size, **nodes;
+  PetscInt            *iptr, *msg_list, *msg_size, **msg_nodes;
+  PetscInt            *pw, *list, *size, **nodes;
   MPI_Request    *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status     status;
   PetscErrorCode ierr;
@@ -1913,8 +1913,8 @@ static PetscErrorCode gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_tree_max(gs_id *gs, PetscScalar *vals)
 {
-  int            size;
-  int            *in, *out;  
+  PetscInt            size;
+  PetscInt            *in, *out;  
   PetscScalar    *buf, *work;
   PetscErrorCode ierr;
   
@@ -1977,7 +1977,7 @@ static PetscErrorCode gs_gop_min_abs( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_min_abs( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar tmp;
 
   PetscFunctionBegin;
@@ -2000,7 +2000,7 @@ static PetscErrorCode gs_gop_local_min_abs( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_in_min_abs( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar *base;
 
   PetscFunctionBegin;
@@ -2020,8 +2020,8 @@ static PetscErrorCode gs_gop_local_in_min_abs( gs_id *gs,  PetscScalar *vals)
 static PetscErrorCode gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   int *iptr, *msg_list, *msg_size, **msg_nodes;
-   int *pw, *list, *size, **nodes;
+   PetscInt *iptr, *msg_list, *msg_size, **msg_nodes;
+   PetscInt *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
   PetscErrorCode ierr;
@@ -2095,10 +2095,10 @@ static PetscErrorCode gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_tree_min_abs(gs_id *gs, PetscScalar *vals)
 {
-  int size;
-  int *in, *out;  
+  PetscInt size;
+  PetscInt *in, *out;  
   PetscScalar *buf, *work;
-  int op[] = {GL_MIN_ABS,0};
+  PetscInt op[] = {GL_MIN_ABS,0};
 
   PetscFunctionBegin;
   in   = gs->tree_map_in;
@@ -2160,7 +2160,7 @@ static PetscErrorCode gs_gop_min( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_min( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar tmp;
   PetscFunctionBegin;
   num    = gs->num_local_reduce;  
@@ -2182,7 +2182,7 @@ static PetscErrorCode gs_gop_local_min( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_in_min( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar *base;
 
   PetscFunctionBegin;
@@ -2202,8 +2202,8 @@ static PetscErrorCode gs_gop_local_in_min( gs_id *gs,  PetscScalar *vals)
 static PetscErrorCode gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   int *iptr, *msg_list, *msg_size, **msg_nodes;
-   int *pw, *list, *size, **nodes;
+   PetscInt *iptr, *msg_list, *msg_size, **msg_nodes;
+   PetscInt *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
   PetscErrorCode ierr;
@@ -2277,8 +2277,8 @@ static PetscErrorCode gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_tree_min(gs_id *gs, PetscScalar *vals)
 {
-  int size;
-  int *in, *out;  
+  PetscInt size;
+  PetscInt *in, *out;  
   PetscScalar *buf, *work;
   PetscErrorCode ierr;
   
@@ -2342,7 +2342,7 @@ static PetscErrorCode gs_gop_times( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_times( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar tmp;
 
   PetscFunctionBegin;
@@ -2388,7 +2388,7 @@ static PetscErrorCode gs_gop_local_times( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_in_times( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar *base;
 
   PetscFunctionBegin;
@@ -2430,8 +2430,8 @@ static PetscErrorCode gs_gop_local_in_times( gs_id *gs,  PetscScalar *vals)
 static PetscErrorCode gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   int *iptr, *msg_list, *msg_size, **msg_nodes;
-   int *pw, *list, *size, **nodes;
+   PetscInt *iptr, *msg_list, *msg_size, **msg_nodes;
+   PetscInt *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
   PetscErrorCode ierr;
@@ -2505,8 +2505,8 @@ static PetscErrorCode gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_tree_times(gs_id *gs, PetscScalar *vals)
 {
-  int size;
-  int *in, *out;  
+  PetscInt size;
+  PetscInt *in, *out;  
   PetscScalar *buf, *work;
   PetscErrorCode ierr;
   
@@ -2570,7 +2570,7 @@ static PetscErrorCode gs_gop_plus( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_plus( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar tmp;
 
   PetscFunctionBegin;
@@ -2616,7 +2616,7 @@ static PetscErrorCode gs_gop_local_plus( gs_id *gs,  PetscScalar *vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_local_in_plus( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar *base;
 
   PetscFunctionBegin;
@@ -2658,8 +2658,8 @@ static PetscErrorCode gs_gop_local_in_plus( gs_id *gs,  PetscScalar *vals)
 static PetscErrorCode gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   int *iptr, *msg_list, *msg_size, **msg_nodes;
-   int *pw, *list, *size, **nodes;
+   PetscInt *iptr, *msg_list, *msg_size, **msg_nodes;
+   PetscInt *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
   PetscErrorCode ierr;
@@ -2734,8 +2734,8 @@ static PetscErrorCode gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
 /******************************************************************************/
 static PetscErrorCode gs_gop_tree_plus(gs_id *gs, PetscScalar *vals)
 {
-  int size;
-  int *in, *out;  
+  PetscInt size;
+  PetscInt *in, *out;  
   PetscScalar *buf, *work;
   PetscErrorCode ierr;
   
@@ -2762,7 +2762,7 @@ static PetscErrorCode gs_gop_tree_plus(gs_id *gs, PetscScalar *vals)
 /******************************************************************************/
 PetscErrorCode gs_free( gs_id *gs)
 {
-   int i;
+   PetscInt i;
 
   PetscFunctionBegin;
   if (gs->nghs) {free((void*) gs->nghs);}
@@ -2825,7 +2825,7 @@ PetscErrorCode gs_free( gs_id *gs)
 }
 
 /******************************************************************************/
-PetscErrorCode gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  int step)
+PetscErrorCode gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  PetscInt step)
 {
   PetscFunctionBegin;
   switch (*op) {
@@ -2842,7 +2842,7 @@ PetscErrorCode gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  int 
 }
 
 /******************************************************************************/
-static PetscErrorCode gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  int step)
+static PetscErrorCode gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  PetscInt step)
 {
   PetscFunctionBegin;
   if (!gs) {error_msg_fatal("gs_gop_vec() passed NULL gs handle!!!");}
@@ -2881,9 +2881,9 @@ static PetscErrorCode gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  int step)
 }
 
 /******************************************************************************/
-static PetscErrorCode gs_gop_vec_local_plus( gs_id *gs,  PetscScalar *vals, int step)
+static PetscErrorCode gs_gop_vec_local_plus( gs_id *gs,  PetscScalar *vals, PetscInt step)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar *base;
 
   PetscFunctionBegin;
@@ -2938,9 +2938,9 @@ static PetscErrorCode gs_gop_vec_local_plus( gs_id *gs,  PetscScalar *vals, int 
 }
 
 /******************************************************************************/
-static PetscErrorCode gs_gop_vec_local_in_plus( gs_id *gs,  PetscScalar *vals, int step)
+static PetscErrorCode gs_gop_vec_local_in_plus( gs_id *gs,  PetscScalar *vals, PetscInt step)
 {
-   int  *num, *map, **reduce;
+   PetscInt  *num, *map, **reduce;
    PetscScalar *base;
   PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
@@ -2982,9 +2982,9 @@ static PetscErrorCode gs_gop_vec_local_in_plus( gs_id *gs,  PetscScalar *vals, i
 }
 
 /******************************************************************************/
-static PetscErrorCode gs_gop_vec_local_out( gs_id *gs,  PetscScalar *vals, int step)
+static PetscErrorCode gs_gop_vec_local_out( gs_id *gs,  PetscScalar *vals, PetscInt step)
 {
-   int *num, *map, **reduce;
+   PetscInt *num, *map, **reduce;
    PetscScalar *base;
 
   PetscFunctionBegin;
@@ -3027,11 +3027,11 @@ static PetscErrorCode gs_gop_vec_local_out( gs_id *gs,  PetscScalar *vals, int s
 }
 
 /******************************************************************************/
-static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals, int step)
+static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals, PetscInt step)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   int *iptr, *msg_list, *msg_size, **msg_nodes;
-   int *pw, *list, *size, **nodes;
+   PetscInt *iptr, *msg_list, *msg_size, **msg_nodes;
+   PetscInt *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
   PetscBLASInt i1;
@@ -3119,11 +3119,11 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
 }
 
 /******************************************************************************/
-static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int step) 
+static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  PetscInt step) 
 {
-  int size, *in, *out;  
+  PetscInt size, *in, *out;  
   PetscScalar *buf, *work;
-  int op[] = {GL_ADD,0};
+  PetscInt op[] = {GL_ADD,0};
   PetscBLASInt i1 = 1;
 
   PetscFunctionBegin;
@@ -3161,7 +3161,7 @@ static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int 
 }
 
 /******************************************************************************/
-PetscErrorCode gs_gop_hc( gs_id *gs,  PetscScalar *vals,  const char *op,  int dim)
+PetscErrorCode gs_gop_hc( gs_id *gs,  PetscScalar *vals,  const char *op,  PetscInt dim)
 {
   PetscFunctionBegin;
   switch (*op) {
@@ -3178,7 +3178,7 @@ PetscErrorCode gs_gop_hc( gs_id *gs,  PetscScalar *vals,  const char *op,  int d
 }
 
 /******************************************************************************/
-static PetscErrorCode gs_gop_plus_hc( gs_id *gs,  PetscScalar *vals, int dim)
+static PetscErrorCode gs_gop_plus_hc( gs_id *gs,  PetscScalar *vals, PetscInt dim)
 {
   PetscFunctionBegin;
   /* if there's nothing to do return */
@@ -3222,14 +3222,14 @@ static PetscErrorCode gs_gop_plus_hc( gs_id *gs,  PetscScalar *vals, int dim)
 }
 
 /******************************************************************************/
-static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
+static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, PetscInt dim)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   int *iptr, *msg_list, *msg_size, **msg_nodes;
-   int *pw, *list, *size, **nodes;
+   PetscInt *iptr, *msg_list, *msg_size, **msg_nodes;
+   PetscInt *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  int i, mask=1;
+  PetscInt i, mask=1;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -3327,12 +3327,12 @@ static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals,
 }
 
 /******************************************************************************/
-static PetscErrorCode gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, int dim)
+static PetscErrorCode gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, PetscInt dim)
 {
-  int size;
-  int *in, *out;  
+  PetscInt size;
+  PetscInt *in, *out;  
   PetscScalar *buf, *work;
-  int op[] = {GL_ADD,0};
+  PetscInt op[] = {GL_ADD,0};
 
   PetscFunctionBegin;
   in   = gs->tree_map_in;

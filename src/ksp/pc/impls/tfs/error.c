@@ -35,7 +35,7 @@ PetscErrorCode error_msg_fatal(const char msg[], ...)
   va_list    ap;
   const char *p;
   char       *sval, cval;
-  int        ival;
+  PetscInt        ival;
   PetscScalar       dval;
 
 
@@ -108,7 +108,7 @@ PetscErrorCode error_msg_warning(const char msg[], ...)
 #if   defined V
   va_list ap;
   char *p, *sval, cval;
-  int ival;
+  PetscInt ival;
   PetscScalar dval;
 
   va_start(ap,msg);
@@ -160,7 +160,7 @@ PetscErrorCode error_msg_warning(const char msg[], ...)
 #elif defined VV
   va_list ap;
   char *p, *sval, cval;
-  int ival;
+  PetscInt ival;
   PetscScalar dval;
   va_start(ap,msg);
   if (my_id>=0)

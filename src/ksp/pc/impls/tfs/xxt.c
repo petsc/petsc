@@ -24,42 +24,42 @@ Last Modification: 3.20.01
 #define BOTH   0
 
 typedef struct xxt_solver_info {
-  int n, m, n_global, m_global;
-  int nnz, max_nnz, msg_buf_sz;
-  int *nsep, *lnsep, *fo, nfo, *stages;
-  int *col_sz, *col_indices; 
+  PetscInt n, m, n_global, m_global;
+  PetscInt nnz, max_nnz, msg_buf_sz;
+  PetscInt *nsep, *lnsep, *fo, nfo, *stages;
+  PetscInt *col_sz, *col_indices; 
   PetscScalar **col_vals, *x, *solve_uu, *solve_w;
-  int nsolves;
+  PetscInt nsolves;
   PetscScalar tot_solve_time;
 } xxt_info;
 
 typedef struct matvec_info {
-  int n, m, n_global, m_global;
-  int *local2global;
+  PetscInt n, m, n_global, m_global;
+  PetscInt *local2global;
   gs_ADT gs_handle;
   PetscErrorCode (*matvec)(struct matvec_info*,PetscScalar*,PetscScalar*);
   void *grid_data;
 } mv_info;
 
 struct xxt_CDT{
-  int id;
-  int ns;
-  int level;
+  PetscInt id;
+  PetscInt ns;
+  PetscInt level;
   xxt_info *info;
   mv_info  *mvi;
 };
 
-static int n_xxt=0;
-static int n_xxt_handles=0;
+static PetscInt n_xxt=0;
+static PetscInt n_xxt_handles=0;
 
 /* prototypes */
 static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle, PetscScalar *rhs);
 static PetscErrorCode check_handle(xxt_ADT xxt_handle);
 static PetscErrorCode det_separators(xxt_ADT xxt_handle);
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u);
-static int xxt_generate(xxt_ADT xxt_handle);
-static int do_xxt_factor(xxt_ADT xxt_handle);
-static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data);
+static PetscInt xxt_generate(xxt_ADT xxt_handle);
+static PetscInt do_xxt_factor(xxt_ADT xxt_handle);
+static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, void *matvec, void *grid_data);
 
 /**************************************xxt.c***********************************/
 xxt_ADT XXT_new(void)
@@ -76,10 +76,10 @@ xxt_ADT XXT_new(void)
 }
 
 /**************************************xxt.c***********************************/
-int XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
-	   int *local2global,  /* global column mapping       */
-	   int n,              /* local num rows              */
-	   int m,              /* local num cols              */
+PetscInt XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
+	   PetscInt *local2global,  /* global column mapping       */
+	   PetscInt n,              /* local num rows              */
+	   PetscInt m,              /* local num cols              */
 	   void *matvec,       /* b_loc=A_local.x_loc         */
 	   void *grid_data     /* grid data for matvec        */
 	   )
@@ -108,7 +108,7 @@ int XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
 }
 
 /**************************************xxt.c***********************************/
-int XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
+PetscInt XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
 {
 
   comm_init();
@@ -123,7 +123,7 @@ int XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
 }
 
 /**************************************xxt.c***********************************/
-int XXT_free(xxt_ADT xxt_handle)
+PetscInt XXT_free(xxt_ADT xxt_handle)
 {
 
   comm_init();
@@ -153,11 +153,11 @@ int XXT_free(xxt_ADT xxt_handle)
 }
 
 /**************************************xxt.c***********************************/
-int XXT_stats(xxt_ADT xxt_handle)
+PetscInt XXT_stats(xxt_ADT xxt_handle)
 {
-  int  op[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD};
-  int fop[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
-  int   vals[9],  work[9];
+  PetscInt  op[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD};
+  PetscInt fop[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
+  PetscInt   vals[9],  work[9];
   PetscScalar fvals[3], fwork[3];
 
   comm_init();
@@ -216,37 +216,37 @@ is a row dist. nxm matrix w/ n<m.
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
 mylocmatvec (void :: void *data, double *in, double *out)
 **************************************xxt.c***********************************/
-static int do_xxt_factor(xxt_ADT xxt_handle)
+static PetscInt do_xxt_factor(xxt_ADT xxt_handle)
 {
   return xxt_generate(xxt_handle);
 }
 
 /**************************************xxt.c***********************************/
-static int xxt_generate(xxt_ADT xxt_handle)
+static PetscInt xxt_generate(xxt_ADT xxt_handle)
 {
-  int i,j,k,idex;
-  int dim, col;
+  PetscInt i,j,k,idex;
+  PetscInt dim, col;
   PetscScalar *u, *uu, *v, *z, *w, alpha, alpha_w;
-  int *segs;
-  int op[] = {GL_ADD,0};
-  int off, len;
+  PetscInt *segs;
+  PetscInt op[] = {GL_ADD,0};
+  PetscInt off, len;
   PetscScalar *x_ptr;
-  int *iptr, flag;
-  int start=0, end, work;
-  int op2[] = {GL_MIN,0};
+  PetscInt *iptr, flag;
+  PetscInt start=0, end, work;
+  PetscInt op2[] = {GL_MIN,0};
   gs_ADT gs_handle;
-  int *nsep, *lnsep, *fo;
-  int a_n=xxt_handle->mvi->n;
-  int a_m=xxt_handle->mvi->m;
-  int *a_local2global=xxt_handle->mvi->local2global;
-  int level;
-  int xxt_nnz=0, xxt_max_nnz=0;
-  int n, m;
-  int *col_sz, *col_indices, *stages; 
+  PetscInt *nsep, *lnsep, *fo;
+  PetscInt a_n=xxt_handle->mvi->n;
+  PetscInt a_m=xxt_handle->mvi->m;
+  PetscInt *a_local2global=xxt_handle->mvi->local2global;
+  PetscInt level;
+  PetscInt xxt_nnz=0, xxt_max_nnz=0;
+  PetscInt n, m;
+  PetscInt *col_sz, *col_indices, *stages; 
   PetscScalar **col_vals, *x;
-  int n_global;
-  int xxt_zero_nnz=0;
-  int xxt_zero_nnz_0=0;
+  PetscInt n_global;
+  PetscInt xxt_zero_nnz=0;
+  PetscInt xxt_zero_nnz_0=0;
   PetscBLASInt i1 = 1;
   PetscScalar dm1 = -1.0;
 
@@ -269,8 +269,8 @@ static int xxt_generate(xxt_ADT xxt_handle)
 
   /* get and initialize storage for x local         */
   /* note that x local is nxm and stored by columns */
-  col_sz = (int*) malloc(m*sizeof(PetscInt));
-  col_indices = (int*) malloc((2*m+1)*sizeof(int));
+  col_sz = (PetscInt*) malloc(m*sizeof(PetscInt));
+  col_indices = (PetscInt*) malloc((2*m+1)*sizeof(PetscInt));
   col_vals = (PetscScalar **) malloc(m*sizeof(PetscScalar *));
   for (i=j=0; i<m; i++, j+=2)
     {
@@ -281,8 +281,8 @@ static int xxt_generate(xxt_ADT xxt_handle)
 
   /* size of separators for each sub-hc working from bottom of tree to top */
   /* this looks like nsep[]=segments */
-  stages = (int*) malloc((level+1)*sizeof(PetscInt));
-  segs   = (int*) malloc((level+1)*sizeof(PetscInt));
+  stages = (PetscInt*) malloc((level+1)*sizeof(PetscInt));
+  segs   = (PetscInt*) malloc((level+1)*sizeof(PetscInt));
   ivec_zero(stages,level+1);
   ivec_copy(segs,nsep,level+1);
   for (i=0; i<level; i++)
@@ -302,7 +302,7 @@ static int xxt_generate(xxt_ADT xxt_handle)
 
   /* storage for sparse x values */
   n_global = xxt_handle->info->n_global;
-  xxt_max_nnz = (int)(2.5*pow(1.0*n_global,1.6667) + j*n/2)/num_nodes;
+  xxt_max_nnz = (PetscInt)(2.5*pow(1.0*n_global,1.6667) + j*n/2)/num_nodes;
   x = (PetscScalar *) malloc(xxt_max_nnz*sizeof(PetscScalar));
   xxt_nnz = 0;
 
@@ -508,12 +508,12 @@ static int xxt_generate(xxt_ADT xxt_handle)
 /**************************************xxt.c***********************************/
 static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 {
-   int off, len, *iptr;
-  int level       =xxt_handle->level;
-  int n           =xxt_handle->info->n;
-  int m           =xxt_handle->info->m;
-  int *stages     =xxt_handle->info->stages;
-  int *col_indices=xxt_handle->info->col_indices;
+   PetscInt off, len, *iptr;
+  PetscInt level       =xxt_handle->level;
+  PetscInt n           =xxt_handle->info->n;
+  PetscInt m           =xxt_handle->info->m;
+  PetscInt *stages     =xxt_handle->info->stages;
+  PetscInt *col_indices=xxt_handle->info->col_indices;
   PetscScalar *x_ptr, *uu_ptr;
   PetscScalar *solve_uu=xxt_handle->info->solve_uu;
   PetscScalar *solve_w =xxt_handle->info->solve_w;
@@ -550,7 +550,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 /**************************************xxt.c***********************************/
 static PetscErrorCode check_handle(xxt_ADT xxt_handle)
 {
-  int vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
+  PetscInt vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
 
   PetscFunctionBegin;
   if (xxt_handle==NULL)
@@ -567,27 +567,27 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle)
 /**************************************xxt.c***********************************/
 static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 {
-  int i, ct, id;
-  int mask, edge, *iptr; 
-  int *dir, *used;
-  int sum[4], w[4];
+  PetscInt i, ct, id;
+  PetscInt mask, edge, *iptr; 
+  PetscInt *dir, *used;
+  PetscInt sum[4], w[4];
   PetscScalar rsum[4], rw[4];
-  int op[] = {GL_ADD,0};
+  PetscInt op[] = {GL_ADD,0};
   PetscScalar *lhs, *rhs;
-  int *nsep, *lnsep, *fo, nfo=0;
+  PetscInt *nsep, *lnsep, *fo, nfo=0;
   gs_ADT gs_handle=xxt_handle->mvi->gs_handle;
-  int *local2global=xxt_handle->mvi->local2global;
-  int  n=xxt_handle->mvi->n;
-  int  m=xxt_handle->mvi->m;
-  int level=xxt_handle->level;
-  int shared=FALSE; 
+  PetscInt *local2global=xxt_handle->mvi->local2global;
+  PetscInt  n=xxt_handle->mvi->n;
+  PetscInt  m=xxt_handle->mvi->m;
+  PetscInt level=xxt_handle->level;
+  PetscInt shared=FALSE; 
 
   PetscFunctionBegin;
-  dir  = (int*)malloc(sizeof(PetscInt)*(level+1));
-  nsep = (int*)malloc(sizeof(PetscInt)*(level+1));
-  lnsep= (int*)malloc(sizeof(PetscInt)*(level+1));
-  fo   = (int*)malloc(sizeof(PetscInt)*(n+1));
-  used = (int*)malloc(sizeof(PetscInt)*n);
+  dir  = (PetscInt*)malloc(sizeof(PetscInt)*(level+1));
+  nsep = (PetscInt*)malloc(sizeof(PetscInt)*(level+1));
+  lnsep= (PetscInt*)malloc(sizeof(PetscInt)*(level+1));
+  fo   = (PetscInt*)malloc(sizeof(PetscInt)*(n+1));
+  used = (PetscInt*)malloc(sizeof(PetscInt)*n);
 
   ivec_zero(dir  ,level+1);
   ivec_zero(nsep ,level+1);
@@ -620,8 +620,8 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
   if (fabs(rsum[0]-rsum[1])>EPS)
     {shared=TRUE;}
 
-  xxt_handle->info->n_global=xxt_handle->info->m_global=(int) rsum[0];
-  xxt_handle->mvi->n_global =xxt_handle->mvi->m_global =(int) rsum[0];
+  xxt_handle->info->n_global=xxt_handle->info->m_global=(PetscInt) rsum[0];
+  xxt_handle->mvi->n_global =xxt_handle->mvi->m_global =(PetscInt) rsum[0];
 
   /* determine separator sets top down */
   if (shared)
@@ -704,7 +704,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 	      if (ct>1) {ivec_sort(iptr,ct);}
 
 	      lnsep[edge]=ct;
-	      nsep[edge]=(int) rsum[0];
+	      nsep[edge]=(PetscInt) rsum[0];
 	      dir [edge]=LEFT;
 	    }
 
@@ -727,7 +727,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 	      if (ct>1) {ivec_sort(iptr,ct);}
 
 	      lnsep[edge]=ct;
-	      nsep[edge]= (int) rsum[1];
+	      nsep[edge]= (PetscInt) rsum[1];
 	      dir [edge]=RIGHT;
 	    }
 
@@ -849,7 +849,7 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 }
 
 /**************************************xxt.c***********************************/
-static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
+static mv_info *set_mvi(PetscInt *local2global, PetscInt n, PetscInt m, void *matvec, void *grid_data)
 {
   mv_info *mvi;
 
@@ -859,7 +859,7 @@ static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *gri
   mvi->m=m;
   mvi->n_global=-1;
   mvi->m_global=-1;
-  mvi->local2global=(int*)malloc((m+1)*sizeof(PetscInt));
+  mvi->local2global=(PetscInt*)malloc((m+1)*sizeof(PetscInt));
   ivec_copy(mvi->local2global,local2global,m);
   mvi->local2global[m] = INT_MAX;
   mvi->matvec=(PetscErrorCode (*)(mv_info*,PetscScalar*,PetscScalar*))matvec;

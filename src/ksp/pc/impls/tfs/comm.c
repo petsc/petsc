@@ -18,17 +18,17 @@ Last Modification:
 
 
 /* global program control variables - explicitly exported */
-int my_id            = 0;
-int num_nodes        = 1;
-int floor_num_nodes  = 0;
-int i_log2_num_nodes = 0;
+PetscMPIInt my_id            = 0;
+PetscMPIInt num_nodes        = 1;
+PetscInt floor_num_nodes  = 0;
+PetscInt i_log2_num_nodes = 0;
 
 /* global program control variables */
-static int p_init = 0;
-static int modfl_num_nodes;
-static int edge_not_pow_2;
+static PetscInt p_init = 0;
+static PetscInt modfl_num_nodes;
+static PetscInt edge_not_pow_2;
 
-static unsigned int edge_node[sizeof(PetscInt)*32];
+static PetscInt edge_node[sizeof(PetscInt)*32];
 
 /***********************************comm.c*************************************/
 PetscErrorCode comm_init (void)
@@ -263,7 +263,7 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs)
 }  
 
 /***********************************comm.c*************************************/
-PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs, PetscInt dim)
+PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim)
 {
   PetscInt       mask, edge;
   PetscInt       type, dest;
@@ -342,7 +342,7 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, int *op
 }  
 
 /***********************************comm.c*************************************/
-PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt, int comm_type)
+PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt, PetscInt comm_type)
 {
   PetscInt       mask, edge;
   PetscInt       dest;
@@ -485,10 +485,10 @@ PetscErrorCode ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level
 }  
 
 /******************************************************************************/
-PetscErrorCode new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, int *segs)
+PetscErrorCode new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
 {
-  int            edge, type, dest, mask;
-  int            stage_n;
+  PetscInt            edge, type, dest, mask;
+  PetscInt            stage_n;
   MPI_Status     status;
   PetscErrorCode ierr;
 
@@ -539,10 +539,10 @@ PetscErrorCode new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level,
 }  
 
 /***********************************comm.c*************************************/
-PetscErrorCode giop_hc(int *vals, int *work, int n, int *oprs, int dim)
+PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim)
 {
-  int            mask, edge;
-  int            type, dest;
+  PetscInt            mask, edge;
+  PetscInt            type, dest;
   vfp            fp;
   MPI_Status     status;
   PetscErrorCode ierr;
