@@ -81,7 +81,7 @@ div_ceil( PetscInt numer,  PetscInt denom)
    PetscInt rt_val;
 
   if ((numer<0)||(denom<=0))
-    {error_msg_fatal("div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);}
+    {SETERRQ2(PETSC_ERR_PLIB,"div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);}
 
   /* if integer division remainder then increment */
   rt_val = numer/denom;
@@ -98,7 +98,7 @@ len_bit_mask( PetscInt num_items)
    PetscInt rt_val, tmp;
 
   if (num_items<0)
-    {error_msg_fatal("Value Sent To len_bit_mask() Must be >= 0!");}
+    {SETERRQ(PETSC_ERR_PLIB,"Value Sent To len_bit_mask() Must be >= 0!");}
 
   /* mod BYTE ceiling function */
   rt_val = num_items/BYTE;
@@ -121,7 +121,7 @@ PetscErrorCode set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
 
 
   if (len_bit_mask(val)>len)
-    {error_msg_fatal("The Bit Mask Isn't That Large!");}
+    {SETERRQ(PETSC_ERR_PLIB,"The Bit Mask Isn't That Large!");}
 
   cptr = (char *) bm;
 

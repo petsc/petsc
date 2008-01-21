@@ -212,17 +212,6 @@ File Description:
 
 **********************************error.h*************************************/
 
-/**********************************error.h*************************************
-Function: error_msg_fatal()
-
-Input : formatted string and arguments.
-Output: conversion printed to stdout.
-Return: na.
-Description: prints error message and terminates program.
-Usage: error_msg_fatal("this is my %d'st test",test_num)
-**********************************error.h*************************************/
-extern PetscErrorCode error_msg_fatal(const char msg[], ...);
-
 
 
 /**********************************error.h*************************************

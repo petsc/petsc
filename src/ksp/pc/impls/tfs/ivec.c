@@ -188,7 +188,7 @@ PetscErrorCode ivec_non_uniform(PetscInt *arg1, PetscInt *arg2,  PetscInt n,  Pe
       else if (type == GL_L_AND)   
 	{ivec_land(arg1,arg2,j);}
       else
-	{error_msg_fatal("unrecognized type passed to ivec_non_uniform()!");}
+	{SETERRQ(PETSC_ERR_PLIB,"unrecognized type passed to ivec_non_uniform()!");}
 
       arg1+=j; arg2+=j; i+=j;
     }
@@ -280,7 +280,7 @@ PetscErrorCode ivec_sort( PetscInt *ar,  PetscInt size)
 
 	  /* test stack_size to see if we've exhausted our stack */
 	  if (top_s-bottom_s >= SORT_STACK)
-	    {error_msg_fatal("ivec_sort() :: STACK EXHAUSTED!!!");}
+	    {SETERRQ(PETSC_ERR_PLIB,"ivec_sort() :: STACK EXHAUSTED!!!");}
 
 	  /* push right hand child iff length > 1 */
 	  if ((*top_s = size-((PetscInt) (pi-ar))))
@@ -390,7 +390,7 @@ PetscErrorCode ivec_sort_companion( PetscInt *ar,  PetscInt *ar2,  PetscInt size
 
 	  /* test stack_size to see if we've exhausted our stack */
 	  if (top_s-bottom_s >= SORT_STACK)
-	    {error_msg_fatal("ivec_sort_companion() :: STACK EXHAUSTED!!!");}
+	    {SETERRQ(PETSC_ERR_PLIB,"ivec_sort_companion() :: STACK EXHAUSTED!!!");}
 
 	  /* push right hand child iff length > 1 */
 	  if ((*top_s = size-((PetscInt) (pi-ar))))
@@ -506,7 +506,7 @@ PetscErrorCode ivec_sort_companion_hack( PetscInt *ar,  PetscInt **ar2, PetscInt
 
 	  /* test stack_size to see if we've exhausted our stack */
 	  if (top_s-bottom_s >= SORT_STACK)
-         {error_msg_fatal("ivec_sort_companion_hack() :: STACK EXHAUSTED!!!");}
+         {SETERRQ(PETSC_ERR_PLIB,"ivec_sort_companion_hack() :: STACK EXHAUSTED!!!");}
 
 	  /* push right hand child iff length > 1 */
 	  if ((*top_s = size-((PetscInt) (pi-ar))))
@@ -579,7 +579,7 @@ PetscErrorCode SMI_sort(void *ar1, void *ar2, PetscInt size, PetscInt type)
 
   else
     {
-      error_msg_fatal("SMI_sort only does SORT_INTEGER!");
+      SETERRQ(PETSC_ERR_PLIB,"SMI_sort only does SORT_INTEGER!");
     }
   PetscFunctionReturn(0);
 }
@@ -742,7 +742,7 @@ PetscErrorCode rvec_non_uniform(PetscScalar *arg1, PetscScalar *arg2,  PetscInt 
       else if (type == GL_EXISTS)
 	{rvec_exists(arg1,arg2,j);}
       else
-	{error_msg_fatal("unrecognized type passed to rvec_non_uniform()!");}
+	{SETERRQ(PETSC_ERR_PLIB,"unrecognized type passed to rvec_non_uniform()!");}
 
       arg1+=j; arg2+=j; i+=j;
     }
