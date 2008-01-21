@@ -121,30 +121,39 @@ namespace ALE {
     struct rebind {typedef malloc_allocator<U> other;};
   protected:
     const char *className;
-    //
-    // Dmitry's crap that has to be sorted out
-    //
   public:
     int sz;
   public:
+#ifdef ALE_MEM_LOGGING
     malloc_allocator() {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
     malloc_allocator(const malloc_allocator&) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
     template <class U> 
     malloc_allocator(const malloc_allocator<U>&) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
     ~malloc_allocator() {ALE::MemoryLogger::restoreClassName(className);}
+#else
+    malloc_allocator() {sz = sizeof(value_type);}
+    malloc_allocator(const malloc_allocator&) {sz = sizeof(value_type);}
+    template <class U> 
+    malloc_allocator(const malloc_allocator<U>&) {sz = sizeof(value_type);}
+    ~malloc_allocator() {}
+#endif
   public:
     pointer address(reference x) const {return &x;}
     const_pointer address(const_reference x) const {return x;}
 
     pointer allocate(size_type n, const_pointer = 0) {
+#ifdef ALE_MEM_LOGGING
       ALE::MemoryLogger::singleton().logAllocation(className, n * sizeof(T));
+#endif
       void *p = std::malloc(n * sizeof(T));
       if (!p) throw std::bad_alloc();
       return static_cast<pointer>(p);
     }
 
     void deallocate(pointer p, size_type n) {
+#ifdef ALE_MEM_LOGGING
       ALE::MemoryLogger::singleton().logDeallocation(className, n * sizeof(T));
+#endif
       std::free(p);
     }
 
@@ -153,10 +162,6 @@ namespace ALE {
     void construct(pointer p, const value_type& x) {new(p) value_type(x);}
 
     void destroy(pointer p) {p->~value_type();}
-
-    //
-    // Dmitry's crap that has to be sorted out
-    //
   public:
     pointer create(const value_type& x = value_type()) {
       pointer p = (pointer) allocate(1);

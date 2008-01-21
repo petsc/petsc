@@ -130,6 +130,10 @@ refinement: GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o refinement.o chk
 	-${CLINKER} -o refinement GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o refinement.o ${PETSC_SNES_LIB}
 	${RM} -f refinement.o
 
+fvTest: fvTest.o chkopts
+	-${CLINKER} -o fvTest fvTest.o ${PETSC_SNES_LIB}
+	${RM} -f fvTest.o
+
 #-----------------------------------------------------------------
 runstokes:
 	-@${MPIEXEC} -np ${NP} ./stokes ${EXTRA_ARGS}

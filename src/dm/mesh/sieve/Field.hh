@@ -237,7 +237,6 @@ namespace ALE {
         this->setFiberDimension(p, dim);
       }
     };
-    int size() {return this->_sheaf.size();};
     int size(const point_type& p) {return this->getFiberDimension(p);};
   public: // Restriction
     const value_type *restrict(const point_type& p) const {

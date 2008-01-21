@@ -61,11 +61,11 @@ PetscInt main(PetscInt argc,char **args)
     } else if (function == TANH) {
       PetscScalar *a;
 
-      VecGetArray(x, &a);
+      ierr = VecGetArray(x, &a);CHKERRQ(ierr);
       for(i = 0; i < N; ++i) {
         a[i] = tanh((i - N/2.0)*(10.0/N));
       }
-      VecRestoreArray(x, &a);
+      ierr = VecRestoreArray(x, &a);CHKERRQ(ierr);
     }
     if (view) {ierr = VecView(x, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
 

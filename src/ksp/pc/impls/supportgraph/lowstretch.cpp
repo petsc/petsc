@@ -256,7 +256,7 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   put(get(vertex_depth_t(),g),root,0);
-  ierr = LowStretchSpanningTreeHelper(g,root,log(4.0/3)/(2.0*log(n)),idx);CHKERRQ(ierr);
+  ierr = LowStretchSpanningTreeHelper(g,root,log(4.0/3.0)/(2.0*log((double)n)),idx);CHKERRQ(ierr);
 
   if (augment) {
     ierr = AugmentSpanningTree(g,root,maxCong);CHKERRQ(ierr);
@@ -445,7 +445,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   edgesLeft = m;
 
   std::vector<PetscInt> pred(n,-1);
-  std::vector<PetscInt> succ[n]; 
+  const std::vector<PetscInt> succ[n]; 
   std::vector<PetscInt>::iterator i;
   PetscScalar dist[n];
   std::vector<PetscTruth> taken(n,PETSC_FALSE);
@@ -505,7 +505,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       pq.push(PQNode(*i,dist[*i]));
     }
   }
-  while (boundary > (edgeCount+1)*log(m)/(log(2)*(1-2*delta)*radius)) {
+  while (boundary > (edgeCount+1)*log((double)m)/(log(2.0)*(1.0-2.0*delta)*radius)) {
     assert(!pq.empty());
     node = pq.top();pq.pop();
     centerIdx.push_back(g.local_to_global(node.vertex));
@@ -598,7 +598,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       }
       if (initialInternalConeEdges < edgesLeft) {
 	while (initialInternalConeEdges == 0 ?
-	       boundary > (edgeCount+1)*log(edgesLeft+1)*2.0/(log(2.0)*epsilon*radius) : 
+	       boundary > (edgeCount+1)*log((double)(edgesLeft+1))*2.0/(log(2.0)*epsilon*radius) : 
 	       boundary > (edgeCount)*log(edgesLeft*1.0/initialInternalConeEdges)*2.0/(log(2.0)*epsilon*radius))
 	  {
 	    assert(!mycone_pq.empty());
