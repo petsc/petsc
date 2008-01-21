@@ -20,8 +20,8 @@ Last Modification:
 /* global program control variables - explicitly exported */
 PetscMPIInt my_id            = 0;
 PetscMPIInt num_nodes        = 1;
-PetscInt floor_num_nodes  = 0;
-PetscInt i_log2_num_nodes = 0;
+PetscMPIInt floor_num_nodes  = 0;
+PetscMPIInt i_log2_num_nodes = 0;
 
 /* global program control variables */
 static PetscInt p_init = 0;
@@ -167,7 +167,7 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 }  
 
 /***********************************comm.c*************************************/
-PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs)
+PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs)
 {
   PetscInt       mask, edge;
   PetscInt       type, dest;
@@ -342,7 +342,7 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscIn
 }  
 
 /***********************************comm.c*************************************/
-PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt, PetscInt comm_type)
+PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt)
 {
   PetscInt       mask, edge;
   PetscInt       dest;
@@ -367,12 +367,10 @@ PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt
   if (n<0)
     {SETERRQ1(PETSC_ERR_PLIB,"gop() :: n=%D<0?",n);}
 
-  if (comm_type==MPI)
-    {
-      ierr = MPI_Op_create(fp,TRUE,&op);CHKERRQ(ierr);
-      ierr = MPI_Allreduce (vals, work, n, dt, op, MPI_COMM_WORLD);CHKERRQ(ierr);
-      ierr = MPI_Op_free(&op);CHKERRQ(ierr);
-    }
+  ierr = MPI_Op_create(fp,TRUE,&op);CHKERRQ(ierr);
+  ierr = MPI_Allreduce (vals, work, n, dt, op, MPI_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&op);CHKERRQ(ierr);
+
 
   /* if not a hypercube must colapse partial dim */
   if (edge_not_pow_2)

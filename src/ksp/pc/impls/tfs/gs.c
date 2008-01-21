@@ -196,13 +196,6 @@ static PetscErrorCode gs_gop_local_exists(gs_id *gs, PetscScalar *vals);
 static PetscErrorCode gs_gop_local_in_exists(gs_id *gs, PetscScalar *vals);
 static PetscErrorCode gs_gop_tree_exists(gs_id *gs, PetscScalar *vals);
 
-static PetscErrorCode gs_gop_pairwise_binary(gs_id *gs, PetscScalar *in_vals, rbfp fct);
-static PetscErrorCode gs_gop_local_binary(gs_id *gs, PetscScalar *vals, rbfp fct);
-static PetscErrorCode gs_gop_local_in_binary(gs_id *gs, PetscScalar *vals, rbfp fct);
-static PetscErrorCode gs_gop_tree_binary(gs_id *gs, PetscScalar *vals, rbfp fct);
-
-
-
 /* global vars */
 /* from comm.c module */
 
@@ -961,197 +954,6 @@ static PetscErrorCode gs_gop_local_out( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-/******************************************************************************/
-PetscErrorCode gs_gop_binary(gs_ADT gs, PetscScalar *vals, rbfp fct)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  /* local only operations!!! */
-  if (gs->num_local)
-    {ierr = gs_gop_local_binary(gs,vals,fct);CHKERRQ(ierr);}
-  
-  /* if intersection tree/pairwise and local isn't empty */
-  if (gs->num_local_gop)
-    {
-      ierr = gs_gop_local_in_binary(gs,vals,fct);CHKERRQ(ierr);
-      
-      /* pairwise */
-      if (gs->num_pairs)
-        {ierr = gs_gop_pairwise_binary(gs,vals,fct);CHKERRQ(ierr);}
-      
-      /* tree */
-      else if (gs->max_left_over)
-        {ierr = gs_gop_tree_binary(gs,vals,fct);CHKERRQ(ierr);}
-      
-      ierr = gs_gop_local_out(gs,vals);CHKERRQ(ierr);
-    }
-  /* if intersection tree/pairwise and local is empty */
-  else
-    {
-      /* pairwise */
-      if (gs->num_pairs)
-        {ierr = gs_gop_pairwise_binary(gs,vals,fct);CHKERRQ(ierr);}
-      
-      /* tree */
-      else if (gs->max_left_over)
-        {ierr = gs_gop_tree_binary(gs,vals,fct);CHKERRQ(ierr);}
-    }
-  PetscFunctionReturn(0);
-}
-
-/******************************************************************************/
-static PetscErrorCode gs_gop_local_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct)
-{
-   PetscInt *num, *map, **reduce;
-  PetscScalar tmp;
-
-  PetscFunctionBegin;
-  num    = gs->num_local_reduce;  
-  reduce = gs->local_reduce;  
-  while ((map = *reduce))
-    {
-      num ++;
-      (*fct)(&tmp,NULL,1);
-      /* tmp = 0.0; */
-      while (*map >= 0)
-        {(*fct)(&tmp,(vals + *map),1); map++;}
-        /*        {tmp = (*fct)(tmp,*(vals + *map)); map++;} */
-      
-      map = *reduce++;
-      while (*map >= 0)
-        {*(vals + *map++) = tmp;}
-    }
-  PetscFunctionReturn(0);
-}
-
-/******************************************************************************/
-static PetscErrorCode gs_gop_local_in_binary( gs_id *gs,  PetscScalar *vals,  rbfp fct) 
-{
-   PetscInt *num, *map, **reduce;
-   PetscScalar *base;
-
-  PetscFunctionBegin;
-  num    = gs->num_gop_local_reduce;  
-
-  reduce = gs->gop_local_reduce;  
-  while ((map = *reduce++))
-    {
-      num++;
-      base = vals + *map++;
-      while (*map >= 0)
-        {(*fct)(base,(vals + *map),1); map++;}
-    }
-  PetscFunctionReturn(0);
-}
-
-/******************************************************************************/
-static PetscErrorCode gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,rbfp fct)
-{
-  PetscScalar    *dptr1, *dptr2, *dptr3, *in1, *in2;
-  PetscInt            *iptr, *msg_list, *msg_size, **msg_nodes;
-  PetscInt            *pw, *list, *size, **nodes;
-  MPI_Request    *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-  MPI_Status     status;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* strip and load s */
-  msg_list =list         = gs->pair_list;
-  msg_size =size         = gs->msg_sizes;
-  msg_nodes=nodes        = gs->node_list;
-  iptr=pw                = gs->pw_elm_list;  
-  dptr1=dptr3            = gs->pw_vals;
-  msg_ids_in  = ids_in   = gs->msg_ids_in;
-  msg_ids_out = ids_out  = gs->msg_ids_out;
-  dptr2                  = gs->out;
-  in1=in2                = gs->in;
-
-  /* post the receives */
-  /*  msg_nodes=nodes; */
-  do 
-    {
-      /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
-         second one *list and do list++ afterwards */
-      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, gs->gs_comm, msg_ids_in++);CHKERRQ(ierr); 
-      in1 += *size++;
-    }
-  while (*++msg_nodes);
-  msg_nodes=nodes;
-
-  /* load gs values into in out gs buffers */  
-  while (*iptr >= 0)
-    {*dptr3++ = *(in_vals + *iptr++);}
-
-  /* load out buffers and post the sends */
-  while ((iptr = *msg_nodes++))
-    {
-      dptr3 = dptr2;
-      while (*iptr >= 0)
-        {*dptr2++ = *(dptr1 + *iptr++);}
-      /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
-      /* is msg_ids_out++ correct? */
-      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++, MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);CHKERRQ(ierr);
-    }
-
-  if (gs->max_left_over)
-    {gs_gop_tree_binary(gs,in_vals,fct);}
-
-  /* process the received data */
-  msg_nodes=nodes;
-  while ((iptr = *nodes++))
-    {
-      /* Should I check the return value of MPI_Wait() or status? */
-      /* Can this loop be replaced by a call to MPI_Waitall()? */
-      ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
-      while (*iptr >= 0)
-        {(*fct)((dptr1 + *iptr),in2,1); iptr++; in2++;}
-      /* {*(dptr1 + *iptr) = (*fct)(*(dptr1 + *iptr),*in2); iptr++; in2++;} */
-    }
-
-  /* replace vals */
-  while (*pw >= 0)
-    {*(in_vals + *pw++) = *dptr1++;}
-
-  /* clear isend message handles */
-  /* This changed for clarity though it could be the same */
-  while (*msg_nodes++)
-    /* Should I check the return value of MPI_Wait() or status? */
-    /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
-}
-
-/******************************************************************************/
-static PetscErrorCode gs_gop_tree_binary(gs_id *gs, PetscScalar *vals,  rbfp fct)
-{
-  PetscInt         size;
-  PetscInt         *in,    *out;  
-  PetscScalar *buf, *work;
-
-  PetscFunctionBegin;
-  in   = gs->tree_map_in;
-  out  = gs->tree_map_out;
-  buf  = gs->tree_buf;
-  work = gs->tree_work;
-  size = gs->tree_nel;
-
-  /* load vals vector w/identity */
-  (*fct)(buf,NULL,size);
-  
-  /* load my contribution into val vector */
-  while (*in >= 0) {
-    (*fct)((buf + *out++),(vals + *in++),-1);
-  }
-
-  gfop(buf,work,size,(vbfp)fct,MPIU_SCALAR,0);
-
-  in   = gs->tree_map_in;
-  out  = gs->tree_map_out;
-  while (*in >= 0) {
-    (*fct)((vals + *in++),(buf + *out++),-1);
-  }
-  PetscFunctionReturn(0);
-}
 
 /******************************************************************************/
 PetscErrorCode gs_gop( gs_id *gs,  PetscScalar *vals,  const char *op)
@@ -2849,7 +2651,7 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
    PetscInt *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  PetscBLASInt i1;
+  PetscBLASInt i1,dstep;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2909,9 +2711,10 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
       /* Can this loop be replaced by a call to MPI_Waitall()? */
       ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0) {
-          BLASaxpy_(&step,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
-          in2+=step;
-          iptr++;
+	dstep = step;
+        BLASaxpy_(&step,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
+	in2+=step;
+	iptr++;
       }
   }
 
@@ -2956,7 +2759,8 @@ static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  Pets
   /* copy over my contributions */
   while (*in >= 0)
     { 
-      BLAScopy_(&step,vals + *in++*step,&i1,buf + *out++*step,&i1);
+      PetscBLASInt dstep = step;
+      BLAScopy_(&dstep,vals + *in++*step,&i1,buf + *out++*step,&i1);
     }
 
   /* perform fan in/out on full buffer */
@@ -2970,7 +2774,8 @@ static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  Pets
   /* get the portion of the results I need */
   while (*in >= 0)
     {
-      BLAScopy_(&step,buf + *out++*step,&i1,vals + *in++*step,&i1);
+      PetscBLASInt dstep = step;
+      BLAScopy_(&dstep,buf + *out++*step,&i1,vals + *in++*step,&i1);
     }
   PetscFunctionReturn(0);
 }
