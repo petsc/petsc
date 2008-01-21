@@ -331,7 +331,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
       /* shouldn't need this */
       if (col==INT_MAX)
 	{
-	  ierr = PetscInfo(0,"hey ... col==INT_MAX??\n");
+	  ierr = PetscInfo(0,"hey ... col==INT_MAX??\n");CHKERRQ(ierr);
 	  continue;
 	}
 
@@ -433,7 +433,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 	{
 	  if ((xxt_nnz+len)>xxt_max_nnz)
 	    {
-	      ierr = PetscInfo(0,"increasing space for X by 2x!\n");
+	      ierr = PetscInfo(0,"increasing space for X by 2x!\n");CHKERRQ(ierr);
 	      xxt_max_nnz *= 2;
 	      x_ptr = (PetscScalar *) malloc(xxt_max_nnz*sizeof(PetscScalar));
 	      rvec_copy(x_ptr,x,xxt_nnz);

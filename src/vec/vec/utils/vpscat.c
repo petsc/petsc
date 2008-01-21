@@ -158,7 +158,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
     }
   }
 
-#if defined(PETSC_HAVE_MPI_ALLTOALLW)
+#if defined(PETSC_HAVE_MPI_ALLTOALLW) && !defined(PETSC_USE_64BIT_INDICES)
   if (to->use_alltoallw) {
     ierr = PetscFree3(to->wcounts,to->wdispls,to->types);CHKERRQ(ierr);
     ierr = PetscFree3(from->wcounts,from->wdispls,from->types);CHKERRQ(ierr);
@@ -1715,7 +1715,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_alltoall",&to->use_alltoallv);CHKERRQ(ierr);
   from->use_alltoallv = to->use_alltoallv;
   if (from->use_alltoallv) PetscInfo(ctx,"Using MPI_Alltoallv() for scatter\n");
-#if defined(PETSC_HAVE_MPI_ALLTOALLW) 
+#if defined(PETSC_HAVE_MPI_ALLTOALLW)  && !defined(PETSC_USE_64BIT_INDICES)
   if (to->use_alltoallv) {
     ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_nopack",&to->use_alltoallw);CHKERRQ(ierr);
   }
@@ -1749,7 +1749,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     for (i=1; i<size; i++) {
       from->displs[i] = from->displs[i-1] + from->counts[i-1]; 
     }
-#if defined(PETSC_HAVE_MPI_ALLTOALLW) 
+#if defined(PETSC_HAVE_MPI_ALLTOALLW) && !defined(PETSC_USE_64BIT_INDICES)
     if (to->use_alltoallw) {
       PetscMPIInt mpibs = (PetscMPIInt)bs, mpilen;
       ctx->packtogether = PETSC_FALSE;
