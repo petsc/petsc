@@ -253,7 +253,6 @@ typedef struct gather_scatter_id *gs_ADT;
 typedef PetscErrorCode (*Rbfp)(PetscScalar *, PetscScalar *, PetscInt len);
 
 extern gs_ADT gs_init(PetscInt *elms, PetscInt nel, PetscInt level);
-extern PetscErrorCode   gs_gop(gs_ADT gs_handle, PetscScalar *vals, const char *op);
 extern PetscErrorCode   gs_gop_vec(gs_ADT gs_handle, PetscScalar *vals, const char *op, PetscInt step);
 extern PetscErrorCode   gs_gop_binary(gs_ADT gs, PetscScalar *vals, Rbfp fct);
 extern PetscErrorCode   gs_gop_hc(gs_ADT gs_handle, PetscScalar *vals, const char *op, PetscInt dim);
