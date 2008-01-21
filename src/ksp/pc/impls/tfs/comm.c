@@ -105,7 +105,7 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 
   /* major league hack */
   if (!(fp = (vfp) ivec_fct_addr(type))) {
-    error_msg_warning("giop() :: hope you passed in a rbfp!\n");
+    ierr = PetscInfo(0,"giop() :: hope you passed in a rbfp!\n");
     fp = (vfp) oprs;
   }
 
@@ -201,7 +201,7 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs)
     {oprs++;}
 
   if (!(fp = (vfp) rvec_fct_addr(type))) {
-    error_msg_warning("grop() :: hope you passed in a rbfp!\n");
+    ierr = PetscInfo(0,"grop() :: hope you passed in a rbfp!\n");
     fp = (vfp) oprs;
   }
 
@@ -304,7 +304,7 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscIn
     {oprs++;}
 
   if (!(fp = (vfp) rvec_fct_addr(type))) {
-    error_msg_warning("grop_hc() :: hope you passed in a rbfp!\n");
+    ierr = PetscInfo(0,"grop_hc() :: hope you passed in a rbfp!\n");
     fp = (vfp) oprs;
   }
 
@@ -580,7 +580,7 @@ PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *opr
     {oprs++;}
 
   if (!(fp = (vfp) ivec_fct_addr(type))){
-    error_msg_warning("giop_hc() :: hope you passed in a rbfp!\n");
+    ierr = PetscInfo(0,"giop_hc() :: hope you passed in a rbfp!\n");
     fp = (vfp) oprs;
   }
 

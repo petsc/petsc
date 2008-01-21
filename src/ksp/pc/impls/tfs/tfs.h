@@ -206,47 +206,6 @@ Last Modification:
 6.21.97
 **********************************error.h*************************************/
 
-/**********************************error.h*************************************
-File Description:
------------------
-
-**********************************error.h*************************************/
-
-
-
-/**********************************error.h*************************************
-Function: error_msg_warning()
-
-Input : formatted string and arguments.
-Output: conversion printed to stdout.
-Return: na.
-Description: prints error message.
-Usage: error_msg_warning("this is my %d'st test",test_num)
-**********************************error.h*************************************/
-extern PetscErrorCode error_msg_warning(const char msg[], ...);
-
-/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
-/**********************************ivec.h**************************************
-
-Author: Henry M. Tufo III
-
-e-mail: hmt@cs.brown.edu
-
-snail-mail:
-Division of Applied Mathematics
-Brown University
-Providence, RI 02912
-
-Last Modification: 
-6.21.97
-***********************************ivec.h*************************************/
-
-/**********************************ivec.h**************************************
-File Description:
------------------
-
-***********************************ivec.h*************************************/
-
 #define SORT_REAL		1
 #define SORT_INTEGER	        0
 #define SORT_INT_PTR	        2

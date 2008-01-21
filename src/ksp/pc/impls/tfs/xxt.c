@@ -249,6 +249,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
   PetscInt xxt_zero_nnz_0=0;
   PetscBLASInt i1 = 1;
   PetscScalar dm1 = -1.0;
+  PetscErrorCode ierr;
 
   n=xxt_handle->mvi->n; 
   nsep=xxt_handle->info->nsep; 
@@ -330,7 +331,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
       /* shouldn't need this */
       if (col==INT_MAX)
 	{
-	  error_msg_warning("hey ... col==INT_MAX??\n");
+	  ierr = PetscInfo(0,"hey ... col==INT_MAX??\n");
 	  continue;
 	}
 
@@ -432,7 +433,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
 	{
 	  if ((xxt_nnz+len)>xxt_max_nnz)
 	    {
-	      error_msg_warning("increasing space for X by 2x!\n");
+	      ierr = PetscInfo(0,"increasing space for X by 2x!\n");
 	      xxt_max_nnz *= 2;
 	      x_ptr = (PetscScalar *) malloc(xxt_max_nnz*sizeof(PetscScalar));
 	      rvec_copy(x_ptr,x,xxt_nnz);
@@ -476,7 +477,7 @@ static PetscInt xxt_generate(xxt_ADT xxt_handle)
   while (dim!=level)
     {
       stages[dim++]=i;
-      error_msg_warning("disconnected!!! dim(%d)!=level(%d)\n",dim,level);
+      ierr = PetscInfo2(0,"disconnected!!! dim(%d)!=level(%d)\n",dim,level);CHKERRQ(ierr);
     }
   stages[dim]=i;
 

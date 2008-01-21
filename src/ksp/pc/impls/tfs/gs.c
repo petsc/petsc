@@ -328,7 +328,7 @@ static gs_id * gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
   PetscInt vals[sizeof(oprs)/sizeof(oprs[0])-1];
   PetscInt work[sizeof(oprs)/sizeof(oprs[0])-1];
   gs_id *gs;
-
+  PetscErrorCode ierr;
 
 
   if (!in_elms)
@@ -338,7 +338,7 @@ static gs_id * gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
     {SETERRABORT(PETSC_COMM_WORLD,PETSC_ERR_PLIB,"can't have fewer than 0 elms!!!\n");}
 
   if (nel==0)
-    {error_msg_warning("I don't have any elements!!!\n");}
+    {ierr = PetscInfo(0,"I don't have any elements!!!\n");}
 
   /* get space for gs template */
   gs = gsi_new();
@@ -380,11 +380,11 @@ static gs_id * gsi_check_args(PetscInt *in_elms, PetscInt nel, PetscInt level)
   /* set up inverse map */  
   if (j)
     {
-      error_msg_warning("gsi_check_args() :: elm list *not* sorted!\n");
+      ierr = PetscInfo(0,"gsi_check_args() :: elm list *not* sorted!\n");
       SMI_sort((void*)elms, (void*)companion, nel, SORT_INTEGER);
     }
   else
-    {error_msg_warning("gsi_check_args() :: elm list sorted!\n");}
+    {ierr = PetscInfo(0,"gsi_check_args() :: elm list sorted!\n");}
   elms[nel] = INT_MIN;
 
   /* first pass */
@@ -1327,8 +1327,9 @@ Description:
 ******************************************************************************/
 PetscErrorCode gs_gop( gs_id *gs,  PetscScalar *vals,  const char *op)
 {
-  PetscFunctionBegin;
+  PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   switch (*op) {
   case '+':
     gs_gop_plus(gs,vals);
@@ -1351,8 +1352,8 @@ PetscErrorCode gs_gop( gs_id *gs,  PetscScalar *vals,  const char *op)
   case 'M':
     gs_gop_max(gs,vals); break;
   default:
-    error_msg_warning("gs_gop() :: %c is not a valid op",op[0]);
-    error_msg_warning("gs_gop() :: default :: plus");
+    ierr = PetscInfo1(0,"gs_gop() :: %c is not a valid op",op[0]);
+    ierr = PetscInfo(0,"gs_gop() :: default :: plus");
     gs_gop_plus(gs,vals);    
     break;
   }
@@ -2827,14 +2828,16 @@ PetscErrorCode gs_free( gs_id *gs)
 /******************************************************************************/
 PetscErrorCode gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  PetscInt step)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   switch (*op) {
   case '+':
     gs_gop_vec_plus(gs,vals,step);
     break;
   default:
-    error_msg_warning("gs_gop_vec() :: %c is not a valid op",op[0]);
-    error_msg_warning("gs_gop_vec() :: default :: plus");
+    ierr = PetscInfo1(0,"gs_gop_vec() :: %c is not a valid op",op[0]);
+    ierr = PetscInfo(0,"gs_gop_vec() :: default :: plus");
     gs_gop_vec_plus(gs,vals,step);    
     break;
   }
@@ -3163,14 +3166,16 @@ static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  Pets
 /******************************************************************************/
 PetscErrorCode gs_gop_hc( gs_id *gs,  PetscScalar *vals,  const char *op,  PetscInt dim)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   switch (*op) {
   case '+':
     gs_gop_plus_hc(gs,vals,dim);
     break;
   default:
-    error_msg_warning("gs_gop_hc() :: %c is not a valid op",op[0]);
-    error_msg_warning("gs_gop_hc() :: default :: plus\n");
+    ierr = PetscInfo1(0,"gs_gop_hc() :: %c is not a valid op",op[0]);
+    ierr = PetscInfo(0,"gs_gop_hc() :: default :: plus\n");
     gs_gop_plus_hc(gs,vals,dim);    
     break;
   }

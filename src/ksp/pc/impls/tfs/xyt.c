@@ -264,6 +264,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
   PetscInt yt_zero_nnz_0=0;
   PetscBLASInt i1 = 1;
   PetscScalar dm1 = -1.0;
+  PetscErrorCode ierr;
 
   n=xyt_handle->mvi->n; 
   nsep=xyt_handle->info->nsep; 
@@ -282,7 +283,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
   if (m!=j)
     {printf("xyt_generate() :: null space exists %d %d %d\n",m,j,xyt_handle->ns);}
 
-  error_msg_warning("xyt_generate() :: X(%d,%d)\n",n,m);    
+  ierr = PetscInfo2(0,"xyt_generate() :: X(%d,%d)\n",n,m);CHKERRQ(ierr);
 
   /* get and initialize storage for x local         */
   /* note that x local is nxm and stored by columns */
@@ -359,7 +360,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
       /* shouldn't need this */
       if (col==INT_MAX)
 	{
-	  error_msg_warning("hey ... col==INT_MAX??\n");
+	  ierr = PetscInfo(0,"hey ... col==INT_MAX??\n");
 	  continue;
 	}
 
@@ -461,7 +462,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 	{
 	  if ((xt_nnz+len)>xt_max_nnz)
 	    {
-	      error_msg_warning("increasing space for X by 2x!\n");
+	      ierr = PetscInfo(0,"increasing space for X by 2x!\n");
 	      xt_max_nnz *= 2;
 	      x_ptr = (PetscScalar *) malloc(xt_max_nnz*sizeof(PetscScalar));
 	      rvec_copy(x_ptr,x,xt_nnz);
@@ -520,7 +521,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
 	{
 	  if ((yt_nnz+len)>yt_max_nnz)
 	    {
-	      error_msg_warning("increasing space for Y by 2x!\n");
+	      ierr = PetscInfo(0,"increasing space for Y by 2x!\n");
 	      yt_max_nnz *= 2;
 	      y_ptr = (PetscScalar *) malloc(yt_max_nnz*sizeof(PetscScalar));
 	      rvec_copy(y_ptr,y,yt_nnz);
@@ -564,7 +565,7 @@ static PetscInt xyt_generate(xyt_ADT xyt_handle)
   while (dim!=level)
     {
       stages[dim++]=i;
-      error_msg_warning("disconnected!!! dim(%d)!=level(%d)\n",dim,level);
+      ierr = PetscInfo2(0,"disconnected!!! dim(%d)!=level(%d)\n",dim,level);CHKERRQ(ierr);
     }
   stages[dim]=i;
 
@@ -672,6 +673,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   PetscInt  m=xyt_handle->mvi->m;
   PetscInt level=xyt_handle->level;
   PetscInt shared=FALSE; 
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   dir  = (PetscInt*)malloc(sizeof(PetscInt)*(level+1));
@@ -693,7 +695,7 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   rvec_zero(lhs,m);
   rvec_set(lhs,1.0,n);
   gs_gop_hc(gs_handle,lhs,"+\0",level);
-  error_msg_warning("done first gs_gop_hc\n");
+  ierr = PetscInfo(0,"done first gs_gop_hc\n");CHKERRQ(ierr);
   rvec_zero(rsum,2);
   for (ct=i=0;i<n;i++)
     {
