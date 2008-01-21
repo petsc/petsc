@@ -14,23 +14,10 @@ Providence, RI 02912
 Last Modification: 
 11.21.97
 *********************************bit_mask.c***********************************/
-
-/********************************bit_mask.c************************************
-File Description:
------------------
-
-*********************************bit_mask.c***********************************/
 #include "src/ksp/pc/impls/tfs/tfs.h"
 
 
-/********************************bit_mask.c************************************
-Function: bm_to_proc
-
-Input : 
-Output: 
-Return: 
-Description: 
-*********************************bit_mask.c***********************************/
+/*********************************bit_mask.c***********************************/
 PetscErrorCode bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list)
 {
    PetscInt i, tmp;
@@ -65,16 +52,7 @@ PetscErrorCode bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list)
   PetscFunctionReturn(0);
 }
 
-
-
-/********************************bit_mask.c************************************
-Function: ct_bits()
-
-Input : 
-Output: 
-Return: 
-Description: 
-*********************************bit_mask.c***********************************/
+/*********************************bit_mask.c***********************************/
 PetscInt ct_bits( char *ptr, PetscInt n)
 {
    PetscInt i, tmp=0;
@@ -96,16 +74,7 @@ PetscInt ct_bits( char *ptr, PetscInt n)
   return(tmp);
 }
 
-
-
-/********************************bit_mask.c************************************
-Function: len_buf()
-
-Input : 
-Output: 
-Return: 
-Description:
-*********************************bit_mask.c***********************************/ 
+/*********************************bit_mask.c***********************************/ 
 PetscInt
 div_ceil( PetscInt numer,  PetscInt denom)
 {
@@ -122,16 +91,7 @@ div_ceil( PetscInt numer,  PetscInt denom)
   return(rt_val);
 }
 
-
-
-/********************************bit_mask.c************************************
-Function: len_bit_mask()
-
-Input : 
-Output: 
-Return: 
-Description:
-*********************************bit_mask.c***********************************/ 
+/*********************************bit_mask.c***********************************/ 
 PetscInt
 len_bit_mask( PetscInt num_items)
 {
@@ -152,16 +112,7 @@ len_bit_mask( PetscInt num_items)
   return(rt_val);
 }
 
-
-
-/********************************bit_mask.c************************************
-Function: set_bit_mask()
-
-Input : 
-Output: 
-Return:
-Description: 
-*********************************bit_mask.c***********************************/
+/*********************************bit_mask.c***********************************/
 PetscErrorCode set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
 {
    PetscInt i, offset;
@@ -187,18 +138,8 @@ PetscErrorCode set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
   PetscFunctionReturn(0);
 }
 
-
-
-/********************************bit_mask.c************************************
-Function: len_buf()
-
-Input : 
-Output: 
-Return: 
-Description: 
-*********************************bit_mask.c***********************************/
-PetscInt
-len_buf(PetscInt item_size, PetscInt num_items)
+/*********************************bit_mask.c***********************************/
+PetscInt len_buf(PetscInt item_size, PetscInt num_items)
 {
    PetscInt rt_val, tmp;
 

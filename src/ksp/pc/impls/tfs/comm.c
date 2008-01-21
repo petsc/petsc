@@ -14,12 +14,6 @@ Providence, RI 02912
 Last Modification: 
 11.21.97
 ***********************************comm.c*************************************/
-
-/***********************************comm.c*************************************
-File Description:
------------------
-
-***********************************comm.c*************************************/
 #include "src/ksp/pc/impls/tfs/tfs.h"
 
 
@@ -36,14 +30,7 @@ static int edge_not_pow_2;
 
 static unsigned int edge_node[sizeof(PetscInt)*32];
 
-/***********************************comm.c*************************************
-Function: giop()
-
-Input : 
-Output: 
-Return: 
-Description: 
-***********************************comm.c*************************************/
+/***********************************comm.c*************************************/
 PetscErrorCode comm_init (void)
 {
 
@@ -80,23 +67,14 @@ PetscErrorCode comm_init (void)
   PetscFunctionReturn(0);
 }
 
-
-
-/***********************************comm.c*************************************
-Function: giop()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-***********************************comm.c*************************************/
+/***********************************comm.c*************************************/
 PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 {
-   PetscInt mask, edge;
-  PetscInt type, dest;
-  vfp fp;
+  PetscInt   mask, edge;
+  PetscInt    type, dest;
+  vfp         fp;
   MPI_Status  status;
-  PetscInt ierr;
+  PetscInt    ierr;
 
    PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
@@ -188,20 +166,13 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
         PetscFunctionReturn(0);
 }  
 
-/***********************************comm.c*************************************
-Function: grop()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-***********************************comm.c*************************************/
+/***********************************comm.c*************************************/
 PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs)
 {
-   PetscInt mask, edge;
-  PetscInt type, dest;
-  vfp fp;
-  MPI_Status  status;
+  PetscInt       mask, edge;
+  PetscInt       type, dest;
+  vfp            fp;
+  MPI_Status     status;
   PetscErrorCode ierr;
 
    PetscFunctionBegin;
@@ -291,24 +262,13 @@ PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs)
         PetscFunctionReturn(0);
 }  
 
-
-/***********************************comm.c*************************************
-Function: grop()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-
-note good only for num_nodes=2^k!!!
-
-***********************************comm.c*************************************/
+/***********************************comm.c*************************************/
 PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs, PetscInt dim)
 {
-   PetscInt mask, edge;
-  PetscInt type, dest;
-  vfp fp;
-  MPI_Status  status;
+  PetscInt       mask, edge;
+  PetscInt       type, dest;
+  vfp            fp;
+  MPI_Status     status;
   PetscErrorCode ierr;
 
    PetscFunctionBegin;
@@ -381,21 +341,13 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, int *op
         PetscFunctionReturn(0);
 }  
 
-
-/***********************************comm.c*************************************
-Function: gop()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-***********************************comm.c*************************************/
+/***********************************comm.c*************************************/
 PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt, int comm_type)
 {
-   PetscInt mask, edge;
-  PetscInt dest;
-  MPI_Status  status;
-  MPI_Op op;
+  PetscInt       mask, edge;
+  PetscInt       dest;
+  MPI_Status     status;
+  MPI_Op         op;
   PetscErrorCode ierr;
 
    PetscFunctionBegin;
@@ -409,7 +361,7 @@ PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n))
-    {CHKERRQ(ierr);}
+    {PetscFunctionReturn(0);}
 
   /* a negative number of items to send ==> fatal */
   if (n<0)
@@ -420,7 +372,6 @@ PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt
       ierr = MPI_Op_create(fp,TRUE,&op);CHKERRQ(ierr);
       ierr = MPI_Allreduce (vals, work, n, dt, op, MPI_COMM_WORLD);CHKERRQ(ierr);
       ierr = MPI_Op_free(&op);CHKERRQ(ierr);
-      CHKERRQ(ierr);
     }
 
   /* if not a hypercube must colapse partial dim */
@@ -465,7 +416,6 @@ PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt
 	    }
 	}
     }
-
   /* if not a hypercube must expand to partial dim */
   if (edge_not_pow_2)
     {
@@ -479,27 +429,12 @@ PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt
   PetscFunctionReturn(0);
 }  
 
-
-
-
-
-
-/******************************************************************************
-Function: giop()
-
-Input : 
-Output: 
-Return: 
-Description: 
- 
-ii+1 entries in seg :: 0 .. ii
-
-******************************************************************************/
+/******************************************************************************/
 PetscErrorCode ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
 {
-   PetscInt edge, type, dest, mask;
-   PetscInt stage_n;
-  MPI_Status  status;
+  PetscInt       edge, type, dest, mask;
+  PetscInt       stage_n;
+  MPI_Status     status;
   PetscErrorCode ierr;
 
    PetscFunctionBegin;
@@ -549,112 +484,12 @@ PetscErrorCode ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level
   PetscFunctionReturn(0);
 }  
 
-
-
-/***********************************comm.c*************************************
-Function: grop_hc_vvl()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-
-note good only for num_nodes=2^k!!!
-
-***********************************comm.c*************************************/
-PetscErrorCode grop_hc_vvl(PetscScalar *vals, PetscScalar *work, PetscInt *segs, PetscInt *oprs, PetscInt dim)
-{
-   PetscInt mask, edge, n;
-  PetscInt type, dest;
-  vfp fp;
-  MPI_Status  status;
-  PetscErrorCode ierr;
-
-   PetscFunctionBegin;
-  error_msg_fatal("grop_hc_vvl() :: is not working!\n");
-
-  /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!oprs||!segs)
-    {error_msg_fatal("grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
-
-  /* non-uniform should have at least two entries */
-
-  /* check to make sure comm package has been initialized */
-  if (!p_init)
-    {comm_init();}
-
-  /* if there's nothing to do return */
-  if ((num_nodes<2)||(dim<=0))
-    {PetscFunctionReturn(0);}
-
-  /* the error msg says it all!!! */
-  if (modfl_num_nodes)
-    {error_msg_fatal("grop_hc() :: num_nodes not a power of 2!?!");}
-
-  /* can't do more dimensions then exist */
-  dim = PetscMin(dim,i_log2_num_nodes);
-
-  /* advance to list of n operations for custom */
-  if ((type=oprs[0])==NON_UNIFORM)
-    {oprs++;}
-
-  if (!(fp = (vfp) rvec_fct_addr(type))){
-    error_msg_warning("grop_hc() :: hope you passed in a rbfp!\n");
-    fp = (vfp) oprs;
-  }
-
-  for (mask=1,edge=0; edge<dim; edge++,mask<<=1)
-    {
-      n = segs[dim]-segs[edge];
-      dest = my_id^mask;
-      if (my_id > dest)
-	{ierr = MPI_Send(vals+segs[edge],n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
-      else
-	{
-	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
-	  (*fp)(vals+segs[edge], work, n, oprs);
-	}
-    }
-
-  if (edge==dim)
-    {mask>>=1;}
-  else
-    {while (++edge<dim) {mask<<=1;}}
-
-  for (edge=0; edge<dim; edge++,mask>>=1)
-    {
-      if (my_id%mask)
-	{continue;}
-      
-      n = (segs[dim]-segs[dim-1-edge]);
-      
-      dest = my_id^mask;
-      if (my_id < dest)
-	{ierr = MPI_Send(vals+segs[dim-1-edge],n,MPIU_SCALAR,dest,MSGTAG4+my_id, MPI_COMM_WORLD);CHKERRQ(ierr);}
-      else
-	{
-	  ierr = MPI_Recv(vals+segs[dim-1-edge],n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
-	}
-    }
-  PetscFunctionReturn(0);
-}  
-
-/******************************************************************************
-Function: giop()
-
-Input : 
-Output: 
-Return: 
-Description: 
- 
-ii+1 entries in seg :: 0 .. ii
-
-******************************************************************************/
+/******************************************************************************/
 PetscErrorCode new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, int *segs)
 {
-   int edge, type, dest, mask;
-   int stage_n;
-  MPI_Status  status;
+  int            edge, type, dest, mask;
+  int            stage_n;
+  MPI_Status     status;
   PetscErrorCode ierr;
 
    PetscFunctionBegin;
@@ -703,25 +538,13 @@ PetscErrorCode new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level,
   PetscFunctionReturn(0);
 }  
 
-
-
-/***********************************comm.c*************************************
-Function: giop()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-
-note good only for num_nodes=2^k!!!
-
-***********************************comm.c*************************************/
+/***********************************comm.c*************************************/
 PetscErrorCode giop_hc(int *vals, int *work, int n, int *oprs, int dim)
 {
-   int mask, edge;
-  int type, dest;
-  vfp fp;
-  MPI_Status  status;
+  int            mask, edge;
+  int            type, dest;
+  vfp            fp;
+  MPI_Status     status;
   PetscErrorCode ierr;
 
    PetscFunctionBegin;

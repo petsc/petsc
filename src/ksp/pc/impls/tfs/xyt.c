@@ -17,12 +17,6 @@ contact:
 
 Last Modification: 3.20.01
 **************************************xyt.c***********************************/
-
-
-/*************************************xyt.c************************************
-NOTES ON USAGE: 
-
-**************************************xyt.c***********************************/
 #include "src/ksp/pc/impls/tfs/tfs.h"
 
 #define LEFT  -1
@@ -70,21 +64,10 @@ static int xyt_generate(xyt_ADT xyt_handle);
 static int do_xyt_factor(xyt_ADT xyt_handle);
 static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data);
 
-
-/*************************************xyt.c************************************
-Function: XYT_new()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
-xyt_ADT 
-XYT_new(void)
+/**************************************xyt.c***********************************/
+xyt_ADT XYT_new(void)
 {
   xyt_ADT xyt_handle;
-
-
 
   /* rolling count on n_xyt ... pot. problem here */
   n_xyt_handles++;
@@ -96,17 +79,8 @@ XYT_new(void)
   return(xyt_handle);
 }
 
-
-/*************************************xyt.c************************************
-Function: XYT_factor()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
-int
-XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
+/**************************************xyt.c***********************************/
+int XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
 	   int *local2global,  /* global column mapping       */
 	   int n,              /* local num rows              */
 	   int m,              /* local num cols              */
@@ -138,17 +112,8 @@ XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
   return(do_xyt_factor(xyt_handle));
 }
 
-
-/*************************************xyt.c************************************
-Function: XYT_solve
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
-int
-XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
+/**************************************xyt.c***********************************/
+int XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
 {
   comm_init();
   check_handle(xyt_handle);
@@ -161,17 +126,8 @@ XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
   return(0);
 }
 
-
-/*************************************xyt.c************************************
-Function: XYT_free()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
-int
-XYT_free(xyt_ADT xyt_handle)
+/**************************************xyt.c***********************************/
+int XYT_free(xyt_ADT xyt_handle)
 {
   comm_init();
   check_handle(xyt_handle);
@@ -193,7 +149,7 @@ XYT_free(xyt_ADT xyt_handle)
   free(xyt_handle->info->ycol_indices);
   free(xyt_handle->info);
   free(xyt_handle->mvi->local2global);
-   gs_free(xyt_handle->mvi->gs_handle);
+  gs_free(xyt_handle->mvi->gs_handle);
   free(xyt_handle->mvi);
   free(xyt_handle);
 
@@ -204,18 +160,8 @@ XYT_free(xyt_ADT xyt_handle)
   return(0);
 }
 
-
-
-/*************************************xyt.c************************************
-Function: 
-
-Input : 
-Output: 
-Return: 
-Description:  
-**************************************xyt.c***********************************/
-int
-XYT_stats(xyt_ADT xyt_handle)
+/**************************************xyt.c***********************************/
+int XYT_stats(xyt_ADT xyt_handle)
 {
   int  op[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD};
   int fop[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
@@ -268,11 +214,7 @@ XYT_stats(xyt_ADT xyt_handle)
 
 
 /*************************************xyt.c************************************
-Function: do_xyt_factor
 
-Input : 
-Output: 
-Return: 
 Description: get A_local, local portion of global coarse matrix which 
 is a row dist. nxm matrix w/ n<m.
    o my_ml holds address of ML struct associated w/A_local and coarse grid
@@ -284,29 +226,13 @@ is a row dist. nxm matrix w/ n<m.
 mylocmatvec = my_ml->Amat[grid_tag].matvec->external;
 mylocmatvec (void :: void *data, double *in, double *out)
 **************************************xyt.c***********************************/
-static
-int
-do_xyt_factor(xyt_ADT xyt_handle)
+static int do_xyt_factor(xyt_ADT xyt_handle)
 {
-  int flag;
-
-
-  flag=xyt_generate(xyt_handle);
-  return(flag);
+  return xyt_generate(xyt_handle);
 }
 
-
-/*************************************xyt.c************************************
-Function: 
-
-Input : 
-Output: 
-Return: 
-Description:  
-**************************************xyt.c***********************************/
-static
-int
-xyt_generate(xyt_ADT xyt_handle)
+/**************************************xyt.c***********************************/
+static int xyt_generate(xyt_ADT xyt_handle)
 {
   int i,j,k,idx;
   int dim, col;
@@ -669,15 +595,7 @@ xyt_generate(xyt_ADT xyt_handle)
   return(0);
 }
 
-
-/*************************************xyt.c************************************
-Function: 
-
-Input : 
-Output: 
-Return: 
-Description:  
-**************************************xyt.c***********************************/
+/**************************************xyt.c***********************************/
 static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
 {
   int off, len, *iptr;
@@ -721,15 +639,7 @@ static PetscErrorCode do_xyt_solve(xyt_ADT xyt_handle,  PetscScalar *uc)
   PetscFunctionReturn(0);
 }
 
-
-/*************************************xyt.c************************************
-Function: check_handle()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
+/**************************************xyt.c***********************************/
 static PetscErrorCode check_handle(xyt_ADT xyt_handle)
 {
   int vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
@@ -746,16 +656,7 @@ static PetscErrorCode check_handle(xyt_ADT xyt_handle)
   PetscFunctionReturn(0);
 }
 
-
-/*************************************xyt.c************************************
-Function: det_separators
-
-Input :
-Output:
-Return:
-Description:
-  det_separators(xyt_handle, local2global, n, m, mylocmatvec, grid_data);
-**************************************xyt.c***********************************/
+/**************************************xyt.c***********************************/
 static PetscErrorCode det_separators(xyt_ADT xyt_handle)
 {
   int i, ct, id;
@@ -1044,17 +945,8 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   PetscFunctionReturn(0);
 }
 
-
-/*************************************xyt.c************************************
-Function: set_mvi
-
-Input :
-Output:
-Return:
-Description:
-**************************************xyt.c***********************************/
-static
-mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
+/**************************************xyt.c***********************************/
+static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
 {
   mv_info *mvi;
 
@@ -1076,18 +968,7 @@ mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
   return(mvi);
 }
 
-
-/*************************************xyt.c************************************
-Function: set_mvi
-
-Input :
-Output:
-Return:
-Description:
-
-      computes u = A.v 
-      do_matvec(xyt_handle->mvi,v,u);
-**************************************xyt.c***********************************/
+/**************************************xyt.c***********************************/
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
 {
   PetscFunctionBegin;

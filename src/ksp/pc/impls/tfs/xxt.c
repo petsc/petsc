@@ -17,12 +17,6 @@ contact:
 
 Last Modification: 3.20.01
 **************************************xxt.c***********************************/
-
-
-/*************************************xxt.c************************************
-NOTES ON USAGE: 
-
-**************************************xxt.c***********************************/
 #include "src/ksp/pc/impls/tfs/tfs.h"
 
 #define LEFT  -1
@@ -67,22 +61,10 @@ static int xxt_generate(xxt_ADT xxt_handle);
 static int do_xxt_factor(xxt_ADT xxt_handle);
 static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data);
 
-
-
-/*************************************xxt.c************************************
-Function: XXT_new()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xxt.c***********************************/
-xxt_ADT 
-XXT_new(void)
+/**************************************xxt.c***********************************/
+xxt_ADT XXT_new(void)
 {
   xxt_ADT xxt_handle;
-
-
 
   /* rolling count on n_xxt ... pot. problem here */
   n_xxt_handles++;
@@ -93,17 +75,8 @@ XXT_new(void)
   return(xxt_handle);
 }
 
-
-/*************************************xxt.c************************************
-Function: XXT_factor()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xxt.c***********************************/
-int
-XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
+/**************************************xxt.c***********************************/
+int XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
 	   int *local2global,  /* global column mapping       */
 	   int n,              /* local num rows              */
 	   int m,              /* local num cols              */
@@ -134,17 +107,8 @@ XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
   return(do_xxt_factor(xxt_handle));
 }
 
-
-/*************************************xxt.c************************************
-Function: XXT_solve
-
-Input :
-Output:
-Return:
-Description:
-**************************************xxt.c***********************************/
-int
-XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
+/**************************************xxt.c***********************************/
+int XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
 {
 
   comm_init();
@@ -158,17 +122,8 @@ XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
   return(0);
 }
 
-
-/*************************************xxt.c************************************
-Function: XXT_free()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xxt.c***********************************/
-int
-XXT_free(xxt_ADT xxt_handle)
+/**************************************xxt.c***********************************/
+int XXT_free(xxt_ADT xxt_handle)
 {
 
   comm_init();
@@ -191,33 +146,19 @@ XXT_free(xxt_ADT xxt_handle)
   free(xxt_handle->mvi);
   free(xxt_handle);
 
- 
-
   /* if the check fails we nuke */
   /* if NULL pointer passed to free we nuke */
   /* if the calls to free fail that's not my problem */
   return(0);
 }
 
-
-
-/*************************************xxt.c************************************
-Function: 
-
-Input : 
-Output: 
-Return: 
-Description:  
-**************************************xxt.c***********************************/
-int
-XXT_stats(xxt_ADT xxt_handle)
+/**************************************xxt.c***********************************/
+int XXT_stats(xxt_ADT xxt_handle)
 {
   int  op[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD,GL_MIN,GL_MAX,GL_ADD};
   int fop[] = {NON_UNIFORM,GL_MIN,GL_MAX,GL_ADD};
   int   vals[9],  work[9];
   PetscScalar fvals[3], fwork[3];
-
-
 
   comm_init();
   check_handle(xxt_handle);
@@ -262,13 +203,8 @@ XXT_stats(xxt_ADT xxt_handle)
   return(0);
 }
 
-
 /*************************************xxt.c************************************
-Function: do_xxt_factor
 
-Input : 
-Output: 
-Return: 
 Description: get A_local, local portion of global coarse matrix which 
 is a row dist. nxm matrix w/ n<m.
    o my_ml holds address of ML struct associated w/A_local and coarse grid
@@ -282,23 +218,10 @@ mylocmatvec (void :: void *data, double *in, double *out)
 **************************************xxt.c***********************************/
 static int do_xxt_factor(xxt_ADT xxt_handle)
 {
-  int flag;
-
-
-  flag=xxt_generate(xxt_handle);
-
-  return(flag);
+  return xxt_generate(xxt_handle);
 }
 
-
-/*************************************xxt.c************************************
-Function: 
-
-Input : 
-Output: 
-Return: 
-Description:  
-**************************************xxt.c***********************************/
+/**************************************xxt.c***********************************/
 static int xxt_generate(xxt_ADT xxt_handle)
 {
   int i,j,k,idex;
@@ -582,15 +505,7 @@ static int xxt_generate(xxt_ADT xxt_handle)
   return(0);
 }
 
-
-/*************************************xxt.c************************************
-Function: 
-
-Input : 
-Output: 
-Return: 
-Description:  
-**************************************xxt.c***********************************/
+/**************************************xxt.c***********************************/
 static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
 {
    int off, len, *iptr;
@@ -632,14 +547,7 @@ static PetscErrorCode do_xxt_solve(xxt_ADT xxt_handle,  PetscScalar *uc)
   PetscFunctionReturn(0);
 }
 
-/*************************************xxt.c************************************
-Function: check_handle()
-
-Input :
-Output:
-Return:
-Description:
-**************************************xxt.c***********************************/
+/**************************************xxt.c***********************************/
 static PetscErrorCode check_handle(xxt_ADT xxt_handle)
 {
   int vals[2], work[2], op[] = {NON_UNIFORM,GL_MIN,GL_MAX};
@@ -656,16 +564,7 @@ static PetscErrorCode check_handle(xxt_ADT xxt_handle)
   PetscFunctionReturn(0);
 }
 
-
-/*************************************xxt.c************************************
-Function: det_separators
-
-Input :
-Output:
-Return:
-Description:
-  det_separators(xxt_handle, local2global, n, m, mylocmatvec, grid_data);
-**************************************xxt.c***********************************/
+/**************************************xxt.c***********************************/
 static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
 {
   int i, ct, id;
@@ -949,17 +848,8 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
   PetscFunctionReturn(0);
 }
 
-
-/*************************************xxt.c************************************
-Function: set_mvi
-
-Input :
-Output:
-Return:
-Description:
-**************************************xxt.c***********************************/
-static
-mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
+/**************************************xxt.c***********************************/
+static mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
 {
   mv_info *mvi;
 
@@ -981,18 +871,7 @@ mv_info *set_mvi(int *local2global, int n, int m, void *matvec, void *grid_data)
   return(mvi);
 }
 
-
-/*************************************xxt.c************************************
-Function: set_mvi
-
-Input :
-Output:
-Return:
-Description:
-
-      computes u = A.v 
-      do_matvec(xxt_handle->mvi,v,u);
-**************************************xxt.c***********************************/
+/**************************************xxt.c***********************************/
 static PetscErrorCode do_matvec(mv_info *A, PetscScalar *v, PetscScalar *u)
 {
   PetscFunctionBegin;

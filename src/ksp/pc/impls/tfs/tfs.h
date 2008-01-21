@@ -97,7 +97,6 @@ File Description:
 #define MPI   1
 #define NX    2
 
-
 #define LOG2(x)		(PetscScalar)log((double)x)/log(2)
 #define SWAP(a,b)       temp=(a); (a)=(b); (b)=temp;
 #define P_SWAP(a,b)     ptr=(a); (a)=(b); (b)=ptr;
@@ -181,7 +180,6 @@ extern PetscErrorCode gfop(void *vals, void *wk, int n, vbfp fp, MPI_Datatype dt
 extern PetscErrorCode comm_init(void);
 extern PetscErrorCode giop_hc(int *vals, int *work, int n, int *oprs, int dim);
 extern PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim);
-extern PetscErrorCode grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *n, int *oprs, int dim);
 extern PetscErrorCode ssgl_radd(PetscScalar *vals, PetscScalar *work, int level, int *segs);
 
 #define MSGTAG0 101

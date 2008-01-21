@@ -1197,14 +1197,13 @@ Output:
 Return: 
 Description: 
 ******************************************************************************/
-static PetscErrorCode gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
-                        rbfp fct)
+static PetscErrorCode gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,rbfp fct)
 {
-   PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   int *iptr, *msg_list, *msg_size, **msg_nodes;
-   int *pw, *list, *size, **nodes;
-  MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-  MPI_Status status;
+  PetscScalar    *dptr1, *dptr2, *dptr3, *in1, *in2;
+  int            *iptr, *msg_list, *msg_size, **msg_nodes;
+  int            *pw, *list, *size, **nodes;
+  MPI_Request    *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
+  MPI_Status     status;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1286,8 +1285,8 @@ Description:
 ******************************************************************************/
 static PetscErrorCode gs_gop_tree_binary(gs_id *gs, PetscScalar *vals,  rbfp fct)
 {
-  int size;
-  int *in, *out;  
+  int         size;
+  int         *in,    *out;  
   PetscScalar *buf, *work;
 
   PetscFunctionBegin;
@@ -1301,15 +1300,17 @@ static PetscErrorCode gs_gop_tree_binary(gs_id *gs, PetscScalar *vals,  rbfp fct
   (*fct)(buf,NULL,size);
   
   /* load my contribution into val vector */
-  while (*in >= 0)
-    {(*fct)((buf + *out++),(vals + *in++),-1);}
+  while (*in >= 0) {
+    (*fct)((buf + *out++),(vals + *in++),-1);
+  }
 
   gfop(buf,work,size,(vbfp)fct,MPIU_SCALAR,0);
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-  while (*in >= 0)
-    {(*fct)((vals + *in++),(buf + *out++),-1);}
+  while (*in >= 0) {
+    (*fct)((vals + *in++),(buf + *out++),-1);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1327,6 +1328,7 @@ Description:
 PetscErrorCode gs_gop( gs_id *gs,  PetscScalar *vals,  const char *op)
 {
   PetscFunctionBegin;
+
   switch (*op) {
   case '+':
     gs_gop_plus(gs,vals);
@@ -1348,14 +1350,6 @@ PetscErrorCode gs_gop( gs_id *gs,  PetscScalar *vals,  const char *op)
     break;
   case 'M':
     gs_gop_max(gs,vals); break;
-    /*
-    if (*(op+1)=='\0')
-      {gs_gop_max(gs,vals); break;}
-    else if (*(op+1)=='X')
-      {gs_gop_max_abs(gs,vals); break;}
-    else if (*(op+1)=='N')
-      {gs_gop_min_abs(gs,vals); break;}
-    */
   default:
     error_msg_warning("gs_gop() :: %c is not a valid op",op[0]);
     error_msg_warning("gs_gop() :: default :: plus");
@@ -1422,7 +1416,7 @@ Description:
 ******************************************************************************/
 static PetscErrorCode gs_gop_local_exists( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
+   int         *num, *map, **reduce;
    PetscScalar tmp;
 
   PetscFunctionBegin;
@@ -1442,20 +1436,11 @@ static PetscErrorCode gs_gop_local_exists( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_in_exists( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
-   PetscScalar *base;
+  int         *num, *map, **reduce;
+  PetscScalar *base;
 
   PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
@@ -1470,25 +1455,13 @@ static PetscErrorCode gs_gop_local_in_exists( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-VERSION 3 :: 
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
 static PetscErrorCode gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
 {
-   PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   int *iptr, *msg_list, *msg_size, **msg_nodes;
-   int *pw, *list, *size, **nodes;
-  MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-  MPI_Status status;
+  PetscScalar    *dptr1, *dptr2, *dptr3, *in1, *in2;
+  int            *iptr, *msg_list, *msg_size, **msg_nodes;
+  int            *pw, *list, *size, **nodes;
+  MPI_Request    *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
+  MPI_Status     status;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1504,7 +1477,6 @@ static PetscErrorCode gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
   in1=in2                = gs->in;
 
   /* post the receives */
-  /*  msg_nodes=nodes; */
   do 
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
@@ -1556,23 +1528,13 @@ static PetscErrorCode gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
     {ierr = MPI_Wait(ids_out++, &status);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
-
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_tree_exists(gs_id *gs, PetscScalar *vals)
 {
-  int size;
-  int *in, *out;  
+  int         size;
+  int         *in, *out;  
   PetscScalar *buf, *work;
-  int op[] = {GL_EXISTS,0};
+  int         op[] = {GL_EXISTS,0};
 
   PetscFunctionBegin;
   in   = gs->tree_map_in;
@@ -1602,16 +1564,7 @@ static PetscErrorCode gs_gop_tree_exists(gs_id *gs, PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/*******************************************************************************/
 static PetscErrorCode gs_gop_max_abs( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
@@ -1648,20 +1601,11 @@ static PetscErrorCode gs_gop_max_abs( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_max_abs( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
-   PetscScalar tmp;
+  int         *num, *map, **reduce;
+  PetscScalar tmp;
 
   PetscFunctionBegin;
   num    = gs->num_local_reduce;  
@@ -1680,20 +1624,11 @@ static PetscErrorCode gs_gop_local_max_abs( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_in_max_abs( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
-   PetscScalar *base;
+  int         *num, *map, **reduce;
+  PetscScalar *base;
 
   PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
@@ -1708,25 +1643,14 @@ static PetscErrorCode gs_gop_local_in_max_abs( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-VERSION 3 :: 
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
 {
-   PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   int *iptr, *msg_list, *msg_size, **msg_nodes;
-   int *pw, *list, *size, **nodes;
-  MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-  MPI_Status status;
+  PetscScalar    *dptr1, *dptr2, *dptr3, *in1, *in2;
+  int            *iptr, *msg_list, *msg_size, **msg_nodes;
+  int            *pw, *list, *size, **nodes;
+  MPI_Request    *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
+  MPI_Status     status;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1795,22 +1719,13 @@ static PetscErrorCode gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_tree_max_abs(gs_id *gs, PetscScalar *vals)
 {
-  int size;
-  int *in, *out;  
+  int         size;
+  int         *in, *out;  
   PetscScalar *buf, *work;
-  int op[] = {GL_MAX_ABS,0};
+  int         op[] = {GL_MAX_ABS,0};
 
   PetscFunctionBegin;
   in   = gs->tree_map_in;
@@ -1840,16 +1755,7 @@ static PetscErrorCode gs_gop_tree_max_abs(gs_id *gs, PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_max( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
@@ -1886,20 +1792,11 @@ static PetscErrorCode gs_gop_max( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_max( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
-   PetscScalar tmp;
+  int         *num, *map, **reduce;
+  PetscScalar tmp;
 
   PetscFunctionBegin;
   num    = gs->num_local_reduce;  
@@ -1918,20 +1815,11 @@ static PetscErrorCode gs_gop_local_max( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_in_max( gs_id *gs,  PetscScalar *vals)
 {
-   int *num, *map, **reduce;
-   PetscScalar *base;
+  int         *num, *map, **reduce;
+  PetscScalar *base;
 
   PetscFunctionBegin;
   num    = gs->num_gop_local_reduce;  
@@ -1946,25 +1834,14 @@ static PetscErrorCode gs_gop_local_in_max( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-VERSION 3 :: 
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
 {
-   PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   int *iptr, *msg_list, *msg_size, **msg_nodes;
-   int *pw, *list, *size, **nodes;
-  MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
-  MPI_Status status;
+  PetscScalar    *dptr1, *dptr2, *dptr3, *in1, *in2;
+  int            *iptr, *msg_list, *msg_size, **msg_nodes;
+  int            *pw, *list, *size, **nodes;
+  MPI_Request    *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
+  MPI_Status     status;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -2033,21 +1910,12 @@ static PetscErrorCode gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_tree_max(gs_id *gs, PetscScalar *vals)
 {
-  int size;
-  int *in, *out;  
-  PetscScalar *buf, *work;
+  int            size;
+  int            *in, *out;  
+  PetscScalar    *buf, *work;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -2069,17 +1937,7 @@ static PetscErrorCode gs_gop_tree_max(gs_id *gs, PetscScalar *vals)
     {*(vals + *in++) = *(work + *out++);}
   PetscFunctionReturn(0);
 }
-
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_min_abs( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
@@ -2116,16 +1974,7 @@ static PetscErrorCode gs_gop_min_abs( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_min_abs( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
@@ -2148,16 +1997,7 @@ static PetscErrorCode gs_gop_local_min_abs( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_in_min_abs( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
@@ -2176,18 +2016,7 @@ static PetscErrorCode gs_gop_local_in_min_abs( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-VERSION 3 :: 
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -2263,16 +2092,7 @@ static PetscErrorCode gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_tree_min_abs(gs_id *gs, PetscScalar *vals)
 {
   int size;
@@ -2300,16 +2120,7 @@ static PetscErrorCode gs_gop_tree_min_abs(gs_id *gs, PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_min( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
@@ -2346,16 +2157,7 @@ static PetscErrorCode gs_gop_min( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_min( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
@@ -2377,16 +2179,7 @@ static PetscErrorCode gs_gop_local_min( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_in_min( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
@@ -2405,18 +2198,7 @@ static PetscErrorCode gs_gop_local_in_min( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-VERSION 3 :: 
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -2492,16 +2274,7 @@ static PetscErrorCode gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_tree_min(gs_id *gs, PetscScalar *vals)
 {
   int size;
@@ -2529,16 +2302,7 @@ static PetscErrorCode gs_gop_tree_min(gs_id *gs, PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_times( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
@@ -2575,16 +2339,7 @@ static PetscErrorCode gs_gop_times( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_times( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
@@ -2630,16 +2385,7 @@ static PetscErrorCode gs_gop_local_times( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_in_times( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
@@ -2680,18 +2426,7 @@ static PetscErrorCode gs_gop_local_in_times( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-VERSION 3 :: 
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -2767,16 +2502,7 @@ static PetscErrorCode gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_tree_times(gs_id *gs, PetscScalar *vals)
 {
   int size;
@@ -2804,17 +2530,7 @@ static PetscErrorCode gs_gop_tree_times(gs_id *gs, PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_plus( gs_id *gs,  PetscScalar *vals)
 {
   PetscFunctionBegin;
@@ -2851,16 +2567,7 @@ static PetscErrorCode gs_gop_plus( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_plus( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
@@ -2906,16 +2613,7 @@ static PetscErrorCode gs_gop_local_plus( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_local_in_plus( gs_id *gs,  PetscScalar *vals)
 {
    int *num, *map, **reduce;
@@ -2956,18 +2654,7 @@ static PetscErrorCode gs_gop_local_in_plus( gs_id *gs,  PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-VERSION 3 :: 
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -3044,16 +2731,7 @@ static PetscErrorCode gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_tree_plus(gs_id *gs, PetscScalar *vals)
 {
   int size;
@@ -3081,18 +2759,7 @@ static PetscErrorCode gs_gop_tree_plus(gs_id *gs, PetscScalar *vals)
   PetscFunctionReturn(0);
 }
 
-/******************************************************************************
-Function: gs_free()
-
-Input : 
-
-Output: 
-
-Return: 
-
-Description:  
-  if (gs->sss) {free((void*) gs->sss);}
-******************************************************************************/
+/******************************************************************************/
 PetscErrorCode gs_free( gs_id *gs)
 {
    int i;
@@ -3157,19 +2824,7 @@ PetscErrorCode gs_free( gs_id *gs)
   PetscFunctionReturn(0);
 }
 
-
-
-
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 PetscErrorCode gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  int step)
 {
   PetscFunctionBegin;
@@ -3186,16 +2841,7 @@ PetscErrorCode gs_gop_vec( gs_id *gs,  PetscScalar *vals,  const char *op,  int 
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  int step)
 {
   PetscFunctionBegin;
@@ -3234,16 +2880,7 @@ static PetscErrorCode gs_gop_vec_plus( gs_id *gs,  PetscScalar *vals,  int step)
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_vec_local_plus( gs_id *gs,  PetscScalar *vals, int step)
 {
    int *num, *map, **reduce;
@@ -3300,16 +2937,7 @@ static PetscErrorCode gs_gop_vec_local_plus( gs_id *gs,  PetscScalar *vals, int 
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_vec_local_in_plus( gs_id *gs,  PetscScalar *vals, int step)
 {
    int  *num, *map, **reduce;
@@ -3353,15 +2981,7 @@ static PetscErrorCode gs_gop_vec_local_in_plus( gs_id *gs,  PetscScalar *vals, i
   PetscFunctionReturn(0);
 }
 
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_vec_local_out( gs_id *gs,  PetscScalar *vals, int step)
 {
    int *num, *map, **reduce;
@@ -3406,18 +3026,7 @@ static PetscErrorCode gs_gop_vec_local_out( gs_id *gs,  PetscScalar *vals, int s
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-VERSION 3 :: 
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals, int step)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -3509,16 +3118,7 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int step) 
 {
   int size, *in, *out;  
@@ -3560,16 +3160,7 @@ static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  int 
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 PetscErrorCode gs_gop_hc( gs_id *gs,  PetscScalar *vals,  const char *op,  int dim)
 {
   PetscFunctionBegin;
@@ -3586,16 +3177,7 @@ PetscErrorCode gs_gop_hc( gs_id *gs,  PetscScalar *vals,  const char *op,  int d
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_plus_hc( gs_id *gs,  PetscScalar *vals, int dim)
 {
   PetscFunctionBegin;
@@ -3639,15 +3221,7 @@ static PetscErrorCode gs_gop_plus_hc( gs_id *gs,  PetscScalar *vals, int dim)
   PetscFunctionReturn(0);
 }
 
-
-/******************************************************************************
-VERSION 3 :: 
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
 {
    PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
@@ -3752,16 +3326,7 @@ static PetscErrorCode gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals,
   PetscFunctionReturn(0);
 }
 
-
-
-/******************************************************************************
-Function: gather_scatter
-
-Input : 
-Output: 
-Return: 
-Description: 
-******************************************************************************/
+/******************************************************************************/
 static PetscErrorCode gs_gop_tree_plus_hc(gs_id *gs, PetscScalar *vals, int dim)
 {
   int size;
