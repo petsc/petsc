@@ -224,7 +224,7 @@ class Configure(config.package.Package):
     # IBM ESSL locations
     yield ('IBM ESSL Mathematics library', None, 'libessl.a', 1)
     # Portland group compiler blas and lapack
-    if 'PGI' in os.environ:
+    if 'PGI' in os.environ and config.setCompilers.Configure.isPGI(self.setCompilers.CC):
       dir = os.path.join(os.environ['PGI'],'linux86','5.1','lib')
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'), os.path.join(dir, 'liblapack.a'), 1)
       dir = os.path.join(os.environ['PGI'],'linux86','5.0','lib')

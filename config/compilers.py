@@ -714,9 +714,13 @@ class Configure(config.base.Configure):
             continue
         if arg.find('quickfit.o')>=0:
           flibs.append(arg)
+          self.logPrint('Found quickfit.o in argument, adding it')
+          continue
         # gcc+pgf90 might require pgi.dl
         if arg.find('pgi.ld')>=0:
           flibs.append(arg)
+          self.logPrint('Found strange PGI file ending with .ld, adding it')
+          continue
         self.logPrint('Unknown arg '+arg, 4, 'compilers')
     except StopIteration:
       pass
@@ -758,8 +762,18 @@ class Configure(config.base.Configure):
       try:
         self.setCompilers.checkCompiler('C')
       except RuntimeError, e:
-        self.logPrint(str(e), 4, 'compilers')
-        raise RuntimeError('Fortran libraries cannot be used with C compiler')
+        self.logPrint('Fortran libraries still cannot directly be used from C, try without pgi.ld files', 4, 'compilers')
+        self.logPrint('Error message from compiling {'+str(e)+'}', 4, 'compilers')
+        tmpflibs = self.flibs
+        for lib in tmpflibs:
+          if lib.find('pgi.ld')>=0:
+            self.flibs.remove(lib)
+        self.setCompilers.LIBS = oldLibs+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.flibs])
+        try:
+          self.setCompilers.checkCompiler('C')
+        except:
+          self.logPrint(str(e), 4, 'compilers')
+          raise RuntimeError('Fortran libraries cannot be used with C compiler')
 
     # check if Intel library exists (that is not linked by default but has iargc_ in it :-(
     self.logPrint('Check for Intel PEPCF90 library', 4, 'compilers')
