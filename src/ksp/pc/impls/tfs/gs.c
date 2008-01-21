@@ -1340,7 +1340,7 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
       ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0) {
 	dstep = step;
-        BLASaxpy_(&step,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
+        BLASaxpy_(&dstep,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
 	in2+=step;
 	iptr++;
       }
