@@ -550,6 +550,8 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MPI_COMM_SPAWN',1)
     if self.libraries.check(self.dlib, "MPI_Win_create"):
       self.addDefine('HAVE_MPI_WIN_CREATE',1)
+    if self.libraries.check(self.dlib, "MPI_Finalized"):
+      self.addDefine('HAVE_MPI_FINALIZED',1)
 
 if __name__ == '__main__':
   import config.framework
