@@ -669,10 +669,11 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
 #define __FUNCT__ "VecAYPX_Seq"
 PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
 {
-  Vec_Seq        *y = (Vec_Seq *)yin->data;
-  PetscErrorCode ierr;
-  PetscInt       n = yin->map.n;
-  PetscScalar    *yy = y->array,*xx;
+  Vec_Seq           *y = (Vec_Seq *)yin->data;
+  PetscErrorCode    ierr;
+  PetscInt          n = yin->map.n;
+  PetscScalar       *yy = y->array;
+  const PetscScalar *xx;
 
   PetscFunctionBegin;
   if (alpha == 0.0) {
@@ -680,7 +681,7 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
   } else if (alpha == 1.0) {
     ierr = VecAXPY_Seq(yin,alpha,xin);CHKERRQ(ierr);
   } else {
-    ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+    ierr = VecGetArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
 #if defined(PETSC_USE_FORTRAN_KERNEL_AYPX)
     {
       PetscScalar oalpha = alpha;
@@ -694,7 +695,7 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
       }
     }
 #endif
-    ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
     ierr = PetscLogFlops(2*n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -710,14 +711,15 @@ PetscErrorCode VecAYPX_Seq(Vec yin,PetscScalar alpha,Vec xin)
 #define __FUNCT__ "VecWAXPY_Seq"
 PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
 {
-  Vec_Seq        *w = (Vec_Seq *)win->data;
-  PetscErrorCode ierr;
-  PetscInt       i,n = win->map.n;
-  PetscScalar    *ww = w->array,*yy,*xx;
+  Vec_Seq            *w = (Vec_Seq *)win->data;
+  PetscErrorCode     ierr;
+  PetscInt           i,n = win->map.n;
+  PetscScalar        *ww = w->array;
+  const PetscScalar  *yy,*xx;
 
   PetscFunctionBegin;
-  ierr = VecGetArray(yin,&yy);CHKERRQ(ierr);
-  ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
   if (alpha == 1.0) {
     ierr = PetscLogFlops(n);CHKERRQ(ierr);
     /* could call BLAS axpy after call to memcopy, but may be slower */
@@ -736,8 +738,8 @@ PetscErrorCode VecWAXPY_Seq(Vec win, PetscScalar alpha,Vec xin,Vec yin)
 #endif
     ierr = PetscLogFlops(2*n);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(yin,&yy);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(yin,(PetscScalar**)&yy);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,(PetscScalar**)&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

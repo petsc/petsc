@@ -26,13 +26,12 @@
 #if !defined(PETSC_WORDS_BIGENDIAN)
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscByteSwapInt"
+#define __FUNCT__ "PetscByteSwapInt32"
 /*
-  PetscByteSwapInt - Swap bytes in a 32 bit integer. NOT a PetscInt! Note that PETSc binary read and write
-      always store and read only 32 bit integers! (See PetscBinaryRead(), PetscBinaryWrite()).
+  PetscByteSwapInt32 - Swap bytes in a 32 bit integer. 
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(PetscInt32 *buff,PetscInt n)
+PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt32(PetscInt32 *buff,PetscInt n)
 {
   PetscInt  i,j,tmp = 0;
   PetscInt  *tptr = &tmp;                /* Need to access tmp indirectly to get */
@@ -43,6 +42,29 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(PetscInt32 *buff,PetscInt n)
     ptr1 = (char*)(buff + j);
     for (i=0; i<(int)sizeof(PetscInt32); i++) {
       ptr2[i] = ptr1[sizeof(PetscInt32)-1-i];
+    }
+    buff[j] = *tptr;
+  }
+  PetscFunctionReturn(0);
+}
+/* --------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "PetscByteSwapInt"
+/*
+  PetscByteSwapInt - Swap bytes in a  bit integer. 
+
+*/
+PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt64(PetscInt *buff,PetscInt n)
+{
+  PetscInt  i,j,tmp = 0;
+  PetscInt  *tptr = &tmp;             /* Need to access tmp indirectly to get */
+  char       *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+                                   
+  PetscFunctionBegin;
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff + j);
+    for (i=0; i<(int)sizeof(PetscInt); i++) {
+      ptr2[i] = ptr1[sizeof(PetscInt)-1-i];
     }
     buff[j] = *tptr;
   }
@@ -172,8 +194,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
   if (!n) PetscFunctionReturn(0);
 
   if (type == PETSC_INT){
+#if defined(PETSC_USE_64BIT_INDICES_BINARY)
+    m   *= sizeof(PetscInt);
+#else
     m   *= sizeof(PetscInt32);
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
+#endif
+#if ((PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)) && !defined(PETSC_USE_64BIT_INDICES_BINARY)
     /* read them in as 32 bit ints, later stretch into ints */
     ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
     ptmp = (void*)pp;
@@ -198,15 +224,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
     pp += err;
   }
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}        
-  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}        
+#if defined(PETSC_USE_64BIT_INDICES_BINARY)
+  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt64((PetscInt*)ptmp,n);CHKERRQ(ierr);}
+#else
+  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt32((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
+#endif
+  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt32((PetscInt32*)ptmp,n);CHKERRQ(ierr);}        
+  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt32((PetscInt32*)ptmp,n);CHKERRQ(ierr);}        
   else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
 
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
+#if ((PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)) && !defined(PETSC_USE_64BIT_INDICES_BINARY)
   if (type == PETSC_INT) {
     PetscInt   *p_int = (PetscInt*)p,i;
     PetscInt32 *p_short = (PetscInt32 *)ptmp;
@@ -275,8 +305,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   if (!n) PetscFunctionReturn(0);
 
   if (type == PETSC_INT){
+#if defined(PETSC_USE_64BIT_INDICES_BINARY)
+    m   *= sizeof(PetscInt);
+#else
     m   *= sizeof(PetscInt32);
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
+#endif
+#if ((PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)) && !defined(PETSC_USE_64BIT_INDICES_BINARY)
     PetscInt   *p_int = (PetscInt*)p,i;
     PetscInt32 *p_short;
     ierr    = PetscMalloc(m,&pp);CHKERRQ(ierr);
@@ -299,9 +333,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}          
-  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}          
+#if defined(PETSC_USE_64BIT_INDICES_BINARY)
+  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt64((PetscInt*)ptmp,n);CHKERRQ(ierr);}
+#else
+  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt32((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
+#endif
+  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt32((PetscInt32*)ptmp,n);CHKERRQ(ierr);}          
+  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt32((PetscInt32*)ptmp,n);CHKERRQ(ierr);}          
   else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
@@ -318,16 +356,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if (!istemp) {
+#if defined(PETSC_USE_64BIT_INDICES_BINARY)
+    if      (type == PETSC_INT)    {ierr = PetscByteSwapInt64((PetscInt*)ptmp,n);CHKERRQ(ierr);}
+#else
+    if      (type == PETSC_INT)    {ierr = PetscByteSwapInt32((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
+#endif
     if      (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_INT)    {ierr = PetscByteSwapInt32((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt32((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt32((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
   }
 #endif
 
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
+#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_USE_64BIT_INDICES_BINARY)
   if (type == PETSC_INT){
     ierr = PetscFree(ptmp);CHKERRQ(ierr);
   }

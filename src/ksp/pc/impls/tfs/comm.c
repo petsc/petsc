@@ -14,54 +14,35 @@ Providence, RI 02912
 Last Modification: 
 11.21.97
 ***********************************comm.c*************************************/
-
-/***********************************comm.c*************************************
-File Description:
------------------
-
-***********************************comm.c*************************************/
 #include "src/ksp/pc/impls/tfs/tfs.h"
 
 
 /* global program control variables - explicitly exported */
-int my_id            = 0;
-int num_nodes        = 1;
-int floor_num_nodes  = 0;
-int i_log2_num_nodes = 0;
+PetscMPIInt my_id            = 0;
+PetscMPIInt num_nodes        = 1;
+PetscInt floor_num_nodes  = 0;
+PetscInt i_log2_num_nodes = 0;
 
 /* global program control variables */
-static int p_init = 0;
-static int modfl_num_nodes;
-static int edge_not_pow_2;
+static PetscInt p_init = 0;
+static PetscInt modfl_num_nodes;
+static PetscInt edge_not_pow_2;
 
-static unsigned int edge_node[sizeof(PetscInt)*32];
+static PetscInt edge_node[sizeof(PetscInt)*32];
 
-/***********************************comm.c*************************************
-Function: giop()
-
-Input : 
-Output: 
-Return: 
-Description: 
-***********************************comm.c*************************************/
-void
-comm_init (void)
+/***********************************comm.c*************************************/
+PetscErrorCode comm_init (void)
 {
 
-  if (p_init++) return;
-
-#if PETSC_SIZEOF_INT != 4
-  error_msg_warning("Int != 4 Bytes!");
-#endif
-
+  if (p_init++)   PetscFunctionReturn(0);
 
   MPI_Comm_size(MPI_COMM_WORLD,&num_nodes);
   MPI_Comm_rank(MPI_COMM_WORLD,&my_id);
 
   if (num_nodes> (INT_MAX >> 1))
-  {error_msg_fatal("Can't have more then MAX_INT/2 nodes!!!");}
+  {SETERRQ(PETSC_ERR_PLIB,"Can't have more then MAX_INT/2 nodes!!!");}
 
-  ivec_zero((int*)edge_node,sizeof(PetscInt)*32);
+  ivec_zero((PetscInt*)edge_node,sizeof(PetscInt)*32);
 
   floor_num_nodes = 1;
   i_log2_num_nodes = modfl_num_nodes = 0;
@@ -83,52 +64,40 @@ comm_init (void)
     }
   else
     {edge_not_pow_2 = 0;}
-
+  PetscFunctionReturn(0);
 }
 
-
-
-/***********************************comm.c*************************************
-Function: giop()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-***********************************comm.c*************************************/
-void
-giop(int *vals, int *work, int n, int *oprs)
+/***********************************comm.c*************************************/
+PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
 {
-   int mask, edge;
-  int type, dest;
-  vfp fp;
+  PetscInt   mask, edge;
+  PetscInt    type, dest;
+  vfp         fp;
   MPI_Status  status;
-  int ierr;
+  PetscInt    ierr;
 
-
-#ifdef SAFE
+   PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
-    {error_msg_fatal("giop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
+    {SETERRQ3(PETSC_ERR_PLIB,"giop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2))
-    {error_msg_fatal("giop() :: non_uniform and n=0,1?");}    
+    {SETERRQ(PETSC_ERR_PLIB,"giop() :: non_uniform and n=0,1?");}    
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n))
     {
-      return;
+        PetscFunctionReturn(0);
     }
 
   /* a negative number if items to send ==> fatal */
   if (n<0)
-    {error_msg_fatal("giop() :: n=%D<0?",n);}
+    {SETERRQ1(PETSC_ERR_PLIB,"giop() :: n=%D<0?",n);}
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
@@ -136,7 +105,7 @@ giop(int *vals, int *work, int n, int *oprs)
 
   /* major league hack */
   if (!(fp = (vfp) ivec_fct_addr(type))) {
-    error_msg_warning("giop() :: hope you passed in a rbfp!\n");
+    ierr = PetscInfo(0,"giop() :: hope you passed in a rbfp!\n");
     fp = (vfp) oprs;
   }
 
@@ -145,11 +114,10 @@ giop(int *vals, int *work, int n, int *oprs)
   if (edge_not_pow_2)
     {
       if (my_id >= floor_num_nodes)
-	{ierr = MPI_Send(vals,n,MPI_INT,edge_not_pow_2,MSGTAG0+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_INT,edge_not_pow_2,MSGTAG0+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else 
 	{
-	  ierr = MPI_Recv(work,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
-		   MPI_COMM_WORLD,&status);
+	  ierr = MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2, MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	  (*fp)(vals,work,n,oprs);
 	}
     }
@@ -161,11 +129,10 @@ giop(int *vals, int *work, int n, int *oprs)
 	{
 	  dest = my_id^mask;
 	  if (my_id > dest)
-	    {ierr = MPI_Send(vals,n,MPI_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
-	      ierr = MPI_Recv(work,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG2+dest,
-		       MPI_COMM_WORLD, &status);
+	      ierr = MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
 	      (*fp)(vals, work, n, oprs);
 	    }
 	}
@@ -178,11 +145,10 @@ giop(int *vals, int *work, int n, int *oprs)
       
 	  dest = my_id^mask;
 	  if (my_id < dest)
-	    {ierr = MPI_Send(vals,n,MPI_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
-	      ierr = MPI_Recv(vals,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG4+dest,
-		       MPI_COMM_WORLD, &status);
+	      ierr = MPI_Recv(vals,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
 	    }
 	}
     }
@@ -192,60 +158,50 @@ giop(int *vals, int *work, int n, int *oprs)
     {
       if (my_id >= floor_num_nodes)
 	{
-	  ierr = MPI_Recv(vals,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2,
-		   MPI_COMM_WORLD,&status);
+	  ierr = MPI_Recv(vals,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	}
       else
-	{ierr = MPI_Send(vals,n,MPI_INT,edge_not_pow_2,MSGTAG5+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_INT,edge_not_pow_2,MSGTAG5+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
     }
+        PetscFunctionReturn(0);
 }  
 
-/***********************************comm.c*************************************
-Function: grop()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-***********************************comm.c*************************************/
-void
-grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
+/***********************************comm.c*************************************/
+PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, int *oprs)
 {
-   int mask, edge;
-  int type, dest;
-  vfp fp;
-  MPI_Status  status;
-  int ierr;
+  PetscInt       mask, edge;
+  PetscInt       type, dest;
+  vfp            fp;
+  MPI_Status     status;
+  PetscErrorCode ierr;
 
-
-#ifdef SAFE
+   PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
-    {error_msg_fatal("grop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
+    {SETERRQ3(PETSC_ERR_PLIB,"grop() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2))
-    {error_msg_fatal("grop() :: non_uniform and n=0,1?");}    
+    {SETERRQ(PETSC_ERR_PLIB,"grop() :: non_uniform and n=0,1?");}    
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n))
-    {return;}
+    {        PetscFunctionReturn(0);}
 
   /* a negative number of items to send ==> fatal */
   if (n<0)
-    {error_msg_fatal("gdop() :: n=%D<0?",n);}
+    {SETERRQ1(PETSC_ERR_PLIB,"gdop() :: n=%D<0?",n);}
 
   /* advance to list of n operations for custom */
   if ((type=oprs[0])==NON_UNIFORM)
     {oprs++;}
 
   if (!(fp = (vfp) rvec_fct_addr(type))) {
-    error_msg_warning("grop() :: hope you passed in a rbfp!\n");
+    ierr = PetscInfo(0,"grop() :: hope you passed in a rbfp!\n");
     fp = (vfp) oprs;
   }
 
@@ -254,12 +210,10 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
   if (edge_not_pow_2)
     {
       if (my_id >= floor_num_nodes)
-	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG0+my_id,
-		  MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG0+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else 
 	{
-	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
-		   MPI_COMM_WORLD,&status);
+	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	  (*fp)(vals,work,n,oprs);
 	}
     }
@@ -271,11 +225,10 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
 	{
 	  dest = my_id^mask;
 	  if (my_id > dest)
-	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
-	      ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,
-		       MPI_COMM_WORLD, &status);
+	      ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
 	      (*fp)(vals, work, n, oprs);
 	    }
 	}
@@ -288,11 +241,10 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
       
 	  dest = my_id^mask;
 	  if (my_id < dest)
-	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
-	      ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,
-		       MPI_COMM_WORLD, &status);
+	      ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
 	    }
 	}
     }
@@ -302,61 +254,47 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
     {
       if (my_id >= floor_num_nodes)
 	{
-	  ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, 
-		   MPI_COMM_WORLD,&status);
+	  ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	}
       else
-	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG5+my_id,
-		  MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG5+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
     }
+        PetscFunctionReturn(0);
 }  
 
-
-/***********************************comm.c*************************************
-Function: grop()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-
-note good only for num_nodes=2^k!!!
-
-***********************************comm.c*************************************/
-void
-grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim)
+/***********************************comm.c*************************************/
+PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim)
 {
-   int mask, edge;
-  int type, dest;
-  vfp fp;
-  MPI_Status  status;
-  int ierr;
+  PetscInt       mask, edge;
+  PetscInt       type, dest;
+  vfp            fp;
+  MPI_Status     status;
+  PetscErrorCode ierr;
 
-#ifdef SAFE
+   PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
-    {error_msg_fatal("grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
+    {SETERRQ3(PETSC_ERR_PLIB,"grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2))
-    {error_msg_fatal("grop_hc() :: non_uniform and n=0,1?");}    
+    {SETERRQ(PETSC_ERR_PLIB,"grop_hc() :: non_uniform and n=0,1?");}    
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n)||(dim<=0))
-    {return;}
+    {PetscFunctionReturn(0);}
 
   /* the error msg says it all!!! */
   if (modfl_num_nodes)
-    {error_msg_fatal("grop_hc() :: num_nodes not a power of 2!?!");}
+    {SETERRQ(PETSC_ERR_PLIB,"grop_hc() :: num_nodes not a power of 2!?!");}
 
   /* a negative number of items to send ==> fatal */
   if (n<0)
-    {error_msg_fatal("grop_hc() :: n=%D<0?",n);}
+    {SETERRQ1(PETSC_ERR_PLIB,"grop_hc() :: n=%D<0?",n);}
 
   /* can't do more dimensions then exist */
   dim = PetscMin(dim,i_log2_num_nodes);
@@ -366,7 +304,7 @@ grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim)
     {oprs++;}
 
   if (!(fp = (vfp) rvec_fct_addr(type))) {
-    error_msg_warning("grop_hc() :: hope you passed in a rbfp!\n");
+    ierr = PetscInfo(0,"grop_hc() :: hope you passed in a rbfp!\n");
     fp = (vfp) oprs;
   }
 
@@ -374,11 +312,10 @@ grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim)
     {
       dest = my_id^mask;
       if (my_id > dest)
-	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else
 	{
-	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,
-		   &status);
+	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	  (*fp)(vals, work, n, oprs);
 	}
     }
@@ -395,68 +332,56 @@ grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim)
       
       dest = my_id^mask;
       if (my_id < dest)
-	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else
 	{
-	  ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,
-		   &status);
+	  ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	}
     }
+        PetscFunctionReturn(0);
 }  
 
-
-/***********************************comm.c*************************************
-Function: gop()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-***********************************comm.c*************************************/
-void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type)
+/***********************************comm.c*************************************/
+PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt, PetscInt comm_type)
 {
-   int mask, edge;
-  int dest;
-  MPI_Status  status;
-  MPI_Op op;
-  int ierr;
+  PetscInt       mask, edge;
+  PetscInt       dest;
+  MPI_Status     status;
+  MPI_Op         op;
+  PetscErrorCode ierr;
 
-#ifdef SAFE
+   PetscFunctionBegin;
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
 
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!fp)
-    {error_msg_fatal("gop() :: v=%D, w=%D, f=%D",vals,work,fp);}
-#endif
+    {SETERRQ3(PETSC_ERR_PLIB,"gop() :: v=%D, w=%D, f=%D",vals,work,fp);}
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n))
-    {return;}
+    {PetscFunctionReturn(0);}
 
   /* a negative number of items to send ==> fatal */
   if (n<0)
-    {error_msg_fatal("gop() :: n=%D<0?",n);}
+    {SETERRQ1(PETSC_ERR_PLIB,"gop() :: n=%D<0?",n);}
 
   if (comm_type==MPI)
     {
-      ierr = MPI_Op_create(fp,TRUE,&op);
-      ierr = MPI_Allreduce (vals, work, n, dt, op, MPI_COMM_WORLD);
-      ierr = MPI_Op_free(&op);
-      return;
+      ierr = MPI_Op_create(fp,TRUE,&op);CHKERRQ(ierr);
+      ierr = MPI_Allreduce (vals, work, n, dt, op, MPI_COMM_WORLD);CHKERRQ(ierr);
+      ierr = MPI_Op_free(&op);CHKERRQ(ierr);
     }
 
   /* if not a hypercube must colapse partial dim */
   if (edge_not_pow_2)
     {
       if (my_id >= floor_num_nodes)
-	{ierr = MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG0+my_id,
-		  MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG0+my_id, MPI_COMM_WORLD);CHKERRQ(ierr);}
       else 
 	{
-	  ierr = MPI_Recv(work,n,dt,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
-		   MPI_COMM_WORLD,&status);
+	  ierr = MPI_Recv(work,n,dt,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	  (*fp)(vals,work,&n,&dt);
 	}
     }
@@ -468,11 +393,10 @@ void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type
 	{
 	  dest = my_id^mask;
 	  if (my_id > dest)
-	    {ierr = MPI_Send(vals,n,dt,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,dt,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
-	      ierr = MPI_Recv(work,n,dt,MPI_ANY_SOURCE,MSGTAG2+dest,
-		       MPI_COMM_WORLD, &status);
+	      ierr = MPI_Recv(work,n,dt,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
 	      (*fp)(vals, work, &n, &dt);
 	    }
 	}
@@ -485,59 +409,38 @@ void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type
       
 	  dest = my_id^mask;
 	  if (my_id < dest)
-	    {ierr = MPI_Send(vals,n,dt,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,dt,dest,MSGTAG4+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
-	      ierr = MPI_Recv(vals,n,dt,MPI_ANY_SOURCE,MSGTAG4+dest,
-		       MPI_COMM_WORLD, &status);
+	      ierr = MPI_Recv(vals,n,dt,MPI_ANY_SOURCE,MSGTAG4+dest, MPI_COMM_WORLD, &status);CHKERRQ(ierr);
 	    }
 	}
     }
-
   /* if not a hypercube must expand to partial dim */
   if (edge_not_pow_2)
     {
       if (my_id >= floor_num_nodes)
 	{
-	  ierr = MPI_Recv(vals,n,dt,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, 
-		   MPI_COMM_WORLD,&status);
+	  ierr = MPI_Recv(vals,n,dt,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	}
       else
-	{ierr = MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG5+my_id,
-		  MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG5+my_id, MPI_COMM_WORLD);CHKERRQ(ierr);}
     }
+  PetscFunctionReturn(0);
 }  
 
-
-
-
-
-
-/******************************************************************************
-Function: giop()
-
-Input : 
-Output: 
-Return: 
-Description: 
- 
-ii+1 entries in seg :: 0 .. ii
-
-******************************************************************************/
-void 
-ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, 
-	   int *segs)
+/******************************************************************************/
+PetscErrorCode ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
 {
-   int edge, type, dest, mask;
-   int stage_n;
-  MPI_Status  status;
-  int ierr;
+  PetscInt       edge, type, dest, mask;
+  PetscInt       stage_n;
+  MPI_Status     status;
+  PetscErrorCode ierr;
 
-#ifdef SAFE
+   PetscFunctionBegin;
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
 
   /* all msgs are *NOT* the same length */
@@ -550,13 +453,11 @@ ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level,
 	  dest = edge_node[edge];
 	  type = MSGTAG3 + my_id + (num_nodes*edge);
 	  if (my_id>dest)
-          {ierr = MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, 
-                      MPI_COMM_WORLD);}
+          {ierr = MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-              ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,
-                       MPI_COMM_WORLD,&status);              
+              ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
 	      rvec_add(vals+segs[edge], work, stage_n); 
 	    }
 	}
@@ -571,136 +472,30 @@ ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level,
 	  dest = edge_node[level-edge-1];
 	  type = MSGTAG6 + my_id + (num_nodes*edge);
 	  if (my_id<dest)
-            {ierr = MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,
-                      MPI_COMM_WORLD);}
+            {ierr = MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-              ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,
-                       MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);              
+              ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR, MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
 	    }
 	}
       mask >>= 1;
     }
+  PetscFunctionReturn(0);
 }  
 
-
-
-/***********************************comm.c*************************************
-Function: grop_hc_vvl()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-
-note good only for num_nodes=2^k!!!
-
-***********************************comm.c*************************************/
-void
-grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *segs, int *oprs, int dim)
+/******************************************************************************/
+PetscErrorCode new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  PetscInt level, PetscInt *segs)
 {
-   int mask, edge, n;
-  int type, dest;
-  vfp fp;
-  MPI_Status  status;
-  int ierr;
+  PetscInt            edge, type, dest, mask;
+  PetscInt            stage_n;
+  MPI_Status     status;
+  PetscErrorCode ierr;
 
-  error_msg_fatal("grop_hc_vvl() :: is not working!\n");
-
-#ifdef SAFE
-  /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!oprs||!segs)
-    {error_msg_fatal("grop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
-
-  /* non-uniform should have at least two entries */
-
+   PetscFunctionBegin;
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
-
-  /* if there's nothing to do return */
-  if ((num_nodes<2)||(dim<=0))
-    {return;}
-
-  /* the error msg says it all!!! */
-  if (modfl_num_nodes)
-    {error_msg_fatal("grop_hc() :: num_nodes not a power of 2!?!");}
-
-  /* can't do more dimensions then exist */
-  dim = PetscMin(dim,i_log2_num_nodes);
-
-  /* advance to list of n operations for custom */
-  if ((type=oprs[0])==NON_UNIFORM)
-    {oprs++;}
-
-  if (!(fp = (vfp) rvec_fct_addr(type))){
-    error_msg_warning("grop_hc() :: hope you passed in a rbfp!\n");
-    fp = (vfp) oprs;
-  }
-
-  for (mask=1,edge=0; edge<dim; edge++,mask<<=1)
-    {
-      n = segs[dim]-segs[edge];
-      dest = my_id^mask;
-      if (my_id > dest)
-	{ierr = MPI_Send(vals+segs[edge],n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
-      else
-	{
-	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,
-		   MPI_COMM_WORLD, &status);
-	  (*fp)(vals+segs[edge], work, n, oprs);
-	}
-    }
-
-  if (edge==dim)
-    {mask>>=1;}
-  else
-    {while (++edge<dim) {mask<<=1;}}
-
-  for (edge=0; edge<dim; edge++,mask>>=1)
-    {
-      if (my_id%mask)
-	{continue;}
-      
-      n = (segs[dim]-segs[dim-1-edge]);
-      
-      dest = my_id^mask;
-      if (my_id < dest)
-	{ierr = MPI_Send(vals+segs[dim-1-edge],n,MPIU_SCALAR,dest,MSGTAG4+my_id,
-		  MPI_COMM_WORLD);}
-      else
-	{
-	  ierr = MPI_Recv(vals+segs[dim-1-edge],n,MPIU_SCALAR,MPI_ANY_SOURCE,
-		   MSGTAG4+dest,MPI_COMM_WORLD, &status);
-	}
-    }
-}  
-
-/******************************************************************************
-Function: giop()
-
-Input : 
-Output: 
-Return: 
-Description: 
- 
-ii+1 entries in seg :: 0 .. ii
-
-******************************************************************************/
-void new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, int *segs)
-{
-   int edge, type, dest, mask;
-   int stage_n;
-  MPI_Status  status;
-  int ierr;
-
-#ifdef SAFE
-  /* check to make sure comm package has been initialized */
-  if (!p_init)
-    {comm_init();}
-#endif
 
   /* all msgs are *NOT* the same length */
   /* implement the mesh fan in/out exchange algorithm */
@@ -712,13 +507,11 @@ void new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, int *segs
 	  dest = edge_node[edge];
 	  type = MSGTAG3 + my_id + (num_nodes*edge);
 	  if (my_id>dest)
-          {ierr = MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, 
-                      MPI_COMM_WORLD);}
+          {ierr = MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-              ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,
-                       MPI_COMM_WORLD,&status);              
+              ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type, MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
 	      rvec_add(vals+segs[edge], work, stage_n); 
 	    }
 	}
@@ -733,65 +526,51 @@ void new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, int *segs
 	  dest = edge_node[level-edge-1];
 	  type = MSGTAG6 + my_id + (num_nodes*edge);
 	  if (my_id<dest)
-            {ierr = MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,
-                      MPI_COMM_WORLD);}
+            {ierr = MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,MPI_COMM_WORLD);CHKERRQ(ierr);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-              ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,
-                       MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);              
+              ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR, MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);CHKERRQ(ierr);              
 	    }
 	}
       mask >>= 1;
     }
+  PetscFunctionReturn(0);
 }  
 
-
-
-/***********************************comm.c*************************************
-Function: giop()
-
-Input : 
-Output: 
-Return: 
-Description: fan-in/out version
-
-note good only for num_nodes=2^k!!!
-
-***********************************comm.c*************************************/
-void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
+/***********************************comm.c*************************************/
+PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim)
 {
-   int mask, edge;
-  int type, dest;
-  vfp fp;
-  MPI_Status  status;
-  int ierr;
+  PetscInt            mask, edge;
+  PetscInt            type, dest;
+  vfp            fp;
+  MPI_Status     status;
+  PetscErrorCode ierr;
 
-#ifdef SAFE
+   PetscFunctionBegin;
   /* ok ... should have some data, work, and operator(s) */
   if (!vals||!work||!oprs)
-    {error_msg_fatal("giop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
+    {SETERRQ3(PETSC_ERR_PLIB,"giop_hc() :: vals=%D, work=%D, oprs=%D",vals,work,oprs);}
 
   /* non-uniform should have at least two entries */
   if ((oprs[0] == NON_UNIFORM)&&(n<2))
-    {error_msg_fatal("giop_hc() :: non_uniform and n=0,1?");}    
+    {SETERRQ(PETSC_ERR_PLIB,"giop_hc() :: non_uniform and n=0,1?");}    
 
   /* check to make sure comm package has been initialized */
   if (!p_init)
     {comm_init();}
-#endif
 
   /* if there's nothing to do return */
   if ((num_nodes<2)||(!n)||(dim<=0))
-    {return;}
+    {  PetscFunctionReturn(0);}
 
   /* the error msg says it all!!! */
   if (modfl_num_nodes)
-    {error_msg_fatal("giop_hc() :: num_nodes not a power of 2!?!");}
+    {SETERRQ(PETSC_ERR_PLIB,"giop_hc() :: num_nodes not a power of 2!?!");}
 
   /* a negative number of items to send ==> fatal */
   if (n<0)
-    {error_msg_fatal("giop_hc() :: n=%D<0?",n);}
+    {SETERRQ1(PETSC_ERR_PLIB,"giop_hc() :: n=%D<0?",n);}
 
   /* can't do more dimensions then exist */
   dim = PetscMin(dim,i_log2_num_nodes);
@@ -801,7 +580,7 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
     {oprs++;}
 
   if (!(fp = (vfp) ivec_fct_addr(type))){
-    error_msg_warning("giop_hc() :: hope you passed in a rbfp!\n");
+    ierr = PetscInfo(0,"giop_hc() :: hope you passed in a rbfp!\n");
     fp = (vfp) oprs;
   }
 
@@ -809,11 +588,10 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
     {
       dest = my_id^mask;
       if (my_id > dest)
-	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else
 	{
-	  ierr = MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,
-		   &status);
+	  ierr = MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
 	  (*fp)(vals, work, n, oprs);
 	}
     }
@@ -830,11 +608,11 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
       
       dest = my_id^mask;
       if (my_id < dest)
-	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
       else
 	{
-	  ierr = MPI_Recv(vals,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,
-		   &status);
+	  ierr = MPI_Recv(vals,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
 	}
     }
+  PetscFunctionReturn(0);
 }  

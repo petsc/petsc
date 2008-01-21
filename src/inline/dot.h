@@ -71,7 +71,7 @@ EXTERN void fortranmultcsrperm_(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,Petsc
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortranmultaij_    fortranmultaij
 #endif
-EXTERN void fortranmultaij_(PetscInt*,void*,PetscInt*,PetscInt*,void*,void*);
+EXTERN void fortranmultaij_(PetscInt*,const PetscScalar*,PetscInt*,PetscInt*,const PetscScalar*,PetscScalar*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
