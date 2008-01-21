@@ -46,6 +46,11 @@ class Configure(config.base.Configure):
     self.check('size_t', 'int')
     return
 
+  def checkIntegerTypes(self):
+    '''Checks for types associated with integers, such as int32_t.'''
+    self.check('int32_t', 'int')
+    return
+
   def checkFileTypes(self):
     '''Checks for types associated with files, such as mode_t, off_t, etc.'''
     self.check('mode_t', 'int')
@@ -332,6 +337,7 @@ void (*signal())();
   def configure(self):
     self.executeTest(self.checkSizeTypes)
     self.executeTest(self.checkFileTypes)
+    self.executeTest(self.checkIntegerTypes)
     self.executeTest(self.checkPID)
     self.executeTest(self.checkUID)
     self.executeTest(self.checkSignal)

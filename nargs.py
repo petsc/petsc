@@ -88,7 +88,10 @@ tests will cause ValueError.
     if arg.find('=') >= 0:
       (key, value) = arg[start:].split('=', 1)
     else:
-      (key, value) = (arg[start:], '1')
+      if start == 0:
+        (key, value) = (None, arg)
+      else:
+        (key, value) = (arg[start:], '1')
     return (key, Arg.parseValue(value))
 
   parseArgument = staticmethod(parseArgument)

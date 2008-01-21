@@ -164,7 +164,20 @@ class Configure(config.package.Package):
       raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
     self.addMakeMacro('MPIEXEC',self.mpiexec.replace(' -np 1','').replace(' ', '\\ '))
     return
-        
+
+  def configureMPI2(self):
+    '''Check for functions added to the interface in MPI-2'''
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    if self.checkLink('#include <mpi.h>\n', 'int flag;if (MPI_Finalized(&flag));\n'):
+      self.haveFinalized = 1
+      self.addDefine('HAVE_MPI_FINALIZED', 1)
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    return
+
   def configureConversion(self):
     '''Check for the functions which convert communicators between C and Fortran
        - Define HAVE_MPI_COMM_F2C and HAVE_MPI_COMM_C2F if they are present
@@ -540,6 +553,7 @@ class Configure(config.package.Package):
     # if not then set it to None
 
     self.executeTest(self.configureConversion)
+    self.executeTest(self.configureMPI2)
     self.executeTest(self.configureTypes)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.SGIMPICheck)
