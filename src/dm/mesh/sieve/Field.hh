@@ -487,19 +487,19 @@ namespace ALE {
   // A Section is our most general construct (more general ones could be envisioned)
   //   The Atlas is a UniformSection of dimension 1 and value type Point
   //     to hold each fiber dimension and offsets into a contiguous patch array
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_> >
+  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_>,
+           typename Atlas_ = UniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other> >
   class Section : public ALE::ParallelObject {
   public:
-    typedef Point_                                                      point_type;
-    typedef Value_                                                      value_type;
-    typedef Alloc_                                                      alloc_type;
-    typedef ALE::Point                                                  index_type;
-    typedef typename alloc_type::template rebind<index_type>::other     index_alloc_type;
-    typedef UniformSection<point_type, index_type, 1, index_alloc_type> atlas_type;
-    typedef typename atlas_type::chart_type                             chart_type;
-    typedef value_type *                                                values_type;
-    typedef typename alloc_type::template rebind<atlas_type>::other     atlas_alloc_type;
-    typedef typename atlas_alloc_type::pointer                          atlas_ptr;
+    typedef Point_                                                  point_type;
+    typedef Value_                                                  value_type;
+    typedef Alloc_                                                  alloc_type;
+    typedef Atlas_                                                  atlas_type;
+    typedef Point                                                   index_type;
+    typedef typename atlas_type::chart_type                         chart_type;
+    typedef value_type *                                            values_type;
+    typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
+    typedef typename atlas_alloc_type::pointer                      atlas_ptr;
   protected:
     Obj<atlas_type> _atlas;
     Obj<atlas_type> _atlasNew;
@@ -509,8 +509,12 @@ namespace ALE {
     Section(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
       atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
       atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
-      this->_atlas         = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
-      ///this->_atlas    = new atlas_type(comm, debug);
+      this->_atlas    = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
+      this->_atlasNew = NULL;
+      this->_array    = NULL;
+    };
+    Section(MPI_Comm comm, const int debug, const bool doNotCreateAtlas) : ParallelObject(comm, debug) {
+      this->_atlas    = NULL;
       this->_atlasNew = NULL;
       this->_array    = NULL;
     };
@@ -630,7 +634,7 @@ namespace ALE {
       const chart_type& points = this->getChart();
       int size = 0;
 
-      for(typename chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+      for(typename chart_type::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         size += this->getConstrainedFiberDimension(*p_iter);
       }
       return size;
@@ -640,7 +644,7 @@ namespace ALE {
       const chart_type& points = this->getChart();
       int size = 0;
 
-      for(typename chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+      for(typename chart_type::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         size += this->getFiberDimension(*p_iter);
       }
       return size;
@@ -721,7 +725,7 @@ namespace ALE {
       int               offset   = 0;
       int               bcOffset = this->size();
 
-      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         typename atlas_type::value_type idx  = atlas->restrictPoint(*c_iter)[0];
         const int&                      dim  = idx.prefix;
 
@@ -896,25 +900,25 @@ namespace ALE {
   //     We must eliminate restrict() since it does not correspond to the constrained system
   //   Numbering will have to be rewritten to calculate correct mappings
   //     I think we can just generate multiple tuples per point
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_> >
+  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_>,
+           typename Atlas_ = UniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other>,
+           typename BCAtlas_ = Section<Point_, int, typename Alloc_::template rebind<int>::other> >
   class GeneralSection : public ALE::ParallelObject {
   public:
-    typedef Point_                                                      point_type;
-    typedef Value_                                                      value_type;
-    typedef Alloc_                                                      alloc_type;
-    typedef ALE::Point                                                  index_type;
-    typedef typename alloc_type::template rebind<index_type>::other     index_alloc_type;
-    typedef UniformSection<point_type, index_type, 1, index_alloc_type> atlas_type;
-    typedef typename alloc_type::template rebind<int>::other            int_alloc_type;
-    typedef Section<point_type, int, int_alloc_type>                    bc_type;
-    typedef typename atlas_type::chart_type                             chart_type;
-    typedef value_type *                                                values_type;
-    typedef std::pair<const int *, const int *>                         customAtlasInd_type;
-    typedef std::pair<customAtlasInd_type, bool>                        customAtlas_type;
-    typedef typename alloc_type::template rebind<atlas_type>::other     atlas_alloc_type;
-    typedef typename atlas_alloc_type::pointer                          atlas_ptr;
-    typedef typename alloc_type::template rebind<bc_type>::other        bc_alloc_type;
-    typedef typename bc_alloc_type::pointer                             bc_ptr;
+    typedef Point_                                                  point_type;
+    typedef Value_                                                  value_type;
+    typedef Alloc_                                                  alloc_type;
+    typedef Atlas_                                                  atlas_type;
+    typedef BCAtlas_                                                bc_type;
+    typedef Point                                                   index_type;
+    typedef typename atlas_type::chart_type                         chart_type;
+    typedef value_type *                                            values_type;
+    typedef std::pair<const int *, const int *>                     customAtlasInd_type;
+    typedef std::pair<customAtlasInd_type, bool>                    customAtlas_type;
+    typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
+    typedef typename atlas_alloc_type::pointer                      atlas_ptr;
+    typedef typename alloc_type::template rebind<bc_type>::other    bc_alloc_type;
+    typedef typename bc_alloc_type::pointer                         bc_ptr;
   protected:
     Obj<atlas_type> _atlas;
     Obj<atlas_type> _atlasNew;
@@ -942,11 +946,21 @@ namespace ALE {
       this->_array         = NULL;
       this->_sharedStorage = false;
     };
+    GeneralSection(MPI_Comm comm, const int debug, const bool doNotCreateAtlas) : ParallelObject(comm, debug) {
+      this->_atlas         = NULL;
+      this->_atlasNew      = NULL;
+      this->_bc            = NULL;
+      this->_array         = NULL;
+      this->_sharedStorage = false;
+    };
     GeneralSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL), _sharedStorage(false), _sharedStorageSize(0) {
       bc_ptr pBC = bc_alloc_type(this->_allocator).allocate(1);
       bc_alloc_type(this->_allocator).construct(pBC, bc_type(comm, debug));
       this->_bc  = Obj<bc_type>(pBC, sizeof(bc_type));
       ///this->_bc = new bc_type(comm, debug);
+    };
+    GeneralSection(const Obj<atlas_type>& atlas, const bool doNotCreateBC) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL), _sharedStorage(false), _sharedStorageSize(0) {
+      this->_bc = NULL;
     };
     virtual ~GeneralSection() {
       if (this->_array && !this->_sharedStorage) {
@@ -1121,7 +1135,7 @@ namespace ALE {
       const chart_type& points = this->getChart();
       int               size   = 0;
 
-      for(typename chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+      for(typename chart_type::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         size += this->getFiberDimension(*p_iter);
       }
       return size;
@@ -1260,7 +1274,7 @@ namespace ALE {
       const chart_type& chart  = this->getChart();
       int               offset = 0;
 
-      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         typename atlas_type::value_type idx = atlas->restrictPoint(*c_iter)[0];
         const int&                      dim = idx.prefix;
 

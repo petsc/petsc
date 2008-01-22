@@ -1,3 +1,4 @@
+
 static char help[] = "Sieve Package Correctness and Performance Unit Tests.\n\n";
 
 #include <petsc.h>
@@ -13,11 +14,13 @@ static char help[] = "Sieve Package Correctness and Performance Unit Tests.\n\n"
 extern PetscErrorCode RegisterSifterSuite();
 extern PetscErrorCode RegisterSieveSuite();
 extern PetscErrorCode RegisterSectionSuite();
+extern PetscErrorCode RegisterISectionSuite();
 
 typedef struct {
-  PetscTruth sifter;  // Run the Sifter tests
-  PetscTruth sieve;   // Run the Sieve tests
-  PetscTruth section; // Run the Section tests
+  PetscTruth sifter;   // Run the Sifter tests
+  PetscTruth sieve;    // Run the Sieve tests
+  PetscTruth section;  // Run the Section tests
+  PetscTruth isection; // Run the ISection tests
 } Options;
 
 #undef __FUNCT__
@@ -27,14 +30,16 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->sifter  = PETSC_FALSE;
-  options->sieve   = PETSC_FALSE;
-  options->section = PETSC_FALSE;
+  options->sifter   = PETSC_FALSE;
+  options->sieve    = PETSC_FALSE;
+  options->section  = PETSC_FALSE;
+  options->isection = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-sifter", "Run Sifter tests", "unitTests", options->sifter, &options->sifter, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-sieve", "Run Sieve tests", "unitTests", options->sieve, &options->sieve, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-section", "Run Section tests", "unitTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-isection", "Run ISection tests", "unitTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -45,9 +50,10 @@ PetscErrorCode RegisterSuites(Options *options) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (options->sifter)  {ierr = RegisterSifterSuite();CHKERRQ(ierr);}
-  if (options->sieve)   {ierr = RegisterSieveSuite();CHKERRQ(ierr);}
-  if (options->section) {ierr = RegisterSectionSuite();CHKERRQ(ierr);}
+  if (options->sifter)   {ierr = RegisterSifterSuite();CHKERRQ(ierr);}
+  if (options->sieve)    {ierr = RegisterSieveSuite();CHKERRQ(ierr);}
+  if (options->section)  {ierr = RegisterSectionSuite();CHKERRQ(ierr);}
+  if (options->isection) {ierr = RegisterISectionSuite();CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 

@@ -1,0 +1,126 @@
+#include <petsc.h>
+#include <IField.hh>
+#include "unitTests.hh"
+
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/extensions/HelperMacros.h>
+
+template<typename Section_>
+class TestSection : public CppUnit::TestFixture
+{
+public:
+  typedef Section_ section_type;
+protected:
+  ALE::Obj<section_type> _section;
+  int                    _debug; // The debugging level
+  PetscInt               _iters; // The number of test repetitions
+  PetscInt               _size;  // The interval size
+public :
+  virtual std::string getName() {return "General";};
+
+  PetscErrorCode processOptions() {
+    PetscErrorCode ierr;
+
+    this->_debug = 0;
+    this->_iters = 10000;
+    this->_size  = 10000;
+
+    PetscFunctionBegin;
+    ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-size", "The interval size", "isection.c", this->_size, &this->_size, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  };
+
+  /// Tear down data.
+  void tearDown(void) {};
+
+  /// Test restrict().
+  void testRestrictPoint(const std::string testName, const double maxTimePerRestrict) {
+    const typename section_type::chart_type& chart = this->_section->getChart();
+    const int   numPoints = chart.size();
+    std::string stageName = this->getName()+" RestrictPoint Test";
+    std::string eventName = testName+" RestrictPoint";
+
+    ALE::LogStage  stage = ALE::LogStageRegister(stageName.c_str());
+    PetscEvent     restrictEvent;
+    PetscErrorCode ierr;
+
+    ierr = PetscLogEventRegister(&restrictEvent, eventName.c_str(), PETSC_OBJECT_COOKIE);
+    ALE::LogStagePush(stage);
+    ierr = PetscLogEventBegin(restrictEvent,0,0,0,0);
+    for(int r = 0; r < this->_iters; r++) {
+      for(typename section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        const typename section_type::value_type *restrict = this->_section->restrictPoint(*c_iter);
+      }
+    }
+    ierr = PetscLogEventEnd(restrictEvent,0,0,0,0);
+    ALE::LogStagePop(stage);
+    StageLog     stageLog;
+    EventPerfLog eventLog;
+
+    ierr = PetscLogGetStageLog(&stageLog);
+    ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);
+    EventPerfInfo eventInfo = eventLog->eventInfo[restrictEvent];
+
+    CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
+    CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
+    if (this->_debug) {
+      ierr = PetscPrintf(this->_section->comm(), " Average time per restrictPoint: %gs\n", eventInfo.time/(numPoints*this->_iters));
+    }
+    CPPUNIT_ASSERT((eventInfo.time <  maxTimePerRestrict * numPoints * this->_iters));
+  };
+};
+
+class TestIConstantSection : public TestSection<ALE::IConstantSection<int, double> >
+{
+  CPPUNIT_TEST_SUITE(TestIConstantSection);
+
+  CPPUNIT_TEST(testConstantRestrictPoint);
+
+  CPPUNIT_TEST_SUITE_END();
+public:
+  virtual std::string getName() {return "Constant";};
+
+  /// Setup data.
+  void setUp(void) {
+    this->processOptions();
+    this->_section = new section_type(PETSC_COMM_WORLD, 0, this->_size, 1.0, this->_debug);
+  };
+
+  void testConstantRestrictPoint(void) {
+    this->testRestrictPoint("Constant", 1.0e-7);
+  }
+};
+
+class TestIUniformSection : public TestSection<ALE::IUniformSection<int, double> >
+{
+  CPPUNIT_TEST_SUITE(TestIUniformSection);
+
+  CPPUNIT_TEST(testUniformRestrictPoint);
+
+  CPPUNIT_TEST_SUITE_END();
+public:
+  virtual std::string getName() {return "Uniform";};
+
+  /// Setup data.
+  void setUp(void) {
+    this->processOptions();
+    this->_section = new section_type(PETSC_COMM_WORLD, 0, this->_size, this->_debug);
+  };
+
+  void testUniformRestrictPoint(void) {
+    this->testRestrictPoint("Uniform", 1.0e-7);
+  }
+};
+
+#undef __FUNCT__
+#define __FUNCT__ "RegisterISectionSuite"
+PetscErrorCode RegisterISectionSuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION(TestIConstantSection);
+  CPPUNIT_TEST_SUITE_REGISTRATION(TestIUniformSection);
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
