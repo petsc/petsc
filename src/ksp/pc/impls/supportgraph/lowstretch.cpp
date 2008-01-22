@@ -445,7 +445,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   edgesLeft = m;
 
   std::vector<PetscInt> pred(n,-1);
-  const std::vector<PetscInt> succ[n]; 
+  std::vector<PetscInt> succ[n]; 
   std::vector<PetscInt>::iterator i;
   PetscScalar dist[n];
   std::vector<PetscTruth> taken(n,PETSC_FALSE);
