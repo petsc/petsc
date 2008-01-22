@@ -1185,8 +1185,8 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& rowM, con
   const ALE::Mesh::indices_type rowIndicesBlock = rowM->getIndices(rowSection, rowE, rowGlobalOrder);
 
   const PetscInt *tmpIndices    = rowIndicesBlock.first;
-  const int      numRowIndices = rowIndicesBlock.second;
-  PetscInt rowIndices[numRowIndices];
+  const int       numRowIndices = rowIndicesBlock.second;
+  PetscInt       *rowIndices    = new PetscInt[numRowIndices];
   PetscMemcpy(rowIndices, tmpIndices, numRowIndices*sizeof(PetscInt));
 
   const ALE::Mesh::indices_type colIndicesBlock = colM->getIndices(colSection, colE, colGlobalOrder);
@@ -1225,6 +1225,7 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& rowM, con
     CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  delete [] rowIndices;
   PetscFunctionReturn(0);
 }
 

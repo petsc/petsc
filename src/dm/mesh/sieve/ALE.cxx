@@ -41,10 +41,9 @@ namespace ALE {
   // including the function and the line where the error occured.
   void ERROR(PetscErrorCode ierr, const char *func, int line, const char *msg) {
     if(ierr) {
-        int32_t buf_size = 2*1024;
-        char *mess = (char *)malloc(sizeof(char)*(buf_size+1));
-        snprintf(mess, buf_size, "%s: line %d: error %d: %s:\n", func, line, (int)ierr, msg);
-        throw ALE::Exception(mess);
+      ostringstream mess;
+      mess << func << ": line " << line << ": error " << ierr << ": " << msg << ":\n";
+      throw ALE::Exception(mess);
     }
   }// ERROR()
 
@@ -56,15 +55,14 @@ namespace ALE {
       char mpi_error[MPI_MAX_ERROR_STRING+1];
       int len = MPI_MAX_ERROR_STRING;
       PetscErrorCode ie = MPI_Error_string(ierr, mpi_error, &len);
-      char *mess;
-      if(!ie) {
-        mess = (char *) malloc(sizeof(char)*(strlen(msg)+len+3));
-        sprintf(mess, "%s: %s", msg, mpi_error);
+      ostringstream mess;
+
+      if (!ie) {
+        mess << func << ": line " << line << ": error " << ierr << ": " << msg << ": " << mpi_error << "\n";
       } else {
-        mess = (char *) malloc(sizeof(char)*(strlen(msg)+18));
-        sprintf(mess, "%s: <unknown error>", msg);
+        mess << func << ": line " << line << ": error " << ierr << ": " << msg << ": <unknown error>\n";
       }
-      ERROR(ierr, func, line, mess);
+      throw ALE::Exception(mess);
     }
   }// MPIERROR()
 

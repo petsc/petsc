@@ -52,7 +52,8 @@ n2   \\
 
   double doublet_angle (int dim, double * a, double * b, double * c, double * d) {
     if (dim != 3) return 0.;
-    double b_r[dim], c_r[dim], d_r[dim], n1[dim], n2[dim], n1mag = 0, n2mag = 0, n1dotn2 = 0, angle;
+    const int nDim = 3;
+    double b_r[nDim], c_r[nDim], d_r[nDim], n1[nDim], n2[nDim], n1mag = 0, n2mag = 0, n1dotn2 = 0, angle;
     for (int i = 0; i < dim; i++) {
       b_r[i] = b[i] - a[i];
       c_r[i] = c[i] - a[i];
@@ -87,9 +88,10 @@ n2   \\
 
   double tetrahedron_volume (int dim, double * a, double * b, double * c, double * d) {
     if (dim != 3) return 0.;
-    double x[dim];
-    double y[dim];
-    double z[dim];
+    const int nDim = 3;
+    double x[nDim];
+    double y[nDim];
+    double z[nDim];
     for (int i = 0; i < dim; i++) {
       x[i] = b[i] - a[i];
       y[i] = c[i] - a[i];
@@ -163,12 +165,14 @@ d = vertices[3];
   }
 
   PetscTruth Surgery_2D_22Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
-    double pi = M_PI;
+    const double pi = M_PI;
     //VALIDITY CONDITION FOR THIS FLIP: cad and cbd must be (much) less than 180. 
     //we could probably have some angle heuristic for local delaunay approximation, but whatever.
     //must compute it in terms of acb + bad etc.
     int dim = m->getDimension();
-    double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim];
+    if (dim != 2) throw ALE::Exception("Wrong dimension");
+    const int nDim = 2;
+    double a_coords[nDim], b_coords[nDim], c_coords[nDim], d_coords[nDim];
     const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
     PetscMemcpy(b_coords, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));
@@ -191,7 +195,9 @@ d = vertices[3];
     //if abc + abd + bac + bad < cda + cdb + dca + dcb then flip (divide the larger angle)
     const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     int dim = m->getDimension();
-    double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim];
+    if (dim != 2) throw ALE::Exception("Wrong dimension");
+    const int nDim = 2;
+    double a_coords[nDim], b_coords[nDim], c_coords[nDim], d_coords[nDim];
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
     PetscMemcpy(b_coords, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));
     PetscMemcpy(c_coords, coordinates->restrictPoint(vertices[2]), dim*sizeof(double));
@@ -468,7 +474,9 @@ c-----------d      c-----------d
     double pi = M_PI;
     //    double pi = 3.141592653589793238;
     int dim = m->getDimension();
-    double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim], e_coords[dim];
+    if (dim != 2) throw ALE::Exception("Wrong dimension");
+    const int nDim = 2;
+    double a_coords[nDim], b_coords[nDim], c_coords[nDim], d_coords[nDim], e_coords[nDim];
     const Obj<Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
     PetscMemcpy(b_coords, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));
@@ -658,7 +666,9 @@ b------a------c ->  b-------------c
     Obj<Mesh::sieve_type::supportSet> line = new Mesh::sieve_type::supportSet();
     vertices[0] = a;
     int dim = m->getDimension();
-    double v_coords[dim], n_coords[dim], e1_coords[dim], e2_coords[dim];
+    if (dim != 2) throw ALE::Exception("Wrong dimension");
+    const int nDim = 2;
+    double v_coords[nDim], n_coords[nDim], e1_coords[nDim], e2_coords[nDim];
     PetscMemcpy(v_coords, coordinates->restrictPoint(a), dim*sizeof(double));
     //go through the neighbors of the vertex and find the nearest one
     Obj<Mesh::sieve_type> s = m->getSieve();
@@ -806,7 +816,9 @@ a------d------c   a-------------c
     //    double pi = 3.14159265359;
     const Obj<Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     int dim = m->getDimension();
-    double coords_a[dim], coords_b[dim], coords_c[dim], coords_d[dim];
+    if (dim != 2) throw ALE::Exception("Wrong dimension");
+    const int nDim = 2;
+    double coords_a[nDim], coords_b[nDim], coords_c[nDim], coords_d[nDim];
     PetscMemcpy(coords_a, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
     PetscMemcpy(coords_b, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));
     PetscMemcpy(coords_c, coordinates->restrictPoint(vertices[2]), dim*sizeof(double));
@@ -925,13 +937,15 @@ b----a----c -> b1---a---3c
     //volume(abde + bcde + cade) <== volume(abcd + abce)
     
     int dim = m->getDimension();
+    if (dim != 3) throw ALE::Exception("Wrong dimension");
+    const int nDim = 3;
     //kill this thing cheaply if possible:
     Obj<Mesh::sieve_type::supportSet> line = new Mesh::sieve_type::supportSet();
     line->insert(vertices[3]);
     line->insert(vertices[4]);
     if (m->getSieve()->nJoin1(line)->size() != 0) return PETSC_FALSE;
     const Obj<Mesh::real_section_type> coordinates = m->getRealSection("coordinates");
-    double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim], e_coords[dim];
+    double a_coords[nDim], b_coords[nDim], c_coords[nDim], d_coords[nDim], e_coords[nDim];
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
     PetscMemcpy(b_coords, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));
     PetscMemcpy(c_coords, coordinates->restrictPoint(vertices[2]), dim*sizeof(double));
@@ -1164,8 +1178,10 @@ c1---2---3e -> c----d----e
   PetscTruth Surgery_3D_32Flip_Possible (Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices){
     //The 3-2 flip is only possible if each new subvolume will have volume less than the previous three combined (convex)
     int dim = m->getDimension();
+    if (dim != 3) throw ALE::Exception("Wrong dimension");
+    const int nDim = 3;
     const Obj<Mesh::real_section_type> coordinates = m->getRealSection("coordinates");
-    double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim], e_coords[dim];
+    double a_coords[nDim], b_coords[nDim], c_coords[nDim], d_coords[nDim], e_coords[nDim];
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
     PetscMemcpy(b_coords, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));
     PetscMemcpy(c_coords, coordinates->restrictPoint(vertices[2]), dim*sizeof(double));
@@ -1474,8 +1490,10 @@ b-------a-------c     b-------a-------c
 
   PetscTruth Surgery_3D_31BoundFlip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
     int dim = m->getDimension();
+    if (dim != 3) throw ALE::Exception("Wrong dimension");
+    const int nDim = 3;
     const Obj<Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-    double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim], e_coords[dim];
+    double a_coords[nDim], b_coords[nDim], c_coords[nDim], d_coords[nDim], e_coords[nDim];
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
     PetscMemcpy(b_coords, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));
     PetscMemcpy(c_coords, coordinates->restrictPoint(vertices[2]), dim*sizeof(double));
@@ -1553,10 +1571,12 @@ a, b, c, and d are on the boundary in question
 
     //criterion for success:  both new volumes are less than the old volume. (they don't overlap)
     int dim = m->getDimension();
-    double pi = M_PI;
+    const double pi = M_PI;
+    if (dim != 3) throw ALE::Exception("Wrong dimension");
+    const int nDim = 3;
     //    double pi = 3.141592653589793238;
     const Obj<Mesh::real_section_type> coordinates = m->getRealSection("coordinates");
-    double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim], e_coords[dim];
+    double a_coords[nDim], b_coords[nDim], c_coords[nDim], d_coords[nDim], e_coords[nDim];
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
     PetscMemcpy(b_coords, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));
     PetscMemcpy(c_coords, coordinates->restrictPoint(vertices[2]), dim*sizeof(double));
