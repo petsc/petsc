@@ -171,6 +171,18 @@ static PetscErrorCode PCView_TFS(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_TFS"
+/*MC
+     PCTFS - A parallel direct solver intended for problems with very few unknowns (like the 
+         coarse grid in multigrid).
+
+   Implemented by  Henry M. Tufo III and Paul Fischer
+
+   Level: beginner
+
+   Notes: Only implemented for the MPIAIJ matrices
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
+M*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC pc)
 {
   PetscErrorCode ierr;

@@ -129,14 +129,8 @@ Last Modification:
 6.21.97
 ***********************************types.h************************************/
 
-/**********************************types.h*************************************
-File Description:
------------------
-
-***********************************types.h************************************/
-typedef PetscErrorCode (*vfp)(void*,void*,int,...);
+typedef PetscErrorCode (*vfp)(void*,void*,PetscInt,...);
 typedef PetscErrorCode (*rbfp)(PetscScalar *, PetscScalar *, PetscInt len);
-#define vbfp MPI_User_function *
 typedef PetscInt (*bfp)(void*, void *, PetscInt *len, MPI_Datatype *dt); 
 
 /***********************************comm.h*************************************
@@ -153,22 +147,6 @@ Providence, RI 02912
 Last Modification: 
 6.21.97
 ***********************************comm.h*************************************/
-
-/***********************************comm.h*************************************
-File Description:
------------------
-
-***********************************comm.h*************************************/
-
-/***********************************comm.h*************************************
-Function:
-
-Input : 
-Output: 
-Return: 
-Description: 
-Usage: 
-***********************************comm.h*************************************/
 extern PetscMPIInt my_id;
 extern PetscMPIInt num_nodes;
 extern PetscMPIInt floor_num_nodes;
@@ -176,7 +154,6 @@ extern PetscMPIInt i_log2_num_nodes;
 
 extern PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs);
 extern PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs);
-extern PetscErrorCode gfop(void *vals, void *wk, PetscInt n, vbfp fp, MPI_Datatype dt, PetscInt comm_type);
 extern PetscErrorCode comm_init(void);
 extern PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim);
 extern PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim);
@@ -189,27 +166,6 @@ extern PetscErrorCode ssgl_radd(PetscScalar *vals, PetscScalar *work, PetscInt l
 #define MSGTAG4 163841
 #define MSGTAG5 249439
 #define MSGTAG6 10000001
-
-
-/**********************************error.h*************************************
-
-Author: Henry M. Tufo III
-
-e-mail: hmt@cs.brown.edu
-
-snail-mail:
-Division of Applied Mathematics
-Brown University
-Providence, RI 02912
-
-Last Modification: 
-6.21.97
-**********************************error.h*************************************/
-
-#define SORT_REAL		1
-#define SORT_INTEGER	        0
-#define SORT_INT_PTR	        2
-           
 
 #define NON_UNIFORM     0
 #define GL_MAX          1
@@ -226,17 +182,6 @@ Last Modification:
 #define GL_MIN_ABS      12
 #define GL_EXISTS       13
 
-
-
-/**********************************ivec.h**************************************
-Function:
-
-Input : 
-Output: 
-Return: 
-Description: 
-Usage: 
-***********************************ivec.h*************************************/
 extern PetscInt *ivec_copy(PetscInt *arg1, PetscInt *arg2, PetscInt n);
 
 extern PetscErrorCode ivec_zero(PetscInt *arg1, PetscInt n);
@@ -269,6 +214,8 @@ extern PetscInt ivec_linear_search(PetscInt item, PetscInt *list, PetscInt n);
 
 extern PetscErrorCode ivec_sort_companion_hack(PetscInt *ar, PetscInt **ar2, PetscInt size);
 
+#define SORT_INTEGER 1
+#define SORT_INT_PTR 2
 
 extern PetscErrorCode rvec_zero(PetscScalar *arg1, PetscInt n);
 extern PetscErrorCode rvec_one(PetscScalar *arg1, PetscInt n);
@@ -285,8 +232,6 @@ extern PetscErrorCode rvec_min(PetscScalar *arg1, PetscScalar *arg2, PetscInt n)
 extern PetscErrorCode rvec_min_abs(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
 extern PetscErrorCode vec_exists(PetscScalar *arg1, PetscScalar *arg2, PetscInt n);
 
-
-/*$Id: vector.c,v 1.228 2001/03/23 23:21:22 balay Exp $*/
 /***********************************gs.h***************************************
 
 Author: Henry M. Tufo III
@@ -302,40 +247,16 @@ Last Modification:
 6.21.97
 ************************************gs.h**************************************/
 
-/***********************************gs.h***************************************
-File Description:
------------------
-
-************************************gs.h**************************************/
-
-/***********************************gs.h***************************************
-Type: gs_ADT
-------------
-
-************************************gs.h**************************************/
-
 typedef struct gather_scatter_id *gs_ADT;
 typedef PetscErrorCode (*Rbfp)(PetscScalar *, PetscScalar *, PetscInt len);
 
-/***********************************gs.h***************************************
-Function:
-
-Input : 
-Output: 
-Return: 
-Description: 
-Usage: 
-************************************gs.h**************************************/
 extern gs_ADT gs_init(PetscInt *elms, PetscInt nel, PetscInt level);
-extern PetscErrorCode   gs_gop(gs_ADT gs_handle, PetscScalar *vals, const char *op);
 extern PetscErrorCode   gs_gop_vec(gs_ADT gs_handle, PetscScalar *vals, const char *op, PetscInt step);
 extern PetscErrorCode   gs_gop_binary(gs_ADT gs, PetscScalar *vals, Rbfp fct);
 extern PetscErrorCode   gs_gop_hc(gs_ADT gs_handle, PetscScalar *vals, const char *op, PetscInt dim);
 extern PetscErrorCode   gs_free(gs_ADT gs_handle);
 extern PetscErrorCode   gs_init_msg_buf_sz(PetscInt buf_size);
 extern PetscErrorCode   gs_init_vec_sz(PetscInt size);
-
-
 
 /*************************************xxt.h************************************
 Module Name: xxt
@@ -355,23 +276,12 @@ contact:
 Last Modification: 3.20.01
 **************************************xxt.h***********************************/
 
-/*************************************xxt.h************************************
-File Description:
-**************************************xxt.h***********************************/
-
-/*************************************xxt.h************************************
-Notes on Usage: 
-**************************************xxt.h***********************************/
-
-
 typedef struct xxt_CDT *xxt_ADT;
 
 
 /*************************************xxt.h************************************
 Function: XXT_new()
 
-Input :
-Output:
 Return: ADT ptr or NULL upon failure.
 Description: This function allocates and returns an xxt handle
 Usage: xxt_handle = xxt_new();
@@ -383,8 +293,7 @@ extern xxt_ADT XXT_new(void);
 Function: XXT_free()
 
 Input : pointer to ADT.
-Output:
-Return:
+
 Description: This function frees the storage associated with an xxt handle
 Usage: XXT_free(xxt_handle);
 **************************************xxt.h***********************************/
@@ -395,7 +304,6 @@ EXTERN PetscInt XXT_free(xxt_ADT xxt_handle);
 Function: XXT_factor
 
 Input : ADT ptr,  and pointer to object
-Output:
 Return: 0 on failure, 1 on success
 Description: This function sets the xxt solver 
 
@@ -444,15 +352,10 @@ assumes x has been initialized to be b
 **************************************xxt.h***********************************/
 extern PetscInt XXT_solve(xxt_ADT xxt_handle, double *x, double *b);
 
-
 /*************************************xxt.h************************************
 Function: XXT_stats
 
 Input : handle
-Output:
-Return:
-Description:
-factor stats
 **************************************xxt.h***********************************/
 extern PetscInt XXT_stats(xxt_ADT xxt_handle);
 
@@ -488,24 +391,12 @@ contact:
 Last Modification: 3.20.01
 **************************************xyt.h***********************************/
 
-/*************************************xyt.h************************************
-File Description:
-**************************************xyt.h***********************************/
-
-/*************************************xyt.h************************************
-Notes on Usage: 
-**************************************xyt.h***********************************/
-
-
-
 typedef struct xyt_CDT *xyt_ADT;
 
 
 /*************************************xyt.h************************************
 Function: XYT_new()
 
-Input :
-Output:
 Return: ADT ptr or NULL upon failure.
 Description: This function allocates and returns an xyt handle
 Usage: xyt_handle = xyt_new();
@@ -517,8 +408,6 @@ extern xyt_ADT XYT_new(void);
 Function: XYT_free()
 
 Input : pointer to ADT.
-Output:
-Return:
 Description: This function frees the storage associated with an xyt handle
 Usage: XYT_free(xyt_handle);
 **************************************xyt.h***********************************/
@@ -580,25 +469,9 @@ extern PetscInt XYT_solve(xyt_ADT xyt_handle, double *x, double *b);
 Function: XYT_stats
 
 Input : handle
-Output:
-Return:
-Description:
-factor stats
 **************************************xyt.h***********************************/
 extern PetscInt XYT_stats(xyt_ADT xyt_handle);
 
-
-/*************************************xyt.h************************************
-Function: XYT_sp_1()
-
-Input : pointer to ADT
-Output: 
-Return: 
-Description: sets xyt parameter 1 in xyt_handle
-Usage: implement later
-
-PetscErrorCode XYT_sp_1(xyt_handle,parameter 1 value)
-**************************************xyt.h***********************************/
 
 /********************************bit_mask.h************************************
 
@@ -613,23 +486,6 @@ Providence, RI 02912
 
 Last Modification: 
 11.21.97
-*********************************bit_mask.h***********************************/
-
-/********************************bit_mask.h************************************
-File Description:
------------------
-
-*********************************bit_mask.h***********************************/
-
-
-/********************************bit_mask.h************************************
-Function:
-
-Input : 
-Output: 
-Return: 
-Description: 
-Usage: 
 *********************************bit_mask.h***********************************/
 extern PetscInt div_ceil(PetscInt numin, PetscInt denom);
 extern PetscErrorCode set_bit_mask(PetscInt *bm, PetscInt len, PetscInt val);

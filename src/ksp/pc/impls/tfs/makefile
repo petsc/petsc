@@ -1,7 +1,5 @@
 
-#requirespackage  'PETSC_USE_32BIT_INT'
 #requiresscalar real 
-#requiresprecision  double                                                                                                                                                             
 
 ALL: lib
 
