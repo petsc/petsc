@@ -95,6 +95,7 @@ PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs)
         PetscFunctionReturn(0);
     }
 
+
   /* a negative number if items to send ==> fatal */
   if (n<0)
     {SETERRQ1(PETSC_ERR_PLIB,"giop() :: n=%D<0?",n);}
@@ -339,92 +340,6 @@ PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscIn
 	}
     }
         PetscFunctionReturn(0);
-}  
-
-/***********************************comm.c*************************************/
-PetscErrorCode gfop(void *vals, void *work, PetscInt n, vbfp fp, MPI_Datatype dt)
-{
-  PetscInt       mask, edge;
-  PetscInt       dest;
-  MPI_Status     status;
-  MPI_Op         op;
-  PetscErrorCode ierr;
-
-   PetscFunctionBegin;
-  /* check to make sure comm package has been initialized */
-  if (!p_init)
-    {comm_init();}
-
-  /* ok ... should have some data, work, and operator(s) */
-  if (!vals||!work||!fp)
-    {SETERRQ3(PETSC_ERR_PLIB,"gop() :: v=%D, w=%D, f=%D",vals,work,fp);}
-
-  /* if there's nothing to do return */
-  if ((num_nodes<2)||(!n))
-    {PetscFunctionReturn(0);}
-
-  /* a negative number of items to send ==> fatal */
-  if (n<0)
-    {SETERRQ1(PETSC_ERR_PLIB,"gop() :: n=%D<0?",n);}
-
-  ierr = MPI_Op_create(fp,TRUE,&op);CHKERRQ(ierr);
-  ierr = MPI_Allreduce (vals, work, n, dt, op, MPI_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Op_free(&op);CHKERRQ(ierr);
-
-
-  /* if not a hypercube must colapse partial dim */
-  if (edge_not_pow_2)
-    {
-      if (my_id >= floor_num_nodes)
-	{ierr = MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG0+my_id, MPI_COMM_WORLD);CHKERRQ(ierr);}
-      else 
-	{
-	  ierr = MPI_Recv(work,n,dt,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
-	  (*fp)(vals,work,&n,&dt);
-	}
-    }
-
-  /* implement the mesh fan in/out exchange algorithm */
-  if (my_id<floor_num_nodes)
-    {
-      for (mask=1,edge=0; edge<i_log2_num_nodes; edge++,mask<<=1)
-	{
-	  dest = my_id^mask;
-	  if (my_id > dest)
-	    {ierr = MPI_Send(vals,n,dt,dest,MSGTAG2+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
-	  else
-	    {
-	      ierr = MPI_Recv(work,n,dt,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD, &status);CHKERRQ(ierr);
-	      (*fp)(vals, work, &n, &dt);
-	    }
-	}
-
-      mask=floor_num_nodes>>1;
-      for (edge=0; edge<i_log2_num_nodes; edge++,mask>>=1)
-	{
-	  if (my_id%mask)
-	    {continue;}
-      
-	  dest = my_id^mask;
-	  if (my_id < dest)
-	    {ierr = MPI_Send(vals,n,dt,dest,MSGTAG4+my_id,MPI_COMM_WORLD);CHKERRQ(ierr);}
-	  else
-	    {
-	      ierr = MPI_Recv(vals,n,dt,MPI_ANY_SOURCE,MSGTAG4+dest, MPI_COMM_WORLD, &status);CHKERRQ(ierr);
-	    }
-	}
-    }
-  /* if not a hypercube must expand to partial dim */
-  if (edge_not_pow_2)
-    {
-      if (my_id >= floor_num_nodes)
-	{
-	  ierr = MPI_Recv(vals,n,dt,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, MPI_COMM_WORLD,&status);CHKERRQ(ierr);
-	}
-      else
-	{ierr = MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG5+my_id, MPI_COMM_WORLD);CHKERRQ(ierr);}
-    }
-  PetscFunctionReturn(0);
 }  
 
 /******************************************************************************/

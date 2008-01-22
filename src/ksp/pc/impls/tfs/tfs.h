@@ -131,7 +131,6 @@ Last Modification:
 
 typedef PetscErrorCode (*vfp)(void*,void*,PetscInt,...);
 typedef PetscErrorCode (*rbfp)(PetscScalar *, PetscScalar *, PetscInt len);
-#define vbfp MPI_User_function *
 typedef PetscInt (*bfp)(void*, void *, PetscInt *len, MPI_Datatype *dt); 
 
 /***********************************comm.h*************************************
@@ -155,7 +154,6 @@ extern PetscMPIInt i_log2_num_nodes;
 
 extern PetscErrorCode giop(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs);
 extern PetscErrorCode grop(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs);
-extern PetscErrorCode gfop(void *vals, void *wk, PetscInt n, vbfp fp, MPI_Datatype dt);
 extern PetscErrorCode comm_init(void);
 extern PetscErrorCode giop_hc(PetscInt *vals, PetscInt *work, PetscInt n, PetscInt *oprs, PetscInt dim);
 extern PetscErrorCode grop_hc(PetscScalar *vals, PetscScalar *work, PetscInt n, PetscInt *oprs, PetscInt dim);
