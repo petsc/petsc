@@ -92,7 +92,6 @@ class Configure(config.base.Configure):
         self.compilers.LIBS += ' '+self.libraries.getLibArgument('-lgcc_s.1')
     else:
       self.integerSize = 32
-      self.addDefine('USE_32BIT_INT', 1)
     return
 
   def configureISColorValueType(self):
