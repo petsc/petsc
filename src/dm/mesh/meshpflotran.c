@@ -12,12 +12,12 @@ namespace ALE {
     void Builder::readConnectivity(MPI_Comm comm, const std::string& filename, 
                                    int& corners, const bool useZeroBase, 
                                    int& numElements, int *vertices[]) {
-      PetscViewer    viewer;
-      PetscInt       numCells;
-      PetscInt      *verts;
       PetscInt       commRank;
       PetscErrorCode ierr;
 #if defined(PETSC_HAVE_HDF5)
+      PetscViewer    viewer;
+      PetscInt       numCells;
+      PetscInt      *verts;
       herr_t         status;
       hid_t          file_id;
       hid_t          group_id;
@@ -119,13 +119,13 @@ namespace ALE {
     void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, 
                                   const int dim, int& numVertices, 
                                   double *coordinates[]) {
+      PetscInt       commRank;
+      PetscErrorCode ierr;
+#if defined(PETSC_HAVE_HDF5)
       PetscViewer    viewer;
       PetscInt       numVerts;
       PetscScalar   *coords, *coord;
       PetscInt       c;
-      PetscInt       commRank;
-      PetscErrorCode ierr;
-#if defined(PETSC_HAVE_HDF5)
       herr_t         status;
       hid_t          file_id;
       hid_t          group_id;
