@@ -309,7 +309,8 @@ namespace ALE {
       atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
       atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
       this->_atlas = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
-      ///this->_atlas = new atlas_type(comm, fiberDim, 0, debug);
+      int dim = fiberDim;
+      this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
       for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
     UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas) {
@@ -510,11 +511,6 @@ namespace ALE {
       atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
       atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
       this->_atlas    = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
-      this->_atlasNew = NULL;
-      this->_array    = NULL;
-    };
-    Section(MPI_Comm comm, const int debug, const bool doNotCreateAtlas) : ParallelObject(comm, debug) {
-      this->_atlas    = NULL;
       this->_atlasNew = NULL;
       this->_array    = NULL;
     };
@@ -937,19 +933,10 @@ namespace ALE {
       atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
       atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
       this->_atlas         = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
-      ///this->_atlas         = new atlas_type(comm, debug);
       bc_ptr pBC           = bc_alloc_type(this->_allocator).allocate(1);
       bc_alloc_type(this->_allocator).construct(pBC, bc_type(comm, debug));
       this->_bc            = Obj<bc_type>(pBC, sizeof(bc_type));
-      ///this->_bc            = new bc_type(comm, debug);
       this->_atlasNew      = NULL;
-      this->_array         = NULL;
-      this->_sharedStorage = false;
-    };
-    GeneralSection(MPI_Comm comm, const int debug, const bool doNotCreateAtlas) : ParallelObject(comm, debug) {
-      this->_atlas         = NULL;
-      this->_atlasNew      = NULL;
-      this->_bc            = NULL;
       this->_array         = NULL;
       this->_sharedStorage = false;
     };
@@ -957,12 +944,8 @@ namespace ALE {
       bc_ptr pBC = bc_alloc_type(this->_allocator).allocate(1);
       bc_alloc_type(this->_allocator).construct(pBC, bc_type(comm, debug));
       this->_bc  = Obj<bc_type>(pBC, sizeof(bc_type));
-      ///this->_bc = new bc_type(comm, debug);
     };
-    GeneralSection(const Obj<atlas_type>& atlas, const bool doNotCreateBC) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL), _sharedStorage(false), _sharedStorageSize(0) {
-      this->_bc = NULL;
-    };
-    virtual ~GeneralSection() {
+    ~GeneralSection() {
       if (this->_array && !this->_sharedStorage) {
         const int totalSize = this->sizeWithBC();
 

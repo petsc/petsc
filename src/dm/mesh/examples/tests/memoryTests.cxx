@@ -582,6 +582,7 @@ PetscErrorCode SectionDistributionTest(const Options *options)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ "ISectionDistributionTest"
 // We need to rework distribution to allow interval sections
@@ -591,7 +592,7 @@ PetscErrorCode SectionDistributionTest(const Options *options)
 // I think we need to rewrite the distributeSection() method, but not much else
 PetscErrorCode ISectionDistributionTest(const Options *options)
 {
-  typedef ALE::IConstantSection<int, double, ALE::malloc_allocator<double> > TestSection;
+  typedef ALE::IUniformSection<int, double, 1, ALE::malloc_allocator<double> > TestSection;
   ALE::MemoryLogger& logger   = ALE::MemoryLogger::singleton();
   const PetscInt     num      = options->number;
   const PetscInt     block    = options->numCells/options->size;
@@ -865,6 +866,7 @@ PetscErrorCode ISectionDistributionTest(const Options *options)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshTest"
