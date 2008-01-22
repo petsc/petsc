@@ -152,7 +152,7 @@ extern FILE *petsc_history;
        PetscErrorCode PetscInfo(void *vobj, const char message[], ...))  
 
     Input Parameter:
-+   vobj - object most closely associated with the logging statement
++   vobj - object most closely associated with the logging statement or PETSC_NULL
 -   message - logging message, using standard "printf" format
 
     Options Database Key:
@@ -160,9 +160,7 @@ $    -info : activates printing of PetscInfo() messages
 
     Level: intermediate
 
-    Note: Since this is a macro you must wrap the arguments in TWO sets of (())
-
-    Fortran Note: This routine is not supported in Fortran.
+    Fortran Note: This function does not take the vobj argument
 
     Example of Usage:
 $

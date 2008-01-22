@@ -14,29 +14,16 @@ Providence, RI 02912
 Last Modification: 
 11.21.97
 *********************************bit_mask.c***********************************/
-
-/********************************bit_mask.c************************************
-File Description:
------------------
-
-*********************************bit_mask.c***********************************/
 #include "src/ksp/pc/impls/tfs/tfs.h"
 
 
-/********************************bit_mask.c************************************
-Function: bm_to_proc
-
-Input : 
-Output: 
-Return: 
-Description: 
-*********************************bit_mask.c***********************************/
-void 
-bm_to_proc( char *ptr, int p_mask,  int *msg_list)
+/*********************************bit_mask.c***********************************/
+PetscErrorCode bm_to_proc( char *ptr, PetscInt p_mask,  PetscInt *msg_list)
 {
-   int i, tmp;
+   PetscInt i, tmp;
 
-  if (msg_list)
+   PetscFunctionBegin;
+   if (msg_list)
     {
       /* low to high */
       ptr+=(p_mask-1);
@@ -61,50 +48,16 @@ bm_to_proc( char *ptr, int p_mask,  int *msg_list)
 	    {*msg_list = tmp+7; msg_list++;}
 	  ptr --;
 	}
-
-      /* high to low */
-      /*
-      for (i=0;i<p_mask;i++)
-	{
-	  tmp = BYTE*(p_mask-i-1);
-	  if (*ptr&128) 
-	    {*msg_list = tmp+7; msg_list++;}
-	  if (*ptr&64)
-	    {*msg_list = tmp+6; msg_list++;}
-	  if (*ptr&32)
-	    {*msg_list = tmp+5; msg_list++;}
-	  if (*ptr&16)
-	    {*msg_list = tmp+4; msg_list++;}
-	  if (*ptr&8) 
-	    {*msg_list = tmp+3; msg_list++;}
-	  if (*ptr&4) 
-	    {*msg_list = tmp+2; msg_list++;}
-	  if (*ptr&2) 
-	    {*msg_list = tmp+1; msg_list++;}
-	  if (*ptr&1) 
-	    {*msg_list = tmp; msg_list++;}
-	  ptr ++;
-	}
-      */
-
-    }
+  }
+  PetscFunctionReturn(0);
 }
 
-
-
-/********************************bit_mask.c************************************
-Function: ct_bits()
-
-Input : 
-Output: 
-Return: 
-Description: 
-*********************************bit_mask.c***********************************/
-int ct_bits( char *ptr, int n)
+/*********************************bit_mask.c***********************************/
+PetscInt ct_bits( char *ptr, PetscInt n)
 {
-   int i, tmp=0;
+   PetscInt i, tmp=0;
 
-
+   PetscFunctionBegin;
   for(i=0;i<n;i++)
     {
       if (*ptr&128) {tmp++;}
@@ -121,23 +74,14 @@ int ct_bits( char *ptr, int n)
   return(tmp);
 }
 
-
-
-/********************************bit_mask.c************************************
-Function: len_buf()
-
-Input : 
-Output: 
-Return: 
-Description:
-*********************************bit_mask.c***********************************/ 
-int
-div_ceil( int numer,  int denom)
+/*********************************bit_mask.c***********************************/ 
+PetscInt
+div_ceil( PetscInt numer,  PetscInt denom)
 {
-   int rt_val;
+   PetscInt rt_val;
 
   if ((numer<0)||(denom<=0))
-    {error_msg_fatal("div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);}
+    {SETERRQ2(PETSC_ERR_PLIB,"div_ceil() :: numer=%D ! >=0, denom=%D ! >0",numer,denom);}
 
   /* if integer division remainder then increment */
   rt_val = numer/denom;
@@ -147,23 +91,14 @@ div_ceil( int numer,  int denom)
   return(rt_val);
 }
 
-
-
-/********************************bit_mask.c************************************
-Function: len_bit_mask()
-
-Input : 
-Output: 
-Return: 
-Description:
-*********************************bit_mask.c***********************************/ 
-int
-len_bit_mask( int num_items)
+/*********************************bit_mask.c***********************************/ 
+PetscInt
+len_bit_mask( PetscInt num_items)
 {
-   int rt_val, tmp;
+   PetscInt rt_val, tmp;
 
   if (num_items<0)
-    {error_msg_fatal("Value Sent To len_bit_mask() Must be >= 0!");}
+    {SETERRQ(PETSC_ERR_PLIB,"Value Sent To len_bit_mask() Must be >= 0!");}
 
   /* mod BYTE ceiling function */
   rt_val = num_items/BYTE;
@@ -177,26 +112,16 @@ len_bit_mask( int num_items)
   return(rt_val);
 }
 
-
-
-/********************************bit_mask.c************************************
-Function: set_bit_mask()
-
-Input : 
-Output: 
-Return:
-Description: 
-*********************************bit_mask.c***********************************/
-void
-set_bit_mask( int *bm, int len, int val)
+/*********************************bit_mask.c***********************************/
+PetscErrorCode set_bit_mask( PetscInt *bm, PetscInt len, PetscInt val)
 {
-   int i, offset;
+   PetscInt i, offset;
    char mask = 1;
   char *cptr;
 
 
   if (len_bit_mask(val)>len)
-    {error_msg_fatal("The Bit Mask Isn't That Large!");}
+    {SETERRQ(PETSC_ERR_PLIB,"The Bit Mask Isn't That Large!");}
 
   cptr = (char *) bm;
 
@@ -210,27 +135,19 @@ set_bit_mask( int *bm, int len, int val)
 
   offset = len - val/BYTE - 1;
   cptr[offset] = mask;
+  PetscFunctionReturn(0);
 }
 
-
-
-/********************************bit_mask.c************************************
-Function: len_buf()
-
-Input : 
-Output: 
-Return: 
-Description: 
-*********************************bit_mask.c***********************************/
-int
-len_buf(int item_size, int num_items)
+/*********************************bit_mask.c***********************************/
+PetscInt len_buf(PetscInt item_size, PetscInt num_items)
 {
-   int rt_val, tmp;
+   PetscInt rt_val, tmp;
 
+   PetscFunctionBegin;
   rt_val = item_size * num_items;
 
   /*  double precision align for now ... consider page later */
-  if ((tmp = (rt_val%(int)sizeof(double))))
+  if ((tmp = (rt_val%(PetscInt)sizeof(double))))
     {rt_val += (sizeof(double) - tmp);}
 
   return(rt_val);

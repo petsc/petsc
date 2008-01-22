@@ -52,10 +52,11 @@ extern "C" {
 
 namespace ALE {
   namespace New {
-    template<typename Bundle_>
+    template<typename Bundle_, typename Alloc_ = typename Bundle_::alloc_type>
     class Partitioner {
     public:
       typedef Bundle_                          bundle_type;
+      typedef Alloc_                           alloc_type;
       typedef typename bundle_type::sieve_type sieve_type;
       typedef typename bundle_type::point_type point_type;
     public:
@@ -68,7 +69,7 @@ namespace ALE {
       //     the iterator order, but we can fix it later.
       static void buildDualCSR(const Obj<bundle_type>& bundle, const int dim, int **offsets, int **adjacency) {
         ALE_LOG_EVENT_BEGIN;
-        typedef typename ALE::New::Completion<bundle_type, point_type> completion;
+        typedef typename ALE::New::Completion<bundle_type, point_type, alloc_type> completion;
         const Obj<sieve_type>&                           sieve        = bundle->getSieve();
         const Obj<typename bundle_type::label_sequence>& elements     = bundle->heightStratum(0);
         Obj<sieve_type>                                  overlapSieve = new sieve_type(bundle->comm(), bundle->debug());
@@ -300,7 +301,7 @@ namespace ALE {
             float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
             char *outassignname = NULL;             /*  name of assignment output file */
             char *outfilename = NULL;               /* output file name */
-            int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
+            int architecture = dim;                 /* 0 => hypercube, d => d-dimensional mesh */
             int ndims_tot = 0;                      /* total number of cube dimensions to divide */
             int mesh_dims[3];                       /* dimensions of mesh of processors */
             double *goal = NULL;                    /* desired set sizes for each set */
@@ -311,7 +312,36 @@ namespace ALE {
             int ndims = 1;                          /* number of eigenvectors (2^d sets) */
             double eigtol = 0.001;                  /* tolerance on eigenvectors */
             long seed = 123636512;                  /* for random graph mutations */
+	    float *vCoords[3];
             PetscErrorCode ierr;
+
+	    ierr = PetscOptionsGetInt(PETSC_NULL, "-partitioner_chaco_global_method", &global_method, PETSC_NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
+	    ierr = PetscOptionsGetInt(PETSC_NULL, "-partitioner_chaco_local_method",  &local_method,  PETSC_NULL);CHKERROR(ierr, "Error in PetscOptionsGetInt");
+	    if (global_method == 3) {
+	      // Inertial Partitioning
+	      ierr = PetscMalloc3(nvtxs,float,&x,nvtxs,float,&y,nvtxs,float,&z);CHKERROR(ierr, "Error in PetscMalloc");
+	      vCoords[0] = x; vCoords[1] = y; vCoords[2] = z;
+	      const Obj<typename bundle_type::label_sequence>&    cells       = bundle->heightStratum(0);
+	      const Obj<typename bundle_type::real_section_type>& coordinates = bundle->getRealSection("coordinates");
+	      const int corners = bundle->size(coordinates, *(cells->begin()))/dim;
+	      int       c       = 0;
+
+	      for(typename bundle_type::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
+		const double *coords = bundle->restrict(coordinates, *c_iter);
+
+		for(int d = 0; d < dim; ++d) {
+		  vCoords[d][c] = 0.0;
+		}
+		for(int v = 0; v < corners; ++v) {
+		  for(int d = 0; d < dim; ++d) {
+		    vCoords[d][c] += coords[v*dim+d];
+		  }
+		}
+		for(int d = 0; d < dim; ++d) {
+		  vCoords[d][c] /= corners;
+		}
+	      }
+	    }
 
             nvtxs = bundle->heightStratum(0)->size();
             mesh_dims[0] = bundle->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
@@ -355,6 +385,10 @@ namespace ALE {
             }
             delete [] msgLog;
 #endif
+	    if (global_method == 3) {
+	      // Inertial Partitioning
+	      ierr = PetscFree3(x, y, z);CHKERROR(ierr, "Error in PetscFree");
+	    }
           }
           if (adjacency) delete [] adjacency;
           if (start)     delete [] start;

@@ -1,6 +1,6 @@
 import sys, os
-sys.path.insert(0, os.path.join(os.getenv('PETSC_DIR'), 'python'))
-sys.path.insert(0, os.path.join(os.getenv('PETSC_DIR'), 'python', 'BuildSystem'))
+sys.path.insert(0, os.path.join(os.getenv('PETSC_DIR'), 'config'))
+sys.path.insert(0, os.path.join(os.getenv('PETSC_DIR'), 'config', 'BuildSystem'))
 import script
 
 class FEMQuadrature(script.Script):

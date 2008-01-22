@@ -189,7 +189,7 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-user_defined_pc',      &
      &                    user_defined_pc,ierr)
 
-      if (user_defined_pc .eq. 1) then
+      if (user_defined_pc) then
 
 !  (Required) Indicate to PETSc that we are using a shell preconditioner 
          call PCSetType(pc,PCSHELL,ierr)
@@ -246,7 +246,7 @@
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
-      if (user_defined_pc .eq. 1) then
+      if (user_defined_pc) then
          call VecDestroy(diag,ierr)
       endif
 

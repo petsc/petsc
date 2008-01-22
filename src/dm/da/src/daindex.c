@@ -50,7 +50,7 @@
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlobal()
           DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DAGetAO(), DAGetGlobalIndicesF90()
-          DAGetISLocalToGlobalMapping(), DACreate3d(), DACreate1d(), DALocalToLocalEnd()
+          DAGetISLocalToGlobalMapping(), DACreate3d(), DACreate1d(), DALocalToLocalEnd(), DAGetOwnershipRange()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalIndices(DA da,PetscInt *n,PetscInt **idx)
 {
@@ -136,7 +136,7 @@ PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
 .keywords: distributed array, get, global, indices, local-to-global
 
 .seealso: DACreate2d(), DAGetGhostCorners(), DAGetCorners(), DALocalToGlocal()
-          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices()
+          DAGlobalToLocalBegin(), DAGlobalToLocalEnd(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetGlobalIndices(), DAGetOwnershipRange()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
 {

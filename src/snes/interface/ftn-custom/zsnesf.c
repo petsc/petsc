@@ -27,6 +27,7 @@
 #define snesmonitorlg_                   SNESMONITORLG
 #define snesmonitorsolutionupdate_       SNESMONITORSOLUTIONUPDATE
 #define snesmonitorset_                  SNESMONITORSET
+#define snesgetapplicationcontext_       SNESGETAPPLICATIONCONTEXT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define snessolve_                       snessolve
 #define snesdefaultcomputejacobian_      snesdefaultcomputejacobian
@@ -53,6 +54,7 @@
 #define snesmonitorsolution_             snesmonitorsolution
 #define snesmonitorsolutionupdate_       snesmonitorsolutionupdate
 #define snesmonitorset_                  snesmonitorset
+#define snesgetapplicationcontext_       snesgetapplicationcontext
 #endif
 
 EXTERN_C_BEGIN
@@ -186,6 +188,11 @@ void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
 #endif
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
+
+void PETSC_STDCALL snesgetapplicationcontext_(SNES *snes,void **ctx,PetscErrorCode *ierr)
+{
+  *ierr = SNESGetApplicationContext(*snes,ctx);
+} 
 /* ---------------------------------------------------------*/
 
 /*

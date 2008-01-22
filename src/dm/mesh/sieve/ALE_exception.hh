@@ -5,7 +5,9 @@
 #include <sstream>
 
 typedef std::basic_ostringstream<char> ostringstream;
-typedef std::string string;
+typedef std::basic_ostringstream<char> ostrstr;
+typedef std::string                    string;
+
 
 namespace ALE {
   class Exception {
@@ -24,6 +26,33 @@ namespace ALE {
       return os;
     };
   };
+
+  class XException {
+    ostrstr _txt;
+  public:
+    XException(){};
+    explicit 
+    XException(const string& msg)   {this->_txt << msg;};
+    explicit 
+    XException(const ostrstr& txt)  {this->_txt << txt.str();};
+    XException(const XException& e) {this->_txt << e._txt.str();};
+    //
+    const string msg()     const {return this->_txt.str();};
+    const char   *message() const {return this->_txt.str().c_str();};
+    // Message input
+    template<typename Input_>
+    XException& operator<<(const Input_& in) {
+      this->_txt << in;
+      return *this;
+    };
+    // Printing
+    template <typename Stream_>
+    friend Stream_& operator<<(Stream_& os, const XException& e) {
+      os << "ERROR: " << e.message() << std::endl;
+      return os;
+    };
+  };// class XException
+
 
   // A helper function that throws an ALE::Exception with a message identifying the function that returned the given error code, 
   // including the function and the line where the error occured.

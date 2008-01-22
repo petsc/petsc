@@ -883,15 +883,16 @@ PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMult_SeqAIJ"
 PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *x,*y,*aa;
-  PetscErrorCode ierr;
-  PetscInt       m=A->rmap.n,*aj,*ii;
-  PetscInt       n,i,j,nonzerorow=0,*ridx=PETSC_NULL;
-  PetscScalar    sum;
-  PetscTruth     usecprow=a->compressedrow.use;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar       *y;
+  const PetscScalar *x,*aa;
+  PetscErrorCode    ierr;
+  PetscInt          m=A->rmap.n,*aj,*ii;
+  PetscInt          n,i,j,nonzerorow=0,*ridx=PETSC_NULL;
+  PetscScalar       sum;
+  PetscTruth        usecprow=a->compressedrow.use;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
-  PetscInt       jrow;
+  PetscInt         jrow;
 #endif
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
@@ -899,7 +900,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
 
   PetscFunctionBegin;
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   aj  = a->j;
   aa  = a->a;
@@ -934,7 +935,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
 #endif
   }
   ierr = PetscLogFlops(2*a->nz - nonzerorow);CHKERRQ(ierr);
-  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xx,(PetscScalar**)&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1152,17 +1153,6 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
     ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
-
-
-    /* Let  A = L + U + D; where L is lower trianglar,
-    U is upper triangular, E is diagonal; This routine applies
-
-            (L + E)^{-1} A (U + E)^{-1}
-
-    to a vector efficiently using Eisenstat's trick. This is for
-    the case of SSOR preconditioner, so E is D/omega where omega
-    is the relaxation factor.
-    */
 
   if (flag == SOR_APPLY_LOWER) {
     SETERRQ(PETSC_ERR_SUP,"SOR_APPLY_LOWER is not implemented");
@@ -2814,6 +2804,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,Petsc
    allocation.  For large problems you MUST preallocate memory or you 
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
+   You can call MatGetInfo() to get information on how effective the preallocation was;
+   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+   You can also run with the option -info and look for messages with the string 
+   malloc in them to see if additional memory allocation was needed.
+
    Developers: Use nz of MAT_SKIP_ALLOCATION to not allocate any space for the matrix
    entries or columns indices
 
@@ -2831,7 +2826,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,Petsc
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
+.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatGetInfo()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation(Mat B,PetscInt nz,const PetscInt nnz[])
@@ -3333,9 +3328,10 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
         4 5 6
 
         i =  {0,1,3,6}  [size = nrow+1  = 3+1]
-        j =  {0,0,2,0,1,2}  [size = nz = 6]
+        j =  {0,0,2,0,1,2}  [size = nz = 6]; values must be sorted for each row
         v =  {1,2,3,4,5,6}  [size = nz = 6]
 
+        
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatCreateSeqAIJ(), MatCreateMPIAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
@@ -3344,6 +3340,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscI
   PetscErrorCode ierr;
   PetscInt       ii;
   Mat_SeqAIJ     *aij;
+#if defined(PETSC_USE_DEBUG)
+  PetscInt       jj;
+#endif
 
   PetscFunctionBegin;
   if (i[0]) {
@@ -3368,6 +3367,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscI
     aij->ilen[ii] = aij->imax[ii] = i[ii+1] - i[ii];
 #if defined(PETSC_USE_DEBUG)
     if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
+    for (jj=i[ii]+1; jj<i[ii+1]; jj++) {
+      if (j[jj] < j[jj-1]) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is not sorted",jj-i[ii],j[jj],ii);
+      if (j[jj] == j[jj]-1) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is identical to previous entry",jj-i[ii],j[jj],ii);
+    }
 #endif    
   }
 #if defined(PETSC_USE_DEBUG)

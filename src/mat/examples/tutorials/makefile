@@ -30,6 +30,10 @@ ex6: ex6.o  chkopts
 	-${CLINKER}  -o ex6 ex6.o ${PETSC_MAT_LIB}
 	${RM} ex6.o
 
+ex8: ex8.o  chkopts
+	-${CLINKER}  -o ex8 ex8.o ${PETSC_MAT_LIB}
+	${RM} ex8.o
+
 runex1: 
 	-@${MPIEXEC} -np 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 

@@ -15,7 +15,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
                    ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c \
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c\
-                   ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c
+                   ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F
 
 include ${PETSC_DIR}/conf/base
@@ -453,6 +453,10 @@ ex119: ex119.o chkopts
 ex120: ex120.o chkopts
 	-${CLINKER} -o ex120 ex120.o ${PETSC_MAT_LIB}
 	${RM} ex120.o
+
+ex121: ex121.o chkopts
+	-${CLINKER} -o ex121 ex121.o ${PETSC_MAT_LIB}
+	${RM} ex121.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1097,10 +1101,26 @@ runex120:
 	   else echo "Possible problem with ex120_1, diffs above"; fi; \
 	   ${RM} -f ex120_1.tmp 
 runex120_2:
-	-@${MPIEXEC} -np 1 ./ex120 -test_zheevx > ex120_2.tmp 2>&1;   \
-	   if (${DIFF} output/ex120_2.out ex120_2.tmp) then true; \
+	-@${MPIEXEC} -np 1 ./ex120 -test_zheevx > ex120.tmp 2>&1;   \
+	   if (${DIFF} output/ex120_2.out ex120.tmp) then true; \
 	   else echo "Possible problem with ex120_2, diffs above"; fi; \
-	   ${RM} -f ex120_2.tmp 
+	   ${RM} -f ex120.tmp 
+runex120_3:
+	-@${MPIEXEC} -np 1 ./ex120 -test_zhegv > ex120.tmp 2>&1;   \
+	   if (${DIFF} output/ex120_3.out ex120.tmp) then true; \
+	   else echo "Possible problem with ex120_3, diffs above"; fi; \
+	   ${RM} -f ex120.tmp
+runex120_4:
+	-@${MPIEXEC} -np 1 ./ex120 -test_zhegvx > ex120.tmp 2>&1;   \
+	   if (${DIFF} output/ex120_4.out ex120.tmp) then true; \
+	   else echo "Possible problem with ex120_4, diffs above"; fi; \
+	   ${RM} -f ex120.tmp
+
+runex121:
+	-@${MPIEXEC} -np 1 ./ex121 > ex121_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex121.out ex121_1.tmp) then true; \
+	   else echo "Possible problem with ex121_1, diffs above"; fi; \
+	   ${RM} -f ex121_1.tmp 
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
@@ -1140,6 +1160,6 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm 
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
-TESTEXAMPLES_FFTW	       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm 
+TESTEXAMPLES_FFTW	       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc runex121 ex121.rm
 
 include ${PETSC_DIR}/conf/test

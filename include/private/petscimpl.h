@@ -155,7 +155,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject);
 #define PetscValidIntPointer(h,arg)
 #define PetscValidScalarPointer(h,arg)
 
-#elif !defined(PETSC_HAVE_CRAY90_POINTER)
+#elif !defined(PETSC_HAVE_UNALIGNED_POINTERS)
 /* 
     Macros to test if a PETSc object is valid and if pointers are
 valid

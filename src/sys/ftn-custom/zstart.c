@@ -226,8 +226,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   PetscMPIInt size;
   char        **args = 0,*t1,name[256],hostname[64];
   PetscMPIInt f_petsc_comm_world;
-  
-  *ierr = 1;
+
   *ierr = PetscMemzero(name,256); if (*ierr) return;
   if (PetscInitializeCalled) {*ierr = 0; return;}
 
@@ -296,12 +295,10 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 
   *ierr = PetscErrorPrintfInitialize();
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscErrorPrintfInitialize()");return;}
-
   *ierr = MPI_Comm_rank(MPI_COMM_WORLD,&PetscGlobalRank);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Setting PetscGlobalRank");return;}
   *ierr = MPI_Comm_size(MPI_COMM_WORLD,&PetscGlobalSize);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Setting PetscGlobalSize");return;}
-
 #if defined(PETSC_USE_COMPLEX)
   /* 
      Initialized the global variable; this is because with 
@@ -325,7 +322,6 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   *ierr = MPI_Op_create(PetscSum_Local,1,&PetscSum_Op);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating MPI ops");return;}
 #endif
-
   /*
        Create the PETSc MPI reduction operator that sums of the first
      half of the entries and maxes the second half.
@@ -353,7 +349,6 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
      below.
   */
   PetscInitializeFortran();
-
   PETScParseFortranArgs_Private(&argc,&args);
   FIXCHAR(filename,len,t1);
   *ierr = PetscOptionsInsert(&argc,&args,t1); 

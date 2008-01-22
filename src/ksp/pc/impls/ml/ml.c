@@ -190,16 +190,32 @@ PetscErrorCode PCSetUp_ML(PC pc)
   if (Nlevels<=0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Nlevels %d must > 0",Nlevels);
   if (pc->setupcalled && pc_ml->Nlevels != Nlevels) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"previous Nlevels %D and current Nlevels %d must be same", pc_ml->Nlevels,Nlevels);
   pc_ml->Nlevels = Nlevels;
+  fine_level = Nlevels - 1;
   if (!pc->setupcalled){
     ierr = PCMGSetLevels(pc,Nlevels,PETSC_NULL);CHKERRQ(ierr); 
-  ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
+    /* set default smoothers */
+    KSP smoother;
+    PC  subpc;
+    for (level=1; level<=fine_level; level++){
+      if (size == 1){
+        ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
+        ierr = KSPSetType(smoother,KSPRICHARDSON);CHKERRQ(ierr);
+        ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
+        ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
+      } else {
+        ierr = PCMGGetSmoother(pc,level,&smoother);CHKERRQ(ierr);
+        ierr = KSPSetType(smoother,KSPRICHARDSON);CHKERRQ(ierr);
+        ierr = KSPGetPC(smoother,&subpc);CHKERRQ(ierr);
+        ierr = PCSetType(subpc,PCSOR);CHKERRQ(ierr);
+      }
+    }
+    ierr = PCSetFromOptions_MG(pc);CHKERRQ(ierr); /* should be called in PCSetFromOptions_ML(), but cannot be called prior to PCMGSetLevels() */
   }
    
   if (!reuse){
     ierr = PetscMalloc(Nlevels*sizeof(GridCtx),&gridctx);CHKERRQ(ierr); 
     pc_ml->gridctx = gridctx;
   }
-  fine_level = Nlevels - 1;    
 
   /* wrap ML matrices by PETSc shell matrices at coarsened grids. 
      Level 0 is the finest grid for ML, but coarsest for PETSc! */
@@ -710,7 +726,7 @@ PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *newmat)
   struct ML_CSR_MSRdata *matdata = (struct ML_CSR_MSRdata *)mlmat->data;
   PetscErrorCode        ierr;
   PetscInt              m=mlmat->outvec_leng,n=mlmat->invec_leng,*nnz,nz_max;
-  PetscInt              *ml_cols=matdata->columns,*aj,i,j,k;
+  PetscInt              *ml_cols=matdata->columns,*ml_rowptr=matdata->rowptr,*aj,i,j,k;
   PetscScalar           *ml_vals=matdata->values,*aa;
   
   PetscFunctionBegin;
@@ -718,11 +734,22 @@ PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *newmat)
   if (m != n){ /* ML Pmat and Rmat are in CSR format. Pass array pointers into SeqAIJ matrix */
     if (reuse){
       Mat_SeqAIJ  *aij= (Mat_SeqAIJ*)(*newmat)->data;
-      aij->i = matdata->rowptr;
+      aij->i = ml_rowptr;
       aij->j = ml_cols;
       aij->a = ml_vals;
     } else {
-      ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,n,matdata->rowptr,ml_cols,ml_vals,newmat);CHKERRQ(ierr);
+      /* sort ml_cols and ml_vals */
+      ierr = PetscMalloc((m+1)*sizeof(PetscInt),&nnz);
+      for (i=0; i<m; i++) {
+        nnz[i] = ml_rowptr[i+1] - ml_rowptr[i];
+      }
+      aj = ml_cols; aa = ml_vals;
+      for (i=0; i<m; i++){
+        ierr = PetscSortIntWithScalarArray(nnz[i],aj,aa);CHKERRQ(ierr);
+        aj += nnz[i]; aa += nnz[i];
+      }
+      ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,n,ml_rowptr,ml_cols,ml_vals,newmat);CHKERRQ(ierr);
+      ierr = PetscFree(nnz);CHKERRQ(ierr); 
     }
     PetscFunctionReturn(0);
   } 

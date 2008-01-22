@@ -6,11 +6,12 @@
 #define __PETSC_H
 /* ========================================================================== */
 /* 
-   petscconf.h is contained in ${PETSC_ARCH}/conf/petscconf.h it is 
+   petscconf.h is contained in ${PETSC_ARCH}/include/petscconf.h it is 
    found automatically by the compiler due to the -I${PETSC_DIR}/${PETSC_ARCH}/include
-   in the bmake/common/variables definition of PETSC_INCLUDE
+   in the conf/variables definition of PETSC_INCLUDE
 */
 #include "petscconf.h"
+#include "petscfix.h"
 
 /* ========================================================================== */
 /* 
@@ -42,31 +43,31 @@
     petsc-maint@mcs.anl.gov\n\
  http://www.mcs.anl.gov/petsc/\n"
 #if (PETSC_VERSION_RELEASE == 1)
-#define PetscGetVersion(version,len) (PetscSNPrintf(*(version),len,"Petsc Release Version %d.%d.%d, Patch %d, ", \
+#define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(*(version)," HG revision: "),PetscStrcat(*(version),PETSC_VERSION_HG),0)
+                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE), \
+                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG))
 #else
-#define PetscGetVersion(version,len) (PetscSNPrintf(*(version),len,"Petsc Development Version %d.%d.%d, Patch %d, ", \
+#define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Development Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(*(version),PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(*(version)," HG revision: "),PetscStrcat(*(version),PETSC_VERSION_HG),0)
+                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE), \
+                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG))
 #endif
 
 /*MC
-    PetscGetVersion - Gets the Petsc Version information in a string.
-
-    Output Parameter:
-.   version - version string
+    PetscGetVersion - Gets the PETSc version information in a string.
 
     Input Parameter:
 .   len - length of the string
+
+    Output Parameter:
+.   version - version string
 
     Level: developer
 
     Usage:
     char version[256];
-    PetscGetVersion(&version,256);
+    ierr = PetscGetVersion(version,256);CHKERRQ(ierr)
 
     Fortran Note:
     This routine is not supported in Fortran.
@@ -87,7 +88,7 @@ M*/
 #define PETSC_FPRINTF_FORMAT_CHECK(a,b)
 
 /*
-   Fixes for configure time choices which impact our interface. Currently only
+   Fixes for config/configure.py time choices which impact our interface. Currently only
    calling conventions and extra compiler checking falls under this category.
 */
 #if !defined(PETSC_STDCALL)
@@ -138,7 +139,7 @@ M*/
 #include "mpi.h"
 /*
     Yuck, we need to put stdio.h AFTER mpi.h for MPICH2 with C++ compiler 
-    see the top of mpicxx.h
+    see the top of mpicxx.h in the MPICH2 distribution.
 
     The MPI STANDARD HAS TO BE CHANGED to prevent this nonsense.
 */
@@ -171,14 +172,20 @@ typedef int PetscCookie;
 
     Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin() PetscLogEventEnd()
+.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
 M*/
 typedef int PetscEvent;
 
 /*MC
-    PetscBLASInt - datatype used to represent 'int' parameters to blas functions.
+    PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
 
     Level: intermediate
+
+    Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but 
+           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt
+
+.seealso: PetscMPIInt, PetscInt
+
 M*/
 typedef int PetscBLASInt;
 
@@ -186,6 +193,12 @@ typedef int PetscBLASInt;
     PetscMPIInt - datatype used to represent 'int' parameters to MPI functions.
 
     Level: intermediate
+
+    Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but 
+           standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt
+
+.seealso: PetscBLASInt, PetscInt
+
 M*/
 typedef int PetscMPIInt;
 
@@ -205,7 +218,7 @@ typedef enum { ENUM_DUMMY } PetscEnum;
 
    Level: intermediate
 
-.seealso: PetscScalar
+.seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef long long PetscInt;
@@ -973,8 +986,8 @@ M*/
 
 EXTERN PETSC_DLLEXPORT PetscErrorCode (*PetscTrMalloc)(size_t,int,const char[],const char[],const char[],void**);
 EXTERN PETSC_DLLEXPORT PetscErrorCode (*PetscTrFree)(void*,int,const char[],const char[],const char[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSetMalloc(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscClearMalloc(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscMallocSet(PetscErrorCode (*)(size_t,int,const char[],const char[],const char[],void**),PetscErrorCode (*)(void*,int,const char[],const char[],const char[]));
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscMallocClear(void);
 
 /*
    Routines for tracing memory corruption/bleeding with default PETSc 
@@ -1078,11 +1091,11 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscStrreplace(MPI_Comm,const char[],ch
 
 .seealso: PetscTokenCreate(), PetscTokenFind(), PetscTokenDestroy()
 S*/
-typedef struct {char token;char *array;char *current;} PetscToken;
+typedef struct _p_PetscToken* PetscToken;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenCreate(const char[],const char,PetscToken**);
-EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenFind(PetscToken*,char *[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenDestroy(PetscToken*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenCreate(const char[],const char,PetscToken*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenFind(PetscToken,char *[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscTokenDestroy(PetscToken);
 
 /*
    These are  MPI operations for MPI_Allreduce() etc
@@ -1167,8 +1180,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFinalized(PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void);
 EXTERN PetscErrorCode PetscInitializeFortran(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int*,char ***);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***args);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEnd(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char[]); 
@@ -1281,6 +1294,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroy(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroyAll(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectName(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTypeCompare(PetscObject,const char[],PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalize(PetscErrorCode (*)(void));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalizeAll(void);
 
 /*
     Defines PETSc error handling.
@@ -1482,7 +1497,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStartMatlab(MPI_Comm,const char[],co
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscStartJava(MPI_Comm,const char[],const char[],FILE**);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscGetPetscDir(const char*[]);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPopUpSelect(MPI_Comm,char*,char*,int,char**,int*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPopUpSelect(MPI_Comm,const char*,const char*,int,const char**,int*);
 
 /*S
      PetscContainer - Simple PETSc object that contains a pointer to any required data
@@ -1643,7 +1658,7 @@ M*/
 
    Level: beginner
 
-.seealso: PetscReal, PassiveReal, PassiveScalar
+.seealso: PetscReal, PassiveReal, PassiveScalar, MPIU_SCALAR, PetscInt
 M*/
 
 /*MC
@@ -1683,7 +1698,7 @@ M*/
     Note: In MPI calls that require an MPI datatype that matches a PetscScalar or array of PetscScalars
           pass this value
 
-.seealso: PetscReal, PassiveReal, PassiveScalar, PetscScalar
+.seealso: PetscReal, PassiveReal, PassiveScalar, PetscScalar, MPIU_INT
 M*/
 
 /*
@@ -1715,6 +1730,9 @@ M*/
 #else
 #  define PETSC_MAX_PATH_LEN     4096
 #endif
+
+/* Special support for C++ */
+#include "petsc.hh"
 
 PETSC_EXTERN_CXX_END
 #endif

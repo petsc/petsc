@@ -19,10 +19,10 @@ namespace ALE {
     //   GlobalOrder       UniformSection
     //
     // We will use factory types to create objects which satisfy a given concept.
-  template<typename Point_, typename Value_ = int>
-  class Numbering : public UniformSection<Point_, Value_> {
+  template<typename Point_, typename Value_ = int, typename Alloc_ = std::allocator<Point_> >
+  class Numbering : public UniformSection<Point_, Value_, 1, Alloc_> {
   public:
-    typedef UniformSection<Point_, Value_> base_type;
+    typedef UniformSection<Point_, Value_, 1, Alloc_> base_type;
     typedef typename base_type::point_type point_type;
     typedef typename base_type::value_type value_type;
     typedef typename base_type::atlas_type atlas_type;
@@ -31,7 +31,7 @@ namespace ALE {
     int                      *_offsets;
     std::map<int, point_type> _invOrder;
   public:
-    Numbering(MPI_Comm comm, const int debug = 0) : UniformSection<Point_, Value_>(comm, debug), _localSize(0) {
+    Numbering(MPI_Comm comm, const int debug = 0) : UniformSection<Point_, Value_, 1, Alloc_>(comm, debug), _localSize(0) {
       this->_offsets    = new int[this->commSize()+1];
       this->_offsets[0] = 0;
     };
@@ -107,17 +107,20 @@ namespace ALE {
     virtual bool isLocal(const point_type& p) {return this->restrictPoint(p)[0].prefix >= 0;};
     virtual bool isRemote(const point_type& p) {return this->restrictPoint(p)[0].prefix < 0;};
   };
-  template<typename Bundle_, typename Value_ = int>
+  template<typename Bundle_, typename Value_ = int, typename Alloc_ = typename Bundle_::alloc_type>
   class NumberingFactory : ALE::ParallelObject {
   public:
     typedef Bundle_                                         bundle_type;
+    typedef Alloc_                                          alloc_type;
     typedef typename bundle_type::sieve_type                sieve_type;
     typedef typename sieve_type::point_type                 point_type;
     typedef Value_                                          value_type;
-    typedef Numbering<point_type, value_type>               numbering_type;
+    typedef typename alloc_type::template rebind<value_type>::other value_alloc_type;
+    typedef Numbering<point_type, value_type, alloc_type>   numbering_type;
     typedef std::map<bundle_type*, std::map<int, Obj<numbering_type> > >     numberings_type;
     typedef GlobalOrder<point_type>                         order_type;
     typedef typename order_type::value_type                 oValue_type;
+    typedef typename alloc_type::template rebind<oValue_type>::other oValue_alloc_type;
     typedef std::map<bundle_type*, std::map<std::string, Obj<order_type> > > orders_type;
     typedef typename ALE::Sifter<int,point_type,point_type> send_overlap_type;
     typedef typename ALE::Sifter<point_type,int,point_type> recv_overlap_type;
@@ -402,11 +405,11 @@ namespace ALE {
     };
     // Communicate numbers in the overlap
     void completeNumbering(const Obj<numbering_type>& numbering, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false) {
-      typedef Field<send_overlap_type, int, Section<point_type, value_type> > send_section_type;
-      typedef Field<recv_overlap_type, int, Section<point_type, value_type> > recv_section_type;
-      typedef typename ALE::DiscreteSieve<point_type>                   dsieve_type;
-      typedef typename ALE::Topology<int, dsieve_type>                  dtopology_type;
-      typedef typename ALE::New::SectionCompletion<dtopology_type, int> completion;
+      typedef Field<send_overlap_type, int, Section<point_type, value_type, value_alloc_type> > send_section_type;
+      typedef Field<recv_overlap_type, int, Section<point_type, value_type, value_alloc_type> > recv_section_type;
+      typedef typename ALE::DiscreteSieve<point_type, alloc_type>                   dsieve_type;
+      typedef typename ALE::Topology<int, dsieve_type, alloc_type>                  dtopology_type;
+      typedef typename ALE::New::SectionCompletion<dtopology_type, int, alloc_type> completion;
       const Obj<send_section_type> sendSection = new send_section_type(numbering->comm(), this->debug());
       const Obj<recv_section_type> recvSection = new recv_section_type(numbering->comm(), sendSection->getTag(), this->debug());
 
@@ -442,12 +445,12 @@ namespace ALE {
     };
     // Communicate (size,offset)s in the overlap
     void completeOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false) {
-      typedef Field<send_overlap_type, int, Section<point_type, oValue_type> > send_section_type;
-      typedef Field<recv_overlap_type, int, Section<point_type, oValue_type> > recv_section_type;
-      typedef ConstantSection<point_type, int>                                 constant_sizer;
-      typedef typename ALE::DiscreteSieve<point_type>                   dsieve_type;
-      typedef typename ALE::Topology<int, dsieve_type>                  dtopology_type;
-      typedef typename ALE::New::SectionCompletion<dtopology_type, int> completion;
+      typedef Field<send_overlap_type, int, Section<point_type, oValue_type, oValue_alloc_type> > send_section_type;
+      typedef Field<recv_overlap_type, int, Section<point_type, oValue_type, oValue_alloc_type> > recv_section_type;
+      typedef ConstantSection<point_type, int, alloc_type>                          constant_sizer;
+      typedef typename ALE::DiscreteSieve<point_type, alloc_type>                   dsieve_type;
+      typedef typename ALE::Topology<int, dsieve_type, alloc_type>                  dtopology_type;
+      typedef typename ALE::New::SectionCompletion<dtopology_type, int, alloc_type> completion;
       const Obj<send_section_type> sendSection = new send_section_type(order->comm(), this->debug());
       const Obj<recv_section_type> recvSection = new recv_section_type(order->comm(), sendSection->getTag(), this->debug());
       //const Obj<constant_sizer>    sizer       = new constant_sizer(order->comm(), 1, this->debug());

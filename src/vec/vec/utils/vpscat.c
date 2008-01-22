@@ -87,7 +87,11 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 /*
       The next routine determines what part of  the local part of the scatter is an
   exact copy of values into their current location. We check this here and
-  then know that we need not perform that portion of the scatter.
+  then know that we need not perform that portion of the scatter when the vector is
+  scattering to itself with INSERT_VALUES.
+
+     This is currently not used but would speed up, for example DALocalToLocalBegin/End()
+
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterLocalOptimize_Private"
@@ -154,7 +158,7 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
     }
   }
 
-#if defined(PETSC_HAVE_MPI_ALLTOALLW)
+#if defined(PETSC_HAVE_MPI_ALLTOALLW) && !defined(PETSC_USE_64BIT_INDICES)
   if (to->use_alltoallw) {
     ierr = PetscFree3(to->wcounts,to->wdispls,to->types);CHKERRQ(ierr);
     ierr = PetscFree3(from->wcounts,from->wdispls,from->types);CHKERRQ(ierr);
@@ -1711,7 +1715,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_alltoall",&to->use_alltoallv);CHKERRQ(ierr);
   from->use_alltoallv = to->use_alltoallv;
   if (from->use_alltoallv) PetscInfo(ctx,"Using MPI_Alltoallv() for scatter\n");
-#if defined(PETSC_HAVE_MPI_ALLTOALLW) 
+#if defined(PETSC_HAVE_MPI_ALLTOALLW)  && !defined(PETSC_USE_64BIT_INDICES)
   if (to->use_alltoallv) {
     ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_nopack",&to->use_alltoallw);CHKERRQ(ierr);
   }
@@ -1745,8 +1749,9 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     for (i=1; i<size; i++) {
       from->displs[i] = from->displs[i-1] + from->counts[i-1]; 
     }
-#if defined(PETSC_HAVE_MPI_ALLTOALLW) 
+#if defined(PETSC_HAVE_MPI_ALLTOALLW) && !defined(PETSC_USE_64BIT_INDICES)
     if (to->use_alltoallw) {
+      PetscMPIInt mpibs = (PetscMPIInt)bs, mpilen;
       ctx->packtogether = PETSC_FALSE;
       ierr       = PetscMalloc3(size,PetscMPIInt,&to->wcounts,size,PetscMPIInt,&to->wdispls,size,MPI_Datatype,&to->types);CHKERRQ(ierr);
       ierr       = PetscMemzero(to->wcounts,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
@@ -1757,7 +1762,8 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 
       for (i=0; i<to->n; i++) {
         to->wcounts[to->procs[i]] = 1;
-        ierr = MPI_Type_create_indexed_block(to->starts[i+1]-to->starts[i],bs,to->indices+to->starts[i],MPIU_SCALAR,to->types+to->procs[i]);CHKERRQ(ierr);
+        mpilen = (PetscMPIInt) to->starts[i+1]-to->starts[i];
+        ierr = MPI_Type_create_indexed_block(mpilen,mpibs,to->indices+to->starts[i],MPIU_SCALAR,to->types+to->procs[i]);CHKERRQ(ierr);
         ierr = MPI_Type_commit(to->types+to->procs[i]);CHKERRQ(ierr);
       }
       ierr       = PetscMalloc3(size,PetscMPIInt,&from->wcounts,size,PetscMPIInt,&from->wdispls,size,MPI_Datatype,&from->types);CHKERRQ(ierr);
@@ -1778,7 +1784,8 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       } else {
 	for (i=0; i<from->n; i++) {
 	  from->wcounts[from->procs[i]] = 1;
-	  ierr = MPI_Type_create_indexed_block(from->starts[i+1]-from->starts[i],bs,from->indices+from->starts[i],MPIU_SCALAR,from->types+from->procs[i]);CHKERRQ(ierr);
+          mpilen = (PetscMPIInt) from->starts[i+1]-from->starts[i];
+	  ierr = MPI_Type_create_indexed_block(mpilen,mpibs,from->indices+from->starts[i],MPIU_SCALAR,from->types+from->procs[i]);CHKERRQ(ierr);
 	  ierr = MPI_Type_commit(from->types+from->procs[i]);CHKERRQ(ierr);
         }
       }

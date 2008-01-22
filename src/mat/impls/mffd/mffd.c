@@ -113,8 +113,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,MatMFFDType ftype)
 typedef PetscErrorCode (*FCN1)(void*,Vec); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMFFDSetFunctioniBase_FD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase_FD(Mat mat,FCN1 func)
+#define __FUNCT__ "MatMFFDSetFunctioniBase_MFFD"
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase_MFFD(Mat mat,FCN1 func)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -127,8 +127,8 @@ EXTERN_C_END
 typedef PetscErrorCode (*FCN2)(void*,PetscInt,Vec,PetscScalar*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMFFDSetFunctioni_FD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni_FD(Mat mat,FCN2 funci)
+#define __FUNCT__ "MatMFFDSetFunctioni_MFFD"
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni_MFFD(Mat mat,FCN2 funci)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
@@ -417,8 +417,8 @@ PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMFFDSetBase_FD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_FD(Mat J,Vec U,Vec F)
+#define __FUNCT__ "MatMFFDSetBase_MFFD"
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_MFFD(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
   MatMFFD        ctx = (MatMFFD)J->data;
@@ -444,8 +444,8 @@ EXTERN_C_END
 typedef PetscErrorCode (*FCN3)(void*,Vec,Vec,PetscScalar*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatMFFDSetCheckh_FD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh_FD(Mat J,FCN3 fun,void*ectx)
+#define __FUNCT__ "MatMFFDSetCheckh_MFFD"
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh_MFFD(Mat J,FCN3 fun,void*ectx)
 {
   MatMFFD ctx = (MatMFFD)J->data;
 
@@ -569,10 +569,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat A)
   A->ops->setfromoptions = MatMFFDSetFromOptions;
   A->assembled = PETSC_TRUE;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetBase_C","MatMFFDSetBase_FD",MatMFFDSetBase_FD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetFunctioniBase_C","MatMFFDSetFunctioniBase_FD",MatMFFDSetFunctioniBase_FD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetFunctioni_C","MatMFFDSetFunctioni_FD",MatMFFDSetFunctioni_FD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetCheckh_C","MatMFFDSetCheckh_FD",MatMFFDSetCheckh_FD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetBase_C","MatMFFDSetBase_MFFD",MatMFFDSetBase_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetFunctioniBase_C","MatMFFDSetFunctioniBase_MFFD",MatMFFDSetFunctioniBase_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetFunctioni_C","MatMFFDSetFunctioni_MFFD",MatMFFDSetFunctioni_MFFD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMFFDSetCheckh_C","MatMFFDSetCheckh_MFFD",MatMFFDSetCheckh_MFFD);CHKERRQ(ierr);
   mfctx->mat = A;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATMFFD);CHKERRQ(ierr);
   PetscFunctionReturn(0);

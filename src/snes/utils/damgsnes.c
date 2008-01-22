@@ -188,16 +188,16 @@ PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr)
 {
   DMMG           dmmg = (DMMG) ptr;
   Mesh           mesh = (Mesh) dmmg->dm;
-  SectionReal    sectionX, section;
+  SectionReal    sectionF, section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetSectionReal(mesh, "default", &section);CHKERRQ(ierr);
-  ierr = SectionRealDuplicate(section, &sectionX);CHKERRQ(ierr);
-  ierr = SectionRealToVec(sectionX, mesh, SCATTER_REVERSE, X);CHKERRQ(ierr);
-  ierr = MeshFormFunction(mesh, sectionX, section, dmmg->user);CHKERRQ(ierr);
-  ierr = SectionRealToVec(section, mesh, SCATTER_FORWARD, F);CHKERRQ(ierr);
-  ierr = SectionRealDestroy(sectionX);CHKERRQ(ierr);
+  ierr = SectionRealDuplicate(section, &sectionF);CHKERRQ(ierr);
+  ierr = SectionRealToVec(section, mesh, SCATTER_REVERSE, X);CHKERRQ(ierr);
+  ierr = MeshFormFunction(mesh, section, sectionF, dmmg->user);CHKERRQ(ierr);
+  ierr = SectionRealToVec(sectionF, mesh, SCATTER_FORWARD, F);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(sectionF);CHKERRQ(ierr);
   ierr = SectionRealDestroy(section);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 

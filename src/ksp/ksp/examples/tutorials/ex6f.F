@@ -181,10 +181,10 @@
 ! First time thorough: Create new matrix to define the linear system
       if (count .eq. 1) then
         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
-        pflag = 0
+        pflag = .false.
         call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-mat_view',       &
      &       pflag,ierr)
-        if (pflag .ne. 0) then
+        if (pflag) then
           if (rank .eq. 0) write(6,100)
         endif
         call MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,A2,ierr)
@@ -200,7 +200,7 @@
         call MatSetValues(A,one,II,one,II,v,ADD_VALUES,ierr)
  20   continue
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
-      if (pflag .ne. 0) then
+      if (pflag) then
         if (rank .eq. 0) write(6,110)
       endif
       call MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY,ierr)

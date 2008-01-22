@@ -100,7 +100,7 @@
       time_steps_max = 1000
       time_total_max = 100.0
       m              = 60
-      debug          = 0
+      debug          = .false.
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',M,flg,ierr)
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-debug',debug,ierr)
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-monitor',monitor,       &
@@ -147,7 +147,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
-      if (monitor .eq. 1) then
+      if (monitor) then
         call TSMonitorSet(ts,MyMonitor,PETSC_NULL_OBJECT,               &
      &                    PETSC_NULL_FUNCTION,ierr)
       endif
@@ -163,7 +163,7 @@
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m,m,ierr)
       call MatSetFromOptions(A,ierr)
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-fdjac',flg,ierr)
-      if (flg .eq. 1) then
+      if (flg) then
          call SetCRoutineFromFortran(ts,A,A,ierr)
       else
          call TSSetRHSJacobian(ts,A,A,RHSJacobian,PETSC_NULL_OBJECT,    &
@@ -281,7 +281,7 @@
       call VecRestoreArray(u,localptr,idx,ierr) 
 
 !  Print debugging information if desired
-      if (debug .eq. 1) then
+      if (debug) then
         if (rank .eq. 0) write(6,*) 'initial guess vector'
         call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
@@ -395,7 +395,7 @@
       call ExactSolution(time,ierr)
 
 !  Print debugging information if desired
-      if (debug .eq. 1) then
+      if (debug) then
         if (rank .eq. 0) write(6,*) 'Computed solution vector'
         call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
         if (rank .eq. 0) write(6,*) 'Exact solution vector'
@@ -417,7 +417,7 @@
      &       ', error [max-norm] = ',e9.3)
 
 !  Print debugging information if desired
-      if (debug .eq. 1) then
+      if (debug) then
         if (rank .eq. 0) write(6,*) 'Error vector'
         call VecView(solution,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
@@ -514,7 +514,7 @@
       call DALocalToGlobal(da,localwork,INSERT_VALUES,global_out,ierr)
 
 !  Print debugging information if desired
-      if (debug .eq. 1) then
+      if (debug) then
         if (rank .eq. 0) write(6,*) 'RHS function vector'
         call VecView(global_out,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif

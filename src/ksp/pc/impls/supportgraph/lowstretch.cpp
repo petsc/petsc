@@ -110,16 +110,16 @@ struct ComponentPair {
 struct PQNode {
   PetscInt vertex;
   PetscInt pred;
-  PetscScalar dist;
+  PetscReal dist;
 
   PQNode() {}
 
-  PQNode(const PetscInt v,const PetscScalar d) {
+  PQNode(const PetscInt v,const PetscReal d) {
     vertex = v;
     dist = d;
   }
 
-  PQNode(const PetscInt v,const PetscInt p,const PetscScalar d) {
+  PQNode(const PetscInt v,const PetscInt p,const PetscReal d) {
     vertex = v;
     pred = p;
     dist = d;
@@ -204,11 +204,11 @@ PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact,
 #undef __FUNCT__  
 #define __FUNCT__ "AugmentedLowStretchSpanningTree"
 PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth augment,
-					       PetscScalar tol,PetscScalar& maxCong)
+					       PetscReal tol,PetscReal& maxCong)
 {
-  PetscErrorCode    ierr;
+#ifndef PETSC_USE_COMPLEX
   PetscInt          *idx;
-  PetscInt          start,end,n,ncols,i,j,k;
+  PetscInt          start,end,ncols,i,j,k;
   MatFactorInfo     info;
   // IS                perm, iperm;
   const PetscInt    *cols_c;
@@ -218,7 +218,9 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
   Mat               *pre;
   graph_traits<Graph>::out_edge_iterator e, e_end;
   const PetscInt    root = 0;
-
+#endif
+  PetscInt          n;
+  PetscErrorCode    ierr;
   PetscFunctionBegin;
 
   ierr = MatGetSize(mat,PETSC_NULL,&n);CHKERRQ(ierr);
@@ -227,6 +229,9 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
 
   EdgeKeep edge_keep_g = get(edge_keep_t(),g);
 
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+#else
   ierr = PetscMalloc3(n,PetscScalar,&diag,n,PetscInt,&dnz,n,PetscInt,&onz);CHKERRQ(ierr);
   ierr = PetscMemzero(dnz, n * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(onz, n * sizeof(PetscInt));CHKERRQ(ierr);
@@ -251,7 +256,7 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
   put(get(vertex_depth_t(),g),root,0);
-  ierr = LowStretchSpanningTreeHelper(g,root,log(4.0/3)/(2.0*log(n)),idx);CHKERRQ(ierr);
+  ierr = LowStretchSpanningTreeHelper(g,root,log(4.0/3.0)/(2.0*log((double)n)),idx);CHKERRQ(ierr);
 
   if (augment) {
     ierr = AugmentSpanningTree(g,root,maxCong);CHKERRQ(ierr);
@@ -322,7 +327,7 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
   ierr = MatLUFactor(*pre,rperm,cperm,&info);CHKERRQ(ierr);
   ierr = ISDestroy(rperm);CHKERRQ(ierr);
   ierr = ISDestroy(cperm);CHKERRQ(ierr);
-
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -419,6 +424,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
 			  PetscInt& k,std::vector<PetscInt>& size,std::vector<std::vector<PetscInt> >& idx,
 			  std::vector<PetscInt>& x,std::vector<PetscInt>& y)
 {
+#ifndef PETSC_USE_COMPLEX
   PetscInt n,m,edgesLeft;
   //PetscErrorCode ierr;
   ShortestPathPriorityQueue pq;
@@ -426,9 +432,12 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   PetscInt centerSize;
   std::vector<PetscInt> centerIdx;
   PQNode node;
+#endif
 
   PetscFunctionBegin;
-
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+#else
   EdgeWeight edge_weight_g = get(edge_weight_t(),g);
   EdgeLength edge_length_g = get(edge_length_t(),g);
   n = num_vertices(g);
@@ -436,7 +445,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   edgesLeft = m;
 
   std::vector<PetscInt> pred(n,-1);
-  std::vector<PetscInt> succ[n]; 
+  const std::vector<PetscInt> succ[n]; 
   std::vector<PetscInt>::iterator i;
   PetscScalar dist[n];
   std::vector<PetscTruth> taken(n,PETSC_FALSE);
@@ -496,7 +505,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       pq.push(PQNode(*i,dist[*i]));
     }
   }
-  while (boundary > (edgeCount+1)*log(m)/(log(2)*(1-2*delta)*radius)) {
+  while (boundary > (edgeCount+1)*log((double)m)/(log(2.0)*(1.0-2.0*delta)*radius)) {
     assert(!pq.empty());
     node = pq.top();pq.pop();
     centerIdx.push_back(g.local_to_global(node.vertex));
@@ -589,7 +598,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       }
       if (initialInternalConeEdges < edgesLeft) {
 	while (initialInternalConeEdges == 0 ?
-	       boundary > (edgeCount+1)*log(edgesLeft+1)*2.0/(log(2.0)*epsilon*radius) : 
+	       boundary > (edgeCount+1)*log((double)(edgesLeft+1))*2.0/(log(2.0)*epsilon*radius) : 
 	       boundary > (edgeCount)*log(edgesLeft*1.0/initialInternalConeEdges)*2.0/(log(2.0)*epsilon*radius))
 	  {
 	    assert(!mycone_pq.empty());
@@ -627,7 +636,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       k++;
     }
   }
-    
+#endif    
   
 
   /*
@@ -781,6 +790,7 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
 				PetscScalar& currInternalStretch,
 				PetscScalar& currExternalWeight)
 {
+#ifndef PETSC_USE_COMPLEX
   const EdgeWeight edge_weight_g = get(edge_weight_t(),g);
   const EdgeIndex edge_index_g = get(edge_index_t(),g);
   const EdgeKeep edge_keep_g = get(edge_keep_t(),g);
@@ -794,9 +804,12 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
   PetscScalar newInternalStretch, newExternalWeight;
   PetscInt v,w,edgeIndex,compIndex;
   PetscScalar weight;
+#endif
 
   PetscFunctionBegin;
-
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+#else
   currComponent = new Component();
   currComponent->vertices.push_back(root);
   currInternalStretch = 0;
@@ -909,7 +922,7 @@ PetscErrorCode DecomposeSubTree(Graph& g,const PetscInt root,
       }
     }
   }
-
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -921,6 +934,7 @@ PetscErrorCode AddBridges(Graph& g,
 			  std::vector<ComponentPair>& edgeComponentMap,
 			  PetscScalar& maxCong) {
 
+#ifndef PETSC_USE_COMPLEX
   const PetscInt m = num_edges(g);
   std::vector<PetscTruth> edgeSupported(m); // edgeSupported[i] if edge i's component pair has been bridged
   const EdgeLength edge_length_g = get(edge_length_t(),g);
@@ -936,9 +950,12 @@ PetscErrorCode AddBridges(Graph& g,
   graph_traits<Graph>::edge_iterator e, e_end;
   graph_traits<Graph>::out_edge_iterator ee, ee_end;  
   PetscScalar realMaxCong;
+#endif
 
   PetscFunctionBegin;
-
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "Complex numbers not supported for support graph PC");
+#else
   realMaxCong = 0;
 
   for (tie(e,e_end)=edges(g); e!=e_end; e++) {
@@ -1063,7 +1080,7 @@ PetscErrorCode AddBridges(Graph& g,
     }
   }
   maxCong = realMaxCong;
-
+#endif
   PetscFunctionReturn(0);
 }
 

@@ -359,6 +359,7 @@ PetscPolymorphicFunction(VecGetSize,(Vec x),(x,&s),PetscInt,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetLocalSize(Vec,PetscInt*);
 PetscPolymorphicFunction(VecGetLocalSize,(Vec x),(x,&s),PetscInt,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRanges(Vec,const PetscInt *[]);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec,ISLocalToGlobalMapping);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesLocal(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);

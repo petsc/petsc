@@ -166,7 +166,7 @@
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
-      if (matrix_free .eq. 0) then
+      if (.not. matrix_free) then
         call MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,i5,PETSC_NULL_INTEGER, &
      &        J,ierr)
       endif
@@ -175,10 +175,10 @@
 !     This option will cause the Jacobian to be computed via finite differences
 !    efficiently using a coloring of the columns of the matrix.
 !
-      fd_coloring = 0
+      fd_coloring = .false.
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_fd_coloring',     &
      &                    fd_coloring,ierr)
-      if (fd_coloring .eq. 1) then
+      if (fd_coloring) then
              
 ! 
 !      This initializes the nonzero structure of the Jacobian. This is artificial
@@ -208,7 +208,7 @@
      &                     fdcoloring,ierr)
         call ISColoringDestroy(iscoloring,ierr)
 
-      else if (matrix_free .eq. 0) then
+      else if (.not. matrix_free) then
 
 !  Set Jacobian matrix data structure and default Jacobian evaluation
 !  routine.  Whenever the nonlinear solver needs to compute the
@@ -271,8 +271,8 @@
 !  are no longer needed.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      if (matrix_free .eq. 0) call MatDestroy(J,ierr)
-      if (fd_coloring .ne. 0) call MatFDColoringDestroy(fdcoloring,ierr)
+      if (.not. matrix_free) call MatDestroy(J,ierr)
+      if (fd_coloring) call MatFDColoringDestroy(fdcoloring,ierr)
 
       call VecDestroy(x,ierr)
       call VecDestroy(r,ierr)

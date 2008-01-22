@@ -23,10 +23,12 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Galerkin(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_CP(PC);
+
 #if defined(PETSC_HAVE_BOOST) && defined(PETSC_CLANGUAGE_CXX)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC);
 #endif
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC);
 #if defined(PETSC_HAVE_ML)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC);
 #endif
@@ -40,7 +42,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Mat(PC);
 #if defined(PETSC_HAVE_HYPRE)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC);
 #endif
-#if !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
+#if !defined(PETSC_USE_COMPLEX)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC);
 #endif
 #if defined(PETSC_HAVE_PROMETHEUS)
@@ -94,6 +96,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCGALERKIN     ,path,"PCCreate_Galerkin",PCCreate_Galerkin);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCOPENMP       ,path,"PCCreate_OpenMP",PCCreate_OpenMP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCASA          ,path,"PCCreate_ASA",PCCreate_ASA);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCCP           ,path,"PCCreate_CP",PCCreate_CP);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_BOOST) && defined(PETSC_CLANGUAGE_CXX)
   ierr = PCRegisterDynamic(PCSUPPORTGRAPH ,path,"PCCreate_SupportGraph",PCCreate_SupportGraph);CHKERRQ(ierr);
 #endif
@@ -109,7 +112,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
 #if defined(PETSC_HAVE_HYPRE)
   ierr = PCRegisterDynamic(PCHYPRE        ,path,"PCCreate_HYPRE",PCCreate_HYPRE);CHKERRQ(ierr);
 #endif
-#if !defined(PETSC_USE_64BIT_INDICES) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
+#if !defined(PETSC_USE_COMPLEX)
   ierr = PCRegisterDynamic(PCTFS         ,path,"PCCreate_TFS",PCCreate_TFS);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PROMETHEUS)

@@ -1,6 +1,8 @@
 // This example will solve the Bratu problem eventually
 static char help[] = "This example solves the Bratu problem.\n\n";
 
+#define ALE_HAVE_CXX_ABI
+
 #include <petscmesh.hh>
 #include <petscmesh_viewers.hh>
 #include <petscmesh_formats.hh>
@@ -66,11 +68,18 @@ PetscScalar singularity_exact_2d(const double x[]) {
     return 0.;
   } else theta = asin(x[1]/r);
   if (x[0] < 0) {
-    theta = 2*3.14159265358979323846264338327950288419716939937510582097494459230 - theta;
+    theta = 2*M_PI - theta;
   }
   return pow(r, 2./3.)*sin((2./3.)*theta);
 }
 
+PetscScalar singularity_exact_3d(const double x[]) {
+  return sin(x[0] + x[1] + x[2]);  
+}
+
+PetscScalar singularity_3d(const double x[]) {
+  return (3)*sin(x[0] + x[1] + x[2]);
+}
 
 PetscScalar linear_2d(const double x[]) {
   return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5);
@@ -294,6 +303,93 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MeshRefineSingularity_Fichera"
+PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(Mesh mesh, MPI_Comm comm, double * singularity, double factor, Mesh *refinedMesh)
+{
+  ALE::Obj<ALE::Mesh> oldMesh;
+  double              oldLimit;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+  ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
+  int dim = oldMesh->getDimension();
+  oldLimit = oldMesh->getMaxVolume();
+  //double oldLimInv = 1./oldLimit;
+  double curLimit, tmpLimit;
+  double minLimit = oldLimit/16384.;             //arbitrary;
+  const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = oldMesh->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::real_section_type>& volume_limits = oldMesh->getRealSection("volume_limits");
+  volume_limits->setFiberDimension(oldMesh->heightStratum(0), 1);
+  oldMesh->allocate(volume_limits);
+  const ALE::Obj<ALE::Mesh::label_sequence>& cells = oldMesh->heightStratum(0);
+  ALE::Mesh::label_sequence::iterator c_iter = cells->begin();
+  ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
+  double centerCoords[dim];
+  while (c_iter != c_iter_end) {
+    const double * coords = oldMesh->restrict(coordinates, *c_iter);
+    for (int i = 0; i < dim; i++) {
+      centerCoords[i] = 0;
+      for (int j = 0; j < dim+1; j++) {
+        centerCoords[i] += coords[j*dim+i];
+      }
+      centerCoords[i] = centerCoords[i]/(dim+1);
+      //PetscPrintf(oldMesh->comm(), "%f, ", centerCoords[i]);
+    }
+    //PetscPrintf(oldMesh->comm(), "\n");
+    double dist = 0.;
+    double cornerdist = 0.;
+    //HERE'S THE DIFFERENCE: if centercoords is less than the singularity coordinate for each direction, include that direction in the distance
+    /*
+    for (int i = 0; i < dim; i++) {
+      if (centerCoords[i] <= singularity[i]) {
+        dist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
+      }
+    }
+    */
+    //determine: the per-dimension distance: cases
+    for (int i = 0; i < dim; i++) {
+      cornerdist = 0.;
+      if (centerCoords[i] > singularity[i]) {
+        for (int j = 0; j < dim; j++) {
+          if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
+        }
+        if (cornerdist < dist || dist == 0.) dist = cornerdist; 
+      }
+    }
+    //patch up AROUND the corner by minimizing between the distance from the relevant axis and the singular vertex
+    double singdist = 0.;
+    for (int i = 0; i < dim; i++) {
+      singdist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
+    }
+    if (singdist < dist || dist == 0.) dist = singdist;
+    if (dist > 0.) {
+      dist = sqrt(dist);
+      double mu = pow(dist, factor);
+      //PetscPrintf(oldMesh->comm(), "%f, %f\n", mu, dist);
+      tmpLimit = oldLimit*pow(mu, dim);
+      if (tmpLimit > minLimit) {
+        curLimit = tmpLimit;
+      } else curLimit = minLimit;
+    } else curLimit = minLimit;
+    //PetscPrintf(oldMesh->comm(), "%f, %f\n", dist, tmpLimit);
+    volume_limits->updatePoint(*c_iter, &curLimit);
+    c_iter++;
+  }
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, volume_limits, true);
+  ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+  const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
+
+  for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+    newMesh->setDiscretization(*f_iter, oldMesh->getDiscretization(*f_iter));
+  }
+  newMesh->setupField(s);
+  //  PetscPrintf(newMesh->comm(), "refined\n");
+  PetscFunctionReturn(0);
+}
+
 extern PetscErrorCode MeshIDBoundary(Mesh);
 
 void FlipCellOrientation(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim) {
@@ -360,11 +456,20 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
         }
         ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
       } else if (options->dim == 3) {
-        double lower[3] = {0.0, 0.0, 0.0};
-        double upper[3] = {1.0, 1.0, 1.0};
-        int    faces[3] = {3, 3, 3};
+        Obj<ALE::Mesh> mB;
+        if (options->reentrantMesh) {
+          double lower[3] = {-1., -1., -1.};
+          double upper[3] = {1., 1., 1.};
+          double offset[3] = {0.5, 0.5, 0.5};
+          mB = ALE::MeshBuilder::createFicheraCornerBoundary(comm, lower, upper, offset, options->debug);
+          
+        } else {
+          double lower[3] = {0.0, 0.0, 0.0};
+          double upper[3] = {1.0, 1.0, 1.0};
+          int    faces[3] = {3, 3, 3};
 
-        Obj<ALE::Mesh> mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
+          mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
+        }
         ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
       } else {
         SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
@@ -422,9 +527,14 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       mesh = refinedMesh;
       if (options->refineSingularity) {
         double singularity[3] = {0.0, 0.0, 0.0};
-        ierr = MeshRefineSingularity(mesh, comm, singularity, options->reentrant_angle, &refinedMesh2);CHKERRQ(ierr);
+        if (options->dim == 2) {
+          ierr = MeshRefineSingularity(mesh, comm, singularity, options->reentrant_angle, &refinedMesh2);CHKERRQ(ierr);
+        } else if (options->dim == 3) {
+          ierr = MeshRefineSingularity_Fichera(mesh, comm, singularity, 0.75, &refinedMesh2);CHKERRQ(ierr);
+        }
         ierr = MeshDestroy(mesh);CHKERRQ(ierr);
         mesh = refinedMesh2;
+        ierr = MeshIDBoundary(mesh);CHKERRQ(ierr);
       }
     }
     if (options->bcType == DIRICHLET) {
@@ -1428,12 +1538,17 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     }
   } else if (options->dim == 3) {
     if (options->bcType == DIRICHLET) {
-      if (options->lambda > 0.0) {
-        options->func    = nonlinear_3d;
+      if (options->reentrantMesh) {
+        options->func = singularity_3d;
+        options->exactFunc = singularity_exact_3d;
       } else {
-        options->func    = constant;
+        if (options->lambda > 0.0) {
+          options->func    = nonlinear_3d;
+        } else {
+          options->func    = constant;
+        }
+        options->exactFunc = quadratic_3d;
       }
-      options->exactFunc = quadratic_3d;
     } else {
       options->func      = linear_3d;
       options->exactFunc = cubic_3d;
@@ -1596,6 +1711,7 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
   if (options->structured) {
     DA  da = (DA) dm;
@@ -1727,7 +1843,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "mesh_hierarchy.vtk");CHKERRQ(ierr);
-      double offset[3] = {0.7, 0.0, 0.25};
+      double offset[3] = {2.0, 0.0, 0.25};
       ierr = PetscOptionsReal("-hierarchy_vtk", PETSC_NULL, "bratu.cxx", *offset, offset, PETSC_NULL);CHKERRQ(ierr);
       ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeHierarchyVertices(dmmg, viewer, offset);CHKERRQ(ierr);

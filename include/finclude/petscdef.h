@@ -20,9 +20,11 @@
 #if defined(PETSC_USE_FORTRANKIND)
 #define integer8 integer(kind=selected_int_kind(10))
 #define integer4 integer(kind=selected_int_kind(5))
+#define PetscTruth logical(kind=4)
 #else
 #define integer8 integer*8
 #define integer4 integer*4
+#define PetscTruth logical*4
 #endif
 
 #if (PETSC_SIZEOF_VOID_P == 8)
@@ -64,7 +66,11 @@
 #define PetscCookie PetscFortranInt
 #define PetscEvent PetscFortranInt
 !
+#if defined(PETSC_FORTRAN_PETSCTRUTH_INT)
+#undef PetscTruth
 #define PetscTruth PetscEnum
+#endif
+!
 #define PetscDataType PetscEnum
 #define PetscFPTrap PetscEnum
 !
@@ -174,13 +180,14 @@
 #define PETSC_DEC_ATTRIBUTES(A,B)
 #endif
 
+#if !defined(PetscFlush)
 #if defined(PETSC_HAVE_FLUSH)
 #define PetscFlush(a)    call flush(a)
 #elif defined(PETSC_HAVE_FLUSH_)
 #define PetscFlush(a)    call flush_(a)
 #else
-#define PETSCFLUSH(a)
+#define PetscFlush(a)
 #endif
-
+#endif
 
 #endif

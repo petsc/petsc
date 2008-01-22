@@ -2996,6 +2996,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR(Mat B,const Petsc
 
    If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
 
+   You can call MatGetInfo() to get information on how effective the preallocation was;
+   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+   You can also run with the option -info and look for messages with the string 
+   malloc in them to see if additional memory allocation was needed.
+
    Example usage:
   
    Consider the following 8x8 matrix with 34 non-zero values, that is 
@@ -3070,7 +3075,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR(Mat B,const Petsc
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatCreateMPIAIJ(), MatMPIAIJSetPreallocationCSR(),
-          MPIAIJ
+          MPIAIJ, MatGetInfo()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
 {
@@ -3606,7 +3611,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 
 #include "src/mat/utils/freespace.h"
 #include "petscbt.h"
-static PetscEvent logkey_seqstompinum = 0;
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatMerge_SeqsToMPINumeric"
 /*@C
@@ -3650,10 +3655,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   PetscContainer       container;
   
   PetscFunctionBegin;
-  if (!logkey_seqstompinum) {
-    ierr = PetscLogEventRegister(&logkey_seqstompinum,"MatMerge_SeqsToMPINumeric",MAT_COOKIE);
-  }
-  ierr = PetscLogEventBegin(logkey_seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -3748,11 +3750,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
   ierr = PetscFree(ba_i);CHKERRQ(ierr);
   ierr = PetscFree(buf_ri_k);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Seqstompinum,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscEvent logkey_seqstompisym = 0;
 #undef __FUNCT__  
 #define __FUNCT__ "MatMerge_SeqsToMPISymbolic"
 PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,Mat *mpimat) 
@@ -3774,10 +3775,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   PetscContainer       container;
 
   PetscFunctionBegin;
-  if (!logkey_seqstompisym) {
-    ierr = PetscLogEventRegister(&logkey_seqstompisym,"MatMerge_SeqsToMPISymbolic",MAT_COOKIE);
-  }
-  ierr = PetscLogEventBegin(logkey_seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
 
   /* make sure it is a PETSc comm */
   ierr = PetscCommDuplicate(comm,&comm,PETSC_NULL);CHKERRQ(ierr);
@@ -4003,11 +4001,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   *mpimat = B_mpi;
 
   ierr = PetscCommDestroy(&comm);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Seqstompisym,seqmat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscEvent logkey_seqstompi = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatMerge_SeqsToMPI"
 PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,PetscInt m,PetscInt n,MatReuse scall,Mat *mpimat) 
@@ -4015,18 +4012,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,Pe
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  if (!logkey_seqstompi) {
-    ierr = PetscLogEventRegister(&logkey_seqstompi,"MatMerge_SeqsToMPI",MAT_COOKIE);
-  }
-  ierr = PetscLogEventBegin(logkey_seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){ 
     ierr = MatMerge_SeqsToMPISymbolic(comm,seqmat,m,n,mpimat);CHKERRQ(ierr);
   } 
   ierr = MatMerge_SeqsToMPINumeric(seqmat,*mpimat);CHKERRQ(ierr); 
-  ierr = PetscLogEventEnd(logkey_seqstompi,seqmat,0,0,0);CHKERRQ(ierr); 
+  ierr = PetscLogEventEnd(MAT_Seqstompi,seqmat,0,0,0);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
-static PetscEvent logkey_getlocalmat = 0;
+
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalMat"
 /*@
@@ -4055,10 +4049,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc
   PetscInt        *ci,*cj,col,ncols_d,ncols_o,jo;
 
   PetscFunctionBegin;
-  if (!logkey_getlocalmat) {
-    ierr = PetscLogEventRegister(&logkey_getlocalmat,"MatGetLocalMat",MAT_COOKIE);
-  }
-  ierr = PetscLogEventBegin(logkey_getlocalmat,A,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Getlocalmat,A,0,0,0);CHKERRQ(ierr);
   if (scall == MAT_INITIAL_MATRIX){
     ierr = PetscMalloc((1+am)*sizeof(PetscInt),&ci);CHKERRQ(ierr);
     ci[0] = 0;
@@ -4120,11 +4111,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc
     SETERRQ1(PETSC_ERR_ARG_WRONG,"Invalid MatReuse %d",(int)scall);
   }
 
-  ierr = PetscLogEventEnd(logkey_getlocalmat,A,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Getlocalmat,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscEvent logkey_getlocalmatcondensed = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalMatCondensed"
 /*@C
@@ -4152,10 +4142,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMatCondensed(Mat A,MatReuse scall,I
   Mat               *aloc;
 
   PetscFunctionBegin;
-  if (!logkey_getlocalmatcondensed) {
-    ierr = PetscLogEventRegister(&logkey_getlocalmatcondensed,"MatGetLocalMatCondensed",MAT_COOKIE);
-  }
-  ierr = PetscLogEventBegin(logkey_getlocalmatcondensed,A,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Getlocalmatcondensed,A,0,0,0);CHKERRQ(ierr);
   if (!row){
     start = A->rmap.rstart; end = A->rmap.rend;
     ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&isrowa);CHKERRQ(ierr); 
@@ -4194,11 +4181,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMatCondensed(Mat A,MatReuse scall,I
   if (!col){ 
     ierr = ISDestroy(iscola);CHKERRQ(ierr);
   } 
-  ierr = PetscLogEventEnd(logkey_getlocalmatcondensed,A,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Getlocalmatcondensed,A,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscEvent logkey_GetBrowsOfAcols = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatGetBrowsOfAcols"
 /*@C
@@ -4231,10 +4217,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,
   if (A->cmap.rstart != B->rmap.rstart || A->cmap.rend != B->rmap.rend){
     SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap.rstart,A->cmap.rend,B->rmap.rstart,B->rmap.rend);
   }
-  if (!logkey_GetBrowsOfAcols) {
-    ierr = PetscLogEventRegister(&logkey_GetBrowsOfAcols,"MatGetBrowsOfAcols",MAT_COOKIE);
-  }
-  ierr = PetscLogEventBegin(logkey_GetBrowsOfAcols,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_GetBrowsOfAcols,A,B,0,0);CHKERRQ(ierr);
   
   if (scall == MAT_INITIAL_MATRIX){
     start = A->cmap.rstart;
@@ -4273,11 +4256,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,
   } else {
     *colb = iscolb;
   }
-  ierr = PetscLogEventEnd(logkey_GetBrowsOfAcols,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetBrowsOfAcols,A,B,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-static PetscEvent logkey_GetBrowsOfAocols = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatGetBrowsOfAoCols"
 /*@C
@@ -4320,10 +4302,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
   if (A->cmap.rstart != B->rmap.rstart || A->cmap.rend != B->rmap.rend){
     SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%d, %d) != (%d,%d)",A->cmap.rstart,A->cmap.rend,B->rmap.rstart,B->rmap.rend);
   }
-  if (!logkey_GetBrowsOfAocols) {
-    ierr = PetscLogEventRegister(&logkey_GetBrowsOfAocols,"MatGetBrAoCol",MAT_COOKIE);
-  }
-  ierr = PetscLogEventBegin(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   gen_to   = (VecScatter_MPI_General*)ctx->todata;
@@ -4501,7 +4480,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
       *bufa_ptr = bufa;
     }
   }
-  ierr = PetscLogEventEnd(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);  
+  ierr = PetscLogEventEnd(MAT_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 

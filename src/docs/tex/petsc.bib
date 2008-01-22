@@ -241,6 +241,15 @@
   key =        "{Cumulvs} {W}eb page",
 }
 
+@Article{nonlinearGMRES,
+  author    = "T. Washio and C. W. Oosterlee",
+  title     = "Nonlinear GMRES Krylov Subspace Acceleration for Nonlinear Multigrid Schemes",
+  journal =   "ETNA",
+  year      = 1997,
+  pages = "271--290",
+  volume = "6"
+}
+
 @Article{pcice,
   author    = "Richard C. Martineau and Ray A. Berry",
   title     = "The pressure-corrected ICE finite element method for compressible flows on unstructured meshes",
@@ -818,15 +827,6 @@ University of Colorado-Boulder",
   year = "1993",
   pages="229--245"
   }
-
-@Article{ ew94,
-  AUTHOR = "S. C. Eisenstat and H. F. Walker",
-  TITLE = "Choosing the forcing terms in an inexact {N}ewton method", 
-  journal =	 "SIAM J. Sci. Stat. Comput.",
-  year =	 1996,
-  volume =	 17,
-  pages =	 "16--32"
-}
 
 @Article{ pw98,
   AUTHOR = "M. Pernice and H. F. Walker",
@@ -1984,6 +1984,22 @@ Booktitle = "Supercomputing '95 Proceedings",
        YEAR = 1997
 }
 
+@BOOK{hackbusch94,
+       AUTHOR = "Wolfgang Hackbusch",
+       TITLE = "Iterative Solution of Large Sparse Systems of Equations",
+       PUBLISHER = "Springer-Verlag",
+       address = "New York",
+       YEAR = 1994
+}
+
+@BOOK{axelsson94,
+       AUTHOR = "Owe Axelsson",
+       TITLE = "Iterative Solution Methods",
+       PUBLISHER = "Cambridge University Press",
+       address = "Cambridge",
+       YEAR = 1994
+}
+
 @BOOK{saad96, 
        AUTHOR = "Yousef Saad",
        TITLE = "Iterative Methods for Sparse Linear Systems",
@@ -2243,6 +2259,15 @@ mesh refinement",
   author =       "George Biros",
   title =        "{Veltisto Web page}",
   note =         "\url{http://www.cs.nyu.edu/~biros/veltisto}",
+}
+
+@article{KarypisKumar98,
+  author  = "George Karypis and Vipin Kumar",
+  title   = "A Parallel Algorithm for Multilevel Graph Partitioning and Sparse Matrix Ordering",
+  journal = "Journal of Parallel and Distributed Computing",
+  volume  = "48",
+  pages   = "71--85",
+  year    = "1998"
 }
 
 @misc{ parmetis-web-page,
@@ -2748,6 +2773,13 @@ mesh refinement",
   year = {2001}
 }
 
+@article{Zoltan06,
+  author  = {K. Devine and E. Boman and R. Heaphy and U. Catalyurek and R. Bisseling},
+  title   = {Parallel Hypergraph Partitioning for Irregular Problems},
+  journal = {SIAM Parallel Processing for Scientific Computing},
+  month   = {February},
+  year    = {2006}
+}
 
 @article{lidemmel03,
      AUTHOR = {Xiaoye S. Li and James W. Demmel},
@@ -3455,4 +3487,65 @@ It begins with a general introduction to bundles, including such topics as diffe
   PAGES = {524},
   SERIES = {Graduate Texts in Mathematics},
   YEAR = 1997
+}
+
+@techreport{TautgesMeyers04,
+  title       = "MOAB: A Mesh-Oriented Database",
+  author      = "Timothy J. Tautges and Ray Meyers and Karl Merkley and Clint Stimpson and Corey Ernst",
+  institution = "Sandia National Laboratories",
+  number      = "SAND2004-1592",
+  month       = "April",
+  year        = "2004"
+}
+
+@article{Tautges04,
+  author  = {Timothy J. Tautges},
+  title   = {MOAB-SD: Integrated Structured and Unstructured Mesh Representation},
+  journal = {Engineering With Computers},
+  volume  = {20},
+  pages   = {286--293},
+  year    = {2004}
+}
+
+@inproceedings{Meyers02,
+  author    = {Ray Meyers et. al},
+  title     = {SNL Implementation of the TSTT Mesh Interface},
+  booktitle = {8th International conference on numerical grid generation in computational field simulations},
+  month     = {June},
+  year      = {2002}
+}
+
+@inproceedings{SeolShepard05,
+  author    = {E. S. Seol and Mark S. Shephard},
+  title     = {A Flexible Distributed Mesh Data Structure to Support Parallel Adaptive Analysis},
+  booktitle = {Proceedings of the 8th US National Congress on Computational Mechanics},
+  year      = {2005},
+}
+
+@article{BeallWalshShephard04,
+  author  = {M. W. Beall and J. Walsh and Mark S. Shephard},
+  title   = {A comparison of techniques for geometry access related to mesh generation},
+  journal = {Engineering With Computers},
+  volume  = {20},
+  number  = {3},
+  pages   = {210--221},
+  year    = {2004}
+}
+
+@article{CareyAndersonCarnesKirk04,
+  author  = {Graham F. },
+  title   = {Some aspects of adaptive grid technology related to boundary and interior layers},
+  journal = {Journal of Computational Applied Mathematics},
+  volume  = {166},
+  number  = {1},
+  pages   = {55--86},
+  year    = {2004}
+}
+
+@PHDTHESIS{GrALThesis,
+  author = "Guntram Berti",
+  title  = "Generic Software Components for Scientific Computing",
+  school = "TU Cottbus",
+  year   = "2000",
+  note   = "http://www.math.tu-cottbus.de/~berti/diss"
 }

@@ -226,21 +226,21 @@ PetscErrorCode PetscOptionsEnd_Private(void)
         case OPTION_HEAD:
           break;
         case OPTION_INT: 
-          sprintf(value,"%d",*(PetscInt*)PetscOptionsObject.next->data);
+          sprintf(value,"%d",(int) *(PetscInt*)PetscOptionsObject.next->data);
           break;
         case OPTION_REAL:
-          sprintf(value,"%g",*(PetscReal*)PetscOptionsObject.next->data);
+          sprintf(value,"%g",(double) *(PetscReal*)PetscOptionsObject.next->data);
           break;
         case OPTION_REAL_ARRAY:
-          sprintf(value,"%g",((PetscReal*)PetscOptionsObject.next->data)[0]);
+          sprintf(value,"%g",(double)((PetscReal*)PetscOptionsObject.next->data)[0]);
           for (j=1; j<PetscOptionsObject.next->arraylength; j++) {
-            sprintf(tmp,"%g",((PetscReal*)PetscOptionsObject.next->data)[j]);
+            sprintf(tmp,"%g",(double)((PetscReal*)PetscOptionsObject.next->data)[j]);
             ierr = PetscStrcat(value,",");CHKERRQ(ierr);
             ierr = PetscStrcat(value,tmp);CHKERRQ(ierr);
           }
           break;
         case OPTION_LOGICAL:
-          sprintf(value,"%d",*(PetscInt*)PetscOptionsObject.next->data);
+          sprintf(value,"%d",(int)*(PetscInt*)PetscOptionsObject.next->data);
           break;
         case OPTION_LIST:
           ierr = PetscStrcpy(value,*(char**)PetscOptionsObject.next->data);CHKERRQ(ierr);

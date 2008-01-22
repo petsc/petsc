@@ -17,32 +17,74 @@
 #endif
 #include "petscbt.h"
 
-#if (PETSC_SIZEOF_INT == 8)
-#define PetscInt32 short
-#else
-#define PetscInt32 int
-#endif
-
 #if !defined(PETSC_WORDS_BIGENDIAN)
 
+/* --------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "PetscByteSwapInt"
+#define __FUNCT__ "PetscByteSwapEnum"
 /*
-  PetscByteSwapInt - Swap bytes in a 32 bit integer. NOT a PetscInt! Note that PETSc binary read and write
-      always store and read only 32 bit integers! (See PetscBinaryRead(), PetscBinaryWrite()).
+  PetscByteSwapEnum - Swap bytes in a  PETSc Enum
 
 */
-PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(PetscInt32 *buff,PetscInt n)
+PetscErrorCode PETSC_DLLEXPORT PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
 {
-  PetscInt  i,j,tmp = 0;
-  PetscInt  *tptr = &tmp;                /* Need to access tmp indirectly to get */
-  char      *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+  PetscInt   i,j;
+  PetscEnum   tmp = 0;
+  PetscEnum  *tptr = &tmp;             /* Need to access tmp indirectly to get */
+  char       *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
                                    
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
     ptr1 = (char*)(buff + j);
-    for (i=0; i<(int)sizeof(PetscInt32); i++) {
-      ptr2[i] = ptr1[sizeof(PetscInt32)-1-i];
+    for (i=0; i<(int)sizeof(PetscEnum); i++) {
+      ptr2[i] = ptr1[sizeof(PetscEnum)-1-i];
+    }
+    buff[j] = *tptr;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscByteSwapTruth"
+/*
+  PetscByteSwapTruth - Swap bytes in a  PETSc Truth
+
+*/
+PetscErrorCode PETSC_DLLEXPORT PetscByteSwapTruth(PetscTruth *buff,PetscInt n)
+{
+  PetscInt    i,j;
+  PetscTruth  tmp = 0;
+  PetscTruth  *tptr = &tmp;             /* Need to access tmp indirectly to get */
+  char        *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+                                   
+  PetscFunctionBegin;
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff + j);
+    for (i=0; i<(int)sizeof(PetscTruth); i++) {
+      ptr2[i] = ptr1[sizeof(PetscTruth)-1-i];
+    }
+    buff[j] = *tptr;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscByteSwapInt"
+/*
+  PetscByteSwapInt - Swap bytes in a  PETSc integer (which may be 32 or 64 bits) 
+
+*/
+PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(PetscInt *buff,PetscInt n)
+{
+  PetscInt  i,j,tmp = 0;
+  PetscInt  *tptr = &tmp;             /* Need to access tmp indirectly to get */
+  char       *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+                                   
+  PetscFunctionBegin;
+  for (j=0; j<n; j++) {
+    ptr1 = (char*)(buff + j);
+    for (i=0; i<(int)sizeof(PetscInt); i++) {
+      ptr2[i] = ptr1[sizeof(PetscInt)-1-i];
     }
     buff[j] = *tptr;
   }
@@ -153,31 +195,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
    Concepts: files^reading binary
    Concepts: binary files^reading
 
-.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor()
+.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(),
+          PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDataType type)
 {
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES) || !defined(PETSC_WORDS_BIGENDIAN)
-  PetscErrorCode    ierr;
-#endif
   int               wsize,err;
   size_t            m = (size_t) n,maxblock = 65536;
   char              *pp = (char*)p;
-#if (PETSC_SIZEOF_INT == 8) || !defined(PETSC_WORDS_BIGENDIAN) || defined(PETSC_USE_64BIT_INDICES)
+#if !defined(PETSC_WORDS_BIGENDIAN)
+  PetscErrorCode    ierr;
   void              *ptmp = p; 
 #endif
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  if (type == PETSC_INT){
-    m   *= sizeof(PetscInt32);
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
-    /* read them in as 32 bit ints, later stretch into ints */
-    ierr = PetscMalloc(m,&pp);CHKERRQ(ierr);
-    ptmp = (void*)pp;
-#endif
-  } 
+  if (type == PETSC_INT)          m *= sizeof(PetscInt);
   else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
@@ -197,24 +231,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
     pp += err;
   }
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}        
-  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}        
+  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)ptmp,n);CHKERRQ(ierr);}        
+  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapTruth((PetscTruth*)ptmp,n);CHKERRQ(ierr);}        
   else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
 #endif
 
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
-  if (type == PETSC_INT) {
-    PetscInt   *p_int = (PetscInt*)p,i;
-    PetscInt32 *p_short = (PetscInt32 *)ptmp;
-    for (i=0; i<n; i++) {
-      p_int[i] = (PetscInt)p_short[i];
-    }
-    ierr = PetscFree(ptmp);CHKERRQ(ierr);
-  }
-#endif
   PetscFunctionReturn(0);
 }
 /* --------------------------------------------------------- */
@@ -256,14 +280,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
    Concepts: files^writing binary
    Concepts: binary files^writing
 
-.seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor()
+.seealso: PetscBinaryRead(), PetscBinaryOpen(), PetscBinaryClose(), PetscViewerBinaryGetDescriptor(), PetscBinarySynchronizedWrite(), 
+          PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
 {
   char           *pp = (char*)p;
   int            err,wsize;
   size_t         m = (size_t)n,maxblock=65536;
-#if !defined(PETSC_WORDS_BIGENDIAN) || (PETSC_SIZEOF_INT == 8) ||  defined(PETSC_USE_64BIT_INDICES)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   PetscErrorCode ierr;
   void           *ptmp = p; 
 #endif
@@ -272,21 +297,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Trying to write a negative amount of data %D",n);
   if (!n) PetscFunctionReturn(0);
 
-  if (type == PETSC_INT){
-    m   *= sizeof(PetscInt32);
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
-    PetscInt   *p_int = (PetscInt*)p,i;
-    PetscInt32 *p_short;
-    ierr    = PetscMalloc(m,&pp);CHKERRQ(ierr);
-    ptmp    = (void*)pp;
-    p_short = (PetscInt32*)pp;
-
-    for (i=0; i<n; i++) {
-      p_short[i] = (PetscInt32) p_int[i];
-    }
-    istemp = PETSC_TRUE;
-#endif
-  }
+  if (type == PETSC_INT)          m *= sizeof(PetscInt);
   else if (type == PETSC_SCALAR)  m *= sizeof(PetscScalar);
   else if (type == PETSC_DOUBLE)  m *= sizeof(double);
   else if (type == PETSC_SHORT)   m *= sizeof(short);
@@ -297,9 +308,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}          
-  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}          
+  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt*)ptmp,n);CHKERRQ(ierr);}
+  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)ptmp,n);CHKERRQ(ierr);}          
+  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapTruth((PetscTruth*)ptmp,n);CHKERRQ(ierr);}          
   else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
   else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
@@ -316,18 +327,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if (!istemp) {
-    if      (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
+    if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_ENUM)   {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapInt((PetscInt32*)ptmp,n);CHKERRQ(ierr);}
-  }
-#endif
-
-#if (PETSC_SIZEOF_INT == 8) || defined(PETSC_USE_64BIT_INDICES)
-  if (type == PETSC_INT){
-    ierr = PetscFree(ptmp);CHKERRQ(ierr);
+    else if (type == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)ptmp,n);CHKERRQ(ierr);}
+    else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapTruth((PetscTruth*)ptmp,n);CHKERRQ(ierr);}
   }
 #endif
   PetscFunctionReturn(0);
@@ -356,7 +361,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
    big-endian format. This means the file can be accessed using PetscBinaryOpen() and
    PetscBinaryRead() and PetscBinaryWrite() on any machine.
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscFileMode, PetscViewerFileSetMode(), PetscViewerBinaryGetDescriptor()
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscFileMode, PetscViewerFileSetMode(), PetscViewerBinaryGetDescriptor(), 
+          PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(), PetscBinarySynchronizedSeek()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char name[],PetscFileMode mode,int *fd)
@@ -406,7 +412,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char name[],PetscFileMode m
 
    Level: advanced
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
+          PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int fd)
 {
@@ -445,7 +452,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int fd)
    Concepts: files^binary seeking
    Concepts: binary files^seeking
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
+          PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
 {
@@ -505,7 +513,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekT
    Concepts: files^synchronized reading of binary files
    Concepts: binary files^reading, synchronized
 
-.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
+.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedWrite(), 
+          PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
 {
@@ -554,7 +563,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedRead(MPI_Comm comm,int fd,
    Concepts: files^synchronized writing of binary files
    Concepts: binary files^reading, synchronized
 
-.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
+.seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead(), PetscBinarySynchronizedRead(),
+          PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
 {
@@ -597,7 +607,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedWrite(MPI_Comm comm,int fd
    Concepts: binary files^seeking
    Concepts: files^seeking in binary 
 
-.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
+.seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen(), PetscBinarySynchronizedWrite(), PetscBinarySynchronizedRead(),
+          PetscBinarySynchronizedSeek()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedSeek(MPI_Comm comm,int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
 {

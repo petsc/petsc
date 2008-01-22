@@ -480,6 +480,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
 
    Level: intermediate
 
+   Notes: x and y must be different vectors
+
    Concepts: vector^BLAS
    Concepts: BLAS
 
@@ -520,6 +522,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(Vec y,PetscScalar alpha,Vec x)
 .  y - output vector
 
    Level: intermediate
+
+   Notes: x and y must be different vectors 
 
    Concepts: BLAS
    Concepts: vector^BLAS
@@ -562,6 +566,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec y,PetscScalar alpha,PetscScalar b
 
    Level: intermediate
 
+   Notes: x and y must be different vectors
+
    Concepts: vector^BLAS
    Concepts: BLAS
 
@@ -603,6 +609,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec y,PetscScalar alpha,Vec x)
 .  w - the result
 
    Level: intermediate
+
+   Notes: Neither the vector x or y can be the same as vector w
 
    Concepts: vector^BLAS
    Concepts: BLAS

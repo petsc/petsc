@@ -200,7 +200,7 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d(), DAGlobalToLocalBegin(), DAGetRefinementFactor(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRange()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
@@ -1753,7 +1753,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
    
 .keywords: distributed array, create, three-dimensional
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DAGetOwnershipRange()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm,PetscInt dim,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,

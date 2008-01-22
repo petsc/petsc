@@ -465,7 +465,7 @@ PetscErrorCode PCSetupDirectSolversOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_le
 {
   PetscErrorCode    ierr;
   PetscTruth        flg;
-  PetscInt          comm_size;
+  PetscMPIInt       comm_size;
   PC                pc;
 
   PetscFunctionBegin;
@@ -600,7 +600,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
   PetscInt       i,j;
 
   PetscScalar    *tau = 0, *work = 0;
-  PetscBLASInt   info;
+  PetscBLASInt   info,b1,b2;
 
   PetscInt       max_cand_vecs_to_add;
   PetscInt       *new_loc_agg_dofs = 0;
@@ -613,7 +613,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
   PetscInt       loc_agg_dofs_sum;
   PetscInt       row, col;
   PetscScalar    val;
-  PetscInt       comm_size, comm_rank;
+  PetscMPIInt    comm_size, comm_rank;
   PetscInt       *loc_cols = 0;
 
   PetscFunctionBegin;
@@ -758,9 +758,15 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
 
        CHKMEMQ;
        /* orthogonalize b_submat_tp using the QR algorithm from LAPACK */
-       LAPACKgeqrf_(cand_vec_length+a, new_loc_agg_dofs+a, b_submat_tp, cand_vec_length+a, tau, work, new_loc_agg_dofs+a, &info);
+       b1 = (PetscBLASInt) *(cand_vec_length+a);
+       b2 = (PetscBLASInt) *(new_loc_agg_dofs+a);
+       LAPACKgeqrf_(&b1, &b2, b_submat_tp, &b1, tau, work, &b2, &info);
        if (info) SETERRQ(PETSC_ERR_LIB, "LAPACKgeqrf_ LAPACK routine failed");
-       LAPACKungqr_(cand_vec_length+a, new_loc_agg_dofs+a, new_loc_agg_dofs+a, b_submat_tp, cand_vec_length+a, tau, work, new_loc_agg_dofs+a, &info);
+#if !defined(PETSC_MISSING_LAPACK_ORGQR) 
+       LAPACKungqr_(&b1, &b2, &b2, b_submat_tp, &b1, tau, work, &b2, &info);
+#else
+       SETERRQ(PETSC_ERR_SUP,"ORGQR - Lapack routine is unavailable\nIf linking with ESSL you MUST also link with full LAPACK, for example\nuse config/configure.py with --with-blas-lib=libessl.a --with-lapack-lib=/usr/local/lib/liblapack.a'");
+#endif
        if (info) SETERRQ(PETSC_ERR_LIB, "LAPACKungqr_ LAPACK routine failed");
 
        /* Transpose b_submat_tp and store it in b_orth_arr[a]. If we are constructing a

@@ -23,10 +23,10 @@ all:
       echo "********************************************************************"; \
       exit 1; fi
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
-	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/make_log
-	-@egrep -i "( error | error:)" ${PETSC_ARCH}/make_log > /dev/null; if [ "$$?" = "0" ]; then \
+	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/conf/make_log
+	-@egrep -i "( error | error:)" ${PETSC_ARCH}/conf/make_log > /dev/null; if [ "$$?" = "0" ]; then \
            echo "********************************************************************"; \
-           echo "  Error during compile, check ${PETSC_ARCH}/make_log"; \
+           echo "  Error during compile, check ${PETSC_ARCH}/conf/make_log"; \
            echo "  Send it and configure.log to petsc-maint@mcs.anl.gov";\
            echo "********************************************************************"; \
            exit 1; fi
@@ -88,7 +88,11 @@ info_h:
 	-@$(RM) -f ${MINFO} MINFO
 	-@echo  "static const char *petscmachineinfo = \"\__n__\"" >> MINFO
 	-@echo  "\"-----------------------------------------\__n__\"" >> MINFO
-	-@echo  "\"Libraries compiled on `date` on `hostname` \__n__\"" >> MINFO
+	-@if [ -f /usr/bin/cygcheck.exe ]; then \
+	  echo  "\"Libraries compiled on `date` on `hostname|/usr/bin/dos2unix` \__n__\"" >> MINFO; \
+          else \
+	  echo  "\"Libraries compiled on `date` on `hostname` \__n__\"" >> MINFO; \
+          fi
 	-@echo  "\"Machine characteristics: `uname -a` \__n__\"" >> MINFO
 	-@echo  "\"Using PETSc directory: ${PETSC_DIR}\__n__\"" >> MINFO
 	-@echo  "\"Using PETSc arch: ${PETSC_ARCH}\__n__\"" >> MINFO
@@ -122,15 +126,6 @@ build:
 	-@echo "Completed building libraries"
 	-@echo "========================================="
 #
-# Builds the Python wrappers
-python:
-	-@if [ -d "${PETSC_DIR}/src/python/PETSc" ]; then \
-	  echo "COMPILING PYTHON WRAPPERS"; \
-	  echo "========================================="; \
-	  PYTHONPATH=${PYTHONPATH}:${PETSC_DIR}/python/BuildSystem ./make.py --with-petsc-arch=${PETSC_ARCH} --ignoreWarnings 0; \
-	  echo "Completed building Python wrappers"; \
-	  echo "========================================="; \
-	fi
 #
 # Builds PETSc test examples for a given architecture
 #
@@ -286,11 +281,11 @@ install_docs:
 #     To locate later occurrences, use M-,
 # Builds all etags files
 alletags:
-	-@maint/generateetags.py
-	-@find python -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
+	-@bin/maint/generateetags.py
+	-@find config -type f -name "*.py" |grep -v SCCS | xargs etags -o TAGS_PYTHON
 
 allfortranstubs:
-	-@maint/generatefortranstubs.py ${BFORT}
+	-@bin/maint/generatefortranstubs.py ${BFORT}
 deletefortranstubs:
 	-@find . -type d -name ftn-auto | xargs rm -rf 
 #
@@ -298,13 +293,13 @@ deletefortranstubs:
 #
 
 BMAKEFILES = conf/base conf/test bmake/adic.init bmake/adicmf.init
-SCRIPTS    = maint/builddist  maint/wwwman maint/xclude maint/bugReport.py maint/buildconfigtest maint/builddistlite \
-             maint/buildtest maint/checkBuilds.py maint/copylognightly maint/copylognightly.tao maint/countfiles maint/findbadfiles \
-             maint/fixinclude maint/getexlist maint/getpdflabels.py maint/helpindex.py maint/hosts.local maint/hosts.solaris  \
-             maint/lex.py  maint/mapnameslatex.py maint/startnightly maint/startnightly.tao maint/submitPatch.py \
-             maint/update-docs.py  maint/wwwindex.py maint/xcludebackup maint/xcludecblas maint/zap maint/zapall \
-             python/PETSc/Configure.py python/PETSc/Options.py \
-             python/PETSc/packages/*.py python/PETSc/utilities/*.py
+SCRIPTS    = bin/maint/builddist  bin/maint/wwwman bin/maint/xclude bin/maint/bugReport.py bin/maint/buildconfigtest bin/maint/builddistlite \
+             bin/maint/buildtest bin/maint/checkBuilds.py bin/maint/copylognightly bin/maint/copylognightly.tao bin/maint/countfiles bin/maint/findbadfiles \
+             bin/maint/fixinclude bin/maint/getexlist bin/maint/getpdflabels.py bin/maint/helpindex.py bin/maint/hosts.local bin/maint/hosts.solaris  \
+             bin/maint/lex.py  bin/maint/mapnameslatex.py bin/maint/startnightly bin/maint/startnightly.tao bin/maint/submitPatch.py \
+             bin/maint/update-docs.py  bin/maint/wwwindex.py bin/maint/xcludebackup bin/maint/xcludecblas bin/maint/zap bin/maint/zapall \
+             config/PETSc/Configure.py config/PETSc/Options.py \
+             config/PETSc/packages/*.py config/PETSc/utilities/*.py
 
 
 # Builds all the documentation - should be done every night
@@ -317,21 +312,21 @@ alldoc1: chk_loc deletemanualpages chk_concepts_dir
 	-@cat ${PETSC_DIR}/src/docs/mpi.www.index >> ${LOC}/docs/manualpages/htmlmap
 	-cd src/docs/tex/manual; ${OMAKE} manual.pdf LOC=${LOC}
 	-${OMAKE} ACTION=manualpages tree_basic LOC=${LOC}
-	-maint/wwwindex.py ${PETSC_DIR} ${LOC}
+	-bin/maint/wwwindex.py ${PETSC_DIR} ${LOC}
 	-${OMAKE} ACTION=manexamples tree_basic LOC=${LOC}
 	-${OMAKE} manconcepts LOC=${LOC}
 	-${OMAKE} ACTION=getexlist tree_basic LOC=${LOC}
 	-${OMAKE} ACTION=exampleconcepts tree_basic LOC=${LOC}
-	-maint/helpindex.py ${PETSC_DIR} ${LOC}
+	-bin/maint/helpindex.py ${PETSC_DIR} ${LOC}
 	-grep -h Polymorphic include/*.h | grep -v '#define ' | sed "s?PetscPolymorphic[a-zA-Z]*(??g" | cut -f1 -d"{" > tmppoly
-	-maint/processpoly.py ${PETSC_DIR} ${LOC}
+	-bin/maint/processpoly.py ${PETSC_DIR} ${LOC}
 	-${RM} tmppoly
 
 # Builds .html versions of the source
 # html overwrites some stuff created by update-docs - hence this is done later.
 alldoc2: chk_loc
 	-${OMAKE} ACTION=html PETSC_DIR=${PETSC_DIR} alltree LOC=${LOC}
-	-maint/update-docs.py ${PETSC_DIR} ${LOC}
+	-bin/maint/update-docs.py ${PETSC_DIR} ${LOC}
 
 alldocclean: deletemanualpages allcleanhtml
 
@@ -342,7 +337,7 @@ deletemanualpages: chk_loc
           ${RM} ${LOC}/docs/exampleconcepts ;\
           ${RM} ${LOC}/docs/manconcepts ;\
           ${RM} ${LOC}/docs/manualpages/manualpages.cit ;\
-          maint/update-docs.py ${PETSC_DIR} ${LOC} clean;\
+          bin/maint/update-docs.py ${PETSC_DIR} ${LOC} clean;\
         fi
 
 allcleanhtml: 
@@ -359,7 +354,7 @@ chk_concepts_dir: chk_loc
 
 # Creates ${HOME}/petsc.tar.gz [and petsc-lite.tar.gz]
 dist:
-	${PETSC_DIR}/maint/builddist ${PETSC_DIR}
+	${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR}
 
 # This target works only if you can do 'ssh petsc@harley.mcs.anl.gov'
 # also copy the file over to ftp site.
@@ -512,16 +507,10 @@ exercises:
 	/home/MPI/class/mpiexmpl/maint/makepage.new -pageform=docs/pageform.txt -access_extra=/dev/null -outdir=docs/exercises
 	-@echo "========================================="
 
-# Make a tarball of all the Python code
-#   This is currently used to release to the Teragrid
-petscPython.tgz:
-	@tar cvzf $@ --exclude SCCS --exclude BitKeeper --dereference python/
-	-@scp $@ tg-login2.uc.teragrid.org:./
-
 .PHONY: info info_h all all_build build testexamples testfortran testexamples_uni testfortran_uni ranlib deletelibs allclean update chk_petsc_dir \
         alletags etags etags_complete etags_noexamples etags_makefiles etags_examples etags_fexamples alldoc allmanualpages \
         allhtml allcleanhtml  allci allco allrcslabel alladicignore alladic alladiclib countfortranfunctions \
-        start_configure configure_petsc configure_clean python
+        start_configure configure_petsc configure_clean
 
 getsigs:
 	-@if [ ! -d src/sigs ]; then mkdir -p sigs; fi

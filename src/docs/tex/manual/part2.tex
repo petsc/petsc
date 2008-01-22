@@ -2592,8 +2592,8 @@ such tuning can significantly enhance performance.
 % --------------------------------------------------------------------
 \label{sec_blocksolve}
 PETSc supports incomplete factorization preconditioners for several matrix
-types for the uniprocess case.\sindex{ILU, parallel}\sindex{ICC, parallel}
-In addition, for the parallel case
+types for sequential matrix (for example MATSEQAIJ, MATSEQBAIJ, MATSEQSBAIJ).\sindex{ILU, parallel}\sindex{ICC, parallel}
+In addition, for parallel matrices
 we provide an interface to the ILU and ICC preconditioners
 of BlockSolve95 \cite{bs-user-ref}.   PETSc enables users
 to employ the preconditioners within
@@ -2602,9 +2602,12 @@ and invoking either the \trl{PCILU} or \trl{PCICC} method within the linear
 solvers.  Since PETSc automatically handles matrix assembly,
 preconditioner setup, profiling, etc., users who employ BlockSolve95
 through the PETSc interface need not concern themselves with many
-details provided within the BlockSolve95 users manual. Consult the file
+details provided within the BlockSolve95 users manual. To 
+use BlockSolve you Consult the file
 \trl{docs/installation/index.htm} for details on installing PETSc to allow 
-the use of BlockSolve95.
+the use of BlockSolve95. Note that when using parallel preconditioners such as
+block Jacobi and the additive Schwarz method with factorizations on each block
+(which are sequential) the regular PETSc sequential ILU and ICC preconditioners are used.
 
 One can create a matrix that is compatible with BlockSolve95 by using
 MatCreate() with the option \trl{-mat_mpirowbs}, or by directly
@@ -4961,7 +4964,7 @@ PETSc provides two macros (defined in C/C++) to help write
 portable code that mixes C/C++ and Fortran. They are 
 \trl{PETSC_HAVE_FORTRAN_UNDERSCORE} and \trl{PETSC_HAVE_FORTRAN_CAPS}
 \findex{PETSC_HAVE_FORTRAN_UNDERSCORE} \findex{PETSC_HAVE_FORTRAN_CAPS},
-which are defined in the file \trl{${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h}.
+which are defined in the file \trl{${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h}.
 The macros are used, for example, as follows:
 \begin{tabbing}
    \#if defined(PETSC\_HAVE\_FORTRAN\_CAPS)\\

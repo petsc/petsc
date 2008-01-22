@@ -1,46 +1,273 @@
-/*T
-   Concepts: Creating a series of coarsened meshes using function-based coarsening and Triangle (or TetGen).
-   Processors: n
-T*/
+//Use Hierarchy.hh to implement the creation of an entire array of topologies for use in multigrid methods.
 
-/*
 
-*/
 
-static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
+#include <petscmesh.hh>
+#include <petscmesh_viewers.hh>
+#include <petscmesh_formats.hh>
+#include <petscdmmg.h>
+//TEST compile without triangle and tetgen
+//#undef PETSC_HAVE_TRIANGLE
+//#undef PETSC_HAVE_TETGEN
+#include "Generator.hh"
+#include "Hierarchy.hh"
+#include "Hierarchy_New.hh"
 
-#include "ex_coarsen.h"
 
-PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh>);
-PetscErrorCode CreateCoarsenedMesh(Obj<ALE::Mesh>, Obj<ALE::Mesh>, double);
-bool IsEssentialBoundaryNode(Obj<ALE::Mesh>&, ALE::Mesh::point_type, int);
+using ALE::Obj;
+
+
+typedef struct {
+  int        dim;                // The mesh dimension
+  int        debug;              // The debugging level
+  PetscTruth useZeroBase;        // Use zero-based indexing
+  char       baseFilename[2048]; // The base filename for mesh files
+  PetscInt   levels;             // The number of levels in the hierarchy
+  PetscReal  coarseFactor;       // The maximum coarsening factor
+  PetscReal  zScale;             // The relative spread of levels for visualization
+  PetscTruth outputVTK;          // Output the mesh in VTK
+  PetscTruth generate;           // Generate the mesh rather than reading it in
+  PetscReal  curvatureCutoff;     // the cutoff for the curvature
+  PetscReal  refinementLimit;    // the maximum cell volume used in the finest mesh 
+  PetscTruth refinementGrading;  //grade the L-shaped and Fichera corner meshes as C0r^-2 \leq h \leq C1r^-2
+  PetscTruth interpolate;        //construct the subdimensional elements of the mesh
+} Options;
+
+#undef __FUNCT__
+#define __FUNCT__ "ProcessOptions"
+PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "DMMG");CHKERRQ(ierr);
+  options->dim          = 2;
+  ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex_coarsen_3.c", options->dim, &options->dim, PETSC_NULL);    
+  options->debug        = 0;
+  options->useZeroBase  = PETSC_TRUE;
+  ierr = PetscStrcpy(options->baseFilename, "data/coarsen_mesh");CHKERRQ(ierr);
+  options->levels       = 3;
+  options->coarseFactor = 1.45;
+  options->zScale       = 1.0;
+  options->outputVTK    = PETSC_TRUE;
+  options->curvatureCutoff = 1.5;
+  options->generate = PETSC_TRUE;
+  options->interpolate = PETSC_TRUE;  
+
+  if (options->dim == 2) {
+    options->refinementLimit = 0.001;
+  } else {
+    options->refinementLimit = 0.0001;
+  }
+  ierr = PetscOptionsTruth("-interpolate", "construct additional elements of the sieve", "ex_coarsen.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinementlimit", "The maximum cell volume in the finest mesh", "ex_coarsen.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen_3", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex_coarsen_3.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen_3.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen_3.c", options->levels, &options->levels, PETSC_NULL);    
+  ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen_3.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);   
+  ierr = PetscOptionsReal("-curvature", "The automatic inclusion threshhold for the curvature", "ex_coarsen_3.c", options->curvatureCutoff, &options->curvatureCutoff, PETSC_NULL); 
+  ierr = PetscOptionsTruth("-generate", "Generate the mesh rather than reading it in.", "ex_coarsen.c", options->generate, &options->generate, PETSC_NULL);
+  ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen_3.c", options->zScale, &options->zScale, PETSC_NULL);    
+  ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex_coarsen_3.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "Coarsen_RefineSingularity_Fichera"
+PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mesh> mesh, MPI_Comm comm, double * singularity, double factor, ALE::Obj<ALE::Mesh> *refinedMesh, PetscTruth interpolate = PETSC_FALSE)
+{
+  ALE::Obj<ALE::Mesh> oldMesh = mesh;
+  double              oldLimit;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  //ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+  //ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
+  int dim = oldMesh->getDimension();
+  oldLimit = oldMesh->getMaxVolume();
+  //double oldLimInv = 1./oldLimit;
+  double curLimit, tmpLimit;
+  double minLimit = oldLimit/16384.;             //arbitrary;
+  const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = oldMesh->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::real_section_type>& volume_limits = oldMesh->getRealSection("volume_limits");
+  volume_limits->setFiberDimension(oldMesh->heightStratum(0), 1);
+  oldMesh->allocate(volume_limits);
+  const ALE::Obj<ALE::Mesh::label_sequence>& cells = oldMesh->heightStratum(0);
+  ALE::Mesh::label_sequence::iterator c_iter = cells->begin();
+  ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
+  double centerCoords[dim];
+  while (c_iter != c_iter_end) {
+    const double * coords = oldMesh->restrict(coordinates, *c_iter);
+    for (int i = 0; i < dim; i++) {
+      centerCoords[i] = 0;
+      for (int j = 0; j < dim+1; j++) {
+        centerCoords[i] += coords[j*dim+i];
+      }
+      centerCoords[i] = centerCoords[i]/(dim+1);
+      //PetscPrintf(oldMesh->comm(), "%f, ", centerCoords[i]);
+    }
+    //PetscPrintf(oldMesh->comm(), "\n");
+    double dist = 0.;
+    double cornerdist = 0.;
+    //HERE'S THE DIFFERENCE: if centercoords is less than the singularity coordinate for each direction, include that direction in the distance
+    /*
+    for (int i = 0; i < dim; i++) {
+      if (centerCoords[i] <= singularity[i]) {
+        dist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
+      }
+    }
+    */
+    //determine: the per-dimension distance: cases
+    for (int i = 0; i < dim; i++) {
+      cornerdist = 0.;
+      if (centerCoords[i] > singularity[i]) {
+        for (int j = 0; j < dim; j++) {
+          if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
+        }
+        if (cornerdist < dist || dist == 0.) dist = cornerdist; 
+      }
+    }
+    //patch up AROUND the corner by minimizing between the distance from the relevant axis and the singular vertex
+    double singdist = 0.;
+    for (int i = 0; i < dim; i++) {
+      singdist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
+    }
+    if (singdist < dist || dist == 0.) dist = singdist;
+    if (dist > 0.) {
+      dist = sqrt(dist);
+      double mu = pow(dist, factor);
+      //PetscPrintf(oldMesh->comm(), "%f, %f\n", mu, dist);
+      tmpLimit = oldLimit*pow(mu, dim);
+      if (tmpLimit > minLimit) {
+        curLimit = tmpLimit;
+      } else curLimit = minLimit;
+    } else curLimit = minLimit;
+    //PetscPrintf(oldMesh->comm(), "%f, %f\n", dist, tmpLimit);
+    volume_limits->updatePoint(*c_iter, &curLimit);
+    c_iter++;
+  }
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, volume_limits, interpolate);
+  //ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
+  *refinedMesh = newMesh;
+  const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+  const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
+
+  for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+    newMesh->setDiscretization(*f_iter, oldMesh->getDiscretization(*f_iter));
+  }
+  newMesh->setupField(s);
+  //  PetscPrintf(newMesh->comm(), "refined\n");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateMesh"
+PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
+{
+  ALE::Obj<ALE::Mesh> mesh2;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
+  ALE::LogStagePush(stage);
+  ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
+  if (options->generate) {
+    if (options->dim == 3) {
+      double lower[3] = {0.0, 0.0, 0.0};
+      double upper[3] = {1.0, 1.0, 1.0};
+      double offset[3] = {0.5, 0.5, 0.5};
+      ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createFicheraCornerBoundary(comm, lower, upper, offset);
+      mesh2 = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->interpolate), options->refinementLimit, options->interpolate);
+      ierr = MeshRefineSingularity_Fichera(mesh2, comm, offset, 0.75, &mesh);CHKERRQ(ierr);
+    } else if (options->dim == 2) {
+      double lower[2] = {0.0, 0.0};
+      double upper[2] = {1.0, 1.0};
+      double offset[2] = {0.5, 0.5};
+      ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createReentrantBoundary(comm, lower, upper, offset);
+      mesh = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->interpolate), options->refinementLimit, options->interpolate);
+      //mesh = ALE::Generator::generateMesh(mb, options->debug);
+    }
+  } else {
+    mesh = ALE::PCICE::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
+  }
+  //ALE::Coarsener::IdentifyBoundary(mesh, 2);
+  //ALE::Coarsener::make_coarsest_boundary(mesh, 2, options->levels + 1);
+  ALE::LogStagePop(stage);
+  ierr = PetscPrintf(comm, "  Read %d elements\n", mesh->heightStratum(0)->size());CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "  Read %d edges/faces\n", mesh->heightStratum(1)->size());CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "  Read %d vertices\n", mesh->depthStratum(0)->size());CHKERRQ(ierr);
+  if (options->debug) {
+   // topology->view("Serial topology");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "OutputVTK"
+PetscErrorCode OutputVTK(ALE::Obj<ALE::Mesh> mesh, Options *options, std::string outname)
+{
+  PetscViewer    viewer;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (options->outputVTK) {
+    ALE::LogStage stage = ALE::LogStageRegister("VTKOutput");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(mesh->comm(), "Creating VTK mesh files\n");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, outname.c_str());CHKERRQ(ierr);
+    ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
+    ierr = VTKViewer::writeVertices(mesh, viewer);
+    ierr = VTKViewer::writeElements(mesh, viewer);
+//    ierr = VTKViewer::writeHierarchyVertices(mesh, viewer, options->zScale);CHKERRQ(ierr);
+//    ierr = VTKViewer::writeHierarchyElements(mesh, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    //const ALE::Mesh::topology_type::sheaf_type& patches = mesh->getTopology()->getPatches();
+    ALE::LogStagePop(stage);
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
+  Options        options;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char *) 0, NULL);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
   try {
-    Obj<ALE::Mesh> mesh;
-    ierr = ProcessOptions(comm);CHKERRQ(ierr);
-    ierr = CreateMesh(comm, mesh);CHKERRQ(ierr);
-    Obj<ALE::Mesh> coarseMesh = ALE::Mesh(comm, 2, 0);	
-    ierr = CreateSpacingFunction(mesh);CHKERRQ(ierr);
-    ierr = CreateCoarsenedMesh(mesh, coarseMesh, c_factor);CHKERRQ(ierr);
-    ierr = CreateSpacingFunction(coarseMesh);CHKERRQ(ierr);
-
-//        mesh->getTopology()->view("Serial topology");
-//	coarseMesh->getTopology()->view("Serial topology");
-//    ierr = OutputVTK(mesh, "notCoarseMesh.vtk", "spacing", 0); CHKERRQ(ierr);
-    ierr = OutputVTK(coarseMesh, "coarseMesh.vtk", "spacing", 0);CHKERRQ(ierr);
+    ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
+    Obj<ALE::Mesh> m;
+    Mesh mesh;
+    ierr = MeshCreate(comm, &mesh);
+    m = new ALE::Mesh(comm, options.debug);
+    ierr = CreateMesh(comm, m, &options);CHKERRQ(ierr);
+    ierr = MeshSetMesh(mesh, m);
+    //ierr = MeshIDBoundary(mesh);
+    //create the spacing function on the original mesh
     
-//    ierr = OutputMesh(coarseMesh);CHKERRQ(ierr);
+    m->markBoundaryCells("marker");
+    //    PetscPrintf(m->comm(), "marked the boundary cells\n");
+
+    int nMeshes;
+    Obj<ALE::Mesh> * coarsened_mesh = Hierarchy_createHierarchy_adaptive(m, 40, 10, options.coarseFactor, &nMeshes);
+ 
+    char vtkfilename[256];
+    sprintf(vtkfilename, "fine_mesh.vtk");
+    ierr = OutputVTK(m, &options, vtkfilename);CHKERRQ(ierr);
+    for (int i = 1; i < nMeshes; i++) {
+      sprintf(vtkfilename, "coarse_mesh%d.vtk", i);
+      ierr = OutputVTK(coarsened_mesh[i], &options, vtkfilename);CHKERRQ(ierr);
+    } 
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
@@ -48,300 +275,3 @@ int main(int argc, char *argv[])
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateSpacingFunction"
-
-PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh> mesh) {
-
-
-//grab a new section for the spacing function
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
-
-  Obj<ALE::Mesh::section_type>        spacing = mesh->getSection("spacing");
-  ALE::Mesh::section_type::patch_type patch = 0;
-  PetscFunctionBegin;
-  ALE_LOG_EVENT_BEGIN;
-  spacing->setFiberDimensionByDepth(patch, 0, 1);
-  spacing->allocate();
-  const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = spacing->getTopology()->depthStratum(patch, 0);
-
-  //grab the coordinate section
-  Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
-  //ierr = PetscPrintf(mesh->comm(), "Spacing Values: ");CHKERRQ(ierr);
-  ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
-  ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
-  while(v_iter != v_iter_end) {
-    ALE::Obj<ALE::Mesh::sieve_type::traits::supportSequence> support = topology->getPatch(patch)->support(*v_iter);
-
-    //ierr = PetscPrintf(mesh->comm(), "Edges: %d\n", support->size());CHKERRQ(ierr);
-    //ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> tCone = topology->getPatch(patch)->cone(support);
-    const double *vCoords = coords->restrict(patch, *v_iter);
-    double        v_x     = vCoords[0], v_y = vCoords[1];
-    double        minDist = 10000.;
-
-    ALE::Mesh::topology_type::label_sequence::iterator s_iter     = support->begin();
-    ALE::Mesh::topology_type::label_sequence::iterator s_iter_end = support->end();
-    while(s_iter != s_iter_end) {
-      ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
-      //ierr = PetscPrintf(mesh->comm(), "Edge Cardinality (This is stupid): %d, %d\n", neighbors->size(), *neighbors->end());CHKERRQ(ierr);
-      ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin();
-      ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
-      while(n_iter != n_iter_end) {
-        if (*v_iter != *n_iter) {
-          const double *nCoords = coords->restrict(patch, *n_iter);
-          double n_x = nCoords[0], n_y = nCoords[1];
-          double        dist    = 0.0;
-
-          dist = (n_x - v_x)*(n_x - v_x) + (v_y - n_y)*(v_y - n_y);
-//          for(int d = 0; d < dim; d++) {
-//            dist += (vCoords[d] - nCoords[d])*(vCoords[d] - nCoords[d]);
-	  //ierr = PetscPrintf(mesh->comm(), "%f\n", (vCoords[d] - nCoords[d])*(vCoords[d] - nCoords[d]));CHKERRQ(ierr);
-          //}
-	 // ierr = PetscPrintf(mesh->comm(), "%d: %f %f (%x) -> %d: %f %f (%x) = %f\n", *v_iter, vCoords[0], vCoords[1], vCoords, *n_iter, nCoords[0], nCoords[1], nCoords, dist);CHKERRQ(ierr);
-          if (dist < minDist) minDist = dist;
-        }
-        n_iter++;
-      }
-      s_iter++;
-    }
-    //ierr = PetscPrintf(mesh->comm(), "%d: %f ", *v_iter, minDist);CHKERRQ(ierr);
-    minDist = sqrt(minDist);
-    spacing->update(patch, *v_iter, &minDist);
-    v_iter++;
-  }  
-  PetscFunctionReturn(0);
-}
-
-
-PetscErrorCode CreateCoarsenedMesh(Obj<ALE::Mesh> srcMesh, Obj<ALE::Mesh> dstMesh, double beta) {
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscPrintf(srcMesh->comm(), "Coarsening mesh by beta = %f\n", beta);CHKERRQ(ierr);
-  std::list<double *> points;
-  ALE::Mesh::section_type::patch_type patch = 0;  
-  //come up with a list containing an independent set of bubbles.
-  //arbitrarily add the first vertex to this list.
-  double * add_point;
-  const double * tmp_point;
-  Obj<ALE::Mesh::section_type> coords = srcMesh->getSection("coordinates");
-  Obj<ALE::Mesh::section_type> space = srcMesh->getSection("spacing");
-  Obj<ALE::Mesh::topology_type> topology = srcMesh->getTopology();
-  const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
-
-  ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
-  ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
-
-  const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
-  double v_space;
-  int essentialBoundary = 0;
-  //boundary handling  right now we are using uninterpolated meshes, so to find the neighbors will only take one down and up, but we will have to watch
-  //for which are on the boundary.
-    
-  while (v_iter != v_iter_end) {  //add the essential boundary nodes first.
-    if (topology->getValue(markers, *v_iter) != 0) if(IsEssentialBoundaryNode(srcMesh, *v_iter, 2)){ 
-      essentialBoundary++;
-      add_point = new double[3];
-      tmp_point = coords->restrict(patch, *v_iter);
-      add_point[0] = tmp_point[0];
-      add_point[1] = tmp_point[1];
-      add_point[2] = *space->restrict(patch, *v_iter);
-      points.push_front(add_point);
-    }
-    v_iter++;
-  }
-
-  v_iter = vertices->begin();
-  v_iter_end = vertices->end();
-
-  //go through the rest of the boundary nodes now
-
-  while(v_iter != v_iter_end) {
-
-    if (topology->getValue(markers, *v_iter) != 0) {
-      v_space = *space->restrict(patch, *v_iter); 
-      tmp_point = coords->restrict(patch, *v_iter);
-      std::list<double *>::iterator c_iter = points.begin(), c_iter_end = points.end();
-      bool point_is_ok = true; //point doesn't intersect anything already in the list.
-      while (c_iter != c_iter_end && point_is_ok) {
-        double dist = sqrt(((*c_iter)[0] - tmp_point[0])*((*c_iter)[0] - tmp_point[0]) + ((*c_iter)[1] - tmp_point[1])*((*c_iter)[1] - tmp_point[1]));
-        if(dist < beta*((*c_iter)[2] + v_space)/2.) {
-          point_is_ok = false;
-          //ierr = PetscPrintf(srcMesh->comm(), "(%f, %f) (%f) <> (%f, %f) (%f)\n", tmp_point[0], tmp_point[1], v_space, (*c_iter)[0], (*c_iter)[1], (*c_iter)[2]);
-
-        }
-		c_iter++;
-      }
-      if(point_is_ok) { //add to the set.
-        add_point = new double[3];
-        tmp_point = coords->restrict(patch, *v_iter);
-        add_point[0] = tmp_point[0];
-        add_point[1] = tmp_point[1];
-        add_point[2] = v_space;
-        points.push_front(add_point);
-        //ierr = PetscPrintf(srcMesh->comm(), "added %d to the set\n", *v_iter);
-      }
-    }
-    v_iter++;
-  }
-  printf("Found %d essential boundary nodes\n", essentialBoundary);
-  //interior handling
-
-  v_iter = vertices->begin();
-  v_iter_end = vertices->end();
-
-  while(v_iter != v_iter_end) {
-    v_space = *space->restrict(patch, *v_iter); 
-    tmp_point = coords->restrict(patch, *v_iter);
-    std::list<double *>::iterator c_iter = points.begin(), c_iter_end = points.end();
-    bool point_is_ok = true; //point doesn't intersect anything already in the list.
-    while (c_iter != c_iter_end && point_is_ok) {
-      double dist = sqrt(((*c_iter)[0] - tmp_point[0])*((*c_iter)[0] - tmp_point[0]) + ((*c_iter)[1] - tmp_point[1])*((*c_iter)[1] - tmp_point[1]));
-      if(dist < beta*((*c_iter)[2] + v_space)/2.) {
-        point_is_ok = false;
-        //ierr = PetscPrintf(srcMesh->comm(), "(%f, %f) (%f) <> (%f, %f) (%f)\n", tmp_point[0], tmp_point[1], v_space, (*c_iter)[0], (*c_iter)[1], (*c_iter)[2]);
-
-      }
-      c_iter++;
-    }
-    if(point_is_ok) { //add to the set.
-      add_point = new double[3];
-      add_point[0] = tmp_point[0];
-      add_point[1] = tmp_point[1];
-      add_point[2] = v_space;
-      points.push_front(add_point);
-      //ierr = PetscPrintf(srcMesh->comm(), "added %d to the set\n", *v_iter);
-    }
-	v_iter++;
-  }
-  
-  ierr = PetscPrintf(srcMesh->comm(), "Now have a set of vertices of size %d, triangulating\n", points.size());
-
-  //get the set ready for triangle!
-  //
-  triangulateio * input = new triangulateio;
-  triangulateio * output = new triangulateio;
-  input->numberofpoints = points.size();
-  input->numberofpointattributes = 0;
-  input->pointlist = new double[2*input->numberofpoints];
-
-  //copy the points over
-  std::list<double *>::iterator c_iter = points.begin(), c_iter_end = points.end();
-
-  int index = 0;
-  while (c_iter != c_iter_end) {
-    input->pointlist[2*index] = (*c_iter)[0];
-	input->pointlist[2*index+1] = (*c_iter)[1];
-	c_iter++;
-    index++;
-  }
-
-  //ierr = PetscPrintf(srcMesh->comm(), "copy is ok\n");
-  input->numberofpointattributes = 0;
-  input->pointattributelist = NULL;
-  input->pointmarkerlist = NULL;
-
-  input->numberoftriangles = 0;
-  input->numberofcorners = 0;
-  input->numberoftriangleattributes = 0;
-  input->trianglelist = NULL;
-  input->triangleattributelist = NULL;
-  input->trianglearealist = NULL;
-
-  input->segmentlist = NULL;
-  input->segmentmarkerlist = NULL;
-  input->numberofsegments = 0;
-
-  input->holelist = NULL;
-  input->numberofholes = 0;
-   
-  input->regionlist = NULL;
-  input->numberofregions = 0;
-
-  output->pointlist = NULL;
-  output->pointattributelist = NULL;
-  output->pointmarkerlist = NULL;
-  output->trianglelist = NULL;
-  output->triangleattributelist = NULL;
-  output->trianglearealist = NULL;
-  output->neighborlist = NULL;
-  output->segmentlist = NULL;
-  output->segmentmarkerlist = NULL;
-  output->holelist = NULL;
-  output->regionlist = NULL;
-  output->edgelist = NULL;
-  output->edgemarkerlist = NULL;
-  output->normlist = NULL;
-
-  string triangleOptions = "-zeQ"; //(z)ero indexing, output (e)dges, Quiet
-
-  triangulate((char *)triangleOptions.c_str(), input, output, NULL);
-  //initialize the dstmesh
-  ierr = PetscPrintf(srcMesh->comm(), "triangles: %d edges: %d points: %d\n", output->numberoftriangles, output->numberofedges, output->numberofpoints);
-  TriangleToMesh(dstMesh, output, 0);
-  //rest are out only.
-
-  //cleanup
-
-  //c_iter = points.begin(); c_iter_end = points.end();
-  //while (c_iter != c_iter_end) {
-  //	delete *c_iter;
-  //  }
-
-  delete input->pointlist;
-  delete output->pointlist;
-  delete output->trianglelist;
-  delete output->edgelist;
-  delete input;
-  delete output;
-   
-  //ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
-  PetscFunctionReturn(0);
-}
-
-//decides if the given boundary node is essential, or merely collinear (or coplanar as the case may be) with its neighbors.
-
-bool IsEssentialBoundaryNode(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex, int dim) {
-
-  ALE::Mesh::section_type::patch_type patch = 0; 
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
-  if (dim != 2) {printf("Not Supported for more than 2D yet\n"); return false;}
-  const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
-  Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
-  const double *vCoords = coords->restrict(patch, vertex);
-  double v_x = vCoords[0], v_y = vCoords[1];
-
-  bool foundNeighbor = false;
-  bool isEssential = false;
-
-  double f_n_x, f_n_y;
-
-  ALE::Obj<ALE::Mesh::sieve_type::traits::supportSequence> support = topology->getPatch(patch)->support(vertex);
-  ALE::Mesh::topology_type::label_sequence::iterator s_iter = support->begin();
-  ALE::Mesh::topology_type::label_sequence::iterator s_iter_end = support->end();
-  while(s_iter != s_iter_end) {
-    if (topology->getValue(markers, *s_iter) != 0) {
-      ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
-      ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin();
-      ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
-      while(n_iter != n_iter_end) {
-        if (vertex != *n_iter && topology->getValue(markers, *n_iter) == 1) {
-          if (!foundNeighbor) {
-            const double *nCoords = coords->restrict(patch, *n_iter);
-            f_n_x = nCoords[0]; f_n_y = nCoords[1];
-            foundNeighbor = true;
-          } else {
-            const double *nCoords = coords->restrict(patch, *n_iter);
-            double n_x = nCoords[0], n_y = nCoords[1];
-            double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
-            if (parArea > 0.000001) isEssential = true;
-            printf("Parallelogram area: %f\n", parArea);
-          }
-        }
-        n_iter++;
-      }
-    } //end of testing if the edge is a boundary edge
-    s_iter++;
-  }
-  return isEssential;
-}

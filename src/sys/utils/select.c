@@ -34,7 +34,7 @@
    Concepts: menu
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,char *machine,char *title,int n,char **choices,int *choice)
+PetscErrorCode PETSC_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,const char *machine,const char *title,int n,const char **choices,int *choice)
 {
   PetscMPIInt    rank;
   int            i,rows = n + 2;
@@ -80,7 +80,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPopUpSelect(MPI_Comm comm,char *machine,char
     fscanf(fd,"%d",choice);
     *choice -= 1;
     if (*choice < 0 || *choice > n-1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Selection %d out of range",*choice);
-    ierr = PetscPClose(PETSC_COMM_SELF,fd);CHKERRQ(ierr);
+    ierr = PetscFClose(PETSC_COMM_SELF,fd);CHKERRQ(ierr);
   }
 #else
   SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");

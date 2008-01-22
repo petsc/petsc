@@ -269,7 +269,8 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreate(MPI_Comm comm, SectionReal *s
 
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
 
-  s->s             = new ALE::Mesh::real_section_type(comm);
+  new(&s->s) ALE::Obj<ALE::Mesh::real_section_type>(ALE::Mesh::real_section_type(comm));
+  new(&s->b) ALE::Obj<ALE::Mesh>(PETSC_NULL);
   *section = s;
   PetscFunctionReturn(0);
 }
@@ -1042,7 +1043,8 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntCreate(MPI_Comm comm, SectionInt *sec
 
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
 
-  s->s             = new ALE::Mesh::int_section_type(comm);
+  new(&s->s) ALE::Obj<ALE::Mesh::int_section_type>(ALE::Mesh::int_section_type(comm));
+  new(&s->b) ALE::Obj<ALE::Mesh>(PETSC_NULL);
   *section = s;
   PetscFunctionReturn(0);
 }

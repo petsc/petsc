@@ -2,7 +2,9 @@
 #define included_ALE_mem_hh
 // This should be included indirectly -- only by including ALE.hh
 
-
+#include <deque>
+#include <iostream>
+#include <map>
 #include <memory>
 #include <typeinfo>
 #include <petsc.h>
@@ -13,6 +15,195 @@
 #endif
 
 namespace ALE {
+  class MemoryLogger {
+  public:
+    struct Log {
+      int num;
+      int total;
+      std::map<std::string, int> items;
+
+      Log(): num(0), total(0) {};
+    };
+    typedef std::map<std::string, std::pair<Log, Log> > stageLog;
+    typedef std::deque<std::string>                     names;
+  protected:
+    int      _debug;
+    MPI_Comm comm;
+    int      rank;
+    names    stageNames;
+    stageLog stages;
+  protected:
+    MemoryLogger(): _debug(0), comm(PETSC_COMM_WORLD) {
+      MPI_Comm_rank(comm, &rank);
+      stageNames.push_front("default");
+    };
+  public:
+    ~MemoryLogger() {};
+    static MemoryLogger& singleton() {
+      static MemoryLogger singleton;
+
+      return singleton;
+    };
+    int  debug() {return _debug;};
+    void setDebug(int debug) {_debug = debug;};
+  public:
+    void stagePush(const std::string& name) {stageNames.push_front(name);};
+    void stagePop() {stageNames.pop_front();};
+    void logAllocation(const std::string& className, int bytes) {logAllocation(stageNames.front(), className, bytes);};
+    void logAllocation(const std::string& stage, const std::string& className, int bytes) {
+      if (_debug) {std::cout << "["<<rank<<"]Allocating " << bytes << " bytes for class " << className << std::endl;}
+      stages[stage].first.num++;
+      stages[stage].first.total += bytes;
+      stages[stage].first.items[className] += bytes;
+    };
+    void logDeallocation(const std::string& className, int bytes) {logDeallocation(stageNames.front(), className, bytes);};
+    void logDeallocation(const std::string& stage, const std::string& className, int bytes) {
+      if (_debug) {std::cout << "["<<rank<<"]Deallocating " << bytes << " bytes for class " << className << std::endl;}
+      stages[stage].second.num++;
+      stages[stage].second.total += bytes;
+      stages[stage].second.items[className] += bytes;
+    };
+  public:
+    int getNumAllocations() {return getNumAllocations(stageNames.front());};
+    int getNumAllocations(const std::string& stage) {return stages[stage].first.num;};
+    int getNumDeallocations() {return getNumDeallocations(stageNames.front());};
+    int getNumDeallocations(const std::string& stage) {return stages[stage].second.num;};
+    int getAllocationTotal() {return getAllocationTotal(stageNames.front());};
+    int getAllocationTotal(const std::string& stage) {return stages[stage].first.total;};
+    int getDeallocationTotal() {return getDeallocationTotal(stageNames.front());};
+    int getDeallocationTotal(const std::string& stage) {return stages[stage].second.total;};
+  public:
+    template<typename T>
+    static const char *getClassName() {
+      const std::type_info& id = typeid(T);
+
+#ifdef ALE_HAVE_CXX_ABI
+      // If the C++ ABI API is available, we can use it to demangle the class name provided by type_info.
+      // Here we assume the industry standard C++ ABI as described in http://www.codesourcery.com/cxx-abi/abi.html.
+      char *id_name;
+      int   status;
+      char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &status);
+
+      if (status != 0) {
+        id_name = new char[strlen(id.name())+1];
+        strcpy(id_name, id.name());
+      } else {
+        id_name = id_name_demangled;
+      }
+#else
+      const char *id_name;
+
+      id_name = id.name();
+#endif
+      return id_name;
+    };
+    static void restoreClassName(const char *className) {
+#ifdef ALE_HAVE_CXX_ABI
+      // Free the name malloc'ed by __cxa_demangle
+      free(const_cast<char *>(className));
+#endif
+    };
+  };
+
+  template<class T>
+  class malloc_allocator
+  {
+  public:
+    typedef T                 value_type;
+    typedef value_type*       pointer;
+    typedef const value_type* const_pointer;
+    typedef value_type&       reference;
+    typedef const value_type& const_reference;
+    typedef std::size_t       size_type;
+    typedef std::ptrdiff_t    difference_type;
+  public:
+    template <class U>
+    struct rebind {typedef malloc_allocator<U> other;};
+  protected:
+    const char *className;
+  public:
+    int sz;
+  public:
+#ifdef ALE_MEM_LOGGING
+    malloc_allocator() {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
+    malloc_allocator(const malloc_allocator&) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
+    template <class U> 
+    malloc_allocator(const malloc_allocator<U>&) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
+    ~malloc_allocator() {ALE::MemoryLogger::restoreClassName(className);}
+#else
+    malloc_allocator() {sz = sizeof(value_type);}
+    malloc_allocator(const malloc_allocator&) {sz = sizeof(value_type);}
+    template <class U> 
+    malloc_allocator(const malloc_allocator<U>&) {sz = sizeof(value_type);}
+    ~malloc_allocator() {}
+#endif
+  public:
+    pointer address(reference x) const {return &x;}
+    const_pointer address(const_reference x) const {return x;}
+
+    pointer allocate(size_type n, const_pointer = 0) {
+#ifdef ALE_MEM_LOGGING
+      ALE::MemoryLogger::singleton().logAllocation(className, n * sizeof(T));
+#endif
+      void *p = std::malloc(n * sizeof(T));
+      if (!p) throw std::bad_alloc();
+      return static_cast<pointer>(p);
+    }
+
+    void deallocate(pointer p, size_type n) {
+#ifdef ALE_MEM_LOGGING
+      ALE::MemoryLogger::singleton().logDeallocation(className, n * sizeof(T));
+#endif
+      std::free(p);
+    }
+
+    size_type max_size() const {return static_cast<size_type>(-1) / sizeof(T);}
+
+    void construct(pointer p, const value_type& x) {new(p) value_type(x);}
+
+    void destroy(pointer p) {p->~value_type();}
+  public:
+    pointer create(const value_type& x = value_type()) {
+      pointer p = (pointer) allocate(1);
+      construct(p, x);
+      return p;
+    };
+
+    void del(pointer p) {
+      destroy(p);
+      deallocate(p, 1);
+    };
+
+    // This is just to be compatible with Dmitry's weird crap for now
+    void del(pointer p, size_type size) {
+      if (size != sizeof(value_type)) throw std::exception();
+      destroy(p);
+      deallocate(p, 1);
+    };
+  private:
+    void operator=(const malloc_allocator&);
+  };
+
+  template<> class malloc_allocator<void>
+  {
+    typedef void        value_type;
+    typedef void*       pointer;
+    typedef const void* const_pointer;
+
+    template <class U> 
+    struct rebind {typedef malloc_allocator<U> other;};
+  };
+
+  template <class T>
+  inline bool operator==(const malloc_allocator<T>&, const malloc_allocator<T>&) {
+    return true;
+  };
+
+  template <class T>
+  inline bool operator!=(const malloc_allocator<T>&, const malloc_allocator<T>&) {
+    return false;
+  };
+
   template <class T>
   static const char *getClassName() {
     const std::type_info& id = typeid(T);
@@ -343,7 +534,11 @@ namespace ALE {
 #ifdef ALE_USE_LOGGING
 #define ALE_ALLOCATOR ::ALE::logged_allocator
 #else
+#if 1
+#define ALE_ALLOCATOR ::ALE::malloc_allocator
+#else
 #define ALE_ALLOCATOR ::ALE::polymorphic_allocator
+#endif
 #endif
 
   //
@@ -362,16 +557,21 @@ namespace ALE {
   };
 
   // This is the main smart pointer class.
-  template<class X> 
+  template<class X, typename A = malloc_allocator<X> > 
   class Obj {
   public:
-    // Types 
+    // Types
+#if 1
+    typedef A                                               Allocator;
+    typedef typename Allocator::template rebind<int>::other Allocator_int;
+#else
 #ifdef ALE_USE_LOGGING
     typedef logged_allocator<X,true>      Allocator;
     typedef logged_allocator<int,true>    Allocator_int;
 #else
     typedef polymorphic_allocator<X>      Allocator;
     typedef polymorphic_allocator<int>    Allocator_int;
+#endif
 #endif
     typedef typename Allocator::size_type size_type;
   public:
@@ -390,6 +590,7 @@ namespace ALE {
     Obj() : objPtr((X *)NULL), refCnt((int*)NULL), sz(0) {this->createAllocators();};
     Obj(const X& x);
     Obj(X *xx);
+    Obj(X *xx, size_type sz);
     Obj(const Obj& obj);
     virtual ~Obj();
 
@@ -418,7 +619,7 @@ namespace ALE {
     
     // "exposure" methods: expose the underlying object or object pointer
     operator X*() {return objPtr;};
-    X& operator*() {assertNull(false); return *objPtr;};
+    X& operator*() const {assertNull(false); return *objPtr;};
     operator X()  {assertNull(false); return *objPtr;};
     template<class Y> Obj& copy(const Obj<Y>& obj); // this operator will copy the underlying objects: USE WITH CAUTION
     
@@ -434,16 +635,16 @@ namespace ALE {
 
   // Constructors 
   // New reference
-  template <class X>
-  Obj<X>::Obj(const X& x) {
+  template <class X, typename A>
+  Obj<X,A>::Obj(const X& x) {
     this->createAllocators();
     this->refCnt = NULL;
     this->create(x);
   }
   
   // Stolen reference
-  template <class X>
-  Obj<X>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer 
+  template <class X, typename A>
+  Obj<X,A>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer 
                      // (e.g., we assume the pointer was obtained with new)
     this->createAllocators();
     if (xx) {
@@ -457,9 +658,24 @@ namespace ALE {
       this->sz = 0;
     }
   }
+
+  // Work around for thing allocated with an allocator
+  template <class X, typename A>
+  Obj<X,A>::Obj(X *xx, size_type sz){// such an object will be destroyed by the allocator
+    this->createAllocators();
+    if (xx) {
+      this->objPtr = xx; 
+      this->refCnt = this->int_allocator->create(1);
+      this->sz     = sz;
+    } else {
+      this->objPtr = NULL; 
+      this->refCnt = NULL;
+      this->sz = 0;
+    }
+  }
   
-  template <class X>
-  Obj<X>::Obj(X *_xx, int *_refCnt, size_type _sz) {  // This is intended to be private.
+  template <class X, typename A>
+  Obj<X,A>::Obj(X *_xx, int *_refCnt, size_type _sz) {  // This is intended to be private.
     this->createAllocators();
     if (!_xx) {
       throw ALE::Exception("Making an Obj with a NULL objPtr");
@@ -473,8 +689,8 @@ namespace ALE {
     //}
   }
   
-  template <class X>
-  Obj<X>::Obj(const Obj& obj) {
+  template <class X, typename A>
+  Obj<X,A>::Obj(const Obj& obj) {
     this->createAllocators();
     this->objPtr = obj.objPtr;
     this->refCnt = obj.refCnt;
@@ -488,24 +704,24 @@ namespace ALE {
   }
 
   // Destructor
-  template <class X>
-  Obj<X>::~Obj(){
+  template <class X, typename A>
+  Obj<X,A>::~Obj(){
     this->destroy();
     this->destroyAllocators();
   }
 
-  template <class X>
-  void Obj<X>::createAllocators() {
+  template <class X, typename A>
+  void Obj<X,A>::createAllocators() {
     this->handleAllocators(true);
   }
 
-  template <class X>
-  void Obj<X>::destroyAllocators() {
+  template <class X, typename A>
+  void Obj<X,A>::destroyAllocators() {
     this->handleAllocators(false);
   }
 
-  template <class X>
-  void Obj<X>::handleAllocators(const bool create) {
+  template <class X, typename A>
+  void Obj<X,A>::handleAllocators(const bool create) {
     static Allocator_int *s_int_allocator = NULL;
     static Allocator     *s_allocator     = NULL;
     static int            s_allocRefCnt   = 0;
@@ -528,8 +744,8 @@ namespace ALE {
     }
   }
 
-  template <class X>
-  Obj<X>& Obj<X>::create(const X& x) {
+  template <class X, typename A>
+  Obj<X,A>& Obj<X,A>::create(const X& x) {
     // Destroy the old state
     this->destroy();
     // Create the new state
@@ -542,8 +758,8 @@ namespace ALE {
     return *this;
   }
 
-  template <class X>
-  void Obj<X>::destroy() {
+  template <class X, typename A>
+  void Obj<X,A>::destroy() {
     if(ALE::getVerbosity() > 3) {
 #ifdef ALE_USE_DEBUGGING
       const char *id_name = ALE::getClassName<X>();
@@ -590,8 +806,8 @@ namespace ALE {
   }
 
   // assignment operator
-  template <class X>
-  Obj<X>& Obj<X>::operator=(const Obj<X>& obj) {
+  template <class X, typename A>
+  Obj<X,A>& Obj<X,A>::operator=(const Obj<X,A>& obj) {
     if(this->objPtr == obj.objPtr) {return *this;}
     // Destroy 'this' Obj -- it will properly release the underlying object if the reference count is exhausted.
     if(this->objPtr) {
@@ -608,8 +824,8 @@ namespace ALE {
   }
 
   // conversion operator, preserves 'this'
-  template<class X> template<class Y> 
-  Obj<X>::operator Obj<Y> const() {
+  template<class X, typename A> template<class Y> 
+  Obj<X,A>::operator Obj<Y> const() {
     // We attempt to cast X* objPtr to Y* using dynamic_
 #ifdef ALE_USE_DEBUGGING
     if(ALE::getVerbosity() > 1) {
@@ -635,8 +851,8 @@ namespace ALE {
   }
 
   // assignment-conversion operator
-  template<class X> template<class Y> 
-  Obj<X>& Obj<X>::operator=(const Obj<Y>& obj) {
+  template<class X, typename A> template<class Y> 
+  Obj<X,A>& Obj<X,A>::operator=(const Obj<Y>& obj) {
     // We attempt to cast Y* obj.objPtr to X* using dynamic_cast
     X* xObjPtr = dynamic_cast<X*>(obj.objPtr);
     // If the cast failed, throw an exception
@@ -665,8 +881,8 @@ namespace ALE {
   }
  
   // copy operator (USE WITH CAUTION)
-  template<class X> template<class Y> 
-  Obj<X>& Obj<X>::copy(const Obj<Y>& obj) {
+  template<class X, typename A> template<class Y> 
+  Obj<X,A>& Obj<X,A>::copy(const Obj<Y>& obj) {
     if(this->isNull() || obj.isNull()) {
       throw(Exception("Copying to or from a null Obj"));
     }

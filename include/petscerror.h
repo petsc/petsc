@@ -97,8 +97,9 @@ PETSC_EXTERN_CXX_BEGIN
 
     See SETERRQ1(), SETERRQ2(), SETERRQ3() for versions that take arguments
 
+    In Fortran MPI_Abort() is always called
 
-   Experienced users can set the error handler with PetscPushErrorHandler().
+    Experienced users can set the error handler with PetscPushErrorHandler().
 
    Concepts: error^setting condition
 
@@ -223,8 +224,12 @@ M*/
     Although typical usage resembles "void CHKERRQ(PetscErrorCode)" as described above, for certain uses it is
     highly inappropriate to use it in this manner as it invokes return(PetscErrorCode). In particular,
     it cannot be used in functions which return(void) or any other datatype.  In these types of functions,
-    a more appropriate construct for using PETSc Error Handling would be
-         if (n) {PetscError(....); return(YourReturnType);}
+    you can use CHKERRV() which returns without an error code (bad idea since the error is ignored or
+         if (n) {PetscError(....); return(YourReturnType);} 
+    where you may pass back a PETSC_NULL to indicate an error. You can also call CHKERRABORT(comm,n) to have
+    MPI_Abort() returned immediately.
+
+    In Fortran MPI_Abort() is always called
 
    Concepts: error^setting condition
 
@@ -236,7 +241,13 @@ M*/
 #define CHKERRABORT(comm,n)    if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");MPI_Abort(comm,n);}
 #define CHKERRCONTINUE(n)      if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
 
-#define CHKFPQ(f) if (f != f) {SETERRQ(PETSC_ERR_FP, "Invalid value: NaN");}
+#define CHKFPQ(f)              if (f != f) {SETERRQ(PETSC_ERR_FP, "Invalid value: NaN");}
+
+#ifdef PETSC_CLANGUAGE_CXX
+
+#define CHKERRXX(n)            if (n) {PetscErrorCxx(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0);}
+
+#endif
 
 /*MC
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
@@ -377,8 +388,8 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
 M*/
-extern PetscErrorCode PetscExceptionTmp;
-#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a, (PetscExceptionPop(b) || PetscExceptionTmp))
+extern PetscErrorCode PetscExceptionTmp,PetscExceptionTmp1;
+#define PetscExceptionTry1(a,b) (PetscExceptionTmp1 = PetscExceptionPush(b)) ? PetscExceptionTmp1 : (PetscExceptionTmp1 = a, (PetscExceptionTmp = PetscExceptionPop(b)) ? PetscExceptionTmp : PetscExceptionTmp1)
 
 /*
    Used by PetscExceptionTrySync(). Returns zierr on ALL processes in comm iff xierr is zierr on at least one process and zero on all others.
@@ -468,6 +479,10 @@ extern PetscErrorCode PetscExceptionTmp;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int,const char*[],char **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
+#ifdef PETSC_CLANGUAGE_CXX
+#include <sstream>
+EXTERN void           PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(int,const char *,const char *,const char *,PetscErrorCode,int, std::ostringstream&);
+#endif
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIAbortErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
@@ -475,6 +490,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(int,const char*,con
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscError(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,...) PETSC_PRINTF_FORMAT_CHECK(7,8);
+EXTERN void           PETSC_DLLEXPORT PetscErrorCxx(int,const char*,const char*,const char*,PetscErrorCode,int);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPushErrorHandler(PetscErrorCode (*handler)(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*),void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPopErrorHandler(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDefaultSignalHandler(int,void*);

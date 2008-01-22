@@ -8,9 +8,6 @@
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/utils/freespace.h"
 
-static PetscEvent logkey_matapplypapt          = 0;
-static PetscEvent logkey_matapplypapt_symbolic = 0;
-static PetscEvent logkey_matapplypapt_numeric  = 0;
 
 /*
      MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ - Forms the symbolic product of two SeqAIJ matrices
@@ -40,10 +37,7 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
   if (am!=an) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix 'A' must be square, %D != %D",am, an);
 
   /* Set up timers */
-  if (!logkey_matapplypapt_symbolic) {
-    ierr = PetscLogEventRegister(&logkey_matapplypapt_symbolic,"MatApplyPAPt_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(logkey_matapplypapt_symbolic,A,P,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Applypapt_symbolic,A,P,0,0);CHKERRQ(ierr);
 
   /* Create ij structure of P^T */
   ierr = MatGetSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
@@ -142,7 +136,7 @@ PetscErrorCode MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
 
-  ierr = PetscLogEventEnd(logkey_matapplypapt_symbolic,A,P,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Applypapt_symbolic,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -175,10 +169,7 @@ PetscErrorCode MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   if (pm!=cn) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",pm, cn);
 
   /* Set up timers */
-  if (!logkey_matapplypapt_numeric) {
-    ierr = PetscLogEventRegister(&logkey_matapplypapt_numeric,"MatApplyPAPt_Numeric",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(logkey_matapplypapt_numeric,A,P,C,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Applypapt_numeric,A,P,C,0);CHKERRQ(ierr);
 
   ierr = PetscMalloc(an*(sizeof(MatScalar)+2*sizeof(PetscInt)),&paa);CHKERRQ(ierr);
   ierr = PetscMemzero(paa,an*(sizeof(MatScalar)+2*sizeof(PetscInt)));CHKERRQ(ierr);
@@ -244,7 +235,7 @@ PetscErrorCode MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_matapplypapt_numeric,A,P,C,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Applypapt_numeric,A,P,C,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   
@@ -255,12 +246,9 @@ PetscErrorCode MatApplyPAPt_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat *C)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!logkey_matapplypapt) {
-    ierr = PetscLogEventRegister(&logkey_matapplypapt,"MatApplyPAPt",MAT_COOKIE);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventBegin(logkey_matapplypapt,A,P,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_Applypapt,A,P,0,0);CHKERRQ(ierr);
   ierr = MatApplyPAPt_Symbolic_SeqAIJ_SeqAIJ(A,P,C);CHKERRQ(ierr);
   ierr = MatApplyPAPt_Numeric_SeqAIJ_SeqAIJ(A,P,*C);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(logkey_matapplypapt,A,P,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_Applypapt,A,P,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

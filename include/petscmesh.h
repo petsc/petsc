@@ -3,6 +3,7 @@
 */
 #if !defined(__PETSCMESH_H)
 #define __PETSCMESH_H
+#include "petsc.h"
 #include <Mesh.hh>
 #include <CartesianSieve.hh>
 #include <Distribution.hh>
@@ -110,6 +111,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVector(Vec, PetscInt, PetscScala
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleMatrix(Mat, PetscInt, PetscScalar [], InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT preallocateMatrix(const ALE::Obj<ALE::Mesh>&, const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>&, const ALE::Obj<ALE::Mesh::order_type>&, Mat);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperator(Mat, const ALE::Obj<ALE::Mesh>&, const ALE::Obj<ALE::Mesh::real_section_type>&, const ALE::Obj<ALE::Mesh::order_type>&, const ALE::Mesh::point_type&, PetscScalar [], InsertMode);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperator(Mat, const ALE::Obj<ALE::Mesh>&, const ALE::Obj<ALE::Mesh::real_section_type>&, const ALE::Obj<ALE::Mesh::order_type>&, int, int, PetscScalar [], InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperatorGeneral(Mat, const ALE::Obj<ALE::Mesh>&, const ALE::Obj<ALE::Mesh::real_section_type>&, const ALE::Obj<ALE::Mesh::order_type>&, const ALE::Mesh::point_type&, const ALE::Obj<ALE::Mesh>&, const ALE::Obj<ALE::Mesh::real_section_type>&, const ALE::Obj<ALE::Mesh::order_type>&, const ALE::Mesh::point_type&, PetscScalar [], InsertMode);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePFLOTRAN(MPI_Comm, const int, const char[], PetscTruth, Mesh *);

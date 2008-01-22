@@ -121,7 +121,7 @@ static PetscErrorCode PetscDrawString_X(PetscDraw draw,PetscReal x,PetscReal  y,
   size_t         len;
   PetscDraw_X    *XiWin = (PetscDraw_X*)draw->data;
   char           *substr;
-  PetscToken     *token;
+  PetscToken     token;
 
   PetscFunctionBegin;
   xx = XTRANS(draw,XiWin,x);  yy = YTRANS(draw,XiWin,y);

@@ -11,10 +11,6 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
   PetscInt        restart = lcd->restart;
 
   PetscFunctionBegin;
-  /* 
-       This implementation of LCD only handles left preconditioning
-     so generate an error otherwise.
-  */
   if (ksp->pc_side == PC_RIGHT) {
     SETERRQ(2,"No right preconditioning for KSPLCD");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
@@ -24,8 +20,8 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
   /* get work vectors needed by LCD */
   ierr = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);
  
-  ierr = VecDuplicateVecs(ksp->vec_rhs,restart+1,&lcd->P); CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(ksp->vec_rhs, restart + 1, &lcd->Q); CHKERRQ(ierr); 
+  ierr = VecDuplicateVecs(ksp->work[0],restart+1,&lcd->P); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ksp->work[0], restart + 1, &lcd->Q); CHKERRQ(ierr); 
   ierr = PetscLogObjectMemory(ksp,2*(restart+2)*sizeof(Vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

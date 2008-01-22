@@ -663,25 +663,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
   }
 
-  /* Destroy auxiliary packages */
-#if defined(PETSC_HAVE_MATHEMATICA)
-  ierr = PetscViewerMathematicaFinalizePackage();CHKERRQ(ierr);
-#endif
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#if defined(PETSC_HAVE_SIEVE)
-  {
-    PetscErrorCode (*func)(void);
-    char lib[PETSC_MAX_PATH_LEN];
-
-    ierr = PetscStrcpy(lib,PETSC_LIB_DIR);CHKERRQ(ierr);
-    ierr = PetscStrcat(lib,"/libpetscdm");CHKERRQ(ierr);
-    ierr = PetscDLLibrarySym(PETSC_COMM_WORLD,&DLLibrariesLoaded,lib,"DMFinalizePackage",(void **) &func);CHKERRQ(ierr);
-    if (func) {
-      ierr = (*func)();CHKERRQ(ierr);
-    }
-  }
-#endif
-#endif
+  /* Destroy any packages that registered a finalize */
+  ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
 
   /*
      Destroy all the function registration lists created
@@ -864,6 +847,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
 
   ierr = PetscInfo(0,"PETSc successfully ended!\n");CHKERRQ(ierr);
   if (PetscBeganMPI) {
+#if defined(PETSC_HAVE_MPI_FINALIZED)
+    PetscMPIInt flag;
+    ierr = MPI_Finalized(&flag);CHKERRQ(ierr);
+    if (flag) SETERRQ(PETSC_ERR_LIB,"MPI_Finalize() has already been called, even though MPI_Init() was called by PetscInitialize()");
+#endif
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
 
@@ -882,7 +870,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
    memory was not freed.
 
 */
-  ierr = PetscClearMalloc();CHKERRQ(ierr);
+  ierr = PetscMallocClear();CHKERRQ(ierr);
   PetscInitializeCalled = PETSC_FALSE;
   PetscFinalizeCalled   = PETSC_TRUE;
   PetscFunctionReturn(ierr);

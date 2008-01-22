@@ -815,8 +815,8 @@ $
 
    Currently the MPI_Send(), MPI_Ssend() and MPI_Rsend() all use PERSISTENT versions.
    (this unfortunately requires that the same in and out arrays be used for each use, this
-    is why when no using MPI_alltoallw() we always need to pack the input into the work array before sending
-    and unpack upon recieving instead of using MPI datatypes to avoid the packing/unpacking).
+    is why when not using MPI_alltoallw() we always need to pack the input into the work array before sending
+    and unpack upon receeving instead of using MPI datatypes to avoid the packing/unpacking).
 
    Concepts: scatter^between vectors
    Concepts: gather^between vectors
@@ -1463,7 +1463,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter ctx,PetscTruth 
    You cannot change the values in the input vector between the calls to VecScatterBegin()
    and VecScatterEnd().
 
-   If you use SCATTER_REVERSE the first two arguments should be reversed, from 
+   If you use SCATTER_REVERSE the two arguments x and y should be reversed, from 
    the SCATTER_FORWARD.
    
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
@@ -1543,8 +1543,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(VecScatter inctx,Vec x,Vec y,I
    Level: intermediate
 
    Notes:
-   If you use SCATTER_REVERSE the first two arguments should be reversed, from 
-   the SCATTER_FORWARD.
+   If you use SCATTER_REVERSE the arguments x and y should be reversed, from the SCATTER_FORWARD.
+
    y[iy[i]] = x[ix[i]], for i=0,...,ni-1
 
 .seealso: VecScatterBegin(), VecScatterCreate()

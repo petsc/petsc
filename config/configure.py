@@ -169,21 +169,21 @@ def petsc_configure(configure_options):
 ================================================================================''')
           
   # Should be run from the toplevel
-  pythonDir = os.path.abspath(os.path.join('python'))
-  bsDir     = os.path.join(pythonDir, 'BuildSystem')
-  if not os.path.isdir(pythonDir):
+  configDir = os.path.abspath('config')
+  bsDir     = os.path.join(configDir, 'BuildSystem')
+  if not os.path.isdir(configDir):
     raise RuntimeError('Run configure from $PETSC_DIR, not '+os.path.abspath('.'))
   if not os.path.isdir(bsDir):
     print '================================================================================='
-    print '''++ Could not locate BuildSystem in %s/python.''' % os.getcwd()
-    print '''++ Downloading it using "hg clone http://hg.mcs.anl.gov/petsc/BuildSystem %s/python/BuildSystem"''' % os.getcwd()
+    print '''++ Could not locate BuildSystem in %s.''' % configDir
+    print '''++ Downloading it using "hg clone http://hg.mcs.anl.gov/petsc/BuildSystem %s"''' % bsDir
     print '================================================================================='
-    (status,output) = commands.getstatusoutput('hg clone http://hg.mcs.anl.gov/petsc/BuildSystem python/BuildSystem')
+    (status,output) = commands.getstatusoutput('hg clone http://petsc.cs.iit.edu/petsc/BuildSystem '+ bsDir)
     if status:
       if output.find('ommand not found') >= 0:
         print '================================================================================='
         print '''** Unable to locate hg (Mercurial) to download BuildSystem; make sure hg is in your path'''
-        print '''** or manually copy BuildSystem to $PETSC_DIR/python/BuildSystem from a machine where'''
+        print '''** or manually copy BuildSystem to $PETSC_DIR/config/BuildSystem from a machine where'''
         print '''** you do have hg installed and can clone BuildSystem. '''
         print '================================================================================='
       elif output.find('Cannot resolve host') >= 0:
@@ -199,7 +199,7 @@ def petsc_configure(configure_options):
       sys.exit(3)
       
   sys.path.insert(0, bsDir)
-  sys.path.insert(0, pythonDir)
+  sys.path.insert(0, configDir)
   import config.base
   import config.framework
   import cPickle
@@ -222,6 +222,9 @@ def petsc_configure(configure_options):
       if hasattr(i,'postProcess'):
         i.postProcess()
     framework.logClear()
+    framework.closeLog()
+    import shutil
+    shutil.move(framework.logName,os.path.join(framework.arch,'conf',framework.logName))
     return 0
   except (RuntimeError, config.base.ConfigureSetupError), e:
     emsg = str(e)

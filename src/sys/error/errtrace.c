@@ -68,7 +68,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
   ierr = PetscGetUserName(username,16);CHKERRQ(ierr);
   ierr = PetscGetProgramName(pname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscGetDate(date,64);CHKERRQ(ierr);
-  ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
+  ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stdout",&use_stdout);CHKERRQ(ierr);
   if (use_stdout) {
@@ -223,3 +223,86 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *f
   PetscFunctionReturn(n);
 }
 
+#ifdef PETSC_CLANGUAGE_CXX
+#undef __FUNCT__  
+#define __FUNCT__ "PetscTraceBackErrorHandlerCxx"
+/*@C
+
+   PetscTraceBackErrorHandlerCxx - Default error handler routine that generates
+   a traceback on error detection.
+
+   Not Collective
+
+   Input Parameters:
++  line - the line number of the error (indicated by __LINE__)
+.  func - the function where error is detected (indicated by __FUNCT__)
+.  file - the file in which the error was detected (indicated by __FILE__)
+.  dir - the directory of the file (indicated by __SDIR__)
+.  n - the generic error number
+.  p - specific error number
+-  msg - The message stream
+
+   Level: developer
+
+   Notes:
+   Most users need not directly employ this routine and the other error 
+   handlers, but can instead use the simplified interface SETERROR, which has 
+   the calling sequence
+$     SETERROR(number,p,mess)
+
+   Concepts: error handler^traceback
+   Concepts: traceback^generating
+
+.seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler()
+ @*/
+void PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p, std::ostringstream& msg)
+{
+  if (p == 1) {
+    PetscLogDouble mem, rss;
+    PetscTruth     flg1, flg2;
+
+    msg << "--------------------- Error Message ------------------------------------" << std::endl;
+    if (n == PETSC_ERR_MEM) {
+      msg << "Out of memory. This could be due to allocating" << std::endl;
+      msg << "too large an object or bleeding by not properly" << std::endl;
+      msg << "destroying unneeded objects." << std::endl;
+      PetscMallocGetCurrentUsage(&mem);
+      PetscMemoryGetCurrentUsage(&rss);
+      PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);
+      PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg2);
+      if (flg2) {
+        //PetscMallocDumpLog(stdout);
+        msg << "Option -malloc_log does not work in C++." << std::endl;
+      } else {
+        msg << "Memory allocated " << mem << " Memory used by process " << rss << std::endl;
+        if (flg1) {
+          //PetscMallocDump(stdout);
+          msg << "Option -malloc_dump does not work in C++." << std::endl;
+        } else {
+          msg << "Try running with -malloc_dump or -malloc_log for info." << std::endl;
+        }
+      }
+    } else {
+      const char *text;
+
+      PetscErrorMessage(n,&text,PETSC_NULL);
+      if (text) {msg << text << "!" << std::endl;}
+    }
+    msg << "------------------------------------------------------------------------" << std::endl;
+    msg << version << std::endl;
+    msg << "See docs/changes/index.html for recent updates." << std::endl;
+    msg << "See docs/faq.html for hints about trouble shooting." << std::endl;
+    msg << "See docs/index.html for manual pages." << std::endl;
+    msg << "------------------------------------------------------------------------" << std::endl;
+    if (PetscErrorPrintfInitializeCalled) {
+      msg << pname << " on a " << arch << " named " << hostname << " by " << username << " " << date << std::endl;
+    }
+    msg << "Libraries linked from " << PETSC_LIB_DIR << std::endl;
+    msg << "Configure run at " << petscconfigureruntime << std::endl;
+    msg << "Configure options " << petscconfigureoptions << std::endl;
+    msg << "------------------------------------------------------------------------" << std::endl;
+  } else {
+    msg << fun<<"() line " << line << " in " << dir << file << std::endl;
+  }
+}
+#endif

@@ -48,6 +48,8 @@ PetscErrorCode    KSPSetUp_GMRES(KSP ksp)
   PetscFunctionBegin;
   if (ksp->pc_side == PC_SYMMETRIC) {
     SETERRQ(PETSC_ERR_SUP,"no symmetric preconditioning for KSPGMRES");
+  } else if (ksp->pc_side == PC_RIGHT) {
+    SETERRQ(PETSC_ERR_SUP, "no right preconditioning for KSPGMRES use KSPFGMRES");
   } 
 
   max_k         = gmres->max_k;  /* restart size */
@@ -141,6 +143,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
   ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   gmres->it = (it - 1);
   KSPLogResidualHistory(ksp,res);
+  KSPMonitor(ksp,ksp->its,res); 
   if (!res) {
     if (itcount) *itcount = 0;
     ksp->reason = KSP_CONVERGED_ATOL;
@@ -150,9 +153,11 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
 
   ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
   while (!ksp->reason && it < max_k && ksp->its < ksp->max_it) {
-    KSPLogResidualHistory(ksp,res);
+    if (it) {
+      KSPLogResidualHistory(ksp,res);
+      KSPMonitor(ksp,ksp->its,res); 
+    }
     gmres->it = (it - 1);
-    KSPMonitor(ksp,ksp->its,res); 
     if (gmres->vv_allocated <= it + VEC_OFFSET + 1) {
       ierr = GMRESGetNewVectors(ksp,it+1);CHKERRQ(ierr);
     }

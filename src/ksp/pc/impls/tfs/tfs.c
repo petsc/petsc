@@ -122,7 +122,7 @@ static PetscErrorCode PCSetUp_TFS(PC pc)
 
   /* generate the local to global mapping */
   ncol = a->A->cmap.n + a->B->cmap.n;
-  ierr = PetscMalloc((ncol)*sizeof(int),&localtoglobal);CHKERRQ(ierr);
+  ierr = PetscMalloc((ncol)*sizeof(PetscInt),&localtoglobal);CHKERRQ(ierr);
   for (i=0; i<a->A->cmap.n; i++) {
     localtoglobal[i] = A->cmap.rstart + i + 1;
   }
@@ -171,6 +171,18 @@ static PetscErrorCode PCView_TFS(PC pc,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PCCreate_TFS"
+/*MC
+     PCTFS - A parallel direct solver intended for problems with very few unknowns (like the 
+         coarse grid in multigrid).
+
+   Implemented by  Henry M. Tufo III and Paul Fischer
+
+   Level: beginner
+
+   Notes: Only implemented for the MPIAIJ matrices
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC
+M*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC pc)
 {
   PetscErrorCode ierr;

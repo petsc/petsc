@@ -743,17 +743,18 @@ PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
 #define __FUNCT__ "MatSolve_SeqAIJ"
 PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  IS             iscol = a->col,isrow = a->row;
-  PetscErrorCode ierr;
-  PetscInt       *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt       nz,*rout,*cout;
-  PetscScalar    *x,*b,*tmp,*tmps,*aa = a->a,sum,*v;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  IS                iscol = a->col,isrow = a->row;
+  PetscErrorCode    ierr;
+  PetscInt          *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
+  PetscInt          nz,*rout,*cout;
+  PetscScalar       *x,*tmp,*tmps,*aa = a->a,sum,*v;
+  const PetscScalar *b;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   tmp  = a->solve_work;
 
@@ -784,7 +785,7 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 
   ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1116,7 +1117,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
-EXTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat,PetscTruth*,PetscInt*);
+EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ"
@@ -1154,7 +1155,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
     (*fact)->info.fill_ratio_given  = info->fill;
     (*fact)->info.fill_ratio_needed = 1.0;
     b               = (Mat_SeqAIJ*)(*fact)->data;
-    ierr = MatMissingDiagonal_SeqAIJ(*fact,&missing,&d);CHKERRQ(ierr);
+    ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
     if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
     b->row              = isrow;
     b->col              = iscol;
@@ -1163,6 +1164,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
     (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
     ierr                = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);
     ierr                = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
+    ierr = Mat_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
@@ -1455,10 +1457,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   Mat_SeqSBAIJ       *b;
   Mat                B;
   PetscErrorCode     ierr;
-  PetscTruth         perm_identity;
+  PetscTruth         perm_identity,missing;
   PetscInt           reallocs=0,*rip,*riip,i,*ai=a->i,*aj=a->j,am=A->rmap.n,*ui;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
-  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL;
+  PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,d;
   PetscInt           ncols,ncols_upper,*cols,*ajtmp,*uj,**uj_ptr,**uj_lvl_ptr;
   PetscReal          fill=info->fill,levels=info->levels;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
@@ -1467,6 +1469,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   IS                 iperm;  
   
   PetscFunctionBegin;   
+  ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
 
@@ -1475,6 +1479,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
 
   /* ICC(0) without matrix ordering: simply copies fill pattern */
   if (!levels && perm_identity) { 
+
     for (i=0; i<am; i++) {
       ui[i+1] = ui[i] + ai[i+1] - a->diag[i]; 
     }

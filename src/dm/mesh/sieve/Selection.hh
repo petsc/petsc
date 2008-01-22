@@ -570,16 +570,32 @@ namespace ALE {
     };
   protected:
     static Obj<mesh_type> boundary_uninterpolated(const Obj<mesh_type>& mesh) {
+      throw ALE::Exception("Not yet implemented");
       const Obj<typename mesh_type::label_sequence>&     cells    = mesh->heightStratum(0);
+      const Obj<sieve_type>&                             sieve    = mesh->getSieve();
       const typename mesh_type::label_sequence::iterator cBegin   = cells->begin();
       const typename mesh_type::label_sequence::iterator cEnd     = cells->end();
       const int                                          faceSize = numFaceVertices(*cBegin, mesh);
-      const int                                          depth    = mesh->depth();
 
       for(typename mesh_type::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
-        const Obj<typename sieve_type::coneSet>& cone = mesh->getSieve()->nCone(*c_iter, depth);
-        PointArray cell(cone->begin(), cone->end());
+        const Obj<typename sieve_type::traits::coneSequence>&     vertices = sieve->cone(*c_iter);
+        const typename sieve_type::traits::coneSequence::iterator vBegin   = vertices->begin();
+        const typename sieve_type::traits::coneSequence::iterator vEnd     = vertices->end();
+        //PointArray cell(vertices->begin(), vertices->end());
 
+        // For each vertex, gather 
+        for(typename sieve_type::traits::coneSequence::iterator v_iter = vBegin; v_iter != vEnd; ++v_iter) {
+          const Obj<typename sieve_type::traits::supportSequence>&     neighbors = sieve->support(*v_iter);
+          const typename sieve_type::traits::supportSequence::iterator nBegin    = neighbors->begin();
+          const typename sieve_type::traits::supportSequence::iterator nEnd      = neighbors->end();
+
+          for(typename sieve_type::traits::supportSequence::iterator n_iter = nBegin; n_iter != nEnd; ++n_iter) {
+            const Obj<typename sieve_type::coneSet>& preFace = sieve->nMeet(*c_iter, *n_iter, 1);
+
+            if (preFace->size() == faceSize) {
+            }
+          }
+        }
         // For each face
         // - determine if its legal
         
@@ -588,23 +604,56 @@ namespace ALE {
         //subsets(cell, faceSize, inserter);
       }
     };
-    static Obj<mesh_type> boundary_interpolated(const Obj<mesh_type>& mesh) {
-      Obj<mesh_type>                                     newMesh  = new mesh_type(mesh->comm(), mesh->getDimension(), mesh->debug());
+    static void addClosure(const Obj<sieve_type>& sieveA, const Obj<sieve_type>& sieveB, const point_type& p, const int depth = 1) {
+      Obj<typename sieve_type::coneSet> current = new typename sieve_type::coneSet();
+      Obj<typename sieve_type::coneSet> next    = new typename sieve_type::coneSet();
+      Obj<typename sieve_type::coneSet> tmp;
+
+      current->insert(p);
+      while(current->size()) {
+        for(typename sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+          const Obj<typename sieve_type::traits::coneSequence>&     cone  = sieveA->cone(*p_iter);
+          const typename sieve_type::traits::coneSequence::iterator begin = cone->begin();
+          const typename sieve_type::traits::coneSequence::iterator end   = cone->end();
+
+          for(typename sieve_type::traits::coneSequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
+            sieveB->addArrow(*c_iter, *p_iter, c_iter.color());
+            next->insert(*c_iter);
+          }
+        }
+        tmp = current; current = next; next = tmp;
+        next->clear();
+      }
+      if (!depth) {
+        const Obj<typename sieve_type::traits::supportSequence>&     support = sieveA->support(p);
+        const typename sieve_type::traits::supportSequence::iterator begin   = support->begin();
+        const typename sieve_type::traits::supportSequence::iterator end     = support->end();
+            
+        for(typename sieve_type::traits::supportSequence::iterator s_iter = begin; s_iter != end; ++s_iter) {
+          sieveB->addArrow(p, *s_iter, s_iter.color());
+          next->insert(*s_iter);
+        }
+      }
+    };
+    static Obj<mesh_type> boundary_interpolated(const Obj<mesh_type>& mesh, const int faceHeight = 1) {
+      Obj<mesh_type>                                     newMesh  = new mesh_type(mesh->comm(), mesh->getDimension()-1, mesh->debug());
       Obj<sieve_type>                                    newSieve = new sieve_type(mesh->comm(), mesh->debug());
       const Obj<sieve_type>&                             sieve    = mesh->getSieve();
-      const Obj<typename mesh_type::label_sequence>&     faces    = mesh->heightStratum(1);
+      const Obj<typename mesh_type::label_sequence>&     faces    = mesh->heightStratum(faceHeight);
       const typename mesh_type::label_sequence::iterator fBegin   = faces->begin();
       const typename mesh_type::label_sequence::iterator fEnd     = faces->end();
+      const int                                          depth    = faceHeight - mesh->depth();
 
       for(typename mesh_type::label_sequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
         const Obj<typename sieve_type::traits::supportSequence>& support = sieve->support(*f_iter);
 
         if (support->size() == 1) {
-          addClosure(sieve, newSieve, *f_iter);
+          addClosure(sieve, newSieve, *f_iter, depth);
         }
       }
       newMesh->setSieve(newSieve);
       newMesh->stratify();
+      return newMesh;
     };
   public:
     static Obj<mesh_type> boundary(const Obj<mesh_type>& mesh) {
@@ -613,8 +662,17 @@ namespace ALE {
 
       if (dim == depth) {
         return boundary_interpolated(mesh);
+      } else if (depth == dim+1) {
+        return boundary_interpolated(mesh, 2);
       } else if (depth == 1) {
         return boundary_uninterpolated(mesh);
+      } else if (depth == -1) {
+        Obj<mesh_type>  newMesh  = new mesh_type(mesh->comm(), mesh->getDimension()-1, mesh->debug());
+        Obj<sieve_type> newSieve = new sieve_type(mesh->comm(), mesh->debug());
+
+        newMesh->setSieve(newSieve);
+        newMesh->stratify();
+        return newMesh;
       }
       throw ALE::Exception("Cannot handle partially interpolated meshes");
     };

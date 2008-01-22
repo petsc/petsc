@@ -114,9 +114,9 @@ PetscErrorCode  PETSC_DLLEXPORT (*PetscTrFree)(void*,int,const char[],const char
 PetscTruth petscsetmallocvisited = PETSC_FALSE;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSetMalloc"
+#define __FUNCT__ "PetscMallocSet"
 /*@C
-   PetscSetMalloc - Sets the routines used to do mallocs and frees.
+   PetscMallocSet - Sets the routines used to do mallocs and frees.
    This routine MUST be called before PetscInitialize() and may be
    called only once.
 
@@ -132,7 +132,7 @@ PetscTruth petscsetmallocvisited = PETSC_FALSE;
    Concepts: memory^allocation 
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSetMalloc(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
+PetscErrorCode PETSC_DLLEXPORT PetscMallocSet(PetscErrorCode (*imalloc)(size_t,int,const char[],const char[],const char[],void**),
                                               PetscErrorCode (*ifree)(void*,int,const char[],const char[],const char[]))
 {
   PetscFunctionBegin;
@@ -144,9 +144,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetMalloc(PetscErrorCode (*imalloc)(size_t,i
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscClearMalloc"
+#define __FUNCT__ "PetscMallocClear"
 /*@C
-   PetscClearMalloc - Resets the routines used to do mallocs and frees to the 
+   PetscMallocClear - Resets the routines used to do mallocs and frees to the 
         defaults.
 
    Not Collective
@@ -159,7 +159,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetMalloc(PetscErrorCode (*imalloc)(size_t,i
     free() an address that was malloced by a different memory management system
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscClearMalloc(void)
+PetscErrorCode PETSC_DLLEXPORT PetscMallocClear(void)
 {
   PetscFunctionBegin;
   PetscTrMalloc         = PetscMallocAlign;

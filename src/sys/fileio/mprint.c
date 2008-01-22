@@ -34,7 +34,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newfo
   while (format[i] && i < size-1) {
     if (format[i] == '%' && format[i+1] == 'D') {
       newformat[j++] = '%';
-#if defined(PETSC_USE_32BIT_INT)
+#if !defined(PETSC_USE_64BIT_INDICES)
       newformat[j++] = 'd';
 #else
       newformat[j++] = 'l';
@@ -45,7 +45,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newfo
     } else if (format[i] == '%' && format[i+1] >= '1' && format[i+1] <= '9' && format[i+2] == 'D') {
       newformat[j++] = '%';
       newformat[j++] = format[i+1];
-#if defined(PETSC_USE_32BIT_INT)
+#if !defined(PETSC_USE_64BIT_INDICES)
       newformat[j++] = 'd';
 #else
       newformat[j++] = 'l';

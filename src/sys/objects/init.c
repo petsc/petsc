@@ -42,6 +42,7 @@ MPI_Datatype  PETSC_DLLEXPORT MPIU_2INT = 0;
 /*
      These are needed by petscbt.h
 */
+#include "petscbt.h"
 char     PETSC_DLLEXPORT _BT_mask = ' ';
 char     PETSC_DLLEXPORT _BT_c = ' ';
 PetscInt PETSC_DLLEXPORT _BT_idx  = 0;
@@ -76,7 +77,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FIL
 
     ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
     ierr = PetscGetDate(date,64);CHKERRQ(ierr);
-    ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
+    ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     if (filename) {
       ierr = PetscFixFilename(filename,fname);CHKERRQ(ierr);
@@ -281,7 +282,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
       ierr = (*PetscExternalVersionFunction)(comm);CHKERRQ(ierr);
     }
 
-    ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
+    ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"--------------------------------------------\
 ------------------------------\n");CHKERRQ(ierr);
     ierr = (*PetscHelpPrintf)(comm,"%s\n",version);CHKERRQ(ierr);

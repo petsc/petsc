@@ -10,27 +10,30 @@
 
 namespace ALE {
   namespace New {
-    template<typename Bundle_, typename Value_>
+    template<typename Bundle_, typename Value_, typename Alloc_ = std::allocator<typename Bundle_::point_type> >
     class Completion {
     public:
       typedef int                                                                         point_type;
       typedef Value_                                                                      value_type;
       typedef Bundle_                                                                     bundle_type;
+      typedef Alloc_                                                                      alloc_type;
+      typedef typename alloc_type::template rebind<int>::other                            int_alloc_type;
+      typedef typename alloc_type::template rebind<value_type>::other                     value_alloc_type;
       typedef typename bundle_type::sieve_type                                            sieve_type;
-      typedef typename ALE::DiscreteSieve<point_type>                                     dsieve_type;
-      typedef typename ALE::Topology<int, dsieve_type>                                    topology_type;
+      typedef typename ALE::DiscreteSieve<point_type, alloc_type>                         dsieve_type;
+      typedef typename ALE::Topology<int, dsieve_type, alloc_type>                        topology_type;
       typedef typename ALE::Sifter<int, point_type, point_type>                           send_overlap_type;
       typedef typename ALE::Sifter<point_type, int, point_type>                           recv_overlap_type;
-      typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, int> > send_sizer_type;
-      typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, int> > recv_sizer_type;
+      typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, int, int_alloc_type> > send_sizer_type;
+      typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, int, int_alloc_type> > recv_sizer_type;
       typedef typename ALE::New::ConeSizeSection<bundle_type, sieve_type>                 cone_size_section;
       typedef typename ALE::New::ConeSection<sieve_type>                                  cone_section;
-      typedef typename ALE::New::SectionCompletion<bundle_type, value_type>               completion;
+      typedef typename ALE::New::SectionCompletion<bundle_type, value_type, alloc_type>   completion;
     public:
       template<typename PartitionType>
       static void scatterSieve(const Obj<bundle_type>& bundle, const Obj<sieve_type>& sieve, const int dim, const Obj<sieve_type>& sieveNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const int height, const int numCells, const PartitionType assignment[]) {
-        typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type> > send_section_type;
-        typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type> > recv_section_type;
+        typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > send_section_type;
+        typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > recv_section_type;
         int rank  = sieve->commRank();
         int debug = sieve->debug();
 
@@ -152,8 +155,8 @@ namespace ALE {
       static void scatterCones(const Obj<SifterType>& sifter, const Obj<SifterType>& sifterNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<bundle_type>& bundle = NULL, const int minimumHeight = 0) {
         typedef typename ALE::New::ConeSizeSection<bundle_type, SifterType> cone_size_section;
         typedef typename ALE::New::ConeSection<SifterType>                  cone_section;
-        typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type> > send_section_type;
-        typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type> > recv_section_type;
+        typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > send_section_type;
+        typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > recv_section_type;
         Obj<topology_type>     secTopology     = completion::createSendTopology(sendOverlap);
         Obj<cone_size_section> coneSizeSection = new cone_size_section(bundle, sifter, minimumHeight);
         Obj<cone_section>      coneSection     = new cone_section(sifter);
@@ -183,8 +186,8 @@ namespace ALE {
       static void scatterSupports(const Obj<SifterType>& sifter, const Obj<SifterType>& sifterNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<bundle_type>& bundle = NULL, const int minimumDepth = 0) {
         typedef typename ALE::New::SupportSizeSection<bundle_type, SifterType> support_size_section;
         typedef typename ALE::New::SupportSection<SifterType>                  support_section;
-        typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type> > send_section_type;
-        typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type> > recv_section_type;
+        typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > send_section_type;
+        typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > recv_section_type;
         Obj<topology_type>        secTopology        = completion::createSendTopology(sendOverlap);
         Obj<support_size_section> supportSizeSection = new support_size_section(bundle, sifter, minimumDepth);
         Obj<support_section>      supportSection     = new support_section(sifter);

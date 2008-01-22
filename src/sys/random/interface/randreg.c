@@ -167,7 +167,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterAll(const char path[])
   ierr = PetscRandomRegisterDynamic(PETSCRAND48,path,"PetscRandomCreate_Rand48",PetscRandomCreate_Rand48);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SPRNG)
-  ierr = PetscRandomRegisterDynamic(SPRNG,path,"PetscRandomCreate_Sprng",PetscRandomCreate_Sprng);CHKERRQ(ierr);
+  ierr = PetscRandomRegisterDynamic(PETSCSPRNG,path,"PetscRandomCreate_Sprng",PetscRandomCreate_Sprng);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

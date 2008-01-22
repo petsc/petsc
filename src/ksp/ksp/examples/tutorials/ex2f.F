@@ -201,7 +201,7 @@
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &             "-random_exact_sol",flg,ierr)
-      if (flg .eq. 1) then
+      if (flg) then
          call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
          call PetscRandomSetFromOptions(rctx,ierr)
          call VecSetRandom(u,rctx,ierr)
@@ -215,7 +215,7 @@
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &             "-view_exact_sol",flg,ierr)
-      if (flg .eq. 1) then
+      if (flg) then
          call VecView(u,PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
 
@@ -255,7 +255,7 @@
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',  &
      &                    flg,ierr)
-      if (flg .eq. 1) then
+      if (flg) then
         call KSPMonitorSet(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
      &                     PETSC_NULL_FUNCTION,ierr)
       endif
@@ -273,7 +273,7 @@
 
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,                    &
      &     '-my_ksp_convergence',flg,ierr)
-      if (flg .eq. 1) then
+      if (flg) then
         call KSPSetConvergenceTest(ksp,MyKSPConverged,                  &
      &          PETSC_NULL_OBJECT,ierr)
       endif

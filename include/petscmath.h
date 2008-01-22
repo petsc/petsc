@@ -33,17 +33,25 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_2INT;
 */
 #include <complex>
 
-#define PetscRealPart(a)        (a).real()
-#define PetscImaginaryPart(a)   (a).imag()
-#define PetscAbsScalar(a)   std::abs(a)
-#define PetscConj(a)        std::conj(a)
-#define PetscSqrtScalar(a)  std::sqrt(a)
-#define PetscPowScalar(a,b) std::pow(a,b)
-#define PetscExpScalar(a)   std::exp(a)
-#define PetscSinScalar(a)   std::sin(a)
-#define PetscCosScalar(a)   std::cos(a)
+#define PetscRealPart(a)      (a).real()
+#define PetscImaginaryPart(a) (a).imag()
+#define PetscAbsScalar(a)     std::abs(a)
+#define PetscConj(a)          std::conj(a)
+#define PetscSqrtScalar(a)    std::sqrt(a)
+#define PetscPowScalar(a,b)   std::pow(a,b)
+#define PetscExpScalar(a)     std::exp(a)
+#define PetscSinScalar(a)     std::sin(a)
+#define PetscCosScalar(a)     std::cos(a)
 
+#if defined(PETSC_USE_SINGLE)
+typedef std::complex<float> PetscScalar;
+#elif defined(PETSC_USE_LONG_DOUBLE)
+typedef std::complex<long double> PetscScalar;
+#elif defined(PETSC_USE_INT)
+typedef std::complex<int> PetscScalar;
+#else
 typedef std::complex<double> PetscScalar;
+#endif
 #else
 #include <complex.h>
 
@@ -52,17 +60,44 @@ typedef std::complex<double> PetscScalar;
    C90 compliant compiler to work...
  */
 
-#define PetscRealPart(a)        creal(a)
-#define PetscImaginaryPart(a)   cimag(a)
-#define PetscAbsScalar(a)   cabs(a)
-#define PetscConj(a)        conj(a)
-#define PetscSqrtScalar(a)  csqrt(a)
-#define PetscPowScalar(a,b) cpow(a,b)
-#define PetscExpScalar(a)   cexp(a)
-#define PetscSinScalar(a)   csin(a)
-#define PetscCosScalar(a)   ccos(a)
+#if defined(PETSC_USE_SINGLE)
+typedef float complex PetscScalar;
 
+#define PetscRealPart(a)      crealf(a)
+#define PetscImaginaryPart(a) cimagf(a)
+#define PetscAbsScalar(a)     cabsf(a)
+#define PetscConj(a)          conjf(a)
+#define PetscSqrtScalar(a)    csqrtf(a)
+#define PetscPowScalar(a,b)   cpowf(a,b)
+#define PetscExpScalar(a)     cexpf(a)
+#define PetscSinScalar(a)     csinf(a)
+#define PetscCosScalar(a)     ccosf(a)
+#elif defined(PETSC_USE_LONG_DOUBLE)
+typedef long double complex PetscScalar;
+
+#define PetscRealPart(a)      creall(a)
+#define PetscImaginaryPart(a) cimagl(a)
+#define PetscAbsScalar(a)     cabsl(a)
+#define PetscConj(a)          conjl(a)
+#define PetscSqrtScalar(a)    csqrtl(a)
+#define PetscPowScalar(a,b)   cpowl(a,b)
+#define PetscExpScalar(a)     cexpl(a)
+#define PetscSinScalar(a)     csinl(a)
+#define PetscCosScalar(a)     ccosl(a)
+
+#else
 typedef double complex PetscScalar;
+
+#define PetscRealPart(a)      creal(a)
+#define PetscImaginaryPart(a) cimag(a)
+#define PetscAbsScalar(a)     cabs(a)
+#define PetscConj(a)          conj(a)
+#define PetscSqrtScalar(a)    csqrt(a)
+#define PetscPowScalar(a,b)   cpow(a,b)
+#define PetscExpScalar(a)     cexp(a)
+#define PetscSinScalar(a)     csin(a)
+#define PetscCosScalar(a)     ccos(a)
+#endif
 #endif
 
 extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;

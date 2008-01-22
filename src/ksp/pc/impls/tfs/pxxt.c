@@ -10,7 +10,7 @@
 typedef struct {
   xxt_ADT xxt;
   Vec     b,xd,xo;
-  int     nd;
+  PetscInt     nd;
 } Mat_MPIAIJ_XXT;
 
 
@@ -85,7 +85,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *inf
   Mat            B;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  int            *localtoglobal,ncol,i;
+  PetscInt            *localtoglobal,ncol,i;
   Mat_MPIAIJ_XXT *xxt;
 
   PetscFunctionBegin;
@@ -106,7 +106,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *inf
   xxt->xxt = XXT_new();
   /* generate the local to global mapping */
   ncol = a->A->n + a->B->n;
-  ierr = PetscMalloc((ncol)*sizeof(int),&localtoglobal);CHKERRQ(ierr);
+  ierr = PetscMalloc((ncol)*sizeof(PetscInt),&localtoglobal);CHKERRQ(ierr);
   for (i=0; i<a->A->n; i++) {
     localtoglobal[i] = a->cstart + i + 1;
   }
@@ -139,7 +139,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *inf
 typedef struct {
   xyt_ADT xyt;
   Vec     b,xd,xo;
-  int     nd;
+  PetscInt     nd;
 } Mat_MPIAIJ_XYT;
 
 
@@ -213,7 +213,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *inf
   Mat            B;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
-  int            *localtoglobal,ncol,i;
+  PetscInt            *localtoglobal,ncol,i;
   Mat_MPIAIJ_XYT *xyt;
 
   PetscFunctionBegin;
@@ -234,7 +234,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *inf
   xyt->xyt = XYT_new();
   /* generate the local to global mapping */
   ncol = a->A->n + a->B->n;
-  ierr = PetscMalloc((ncol)*sizeof(int),&localtoglobal);CHKERRQ(ierr);
+  ierr = PetscMalloc((ncol)*sizeof(PetscInt),&localtoglobal);CHKERRQ(ierr);
   for (i=0; i<a->A->n; i++) {
     localtoglobal[i] = a->cstart + i + 1;
   }

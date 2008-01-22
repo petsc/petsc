@@ -20,6 +20,9 @@ PetscEvent  MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0
 PetscEvent  MAT_MatMult = 0, MAT_MatMultSymbolic = 0, MAT_MatMultNumeric = 0;
 PetscEvent  MAT_PtAP = 0, MAT_PtAPSymbolic = 0, MAT_PtAPNumeric = 0;
 PetscEvent  MAT_MatMultTranspose = 0, MAT_MatMultTransposeSymbolic = 0, MAT_MatMultTransposeNumeric = 0;
+PetscEvent  MAT_Getsymtranspose = 0, MAT_Getsymtransreduced = 0, MAT_Transpose_SeqAIJ = 0, MAT_GetBrowsOfAcols = 0;
+PetscEvent  MAT_GetBrowsOfAocols = 0, MAT_Getlocalmat = 0, MAT_Getlocalmatcondensed = 0, MAT_Seqstompi = 0, MAT_Seqstompinum = 0, MAT_Seqstompisym = 0;
+PetscEvent  MAT_Applypapt = 0, MAT_Applypapt_numeric = 0, MAT_Applypapt_symbolic = 0, MAT_GetSequentialNonzeroStructure = 0;
 
 /* nasty global values for MatSetValue() */
 PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Row = 0;
@@ -2898,7 +2901,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolveTransposeAdd(Mat mat,Vec b,Vec y,Vec x
 .  omega - the relaxation factor
 .  flag - flag indicating the type of SOR (see below)
 .  shift -  diagonal shift
--  its - the number of iterations
+.  its - the number of iterations
 -  lits - the number of local iterations 
 
    Output Parameters:
@@ -4258,9 +4261,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
 
    Input Parameters:
 +  mat - the matrix 
--  option - the option, one of those listed below (and possibly others),
+.  option - the option, one of those listed below (and possibly others),
+-  flg - turn the option on (PETSC_TRUE) or off (PETSC_FALSE)
 
-   Options Describing Matrix Structure:
+  Options Describing Matrix Structure:
 +    MAT_SYMMETRIC - symmetric in terms of both structure and value
 .    MAT_HERMITIAN - transpose is the complex conjugation
 .    MAT_STRUCTURALLY_SYMMETRIC - symmetric nonzero structure
@@ -4275,7 +4279,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
    Insert a logically dense subblock, which can be
 .    MAT_ROW_ORIENTED - row-oriented (default)
 
-   Not these options reflect the data you pass in with MatSetValues(); it has 
+   Note these options reflect the data you pass in with MatSetValues(); it has 
    nothing to do with how the data is stored internally in the matrix 
    data structure.
 
@@ -5338,7 +5342,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBlockSize(Mat mat,PetscInt *bs)
    MatSetBlockSize - Sets the matrix block size; for many matrix types you 
      cannot use this and MUST set the blocksize when you preallocate the matrix
    
-   Not Collective
+   Collective on Mat
 
    Input Parameters:
 +  mat - the matrix
@@ -5398,6 +5402,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
     Notes: You CANNOT change any of the ia[] or ja[] values.
 
            Use MatRestoreRowIJ() when you are finished accessing the ia[] and ja[] values
+
+    Fortran Node
+
+           In Fortran use
+$           PetscInt ia(1), ja(1)
+$           PetscOffset iia, jja
+$      call MatGetRowIJ(mat,shift,symmetric,blockcompressed,n,ia,iia,ja,jja,done,ierr)
+ 
+       Acess the ith and jth entries via ia(iia + i) and ja(jja + j)
 
 .seealso: MatGetColumnIJ(), MatRestoreRowIJ(), MatGetArray()
 @*/
