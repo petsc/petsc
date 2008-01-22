@@ -584,9 +584,14 @@ PetscErrorCode SectionDistributionTest(const Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "ISectionDistributionTest"
+// We need to rework distribution to allow interval sections
+//   1) We can do update local with an ISection
+//   2) We need to convert the overlap to use local names
+//   3) The completion and then remote update proceed as before (I think)
+// I think we need to rewrite the distributeSection() method, but not much else
 PetscErrorCode ISectionDistributionTest(const Options *options)
 {
-  typedef ALE::GeneralSection<int, double, ALE::malloc_allocator<double> > TestSection;
+  typedef ALE::IConstantSection<int, double, ALE::malloc_allocator<double> > TestSection;
   ALE::MemoryLogger& logger   = ALE::MemoryLogger::singleton();
   const PetscInt     num      = options->number;
   const PetscInt     block    = options->numCells/options->size;
@@ -598,20 +603,8 @@ PetscErrorCode ISectionDistributionTest(const Options *options)
   const PetscInt     remCells = numCells - locCells;
   const PetscInt     remRanks = options->size-1;
   const PetscInt     rotRanks = 1; 
- // Allocs:
-  //   Atlas (UniformSection) + Obj
-  //     Atlas (ConstantSection) + Obj
-  //       Atlas (points)
-  //     Data (sizes)
-  //   BC (Section) + Obj
-  //     Atlas (UniformSection) + Obj
-  //       Atlas (ConstantSection) + Obj
-  //     Data
-  //   Data
-  const PetscInt     numAlloc = (12 + 2*numCells)*options->number;
-  const PetscInt     numBytes = ((100+4)+(68+4)+20*numCells+28*numCells+(88+4)+(100+4)+(68+4)+8*options->components*numCells)*options->number;
-  PetscInt           numDistAlloc;
-  PetscInt           numDistBytes;
+  PetscInt           numAlloc;
+  PetscInt           numBytes;
   double            *values;
   PetscErrorCode     ierr;
 
@@ -628,47 +621,47 @@ PetscErrorCode ISectionDistributionTest(const Options *options)
     //   remRanks: 44
     //   locCells: (60+84+84)+(20+28+8*comp) = 228 (Sieve) + 48+8*comp (Section)
     //   remCells: (60+24+24)+(20+28+8*comp)+(20+28+4)+(20) = 108 (Overlap) + 48+8*comp (OSection) + 52 (Sizer) + 20 (Topology)
-    numDistAlloc = (1+15+8+3*locCells+6+3*remCells+6+13+2*locCells+7+2*remCells+1+1+7+2*remCells+1+2+1+2+32+1*remCells+//50+9*remCells+
-                    1*remRanks+2+23+2+2+2)*options->number+1;
-    numDistBytes = (4+
-                    4*3+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
-                    (60+4+60*locCells)+(84+4+84*locCells)+(84+4+84*locCells)+4+4+
-                    (60+4+60*remCells)+(24+4+24*remCells)+(24+4+24*remCells)+(60+4)+(24+4)+(24+4)+
-                    4+(100+4+28*locCells)+(68+4+20*locCells)+(88+4+0)+(100+4)+(68+4)+8*options->components*locCells+
-                    4+4+(100+4+28*remCells)+(68+4+20*remCells)+8*options->components*remCells+
-                    4+
-                    4+
-                    4+4+(100+4+28*remCells)+(68+4+20*remCells)+4*remCells+
-                    4+
-                    4+4+
-                    4+
-                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+4+(32+4+20*remCells)+(20+4+0)+(20+4+0)+44*remRanks+
-                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+
-                    (8+4)+(8+4)+(8+4))*options->number+4;
+    numAlloc = (1+15+8+3*locCells+6+3*remCells+6+13+2*locCells+7+2*remCells+1+1+7+2*remCells+1+2+1+2+32+1*remCells+//50+9*remCells+
+                1*remRanks+2+23+2+2+2)*options->number+1;
+    numBytes = (4+
+                4*3+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
+                (60+4+60*locCells)+(84+4+84*locCells)+(84+4+84*locCells)+4+4+
+                (60+4+60*remCells)+(24+4+24*remCells)+(24+4+24*remCells)+(60+4)+(24+4)+(24+4)+
+                4+(100+4+28*locCells)+(68+4+20*locCells)+(88+4+0)+(100+4)+(68+4)+8*options->components*locCells+
+                4+4+(100+4+28*remCells)+(68+4+20*remCells)+8*options->components*remCells+
+                4+
+                4+
+                4+4+(100+4+28*remCells)+(68+4+20*remCells)+4*remCells+
+                4+
+                4+4+
+                4+
+                (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+4+(32+4+20*remCells)+(20+4+0)+(20+4+0)+44*remRanks+
+                (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+
+                (8+4)+(8+4)+(8+4))*options->number+4;
   } else {
-    numDistAlloc = (1+15+8+3*locCells+6+6+3*locCells+17+4*locCells+1+7+2*locCells+1+1+7+2*locCells+1+2+2+23+2+32+1*locCells+//50+9*locCells+
-                    1*rotRanks+2+2+2)*options->number+1;
-    numDistBytes = (4+
-                    4*3+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
-                    (60+4+60*locCells)+(84+4+84*locCells)+(84+4+84*locCells)+4+4+
-                    (60+4)+(24+4)+(24+4)+(60+4+60*locCells)+(24+4+24*locCells)+(24+4+24*locCells)+
-                    4+(100+4+28*locCells)+(68+4+20*locCells)+(88+4+0)+(100+4)+(68+4)+8*options->components*locCells+4+28*locCells+(68+4+20*locCells)+8*options->components*locCells+
-                    4+
-                    4+4+(100+4+28*locCells)+(68+4+20*locCells)+8*options->components*locCells+
-                    4+
-                    4+
-                    4+4+(100+4+28*locCells)+(68+4+20*locCells)+4*locCells+
-                    4+
-                    4+4+
-                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+
-                    (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+4+(32+4+20*locCells)+(20+4+0)+(20+4+0)+44*rotRanks+
-                    (8+4)+(8+4)+(8+4))*options->number+4;
+    numAlloc = (1+15+8+3*locCells+6+6+3*locCells+17+4*locCells+1+7+2*locCells+1+1+7+2*locCells+1+2+2+23+2+32+1*locCells+//50+9*locCells+
+                1*rotRanks+2+2+2)*options->number+1;
+    numBytes = (4+
+                4*3+(60+4)+(24+4)+(24+4)+(60+4)+(24+4)+(24+4)+
+                (60+4+60*locCells)+(84+4+84*locCells)+(84+4+84*locCells)+4+4+
+                (60+4)+(24+4)+(24+4)+(60+4+60*locCells)+(24+4+24*locCells)+(24+4+24*locCells)+
+                4+(100+4+28*locCells)+(68+4+20*locCells)+(88+4+0)+(100+4)+(68+4)+8*options->components*locCells+4+28*locCells+(68+4+20*locCells)+8*options->components*locCells+
+                4+
+                4+4+(100+4+28*locCells)+(68+4+20*locCells)+8*options->components*locCells+
+                4+
+                4+
+                4+4+(100+4+28*locCells)+(68+4+20*locCells)+4*locCells+
+                4+
+                4+4+
+                (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+
+                (8+4)+4+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(148+60+4)+(60+24+24)+(24+4)+(24+4)+(32+4)+4+(32+4+20*locCells)+(20+4+0)+(20+4+0)+44*rotRanks+
+                (8+4)+(8+4)+(8+4))*options->number+4;
   }
   ierr = PetscMalloc(options->components * sizeof(double), &values);CHKERRQ(ierr);
   for(PetscInt c = 0; c < options->components; ++c) {values[c] = 1.0;}
   logger.stagePush("SectionII");
   for(PetscInt i = 0; i < num; ++i) {
-    TestSection section(PETSC_COMM_WORLD);
+    TestSection section(PETSC_COMM_WORLD, 0, options->numCells);
 
     for(PetscInt c = 0; c < numCells; ++c) {
       section.setFiberDimension(c, options->components);
@@ -858,29 +851,17 @@ PetscErrorCode ISectionDistributionTest(const Options *options)
   }
   logger.stagePop();
   ierr = PetscFree(values);CHKERRQ(ierr);
-  if (logger.getNumAllocations("SectionII") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("SectionII"), numAlloc);
+  if (logger.getNumAllocations("Distribution") != numAlloc) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Distribution"), numAlloc);
   }
-  if (logger.getNumDeallocations("SectionII") != numAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("SectionII"), numAlloc);
+  if (logger.getNumDeallocations("Distribution") != numAlloc) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Distribution"), numAlloc);
   }
-  if (logger.getAllocationTotal("SectionII") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("SectionII"), numBytes);
+  if (logger.getAllocationTotal("Distribution") != numBytes) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Distribution"), numBytes);
   }
-  if (logger.getDeallocationTotal("SectionII") != numBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("SectionII"), numBytes);
-  }
-  if (logger.getNumAllocations("Distribution") != numDistAlloc) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Distribution"), numDistAlloc);
-  }
-  if (logger.getNumDeallocations("Distribution") != numDistAlloc-options->number-1) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Distribution"), numDistAlloc);
-  }
-  if (logger.getAllocationTotal("Distribution") != numDistBytes) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Distribution"), numDistBytes);
-  }
-  if (logger.getDeallocationTotal("Distribution") != numDistBytes-4*options->number-4) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Distribution"), numDistBytes);
+  if (logger.getDeallocationTotal("Distribution") != numBytes) {
+    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Distribution"), numBytes);
   }
   PetscFunctionReturn(0);
 }

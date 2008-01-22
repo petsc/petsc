@@ -34,6 +34,7 @@ class Configure(config.base.Configure):
     if hasattr(self, 'gdb'):
       self.addDefine('USE_GDB_DEBUGGER', 1)
     elif hasattr(self, 'dbx'):
+      import re
       if self.framework.argDB['with-batch']: return
       self.addDefine('USE_DBX_DEBUGGER', 1)
       f = file('conftest', 'w')
@@ -46,7 +47,7 @@ class Configure(config.base.Configure):
           (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -p '+pid, log = self.framework.log)
           if not status:
             for line in output:
-              if re.match(r'Process '+pid):
+              if re.match(r'Process '+pid, line):
                 self.addDefine('USE_P_FOR_DEBUGGER', 1)
                 foundOption = 1
                 break
@@ -56,7 +57,7 @@ class Configure(config.base.Configure):
           (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -a '+pid, log = self.framework.log)
           if not status:
             for line in output:
-              if re.match(r'Process '+pid):
+              if re.match(r'Process '+pid, line):
                 self.addDefine('USE_A_FOR_DEBUGGER', 1)
                 foundOption = 1
                 break
@@ -66,7 +67,7 @@ class Configure(config.base.Configure):
           (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -pid '+pid, log = self.framework.log)
           if not status:
             for line in output:
-              if re.match(r'Process '+pid):
+              if re.match(r'Process '+pid, line):
                 self.addDefine('USE_PID_FOR_DEBUGGER', 1)
                 foundOption = 1
                 break

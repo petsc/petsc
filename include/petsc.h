@@ -11,6 +11,7 @@
    in the conf/variables definition of PETSC_INCLUDE
 */
 #include "petscconf.h"
+#include "petscfix.h"
 
 /* ========================================================================== */
 /* 
