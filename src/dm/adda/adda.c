@@ -30,6 +30,8 @@ PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE = 0;
    Output Parameters:
 .  adda - pointer to ADDA data structure that is created
 
+  Level: intermediate
+
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm comm, PetscInt dim, PetscInt *nodes,PetscInt *procs,
                                            PetscInt dof, PetscTruth *periodic,ADDA *adda_p)
