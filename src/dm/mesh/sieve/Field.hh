@@ -1108,7 +1108,7 @@ namespace ALE {
       const chart_type& points = this->getChart();
       int               size   = 0;
 
-      for(typename chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+      for(typename chart_type::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         size += this->getConstrainedFiberDimension(*p_iter);
       }
       return size;
@@ -3018,7 +3018,7 @@ namespace ALECompat {
             const typename atlas_type::chart_type& points = this->_atlas->getPatch(p_iter->first);
             typename atlas_type::value_type::index_type offset = 0, bcOffset = -2;
 
-            for(typename atlas_type::chart_type::iterator point = points.begin(); point != points.end(); ++point) {
+            for(typename atlas_type::chart_type::const_iterator point = points.begin(); point != points.end(); ++point) {
               const index_type& idx = this->_atlas->restrictPoint(p_iter->first, *point)[0];
 
               offset = std::max(offset, idx.index + std::abs(idx.prefix));
