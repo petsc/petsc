@@ -82,8 +82,9 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* generate the scatter context 
      -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but usefule for some applications */
-  ierr = VecCreateMPI(((PetscObject)mat)->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,mat->cmap.n,mat->cmap.N,PETSC_NULL,&gvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr); 
+  ierr = VecDestroy(gvec);CHKERRQ(ierr);
 
   sbaij->garray = garray;
   ierr = PetscLogObjectParent(mat,sbaij->Mvctx);CHKERRQ(ierr);
@@ -149,7 +150,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = PetscLogObjectMemory(mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);  
   ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = VecDestroy(gvec);CHKERRQ(ierr);
   ierr = PetscFree(sgarray);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
@@ -269,12 +269,9 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   ierr = PetscFree(stmp);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
-  /* this is inefficient, but otherwise we must do either 
-     1) save garray until the first actual scatter when the vector is known or
-     2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(((PetscObject)mat)->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
-
+  ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,mat->cmap.n,mat->cmap.N,PETSC_NULL,&gvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
+  ierr = VecDestroy(gvec);CHKERRQ(ierr);
 
   ierr = PetscLogObjectParent(mat,baij->Mvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,baij->lvec);CHKERRQ(ierr);
@@ -284,7 +281,6 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   ierr = PetscLogObjectMemory(mat,(ec+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
-  ierr = VecDestroy(gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

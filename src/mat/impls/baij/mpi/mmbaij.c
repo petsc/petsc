@@ -124,10 +124,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   ierr = PetscFree(stmp);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
-  /* this is inefficient, but otherwise we must do either 
-     1) save garray until the first actual scatter when the vector is known or
-     2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(((PetscObject)mat)->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,mat->cmap.n,mat->cmap.N,PETSC_NULL,&gvec);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
 

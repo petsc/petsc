@@ -2994,7 +2994,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       ierr = ISCreateStride(PETSC_COMM_SELF,n*dof,0,1,&to);CHKERRQ(ierr);
 
       /* create temporary global vector to generate scatter context */
-      ierr = VecCreateMPI(((PetscObject)A)->comm,dof*A->cmap.n,dof*A->cmap.N,&gvec);CHKERRQ(ierr);
+      ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,dof*A->cmap.n,dof*A->cmap.N,PETSC_NULL,&gvec);CHKERRQ(ierr);
       ierr = VecSetBlockSize(gvec,dof);CHKERRQ(ierr);
 
       /* generate the scatter context */

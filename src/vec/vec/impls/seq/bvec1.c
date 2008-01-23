@@ -103,8 +103,8 @@ PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 #define __FUNCT__ "VecCopy_Seq"
 PetscErrorCode VecCopy_Seq(Vec xin,Vec yin)
 {
-  Vec_Seq     *x = (Vec_Seq *)xin->data;
-  PetscScalar *ya;
+  Vec_Seq        *x = (Vec_Seq *)xin->data;
+  PetscScalar    *ya;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

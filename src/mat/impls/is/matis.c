@@ -186,7 +186,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mappin
   /* setup the global to local scatter */
   ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&to);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(mapping,to,&from);CHKERRQ(ierr);
-  ierr = VecCreateMPI(((PetscObject)A)->comm,A->cmap.n,A->cmap.N,&global);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,A->cmap.n,A->cmap.N,PETSC_NULL,&global);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,is->x,to,&is->ctx);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);

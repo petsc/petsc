@@ -27,7 +27,7 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
 
   ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v,win->map.n,win->map.N);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*v,w->nghost,array,win->map);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,array);CHKERRQ(ierr);
 
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash   = win->stash.donotstash;
@@ -63,7 +63,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec vv)
   ierr = PetscSplitOwnership(((PetscObject)vv)->comm,&vv->map.n,&vv->map.N);CHKERRQ(ierr);
   ierr = PetscSharedMalloc(((PetscObject)vv)->comm,vv->map.n*sizeof(PetscScalar),vv->map.N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr); 
 
-  ierr = VecCreate_MPI_Private(vv,0,array,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,array);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;
 
   PetscFunctionReturn(0);
