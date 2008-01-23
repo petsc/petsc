@@ -2793,7 +2793,7 @@ namespace ALECompat {
         const typename atlas_type::chart_type& points = this->_atlas->getPatch(patch);
         int size = 0;
 
-        for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        for(typename atlas_type::chart_type::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           size += std::abs(this->getFiberDimension(patch, *p_iter));
         }
         return size;
