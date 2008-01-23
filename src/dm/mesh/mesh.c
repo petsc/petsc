@@ -1926,7 +1926,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
   //    ce_iter++;
   //  }
 
-  double fvCoords[dim], nvCoords[dim];
+  double *fvCoords = new double[dim], *nvCoords = new double[dim];
   bool pointIsInElement;
 
   if (debug) {ierr = PetscPrintf(fm->comm(), "starting iterations\n");CHKERRQ(ierr);}
@@ -2079,6 +2079,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
   ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   //MatView(P, PETSC_VIEWER_STDOUT_SELF);
+  delete [] fvCoords; delete [] nvCoords;
   *interpolation = P;
   if (debug) {ierr = PetscPrintf(fm->comm(), "Ending Interpolation Matrix Build\n");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -2126,7 +2127,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
     PetscPrintf(fine->comm(), "WARNING: Point Location Label Does Not Exist");
   }
   ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();
-  ALE::Mesh::real_section_type::value_type coords[dim];
+  ALE::Mesh::real_section_type::value_type *coords = new ALE::Mesh::real_section_type::value_type[dim];
 
   for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != v_iter_end; ++v_iter) {
     //const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
@@ -2161,6 +2162,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   ierr = PetscFree5(v0,J,invJ,refCoords,values);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  delete [] coords;
   *interpolation = P;
   PetscFunctionReturn(0);
 }
@@ -2404,12 +2406,12 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   int fiberDimMin = section->getFiberDimension(*chart.begin());
   int numElem     = 0;
 
-  for(ALE::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
   }
-  for(ALE::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     numElem += fiberDim/fiberDimMin;

@@ -73,7 +73,11 @@ namespace ALE {
     if(fmt) {
       va_start(Argp, fmt);
       char *msg = (char *)malloc(sizeof(char)*(buf_size+1));
+#ifdef PETSC_HAVE_SNPRINTF
       snprintf(msg, buf_size, fmt, Argp);
+#else
+      sprintf(msg, fmt, Argp);
+#endif
       va_end(Argp);
       return msg;
     }
