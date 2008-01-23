@@ -63,7 +63,7 @@ void SetupTriangulateio(triangulateio * input, triangulateio * output) {
 double vertex_angle (const ALE::Obj<ALE::Mesh::real_section_type> coords, int dim, ALE::Mesh::point_type p, ALE::Mesh::point_type q, ALE::Mesh::point_type r) {
 
 // o is our origin point, p is one endpoint, q is the other; find their angle given the coordinates
-  double p_coords[dim], q_coords[dim], r_coords[dim], mag_q, mag_r, dot_product, angle;
+  double *p_coords = new double[dim], *q_coords = new double[dim], *r_coords = new double[dim], mag_q, mag_r, dot_product, angle;
   PetscErrorCode ierr;
   ierr = PetscMemcpy(p_coords, coords->restrictPoint(p), dim*sizeof(double));CHKERRQ(ierr);
   ierr = PetscMemcpy(q_coords, coords->restrictPoint(q), dim*sizeof(double));CHKERRQ(ierr);
@@ -75,6 +75,7 @@ double vertex_angle (const ALE::Obj<ALE::Mesh::real_section_type> coords, int di
   }
   if (mag_q == 0 || mag_r == 0) return 0.;
   angle = acos(dot_product/sqrt(mag_q*mag_r));
+  delete [] p_coords; delete [] q_coords; delete [] r_coords;
   return angle;
 } 
 
@@ -785,7 +786,7 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, ALE::Obj<ALE:
 #else
 
 
-ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh::sieve_type::supportSet> includedVertices) {
+ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, ALE::Obj<ALE::Mesh::sieve_type::supportSet> includedVertices) {
   throw ALE::Exception("reconfigure PETSc with --download-triangle and --download-tetgen to use this method.");
   return m;
 }
@@ -1229,7 +1230,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
     bv_iter++;
   }
  // PetscPrintf(m->comm(), "Forced in %d especially curved boundary nodes.\n", m->getLabelStratum("hdepth", nLevels-1)->size());
-  double bvCoords[dim];
+  double *bvCoords = new double[dim];
   ALE::Mesh::point_type bvdom;
   std::list<ALE::Mesh::point_type> complist;
   std::list<ALE::Mesh::point_type> domlist; //stores the points dominated by the current point.
@@ -1484,6 +1485,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
     ierr = MeshSetSectionReal(outmeshes[curLevel-1], section);CHKERRQ(ierr);
     ierr = SectionRealDestroy(section);*/
   } //end of level for
+  delete [] bvCoords;
   if (info)PetscPrintf(m->comm(), "Comparisons per Point: %f\n", (float)overallComparisons/vertices->size());
   //std::list<ALE::Mesh::point_type> tricomplist;
 /*  for (int curLevel = 0; curLevel < nLevels-1; curLevel++) {
@@ -1872,7 +1874,7 @@ PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh) {
   const ALE::Obj<ALE::Mesh::label_sequence>& coarseelements = cm->heightStratum(0);
   ALE::Mesh::label_sequence::iterator ce_iter = coarseelements->begin();
   ALE::Mesh::label_sequence::iterator ce_iter_end = coarseelements->end();
-  double fvCoords[dim], nvCoords[dim];
+  double *fvCoords = new double[dim], *nvCoords = new double[dim];
   std::list<ALE::Mesh::point_type> travlist;  //store point
 //  std::list<ALE::Mesh::point_type> travElist; //store element location "guesses"
   std::list<ALE::Mesh::point_type> eguesslist; // store the next guesses for the location of the current point.
@@ -1975,6 +1977,7 @@ PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh) {
    // printf("-");
     fv_iter++;
   }
+  delete [] fvCoords; delete [] nvCoords;
   PetscFunctionReturn(0);
 }
 

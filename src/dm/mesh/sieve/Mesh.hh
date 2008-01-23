@@ -2565,8 +2565,8 @@ namespace ALE {
     */
     static Obj<Mesh> createFicheraCornerBoundary(const MPI_Comm comm, const double lower[], const double upper[], const double offset[], const int debug = 0) {
       Obj<Mesh> mesh            = new Mesh(comm, 2, debug);
-      int nVertices = 14;
-      int nFaces = 12;
+      const int nVertices = 14;
+      const int nFaces = 12;
       double ilower[3];
       ilower[0] = lower[0]*(1. - offset[0]) + upper[0]*offset[0];
       ilower[1] = lower[1]*(1. - offset[1]) + upper[1]*offset[1];

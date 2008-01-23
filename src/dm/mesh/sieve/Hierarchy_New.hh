@@ -89,7 +89,7 @@ ALE::Obj<ALE::Mesh::sieve_type::supportSet> Hierarchy_CoarsenVertexSet(ALE::Obj<
 
   int dim = original_mesh->getDimension();
 
-  double a_coords[dim], b_coords[dim];
+  double *a_coords = new double[dim], *b_coords = new double[dim];
 
   ALE::Mesh::sieve_type::supportSet candidate_vertices;
 
@@ -232,6 +232,7 @@ ALE::Obj<ALE::Mesh::sieve_type::supportSet> Hierarchy_CoarsenVertexSet(ALE::Obj<
     }  //end of candidate_vertices.empty() if for adding a new vertex
   }  //end of !candidate_vertices.empty() while
   //PetscPrintf(original_mesh->comm(), "%d vertices included in coarse set\n", output_vertices->size());
+  delete [] a_coords; delete [] b_coords;
   return output_vertices;
 }
 /*
@@ -394,7 +395,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective1DBoundary (ALE::Obj<ALE::Mesh> ori
   int dim = original_mesh->getDimension();
   ALE::Obj<ALE::Mesh::sieve_type> original_sieve = original_mesh->getSieve();
   ALE::Obj<ALE::Mesh::real_section_type> coordinates = original_mesh->getRealSection("coordinates");
-  double a_coords[dim], b_coords[dim], c_coords[dim], d_coords[dim];
+  double *a_coords = new double[dim], *b_coords = new double[dim], *c_coords = new double[dim], *d_coords = new double[dim];
   int depth = original_mesh->depth();
   ALE::Mesh::point_type cur_available_index = maxIndex+1;
   ALE::Obj<ALE::Mesh> output_mesh = new ALE::Mesh(original_mesh->comm(), dim, original_mesh->debug());
@@ -511,6 +512,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective1DBoundary (ALE::Obj<ALE::Mesh> ori
   output_mesh->stratify();
   output_mesh->setRealSection("coordinates", original_mesh->getRealSection("coordinates"));
   //PetscPrintf(output_mesh->comm(), "leaving 1D Boundary Building\n");
+  delete [] a_coords; delete [] b_coords; delete [] c_coords; delete [] d_coords;
   return output_mesh;
 }
 
@@ -541,7 +543,7 @@ ALE::Obj<ALE::Mesh::sieve_type::supportSet> Hierarchy_createEffective0DBoundary(
   ALE::Obj<ALE::Mesh::real_section_type> coordinates = original_mesh->getRealSection("coordinates");
   //PetscPrintf(original_mesh->comm(), "In 0D Boundary Building\n");
   int dim = original_mesh->getDimension();
-  double a_coords[dim], b_coords[dim], c_coords[dim];
+  double *a_coords = new double[dim], *b_coords = new double[dim], *c_coords = new double[dim];
   //create a set of "essential" vertices from the 1D boundary meshes given
   //find the topologically necessary vertices in the 1D mesh -- this means vertices on which an edge terminates or is noncontractible.
   ALE::Obj<ALE::Mesh::sieve_type::supportSet> output_set = new ALE::Mesh::sieve_type::supportSet();
@@ -574,6 +576,7 @@ ALE::Obj<ALE::Mesh::sieve_type::supportSet> Hierarchy_createEffective0DBoundary(
   }
   //we can't do curvatures here; leave this to another thing we'll include in this set later
   //PetscPrintf(original_mesh->comm(), "leaving 0D Boundary Building\n");
+  delete [] a_coords; delete [] b_coords; delete [] c_coords;
   return output_set;
 }
 
@@ -637,7 +640,7 @@ ALE::Obj<ALE::Mesh::real_section_type> Hierarchy_defineSpacingFunction(ALE::Obj<
   ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();
   ALE::Obj<ALE::Mesh::real_section_type> spacing;
   int dim = m->getDimension();
-  double v_coords[dim];
+  double *v_coords = new double[dim];
   if (!m->hasRealSection("spacing")) { 
     spacing = m->getRealSection("spacing");
     spacing->setFiberDimension(vertices, 1);
@@ -672,6 +675,7 @@ ALE::Obj<ALE::Mesh::real_section_type> Hierarchy_defineSpacingFunction(ALE::Obj<
     spacing->updatePoint(*v_iter, &min_dist);
     v_iter++;
   }
+  delete [] v_coords;
   return spacing;
 }
 

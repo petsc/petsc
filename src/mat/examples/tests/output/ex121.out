@@ -1,0 +1,8 @@
+
+ 1-D: FFTW on vector of size 10 
+
+ 2-D: FFTW on vector of size 100 
+
+ 3-D: FFTW on vector of size 1000 
+
+ 4-D: FFTW on vector of size 10000 
