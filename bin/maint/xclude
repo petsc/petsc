@@ -1,9 +1,9 @@
 petsc-dist/.hg
-petsc-dist/python/BuildSystem/.hg
+petsc-dist/config/BuildSystem/.hg
 petsc-dist/src/tops/images
 petsc-dist/src/tops/slides.ppt
 petsc-dist/src/tops/twopager.ppt
-petsc-dist/maint
+petsc-dist/bin/maint
 petsc-dist/lib
 petsc-dist/BitKeeper
 petsc-dist/ChangeSet
@@ -116,8 +116,8 @@ petsc-dist/src/mat/examples/matrices
 petsc-dist/src/examples
 petsc-dist/src/mat/impls/dense/mpi/mdnfact.c
 petsc-dist/src/mat/impls/csn
-petsc-dist/python/BuildSystem/BitKeeper
-petsc-dist/python/BuildSystem/ChangeSet
+petsc-dist/config/BuildSystem/BitKeeper
+petsc-dist/config/BuildSystem/ChangeSet
 petsc-dist/src/contrib/blopex/driver_fiedler/DL-matrix.petsc
 petsc-dist/src/contrib/blopex/driver_fiedler/L-matrix.petsc
 petsc-dist/src/dm/mesh/examples/tutorials/illinois
