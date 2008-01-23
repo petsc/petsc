@@ -590,6 +590,41 @@ PetscErrorCode SectionDistributionTest(const Options *options)
 //   2) We need to convert the overlap to use local names
 //   3) The completion and then remote update proceed as before (I think)
 // I think we need to rewrite the distributeSection() method, but not much else
+//
+// We can define pullback,
+//
+//   Mapping pullback(Mapping phi, Mapping f)
+//
+// which produces \phi^* f. I need another operation, fuse,
+//
+//   Mapping fuse(Mapping f, Mapping g)
+//
+// which produces a map h: D_f \to R_f such that
+//
+//   h(p) = fuse(f(p), g(p)) \forall p \in D_f
+//
+// and fuse: R_f \times R_g \to R_h (and f(p) or g(p) may be \empty).
+// A completion is then a pullback of f along the overlap, followed by a fuse with f'.
+// I have left out the pullbacks which are just restrictions, but as Dmitry points out,
+// they are important.
+//
+// For parallel completion, we must first copy the section, restricted to the
+// overlap, to the other process, then we can proceed as above. The copy
+// process can be broken down as in the distribution paper:
+//
+//   1) Copy atlas (perhaps empty, signaling a single datum per point)
+//   2) Copy data
+//
+// The atlas copy is recursive, since it is itself a section.
+//
+// Thus, we have a software plan
+//
+// - Write parallel section copy (currently in ALE::Field)
+//
+// - Write pullback as a generic algorithm
+//
+// - Write fuse as a generic algorithm
+//   - Implement add and replace fusers
 PetscErrorCode ISectionDistributionTest(const Options *options)
 {
   typedef ALE::IUniformSection<int, double, 1, ALE::malloc_allocator<double> > TestSection;
