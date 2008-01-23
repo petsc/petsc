@@ -35,5 +35,6 @@ class Configure(config.package.Package):
         import FIAT.quadrature
         return
       except ImportError, e:
+        self.framework.logPrint('Added directory '+dir+' to path')
         self.framework.logPrint('ERROR: Could not import FIAT: '+str(e))
     raise RuntimeError('Could not find a functional '+self.name+'\n')

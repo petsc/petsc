@@ -155,6 +155,21 @@ class Configure(config.base.Configure):
       self.addDefine('TIME_WITH_SYS_TIME', 1)
     return
 
+  def checkMath(self):
+    '''Checks for the math headers and defines'''
+    haveMath = self.check('math.h')
+    if haveMath:
+      if self.checkCompile('#include <math.h>\n', 'double pi = M_PI;\n\nif (pi);\n'):
+        self.logPrint('Found math #defines, like M_PI')
+      elif self.checkCompile('#define _USE_MATH_DEFINES 1\n#include <math.h>\n', 'double pi = M_PI;\n\nif (pi);\n'):
+        self.framework.addDefine('_USE_MATH_DEFINES', 1)
+        self.logPrint('Activated Windows math #defines, like M_PI')
+      else:
+        self.logPrint('Missing math #defines, like M_PI')
+    else:
+      self.logPrint('Missing math.h')
+    return
+
   def checkRecursiveMacros(self):
     '''Checks that the preprocessor allows recursive macros, and if not defines HAVE_BROKEN_RECURSIVE_MACRO'''
     includes = 'void a(int i, int j) {}\n#define a(b) a(b,__LINE__)'
@@ -169,6 +184,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.checkStat)
     self.executeTest(self.checkSysWait)
     self.executeTest(self.checkTime)
+    self.executeTest(self.checkMath)
     map(lambda header: self.executeTest(self.check, header), self.headers)
     self.executeTest(self.checkRecursiveMacros)
     return
