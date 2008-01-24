@@ -138,12 +138,15 @@ namespace ALE {
   class ParallelPullback {
   public:
     // Copy the overlap section to the related processes
+    // TODO: Can cache MPIMover objects (like a VecScatter)
     template<typename SendOverlap, typename RecvOverlap, typename Section>
     static Obj<Section> copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& sendSection) {
       const Obj<typename Section::atlas_type>& sendAtlas   = sendSection->getAtlas();
       const Obj<typename Section::atlas_type>& recvAtlas   = copy(sendOverlap, recvOverlap, sendAtlas);
       Obj<Section>                             recvSection = new Section(recvAtlas);
       MPIMover<typename Section::value_type>   vMover(sendSection->comm(), sendSection->debug());
+      std::map<int, typename Section::value_type *> sendValues;
+      std::map<int, typename Section::value_type *> recvValues;
 
       const Obj<typename SendOverlap::traits::baseSequence> sRanks = sendOverlap->base();
 
@@ -151,12 +154,20 @@ namespace ALE {
       for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sRanks->end(); ++r_iter) {
         const Obj<typename SendOverlap::coneSequence>& points  = sendOverlap->cone(*r_iter);
         int                                            numVals = 0;
+        int                                            k       = 0;
 
         // TODO: This should be const_iterator, but Sifter sucks
         for(typename SendOverlap::coneSequence::iterator c_iter = points->begin(); c_iter != points->end(); ++c_iter) {
           numVals += sendSection->getFiberDimension(*c_iter);
         }
-        vMover.send(*r_iter, numVals, sendSection->restrict());
+        // TODO: This should use an allocator
+        sendValues[*r_iter] = new typename Section::value_type[numVals];
+        for(typename SendOverlap::coneSequence::iterator c_iter = points->begin(); c_iter != points->end(); ++c_iter) {
+          const typename Section::value_type *v = sendSection->restrictPoint(*c_iter);
+
+          for(int i = 0; i < sendSection->getFiberDimension(*c_iter); ++i, ++k) sendValues[*r_iter][k] = v[i];
+        }
+        vMover.send(*r_iter, numVals, sendValues[*r_iter]);
       }
       const Obj<typename RecvOverlap::traits::capSequence> rRanks = recvOverlap->cap();
 
@@ -170,10 +181,29 @@ namespace ALE {
         for(typename RecvOverlap::supportSequence::iterator s_iter = points->begin(); s_iter != points->end(); ++s_iter) {
           numVals += recvSection->getFiberDimension(s_iter.color());
         }
-        vMover.recv(*r_iter, numVals, recvSection->restrict());
+        // TODO: This should use an allocator
+        recvValues[*r_iter] = new typename Section::value_type[numVals];
+        vMover.recv(*r_iter, numVals, recvValues[*r_iter]);
       }
       vMover.start();
       vMover.end();
+      for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rRanks->end(); ++r_iter) {
+        const Obj<typename RecvOverlap::supportSequence>& points = recvOverlap->support(*r_iter);
+        const typename Section::value_type               *v      = recvValues[*r_iter];
+        int                                               k      = 0;
+
+        for(typename RecvOverlap::supportSequence::iterator s_iter = points->begin(); s_iter != points->end(); ++s_iter) {
+
+          recvSection->updatePoint(*s_iter, &v[k]);
+          k += recvSection->getFiberDimension(*s_iter);
+        }
+        // TODO: This should use an allocator
+        delete [] v;
+      }
+      for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sRanks->end(); ++r_iter) {
+        // TODO: This should use an allocator
+        delete [] sendValues[*r_iter];
+      }
       return recvSection;
     };
     // Specialize to an ConstantSection

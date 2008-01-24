@@ -125,7 +125,7 @@ PetscErrorCode UniformSectionTest(const Options *options)
   Obj<send_overlap_type> sendOverlap   = new send_overlap_type(options->comm);
   Obj<recv_overlap_type> recvOverlap   = new recv_overlap_type(options->comm);
   Obj<section>           serialSection = new section(options->comm, options->debug);
-  section::value_type    value[4]      = {7.0, 14.0, 21.0, 28.0};
+  section::value_type    value[4];
   
   PetscErrorCode ierr;
 
@@ -133,6 +133,7 @@ PetscErrorCode UniformSectionTest(const Options *options)
   ierr = CreateScatterOverlap(sendOverlap, recvOverlap, options);CHKERRQ(ierr);
   if (!options->rank) {
     for(int c = 0; c < options->numCells; ++c) {
+      for(PetscInt comp = 0; comp < 4; ++comp) {value[comp] = (c+1)*(comp+1);}
       serialSection->setFiberDimension(c, 4);
       serialSection->updatePoint(c, value);
     }
@@ -149,13 +150,13 @@ PetscErrorCode UniformSectionTest(const Options *options)
 //
 // Also, we need a way to update overlaps based on a renumbering
 #undef __FUNCT__
-#define __FUNCT__ "NewSectionTest"
-PetscErrorCode NewSectionTest(const Options *options)
+#define __FUNCT__ "SectionTest"
+PetscErrorCode SectionTest(const Options *options)
 {
   typedef int point_type;
   typedef ALE::Sifter<int,point_type,point_type> send_overlap_type;
   typedef ALE::Sifter<point_type,int,point_type> recv_overlap_type;
-  typedef ALE::Section<point_type, double, std::allocator<double>, ALE::NewUniformSection<point_type, ALE::Point> > section;
+  typedef ALE::Section<point_type, double> section;
   Obj<send_overlap_type> sendOverlap   = new send_overlap_type(options->comm);
   Obj<recv_overlap_type> recvOverlap   = new recv_overlap_type(options->comm);
   Obj<section>           serialSection = new section(options->comm, options->debug);
@@ -165,7 +166,6 @@ PetscErrorCode NewSectionTest(const Options *options)
 
   PetscFunctionBegin;
   ierr = PetscMalloc(options->components * sizeof(double), &value);CHKERRQ(ierr);
-  for(PetscInt c = 0; c < options->components; ++c) {value[c] = 1.0;}
   ierr = CreateScatterOverlap(sendOverlap, recvOverlap, options);CHKERRQ(ierr);
   if (!options->rank) {
     for(PetscInt c = 0; c < options->numCells; ++c) {
@@ -175,6 +175,7 @@ PetscErrorCode NewSectionTest(const Options *options)
   serialSection->allocatePoint();
   if (!options->rank) {
     for(PetscInt c = 0; c < options->numCells; ++c) {
+      for(PetscInt comp = 0; comp < options->components; ++comp) {value[comp] = (c+1)*(comp+1);}
       serialSection->updatePoint(c, value);
     }
   }
@@ -186,15 +187,15 @@ PetscErrorCode NewSectionTest(const Options *options)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SectionTest"
-PetscErrorCode SectionTest(const Options *options)
+#define __FUNCT__ "SectionTests"
+PetscErrorCode SectionTests(const Options *options)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = ConstantSectionTest(options);CHKERRQ(ierr);
   ierr = UniformSectionTest(options);CHKERRQ(ierr);
-  //ierr = NewSectionTest(options);CHKERRQ(ierr);
+  ierr = SectionTest(options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -213,7 +214,7 @@ PetscErrorCode RunUnitTests(const Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (options->section)  {ierr = SectionTest(options);CHKERRQ(ierr);}
+  if (options->section)  {ierr = SectionTests(options);CHKERRQ(ierr);}
   if (options->isection) {ierr = ISectionTest(options);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
