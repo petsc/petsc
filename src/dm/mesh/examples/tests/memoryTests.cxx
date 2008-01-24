@@ -30,8 +30,6 @@ typedef struct {
   PetscReal  refine;      // The refinement limit
   // Section flags
   PetscInt   components;  // Number of section components
-  PetscTruth shareAtlas;  // Share the atlas among the sections
-  PetscTruth distribute;  // Distribute the section
 } Options;
 
 #undef __FUNCT__
@@ -56,8 +54,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->interpolate = PETSC_FALSE;
   options->refine      = 0.0;
   options->components  = 3;
-  options->shareAtlas  = PETSC_FALSE;
-  options->distribute  = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "Debugging flag", "memTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
@@ -74,8 +70,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "memTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refine", "The refinement limit", "memTests", options->refine, &options->refine, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-components", "Number of section components", "memTests", options->components, &options->components, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-share_atlas", "Share section atlases", "memTests", options->shareAtlas, &options->shareAtlas, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-distribute", "Distribute the section", "memTests", options->distribute, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);

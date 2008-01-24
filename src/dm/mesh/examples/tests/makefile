@@ -90,11 +90,15 @@ subset: subset.o chkopts
 
 unitTests: sifter1.o sieve1.o section1.o isection1.o unitTests.o chkopts
 	-${CLINKER} -o unitTests sifter1.o sieve1.o section1.o isection1.o unitTests.o ${PETSC_DM_LIB} -lcppunit
-	#${RM} -f sifter1.o sieve1.o section1.o isection1.o unitTests.o
+	${RM} -f sifter1.o sieve1.o section1.o isection1.o unitTests.o
 
 memoryTests: memoryTests.o chkopts
 	-${CLINKER} -o memoryTests memoryTests.o ${PETSC_DM_LIB}
 	${RM} -f memoryTests.o
+
+distributionTests: distributionTests.o chkopts
+	-${CLINKER} -o distributionTests distributionTests.o ${PETSC_DM_LIB}
+	${RM} -f distributionTests.o
 #-----------------------------------------------------------------
 BOOST_LIBS = -Wl,-rpath,${BOOST_DIR}/lib -L${BOOST_DIR}/lib -lboost_program_options-gcc41
 args0: args0.o chkopts

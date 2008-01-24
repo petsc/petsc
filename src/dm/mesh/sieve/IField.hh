@@ -21,8 +21,8 @@ namespace ALE {
       ~const_iterator() {};
     public:
       const_iterator& operator=(const const_iterator& iter) {this->_p = iter._p;};
-      bool operator==(const const_iterator& iter) {return this->_p == iter._p;};
-      bool operator!=(const const_iterator& iter) {return this->_p != iter._p;};
+      bool operator==(const const_iterator& iter) const {return this->_p == iter._p;};
+      bool operator!=(const const_iterator& iter) const {return this->_p != iter._p;};
       const_iterator& operator++() {++this->_p; return *this;}
       const_iterator& operator++(int) {
         const_iterator tmp(*this);
@@ -35,7 +35,7 @@ namespace ALE {
         --(*this);
         return tmp;
       };
-      point_type operator*() {return this->_p;};
+      point_type operator*() const {return this->_p;};
     };
   protected:
     point_type _min, _max;
