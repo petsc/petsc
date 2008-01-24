@@ -54,10 +54,16 @@ int main(int argc,char **argv)
   if (!rank) {
     ierr = VecView(z,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }
+  ierr = VecDestroy(z);CHKERRQ(ierr);
+
+  ierr = VecScatterCreateToZero(x,&tozero,&z);CHKERRQ(ierr);
+  ierr = VecScatterBegin(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(tozero,x,z,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(tozero);CHKERRQ(ierr);
+  ierr = VecDestroy(z);CHKERRQ(ierr);
 
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = VecDestroy(z);CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;

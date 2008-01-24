@@ -16,7 +16,7 @@
 typedef struct _MatOps *MatOps;
 struct _MatOps {
   /* 0*/
-  PetscErrorCode (*setvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const MatScalar[],InsertMode);
+  PetscErrorCode (*setvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*getrow)(Mat,PetscInt,PetscInt *,PetscInt*[],PetscScalar*[]);
   PetscErrorCode (*restorerow)(Mat,PetscInt,PetscInt *,PetscInt *[],PetscScalar *[]);
   PetscErrorCode (*mult)(Mat,Vec,Vec);
@@ -142,7 +142,7 @@ struct _MatOps {
   PetscErrorCode (*conjugate)(Mat);                              /* complex conjugate */
   PetscErrorCode (*setsizes)(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
   /*105*/
-  PetscErrorCode (*setvaluesrow)(Mat,PetscInt,const MatScalar[]);
+  PetscErrorCode (*setvaluesrow)(Mat,PetscInt,const PetscScalar[]);
   PetscErrorCode (*realpart)(Mat);
   PetscErrorCode (*imaginarypart)(Mat);
   PetscErrorCode (*getrowuppertriangular)(Mat);
@@ -184,7 +184,7 @@ typedef struct _MatStashSpace *PetscMatStashSpace;
 
 struct _MatStashSpace {
   PetscMatStashSpace next;
-  MatScalar          *space_head,*val;
+  PetscScalar        *space_head,*val;
   PetscInt           *idx,*idy;
   PetscInt           total_space_size;
   PetscInt           local_used;
@@ -211,8 +211,8 @@ typedef struct {
   MPI_Request   *recv_waits;            /* array of receive requests */
   MPI_Status    *send_status;           /* array of send status */
   PetscInt      nsends,nrecvs;          /* numbers of sends and receives */
-  MatScalar     *svalues;               /* sending data */
-  MatScalar     **rvalues;              /* receiving data (values) */
+  PetscScalar   *svalues;               /* sending data */
+  PetscScalar   **rvalues;              /* receiving data (values) */
   PetscInt      **rindices;             /* receiving data (indices) */
   PetscMPIInt   *nprocs;                /* tmp data used both during scatterbegin and end */
   PetscInt      nprocessed;             /* number of messages already processed */
@@ -223,12 +223,12 @@ EXTERN PetscErrorCode MatStashDestroy_Private(MatStash*);
 EXTERN PetscErrorCode MatStashScatterEnd_Private(MatStash*);
 EXTERN PetscErrorCode MatStashSetInitialSize_Private(MatStash*,PetscInt);
 EXTERN PetscErrorCode MatStashGetInfo_Private(MatStash*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[]);
-EXTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[],PetscInt);
-EXTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[],PetscInt,PetscInt,PetscInt);
-EXTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[],PetscInt,PetscInt,PetscInt);
+EXTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[]);
+EXTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt);
+EXTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
+EXTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const PetscScalar[],PetscInt,PetscInt,PetscInt);
 EXTERN PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
-EXTERN PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,MatScalar**,PetscInt*);
+EXTERN PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
 
 #define FACTOR_LU       1
 #define FACTOR_CHOLESKY 2

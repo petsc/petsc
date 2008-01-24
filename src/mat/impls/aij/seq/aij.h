@@ -64,9 +64,9 @@ EXTERN PetscErrorCode MatILUFactorSymbolic_Inode(Mat A,IS isrow,IS iscol,MatFact
 
 
 typedef struct {
-  SEQAIJHEADER(PetscScalar);
+  SEQAIJHEADER(MatScalar);
   Mat_Inode    inode;
-  PetscScalar  *saved_values;             /* location for stashing nonzero values of matrix */
+  MatScalar    *saved_values;             /* location for stashing nonzero values of matrix */
 
   PetscScalar  *idiag,*mdiag,*ssor_work;  /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
   PetscTruth   idiagvalid;                     /* current idiag[] and mdiag[] are valid */
@@ -80,7 +80,7 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqXAIJFreeAIJ"
-PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,PetscScalar **a,PetscInt **j,PetscInt **i) {
+PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i) {
                                      PetscErrorCode ierr;
                                      Mat_SeqAIJ     *A = (Mat_SeqAIJ*) AA->data;
                                      if (A->singlemalloc) {
@@ -181,8 +181,8 @@ EXTERN PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscRe
 EXTERN PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatSetValues_SeqAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
-EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
+EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,MatScalar**);
+EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,MatScalar**);
 EXTERN PetscErrorCode MatAXPY_SeqAIJ(Mat,PetscScalar,Mat,MatStructure);
 EXTERN PetscErrorCode MatGetRowIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);

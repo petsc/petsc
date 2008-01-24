@@ -64,7 +64,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   PetscInt       *old_i = a->i,*old_j = a->j,*new_i,*old_i2 = 0,*old_j2 = 0,*new_j;
   PetscInt       *ordcol,*iwk,*iperm,*jw;
   PetscInt       jmax,lfill,job,*o_i,*o_j;
-  PetscScalar    *old_a = a->a,*w,*new_a,*old_a2 = 0,*wk,*o_a;
+  MatScalar      *old_a = a->a,*w,*new_a,*old_a2 = 0,*wk,*o_a;
   PetscReal      af;
 
   PetscFunctionBegin;
@@ -438,7 +438,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       *r,*ic,i,j,n=A->rmap.n,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,row,*ics;
   PetscInt       *diag_offset = b->diag,diag,*pj;
-  PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
+  PetscScalar    *rtmp,*pc,multiplier,*rtmps;
+  MatScalar      *v,*pv;
   PetscScalar    d;
   PetscReal      rs;
   LUShift_Ctx    sctx;

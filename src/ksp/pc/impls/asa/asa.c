@@ -268,6 +268,7 @@ PetscErrorCode PrintEnergyNormOfDiff(Mat A, Vec x, Vec y)
   PetscScalar    dotprod;
   PetscReal      dotabs;
   MPI_Comm       Acomm;
+
   PetscFunctionBegin;
   ierr = VecDuplicate(x, &vecdiff);CHKERRQ(ierr);
   ierr = VecWAXPY(vecdiff, -1.0, x, y);CHKERRQ(ierr);
@@ -1148,7 +1149,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   ierr = VecDot(asa_lev->x, ax, &tmp);CHKERRQ(ierr);
   norm = PetscAbsScalar(tmp);
   ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
-  ierr = PetscPrintf(asa_lev->comm, "Residual norm of relaxation after %g %d relaxations: %g %g\n", asa->epsilon,asa->mu_initial, norm,prevnorm);CHKERRQ(ierr);
+  ierr = PetscPrintf(asa_lev->comm, "Residual norm of relaxation after %g %D relaxations: %g %g\n", asa->epsilon,asa->mu_initial, norm,prevnorm);CHKERRQ(ierr);
 
   /* Check if it already converges by itself */
   if (norm/prevnorm <= PetscAbsScalar(PetscPowScalar(asa->epsilon, asa->mu_initial))) {
@@ -1164,7 +1165,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 
     /* do the whole initialization stage loop */
     while (!sufficiently_coarsened) {
-      ierr = PetscPrintf(asa_lev->comm, "Initialization stage: creating level %d\n", asa_lev->level+1);CHKERRQ(ierr);
+      ierr = PetscPrintf(asa_lev->comm, "Initialization stage: creating level %D\n", asa_lev->level+1);CHKERRQ(ierr);
 
       /* (a) Set candidate matrix B_l = x_l */
       /* get the correct vector sizes and data */
@@ -1208,8 +1209,8 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
       /* coarse enough for direct solver? */
       ierr = MatGetSize(asa_next_lev->A, &i, &j);CHKERRQ(ierr);
       if (PetscMax(i,j) <= asa->direct_solver) {
-	ierr = PetscPrintf(asa_lev->comm, "Level %d can be treated directly.\n"
-			   "Algorithm will use %d levels.\n", asa_next_lev->level,
+	ierr = PetscPrintf(asa_lev->comm, "Level %D can be treated directly.\n"
+			   "Algorithm will use %D levels.\n", asa_next_lev->level,
 			   asa_next_lev->level);CHKERRQ(ierr);
 	break; /* go to step 5 */
       }
@@ -1235,7 +1236,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 	ierr = MatMult(asa_next_lev->A, asa_next_lev->x, ax);CHKERRQ(ierr);
 	ierr = VecDot(asa_next_lev->x, ax, &tmp);CHKERRQ(ierr);
 	prevnorm = PetscAbsScalar(tmp);
-	ierr = PetscPrintf(asa_next_lev->comm, "Residual norm of starting guess on level %d: %f\n", asa_next_lev->level, prevnorm);CHKERRQ(ierr);
+	ierr = PetscPrintf(asa_next_lev->comm, "Residual norm of starting guess on level %D: %f\n", asa_next_lev->level, prevnorm);CHKERRQ(ierr);
 	/* apply mu relaxations: WORK, make sure that mu is set correctly */
 	ierr = KSPSolve(asa_next_lev->smoothd, asa_next_lev->b, asa_next_lev->x);CHKERRQ(ierr);
 	/* compute new norm */
@@ -1243,7 +1244,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 	ierr = VecDot(asa_next_lev->x, ax, &tmp);CHKERRQ(ierr);
 	norm = PetscAbsScalar(tmp);
 	ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
-	ierr = PetscPrintf(asa_next_lev->comm, "Residual norm after Richardson iteration  on level %d: %f\n", asa_next_lev->level, norm);CHKERRQ(ierr);
+	ierr = PetscPrintf(asa_next_lev->comm, "Residual norm after Richardson iteration  on level %D: %f\n", asa_next_lev->level, norm);CHKERRQ(ierr);
 	/* (i) Check if it already converges by itself */
 	if (norm/prevnorm <= PetscAbsScalar(PetscPowScalar(asa->epsilon, asa->mu))) {
 	  /* relaxation reduces error sufficiently */
@@ -1420,7 +1421,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
   /* 1. If max. dof per node on level 2 equals K, stop */
   if (asa_next_lev->cand_vecs >= asa->max_dof_lev_2) {
     ierr = PetscPrintf(PETSC_COMM_WORLD,
-		       "Maximum dof on level 2 reached: %d\n"
+		       "Maximum dof on level 2 reached: %D\n"
 		       "Consider increasing this limit by setting it with -pc_asa_max_dof_lev_2\n",
 		       asa->max_dof_lev_2);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -1483,7 +1484,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
   if (asa_lev->cand_vecs >= asa->max_cand_vecs) {
     SETERRQ(PETSC_ERR_MEM, "Number of candidate vectors will exceed allocated storage space");
   } else {
-    ierr = PetscPrintf(asa_lev->comm, "Adding candidate vector %d\n", asa_lev->cand_vecs+1);CHKERRQ(ierr);
+    ierr = PetscPrintf(asa_lev->comm, "Adding candidate vector %D\n", asa_lev->cand_vecs+1);CHKERRQ(ierr);
   }
   ierr = PCAddCandidateToB_ASA(asa_lev->B, asa_lev->cand_vecs, asa_lev->x, asa_lev->A);CHKERRQ(ierr);
   *cand_added = PETSC_TRUE;
@@ -1491,7 +1492,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
 
   /* 6. loop over levels */
   while(asa_next_lev && asa_next_lev->next) {
-    ierr = PetscPrintf(asa_lev->comm, "General setup stage: processing level %d\n", asa_next_lev->level);CHKERRQ(ierr);
+    ierr = PetscPrintf(asa_lev->comm, "General setup stage: processing level %D\n", asa_next_lev->level);CHKERRQ(ierr);
     /* (a) define B_{l+1} and P_{l+1}^L */
     /* construct P_{l+1}^l */
     ierr = PCCreateTransferOp_ASA(asa_lev, PETSC_FALSE);CHKERRQ(ierr);
@@ -1704,7 +1705,7 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
     /* check convergence */
     ierr = MatMult(asa_lev->A, asa_lev->x, asa_lev->r);CHKERRQ(ierr);
     ierr = VecNorm(asa_lev->r, NORM_2, &rnorm);CHKERRQ(ierr);
-    ierr = PetscPrintf(asa->comm, "After %d iterations residual norm is %f\n", i+1, rnorm);CHKERRQ(ierr);
+    ierr = PetscPrintf(asa->comm, "After %D iterations residual norm is %f\n", i+1, rnorm);CHKERRQ(ierr);
     if (rnorm < rnorm_start*(asa->rtol) || rnorm < asa->abstol) {
       /* convergence */
       break;
@@ -1713,7 +1714,7 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc)
     ierr = VecDot(asa_lev->x, asa_lev->r, &rq_nom);CHKERRQ(ierr);
     ierr = VecDot(asa_lev->x, asa_lev->x, &rq_denom);CHKERRQ(ierr);
     rq = PetscAbsScalar(rq_nom / rq_denom);
-    ierr = PetscPrintf(asa->comm, "After %d iterations Rayleigh quotient of residual is %f\n", i+1, rq);CHKERRQ(ierr);
+    ierr = PetscPrintf(asa->comm, "After %D iterations Rayleigh quotient of residual is %f\n", i+1, rq);CHKERRQ(ierr);
     /* test Rayleigh quotient decrease and add more candidate vectors if necessary */
     if (i && (rq > asa->rq_improve*rq_prev)) {
       /* improve interpolation by adding another candidate vector */
@@ -1857,7 +1858,7 @@ PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,Pets
     ierr = MatMult(asa->A, asa->x, asa->r);CHKERRQ(ierr);
     ierr = VecAYPX(asa->r, -1.0, asa->b);CHKERRQ(ierr);
     ierr = VecNorm(asa->r, NORM_2, &rnorm);CHKERRQ(ierr);
-    ierr = PetscPrintf(asa->comm, "After %d iterations residual norm is %f\n", i+1, rnorm);CHKERRQ(ierr);
+    ierr = PetscPrintf(asa->comm, "After %D iterations residual norm is %f\n", i+1, rnorm);CHKERRQ(ierr);
     if (rnorm < rnorm_start*(rtol) || rnorm < asa->abstol) {
       /* convergence */
       break;
