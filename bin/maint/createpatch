@@ -17,8 +17,8 @@ if [ ! -d $petscrepo ]; then
   echo "Error: dir $petscrepo does not exist"
   exit
 fi
-if [ ! -d $petscrepo/python/BuildSystem ]; then
-  echo "Error: dir $petscrepo/python/BuildSystem does not exist"
+if [ ! -d $petscrepo/config/BuildSystem ]; then
+  echo "Error: dir $petscrepo/config/BuildSystem does not exist"
   exit
 fi
 cd $petscrepo
@@ -35,11 +35,11 @@ fi
 
 # check if all files are checked in
 a=`hg status -m | wc -l`
-b=`hg status -m -R python/BuildSystem | wc -l`
+b=`hg status -m -R config/BuildSystem | wc -l`
 if [ "${a}" != "0" -o "${b}" != "0" ]; then
   echo "*** Mercurial edited files exist. Cannot proceed! ****"
   hg status -m
-  hg status -m -R python/BuildSystem
+  hg status -m -R config/BuildSystem
   exit
 fi
 

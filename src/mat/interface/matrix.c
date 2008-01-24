@@ -5206,6 +5206,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroyMatrices(PetscInt n,Mat *mat[])
 
    Output Parameter:
 .  matstruct - the sequential matrix with the nonzero structure of mat
+
+  Level: intermediate
+
 .seealso: MatDestroySeqNonzeroStructure(), MatGetSubMatrices(), MatDestroyMatrices()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetSeqNonzeroStructure(Mat mat,Mat *matstruct[])

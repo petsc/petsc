@@ -20,7 +20,7 @@ PetscEvent  SNES_Solve = 0, SNES_LineSearch = 0, SNES_FunctionEval = 0, SNES_Jac
    Input Parameters:
 .  SNES - the SNES context
 
-   Level: advanded
+   Level: advanced
 
 .keywords: SNES, view
 

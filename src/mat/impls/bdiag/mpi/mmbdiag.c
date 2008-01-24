@@ -72,13 +72,8 @@ PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat mat)
   ierr = PetscFree(garray);CHKERRQ(ierr);
 
   /* create temporary global vector to generate scatter context */
-  /* this is inefficient, but otherwise we must do either 
-     1) save garray until the first actual scatter when the vector is known or
-     2) have another way of generating a scatter context without a vector.*/
-  /*
-     This is not correct for a rectangular matrix mbd->rmap.N? 
-  */
-  ierr = VecCreateMPI(((PetscObject)mat)->comm,mat->rmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
+  /*   This is not correct for a rectangular matrix mbd->rmap.N?   */
+  ierr = VecCreateMPIWithArray(((PetscObject)mat)->comm,mat->rmap.n,mat->cmap.N,PETSC_NULL,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mbd->lvec,to,&mbd->Mvctx);CHKERRQ(ierr);

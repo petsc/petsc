@@ -14,12 +14,12 @@ foreach CONF ($*)
   set BITKEEPER=yes
   source $dir/confignightly/${CONF}
 
-  echo "start TAO build at `date`:$SSH $USR@$MACH $DASHN $TAO_LOC/maint/buildtest $CONF $LOC" 
+  echo "start TAO build at `date`:$SSH $USR@$MACH $DASHN $TAO_LOC/bin/maint/buildtest $CONF $LOC" 
   if ("${BITKEEPER}" == "yes") then
-    $SSH $USR@$MACH $DASHN "cd $TAO_LOC ; bk pull; $TAO_LOC/maint/buildtest $CONF $LOC" &
+    $SSH $USR@$MACH $DASHN "cd $TAO_LOC ; bk pull; $TAO_LOC/bin/maint/buildtest $CONF $LOC" &
   else
     rsync -e ssh -az --delete  $pdir/../tao-devel/ ${USR}@${MACH}:${TAO_LOC}
-    $SSH $USR@$MACH $DASHN "cd $TAO_LOC; $TAO_LOC/maint/buildtest $CONF $LOC" &
+    $SSH $USR@$MACH $DASHN "cd $TAO_LOC; $TAO_LOC/bin/maint/buildtest $CONF $LOC" &
   endif
 
   sleep 300 # perhaps ease the load on petsc.bkbits.net by spacing the builds

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #######################################################################
 # Usage:
-#  ./maint/builddist.py --with-config=linux-gnu
+#  ./bin/maint/builddist.py --with-config=linux-gnu
 #
 #  Options:
 #    --with-config - specify the config file to use for the build (from $PETSC_DIR/config/*.py)
