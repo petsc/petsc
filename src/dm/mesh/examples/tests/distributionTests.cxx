@@ -73,7 +73,8 @@ PetscErrorCode CreateScatterOverlap(const Obj<SendOverlap>& sendOverlap, const O
       const PetscInt rEnd   = (r+1)*block + PetscMin(r+1, numCells%size);
 
       for(PetscInt c = rStart; c < rEnd; ++c) {
-        sendOverlap->addArrow(c, r, c);
+        //sendOverlap->addArrow(c, r, c);
+        sendOverlap->addArrow(c, r, c - rStart);
       }
     }
   } else {
@@ -81,7 +82,8 @@ PetscErrorCode CreateScatterOverlap(const Obj<SendOverlap>& sendOverlap, const O
     const PetscInt end   = (rank+1)*block + PetscMin(rank+1, numCells%size);
 
     for(PetscInt c = start; c < end; ++c) {
-      recvOverlap->addArrow(0, c, c);
+      //recvOverlap->addArrow(0, c, c);
+      recvOverlap->addArrow(0, c - start, c);
     }
   }
   PetscFunctionReturn(0);

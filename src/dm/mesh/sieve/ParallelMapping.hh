@@ -194,8 +194,8 @@ namespace ALE {
 
         for(typename RecvOverlap::supportSequence::iterator s_iter = points->begin(); s_iter != points->end(); ++s_iter) {
 
-          recvSection->updatePoint(*s_iter, &v[k]);
-          k += recvSection->getFiberDimension(*s_iter);
+          recvSection->updatePoint(s_iter.color(), &v[k]);
+          k += recvSection->getFiberDimension(s_iter.color());
         }
         // TODO: This should use an allocator
         delete [] v;
@@ -220,7 +220,7 @@ namespace ALE {
         vMover.send(*r_iter, 1, sendSection->restrict(p));
       }
       const Obj<typename RecvOverlap::traits::capSequence> rRanks = recvOverlap->cap();
-      const typename SendOverlap::target_type              q      = *recvOverlap->support(*rRanks->begin())->begin();
+      const typename SendOverlap::target_type              q      = recvOverlap->support(*rRanks->begin())->begin().color();
 
       for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rRanks->end(); ++r_iter) {
         const Obj<typename RecvOverlap::traits::supportSequence> sPoints = recvOverlap->support(*r_iter);
@@ -234,6 +234,7 @@ namespace ALE {
       vMover.end();
       return recvSection;
     };
+    // BROKEN
     // Specialize to an FauxConstantSection
     template<typename SendOverlap, typename RecvOverlap, typename Value>
     static Obj<FauxConstantSection<typename SendOverlap::source_type, Value> > copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<FauxConstantSection<typename SendOverlap::source_type, Value> >& sendSection) {
@@ -263,6 +264,7 @@ namespace ALE {
       recvSection->view("");
       return recvSection;
     };
+    // BROKEN
     // Specialize to an IConstantSection
     template<typename SendOverlap, typename RecvOverlap, typename Value>
     static Obj<IConstantSection<typename SendOverlap::source_type, Value> > copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<IConstantSection<typename SendOverlap::source_type, Value> >& sendSection) {
