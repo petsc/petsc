@@ -299,12 +299,14 @@ namespace ALE {
     typedef typename alloc_type::template rebind<atlas_type>::other                               atlas_alloc_type;
     typedef typename atlas_alloc_type::pointer                                                    atlas_ptr;
   protected:
+    size_t          _contiguous_array_size;
+    value_type     *_contiguous_array;
     Obj<atlas_type> _atlas;
     values_type     _array;
     fiber_type      _emptyValue;
     alloc_type      _allocator;
   public:
-    UniformSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
+    UniformSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _contiguous_array_size(0), _contiguous_array(NULL) {
       atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
       atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
       this->_atlas = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
@@ -312,13 +314,17 @@ namespace ALE {
       this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
       for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
-    UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas) {
+    UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _contiguous_array_size(0), _contiguous_array(NULL), _atlas(atlas) {
       int dim = fiberDim;
       this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
       for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
     virtual ~UniformSection() {
       this->_atlas = NULL;
+      if (this->_contiguous_array) {
+        for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.destroy(this->_contiguous_array+i);}
+        this->_allocator.deallocate(this->_contiguous_array, this->_contiguous_array_size);
+      }
     };
   public:
     value_type *getRawArray(const int size) {
@@ -381,6 +387,7 @@ namespace ALE {
       return this->_atlas->restrictPoint(p)[0];
     };
     void setFiberDimension(const point_type& p, int dim) {
+      this->update();
       this->checkDimension(dim);
       this->_atlas->addPoint(p);
       this->_atlas->updatePoint(p, &dim);
@@ -417,24 +424,65 @@ namespace ALE {
     int sizeWithBC() const {
       return this->size();
     };
+    void allocatePoint() {};
   public: // Restriction
-    // Return a pointer to the entire contiguous storage array
-    const values_type& restrict() {
-      return this->_array;
+    const value_type *restrict() {
+      const chart_type& chart = this->getChart();
+      const value_type  dummy = 0;
+      int               k     = 0;
+
+      if (chart.size() > this->_contiguous_array_size*fiberDim) {
+        if (this->_contiguous_array) {
+          for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.destroy(this->_contiguous_array+i);}
+          this->_allocator.deallocate(this->_contiguous_array, this->_contiguous_array_size);
+        }
+        this->_contiguous_array_size = chart.size()*fiberDim;
+        this->_contiguous_array = this->_allocator.allocate(this->_contiguous_array_size*fiberDim);
+        for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.construct(this->_contiguous_array+i, dummy);}
+      }
+      for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const value_type *a = this->_array[*p_iter].v;
+
+        for(int i = 0; i < fiberDim; ++i, ++k) {
+          this->_contiguous_array[k] = a[i];
+        }
+      }
+      return this->_contiguous_array;
+    };
+    void update() {
+      if (this->_contiguous_array) {
+        const chart_type& chart = this->getChart();
+        int               k     = 0;
+
+        for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+          value_type *a = this->_array[*p_iter].v;
+
+          for(int i = 0; i < fiberDim; ++i, ++k) {
+            a[i] = this->_contiguous_array[k];
+          }
+        }
+        for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.destroy(this->_contiguous_array+i);}
+        this->_allocator.deallocate(this->_contiguous_array, this->_contiguous_array_size);
+        this->_contiguous_array_size = 0;
+        this->_contiguous_array      = NULL;
+      }
     };
     // Return only the values associated to this point, not its closure
     const value_type *restrictPoint(const point_type& p) {
       if (this->_array.find(p) == this->_array.end()) return this->_emptyValue.v;
+      this->update();
       return this->_array[p].v;
     };
     // Update only the values associated to this point, not its closure
     void updatePoint(const point_type& p, const value_type v[]) {
+      this->update();
       for(int i = 0; i < fiberDim; ++i) {
         this->_array[p].v[i] = v[i];
       }
     };
     // Update only the values associated to this point, not its closure
     void updateAddPoint(const point_type& p, const value_type v[]) {
+      this->update();
       for(int i = 0; i < fiberDim; ++i) {
         this->_array[p].v[i] += v[i];
       }
@@ -447,6 +495,7 @@ namespace ALE {
       ostringstream txt;
       int rank;
 
+      this->update();
       if (comm == MPI_COMM_NULL) {
         comm = this->comm();
         rank = this->commRank();
@@ -768,6 +817,7 @@ namespace ALE {
     int sizeWithBC() const {
       return this->size();
     };
+    void allocatePoint() {};
   public: // Restriction
     // Return a pointer to the entire contiguous storage array
     const value_type *restrict() {

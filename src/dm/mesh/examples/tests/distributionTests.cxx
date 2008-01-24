@@ -105,7 +105,38 @@ PetscErrorCode ConstantSectionTest(const Options *options)
   PetscFunctionBegin;
   ierr = CreateScatterOverlap(sendOverlap, recvOverlap, options);CHKERRQ(ierr);
   serialSection->addPoint(sendOverlap->cap());
-  serialSection->update(0, &value);
+  if (!options->rank) {
+    serialSection->update(0, &value);
+  }
+  serialSection->view("");
+  Obj<section> parallelSection = ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection);
+  parallelSection->view("");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "UniformSectionTest"
+PetscErrorCode UniformSectionTest(const Options *options)
+{
+  typedef int point_type;
+  typedef ALE::Sifter<int,point_type,point_type> send_overlap_type;
+  typedef ALE::Sifter<point_type,int,point_type> recv_overlap_type;
+  typedef ALE::UniformSection<point_type, double, 4> section;
+  Obj<send_overlap_type> sendOverlap   = new send_overlap_type(options->comm);
+  Obj<recv_overlap_type> recvOverlap   = new recv_overlap_type(options->comm);
+  Obj<section>           serialSection = new section(options->comm, options->debug);
+  section::value_type    value[4]      = {7.0, 14.0, 21.0, 28.0};
+  
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = CreateScatterOverlap(sendOverlap, recvOverlap, options);CHKERRQ(ierr);
+  if (!options->rank) {
+    for(int c = 0; c < options->numCells; ++c) {
+      serialSection->setFiberDimension(c, 4);
+      serialSection->updatePoint(c, value);
+    }
+  }
   serialSection->view("");
   Obj<section> parallelSection = ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection);
   parallelSection->view("");
@@ -118,27 +149,36 @@ PetscErrorCode ConstantSectionTest(const Options *options)
 //
 // Also, we need a way to update overlaps based on a renumbering
 #undef __FUNCT__
-#define __FUNCT__ "NewUniformSectionTest"
-PetscErrorCode NewUniformSectionTest(const Options *options)
+#define __FUNCT__ "NewSectionTest"
+PetscErrorCode NewSectionTest(const Options *options)
 {
   typedef int point_type;
   typedef ALE::Sifter<int,point_type,point_type> send_overlap_type;
   typedef ALE::Sifter<point_type,int,point_type> recv_overlap_type;
-  typedef ALE::NewUniformSection<point_type, double, 4> section;
+  typedef ALE::Section<point_type, double, std::allocator<double>, ALE::NewUniformSection<point_type, ALE::Point> > section;
   Obj<send_overlap_type> sendOverlap   = new send_overlap_type(options->comm);
   Obj<recv_overlap_type> recvOverlap   = new recv_overlap_type(options->comm);
   Obj<section>           serialSection = new section(options->comm, options->debug);
-  section::value_type    value[4]      = {7.0, 14.0, 21.0, 28.0};
+  section::value_type   *value;
   
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscMalloc(options->components * sizeof(double), &value);CHKERRQ(ierr);
+  for(PetscInt c = 0; c < options->components; ++c) {value[c] = 1.0;}
   ierr = CreateScatterOverlap(sendOverlap, recvOverlap, options);CHKERRQ(ierr);
   if (!options->rank) {
-    for(int c = 0; c < options->numCells; ++c) {
+    for(PetscInt c = 0; c < options->numCells; ++c) {
+      serialSection->setFiberDimension(c, options->components);
+    }
+  }
+  serialSection->allocatePoint();
+  if (!options->rank) {
+    for(PetscInt c = 0; c < options->numCells; ++c) {
       serialSection->updatePoint(c, value);
     }
   }
+  ierr = PetscFree(value);CHKERRQ(ierr);
   serialSection->view("");
   Obj<section> parallelSection = ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection);
   parallelSection->view("");
@@ -153,7 +193,8 @@ PetscErrorCode SectionTest(const Options *options)
 
   PetscFunctionBegin;
   ierr = ConstantSectionTest(options);CHKERRQ(ierr);
-  ierr = NewUniformSectionTest(options);CHKERRQ(ierr);
+  ierr = UniformSectionTest(options);CHKERRQ(ierr);
+  //ierr = NewSectionTest(options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
