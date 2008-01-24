@@ -118,7 +118,7 @@ PetscErrorCode ConstantSectionTest(const Options *options)
     serialSection->update(0, &value);
   }
   serialSection->view("");
-  ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection, parallelSection);
+  ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, serialSection, parallelSection);
   parallelSection->view("");
   PetscFunctionReturn(0);
 }
@@ -149,7 +149,7 @@ PetscErrorCode UniformSectionTest(const Options *options)
     }
   }
   serialSection->view("");
-  ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection, parallelSection);
+  ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, serialSection, parallelSection);
   // Fuse into existing section (needs no create)
   parallelSection->view("");
   PetscFunctionReturn(0);
@@ -199,6 +199,7 @@ PetscErrorCode SectionTest(const Options *options)
   Obj<send_overlap_type> sendOverlap     = new send_overlap_type(options->comm);
   Obj<recv_overlap_type> recvOverlap     = new recv_overlap_type(options->comm);
   Obj<section>           serialSection   = new section(options->comm, options->debug);
+  Obj<section>           overlapSection  = new section(options->comm, options->debug);
   Obj<section>           parallelSection = new section(options->comm, options->debug);
   section::value_type   *value;
   
@@ -220,9 +221,11 @@ PetscErrorCode SectionTest(const Options *options)
     }
   }
   ierr = PetscFree(value);CHKERRQ(ierr);
-  serialSection->view("");
-  ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection, parallelSection);
-  parallelSection->view("");
+  serialSection->view("Serial Section");
+  ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, serialSection, overlapSection);
+  overlapSection->view("Overlap Section");
+  ALE::Pullback::InsertionBinaryFusion::fuse(overlapSection, recvOverlap, parallelSection);
+  parallelSection->view("Parallel Section");
   PetscFunctionReturn(0);
 }
 
