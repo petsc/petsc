@@ -171,7 +171,7 @@ namespace ALE {
           const Obj<typename recv_section_type::section_type>&        section = p_iter->second;
           const typename recv_section_type::section_type::chart_type& chart   = section->getChart();
 
-          for(typename recv_section_type::section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+          for(typename recv_section_type::section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
             const typename recv_section_type::value_type *points = section->restrictPoint(*c_iter);
             int size = section->getFiberDimension(*c_iter);
             int c    = 0;

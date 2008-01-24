@@ -445,9 +445,9 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   edgesLeft = m;
 
   std::vector<PetscInt> pred(n,-1);
-  std::vector<PetscInt> succ[n]; 
+  std::vector<PetscInt> *succ = new std::vector<PetscInt>[n];
   std::vector<PetscInt>::iterator i;
-  PetscScalar dist[n];
+  PetscScalar *dist = new PetscScalar[n];
   std::vector<PetscTruth> taken(n,PETSC_FALSE);
 
   /** form tree of shortest paths to root **/
@@ -531,7 +531,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   assert(!pq.empty());
   std::queue<PetscInt> anchor_q;
   ShortestPathPriorityQueue cone_pq;
-  std::vector<PetscInt> cone_succ[n]; 
+  std::vector<PetscInt> *cone_succ = new std::vector<PetscInt>[n];
   std::vector<PetscTruth> cone_found(n,PETSC_FALSE);
 
   /** form tree of shortest paths to an anchor **/
@@ -669,10 +669,9 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
     k++;
   }
   */
-
-  
-
-
+  delete [] succ;
+  delete [] dist;
+  delete [] cone_succ;
   PetscFunctionReturn(0);
 }
 
