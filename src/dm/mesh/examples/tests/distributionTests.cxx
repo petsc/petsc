@@ -230,6 +230,49 @@ PetscErrorCode SectionTest(const Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SectionToISectionTest"
+PetscErrorCode SectionToISectionTest(const Options *options)
+{
+  typedef int point_type;
+  typedef ALE::Sifter<int,point_type,point_type> send_overlap_type;
+  typedef ALE::Sifter<point_type,int,point_type> recv_overlap_type;
+  typedef ALE::Section<point_type, double>  section;
+  typedef ALE::ISection<point_type, double> isection;
+  Obj<send_overlap_type> sendOverlap     = new send_overlap_type(options->comm);
+  Obj<recv_overlap_type> recvOverlap     = new recv_overlap_type(options->comm);
+  Obj<section>           serialSection   = new section(options->comm, options->debug);
+  Obj<section>           overlapSection  = new section(options->comm, options->debug);
+  section::value_type   *value;
+  
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc(options->components * sizeof(double), &value);CHKERRQ(ierr);
+  ierr = CreateScatterOverlap(sendOverlap, recvOverlap, true, options);CHKERRQ(ierr);
+  Obj<isection> parallelSection = new isection(options->comm, 0, recvOverlap->base()->size(), options->debug);
+
+  if (!options->rank) {
+    for(PetscInt c = 0; c < options->numCells; ++c) {
+      serialSection->setFiberDimension(c, options->components);
+    }
+  }
+  serialSection->allocatePoint();
+  if (!options->rank) {
+    for(PetscInt c = 0; c < options->numCells; ++c) {
+      for(PetscInt comp = 0; comp < options->components; ++comp) {value[comp] = (c+1)*(comp+1);}
+      serialSection->updatePoint(c, value);
+    }
+  }
+  ierr = PetscFree(value);CHKERRQ(ierr);
+  serialSection->view("Serial Section");
+  ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, serialSection, overlapSection);
+  overlapSection->view("Overlap Section");
+  ALE::Pullback::InsertionBinaryFusion::fuse(overlapSection, recvOverlap, parallelSection);
+  parallelSection->view("Parallel Section");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SectionTests"
 PetscErrorCode SectionTests(const Options *options)
 {
@@ -239,6 +282,7 @@ PetscErrorCode SectionTests(const Options *options)
   ierr = ConstantSectionTest(options);CHKERRQ(ierr);
   ierr = UniformSectionTest(options);CHKERRQ(ierr);
   ierr = SectionTest(options);CHKERRQ(ierr);
+  ierr = SectionToISectionTest(options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
