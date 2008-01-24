@@ -59,7 +59,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 #undef __FUNCT__
 #define __FUNCT__ "CreateScatterOverlap"
 template<typename SendOverlap, typename RecvOverlap>
-PetscErrorCode CreateScatterOverlap(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Options *options)
+PetscErrorCode CreateScatterOverlap(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const bool localNumbering, const Options *options)
 {
   const PetscInt rank     = options->rank;
   const PetscInt size     = options->size;
@@ -73,8 +73,11 @@ PetscErrorCode CreateScatterOverlap(const Obj<SendOverlap>& sendOverlap, const O
       const PetscInt rEnd   = (r+1)*block + PetscMin(r+1, numCells%size);
 
       for(PetscInt c = rStart; c < rEnd; ++c) {
-        //sendOverlap->addArrow(c, r, c);
-        sendOverlap->addArrow(c, r, c - rStart);
+        if (localNumbering) {
+          sendOverlap->addArrow(c, r, c - rStart);
+        } else {
+          sendOverlap->addArrow(c, r, c);
+        }
       }
     }
   } else {
@@ -82,8 +85,11 @@ PetscErrorCode CreateScatterOverlap(const Obj<SendOverlap>& sendOverlap, const O
     const PetscInt end   = (rank+1)*block + PetscMin(rank+1, numCells%size);
 
     for(PetscInt c = start; c < end; ++c) {
-      //recvOverlap->addArrow(0, c, c);
-      recvOverlap->addArrow(0, c - start, c);
+      if (localNumbering) {
+        recvOverlap->addArrow(0, c - start, c);
+      } else {
+        recvOverlap->addArrow(0, c, c);
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -97,21 +103,22 @@ PetscErrorCode ConstantSectionTest(const Options *options)
   typedef ALE::Sifter<int,point_type,point_type> send_overlap_type;
   typedef ALE::Sifter<point_type,int,point_type> recv_overlap_type;
   typedef ALE::ConstantSection<point_type, double> section;
-  Obj<send_overlap_type> sendOverlap   = new send_overlap_type(options->comm);
-  Obj<recv_overlap_type> recvOverlap   = new recv_overlap_type(options->comm);
-  Obj<section>           serialSection = new section(options->comm, options->debug);
-  section::value_type    value         = 7.0;
+  Obj<send_overlap_type> sendOverlap     = new send_overlap_type(options->comm);
+  Obj<recv_overlap_type> recvOverlap     = new recv_overlap_type(options->comm);
+  Obj<section>           serialSection   = new section(options->comm, options->debug);
+  Obj<section>           parallelSection = new section(options->comm, options->debug);
+  section::value_type    value           = 7.0;
   
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = CreateScatterOverlap(sendOverlap, recvOverlap, options);CHKERRQ(ierr);
+  ierr = CreateScatterOverlap(sendOverlap, recvOverlap, true, options);CHKERRQ(ierr);
   serialSection->addPoint(sendOverlap->cap());
   if (!options->rank) {
     serialSection->update(0, &value);
   }
   serialSection->view("");
-  Obj<section> parallelSection = ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection);
+  ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection, parallelSection);
   parallelSection->view("");
   PetscFunctionReturn(0);
 }
@@ -124,15 +131,16 @@ PetscErrorCode UniformSectionTest(const Options *options)
   typedef ALE::Sifter<int,point_type,point_type> send_overlap_type;
   typedef ALE::Sifter<point_type,int,point_type> recv_overlap_type;
   typedef ALE::UniformSection<point_type, double, 4> section;
-  Obj<send_overlap_type> sendOverlap   = new send_overlap_type(options->comm);
-  Obj<recv_overlap_type> recvOverlap   = new recv_overlap_type(options->comm);
-  Obj<section>           serialSection = new section(options->comm, options->debug);
+  Obj<send_overlap_type> sendOverlap     = new send_overlap_type(options->comm);
+  Obj<recv_overlap_type> recvOverlap     = new recv_overlap_type(options->comm);
+  Obj<section>           serialSection   = new section(options->comm, options->debug);
+  Obj<section>           parallelSection = new section(options->comm, options->debug);
   section::value_type    value[4];
   
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = CreateScatterOverlap(sendOverlap, recvOverlap, options);CHKERRQ(ierr);
+  ierr = CreateScatterOverlap(sendOverlap, recvOverlap, true, options);CHKERRQ(ierr);
   if (!options->rank) {
     for(int c = 0; c < options->numCells; ++c) {
       for(PetscInt comp = 0; comp < 4; ++comp) {value[comp] = (c+1)*(comp+1);}
@@ -141,16 +149,45 @@ PetscErrorCode UniformSectionTest(const Options *options)
     }
   }
   serialSection->view("");
-  Obj<section> parallelSection = ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection);
+  ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection, parallelSection);
+  // Fuse into existing section (needs no create)
   parallelSection->view("");
   PetscFunctionReturn(0);
 }
 
+// Describe the completion process as the composition of two pullbacks:
+//
+//   copy(): unifies pullback to the overlap (restrict) and copy to neighboring process
+//   fuse(): unifies pullback across the overlap, then to the big section (update), and then fusion
+//
+// For parallel completion, we must first copy the section, restricted to the
+// overlap, to the other process, then we can proceed as above. The copy
+// process can be broken down as in the distribution paper:
+//
+//   1) Copy atlas (perhaps empty, signaling a single datum per point)
+//   2) Copy data
+//
+// The atlas copy is recursive, since it is itself a section.
+//
+// Thus, we have a software plan
+//
+// - Write parallel section copy (currently in ALE::Field)
+//
+// - Write pullback as a generic algorithm
+//
+// - Write fuse as a generic algorithm
+//   - Implement add and replace fusers
+//
 // Now we move back to
+//   We do not need the initial pullback
 //   copy: Copy the vector and leave it in the old domain
 //   fuse: fuse the copy, pulled back to the new domain, with the existing whole section
 //
 // Also, we need a way to update overlaps based on a renumbering
+//
+// We need to wrap distribution around completion
+//   Create local section
+//   Complete, with fuser which adds in
 #undef __FUNCT__
 #define __FUNCT__ "SectionTest"
 PetscErrorCode SectionTest(const Options *options)
@@ -159,16 +196,17 @@ PetscErrorCode SectionTest(const Options *options)
   typedef ALE::Sifter<int,point_type,point_type> send_overlap_type;
   typedef ALE::Sifter<point_type,int,point_type> recv_overlap_type;
   typedef ALE::Section<point_type, double> section;
-  Obj<send_overlap_type> sendOverlap   = new send_overlap_type(options->comm);
-  Obj<recv_overlap_type> recvOverlap   = new recv_overlap_type(options->comm);
-  Obj<section>           serialSection = new section(options->comm, options->debug);
+  Obj<send_overlap_type> sendOverlap     = new send_overlap_type(options->comm);
+  Obj<recv_overlap_type> recvOverlap     = new recv_overlap_type(options->comm);
+  Obj<section>           serialSection   = new section(options->comm, options->debug);
+  Obj<section>           parallelSection = new section(options->comm, options->debug);
   section::value_type   *value;
   
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(options->components * sizeof(double), &value);CHKERRQ(ierr);
-  ierr = CreateScatterOverlap(sendOverlap, recvOverlap, options);CHKERRQ(ierr);
+  ierr = CreateScatterOverlap(sendOverlap, recvOverlap, true, options);CHKERRQ(ierr);
   if (!options->rank) {
     for(PetscInt c = 0; c < options->numCells; ++c) {
       serialSection->setFiberDimension(c, options->components);
@@ -183,7 +221,7 @@ PetscErrorCode SectionTest(const Options *options)
   }
   ierr = PetscFree(value);CHKERRQ(ierr);
   serialSection->view("");
-  Obj<section> parallelSection = ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection);
+  ALE::ParallelPullback::copy(sendOverlap, recvOverlap, serialSection, parallelSection);
   parallelSection->view("");
   PetscFunctionReturn(0);
 }

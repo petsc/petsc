@@ -140,14 +140,14 @@ namespace ALE {
     // Copy the overlap section to the related processes
     // TODO: Can cache MPIMover objects (like a VecScatter)
     template<typename SendOverlap, typename RecvOverlap, typename Section>
-    static Obj<Section> copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& sendSection) {
-      const Obj<typename Section::atlas_type>& sendAtlas   = sendSection->getAtlas();
-      const Obj<typename Section::atlas_type>& recvAtlas   = copy(sendOverlap, recvOverlap, sendAtlas);
-      Obj<Section>                             recvSection = new Section(recvAtlas);
-      MPIMover<typename Section::value_type>   vMover(sendSection->comm(), sendSection->debug());
+    static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& sendSection, const Obj<Section>& recvSection) {
+      const Obj<typename Section::atlas_type>&      sendAtlas = sendSection->getAtlas();
+      const Obj<typename Section::atlas_type>&      recvAtlas = recvSection->getAtlas();
+      MPIMover<typename Section::value_type>        vMover(sendSection->comm(), sendSection->debug());
       std::map<int, typename Section::value_type *> sendValues;
       std::map<int, typename Section::value_type *> recvValues;
 
+      copy(sendOverlap, recvOverlap, sendAtlas, recvAtlas);
       const Obj<typename SendOverlap::traits::baseSequence> sRanks = sendOverlap->base();
 
       // TODO: This should be const_iterator, but Sifter sucks
@@ -204,13 +204,11 @@ namespace ALE {
         // TODO: This should use an allocator
         delete [] sendValues[*r_iter];
       }
-      return recvSection;
     };
     // Specialize to an ConstantSection
     template<typename SendOverlap, typename RecvOverlap, typename Value>
-    static Obj<ConstantSection<typename SendOverlap::source_type, Value> > copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<ConstantSection<typename SendOverlap::source_type, Value> >& sendSection) {
-      typedef ConstantSection<typename SendOverlap::source_type, Value> Section;
-      Obj<Section>    recvSection = new Section(sendSection->comm(), sendSection->debug());
+    static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<ConstantSection<typename SendOverlap::source_type, Value> >& sendSection, const Obj<ConstantSection<typename SendOverlap::source_type, Value> >& recvSection) {
+      // No need to cache this
       MPIMover<Value> vMover(sendSection->comm(), sendSection->debug());
 
       const Obj<typename SendOverlap::traits::baseSequence> sRanks = sendOverlap->base();
@@ -232,7 +230,6 @@ namespace ALE {
       }
       vMover.start();
       vMover.end();
-      return recvSection;
     };
     // BROKEN
     // Specialize to an FauxConstantSection
