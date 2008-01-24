@@ -171,6 +171,8 @@ $    This algorithm can be thought of as Gauss-Seidel on the normal equations
       This is related to, but not the same as "row projection" methods.
 
       This is currently coded only for SeqAIJ matrices in sequential (SOR) form.
+  
+  Level: intermediate
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCJACOBI, PCSOR
 

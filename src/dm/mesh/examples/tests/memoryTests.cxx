@@ -30,8 +30,6 @@ typedef struct {
   PetscReal  refine;      // The refinement limit
   // Section flags
   PetscInt   components;  // Number of section components
-  PetscTruth shareAtlas;  // Share the atlas among the sections
-  PetscTruth distribute;  // Distribute the section
 } Options;
 
 #undef __FUNCT__
@@ -56,8 +54,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->interpolate = PETSC_FALSE;
   options->refine      = 0.0;
   options->components  = 3;
-  options->shareAtlas  = PETSC_FALSE;
-  options->distribute  = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "Debugging flag", "memTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
@@ -74,8 +70,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "memTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refine", "The refinement limit", "memTests", options->refine, &options->refine, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-components", "Number of section components", "memTests", options->components, &options->components, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-share_atlas", "Share section atlases", "memTests", options->shareAtlas, &options->shareAtlas, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-distribute", "Distribute the section", "memTests", options->distribute, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
@@ -585,46 +579,6 @@ PetscErrorCode SectionDistributionTest(const Options *options)
 #if 0
 #undef __FUNCT__
 #define __FUNCT__ "ISectionDistributionTest"
-// We need to rework distribution to allow interval sections
-//   1) We can do update local with an ISection
-//   2) We need to convert the overlap to use local names
-//   3) The completion and then remote update proceed as before (I think)
-// I think we need to rewrite the distributeSection() method, but not much else
-//
-// We can define pullback,
-//
-//   Mapping pullback(Mapping phi, Mapping f)
-//
-// which produces \phi^* f. I need another operation, fuse,
-//
-//   Mapping fuse(Mapping f, Mapping g)
-//
-// which produces a map h: D_f \to R_f such that
-//
-//   h(p) = fuse(f(p), g(p)) \forall p \in D_f
-//
-// and fuse: R_f \times R_g \to R_h (and f(p) or g(p) may be \empty).
-// A completion is then a pullback of f along the overlap, followed by a fuse with f'.
-// I have left out the pullbacks which are just restrictions, but as Dmitry points out,
-// they are important.
-//
-// For parallel completion, we must first copy the section, restricted to the
-// overlap, to the other process, then we can proceed as above. The copy
-// process can be broken down as in the distribution paper:
-//
-//   1) Copy atlas (perhaps empty, signaling a single datum per point)
-//   2) Copy data
-//
-// The atlas copy is recursive, since it is itself a section.
-//
-// Thus, we have a software plan
-//
-// - Write parallel section copy (currently in ALE::Field)
-//
-// - Write pullback as a generic algorithm
-//
-// - Write fuse as a generic algorithm
-//   - Implement add and replace fusers
 PetscErrorCode ISectionDistributionTest(const Options *options)
 {
   typedef ALE::IUniformSection<int, double, 1, ALE::malloc_allocator<double> > TestSection;

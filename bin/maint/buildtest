@@ -4,9 +4,9 @@
 # Run as buildtest ARCH where ARCH is one of the default PETSc archs
 # of a configure arch
 #
-# Example usage: ${PETSC_DIR}/maint/buildtest solaris
-#                ./maint/buildtest solaris
-#                ./maint/buildtest 
+# Example usage: ${PETSC_DIR}/bin/maint/buildtest solaris
+#                ./bin/maint/buildtest solaris
+#                ./bin/maint/buildtest 
 #
 set day=`date | cut -f1 -d" "`
 #
@@ -49,7 +49,7 @@ cd $nPETSC_DIR
 hg revert -a
 hg -q pull >>& $nPETSC_DIR/test.log
 hg update  >>& $nPETSC_DIR/test.log
-pushd python/BuildSystem
+pushd config/BuildSystem
 hg revert -a
 hg -q pull >>& $nPETSC_DIR/test.log
 hg update  >>& $nPETSC_DIR/test.log

@@ -14,12 +14,12 @@ foreach CONF ($*)
   set MERCURIAL=yes
   source $dir/confignightly/${CONF}
 
-  echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/maint/buildtest $CONF" 
+  echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/bin/maint/buildtest $CONF" 
   if ("${MERCURIAL}" == "yes") then
-    $SSH $USR@$MACH $DASHN "cd $LOC ; hg revert -a; hg pull; hg update; $LOC/maint/buildtest $CONF" &
+    $SSH $USR@$MACH $DASHN "cd $LOC ; hg revert -a; hg pull; hg update; $LOC/bin/maint/buildtest $CONF" &
   else
     rsync -e ssh -az --delete  $pdir/ ${USR}@${MACH}:${LOC}
-    $SSH $USR@$MACH $DASHN "cd $LOC; $LOC/maint/buildtest $CONF" &
+    $SSH $USR@$MACH $DASHN "cd $LOC; $LOC/bin/maint/buildtest $CONF" &
   endif
   sleep 120 # perhaps ease the nfs load
 end

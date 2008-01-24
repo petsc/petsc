@@ -54,7 +54,7 @@ if [ ! -d $tmpdir ]; then
 fi
 
 # Update the hg repository
-cd $PETSC_DIR/python/BuildSystem
+cd $PETSC_DIR/config/BuildSystem
 hg pull
 hg -q update
 cd $PETSC_DIR
@@ -90,7 +90,7 @@ make ACTION=clean tree_basic
 
 # now tar up the PETSc tree
 cd $PETSC_DIR/..
-cat ${PETSC_DIR}/maint/xclude | sed -e s/petsc-dist/$pdir/ > $tmpdir/xclude
+cat ${PETSC_DIR}/bin/maint/xclude | sed -e s/petsc-dist/$pdir/ > $tmpdir/xclude
 /bin/tar --create --file $tmpdir/petsc.tar --exclude-from  $tmpdir/xclude $pdir
 cd $tmpdir
 /bin/tar xf $tmpdir/petsc.tar
@@ -130,7 +130,7 @@ cat include/petscversion.h.bak | \
 # eliminate misc files mercurial leaves
 /usr/bin/find . -type f -name "*.orig" -exec /bin/rm -f {} \;
 # Create EMACS-TAGS
-${PETSC_DIR}/maint/generateetags.py
+cd $tmpdir/petsc$version; ${PETSC_DIR}/bin/maint/generateetags.py
 # Update project files
 cd $tmpdir/petsc$version/projects; make
 
@@ -144,11 +144,12 @@ find petsc$version -type d -name "*" -exec chmod a+x {} \;
 # Now create the tar files
 cd $tmpdir
 /bin/tar -czf ~/petsc$version.tar.gz petsc$version
+
 # create lite version
 /bin/rm -rf $tmpdir/petsc$version/docs
 find $tmpdir/petsc$version -type f -name "*.html" -exec rm {} \;
 # recreate EMACS-TAGS [after deletion]
-${PETSC_DIR}/maint/generateetags.py
+cd $tmpdir/petsc$version; ${PETSC_DIR}/bin/maint/generateetags.py
 /bin/tar -czf ~/petsc-lite$version.tar.gz petsc$version
 
 #cleanup

@@ -279,7 +279,6 @@ namespace ALE {
       PetscSynchronizedFlush(comm);
     };
   };
-
   // A UniformSection often acts as an Atlas
   //   All fibers are the same dimension
   //     Note we can use a ConstantSection for this Atlas
@@ -300,12 +299,14 @@ namespace ALE {
     typedef typename alloc_type::template rebind<atlas_type>::other                               atlas_alloc_type;
     typedef typename atlas_alloc_type::pointer                                                    atlas_ptr;
   protected:
+    size_t          _contiguous_array_size;
+    value_type     *_contiguous_array;
     Obj<atlas_type> _atlas;
     values_type     _array;
     fiber_type      _emptyValue;
     alloc_type      _allocator;
   public:
-    UniformSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
+    UniformSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _contiguous_array_size(0), _contiguous_array(NULL) {
       atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
       atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
       this->_atlas = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
@@ -313,13 +314,17 @@ namespace ALE {
       this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
       for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
-    UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas) {
+    UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _contiguous_array_size(0), _contiguous_array(NULL), _atlas(atlas) {
       int dim = fiberDim;
       this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
       for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
     virtual ~UniformSection() {
       this->_atlas = NULL;
+      if (this->_contiguous_array) {
+        for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.destroy(this->_contiguous_array+i);}
+        this->_allocator.deallocate(this->_contiguous_array, this->_contiguous_array_size);
+      }
     };
   public:
     value_type *getRawArray(const int size) {
@@ -382,6 +387,7 @@ namespace ALE {
       return this->_atlas->restrictPoint(p)[0];
     };
     void setFiberDimension(const point_type& p, int dim) {
+      this->update();
       this->checkDimension(dim);
       this->_atlas->addPoint(p);
       this->_atlas->updatePoint(p, &dim);
@@ -418,24 +424,65 @@ namespace ALE {
     int sizeWithBC() const {
       return this->size();
     };
+    void allocatePoint() {};
   public: // Restriction
-    // Return a pointer to the entire contiguous storage array
-    const values_type& restrict() {
-      return this->_array;
+    const value_type *restrict() {
+      const chart_type& chart = this->getChart();
+      const value_type  dummy = 0;
+      int               k     = 0;
+
+      if (chart.size() > this->_contiguous_array_size*fiberDim) {
+        if (this->_contiguous_array) {
+          for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.destroy(this->_contiguous_array+i);}
+          this->_allocator.deallocate(this->_contiguous_array, this->_contiguous_array_size);
+        }
+        this->_contiguous_array_size = chart.size()*fiberDim;
+        this->_contiguous_array = this->_allocator.allocate(this->_contiguous_array_size*fiberDim);
+        for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.construct(this->_contiguous_array+i, dummy);}
+      }
+      for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const value_type *a = this->_array[*p_iter].v;
+
+        for(int i = 0; i < fiberDim; ++i, ++k) {
+          this->_contiguous_array[k] = a[i];
+        }
+      }
+      return this->_contiguous_array;
+    };
+    void update() {
+      if (this->_contiguous_array) {
+        const chart_type& chart = this->getChart();
+        int               k     = 0;
+
+        for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+          value_type *a = this->_array[*p_iter].v;
+
+          for(int i = 0; i < fiberDim; ++i, ++k) {
+            a[i] = this->_contiguous_array[k];
+          }
+        }
+        for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.destroy(this->_contiguous_array+i);}
+        this->_allocator.deallocate(this->_contiguous_array, this->_contiguous_array_size);
+        this->_contiguous_array_size = 0;
+        this->_contiguous_array      = NULL;
+      }
     };
     // Return only the values associated to this point, not its closure
     const value_type *restrictPoint(const point_type& p) {
       if (this->_array.find(p) == this->_array.end()) return this->_emptyValue.v;
+      this->update();
       return this->_array[p].v;
     };
     // Update only the values associated to this point, not its closure
     void updatePoint(const point_type& p, const value_type v[]) {
+      this->update();
       for(int i = 0; i < fiberDim; ++i) {
         this->_array[p].v[i] = v[i];
       }
     };
     // Update only the values associated to this point, not its closure
     void updateAddPoint(const point_type& p, const value_type v[]) {
+      this->update();
       for(int i = 0; i < fiberDim; ++i) {
         this->_array[p].v[i] += v[i];
       }
@@ -448,6 +495,7 @@ namespace ALE {
       ostringstream txt;
       int rank;
 
+      this->update();
       if (comm == MPI_COMM_NULL) {
         comm = this->comm();
         rank = this->commRank();
@@ -473,6 +521,399 @@ namespace ALE {
         if (dim != 0) {
           txt << "[" << this->commRank() << "]:   " << point << " dim " << dim << "  ";
           for(int i = 0; i < dim; i++) {
+            txt << " " << array[point].v[i];
+          }
+          txt << std::endl;
+        }
+      }
+      if (chart.size() == 0) {
+        txt << "[" << this->commRank() << "]: empty" << std::endl;
+      }
+      PetscSynchronizedPrintf(comm, txt.str().c_str());
+      PetscSynchronizedFlush(comm);
+    };
+  };
+
+  // A FauxConstantSection is the simplest Section
+  //   All fibers are dimension 1
+  //   All values are equal to a constant
+  //     We need no value storage and no communication for completion
+  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Point_> >
+  class FauxConstantSection : public ALE::ParallelObject {
+  public:
+    typedef Point_ point_type;
+    typedef Value_ value_type;
+    typedef Alloc_ alloc_type;
+  protected:
+    value_type _value;
+  public:
+    FauxConstantSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {};
+    FauxConstantSection(MPI_Comm comm, const value_type& value, const int debug) : ParallelObject(comm, debug), _value(value) {};
+  public: // Verifiers
+    void checkDimension(const int& dim) {
+      if (dim != 1) {
+        ostringstream msg;
+        msg << "Invalid fiber dimension " << dim << " must be 1" << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
+    };
+  public: // Accessors
+    void addPoint(const point_type& point) {
+    };
+    template<typename Points>
+    void addPoint(const Obj<Points>& points) {
+    };
+    template<typename Points>
+    void addPoint(const Points& points) {
+    };
+    void copy(const Obj<FauxConstantSection>& section) {
+      this->_value = section->restrict(point_type())[0];
+    };
+  public: // Sizes
+    void clear() {
+    };
+    int getFiberDimension(const point_type& p) const {
+      return 1;
+    };
+    void setFiberDimension(const point_type& p, int dim) {
+      this->checkDimension(dim);
+      this->addPoint(p);
+    };
+    template<typename Sequence>
+    void setFiberDimension(const Obj<Sequence>& points, int dim) {
+      for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        this->setFiberDimension(*p_iter, dim);
+      }
+    };
+    void addFiberDimension(const point_type& p, int dim) {
+      this->setFiberDimension(p, dim);
+    };
+    int size(const point_type& p) {return this->getFiberDimension(p);};
+  public: // Restriction
+    const value_type *restrict(const point_type& p) const {
+      return &this->_value;
+    };
+    const value_type *restrictPoint(const point_type& p) const {return this->restrict(p);};
+    void update(const point_type& p, const value_type v[]) {
+      this->_value = v[0];
+    };
+    void updatePoint(const point_type& p, const value_type v[]) {return this->update(p, v);};
+    void updateAdd(const point_type& p, const value_type v[]) {
+      this->_value += v[0];
+    };
+    void updateAddPoint(const point_type& p, const value_type v[]) {return this->updateAdd(p, v);};
+  public:
+    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+      ostringstream txt;
+      int rank;
+
+      if (comm == MPI_COMM_NULL) {
+        comm = this->comm();
+        rank = this->commRank();
+      } else {
+        MPI_Comm_rank(comm, &rank);
+      }
+      if (name == "") {
+        if(rank == 0) {
+          txt << "viewing a FauxConstantSection" << std::endl;
+        }
+      } else {
+        if(rank == 0) {
+          txt << "viewing FauxConstantSection '" << name << "'" << std::endl;
+        }
+      }
+      txt <<"["<<this->commRank()<<"]: Value " << this->_value << std::endl;
+      PetscSynchronizedPrintf(comm, txt.str().c_str());
+      PetscSynchronizedFlush(comm);
+    };
+  };
+  // Make a simple set from the keys of a map
+  template<typename Map>
+  class SetFromMap {
+  public:
+    typedef typename Map::size_type size_type;
+    class const_iterator {
+    public:
+      typedef typename Map::key_type  value_type;
+      typedef typename Map::size_type size_type;
+    protected:
+      typename Map::const_iterator _iter;
+    public:
+      const_iterator(const typename Map::const_iterator& iter): _iter(iter) {};
+      ~const_iterator() {};
+    public:
+      const_iterator& operator=(const const_iterator& iter) {this->_iter = iter._iter;};
+      bool operator==(const const_iterator& iter) const {return this->_iter == iter._iter;};
+      bool operator!=(const const_iterator& iter) const {return this->_iter != iter._iter;};
+      const_iterator& operator++() {++this->_iter; return *this;}
+      const_iterator& operator++(int) {
+        const_iterator tmp(*this);
+        ++(*this);
+        return tmp;
+      };
+      const_iterator& operator--() {--this->_iter; return *this;}
+      const_iterator& operator--(int) {
+        const_iterator tmp(*this);
+        --(*this);
+        return tmp;
+      };
+      value_type operator*() const {return this->_iter->first;};
+      size_type size() const {return this->_iter->size();};
+    };
+  protected:
+    const Map& _map;
+  public:
+    SetFromMap(const Map& map): _map(map) {};
+  public:
+    const_iterator begin() const {return const_iterator(this->_map.begin());};
+    const_iterator end()   const {return const_iterator(this->_map.end());};
+    size_type      size()  const {return this->_map.size();};
+  };
+  // A NewUniformSection often acts as an Atlas
+  //   All fibers are the same dimension
+  //     Note we can use a ConstantSection for this Atlas
+  //   Each point may have a different vector
+  //     Thus we need storage for values, and hence must implement completion
+  template<typename Point_, typename Value_, int fiberDim = 1, typename Alloc_ = std::allocator<Value_> >
+  class NewUniformSection : public ALE::ParallelObject {
+  public:
+    typedef Point_                                           point_type;
+    typedef Value_                                           value_type;
+    typedef Alloc_                                           alloc_type;
+    typedef typename alloc_type::template rebind<point_type>::other                               point_alloc_type;
+    typedef FauxConstantSection<point_type, int, point_alloc_type>                                atlas_type;
+    typedef struct {value_type v[fiberDim];}                                                      fiber_type;
+    typedef typename alloc_type::template rebind<std::pair<const point_type, fiber_type> >::other pair_alloc_type;
+    typedef std::map<point_type, fiber_type, std::less<point_type>, pair_alloc_type>              values_type;
+    typedef SetFromMap<values_type>                                                               chart_type;
+    typedef typename alloc_type::template rebind<atlas_type>::other                               atlas_alloc_type;
+    typedef typename atlas_alloc_type::pointer                                                    atlas_ptr;
+  protected:
+    values_type     _array;
+    chart_type      _chart;
+    size_t          _contiguous_array_size;
+    value_type     *_contiguous_array;
+    Obj<atlas_type> _atlas;
+    fiber_type      _emptyValue;
+    alloc_type      _allocator;
+  public:
+    NewUniformSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _chart(_array), _contiguous_array_size(0), _contiguous_array(NULL) {
+      atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
+      atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
+      this->_atlas = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
+      int dim = fiberDim;
+      this->_atlas->update(point_type(), &dim);
+      for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
+    };
+    NewUniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _chart(_array), _contiguous_array_size(0), _contiguous_array(NULL), _atlas(atlas) {
+      int dim = fiberDim;
+      this->_atlas->update(point_type(), &dim);
+      for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
+    };
+    ~NewUniformSection() {
+      this->_atlas = NULL;
+      if (this->_contiguous_array) {
+        for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.destroy(this->_contiguous_array+i);}
+        this->_allocator.deallocate(this->_contiguous_array, this->_contiguous_array_size);
+      }
+    };
+  public:
+    value_type *getRawArray(const int size) {
+      static value_type *array   = NULL;
+      static int         maxSize = 0;
+
+      if (size > maxSize) {
+        const value_type dummy(0);
+
+        if (array) {
+          for(int i = 0; i < maxSize; ++i) {this->_allocator.destroy(array+i);}
+          this->_allocator.deallocate(array, maxSize);
+          ///delete [] array;
+        }
+        maxSize = size;
+        array   = this->_allocator.allocate(maxSize);
+        for(int i = 0; i < maxSize; ++i) {this->_allocator.construct(array+i, dummy);}
+        ///array = new value_type[maxSize];
+      };
+      return array;
+    };
+  public: // Verifiers
+    bool hasPoint(const point_type& point) {
+      return (this->_values.find(point) != this->_values.end());
+      ///return this->_atlas->hasPoint(point);
+    };
+    void checkDimension(const int& dim) {
+      if (dim != fiberDim) {
+        ostringstream msg;
+        msg << "Invalid fiber dimension " << dim << " must be " << fiberDim << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
+    };
+  public: // Accessors
+    const chart_type& getChart() {return this->_chart;};
+    const Obj<atlas_type>& getAtlas() {return this->_atlas;};
+    void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
+    void addPoint(const point_type& point) {
+      this->setFiberDimension(point, fiberDim);
+    };
+    template<typename Points>
+    void addPoint(const Obj<Points>& points) {
+      for(typename Points::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        this->setFiberDimension(*p_iter, fiberDim);
+      }
+    };
+    void copy(const Obj<NewUniformSection>& section) {
+      this->getAtlas()->copy(section->getAtlas());
+      const chart_type& chart = section->getChart();
+
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        this->updatePoint(*c_iter, section->restrictPoint(*c_iter));
+      }
+    };
+  public: // Sizes
+    void clear() {
+      this->_atlas->clear(); 
+      this->_array.clear();
+    };
+    int getFiberDimension(const point_type& p) const {
+      return fiberDim;
+    };
+    void setFiberDimension(const point_type& p, int dim) {
+      this->update();
+      this->checkDimension(dim);
+      this->_atlas->addPoint(p);
+      this->_atlas->updatePoint(p, &dim);
+      this->_array[p] = fiber_type();
+    };
+    template<typename Sequence>
+    void setFiberDimension(const Obj<Sequence>& points, int dim) {
+      for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        this->setFiberDimension(*p_iter, dim);
+      }
+    };
+    void setFiberDimension(const std::set<point_type>& points, int dim) {
+      for(typename std::set<point_type>::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        this->setFiberDimension(*p_iter, dim);
+      }
+    };
+    void addFiberDimension(const point_type& p, int dim) {
+      if (this->hasPoint(p)) {
+        ostringstream msg;
+        msg << "Invalid addition to fiber dimension " << dim << " cannot exceed " << fiberDim << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      } else {
+        this->setFiberDimension(p, dim);
+      }
+    };
+    int size() const {
+      const chart_type& points = this->getChart();
+      int               size   = 0;
+
+      for(typename chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        size += this->getFiberDimension(*p_iter);
+      }
+      return size;
+    };
+    int sizeWithBC() const {
+      return this->size();
+    };
+    void allocatePoint() {};
+  public: // Restriction
+    // Return a pointer to the entire contiguous storage array
+    const value_type *restrict() {
+      const chart_type& chart = this->getChart();
+      const value_type  dummy = 0;
+      int               k     = 0;
+
+      if (chart.size() > this->_contiguous_array_size*fiberDim) {
+        if (this->_contiguous_array) {
+          for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.destroy(this->_contiguous_array+i);}
+          this->_allocator.deallocate(this->_contiguous_array, this->_contiguous_array_size);
+        }
+        this->_contiguous_array_size = chart.size()*fiberDim;
+        this->_contiguous_array = this->_allocator.allocate(this->_contiguous_array_size*fiberDim);
+        for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.construct(this->_contiguous_array+i, dummy);}
+      }
+      for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const value_type *a = this->_array[*p_iter].v;
+
+        for(int i = 0; i < fiberDim; ++i, ++k) {
+          this->_contiguous_array[k] = a[i];
+        }
+      }
+      return this->_contiguous_array;
+    };
+    void update() {
+      if (this->_contiguous_array) {
+        const chart_type& chart = this->getChart();
+        int               k     = 0;
+
+        for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+          value_type *a = this->_array[*p_iter].v;
+
+          for(int i = 0; i < fiberDim; ++i, ++k) {
+            a[i] = this->_contiguous_array[k];
+          }
+        }
+        for(size_t i = 0; i < this->_contiguous_array_size; ++i) {this->_allocator.destroy(this->_contiguous_array+i);}
+        this->_allocator.deallocate(this->_contiguous_array, this->_contiguous_array_size);
+        this->_contiguous_array_size = 0;
+        this->_contiguous_array      = NULL;
+      }
+    };
+    // Return only the values associated to this point, not its closure
+    const value_type *restrictPoint(const point_type& p) {
+      if (this->_array.find(p) == this->_array.end()) return this->_emptyValue.v;
+      this->update();
+      return this->_array[p].v;
+    };
+    // Update only the values associated to this point, not its closure
+    void updatePoint(const point_type& p, const value_type v[]) {
+      this->update();
+      for(int i = 0; i < fiberDim; ++i) {
+        this->_array[p].v[i] = v[i];
+      }
+    };
+    // Update only the values associated to this point, not its closure
+    void updateAddPoint(const point_type& p, const value_type v[]) {
+      this->update();
+      for(int i = 0; i < fiberDim; ++i) {
+        this->_array[p].v[i] += v[i];
+      }
+    };
+    void updatePointAll(const point_type& p, const value_type v[]) {
+      this->updatePoint(p, v);
+    };
+  public:
+    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
+      ostringstream txt;
+      int rank;
+
+      this->update();
+      if (comm == MPI_COMM_NULL) {
+        comm = this->comm();
+        rank = this->commRank();
+      } else {
+        MPI_Comm_rank(comm, &rank);
+      }
+      if (name == "") {
+        if(rank == 0) {
+          txt << "viewing a NewUniformSection" << std::endl;
+        }
+      } else {
+        if(rank == 0) {
+          txt << "viewing NewUniformSection '" << name << "'" << std::endl;
+        }
+      }
+      const chart_type& chart = this->getChart();
+      values_type&      array = this->_array;
+
+      for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const point_type& point = *p_iter;
+
+        if (fiberDim != 0) {
+          txt << "[" << this->commRank() << "]:   " << point << " dim " << fiberDim << "  ";
+          for(int i = 0; i < fiberDim; i++) {
             txt << " " << array[point].v[i];
           }
           txt << std::endl;

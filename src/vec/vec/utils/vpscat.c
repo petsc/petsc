@@ -1412,13 +1412,15 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *,VecScatter_M
 .     recvSizes - 
 .     recvProcs - processes who are sending to me
 .     recvIdx - indices of where received entries are to be put, (in local, on process numbering), this is one long array of size \sum_{i=0,i<nrecvs} recvSizes[i]
--
+-     bs - size of block
 
      Notes:  sendSizes[] and recvSizes[] cannot have any 0 entries. If you want to support having 0 entries you need
       to change the code below to "compress out" the sendProcs[] and recvProcs[] entries that have 0 entries.
 
        Probably does not handle sends to self properly. It should remove those from the counts that are used
       in allocating space inside of the from struct
+
+  Level: intermediate
 
 @*/
 PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs)

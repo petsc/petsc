@@ -874,7 +874,7 @@ namespace ALE {
         const typename Section_::chart_type& points = section->getChart();
         typename Section_::index_type::index_type offset = 0;
 
-        for(typename Section_::chart_type::iterator point = points.begin(); point != points.end(); ++point) {
+        for(typename Section_::chart_type::const_iterator point = points.begin(); point != points.end(); ++point) {
           const typename Section_::index_type& idx = section->getIndex(*point);
 
           offset = std::max(offset, idx.index + std::abs(idx.prefix));

@@ -19,12 +19,12 @@ manual.pdf: chk_loc intro.tex abstract.tex acknowl.tex manual.tex part1.tex part
 # Generate a list of labels
 	-@${MAKE} rclean
 	-@sed "s?hyperbaseurl?\\\hyperbaseurl{${LOC}/docs/}?g" manual.tex > manual1.tex
-	-@cat  part1.tex part2.tex | egrep '(\\label|\\chapter|\\section|\\subsection)' | ${PETSC_DIR}/maint/getpdflabels.py > anchors
+	-@cat  part1.tex part2.tex | egrep '(\\label|\\chapter|\\section|\\subsection)' | ${PETSC_DIR}/bin/maint/getpdflabels.py > anchors
 	-@cat anchors >> ${LOC}/docs/manualpages/manualpages.cit
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part1.tex | \
-	  ../../../../maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part1tmp.tex
+	  ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part1tmp.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat part2.tex | \
-	  ../../../../maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part2tmp.tex
+	  ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > part2tmp.tex
 	${PDFLATEX} manual1  ${GONULL}
 	bibtex manual1 ${GONULL}
 	${PDFLATEX} manual1  ${GONULL}
@@ -43,7 +43,7 @@ manual.pdf: chk_loc intro.tex abstract.tex acknowl.tex manual.tex part1.tex part
 
 developers.pdf: chk_loc developers.tex
 	-@PYTHONPATH=../../../../maint;export PYTHONPATH;cat developers.tex | \
-	  ../../../../maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
+	  ../../../../bin/maint/mapnameslatex.py ${PETSC_DIR} ${LOC}/docs/manualpages/htmlmap > developerstmp.tex
 	${PDFLATEX} developerstmp.tex
 	${PDFLATEX} developerstmp.tex
 	${MV} developerstmp.pdf developers.pdf
