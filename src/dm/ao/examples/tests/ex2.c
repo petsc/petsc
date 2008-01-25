@@ -22,8 +22,8 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(2*n*sizeof(PetscInt),&ispetsc);CHKERRQ(ierr);
   isapp   = ispetsc + n;
 
-  ierr = MPI_Scan(&n,&start,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&n,&N,1,MPI_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Scan(&n,&start,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&n,&N,1,MPIU_INT,MPI_SUM,PETSC_COMM_WORLD);CHKERRQ(ierr);
   start -= n;
 
   for (i=0; i<n; i++) {  
@@ -40,10 +40,9 @@ int main(int argc,char **argv)
   ierr = AOPetscToApplication(ao,n,ispetsc);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     if (ispetsc[i] != isapp[i]) {
-      fprintf(stdout,"[%d] Problem with mapping %d to %d\n",rank,(int)i,(int)ispetsc[i]);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"[%d] Problem with mapping %D to %D\n",rank,i,ispetsc[i]);
     }
   }
-
   ierr = PetscFree(ispetsc);CHKERRQ(ierr);
 
   ierr = AODestroy(ao);CHKERRQ(ierr);

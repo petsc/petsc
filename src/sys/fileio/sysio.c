@@ -188,9 +188,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
    PetscBinaryRead() uses byte swapping to work on all machines; the files
    are written to file ALWAYS using big-endian ordering. On small-endian machines the numbers
    are converted to the small-endian format when they are read in from the file.
-   Integers are stored on the file as 32 bits long, regardless of whether
-   they are stored in the machine as 32 bits or 64 bits, this means the same
-   binary file may be read on any machine.
+   When PETSc is config/configure.py with --with-64bit-indices the integers are written to the
+   file as 64 bit integers, this means they can only be read back in when the option --with-64bit-indices
+   is used.
 
    Concepts: files^reading binary
    Concepts: binary files^reading
@@ -262,10 +262,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
    PetscBinaryWrite() uses byte swapping to work on all machines; the files
    are written using big-endian ordering to the file. On small-endian machines the numbers
    are converted to the big-endian format when they are written to disk.
-   Integers are stored on the file as 32 bits long, regardless of whether
-   they are stored in the machine as 32 bits or 64 bits, this means the same
-   binary file may be read on any machine. It also means that 64 bit integers larger than
-   roughly 2 billion are TRUNCATED/WRONG when written to the file.
+   When PETSc is config/configure.py with --with-64bit-indices the integers are written to the
+   file as 64 bit integers, this means they can only be read back in when the option --with-64bit-indices
+   is used.
 
    The Buffer p should be read-write buffer, and not static data.
    This way, byte-swapping is done in-place, and then the buffer is

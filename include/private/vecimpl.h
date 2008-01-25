@@ -201,6 +201,7 @@ typedef struct {
 typedef struct {
   VecScatterType type;
   PetscMPIInt    *count;        /* elements of vector on each processor */
+  PetscMPIInt    *displx,*disply;        
   PetscScalar    *work1;
   PetscScalar    *work2;        
 } VecScatter_MPI_ToAll;

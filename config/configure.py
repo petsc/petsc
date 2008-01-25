@@ -116,12 +116,12 @@ def petsc_configure(configure_options):
         if not os.access(installdir,os.W_OK):
           print 'You do not have write access to requested install directory given with --prefix='+installdir+' perhaps use --with-sudo=sudo also'
           sys.exit(3)
-        else:
-          try:
-            os.mkdir(installdir)
-          except:
-            print 'You do not have write access to create install directory given with --prefix='+installdir+' perhaps use --with-sudo=sudo also'
-            sys.exit(3)
+      else:
+         try:
+           os.mkdir(installdir)
+         except:
+           print 'You do not have write access to create install directory given with --prefix='+installdir+' perhaps use --with-sudo=sudo also'
+           sys.exit(3)
         
 
   # Check for sudo

@@ -1,4 +1,4 @@
-
+\
 ALL: lib
 
 CFLAGS   =

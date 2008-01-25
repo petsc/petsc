@@ -243,7 +243,7 @@ static PetscErrorCode MatStashExpand_Private(MatStash *stash,PetscInt incr)
 */
 #undef __FUNCT__
 #define __FUNCT__ "MatStashValuesRow_Private"
-PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const MatScalar values[])
+PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[])
 {
   PetscErrorCode     ierr;
   PetscInt           i,k;
@@ -284,7 +284,7 @@ PetscErrorCode MatStashValuesRow_Private(MatStash *stash,PetscInt row,PetscInt n
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesCol_Private"
-PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const MatScalar values[],PetscInt stepval)
+PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt stepval)
 {
   PetscErrorCode     ierr;
   PetscInt           i,k; 
@@ -329,12 +329,12 @@ PetscErrorCode MatStashValuesCol_Private(MatStash *stash,PetscInt row,PetscInt n
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesRowBlocked_Private"
-PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const MatScalar values[],PetscInt rmax,PetscInt cmax,PetscInt idx)
+PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt rmax,PetscInt cmax,PetscInt idx)
 {
   PetscErrorCode     ierr;
   PetscInt           i,j,k,bs2,bs=stash->bs,l; 
-  const MatScalar    *vals;
-  MatScalar          *array;
+  const PetscScalar  *vals;
+  PetscScalar        *array;
   PetscMatStashSpace space=stash->space;
 
   PetscFunctionBegin;
@@ -385,12 +385,12 @@ PetscErrorCode MatStashValuesRowBlocked_Private(MatStash *stash,PetscInt row,Pet
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashValuesColBlocked_Private"
-PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const MatScalar values[],PetscInt rmax,PetscInt cmax,PetscInt idx)
+PetscErrorCode MatStashValuesColBlocked_Private(MatStash *stash,PetscInt row,PetscInt n,const PetscInt idxn[],const PetscScalar values[],PetscInt rmax,PetscInt cmax,PetscInt idx)
 {
-  PetscErrorCode  ierr;
-  PetscInt        i,j,k,bs2,bs=stash->bs,l; 
-  const MatScalar *vals;
-  MatScalar       *array;
+  PetscErrorCode     ierr;
+  PetscInt           i,j,k,bs2,bs=stash->bs,l; 
+  const PetscScalar  *vals;
+  PetscScalar        *array;
   PetscMatStashSpace space=stash->space;
 
   PetscFunctionBegin;
@@ -443,12 +443,12 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   PetscInt          size=stash->size,nsends;
   PetscErrorCode    ierr;
   PetscInt          count,*sindices,**rindices,i,j,idx,lastidx,l;
-  MatScalar         **rvalues,*svalues;
+  PetscScalar       **rvalues,*svalues;
   MPI_Comm          comm = stash->comm;
   MPI_Request       *send_waits,*recv_waits,*recv_waits1,*recv_waits2;
   PetscMPIInt       *nprocs,*nlengths,nreceives;
   PetscInt          *sp_idx,*sp_idy; 
-  MatScalar         *sp_val;
+  PetscScalar       *sp_val;
   PetscMatStashSpace space,space_next;
 
   PetscFunctionBegin;
@@ -484,7 +484,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
     if (nlengths[i]) { nprocs[i] = 1; nsends ++;}
   }
 
-  { int  *onodes,*olengths;
+  {PetscMPIInt  *onodes,*olengths;
   /* Determine the number of messages to expect, their lengths, from from-ids */
   ierr = PetscGatherNumberOfMessages(comm,nprocs,nlengths,&nreceives);CHKERRQ(ierr);
   ierr = PetscGatherMessageLengths(comm,nsends,nreceives,nlengths,&onodes,&olengths);CHKERRQ(ierr);
@@ -526,8 +526,8 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
       if (bs2 == 1) {
         svalues[startv[j]] = sp_val[l];       
       } else {
-        PetscInt  k;
-        MatScalar *buf1,*buf2;
+        PetscInt     k;
+        PetscScalar *buf1,*buf2;
         buf1 = svalues+bs2*startv[j];
         buf2 = space->val + bs2*l;
         for (k=0; k<bs2; k++){ buf1[k] = buf2[k]; }
@@ -600,7 +600,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatStashScatterGetMesg_Private"
-PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt** cols,MatScalar **vals,PetscInt *flg)
+PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals,PetscInt **rows,PetscInt** cols,PetscScalar **vals,PetscInt *flg)
 {
   PetscErrorCode ierr;
   PetscMPIInt    i,*flg_v,i1,i2;

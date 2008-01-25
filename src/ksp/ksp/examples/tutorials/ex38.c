@@ -46,8 +46,7 @@ int main(int Argc,char **Args)
   ierr = DASetRefinementFactor(da, 3, 3, 3); CHKERRQ(ierr);
   ierr = PCASASetDM(pcmg, (DM) da); CHKERRQ(ierr);
 
-  ierr = PCASASetTolerances(pcmg, 1.e-10, 1.e-10, PETSC_DEFAULT,
-			    PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = PCASASetTolerances(pcmg, 1.e-10, 1.e-10, PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
@@ -73,8 +72,7 @@ PetscErrorCode Create1dLaplacian(PetscInt n,Mat *mat)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n,
-			 1, PETSC_NULL, 2, PETSC_NULL, mat);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD, PETSC_DECIDE, PETSC_DECIDE, n, n,1, PETSC_NULL, 2, PETSC_NULL, mat);CHKERRQ(ierr);
   
   ierr = MatGetOwnershipRange(*mat,&loc_start,&loc_end);CHKERRQ(ierr);
   for (i=loc_start; i<loc_end; i++) {
