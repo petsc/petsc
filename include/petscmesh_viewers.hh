@@ -91,7 +91,7 @@ class VTKViewer {
             if (d > 0) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
             }
-            if (mpiType == MPI_INT) {
+            if (mpiType == MPI_INT || mpiType == MPI_SHORT) {
               ierr = PetscViewerASCIIPrintf(viewer, "%d", array[d]);CHKERRQ(ierr);
             } else {
               ierr = PetscViewerASCIIPrintf(viewer, "%G", array[d]);CHKERRQ(ierr);

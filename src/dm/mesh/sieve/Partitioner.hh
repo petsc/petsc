@@ -27,6 +27,9 @@ extern "C" {
 #endif
 
 #ifdef PETSC_HAVE_CHACO
+#ifdef PETSC_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 /* Chaco does not have an include file */
 extern "C" {
   extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
@@ -51,6 +54,439 @@ extern "C" {
 #endif
 
 namespace ALE {
+#if 1
+#ifdef PETSC_HAVE_CHACO
+  namespace Chaco {
+    template<typename Alloc_ = std::allocator<short int> >
+    class Partitioner {
+    public:
+      typedef short int part_type;
+      typedef Alloc_    alloc_type;
+      enum {DEFAULT_METHOD = 1, INERTIAL_METHOD = 3};
+    protected:
+      const int  logSize;
+      char      *msgLog;
+      int        fd_stdout, fd_pipe[2];
+      alloc_type _allocator;
+    public:
+      Partitioner(): logSize(10000) {};
+      ~Partitioner() {};
+    protected:
+      // Chaco outputs to stdout. We redirect this to a buffer.
+      // TODO: check error codes for UNIX calls
+      void startStdoutRedirect() {
+#ifdef PETSC_HAVE_UNISTD_H
+        this->fd_stdout = dup(1);
+        pipe(this->fd_pipe);
+        close(1);
+        dup2(this->fd_pipe[1], 1);
+#endif
+      };
+      void stopStdoutRedirect() {
+#ifdef PETSC_HAVE_UNISTD_H
+        int count;
+
+        fflush(stdout);
+        this->msgLog = new char[this->logSize];
+        count = read(this->fd_pipe[0], this->msgLog, (this->logSize-1)*sizeof(char));
+        if (count < 0) count = 0;
+        this->msgLog[count] = 0;
+        close(1);
+        dup2(this->fd_stdout, 1);
+        close(this->fd_stdout);
+        close(this->fd_pipe[0]);
+        close(this->fd_pipe[1]);
+        //std::cout << this->msgLog << std::endl;
+        delete [] this->msgLog;
+#endif
+      };
+    public:
+      static bool zeroBase() {return false;}
+      // This method returns the partition section mapping sieve points (here cells) to partitions
+      //   start:     start of edge list for each vertex
+      //   adjacency: adj[start[v]] is edge list data for vertex v
+      //   partition: this section should be properly allocated on input
+      // TODO: Read global and local methods from options
+      template<typename Section, typename MeshManager>
+      void partition(const int numVertices, const int start[], const int adjacency[], const Obj<Section>& partition, const MeshManager& manager) {
+        FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
+        int nvtxs = numVertices;                /* number of vertices in full graph */
+        int *vwgts = NULL;                      /* weights for all vertices */
+        float *ewgts = NULL;                    /* weights for all edges */
+        float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
+        char *outassignname = NULL;             /*  name of assignment output file */
+        char *outfilename = NULL;               /* output file name */
+        int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
+        int ndims_tot = 0;                      /* total number of cube dimensions to divide */
+        int mesh_dims[3];                       /* dimensions of mesh of processors */
+        double *goal = NULL;                    /* desired set sizes for each set */
+        int global_method = 1;                  /* global partitioning algorithm */
+        int local_method = 1;                   /* local partitioning algorithm */
+        int rqi_flag = 0;                       /* should I use RQI/Symmlq eigensolver? */
+        int vmax = 200;                         /* how many vertices to coarsen down to? */
+        int ndims = 1;                          /* number of eigenvectors (2^d sets) */
+        double eigtol = 0.001;                  /* tolerance on eigenvectors */
+        long seed = 123636512;                  /* for random graph mutations */
+
+	    if (global_method == INERTIAL_METHOD) {manager.createCellCoordinates(nvtxs, &x, &y, &z);}
+        mesh_dims[0] = partition->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
+        part_type *assignment = this->_allocator.allocate(nvtxs);
+        for(int i = 0; i < nvtxs; ++i) {this->_allocator.construct(assignment+i, 0);}
+
+        this->startStdoutRedirect();
+        interface(nvtxs, (int *) start, (int *) adjacency, vwgts, ewgts, x, y, z, outassignname, outfilename,
+                  assignment, architecture, ndims_tot, mesh_dims, goal, global_method, local_method, rqi_flag,
+                  vmax, ndims, eigtol, seed);
+        this->stopStdoutRedirect();
+
+        for(int v = 0; v < nvtxs; ++v) {partition->updatePoint(v, &assignment[v]);}
+
+	    if (global_method == INERTIAL_METHOD) {manager.destroyCellCoordinates(nvtxs, &x, &y, &z);}
+        for(int i = 0; i < nvtxs; ++i) {this->_allocator.destroy(assignment+i);}
+        this->_allocator.deallocate(assignment, nvtxs);
+      };
+    };
+  }
+#endif
+  template<typename GraphPartitioner = ALE::Chaco::Partitioner<>, typename Alloc_ = std::allocator<int> >
+  class Partitioner {
+  public:
+    typedef Alloc_                               alloc_type;
+    typedef typename GraphPartitioner::part_type part_type;
+    template<typename Mesh>
+    class MeshManager {
+    protected:
+      const Obj<Mesh>& mesh;
+    public:
+      MeshManager(const Obj<Mesh>& mesh): mesh(mesh) {};
+      ~MeshManager() {};
+    public:
+      template<typename Float>
+      void createCellCoordinates(const int numVertices, Float *X[], Float *Y[], Float *Z[]) const {
+        const Obj<typename Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+        const int dim = mesh->getDimension();
+        typedef typename alloc_type::template rebind<Float>::other float_alloc_type;
+        Float *x = float_alloc_type().allocate(numVertices*3);
+        for(int i = 0; i < numVertices*3; ++i) {float_alloc_type().construct(x+i, 0.0);}
+        Float *y = x+numVertices;
+        Float *z = y+numVertices;
+        Float *vCoords[3];
+
+        vCoords[0] = x; vCoords[1] = y; vCoords[2] = z;
+        const Obj<typename Mesh::label_sequence>& cells = mesh->heightStratum(0);
+        const int corners = mesh->size(coordinates, *(cells->begin()))/dim;
+        int       c       = 0;
+
+        for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
+          const double *coords = mesh->restrict(coordinates, *c_iter);
+
+          for(int d = 0; d < dim; ++d) {
+            vCoords[d][c] = 0.0;
+          }
+          for(int v = 0; v < corners; ++v) {
+            for(int d = 0; d < dim; ++d) {
+              vCoords[d][c] += coords[v*dim+d];
+            }
+          }
+          for(int d = 0; d < dim; ++d) {
+            vCoords[d][c] /= corners;
+          }
+        }
+        *X = x;
+        *Y = y;
+        *Z = z;
+      };
+      template<typename Float>
+      void destroyCellCoordinates(const int numVertices, Float *X[], Float *Y[], Float *Z[]) const {
+        typedef typename alloc_type::template rebind<Float>::other float_alloc_type;
+        Float *x = *X;
+
+        for(int i = 0; i < numVertices*3; ++i) {float_alloc_type().destroy(x+i);}
+        float_alloc_type().deallocate(x, numVertices*3);
+      };
+    };
+  public:
+    // The intention is to create an overlap which enables exchange of redistribution information
+    template<typename Section, typename SendOverlap, typename RecvOverlap>
+    static void createPartitionOverlap(const Obj<Section>& partition, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap) {
+      const typename Section::chart_type& chart      = partition->getChart();
+      const int                           rank       = partition->commRank();
+      const int                           size       = partition->commSize();
+      int                                *adj        = new int[size];
+      int                                *recvCounts = new int[size];
+      int                                 numNeighbors;
+
+      for(int p = 0; p < size; ++p) {
+        adj[p]        = 0;
+        recvCounts[p] = 1;
+      }
+      for(typename Section::chart_type::iterator p_iter = chart.begin(); p_iter != chart->end(); ++p_iter) {
+        const typename Section::value_type& p = partition->restrictPoint(*p_iter)[0];
+        // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
+        sendOverlap->addCone(p, p, p);
+        adj[p] = 1;
+      }
+      MPI_Reduce_Scatter(adj, &numNeighbors, recvCounts, size, MPI_INT, MPI_SUM, partition->comm());
+      MPI_Request *recvRequests = new MPI_Request[numNeighbors];
+      int          dummy        = 0;
+
+      // TODO: Get a unique tag
+      for(int n = 0; n < numNeighbors; ++n) {
+        MPI_Irecv(&dummy, 1, MPI_INT, MPI_ANY_SOURCE, 1, partition->comm(), &recvRequests[n]);
+      }
+      const Obj<typename SendOverlap::traits::baseSequence>      ranks        = sendOverlap->base();
+      const typename SendOverlap::traits::baseSequence::iterator rEnd         = ranks->end();
+      MPI_Request                                               *sendRequests = new MPI_Request[ranks->size()];
+      int                                                        s            = 0;
+
+      for(typename SendOverlap::traits::baseSequence::iterator r_iter = ranks->begin(); r_iter != rEnd; ++r_iter, ++s) {
+        MPI_Isend(&dummy, 1, MPI_INT, *r_iter, 1, partition->comm(), &sendRequests[s]);
+      }
+      for(int n = 0; n < numNeighbors; ++n) {
+        MPI_Status status;
+        int        idx;
+
+        MPI_Waitany(numNeighbors, recvRequests, &idx, &status);
+        // The arrow is from remote partition point rank (color) on rank p (source) to local partition point rank (target)
+        recvOverlap->addCone(status.MPI_SOURCE, rank, rank);
+      }
+      MPI_Waitall(ranks->size(), sendRequests, MPI_STATUSES_IGNORE);
+      delete [] sendRequests;
+      delete [] recvRequests;
+      delete [] adj;
+      delete [] recvCounts;
+    };
+    // This is the default overlap which comes from distributing a serial mesh on process 0
+    template<typename SendOverlap, typename RecvOverlap>
+    static void createDistributionOverlap(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap) {
+      const int rank = sendOverlap->commRank();
+      const int size = sendOverlap->commSize();
+
+      if (rank == 0) {
+        for(int p = 1; p < size; p++) {
+          // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
+          sendOverlap->addCone(p, p, p);
+        }
+      }
+      if (rank != 0) {
+        // The arrow is from remote partition point rank (color) on rank 0 (source) to local partition point rank (target)
+        recvOverlap->addCone(0, rank, rank);
+      }
+    };
+    // This produces the dual graph (each cell is a vertex and each face is an edge)
+    //   numbering:   A contiguous numbering of the cells (not yet included)
+    //   numVertices: The number of vertices in the graph (cells in the mesh)
+    //   adjacency:   The vertices adjacent to each vertex (cells adjacent to each mesh cell)
+    // - We allow an exception to contiguous numbering.
+    //   If the cell id > numElements, we assign a new number starting at
+    //     the top and going downward. I know these might not match up with
+    //     the iterator order, but we can fix it later.
+    template<typename Mesh>
+    static void buildDualCSR(const Obj<Mesh>& mesh, int *numVertices, int **offsets, int **adjacency, const bool zeroBase = true) {
+      const Obj<typename Mesh::sieve_type>&         sieve        = mesh->getSieve();
+      const Obj<typename Mesh::label_sequence>&     cells        = mesh->heightStratum(0);
+      const typename Mesh::label_sequence::iterator cEnd         = cells->end();
+      const int                                     numCells     = cells->size();
+      int                                           newCell      = numCells;
+      Obj<typename Mesh::sieve_type>                overlapSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      int                                           offset       = 0;
+      const int                                     cellOffset   = zeroBase ? 0 : 1;
+      const int                                     dim          = mesh->getDimension();
+      std::map<typename Mesh::point_type, typename Mesh::point_type> newCells;
+
+      // TODO: This is necessary for parallel partitioning
+      //completion::scatterSupports(sieve, overlapSieve, mesh->getSendOverlap(), mesh->getRecvOverlap(), mesh);
+      if (numCells == 0) {
+        *numVertices = 0;
+        *offsets     = NULL;
+        *adjacency   = NULL;
+        return;
+      }
+      int *off = alloc_type().allocate(numCells+1);
+      int *adj;
+      for(int i = 0; i < numCells+1; ++i) {alloc_type().construct(off+i, 0);}
+      if (mesh->depth() == dim) {
+        int c = 1;
+
+        for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter, ++c) {
+          const Obj<typename Mesh::sieve_type::traits::coneSequence>&     faces = sieve->cone(*c_iter);
+          const typename Mesh::sieve_type::traits::coneSequence::iterator fEnd  = faces->end();
+
+          off[c] = off[c-1];
+          for(typename Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces->begin(); f_iter != fEnd; ++f_iter) {
+            if (sieve->support(*f_iter)->size() == 2) {
+              off[c]++;
+            } else if ((sieve->support(*f_iter)->size() == 1) && (overlapSieve->support(*f_iter)->size() == 1)) {
+              off[c]++;
+            }
+          }
+        }
+        adj = alloc_type().allocate(off[numCells]);
+        for(int i = 0; i < off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+        for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+          const Obj<typename Mesh::sieve_type::traits::coneSequence>&     faces = sieve->cone(*c_iter);
+          const typename Mesh::sieve_type::traits::coneSequence::iterator fEnd  = faces->end();
+
+          for(typename Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces->begin(); f_iter != fEnd; ++f_iter) {
+            const Obj<typename Mesh::sieve_type::traits::supportSequence>&     neighbors = sieve->support(*f_iter);
+            const typename Mesh::sieve_type::traits::supportSequence::iterator nEnd      = neighbors->end();
+
+            for(typename Mesh::sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
+              if (*n_iter != *c_iter) adj[offset++] = *n_iter + cellOffset;
+            }
+            const Obj<typename Mesh::sieve_type::traits::supportSequence>&     oNeighbors = overlapSieve->support(*f_iter);
+            const typename Mesh::sieve_type::traits::supportSequence::iterator onEnd      = oNeighbors->end();
+
+            for(typename Mesh::sieve_type::traits::supportSequence::iterator n_iter = oNeighbors->begin(); n_iter != onEnd; ++n_iter) {
+              adj[offset++] = *n_iter + cellOffset;
+            }
+          }
+        }
+      } else if (mesh->depth() == 1) {
+        std::set<typename Mesh::point_type> *neighborCells = new std::set<typename Mesh::point_type>[numCells];
+        const int                            corners       = sieve->cone(*cells->begin())->size();
+        int                                  faceVertices;
+
+        if (corners == dim+1) {
+          faceVertices = dim;
+        } else if ((dim == 2) && (corners == 4)) {
+          faceVertices = 2;
+        } else if ((dim == 3) && (corners == 8)) {
+          faceVertices = 4;
+        } else {
+          throw ALE::Exception("Could not determine number of face vertices");
+        }
+        for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+            const Obj<typename Mesh::sieve_type::traits::coneSequence>&     vertices = sieve->cone(*c_iter);
+            const typename Mesh::sieve_type::traits::coneSequence::iterator vEnd     = vertices->end();
+
+            for(typename Mesh::sieve_type::traits::coneSequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
+              const Obj<typename Mesh::sieve_type::traits::supportSequence>&     neighbors = sieve->support(*v_iter);
+              const typename Mesh::sieve_type::traits::supportSequence::iterator nEnd      = neighbors->end();
+
+              for(typename Mesh::sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
+                if (*c_iter == *n_iter) continue;
+                if ((int) sieve->nMeet(*c_iter, *n_iter, 1)->size() == faceVertices) {
+                  if ((*c_iter < numCells) && (*n_iter < numCells)) {
+                    neighborCells[*c_iter].insert(*n_iter);
+                  } else {
+                    typename Mesh::point_type e = *c_iter, n = *n_iter;
+
+                    if (*c_iter >= numCells) {
+                      if (newCells.find(*c_iter) == newCells.end()) newCells[*c_iter] = --newCell;
+                      e = newCells[*c_iter];
+                    }
+                    if (*n_iter >= numCells) {
+                      if (newCells.find(*n_iter) == newCells.end()) newCells[*n_iter] = --newCell;
+                      n = newCells[*n_iter];
+                    }
+                    neighborCells[e].insert(n);
+                  }
+                }
+              }
+            }
+          }
+          off[0] = 0;
+          for(int c = 1; c <= numCells; c++) {
+            off[c] = neighborCells[c-1].size() + off[c-1];
+          }
+          adj = alloc_type().allocate(off[numCells]);
+          for(int i = 0; i < off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+          for(int c = 0; c < numCells; c++) {
+            for(typename std::set<typename Mesh::point_type>::iterator n_iter = neighborCells[c].begin(); n_iter != neighborCells[c].end(); ++n_iter) {
+              adj[offset++] = *n_iter + cellOffset;
+            }
+          }
+          delete [] neighborCells;
+      } else {
+        throw ALE::Exception("Dual creation not defined for partially interpolated meshes");
+      }
+      if (offset != off[numCells]) {
+        ostringstream msg;
+        msg << "ERROR: Total number of neighbors " << offset << " does not match the offset array " << off[numCells];
+        throw ALE::Exception(msg.str().c_str());
+      }
+      *numVertices = numCells;
+      *offsets     = off;
+      *adjacency   = adj;
+    };
+    // This produces a hypergraph (each face is a vertex and each cell is a hyperedge)
+    //   numbering: A contiguous numbering of the faces
+    //   numEdges:  The number of edges in the hypergraph
+    //   adjacency: The vertices in each edge
+    template<typename Mesh>
+    static void buildFaceDualCSR(const Obj<Mesh>& mesh, const Obj<typename Mesh::numbering_type>& numbering, int *numEdges, int **offsets, int **adjacency, const bool zeroBase = true) {
+      const Obj<typename Mesh::sieve_type>&         sieve = mesh->getSieve();
+      const Obj<typename Mesh::label_sequence>&     cells = mesh->heightStratum(0);
+      const typename Mesh::label_sequence::iterator cEnd  = cells->end();
+      const int faceOffset = zeroBase ? 0 : 1;
+      int       numCells = cells->size();
+      int       c        = 1;
+
+      if (mesh->depth() != mesh->getDimension()) {throw ALE::Exception("Not yet implemented for non-interpolated meshes");}
+      int *off = alloc_type().allocate(numCells+1);
+      for(int i = 0; i < numCells+1; ++i) {alloc_type().construct(off+i, 0);}
+      for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter, ++c) {
+        off[c] = sieve->cone(*c_iter)->size() + off[c-1];
+      }
+      int *adj = alloc_type().allocate(off[numCells]);
+      for(int i = 0; i < off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+      int  offset = 0;
+      for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+        const Obj<typename Mesh::sieve_type::traits::coneSequence>&     faces = sieve->cone(*c_iter);
+        const typename Mesh::sieve_type::traits::coneSequence::iterator fEnd  = faces->end();
+
+        for(typename Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces->begin(); f_iter != fEnd; ++f_iter, ++offset) {
+          adj[offset] = numbering->getIndex(*f_iter) + faceOffset;
+        }
+      }
+      if (offset != off[numCells]) {
+        ostringstream msg;
+        msg << "ERROR: Total number of neighbors " << offset << " does not match the offset array " << off[numCells];
+        throw ALE::Exception(msg.str().c_str());
+      }
+      *numEdges  = numCells;
+      *offsets   = off;
+      *adjacency = adj;
+    };
+    static void destroyCSR(int numPoints, int *offsets, int *adjacency) {
+      if (adjacency) {
+        for(int i = 0; i < offsets[numPoints]; ++i) {alloc_type().destroy(adjacency+i);}
+        alloc_type().deallocate(adjacency, offsets[numPoints]);
+      }
+      if (offsets) {
+        for(int i = 0; i < numPoints+1; ++i) {alloc_type().destroy(offsets+i);}
+        alloc_type().deallocate(offsets, numPoints+1);
+      }
+    };
+    //   partition:    Should be properly allocated on input
+    //   height:       Height of the point set to uniquely partition
+    // TODO: Could rebind assignment section to the type of the output
+    template<typename Mesh, typename Section>
+    static void createPartition(const Obj<Mesh>& mesh, const Obj<Section>& partition, const int height = 0) {
+      MeshManager<Mesh> manager(mesh);
+      int              *start     = NULL;
+      int              *adjacency = NULL;
+
+      if (height == 0) {
+        int numVertices;
+
+        buildDualCSR(mesh, &numVertices, &start, &adjacency, GraphPartitioner::zeroBase());
+        GraphPartitioner().partition(numVertices, start, adjacency, partition, manager);
+        destroyCSR(numVertices, start, adjacency);
+      } else if (height == 1) {
+        int numEdges;
+
+        buildFaceDualCSR(mesh, mesh->getFactory()->getNumbering(mesh, mesh->depth()-1), &numEdges, &start, &adjacency, GraphPartitioner::zeroBase());
+        GraphPartitioner().partition(numEdges, start, adjacency, partition, manager);
+        destroyCSR(numEdges, start, adjacency);
+      } else {
+        throw ALE::Exception("Invalid partition height");
+      }
+    };
+  };
+#endif
+
   namespace New {
     template<typename Bundle_, typename Alloc_ = typename Bundle_::alloc_type>
     class Partitioner {
