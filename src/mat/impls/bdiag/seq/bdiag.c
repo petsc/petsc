@@ -289,15 +289,15 @@ PetscErrorCode MatGetSubMatrices_SeqBDiag(Mat A,PetscInt n,const IS irow[],const
 #define __FUNCT__ "MatScale_SeqBDiag"
 PetscErrorCode MatScale_SeqBDiag(Mat inA,PetscScalar alpha)
 {
-  Mat_SeqBDiag *a = (Mat_SeqBDiag*)inA->data;
-  PetscInt          i,bs = inA->rmap.bs;
-  PetscScalar  oalpha = alpha;
-  PetscBLASInt one = 1,len;
+  Mat_SeqBDiag   *a = (Mat_SeqBDiag*)inA->data;
+  PetscInt       i,bs = inA->rmap.bs;
+  PetscScalar    oalpha = alpha;
+  PetscBLASInt   one = 1,len;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<a->nd; i++) {
-    len = (PetscBLASInt)bs*bs*a->bdlen[i];
+    len = PetscBLASIntCast(bs*bs*a->bdlen[i]);
     if (a->diag[i] > 0) {
       BLASscal_(&len,&oalpha,a->diagv[i] + bs*bs*a->diag[i],&one);
     } else {

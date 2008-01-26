@@ -10,7 +10,7 @@
 
 static PetscRandom LOBPCG_RandomContext = PETSC_NULL;
 
-int PETSC_dpotrf_interface (char *uplo, int *n, double *a, int * lda, int *info)
+int PETSC_dpotrf_interface (char *uplo,PetscInt *n, double *a,PetscInt * lda,PetscInt *info)
 {
    PetscBLASInt n_, lda_, info_;
    
@@ -22,9 +22,9 @@ int PETSC_dpotrf_interface (char *uplo, int *n, double *a, int * lda, int *info)
    #endif
 
    /* type conversion */
-   n_ = *n;
-   lda_ = *lda;
-   info_ = *info;
+     n_ = PetscBLASIntCast(*n);
+     lda_ = PetscBLASIntCast(*lda);
+     info_ = PetscBLASIntCast(*info);
    
    LAPACKpotrf_(uplo, &n_, (PetscScalar*)a, &lda_, &info_);
    
@@ -33,9 +33,9 @@ int PETSC_dpotrf_interface (char *uplo, int *n, double *a, int * lda, int *info)
 }
 
 
-int PETSC_dsygv_interface (int *itype, char *jobz, char *uplo, int *
-                    n, double *a, int *lda, double *b, int *ldb,
-                    double *w, double *work, int *lwork, int *info)
+int PETSC_dsygv_interface (int *itype, char *jobz, char *uplo,PetscInt *
+                    n, double *a,PetscInt *lda, double *b,PetscInt *ldb,
+                    double *w, double *work,PetscInt *lwork,PetscInt *info)
 {
    PetscBLASInt itype_, n_, lda_, ldb_, lwork_, info_;
 
@@ -43,12 +43,12 @@ int PETSC_dsygv_interface (int *itype, char *jobz, char *uplo, int *
      SETERRQ(1,"dsygv_interface: PETSC must be compiled without support for complex numbers");
    #endif
 
-   itype_ = *itype;
-   n_ = *n;
-   lda_ = *lda;
-   ldb_ = *ldb;
-   lwork_ = *lwork;
-   info_ = *info;
+   itype_ = PetscBLASIntCast(*itype);
+   n_ = PetscBLASIntCast(*n0);
+   lda_ = PetscBLASIntCast(*lda);
+   ldb_ = PetscBLASIntCast(*ldb);
+   lwork_ = PetscBLASIntCast(*lwork);
+   info_ = PetscBLASIntCast(*info);
    
 
    LAPACKsygv_(&itype_, jobz, uplo, &n_, (PetscScalar*)a, &lda_,
@@ -108,7 +108,7 @@ PETSC_ClearVector( void *x )
 }
  
 int
-PETSC_SetRandomValues( void* v, int seed )
+PETSC_SetRandomValues( void* v,PetscInt seed )
 {
 	PetscErrorCode ierr;
 

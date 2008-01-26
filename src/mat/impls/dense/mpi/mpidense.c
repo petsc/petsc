@@ -989,8 +989,8 @@ PetscErrorCode MatScale_MPIDense(Mat inA,PetscScalar alpha)
   Mat_MPIDense   *A = (Mat_MPIDense*)inA->data;
   Mat_SeqDense   *a = (Mat_SeqDense*)A->A->data;
   PetscScalar    oalpha = alpha;
-  PetscBLASInt   one = 1,nz = (PetscBLASInt)inA->rmap.n*inA->cmap.N;
   PetscErrorCode ierr;
+  PetscBLASInt   one = 1,nz = PetscBLASIntCast(inA->rmap.n*inA->cmap.N);
 
   PetscFunctionBegin;
   BLASscal_(&nz,&oalpha,a->v,&one);

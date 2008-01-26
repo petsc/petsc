@@ -18,11 +18,15 @@ PetscErrorCode KSPComputeExtremeSingularValues_GMRES(KSP ksp,PetscReal *emax,Pet
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
   PetscInt       n = gmres->it + 1,i,N = gmres->max_k + 2;
-  PetscBLASInt   bn = (PetscBLASInt)n,bN = (PetscBLASInt)N,lwork = (PetscBLASInt)5*N,idummy = (PetscBLASInt)N,lierr;
+  PetscBLASInt   bn, bN ,lwork, idummy,lierr;
   PetscScalar    *R = gmres->Rsvd,*work = R + N*N,sdummy;
   PetscReal      *realpart = gmres->Dsvd;
 
   PetscFunctionBegin;
+  bn = PetscBLASIntCast(n);
+  bN = PetscBLASIntCast(N);
+  lwork = PetscBLASIntCast(5*N);
+  idummy = PetscBLASIntCast(N);
   if (!n) {
     *emax = *emin = 1.0;
     PetscFunctionReturn(0);
@@ -60,10 +64,10 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   PetscErrorCode ierr;
   PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,lwork = 5*N;
   PetscInt       i,*perm;
-  PetscBLASInt   zero = 0,idummy = N;
   PetscScalar    *R = gmres->Rsvd;
   PetscScalar    *cwork = R + N*N,sdummy;
   PetscReal      *work,*realpart = gmres->Dsvd ;
+  PetscBLASInt   zero = 0,idummy = PetscBLASIntCast(N);
 
   PetscFunctionBegin;
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
@@ -117,11 +121,15 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
   PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,i,*perm;
-  PetscBLASInt   bn = (PetscBLASInt)n,bN = (PetscBLASInt)N,lwork = (PetscBLASInt)5*N,idummy = (PetscBLASInt)N,lierr;
+  PetscBLASInt   bn, bN, lwork, idummy, lierr;
   PetscScalar    *R = gmres->Rsvd,*work = R + N*N;
   PetscScalar    *realpart = gmres->Dsvd,*imagpart = realpart + N,sdummy;
 
   PetscFunctionBegin;
+  bn = PetscBLASIntCast(n);
+  bN = PetscBLASIntCast(N);
+  lwork = PetscBLASIntCast(5*N);
+  idummy = PetscBLASIntCast(N);
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 
@@ -148,9 +156,13 @@ PetscErrorCode KSPComputeEigenvalues_GMRES(KSP ksp,PetscInt nmax,PetscReal *r,Pe
   PetscErrorCode ierr;
   PetscInt       n = gmres->it + 1,N = gmres->max_k + 1,i,*perm;
   PetscScalar    *R = gmres->Rsvd,*work = R + N*N,*eigs = work + 5*N,sdummy;
-  PetscBLASInt   bn = (PetscBLASInt)n,bN = (PetscBLASInt)N,lwork = (PetscBLASInt)5*N,idummy = (PetscBLASInt)N,lierr;
+  PetscBLASInt   bn,bN,lwork,idummy,lierr;
 
   PetscFunctionBegin;
+  bn = PetscBLASIntCast(n);
+  bN = PetscBLASIntCast(N);
+  lwork = PetscBLASIntCast(5*N);
+  idummy = PetscBLASIntCast(N);
   if (nmax < n) SETERRQ(PETSC_ERR_ARG_SIZ,"Not enough room in work space r and c for eigenvalues");
   *neig = n;
 

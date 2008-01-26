@@ -939,6 +939,8 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     PetscInt    M = mat->rmap.N,N = mat->cmap.N,m,*ai,*aj,row,*cols,i,*ct;
     PetscScalar *a;
 
+    if (mat->rmap.N > 1024) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"ASCII matrix output not allowed for matrices with more than 512 rows, use binary format instead");
+
     ierr = MatCreate(((PetscObject)mat)->comm,&A);CHKERRQ(ierr);
     if (!rank) {
       ierr = MatSetSizes(A,M,N,M,N);CHKERRQ(ierr);
@@ -1597,11 +1599,11 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscScalar alpha = a;
     x = (Mat_SeqAIJ *)xx->A->data;
     y = (Mat_SeqAIJ *)yy->A->data;
-    bnz = (PetscBLASInt)x->nz;
+    bnz = PetscBLASIntCast(x->nz);
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);    
     x = (Mat_SeqAIJ *)xx->B->data;
     y = (Mat_SeqAIJ *)yy->B->data;
-    bnz = (PetscBLASInt)x->nz;
+    bnz = PetscBLASIntCast(x->nz);
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
   } else if (str == SUBSET_NONZERO_PATTERN) {  
     ierr = MatAXPY_SeqAIJ(yy->A,a,xx->A,str);CHKERRQ(ierr);

@@ -759,8 +759,8 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
 
        CHKMEMQ;
        /* orthogonalize b_submat_tp using the QR algorithm from LAPACK */
-       b1 = (PetscBLASInt) *(cand_vec_length+a);
-       b2 = (PetscBLASInt) *(new_loc_agg_dofs+a);
+       b1 = PetscBLASIntCast(*(cand_vec_length+a));
+       b2 = PetscBLASIntCast(*(new_loc_agg_dofs+a));
        LAPACKgeqrf_(&b1, &b2, b_submat_tp, &b1, tau, work, &b2, &info);
        if (info) SETERRQ(PETSC_ERR_LIB, "LAPACKgeqrf_ LAPACK routine failed");
 #if !defined(PETSC_MISSING_LAPACK_ORGQR) 

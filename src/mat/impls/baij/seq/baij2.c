@@ -1331,7 +1331,7 @@ PetscErrorCode MatScale_SeqBAIJ(Mat inA,PetscScalar alpha)
 #if defined(PETSC_USE_MAT_SINGLE)
   PetscInt     i;
 #else
-  PetscBLASInt tnz = (PetscBLASInt) totalnz,one = 1;
+  PetscBLASInt one = 1,tnz = PetscBLASIntCast(totalnz);
 #endif
 
   PetscFunctionBegin;

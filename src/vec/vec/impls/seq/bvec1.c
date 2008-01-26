@@ -12,10 +12,10 @@
 #define __FUNCT__ "VecDot_Seq"
 PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
-  PetscScalar *ya,*xa;
+  PetscScalar    *ya,*xa;
   PetscErrorCode ierr;
 #if !defined(PETSC_USE_COMPLEX)
-  PetscBLASInt bn = (PetscBLASInt)xin->map.n, one = 1;
+  PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map.n);
 #endif
 
   PetscFunctionBegin;
@@ -48,10 +48,10 @@ PetscErrorCode VecDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 #define __FUNCT__ "VecTDot_Seq"
 PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 {
-  PetscScalar *ya,*xa;
+  PetscScalar    *ya,*xa;
   PetscErrorCode ierr;
 #if !defined(PETSC_USE_COMPLEX)
- PetscBLASInt bn = (PetscBLASInt)xin->map.n, one = 1;
+  PetscBLASInt    one = 1, bn = PetscBLASIntCast(xin->map.n);
 #endif
 
   PetscFunctionBegin;
@@ -85,8 +85,8 @@ PetscErrorCode VecTDot_Seq(Vec xin,Vec yin,PetscScalar *z)
 PetscErrorCode VecScale_Seq(Vec xin, PetscScalar alpha)
 {
   Vec_Seq        *x = (Vec_Seq*)xin->data;
-  PetscBLASInt   bn = (PetscBLASInt)xin->map.n, one = 1;
   PetscErrorCode ierr;
+  PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map.n);
 
   PetscFunctionBegin;
   if (alpha == 0.0) {
@@ -123,7 +123,7 @@ PetscErrorCode VecSwap_Seq(Vec xin,Vec yin)
   Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscScalar    *ya;
   PetscErrorCode ierr;
-  PetscBLASInt   bn = (PetscBLASInt)xin->map.n, one = 1;
+  PetscBLASInt   one = 1,bn = PetscBLASIntCast(xin->map.n);
 
   PetscFunctionBegin;
   if (xin != yin) {
@@ -140,8 +140,8 @@ PetscErrorCode VecAXPY_Seq(Vec yin,PetscScalar alpha,Vec xin)
 {
   Vec_Seq        *y = (Vec_Seq *)yin->data;
   PetscErrorCode ierr;
-  PetscBLASInt   bn = (PetscBLASInt)yin->map.n, one = 1;
   PetscScalar    *xarray;
+  PetscBLASInt   one = 1,bn = PetscBLASIntCast(yin->map.n);
 
   PetscFunctionBegin;
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */

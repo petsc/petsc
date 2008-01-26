@@ -1274,12 +1274,12 @@ static PetscErrorCode gs_gop_vec_local_out( gs_id *gs,  PetscScalar *vals, Petsc
 /******************************************************************************/
 static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals, PetscInt step)
 {
-   PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
-   PetscInt *iptr, *msg_list, *msg_size, **msg_nodes;
-   PetscInt *pw, *list, *size, **nodes;
+  PetscScalar *dptr1, *dptr2, *dptr3, *in1, *in2;
+  PetscInt *iptr, *msg_list, *msg_size, **msg_nodes;
+  PetscInt *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-  PetscBLASInt i1,dstep;
+  PetscBLASInt i1 = 1,dstep;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1339,7 +1339,7 @@ static PetscErrorCode gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals
       /* Can this loop be replaced by a call to MPI_Waitall()? */
       ierr = MPI_Wait(ids_in++, &status);CHKERRQ(ierr);
       while (*iptr >= 0) {
-	dstep = step;
+	dstep = PetscBLASIntCast(step);
         BLASaxpy_(&dstep,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
 	in2+=step;
 	iptr++;
@@ -1387,7 +1387,7 @@ static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  Pets
   /* copy over my contributions */
   while (*in >= 0)
     { 
-      PetscBLASInt dstep = step;
+      PetscBLASInt dstep = PetscBLASIntCast(step);
       BLAScopy_(&dstep,vals + *in++*step,&i1,buf + *out++*step,&i1);
     }
 
@@ -1402,7 +1402,7 @@ static PetscErrorCode gs_gop_vec_tree_plus( gs_id *gs,  PetscScalar *vals,  Pets
   /* get the portion of the results I need */
   while (*in >= 0)
     {
-      PetscBLASInt dstep = step;
+      PetscBLASInt dstep = PetscBLASIntCast(step);
       BLAScopy_(&dstep,buf + *out++*step,&i1,vals + *in++*step,&i1);
     }
   PetscFunctionReturn(0);

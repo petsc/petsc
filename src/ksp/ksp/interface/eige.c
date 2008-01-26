@@ -238,8 +238,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscI
 #else
     {
       PetscBLASInt lierr;
-      PetscBLASInt bn = (PetscBLASInt) n;
       PetscScalar sdummy;
+      PetscBLASInt bn = PetscBLASIntCast(n);
       LAPACKgeev_("N","N",&bn,array,&bn,realpart,imagpart,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,&lierr);
       if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
     }
@@ -273,7 +273,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscI
     {
       PetscBLASInt lierr;
       PetscScalar  sdummy;
-      PetscBLASInt nb = (PetscBLASInt) n;
+      PetscBLASInt nb = PetscBLASIntCast(n);
       LAPACKgeev_("N","N",&nb,array,&nb,eigs,&sdummy,&idummy,&sdummy,&idummy,work,&lwork,rwork,&lierr);
       if (lierr) SETERRQ1(PETSC_ERR_LIB,"Error in LAPACK routine %d",(int)lierr);
     }

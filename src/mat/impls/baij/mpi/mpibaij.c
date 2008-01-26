@@ -1903,11 +1903,11 @@ PetscErrorCode MatAXPY_MPIBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     PetscScalar alpha = a;
     x = (Mat_SeqBAIJ *)xx->A->data;
     y = (Mat_SeqBAIJ *)yy->A->data;
-    bnz = (PetscBLASInt)x->nz;
+    bnz = PetscBLASIntCast(x->nz);
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);    
     x = (Mat_SeqBAIJ *)xx->B->data;
     y = (Mat_SeqBAIJ *)yy->B->data;
-    bnz = (PetscBLASInt)x->nz;
+    bnz = PetscBLASIntCast(x->nz);
     BLASaxpy_(&bnz,&alpha,x->a,&one,y->a,&one);
   } else {
     ierr = MatAXPY_Basic(Y,a,X,str);CHKERRQ(ierr);

@@ -146,8 +146,8 @@ PetscInt main(PetscInt argc,char **args)
 
     /* Solve eigenvalue problem: A*x = lambda*B*x */
     /*============================================*/
-    lwork = 8*n;
-    bn    = (PetscBLASInt)n;
+    lwork = PetscBLASIntCast(8*n);
+    bn    = PetscBLASIntCast(n);
     ierr = PetscMalloc(n*sizeof(PetscScalar),&evals);CHKERRQ(ierr);
     ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
     ierr = MatGetArray(A_dense,&arrayA);CHKERRQ(ierr);
@@ -159,7 +159,7 @@ PetscInt main(PetscInt argc,char **args)
       nevs = m;
       il=1; 
     } else { /* test sygvx()  */
-      il = 1; iu=(PetscBLASInt)(.6*m); /* request 1 to 60%m evalues */
+      il = 1; iu=PetscBLASIntCast(.6*m); /* request 1 to 60%m evalues */
       ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
       ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
       ifail = iwork + 5*n;

@@ -75,7 +75,7 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
     {PetscInt i; for (i=0; i<n; i++) work += PetscRealPart((xx[i])*(PetscConj(xx[i])));}
 #endif
 #else
-    {PetscBLASInt bn = (PetscBLASInt)n, one = 1;
+    {PetscBLASInt one = 1,bn = PetscBLASIntCast(n);
       work  = BLASnrm2_(&bn,xx,&one);
       work *= work;
     }

@@ -430,6 +430,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     }
   } else {
     /* send values */
+    PetscMPIIntCheck(xin->map.n);
     ierr = MPI_Send(xarray,xin->map.n,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);

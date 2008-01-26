@@ -39,7 +39,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   bcgsl->vvR   = ksp->work+vi; vi += ell+1;
   bcgsl->vvU   = ksp->work+vi; vi += ell+1;
   bcgsl->vXr   = ksp->work[vi]; vi++;
-  ldMZ = ell+1;
+  ldMZ = PetscBLASIntCast(ell+1);
   {
     ierr = PetscMalloc(ldMZ*sizeof(PetscScalar), &AY0c);CHKERRQ(ierr);
     ierr = PetscMalloc(ldMZ*sizeof(PetscScalar), &AYlc);CHKERRQ(ierr);
@@ -176,7 +176,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     }
 
     if (!bcgsl->bConvex || bcgsl->ell==1) {
-      PetscBLASInt ione = 1,bell = bcgsl->ell;
+      PetscBLASInt ione = 1,bell = PetscBLASIntCast(bcgsl->ell);
 
       AY0c[0] = -1;
       LAPACKpotrf_("Lower", &bell, &MZa[1+ldMZ], &ldMZ, &bierr);
@@ -188,9 +188,9 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       BLAScopy_(&bell, &MZb[1], &ione, &AY0c[1], &ione);
       LAPACKpotrs_("Lower", &bell, &ione, &MZa[1+ldMZ], &ldMZ, &AY0c[1], &ldMZ, &bierr);
     } else {
-      PetscBLASInt neqs = bcgsl->ell-1;
       PetscBLASInt ione = 1;
       PetscScalar aone = 1.0, azero = 0.0;
+      PetscBLASInt neqs = PetscBLASIntCast(bcgsl->ell-1);
 
       LAPACKpotrf_("Lower", &neqs, &MZa[1+ldMZ], &ldMZ, &bierr);
       if (ierr!=0) {
