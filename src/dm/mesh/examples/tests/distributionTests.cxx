@@ -3,6 +3,7 @@ static char help[] = "Sieve Package Parallel Correctness Tests.\n\n";
 #define ALE_HAVE_CXX_ABI
 #define ALE_MEM_LOGGING
 #include <petscmesh.hh>
+#include <petscmesh_viewers.hh>
 
 #include <IField.hh>
 #include <ParallelMapping.hh>
@@ -17,6 +18,7 @@ typedef struct {
   // Classes
   PetscTruth section;     // Run the Section tests
   PetscTruth isection;    // Run the ISection tests
+  PetscTruth partition;   // Run the Partition tests
   // Run flags
   PetscInt   number;      // Number of each class to create
   // Mesh flags
@@ -36,6 +38,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->debug      = 0;
   options->section    = PETSC_FALSE;
   options->isection   = PETSC_FALSE;
+  options->partition  = PETSC_FALSE;
   options->number     = 0;
   options->numCells   = 8;
   options->components = 3;
@@ -44,6 +47,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsInt("-debug", "Debugging flag", "memTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-section", "Run Section tests", "memTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-isection", "Run ISection tests", "memTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-partition", "Run Partition tests", "memTests", options->partition, &options->partition, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-num", "Number of each class to create", "memTests", options->number, &options->number, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-numCells", "Number of mesh cells", "memTests", options->numCells, &options->numCells, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-components", "Number of section components", "memTests", options->components, &options->components, PETSC_NULL);CHKERRQ(ierr);
@@ -282,15 +286,57 @@ PetscErrorCode SectionTests(const Options *options)
   ierr = ConstantSectionTest(options);CHKERRQ(ierr);
   ierr = UniformSectionTest(options);CHKERRQ(ierr);
   ierr = SectionTest(options);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ISectionTests"
+PetscErrorCode ISectionTests(const Options *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   ierr = SectionToISectionTest(options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ISectionTest"
-PetscErrorCode ISectionTest(const Options *options)
+#define __FUNCT__ "PartitionTests"
+PetscErrorCode PartitionTests(const Options *options)
 {
+  typedef int point_type;
+  typedef ALE::Sifter<int,point_type,point_type> send_overlap_type;
+  typedef ALE::Sifter<point_type,int,point_type> recv_overlap_type;
+  typedef ALE::IUniformSection<point_type, ALE::Partitioner<>::part_type>  partition_type;
+  Obj<send_overlap_type> sendOverlap = new send_overlap_type(options->comm);
+  Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(options->comm);
+  Obj<partition_type>    partition   = new partition_type(options->comm, 0, options->rank ? 0 : options->numCells, options->debug);
+  const int              height      = 0;
+  double                 lower[2]    = {0.0, 0.0};
+  double                 upper[2]    = {1.0, 1.0};
+  int                    edges[2]    = {2, 2};
+  const Obj<ALE::Mesh>   mB          = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+  const Obj<ALE::Mesh>   mesh        = ALE::Generator::generateMesh(mB, true);
+
   PetscFunctionBegin;
+  partition->allocatePoint();
+  ALE::Partitioner<>::createPartition(mesh, partition, height);
+  partition->view("Partition");
+  ALE::Partitioner<>::createDistributionOverlap(sendOverlap, recvOverlap);
+  if (options->debug) {
+    PetscViewer    viewer;
+    PetscErrorCode ierr;
+
+    ierr = PetscViewerCreate(options->comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRQ(ierr);
+    ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
+    ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
+    ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+    ierr = SectionView_Sieve_Ascii(mesh, partition, "Partition", viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -301,8 +347,9 @@ PetscErrorCode RunUnitTests(const Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (options->section)  {ierr = SectionTests(options);CHKERRQ(ierr);}
-  if (options->isection) {ierr = ISectionTest(options);CHKERRQ(ierr);}
+  if (options->section)   {ierr = SectionTests(options);CHKERRQ(ierr);}
+  if (options->isection)  {ierr = ISectionTests(options);CHKERRQ(ierr);}
+  if (options->partition) {ierr = PartitionTests(options);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
