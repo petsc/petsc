@@ -105,7 +105,7 @@ namespace ALE {
       // This method returns the partition section mapping sieve points (here cells) to partitions
       //   start:     start of edge list for each vertex
       //   adjacency: adj[start[v]] is edge list data for vertex v
-      //   partition: this section should be properly allocated on input
+      //   partition: this section is over the partitions and takes points as values
       // TODO: Read global and local methods from options
       template<typename Section, typename MeshManager>
       void partition(const int numVertices, const int start[], const int adjacency[], const Obj<Section>& partition, const MeshManager& manager) {
@@ -127,6 +127,7 @@ namespace ALE {
         int ndims = 1;                          /* number of eigenvectors (2^d sets) */
         double eigtol = 0.001;                  /* tolerance on eigenvectors */
         long seed = 123636512;                  /* for random graph mutations */
+        int maxSize = 0;
 
 	    if (global_method == INERTIAL_METHOD) {manager.createCellCoordinates(nvtxs, &x, &y, &z);}
         mesh_dims[0] = partition->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
@@ -139,7 +140,22 @@ namespace ALE {
                   vmax, ndims, eigtol, seed);
         this->stopStdoutRedirect();
 
-        for(int v = 0; v < nvtxs; ++v) {partition->updatePoint(v, &assignment[v]);}
+        for(int v = 0; v < nvtxs; ++v) {partition->addFiberDimension(assignment[v], 1);}
+        partition->allocatePoint();
+        for(int p = 0; p < partition->commSize(); ++p) {
+          maxSize = std::max(maxSize, partition->getFiberDimension(p));
+        }
+        typename Section::value_type *values = new typename Section::value_type[maxSize];
+        int                           k;
+        for(int p = 0; p < partition->commSize(); ++p) {
+          k = 0;
+          for(int v = 0; v < nvtxs; ++v) {
+            if (assignment[v] == p) values[k++] = v;
+          }
+          if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
+          partition->updatePoint(p, values);
+        }
+        delete [] values;
 
 	    if (global_method == INERTIAL_METHOD) {manager.destroyCellCoordinates(nvtxs, &x, &y, &z);}
         for(int i = 0; i < nvtxs; ++i) {this->_allocator.destroy(assignment+i);}
@@ -205,10 +221,63 @@ namespace ALE {
         float_alloc_type().deallocate(x, numVertices*3);
       };
     };
-  public:
-    // The intention is to create an overlap which enables exchange of redistribution information
+  public: // Creating overlaps
+    // Create a partition point overlap for distribution
+    //   This is the default overlap which comes from distributing a serial mesh on process 0
+    template<typename SendOverlap, typename RecvOverlap>
+    static void createDistributionPartOverlap(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap) {
+      const int rank = sendOverlap->commRank();
+      const int size = sendOverlap->commSize();
+
+      if (rank == 0) {
+        for(int p = 1; p < size; p++) {
+          // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
+          sendOverlap->addCone(p, p, p);
+        }
+      }
+      if (rank != 0) {
+        // The arrow is from remote partition point rank (color) on rank 0 (source) to local partition point rank (target)
+        recvOverlap->addCone(0, rank, rank);
+      }
+    };
+    // Create a mesh point overlap for distribution
+    //   A local numbering is created for the remote points
+    //   This is the default overlap which comes from distributing a serial mesh on process 0
+    template<typename Section, typename RecvPartOverlap, typename Renumbering, typename SendOverlap, typename RecvOverlap>
+    static void createDistributionMeshOverlap(const Obj<Section>& partition, const Obj<RecvPartOverlap>& recvPartOverlap, Renumbering& renumbering, const Obj<Section>& overlapPartition, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap) {
+      const typename Section::chart_type& chart = partition->getChart();
+
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        if (*p_iter == sendOverlap->commRank()) continue;
+        const typename Section::value_type *points     = partition->restrictPoint(*p_iter);
+        const int                           numPoints  = partition->getFiberDimension(*p_iter);
+        
+        for(int i = 0; i < numPoints; ++i) {
+          // Notice here that we do not know the local renumbering (but we do not use it)
+          sendOverlap->addArrow(points[i], *p_iter, points[i]);
+        }
+      }
+      if (sendOverlap->debug()) {sendOverlap->view("Send mesh overlap");}
+      const Obj<typename RecvPartOverlap::traits::baseSequence> rPoints    = recvPartOverlap->base();
+
+      for(typename RecvPartOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
+        const Obj<typename RecvPartOverlap::coneSequence>& ranks           = recvPartOverlap->cone(*p_iter);
+        //const typename Section::point_type&                localPartPoint  = *p_iter;
+        const typename Section::point_type                 rank            = *ranks->begin();
+        const typename Section::point_type&                remotePartPoint = ranks->begin().color();
+        const typename Section::value_type                *points          = overlapPartition->restrictPoint(remotePartPoint);
+        const int                                          numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
+
+        for(int i = 0; i < numPoints; ++i) {
+          recvOverlap->addArrow(rank, renumbering[points[i]], points[i]);
+        }
+      }
+      if (recvOverlap->debug()) {recvOverlap->view("Receive mesh overlap");}
+    };
+    // Create a partition point overlap from a partition
+    //   The intention is to create an overlap which enables exchange of redistribution information
     template<typename Section, typename SendOverlap, typename RecvOverlap>
-    static void createPartitionOverlap(const Obj<Section>& partition, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap) {
+    static void createPartitionPartOverlap(const Obj<Section>& partition, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap) {
       const typename Section::chart_type& chart      = partition->getChart();
       const int                           rank       = partition->commRank();
       const int                           size       = partition->commSize();
@@ -220,7 +289,7 @@ namespace ALE {
         adj[p]        = 0;
         recvCounts[p] = 1;
       }
-      for(typename Section::chart_type::iterator p_iter = chart.begin(); p_iter != chart->end(); ++p_iter) {
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart->end(); ++p_iter) {
         const typename Section::value_type& p = partition->restrictPoint(*p_iter)[0];
         // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
         sendOverlap->addCone(p, p, p);
@@ -256,23 +325,7 @@ namespace ALE {
       delete [] adj;
       delete [] recvCounts;
     };
-    // This is the default overlap which comes from distributing a serial mesh on process 0
-    template<typename SendOverlap, typename RecvOverlap>
-    static void createDistributionOverlap(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap) {
-      const int rank = sendOverlap->commRank();
-      const int size = sendOverlap->commSize();
-
-      if (rank == 0) {
-        for(int p = 1; p < size; p++) {
-          // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
-          sendOverlap->addCone(p, p, p);
-        }
-      }
-      if (rank != 0) {
-        // The arrow is from remote partition point rank (color) on rank 0 (source) to local partition point rank (target)
-        recvOverlap->addCone(0, rank, rank);
-      }
-    };
+  public: // Building CSR meshes
     // This produces the dual graph (each cell is a vertex and each face is an edge)
     //   numbering:   A contiguous numbering of the cells (not yet included)
     //   numVertices: The number of vertices in the graph (cells in the mesh)
@@ -459,6 +512,49 @@ namespace ALE {
         alloc_type().deallocate(offsets, numPoints+1);
       }
     };
+    template<typename Mesh, typename Section, typename Renumbering>
+    static void createLocalMesh(const Obj<Mesh>& mesh, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Mesh>& localMesh, const int height = 0) {
+      const Obj<typename Mesh::sieve_type>& sieve      = mesh->getSieve();
+      const Obj<typename Mesh::sieve_type>& localSieve = localMesh->getSieve();
+      const typename Section::value_type   *points     = partition->restrictPoint(mesh->commRank());
+      const int                             numPoints  = partition->getFiberDimension(mesh->commRank());
+
+      for(int p = 0; p < numPoints; ++p) {
+        Obj<typename Mesh::sieve_type::coneSet> current = new typename Mesh::sieve_type::coneSet();
+        Obj<typename Mesh::sieve_type::coneSet> next    = new typename Mesh::sieve_type::coneSet();
+        Obj<typename Mesh::sieve_type::coneSet> tmp;
+
+        current->insert(points[p]);
+        while(current->size()) {
+          for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+            const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
+            
+            for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+              localSieve->addArrow(renumbering[*c_iter], renumbering[*p_iter], c_iter.color());
+              next->insert(*c_iter);
+            }
+          }
+          tmp = current; current = next; next = tmp;
+          next->clear();
+        }
+        if (height) {
+          current->insert(points[p]);
+          while(current->size()) {
+            for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+              const Obj<typename Mesh::sieve_type::traits::supportSequence>& support = sieve->support(*p_iter);
+            
+              for(typename Mesh::sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+                localSieve->addArrow(renumbering[*p_iter], renumbering[*s_iter], s_iter.color());
+                next->insert(*s_iter);
+              }
+            }
+            tmp = current; current = next; next = tmp;
+            next->clear();
+          }
+        }
+      }
+    };
+  public: // Partitioning
     //   partition:    Should be properly allocated on input
     //   height:       Height of the point set to uniquely partition
     // TODO: Could rebind assignment section to the type of the output
@@ -483,6 +579,110 @@ namespace ALE {
       } else {
         throw ALE::Exception("Invalid partition height");
       }
+    };
+    // Add in the points in the closure (and star) of the partitioned points
+    template<typename Mesh, typename Section>
+    static void createPartitionClosure(const Obj<Mesh>& mesh, const Obj<Section>& pointPartition, const Obj<Section>& partition, const int height = 0) {
+      const Obj<typename Mesh::sieve_type>& sieve = mesh->getSieve();
+      const typename Section::chart_type&   chart = pointPartition->getChart();
+      size_t                                size  = 0;
+
+      for(typename Section::chart_type::const_iterator r_iter = chart.begin(); r_iter != chart.end(); ++r_iter) {
+        const typename Section::value_type    *points    = pointPartition->restrictPoint(*r_iter);
+        const int                              numPoints = pointPartition->getFiberDimension(*r_iter);
+        std::set<typename Section::value_type> closure;
+
+        // TODO: Use Quiver's closure() here instead
+        for(int p = 0; p < numPoints; ++p) {
+          Obj<typename Mesh::sieve_type::coneSet> current = new typename Mesh::sieve_type::coneSet();
+          Obj<typename Mesh::sieve_type::coneSet> next    = new typename Mesh::sieve_type::coneSet();
+          Obj<typename Mesh::sieve_type::coneSet> tmp;
+
+          current->insert(points[p]);
+          closure.insert(points[p]);
+          while(current->size()) {
+            for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+              const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
+            
+              for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                closure.insert(*c_iter);
+                next->insert(*c_iter);
+              }
+            }
+            tmp = current; current = next; next = tmp;
+            next->clear();
+          }
+          if (height) {
+            current->insert(points[p]);
+            while(current->size()) {
+              for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+                const Obj<typename Mesh::sieve_type::traits::supportSequence>& support = sieve->support(*p_iter);
+            
+                for(typename Mesh::sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+                  closure.insert(*s_iter);
+                  next->insert(*s_iter);
+                }
+              }
+              tmp = current; current = next; next = tmp;
+              next->clear();
+            }
+          }
+        }
+        partition->setFiberDimension(*r_iter, closure.size());
+        size = std::max(size, closure.size());
+      }
+      partition->allocatePoint();
+      typename Section::value_type *values = new typename Section::value_type[size];
+
+      for(typename Section::chart_type::const_iterator r_iter = chart.begin(); r_iter != chart.end(); ++r_iter) {
+        const typename Section::value_type    *points    = pointPartition->restrictPoint(*r_iter);
+        const int                              numPoints = pointPartition->getFiberDimension(*r_iter);
+        std::set<typename Section::value_type> closure;
+
+        // TODO: Use Quiver's closure() here instead
+        for(int p = 0; p < numPoints; ++p) {
+          Obj<typename Mesh::sieve_type::coneSet> current = new typename Mesh::sieve_type::coneSet();
+          Obj<typename Mesh::sieve_type::coneSet> next    = new typename Mesh::sieve_type::coneSet();
+          Obj<typename Mesh::sieve_type::coneSet> tmp;
+
+          current->insert(points[p]);
+          closure.insert(points[p]);
+          while(current->size()) {
+            for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+              const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
+            
+              for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                closure.insert(*c_iter);
+                next->insert(*c_iter);
+              }
+            }
+            tmp = current; current = next; next = tmp;
+            next->clear();
+          }
+          if (height) {
+            current->insert(points[p]);
+            while(current->size()) {
+              for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+                const Obj<typename Mesh::sieve_type::traits::supportSequence>& support = sieve->support(*p_iter);
+            
+                for(typename Mesh::sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+                  closure.insert(*s_iter);
+                  next->insert(*s_iter);
+                }
+              }
+              tmp = current; current = next; next = tmp;
+              next->clear();
+            }
+          }
+        }
+        int i = 0;
+
+        for(typename std::set<typename Section::value_type>::const_iterator p_iter = closure.begin(); p_iter != closure.end(); ++p_iter, ++i) {
+          values[i] = *p_iter;
+        }
+        partition->updatePoint(*r_iter, values);
+      }
+      delete [] values;
     };
   };
 #endif

@@ -64,6 +64,8 @@
 //
 // 6) Synchronize PETSc tags (can I get around this?)
 namespace ALE {
+  class DistributionNew {
+  };
   template<typename Bundle_>
   class Distribution {
   public:

@@ -5,10 +5,27 @@
 #include <Sections.hh>
 #endif
 
+#ifndef  included_ALE_ParallelMapping_hh
+#include <ParallelMapping.hh>
+#endif
+
 #include <iostream>
 #include <fstream>
 
 namespace ALE {
+  class Completion {
+  public:
+    template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection>
+    static void completeSection(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
+      Obj<SendSection> overlapSection = new SendSection(sendSection->comm(), sendSection->debug());
+
+      if (sendSection->debug()) {sendSection->view("Send Section");}
+      ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, sendSection, overlapSection);
+      if (overlapSection->debug()) {overlapSection->view("Overlap Section");}
+      ALE::Pullback::InsertionBinaryFusion::fuse(overlapSection, recvOverlap, recvSection);
+      if (recvSection->debug()) {recvSection->view("Receieve Section");}
+    };
+  };
   namespace New {
     template<typename Bundle_, typename Value_, typename Alloc_ = std::allocator<typename Bundle_::point_type> >
     class Completion {

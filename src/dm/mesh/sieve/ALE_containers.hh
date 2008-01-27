@@ -30,45 +30,54 @@ namespace ALE {
     int         _commRank;
     int         _commSize;
     std::string _name;
-    PetscObject _petscObj;
+    std::string _className;
+  protected:
     void __init(MPI_Comm comm) {
-      static PetscCookie objType = -1;
-      //const char        *id_name = ALE::getClassName<T>();
-      const char        *id_name = "ParallelObject";
-      PetscErrorCode     ierr;
+      PetscErrorCode ierr;
 
-      if (objType < 0) {
-        ierr = PetscLogClassRegister(&objType, id_name);CHKERROR(ierr, "Error in PetscLogClassRegister");
-      }
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
       ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_size");
-#ifdef USE_PETSC_OBJ
-      ierr = PetscObjectCreateGeneric(this->_comm, objType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
-#endif
-      //ALE::restoreClassName<T>(id_name);
+      const char *class_name = ALE::getClassName(this);
+      this->_className = class_name;
+      ALE::restoreClassName(this, class_name);
     };
   public:
-    ParallelObject(MPI_Comm comm = PETSC_COMM_SELF, const int debug = 0) : _debug(debug), _petscObj(NULL) {__init(comm);}
-    virtual ~ParallelObject() {
-#ifdef USE_PETSC_OBJ
-      if (this->_petscObj) {
-        PetscErrorCode ierr = PetscObjectDestroy(this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectDestroy");
-        this->_petscObj = NULL;
-      }
-#endif
-    };
+    ParallelObject(MPI_Comm comm = PETSC_COMM_SELF, const int debug = 0) : _debug(debug) {__init(comm);}
+    ~ParallelObject() {};
   public:
     int                debug()    const {return this->_debug;};
     void               setDebug(const int debug) {this->_debug = debug;};
     MPI_Comm           comm()     const {return this->_comm;};
     int                commSize() const {return this->_commSize;};
     int                commRank() const {return this->_commRank;}
-#ifdef USE_PETSC_OBJ
-    PetscObject        petscObj() const {return this->_petscObj;};
-#endif
     const std::string& getName() const {return this->_name;};
     void               setName(const std::string& name) {this->_name = name;};
+    const std::string& getClassName() const {return this->_className;};
+    void               setClassName(const std::string& name) {this->_className = name;};
+  public:
+    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+      ostringstream txt;
+      int           rank;
+
+      if (comm == MPI_COMM_NULL) {
+        comm = this->comm();
+        rank = this->commRank();
+      } else {
+        MPI_Comm_rank(comm, &rank);
+      }
+      if (name == "") {
+        if(rank == 0) {
+          txt << "viewing a " << this->getClassName() << std::endl;
+        }
+      } else {
+        if(rank == 0) {
+          txt << "viewing " << this->getClassName() << " '" << name << "'" << std::endl;
+        }
+      }
+      PetscSynchronizedPrintf(comm, txt.str().c_str());
+      PetscSynchronizedFlush(comm);
+    };
   };
 
   // Use for ArrowSections
