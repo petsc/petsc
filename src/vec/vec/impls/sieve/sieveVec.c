@@ -31,8 +31,8 @@ PetscErrorCode VecSet_Sieve(Vec v, PetscScalar alpha)
 PetscErrorCode VecScale_Sieve(Vec v, PetscScalar alpha)
 {
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) v->data;
-  PetscBLASInt           bn    = (PetscBLASInt) v->map.n, one = 1;
   PetscErrorCode         ierr;
+  PetscBLASInt           one = 1,bn    = PetscBLASIntCast(v->map.n);
 
   PetscFunctionBegin;
   if (alpha == 0.0) {
@@ -68,9 +68,9 @@ PetscErrorCode VecCopy_Sieve(Vec x, Vec y)
 PetscErrorCode VecAXPY_Sieve(Vec y, PetscScalar alpha, Vec x)
 {
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) y->data;
-  PetscBLASInt           bn    = (PetscBLASInt) y->map.n, one = 1;
   PetscScalar           *xarray;
   PetscErrorCode         ierr;
+  PetscBLASInt           one = 1,bn = PetscBLASIntCast(y->map.n);
 
   PetscFunctionBegin;
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
@@ -202,7 +202,7 @@ PetscErrorCode VecMAXPY_Sieve(Vec x, PetscInt nv, const PetscScalar *alpha, Vec 
   case 1: 
     ierr = VecGetArray(y[0],&yy0);CHKERRQ(ierr);
     alpha0 = *alpha++; 
-    {PetscBLASInt nn = (PetscBLASInt)n; APXY(xx,alpha0,yy0,nn);}
+    {PetscBLASInt nn = PetscBLASIntCast(n); APXY(xx,alpha0,yy0,nn);}
     ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
     y     +=1;
     break;

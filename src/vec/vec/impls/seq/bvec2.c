@@ -20,7 +20,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
   PetscScalar    *xx;
   PetscErrorCode ierr;
   PetscInt       n = xin->map.n;
-  PetscBLASInt   bn = (PetscBLASInt)n,one = 1;
+  PetscBLASInt   one = 1, bn = PetscBLASIntCast(n);
 
   PetscFunctionBegin;
   if (type == NORM_2 || type == NORM_FROBENIUS) {

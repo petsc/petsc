@@ -639,7 +639,7 @@ PetscErrorCode VecMAXPY_Seq(Vec xin, PetscInt nv,const PetscScalar *alpha,Vec *y
   case 1: 
     ierr = VecGetArray(y[0],&yy0);CHKERRQ(ierr);
     alpha0 = *alpha++; 
-    {PetscBLASInt nn = (PetscBLASInt)n; APXY(xx,alpha0,yy0,nn);}
+    {PetscBLASInt nn = PetscBLASIntCast(n); APXY(xx,alpha0,yy0,nn);}
     ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
     y     +=1;
     break;

@@ -1849,10 +1849,9 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 PetscErrorCode MatScale_SeqAIJ(Mat inA,PetscScalar alpha)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)inA->data;
-  PetscBLASInt   bnz = (PetscBLASInt)a->nz,one = 1;
   PetscScalar    oalpha = alpha;
   PetscErrorCode ierr;
-
+  PetscBLASInt   one = 1,bnz = PetscBLASIntCast(a->nz);
 
   PetscFunctionBegin;
   BLASscal_(&bnz,&oalpha,a->a,&one);
@@ -2196,7 +2195,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   PetscErrorCode ierr;
   PetscInt       i;
   Mat_SeqAIJ     *x  = (Mat_SeqAIJ *)X->data,*y = (Mat_SeqAIJ *)Y->data;
-  PetscBLASInt   one=1,bnz = (PetscBLASInt)x->nz;
+  PetscBLASInt   one=1,bnz = PetscBLASIntCast(x->nz);
 
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {

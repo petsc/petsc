@@ -1488,6 +1488,8 @@ PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscI
 
 /*
    bs indicates how many elements there are in each block. Normally this would be 1.
+
+   contains check that PetscMPIInt can handle the sizes needed 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreate_PtoS"
@@ -1530,6 +1532,9 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
         break;
       }
     }
+  }
+  for (i=1; i<2*size; i += 2) {
+    PetscMPIIntCheck(nprocs[i]);
   }
   nprocslocal    = nprocs[2*rank]; 
   nprocs[2*rank] = nprocs[2*rank+1] = 0; 

@@ -1123,7 +1123,7 @@ PetscErrorCode MatAXPY_SeqSBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
   Mat_SeqSBAIJ   *x=(Mat_SeqSBAIJ *)X->data, *y=(Mat_SeqSBAIJ *)Y->data;
   PetscErrorCode ierr;
   PetscInt       i,bs=Y->rmap.bs,bs2,j;
-  PetscBLASInt   bnz = (PetscBLASInt)x->nz,one = 1;
+  PetscBLASInt   one = 1,bnz = PetscBLASIntCast(x->nz);
   
   PetscFunctionBegin;
   if (str == SAME_NONZERO_PATTERN) {

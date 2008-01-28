@@ -68,8 +68,8 @@ PetscInt main(PetscInt argc,char **args)
 
   /* Solve eigenvalue problem: A*x = lambda*B*x */
   /*============================================*/
-  lwork = 8*n;
-  bn    = (PetscBLASInt)n;
+  lwork = PetscBLASIntCast(8*n);
+  bn    = PetscBLASIntCast(n);
   ierr = PetscMalloc(n*sizeof(PetscScalar),&evals);CHKERRQ(ierr);
   ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
   ierr = MatGetArray(A_dense,&arrayA);CHKERRQ(ierr);
@@ -78,10 +78,10 @@ PetscInt main(PetscInt argc,char **args)
     printf(" LAPACKsyev: compute all %d eigensolutions...\n",m);
     LAPACKsyev_("V","U",&bn,arrayA,&bn,evals,work,&lwork,&lierr); 
     evecs_array = arrayA;
-    nevs = m;
-    il=1; iu=m; 
+    nevs = PetscBLASIntCast(m);
+    il=1; iu=PetscBLASIntCast(m); 
   } else { /* test syevx()  */
-    il = 1; iu=(PetscBLASInt)(0.2*m); /* request 1 to 20%m evalues */
+    il = 1; iu=PetscBLASIntCast((0.2*m)); /* request 1 to 20%m evalues */
     printf(" LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);
     ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
     ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);

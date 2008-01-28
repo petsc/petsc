@@ -125,8 +125,8 @@ PetscInt main(PetscInt argc,char **args)
 
   /* Solve standard eigenvalue problem: A*x = lambda*x */
   /*===================================================*/
-  lwork = 2*n;
-  bn    = (PetscBLASInt)n;
+  lwork = PetscBLASIntCast(2*n);
+  bn    = PetscBLASIntCast(n);
   ierr = PetscMalloc(n*sizeof(PetscReal),&evals);CHKERRQ(ierr);
   ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
   ierr = MatGetArray(A_dense,&arrayA);CHKERRQ(ierr);
@@ -141,7 +141,7 @@ PetscInt main(PetscInt argc,char **args)
     il=1; iu=m; 
   } 
   if (TestZHEEVX){
-    il = 1; iu=(PetscBLASInt)(0.2*m); /* request 1 to 20%m evalues */
+    il = 1; iu=PetscBLASIntCast((0.2*m)); /* request 1 to 20%m evalues */
     printf(" LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);
     ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
     ierr = PetscMalloc((7*n+1)*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscFree(rwork);CHKERRQ(ierr);
   }
   if (TestZHEGVX){
-    il = 1; iu=(PetscBLASInt)(0.2*m); /* request 1 to 20%m evalues */
+    il = 1; iu=PetscBLASIntCast((0.2*m)); /* request 1 to 20%m evalues */
     printf(" LAPACKsygv: compute %d to %d-th eigensolutions...\n",il,iu);
     ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);    
     ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);     

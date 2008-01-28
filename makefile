@@ -223,7 +223,7 @@ install:
 	    ${MKDIR} ${INSTALL_DIR}/conf ; \
           fi;\
           ${CP} -fr conf ${INSTALL_DIR} ; \
-          ${RM} -fr ${INSTALL_DIR}/conf/docsonly ;\
+          ${RM} -fr ${INSTALL_DIR}/docsonly ;\
           sed -i "" 's?$${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
           sed -i "" s?TMP_INSTALL_DIR?${INSTALL_DIR}?g ${INSTALL_DIR}/conf/* ;\
           sed -i "" 's?/$${PETSC_ARCH}??g' ${INSTALL_DIR}/conf/* ;\

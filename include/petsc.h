@@ -197,6 +197,12 @@ typedef int PetscBLASInt;
     Notes: usually this is the same as PetscInt, but if PETSc was built with --with-64-bit-indices but 
            standard C/Fortran integers are 32 bit then this is NOT the same as PetscInt
 
+    PetscBLASIntCheck(a) checks if the given PetscInt a will fit in a PetscBLASInt, if not it generates a 
+      PETSC_ERR_ARG_OUTOFRANGE.
+
+    PetscBLASInt b = PetscBLASIntCast(a) checks if the given PetscInt a will fit in a PetscBLASInt, if not it 
+      generates a PETSC_ERR_ARG_OUTOFRANGE
+
 .seealso: PetscBLASInt, PetscInt
 
 M*/
@@ -206,6 +212,12 @@ typedef int PetscMPIInt;
     PetscEnum - datatype used to pass enum types within PETSc functions.
 
     Level: intermediate
+
+    PetscMPIIntCheck(a) checks if the given PetscInt a will fit in a PetscMPIInt, if not it generates a 
+      PETSC_ERR_ARG_OUTOFRANGE.
+
+    PetscMPIInt b = PetscMPIIntCast(a) checks if the given PetscInt a will fit in a PetscMPIInt, if not it 
+      generates a PETSC_ERR_ARG_OUTOFRANGE
 
 .seealso: PetscOptionsGetEnum(), PetscOptionsEnum(), PetscBagRegisterEnum()
 M*/
@@ -218,14 +230,25 @@ typedef enum { ENUM_DUMMY } PetscEnum;
 
    Level: intermediate
 
+
 .seealso: PetscScalar, PetscBLASInt, PetscMPIInt
 M*/
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef long long PetscInt;
 #define MPIU_INT MPI_LONG_LONG_INT
+#define PETSC_MPI_INT_MAX 2147483647
+#define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
+#define PetscMPIIntCast(a) (a);PetscMPIIntCheck(a)
+#define PETSC_BLAS_INT_MAX 2147483647
+#define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
+#define PetscBLASIntCast(a) (a);PetscBLASIntCheck(a)
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
+#define PetscMPIIntCheck(a) 
+#define PetscMPIIntCast(a) a
+#define PetscBLASIntCheck(a) 
+#define PetscBLASIntCast(a) a
 #endif  
 
 /*

@@ -10,8 +10,8 @@ static char help[] = "Shows how to add a new MatOperation to AIJ MatType\n\n";
 PetscErrorCode MatScaleUserImpl_SeqAIJ(Mat inA,PetscScalar alpha)
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)inA->data;
-  PetscBLASInt bnz = (PetscBLASInt)a->nz,one = 1;
-  PetscScalar oalpha = alpha;
+  PetscScalar  oalpha = alpha;
+  PetscBLASInt one = 1,bnz = PetscBLASIntCast(a->nz);
 
   PetscFunctionBegin;
   BLASscal_(&bnz,&oalpha,a->a,&one);
