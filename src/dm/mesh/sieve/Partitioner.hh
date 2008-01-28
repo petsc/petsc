@@ -512,6 +512,23 @@ namespace ALE {
         alloc_type().deallocate(offsets, numPoints+1);
       }
     };
+    template<typename OldSection, typename Partition, typename Renumbering, typename NewSection>
+    static void createLocalSection(const Obj<OldSection>& oldSection, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<NewSection>& newSection) {
+      const typename Partition::value_type *points    = partition->restrictPoint(oldSection->commRank());
+      const int                             numPoints = partition->getFiberDimension(oldSection->commRank());
+
+      for(int p = 0; p < numPoints; ++p) {
+        if (oldSection->hasPoint(points[p])) {
+          newSection->setFiberDimension(renumbering[points[p]], oldSection->getFiberDimension(points[p]));
+        }
+      }
+      if (numPoints) {newSection->allocatePoint();}
+      for(int p = 0; p < numPoints; ++p) {
+        if (oldSection->hasPoint(points[p])) {
+          newSection->updatePointAll(renumbering[points[p]], oldSection->restrictPoint(points[p]));
+        }
+      }
+    };
     template<typename Mesh, typename Section, typename Renumbering>
     static void createLocalMesh(const Obj<Mesh>& mesh, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Mesh>& localMesh, const int height = 0) {
       const Obj<typename Mesh::sieve_type>& sieve      = mesh->getSieve();

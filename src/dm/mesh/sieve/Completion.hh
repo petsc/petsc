@@ -241,7 +241,9 @@ namespace ALE {
       MPI_Datatype _mpiType;
     protected:
       MPI_Datatype constructMPIType() {
-        if (sizeof(value_type) == 2) {
+        if (sizeof(value_type) == 1) {
+          return MPI_BYTE;
+        } else if (sizeof(value_type) == 2) {
           return MPI_SHORT;
         } else if (sizeof(value_type) == 4) {
           return MPI_INT;

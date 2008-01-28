@@ -121,7 +121,7 @@ namespace ALE {
        
        virtual typename traits::index_type::size_type size() {return this->_index.size();};
 
-       virtual iterator begin() {
+       virtual iterator begin() const {
          // Retrieve the beginning iterator of the index
          return iterator(this->_index.begin());
        };

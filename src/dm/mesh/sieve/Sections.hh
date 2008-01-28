@@ -6,42 +6,48 @@
 #endif
 
 namespace ALE {
-  template<typename Sieve_>
+  template<typename Sieve_, typename Alloc_ = std::allocator<typename Sieve_::target_type> >
   class BaseSection : public ALE::ParallelObject {
   public:
     typedef Sieve_                                    sieve_type;
+    typedef Alloc_                                    alloc_type;
     typedef int                                       value_type;
     typedef typename sieve_type::target_type          point_type;
     typedef typename sieve_type::traits::baseSequence chart_type;
   protected:
     Obj<sieve_type> _sieve;
+    chart_type      _chart;
     int             _size;
+    int             _empty;
   public:
-    BaseSection(const Obj<sieve_type>& sieve) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve) {};
+    BaseSection(const Obj<sieve_type>& sieve) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _chart(*sieve->base()), _size(1), _empty(0) {};
     ~BaseSection() {};
   public: // Verifiers
-    bool hasPoint(const point_type& point) {
+    bool hasPoint(const point_type& point) const {
       return this->_sieve->baseContains(point);
     };
   public:
-    const int getFiberDimension(const point_type& p) {
+    const chart_type& getChart() const {
+      return this->_chart;
+    };
+    const int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
-    const value_type *restrictPoint(const point_type& p) {
-      this->_size = this->hasPoint(p) ? 1 : 0;
-      return &this->_size;
+    const value_type *restrictPoint(const point_type& p) const {
+      if (this->hasPoint(p)) return &this->_size;
+      return &this->_empty;
     };
   };
 
   template<typename Sieve_, typename Alloc_ = std::allocator<int> >
   class ConeSizeSection : public ALE::ParallelObject {
   public:
-    typedef Sieve_                           sieve_type;
-    typedef Alloc_                           alloc_type;
-    typedef int                              value_type;
-    typedef typename sieve_type::target_type point_type;
-    typedef BaseSection<sieve_type>          atlas_type;
-    typedef typename atlas_type::chart_type  chart_type;
+    typedef Sieve_                              sieve_type;
+    typedef Alloc_                              alloc_type;
+    typedef int                                 value_type;
+    typedef typename sieve_type::target_type    point_type;
+    typedef BaseSection<sieve_type, alloc_type> atlas_type;
+    typedef typename atlas_type::chart_type     chart_type;
     typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
     typedef typename atlas_alloc_type::pointer                      atlas_ptr;
   protected:

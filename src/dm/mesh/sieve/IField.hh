@@ -67,12 +67,19 @@ namespace ALE {
     typedef Interval<point_type, alloc_type> chart_type;
   protected:
     chart_type _chart;
-    value_type _value;
-    value_type _defaultValue;
+    value_type _value[2]; // Value and default value
   public:
-    IConstantSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {};
-    IConstantSection(MPI_Comm comm, const point_type& min, const point_type& max, const value_type& value, const int debug) : ParallelObject(comm, debug), _chart(min, max), _value(value), _defaultValue(value) {};
-    IConstantSection(MPI_Comm comm, const point_type& min, const point_type& max, const value_type& value, const value_type& defaultValue, const int debug) : ParallelObject(comm, debug), _chart(min, max), _value(value), _defaultValue(defaultValue) {};
+    IConstantSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
+      _value[1] = 0;
+    };
+    IConstantSection(MPI_Comm comm, const point_type& min, const point_type& max, const value_type& value, const int debug) : ParallelObject(comm, debug), _chart(min, max) {
+      _value[0] = value;
+      _value[1] = value;
+    };
+    IConstantSection(MPI_Comm comm, const point_type& min, const point_type& max, const value_type& value, const value_type& defaultValue, const int debug) : ParallelObject(comm, debug), _chart(min, max) {
+      _value[0] = value;
+      _value[1] = defaultValue;
+    };
   public: // Verifiers
     void checkPoint(const point_type& point) const {
       if (point < this->_chart.min() || point >= this->_chart.max()) {
@@ -109,13 +116,14 @@ namespace ALE {
         this->checkPoint(*p_iter);
       }
     };
-    value_type getDefaultValue() {return this->_defaultValue;};
-    void setDefaultValue(const value_type value) {this->_defaultValue = value;};
+    value_type getDefaultValue() {return this->_value[1];};
+    void setDefaultValue(const value_type value) {this->_value[1] = value;};
     void copy(const Obj<IConstantSection>& section) {
       const chart_type& chart = section->getChart();
 
       this->_chart.copy(chart);
-      this->_value = section->restrict(*chart.begin())[0];
+      this->_value[0] = section->restrict(*chart.begin())[0];
+      this->_value[1] = section->restrict(*chart.begin())[1];
     };
   public: // Sizes
     ///void clear() {};
@@ -144,19 +152,22 @@ namespace ALE {
     };
     int size(const point_type& p) {return this->getFiberDimension(p);};
   public: // Restriction
+    const value_type *restrict() const {
+      return this->_value;
+    };
     const value_type *restrict(const point_type& p) const {
       if (this->hasPoint(p)) {
-        return &this->_value;
+        return this->_value;
       }
-      return &this->_defaultValue;
+      return &this->_value[1];
     };
     const value_type *restrictPoint(const point_type& p) const {return this->restrict(p);};
     void update(const point_type& p, const value_type v[]) {
-      this->_value = v[0];
+      this->_value[0] = v[0];
     };
     void updatePoint(const point_type& p, const value_type v[]) {return this->update(p, v);};
     void updateAdd(const point_type& p, const value_type v[]) {
-      this->_value += v[0];
+      this->_value[0] += v[0];
     };
     void updateAddPoint(const point_type& p, const value_type v[]) {return this->updateAdd(p, v);};
   public:
@@ -179,7 +190,7 @@ namespace ALE {
           txt << "viewing IConstantSection '" << name << "'" << std::endl;
         }
       }
-      txt <<"["<<this->commRank()<<"]: Value " << this->_value << std::endl;
+      txt <<"["<<this->commRank()<<"]: Value " << this->_value[0] << " Default Value " << this->_value[1] << std::endl;
       PetscSynchronizedPrintf(comm, txt.str().c_str());
       PetscSynchronizedFlush(comm);
     };
@@ -342,17 +353,18 @@ namespace ALE {
     // Return only the values associated to this point, not its closure
     const value_type *restrictPoint(const point_type& p) {
       if (!this->hasPoint(p)) return this->_emptyValue.v;
-      return &this->_array[p*fiberDim];
+      const int offset = (p - this->getChart().min())*fiberDim;
+      return &this->_array[offset];
     };
     // Update only the values associated to this point, not its closure
     void updatePoint(const point_type& p, const value_type v[]) {
-      for(int i = 0, idx = p*fiberDim; i < fiberDim; ++i, ++idx) {
+      for(int i = 0, idx = (p - this->getChart().min())*fiberDim; i < fiberDim; ++i, ++idx) {
         this->_array[idx] = v[i];
       }
     };
     // Update only the values associated to this point, not its closure
     void updateAddPoint(const point_type& p, const value_type v[]) {
-      for(int i = 0, idx = p*fiberDim; i < fiberDim; ++i, ++idx) {
+      for(int i = 0, idx = (p - this->getChart().min())*fiberDim; i < fiberDim; ++i, ++idx) {
         this->_array[idx] += v[i];
       }
     };
@@ -383,7 +395,7 @@ namespace ALE {
       values_type&                           array = this->_array;
 
       for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        const int idx = (*p_iter)*fiberDim;
+        const int idx = (*p_iter - this->getChart().min())*fiberDim;
 
         if (fiberDim != 0) {
           txt << "[" << this->commRank() << "]:   " << *p_iter << " dim " << fiberDim << "  ";

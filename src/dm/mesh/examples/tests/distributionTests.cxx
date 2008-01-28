@@ -226,6 +226,19 @@ PetscErrorCode SectionTest(const Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SectionTests"
+PetscErrorCode SectionTests(const Options *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = ConstantSectionTest(options);CHKERRQ(ierr);
+  ierr = UniformSectionTest(options);CHKERRQ(ierr);
+  ierr = SectionTest(options);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SectionToISectionTest"
 PetscErrorCode SectionToISectionTest(const Options *options)
 {
@@ -258,19 +271,6 @@ PetscErrorCode SectionToISectionTest(const Options *options)
   }
   ierr = PetscFree(value);CHKERRQ(ierr);
   ALE::Completion::completeSection(sendOverlap, recvOverlap, serialSection, parallelSection);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SectionTests"
-PetscErrorCode SectionTests(const Options *options)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = ConstantSectionTest(options);CHKERRQ(ierr);
-  ierr = UniformSectionTest(options);CHKERRQ(ierr);
-  ierr = SectionTest(options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -388,7 +388,18 @@ PetscErrorCode PartitionTests(const Options *options)
   ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, parallelSieve);
   //   Create the local mesh
   ALE::Partitioner<>::createLocalMesh(mesh, partition, renumbering, parallelMesh, height);
+  parallelMesh->stratify();
   parallelMesh->view("Parallel Mesh");
+  //   Distribute the coordinates
+  typedef ALE::ISection<point_type, double> real_section_type;
+  const int              firstVertex = parallelMesh->heightStratum(0)->size();
+  const int              lastVertex  = firstVertex+parallelMesh->depthStratum(0)->size();
+  Obj<real_section_type> parallelCoordinates = new real_section_type(options->comm, firstVertex, lastVertex, options->debug);
+  const Obj<ALE::Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+
+  coordinates->setDebug(options->debug);
+  ALE::Partitioner<>::createLocalSection(coordinates, partition, renumbering, parallelCoordinates);
+  ALE::Completion::completeSection(sendMeshOverlap, recvMeshOverlap, coordinates, parallelCoordinates);
   //   Create the parallel overlap
   Obj<mesh_send_overlap_type> sendParallelMeshOverlap  = new mesh_send_overlap_type(options->comm);
   Obj<mesh_recv_overlap_type> recvParallelMeshOverlap  = new mesh_recv_overlap_type(options->comm);
