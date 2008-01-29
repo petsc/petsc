@@ -463,10 +463,10 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_superlu));CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   /* Default num of process columns and rows */
-  lu->npcol = (PetscMPIInt)(0.5 + sqrt((PetscReal)size)); 
+  lu->npcol = PetscMPIIntCast(0.5 + sqrt((PetscReal)size)); 
   if (!lu->npcol) lu->npcol = 1;
   while (lu->npcol > 0) {
-    lu->nprow = (PetscMPIInt)(size/lu->npcol);  
+    lu->nprow = PetscMPIIntCast(size/lu->npcol);  
     if (size == lu->nprow * lu->npcol) break;
     lu->npcol --;
   }    

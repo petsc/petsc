@@ -608,7 +608,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
 PetscErrorCode PetscGetProc(const PetscInt row, const PetscMPIInt size, const PetscInt proc_gnode[], PetscMPIInt *rank)
 {
   PetscInt    nGlobalNd = proc_gnode[size];
-  PetscMPIInt fproc = (PetscMPIInt) ((float)row * (float)size / (float)nGlobalNd + 0.5);
+  PetscMPIInt fproc = PetscMPIIntCast( ((float)row * (float)size / (float)nGlobalNd + 0.5));
   
   PetscFunctionBegin;
   if (fproc > size) fproc = size;

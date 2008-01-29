@@ -613,7 +613,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    PetscMPIInt rank,size,*sizes,Ntotal,*displs, NN = (PetscMPIInt)N;
+    PetscMPIInt rank,size,*sizes,Ntotal,*displs, NN = PetscMPIIntCast(N);
     PetscInt    *array;
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -696,7 +696,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscVie
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    PetscMPIInt rank,size,*sizes,*displs, Ntotal,NN = (PetscMPIInt)N;
+    PetscMPIInt rank,size,*sizes,*displs, Ntotal,NN = PetscMPIIntCast(N);
     PetscReal   *array;
 
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -792,7 +792,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,PetscScalar idx[],Pets
     }
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isbinary) {
-    PetscMPIInt size,rank,*sizes,Ntotal,*displs,NN = (PetscMPIInt)N;
+    PetscMPIInt size,rank,*sizes,Ntotal,*displs,NN = PetscMPIIntCast(N);
     PetscScalar *array;
 
     ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
