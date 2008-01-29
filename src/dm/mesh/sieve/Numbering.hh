@@ -606,7 +606,7 @@ namespace ALECompat {
         this->_offsets    = new int[this->commSize()+1];
         this->_offsets[0] = 0;
       };
-      ~NewNumbering() {
+      virtual ~NewNumbering() {
         delete [] this->_offsets;
       };
     public: // Sizes
@@ -656,7 +656,7 @@ namespace ALECompat {
         this->_offsets    = new int[this->commSize()+1];
         this->_offsets[0] = 0;
       };
-      ~NewGlobalOrder() {
+      virtual ~NewGlobalOrder() {
         delete [] this->_offsets;
       };
     public: // Sizes

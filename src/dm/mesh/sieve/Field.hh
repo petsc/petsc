@@ -162,12 +162,19 @@ namespace ALE {
     typedef std::set<point_type, std::less<point_type>, alloc_type> chart_type;
   protected:
     chart_type _chart;
-    value_type _value;
-    value_type _defaultValue;
+    value_type _value[2];
   public:
-    ConstantSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _defaultValue(0) {};
-    ConstantSection(MPI_Comm comm, const value_type& value, const int debug) : ParallelObject(comm, debug), _value(value), _defaultValue(value) {};
-    ConstantSection(MPI_Comm comm, const value_type& value, const value_type& defaultValue, const int debug) : ParallelObject(comm, debug), _value(value), _defaultValue(defaultValue) {};
+    ConstantSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
+      _value[1] = 0;
+    };
+    ConstantSection(MPI_Comm comm, const value_type& value, const int debug) : ParallelObject(comm, debug) {
+      _value[0] = value;
+      _value[1] = value;
+    };
+    ConstantSection(MPI_Comm comm, const value_type& value, const value_type& defaultValue, const int debug) : ParallelObject(comm, debug) {
+      _value[0] = value;
+      _value[1] = defaultValue;
+    };
   public: // Verifiers
     void checkPoint(const point_type& point) const {
       if (this->_chart.find(point) == this->_chart.end()) {
@@ -202,13 +209,14 @@ namespace ALE {
 //     void addPoint(const std::set<point_type>& points) {
 //       this->_chart.insert(points.begin(), points.end());
 //     };
-    value_type getDefaultValue() {return this->_defaultValue;};
-    void setDefaultValue(const value_type value) {this->_defaultValue = value;};
+    value_type getDefaultValue() {return this->_value[1];};
+    void setDefaultValue(const value_type value) {this->_value[1] = value;};
     void copy(const Obj<ConstantSection>& section) {
       const chart_type& chart = section->getChart();
 
       this->addPoint(chart);
-      this->_value = section->restrict(*chart.begin())[0];
+      this->_value[0] = section->restrict(*chart.begin())[0];
+      this->_value[1] = section->restrict(*chart.begin())[1];
     };
   public: // Sizes
     void clear() {
@@ -239,19 +247,22 @@ namespace ALE {
     };
     int size(const point_type& p) {return this->getFiberDimension(p);};
   public: // Restriction
+    const value_type *restrict() const {
+      return this->_value;
+    };
     const value_type *restrict(const point_type& p) const {
       if (this->hasPoint(p)) {
-        return &this->_value;
+        return this->_value;
       }
-      return &this->_defaultValue;
+      return &this->_value[1];
     };
     const value_type *restrictPoint(const point_type& p) const {return this->restrict(p);};
     void update(const point_type& p, const value_type v[]) {
-      this->_value = v[0];
+      this->_value[0] = v[0];
     };
     void updatePoint(const point_type& p, const value_type v[]) {return this->update(p, v);};
     void updateAdd(const point_type& p, const value_type v[]) {
-      this->_value += v[0];
+      this->_value[0] += v[0];
     };
     void updateAddPoint(const point_type& p, const value_type v[]) {return this->updateAdd(p, v);};
   public:
@@ -274,7 +285,7 @@ namespace ALE {
           txt << "viewing ConstantSection '" << name << "'" << std::endl;
         }
       }
-      txt <<"["<<this->commRank()<<"]: Value " << this->_value << std::endl;
+      txt <<"["<<this->commRank()<<"]: Value " << this->_value[0] << " Default Value " << this->_value[1] << std::endl;
       PetscSynchronizedPrintf(comm, txt.str().c_str());
       PetscSynchronizedFlush(comm);
     };

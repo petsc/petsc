@@ -150,6 +150,8 @@ cd $tmpdir
 find $tmpdir/petsc$version -type f -name "*.html" -exec rm {} \;
 # recreate EMACS-TAGS [after deletion]
 cd $tmpdir/petsc$version; ${PETSC_DIR}/bin/maint/generateetags.py
+
+cd $tmpdir
 /bin/tar -czf ~/petsc-lite$version.tar.gz petsc$version
 
 #cleanup

@@ -226,12 +226,18 @@ namespace ALE {
       return id_name;
   };
   template <class T>
+  static const char *getClassName(const T *obj) {
+    return getClassName<T>();
+  };
+  template<class T>
   static void restoreClassName(const char *id_name) {
 #ifdef ALE_HAVE_CXX_ABI
     // Free the name malloc'ed by __cxa_demangle
     free((char *) id_name);
 #endif
   };
+  template<class T>
+  static void restoreClassName(const T *obj, const char *id_name) {restoreClassName<T>(id_name);};
 
   // This UNIVERSAL allocator class is static and provides allocation/deallocation services to all allocators defined below.
   class universal_allocator {
