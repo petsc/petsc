@@ -485,7 +485,7 @@ static PetscErrorCode MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
 {
   Mat_MPIRowbs   *a = (Mat_MPIRowbs*)mat->data;
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
+  PetscMPIInt    rank,size,mnz;
   PetscInt       i,M,m,*sbuff,*rowlengths;
   PetscInt       *recvcts,*recvdisp,fd,*cols,maxnz,nz,j;
   BSspmat        *A = a->A;
@@ -520,7 +520,7 @@ static PetscErrorCode MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
     rowlengths[1] = mat->rmap.N;
     rowlengths[2] = mat->cmap.N;
     rowlengths[3] = (int)info.nz_used;
-    ierr = MPI_Gatherv(sbuff,m,MPI_INT,rowlengths+4,recvcts,recvdisp,MPI_INT,0,comm);CHKERRQ(ierr);
+    ierr = MPI_Gatherv(sbuff,m,MPIU_INT,rowlengths+4,recvcts,recvdisp,MPIU_INT,0,comm);CHKERRQ(ierr);
     ierr = PetscFree(sbuff);CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fd,rowlengths,4+M,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     /* count the number of nonzeros on each processor */
@@ -551,8 +551,8 @@ static PetscErrorCode MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
     /* receive and store column indices for all other processors */
     for (i=1; i<size; i++) {
       /* should tell processor that I am now ready and to begin the send */
-      ierr = MPI_Recv(cols,maxnz,MPI_INT,i,((PetscObject)mat)->tag,comm,&status);CHKERRQ(ierr);
-      ierr = MPI_Get_count(&status,MPI_INT,&nz);CHKERRQ(ierr);
+      ierr = MPI_Recv(cols,maxnz,MPIU_INT,i,((PetscObject)mat)->tag,comm,&status);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&status,MPIU_INT,&mnz);CHKERRQ(ierr);
       ierr = PetscBinaryWrite(fd,cols,nz,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);

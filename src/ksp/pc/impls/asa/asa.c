@@ -819,7 +819,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
   ierr = MPI_Comm_size(asa_lev->comm, &comm_size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(asa_lev->comm, &comm_rank);CHKERRQ(ierr);
   ierr = PetscMalloc(comm_size*sizeof(PetscInt), &loc_cols);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&total_loc_cols, 1, MPI_INT, loc_cols, 1, MPI_INT, asa_lev->comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&total_loc_cols, 1, MPIU_INT, loc_cols, 1, MPIU_INT, asa_lev->comm);CHKERRQ(ierr);
   mat_loc_col_start = 0;
   for (i=0;i<comm_rank;i++) {
     mat_loc_col_start += loc_cols[i];

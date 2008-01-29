@@ -210,6 +210,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
         if (rp[i] == col) {
           if (is == ADD_VALUES) ap[i] += value;  
           else                  ap[i] = value;
+          low = i + 1;
           goto noinsert;
         }
       } 
@@ -225,8 +226,8 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       }
       rp[i] = col; 
       ap[i] = value; 
+      low   = i + 1;
       noinsert:;
-      low = i + 1;
     }
     ailen[row] = nrow;
   }

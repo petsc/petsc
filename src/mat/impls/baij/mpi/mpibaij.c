@@ -980,8 +980,8 @@ PetscErrorCode MatAssemblyEnd_MPIBAIJ(Mat mat,MatAssemblyType mode)
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)baij->A->data;
   PetscErrorCode ierr;
   PetscInt       i,j,rstart,ncols,flg,bs2=baij->bs2;
-  PetscInt       *row,*col,other_disassembled;
-  PetscTruth     r1,r2,r3;
+  PetscInt       *row,*col;
+  PetscTruth     r1,r2,r3,other_disassembled;
   MatScalar      *val;
   InsertMode     addv = mat->insertmode;
   PetscMPIInt    n;

@@ -67,8 +67,9 @@ class Configure(config.base.Configure):
     elif 'with-fortran-kernels' in self.framework.argDB:
       self.useFortranKernels = self.framework.argDB['with-fortran-kernels'].lower()
     elif self.scalarTypes.precision == 'matsingle':
-      self.logPrint('Enabling fortran kernels automatically due to matsingle option')
-      self.useFortranKernels = 'generic'
+#      self.logPrint('Enabling fortran kernels automatically due to matsingle option')
+#      self.useFortranKernels = 'generic'
+      self.useFortranKernels = 'none'
     else:
       self.useFortranKernels = 'none'
 

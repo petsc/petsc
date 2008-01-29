@@ -264,7 +264,7 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscFunctionBegin;
   red->comm = comm;
   ierr = MPI_Bcast(&red->setupcalled,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&red->flag,1,MPI_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&red->flag,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   if (!red->setupcalled) {
     /* setup vector communication */
     ierr = MPI_Bcast(&red->n,1,MPIU_INT,0,comm);CHKERRQ(ierr);

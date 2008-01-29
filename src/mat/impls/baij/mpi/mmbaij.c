@@ -157,7 +157,7 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
   Mat            B = baij->B,Bnew;
   Mat_SeqBAIJ    *Bbaij = (Mat_SeqBAIJ*)B->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,mbs=Bbaij->mbs,n = A->cmap.n,col,*garray=baij->garray;
+  PetscInt       i,j,mbs=Bbaij->mbs,n = A->cmap.N,col,*garray=baij->garray;
   PetscInt       bs2 = baij->bs2,*nz,ec,m = A->rmap.n;
   MatScalar      *a = Bbaij->a;
   PetscScalar    *atmp;

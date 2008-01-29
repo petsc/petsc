@@ -586,7 +586,8 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)baij->A->data;
   PetscErrorCode ierr;
   PetscInt       i,j,rstart,ncols,flg,bs2=baij->bs2;
-  PetscInt       *row,*col,other_disassembled;
+  PetscInt       *row,*col;
+  PetscTruth     other_disassembled;
   PetscMPIInt    n;
   PetscTruth     r1,r2,r3;
   MatScalar      *val;
@@ -2146,7 +2147,7 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   PetscScalar    *vals,*buf;
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
   MPI_Status     status;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,*sndcounts = 0,*browners,maxnz,*rowners,*locrowlens;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,*sndcounts = 0,*browners,maxnz,*rowners,*locrowlens,mmbs;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
   PetscInt       *procsnz = 0,jj,*mycols,*ibuf;
   PetscInt       bs=1,Mbs,mbs,extra_rows;
@@ -2192,7 +2193,8 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   m          = mbs*bs;
   ierr       = PetscMalloc(2*(size+2)*sizeof(PetscMPIInt),&rowners);CHKERRQ(ierr);
   browners   = rowners + size + 1;
-  ierr       = MPI_Allgather(&mbs,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
+  mmbs       = PetscMPIIntCast(mbs);
+  ierr       = MPI_Allgather(&mmbs,1,MPI_INT,rowners+1,1,MPI_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
   for (i=2; i<=size; i++) rowners[i] += rowners[i-1];
   for (i=0; i<=size;  i++) browners[i] = rowners[i]*bs;
