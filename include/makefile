@@ -8,7 +8,7 @@ SOURCEH  = petsc.h petscsys.h private/petscimpl.h petscbag.h petscmath.h petscbt
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = finclude f90impl
+DIRS     = finclude
 LOCDIR   = include/
 MANSEC   = Sys
 

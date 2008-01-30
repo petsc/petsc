@@ -2,7 +2,7 @@
 ALL:
 
 CFLAGS	        = 
-FFLAGS	        = 
+FFLAGS	        = -I${PETSC_DIR}/include/finclude
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tutorials/
@@ -36,6 +36,10 @@ ex4: ex4.o   chkopts
 ex4f: ex4f.o   chkopts
 	-${FLINKER} -o ex4f ex4f.o  ${PETSC_SYS_LIB}
 	${RM} -f ex4f.o
+
+ex4f90: ex4f90.o   chkopts
+	-${FLINKER} -o ex4f90 ex4f90.o  ${PETSC_SYS_LIB}
+	${RM} -f ex4f90.o
 
 ex5: ex5.o   chkopts
 	-${CLINKER} -o ex5 ex5.o  ${PETSC_SYS_LIB}
