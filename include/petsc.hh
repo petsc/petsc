@@ -32,6 +32,7 @@ namespace PETSc {
   struct Point {
     double x[dim];
     Point() {for(int d = 0; d < dim; ++d) {x[d] = 0.0;}};
+    Point(const int p) {for(int d = 0; d < dim; ++d) {x[d] = (double) p;}};
     Point(const double p) {for(int d = 0; d < dim; ++d) {x[d] = p;}};
     Point(const double p[]) {for(int d = 0; d < dim; ++d) {x[d] = p[d];}};
     Point(const Point& p) {for(int d = 0; d < dim; ++d) {x[d] = p.x[d];}};
