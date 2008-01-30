@@ -40,7 +40,7 @@
 
 /* Info about i-nodes (identical nodes) helper class for SeqAIJ */
 typedef struct {
-  PetscScalar *bdiag,*ibdiag;               /* diagonal blocks of matrix used for MatRelax_Inode() */
+  MatScalar   *bdiag,*ibdiag;               /* diagonal blocks of matrix used for MatRelax_Inode() */
   PetscInt    bdiagsize;                       /* length of bdiag and ibdiag */
   PetscTruth  ibdiagvalid;                     /* do ibdiag[] and bdiag[] contain the most recent values */
 
@@ -181,8 +181,8 @@ EXTERN PetscErrorCode MatMatMultTranspose_SeqAIJ_SeqAIJ(Mat,Mat,MatReuse,PetscRe
 EXTERN PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat,Mat,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatSetValues_SeqAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
-EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,MatScalar**);
-EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,MatScalar**);
+EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
+EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 EXTERN PetscErrorCode MatAXPY_SeqAIJ(Mat,PetscScalar,Mat,MatStructure);
 EXTERN PetscErrorCode MatGetRowIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);

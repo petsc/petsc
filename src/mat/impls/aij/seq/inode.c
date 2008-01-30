@@ -1640,7 +1640,8 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
 PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar        *x,*xs,*ibdiag,*bdiag,sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
+  PetscScalar        *x,*xs,sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
+  MatScalar          *ibdiag,*bdiag;
   PetscScalar        *b,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
   const PetscScalar  *v = a->a,*v1,*v2,*v3,*v4,*v5;
   PetscReal          zeropivot = 1.0e-15;
@@ -1660,7 +1661,7 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
 	cnt += sizes[i]*sizes[i];
       }
       a->inode.bdiagsize = cnt;
-      ierr   = PetscMalloc2(cnt,PetscScalar,&a->inode.ibdiag,cnt,PetscScalar,&a->inode.bdiag);CHKERRQ(ierr);
+      ierr   = PetscMalloc2(cnt,MatScalar,&a->inode.ibdiag,cnt,MatScalar,&a->inode.bdiag);CHKERRQ(ierr);
     }
 
     /* copy over the diagonal blocks and invert them */
@@ -1673,7 +1674,7 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
           bdiag[cnt+k*sizes[i]+j] = v[diag[row+j] - j + k];
         }
       }
-      ierr = PetscMemcpy(ibdiag+cnt,bdiag+cnt,sizes[i]*sizes[i]*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = PetscMemcpy(ibdiag+cnt,bdiag+cnt,sizes[i]*sizes[i]*sizeof(MatScalar));CHKERRQ(ierr);
       
       switch(sizes[i]) {
         case 1:

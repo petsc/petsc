@@ -145,16 +145,16 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   Mat            A = aij->A;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
   PetscInt       *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
-  PetscScalar    *aa = a->a;
+  MatScalar      *aa = a->a;
   PetscTruth     ignorezeroentries = a->ignorezeroentries;
   Mat            B = aij->B;
   Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data; 
   PetscInt       *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->rmap.n,am = aij->A->rmap.n;
-  PetscScalar    *ba = b->a;
+  MatScalar      *ba = b->a;
 
   PetscInt       *rp1,*rp2,ii,nrow1,nrow2,_i,rmax1,rmax2,N,low1,high1,low2,high2,t,lastcol1,lastcol2; 
   PetscInt       nonew = a->nonew; 
-  PetscScalar    *ap1,*ap2;
+  MatScalar      *ap1,*ap2;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
@@ -1339,7 +1339,7 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
   PetscErrorCode ierr;
   PetscInt       i,j,cstart = mat->cmap.rstart;
   PetscReal      sum = 0.0;
-  PetscScalar    *v;
+  MatScalar      *v;
 
   PetscFunctionBegin;
   if (aij->size == 1) {
@@ -1366,7 +1366,7 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
       *norm = sqrt(*norm);
     } else if (type == NORM_1) { /* max column norm */
       PetscReal *tmp,*tmp2;
-      PetscInt    *jj,*garray = aij->garray;
+      PetscInt  *jj,*garray = aij->garray;
       ierr = PetscMalloc((mat->cmap.N+1)*sizeof(PetscReal),&tmp);CHKERRQ(ierr);
       ierr = PetscMalloc((mat->cmap.N+1)*sizeof(PetscReal),&tmp2);CHKERRQ(ierr);
       ierr = PetscMemzero(tmp,mat->cmap.N*sizeof(PetscReal));CHKERRQ(ierr);
@@ -1417,7 +1417,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,Mat *matout)
   PetscInt       M = A->rmap.N,N = A->cmap.N,ma,na,mb,*ai,*aj,*bi,*bj,row,*cols,i,*d_nnz;
   PetscInt       cstart=A->cmap.rstart,ncol;
   Mat            B;
-  PetscScalar    *array;
+  MatScalar      *array;
 
   PetscFunctionBegin;
   if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
@@ -1857,7 +1857,8 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
   PetscInt       j,cstart=mat->cmap.rstart,cend=mat->cmap.rend,row,nzA,nzB,ncols,*cworkA,*cworkB;
   PetscInt       rstart=mat->rmap.rstart,rend=mat->rmap.rend,*bmap=aij->garray,M,N;
   PetscInt       *cols,ctmp,lwrite,*rptr,l,*sbuf_j;
-  PetscScalar    *vals,*aworkA,*aworkB;
+  MatScalar      *aworkA,*aworkB;
+  PetscScalar    *vals;
   PetscMPIInt    tag1,tag2,tag3,imdex;
   MPI_Request    *s_waits1=PETSC_NULL,*s_waits2=PETSC_NULL,*s_waits3=PETSC_NULL,
                  *r_waits1=PETSC_NULL,*r_waits2=PETSC_NULL,*r_waits3=PETSC_NULL;
@@ -2700,7 +2701,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ(Mat mat,IS isrow,IS iscol,PetscInt csize,M
   PetscInt       i,m,n,rstart,row,rend,nz,*cwork,j;
   PetscInt       *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend,mglobal;
   Mat            *local,M,Mreuse;
-  PetscScalar    *vwork,*aa;
+  MatScalar      *vwork,*aa;
   MPI_Comm       comm = ((PetscObject)mat)->comm;
   Mat_SeqAIJ     *aij;
 
@@ -3653,7 +3654,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   PetscInt             nrows,**buf_ri_k,**nextrow,**nextai;
   MPI_Request          *s_waits,*r_waits; 
   MPI_Status           *status;
-  MatScalar            *aa=a->a,**abuf_r,*ba_i;
+  MatScalar            *aa=a->a;
+  PetscScalar          **abuf_r,*ba_i;
   Mat_Merge_SeqsToMPI  *merge;
   PetscContainer       container;
   
@@ -3698,7 +3700,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
 
   /* insert mat values of mpimat */
   /*----------------------------*/
-  ierr = PetscMalloc(N*sizeof(MatScalar),&ba_i);CHKERRQ(ierr);
+  ierr = PetscMalloc(N*sizeof(PetscScalar),&ba_i);CHKERRQ(ierr);
   ierr = PetscMalloc((3*merge->nrecv+1)*sizeof(PetscInt**),&buf_ri_k);CHKERRQ(ierr);
   nextrow = buf_ri_k + merge->nrecv;
   nextai  = nextrow + merge->nrecv;
@@ -3716,7 +3718,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
     arow = owners[rank] + i; 
     bj_i = bj+bi[i];  /* col indices of the i-th row of mpimat */
     bnzi = bi[i+1] - bi[i];
-    ierr = PetscMemzero(ba_i,bnzi*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscMemzero(ba_i,bnzi*sizeof(PetscScalar));CHKERRQ(ierr);
 
     /* add local non-zero vals of this proc's seqmat into ba */
     anzi = ai[arow+1] - ai[arow];
@@ -4047,7 +4049,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc
   Mat_MPIAIJ      *mpimat=(Mat_MPIAIJ*)A->data; 
   Mat_SeqAIJ      *mat,*a=(Mat_SeqAIJ*)(mpimat->A)->data,*b=(Mat_SeqAIJ*)(mpimat->B)->data;
   PetscInt        *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*cmap=mpimat->garray;
-  PetscScalar     *aa=a->a,*ba=b->a,*ca;
+  MatScalar       *aa=a->a,*ba=b->a,*cam;
+  PetscScalar     *ca;
   PetscInt        am=A->rmap.n,i,j,k,cstart=A->cmap.rstart;
   PetscInt        *ci,*cj,col,ncols_d,ncols_o,jo;
 
@@ -4093,21 +4096,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMat(Mat A,MatReuse scall,Mat *A_loc
     mat->nonew   = 0;
   } else if (scall == MAT_REUSE_MATRIX){
     mat=(Mat_SeqAIJ*)(*A_loc)->data; 
-    ci = mat->i; cj = mat->j; ca = mat->a;
+    ci = mat->i; cj = mat->j; cam = mat->a;
     for (i=0; i<am; i++) {
       /* off-diagonal portion of A */
       ncols_o = bi[i+1] - bi[i];
       for (jo=0; jo<ncols_o; jo++) {
         col = cmap[*bj];
         if (col >= cstart) break;
-        *ca++ = *ba++; bj++;
+        *cam++ = *ba++; bj++;
       }
       /* diagonal portion of A */
       ncols_d = ai[i+1] - ai[i];
-      for (j=0; j<ncols_d; j++) *ca++ = *aa++; 
+      for (j=0; j<ncols_d; j++) *cam++ = *aa++; 
       /* off-diagonal portion of A */
       for (j=jo; j<ncols_o; j++) {
-        *ca++ = *ba++; bj++;
+        *cam++ = *ba++; bj++;
       }
     }
   } else {

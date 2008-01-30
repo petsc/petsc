@@ -245,7 +245,7 @@ PetscErrorCode VecScatterDestroy_MPI_ToAll(VecScatter ctx)
   PetscFunctionBegin;
   ierr = PetscFree(scat->work1);CHKERRQ(ierr);
   ierr = PetscFree(scat->work2);CHKERRQ(ierr);
-  ierr = PetscFree2(scat->displx,scat->disply);CHKERRQ(ierr);
+  ierr = PetscFree(scat->displx);CHKERRQ(ierr);
   ierr = PetscFree2(ctx->todata,scat->count);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -318,12 +318,11 @@ PetscErrorCode VecScatterCopy_MPI_ToAll(VecScatter in,VecScatter out)
 
   ierr                = MPI_Comm_size(((PetscObject)out)->comm,&size);CHKERRQ(ierr);
   ierr                = PetscMalloc2(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&sto->count);CHKERRQ(ierr);
-  ierr                = PetscMalloc2(size,PetscMPIInt,&sto->displx,size,PetscMPIInt,&sto->disply);CHKERRQ(ierr);
+  ierr                = PetscMalloc(size*sizeof(PetscMPIInt),&sto->displx);CHKERRQ(ierr);
   sto->type           = in_to->type;
   for (i=0; i<size; i++) {
     sto->count[i]  = in_to->count[i];
     sto->displx[i] = in_to->displx[i];
-    sto->disply[i] = in_to->disply[i];
   }
   sto->work1         = 0;
   sto->work2         = 0;
@@ -1135,7 +1134,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
     totalv = 0;
     if (((PetscObject)ix)->type == IS_STRIDE && ((PetscObject)iy)->type == IS_STRIDE){
       PetscInt             i,nx,ny,to_first,to_step,from_first,from_step,N;
-      PetscMPIInt          *count = PETSC_NULL,*displx,*disply;
+      PetscMPIInt          *count = PETSC_NULL,*displx;
       VecScatter_MPI_ToAll *sto = PETSC_NULL;
 
       ierr = ISGetLocalSize(ix,&nx);CHKERRQ(ierr);
@@ -1154,17 +1153,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       if (cando) {
         PetscMPIIntCheck(yin->map.N);
         ierr  = MPI_Comm_size(((PetscObject)ctx)->comm,&size);CHKERRQ(ierr);
-	ierr  = PetscMalloc2(size,PetscMPIInt,&displx,size,PetscMPIInt,&disply);CHKERRQ(ierr);
+	ierr  = PetscMalloc(size*sizeof(PetscMPIInt),&displx);CHKERRQ(ierr);
 	ierr  = PetscMalloc2(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count);CHKERRQ(ierr);
         range = xin->map.range;
         for (i=0; i<size; i++) {
           count[i]  = PetscMPIIntCast(range[i+1] - range[i]);
           displx[i] = PetscMPIIntCast(range[i]);
-          disply[i] = PetscMPIIntCast(yin->map.range[i]);
         }
         sto->count        = count;
         sto->displx       = displx;
-        sto->disply       = disply;
         sto->work1        = 0;
         sto->work2        = 0;
         sto->type         = VEC_SCATTER_MPI_TOALL;
@@ -1186,7 +1183,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
     totalv = 0;
     if (((PetscObject)ix)->type == IS_STRIDE && ((PetscObject)iy)->type == IS_STRIDE){
       PetscInt             i,nx,ny,to_first,to_step,from_first,from_step,N;
-      PetscMPIInt          rank,*count = PETSC_NULL,*displx,*disply;
+      PetscMPIInt          rank,*count = PETSC_NULL,*displx;
       VecScatter_MPI_ToAll *sto = PETSC_NULL;
 
       ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
@@ -1213,17 +1210,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       if (cando) {
         PetscMPIIntCheck(yin->map.N);
         ierr  = MPI_Comm_size(((PetscObject)ctx)->comm,&size);CHKERRQ(ierr);
-	ierr  = PetscMalloc2(size,PetscMPIInt,&displx,size,PetscMPIInt,&disply);CHKERRQ(ierr);
+	ierr  = PetscMalloc(size*sizeof(PetscMPIInt),&displx);CHKERRQ(ierr);
 	ierr  = PetscMalloc2(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count);CHKERRQ(ierr);
         range = xin->map.range;
         for (i=0; i<size; i++) {
 	  count[i] = PetscMPIIntCast(range[i+1] - range[i]);
           displx[i] = PetscMPIIntCast(range[i]);
-          disply[i] = PetscMPIIntCast(yin->map.range[i]);
         }
         sto->count        = count;
         sto->displx       = displx;
-        sto->disply       = disply;
         sto->work1        = 0;
         sto->work2        = 0;
         sto->type         = VEC_SCATTER_MPI_TOONE;

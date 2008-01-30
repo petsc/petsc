@@ -20,9 +20,9 @@ PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *ir
 
 
 #if !defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
-EXTERN PetscErrorCode SPARSEKIT2dperm(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
-EXTERN PetscErrorCode SPARSEKIT2ilutp(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscReal,PetscReal*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscErrorCode*);
-EXTERN PetscErrorCode SPARSEKIT2msrcsr(PetscInt*,PetscScalar*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*);
+EXTERN PetscErrorCode SPARSEKIT2dperm(PetscInt*,MatScalar*,PetscInt*,PetscInt*,MatScalar*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode SPARSEKIT2ilutp(PetscInt*,MatScalar*,PetscInt*,PetscInt*,PetscInt*,PetscReal,PetscReal*,PetscInt*,MatScalar*,PetscInt*,PetscInt*,PetscInt*,MatScalar*,PetscInt*,PetscInt*,PetscErrorCode*);
+EXTERN PetscErrorCode SPARSEKIT2msrcsr(PetscInt*,MatScalar*,PetscInt*,MatScalar*,PetscInt*,PetscInt*,MatScalar*,PetscInt*);
 #endif
 
 #undef __FUNCT__  
@@ -95,7 +95,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   /* storage for ilu factor */
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&new_i);CHKERRQ(ierr);
   ierr = PetscMalloc(jmax*sizeof(PetscInt),&new_j);CHKERRQ(ierr);
-  ierr = PetscMalloc(jmax*sizeof(PetscScalar),&new_a);CHKERRQ(ierr);
+  ierr = PetscMalloc(jmax*sizeof(MatScalar),&new_a);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscInt),&ordcol);CHKERRQ(ierr);
 
   /* ------------------------------------------------------------
@@ -119,7 +119,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
     }
     ierr = PetscMalloc((n+1)*sizeof(PetscInt),&old_i2);CHKERRQ(ierr);
     ierr = PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(PetscInt),&old_j2);CHKERRQ(ierr);
-    ierr = PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(PetscScalar),&old_a2);CHKERRQ(ierr);
+    ierr = PetscMalloc((old_i[n]-old_i[0]+1)*sizeof(MatScalar),&old_a2);CHKERRQ(ierr);
     job  = 3; SPARSEKIT2dperm(&n,old_a,old_j,old_i,old_a2,old_j2,old_i2,r,c,&job);
     for (i=0;i<n;i++) {
       r[i]  = r[i]-1;
@@ -585,7 +585,8 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat A,MatFactorInfo *in
   PetscInt       *r,*ic,i,j,n=A->rmap.n,*ai=a->i,*aj=a->j;
   PetscInt       *ajtmp,nz,row,*ics;
   PetscInt       *diag = a->diag,nbdiag,*pj;
-  PetscScalar    *rtmp,*v,*pc,multiplier,*pv,d;
+  PetscScalar    *rtmp,*pc,multiplier,d;
+  MatScalar      *v,*pv;
   PetscReal      rs;
   LUShift_Ctx    sctx;
   PetscInt       newshift;

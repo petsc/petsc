@@ -15,7 +15,7 @@ PetscErrorCode PetscMatStashSpaceGet(PetscInt bs2,PetscInt n,PetscMatStashSpace 
   if (!n) PetscFunctionReturn(0);
 
   ierr = PetscMalloc(sizeof(struct _MatStashSpace),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc(n*(bs2*sizeof(MatScalar)+2*sizeof(PetscInt)),&(a->space_head));CHKERRQ(ierr);
+  ierr = PetscMalloc(n*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt)),&(a->space_head));CHKERRQ(ierr);
   a->val              = a->space_head;
   a->idx              = (PetscInt*)(a->val + bs2*n);
   a->idy              = (PetscInt*)(a->idx + n); 
@@ -44,7 +44,7 @@ PetscErrorCode PetscMatStashSpaceContiguous(PetscInt bs2,PetscMatStashSpace *spa
   PetscFunctionBegin;
   while ((*space) != PETSC_NULL){
     a    = (*space)->next;
-    ierr = PetscMemcpy(val,(*space)->val,((*space)->local_used*bs2)*sizeof(MatScalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(val,(*space)->val,((*space)->local_used*bs2)*sizeof(PetscScalar));CHKERRQ(ierr);
     val += bs2*(*space)->local_used;
     ierr = PetscMemcpy(idx,(*space)->idx,((*space)->local_used)*sizeof(PetscInt));CHKERRQ(ierr);
     idx += (*space)->local_used;

@@ -238,7 +238,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetValues_SeqAIJ"
-PetscErrorCode MatGetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],MatScalar v[])
+PetscErrorCode MatGetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],PetscScalar v[])
 {
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   PetscInt     *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
@@ -828,7 +828,8 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
   PetscErrorCode    ierr;
   PetscInt          m = A->rmap.n;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTTRANSPOSEAIJ)
-  PetscScalar       *v,alpha;
+  MatScalar         *v;
+  PetscScalar       alpha;
   PetscInt          n,i,*idx,*ii,*ridx=PETSC_NULL;
   Mat_CompressedRow cprow = a->compressedrow;
   PetscTruth        usecprow = cprow.use; 
@@ -1365,7 +1366,7 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRow_SeqAIJ"
-PetscErrorCode MatGetRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,MatScalar **v)
+PetscErrorCode MatGetRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data;
   PetscInt   *itmp;
@@ -1388,7 +1389,7 @@ PetscErrorCode MatGetRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,M
 /* remove this function? */
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRow_SeqAIJ"
-PetscErrorCode MatRestoreRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,MatScalar **v)
+PetscErrorCode MatRestoreRow_SeqAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **idx,PetscScalar **v)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -2017,7 +2018,7 @@ PetscErrorCode MatSetUpPreallocation_SeqAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetArray_SeqAIJ"
-PetscErrorCode MatGetArray_SeqAIJ(Mat A,MatScalar *array[])
+PetscErrorCode MatGetArray_SeqAIJ(Mat A,PetscScalar *array[])
 {
   Mat_SeqAIJ *a = (Mat_SeqAIJ*)A->data; 
   PetscFunctionBegin;
@@ -3343,7 +3344,7 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatCreateSeqAIJ(), MatCreateMPIAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,MatScalar *a,Mat *mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat)
 {
   PetscErrorCode ierr;
   PetscInt       ii;

@@ -2,10 +2,6 @@
 
 #include "include/private/matimpl.h"
 
-/*
-       The input to the stash is ALWAYS in MatScalar precision, and the 
-    internal storage and output is also in MatScalar.
-*/
 #define DEFAULT_STASH_SIZE   10000
 
 /*
@@ -502,7 +498,7 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
       1) starts[i] gives the starting index in svalues for stuff going to 
          the ith processor
   */
-  ierr     = PetscMalloc((stash->n+1)*(bs2*sizeof(MatScalar)+2*sizeof(PetscInt)),&svalues);CHKERRQ(ierr);
+  ierr     = PetscMalloc((stash->n+1)*(bs2*sizeof(PetscScalar)+2*sizeof(PetscInt)),&svalues);CHKERRQ(ierr);
   sindices = (PetscInt*)(svalues + bs2*stash->n);
   ierr     = PetscMalloc(2*(nsends+1)*sizeof(MPI_Request),&send_waits);CHKERRQ(ierr);
   ierr     = PetscMalloc(2*size*sizeof(PetscInt),&startv);CHKERRQ(ierr);
@@ -546,14 +542,14 @@ PetscErrorCode MatStashScatterBegin_Private(Mat mat,MatStash *stash,PetscInt *ow
   for (i=0,count=0; i<size; i++) {
     if (nprocs[i]) {
       ierr = MPI_Isend(sindices+2*startv[i],2*nlengths[i],MPIU_INT,i,tag1,comm,send_waits+count++);CHKERRQ(ierr);
-      ierr = MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_MATSCALAR,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
+      ierr = MPI_Isend(svalues+bs2*startv[i],bs2*nlengths[i],MPIU_SCALAR,i,tag2,comm,send_waits+count++);CHKERRQ(ierr);
     }
   }
 #if defined(PETSC_USE_INFO)
   ierr = PetscInfo1(mat,"No of messages: %d \n",nsends);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
     if (nprocs[i]) {
-      ierr = PetscInfo2(mat,"Mesg_to: %d: size: %d \n",i,nlengths[i]*bs2*sizeof(MatScalar)+2*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscInfo2(mat,"Mesg_to: %d: size: %d \n",i,nlengths[i]*bs2*sizeof(PetscScalar)+2*sizeof(PetscInt));CHKERRQ(ierr);
     }
   }
 #endif
@@ -622,7 +618,7 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
     ierr = MPI_Waitany(2*stash->nrecvs,stash->recv_waits,&i,&recv_status);CHKERRQ(ierr);
     /* Now pack the received message into a structure which is useable by others */
     if (i % 2) { 
-      ierr = MPI_Get_count(&recv_status,MPIU_MATSCALAR,nvals);CHKERRQ(ierr);
+      ierr = MPI_Get_count(&recv_status,MPIU_SCALAR,nvals);CHKERRQ(ierr);
       flg_v[2*recv_status.MPI_SOURCE] = i/2; 
       *nvals = *nvals/bs2; 
     } else { 
