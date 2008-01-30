@@ -99,7 +99,7 @@ namespace ALE {
       return (point >= this->_chart.min() && point < this->_chart.max());
     };
   public: // Accessors
-    const chart_type& getChart() {return this->_chart;};
+    const chart_type& getChart() const {return this->_chart;};
     void setChart(const chart_type& chart) {this->_chart = chart;};
     void addPoint(const point_type& point) {
       this->checkPoint(point);
@@ -269,7 +269,7 @@ namespace ALE {
       return array;
     };
   public: // Verifiers
-    bool hasPoint(const point_type& point) {
+    bool hasPoint(const point_type& point) const {
       return this->_atlas->hasPoint(point);
     };
     void checkDimension(const int& dim) {
@@ -280,7 +280,7 @@ namespace ALE {
       }
     };
   public: // Accessors
-    const chart_type& getChart() {return this->_atlas->getChart();};
+    const chart_type& getChart() const {return this->_atlas->getChart();};
     void setChart(const chart_type& chart) {
       this->_atlas->setChart(chart);
       int dim = fiberDim;
@@ -347,11 +347,11 @@ namespace ALE {
     };
   public: // Restriction
     // Return a pointer to the entire contiguous storage array
-    const values_type& restrict() {
+    const values_type& restrict() const {
       return this->_array;
     };
     // Return only the values associated to this point, not its closure
-    const value_type *restrictPoint(const point_type& p) {
+    const value_type *restrictPoint(const point_type& p) const {
       if (!this->hasPoint(p)) return this->_emptyValue.v;
       const int offset = (p - this->getChart().min())*fiberDim;
       return &this->_array[offset];
@@ -372,7 +372,7 @@ namespace ALE {
       this->updatePoint(p, v);
     };
   public:
-    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
+    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
       ostringstream txt;
       int rank;
 
@@ -441,6 +441,12 @@ namespace ALE {
     void setChart(const chart_type& chart) {
       this->_atlas->setChart(chart);
       this->_atlas->allocatePoint();
+    };
+  public:
+    // Return the free values on a point
+    //   This is overridden, because the one in Section cannot be const due to problem in the interface with UniformSection
+    const value_type *restrictPoint(const point_type& p) const {
+      return &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
     };
   };
   // IGeneralSection will support BC on a subset of unknowns on a point
