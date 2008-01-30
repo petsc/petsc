@@ -188,19 +188,42 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteElements"
   static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, PetscViewer viewer)
   {
+    int                            depth = mesh->depth();
+    Obj<ALE::Mesh::label_sequence> elements;
+    Obj<ALE::Mesh::numbering_type> cNumbering;
+
+    if (mesh->hasLabel("censored depth")) {
+      elements   = mesh->getLabelStratum("censored depth", depth);
+      cNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", depth);
+    } else {
+      elements   = mesh->heightStratum(0);
+      cNumbering = mesh->getFactory()->getNumbering(mesh, depth);
+    }
+    return writeElements(mesh, elements, cNumbering, viewer);
+  };
+  #undef __FUNCT__  
+  #define __FUNCT__ "VTKWriteElements"
+  static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const std::string& labelName, const int labelValue, PetscViewer viewer)
+  {
+    Obj<ALE::Mesh::label_sequence> elements;
+    Obj<ALE::Mesh::numbering_type> cNumbering;
+
+    if (mesh->hasLabel(labelName)) {
+      elements   = mesh->getLabelStratum(labelName, labelValue);
+      cNumbering = mesh->getFactory()->getNumbering(mesh, labelName, labelValue);
+    } else {
+      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid label name: %s", labelName.c_str());
+    }
+    return writeElements(mesh, elements, cNumbering, viewer);
+  };
+  #undef __FUNCT__  
+  #define __FUNCT__ "VTKWriteElements"
+  static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh::label_sequence>& elements, const Obj<ALE::Mesh::numbering_type>& cNumbering, PetscViewer viewer)
+  {
     typedef ALE::SieveAlg<ALE::Mesh> sieve_alg_type;
     const Obj<ALE::Mesh::sieve_type>&     sieve      = mesh->getSieve();
-    int                                   depth      = mesh->depth();
     const Obj<ALE::Mesh::numbering_type>& vNumbering = mesh->getFactory()->getNumbering(mesh, 0);
-    Obj<ALE::Mesh::numbering_type> cNumbering;
-    Obj<ALE::Mesh::label_sequence> elements;
-    if (mesh->hasLabel("censored depth")) {
-      cNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", depth);
-      elements   = mesh->getLabelStratum("censored depth", depth);
-    } else {
-      cNumbering = mesh->getFactory()->getNumbering(mesh, depth);
-      elements   = mesh->heightStratum(0);
-    }
+    int            depth   = mesh->depth();
     int            corners = sieve->nCone(*elements->begin(), depth)->size();
     int            numElements;
     PetscErrorCode ierr;
