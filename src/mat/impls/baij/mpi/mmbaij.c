@@ -161,9 +161,7 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
   PetscInt       bs2 = baij->bs2,*nz,ec,m = A->rmap.n;
   MatScalar      *a = Bbaij->a;
   PetscScalar    *atmp;
-#if defined(PETSC_USE_MAT_SINGLE)
-  PetscInt       k;
-#endif
+
 
   PetscFunctionBegin;
   /* free stuff related to matrix-vec multiply */
@@ -195,25 +193,14 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
   ierr = MatSeqBAIJSetPreallocation(Bnew,B->rmap.bs,0,nz);CHKERRQ(ierr);
   ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
 
-#if defined(PETSC_USE_MAT_SINGLE)
-  ierr = PetscMalloc(bs2*sizeof(PetscScalar),&atmp);CHKERRQ(ierr);
-#endif
-    for (i=0; i<mbs; i++) {
-      for (j=Bbaij->i[i]; j<Bbaij->i[i+1]; j++) {
-        col  = garray[Bbaij->j[j]];
-#if defined(PETSC_USE_MAT_SINGLE)
-        for (k=0; k<bs2; k++) atmp[k] = a[j*bs2+k];
-#else
-        atmp = a + j*bs2;
-#endif
-        ierr = MatSetValuesBlocked_SeqBAIJ(Bnew,1,&i,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
-      }
+  for (i=0; i<mbs; i++) {
+    for (j=Bbaij->i[i]; j<Bbaij->i[i+1]; j++) {
+      col  = garray[Bbaij->j[j]];
+      atmp = a + j*bs2;
+      ierr = MatSetValuesBlocked_SeqBAIJ(Bnew,1,&i,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
     }
-    ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
-
-#if defined(PETSC_USE_MAT_SINGLE)
-  ierr = PetscFree(atmp);CHKERRQ(ierr);
-#endif
+  }
+  ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = PetscFree(nz);CHKERRQ(ierr);
   ierr = PetscFree(baij->garray);CHKERRQ(ierr);

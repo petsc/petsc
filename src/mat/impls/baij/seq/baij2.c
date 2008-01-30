@@ -1328,18 +1328,10 @@ PetscErrorCode MatScale_SeqBAIJ(Mat inA,PetscScalar alpha)
   PetscInt     totalnz = a->bs2*a->nz;
   PetscScalar  oalpha = alpha;
   PetscErrorCode ierr;
-#if defined(PETSC_USE_MAT_SINGLE)
-  PetscInt     i;
-#else
   PetscBLASInt one = 1,tnz = PetscBLASIntCast(totalnz);
-#endif
 
   PetscFunctionBegin;
-#if defined(PETSC_USE_MAT_SINGLE)
-  for (i=0; i<totalnz; i++) a->a[i] *= oalpha;
-#else
   BLASscal_(&tnz,&oalpha,a->a,&one);
-#endif
   ierr = PetscLogFlops(totalnz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
