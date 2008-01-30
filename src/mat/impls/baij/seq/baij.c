@@ -48,7 +48,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
   PetscErrorCode ierr;
   PetscInt       *diag_offset,i,bs = A->rmap.bs,mbs = a->mbs;
-  PetscScalar    *v = a->a,*odiag,*diag,*mdiag;
+  MatScalar     *v = a->a,*odiag,*diag,*mdiag;
 
   PetscFunctionBegin;
   if (a->idiagvalid) PetscFunctionReturn(0);
@@ -1079,21 +1079,6 @@ void PETSCMAT_DLLEXPORT matsetvalues4_(Mat *AA,PetscInt *mm,PetscInt *im,PetscIn
 } 
 EXTERN_C_END
 
-/*  UGLY, ugly, ugly
-   When MatScalar == PetscScalar the function MatSetValuesBlocked_SeqBAIJ_MatScalar() does 
-   not exist. Otherwise ..._MatScalar() takes matrix dlements in single precision and 
-   inserts them into the single precision data structure. The function MatSetValuesBlocked_SeqBAIJ()
-   converts the entries into single precision and then calls ..._MatScalar() to put them
-   into the single precision data structures.
-*/
-#if defined(PETSC_USE_MAT_SINGLE)
-EXTERN PetscErrorCode MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const MatScalar[],InsertMode);
-#else
-#define MatSetValuesBlocked_SeqBAIJ_MatScalar MatSetValuesBlocked_SeqBAIJ
-#endif
-
-#define CHUNKSIZE  10
-
 /*
      Checks for missing diagonals
 */
@@ -1264,9 +1249,6 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   ierr = PetscFree(a->mult_work);CHKERRQ(ierr);
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
-#if defined(PETSC_USE_MAT_SINGLE)
-  ierr = PetscFree(a->setvaluescopy);CHKERRQ(ierr);
-#endif
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
   if (a->compressedrow.use){ierr = PetscFree(a->compressedrow.i);} 
 
@@ -1402,13 +1384,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,Mat *B)
   ierr = PetscMalloc((1+nbs)*sizeof(PetscInt),&col);CHKERRQ(ierr);
   ierr = PetscMemzero(col,(1+nbs)*sizeof(PetscInt));CHKERRQ(ierr);
 
-#if defined(PETSC_USE_MAT_SINGLE)
-  ierr = PetscMalloc(a->bs2*a->nz*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-  for (i=0; i<a->bs2*a->nz; i++) array[i] = (PetscScalar)a->a[i];
-#else
   array = a->a;
-#endif
-
   for (i=0; i<ai[mbs]; i++) col[aj[i]] += 1;
   ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,A->cmap.n,A->rmap.N,A->cmap.n,A->rmap.N);CHKERRQ(ierr);
@@ -1429,9 +1405,6 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,Mat *B)
     }
   }
   ierr = PetscFree(rows);CHKERRQ(ierr);
-#if defined(PETSC_USE_MAT_SINGLE)
-  ierr = PetscFree(array);
-#endif
   
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -1751,35 +1724,10 @@ PetscErrorCode MatGetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
   PetscFunctionReturn(0);
 } 
 
-#if defined(PETSC_USE_MAT_SINGLE)
+#define CHUNKSIZE 10
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetValuesBlocked_SeqBAIJ"
-PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
-{
-  Mat_SeqBAIJ    *b = (Mat_SeqBAIJ*)mat->data;
-  PetscErrorCode ierr;
-  PetscInt       i,N = m*n*b->bs2;
-  MatScalar      *vsingle;
-
-  PetscFunctionBegin;  
-  if (N > b->setvalueslen) {
-    ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);
-    ierr = PetscMalloc(N*sizeof(MatScalar),&b->setvaluescopy);CHKERRQ(ierr);
-    b->setvalueslen  = N;
-  }
-  vsingle = b->setvaluescopy;
-  for (i=0; i<N; i++) {
-    vsingle[i] = v[i];
-  }
-  ierr = MatSetValuesBlocked_SeqBAIJ_MatScalar(mat,m,im,n,in,vsingle,addv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-} 
-#endif
-
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesBlocked_SeqBAIJ"
-PetscErrorCode MatSetValuesBlocked_SeqBAIJ_MatScalar(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const MatScalar v[],InsertMode is)
+PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const MatScalar v[],InsertMode is)
 {
   Mat_SeqBAIJ     *a = (Mat_SeqBAIJ*)A->data;
   PetscInt        *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,lastcol = -1;
@@ -2785,10 +2733,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
   b->icol             = 0;
   b->reallocs         = 0;
   b->saved_values     = 0;
-#if defined(PETSC_USE_MAT_SINGLE)
-  b->setvalueslen     = 0;
-  b->setvaluescopy    = PETSC_NULL;
-#endif
 
   b->roworiented      = PETSC_TRUE;
   b->nonew            = 0;
