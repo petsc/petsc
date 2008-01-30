@@ -533,7 +533,7 @@ namespace ALE {
         const Obj<typename SendSection::section_type>&        section = p_iter->second;
         const typename SendSection::section_type::chart_type& chart   = section->getChart();
 
-        for(typename SendSection::section_type::chart_type::iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
+        for(typename SendSection::section_type::chart_type::const_iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
           const typename SendSection::value_type *points = section->restrictPoint(*b_iter);
           const int                               size   = section->getFiberDimension(*b_iter);
 
@@ -547,7 +547,7 @@ namespace ALE {
         const Obj<typename RecvSection::section_type>&        section = p_iter->second;
         const typename RecvSection::section_type::chart_type& chart   = section->getChart();
 
-        for(typename RecvSection::section_type::chart_type::iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
+        for(typename RecvSection::section_type::chart_type::const_iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
           const typename RecvSection::value_type *points = section->restrictPoint(*b_iter);
           const int                               size   = section->getFiberDimension(*b_iter);
 
@@ -567,7 +567,7 @@ namespace ALE {
         const Obj<typename RecvSection::section_type>&        section = p_iter->second;
         const typename RecvSection::section_type::chart_type& chart   = section->getChart();
 
-        for(typename RecvSection::section_type::chart_type::iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
+        for(typename RecvSection::section_type::chart_type::const_iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
           const typename RecvSection::value_type *points = section->restrictPoint(*b_iter);
           int                                     size   = section->getFiberDimension(*b_iter);
           int                                     c      = 0;

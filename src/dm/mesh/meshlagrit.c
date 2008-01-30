@@ -120,9 +120,9 @@ namespace ALE {
           } else {
             x = strtok(NULL, " ");
           }
-          const int v = atoi(x) + numCells - 1;
+          const int vv = atoi(x) + numCells - 1;
 
-          fault->setFiberDimension(v, 1);
+          fault->setFiberDimension(vv, 1);
         }
         fault->allocatePoint();
       }
