@@ -1731,7 +1731,7 @@ namespace ALE {
       //memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
       const chart_type& chart = this->getChart();
 
-      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         value_type *array = (value_type *) this->restrictPoint(*c_iter);
         const int&  dim   = this->getFiberDimension(*c_iter);
         const int&  cDim  = this->getConstraintDimension(*c_iter);
@@ -3236,7 +3236,7 @@ namespace ALECompat {
         const typename atlas_type::chart_type& points = this->_atlas->getPatch(patch);
         int size = 0;
 
-        for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        for(typename atlas_type::chart_type::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           size += std::max(0, this->getFiberDimension(patch, *p_iter));
         }
         return size;
