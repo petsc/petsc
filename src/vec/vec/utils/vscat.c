@@ -150,7 +150,6 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode a
 #define __FUNCT__ "VecScatterBegin_MPI_ToOne"
 PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 { 
-  PetscFunctionBegin;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       yy_n,xx_n;

@@ -45,6 +45,8 @@ class Configure(PETSc.package.Package):
       self.framework.pushLanguage('FC')
       args.append('F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       self.framework.popLanguage()
+    else:
+      raise RuntimeError('Error: Hypre requires Fortran compiler. None specified (was your MPI built with Fortran support?')
     if self.mpi.include:
       # just use the first dir - and assume the subsequent one isn't necessary [relavant only on AIX?]
       print 'using: ' + '--with-MPI-include="'+self.mpi.include[0]+'"'

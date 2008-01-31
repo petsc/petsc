@@ -65,6 +65,7 @@ makemodules: clean tidy_up makefile.tmp
 	  rm -f modorder;\
 	  make -f makefile.tmp modules;\
 	fi
+	${MV} -f *.mod ${PETSC_DIR}/${PETSC_ARCH}/include
 
 allinone.h: modorder
 	LAST=`tail -n 1 modorder`;if [ -e $$LAST.xinc ]; then cat $$LAST.xinc >>allinone.h;fi;\
