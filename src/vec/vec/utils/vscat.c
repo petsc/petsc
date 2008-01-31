@@ -150,7 +150,6 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(VecScatter ctx,Vec x,Vec y,InsertMode a
 #define __FUNCT__ "VecScatterBegin_MPI_ToOne"
 PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode addv,ScatterMode mode)
 { 
-  PetscFunctionBegin;
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscInt       yy_n,xx_n;
@@ -184,7 +183,7 @@ PetscErrorCode VecScatterBegin_MPI_ToOne(VecScatter ctx,Vec x,Vec y,InsertMode a
       ierr = MPI_Scatterv(xv,scat->count,disply,MPIU_SCALAR,yvt,yy_n,MPIU_SCALAR,0,((PetscObject)ctx)->comm);CHKERRQ(ierr);
       if (addv == ADD_VALUES) {
         for (i=0; i<yy_n; i++) {
-	  yv[i] += yvt[i];
+          yv[i] += yvt[i];
         }
 #if !defined(PETSC_USE_COMPLEX)
       } else if (addv == MAX_VALUES) {
