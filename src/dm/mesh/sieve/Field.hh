@@ -410,7 +410,7 @@ namespace ALE {
       }
     };
     void setFiberDimension(const std::set<point_type>& points, int dim) {
-      for(typename std::set<point_type>::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+      for(typename std::set<point_type>::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
     };
@@ -2499,7 +2499,7 @@ namespace ALE {
         const Obj<section_type>& section = this->getSection(rank);
         const chart_type&        chart   = section->getChart();
     
-        for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
           section->setFiberDimension(*c_iter, *(sizer->getSection(rank)->restrictPoint(*c_iter)));
         }
       }
@@ -2728,7 +2728,7 @@ namespace ALECompat {
         if (!section->hasPatch(patch)) continue;
         const chart_type& chart = section->getPatch(patch);
 
-        for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
           this->updatePatch(patch, *c_iter);
         }
         this->_value = section->restrict(patch, *chart.begin())[0];
@@ -2882,7 +2882,7 @@ namespace ALECompat {
       }
     };
     void setFiberDimension(const patch_type& patch, const std::set<point_type>& points, int dim) {
-      for(typename std::set<point_type>::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+      for(typename std::set<point_type>::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         this->setFiberDimension(patch, *p_iter, dim);
       }
     };
@@ -3284,7 +3284,7 @@ namespace ALECompat {
         const typename atlas_type::chart_type& points = atlas->getPatch(patch);
         int size = 0;
 
-        for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        for(typename atlas_type::chart_type::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           size += std::max(0, this->getFiberDimension(atlas, patch, *p_iter));
         }
         return size;

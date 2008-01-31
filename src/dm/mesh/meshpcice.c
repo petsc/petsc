@@ -68,12 +68,12 @@ PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElem
   int fiberDimMin = section->getFiberDimension(*chart.begin());
   int numElem     = 0;
 
-  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::int_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
   }
-  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::int_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     numElem += fiberDim/fiberDimMin;
@@ -158,12 +158,12 @@ PetscErrorCode BCSectionRealGetArray(Mesh mesh, const char name[], PetscInt *num
   int fiberDimMin = section->getFiberDimension(*chart.begin());
   int numElem     = 0;
 
-  for(ALE::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
   }
-  for(ALE::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     numElem += fiberDim/fiberDimMin;
@@ -852,12 +852,12 @@ namespace ALE {
 
       // Create map from serial bdFace numbers to local bdFace numbers
       {
-        const ALE::Mesh::int_section_type::chart_type     chart = IBCNUMsec->getChart();
-        ALE::Mesh::int_section_type::chart_type::iterator begin = chart.begin();
-        ALE::Mesh::int_section_type::chart_type::iterator end   = chart.end();
+        const ALE::Mesh::int_section_type::chart_type           chart = IBCNUMsec->getChart();
+        ALE::Mesh::int_section_type::chart_type::const_iterator begin = chart.begin();
+        ALE::Mesh::int_section_type::chart_type::const_iterator end   = chart.end();
         int num = 0;
 
-        for(ALE::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
+        for(ALE::Mesh::int_section_type::chart_type::const_iterator p_iter = begin; p_iter != end; ++p_iter) {
           const int  fiberDim  = IBCNUMsec->getFiberDimension(*p_iter);
           const int *globalNum = IBCNUMsec->restrictPoint(*p_iter);
 
@@ -868,10 +868,10 @@ namespace ALE {
       }
       // Renumber vertex section IBC
       {
-        const ALE::Mesh::int_section_type::chart_type     IBCchart = IBCsec->getChart();
-        ALE::Mesh::int_section_type::chart_type::iterator begin    = IBCchart.begin();
-        ALE::Mesh::int_section_type::chart_type::iterator end      = IBCchart.end();
-        for(ALE::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
+        const ALE::Mesh::int_section_type::chart_type           IBCchart = IBCsec->getChart();
+        ALE::Mesh::int_section_type::chart_type::const_iterator begin    = IBCchart.begin();
+        ALE::Mesh::int_section_type::chart_type::const_iterator end      = IBCchart.end();
+        for(ALE::Mesh::int_section_type::chart_type::const_iterator p_iter = begin; p_iter != end; ++p_iter) {
           ALE::Mesh::point_type p = *p_iter;
           const ALE::Mesh::int_section_type::value_type *ibc_in = IBCsec->restrictPoint(p);
           int fiberDimension = IBCsec->getFiberDimension(p);
@@ -900,10 +900,10 @@ namespace ALE {
       }
       {
         // Renumber vertex section IBNDFS
-        const ALE::Mesh::int_section_type::chart_type     IBNDFSchart = IBNDFSsec->getChart();
-        ALE::Mesh::int_section_type::chart_type::iterator begin       = IBNDFSchart.begin();
-        ALE::Mesh::int_section_type::chart_type::iterator end         = IBNDFSchart.end();
-        for(ALE::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
+        const ALE::Mesh::int_section_type::chart_type           IBNDFSchart = IBNDFSsec->getChart();
+        ALE::Mesh::int_section_type::chart_type::const_iterator begin       = IBNDFSchart.begin();
+        ALE::Mesh::int_section_type::chart_type::const_iterator end         = IBNDFSchart.end();
+        for(ALE::Mesh::int_section_type::chart_type::const_iterator p_iter = begin; p_iter != end; ++p_iter) {
           ALE::Mesh::point_type p = *p_iter;
           const ALE::Mesh::int_section_type::value_type *ibndfs_in = IBNDFSsec->restrictPoint(p);
           // Here we assume the fiber dimension is 5

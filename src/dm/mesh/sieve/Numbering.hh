@@ -343,7 +343,7 @@ namespace ALE {
       int localSize = 0;
 
       order->setFiberDimension(points, 1);
-      for(typename std::set<Point_>::iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
+      for(typename std::set<Point_>::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
         oValue_type val;
 
         if (sendOverlap->capContains(*l_iter)) {
@@ -397,7 +397,7 @@ namespace ALE {
     void updateOrder(const Obj<Numbering>& numbering, const std::set<Point>& points) {
       const typename Numbering::value_type val = numbering->getGlobalOffset(numbering->commRank());
 
-      for(typename std::set<Point>::iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
+      for(typename std::set<Point>::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
         if (numbering->isLocal(*l_iter)) {
           numbering->updateAddPoint(*l_iter, &val);
         }
@@ -421,7 +421,7 @@ namespace ALE {
         const Obj<typename recv_section_type::section_type>& section = recvSection->getSection(rPatch);
         const typename recv_section_type::chart_type&        points  = section->getChart();
 
-        for(typename recv_section_type::chart_type::iterator r_iter = points.begin(); r_iter != points.end(); ++r_iter) {
+        for(typename recv_section_type::chart_type::const_iterator r_iter = points.begin(); r_iter != points.end(); ++r_iter) {
           const typename recv_section_type::point_type& point  = *r_iter;
           const typename recv_section_type::value_type *values = section->restrictPoint(point);
 
@@ -817,7 +817,7 @@ namespace ALECompat {
         int localSize = 0;
 
         order->setFiberDimension(patch, points, 1);
-        for(typename std::set<PointType>::iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
+        for(typename std::set<PointType>::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
           oValue_type val;
 
           if (sendOverlap->capContains(*l_iter)) {
@@ -871,7 +871,7 @@ namespace ALECompat {
       void updateOrder(const Obj<Numbering>& numbering, const patch_type& patch, const std::set<PointType>& points) {
         const typename Numbering::value_type val = numbering->getGlobalOffset(numbering->commRank());
 
-        for(typename std::set<PointType>::iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
+        for(typename std::set<PointType>::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
           if (numbering->isLocal(*l_iter)) {
             numbering->updateAddPoint(patch, *l_iter, &val);
           }
