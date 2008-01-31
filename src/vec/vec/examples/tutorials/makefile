@@ -1,6 +1,6 @@
 #
 CFLAGS		 = 
-FFLAGS		 = 
+FFLAGS		 = -I${PETSC_DIR}/${PETSC_ARCH}/include
 CPPFLAGS         =
 FPPFLAGS         =
 MANSEC           = Vec
@@ -122,6 +122,9 @@ ex19: ex19.o  chkopts
 	-${CLINKER} -o ex19 ex19.o  ${PETSC_VEC_LIB}
 	${RM} -f ex19.o
 
+ex20f90: ex20f90.o  chkopts
+	-${FLINKER} -o ex20f90 ex20f90.o ${PETSC_VEC_LIB}
+	${RM} -f ex20f90.o
 #-------------------------------------------------------------------------------------------
 #   This section is used for testing examples and can be ignored 
 #-------------------------------------------------------------------------------------------

@@ -1,3 +1,10 @@
+#requirespackage   'PETSC_HAVE_FORTRAN'
+
+SPECIALLIB     = yes
+SPECIALFASTLIB = yes
+speciallib:
+	-@${OMAKE}  makemodules
+specialfastlib: speciallib
 
 CFLAGS    =
 FFLAGS    =
@@ -53,11 +60,12 @@ makefile.tmp: moddeps
 	MODS=`cat moddeps|grep -v '^ *#'|grep ':'|sed 's/^ *\([^ ]*\).*/\1 /'`;\
 	echo modules : $$MODS >> makefile.tmp
 
-makemodules: makefile.tmp
+makemodules: clean tidy_up makefile.tmp
 	if [ ! -e allinone.h ]; then\
 	  rm -f modorder;\
 	  make -f makefile.tmp modules;\
 	fi
+	${MV} -f *.mod ${PETSC_DIR}/${PETSC_ARCH}/include
 
 allinone.h: modorder
 	LAST=`tail -n 1 modorder`;if [ -e $$LAST.xinc ]; then cat $$LAST.xinc >>allinone.h;fi;\

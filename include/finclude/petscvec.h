@@ -5,6 +5,10 @@
 #if !defined (__PETSCVEC_H)
 #define __PETSCVEC_H
 
+     type Vec
+       PetscFortranAddr:: v
+     end type Vec
+
 #define Vec PetscFortranAddr
 #define VecScatter PetscFortranAddr
 #define NormType PetscEnum
