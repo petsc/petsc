@@ -5,12 +5,11 @@
 #if !defined (__PETSCVEC_H)
 #define __PETSCVEC_H
 
-     type Vec
-       PetscFortranAddr:: v
-     end type Vec
-
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #define Vec PetscFortranAddr
 #define VecScatter PetscFortranAddr
+#endif
+
 #define NormType PetscEnum
 #define InsertMode PetscEnum
 #define ScatterMode PetscEnum 

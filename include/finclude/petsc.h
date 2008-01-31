@@ -193,4 +193,26 @@
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------
 
+!
+!      It is silly to put these here, but they cannot go into petscvec.h
+!    because they sould not be recognized in the interface definitions
+!
+#if defined(PETSC_USE_FORTRAN_MODULES)
+       type IS; PetscFortranAddr:: v; end type IS
+       type ISColoring; PetscFortranAddr:: v; end type ISColoring
+       type PetscViewer; PetscFortranAddr:: v; end type PetscViewer
+       type Vec; PetscFortranAddr:: v; end type Vec
+       type VecScatter; PetscFortranAddr:: v; end type VecScatter
+       type Mat; PetscFortranAddr:: v; end type Mat
+       type PC; PetscFortranAddr:: v; end type PC
+       type KSP; PetscFortranAddr:: v; end type KSP
+       type SNES; PetscFortranAddr:: v; end type SNES
+       type TS; PetscFortranAddr:: v; end type TS
+       type DM; PetscFortranAddr:: v; end type DM
+       type DA; PetscFortranAddr:: v; end type DA
+#define VEC_HIDE type(Vec)
+#else
+#define VEC_HIDE Vec
+#endif
+       
 #endif

@@ -81,7 +81,7 @@ allinone.h: modorder
 	cat $*.use >>$*.f90.h
 	cat $*.inc >>$*.f90.h
 	echo "      end module $*" >>$*.f90.h
-	${CPP} ${FCPPFLAGS} $*.f90.h |grep -v "^ *#" >$*.f90
+	${CPP} -DPETSC_USE_FORTRAN_MODULES ${FCPPFLAGS} $*.f90.h |grep -v "^ *#" >$*.f90
 	${FC} -c ${FC_FLAGS} ${FFLAGS} $*.f90
 	# leave just preprocessor's directives in *.xinc
 	cat $*.inc|grep "^ *#">$*.xinc

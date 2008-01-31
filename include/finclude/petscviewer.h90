@@ -4,6 +4,8 @@
 !
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
+#if defined(PETSC_USE_FORTRAN_MODULES)
+
       Interface PetscViewerBinaryWrite
         Subroutine PetscViewerBinaryWriteInt(v,a,cnt,tmp,ierr)
           PetscViewer v
@@ -55,6 +57,8 @@
 #endif
 
       End Interface
+
+#endif
 
 #endif
 !

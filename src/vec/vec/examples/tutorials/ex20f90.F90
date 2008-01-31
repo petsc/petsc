@@ -7,32 +7,6 @@
 !T*/
 !
 ! -----------------------------------------------------------------------
-      module mystupidmodule
-
-      Interface 
-         Subroutine VecDuplicateVecsF90(v,m,vs,ierr)
-          use petscvec
-          type(Vec), pointer :: vs(:)
-          integer m
-          integer ierr
-          type(Vec)     v
-        End Subroutine
-      End Interface
-!
-!  Question: should VecDestroyVecsF90() take the m argument since
-! the array of vectors already knows how long it is? Yes, to 
-! match calling sequence for C/C++.
-!
-      Interface 
-        Subroutine VecDestroyVecsF90(vs,m,ierr)
-          use petscvec
-          type(Vec), pointer :: vs(:)
-          integer m
-          integer ierr
-        End Subroutine
-      End Interface
-      end module mystupidmodule
-
 
       program main
 
@@ -51,9 +25,7 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-      use petsc
       use petscvec
-      use mystupidmodule
       implicit none
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
