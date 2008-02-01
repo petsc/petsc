@@ -4,7 +4,9 @@
 #if !defined (__PETSCTS_H)
 #define __PETSCTS_H
 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #define TS PetscFortranAddr
+#endif
 #define TSType character*(80)
 #define TSSundialsType PetscEnum
 #define TSProblemType PetscEnum 

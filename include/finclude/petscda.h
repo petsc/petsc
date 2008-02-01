@@ -5,14 +5,16 @@
 #if !defined (__PETSCDA_H)
 #define __PETSCDA_H
 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #define DA PetscFortranAddr
+#define DM PetscFortranAddr
+#endif
 #define DAPeriodicType PetscEnum
 #define DAStencilType PetscEnum
 #define DADirection PetscEnum
 #define DMMG PetscFortranAddr
 #define DMMGArray PetscFortranAddr
 #define DMComposite PetscFortranAddr
-#define DM PetscFortranAddr
 
 #define DALocalInfo PetscInt
 !

@@ -5,7 +5,10 @@
 #if !defined (__PETSCKSP_H)
 #define __PETSCKSP_H
 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #define KSP PetscFortranAddr
+#endif
+
 #define KSPType character*(80)
 #define KSPCGType PetscEnum
 #define KSPConvergedReason PetscEnum 

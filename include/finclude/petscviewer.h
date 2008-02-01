@@ -4,7 +4,9 @@
 #if !defined (__VIEWER_H)
 #define __VIEWER_H
 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #define PetscViewer PetscFortranAddr
+#endif
 #define PetscViewers PetscFortranAddr
 #define PetscFileMode PetscEnum
 #define PetscViewerType character*(80)

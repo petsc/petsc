@@ -5,8 +5,11 @@
 #if !defined (__PETSCMAT_H)
 #define __PETSCMAT_H
 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #define Mat PetscFortranAddr
+#define MatNullSpace PetscFortranAddr
 #define MatFDColoring PetscFortranAddr
+#endif
 #define MatPartitioning PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr
 #define MatType character*(80)
@@ -23,7 +26,6 @@
 #define MatDuplicateOption PetscEnum
 #define MatStructure PetscEnum
 #define MatPartitioningType character*(80)
-#define MatNullSpace PetscFortranAddr
 
 #define MatStencil PetscInt
 #define MatStencil_k 1

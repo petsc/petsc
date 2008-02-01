@@ -11,19 +11,11 @@
       program main
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!                    Include files
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-!  The following include statements are required for Fortran programs
-!  that use PETSc vectors:
-!     petsc.h       - base PETSc routines
-!     petscvec.h    - vectors
-!     petscvec.h90  - to allow access to Fortran90 features of vectors
 !
-!  Additional include statements may be needed if using additional
-!  PETSc routines in a Fortran program, e.g.,
-!     petscviewer.h - viewers
-!     petscis.h     - index sets
+!     This examples uses Fortran 90 MODULES instead of include files
+!   see the manual page FortranModules
 !
       use petscvec
       implicit none

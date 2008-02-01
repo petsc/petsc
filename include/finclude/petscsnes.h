@@ -4,7 +4,9 @@
 #if !defined (__PETSCSNES_H)
 #define __PETSCSNES_H
 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #define SNES PetscFortranAddr
+#endif
 #define SNESType character*(80)
 #define SNESConvergedReason PetscEnum
 #define MatMFFD PetscFortranAddr

@@ -1,12 +1,12 @@
 #
 CFLAGS		 = 
-FFLAGS		 = -I${PETSC_DIR}/${PETSC_ARCH}/include
+FFLAGS		 = 
 CPPFLAGS         =
 FPPFLAGS         =
 MANSEC           = Vec
 LOCDIR		 = src/vec/vec/examples/tutorials/
 EXAMPLESC	 = ex1.c ex1e.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c ex16.c ex17.c ex18.c
-EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F ex9f.F ex11f.F ex14f.F
+EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F ex9f.F ex11f.F ex14f.F ex20f90.F90
 
 include ${PETSC_DIR}/conf/base
 
@@ -257,12 +257,16 @@ runex12:
 	   if (${DIFF} output/ex12_1.out ex12_1.tmp) then true ;  \
 	   else echo "Possible problem with ex12_1, diffs above"; fi ;\
 	   ${RM} -f ex12_1.tmp
-
 runex17:
 	-@${MPIEXEC} -np 1 ./ex17 > ex17_1.tmp 2>&1;\
 	   if (${DIFF} output/ex17_1.out ex17_1.tmp) then true; \
 	   else echo "Possible problem with ex17_1, diffs above"; fi;\
 	   ${RM} -f ex17_1.tmp
+runex20f90:
+	-@${MPIEXEC} -np 1 ./ex20f90 > ex20f90_1.tmp 2>&1;\
+	   if (${DIFF} output/ex20f90_1.out ex20f90_1.tmp) then true; \
+	   else echo "Possible problem with ex20f90_1, diffs above"; fi;\
+	   ${RM} -f ex20f90_1.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 ex1.rm ex1e.PETSc runex1e runex1e_2 ex1e.rm \
                               ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc \
@@ -275,7 +279,7 @@ TESTEXAMPLES_FORTRAN	    = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex
                               runex9f_2 ex9f.rm ex11f.PETSc runex11f ex11f.rm ex14f.PETSc ex14f.rm
 TESTEXAMPLES_C_X11_MPIUNI   = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_FORTRAN_MPIUNI = ex1f.PETSc runex1f ex1f.rm ex4f.PETSc runex4f ex4f.rm ex7.PETSc ex7.rm
-TESTEXAMPLES_F90	    = ex1f90.PETSc runex1f90 ex1f90.rm ex4f90.PETSc runex4f90 ex4f90.rm
+TESTEXAMPLES_F90	    = ex1f90.PETSc runex1f90 ex1f90.rm ex20f90.PETSc runex20f90 ex20f90.rm ex4f90.PETSc runex4f90 ex4f90.rm
 TESTEXAMPLES_13		    = ex10.PETSc ex10.rm
 
 include ${PETSC_DIR}/conf/test

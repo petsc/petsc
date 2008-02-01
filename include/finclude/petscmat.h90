@@ -5,26 +5,24 @@
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
-#if !defined(PETSC_USE_FORTRAN_MODULES)
-
       Interface 
         Subroutine MatGetArrayF90(v,array,ierr)
+          USE_PETSC_HIDE
           PetscScalar, pointer :: array(:,:)
           PetscErrorCode ierr
-          Mat     v
+          MAT_HIDE     v
         End Subroutine
       End Interface
 
 
       Interface 
         Subroutine MatRestoreArrayF90(v,array,ierr)
+          USE_PETSC_HIDE
           PetscScalar, pointer :: array(:,:)
           PetscErrorCode ierr
-          Mat     v
+          MAT_HIDE     v
         End Subroutine
       End Interface
-
-#endif
 
 #endif
 !

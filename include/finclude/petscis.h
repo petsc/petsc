@@ -5,9 +5,11 @@
 #if !defined (__PETSCIS_H)
 #define __PETSCIS_H
 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #define IS PetscFortranAddr
-#define ISType PetscEnum
 #define ISColoring PetscFortranAddr
+#endif
+#define ISType PetscEnum
 #define ISLocalToGlobalMapping PetscFortranAddr
 #define ISGlobalToLocalMappingType PetscEnum
 #define ISColoringType PetscEnum

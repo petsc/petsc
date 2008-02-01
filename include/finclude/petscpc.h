@@ -5,7 +5,9 @@
 #if !defined (__PETSCPC_H)
 #define __PETSCPC_H
 
+#if !defined(PETSC_USE_FORTRAN_MODULES)
 #define PC PetscFortranAddr
+#endif
 #define PCSide PetscEnum
 #define PCASMType PetscEnum
 #define PCCompositeType PetscEnum
