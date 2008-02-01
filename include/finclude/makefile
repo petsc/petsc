@@ -1,9 +1,10 @@
-#requirespackage   'PETSC_HAVE_FORTRAN'
+#requirespackage   'PETSC_USING_F90'
 
 SPECIALLIB     = yes
 SPECIALFASTLIB = yes
 speciallib:
 	-@${OMAKE}  makemodules
+	-@${OMAKE}  clean
 specialfastlib: speciallib
 
 CFLAGS    =
@@ -20,6 +21,7 @@ DIRS      =
 MANSEC    = Sys
 LOCDIR    = include/finclude/
 NOADIC    = true
+CLEANFILES = *.mod ipath __tmp *.xinc *.f90.h *.f90 *.use *.inc modorder makefile.tmp allinone.h *.o *.f90
 
 include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test
@@ -27,19 +29,8 @@ include ${PETSC_DIR}/conf/test
 .SUFFIXES:
 .SUFFIXES: .mod .inc .use
 
-# remake all
-forceall: clean_all all
-
 # remake anly if we havn't allinone.h
-all: makemodules allinone.h tidy_up
-
-# clean all
-clean_all: tidy_up
-	@${RM} -f *.mod
-
-# leave only final files
-tidy_up:
-	@${RM} -f ipath __tmp *.xinc *.f90.h *.f90 *.use *.inc modorder makefile.tmp allinone.h *.o *.f90
+all: makemodules allinone.h
 
 makefile.tmp: moddeps
 	@${CP} makefile makefile.tmp;\
@@ -48,7 +39,7 @@ makefile.tmp: moddeps
 	MODS=`cat moddeps|grep -v '^ *#'|grep ':'|sed 's/^ *\([^ ]*\).*/\1 /'`;\
 	echo modules : $$MODS >> makefile.tmp
 
-makemodules: clean tidy_up makefile.tmp
+makemodules: clean makefile.tmp
 	@if [ ! -e allinone.h ]; then\
 	  ${RM} -f modorder;\
 	  ${OMAKE} -f makefile.tmp modules;\
