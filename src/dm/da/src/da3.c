@@ -751,6 +751,35 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
     if (ze==P)   {n18 = n19 = n20 = n21 = n22 = n23 = n24 = n25 = n26 = -2;}
   }
 
+  ierr = PetscMalloc(27*sizeof(PetscInt),&da->neighbors);CHKERRQ(ierr);
+  da->neighbors[0] = n0;
+  da->neighbors[1] = n1;
+  da->neighbors[2] = n2;
+  da->neighbors[3] = n3;
+  da->neighbors[4] = n4;
+  da->neighbors[5] = n5;
+  da->neighbors[6] = n6;
+  da->neighbors[7] = n7;
+  da->neighbors[8] = n8;
+  da->neighbors[9] = n9;
+  da->neighbors[10] = n10;
+  da->neighbors[11] = n11;
+  da->neighbors[12] = n12;
+  da->neighbors[13] = rank;
+  da->neighbors[14] = n14;
+  da->neighbors[15] = n15;
+  da->neighbors[16] = n16;
+  da->neighbors[17] = n17;
+  da->neighbors[18] = n18;
+  da->neighbors[19] = n19;
+  da->neighbors[20] = n20;
+  da->neighbors[21] = n21;
+  da->neighbors[22] = n22;
+  da->neighbors[23] = n23;
+  da->neighbors[24] = n24; 
+  da->neighbors[25] = n25;
+  da->neighbors[26] = n26;
+
   /* If star stencil then delete the corner neighbors */
   if (stencil_type == DA_STENCIL_STAR) { 
      /* save information about corner neighbors */

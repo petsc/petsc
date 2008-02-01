@@ -1,20 +1,33 @@
 
 #include "private/zpetsc.h"
 #include "petscda.h"
+#include "src/dm/da/daimpl.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dasetlocaljacobian_          DASETLOCALJACOBIAN
 #define dasetlocalfunction_          DASETLOCALFUNCTION
 #define dacreate2d_                  DACREATE2D
 #define dagetownershiprange_         DAGETOWNERSHIPRANGE
+#define dagetneighbors_              DAGETNEIGHBORS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dasetlocaljacobian_          dasetlocaljacobian
 #define dasetlocalfunction_          dasetlocalfunction
 #define dacreate2d_                  dacreate2d
 #define dagetownershiprange_         dagetownershiprange
+#define dagetneighbors_              dagetneighbors
 #endif
 
 EXTERN_C_BEGIN
+void PETSC_STDCALL dagetneighbors_(DA *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
+{
+  const PetscInt *r;
+  PetscInt       n;
+
+  *ierr = DAGetNeighbors(*da,&r);if (*ierr) return;
+  if ((*da)->dim == 2) n = 9; else n = 27;
+  *ierr = PetscMemcpy(ranks,r,n*sizeof(PetscMPIInt));  
+}
+
 
 /************************************************/
 static void (PETSC_STDCALL *j1d)(DALocalInfo*,void*,void*,void*,PetscErrorCode*);

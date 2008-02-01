@@ -113,6 +113,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
   if (da->ghosted_coordinates) {ierr = VecDestroy(da->ghosted_coordinates);CHKERRQ(ierr);}
   if (da->da_coordinates && da != da->da_coordinates) {ierr = DADestroy(da->da_coordinates);CHKERRQ(ierr);}
 
+  ierr = PetscFree(da->neighbors);CHKERRQ(ierr);
   ierr = PetscFree(da->dfill);CHKERRQ(ierr);
   ierr = PetscFree(da->ofill);CHKERRQ(ierr);
   ierr = PetscFree(da->e);CHKERRQ(ierr);
