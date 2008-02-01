@@ -92,5 +92,5 @@ allinone.h: modorder
 
 
 ipath:
-	@echo "-I/usr/include ${PETSC_DIR}/${PETSC_ARCH}/include ${PETSC_DIR}/include/finclude ${PETSC_DIR}/include ${PETSC_DIR} ${PACKAGES_INCLUDES}  "|sed 's/-I//g' > ipath
+	@echo "${PETSC_DIR}/${PETSC_ARCH}/include ${PETSC_DIR}/include/finclude ${PETSC_DIR}/include ${PETSC_DIR} ${PACKAGES_INCLUDES}  "|sed 's/-I//g' > ipath
 
