@@ -1757,7 +1757,7 @@ M*/
 /* Special support for C++ */
 #include "petsc.hh"
 
-/*@M
+/*MC
 
     FortranModules - it is possible to use PETSc from Fortran using Fortran 90 modules instead of C style include macros.
 
@@ -1773,6 +1773,6 @@ $      Vec v
 
     See the example src/vec/vec/examples/tutorials/ex20f90.F90
 
-@*/
+M*/
 PETSC_EXTERN_CXX_END
 #endif
