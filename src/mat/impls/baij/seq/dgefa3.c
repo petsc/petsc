@@ -16,7 +16,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "Kernel_A_gets_inverse_A_3"
-PetscErrorCode Kernel_A_gets_inverse_A_3(MatScalar *a)
+PetscErrorCode Kernel_A_gets_inverse_A_3(MatScalar *a,PetscReal Shift)
 {
     PetscInt   i__2,i__3,kp1,j,k,l,ll,i,ipvt[3],kb,k3;
     PetscInt   k4,j3;

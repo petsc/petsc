@@ -48,7 +48,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*) A->data;
   PetscErrorCode ierr;
   PetscInt       *diag_offset,i,bs = A->rmap.bs,mbs = a->mbs;
-  MatScalar     *v = a->a,*odiag,*diag,*mdiag;
+  MatScalar      *v = a->a,*odiag,*diag,*mdiag;
+  PetscReal      shift = 0.0;
 
   PetscFunctionBegin;
   if (a->idiagvalid) PetscFunctionReturn(0);
@@ -66,7 +67,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
         odiag   = v + 4*diag_offset[i];
         diag[0]  = odiag[0]; diag[1] = odiag[1]; diag[2] = odiag[2]; diag[3] = odiag[3];
 	mdiag[0] = odiag[0]; mdiag[1] = odiag[1]; mdiag[2] = odiag[2]; mdiag[3] = odiag[3];
-	ierr     = Kernel_A_gets_inverse_A_2(diag);CHKERRQ(ierr);
+	ierr     = Kernel_A_gets_inverse_A_2(diag,shift);CHKERRQ(ierr);
 	diag    += 4;
 	mdiag   += 4;
       }
@@ -80,7 +81,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
         mdiag[0] = odiag[0]; mdiag[1] = odiag[1]; mdiag[2] = odiag[2]; mdiag[3] = odiag[3];
         mdiag[4] = odiag[4]; mdiag[5] = odiag[5]; mdiag[6] = odiag[6]; mdiag[7] = odiag[7];
         mdiag[8] = odiag[8]; 
-	ierr     = Kernel_A_gets_inverse_A_3(diag);CHKERRQ(ierr);
+	ierr     = Kernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
 	diag    += 9;
 	mdiag   += 9;
       }
@@ -90,7 +91,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
         odiag  = v + 16*diag_offset[i];
         ierr   = PetscMemcpy(diag,odiag,16*sizeof(PetscScalar));CHKERRQ(ierr);
         ierr   = PetscMemcpy(mdiag,odiag,16*sizeof(PetscScalar));CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_4(diag);CHKERRQ(ierr);
+	ierr   = Kernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
 	diag  += 16;
 	mdiag += 16;
       }
@@ -100,7 +101,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInvertBlockDiagonal_SeqBAIJ(Mat A)
         odiag = v + 25*diag_offset[i];
         ierr   = PetscMemcpy(diag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
         ierr   = PetscMemcpy(mdiag,odiag,25*sizeof(PetscScalar));CHKERRQ(ierr);
-	ierr   = Kernel_A_gets_inverse_A_5(diag);CHKERRQ(ierr);
+	ierr   = Kernel_A_gets_inverse_A_5(diag,shift);CHKERRQ(ierr);
 	diag  += 25;
 	mdiag += 25;
       }

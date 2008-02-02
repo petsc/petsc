@@ -1033,6 +1033,7 @@ typedef struct {
   PetscReal     levels;         /* ICC/ILU(levels) */ 
   PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
                                    factorization may be faster if do not pivot */
+  PetscReal     shiftinblocks;  /* if block in block factorization has zero pivot then shift diagonal until non-singular */
   PetscReal     zeropivot;      /* pivot is called zero if less than this */
 } MatFactorInfo;
 

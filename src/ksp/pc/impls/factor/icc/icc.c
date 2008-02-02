@@ -214,12 +214,9 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
       ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",icc->info.shiftnz,&icc->info.shiftnz,0);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShift",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
-    } else {
-      ierr = PCFactorSetShiftPd(pc,PETSC_FALSE);CHKERRQ(ierr);
-    }
+    flg = (icc->info.shiftpd > 0.0) ? PETSC_TRUE : PETSC_FALSE;
+    ierr = PetscOptionsTruth("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCFactorSetShiftPd(pc,flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",icc->info.zeropivot,&icc->info.zeropivot,0);CHKERRQ(ierr);
  
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -245,6 +242,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  ICC: factor fill ratio allocated %G\n",icc->info.fill);CHKERRQ(ierr);
     if (icc->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);}
+    if (icc->info.shiftnz) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);}
     if (icc->fact) {
       ierr = PetscViewerASCIIPrintf(viewer,"  ICC: factor fill ratio needed %G\n",icc->actualfill);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);

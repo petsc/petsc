@@ -28,6 +28,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat A,MatFactorInfo *info,Mat *B)
   MatScalar      m13,m14,m15,m16;
   MatScalar      *ba = b->a,*aa = a->a;
   PetscTruth     pivotinblocks = b->pivotinblocks;
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -141,7 +142,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat A,MatFactorInfo *info,Mat *B)
     /* invert diagonal block */
     w    = ba + 16*diag_offset[i];
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+      ierr = Kernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
     } else {
       ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }

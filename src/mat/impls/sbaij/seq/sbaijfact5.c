@@ -18,6 +18,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat A,MatFact
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
   PetscTruth     pivotinblocks = b->pivotinblocks;
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   
@@ -151,7 +152,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering(Mat A,MatFact
     diag = ba+k*16;
     ierr = PetscMemcpy(diag,dk,16*sizeof(MatScalar));CHKERRQ(ierr);
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(diag);CHKERRQ(ierr);
+      ierr = Kernel_A_gets_inverse_A_4(diag,shift);CHKERRQ(ierr);
     } else {
       ierr = Kernel_A_gets_inverse_A_4_nopivot(diag);CHKERRQ(ierr);
     }

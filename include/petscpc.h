@@ -226,6 +226,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill(PC,PetscTruth);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC,PetscTruth);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftInBlocks(PC,PetscReal);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance(PC,PetscReal,PetscReal,PetscInt);

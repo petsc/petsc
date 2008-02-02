@@ -26,6 +26,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,MatFactorInfo 
   MatScalar      m13,m14,m15,m16;
   MatScalar      *ba = b->a,*aa = a->a;
   PetscTruth     pivotinblocks = b->pivotinblocks;
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(16*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
@@ -135,7 +136,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat A,MatFactorInfo 
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+      ierr = Kernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
     } else {
       ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
@@ -171,6 +172,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,MatFactorI
   int         nonzero=0;
 /*    int            nonzero=0,colscale = 16; */
   PetscTruth  pivotinblocks = b->pivotinblocks;
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   SSE_SCOPE_BEGIN;
@@ -575,7 +577,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat A,MatFactorI
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+      ierr = Kernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
     } else {
       ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
@@ -610,6 +612,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
   int            nonzero=0;
 /*    int            nonzero=0,colscale = 16; */
   PetscTruth     pivotinblocks = b->pivotinblocks;
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   SSE_SCOPE_BEGIN;
@@ -1016,7 +1019,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+      ierr = Kernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
     } else {
       ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }
@@ -1050,6 +1053,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A,MatFac
   int            nonzero=0;
 /*    int            nonzero=0,colscale = 16; */
   PetscTruth     pivotinblocks = b->pivotinblocks;
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   SSE_SCOPE_BEGIN;
@@ -1459,7 +1463,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat A,MatFac
     /* invert diagonal block */
     w = ba + 16*diag_offset[i];
     if (pivotinblocks) {
-      ierr = Kernel_A_gets_inverse_A_4(w);CHKERRQ(ierr);
+      ierr = Kernel_A_gets_inverse_A_4(w,shift);CHKERRQ(ierr);
     } else {
       ierr = Kernel_A_gets_inverse_A_4_nopivot(w);CHKERRQ(ierr);
     }

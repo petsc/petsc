@@ -16,6 +16,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,MatFactorInfo *info,Mat
   PetscInt       *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   
@@ -158,7 +159,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,MatFactorInfo *info,Mat
     /* invert diagonal block */
     diag = ba+k*9;
     ierr = PetscMemcpy(diag,dk,9*sizeof(MatScalar));CHKERRQ(ierr);
-    ierr = Kernel_A_gets_inverse_A_3(diag);CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_3(diag,shift);CHKERRQ(ierr);
     
     jmin = bi[k]; jmax = bi[k+1];
     if (jmin < jmax) {

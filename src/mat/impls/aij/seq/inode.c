@@ -1644,7 +1644,7 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   MatScalar          *ibdiag,*bdiag;
   PetscScalar        *b,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
   const PetscScalar  *v = a->a,*v1,*v2,*v3,*v4,*v5;
-  PetscReal          zeropivot = 1.0e-15;
+  PetscReal          zeropivot = 1.0e-15, shift = 0.0;
   PetscErrorCode     ierr;
   PetscInt           n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row,i1,i2;
   PetscInt           *idx,*diag = a->diag,*ii = a->i,sz,k;
@@ -1683,16 +1683,16 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
           ibdiag[cnt] = 1.0/ibdiag[cnt];
           break;
         case 2:
-          ierr = Kernel_A_gets_inverse_A_2(ibdiag+cnt);CHKERRQ(ierr);
+          ierr = Kernel_A_gets_inverse_A_2(ibdiag+cnt,shift);CHKERRQ(ierr);
           break;
         case 3:
-          ierr = Kernel_A_gets_inverse_A_3(ibdiag+cnt);CHKERRQ(ierr);
+          ierr = Kernel_A_gets_inverse_A_3(ibdiag+cnt,shift);CHKERRQ(ierr);
           break;
         case 4:
-          ierr = Kernel_A_gets_inverse_A_4(ibdiag+cnt);CHKERRQ(ierr);
+          ierr = Kernel_A_gets_inverse_A_4(ibdiag+cnt,shift);CHKERRQ(ierr);
           break;
         case 5:
-          ierr = Kernel_A_gets_inverse_A_5(ibdiag+cnt);CHKERRQ(ierr);
+          ierr = Kernel_A_gets_inverse_A_5(ibdiag+cnt,shift);CHKERRQ(ierr);
           break;
        default:
 	 SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);

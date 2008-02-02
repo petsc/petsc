@@ -223,7 +223,7 @@ PetscErrorCode NLFNewton_DAAD9(NLF A,DALocalInfo *info,MatStencil *stencil,void 
       f[i]= -ad_f[i*10] + residual[ngI[i]];
     }
 
-    Kernel_A_gets_inverse_A_9(J);
+    Kernel_A_gets_inverse_A_9(J,0.0);
  
     res =0 ;
     for(i=0; i<9; i++){
