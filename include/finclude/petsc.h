@@ -226,7 +226,7 @@
 #define TS_HIDE type(TS)
 #define DM_HIDE type(DM)
 #define DA_HIDE type(DA)
-#define USE_PETSC_HIDE use petsc
+#define USE_PETSC_HIDE use petscdef
 #else
 #define IS_HIDE IS
 #define PETSCVIEWER_HIDE PetscViewer
@@ -242,7 +242,7 @@
 #define TS_HIDE TS
 #define DM_HIDE DM
 #define DA_HIDE DA
-#define USE_PETSC_HIDE use petsc
+#define USE_PETSC_HIDE
 #endif
        
 #endif
