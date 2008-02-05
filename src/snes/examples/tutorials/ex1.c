@@ -30,9 +30,9 @@ extern PetscErrorCode FormFunction2(SNES,Vec,Vec,void*);
 int main(int argc,char **argv)
 {
   SNES           snes;         /* nonlinear solver context */
-  KSP            ksp;         /* linear solver context */
+  KSP            ksp;          /* linear solver context */
   PC             pc;           /* preconditioner context */
-  Vec            x,r;         /* solution, residual vectors */
+  Vec            x,r;          /* solution, residual vectors */
   Mat            J;            /* Jacobian matrix */
   PetscErrorCode ierr;
   PetscInt       its;
@@ -47,13 +47,11 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create nonlinear solver context
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create matrix and vector data structures; set corresponding routines
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
   /*
      Create vectors for solution and nonlinear function
   */
@@ -86,7 +84,6 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
   /* 
      Set linear solver defaults for this problem. By extracting the
      KSP, KSP, and PC contexts from the SNES context, we can then
@@ -185,7 +182,6 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *dummy)
   */
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
-
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -233,6 +229,8 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   /* 
      Assemble matrix
   */
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (*jac != *B){
     ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -269,7 +267,6 @@ PetscErrorCode FormFunction2(SNES snes,Vec x,Vec f,void *dummy)
   */
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr); 
-
   return 0;
 }
 /* ------------------------------------------------------------------- */
@@ -304,6 +301,8 @@ PetscErrorCode FormJacobian2(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   /*
      Assemble matrix
   */
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (*jac != *B){
     ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
