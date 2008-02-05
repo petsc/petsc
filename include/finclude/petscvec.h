@@ -5,12 +5,19 @@
 #if !defined (__PETSCVEC_H)
 #define __PETSCVEC_H
 
-     type Vec
-       PetscFortranAddr:: v
-     end type Vec
+#if defined(PETSC_USE_FORTRAN_MODULES)
+#define VEC_HIDE type(Vec)
+#define VECSCATTER_HIDE type(VecScatter)
+#define USE_VEC_HIDE use petscvecdef
+#else
+#define VEC_HIDE Vec
+#define VECSCATTER_HIDE VecScatter
+#define USE_VEC_HIDE
 
 #define Vec PetscFortranAddr
 #define VecScatter PetscFortranAddr
+#endif
+
 #define NormType PetscEnum
 #define InsertMode PetscEnum
 #define ScatterMode PetscEnum 
@@ -28,6 +35,15 @@
 #endif
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
+
+#if defined(PETSC_USE_FORTRAN_MODULES)
+      type Vec
+        PetscFortranAddr:: v
+      end type Vec
+      type VecScatter
+        PetscFortranAddr:: v
+      end type VecScatter
+#endif
 !
 !
 !  Types of vector and matrix norms

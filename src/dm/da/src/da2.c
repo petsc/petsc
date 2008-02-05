@@ -3,6 +3,38 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 #undef __FUNCT__  
+#define __FUNCT__ "DAGetNeighbors"
+/*@C
+      DAGetNeighbors - Gets an array containing the MPI rank of all the current
+        processes neighbors.
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DA object
+
+   Output Parameters:
+.     ranks - the neighbors ranks, stored with the x index increasing most rapidly.
+              this process itself is in the list
+
+   Notes: In 2d the array is of length 9, in 3d of length 27
+          Not supported in 1d
+          Do not free the array, it is freed when the DA is destroyed.
+
+   Fortran Notes: In fortran you must pass in an array of the appropriate length.
+
+   Level: intermediate
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscInt *ranks[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  *ranks = da->neighbors;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DAGetElements"
 /*@C
       DAGetElements - Gets an array containing the indices (in local coordinates) 
@@ -615,6 +647,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
     if ((n7 >= 0) && (n6 < 0)) n6 = rank+2*m-1;
     if ((n7 >= 0) && (n8 < 0)) n8 = rank+1;
   }
+  ierr = PetscMalloc(9*sizeof(PetscInt),&da->neighbors);CHKERRQ(ierr);
+  da->neighbors[0] = n0;
+  da->neighbors[1] = n1;
+  da->neighbors[2] = n2;
+  da->neighbors[3] = n3;
+  da->neighbors[4] = rank;
+  da->neighbors[5] = n5;
+  da->neighbors[6] = n6;
+  da->neighbors[7] = n7;
+  da->neighbors[8] = n8;
 
   if (stencil_type == DA_STENCIL_STAR) {
     /* save corner processor numbers */

@@ -139,6 +139,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetISLocalToGlobalMapping(DA,ISLoca
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetISLocalToGlobalMappingBlck(DA,ISLocalToGlobalMapping*);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetScatter(DA,VecScatter*,VecScatter*,VecScatter*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetNeighbors(DA,const PetscMPIInt**);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetAO(DA,AO*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASetCoordinates(DA,Vec); 

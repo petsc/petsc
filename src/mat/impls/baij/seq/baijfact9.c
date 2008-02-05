@@ -28,6 +28,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat A,MatFactorInfo *info,Mat *B)
   MatScalar      p15,p16,p17,p18,p19,p20,p21,p22,p23,p24,p25,m10,m11,m12;
   MatScalar      m13,m14,m15,m16,m17,m18,m19,m20,m21,m22,m23,m24,m25;
   MatScalar      *ba = b->a,*aa = a->a;
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -173,7 +174,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat A,MatFactorInfo *info,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 25*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_5(w);CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_5(w,shift);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);

@@ -24,6 +24,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat A,MatFactorInfo *info,Mat *B)
   MatScalar      *pv,*v,*rtmp,m1,m2,m3,m4,*pc,*w,*x,x1,x2,x3,x4;
   MatScalar      p1,p2,p3,p4;
   MatScalar      *ba = b->a,*aa = a->a;
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -84,7 +85,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat A,MatFactorInfo *info,Mat *B)
     }
     /* invert diagonal block */
     w = ba + 4*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_2(w);CHKERRQ(ierr);
+    ierr = Kernel_A_gets_inverse_A_2(w,shift);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
@@ -111,6 +112,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,MatFactorInfo 
   MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
   MatScalar      p1,p2,p3,p4,m1,m2,m3,m4,x1,x2,x3,x4;
   MatScalar      *ba = b->a,*aa = a->a;
+  PetscReal      shift = info->shiftinblocks;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(4*(n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
@@ -169,8 +171,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,MatFactorInfo 
     }
     /* invert diagonal block */
     w = ba + 4*diag_offset[i];
-    ierr = Kernel_A_gets_inverse_A_2(w);CHKERRQ(ierr);
-    /*Kernel_A_gets_inverse_A(bs,w,v_pivots,v_work);*/
+    ierr = Kernel_A_gets_inverse_A_2(w,shift);CHKERRQ(ierr);
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);

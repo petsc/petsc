@@ -7,18 +7,20 @@
 
       Interface 
         Subroutine MatGetArrayF90(v,array,ierr)
+          USE_MAT_HIDE
           PetscScalar, pointer :: array(:,:)
           PetscErrorCode ierr
-          Mat     v
+          MAT_HIDE     v
         End Subroutine
       End Interface
 
 
       Interface 
         Subroutine MatRestoreArrayF90(v,array,ierr)
+          USE_MAT_HIDE
           PetscScalar, pointer :: array(:,:)
           PetscErrorCode ierr
-          Mat     v
+          MAT_HIDE     v
         End Subroutine
       End Interface
 

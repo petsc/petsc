@@ -6,18 +6,20 @@
 
       Interface 
         Subroutine ISGetIndicesF90(i,array,ierr)
+          USE_IS_HIDE
           PetscInt, pointer :: array(:)
           PetscErrorCode  ierr
-          IS       i
+         IS_HIDE       i
         End Subroutine
       End Interface
 
 
       Interface 
         Subroutine ISRestoreIndicesF90(i,array,ierr)
+          USE_IS_HIDE
           PetscInt, pointer :: array(:)
           PetscErrorCode ierr
-          IS      i
+         IS_HIDE      i
         End Subroutine
       End Interface
 
@@ -25,36 +27,40 @@
 
       Interface 
         Subroutine ISBlockGetIndicesF90(i,array,ierr)
+          USE_IS_HIDE
           PetscInt, pointer :: array(:)
           PetscErrorCode  ierr
-          IS       i
+         IS_HIDE       i
         End Subroutine
       End Interface
 
 
       Interface 
         Subroutine ISBlockRestoreIndicesF90(i,array,ierr)
+          USE_IS_HIDE
           PetscInt, pointer :: array(:)
           PetscErrorCode ierr
-          IS      i
+         IS_HIDE      i
         End Subroutine
       End Interface
 
 ! ------------------------------------------------------
       Interface 
         Subroutine ISColoringGetISF90(ic,n,isa,ierr)
-          IS, pointer :: isa(:)
+          USE_IS_HIDE
+          IS_HIDE, pointer :: isa(:)
           PetscInt     n
           PetscErrorCode ierr
-          ISColoring  ic
+          ISCOLORING_HIDE ic
         End Subroutine
       End Interface
 
       Interface 
         Subroutine ISColoringRestoreISF90(ic,isa,ierr)
-          IS, pointer :: isa(:)
+          USE_IS_HIDE
+          IS_HIDE, pointer :: isa(:)
           PetscErrorCode     ierr
-          ISColoring  ic
+          ISCOLORING_HIDE ic
         End Subroutine
       End Interface
 

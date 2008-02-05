@@ -1757,5 +1757,22 @@ M*/
 /* Special support for C++ */
 #include "petsc.hh"
 
+/*MC
+
+    FortranModules - it is possible to use PETSc from Fortran using Fortran 90 modules instead of C style include macros.
+
+$   Objects are named type(XXXX)  instead of XXXX, for example
+$      use petscvec 
+$      type(Vec) v instead of
+$
+$#include "finclude/petsc.h"
+$#include "finclude/petscvec.h"
+$      Vec v
+
+    The PETSc macros, PetscInt, PetscErrorCode etc are not available, you should use integer for these
+
+    See the example src/vec/vec/examples/tutorials/ex20f90.F90
+
+M*/
 PETSC_EXTERN_CXX_END
 #endif

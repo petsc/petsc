@@ -10,8 +10,6 @@
 #if !defined (__PETSCDEF_H)
 #define __PETSCDEF_H
 !
-#include "petscconf.h"
-!
 ! The real*8,complex*16 notatiton is used so that the 
 ! PETSc double/complex variables are not affected by 
 ! compiler options like -r4,-r8, sometimes invoked 
@@ -188,6 +186,12 @@
 #else
 #define PetscFlush(a)
 #endif
+#endif
+
+#if defined(PETSC_USE_FORTRAN_MODULES)
+#define USE_PETSC_HIDE use petscdef
+#else
+#define USE_PETSC_HIDE
 #endif
 
 #endif

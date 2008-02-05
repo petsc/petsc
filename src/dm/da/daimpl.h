@@ -44,6 +44,7 @@ struct _p_DA {
   PetscInt               *lx,*ly,*lz;        /* number of nodes in each partition block along 3 axis */
   Vec                    natural;            /* global vector for storing items in natural order */
   VecScatter             gton;               /* vector scatter from global to natural */
+  PetscMPIInt            *neighbors;         /* ranks of all neighbors and self */
 
   ISColoring             localcoloring;       /* set by DAGetColoring() */
   ISColoring             ghostedcoloring;  

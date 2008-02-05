@@ -4,7 +4,13 @@
 #if !defined (__PETSCTS_H)
 #define __PETSCTS_H
 
+#if defined(PETSC_USE_FORTRAN_MODULES)
+#define TS_HIDE type(TS)
+#else
+#define TS_HIDE TS
+
 #define TS PetscFortranAddr
+#endif
 #define TSType character*(80)
 #define TSSundialsType PetscEnum
 #define TSProblemType PetscEnum 
@@ -20,6 +26,12 @@
 #endif
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
+
+#if defined(PETSC_USE_FORTRAN_MODULES)
+      type TS
+        PetscFortranAddr:: v
+      end type TS
+#endif
 !
 !  TSProblemType
 !

@@ -356,6 +356,24 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_ILU(PC pc,PetscTruth 
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftInBlocks_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftInBlocks_ILU(PC pc,PetscReal shift)
+{
+  PC_ILU *dir = (PC_ILU*)pc->data;
+
+  PetscFunctionBegin;
+  if (shift == PETSC_DEFAULT) {
+    dir->info.shiftinblocks = 1.e-12;
+  } else {
+    dir->info.shiftinblocks = shift;
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_ILU"
 static PetscErrorCode PCSetFromOptions_ILU(PC pc)
@@ -387,16 +405,9 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
       ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",ilu->info.shiftnz,&ilu->info.shiftnz,0);CHKERRQ(ierr);
-    
-    ierr = PetscOptionsName("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscOptionsInt("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",(PetscInt)ilu->info.shiftpd,&itmp,&flg); CHKERRQ(ierr);
-      if (flg && !itmp) {
-	ierr = PCFactorSetShiftPd(pc,PETSC_FALSE);CHKERRQ(ierr);
-      } else {
-	ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr); 
-      }
-    }
+    flg = (ilu->info.shiftpd > 0.0) ? PETSC_TRUE : PETSC_FALSE;
+    ierr = PetscOptionsTruth("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCFactorSetShiftPd(pc,flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",ilu->info.zeropivot,&ilu->info.zeropivot,0);CHKERRQ(ierr);
 
     dt[0] = ilu->info.dt;
@@ -424,6 +435,12 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     if (set) {
       ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
     }
+    ierr = PetscOptionsName("-pc_factor_shift_in_blocks","Shift added to diagonal of block","PCFactorSetShiftInBlocks",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCFactorSetShiftInBlocks(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsReal("-pc_factor_shift_in_blocks","Shift added to diagonal of block","PCFactorSetShiftInBlocks",ilu->info.shiftinblocks,&ilu->info.shiftinblocks,0);CHKERRQ(ierr);
+
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -452,6 +469,8 @@ static PetscErrorCode PCView_ILU(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU: factor fill ratio allocated %G\n",ilu->info.fill);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  ILU: tolerance for zero pivot %G\n",ilu->info.zeropivot);CHKERRQ(ierr);
     if (ilu->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using Manteuffel shift\n");CHKERRQ(ierr);}
+    if (ilu->info.shiftnz) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);}
+    if (ilu->info.shiftinblocks) {ierr = PetscViewerASCIIPrintf(viewer,"  ILU: using diagonal shift on blocks to prevent zero pivot\n");CHKERRQ(ierr);}
     if (ilu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"       in-place factorization\n");CHKERRQ(ierr);}
     else              {ierr = PetscViewerASCIIPrintf(viewer,"       out-of-place factorization\n");CHKERRQ(ierr);}
     ierr = PetscViewerASCIIPrintf(viewer,"       matrix ordering: %s\n",ilu->ordering);CHKERRQ(ierr);
@@ -616,6 +635,36 @@ static PetscErrorCode PCFactorGetMatrix_ILU(PC pc,Mat *mat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetShiftInBlocks"
+/*@
+    PCFactorSetShiftInBlocks - Shifts the diagonal of any block if LU on that block detects a zero pivot.
+
+    Collective on PC
+
+    Input Parameters:
++   pc - the preconditioner context
+-   shift - amount to shift or PETSC_DECIDE
+
+    Options Database Key:
+.   -pc_factor_shift_in_blocks <shift>
+
+    Level: intermediate
+
+.seealso: PCILUSetMatOrdering(), PCFactorSetPivoting(), PCFactorSetShiftInBlocks()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftInBlocks(PC pc,PetscReal shift)
+{
+  PetscErrorCode ierr,(*f)(PC,PetscReal);
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetShiftInBlocks_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,shift);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 /*MC
      PCILU - Incomplete factorization preconditioners.
 
@@ -633,6 +682,7 @@ static PetscErrorCode PCFactorGetMatrix_ILU(PC pc,Mat *mat)
 .  -pc_factor_pivot_in_blocks - for block ILU(k) factorization, i.e. with BAIJ matrices with block size larger
                              than 1 the diagonal blocks are factored with partial pivoting (this increases the 
                              stability of the ILU factorization
+.  -pc_factor_shift_in_blocks - adds a small diagonal to any block if it is singular during ILU factorization
 .  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
 -  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
    is optional with PETSC_TRUE being the default
@@ -677,11 +727,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   ilu->info.dt                 = PETSC_DEFAULT;
   ilu->info.dtcount            = PETSC_DEFAULT;
   ilu->info.dtcol              = PETSC_DEFAULT;
-  ilu->info.shiftnz            = 0.0;
+  ilu->info.shiftnz            = 1.e-12;
   ilu->info.shiftpd            = 0.0; /* false */
   ilu->info.shift_fraction     = 0.0;
   ilu->info.zeropivot          = 1.e-12;
   ilu->info.pivotinblocks      = 1.0;
+  ilu->info.shiftinblocks      = 1.e-12;
   ilu->reusefill               = PETSC_FALSE;
   ilu->info.diagonal_fill      = 0;
   pc->data                     = (void*)ilu;
@@ -720,6 +771,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
                     PCFactorSetAllowDiagonalFill_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetPivotInBlocks_C","PCFactorSetPivotInBlocks_ILU",
                     PCFactorSetPivotInBlocks_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftInBlocks_C","PCFactorSetShiftInBlocks_ILU",
+                    PCFactorSetShiftInBlocks_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C","PCFactorReorderForNonzeroDiagonal_ILU",
                     PCFactorReorderForNonzeroDiagonal_ILU);CHKERRQ(ierr);
   PetscFunctionReturn(0);

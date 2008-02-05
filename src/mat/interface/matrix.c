@@ -3148,7 +3148,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
   PetscErrorCode         ierr;
   PetscTruth             sametype,issame,flg;
   char                   convname[256],mtype[256];
-  Mat                    B; 
+  Mat                    B;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3167,6 +3167,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
   if ((reuse==MAT_REUSE_MATRIX) && (mat != *M)) {
     SETERRQ(PETSC_ERR_SUP,"MAT_REUSE_MATRIX only supported for in-place conversion currently");
   }
+
+  if ((reuse == MAT_REUSE_MATRIX) && (issame || sametype)) PetscFunctionReturn(0);
+  
   if ((sametype || issame) && (reuse==MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
@@ -3232,8 +3235,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
     ierr = (*conv)(mat,newtype,reuse,M);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   }
-  B = *M;
-  ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)*M);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -4,19 +4,22 @@
 !
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
+
       Interface 
         Subroutine VecGetArrayF90(v,array,ierr)
+          USE_VEC_HIDE
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
-          Vec     v
+          VEC_HIDE     v
         End Subroutine
       End Interface
 
       Interface 
         Subroutine VecRestoreArrayF90(v,array,ierr)
+          USE_VEC_HIDE
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
-          Vec     v
+          VEC_HIDE     v
         End Subroutine
       End Interface
 
@@ -24,10 +27,11 @@
 
       Interface 
         Subroutine VecDuplicateVecsF90(v,m,vs,ierr)
-          Vec, pointer :: vs(:)
+          USE_VEC_HIDE
+          VEC_HIDE, pointer :: vs(:)
           PetscInt m
           PetscErrorCode ierr
-          Vec     v
+          VEC_HIDE     v
         End Subroutine
       End Interface
 !
@@ -37,7 +41,8 @@
 !
       Interface 
         Subroutine VecDestroyVecsF90(vs,m,ierr)
-          Vec, pointer :: vs(:)
+          USE_VEC_HIDE
+          VEC_HIDE, pointer :: vs(:)
           PetscInt m
           PetscErrorCode ierr
         End Subroutine

@@ -5,8 +5,21 @@
 #if !defined (__PETSCMAT_H)
 #define __PETSCMAT_H
 
+#if defined(PETSC_USE_FORTRAN_MODULES)
+#define MAT_HIDE type(Mat)
+#define MATFDCOLORING_HIDE type(MatFDColoring)
+#define MATNULLSPACE_HIDE type(MatNullSpace)
+#define USE_MAT_HIDE use petscmatdef
+#else
+#define MAT_HIDE Mat
+#define MATFDCOLORING_HIDE MatFDColoring
+#define MATNULLSPACE_HIDE MatNullSpace
+#define USE_MAT_HIDE
+
 #define Mat PetscFortranAddr
+#define MatNullSpace PetscFortranAddr
 #define MatFDColoring PetscFortranAddr
+#endif
 #define MatPartitioning PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr
 #define MatType character*(80)
@@ -23,7 +36,6 @@
 #define MatDuplicateOption PetscEnum
 #define MatStructure PetscEnum
 #define MatPartitioningType character*(80)
-#define MatNullSpace PetscFortranAddr
 
 #define MatStencil PetscInt
 #define MatStencil_k 1
@@ -98,6 +110,11 @@
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
+#if defined(PETSC_USE_FORTRAN_MODULES)
+      type Mat
+        PetscFortranAddr:: v
+      end type Mat
+#endif
 !
 !  Flag for matrix assembly
 !
