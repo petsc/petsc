@@ -5,7 +5,11 @@
 #if !defined (__PETSCPC_H)
 #define __PETSCPC_H
 
-#if !defined(PETSC_USE_FORTRAN_MODULES)
+#if defined(PETSC_USE_FORTRAN_MODULES)
+#define PC_HIDE type(PC)
+#else
+#define PC_HIDE PC
+
 #define PC PetscFortranAddr
 #endif
 #define PCSide PetscEnum
@@ -43,6 +47,12 @@
 #endif
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
+
+#if defined(PETSC_USE_FORTRAN_MODULES)
+      type PC
+        PetscFortranAddr:: v
+      end type PC
+#endif
 !
 !  PCSide
 !

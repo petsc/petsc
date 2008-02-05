@@ -7,7 +7,7 @@
 
       Interface 
         Subroutine VecGetArrayF90(v,array,ierr)
-          USE_PETSC_HIDE
+          USE_VEC_HIDE
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           VEC_HIDE     v
@@ -16,7 +16,7 @@
 
       Interface 
         Subroutine VecRestoreArrayF90(v,array,ierr)
-          USE_PETSC_HIDE
+          USE_VEC_HIDE
           PetscScalar, pointer :: array(:)
           PetscErrorCode ierr
           VEC_HIDE     v
@@ -27,7 +27,7 @@
 
       Interface 
         Subroutine VecDuplicateVecsF90(v,m,vs,ierr)
-          USE_PETSC_HIDE
+          USE_VEC_HIDE
           VEC_HIDE, pointer :: vs(:)
           PetscInt m
           PetscErrorCode ierr
@@ -41,7 +41,7 @@
 !
       Interface 
         Subroutine VecDestroyVecsF90(vs,m,ierr)
-          USE_PETSC_HIDE
+          USE_VEC_HIDE
           VEC_HIDE, pointer :: vs(:)
           PetscInt m
           PetscErrorCode ierr

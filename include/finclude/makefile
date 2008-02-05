@@ -1,7 +1,12 @@
+#
+# This code to build f90 modules is obsoleted by the sources
+# in src/sys/f90-mod
+#
+
 #requirespackage   'PETSC_USING_F90'
 
-SPECIALLIB     = yes
-SPECIALFASTLIB = yes
+#SPECIALLIB     = yes
+#SPECIALFASTLIB = yes
 speciallib:
 	-@${OMAKE}  makemodules
 	-@${OMAKE}  clean

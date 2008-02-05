@@ -399,7 +399,6 @@ int main(int argc,char **argv)
 
   ierr = SNESCreate(MPI_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetType(snes,type);CHKERRQ(ierr);
-  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set routines for function and Jacobian evaluation
@@ -412,7 +411,9 @@ int main(int argc,char **argv)
    } else { /* Use matfdcoloring */
      ISColoring    iscoloring;
      MatStructure  flag;
+     /* Get the data structure of Jac */
      ierr = FormJacobian(snes,x,&Jac,&Jac,&flag,&user);CHKERRQ(ierr);
+     /* Create coloring context */
      ierr = MatGetColoring(Jac,MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
      ierr = MatFDColoringCreate(Jac,iscoloring,&matfdcoloring);CHKERRQ(ierr);
      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
@@ -430,7 +431,7 @@ int main(int argc,char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Evaluate initial guess; then solve nonlinear system
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   /*
      Note: The user should initialize the vector, x, with the initial guess
@@ -438,21 +439,22 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
 
    /* 
      Print the initial guess 
    */
-   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-   for (inode = 0; inode < user.Nvlocal; inode++)
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  for (inode = 0; inode < user.Nvlocal; inode++){
     ierr = PetscFPrintf(PETSC_COMM_SELF,fptr1,"Initial Solution at node %D is %f \n",inode,xx[inode]);CHKERRQ(ierr);
-   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Now solve the nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
  
@@ -586,7 +588,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
   Nvlocal  = user->Nvlocal;
   lambda   = user->non_lin_param;
-  alpha    =  user->lin_param;
+  alpha    = user->lin_param;
   scatter  = user->scatter;
 
   /* 

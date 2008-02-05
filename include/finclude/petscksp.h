@@ -5,7 +5,11 @@
 #if !defined (__PETSCKSP_H)
 #define __PETSCKSP_H
 
-#if !defined(PETSC_USE_FORTRAN_MODULES)
+#if defined(PETSC_USE_FORTRAN_MODULES)
+#define KSP_HIDE type(KSP)
+#else
+#define KSP_HIDE KSP
+
 #define KSP PetscFortranAddr
 #endif
 
@@ -45,6 +49,11 @@
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
+#if defined(PETSC_USE_FORTRAN_MODULES)
+      type KSP
+        PetscFortranAddr:: v
+      end type KSP
+#endif
 !
 !  CG Types
 !
