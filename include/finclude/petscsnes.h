@@ -4,7 +4,11 @@
 #if !defined (__PETSCSNES_H)
 #define __PETSCSNES_H
 
-#if !defined(PETSC_USE_FORTRAN_MODULES)
+#if defined(PETSC_USE_FORTRAN_MODULES)
+#define SNES_HIDE type(SNES)
+#else
+#define SNES_HIDE SNES
+
 #define SNES PetscFortranAddr
 #endif
 #define SNESType character*(80)
@@ -26,6 +30,12 @@
 #endif
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
+
+#if defined(PETSC_USE_FORTRAN_MODULES)
+      type SNES
+        PetscFortranAddr:: v
+      end type SNES
+#endif
 !
 !  Convergence flags
 !

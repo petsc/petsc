@@ -4,9 +4,17 @@
 #if !defined (__VIEWER_H)
 #define __VIEWER_H
 
-#if !defined(PETSC_USE_FORTRAN_MODULES)
+#if defined(PETSC_USE_FORTRAN_MODULES)
+#define PETSCVIEWER_HIDE type(PetscViewer)
+#define USE_PETSC_HIDE use petscdef
+#else
+#define PETSCVIEWER_HIDE PetscViewer
+#define USE_PETSC_HIDE
+
+
 #define PetscViewer PetscFortranAddr
 #endif
+
 #define PetscViewers PetscFortranAddr
 #define PetscFileMode PetscEnum
 #define PetscViewerType character*(80)
@@ -26,6 +34,11 @@
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
+#if defined(PETSC_USE_FORTRAN_MODULES) 
+      type PetscViewer
+        PetscFortranAddr:: v
+      end type PetscViewer
+#endif
 !
 !  Flags for binary I/O
 !

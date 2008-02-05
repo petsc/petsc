@@ -188,4 +188,10 @@
 #endif
 #endif
 
+#if defined(PETSC_USE_FORTRAN_MODULES)
+#define USE_PETSC_HIDE use petscdef
+#else
+#define USE_PETSC_HIDE
+#endif
+
 #endif
