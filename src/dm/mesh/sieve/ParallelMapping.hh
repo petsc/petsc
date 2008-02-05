@@ -5,6 +5,10 @@
 #include <IField.hh>
 #endif
 
+#ifndef  included_ALE_Sections_hh
+#include <Sections.hh>
+#endif
+
 extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
 namespace ALE {
@@ -31,6 +35,18 @@ namespace ALE {
     };
     MPIMover(MPI_Comm comm, const int tag, const int debug) : ParallelObject(comm, debug), _createdType(0), _tag(tag) {
       this->_datatype = this->getMPIDatatype();
+    };
+    MPIMover(MPI_Comm comm, const MPI_Datatype datatype, const int tag, const int debug) : ParallelObject(comm, debug), _createdType(0) {
+      if (tag == MPI_UNDEFINED) {
+        this->_tag      = this->getNewTag();
+      } else {
+        this->_tag      = tag;
+      }
+      if (datatype == MPI_DATATYPE_NULL) {
+        this->_datatype = this->getMPIDatatype();
+      } else {
+        this->_datatype = datatype;
+      }
     };
     ~MPIMover() {
       if (_createdType) {
@@ -382,10 +398,10 @@ namespace ALE {
       //   This version is for different sections, possibly with different data types
       // TODO: Can cache MPIMover objects (like a VecScatter)
       template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection>
-      static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
+      static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const MPI_Datatype datatype = MPI_DATATYPE_NULL) {
         const Obj<typename SendSection::atlas_type>&      sendAtlas = sendSection->getAtlas();
         const Obj<typename RecvSection::atlas_type>&      recvAtlas = recvSection->getAtlas();
-        MPIMover<typename SendSection::value_type>        vMover(sendSection->comm(), sendSection->debug());
+        MPIMover<typename SendSection::value_type>        vMover(sendSection->comm(), datatype, MPI_UNDEFINED, sendSection->debug());
         std::map<int, typename SendSection::value_type *> sendValues;
         std::map<int, typename SendSection::value_type *> recvValues;
         typename SendSection::alloc_type                  sendAllocator;
@@ -464,10 +480,10 @@ namespace ALE {
       // Copy the overlap section to the related processes
       //   This version is for sections with the same type
       template<typename SendOverlap, typename RecvOverlap, typename Section>
-      static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& sendSection, const Obj<Section>& recvSection) {
+      static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& sendSection, const Obj<Section>& recvSection, const MPI_Datatype datatype = MPI_DATATYPE_NULL) {
         const Obj<typename Section::atlas_type>&      sendAtlas = sendSection->getAtlas();
         const Obj<typename Section::atlas_type>&      recvAtlas = recvSection->getAtlas();
-        MPIMover<typename Section::value_type>        vMover(sendSection->comm(), sendSection->debug());
+        MPIMover<typename Section::value_type>        vMover(sendSection->comm(), datatype, MPI_UNDEFINED, sendSection->debug());
         std::map<int, typename Section::value_type *> sendValues;
         std::map<int, typename Section::value_type *> recvValues;
         typename Section::alloc_type                  allocator;
