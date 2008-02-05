@@ -627,7 +627,7 @@ PetscErrorCode MatStashScatterGetMesg_Private(MatStash *stash,PetscMPIInt *nvals
       *nvals = *nvals/2; /* This message has both row indices and col indices */
     }
     
-    /* Check if we have both the messages from this proc */
+    /* Check if we have both messages from this proc */
     i1 = flg_v[2*recv_status.MPI_SOURCE];
     i2 = flg_v[2*recv_status.MPI_SOURCE+1];
     if (i1 != -1 && i2 != -1) {
