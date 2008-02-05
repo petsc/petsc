@@ -117,7 +117,7 @@ namespace ALE {
     typedef Value_                                          value_type;
     typedef typename alloc_type::template rebind<value_type>::other value_alloc_type;
     typedef Numbering<point_type, value_type, alloc_type>   numbering_type;
-    typedef std::map<bundle_type*, std::map<int, Obj<numbering_type> > >     numberings_type;
+    typedef std::map<bundle_type*, std::map<std::string, std::map<int, Obj<numbering_type> > > > numberings_type;
     typedef GlobalOrder<point_type>                         order_type;
     typedef typename order_type::value_type                 oValue_type;
     typedef typename alloc_type::template rebind<oValue_type>::other oValue_alloc_type;
@@ -528,20 +528,22 @@ namespace ALE {
     template<typename ABundle_>
     const Obj<numbering_type>& getLocalNumbering(const Obj<ABundle_>& bundle, const int depth) {
       if ((this->_localNumberings.find(bundle.ptr()) == this->_localNumberings.end()) ||
-          (this->_localNumberings[bundle.ptr()].find(depth) == this->_localNumberings[bundle.ptr()].end())) {
+          (this->_localNumberings[bundle.ptr()].find("depth") == this->_localNumberings[bundle.ptr()].end()) ||
+          (this->_localNumberings[bundle.ptr()]["depth"].find(depth) == this->_localNumberings[bundle.ptr()]["depth"].end())) {
         Obj<numbering_type>    numbering   = new numbering_type(bundle->comm(), bundle->debug());
         Obj<send_overlap_type> sendOverlap = new send_overlap_type(bundle->comm(), bundle->debug());
 
         this->constructLocalNumbering(numbering, sendOverlap, bundle->depthStratum(depth));
         if (this->_debug) {std::cout << "Creating new local numbering: depth " << depth << std::endl;}
-        this->_localNumberings[bundle.ptr()][depth] = numbering;
+        this->_localNumberings[bundle.ptr()]["depth"][depth] = numbering;
       }
-      return this->_localNumberings[bundle.ptr()][depth];
+      return this->_localNumberings[bundle.ptr()]["depth"][depth];
     };
     template<typename ABundle_>
     const Obj<numbering_type>& getNumbering(const Obj<ABundle_>& bundle, const int depth) {
       if ((this->_numberings.find(bundle.ptr()) == this->_numberings.end()) ||
-          (this->_numberings[bundle.ptr()].find(depth) == this->_numberings[bundle.ptr()].end())) {
+          (this->_numberings[bundle.ptr()].find("depth") == this->_numberings[bundle.ptr()].end()) ||
+          (this->_numberings[bundle.ptr()]["depth"].find(depth) == this->_numberings[bundle.ptr()]["depth"].end())) {
         bundle->constructOverlap();
         Obj<numbering_type>    numbering   = new numbering_type(bundle->comm(), bundle->debug());
         Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
@@ -549,14 +551,15 @@ namespace ALE {
 
         this->constructNumbering(numbering, sendOverlap, recvOverlap, bundle->depthStratum(depth));
         if (this->_debug) {std::cout << "Creating new numbering: depth " << depth << std::endl;}
-        this->_numberings[bundle.ptr()][depth] = numbering;
+        this->_numberings[bundle.ptr()]["depth"][depth] = numbering;
       }
-      return this->_numberings[bundle.ptr()][depth];
+      return this->_numberings[bundle.ptr()]["depth"][depth];
     };
     template<typename ABundle_>
     const Obj<numbering_type>& getNumbering(const Obj<ABundle_>& bundle, const std::string& labelname, const int value) {
       if ((this->_numberings.find(bundle.ptr()) == this->_numberings.end()) ||
-          (this->_numberings[bundle.ptr()].find(value) == this->_numberings[bundle.ptr()].end())) {
+          (this->_numberings[bundle.ptr()].find(labelname) == this->_numberings[bundle.ptr()].end()) ||
+          (this->_numberings[bundle.ptr()][labelname].find(value) == this->_numberings[bundle.ptr()][labelname].end())) {
         bundle->constructOverlap();
         Obj<numbering_type>    numbering   = new numbering_type(bundle->comm(), bundle->debug());
         Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
@@ -564,9 +567,9 @@ namespace ALE {
 
         this->constructNumbering(numbering, sendOverlap, recvOverlap, bundle->getLabelStratum(labelname, value));
         if (this->_debug) {std::cout << "Creating new numbering: labelname " << labelname << " value " << value << std::endl;}
-        this->_numberings[bundle.ptr()][value] = numbering;
+        this->_numberings[bundle.ptr()][labelname][value] = numbering;
       }
-      return this->_numberings[bundle.ptr()][value];
+      return this->_numberings[bundle.ptr()][labelname][value];
     };
     template<typename ABundle_, typename Section_>
     const Obj<order_type>& getGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section) {
