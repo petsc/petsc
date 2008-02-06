@@ -170,8 +170,8 @@ d = vertices[3];
     //we could probably have some angle heuristic for local delaunay approximation, but whatever.
     //must compute it in terms of acb + bad etc.
     int dim = m->getDimension();
-    if (dim != 2) throw ALE::Exception("Wrong dimension");
-    const int nDim = 2;
+    //if (dim != 2) throw ALE::Exception("Wrong dimension");
+    const int nDim = 3;
     double a_coords[nDim], b_coords[nDim], c_coords[nDim], d_coords[nDim];
     const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
@@ -195,8 +195,8 @@ d = vertices[3];
     //if abc + abd + bac + bad < cda + cdb + dca + dcb then flip (divide the larger angle)
     const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     int dim = m->getDimension();
-    if (dim != 2) throw ALE::Exception("Wrong dimension");
-    const int nDim = 2;
+    //if (dim != 2) throw ALE::Exception("Wrong dimension");
+    const int nDim = 3;
     double a_coords[nDim], b_coords[nDim], c_coords[nDim], d_coords[nDim];
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
     PetscMemcpy(b_coords, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));
@@ -474,8 +474,8 @@ c-----------d      c-----------d
     double pi = M_PI;
     //    double pi = 3.141592653589793238;
     int dim = m->getDimension();
-    if (dim != 2) throw ALE::Exception("Wrong dimension");
-    const int nDim = 2;
+    //if (dim != 2) throw ALE::Exception("Wrong dimension");
+    const int nDim = 3;
     double a_coords[nDim], b_coords[nDim], c_coords[nDim], d_coords[nDim], e_coords[nDim];
     const Obj<Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     PetscMemcpy(a_coords, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
@@ -666,8 +666,8 @@ b------a------c ->  b-------------c
     Obj<Mesh::sieve_type::supportSet> line = new Mesh::sieve_type::supportSet();
     vertices[0] = a;
     int dim = m->getDimension();
-    if (dim != 2) throw ALE::Exception("Wrong dimension");
-    const int nDim = 2;
+    //if (dim != 2) throw ALE::Exception("Wrong dimension");
+    const int nDim = 3;
     double v_coords[nDim], n_coords[nDim], e1_coords[nDim], e2_coords[nDim];
     PetscMemcpy(v_coords, coordinates->restrictPoint(a), dim*sizeof(double));
     //go through the neighbors of the vertex and find the nearest one
@@ -816,8 +816,8 @@ a------d------c   a-------------c
     //    double pi = 3.14159265359;
     const Obj<Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
     int dim = m->getDimension();
-    if (dim != 2) throw ALE::Exception("Wrong dimension");
-    const int nDim = 2;
+    //if (dim != 2) throw ALE::Exception("Wrong dimension");
+    const int nDim = 3;
     double coords_a[nDim], coords_b[nDim], coords_c[nDim], coords_d[nDim];
     PetscMemcpy(coords_a, coordinates->restrictPoint(vertices[0]), dim*sizeof(double));
     PetscMemcpy(coords_b, coordinates->restrictPoint(vertices[1]), dim*sizeof(double));

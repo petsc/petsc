@@ -868,6 +868,7 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
     coarsen_candidates.clear();
     nComparisons = 0;
     current_beta = pow(beta, curLevel);
+    if (info) PetscPrintf(m->comm(), "coarsening by %f\n", current_beta);
     //recopy the first two levels of the sieve into a new sieve.
     ALE::Obj<ALE::Mesh::sieve_type> coarsen_sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
     ALE::Obj<ALE::Mesh> coarsen_mesh = new ALE::Mesh(m->comm(), m->debug());

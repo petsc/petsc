@@ -259,8 +259,8 @@ int main(int argc, char *argv[])
     //    PetscPrintf(m->comm(), "marked the boundary cells\n");
 
     int nMeshes;
-    Obj<ALE::Mesh> * coarsened_mesh = Hierarchy_createHierarchy_adaptive(m, 40, 10, options.coarseFactor, &nMeshes);
- 
+    Obj<ALE::Mesh> * coarsened_mesh = Hierarchy_createHierarchy_adaptive(m, 100, 10, options.coarseFactor, &nMeshes);
+    Hierarchy_qualityInfo(coarsened_mesh, nMeshes);
     char vtkfilename[256];
     sprintf(vtkfilename, "fine_mesh.vtk");
     ierr = OutputVTK(m, &options, vtkfilename);CHKERRQ(ierr);
