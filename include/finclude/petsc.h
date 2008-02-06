@@ -192,57 +192,6 @@
   
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------
-
 !
-!      It is silly to put these here, but they cannot go into petscvec.h
-!    because they sould not be recognized in the interface definitions
-!
-!      It would be possible to generate these automatically but not trivial
-!
-#if defined(PETSC_USE_FORTRAN_MODULES)
-       type IS; PetscFortranAddr:: v; end type IS
-       type ISColoring; PetscFortranAddr:: v; end type ISColoring
-       type PetscViewer; PetscFortranAddr:: v; end type PetscViewer
-       type Vec; PetscFortranAddr:: v; end type Vec
-       type VecScatter; PetscFortranAddr:: v; end type VecScatter
-       type Mat; PetscFortranAddr:: v; end type Mat
-       type PC; PetscFortranAddr:: v; end type PC
-       type KSP; PetscFortranAddr:: v; end type KSP
-       type SNES; PetscFortranAddr:: v; end type SNES
-       type TS; PetscFortranAddr:: v; end type TS
-       type DM; PetscFortranAddr:: v; end type DM
-       type DA; PetscFortranAddr:: v; end type DA
-#define IS_HIDE type(IS)
-#define ISCOLORING_HIDE type(ISColoring)
-#define PETSCVIEWER_HIDE type(PetscViewer)
-#define VEC_HIDE type(Vec)
-#define VECSCATTER_HIDE type(VecScatter)
-#define MAT_HIDE type(Mat)
-#define MATFDCOLORING_HIDE type(MatFDColoring)
-#define MATNULLSPACE_HIDE type(MatNullSpace)
-#define PC_HIDE type(PC)
-#define KSP_HIDE type(KSP)
-#define SNES_HIDE type(SNES)
-#define TS_HIDE type(TS)
-#define DM_HIDE type(DM)
-#define DA_HIDE type(DA)
-#define USE_PETSC_HIDE use petsc
-#else
-#define IS_HIDE IS
-#define PETSCVIEWER_HIDE PetscViewer
-#define ISCOLORING_HIDE ISColoring
-#define VEC_HIDE Vec
-#define VECSCATTER_HIDE VecScatter
-#define MAT_HIDE Mat
-#define MATFDCOLORING_HIDE MatFDColoring
-#define MATNULLSPACE_HIDE MatNullSpace
-#define PC_HIDE PC
-#define KSP_HIDE KSP
-#define SNES_HIDE SNES
-#define TS_HIDE TS
-#define DM_HIDE DM
-#define DA_HIDE DA
-#define USE_PETSC_HIDE use petsc
-#endif
        
 #endif

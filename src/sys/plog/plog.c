@@ -1423,22 +1423,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = PetscFPrintf(comm, fd, "      ##########################################################\n\n\n");CHKERRQ(ierr);
 #endif
 
-  if (!PetscPreLoadingUsed) {
-    ierr = PetscFPrintf(comm,fd,"\n\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      ##########################################################\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #                          WARNING!!!                    #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #                                                        #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #   This code was run without the PreLoadBegin()         #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #   macros. To get timing results we always recommend    #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #   preloading. otherwise timing numbers may be          #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      #   meaningless.                                         #\n");CHKERRQ(ierr);
-    ierr = PetscFPrintf(comm,fd,"      ##########################################################\n\n\n");CHKERRQ(ierr);
-  }
-
   /* Report events */
   ierr = PetscFPrintf(comm, fd,
-    "Event                Count      Time (sec)     Flops/sec                         --- Global ---  --- Stage ---   Total\n");
+    "Event                Count      Time (sec)     Flops                             --- Global ---  --- Stage ---   Total\n");
                                                                                                           CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd,
     "                   Max Ratio  Max     Ratio   Max  Ratio  Mess   Avg len Reduct  %%T %%F %%M %%L %%R  %%T %%F %%M %%L %%R Mflop/s\n");
@@ -1485,7 +1472,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
     for(event = 0; event < numEvents; event++) {
       if (localStageUsed[stage] && (event < stageLog->stageInfo[stage].eventLog->numEvents) && (eventInfo[event].depth == 0)) {
         if ((eventInfo[event].count > 0) && (eventInfo[event].time > 0.0)) {
-          flopr = eventInfo[event].flops/eventInfo[event].time;
+          flopr = eventInfo[event].flops;
         } else {
           flopr = 0.0;
         }

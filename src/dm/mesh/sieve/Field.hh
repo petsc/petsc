@@ -657,19 +657,18 @@ namespace ALE {
       bool operator==(const const_iterator& iter) const {return this->_iter == iter._iter;};
       bool operator!=(const const_iterator& iter) const {return this->_iter != iter._iter;};
       const_iterator& operator++() {++this->_iter; return *this;}
-      const_iterator& operator++(int) {
+      const_iterator operator++(int) {
         const_iterator tmp(*this);
         ++(*this);
         return tmp;
       };
       const_iterator& operator--() {--this->_iter; return *this;}
-      const_iterator& operator--(int) {
+      const_iterator operator--(int) {
         const_iterator tmp(*this);
         --(*this);
         return tmp;
       };
       value_type operator*() const {return this->_iter->first;};
-      size_type size() const {return this->_iter->size();};
     };
   protected:
     const Map& _map;

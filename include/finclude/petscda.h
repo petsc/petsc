@@ -5,7 +5,15 @@
 #if !defined (__PETSCDA_H)
 #define __PETSCDA_H
 
-#if !defined(PETSC_USE_FORTRAN_MODULES)
+#if defined(PETSC_USE_FORTRAN_MODULES)
+#define DM_HIDE type(DM)
+#define DA_HIDE type(DA)
+#define USE_DA_HIDE use petscdadef
+#else
+#define DM_HIDE DM
+#define DA_HIDE DA
+#define USE_DA_HIDE
+
 #define DA PetscFortranAddr
 #define DM PetscFortranAddr
 #endif
@@ -55,6 +63,15 @@
 
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
+
+#if defined(PETSC_USE_FORTRAN_MODULES)
+      type DM
+        PetscFortranAddr:: v
+      end type DM
+      type DA
+        PetscFortranAddr:: v
+      end type DA
+#endif
 !
 !  Types of stencils
 !
