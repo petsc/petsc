@@ -706,7 +706,6 @@ PetscErrorCode FormFunctions(DM dm, Options *options)
     ierr = MeshGetSectionReal(mesh, "default", &F);CHKERRQ(ierr);
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     ierr = SectionRealGetSection(F, s);CHKERRQ(ierr);
-    m->setupField(s);
     options->func = linear_2d;
     ierr = Function_Unstructured(mesh, F, (void *) options);CHKERRQ(ierr);
     if (flag) {ierr = ViewSection(mesh, F, "linear.vtk");CHKERRQ(ierr);}
