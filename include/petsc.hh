@@ -14,13 +14,13 @@ namespace PETSc {
   public:
     const std::string msg() const {return this->_txt.str();};
     const char *message() const {return this->_txt.str().c_str();};
-    // Message input
+    /* Message input */
     template<typename Input>
     Exception& operator<<(const Input& in) {
       this->_txt << in;
       return *this;
     };
-    // Printing
+    /* Printing */
     template<typename Stream>
     friend Stream& operator<<(Stream& os, const Exception& e) {
       os << e.message() << std::endl;
@@ -57,6 +57,6 @@ namespace PETSc {
     };
   };
 }
-#endif // PETSC_CLANGUAGE_CXX
+#endif /* PETSC_CLANGUAGE_CXX */
 
-#endif // __PETSC_HH
+#endif /* __PETSC_HH */
