@@ -167,24 +167,28 @@ int Petsc_MPI_Finalized(int *flag)
 #define mpi_comm_size_        MPI_COMM_SIZE
 #define mpi_comm_rank_        MPI_COMM_RANK
 #define mpi_abort_            MPI_ABORT
+#define mpi_reduce_           MPI_REDUCE
 #define mpi_allreduce_        MPI_ALLREDUCE
 #define mpi_barrier_          MPI_BARRIER
 #define mpi_bcast_            MPI_BCAST
 #define mpi_gather_           MPI_GATHER
 #define mpi_allgather_        MPI_ALLGATHER
 #define mpi_comm_split_       MPI_COMM_SPLIT
+#define mpi_scan_             MPI_SCAN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define mpi_init_             mpi_init
 #define mpi_finalize_         mpi_finalize
 #define mpi_comm_size_        mpi_comm_size
 #define mpi_comm_rank_        mpi_comm_rank
 #define mpi_abort_            mpi_abort
+#define mpi_reduce_           mpi_reduce
 #define mpi_allreduce_        mpi_allreduce
 #define mpi_barrier_          mpi_barrier
 #define mpi_bcast_            mpi_bcast
 #define mpi_gather_           mpi_gather
 #define mpi_allgather_        mpi_allgather
 #define mpi_comm_split_       mpi_comm_split
+#define mpi_scan_             mpi_scan
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
@@ -193,12 +197,14 @@ int Petsc_MPI_Finalized(int *flag)
 #define mpi_comm_size_        mpi_comm_size__
 #define mpi_comm_rank_        mpi_comm_rank__
 #define mpi_abort_            mpi_abort__
+#define mpi_reduce_           mpi_reduce__
 #define mpi_allreduce_        mpi_allreduce__
 #define mpi_barrier_          mpi_barrier__
 #define mpi_bcast_            mpi_bcast__
 #define mpi_gather_           mpi_gather__
 #define mpi_allgather_        mpi_allgather__
 #define mpi_comm_split_       mpi_comm_split__
+#define mpi_scan              mpi_scan__
 #endif
 
 void PETSC_STDCALL  mpi_init_(int *ierr)
@@ -235,6 +241,12 @@ void PETSC_STDCALL mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr)
   *ierr = MPI_SUCCESS;
 }
 
+void PETSC_STDCALL mpi_reduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *root,int *comm,int *ierr)
+{
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
+  *ierr = MPI_SUCCESS;
+}
+
 void PETSC_STDCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
@@ -258,15 +270,18 @@ void PETSC_STDCALL mpi_gather_(void *sendbuf,int *scount,int *sdatatype, void* r
   *ierr = MPI_SUCCESS;
 }
 
-
 void PETSC_STDCALL mpi_allgather_(void *sendbuf,int *scount,int *sdatatype, void* recvbuf, int* rcount, int* rdatatype,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*scount)*MPIUNI_DATASIZE[*sdatatype]);
   *ierr = MPI_SUCCESS;
 }
 
+void PETSC_STDCALL mpi_scan_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr)
+{
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
+  *ierr = MPI_SUCCESS;
+}
+
 #if defined(__cplusplus)
 }
 #endif
-
-
