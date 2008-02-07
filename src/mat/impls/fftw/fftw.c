@@ -1,7 +1,8 @@
 #define PETSCMAT_DLL
 
 /*
-    Provides an interface to the FFTW package
+    Provides an interface to the FFTW package.
+    Testing examples can be found in ~src/mat/examples/tests
 */
 
 #include "include/private/matimpl.h"          /*I "petscmat.h" I*/
