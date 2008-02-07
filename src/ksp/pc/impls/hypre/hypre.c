@@ -97,22 +97,17 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   if (!jac->hypre_type) {
     ierr = PCHYPRESetType(pc,"pilut");CHKERRQ(ierr);
   }
-#if 1
-  if (!pc->setupcalled) { 
-    /* create the matrix and vectors the first time through */ 
-    Vec x,b;
-    ierr = MatHYPRE_IJMatrixCreate(pc->pmat,&jac->ij);CHKERRQ(ierr);
-    ierr = MatGetVecs(pc->pmat,&x,&b);CHKERRQ(ierr);
-    ierr = VecHYPRE_IJVectorCreate(x,&jac->x);CHKERRQ(ierr);
-    ierr = VecHYPRE_IJVectorCreate(b,&jac->b);CHKERRQ(ierr);
-    ierr = VecDestroy(x);CHKERRQ(ierr);
-    ierr = VecDestroy(b);CHKERRQ(ierr);
-  } else if (pc->flag != SAME_NONZERO_PATTERN) {
-    /* rebuild the matrix from scratch */
+
+  if (pc->setupcalled) {
+    /* always destroy the old matrix and create a new memory;
+       hope this does not churn the memory too much. The problem
+       is I do not know if it is possible to put the matrix back to
+       its initial state so that we can directly copy the values 
+       the second time through. */
     ierr = HYPRE_IJMatrixDestroy(jac->ij);CHKERRQ(ierr);
-    ierr = MatHYPRE_IJMatrixCreate(pc->pmat,&jac->ij);CHKERRQ(ierr);
+    jac->ij = 0;
   }
-#else  
+
   if (!jac->ij) { /* create the matrix the first time through */ 
     ierr = MatHYPRE_IJMatrixCreate(pc->pmat,&jac->ij);CHKERRQ(ierr);
   }
@@ -124,7 +119,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
     ierr = VecDestroy(x);CHKERRQ(ierr);
     ierr = VecDestroy(b);CHKERRQ(ierr);
   }
-#endif
+
   /* special case for BoomerAMG */
   if (jac->setup == HYPRE_BoomerAMGSetup) {
     ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
