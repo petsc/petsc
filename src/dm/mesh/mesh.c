@@ -1848,18 +1848,18 @@ PetscErrorCode MeshGetInterpolation_Mesh_General(Mesh coarse_mesh, Mesh fine_mes
   if (debug) {ierr = PetscPrintf(fm->comm(), "Starting Interpolation Matrix Build\n");CHKERRQ(ierr);}
 
   //set up the new section holding the names of the contained points.  
-  
-  
 
   const ALE::Obj<ALE::Mesh::int_section_type> & node_locations = fm->getIntSection("node_locations");
+  const ALE::Obj<ALE::Mesh::real_section_type> & fine_default = fm->getRealSection("default");
   for (int i = 0; i < dim; i++) {
     const ALE::Obj<ALE::Mesh::label_sequence> & present_level = fm->depthStratum(i);
-    int current_dimension = 
-    node_locations->setFiberDimension(present_level);
+    int current_dimension = fine_default->getFiberDimension(*present_level->begin());
+    node_locations->setFiberDimension(present_level, current_dimension);
   }
   node_locations->allocate();
-
-  
+  //traverse!
+  ALE::Obj<ALE::Mesh::label_sequence> fine_vertices = fm->depthStratum(0);
+  ALE::Obj<ALE::Mesh::label_sequence> coarse_cells = cm->heightStratum(0);
 
 }
 

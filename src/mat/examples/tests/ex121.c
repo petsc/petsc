@@ -101,7 +101,7 @@ PetscInt main(PetscInt argc,char **args)
     for(i = 0; i < N; ++i) {
       PetscInt checkInd = (i > N/2-1)? i-N/2: i+N/2;
 
-      if (!(i%100)) PetscPrintf(PETSC_COMM_WORLD, "Finished convolution row %d\n", i);
+      //if (!(i%100)) PetscPrintf(PETSC_COMM_WORLD, "Finished convolution row %d\n", i);
       a3[i] = 0.0;
       for(j = -N/2+1; j < N/2; ++j) {
         PetscInt xpInd   = (j < 0)? N+j: j;
@@ -132,6 +132,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecDestroy(y2);CHKERRQ(ierr);
     ierr = VecDestroy(z1);CHKERRQ(ierr);
     ierr = VecDestroy(z2);CHKERRQ(ierr);
+    ierr = VecDestroy(w);CHKERRQ(ierr);
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
   ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);

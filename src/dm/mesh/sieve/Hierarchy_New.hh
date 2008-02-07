@@ -67,6 +67,7 @@ ALE::Obj<ALE::Mesh::sieve_type::supportSet> Hierarchy_CoarsenVertexSet(ALE::Obj<
   
   PetscErrorCode ierr;
 
+  //PetscPrintf(original_mesh->comm(), "%f\n", beta);
   ALE::Obj<ALE::Mesh::sieve_type> original_sieve = original_mesh->getSieve();
   ALE::Obj<ALE::Mesh::real_section_type> coordinates = original_mesh->getRealSection("coordinates");  
 
@@ -199,7 +200,9 @@ ALE::Obj<ALE::Mesh::sieve_type::supportSet> Hierarchy_CoarsenVertexSet(ALE::Obj<
                 //connection_sieve->removeBasePoint(*be_iter);
                 //connection_sieve->removeCapPoint(*be_iter);
                
-              }
+              } else { //readd the edges to the queue
+		comparison_queue.push_back(*be_iter);
+	      }
               be_iter++;
             }
 	    for (ALE::Mesh::sieve_type::supportSet::iterator rtp_iter = remove_these_points.begin(); rtp_iter != remove_these_points.end(); rtp_iter++) {
@@ -662,7 +665,7 @@ ALE::Obj<ALE::Mesh::real_section_type> Hierarchy_defineSpacingFunction(ALE::Obj<
         for (int i = 0; i < dim; i++) {
 	  dist += (n_coords[i] - v_coords[i])*(n_coords[i] - v_coords[i]);
         }
-        dist = sqrt(dist);
+        dist = 0.5*sqrt(dist);
         //PetscPrintf(m->comm(), "%f\n", dist);
         if (dist < min_dist || first == true) {
           min_dist = dist;
@@ -1008,3 +1011,433 @@ ALE::Obj<ALE::Mesh> * Hierarchy_createHierarchy(ALE::Obj<ALE::Mesh> original_mes
     }
     return meshes;
   }
+/*
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
+Hierarchy_CellsCollide:
+
+Use: tells if the coordinates given by a and b collide
+
+Inputs: a (simplex vertex coords), b (simplex vertex coodrs), dim
+
+Outputs: bool; if they collide or not
+
+Remarks:  Sometimes has false positives for shared faces, not a big deal
+
+Assume that 
+
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
+*/
+
+PetscTruth Hierarchy_CellsCollide(const int dim, const double * a_coords, const double * b_coords) {
+    int corners = dim+1; //simplices
+    double * hyperplane = new double[dim]; 
+    double * pivotpoint = new double[dim];
+    double dot_product;
+    double norm_2;
+    double dist;
+    double min_dist = 1.e40;
+    double max_dist = 0.;
+    double tolerance = 1.e-30;
+    bool collides = false;
+    //initialize the pivot and hyperplane
+    for (int a = 0; a < corners; a++) {
+      for (int b = 0; b < corners; b++) {
+        //find the minimum distance between any two vertices
+        dist = 0.;
+        for (int i = 0; i < dim; i++) {
+          dist += (a_coords[dim*a+i] - b_coords[dim*b+i])*(a_coords[dim*a+i] - b_coords[dim*b+i]);
+        }
+        dist = sqrt(dist);
+        if (dist < min_dist) {
+          min_dist = dist;
+          for (int i = 0; i < dim; i++) pivotpoint[i] = 0.5*(a_coords[dim*a+i] + b_coords[dim*b+i]);
+        }
+	if (dist > max_dist) {
+	  max_dist = dist;
+          for (int i = 0; i < dim; i++) hyperplane[i] = (a_coords[dim*a+i] - b_coords[dim*b+i]);	  
+	}
+      }
+    }
+    if (max_dist < tolerance) return PETSC_TRUE; //this cell is messed up
+    //normalize the hyperplane
+    for (int i = 0; i < dim; i++) {
+      dist += hyperplane[i]*hyperplane[i];
+    }
+    dist = sqrt(dist);
+    for (int i = 0; i < dim; i++) {
+      hyperplane[i] = hyperplane[i]/dist;
+    }
+    //training run: attempt to properly classify every fine and coarse point; misclassified points get put on the updated hyperplane
+    //a case; dot products should be positive
+    for (int a = 0; a < dim+1; a++) {
+      dot_product = 0.;
+      norm_2 = 0.;
+      for (int i = 0; i < dim; i++) {
+	dot_product += hyperplane[i]*(a_coords[a*dim+i] - pivotpoint[i]);
+	norm_2 += (a_coords[a*dim+i] - pivotpoint[i])*(a_coords[a*dim+i] - pivotpoint[i]);
+      }
+      if (dot_product < 0.-tolerance) {  //misclassification
+	if (fabs(sqrt(norm_2) + dot_product) < tolerance) {  //orthogonal direct misclassification case; multiple happenings of this indicate no separator (sorta)
+	  for (int i = 0; i < dim; i++) hyperplane[i] = 0. - hyperplane[i];
+	} else {  //simple misclassification case, just remove the offending component of the hyperplane
+	  for (int i = 0; i < dim; i++) hyperplane[i] -= dot_product*(a_coords[a*dim+i] - pivotpoint[i])/norm_2;
+	  for (int i = 0; i < dim; i++) {
+	    dist += hyperplane[i]*hyperplane[i];
+	  }
+	  dist = sqrt(dist);
+	  for (int i = 0; i < dim; i++) {
+	    hyperplane[i] = hyperplane[i]/dist;
+	  }
+	}
+      }
+    }
+    //b case; dot products should be negative
+    for (int b = 0; b < dim+1; b++) {
+      dot_product = 0.;
+      norm_2 = 0.;
+      for (int i = 0; i < dim; i++) {
+	dot_product += hyperplane[i]*(b_coords[b*dim+i] - pivotpoint[i]);
+	norm_2 += (b_coords[b*dim+i] - pivotpoint[i])*(b_coords[b*dim+i] - pivotpoint[i]);
+      }
+      if (dot_product > tolerance) {  //misclassification
+	if (fabs(sqrt(norm_2) - dot_product) < tolerance) {  //orthogonal direct misclassification case; multiple happenings of this indicate no separator (sorta)
+	  for (int i = 0; i < dim; i++) hyperplane[i] = 0. - hyperplane[i];
+	} else {  //simple misclassification case, just remove the offending component of the hyperplane
+	  for (int i = 0; i < dim; i++) hyperplane[i] -= dot_product*(b_coords[b*dim+i] - pivotpoint[i])/norm_2;
+	  for (int i = 0; i < dim; i++) {
+	    dist += hyperplane[i]*hyperplane[i];
+	  }
+	  dist = sqrt(dist);
+	  for (int i = 0; i < dim; i++) {
+	    hyperplane[i] = hyperplane[i]/dist;
+	  }
+	}
+      }
+    }
+    //testing step: if any vertex is misclassified in this case, we know the figures are intersecting (within tolerance)
+    for (int a = 0; a < dim+1; a++) {
+      dot_product = 0.;
+      for (int i = 0; i < dim; i++) {
+	dot_product += hyperplane[i]*(a_coords[a*dim+i] - pivotpoint[i]);
+      }
+      if (dot_product < 0. - tolerance) collides = true; 
+    }
+    for (int b = 0; b < dim+1; b++) {
+      dot_product = 0.;
+      for (int i = 0; i < dim; i++) {
+	dot_product += hyperplane[i]*(b_coords[b*dim+i] - pivotpoint[i]);
+      }
+      if (dot_product > tolerance) collides = true;
+    }
+    delete hyperplane;
+    delete pivotpoint;
+    if (collides) return PETSC_TRUE;
+    return PETSC_FALSE;
+}
+/*
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
+Hierarchy_BBoxesCollide
+
+Sees whether the bounding boxes of the simplices collide; quick check for traversal
+
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
+ */
+
+PetscTruth Hierarchy_BBoxesCollide (int dim, const double * a_coords, const double * b_coords) {
+  double * max_a_coords = new double[dim]; 
+  double * min_a_coords = new double[dim];
+  double * max_b_coords = new double[dim];
+  double * min_b_coords = new double[dim];
+  //initialize the maxes and mins
+  for (int i = 0; i < dim; i++) {
+    max_a_coords[i] = a_coords[i];
+    max_b_coords[i] = b_coords[i];
+    min_a_coords[i] = a_coords[i];
+    min_b_coords[i] = b_coords[i];
+  }
+  //find the min and max in every direction;
+  for (int i = 0; i < dim; i++) {
+    for (int v = 0; v < dim+1; v++) {
+      if (a_coords[v*dim+i] >  max_a_coords[i]) max_a_coords[i] = a_coords[v*dim+i];
+      if (b_coords[v*dim+i] >  max_b_coords[i]) max_b_coords[i] = b_coords[v*dim+i];
+      if (a_coords[v*dim+i] <  min_a_coords[i]) min_a_coords[i] = a_coords[v*dim+i];
+      if (b_coords[v*dim+i] <  min_b_coords[i]) min_b_coords[i] = b_coords[v*dim+i];
+    }
+  }
+  
+  for (int i = 0; i < dim; i++) {
+    if (max_a_coords[i] < min_a_coords[i]) throw ALE::Exception("a erroneous");
+    if (max_b_coords[i] < min_b_coords[i]) throw ALE::Exception("b erroneous");
+  }
+  PetscTruth collides = PETSC_TRUE;
+  //if any set of max and min coords are in proper order, then they don't collide;
+  for (int i = 0; i < dim; i++) {
+    if ((max_b_coords[i] < min_a_coords[i]) || (max_a_coords[i] < min_b_coords[i])) {
+      collides = PETSC_FALSE;
+    }
+  }
+  delete max_a_coords;
+  delete min_a_coords;
+  delete max_b_coords;
+  delete min_b_coords;
+  return collides;
+}
+
+/*
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
+Hierarchy_qualityInfo:
+
+Use:
+
+Gives quality information on the provided mesh hierarchy
+
+Inputs:
+
+the mesh hierarchy
+the number of levels
+
+Output:
+
+prints:
+ - the min, max, and average of the ratio between circumsphere and insphere radii of tetrahedra per-level
+ - the ratio between the minimum and maximum radii in the mesh
+ - the the min, max, and average number of triangles 
+ - the min, max and average ratio of the number of cells between levels
+ - the min, max, and average of the number of unknowns between levels
+
+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
+*/
+
+
+
+void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
+
+  //PetscErrorCode ierr;
+  //double min_cells_ratio = 1.e37, max_cells_ratio = 0.;
+  //double min_unknowns_ratio = 1.e37, max_unknowns_ratio = 0.;
+  //double tolerance = 1.e-10;
+  int dim = meshes[0]->getDimension();
+  double * coords = new double[dim*(dim+1)];
+  double * fcoords = new double[dim*(dim+1)];
+  PetscPrintf(meshes[0]->comm(), "_level____|_cells____|_vertices_|_min_len._|_max_len._|_avg_len._|_len_rat._|_min_asp._|_max_asp._|_avg_asp._|_max_ccs._|_avg_ccs._|\n");
+  for (int current_level = 0; current_level < nLevels; current_level++) {
+    ALE::Obj<ALE::Mesh> m = meshes[current_level];
+    ALE::Obj<ALE::Mesh::real_section_type> coordinates = m->getRealSection("coordinates");
+    ALE::Obj<ALE::Mesh::label_sequence> cells = m->heightStratum(0);
+    int nCells = cells->size();
+    int nVertices = m->depthStratum(0)->size();
+    double min_length_scale = 1.e37, max_length_scale = 0., avg_length_scale = 0.;
+    double min_aspect_ratio = 1.e37, max_aspect_ratio = 0., avg_aspect_ratio = 0.;
+    int max_cell_collisions = 0;
+    double avg_cell_collisions = 0.;
+    ALE::Mesh::label_sequence::iterator c_iter = cells->begin();
+    ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
+    while (c_iter != c_iter_end) {
+      //restrict the coordinates of the closure
+      //Compute the longest edge and perimeter:
+      PetscMemcpy(coords, m->restrict(coordinates, *c_iter), sizeof(double)*dim*(dim+1));
+      double max_cell_edge = 0.;
+      for (int edge = 0; edge < dim+1; edge++) {
+	//compute the max edge length
+        double edge_length = 0;
+        for (int i = 0; i < dim; i++) {
+          double present_coord = coords[dim*edge+i] - coords[dim*((edge+1)%(dim+1))+i];
+          edge_length += present_coord*present_coord;
+        }
+        edge_length = sqrt(edge_length);
+        if (edge_length < min_length_scale) min_length_scale = edge_length;
+        if (edge_length > max_length_scale) max_length_scale = edge_length; 
+        if (edge_length > max_cell_edge) max_cell_edge = edge_length;
+      }
+      avg_length_scale += max_cell_edge;
+      /*Compute the incircle radius:
+      2D: r = 2A(abc) / (L(ab) + L(bc) + L(ca))
+      3D: r = 3V(abcd) / (A(abc) + A(bcd) + A(acd) + A(cad))
+       */
+      double current_inscribed_radius;
+      double current_aspect_ratio;
+      if (dim == 2) {
+        //parallelpiped area
+        double area =   0.5*fabs((coords[1*2+0]-coords[0*2+0])*(coords[2*2+1]-coords[0*2+1]) 
+			   -     (coords[1*2+1]-coords[0*2+1])*(coords[2*2+0]-coords[0*2+0]));
+        double perimeter =      (sqrt((coords[1*2+0]-coords[0*2+0])*(coords[1*2+0]-coords[0*2+0])
+				    + (coords[1*2+1]-coords[0*2+1])*(coords[1*2+1]-coords[0*2+1])) +
+				 sqrt((coords[1*2+0]-coords[2*2+0])*(coords[1*2+0]-coords[2*2+0])
+				    + (coords[1*2+1]-coords[2*2+1])*(coords[1*2+1]-coords[2*2+1])) +
+				 sqrt((coords[0*2+0]-coords[2*2+0])*(coords[0*2+0]-coords[2*2+0])
+				    + (coords[0*2+1]-coords[2*2+1])*(coords[0*2+1]-coords[2*2+1])));
+        current_inscribed_radius = 2.*area/perimeter;
+        //PetscPrintf(m->comm(), "%f inscribed radius %f area %f perimeter\n", current_inscribed_radius, area, perimeter);
+      } else if (dim == 3) {
+	double volume = 0.5*fabs((coords[1*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) +
+                             (coords[2*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]) +
+                             (coords[3*3+0] - coords[0*3+0])*(coords[1*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) -
+			     (coords[1*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) -
+			     (coords[2*3+0] - coords[0*3+0])*(coords[1*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) -
+			     (coords[3*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]));
+        double area = 0.;
+        //0,1,2
+        double area_term_1 = (coords[1*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1]) - (coords[1*3+1] - coords[0*3+1])*(coords[2*3+0] - coords[0*3+0]);
+        double area_term_2 = (coords[1*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) - (coords[1*3+2] - coords[0*3+2])*(coords[2*3+1] - coords[0*3+1]);
+        double area_term_3 = (coords[1*3+2] - coords[0*3+2])*(coords[2*3+0] - coords[0*3+0]) - (coords[1*3+0] - coords[0*3+0])*(coords[2*3+2] - coords[0*3+2]);
+	area += sqrt(area_term_1*area_term_1 + area_term_2*area_term_2 + area_term_3*area_term_3);
+        //0,2,3
+        area_term_1 = (coords[2*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1]) - (coords[2*3+1] - coords[0*3+1])*(coords[3*3+0] - coords[0*3+0]);
+        area_term_2 = (coords[2*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) - (coords[2*3+2] - coords[0*3+2])*(coords[3*3+1] - coords[0*3+1]);
+        area_term_3 = (coords[2*3+2] - coords[0*3+2])*(coords[3*3+0] - coords[0*3+0]) - (coords[2*3+0] - coords[0*3+0])*(coords[3*3+2] - coords[0*3+2]);
+	area += sqrt(area_term_1*area_term_1 + area_term_2*area_term_2 + area_term_3*area_term_3);
+        //0,1,3
+        area_term_1 = (coords[1*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1]) - (coords[1*3+1] - coords[0*3+1])*(coords[3*3+0] - coords[0*3+0]);
+        area_term_2 = (coords[1*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) - (coords[1*3+2] - coords[0*3+2])*(coords[3*3+1] - coords[0*3+1]);
+        area_term_3 = (coords[1*3+2] - coords[0*3+2])*(coords[3*3+0] - coords[0*3+0]) - (coords[1*3+0] - coords[0*3+0])*(coords[3*3+2] - coords[0*3+2]);
+	area += sqrt(area_term_1*area_term_1 + area_term_2*area_term_2 + area_term_3*area_term_3);
+        //1,2,3
+        area_term_1 = (coords[2*3+0] - coords[1*3+0])*(coords[3*3+1] - coords[1*3+1]) - (coords[2*3+1] - coords[1*3+1])*(coords[3*3+0] - coords[1*3+0]);
+        area_term_2 = (coords[2*3+1] - coords[1*3+1])*(coords[3*3+2] - coords[1*3+2]) - (coords[3*3+2] - coords[1*3+2])*(coords[3*3+1] - coords[1*3+1]);
+        area_term_3 = (coords[2*3+2] - coords[1*3+2])*(coords[3*3+0] - coords[1*3+0]) - (coords[3*3+0] - coords[1*3+0])*(coords[3*3+2] - coords[1*3+2]);
+	area += sqrt(area_term_1*area_term_1 + area_term_2*area_term_2 + area_term_3*area_term_3);
+	current_inscribed_radius = 3.*volume/area;
+        //PetscPrintf(m->comm(), "%f inscribed radius, %f volume, %f surface area\n", current_inscribed_radius, volume, area);
+      }
+      current_aspect_ratio = max_cell_edge/(current_inscribed_radius*2);
+      if (current_aspect_ratio > max_aspect_ratio) max_aspect_ratio = current_aspect_ratio;
+      if (current_aspect_ratio < min_aspect_ratio) min_aspect_ratio = current_aspect_ratio;
+      //PetscPrintf(m->comm(), "%f aspect ratio\n", current_aspect_ratio);
+      c_iter++;
+    } //end of loop over cells
+    //ok we need to do the standard location thingamajob;
+    c_iter = cells->begin();
+    c_iter_end = cells->end();
+    if (current_level != 0) {
+      /*
+      while (c_iter != c_iter_end) {
+	int cell_collisions = 0;
+	//now we determine the number of collisions between each tri/tet in a coarse mesh with those in the next finer mesh
+	//IF THERE IS NO LINEAR SEPARATOR BETWEEN THE TWO, THEN THEY COLLIDE
+	ALE::Obj<ALE::Mesh> f_m = meshes[current_level-1]; //get the fine mesh
+	ALE::Obj<ALE::Mesh::label_sequence> f_cells = f_m->heightStratum(0);
+	ALE::Obj<ALE::Mesh::real_section_type> f_coordinates = f_m->getRealSection("coordinates");
+	ALE::Mesh::label_sequence::iterator fc_iter = f_cells->begin();
+	ALE::Mesh::label_sequence::iterator fc_iter_end = f_cells->end();
+	while (fc_iter != fc_iter_end) {
+	  PetscMemcpy(fcoords, f_m->restrict(f_coordinates, *fc_iter), sizeof(double)*dim*(dim+1));
+	  if (Hierarchy_CellsCollide(dim, coords, fcoords) == PETSC_TRUE) cell_collisions++;
+	  fc_iter++;
+	}
+	//PetscPrintf(m->comm(), "cell collisions: %d\n", cell_collisions);
+        c_iter++;
+      }
+      */
+      //NEW STUFF
+
+      ALE::Obj<ALE::Mesh> f_m = meshes[current_level-1]; //get the fine mesh
+      ALE::Obj<ALE::Mesh::sieve_type> f_s = f_m->getSieve();
+      ALE::Obj<ALE::Mesh::sieve_type> s = m->getSieve();
+      ALE::Obj<ALE::Mesh::real_section_type> f_coordinates = f_m->getRealSection("coordinates");
+      ALE::Obj<ALE::Mesh::label_sequence> fcells = f_m->heightStratum(0);
+
+      ALE::Obj<ALE::Mesh::sieve_type::supportSet> c_traversal = new ALE::Mesh::sieve_type::supportSet();
+      ALE::Obj<ALE::Mesh::sieve_type::supportSet> f_traversal = new ALE::Mesh::sieve_type::supportSet();
+
+      std::list<ALE::Mesh::point_type> c_cell_list;
+      std::list<ALE::Mesh::point_type> f_cell_guesses;
+      std::list<ALE::Mesh::point_type> f_cell_list;
+
+      c_iter = cells->begin();
+      c_iter_end = cells->end();
+      c_traversal->clear();
+      f_traversal->clear();
+      while(c_iter != c_iter_end) {
+	PetscMemcpy(coords, m->restrict(coordinates, *c_iter), sizeof(double)*dim*(dim+1));
+	if (c_traversal->find(*c_iter) == c_traversal->end()) {
+	  //locate an initial colliding cell
+	  ALE::Mesh::label_sequence::iterator f_iter = fcells->begin();
+	  ALE::Mesh::label_sequence::iterator f_iter_end = fcells->end();
+	  bool outer_located = false;
+	  while (f_iter != f_iter_end && !outer_located) {
+	    PetscMemcpy(fcoords, f_m->restrict(f_coordinates, *f_iter), sizeof(double)*dim*(dim+1));
+	    if (Hierarchy_BBoxesCollide(dim, coords, fcoords) == PETSC_TRUE) {
+	      outer_located = true;
+	      c_cell_list.push_front(*c_iter);
+	      f_cell_guesses.push_front(*f_iter);
+	      c_traversal->insert(*c_iter);
+	      f_traversal->insert(*f_iter);
+	    }
+	    f_iter++;
+	  }
+	  while (!c_cell_list.empty()) {
+	    int nCollisions = 0;
+	    int nComparisons = 0;
+	    int nBBoxCollisions = 0;
+	    ALE::Mesh::point_type c_current_cell = c_cell_list.front();
+	    c_cell_list.pop_front();
+	    PetscMemcpy(coords, m->restrict(coordinates, c_current_cell), sizeof(double)*dim*(dim+1));
+	    ALE::Mesh::point_type f_current_guess = f_cell_guesses.front();
+	    f_cell_guesses.pop_front();
+	    bool found_the_boundbox = false;
+	    //traverse outward from the fine guess
+	    f_cell_list.push_front(f_current_guess);
+	    f_traversal->insert(f_current_guess);
+	    while (!f_cell_list.empty()) {
+	      nComparisons++;
+	      ALE::Mesh::point_type f_current_cell = f_cell_list.front();
+	      f_cell_list.pop_front();
+	      PetscMemcpy(fcoords, f_m->restrict(f_coordinates, f_current_cell), sizeof(double)*dim*(dim+1));
+	      bool bbox_collide = (Hierarchy_BBoxesCollide(dim, coords, fcoords) == PETSC_TRUE);
+	      //if we have yet to find the box, then we have an unrestricted search; if we have found the box, then we only search within the box
+	      if (bbox_collide || !found_the_boundbox) {
+		if (bbox_collide) {
+		  found_the_boundbox = true;
+		  f_current_guess = f_current_cell;
+		  nBBoxCollisions++;
+		}
+		//test to see if this fine cell ACTUALLY collides with the coarse one 
+		if (bbox_collide) {
+		  if (Hierarchy_CellsCollide(dim, coords, fcoords) == PETSC_TRUE) nCollisions++;
+		}
+		ALE::Obj<ALE::Mesh::sieve_type::coneSet> fine_neighbors = f_s->support(f_s->cone(f_current_cell));
+		ALE::Mesh::sieve_type::coneSet::iterator fn_iter = fine_neighbors->begin();
+		ALE::Mesh::sieve_type::coneSet::iterator fn_iter_end = fine_neighbors->end();
+		//add the neighbors
+		while (fn_iter != fn_iter_end) {
+		  if (f_traversal->find(*fn_iter) == f_traversal->end()) {
+		    f_cell_list.push_back(*fn_iter);
+		    f_traversal->insert(*fn_iter);
+		  }
+		  fn_iter++;
+		}
+	      }
+	    }
+	    //clear the fine traversal list
+	    f_traversal->clear();
+	    //add the neighbors of the coarse cell to the list if they haven't yet been covered
+	    ALE::Obj<ALE::Mesh::sieve_type::coneSet> neighbors = s->support(s->cone(c_current_cell));
+	    ALE::Mesh::sieve_type::coneSet::iterator n_iter = neighbors->begin();
+	    ALE::Mesh::sieve_type::coneSet::iterator n_iter_end = neighbors->end();
+	    while (n_iter != n_iter_end) {
+	      if (c_traversal->find(*n_iter) == c_traversal->end()) {
+		c_cell_list.push_back(*n_iter);
+		f_cell_guesses.push_back(f_current_guess);
+		c_traversal->insert(*n_iter);
+	      }
+	      n_iter++;
+	    }
+	    if (max_cell_collisions < nCollisions) max_cell_collisions = nCollisions;
+	    avg_cell_collisions += nCollisions;
+	    //PetscPrintf(m->comm(), "collisions: %d, bound-box collisions: %d, comparisons %d\n", nCollisions, nBBoxCollisions, nComparisons);
+	  }
+	}
+	c_iter++;
+      }
+    }    
+    //output the stats for this level:
+  //PetscPrintf(m->comm(), "_level____|_cells____|_vertices_|_min_len._|_max_len._|_avg_len._|_len_rat._|_min_asp._|_max_asp._|_avg_asp._|_max_ccs._|_avg_ccs._|\n");
+    avg_length_scale = avg_length_scale / nCells;
+    avg_aspect_ratio = avg_aspect_ratio / nCells;
+    avg_cell_collisions = avg_cell_collisions / nCells;
+    PetscPrintf(m->comm(), " %9d  %9d  %9d  %9f  %9f  %9f  %9f  %9f  %9f  %9f  %9d  %9f\n", current_level, nCells, nVertices, min_length_scale, max_length_scale, avg_length_scale, min_length_scale / max_length_scale, min_aspect_ratio, max_aspect_ratio, avg_aspect_ratio, max_cell_collisions, avg_cell_collisions);
+
+  }
+  delete coords;
+  delete fcoords;
+}
