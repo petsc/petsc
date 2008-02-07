@@ -191,42 +191,50 @@ class VTKViewer {
     int                            depth = mesh->depth();
     Obj<ALE::Mesh::label_sequence> elements;
     Obj<ALE::Mesh::numbering_type> cNumbering;
+    Obj<ALE::Mesh::numbering_type> vNumbering;
 
     if (mesh->hasLabel("censored depth")) {
       elements   = mesh->getLabelStratum("censored depth", depth);
       cNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", depth);
+      vNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", 0);
     } else {
       elements   = mesh->heightStratum(0);
       cNumbering = mesh->getFactory()->getNumbering(mesh, depth);
+      vNumbering = mesh->getFactory()->getNumbering(mesh, 0);
     }
-    return writeElements(mesh, elements, cNumbering, viewer);
+    return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteElements"
-  static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const std::string& labelName, const int labelValue, PetscViewer viewer)
+  static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const std::string& cLabelName, const int cLabelValue, const std::string& vLabelName, const int vLabelValue, PetscViewer viewer)
   {
     Obj<ALE::Mesh::label_sequence> elements;
     Obj<ALE::Mesh::numbering_type> cNumbering;
+    Obj<ALE::Mesh::numbering_type> vNumbering;
 
-    if (mesh->hasLabel(labelName)) {
-      elements   = mesh->getLabelStratum(labelName, labelValue);
-      cNumbering = mesh->getFactory()->getNumbering(mesh, labelName, labelValue);
+    if (mesh->hasLabel(cLabelName)) {
+      elements   = mesh->getLabelStratum(cLabelName, cLabelValue);
+      cNumbering = mesh->getFactory()->getNumbering(mesh, cLabelName, cLabelValue);
     } else {
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid label name: %s", labelName.c_str());
+      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid label name: %s", cLabelName.c_str());
     }
-    return writeElements(mesh, elements, cNumbering, viewer);
+    if (mesh->hasLabel(vLabelName)) {
+      vNumbering = mesh->getFactory()->getNumbering(mesh, vLabelName, vLabelValue);
+    } else {
+      SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid label name: %s", vLabelName.c_str());
+    }
+    return writeElements(mesh, elements, cNumbering, vNumbering, viewer);
   };
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteElements"
-  static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh::label_sequence>& elements, const Obj<ALE::Mesh::numbering_type>& cNumbering, PetscViewer viewer)
+  static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh::label_sequence>& elements, const Obj<ALE::Mesh::numbering_type>& cNumbering, const Obj<ALE::Mesh::numbering_type>& vNumbering, PetscViewer viewer)
   {
-    typedef ALE::SieveAlg<ALE::Mesh> sieve_alg_type;
-    const Obj<ALE::Mesh::sieve_type>&     sieve      = mesh->getSieve();
-    const Obj<ALE::Mesh::numbering_type>& vNumbering = mesh->getFactory()->getNumbering(mesh, 0);
-    int            depth   = mesh->depth();
-    int            corners = sieve->nCone(*elements->begin(), depth)->size();
-    int            numElements;
-    PetscErrorCode ierr;
+    typedef ALE::SieveAlg<ALE::Mesh>  sieve_alg_type;
+    const Obj<ALE::Mesh::sieve_type>& sieve   = mesh->getSieve();
+    int                               depth   = mesh->depth();
+    int                               corners = sieve->nCone(*elements->begin(), depth)->size();
+    int                               numElements;
+    PetscErrorCode                    ierr;
 
     PetscFunctionBegin;
     numElements = cNumbering->getGlobalSize();
