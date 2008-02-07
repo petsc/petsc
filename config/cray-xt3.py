@@ -24,8 +24,9 @@
 #
 # PETSC_HAVE_LSEEK
 # PETSC_HAVE_GETCWD
-#
+# PETSC_HAVE_F90_2PTR_ARG
 
+# Configure script for building PETSc on the Cray XT3 ("Red Storm").
 configure_options = [
   '--with-batch=1',
   '--with-mpi-shared=0',
@@ -42,12 +43,12 @@ configure_options = [
   '--bits_per_byte=8',
   '--sizeof_MPI_Comm=4',
   '--sizeof_MPI_Fint=4',
-  
+  '--sizeof_size_t=8',  
   '--with-debugging=0',
   'COPTFLAGS=-fastsse -O3 -Munroll=c:4 -tp k8-64',
   'FOPTFLAGS=-fastsse -O3 -Munroll=c:4 -tp k8-64',
   '--with-x=0',
-  '--with-mpi-dir=/opt/xt-mpt/1.3.15/mpich2-64/P2'
+  '--with-mpi-dir=/opt/xt-mpt/default/mpich2-64/P2'
   ]
 if __name__ == '__main__':
   import os
