@@ -150,9 +150,7 @@ int main(int argc,char **args)
   ierr = ISDestroy(cperm);CHKERRQ(ierr);
 
   /* initialize factinfo */
-  factinfo.shiftnz   = 0.0;
-  factinfo.shiftpd   = 0.0; /* false */
-  factinfo.zeropivot = 1.e-12;
+  ierr = MatFactorInfoInitialize(&factinfo);CHKERRQ(ierr);
   if (TestShift == 1){
     factinfo.shiftnz = 0.1;
   } else if (TestShift == 2){
