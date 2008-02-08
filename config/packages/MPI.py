@@ -539,6 +539,12 @@ class Configure(config.package.Package):
     self.framework.log.write('Checking for fortran mpi_init()\n')
     if not self.libraries.check(self.lib,'', call = '       include \'mpif.h\'\n       integer ierr\n       call mpi_init(ierr)'):
       raise RuntimeError('Fortran error! mpi_init() could not be located!')
+    # check if mpi.mod exists
+    if self.compilers.fortranIsF90:
+      self.framework.log.write('Checking for mpi.mod\n')
+      if self.libraries.check(self.lib,'', call = '       use mpi\n       integer ierr\n       call mpi_init(ierr)'):
+        self.havef90module = 1
+        self.addDefine('HAVE_MPI_F90MODULE', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.libraries.popLanguage()
     return 0
