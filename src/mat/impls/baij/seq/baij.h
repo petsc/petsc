@@ -19,10 +19,6 @@
                                                                                                      \
   Mat              sbaijMat;         /* mat in sbaij format */                                       \
                                                                                                      \
-  PetscInt         setvalueslen;     /* only used for single precision */                            \
-  MatScalar        *setvaluescopy;   /* area double precision values in MatSetValuesXXX() are copied \
-                                      before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */          \
-                                                                                                     \
   PetscTruth       pivotinblocks;    /* pivot inside factorization of each diagonal block */         \
                                                                                                      \
   MatScalar        *idiag;           /* inverse of block diagonal  */                                \

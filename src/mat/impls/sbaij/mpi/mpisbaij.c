@@ -91,7 +91,7 @@ EXTERN_C_END
       a_noinsert:; \
     ailen[brow] = nrow; \
 } 
-#ifndef MatSetValues_SeqBAIJ_B_Private
+
 #define  MatSetValues_SeqSBAIJ_B_Private(row,col,value,addv) \
 { \
     brow = row/bs;  \
@@ -1627,12 +1627,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat B)
   b->colmap      = PETSC_NULL;
   b->garray      = PETSC_NULL;
   b->roworiented = PETSC_TRUE;
-
-#if defined(PETSC_USE_MAT_SINGLE)
-  /* stuff for MatSetValues_XXX in single precision */
-  b->setvalueslen     = 0;
-  b->setvaluescopy    = PETSC_NULL;
-#endif
 
   /* stuff used in block assembly */
   b->barray       = 0;
