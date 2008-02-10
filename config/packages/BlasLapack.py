@@ -461,7 +461,7 @@ class Configure(config.package.Package):
     '''Check for missing LAPACK routines'''
     if self.foundLapack:
       mangleFunc = hasattr(self.compilers, 'FC') and not self.f2c
-      for baseName in ['gesvd','geev','getrf','potrf','getrs','potrs','stebz','pttrf','pttrs','stein','orgqr']:
+      for baseName in ['gesvd','getrf','getrs','geev','syev','syevx','sygv','sygvx','getrf','potrf','getrs','potrs','stebz','pttrf','pttrs','stein','orgqr','stebz']:
         if self.f2c:
           routine = 'd'+baseName+'_'
         else:
