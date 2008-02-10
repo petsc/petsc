@@ -37,9 +37,6 @@ E*/
 #define MATMPIAIJ          "mpiaij"
 #define MATAIJ             "aij"
 #define MATSHELL           "shell"
-#define MATSEQBDIAG        "seqbdiag"
-#define MATMPIBDIAG        "mpibdiag"
-#define MATBDIAG           "bdiag"
 #define MATSEQDENSE        "seqdense"
 #define MATMPIDENSE        "mpidense"
 #define MATDENSE           "dense"
@@ -207,8 +204,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithArrays(MPI_Comm,Pets
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithSplitArrays(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt[],PetscInt[],PetscScalar[],PetscInt[],PetscInt[],PetscScalar[],Mat*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIRowbs(MPI_Comm,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*); 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqBDiag(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscScalar*[],Mat*); 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIBDiag(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],PetscScalar*[],Mat*); 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqBAIJ(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],Mat*); 
 PetscPolymorphicFunction(MatCreateSeqBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt nz,const PetscInt nnz[]),(PETSC_COMM_SELF,bs,m,n,nz,nnz,&A),Mat,A)
 PetscPolymorphicFunction(MatCreateSeqBAIJ,(PetscInt bs,PetscInt m,PetscInt n,PetscInt nz),(PETSC_COMM_SELF,bs,m,n,nz,PETSC_NULL,&A),Mat,A)
@@ -875,7 +870,6 @@ M*/
 /* Routines unique to particular data structures */
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetContext(Mat,void **);
 PetscPolymorphicFunction(MatShellGetContext,(Mat A),(A,&t),void*,t)
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatBDiagGetData(Mat,PetscInt*,PetscInt*,PetscInt*[],PetscInt*[],PetscScalar***);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes(Mat,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInodeGetInodeSizes(Mat,PetscInt *,PetscInt *[],PetscInt *);
@@ -895,7 +889,6 @@ PetscPolymorphicSubroutine(MatSeqSBAIJSetPreallocation,(Mat A,PetscInt bs,const 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation(Mat,PetscInt,const PetscInt[]);
 PetscPolymorphicSubroutine(MatSeqAIJSetPreallocation,(Mat A,const PetscInt nnz[]),(A,0,nnz))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDensePreallocation(Mat,PetscScalar[]);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBDiagSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[],PetscScalar*[]);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 PetscPolymorphicSubroutine(MatMPIBAIJSetPreallocation,(Mat A,PetscInt bs,const PetscInt nnz[],const PetscInt onz[]),(A,bs,0,nnz,0,onz))
@@ -904,7 +897,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation(Mat,PetscInt,
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR(Mat,const PetscInt [],const PetscInt [],const PetscScalar []);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR(Mat,const PetscInt[],const PetscInt[],const PetscScalar[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocationCSR(Mat,PetscInt,const PetscInt[],const PetscInt[],const PetscScalar[]);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation(Mat,PetscInt,PetscInt,const PetscInt[],PetscScalar*[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation(Mat,PetscInt[],PetscInt[],PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation(Mat,PetscScalar[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation(Mat,PetscScalar[]);

@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
   PetscInt       rstart,rend,rect = 0,nd,bs,*diag,*bdlen;
-  PetscTruth     flg,isbdiag;
+  PetscTruth     flg;
   PetscScalar    v,**diagv;
   PetscReal      normf,normi,norm1;
   MatInfo        info;
@@ -57,18 +57,6 @@ int main(int argc,char **argv)
                      normf,norm1,normi);CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscTypeCompare((PetscObject)mat,MATSEQBDIAG,&isbdiag);CHKERRQ(ierr);
-  if (!isbdiag) {
-    ierr = PetscTypeCompare((PetscObject)mat,MATMPIBDIAG,&isbdiag);CHKERRQ(ierr);
-  }
-  if (isbdiag) {
-    ierr = MatBDiagGetData(mat,&nd,&bs,&diag,&bdlen,&diagv);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"original matrix: block diag format: %D diagonals, block size = %D\n",nd,bs);CHKERRQ(ierr);
-    for (i=0; i<nd; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," diag=%D, bdlength=%D\n",diag[i],bdlen[i]);CHKERRQ(ierr);
-    }
-  }
-
   /* Form matrix transpose */
   ierr = PetscOptionsHasName(PETSC_NULL,"-in_place",&flg);CHKERRQ(ierr);
   if (!rect && flg) {
@@ -89,13 +77,6 @@ int main(int argc,char **argv)
                      normf,norm1,normi);CHKERRQ(ierr);
   ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  if (isbdiag) {
-    ierr = MatBDiagGetData(tmat,&nd,&bs,&diag,&bdlen,&diagv);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose matrix: block diag format: %D diagonals, block size = %D\n",nd,bs);CHKERRQ(ierr);
-    for (i=0; i<nd; i++) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD," diag=%D, bdlength=%D\n",diag[i],bdlen[i]);CHKERRQ(ierr);
-    }
-  }
 
   /* Test MatAXPY */
   if (mat && !rect) {

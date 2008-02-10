@@ -217,7 +217,7 @@ runex5_4:
 	echo "ex5_4: This program tested the ILU preconditioner in BlockSolve95."
 
 runex5_5:
-	-@${MPIEXEC} -np 2 ex5 -mat_bdiag -mat_block_size 2 > ex5_5.tmp 2>&1; \
+	-@${MPIEXEC} -np 2 ex5  -mat_block_size 2 > ex5_5.tmp 2>&1; \
 	   if (diff output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   ${RM} -f ex5_5.tmp

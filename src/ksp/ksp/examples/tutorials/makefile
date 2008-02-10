@@ -4,7 +4,7 @@ FFLAGS	         =
 CPPFLAGS         = 
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
-EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
+EXAMPLESC        = ex1.c ex2.c ex3.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                    ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c \
                    ex39.c ex40.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F
@@ -263,11 +263,6 @@ runex2f:
 	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
 	   else echo "Possible problem with ex2f_1, diffs above"; fi; \
 	   ${RM} -f ex2f_1.tmp
-runex4:
-	-@${MPIEXEC} -np 3  ./ex4 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex4_1.tmp 2>&1; \
-	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
-	   else echo "Possible problem with ex4_1, diffs above"; fi; \
-	   ${RM} -f ex4_1.tmp
 runex5:
 	-@${MPIEXEC} -np 1 ./ex5 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -291,7 +286,7 @@ runex5_4:
 	   -ksp_rtol .000001;\
 	echo "ex5_4: This program tested the ILU preconditioner in BlockSolve95."
 runex5_5:
-	-@${MPIEXEC} -np 2 ./ex5 -mat_type mpibdiag -mat_block_size 2 -ksp_gmres_cgs_refinement_type refine_always > ex5_5.tmp 2>&1; \
+	-@${MPIEXEC} -np 2 ./ex5 -mat_block_size 2 -ksp_gmres_cgs_refinement_type refine_always > ex5_5.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   ${RM} -f ex5_5.tmp
@@ -717,13 +712,13 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc  ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex38.PETSc runex38 ex38.rm 
-TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex4.PETSc ex4.rm ex8.PETSc ex5.PETSc runex5_5 ex5.rm ex8.rm 
+TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm  ex8.PETSc ex5.PETSc runex5_5 ex5.rm ex8.rm 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \
                                  ex22f.rm ex21f.PETSc runex21f ex21f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm ex6f.PETSc runex6f ex6f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_3 ex2.rm \
-                                 ex7.PETSc ex7.rm ex5.PETSc ex5.rm ex4.PETSc ex4.rm ex9.PETSc runex9 ex9.rm \
+                                 ex7.PETSc ex7.rm ex5.PETSc ex5.rm  ex9.PETSc runex9 ex9.rm \
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \

@@ -33,8 +33,6 @@ int main(int argc,char **args)
   diag[3] = -1;
   diag[4] = -n;
   if (size>1) {ndiag = 7; diag[5] = 2; diag[6] = -2;}
-  ierr = MatMPIBDiagSetPreallocation(C,ndiag,bs,diag,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(C,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create the matrix for the five point stencil, YET AGAIN */
   for (i=0; i<m; i++) { 

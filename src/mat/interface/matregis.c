@@ -20,10 +20,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJ(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BDiag(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBDiag(Mat);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBDiag(Mat);
-
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Dense(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat);
@@ -139,10 +135,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
   ierr = MatRegisterDynamic(MATSBAIJ,          path,"MatCreate_SBAIJ",     MatCreate_SBAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPISBAIJ,       path,"MatCreate_MPISBAIJ",  MatCreate_MPISBAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQSBAIJ,       path,"MatCreate_SeqSBAIJ",  MatCreate_SeqSBAIJ);CHKERRQ(ierr);
-
-  ierr = MatRegisterDynamic(MATBDIAG,          path,"MatCreate_BDiag",     MatCreate_BDiag);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATMPIBDIAG,       path,"MatCreate_MPIBDiag",  MatCreate_MPIBDiag);CHKERRQ(ierr);
-  ierr = MatRegisterDynamic(MATSEQBDIAG,       path,"MatCreate_SeqBDiag",  MatCreate_SeqBDiag);CHKERRQ(ierr);
 
   ierr = MatRegisterDynamic(MATDENSE,          path,"MatCreate_Dense",     MatCreate_Dense);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATMPIDENSE,       path,"MatCreate_MPIDense",  MatCreate_MPIDense);CHKERRQ(ierr);

@@ -525,12 +525,6 @@ as being stored in a standard multidimensional array; thus, DAs
 are {\em not} intended for parallelizing unstructured grid problems, etc.
 DAs are intended for communicating vector (field) information; they 
 are not intended for storing matrices. 
-% See Section \ref{sec_bdiag} for sparse matrix
-% data structures intended specifically for problems defined on rectangular 
-% grids; but note that general purpose sparse matrix formats discussed in 
-% the next chapter are also appropriate (in fact, on RISC based processors,
-% often one sees no performance gain by using grid-specific sparse matrix
-% storage schemes).
 
 For example, a typical situation one encounters in solving 
 PDEs in parallel is that, to evaluate a local function, \trl{f(x)}, each process
@@ -1830,7 +1824,7 @@ either the same or different format.  Set \trl{newtype} to MATSAME
 to copy the matrix, keeping the same matrix format.  See 
 \trl{${PETSC_DIR}/include/petscmat.h} for other available matrix types;
 standard ones are MATSEQDENSE, MATSEQAIJ, MATMPIAIJ, 
-               MATMPIROWBS, MATSEQBDIAG, MATMPIBDIAG,  MATSEQBAIJ, and
+               MATMPIROWBS, MATSEQBAIJ, and
                MATMPIBAIJ.
 
 In certain applications it may be necessary for application codes
@@ -6259,10 +6253,7 @@ Possible formats include
 \trl{PETSC_VIEWER_ASCII_DEFAULT}, \trl{PETSC_VIEWER_ASCII_MATLAB}, and
 \trl{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format, 
 \trl{PETSC_VIEWER_ASCII_IMPL}, displays the object in the most natural way
-for a particular implementation.  For example, when viewing a block 
-diagonal matrix that has been created with MatCreateSeqBDiag(),
-\trl{PETSC_VIEWER_ASCII_IMPL} prints by diagonals, while \trl{PETSC_VIEWER_ASCII_DEFAULT}
-uses the conventional row-oriented format.
+for a particular implementation.  
 
 The routines
 \begin{tabbing}
@@ -6293,15 +6284,13 @@ where \trl{matrixfilename} is the name of the file containing the matrix.
 The format of the optional file is the same as the \trl{.petscrc} file 
 and can (currently) contain the following:
 \begin{tabbing}
-   -matload\_block\_size \trl{<}bs\trl{>}\\
-   -matload\_bdiag\_diags \trl{<}s1,s2,s3,...\trl{>}
+   -matload\_block\_size \trl{<}bs\trl{>}
 \end{tabbing}
 The block size indicates the size of blocks to use if the matrix is
 read into a block oriented data structure (for example, 
-\trl{MATSEQBDIAG} or \trl{MATMPIBAIJ}). The diagonal information 
+\trl{MATMPIBAIJ}). The diagonal information 
 \trl{s1,s2,s3,...} indicates
 which (block) diagonals in the matrix have nonzero values.
-% Section \ref{sec_bdiag} gives details.
 
 \section{Debugging} \sindex{debugging} \label{sec_debugging}
 

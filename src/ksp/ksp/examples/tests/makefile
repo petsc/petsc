@@ -252,7 +252,7 @@ runex8_4:
 	   -ksp_rtol .000001;\
 	echo "ex8_4: This program tested the ILU preconditioner in BlockSolve95."
 runex10:
-	-@${MPIEXEC} -np 1 ./ex10 -matconvert_type seqbdiag -ksp_monitor_short >ex10_1.tmp 2>&1; \
+	-@${MPIEXEC} -np 1 ./ex10 -matconvert_type seqaij -ksp_monitor_short >ex10_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp

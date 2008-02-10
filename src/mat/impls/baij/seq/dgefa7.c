@@ -4,7 +4,7 @@
       Inverts 7 by 7 matrix using partial pivoting.
 
        Used by the sparse factorization routines in 
-     src/mat/impls/baij/seq and src/mat/impls/bdiag/seq
+     src/mat/impls/baij/seq
 
        See also src/inline/ilu.h
 

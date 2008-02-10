@@ -623,7 +623,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
 
 
    Notes: 
-   For AIJ, BAIJ, and BDiag matrix formats, the matrices are not 
+   For AIJ, and BAIJ matrix formats, the matrices are not 
    internally scaled, so this does nothing. For MPIROWBS it
    permutes and diagonally scales.
 
@@ -668,7 +668,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScaleSystem(Mat mat,Vec b,Vec x)
 
 
    Notes: 
-   For AIJ, BAIJ, and BDiag matrix formats, the matrices are not 
+   For AIJ and BAIJ matrix formats, the matrices are not 
    internally scaled, so this does nothing. For MPIROWBS it
    permutes and diagonally scales.
 
@@ -5319,14 +5319,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],
 .  bs - block size
 
    Notes:
-   Block diagonal formats are MATSEQBDIAG, MATMPIBDIAG.
    Block row formats are MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ
 
    Level: intermediate
 
    Concepts: matrices^block size
 
-.seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ(), MatCreateSeqBDiag(), MatCreateMPIBDiag()
+.seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetBlockSize(Mat mat,PetscInt *bs)
 {
@@ -5360,7 +5359,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBlockSize(Mat mat,PetscInt *bs)
 
    Concepts: matrices^block size
 
-.seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ(), MatCreateSeqBDiag(), MatCreateMPIBDiag(), MatGetBlockSize()
+.seealso: MatCreateSeqBAIJ(), MatCreateMPIBAIJ(), MatGetBlockSize()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
 {

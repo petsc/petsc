@@ -35,8 +35,6 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
    Options Database Keys:
 +    -mat_type seqaij   - AIJ type, uses MatCreateSeqAIJ()
 .    -mat_type mpiaij   - AIJ type, uses MatCreateMPIAIJ()
-.    -mat_type seqbdiag - block diagonal type, uses MatCreateSeqBDiag()
-.    -mat_type mpibdiag - block diagonal type, uses MatCreateMPIBDiag()
 .    -mat_type mpirowbs - rowbs type, uses MatCreateMPIRowbs()
 .    -mat_type seqdense - dense type, uses MatCreateSeqDense()
 .    -mat_type mpidense - dense type, uses MatCreateMPIDense()
@@ -58,7 +56,6 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 .keywords: matrix, create
 
 .seealso: MatCreateSeqAIJ(), MatCreateMPIAIJ(), 
-          MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIDense(), 
           MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
@@ -155,8 +152,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
    Options Database Keys:
 +    -mat_type seqaij   - AIJ type, uses MatCreateSeqAIJ()
 .    -mat_type mpiaij   - AIJ type, uses MatCreateMPIAIJ()
-.    -mat_type seqbdiag - block diagonal type, uses MatCreateSeqBDiag()
-.    -mat_type mpibdiag - block diagonal type, uses MatCreateMPIBDiag()
 .    -mat_type mpirowbs - rowbs type, uses MatCreateMPIRowbs()
 .    -mat_type seqdense - dense type, uses MatCreateSeqDense()
 .    -mat_type mpidense - dense type, uses MatCreateMPIDense()
@@ -172,7 +167,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
 .keywords: matrix, create
 
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
-          MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIDense(), 
           MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
@@ -222,7 +216,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
 .keywords: matrix, create
 
 .seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
-          MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIDense(), 
           MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),
           MatCreateSeqSBAIJ(), MatCreateMPISBAIJ(),
