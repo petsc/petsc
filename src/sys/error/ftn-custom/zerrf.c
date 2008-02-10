@@ -45,18 +45,7 @@ static PetscErrorCode ourerrorhandler(int line,const char *fun,const char *file,
   PetscStrlen(dir,&len3);l3 = (int)len3;
   PetscStrlen(mess,&len4);l4 = (int)len4;
 
-#if defined(PETSC_USES_CPTOFCD)
- {
-   CHAR fun_c,file_c,dir_c,mess_c;
-
-   fun_c  = _cptofcd(fun,len1);
-   file_c = _cptofcd(file,len2);
-   dir_c  = _cptofcd(dir,len3);
-   mess_c = _cptofcd(mess,len4);
-   (*f2)(&line,fun_c,file_c,dir_c,&n,&p,mess_c,ctx,&ierr,len1,len2,len3,len4);
-
- }
-#elif defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
+#if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
   (*f2)(&line,fun,l1,file,l2,dir,l3,&n,&p,mess,l4,ctx,&ierr);
 #else
   (*f2)(&line,fun,file,dir,&n,&p,mess,ctx,&ierr,l1,l2,l3,l4);

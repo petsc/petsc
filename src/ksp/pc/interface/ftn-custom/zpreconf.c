@@ -56,14 +56,7 @@ void PETSC_STDCALL pcgetoptionsprefix_(PC *pc,CHAR prefix PETSC_MIXED_LEN(len),
   const char *tname;
 
   *ierr = PCGetOptionsPrefix(*pc,&tname);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-    char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    *ierr = PetscStrncpy(t,tname,len1);if (*ierr) return;
-  }
-#else
   *ierr = PetscStrncpy(prefix,tname,len);if (*ierr) return;
-#endif
 }
 
 EXTERN_C_END

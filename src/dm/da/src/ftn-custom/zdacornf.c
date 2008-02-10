@@ -24,14 +24,7 @@ void PETSC_STDCALL dagetfieldname_(DA *da,PetscInt *nf,CHAR name PETSC_MIXED_LEN
   char *tname;
 
   *ierr = DAGetFieldName(*da,*nf,&tname);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-    char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-    *ierr = PetscStrncpy(t,tname,len1);
-  }
-#else
   *ierr = PetscStrncpy(name,tname,len);
-#endif
 }
 
 EXTERN_C_END

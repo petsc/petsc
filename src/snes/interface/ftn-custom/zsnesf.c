@@ -162,14 +162,7 @@ void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(
   const char *tname;
 
   *ierr = SNESGetOptionsPrefix(*snes,&tname);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-    char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    *ierr = PetscStrncpy(t,tname,len1);if (*ierr) return;
-  }
-#else
   *ierr = PetscStrncpy(prefix,tname,len);if (*ierr) return;
-#endif
 }
 
 void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
@@ -178,14 +171,7 @@ void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
   const char *tname;
 
   *ierr = SNESGetType(*snes,&tname);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-    char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-    *ierr = PetscStrncpy(t,tname,len1);if (*ierr) return;
-  }
-#else
   *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
-#endif
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 

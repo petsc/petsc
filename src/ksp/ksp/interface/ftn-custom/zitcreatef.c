@@ -17,14 +17,7 @@ void PETSC_STDCALL kspgettype_(KSP *ksp,CHAR name PETSC_MIXED_LEN(len),PetscErro
   const char *tname;
 
   *ierr = KSPGetType(*ksp,&tname);if (*ierr) return;
-#if defined(PETSC_USES_CPTOFCD)
-  {
-    char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-    *ierr = PetscStrncpy(t,tname,len1); 
-  }
-#else
   *ierr = PetscStrncpy(name,tname,len);
-#endif
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 
 }

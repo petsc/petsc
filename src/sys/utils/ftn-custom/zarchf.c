@@ -12,13 +12,8 @@ void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),PetscErrorCod
 {
   char *tstr;
   size_t tlen;
-#if defined(PETSC_USES_CPTOFCD)
-  tstr = _fcdtocp(str); 
-  tlen = _fcdlen(str);
-#else
   tstr = str;
   tlen = len; /* int to size_t */
-#endif
   *ierr = PetscGetArchType(tstr,tlen);
   FIXRETURNCHAR(PETSC_TRUE,str,len);
 

@@ -24,14 +24,7 @@ void PETSC_STDCALL pcgettype_(PC *pc,CHAR name PETSC_MIXED_LEN(len),PetscErrorCo
   const char *tname;
 
   *ierr = PCGetType(*pc,&tname);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-  char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-  *ierr = PetscStrncpy(t,tname,len1); if (*ierr) return;
-  }
-#else
   *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
-#endif
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 
 }

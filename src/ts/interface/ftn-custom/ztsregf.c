@@ -24,14 +24,7 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCo
   char *tname;
 
   *ierr = TSGetType(*ts,(TSType *)&tname);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-    char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-    *ierr = PetscStrncpy(t,tname,len1);
-  }
-#else
   *ierr = PetscStrncpy(name,tname,len);
-#endif
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 

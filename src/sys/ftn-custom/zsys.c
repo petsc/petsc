@@ -31,26 +31,6 @@ void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shi
         This version does not do a malloc 
 */
 static char FIXCHARSTRING[1024];
-#if defined(PETSC_USES_CPTOFCD)
-#include <fortran.h>
-
-#define CHAR _fcd
-#define FIXCHARNOMALLOC(a,n,b) \
-{ \
-  b = _fcdtocp(a); \
-  n = _fcdlen (a); \
-  if (b == PETSC_NULL_CHARACTER_Fortran) { \
-      b = 0; \
-  } else {  \
-    while((n > 0) && (b[n-1] == ' ')) n--; \
-    b = FIXCHARSTRING; \
-    *ierr = PetscStrncpy(b,_fcdtocp(a),n); \
-    if (*ierr) return; \
-    b[n] = 0; \
-  } \
-}
-
-#else
 
 #define CHAR char*
 #define FIXCHARNOMALLOC(a,n,b) \
@@ -67,8 +47,6 @@ static char FIXCHARSTRING[1024];
     } else b = a;\
   } \
 }
-
-#endif
 
 void PETSC_STDCALL chkmemfortran_(int *line,CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
