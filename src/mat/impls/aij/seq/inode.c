@@ -399,7 +399,8 @@ static PetscErrorCode MatMult_Inode(Mat A,Vec xx,Vec yy)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data; 
   PetscScalar       sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
   PetscScalar       *y;
-  const PetscScalar *x,*v1,*v2,*v3,*v4,*v5;
+  const PetscScalar *x;
+  const MatScalar   *v1,*v2,*v3,*v4,*v5;
   PetscErrorCode    ierr;
   PetscInt          *idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz,nonzerorow=0;
   
@@ -586,7 +587,8 @@ static PetscErrorCode MatMultAdd_Inode(Mat A,Vec xx,Vec zz,Vec yy)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data; 
   PetscScalar    sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
-  PetscScalar    *v1,*v2,*v3,*v4,*v5,*x,*y,*z,*zt;
+  MatScalar      *v1,*v2,*v3,*v4,*v5;
+  PetscScalar    *x,*y,*z,*zt;
   PetscErrorCode ierr;
   PetscInt       *idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
   
@@ -783,7 +785,8 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   PetscInt          node_max,*ns,row,nsz,aii,*vi,*ad,*aj,i0,i1,*rout,*cout;
   PetscScalar       *x,*tmp,*tmps,tmp0,tmp1;
   PetscScalar       sum1,sum2,sum3,sum4,sum5;
-  const PetscScalar *v1,*v2,*v3,*v4,*v5,*b,*a_a = a->a,*aa;
+  const MatScalar   *v1,*v2,*v3,*v4,*v5,*a_a = a->a,*aa;
+  const PetscScalar *b;
 
   PetscFunctionBegin;  
   if (A->factor!=FACTOR_LU) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unfactored matrix");
@@ -1178,9 +1181,9 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt          *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,nz_tmp,row,prow;
   PetscInt          *ics,i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nodesz;
   PetscInt          *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
-  PetscScalar       *pc1,*pc2,*pc3,mul1,mul2,mul3;
-  PetscScalar       tmp,*ba = b->a,*pv,*rtmp11,*rtmp22,*rtmp33;
-  const PetscScalar *v1,*v2,*v3,*aa = a->a,*rtmp1;
+  PetscScalar       mul1,mul2,mul3,tmp;
+  MatScalar         *pc1,*pc2,*pc3,*ba = b->a,*pv,*rtmp11,*rtmp22,*rtmp33;
+  const MatScalar   *v1,*v2,*v3,*aa = a->a,*rtmp1;
   PetscReal         rs=0.0;
   LUShift_Ctx       sctx;
   PetscInt          newshift;
@@ -1643,7 +1646,7 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   PetscScalar        *x,*xs,sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3;
   MatScalar          *ibdiag,*bdiag;
   PetscScalar        *b,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
-  const PetscScalar  *v = a->a,*v1,*v2,*v3,*v4,*v5;
+  const MatScalar    *v = a->a,*v1,*v2,*v3,*v4,*v5;
   PetscReal          zeropivot = 1.0e-15, shift = 0.0;
   PetscErrorCode     ierr;
   PetscInt           n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row,i1,i2;

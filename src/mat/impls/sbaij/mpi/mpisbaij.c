@@ -20,27 +20,6 @@ EXTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar *);
 EXTERN PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 
-/*  UGLY, ugly, ugly
-   When MatScalar == PetscScalar the function MatSetValuesBlocked_MPIBAIJ_MatScalar() does 
-   not exist. Otherwise ..._MatScalar() takes matrix elements in single precision and 
-   inserts them into the single precision data structure. The function MatSetValuesBlocked_MPIBAIJ()
-   converts the entries into single precision and then calls ..._MatScalar() to put them
-   into the single precision data structures.
-*/
-#if defined(PETSC_USE_MAT_SINGLE)
-EXTERN PetscErrorCode MatSetValuesBlocked_SeqSBAIJ_MatScalar(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const MatScalar[],InsertMode);
-EXTERN PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const MatScalar[],InsertMode);
-EXTERN PetscErrorCode MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const MatScalar[],InsertMode);
-EXTERN PetscErrorCode MatSetValues_MPISBAIJ_HT_MatScalar(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const MatScalar[],InsertMode);
-EXTERN PetscErrorCode MatSetValuesBlocked_MPISBAIJ_HT_MatScalar(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const MatScalar[],InsertMode);
-#else
-#define MatSetValuesBlocked_SeqSBAIJ_MatScalar      MatSetValuesBlocked_SeqSBAIJ
-#define MatSetValues_MPISBAIJ_MatScalar             MatSetValues_MPISBAIJ
-#define MatSetValuesBlocked_MPISBAIJ_MatScalar      MatSetValuesBlocked_MPISBAIJ
-#define MatSetValues_MPISBAIJ_HT_MatScalar          MatSetValues_MPISBAIJ_HT
-#define MatSetValuesBlocked_MPISBAIJ_HT_MatScalar   MatSetValuesBlocked_MPISBAIJ_HT
-#endif
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatStoreValues_MPISBAIJ"
@@ -150,63 +129,13 @@ EXTERN_C_END
       b_noinsert:; \
     bilen[brow] = nrow; \
 } 
-#endif
-
-#if defined(PETSC_USE_MAT_SINGLE)
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValues_MPISBAIJ"
-PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
-{
-  Mat_MPISBAIJ   *b = (Mat_MPISBAIJ*)mat->data;
-  PetscErrorCode ierr;
-  PetscInt       i,N = m*n;
-  MatScalar      *vsingle;
-
-  PetscFunctionBegin;  
-  if (N > b->setvalueslen) {
-    ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);
-    ierr = PetscMalloc(N*sizeof(MatScalar),&b->setvaluescopy);CHKERRQ(ierr);
-    b->setvalueslen  = N;
-  }
-  vsingle = b->setvaluescopy;
-
-  for (i=0; i<N; i++) {
-    vsingle[i] = v[i];
-  }
-  ierr = MatSetValues_MPISBAIJ_MatScalar(mat,m,im,n,in,vsingle,addv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-} 
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ"
-PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
-{
-  Mat_MPIBAIJ    *b = (Mat_MPIBAIJ*)mat->data;
-  PetscErrorCode ierr;
-  PetscInt       i,N = m*n*b->bs2;
-  MatScalar      *vsingle;
-
-  PetscFunctionBegin;  
-  if (N > b->setvalueslen) {
-    ierr = PetscFree(b->setvaluescopy);CHKERRQ(ierr);
-    ierr = PetscMalloc(N*sizeof(MatScalar),&b->setvaluescopy);CHKERRQ(ierr);
-    b->setvalueslen  = N;
-  }
-  vsingle = b->setvaluescopy;
-  for (i=0; i<N; i++) {
-    vsingle[i] = v[i];
-  }
-  ierr = MatSetValuesBlocked_MPISBAIJ_MatScalar(mat,m,im,n,in,vsingle,addv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-} 
-#endif
 
 /* Only add/insert a(i,j) with i<=j (blocks). 
    Any a(i,j) with i>j input by user is ingored. 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetValues_MPISBAIJ_MatScalar"
-PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const MatScalar v[],InsertMode addv)
+#define __FUNCT__ "MatSetValues_MPISBAIJ"
+PetscErrorCode MatSetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
 {
   Mat_MPISBAIJ   *baij = (Mat_MPISBAIJ*)mat->data;
   MatScalar      value;
@@ -323,8 +252,8 @@ PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ_MatScalar"
-PetscErrorCode MatSetValuesBlocked_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const MatScalar v[],InsertMode addv)
+#define __FUNCT__ "MatSetValuesBlocked_MPISBAIJ"
+PetscErrorCode MatSetValuesBlocked_MPISBAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const MatScalar v[],InsertMode addv)
 {
   Mat_MPISBAIJ    *baij = (Mat_MPISBAIJ*)mat->data;
   const MatScalar *value;
@@ -607,7 +536,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
         if (j < n) ncols = j-i;
         else       ncols = n-i;
         /* Now assemble all these values with a single function call */
-        ierr = MatSetValues_MPISBAIJ_MatScalar(mat,1,row+i,ncols,col+i,val+i,addv);CHKERRQ(ierr);
+        ierr = MatSetValues_MPISBAIJ(mat,1,row+i,ncols,col+i,val+i,addv);CHKERRQ(ierr);
         i = j;
       }
     }
@@ -630,7 +559,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
         for (j=i,rstart=row[j]; j<n; j++) { if (row[j] != rstart) break; }
         if (j < n) ncols = j-i;
         else       ncols = n-i;
-        ierr = MatSetValuesBlocked_MPISBAIJ_MatScalar(mat,1,row+i,ncols,col+i,val+i*bs2,addv);CHKERRQ(ierr);
+        ierr = MatSetValuesBlocked_MPISBAIJ(mat,1,row+i,ncols,col+i,val+i*bs2,addv);CHKERRQ(ierr);
         i = j;
       }
     }
@@ -669,7 +598,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatSetValues_MPIBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const MatScalar[],InsertMode);
+extern PetscErrorCode MatSetValues_MPIBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPISBAIJ_ASCIIorDraworSocket"
 static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
@@ -750,7 +679,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
       for (j=ai[i]; j<ai[i+1]; j++) {
         col = (baij->cstartbs+aj[j])*bs;
         for (k=0; k<bs; k++) {
-          ierr = MatSetValues_MPISBAIJ_MatScalar(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValues_MPISBAIJ(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
           col++; a += bs;
         }
       }

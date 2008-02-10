@@ -296,12 +296,13 @@ PetscErrorCode MatAssemblyEnd_SeqCSRPERM(Mat A, MatAssemblyType mode)
 #define __FUNCT__ "MatMult_SeqCSRPERM"
 PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *x,*y,*aa;
-  PetscErrorCode ierr;
-  PetscInt       *aj,*ai;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar     *x,*y;
+  const MatScalar *aa;
+  PetscErrorCode  ierr;
+  PetscInt        *aj,*ai;
 #if !(defined(PETSC_USE_FORTRAN_KERNEL_MULTCSRPERM) && defined(notworking))
-  PetscInt       i,j;
+  PetscInt        i,j;
 #endif
 
   /* Variables that don't appear in MatMult_SeqAIJ. */
@@ -441,12 +442,13 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
 #define __FUNCT__ "MatMultAdd_SeqCSRPERM"
 PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar    *x,*y,*w,*aa;
-  PetscErrorCode ierr;
-  PetscInt       *aj,*ai;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar     *x,*y,*w;
+  const MatScalar *aa;
+  PetscErrorCode  ierr;
+  PetscInt        *aj,*ai;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTADDCSRPERM)
-  PetscInt       i,j;
+  PetscInt        i,j;
 #endif
 
   /* Variables that don't appear in MatMultAdd_SeqAIJ. */

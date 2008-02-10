@@ -519,7 +519,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMat(Mat,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalMatCondensed(Mat,MatReuse,IS*,IS*,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAcols(Mat,Mat,MatReuse,IS*,IS*,PetscInt*,Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat,Mat,MatReuse,PetscInt**,PetscScalar**,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat,Mat,MatReuse,PetscInt**,MatScalar**,Mat*);
 #if defined (PETSC_USE_CTABLE)
 #include "petscctable.h"
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat, Vec *, PetscTable *, VecScatter *);

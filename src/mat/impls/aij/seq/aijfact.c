@@ -750,8 +750,9 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
   PetscErrorCode    ierr;
   PetscInt          *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
   PetscInt          nz,*rout,*cout;
-  PetscScalar       *x,*tmp,*tmps,*aa = a->a,sum,*v;
+  PetscScalar       *x,*tmp,*tmps,sum;
   const PetscScalar *b;
+  const MatScalar   *aa = a->a,*v;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
@@ -797,12 +798,13 @@ PetscErrorCode MatSolve_SeqAIJ(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatMatSolve_SeqAIJ"
 PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  IS             iscol = a->col,isrow = a->row;
-  PetscErrorCode ierr;
-  PetscInt       *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt       nz,*rout,*cout,neq; 
-  PetscScalar    *x,*b,*tmp,*tmps,*aa = a->a,sum,*v; 
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  IS              iscol = a->col,isrow = a->row;
+  PetscErrorCode  ierr;
+  PetscInt        *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
+  PetscInt        nz,*rout,*cout,neq; 
+  PetscScalar     *x,*b,*tmp,*tmps,sum;
+  const MatScalar *aa = a->a,*v;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
@@ -851,12 +853,13 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
 #define __FUNCT__ "MatSolve_SeqAIJ_InplaceWithPerm"
 PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  IS             iscol = a->col,isrow = a->row;
-  PetscErrorCode ierr;
-  PetscInt       *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt       nz,*rout,*cout,row;
-  PetscScalar    *x,*b,*tmp,*tmps,*aa = a->a,sum,*v;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  IS              iscol = a->col,isrow = a->row;
+  PetscErrorCode  ierr;
+  PetscInt        *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
+  PetscInt        nz,*rout,*cout,row;
+  PetscScalar     *x,*b,*tmp,*tmps,sum;
+  const MatScalar *aa = a->a,*v;
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
@@ -905,13 +908,15 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering"
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       n = A->rmap.n,*ai = a->i,*aj = a->j,*adiag = a->diag;
-  PetscScalar    *x,*b,*aa = a->a;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode  ierr;
+  PetscInt        n = A->rmap.n,*ai = a->i,*aj = a->j,*adiag = a->diag;
+  PetscScalar     *x,*b;
+  const MatScalar *aa = a->a;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
-  PetscInt       adiag_i,i,*vi,nz,ai_i;
-  PetscScalar    *v,sum;
+  PetscInt        adiag_i,i,*vi,nz,ai_i;
+  const MatScalar *v;
+  PetscScalar     sum;
 #endif
 
   PetscFunctionBegin;
@@ -956,12 +961,13 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolveAdd_SeqAIJ"
 PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  IS             iscol = a->col,isrow = a->row;
-  PetscErrorCode ierr;
-  PetscInt       *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt       nz,*rout,*cout;
-  PetscScalar    *x,*b,*tmp,*aa = a->a,sum,*v;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  IS              iscol = a->col,isrow = a->row;
+  PetscErrorCode  ierr;
+  PetscInt        *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
+  PetscInt        nz,*rout,*cout;
+  PetscScalar     *x,*b,*tmp,sum;
+  const MatScalar *aa = a->a,*v;
 
   PetscFunctionBegin;
   if (yy != xx) {ierr = VecCopy(yy,xx);CHKERRQ(ierr);}
@@ -1008,12 +1014,13 @@ PetscErrorCode MatSolveAdd_SeqAIJ(Mat A,Vec bb,Vec yy,Vec xx)
 #define __FUNCT__ "MatSolveTranspose_SeqAIJ"
 PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  IS             iscol = a->col,isrow = a->row;
-  PetscErrorCode ierr;
-  PetscInt       *r,*c,i,n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt       nz,*rout,*cout,*diag = a->diag;
-  PetscScalar    *x,*b,*tmp,*aa = a->a,*v,s1;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  IS              iscol = a->col,isrow = a->row;
+  PetscErrorCode  ierr;
+  PetscInt        *r,*c,i,n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
+  PetscInt        nz,*rout,*cout,*diag = a->diag;
+  PetscScalar     *x,*b,*tmp,s1;
+  const MatScalar *aa = a->a,*v;
 
   PetscFunctionBegin;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
@@ -1066,12 +1073,13 @@ PetscErrorCode MatSolveTranspose_SeqAIJ(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolveTransposeAdd_SeqAIJ"
 PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
 {
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  IS             iscol = a->col,isrow = a->row;
-  PetscErrorCode ierr;
-  PetscInt       *r,*c,i,n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
-  PetscInt       nz,*rout,*cout,*diag = a->diag;
-  PetscScalar    *x,*b,*tmp,*aa = a->a,*v;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  IS              iscol = a->col,isrow = a->row;
+  PetscErrorCode  ierr;
+  PetscInt        *r,*c,i,n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
+  PetscInt        nz,*rout,*cout,*diag = a->diag;
+  PetscScalar     *x,*b,*tmp;
+  const MatScalar *aa = a->a,*v;
 
   PetscFunctionBegin;
   if (zz != xx) {ierr = VecCopy(zz,xx);CHKERRQ(ierr);}

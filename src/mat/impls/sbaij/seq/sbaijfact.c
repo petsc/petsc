@@ -18,7 +18,7 @@
 PetscErrorCode MatGetInertia_SeqSBAIJ(Mat F,PetscInt *nneig,PetscInt *nzero,PetscInt *npos)
 { 
   Mat_SeqSBAIJ *fact_ptr = (Mat_SeqSBAIJ*)F->data;
-  PetscScalar  *dd = fact_ptr->a;
+  MatScalar    *dd = fact_ptr->a;
   PetscInt     mbs=fact_ptr->mbs,bs=F->rmap.bs,i,nneig_tmp,npos_tmp,*fi = fact_ptr->i;
 
   PetscFunctionBegin;

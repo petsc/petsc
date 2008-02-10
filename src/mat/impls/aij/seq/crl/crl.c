@@ -60,7 +60,8 @@ PetscErrorCode SeqCRL_create_crl(Mat A)
   PetscInt       m = A->rmap.n;  /* Number of rows in the matrix. */
   PetscInt       *aj = a->j;  /* From the CSR representation; points to the beginning  of each row. */
   PetscInt       i, j,rmax = a->rmax,*icols, *ilen = a->ilen;
-  PetscScalar    *aa = a->a,*acols;
+  MatScalar      *aa = a->a;
+  PetscScalar    *acols;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -1398,7 +1398,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *,VecScatter_M
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreateLocal"
 /*@
-     VecScatterCreateLocal - Creates a VecScatter from a list of messages it must send a receive.
+     VecScatterCreateLocal - Creates a VecScatter from a list of messages it must send and receive.
 
      Collective on VecScatter
 

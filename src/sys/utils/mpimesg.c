@@ -141,6 +141,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGatherMessageLengths(MPI_Comm comm,PetscMPII
   ierr = PetscFree2(r_waits,w_status);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGatherMessageLengths2"
 /*@C

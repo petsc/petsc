@@ -276,14 +276,14 @@ PetscErrorCode MatSetValues_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],Petsc
 #define __FUNCT__ "MatSetValuesBlocked_MPIBAIJ"
 PetscErrorCode MatSetValuesBlocked_MPIBAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
 {
-  Mat_MPIBAIJ     *baij = (Mat_MPIBAIJ*)mat->data;
-  const MatScalar *value;
-  MatScalar       *barray=baij->barray;
-  PetscTruth      roworiented = baij->roworiented;
-  PetscErrorCode  ierr;
-  PetscInt        i,j,ii,jj,row,col,rstart=baij->rstartbs;
-  PetscInt        rend=baij->rendbs,cstart=baij->cstartbs,stepval;
-  PetscInt        cend=baij->cendbs,bs=mat->rmap.bs,bs2=baij->bs2;
+  Mat_MPIBAIJ       *baij = (Mat_MPIBAIJ*)mat->data;
+  const PetscScalar *value;
+  MatScalar         *barray=baij->barray;
+  PetscTruth        roworiented = baij->roworiented;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,ii,jj,row,col,rstart=baij->rstartbs;
+  PetscInt          rend=baij->rendbs,cstart=baij->cstartbs,stepval;
+  PetscInt          cend=baij->cendbs,bs=mat->rmap.bs,bs2=baij->bs2;
   
   PetscFunctionBegin;
   if(!barray) {
@@ -462,18 +462,18 @@ PetscErrorCode MatSetValues_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],Pe
 #define __FUNCT__ "MatSetValuesBlocked_MPIBAIJ_HT"
 PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT(Mat mat,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode addv)
 {
-  Mat_MPIBAIJ     *baij = (Mat_MPIBAIJ*)mat->data;
-  PetscTruth      roworiented = baij->roworiented;
-  PetscErrorCode  ierr;
-  PetscInt        i,j,ii,jj,row,col;
-  PetscInt        rstart=baij->rstartbs;
-  PetscInt        rend=mat->rmap.rend,stepval,bs=mat->rmap.bs,bs2=baij->bs2,nbs2=n*bs2;
-  PetscInt        h1,key,size=baij->ht_size,idx,*HT=baij->ht,Nbs=baij->Nbs;
-  PetscReal       tmp;
-  MatScalar       **HD = baij->hd,*baij_a;
-  const MatScalar *v_t,*value;
+  Mat_MPIBAIJ       *baij = (Mat_MPIBAIJ*)mat->data;
+  PetscTruth        roworiented = baij->roworiented;
+  PetscErrorCode    ierr;
+  PetscInt          i,j,ii,jj,row,col;
+  PetscInt          rstart=baij->rstartbs;
+  PetscInt          rend=mat->rmap.rend,stepval,bs=mat->rmap.bs,bs2=baij->bs2,nbs2=n*bs2;
+  PetscInt          h1,key,size=baij->ht_size,idx,*HT=baij->ht,Nbs=baij->Nbs;
+  PetscReal         tmp;
+  MatScalar         **HD = baij->hd,*baij_a;
+  const PetscScalar *v_t,*value;
 #if defined(PETSC_USE_DEBUG)
-  PetscInt        total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
+  PetscInt          total_ct=baij->ht_total_ct,insert_ct=baij->ht_insert_ct;
 #endif
  
   PetscFunctionBegin;
