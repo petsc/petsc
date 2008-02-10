@@ -5,6 +5,10 @@
 #undef PETSC_AVOID_DECLARATIONS
 
         module petscdef
+#if defined(PETSC_HAVE_MPI_F90MODULE)
+        use mpi
+#define PETSC_AVOID_MPIF_H
+#endif
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscviewer.h"
 #include "include/finclude/petscdraw.h"
