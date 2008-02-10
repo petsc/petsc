@@ -5,9 +5,7 @@
 #define _BLASLAPACK_H
 #include "petsc.h"
 
-#if defined(PETSC_USES_CPTOFCD)
-#include "petscblaslapack_cptofcd.h"
-#elif defined(PETSC_HAVE_FORTRAN_STDCALL)
+#if defined(PETSC_HAVE_FORTRAN_STDCALL)
 #include "petscblaslapack_stdcall.h"
 #elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_UNDERSCORE)
 #include "petscblaslapack_uscore.h"
