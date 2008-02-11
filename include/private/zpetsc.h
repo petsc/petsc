@@ -48,34 +48,6 @@ EXTERN_C_END
 #endif
 
 /* --------------------------------------------------------------------*/
-/*
-    This defines the mappings from Fortran character strings 
-  to C character strings on the Cray T3D.
-*/
-#if defined(PETSC_USES_CPTOFCD)
-#include <fortran.h>
-
-#define CHAR _fcd
-#define FIXCHAR(a,n,b) \
-{ \
-  b = _fcdtocp(a); \
-  n = _fcdlen (a); \
-  if (b == PETSC_NULL_CHARACTER_Fortran) { \
-      b = 0; \
-  } else {  \
-    while((n > 0) && (b[n-1] == ' ')) n--; \
-    *ierr = PetscMalloc((n+1)*sizeof(char),&b); \
-    if(*ierr) return; \
-    *ierr = PetscStrncpy(b,_fcdtocp(a),n); \
-    if(*ierr) return; \
-    b[n] = 0; \
-  } \
-}
-#define FREECHAR(a,b) if (b) PetscFreeVoid(b);
-#define FIXRETURNCHAR(flg,a,n)
-
-#else
-
 #define CHAR char*
 #define FIXCHAR(a,n,b) \
 {\
@@ -99,8 +71,6 @@ if (flg) {					\
   for (__i=0; __i<n && a[__i] != 0; __i++) ; \
   for (; __i<n; __i++) a[__i] = ' ' ; \
 }
-
-#endif
 
 #define FORTRANNULL(a)         (((void*)a) == PETSC_NULL_Fortran)
 #define FORTRANNULLINTEGER(a)  (((void*)a) == PETSC_NULL_INTEGER_Fortran)

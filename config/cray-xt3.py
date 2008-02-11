@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 
-# After running configure - remove the following flags from petscconf.h
+# This script will generate configuration files for a Cray XT3/4 system 
+# running either Catamount or Compute Node Linux (CNL).  With either OS, 
+# some manual modifications must be made to petscconf.h.
+#
+# If running CNL, you must add PETSC_HAVE_F90_2PTR_ARG to petscconf.h 
+# after running configure.
+#
+# If running Catamount:
+# After running configure, remove the following flags from petscconf.h
 #
 # PETSC_HAVE_SYS_PROCFS_H
 # PETSC_HAVE_DLFCN_H
@@ -18,14 +26,14 @@
 #
 # PETSC_USE_SOCKET_VIEWER
 # PETSC_HAVE_GETPWUID
-
 #
 # And add the following
 #
 # PETSC_HAVE_LSEEK
 # PETSC_HAVE_GETCWD
-#
+# PETSC_HAVE_F90_2PTR_ARG
 
+# Configure script for building PETSc on the Cray XT3/4 ("Red Storm").
 configure_options = [
   '--with-batch=1',
   '--with-mpi-shared=0',
@@ -42,18 +50,17 @@ configure_options = [
   '--bits_per_byte=8',
   '--sizeof_MPI_Comm=4',
   '--sizeof_MPI_Fint=4',
-  
+  '--sizeof_size_t=8',  
   '--with-debugging=0',
   'COPTFLAGS=-fastsse -O3 -Munroll=c:4 -tp k8-64',
   'FOPTFLAGS=-fastsse -O3 -Munroll=c:4 -tp k8-64',
   '--with-x=0',
-  '--with-mpi-dir=/opt/xt-mpt/1.3.15/mpich2-64/P2'
+  '--with-mpi-dir=/opt/xt-mpt/default/mpich2-64/P2'
   ]
+
 if __name__ == '__main__':
   import os
   import sys
   sys.path.insert(0, os.path.abspath(os.path.join('config')))
   import configure
   configure.petsc_configure(configure_options)
-
-    

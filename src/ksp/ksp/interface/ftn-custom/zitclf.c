@@ -17,14 +17,7 @@ void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len
   const char *tname;
 
   *ierr = KSPGetOptionsPrefix(*ksp,&tname);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-    char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    *ierr = PetscStrncpy(t,tname,len1); if (*ierr) return;
-  }
-#else
   *ierr = PetscStrncpy(prefix,tname,len); if (*ierr) return;
-#endif
 }
 void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),
                                            PetscErrorCode *ierr PETSC_END_LEN(len))

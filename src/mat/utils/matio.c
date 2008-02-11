@@ -32,20 +32,15 @@
 .    -matload_type mpibaij  - parallel block AIJ type
 .    -matload_type seqsbaij - block symmetric AIJ type
 .    -matload_type mpisbaij - parallel block symmetric AIJ type
-.    -matload_type seqbdiag - block diagonal type
-.    -matload_type mpibdiag - parallel block diagonal type
 .    -matload_type mpirowbs - parallel rowbs type
 .    -matload_type seqdense - dense type
 .    -matload_type mpidense - parallel dense type
 -    -matload_symmetric - matrix in file is symmetric
 
    More Options Database Keys:
-   Used with block matrix formats (MATSEQBAIJ, MATMPIBDIAG, ...) to specify
+   Used with block matrix formats (MATSEQBAIJ,  ...) to specify
    block size
 .    -matload_block_size <bs>
-
-   Used to specify block diagonal numbers for MATSEQBDIAG and MATMPIBDIAG formats
-.    -matload_bdiag_diags <s1,s2,s3,...>
 
    Level: beginner
 

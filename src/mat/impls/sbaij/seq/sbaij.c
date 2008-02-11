@@ -575,14 +575,14 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
 #define __FUNCT__ "MatSetValuesBlocked_SeqSBAIJ"
 PetscErrorCode MatSetValuesBlocked_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt n,const PetscInt in[],const PetscScalar v[],InsertMode is)
 {
-  Mat_SeqSBAIJ    *a = (Mat_SeqSBAIJ*)A->data;
-  PetscErrorCode  ierr;
-  PetscInt        *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,lastcol = -1;
-  PetscInt        *imax=a->imax,*ai=a->i,*ailen=a->ilen;
-  PetscInt        *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=A->rmap.bs,stepval;
-  PetscTruth      roworiented=a->roworiented; 
-  const MatScalar *value = v;
-  MatScalar       *ap,*aa = a->a,*bap;
+  Mat_SeqSBAIJ      *a = (Mat_SeqSBAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          *rp,k,low,high,t,ii,jj,row,nrow,i,col,l,rmax,N,lastcol = -1;
+  PetscInt          *imax=a->imax,*ai=a->i,*ailen=a->ilen;
+  PetscInt          *aj=a->j,nonew=a->nonew,bs2=a->bs2,bs=A->rmap.bs,stepval;
+  PetscTruth        roworiented=a->roworiented; 
+  const PetscScalar *value = v;
+  MatScalar         *ap,*aa = a->a,*bap;
   
   PetscFunctionBegin;
   if (roworiented) { 
@@ -1188,7 +1188,7 @@ PetscErrorCode MatRealPart_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
   PetscInt       i,nz = a->bs2*a->i[a->mbs];
-  PetscScalar    *aa = a->a;
+  MatScalar      *aa = a->a;
 
   PetscFunctionBegin;  
   for (i=0; i<nz; i++) aa[i] = PetscRealPart(aa[i]);
@@ -1201,7 +1201,7 @@ PetscErrorCode MatImaginaryPart_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
   PetscInt       i,nz = a->bs2*a->i[a->mbs];
-  PetscScalar    *aa = a->a;
+  MatScalar      *aa = a->a;
 
   PetscFunctionBegin;  
   for (i=0; i<nz; i++) aa[i] = PetscImaginaryPart(aa[i]);

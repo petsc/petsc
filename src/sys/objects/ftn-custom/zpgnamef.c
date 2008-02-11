@@ -13,15 +13,7 @@ void PETSC_STDCALL petscobjectgetname_(PetscObject *obj,CHAR name PETSC_MIXED_LE
 {
   const char *tmp;
   *ierr = PetscObjectGetName(*obj,&tmp);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-  char *t = _fcdtocp(name);
-  int  len1 = _fcdlen(name);
-  *ierr = PetscStrncpy(t,tmp,len1);if (*ierr) return;
-  }
-#else
   *ierr = PetscStrncpy(name,tmp,len);if (*ierr) return;
-#endif
 }
 
 

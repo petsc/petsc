@@ -8,10 +8,10 @@ try:
 except ImportError:
   import sys
 
-  if os.path.isdir('python'):
-    sys.path.insert(0, os.path.join('python', 'BuildSystem'))
-  elif os.path.isdir(os.path.join('..', 'python')):
-    sys.path.insert(0, os.path.join(os.path.abspath('..'), 'python', 'BuildSystem'))
+  if os.path.isdir('config'):
+    sys.path.insert(0, os.path.join('config', 'BuildSystem'))
+  elif os.path.isdir(os.path.join('..', 'config')):
+    sys.path.insert(0, os.path.join(os.path.abspath('..'), 'config', 'BuildSystem'))
   import script
 
 class BuildChecker(script.Script):

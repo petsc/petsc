@@ -159,13 +159,8 @@ void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR na
 
   FIXCHAR(pre,len1,c1);
   FIXCHAR(name,len2,c2);
-#if defined(PETSC_USES_CPTOFCD)
-    c3   = _fcdtocp(string);
-    len3 = _fcdlen(string) - 1;
-#else
-    c3   = string;
-    len3 = len - 1;
-#endif
+  c3   = string;
+  len3 = len - 1;
 
   *ierr = PetscOptionsGetString(c1,c2,c3,len3,&flag);
   if (!FORTRANNULLTRUTH(flg)) *flg = flag;
@@ -178,13 +173,8 @@ void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),PetscE
 {
   char *tmp;
   size_t len;
-#if defined(PETSC_USES_CPTOFCD)
-  tmp = _fcdtocp(name);
-  len = _fcdlen(name) - 1;
-#else
   tmp = name;
   len = len_in - 1;
-#endif
   *ierr = PetscGetProgramName(tmp,len);
   FIXRETURNCHAR(PETSC_TRUE,name,len_in);
 }

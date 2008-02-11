@@ -466,7 +466,7 @@ runex1:
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex2:
-	-@for mattype in seqaij seqdense seqbdiag; do \
+	-@for mattype in seqaij seqdense; do \
 	  for shape in ${MATSHAPES}; do \
 	    ${MPIEXEC} -np 1 ./ex2 -mat_type $$mattype -rect$$shape > ex2_1.tmp 2>&1; \
 	      if (${DIFF} output/ex2_1_$$shape.out ex2_1.tmp) then true; \
@@ -489,7 +489,7 @@ runex3:
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   ${RM} -f ex3_1.tmp
 runex4:
-	@-for mattype in seqaij seqdense seqbdiag; do \
+	@-for mattype in seqaij seqdense; do \
 	  ${MPIEXEC} -np 1 ./ex4 -mat_type $$mattype > ex4_1.tmp 2>&1; \
 	    if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	    else echo "Possible problem with ex4_1 for" $$mattype", diffs above"; fi; \
@@ -503,7 +503,7 @@ runex4_2:
 	    ${RM} -f ex4_2.tmp; \
 	done;
 runex5:
-	-@for mattype in seqaij seqdense seqbdiag; do \
+	-@for mattype in seqaij seqdense; do \
 	  for shape in ${MATSHAPES}; do \
 	    ${MPIEXEC} -np 1 ./ex5 -mat_type $$mattype -rect$$shape > ex5_1.tmp 2>&1; \
 	      if (${DIFF} output/ex5_1_$$shape.out ex5_1.tmp) then true; \
@@ -513,7 +513,7 @@ runex5:
 	done;
 runex5_2:
 	@-for np in ${NPROCS}; do \
-	  for mattype in mpiaij mpidense mpibdiag; do \
+	  for mattype in mpiaij mpidense; do \
 	    ${MPIEXEC} -np $$np ./ex5 -mat_type $$mattype > ex5_2.tmp 2>&1; \
 	      if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	      else echo "Possible problem with ex5_2 for" $$mattype", -np="$$np", diffs above"; fi; \
@@ -633,7 +633,7 @@ runex19:
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex20:
-	-@${MPIEXEC} -np 1  ./ex20 -conv_mat_type seqbdiag > ex20_1.tmp 2>&1;	\
+	-@${MPIEXEC} -np 1  ./ex20 -conv_mat_type seqaij > ex20_1.tmp 2>&1;	\
 	   if (${DIFF} output/ex20_1.out ex20_1.tmp) then true; \
 	   else echo "Possible problem with ex20_1, diffs above"; fi; \
 	   ${RM} -f ex20_1.tmp

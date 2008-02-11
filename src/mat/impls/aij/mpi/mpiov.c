@@ -1,3 +1,4 @@
+
 #define PETSCMAT_DLL
 
 /*
@@ -565,7 +566,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
   PetscMPIInt    size,rank,*recvcounts = 0,*displs = 0;
   PetscInt       sendcount,i,*rstarts = A->rmap.range,n,cnt,j;
   PetscInt       m,*b_sendj,*garray = a->garray,*lens,*jsendbuf,*a_jsendbuf,*b_jsendbuf;
-  PetscScalar    *sendbuf,*recvbuf,*a_sendbuf,*b_sendbuf;
+  MatScalar      *sendbuf,*recvbuf,*a_sendbuf,*b_sendbuf;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);

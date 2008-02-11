@@ -15,22 +15,18 @@
   PetscInt         bs2;              /*  square of block size */                                     \
   PetscInt         mbs,nbs;          /* rows/bs, columns/bs */                                       \
   PetscScalar      *mult_work;       /* work array for matrix vector product*/                       \
-  PetscScalar      *saved_values;                                                                    \
+  MatScalar        *saved_values;                                                                    \
                                                                                                      \
   Mat              sbaijMat;         /* mat in sbaij format */                                       \
                                                                                                      \
-  PetscInt         setvalueslen;     /* only used for single precision */                            \
-  MatScalar        *setvaluescopy;   /* area double precision values in MatSetValuesXXX() are copied \
-                                      before calling MatSetValuesXXX_SeqBAIJ_MatScalar() */          \
-                                                                                                     \
   PetscTruth       pivotinblocks;    /* pivot inside factorization of each diagonal block */         \
                                                                                                      \
-  PetscScalar      *idiag;           /* inverse of block diagonal  */                                \
+  MatScalar        *idiag;           /* inverse of block diagonal  */                                \
   PetscTruth       idiagvalid       /* if above has correct/current values */
 
 
 typedef struct {
-  SEQAIJHEADER(PetscScalar);
+  SEQAIJHEADER(MatScalar);
   SEQBAIJHEADER;
 } Mat_SeqBAIJ;
 

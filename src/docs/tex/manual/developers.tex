@@ -1185,67 +1185,6 @@ PETSc provides a parallel, sparse, row-based matrix format that is
 intended for use in conjunction with the ILU and ICC preconditioners
 in BlockSolve95.  
 
-\subsection{Block Diagonal Sparse Matrices}
-\label{sec:bdiag}
-
-Storage \sindex{block diagonal matrix storage} by block diagonals is
-available in both uniprocessor and parallel versions, although currently
-only a subset of matrix operations is supported.  Each element of
-a block diagonal is defined to be a square dense block of size {\tt
-nb} $\times$ \trl{nb}, where conventional diagonal storage results for
-\trl{nb}=1.  Such storage is particularly useful for multicomponent PDEs
-discretized on regular grids.
-
-The routine for creating a uniprocessor block diagonal matrix with \trl{m} 
-rows, \trl{n} columns, and a block size of \trl{nb} is
-\begin{tabbing}
-   ierr = MatCreateSeqBDiag(PETSC\_COMM\_SELF,int m,int n,int nd,int nb,int *diag,\\
-                                   Scalar **diagv,Mat *A);
-\end{tabbing}
-The \findex{MatCreateSeqBDiag} argument \trl{nd} is the number of 
-block diagonals, and \trl{diag} is
-an array of block diagonal numbers.  For the matrix element $A_{ij}$,
-where $i$ and $j$ respectively denote the row and column number of the 
-element, the block diagonal number is computed using integer division by
-\[ {\tt diag} = i/nb - j/nb. \]
-If matrix storage space is allocated by the user, the argument \trl{diagv} 
-is a pointer to the actual diagonals (in the same order as the \trl{diag} 
-array).  For PETSc to control memory allocation, the user should merely
-set \trl{diagv=PETSC\_NULL}.
-
-A simple example of this storage format is illustrated below for block
-size \trl{nb}=1. 
-Here \trl{nd} = 4 and \trl{diag} = [2, 1, 0, -3]. The
-diagonals need not be listed in any particular order, so that
-\trl{diag} = [-3, 0, 1, 2] or \trl{diag} = [0, 2, -3, 1] would also
-be valid values for the \trl{diag} array. 
-
-\begin{center}
-\begin{tabular}{| c c c c c c |}
-\hline
-a00  &0    &0    &a03  &0    &0\\
-a10  &a11  &0    &0    &a14  &0\\
-a20  &a21  &a22  &0    &0    &a25\\
-0    &a31  &a32  &a33  &0    &0\\
-0    &0    &a42  &a43  &a44  &0\\
-0    &0    &0    &a53  &a54  &a55\\
-\hline
-\end{tabular}
-\end{center}
-
-\subsection{Parallel Block Diagonal Sparse Matrices}
-
-The parallel block diagonal matrices are partitioned by rows across
-the processors, so that each local rectangular submatrix is stored by
-block diagonals as described above.  The routine for creating a
-parallel block diagonal matrix with \trl{m} local rows, \trl{M} global
-rows, \trl{n} global columns, and a block size of \trl{nb} is
-\begin{tabbing}
-   ierr = MatCreateMPIBDiag(PETSC\_COMM\_SELF,int m,int M,int N,int nd,int nb,int *diag,\\
-                            Scalar **diagv,Mat *A);
-\end{tabbing}
-Either the \trl{m} or \trl{M} can be set to PETSC\_DECIDE for PETSc
-to determine the corresponding quantity.
 
 
 \bibliographystyle{plain}

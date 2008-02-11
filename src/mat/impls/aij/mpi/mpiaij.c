@@ -3,6 +3,176 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
 #include "src/inline/spops.h"
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatDistribute_MPIAIJ"
+/*
+    Distributes a SeqAIJ matrix across a set of processes. Code stolen from
+    MatLoad_MPIAIJ(). Horrible lack of reuse. Should be a routine for each matrix type.
+
+    Only for square matrices
+*/
+PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,MatReuse reuse,Mat *inmat)
+{
+  PetscMPIInt    rank,size;
+  PetscInt       *rowners,*dlens,*olens,i,rstart,rend,j,jj,nz,*gmataj,cnt,row,*ld;
+  PetscErrorCode ierr;
+  Mat            mat;
+  Mat_SeqAIJ     *gmata;
+  PetscMPIInt    tag;
+  MPI_Status     status;
+  PetscTruth     aij;
+  MatScalar      *gmataa,*ao,*ad,*gmataarestore=0;
+
+  PetscFunctionBegin;
+  CHKMEMQ;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscTypeCompare((PetscObject)gmat,MATSEQAIJ,&aij);CHKERRQ(ierr);
+    if (!aij) SETERRQ1(PETSC_ERR_SUP,"Currently no support for input matrix of type %s\n",((PetscObject)gmat)->type_name);
+  }
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
+    ierr = MatSetSizes(mat,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+    ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
+    ierr = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
+    ierr = PetscMalloc2(m,PetscInt,&dlens,m,PetscInt,&olens);CHKERRQ(ierr);
+    ierr = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
+    rowners[0] = 0;
+    for (i=2; i<=size; i++) {
+      rowners[i] += rowners[i-1];
+    }
+    rstart = rowners[rank]; 
+    rend   = rowners[rank+1]; 
+    ierr   = PetscObjectGetNewTag((PetscObject)mat,&tag);CHKERRQ(ierr);
+    if (!rank) {
+      gmata = (Mat_SeqAIJ*) gmat->data;
+      /* send row lengths to all processors */
+      for (i=0; i<m; i++) dlens[i] = gmata->ilen[i];
+      for (i=1; i<size; i++) {
+	ierr = MPI_Send(gmata->ilen + rowners[i],rowners[i+1]-rowners[i],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      }
+      /* determine number diagonal and off-diagonal counts */
+      ierr = PetscMemzero(olens,m*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMalloc(m*sizeof(PetscInt),&ld);CHKERRQ(ierr);
+      ierr = PetscMemzero(ld,m*sizeof(PetscInt));CHKERRQ(ierr);
+      jj = 0;
+      for (i=0; i<m; i++) {
+	for (j=0; j<dlens[i]; j++) {
+          if (gmata->j[jj] < rstart) ld[i]++;
+	  if (gmata->j[jj] < rstart || gmata->j[jj] >= rend) olens[i]++;
+	  jj++;
+	}
+      }
+      /* send column indices to other processes */
+      for (i=1; i<size; i++) {
+	nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
+	ierr = MPI_Send(&nz,1,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+	ierr = MPI_Send(gmata->j + gmata->i[rowners[i]],nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      }
+
+      /* send numerical values to other processes */
+      for (i=1; i<size; i++) {
+        nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
+        ierr = MPI_Send(gmata->a + gmata->i[rowners[i]],nz,MPIU_SCALAR,i,tag,comm);CHKERRQ(ierr);
+      }
+      gmataa = gmata->a;
+      gmataj = gmata->j;
+
+    } else {
+      /* receive row lengths */
+      ierr = MPI_Recv(dlens,m,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+      /* receive column indices */
+      ierr = MPI_Recv(&nz,1,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+      ierr = PetscMalloc2(nz,PetscScalar,&gmataa,nz,PetscInt,&gmataj);CHKERRQ(ierr);
+      ierr = MPI_Recv(gmataj,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+      /* determine number diagonal and off-diagonal counts */
+      ierr = PetscMemzero(olens,m*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMalloc(m*sizeof(PetscInt),&ld);CHKERRQ(ierr);
+      ierr = PetscMemzero(ld,m*sizeof(PetscInt));CHKERRQ(ierr);
+      jj = 0;
+      for (i=0; i<m; i++) {
+	for (j=0; j<dlens[i]; j++) {
+          if (gmataj[jj] < rstart) ld[i]++;
+	  if (gmataj[jj] < rstart || gmataj[jj] >= rend) olens[i]++;
+	  jj++;
+	}
+      }
+      /* receive numerical values */
+      ierr = PetscMemzero(gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr);
+      ierr = MPI_Recv(gmataa,nz,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
+    }
+    /* set preallocation */
+    for (i=0; i<m; i++) {
+      dlens[i] -= olens[i];
+    }
+    ierr = MatSeqAIJSetPreallocation(mat,0,dlens);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(mat,0,dlens,0,olens);CHKERRQ(ierr);
+    
+    for (i=0; i<m; i++) {
+      dlens[i] += olens[i];
+    }
+    cnt  = 0;
+    for (i=0; i<m; i++) {
+      row  = rstart + i;
+      ierr = MatSetValues(mat,1,&row,dlens[i],gmataj+cnt,gmataa+cnt,INSERT_VALUES);CHKERRQ(ierr);
+      cnt += dlens[i];
+    }
+    if (rank) {
+      ierr = PetscFree2(gmataa,gmataj);CHKERRQ(ierr);
+    }
+    ierr = PetscFree2(dlens,olens);CHKERRQ(ierr);
+    ierr = PetscFree(rowners);CHKERRQ(ierr);
+    ((Mat_MPIAIJ*)(mat->data))->ld = ld;
+    *inmat = mat;
+  } else {   /* column indices are already set; only need to move over numerical values from process 0 */
+    Mat_SeqAIJ *Ad = (Mat_SeqAIJ*)((Mat_MPIAIJ*)((*inmat)->data))->A->data;
+    Mat_SeqAIJ *Ao = (Mat_SeqAIJ*)((Mat_MPIAIJ*)((*inmat)->data))->B->data;
+    mat   = *inmat;
+    ierr  = PetscObjectGetNewTag((PetscObject)mat,&tag);CHKERRQ(ierr);
+    if (!rank) {
+      /* send numerical values to other processes */
+      gmata = (Mat_SeqAIJ*) gmat->data;
+      ierr   = MatGetOwnershipRanges(mat,(const PetscInt**)&rowners);CHKERRQ(ierr);
+      gmataa = gmata->a; 
+      for (i=1; i<size; i++) {
+        nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
+        ierr = MPI_Send(gmataa + gmata->i[rowners[i]],nz,MPIU_SCALAR,i,tag,comm);CHKERRQ(ierr);
+      }
+      nz   = gmata->i[rowners[1]]-gmata->i[rowners[0]];
+    } else {
+      /* receive numerical values from process 0*/
+      nz   = Ad->nz + Ao->nz;
+      ierr = PetscMalloc(nz*sizeof(PetscScalar),&gmataa);CHKERRQ(ierr); gmataarestore = gmataa;
+      ierr = MPI_Recv(gmataa,nz,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
+    }
+    /* transfer numerical values into the diagonal A and off diagonal B parts of mat */
+    ld = ((Mat_MPIAIJ*)(mat->data))->ld;
+    ad = Ad->a;
+    ao = Ao->a;
+    if (mat->rmap.n) {
+      i  = 0;
+      nz = ld[i];                                   ierr = PetscMemcpy(ao,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ao += nz; gmataa += nz;
+      nz = Ad->i[i+1] - Ad->i[i];                   ierr = PetscMemcpy(ad,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ad += nz; gmataa += nz;
+    }
+    for (i=1; i<mat->rmap.n; i++) {
+      nz = Ao->i[i] - Ao->i[i-1] - ld[i-1] + ld[i]; ierr = PetscMemcpy(ao,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ao += nz; gmataa += nz;
+      nz = Ad->i[i+1] - Ad->i[i];                   ierr = PetscMemcpy(ad,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ad += nz; gmataa += nz;
+    }
+    i--;
+    if (mat->rmap.n) {
+      nz = Ao->i[i+1] - Ao->i[i] - ld[i];           ierr = PetscMemcpy(ao,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ao += nz; gmataa += nz;
+    }
+    if (rank) {
+      ierr = PetscFree(gmataarestore);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscFunctionReturn(0);
+}
+
 /* 
   Local utility routine that creates a mapping from the global column 
 number to the local number in the off-diagonal part of the local 
@@ -938,7 +1108,7 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     Mat         A;
     Mat_SeqAIJ  *Aloc;
     PetscInt    M = mat->rmap.N,N = mat->cmap.N,m,*ai,*aj,row,*cols,i,*ct;
-    PetscScalar *a;
+    MatScalar   *a;
 
     if (mat->rmap.N > 1024) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"ASCII matrix output not allowed for matrices with more than 512 rows, use binary format instead");
 
@@ -3655,7 +3825,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   MPI_Request          *s_waits,*r_waits; 
   MPI_Status           *status;
   MatScalar            *aa=a->a;
-  PetscScalar          **abuf_r,*ba_i;
+  MatScalar            **abuf_r,*ba_i;
   Mat_Merge_SeqsToMPI  *merge;
   PetscContainer       container;
   
@@ -4286,7 +4456,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAcols(Mat A,Mat B,MatReuse scall,
     Level: developer
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj,PetscScalar **bufa_ptr,Mat *B_oth) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall,PetscInt **startsj,MatScalar **bufa_ptr,Mat *B_oth) 
 {
   VecScatter_MPI_General *gen_to,*gen_from;
   PetscErrorCode         ierr;
@@ -4296,7 +4466,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
   MPI_Comm               comm=((PetscObject)ctx)->comm;
   PetscMPIInt            *rprocs,*sprocs,tag=((PetscObject)ctx)->tag,rank; 
   PetscInt               *rowlen,*bufj,*bufJ,ncols,aBn=a->B->cmap.n,row,*b_othi,*b_othj;
-  PetscScalar            *rvalues,*svalues,*b_otha,*bufa,*bufA;
+  PetscScalar            *rvalues,*svalues;
+  MatScalar              *b_otha,*bufa,*bufA;
   PetscInt               i,j,k,l,ll,nrecvs,nsends,nrows,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
   MPI_Request            *rwaits = PETSC_NULL,*swaits = PETSC_NULL;
   MPI_Status             *sstatus,rstatus;
@@ -4389,7 +4560,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
 
     /* allocate space for j and a arrrays of B_oth */
     ierr = PetscMalloc((b_othi[aBn]+1)*sizeof(PetscInt),&b_othj);CHKERRQ(ierr);
-    ierr = PetscMalloc((b_othi[aBn]+1)*sizeof(PetscScalar),&b_otha);CHKERRQ(ierr);
+    ierr = PetscMalloc((b_othi[aBn]+1)*sizeof(MatScalar),&b_otha);CHKERRQ(ierr);
 
     /* j-array */
     /*---------*/
@@ -4718,12 +4889,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "matsetvaluesmpiaij_"
 void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[],PetscInt *mn,const PetscInt in[],const PetscScalar v[],InsertMode *maddv,PetscErrorCode *_ierr)
 {
-  Mat            mat = *mmat;
-  PetscInt       m = *mm, n = *mn;
-  InsertMode     addv = *maddv;
-  Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
-  PetscScalar    value;
-  PetscErrorCode ierr;
+  Mat             mat = *mmat;
+  PetscInt        m = *mm, n = *mn;
+  InsertMode      addv = *maddv;
+  Mat_MPIAIJ      *aij = (Mat_MPIAIJ*)mat->data;
+  PetscScalar     value;
+  PetscErrorCode  ierr;
 
   MatPreallocated(mat);
   if (mat->insertmode == NOT_SET_VALUES) {
@@ -4735,24 +4906,24 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
   }
 #endif
   { 
-  PetscInt       i,j,rstart = mat->rmap.rstart,rend = mat->rmap.rend;
-  PetscInt       cstart = mat->cmap.rstart,cend = mat->cmap.rend,row,col;
-  PetscTruth     roworiented = aij->roworiented;
+  PetscInt        i,j,rstart = mat->rmap.rstart,rend = mat->rmap.rend;
+  PetscInt        cstart = mat->cmap.rstart,cend = mat->cmap.rend,row,col;
+  PetscTruth      roworiented = aij->roworiented;
 
   /* Some Variables required in the macro */
-  Mat            A = aij->A;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
-  PetscInt       *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
-  PetscScalar    *aa = a->a;
-  PetscTruth     ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
-  Mat            B = aij->B;
-  Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data; 
-  PetscInt       *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->rmap.n,am = aij->A->rmap.n;
-  PetscScalar    *ba = b->a;
+  Mat             A = aij->A;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data; 
+  PetscInt        *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
+  MatScalar       *aa = a->a;
+  PetscTruth      ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
+  Mat             B = aij->B;
+  Mat_SeqAIJ      *b = (Mat_SeqAIJ*)B->data; 
+  PetscInt        *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->rmap.n,am = aij->A->rmap.n;
+  MatScalar       *ba = b->a;
 
-  PetscInt       *rp1,*rp2,ii,nrow1,nrow2,_i,rmax1,rmax2,N,low1,high1,low2,high2,t,lastcol1,lastcol2; 
-  PetscInt       nonew = a->nonew; 
-  PetscScalar    *ap1,*ap2;
+  PetscInt        *rp1,*rp2,ii,nrow1,nrow2,_i,rmax1,rmax2,N,low1,high1,low2,high2,t,lastcol1,lastcol2; 
+  PetscInt        nonew = a->nonew; 
+  MatScalar       *ap1,*ap2;
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {

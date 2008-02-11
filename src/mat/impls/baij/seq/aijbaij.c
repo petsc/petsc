@@ -12,7 +12,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newty
   PetscErrorCode ierr;
   PetscInt       bs = A->rmap.bs,*ai = a->i,*aj = a->j,n = A->rmap.N/bs,i,j,k;
   PetscInt       *rowlengths,*rows,*cols,maxlen = 0,ncols;
-  PetscScalar    *aa = a->a;
+  MatScalar      *aa = a->a;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(n*bs*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);

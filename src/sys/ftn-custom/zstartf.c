@@ -65,22 +65,6 @@ void PETSC_STDCALL petscinitializefortran_(int *ierr)
   *ierr = PetscInitializeFortran();
 }
 
-#if defined(PETSC_USES_CPTOFCD)
-void PETSC_STDCALL petscsetfortranbasepointers_(_fcd fnull_character,void *fnull_integer,
-                                  void* fnull,void *fnull_scalar,void * fnull_double, void *fnull_real,void* fnull_object,
-                                  void* fnull_truth,void (*fnull_function)(void))
-{
-  PETSC_NULL_CHARACTER_Fortran  = _fcdtocp(fnull_character);
-  PETSC_NULL_INTEGER_Fortran    = fnull_integer;
-  PETSC_NULL_Fortran            = fnull;
-  PETSC_NULL_SCALAR_Fortran     = fnull_scalar;
-  PETSC_NULL_DOUBLE_Fortran     = fnull_double;
-  PETSC_NULL_REAL_Fortran       = fnull_real;
-  PETSC_NULL_OBJECT_Fortran     = fnull_object;
-  PETSC_NULL_TRUTH_Fortran      = fnull_truth;
-  PETSC_NULL_FUNCTION_Fortran   = fnull_function;
-}
-#else
 void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXED_LEN(len),
                                   void *fnull_integer,void* fnull,void *fnull_scalar,void * fnull_double,
   				  void *fnull_real,void *fnull_object,
@@ -95,7 +79,6 @@ void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXE
   PETSC_NULL_TRUTH_Fortran      = fnull_truth;
   PETSC_NULL_FUNCTION_Fortran   = fnull_function;
 }
-#endif 
 
 /*
   A valid address for the fortran variable PETSC_NULL_FUNCTION

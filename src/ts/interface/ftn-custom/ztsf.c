@@ -163,14 +163,7 @@ void PETSC_STDCALL tsgetoptionsprefix_(TS *ts,CHAR prefix PETSC_MIXED_LEN(len),P
   const char *tname;
 
   *ierr = TSGetOptionsPrefix(*ts,&tname);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-    char *t = _fcdtocp(prefix); int len1 = _fcdlen(prefix);
-    *ierr = PetscStrncpy(t,tname,len1);
-  }
-#else
   *ierr = PetscStrncpy(prefix,tname,len);
-#endif
 }
 
 

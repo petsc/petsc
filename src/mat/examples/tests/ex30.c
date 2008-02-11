@@ -38,8 +38,6 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_SELF,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,m*n,m*n,m*n,m*n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  ierr = MatSeqBDiagSetPreallocation(C,0,1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(C,5,PETSC_NULL);CHKERRQ(ierr);
 
   /* Create matrix C in seqaij format and sC in seqsbaij. (This is five-point stencil with some extra elements) */
   for (i=0; i<m; i++) {

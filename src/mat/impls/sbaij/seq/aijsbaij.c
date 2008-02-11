@@ -15,7 +15,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap.N,n=A->cmap.n,i,j,k,*bi,*bj,*rowlengths,nz,*rowstart,itmp;
   PetscInt       bs=A->rmap.bs,bs2=bs*bs,mbs=A->rmap.N/bs;
-  PetscScalar    *av,*bv;
+  MatScalar      *av,*bv;
 
   PetscFunctionBegin;
   /* compute rowlengths of newmat */
@@ -122,7 +122,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newt
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj,m=A->rmap.N,n=A->cmap.N,i,j,*bi,*bj,*rowlengths;
-  PetscScalar    *av,*bv;
+  MatScalar      *av,*bv;
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
@@ -179,7 +179,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType new
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj=a->j,m=A->rmap.N,n=A->cmap.n,i,k,*bi,*bj,*browlengths,nz,*browstart,itmp;
   PetscInt       bs=A->rmap.bs,bs2=bs*bs,mbs=m/bs;
-  PetscScalar    *av,*bv;
+  MatScalar      *av,*bv;
 
   PetscFunctionBegin;
   /* compute browlengths of newmat */
@@ -270,7 +270,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType new
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj,m=A->rmap.N,n=A->cmap.n,i,j,k,*bi,*bj,*browlengths;
   PetscInt       bs=A->rmap.bs,bs2=bs*bs,mbs=m/bs,dd;
-  PetscScalar    *av,*bv;
+  MatScalar      *av,*bv;
   PetscTruth     flg;
 
   PetscFunctionBegin;

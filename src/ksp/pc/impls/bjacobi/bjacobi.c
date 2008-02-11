@@ -721,7 +721,7 @@ PetscErrorCode PCDestroy_BJacobi_Singleblock(PC pc)
   PetscFunctionBegin;
   /*
         If the on processor block had to be generated via a MatGetDiagonalBlock()
-     that creates a copy (for example MPIBDiag matrices do), this frees the space
+     that creates a copy, this frees the space
   */
   if (jac->tp_mat) {
     ierr = MatDestroy(jac->tp_mat);CHKERRQ(ierr);
@@ -963,7 +963,7 @@ PetscErrorCode PCDestroy_BJacobi_Multiblock(PC pc)
 
   /*
         If the on processor block had to be generated via a MatGetDiagonalBlock()
-     that creates a copy (for example MPIBDiag matrices do), this frees the space
+     that creates a copy, this frees the space
   */
   if (jac->tp_mat) {
     ierr = MatDestroy(jac->tp_mat);CHKERRQ(ierr);

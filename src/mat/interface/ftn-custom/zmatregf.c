@@ -25,18 +25,9 @@ void PETSC_STDCALL matgettype_(Mat *mm,CHAR name PETSC_MIXED_LEN(len),PetscError
   const char *tname;
 
   *ierr = MatGetType(*mm,&tname);
-#if defined(PETSC_USES_CPTOFCD)
-  {
-    char *t = _fcdtocp(name); int len1 = _fcdlen(name);
-    if (t != PETSC_NULL_CHARACTER_Fortran) {
-      *ierr = PetscStrncpy(t,tname,len1);if (*ierr) return;
-    }
-  }
-#else
   if (name != PETSC_NULL_CHARACTER_Fortran) {
     *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
   }
-#endif
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 
 }
