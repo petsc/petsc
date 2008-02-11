@@ -164,7 +164,11 @@ namespace ALE {
     };
   }
 #endif
+#ifdef PETSC_HAVE_CHACO
   template<typename GraphPartitioner = ALE::Chaco::Partitioner<>, typename Alloc_ = std::allocator<int> >
+#else
+  template<typename GraphPartitioner, typename Alloc_ = std::allocator<int> >
+#endif
   class Partitioner {
   public:
     typedef Alloc_                               alloc_type;
