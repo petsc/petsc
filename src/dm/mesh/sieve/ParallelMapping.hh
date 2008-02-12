@@ -475,7 +475,7 @@ namespace ALE {
           // TODO: This should use an allocator
           delete [] sendValues[*r_iter];
         }
-        recvSection->view("After copy");
+        //recvSection->view("After copy");
       };
       // Copy the overlap section to the related processes
       //   This version is for sections with the same type
@@ -549,7 +549,7 @@ namespace ALE {
           // TODO: This should use an allocator
           delete [] sendValues[*r_iter];
         }
-        recvSection->view("After copy");
+        //recvSection->view("After copy");
       };
       // Specialize to a ConstantSection
       template<typename SendOverlap, typename RecvOverlap, typename Value>
