@@ -44,7 +44,7 @@ int PETSC_dsygv_interface (int *itype, char *jobz, char *uplo,PetscInt *
    #endif
 
    itype_ = PetscBLASIntCast(*itype);
-   n_ = PetscBLASIntCast(*n0);
+   n_ = PetscBLASIntCast(*n); /* it said n0 here */
    lda_ = PetscBLASIntCast(*lda);
    ldb_ = PetscBLASIntCast(*ldb);
    lwork_ = PetscBLASIntCast(*lwork);
