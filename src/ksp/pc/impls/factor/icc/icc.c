@@ -1,10 +1,5 @@
 #define PETSCKSP_DLL
 
-/*
-   Defines a Cholesky factorization preconditioner for any Mat implementation.
-  Presently only provided for MPIRowbs format (i.e. BlockSolve).
-*/
-
 #include "src/ksp/pc/impls/factor/icc/icc.h"   /*I "petscpc.h" I*/
 
 EXTERN_C_BEGIN
@@ -281,7 +276,9 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 
   Concepts: incomplete Cholesky factorization
 
-   Notes: Only implemented for some matrix formats. Not implemented in parallel
+   Notes: Only implemented for some matrix formats. Not implemented in parallel (for parallel use you 
+             must use MATMPIROWBS, see MatCreateMPIRowbs(), this supports only ICC(0) and this is not recommended
+             unless you really want a parallel ICC).
 
           For BAIJ matrices this implements a point block ICC.
 
@@ -289,6 +286,12 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 
           By default, the Manteuffel is applied (for matrices with block size 1). Call PCFactorSetShiftPd(pc,PETSC_FALSE);
           to turn off the shift.
+
+   References:
+   Review article: APPROXIMATE AND INCOMPLETE FACTORIZATIONS, TONY F. CHAN AND HENK A. VAN DER VORST
+      http://igitur-archive.library.uu.nl/math/2001-0621-115821/proc.pdf chapter in Parallel Numerical
+      Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
+      Science and Engineering, Kluwer, pp. 167--202.
 
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,

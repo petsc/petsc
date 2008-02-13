@@ -218,6 +218,8 @@ EXTERN_C_END
    Level: beginner
 
    Notes: x^{n+1} = x^{n} + scale*B(b - A x^{n})
+ 
+          Here B is the application of the preconditioner
 
           This method often (usually) will not converge unless scale is very small
 

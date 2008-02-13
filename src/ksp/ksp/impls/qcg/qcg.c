@@ -110,38 +110,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPQCGGetQuadratic(KSP ksp,PetscReal *quadrati
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_QCG"
-/* 
-  KSPSolve_QCG - Use preconditioned conjugate gradient to compute 
-  an approximate minimizer of the quadratic function 
 
-            q(s) = g^T * s + .5 * s^T * H * s
-
-   subject to the Euclidean norm trust region constraint
-
-            || D * s || <= delta,
-
-   where 
-
-     delta is the trust region radius, 
-     g is the gradient vector, and
-     H is Hessian matrix,
-     D is a scaling matrix.
-
-   KSPConvergedReason may be 
-$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
-$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
-$  other KSP converged/diverged reasons
-
-
-  Notes:
-  Currently we allow symmetric preconditioning with the following scaling matrices:
-      PCNONE:   D = Identity matrix
-      PCJACOBI: D = diag [d_1, d_2, ...., d_n], where d_i = sqrt(H[i,i])
-      PCICC:    D = L^T, implemented with forward and backward solves.
-                Here L is an incomplete Cholesky factor of H.
-
- We should perhaps rewrite using PCApplyBAorAB().
- */
 PetscErrorCode KSPSolve_QCG(KSP ksp)
 {
 /* 
@@ -467,6 +436,39 @@ PetscErrorCode KSPSetFromOptions_QCG(KSP ksp)
    Notes: This is rarely used directly
 
    Level: developer
+
+  Notes:  Use preconditioned conjugate gradient to compute 
+      an approximate minimizer of the quadratic function 
+
+            q(s) = g^T * s + .5 * s^T * H * s
+
+   subject to the Euclidean norm trust region constraint
+
+            || D * s || <= delta,
+
+   where 
+
+     delta is the trust region radius, 
+     g is the gradient vector, and
+     H is Hessian matrix,
+     D is a scaling matrix.
+
+   KSPConvergedReason may be 
+$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
+$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
+$  other KSP converged/diverged reasons
+
+
+  Notes:
+  Currently we allow symmetric preconditioning with the following scaling matrices:
+      PCNONE:   D = Identity matrix
+      PCJACOBI: D = diag [d_1, d_2, ...., d_n], where d_i = sqrt(H[i,i])
+      PCICC:    D = L^T, implemented with forward and backward solves.
+                Here L is an incomplete Cholesky factor of H.
+
+  References:
+   The Conjugate Gradient Method and Trust Regions in Large Scale Optimization, Trond Steihaug
+   SIAM Journal on Numerical Analysis, Vol. 20, No. 3 (Jun., 1983), pp. 626-637
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPQCGSetTrustRegionRadius()
            KSPQCGGetTrialStepNorm(), KSPQCGGetQuadratic()
