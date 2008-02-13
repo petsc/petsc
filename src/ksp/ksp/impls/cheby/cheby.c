@@ -1,9 +1,5 @@
 #define PETSCKSP_DLL
 
-/*
-    This is a first attempt at a Chebychev routine, it is not 
-    necessarily well optimized.
-*/
 #include "include/private/kspimpl.h"                    /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/cheby/chebctx.h"
 
@@ -49,6 +45,9 @@ EXTERN_C_END
 
   Options Database:
 .  -ksp_chebychev_eigenvalues emin,emax
+
+   Note: If you run with the Krylov method of KSPCG with the option -ksp_monitor_singular_value it will 
+    for that given matrix and preconditioner an estimate of the extreme eigenvalues.
 
    Level: intermediate
 
@@ -249,7 +248,7 @@ PetscErrorCode KSPDestroy_Chebychev(KSP ksp)
           be symmetric positive (semi) definite
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPChebychevSetEigenvalues()
+           KSPChebychevSetEigenvalues(), KSPRICHARDSON, KSPCG
 
 M*/
 

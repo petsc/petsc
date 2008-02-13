@@ -691,9 +691,24 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftInBlocks(PC pc,PetscReal shift
 
   Concepts: incomplete factorization
 
-   Notes: Only implemented for some matrix formats. Not implemented in parallel
+   Notes: Only implemented for some matrix formats. (for parallel use you 
+             must use MATMPIROWBS, see MatCreateMPIRowbs(), this supports only ILU(0) and this is not recommended
+             unless you really want a parallel ILU).
 
           For BAIJ matrices this implements a point block ILU
+
+   References:
+   T. Dupont, R. Kendall, and H. Rachford. An approximate factorization procedure for solving
+   self-adjoint elliptic difference equations. SIAM J. Numer. Anal., 5:559--573, 1968.
+
+   T.A. Oliphant. An implicit numerical method for solving two-dimensional time-dependent dif-
+   fusion problems. Quart. Appl. Math., 19:221--229, 1961.
+
+   Review article: APPROXIMATE AND INCOMPLETE FACTORIZATIONS, TONY F. CHAN AND HENK A. VAN DER VORST
+      http://igitur-archive.library.uu.nl/math/2001-0621-115821/proc.pdf chapter in Parallel Numerical
+      Algorithms, edited by D. Keyes, A. Semah, V. Venkatakrishnan, ICASE/LaRC Interdisciplinary Series in
+      Science and Engineering, Kluwer, pp. 167--202.
+
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCFactorSetUseDropTolerance(),

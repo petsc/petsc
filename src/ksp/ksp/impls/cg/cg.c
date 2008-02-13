@@ -354,7 +354,12 @@ EXTERN_C_END
    Notes: The PCG method requires both the matrix and preconditioner to 
           be symmetric positive (semi) definite
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+   References:
+   Methods of Conjugate Gradients for Solving Linear Systems, Magnus R. Hestenes and Eduard Stiefel,
+   Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
+   pp. 409--436.
+
+.Seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPCGSetType()
 
 M*/

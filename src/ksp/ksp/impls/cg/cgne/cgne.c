@@ -64,7 +64,7 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 
 
-    Probably virtually identical to the KSPSolve_CG, would be nice if we could reuse the code
+    Virtually identical to the KSPSolve_CG, it should definitely reuse the same code.
 
 */
 #undef __FUNCT__  
@@ -121,12 +121,12 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
     ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
   }
 
-  ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
   if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- z'*z       */
   } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
+    ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
     dp = sqrt(PetscAbsScalar(beta));
   } else dp = 0.0;
   KSPLogResidualHistory(ksp,dp);
@@ -194,7 +194,11 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
      if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
-       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /* z <- Br  */
+       if (transpose_pc) {
+	 ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
+       } else {
+	 ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
+       }
      }
      i++;
   } while (i<ksp->max_it);
@@ -222,7 +226,10 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
    Level: beginner
 
    Notes: eigenvalue computation routines will return information about the
-          spectrum of A^tA, rather than A.
+          spectrum of A^t*A, rather than A.
+
+   This is NOT a different algorithm then used with KSPCG, it merely uses that algorithm with the 
+   matrix defined by A^t*A and preconditioner defined by B^t*B where B is the preconditioner for A.
 
    This method requires that one be apply to apply the transpose of the preconditioner and operator
    as well as the operator and preconditioner. If the transpose of the preconditioner is not available then

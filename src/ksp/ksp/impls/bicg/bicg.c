@@ -149,7 +149,7 @@ PetscErrorCode KSPDestroy_BiCG(KSP ksp)
 }
 
 /*MC
-     KSPBICG - Implements the Biconjugate gradient method (essentially running the conjugate
+     KSPBICG - Implements the Biconjugate gradient method (similar to running the conjugate
          gradient on the normal equations).
 
    Options Database Keys:
@@ -159,6 +159,9 @@ PetscErrorCode KSPDestroy_BiCG(KSP ksp)
 
    Note: this method requires that one be apply to apply the transpose of the preconditioner and operator
          as well as the operator and preconditioner.
+
+         See KSPCGNE for code that EXACTLY runs the preconditioned conjugate gradient method on the 
+         normal equations
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPCGNE
 

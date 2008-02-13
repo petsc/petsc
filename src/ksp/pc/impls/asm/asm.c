@@ -821,6 +821,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscIn
 
    Concepts: additive Schwarz method
 
+    References:
+    An additive variant of the Schwarz alternating method for the case of many subregions
+    M Dryja, OB Widlund - Courant Institute, New York University Technical report
+
+    Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations, 
+    Barry Smith, Petter Bjorstad, and William Gropp, Cambridge University Press, ISBN 0-521-49589-X.
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCBJACOBI, PCASMSetUseTrueLocal(), PCASMGetSubKSP(), PCASMSetLocalSubdomains(),
            PCASMSetTotalSubdomains(), PCSetModifySubmatrices(), PCASMSetOverlap(), PCASMSetType(),

@@ -142,6 +142,13 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
    Notes: The operator and the preconditioner must be symmetric for this method. The 
           preconditioner must be POSITIVE-DEFINITE and the operator POSITIVE-SEMIDEFINITE
 
+
+   References:
+   Methods of Conjugate Gradients for Solving Linear Systems, Magnus R. Hestenes and Eduard Stiefel,
+   Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
+   pp. 409--436.
+
+
 .seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
 M*/
 EXTERN_C_BEGIN
