@@ -2349,6 +2349,821 @@ namespace ALE {
       PetscSynchronizedFlush(comm);
     };
   };
+  // FEMSection will support vector BC on a subset of unknowns on a point
+  //   We make a separate constraint Section to hold the transformation and projection operators
+  //   Storage will be contiguous by node, just as in Section
+  //     This allows fast restrict(p)
+  //     Then update() is accomplished by projecting constrained unknowns
+  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_>,
+           typename Atlas_ = UniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other>,
+           typename BCAtlas_ = UniformSection<Point_, int, 1, typename Alloc_::template rebind<int>::other>,
+           typename BC_ = Section<Point_, double, typename Alloc_::template rebind<double>::other> >
+  class FEMSection : public ALE::ParallelObject {
+  public:
+    typedef Point_                                                  point_type;
+    typedef Value_                                                  value_type;
+    typedef Alloc_                                                  alloc_type;
+    typedef Atlas_                                                  atlas_type;
+    typedef BCAtlas_                                                bc_atlas_type;
+    typedef BC_                                                     bc_type;
+    typedef Point                                                   index_type;
+    typedef typename atlas_type::chart_type                         chart_type;
+    typedef value_type *                                            values_type;
+    typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
+    typedef typename atlas_alloc_type::pointer                      atlas_ptr;
+    typedef typename alloc_type::template rebind<bc_type>::other    bc_atlas_alloc_type;
+    typedef typename bc_atlas_alloc_type::pointer                   bc_atlas_ptr;
+    typedef typename alloc_type::template rebind<bc_type>::other    bc_alloc_type;
+    typedef typename bc_alloc_type::pointer                         bc_ptr;
+  protected:
+    Obj<atlas_type>    _atlas;
+    Obj<bc_atlas_type> _bc_atlas;
+    Obj<bc_type>       _bc;
+    values_type        _array;
+    bool               _sharedStorage;
+    int                _sharedStorageSize;
+    alloc_type         _allocator;
+    std::vector<Obj<atlas_type> > _spaces;
+    std::vector<Obj<bc_type> >    _bcs;
+  public:
+    FEMSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
+      atlas_ptr pAtlas      = atlas_alloc_type(this->_allocator).allocate(1);
+      atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
+      this->_atlas          = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
+      bc_atlas_ptr pBCAtlas = bc_atlas_alloc_type(this->_allocator).allocate(1);
+      bc_atlas_alloc_type(this->_allocator).construct(pBCAtlas, bc_atlas_type(comm, debug));
+      this->_bc_atlas       = Obj<bc_atlas_type>(pBCAtlas, sizeof(bc_atlas_type));
+      bc_ptr pBC            = bc_alloc_type(this->_allocator).allocate(1);
+      bc_alloc_type(this->_allocator).construct(pBC, bc_type(comm, debug));
+      this->_bc             = Obj<bc_type>(pBC, sizeof(bc_type));
+      this->_array          = NULL;
+      this->_sharedStorage  = false;
+    };
+    FEMSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _array(NULL), _sharedStorage(false), _sharedStorageSize(0) {
+      bc_atlas_ptr pBCAtlas = bc_atlas_alloc_type(this->_allocator).allocate(1);
+      bc_atlas_alloc_type(this->_allocator).construct(pBCAtlas, bc_atlas_type(comm, debug));
+      this->_bc_atlas       = Obj<bc_atlas_type>(pBCAtlas, sizeof(bc_atlas_type));
+      bc_ptr pBC            = bc_alloc_type(this->_allocator).allocate(1);
+      bc_alloc_type(this->_allocator).construct(pBC, bc_type(comm, debug));
+      this->_bc             = Obj<bc_type>(pBC, sizeof(bc_type));
+    };
+    ~FEMSection() {
+      if (this->_array && !this->_sharedStorage) {
+        const int totalSize = this->sizeWithBC();
+
+        for(int i = 0; i < totalSize; ++i) {this->_allocator.destroy(this->_array+i);}
+        this->_allocator.deallocate(this->_array, totalSize);
+        this->_array = NULL;
+      }
+    };
+  public:
+    value_type *getRawArray(const int size) {
+      // Put in a sentinel value that deallocates the array
+      static value_type *array   = NULL;
+      static int         maxSize = 0;
+
+      if (size > maxSize) {
+        const value_type dummy(0);
+
+        if (array) {
+          for(int i = 0; i < maxSize; ++i) {this->_allocator.destroy(array+i);}
+          this->_allocator.deallocate(array, maxSize);
+        }
+        maxSize = size;
+        array   = this->_allocator.allocate(maxSize);
+        for(int i = 0; i < maxSize; ++i) {this->_allocator.construct(array+i, dummy);}
+      };
+      return array;
+    };
+    int getStorageSize() const {
+      if (this->_sharedStorage) {
+        return this->_sharedStorageSize;
+      }
+      return this->sizeWithBC();
+    };
+  public: // Verifiers
+    bool hasPoint(const point_type& point) {
+      return this->_atlas->hasPoint(point);
+    };
+  public: // Accessors
+    const chart_type& getChart() const {return this->_atlas->getChart();};
+    const Obj<atlas_type>& getAtlas() const {return this->_atlas;};
+    void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
+    const Obj<bc_type>& getBC() const {return this->_bc;};
+    void setBC(const Obj<bc_type>& bc) {this->_bc = bc;};
+  public: // BC
+    // Returns the number of constraints on a point
+    const int getConstraintDimension(const point_type& p) const {
+      if (!this->_bc_atlas->hasPoint(p)) return 0;
+      return this->_bc_atlas->restrictPoint(p)[0];
+    };
+    // Set the number of constraints on a point
+    void setConstraintDimension(const point_type& p, const int numConstraints) {
+      this->_bc_atlas->updatePoint(p, &numConstraints);
+    };
+    // Increment the number of constraints on a point
+    void addConstraintDimension(const point_type& p, const int numConstraints) {
+      this->_bc_atlas->updatePointAdd(p, &numConstraints);
+    };
+  public: // Sizes
+    void clear() {
+      this->_atlas->clear(); 
+      if (!this->_sharedStorage) {
+        const int totalSize = this->sizeWithBC();
+
+        for(int i = 0; i < totalSize; ++i) {this->_allocator.destroy(this->_array+i);}
+        this->_allocator.deallocate(this->_array, totalSize);
+      }
+      this->_array = NULL;
+      this->_bc_atlas->clear(); 
+      this->_bc->clear(); 
+    };
+    // Return the total number of dofs on the point (free and constrained)
+    int getFiberDimension(const point_type& p) const {
+      return this->_atlas->restrictPoint(p)->prefix;
+    };
+    int getFiberDimension(const Obj<atlas_type>& atlas, const point_type& p) const {
+      return atlas->restrictPoint(p)->prefix;
+    };
+    // Set the total number of dofs on the point (free and constrained)
+    void setFiberDimension(const point_type& p, int dim) {
+      const index_type idx(dim, -1);
+      this->_atlas->addPoint(p);
+      this->_atlas->updatePoint(p, &idx);
+    };
+    template<typename Sequence>
+    void setFiberDimension(const Obj<Sequence>& points, int dim) {
+      for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        this->setFiberDimension(*p_iter, dim);
+      }
+    };
+    void addFiberDimension(const point_type& p, int dim) {
+      if (this->_atlas->hasPoint(p)) {
+        const index_type values(dim, 0);
+        this->_atlas->updateAddPoint(p, &values);
+      } else {
+        this->setFiberDimension(p, dim);
+      }
+    };
+    // Return the number of constrained dofs on this point
+    int getConstrainedFiberDimension(const point_type& p) const {
+      return this->getFiberDimension(p) - this->getConstraintDimension(p);
+    };
+    // Return the total number of free dofs
+    int size() const {
+      const chart_type& points = this->getChart();
+      int               size   = 0;
+
+      for(typename chart_type::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        size += this->getConstrainedFiberDimension(*p_iter);
+      }
+      return size;
+    };
+    // Return the total number of dofs (free and constrained)
+    int sizeWithBC() const {
+      const chart_type& points = this->getChart();
+      int               size   = 0;
+
+      for(typename chart_type::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        size += this->getFiberDimension(*p_iter);
+      }
+      return size;
+    };
+  public: // Allocation
+    void allocateStorage() {
+      const int totalSize = this->sizeWithBC();
+      const value_type dummy(0) ;
+
+      this->_array             = this->_allocator.allocate(totalSize);
+      this->_sharedStorage     = false;
+      this->_sharedStorageSize = 0;
+      for(int i = 0; i < totalSize; ++i) {this->_allocator.construct(this->_array+i, dummy);}
+      this->_bc_atlas->allocatePoint();
+      this->_bc->allocatePoint();
+    };
+    void orderPoints(const Obj<atlas_type>& atlas){
+      const chart_type& chart  = this->getChart();
+      int               offset = 0;
+
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        typename atlas_type::value_type idx = atlas->restrictPoint(*c_iter)[0];
+        const int&                      dim = idx.prefix;
+
+        idx.index = offset;
+        atlas->updatePoint(*c_iter, &idx);
+        offset += dim;
+      }
+    };
+    void allocatePoint() {
+      this->orderPoints(this->_atlas);
+      this->allocateStorage();
+    };
+  public: // Restriction and Update
+    // Zero entries
+    void zero() {
+      this->set(0.0);
+    };
+    void set(const value_type value) {
+      //memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
+      const chart_type& chart = this->getChart();
+
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        value_type *array = (value_type *) this->restrictPoint(*c_iter);
+        const int&  dim   = this->getFiberDimension(*c_iter);
+        const int&  cDim  = this->getConstraintDimension(*c_iter);
+
+        if (!cDim) {
+          for(int i = 0; i < dim; ++i) {
+            array[i] = value;
+          }
+        } else {
+          const typename bc_type::value_type *cDof = this->getConstraintDof(*c_iter);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = value;
+          }
+        }
+      }
+    };
+    // Add two sections and put the result in a third
+    void add(const Obj<FEMSection>& x, const Obj<FEMSection>& y) {
+      // Check atlases
+      const chart_type& chart = this->getChart();
+
+      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        value_type       *array  = (value_type *) this->restrictPoint(*c_iter);
+        const value_type *xArray = x->restrictPoint(*c_iter);
+        const value_type *yArray = y->restrictPoint(*c_iter);
+        const int&        dim    = this->getFiberDimension(*c_iter);
+        const int&        cDim   = this->getConstraintDimension(*c_iter);
+
+        if (!cDim) {
+          for(int i = 0; i < dim; ++i) {
+            array[i] = xArray[i] + yArray[i];
+          }
+        } else {
+          const typename bc_type::value_type *cDof = this->getConstraintDof(*c_iter);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = xArray[i] + yArray[i];
+          }
+        }
+      }
+    };
+    // this = this + alpha * x
+    void axpy(const value_type alpha, const Obj<FEMSection>& x) {
+      // Check atlases
+      const chart_type& chart = this->getChart();
+
+      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        value_type       *array  = (value_type *) this->restrictPoint(*c_iter);
+        const value_type *xArray = x->restrictPoint(*c_iter);
+        const int&        dim    = this->getFiberDimension(*c_iter);
+        const int&        cDim   = this->getConstraintDimension(*c_iter);
+
+        if (!cDim) {
+          for(int i = 0; i < dim; ++i) {
+            array[i] += alpha*xArray[i];
+          }
+        } else {
+          const typename bc_type::value_type *cDof = this->getConstraintDof(*c_iter);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] += alpha*xArray[i];
+          }
+        }
+      }
+    };
+    // Return the free values on a point
+    const value_type *restrict() const {
+      return this->_array;
+    };
+    // Return the free values on a point
+    const value_type *restrictPoint(const point_type& p) const {
+      return &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
+    };
+    // Update the free values on a point
+    //   Takes a full array and ignores constrained values
+    void updatePoint(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (!cDim) {
+        if (orientation >= 0) {
+          const int& dim = this->getFiberDimension(p);
+
+          for(int i = 0; i < dim; ++i) {
+            array[i] = v[i];
+          }
+        } else {
+          int offset = 0;
+          int j      = -1;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int& dim = this->getFiberDimension(p, space);
+
+            for(int i = dim-1; i >= 0; --i) {
+              array[++j] = v[i+offset];
+            }
+            offset += dim;
+          }
+        }
+      } else {
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = v[i];
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 offset  = 0;
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            const int sDim = dim - tDim;
+            int       cInd = 0;
+
+            for(int i = 0, k = dim+offset-1; i < dim; ++i, ++j, --k) {
+              if ((cInd < sDim) && (j == cDof[cInd+cOffset])) {++cInd; continue;}
+              array[j] = v[k];
+            }
+            offset  += dim;
+            cOffset += dim - tDim;
+          }
+        }
+      }
+    };
+    // Update the free values on a point
+    //   Takes a full array and ignores constrained values
+    void updateAddPoint(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (!cDim) {
+        if (orientation >= 0) {
+          const int& dim = this->getFiberDimension(p);
+
+          for(int i = 0; i < dim; ++i) {
+            array[i] += v[i];
+          }
+        } else {
+          int offset = 0;
+          int j      = -1;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int& dim = this->getFiberDimension(p, space);
+
+            for(int i = dim-1; i >= 0; --i) {
+              array[++j] += v[i+offset];
+            }
+            offset += dim;
+          }
+        }
+      } else {
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] += v[i];
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 offset  = 0;
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            const int sDim = dim - tDim;
+            int       cInd = 0;
+
+            for(int i = 0, k = dim+offset-1; i < dim; ++i, ++j, --k) {
+              if ((cInd < sDim) && (j == cDof[cInd+cOffset])) {++cInd; continue;}
+              array[j] += v[k];
+            }
+            offset  += dim;
+            cOffset += dim - tDim;
+          }
+        }
+      }
+    };
+    // Update the free values on a point
+    //   Takes ONLY unconstrained values
+    void updateFreePoint(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (!cDim) {
+        if (orientation >= 0) {
+          const int& dim = this->getFiberDimension(p);
+
+          for(int i = 0; i < dim; ++i) {
+            array[i] = v[i];
+          }
+        } else {
+          int offset = 0;
+          int j      = -1;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int& dim = this->getFiberDimension(p, space);
+
+            for(int i = dim-1; i >= 0; --i) {
+              array[++j] = v[i+offset];
+            }
+            offset += dim;
+          }
+        }
+      } else {
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
+          for(int i = 0, k = -1; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = v[++k];
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 offset  = 0;
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            const int sDim = dim - tDim;
+            int       cInd = 0;
+
+            for(int i = 0, k = tDim+offset-1; i < dim; ++i, ++j) {
+              if ((cInd < sDim) && (j == cDof[cInd+cOffset])) {++cInd; continue;}
+              array[j] = v[--k];
+            }
+            offset  += dim;
+            cOffset += dim - tDim;
+          }
+        }
+      }
+    };
+    // Update the free values on a point
+    //   Takes ONLY unconstrained values
+    void updateFreeAddPoint(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (!cDim) {
+        if (orientation >= 0) {
+          const int& dim = this->getFiberDimension(p);
+
+          for(int i = 0; i < dim; ++i) {
+            array[i] += v[i];
+          }
+        } else {
+          int offset = 0;
+          int j      = -1;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int& dim = this->getFiberDimension(p, space);
+
+            for(int i = dim-1; i >= 0; --i) {
+              array[++j] += v[i+offset];
+            }
+            offset += dim;
+          }
+        }
+      } else {
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
+          for(int i = 0, k = -1; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] += v[++k];
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 offset  = 0;
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            const int sDim = dim - tDim;
+            int       cInd = 0;
+
+            for(int i = 0, k = tDim+offset-1; i < dim; ++i, ++j) {
+              if ((cInd < sDim) && (j == cDof[cInd+cOffset])) {++cInd; continue;}
+              array[j] += v[--k];
+            }
+            offset  += dim;
+            cOffset += dim - tDim;
+          }
+        }
+      }
+    };
+    // Update only the constrained dofs on a point
+    //   This takes an array with ONLY bc values
+    void updatePointBC(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (cDim) {
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if (cInd == cDim) break;
+            if (i == cDof[cInd]) {
+              array[i] = v[cInd];
+              ++cInd;
+            }
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            int       cInd = 0;
+
+            for(int i = 0; i < dim; ++i, ++j) {
+              if (cInd < 0) break;
+              if (j == cDof[cInd+cOffset]) {
+                array[j] = v[cInd+cOffset];
+                ++cInd;
+              }
+            }
+            cOffset += dim - tDim;
+          }
+        }
+      }
+    };
+    // Update only the constrained dofs on a point
+    //   This takes an array with ALL values, not just BC
+    void updatePointBCFull(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (cDim) {
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if (cInd == cDim) break;
+            if (i == cDof[cInd]) {
+              array[i] = v[i];
+              ++cInd;
+            }
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 offset  = 0;
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            int       cInd = 0;
+
+            for(int i = 0, k = dim+offset-1; i < dim; ++i, ++j, --k) {
+              if (cInd < 0) break;
+              if (j == cDof[cInd+cOffset]) {
+                array[j] = v[k];
+                ++cInd;
+              }
+            }
+            offset  += dim;
+            cOffset += dim - tDim;
+          }
+        }
+      }
+    };
+    // Update all dofs on a point (free and constrained)
+    void updatePointAll(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+
+      if (orientation >= 0) {
+        const int& dim = this->getFiberDimension(p);
+
+        for(int i = 0; i < dim; ++i) {
+          array[i] = v[i];
+        }
+      } else {
+        int offset = 0;
+        int j      = -1;
+
+        for(int space = 0; space < this->getNumSpaces(); ++space) {
+          const int& dim = this->getFiberDimension(p, space);
+
+          for(int i = dim-1; i >= 0; --i) {
+            array[++j] = v[i+offset];
+          }
+          offset += dim;
+        }
+      }
+    };
+    // Update all dofs on a point (free and constrained)
+    void updatePointAllAdd(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+
+      if (orientation >= 0) {
+        const int& dim = this->getFiberDimension(p);
+
+        for(int i = 0; i < dim; ++i) {
+          array[i] += v[i];
+        }
+      } else {
+        int offset = 0;
+        int j      = -1;
+
+        for(int space = 0; space < this->getNumSpaces(); ++space) {
+          const int& dim = this->getFiberDimension(p, space);
+
+          for(int i = dim-1; i >= 0; --i) {
+            array[++j] += v[i+offset];
+          }
+          offset += dim;
+        }
+      }
+    };
+  public: // Fibrations
+    int getNumSpaces() const {return this->_spaces.size();};
+    const std::vector<Obj<atlas_type> >& getSpaces() {return this->_spaces;};
+    const std::vector<Obj<bc_type> >& getBCs() {return this->_bcs;};
+    void addSpace() {
+      Obj<atlas_type> space = new atlas_type(this->comm(), this->debug());
+      Obj<bc_type>    bc    = new bc_type(this->comm(), this->debug());
+      this->_spaces.push_back(space);
+      this->_bcs.push_back(bc);
+    };
+    int getFiberDimension(const point_type& p, const int space) const {
+      return this->_spaces[space]->restrictPoint(p)->prefix;
+    };
+    void setFiberDimension(const point_type& p, int dim, const int space) {
+      const index_type idx(dim, -1);
+      this->_spaces[space]->addPoint(p);
+      this->_spaces[space]->updatePoint(p, &idx);
+    };
+    template<typename Sequence>
+    void setFiberDimension(const Obj<Sequence>& points, int dim, const int space) {
+      for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        this->setFiberDimension(*p_iter, dim, space);
+      }
+    };
+    const int getConstraintDimension(const point_type& p, const int space) const {
+      if (!this->_bcs[space]->hasPoint(p)) return 0;
+      return this->_bcs[space]->getFiberDimension(p);
+    };
+    void setConstraintDimension(const point_type& p, const int numConstraints, const int space) {
+      this->_bcs[space]->setFiberDimension(p, numConstraints);
+    };
+    int getConstrainedFiberDimension(const point_type& p, const int space) const {
+      return this->getFiberDimension(p, space) - this->getConstraintDimension(p, space);
+    };
+    void copyFibration(const Obj<FEMSection>& section) {
+      const std::vector<Obj<atlas_type> >& spaces = section->getSpaces();
+      const std::vector<Obj<bc_type> >&    bcs    = section->getBCs();
+
+      this->_spaces.clear();
+      for(typename std::vector<Obj<atlas_type> >::const_iterator s_iter = spaces.begin(); s_iter != spaces.end(); ++s_iter) {
+        this->_spaces.push_back(*s_iter);
+      }
+      this->_bcs.clear();
+      for(typename std::vector<Obj<bc_type> >::const_iterator b_iter = bcs.begin(); b_iter != bcs.end(); ++b_iter) {
+        this->_bcs.push_back(*b_iter);
+      }
+    };
+    Obj<FEMSection> getFibration(const int space) const {
+      Obj<FEMSection> field = new FEMSection(this->comm(), this->debug());
+//     Obj<atlas_type> _atlas;
+//     std::vector<Obj<atlas_type> > _spaces;
+//     Obj<bc_type>    _bc;
+//     std::vector<Obj<bc_type> >    _bcs;
+      field->addSpace();
+      const chart_type& chart = this->getChart();
+
+      // Copy sizes
+      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        const int fDim = this->getFiberDimension(*c_iter, space);
+        const int cDim = this->getConstraintDimension(*c_iter, space);
+
+        if (fDim) {
+          field->setFiberDimension(*c_iter, fDim);
+          field->setFiberDimension(*c_iter, fDim, 0);
+        }
+        if (cDim) {
+          field->setConstraintDimension(*c_iter, cDim);
+          field->setConstraintDimension(*c_iter, cDim, 0);
+        }
+      }
+      field->allocateStorage();
+      Obj<atlas_type>   newAtlas = new atlas_type(this->comm(), this->debug());
+      const chart_type& newChart = field->getChart();
+
+      for(typename chart_type::iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+        const int cDim   = field->getConstraintDimension(*c_iter);
+        const int dof[1] = {0};
+
+        if (cDim) {
+          field->setConstraintDof(*c_iter, dof);
+        }
+      }
+      // Copy offsets
+      for(typename chart_type::iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+        index_type idx;
+
+        idx.prefix = field->getFiberDimension(*c_iter);
+        idx.index  = this->_atlas->restrictPoint(*c_iter)[0].index;
+        for(int s = 0; s < space; ++s) {
+          idx.index += this->getFiberDimension(*c_iter, s);
+        }
+        newAtlas->addPoint(*c_iter);
+        newAtlas->updatePoint(*c_iter, &idx);
+      }
+      field->replaceStorage(this->_array, true, this->getStorageSize());
+      field->setAtlas(newAtlas);
+      return field;
+    };
+  public:
+    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+      ostringstream txt;
+      int rank;
+
+      if (comm == MPI_COMM_NULL) {
+        comm = this->comm();
+        rank = this->commRank();
+      } else {
+        MPI_Comm_rank(comm, &rank);
+      }
+      if (name == "") {
+        if(rank == 0) {
+          txt << "viewing a FEMSection" << std::endl;
+        }
+      } else {
+        if (rank == 0) {
+          txt << "viewing FEMSection '" << name << "'" << std::endl;
+        }
+      }
+      if (rank == 0) {
+        txt << "  Fields: " << this->getNumSpaces() << std::endl;
+      }
+      const chart_type& chart = this->getChart();
+
+      for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const value_type *array = this->restrictPoint(*p_iter);
+        const int&        dim   = this->getFiberDimension(*p_iter);
+
+        if (dim != 0) {
+          txt << "[" << this->commRank() << "]:   " << *p_iter << " dim " << dim << " offset " << this->_atlas->restrictPoint(*p_iter)->index << "  ";
+          for(int i = 0; i < dim; i++) {
+            txt << " " << array[i];
+          }
+          const int& dim = this->getConstraintDimension(*p_iter);
+
+          if (dim) {
+            const typename bc_type::value_type *bcArray = this->_bc->restrictPoint(*p_iter);
+
+            txt << " constrained";
+            for(int i = 0; i < dim; ++i) {
+              txt << " " << bcArray[i];
+            }
+          }
+          txt << std::endl;
+        }
+      }
+      if (chart.size() == 0) {
+        txt << "[" << this->commRank() << "]: empty" << std::endl;
+      }
+      PetscSynchronizedPrintf(comm, txt.str().c_str());
+      PetscSynchronizedFlush(comm);
+    };
+  };
   // A Field combines several sections
   template<typename Overlap_, typename Patch_, typename Section_>
   class Field : public ALE::ParallelObject {

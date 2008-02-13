@@ -175,6 +175,9 @@ int Petsc_MPI_Finalized(int *flag)
 #define mpi_allgather_        MPI_ALLGATHER
 #define mpi_comm_split_       MPI_COMM_SPLIT
 #define mpi_scan_             MPI_SCAN
+#define mpi_send_             MPI_SEND
+#define mpi_recv_             MPI_RECV
+
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define mpi_init_             mpi_init
 #define mpi_finalize_         mpi_finalize
@@ -189,6 +192,8 @@ int Petsc_MPI_Finalized(int *flag)
 #define mpi_allgather_        mpi_allgather
 #define mpi_comm_split_       mpi_comm_split
 #define mpi_scan_             mpi_scan
+#define mpi_send_             mpi_send
+#define mpi_recv_             mpi_recv
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
@@ -205,6 +210,8 @@ int Petsc_MPI_Finalized(int *flag)
 #define mpi_allgather_        mpi_allgather__
 #define mpi_comm_split_       mpi_comm_split__
 #define mpi_scan              mpi_scan__
+#define mpi_send_             mpi_send__
+#define mpi_recv_             mpi_recv__
 #endif
 
 void PETSC_STDCALL  mpi_init_(int *ierr)
@@ -280,6 +287,16 @@ void PETSC_STDCALL mpi_scan_(void *sendbuf,void *recvbuf,int *count,int *datatyp
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_send_(void*buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr )
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_recv_(void*buf,int *count,int *datatype,int *source,int *tag,int *comm,int status,int *ierr )
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
 #if defined(__cplusplus)

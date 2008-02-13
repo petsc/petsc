@@ -392,7 +392,7 @@ namespace ALE {
         }
       }
       const typename atlas_type::chart_type& chart = this->_atlas->getChart();
-      values_type&                           array = this->_array;
+      values_type                            array = this->_array;
 
       for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const int idx = (*p_iter - this->getChart().min())*fiberDim;
