@@ -91,8 +91,8 @@
 
 */
 
-#if !defined(__MPI_H)
-#define __MPI_H
+#if !defined(__MPIUNI_H)
+#define __MPIUNI_H
 
 /* Requred by abort() in mpi.c & for win64 */
 #include "petscconf.h"
@@ -105,8 +105,6 @@ extern "C" {
 #if !defined(MPIUNI_INTPTR)
 #define MPIUNI_INTPTR long
 #endif
-
-#define _petsc_mpi_uni
 
 /*
 
@@ -188,20 +186,7 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
   own MPIUni we map the following function names to a unique PETSc name. Those functions
   are defined in mpi.c
 */
-extern int    Petsc_MPI_Abort(MPI_Comm,int);
-extern int    Petsc_MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
-extern int    Petsc_MPI_Keyval_free(int*);
-extern int    Petsc_MPI_Attr_put(MPI_Comm,int,void *);
-extern int    Petsc_MPI_Attr_delete(MPI_Comm,int);
-extern int    Petsc_MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
-extern int    Petsc_MPI_Comm_free(MPI_Comm*);
-extern int    Petsc_MPI_Comm_dup(MPI_Comm,MPI_Comm *);
-
-extern int    Petsc_MPI_Init(int *, char ***);
-extern int    Petsc_MPI_Finalize(void);
-extern int    Petsc_MPI_Initialized(int*);
-extern int    Petsc_MPI_Finalized(int*);
-
+#if defined(MPIUNI_AVOID_MPI_NAMESPACE)
 #define MPI_Abort         Petsc_MPI_Abort
 #define MPI_Attr_get      Petsc_MPI_Attr_get
 #define MPI_Keyval_free   Petsc_MPI_Keyval_free
@@ -210,11 +195,27 @@ extern int    Petsc_MPI_Finalized(int*);
 #define MPI_Keyval_create Petsc_MPI_Keyval_create
 #define MPI_Comm_free     Petsc_MPI_Comm_free
 #define MPI_Comm_dup      Petsc_MPI_Comm_dup
-
+#define MPI_Comm_create   Petsc_MPI_Comm_create
 #define MPI_Init          Petsc_MPI_Init
 #define MPI_Finalize      Petsc_MPI_Finalize
 #define MPI_Initialized   Petsc_MPI_Initialized
 #define MPI_Finalized     Petsc_MPI_Finalized
+#endif
+
+extern int    MPI_Abort(MPI_Comm,int);
+extern int    MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
+extern int    MPI_Keyval_free(int*);
+extern int    MPI_Attr_put(MPI_Comm,int,void *);
+extern int    MPI_Attr_delete(MPI_Comm,int);
+extern int    MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
+extern int    MPI_Comm_free(MPI_Comm*);
+extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
+extern int    MPI_Comm_create(MPI_Comm,MPI_Group,MPI_Comm *);
+extern int    MPI_Init(int *, char ***);
+extern int    MPI_Finalize(void);
+extern int    MPI_Initialized(int*);
+extern int    MPI_Finalized(int*);
+
 
 #define MPI_Aint int
 /* 
@@ -612,10 +613,6 @@ extern int    Petsc_MPI_Finalized(int*);
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm1),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm2),\
      *(result)=MPI_IDENT,\
-     MPI_SUCCESS)
-#define MPI_Comm_create(comm,group,newcomm)  \
-     (*(newcomm) =  (comm),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (group),\
      MPI_SUCCESS)
 #define MPI_Comm_split(comm,color,key,newcomm) MPI_SUCCESS
 #define MPI_Comm_test_inter(comm,flag) (*(flag)=1,MPI_SUCCESS)

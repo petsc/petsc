@@ -54,10 +54,7 @@ static int Keyval_setup(void)
   return 0;
 }
 
-/*
-         These functions are mapped to the Petsc_ name by ./mpi.h
-*/
-int Petsc_MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
+int MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *delete_fn,int *keyval,void *extra_state)
 {
   if (num_attr >= MAX_ATTR) MPI_Abort(MPI_COMM_WORLD,1);
 
@@ -67,20 +64,20 @@ int Petsc_MPI_Keyval_create(MPI_Copy_function *copy_fn,MPI_Delete_function *dele
   return 0;
 }
 
-int Petsc_MPI_Keyval_free(int *keyval)
+int MPI_Keyval_free(int *keyval)
 {
   attr[*keyval].active = 0;
   return MPI_SUCCESS;
 }
 
-int Petsc_MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
+int MPI_Attr_put(MPI_Comm comm,int keyval,void *attribute_val)
 {
   attr[keyval].active        = 1;
   attr[keyval].attribute_val = attribute_val;
   return MPI_SUCCESS;
 }
   
-int Petsc_MPI_Attr_delete(MPI_Comm comm,int keyval)
+int MPI_Attr_delete(MPI_Comm comm,int keyval)
 {
   if (attr[keyval].active && attr[keyval].del) {
     (*(attr[keyval].del))(comm,keyval,attr[keyval].attribute_val,attr[keyval].extra_state);
@@ -90,7 +87,7 @@ int Petsc_MPI_Attr_delete(MPI_Comm comm,int keyval)
   return MPI_SUCCESS;
 }
 
-int Petsc_MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
+int MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
 {
   if (!keyval) Keyval_setup();
   *flag                   = attr[keyval].active;
@@ -98,15 +95,21 @@ int Petsc_MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag)
   return MPI_SUCCESS;
 }
 
+int MPI_Comm_create(MPI_Comm comm,MPI_Group group,MPI_Comm *newcomm)
+{
+  *newcomm =  comm;
+  return MPI_SUCCESS;
+}
+
 static int dups = 0;
-int Petsc_MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
+int MPI_Comm_dup(MPI_Comm comm,MPI_Comm *out)
 {
   *out = comm;
   dups++;
   return 0;
 }
 
-int Petsc_MPI_Comm_free(MPI_Comm *comm)
+int MPI_Comm_free(MPI_Comm *comm)
 {
   int i;
 
@@ -120,7 +123,7 @@ int Petsc_MPI_Comm_free(MPI_Comm *comm)
   return MPI_SUCCESS;
 }
 
-int Petsc_MPI_Abort(MPI_Comm comm,int errorcode) 
+int MPI_Abort(MPI_Comm comm,int errorcode) 
 {
   abort();
   return MPI_SUCCESS;
@@ -131,7 +134,7 @@ int Petsc_MPI_Abort(MPI_Comm comm,int errorcode)
 static int MPI_was_initialized = 0;
 static int MPI_was_finalized   = 0;
 
-int Petsc_MPI_Init(int *argc, char ***argv)
+int MPI_Init(int *argc, char ***argv)
 {
   if (MPI_was_initialized) return 1;
   if (MPI_was_finalized) return 1;
@@ -139,7 +142,7 @@ int Petsc_MPI_Init(int *argc, char ***argv)
   return 0;
 }
 
-int Petsc_MPI_Finalize(void)
+int MPI_Finalize(void)
 {
   if (MPI_was_finalized) return 1;
   if (!MPI_was_initialized) return 1;
@@ -147,13 +150,13 @@ int Petsc_MPI_Finalize(void)
   return 0;
 }
 
-int Petsc_MPI_Initialized(int *flag)
+int MPI_Initialized(int *flag)
 {
   *flag = MPI_was_initialized;
   return 0;
 }
 
-int Petsc_MPI_Finalized(int *flag)
+int MPI_Finalized(int *flag)
 {
   *flag = MPI_was_finalized;
   return 0;
@@ -214,14 +217,18 @@ int Petsc_MPI_Finalized(int *flag)
 #define mpi_recv_             mpi_recv__
 #endif
 
+
+/* Do not build fortran interface if MPI namespace colision is to be avoided */
+#if !defined(MPIUNI_AVOID_MPI_NAMESPACE)
+
 void PETSC_STDCALL  mpi_init_(int *ierr)
 {
-  *ierr = Petsc_MPI_Init((int*)0, (char***)0);
+  *ierr = MPI_Init((int*)0, (char***)0);
 }
 
 void PETSC_STDCALL  mpi_finalize_(int *ierr)
 {
-  *ierr = Petsc_MPI_Finalize();
+  *ierr = MPI_Finalize();
 }
 
 void PETSC_STDCALL mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr) 
@@ -298,6 +305,8 @@ void PETSC_STDCALL mpi_recv_(void*buf,int *count,int *datatype,int *source,int *
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
+
+#endif /* MPIUNI_AVOID_MPI_NAMESPACE */
 
 #if defined(__cplusplus)
 }
