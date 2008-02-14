@@ -101,7 +101,6 @@
 #define __MPIUNI_H
 
 /* Requred by abort() in mpi.c & for win64 */
-#include "petscconf.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -171,6 +170,7 @@ extern int MPIUNI_Memcpy(void*,const void*,int);
 
 #define MPI_REQUEST_NULL    ((MPI_Request)0)
 #define MPI_GROUP_NULL      ((MPI_Group)0)
+#define MPI_BOTTOM          (void *)0
 typedef int MPI_Op;
 
 #define MPI_SUM           0
@@ -178,7 +178,7 @@ typedef int MPI_Op;
 #define MPI_MIN           0
 #define MPI_ANY_TAG     (-1)
 #define MPI_DATATYPE_NULL 0
-
+#define MPI_PACKED        0
 #define MPI_MAX_ERROR_STRING 2056
 /*
   Prototypes of some functions which are implemented in mpi.c
