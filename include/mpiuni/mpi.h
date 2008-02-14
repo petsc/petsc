@@ -9,14 +9,30 @@
 */
 
 /*
-  The following info is a response to one of the petsc-maint questions 
+  The following info is a response to one of the petsc-maint questions
   regarding MPIUNI.
 
   MPIUNI was developed with the aim of getting PETSc compiled, and
-  usable in the absence of MPI. This is the reason each function is
-  not documented.  The development strategy was - to make enough
-  changes to it so that PETSc source compiles without errors, and runs
-  in the uni-processor mode.
+  usable in the absence of a full MPI implementation. With this, we
+  were able to provide PETSc on Windows, Windows64 even before any MPI
+  implementation was available on these platforms. [Or with certain
+  compilers - like borland, that do not have a useable MPI
+  implementation]
+
+  However - providing a seqential, standards compliant MPI
+  implementation is *not* the goal of MPIUNI. The development strategy
+  was - to make enough changes to it so that PETSc sources, examples
+  compile without errors, and runs in the uni-processor mode. This is
+  the reason each function is not documented.
+
+  PETSc usage of MPIUNI is primarily from C. However a minimal fortran
+  interface is also provided - to get PETSc fortran examples with a
+  few MPI calls working.
+
+  One of the optimzation with MPIUNI, is to avoid the function call
+  overhead, when possible. Hence most of the C functions are
+  implemented as macros. However the function calls cannot be avoided
+  with fortran usage.
 
   Most PETSc objects have both sequential and parallel
   implementations, which are separate. For eg: We have two types of
@@ -35,14 +51,6 @@
   executed in the sequential mode. (which shouldn't happen in case of
   PETSc).
 
-  One of the goals with MPIUNI, is to avoid the function call overhead
-  of a regular MPI implementation. If this was not the case, we could
-  as well have used a regular implementation of MPI as they are
-  available on almost all machines. Hence most of the functions are
-  implemented as macros. One of the additional benefits we got from
-  MPIUNI is, we were able to use PETSc on machines where using a
-  proper implementation of MPI was painful (for eg NT).
-
   Proper implementation of send/receive would involve writing a
   function for each of them. Inside each of these functions, we have
   to check if the send is to self or receive is from self, and then
@@ -52,6 +60,35 @@
   case, a proper implementation of MPI might as well be used. This is
   the reason the send to self is not implemented in MPIUNI, and never
   will be.
+  
+  Proper implementations of MPI [for eg: MPICH & OpenMPI] are
+  available for most machines. When these packages are available, Its
+  generally preferable to use one of them instead of MPIUNI - even if
+  the user is using PETSc sequentially.
+
+    - MPIUNI does not support all MPI functions [or functionality].
+    Hence it might not work with external packages or user code that
+    might have MPI calls in it.
+
+    - MPIUNI is not a standards compliant implementation for np=1.
+    For eg: if the user code has send/recv to self, then it will
+    abort. [Similar issues with a number of other MPI functionality]
+    However MPICH & OpenMPI are the correct implementations of MPI
+    standard for np=1.
+
+    - When user code uses multiple MPI based packages that have their
+    own *internal* stubs equivalent to MPIUNI - in sequential mode,
+    invariably these multiple implementations of MPI for np=1 conflict
+    with each other. The correct thing to do is: make all such
+    packages use the *same* MPI implementation for np=1. MPICH/OpenMPI
+    satisfy this requirement correctly [and hence the correct choice].
+
+    - Using MPICH/OpenMPI sequentially should have minimal
+    disadvantages. [for eg: these binaries can be run without
+    mpirun/mpiexec as ./executable, without requiring any extra
+    configurations for ssh/rsh/daemons etc..]. This should not be a
+    reason to avoid these packages for sequential use.
+
 */
 
 #if !defined(__MPI_H)
