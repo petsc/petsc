@@ -89,6 +89,12 @@
     configurations for ssh/rsh/daemons etc..]. This should not be a
     reason to avoid these packages for sequential use.
 
+    Instructions for building standalone MPIUNI [for eg: linux/gcc+gfortran]:
+    - extract include/mpiuni/mpi.h,mpif.f, src/sys/mpiuni/mpi.c from PETSc
+    - remove reference to petscconf.h from mpi.h
+    - gcc -c mpi.c -DPETSC_HAVE_STDLIB_H -DPETSC_HAVE_FORTRAN_UNDERSCORE
+    - ar cr libmpiuni.a mpi.o
+
 */
 
 #if !defined(__MPIUNI_H)
@@ -233,7 +239,7 @@ extern int    MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (dest),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Recv(buf,count,datatype,source,tag,comm,status) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -255,7 +261,7 @@ extern int    MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (dest),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Ssend(buf,count, datatype,dest,tag,comm) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -263,7 +269,7 @@ extern int    MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (dest),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Rsend(buf,count, datatype,dest,tag,comm) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -271,7 +277,7 @@ extern int    MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (dest),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Buffer_attach(buffer,size) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buffer),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (size),\
@@ -288,7 +294,7 @@ extern int    MPI_Finalized(int*);
        MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
        MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
        MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (request),\
-       MPI_SUCCESS)
+       MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Issend(buf,count, datatype,dest,tag,comm,request) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -297,7 +303,7 @@ extern int    MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (request),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Irsend(buf,count, datatype,dest,tag,comm,request) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -306,7 +312,7 @@ extern int    MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (request),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Irecv(buf,count, datatype,source,tag,comm,request) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\

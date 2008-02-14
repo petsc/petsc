@@ -2,9 +2,14 @@
       This provides a few of the MPI-uni functions that cannot be implemented
     with C macros
 */
-#include "include/mpiuni/mpi.h"
-#include "petsc.h"
-
+#include "mpi.h"
+#if !defined(__MPIUNI_H)
+#error "Wrong mpi.h included! require mpi.h from MPIUNI"
+#endif
+#if !defined(PETSC_STDCALL)
+#define PETSC_STDCALL
+#endif
+#include <stdio.h>
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
@@ -298,7 +303,7 @@ void PETSC_STDCALL mpi_scan_(void *sendbuf,void *recvbuf,int *count,int *datatyp
 
 void PETSC_STDCALL mpi_send_(void*buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr )
 {
-  *ierr = MPI_SUCCESS;
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
 void PETSC_STDCALL mpi_recv_(void*buf,int *count,int *datatype,int *source,int *tag,int *comm,int status,int *ierr )
