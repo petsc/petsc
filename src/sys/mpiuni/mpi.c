@@ -202,6 +202,17 @@ int MPI_Finalized(int *flag)
 #define mpi_type_struct_      MPI_TYPE_STRUCT
 #define mpi_type_commit_      MPI_TYPE_COMMIT
 #define mpi_wtime_            MPI_WTIME
+#define mpi_cancel_           MPI_CANCEL
+#define mpi_comm_dup_         MPI_COMM_DUP
+#define mpi_comm_free_        MPI_COMM_FREE
+#define mpi_get_count_        MPI_GET_COUNT
+#define mpi_get_processor_name_ MPI_GET_PROCESSOR_NAME
+#define mpi_initialized_      MPI_INITIALIZED
+#define mpi_iprobe_           MPI_IPROBE
+#define mpi_probe_            MPI_PROBE
+#define mpi_request_free_     MPI_REQUEST_FREE
+#define mpi_ssend_            MPI_SSEND
+#define mpi_wait_             MPI_WAIT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define mpi_init_             mpi_init
 #define mpi_finalize_         mpi_finalize
@@ -235,6 +246,17 @@ int MPI_Finalized(int *flag)
 #define mpi_type_struct_      mpi_type_struct
 #define mpi_type_commit_      mpi_type_commit
 #define mpi_wtime_            mpi_wtime
+#define mpi_cancel_           mpi_cancel
+#define mpi_comm_dup_         mpi_comm_dup
+#define mpi_comm_free_        mpi_comm_free
+#define mpi_get_count_        mpi_get_count
+#define mpi_get_processor_name_ mpi_get_processor_name
+#define mpi_initialized_      mpi_initialized
+#define mpi_iprobe_           mpi_iprobe
+#define mpi_probe_            mpi_probe
+#define mpi_request_free_     mpi_request_free
+#define mpi_ssend_            mpi_ssend
+#define mpi_wait_             mpi_wait
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
@@ -270,6 +292,17 @@ int MPI_Finalized(int *flag)
 #define mpi_type_struct_      mpi_type_struct__
 #define mpi_type_commit_      mpi_type_commit__
 #define mpi_wtime_            mpi_wtime__
+#define mpi_cancel_           mpi_cancel__
+#define mpi_comm_dup_         mpi_comm_dup__
+#define mpi_comm_free_        mpi_comm_free__
+#define mpi_get_count_        mpi_get_count__
+#define mpi_get_processor_name_ mpi_get_processor_name__
+#define mpi_initialized_      mpi_initialized__
+#define mpi_iprobe_           mpi_iprobe__
+#define mpi_probe_            mpi_probe__
+#define mpi_request_free_     mpi_request_free__
+#define mpi_ssend_            mpi_ssend__
+#define mpi_wait_             mpi_wait__
 #endif
 
 
@@ -449,7 +482,74 @@ void PETSC_STDCALL mpi_type_commit_(int *datatype,int *ierr)
 double PETSC_STDCALL mpi_wtime_(void)
 {
   return 0.0;
+}
 
+void PETSC_STDCALL mpi_cancel_(int *request,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_comm_dup_(int *comm,int *out,int *ierr)
+{
+  *out = *comm;
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_comm_free_(int *comm,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_get_count_(int *status,int *datatype,int *count,int *ierr)
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+/* duplicate from zpetsc.h */
+#if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
+#define PETSC_MIXED_LEN(len) ,int len
+#define PETSC_END_LEN(len)
+#else
+#define PETSC_MIXED_LEN(len)
+#define PETSC_END_LEN(len)   ,int len
+#endif
+
+void PETSC_STDCALL mpi_get_processor_name_(char *name PETSC_MIXED_LEN(len),int *result_len,int *ierr PETSC_END_LEN(len))
+{
+  MPIUNI_Memcpy(name,"localhost",9*sizeof(char));
+  *result_len = 9;
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_initialized_(int *flag,int *ierr)
+{
+  *flag = MPI_was_initialized;
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_iprobe_(int *source,int *tag,int *comm,int *glag,int *status,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_probe_(int *source,int *tag,int *comm,int *flag,int *status,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_request_free_(int *request,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_ssend_(void*buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *ierr)
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+void PETSC_STDCALL mpi_wait_(int *request,int *status,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
 }
 
 #endif /* MPIUNI_AVOID_MPI_NAMESPACE */
