@@ -185,7 +185,23 @@ int MPI_Finalized(int *flag)
 #define mpi_scan_             MPI_SCAN
 #define mpi_send_             MPI_SEND
 #define mpi_recv_             MPI_RECV
-
+#define mpi_reduce_scatter_   MPI_REDUCE_SCATTER
+#define mpi_irecv_            MPI_IRECV
+#define mpi_isend_            MPI_ISEND
+#define mpi_sendrecv_         MPI_SENDRECV
+#define mpi_test_             MPI_TEST
+#define mpi_waitall_          MPI_WAITALL
+#define mpi_waitany_          MPI_WAITANY
+#define mpi_allgatherv_       MPI_ALLGATHERV
+#define mpi_alltoallv_        MPI_ALLTOALLV
+#define mpi_comm_create_      MPI_COMM_CREATE
+#define mpi_address_          MPI_ADDRESS
+#define mpi_pack_             MPI_PACK
+#define mpi_unpack_           MPI_UNPACK
+#define mpi_pack_size_        MPI_PACK_SIZE
+#define mpi_type_struct_      MPI_TYPE_STRUCT
+#define mpi_type_commit_      MPI_TYPE_COMMIT
+#define mpi_wtime_            MPI_WTIME
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define mpi_init_             mpi_init
 #define mpi_finalize_         mpi_finalize
@@ -202,6 +218,23 @@ int MPI_Finalized(int *flag)
 #define mpi_scan_             mpi_scan
 #define mpi_send_             mpi_send
 #define mpi_recv_             mpi_recv
+#define mpi_reduce_scatter_   mpi_reduce_scatter
+#define mpi_irecv_            mpi_irecv
+#define mpi_isend_            mpi_isend
+#define mpi_sendrecv_         mpi_sendrecv
+#define mpi_test_             mpi_test
+#define mpi_waitall_          mpi_waitall
+#define mpi_waitany_          mpi_waitany
+#define mpi_allgatherv_       mpi_allgatherv
+#define mpi_alltoallv_        mpi_alltoallv
+#define mpi_comm_create_      mpi_comm_create
+#define mpi_address_          mpi_address
+#define mpi_pack_             mpi_pack
+#define mpi_unpack_           mpi_unpack
+#define mpi_pack_size_        mpi_pack_size
+#define mpi_type_struct_      mpi_type_struct
+#define mpi_type_commit_      mpi_type_commit
+#define mpi_wtime_            mpi_wtime
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
@@ -220,6 +253,23 @@ int MPI_Finalized(int *flag)
 #define mpi_scan              mpi_scan__
 #define mpi_send_             mpi_send__
 #define mpi_recv_             mpi_recv__
+#define mpi_reduce_scatter_   mpi_reduce_scatter__
+#define mpi_irecv_            mpi_irecv__
+#define mpi_isend_            mpi_isend__
+#define mpi_sendrecv_         mpi_sendrecv__
+#define mpi_test_             mpi_test__
+#define mpi_waitall_          mpi_waitall__
+#define mpi_waitany_          mpi_waitany__
+#define mpi_allgatherv_       mpi_allgatherv__
+#define mpi_alltoallv_        mpi_alltoallv__
+#define mpi_comm_create_      mpi_comm_create__
+#define mpi_address_          mpi_address__
+#define mpi_pack_             mpi_pack__
+#define mpi_unpack_           mpi_unpack__
+#define mpi_pack_size_        mpi_pack_size__
+#define mpi_type_struct_      mpi_type_struct__
+#define mpi_type_commit_      mpi_type_commit__
+#define mpi_wtime_            mpi_wtime__
 #endif
 
 
@@ -309,6 +359,97 @@ void PETSC_STDCALL mpi_send_(void*buf,int *count,int *datatype,int *dest,int *ta
 void PETSC_STDCALL mpi_recv_(void*buf,int *count,int *datatype,int *source,int *tag,int *comm,int status,int *ierr )
 {
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+void PETSC_STDCALL mpi_reduce_scatter_(void*sendbuf,void*recvbuf,int *recvcounts,int *datatype,int *op,int *comm,int *ierr)
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+void PETSC_STDCALL mpi_irecv_(void*buf,int *count, int *datatype, int *source, int *tag, int *comm, int *request, int *ierr)
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+void PETSC_STDCALL mpi_isend_(void*buf,int *count,int *datatype,int *dest,int *tag,int *comm,int *request, int *ierr)
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+void PETSC_STDCALL mpi_sendrecv_(void*sendbuf,int *sendcount,int *sendtype,int *dest,int *sendtag,void*recvbuf,int *recvcount,int *recvtype,int *source,int *recvtag,int *comm,int *status,int *ierr)
+{
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*sendcount)*MPIUNI_DATASIZE[*sendtype]);
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_test_(int *request,int *flag,int *status,int *ierr)
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+void PETSC_STDCALL mpi_waitall_(int *count,int *array_of_requests,int *array_of_statuses,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+  void PETSC_STDCALL mpi_waitany_(int *count,int *array_of_requests,int * index, int *status,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_allgatherv_(void*sendbuf,int *sendcount,int *sendtype,void*recvbuf,int *recvcounts,int *displs,int *recvtype,int *comm,int *ierr)
+{
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*sendcount)*MPIUNI_DATASIZE[*sendtype]);
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_alltoallv_(void*sendbuf,int *sendcounts,int *sdispls,int *sendtype,void*recvbuf,int *recvcounts,int *rdispls,int *recvtype,int *comm,int *ierr)
+{
+  MPIUNI_Memcpy(recvbuf,sendbuf,(*sendcounts)*MPIUNI_DATASIZE[*sendtype]);
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_comm_create_(int *comm,int *group,int *newcomm,int *ierr)
+{
+  *newcomm =  *comm;
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_address_(void*location,int *address,int *ierr)
+{
+  *address =  (int) location;
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_pack_(void*inbuf,int *incount,int *datatype,void*outbuf,int *outsize,int *position,int *comm,int *ierr)
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+void PETSC_STDCALL mpi_unpack_(void*inbuf,int *insize,int *position,void*outbuf,int *outcount,int *datatype,int *comm,int *ierr)
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+void PETSC_STDCALL mpi_pack_size_(int *incount,int *datatype,int *comm,int *size,int *ierr)
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+void PETSC_STDCALL mpi_type_struct_(int *count,int *array_of_blocklengths,int * array_of_displaments,int *array_of_types,int *newtype,int *ierr)
+{
+  *ierr = MPI_Abort(MPI_COMM_WORLD,0);
+}
+
+void PETSC_STDCALL mpi_type_commit_(int *datatype,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+double PETSC_STDCALL mpi_wtime_(void)
+{
+  return 0.0;
+
 }
 
 #endif /* MPIUNI_AVOID_MPI_NAMESPACE */

@@ -101,6 +101,7 @@
 #define __MPIUNI_H
 
 /* Requred by abort() in mpi.c & for win64 */
+#include "petscconf.h"
 
 #if defined(__cplusplus)
 extern "C" {
