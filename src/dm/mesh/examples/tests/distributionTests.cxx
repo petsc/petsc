@@ -436,6 +436,7 @@ PetscErrorCode PartitionTests(const Options *options)
   coordinates->setDebug(options->debug);
   ALE::Partitioner<>::createLocalSection(coordinates, partition, renumbering, parallelCoordinates);
   ALE::Completion::completeSection(sendMeshOverlap, recvMeshOverlap, coordinates, parallelCoordinates);
+  parallelCoordinates->view("Parallel Coordinates");
   //   Create the parallel overlap
   Obj<mesh_send_overlap_type> sendParallelMeshOverlap  = new mesh_send_overlap_type(options->comm);
   Obj<mesh_recv_overlap_type> recvParallelMeshOverlap  = new mesh_recv_overlap_type(options->comm);
