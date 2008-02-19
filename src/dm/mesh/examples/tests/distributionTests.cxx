@@ -277,7 +277,9 @@ PetscErrorCode SectionToISectionTest(const Options *options)
   PetscFunctionBegin;
   ierr = PetscMalloc(options->components * sizeof(double), &value);CHKERRQ(ierr);
   ierr = CreateScatterOverlap(sendOverlap, recvOverlap, true, options);CHKERRQ(ierr);
-  Obj<isection> parallelSection = new isection(options->comm, 0, recvOverlap->base()->size(), options->debug);
+  const int     localSize       = options->rank ? recvOverlap->base()->size() : options->numCells/options->size + PetscMin(1, options->numCells%options->size);
+  Obj<isection> parallelSection = new isection(options->comm, 0, localSize, options->debug);
+
   if (!options->rank) {
     for(PetscInt c = 0; c < options->numCells; ++c) {
       serialSection->setFiberDimension(c, options->components);
@@ -292,6 +294,19 @@ PetscErrorCode SectionToISectionTest(const Options *options)
   }
   ierr = PetscFree(value);CHKERRQ(ierr);
   ALE::Completion::completeSection(sendOverlap, recvOverlap, serialSection, parallelSection);
+  if (!options->rank) {
+    const PetscInt rStart = 0;
+    const PetscInt rEnd   = options->numCells/options->size + PetscMin(1, options->numCells%options->size);
+
+    for(PetscInt c = rStart, locC = 0; c < rEnd; ++c, ++locC) {
+      parallelSection->setFiberDimension(locC, serialSection->getFiberDimension(c));
+    }
+    parallelSection->allocatePoint();
+    for(PetscInt c = rStart, locC = 0; c < rEnd; ++c, ++locC) {
+      parallelSection->updatePoint(locC, serialSection->restrictPoint(c));
+    }
+  }
+  if (options->debug) {parallelSection->view("Parallel ISection");}
   PetscFunctionReturn(0);
 }
 
