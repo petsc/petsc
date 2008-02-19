@@ -392,6 +392,8 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
   PetscInt       rnz,nnz,nz=0,i,M=A->rmap.N,*ai,*aj,icntl;
   PetscTruth     valOnly,flg;
   Mat            F_diag; 
+  IS             is_iden;
+  Vec            b;
 
   PetscFunctionBegin; 	
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 
@@ -527,8 +529,6 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
 #endif
       }      
       /* MUMPS only supports centralized rhs. Create scatter scat_rhs for repeated use in MatSolve() */
-      IS  is_iden;
-      Vec b;
       if (!lu->myid){
         ierr = VecCreateSeq(PETSC_COMM_SELF,A->cmap.N,&lu->b_seq);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF,A->cmap.N,0,1,&is_iden);CHKERRQ(ierr);
