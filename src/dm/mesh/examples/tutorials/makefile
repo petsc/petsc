@@ -9,7 +9,7 @@ EXAMPLESF       = ex12f90.F90 mex12f90.F90
 MANSEC          = DA
 NP              = 1
 DISPLAY         = :0.0
-ORDER           = 4
+ORDER           = 1
 EXTRA_ARGS      = -mesh_view_vtk -vec_view_vtk -mat_type umfpack -pc_type lu
 
 include ${PETSC_DIR}/conf/base

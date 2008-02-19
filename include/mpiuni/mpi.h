@@ -9,14 +9,30 @@
 */
 
 /*
-  The following info is a response to one of the petsc-maint questions 
+  The following info is a response to one of the petsc-maint questions
   regarding MPIUNI.
 
   MPIUNI was developed with the aim of getting PETSc compiled, and
-  usable in the absence of MPI. This is the reason each function is
-  not documented.  The development strategy was - to make enough
-  changes to it so that PETSc source compiles without errors, and runs
-  in the uni-processor mode.
+  usable in the absence of a full MPI implementation. With this, we
+  were able to provide PETSc on Windows, Windows64 even before any MPI
+  implementation was available on these platforms. [Or with certain
+  compilers - like borland, that do not have a useable MPI
+  implementation]
+
+  However - providing a seqential, standards compliant MPI
+  implementation is *not* the goal of MPIUNI. The development strategy
+  was - to make enough changes to it so that PETSc sources, examples
+  compile without errors, and runs in the uni-processor mode. This is
+  the reason each function is not documented.
+
+  PETSc usage of MPIUNI is primarily from C. However a minimal fortran
+  interface is also provided - to get PETSc fortran examples with a
+  few MPI calls working.
+
+  One of the optimzation with MPIUNI, is to avoid the function call
+  overhead, when possible. Hence most of the C functions are
+  implemented as macros. However the function calls cannot be avoided
+  with fortran usage.
 
   Most PETSc objects have both sequential and parallel
   implementations, which are separate. For eg: We have two types of
@@ -35,14 +51,6 @@
   executed in the sequential mode. (which shouldn't happen in case of
   PETSc).
 
-  One of the goals with MPIUNI, is to avoid the function call overhead
-  of a regular MPI implementation. If this was not the case, we could
-  as well have used a regular implementation of MPI as they are
-  available on almost all machines. Hence most of the functions are
-  implemented as macros. One of the additional benefits we got from
-  MPIUNI is, we were able to use PETSc on machines where using a
-  proper implementation of MPI was painful (for eg NT).
-
   Proper implementation of send/receive would involve writing a
   function for each of them. Inside each of these functions, we have
   to check if the send is to self or receive is from self, and then
@@ -52,10 +60,45 @@
   case, a proper implementation of MPI might as well be used. This is
   the reason the send to self is not implemented in MPIUNI, and never
   will be.
+  
+  Proper implementations of MPI [for eg: MPICH & OpenMPI] are
+  available for most machines. When these packages are available, Its
+  generally preferable to use one of them instead of MPIUNI - even if
+  the user is using PETSc sequentially.
+
+    - MPIUNI does not support all MPI functions [or functionality].
+    Hence it might not work with external packages or user code that
+    might have MPI calls in it.
+
+    - MPIUNI is not a standards compliant implementation for np=1.
+    For eg: if the user code has send/recv to self, then it will
+    abort. [Similar issues with a number of other MPI functionality]
+    However MPICH & OpenMPI are the correct implementations of MPI
+    standard for np=1.
+
+    - When user code uses multiple MPI based packages that have their
+    own *internal* stubs equivalent to MPIUNI - in sequential mode,
+    invariably these multiple implementations of MPI for np=1 conflict
+    with each other. The correct thing to do is: make all such
+    packages use the *same* MPI implementation for np=1. MPICH/OpenMPI
+    satisfy this requirement correctly [and hence the correct choice].
+
+    - Using MPICH/OpenMPI sequentially should have minimal
+    disadvantages. [for eg: these binaries can be run without
+    mpirun/mpiexec as ./executable, without requiring any extra
+    configurations for ssh/rsh/daemons etc..]. This should not be a
+    reason to avoid these packages for sequential use.
+
+    Instructions for building standalone MPIUNI [for eg: linux/gcc+gfortran]:
+    - extract include/mpiuni/mpi.h,mpif.f, src/sys/mpiuni/mpi.c from PETSc
+    - remove reference to petscconf.h from mpi.h
+    - gcc -c mpi.c -DPETSC_HAVE_STDLIB_H -DPETSC_HAVE_FORTRAN_UNDERSCORE
+    - ar cr libmpiuni.a mpi.o
+
 */
 
-#if !defined(__MPI_H)
-#define __MPI_H
+#if !defined(__MPIUNI_H)
+#define __MPIUNI_H
 
 /* Requred by abort() in mpi.c & for win64 */
 #include "petscconf.h"
@@ -68,8 +111,6 @@ extern "C" {
 #if !defined(MPIUNI_INTPTR)
 #define MPIUNI_INTPTR long
 #endif
-
-#define _petsc_mpi_uni
 
 /*
 
@@ -130,6 +171,7 @@ extern int MPIUNI_Memcpy(void*,const void*,int);
 
 #define MPI_REQUEST_NULL    ((MPI_Request)0)
 #define MPI_GROUP_NULL      ((MPI_Group)0)
+#define MPI_BOTTOM          (void *)0
 typedef int MPI_Op;
 
 #define MPI_SUM           0
@@ -137,7 +179,7 @@ typedef int MPI_Op;
 #define MPI_MIN           0
 #define MPI_ANY_TAG     (-1)
 #define MPI_DATATYPE_NULL 0
-
+#define MPI_PACKED        0
 #define MPI_MAX_ERROR_STRING 2056
 /*
   Prototypes of some functions which are implemented in mpi.c
@@ -151,20 +193,7 @@ typedef void  (MPI_User_function)(void*, void *, int *, MPI_Datatype *);
   own MPIUni we map the following function names to a unique PETSc name. Those functions
   are defined in mpi.c
 */
-extern int    Petsc_MPI_Abort(MPI_Comm,int);
-extern int    Petsc_MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
-extern int    Petsc_MPI_Keyval_free(int*);
-extern int    Petsc_MPI_Attr_put(MPI_Comm,int,void *);
-extern int    Petsc_MPI_Attr_delete(MPI_Comm,int);
-extern int    Petsc_MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
-extern int    Petsc_MPI_Comm_free(MPI_Comm*);
-extern int    Petsc_MPI_Comm_dup(MPI_Comm,MPI_Comm *);
-
-extern int    Petsc_MPI_Init(int *, char ***);
-extern int    Petsc_MPI_Finalize(void);
-extern int    Petsc_MPI_Initialized(int*);
-extern int    Petsc_MPI_Finalized(int*);
-
+#if defined(MPIUNI_AVOID_MPI_NAMESPACE)
 #define MPI_Abort         Petsc_MPI_Abort
 #define MPI_Attr_get      Petsc_MPI_Attr_get
 #define MPI_Keyval_free   Petsc_MPI_Keyval_free
@@ -173,11 +202,27 @@ extern int    Petsc_MPI_Finalized(int*);
 #define MPI_Keyval_create Petsc_MPI_Keyval_create
 #define MPI_Comm_free     Petsc_MPI_Comm_free
 #define MPI_Comm_dup      Petsc_MPI_Comm_dup
-
+#define MPI_Comm_create   Petsc_MPI_Comm_create
 #define MPI_Init          Petsc_MPI_Init
 #define MPI_Finalize      Petsc_MPI_Finalize
 #define MPI_Initialized   Petsc_MPI_Initialized
 #define MPI_Finalized     Petsc_MPI_Finalized
+#endif
+
+extern int    MPI_Abort(MPI_Comm,int);
+extern int    MPI_Attr_get(MPI_Comm comm,int keyval,void *attribute_val,int *flag);
+extern int    MPI_Keyval_free(int*);
+extern int    MPI_Attr_put(MPI_Comm,int,void *);
+extern int    MPI_Attr_delete(MPI_Comm,int);
+extern int    MPI_Keyval_create(MPI_Copy_function *,MPI_Delete_function *,int *,void *);
+extern int    MPI_Comm_free(MPI_Comm*);
+extern int    MPI_Comm_dup(MPI_Comm,MPI_Comm *);
+extern int    MPI_Comm_create(MPI_Comm,MPI_Group,MPI_Comm *);
+extern int    MPI_Init(int *, char ***);
+extern int    MPI_Finalize(void);
+extern int    MPI_Initialized(int*);
+extern int    MPI_Finalized(int*);
+
 
 #define MPI_Aint int
 /* 
@@ -195,7 +240,7 @@ extern int    Petsc_MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (dest),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Recv(buf,count,datatype,source,tag,comm,status) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -217,7 +262,7 @@ extern int    Petsc_MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (dest),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Ssend(buf,count, datatype,dest,tag,comm) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -225,7 +270,7 @@ extern int    Petsc_MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (dest),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Rsend(buf,count, datatype,dest,tag,comm) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -233,7 +278,7 @@ extern int    Petsc_MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (dest),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Buffer_attach(buffer,size) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buffer),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (size),\
@@ -250,7 +295,7 @@ extern int    Petsc_MPI_Finalized(int*);
        MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
        MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
        MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (request),\
-       MPI_SUCCESS)
+       MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Issend(buf,count, datatype,dest,tag,comm,request) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -259,7 +304,7 @@ extern int    Petsc_MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (request),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Irsend(buf,count, datatype,dest,tag,comm,request) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -268,7 +313,7 @@ extern int    Petsc_MPI_Finalized(int*);
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (tag),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (request),\
-      MPI_SUCCESS)
+      MPI_Abort(MPI_COMM_WORLD,0))
 #define MPI_Irecv(buf,count, datatype,source,tag,comm,request) \
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf),\
       MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count),\
@@ -575,10 +620,6 @@ extern int    Petsc_MPI_Finalized(int*);
      (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm1),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm2),\
      *(result)=MPI_IDENT,\
-     MPI_SUCCESS)
-#define MPI_Comm_create(comm,group,newcomm)  \
-     (*(newcomm) =  (comm),\
-     MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (group),\
      MPI_SUCCESS)
 #define MPI_Comm_split(comm,color,key,newcomm) MPI_SUCCESS
 #define MPI_Comm_test_inter(comm,flag) (*(flag)=1,MPI_SUCCESS)

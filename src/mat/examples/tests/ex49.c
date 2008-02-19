@@ -11,9 +11,9 @@ int main(int argc,char **argv)
   PetscInt       m = 4,n,i,j;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank;
-  PetscInt       rstart,rend,rect = 0,nd,bs,*diag,*bdlen;
+  PetscInt       rstart,rend,rect = 0;
   PetscTruth     flg;
-  PetscScalar    v,**diagv;
+  PetscScalar    v;
   PetscReal      normf,normi,norm1;
   MatInfo        info;
   

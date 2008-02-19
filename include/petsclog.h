@@ -304,7 +304,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 
      It does not work with Windows because winmpich lacks MPI_Type_size()
 */
-#if !defined(_petsc_mpi_uni) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
+#if !defined(__MPIUNI_H) && !defined(PETSC_HAVE_BROKEN_RECURSIVE_MACRO) && !defined (PETSC_HAVE_MPI_MISSING_TYPESIZE)
 /*
    Logging of MPI activities
 */
@@ -355,7 +355,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 #define MPI_Start_isend(count,requests) \
  (MPI_Start(requests))
 
-#endif /* !_petsc_mpi_uni && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
+#endif /* !__MPIUNI_H && ! PETSC_HAVE_BROKEN_RECURSIVE_MACRO */
 
 #else  /* ---Logging is turned off --------------------------------------------*/
 

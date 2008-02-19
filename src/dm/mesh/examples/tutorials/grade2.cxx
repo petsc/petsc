@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
       //ierr = SolveTransport(transportDM, &options);CHKERRQ(ierr);
       //ierr = CheckStoppingCriteria(stokesDM, &iterate, &options);CHKERRQ(ierr);
     }
-    PetscPrintf(comm, "Writing stokesDM");
+    PetscPrintf(comm, "Writing stokesDM\n");
     ierr = WriteSolution(stokesDM, &options);CHKERRQ(ierr);
     ierr = DMMGDestroy(stokes);CHKERRQ(ierr);
     ierr = DestroyMesh(stokesDM, transportDM, &options);CHKERRQ(ierr);
