@@ -120,10 +120,10 @@ PetscErrorCode ConstantSectionTest(const Options *options)
   serialSection->addPoint(sendOverlap->cap());
   if (!options->rank) {
     serialSection->update(0, &value);
+    parallelSection->update(0, &value);
   }
-  serialSection->view("");
-  ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, serialSection, parallelSection);
-  parallelSection->view("");
+  ALE::Completion::completeSection(sendOverlap, recvOverlap, serialSection, parallelSection);
+  if (options->debug) {parallelSection->view("Parallel ConstantSection");}
   PetscFunctionReturn(0);
 }
 
@@ -151,8 +151,16 @@ PetscErrorCode UniformSectionTest(const Options *options)
       serialSection->setFiberDimension(c, 4);
       serialSection->updatePoint(c, value);
     }
+    const PetscInt rStart = 0;
+    const PetscInt rEnd   = options->numCells/options->size + PetscMin(1, options->numCells%options->size);
+
+    for(PetscInt c = rStart, locC = 0; c < rEnd; ++c, ++locC) {
+      parallelSection->setFiberDimension(locC, 4);
+      parallelSection->updatePoint(locC, serialSection->restrictPoint(c));
+    }
   }
   ALE::Completion::completeSection(sendOverlap, recvOverlap, serialSection, parallelSection);
+  if (options->debug) {parallelSection->view("Parallel UniformSection");}
   PetscFunctionReturn(0);
 }
 
@@ -222,6 +230,19 @@ PetscErrorCode SectionTest(const Options *options)
   }
   ierr = PetscFree(value);CHKERRQ(ierr);
   ALE::Completion::completeSection(sendOverlap, recvOverlap, serialSection, parallelSection);
+  if (!options->rank) {
+    const PetscInt rStart = 0;
+    const PetscInt rEnd   = options->numCells/options->size + PetscMin(1, options->numCells%options->size);
+
+    for(PetscInt c = rStart, locC = 0; c < rEnd; ++c, ++locC) {
+      parallelSection->setFiberDimension(locC, serialSection->getFiberDimension(c));
+    }
+    parallelSection->allocatePoint();
+    for(PetscInt c = rStart, locC = 0; c < rEnd; ++c, ++locC) {
+      parallelSection->updatePoint(locC, serialSection->restrictPoint(c));
+    }
+  }
+  if (options->debug) {parallelSection->view("Parallel Section");}
   PetscFunctionReturn(0);
 }
 
