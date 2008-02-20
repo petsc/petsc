@@ -470,8 +470,12 @@ template<typename Mesh, typename Section>
 PetscErrorCode MeshView_Sieve_Ascii(const Obj<Mesh>& mesh, const Obj<Section>& partition, PetscViewer viewer)
 {
   typedef ALE::IUniformSection<typename Mesh::point_type, typename Section::point_type> partitionMap_type;
-  Obj<partitionMap_type> partitionMap = new partitionMap_type(mesh->comm(), 0, mesh->commRank() ? 0 : partition->size(), mesh->debug());
-  PetscErrorCode         ierr;
+  const int      numLocalPoints = partition->size();
+  int            numPoints;
+  PetscErrorCode ierr;
+
+  ierr = MPI_Allreduce((void *) &numLocalPoints, (void *) &numPoints, 1, MPI_INT, MPI_SUM, partition->comm());CHKERRQ(ierr);
+  Obj<partitionMap_type> partitionMap = new partitionMap_type(mesh->comm(), 0, numPoints, mesh->debug());
 
   PetscFunctionBegin;
   ALE::Partitioner<>::createPartitionMap(partition, partitionMap);
