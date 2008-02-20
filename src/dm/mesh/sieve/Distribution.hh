@@ -65,6 +65,61 @@
 // 6) Synchronize PETSc tags (can I get around this?)
 namespace ALE {
   class DistributionNew {
+  public:
+    template<typename Mesh, typename Partition, typename Renumbering, typename NewMesh, typename SendOverlap, typename RecvOverlap>
+    static void completeMesh(const Obj<Mesh>& mesh, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<NewMesh>& newMesh, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
+      typedef typename Partition::point_type             rank_type;
+      typedef typename Mesh::point_type                  point_type;
+      typedef ALE::Sifter<rank_type,rank_type,rank_type> part_send_overlap_type;
+      typedef ALE::Sifter<rank_type,rank_type,rank_type> part_recv_overlap_type;
+      const Obj<part_send_overlap_type> sendOverlap = new part_send_overlap_type(partition->comm());
+      const Obj<part_recv_overlap_type> recvOverlap = new part_recv_overlap_type(partition->comm());
+
+      // Create overlap for partition points
+      //   TODO: This needs to be generalized for multiple sources
+      ALE::Partitioner<>::createDistributionPartOverlap(sendOverlap, recvOverlap);
+      // Communicate partition pieces to processes
+      Obj<Partition> overlapPartition = new Partition(partition->comm(), partition->debug());
+
+      overlapPartition->setChart(partition->getChart());
+      overlapPartition->view("Overlap Partition I");
+      ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, partition, overlapPartition);
+      overlapPartition->view("Overlap Partition II");
+      // Create renumbering
+      const int                             rank           = partition->commRank();
+      const typename Partition::value_type *localPoints    = partition->restrictPoint(rank);
+      const int                             numLocalPoints = partition->getFiberDimension(rank);
+
+      for(point_type p = 0; p < numLocalPoints; ++p) {
+        renumbering[localPoints[p]] = p;
+      }
+      const Obj<typename part_recv_overlap_type::traits::baseSequence> rPoints    = recvOverlap->base();
+      typename Partition::value_type                                   localPoint = numLocalPoints;
+
+      for(typename part_recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
+        const Obj<typename part_recv_overlap_type::coneSequence>& ranks           = recvOverlap->cone(*p_iter);
+        const typename Partition::point_type&                     remotePartPoint = ranks->begin().color();
+        const typename Partition::value_type                     *points          = overlapPartition->restrictPoint(remotePartPoint);
+        const int                                                 numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
+
+        for(int i = 0; i < numPoints; ++i) {
+          renumbering[points[i]] = localPoint++;
+        }
+      }
+      // Create mesh overlap from partition overlap
+      //   TODO: Generalize to redistribution (receive from multiple sources)
+      ALE::Partitioner<>::createDistributionMeshOverlap(partition, recvOverlap, renumbering, overlapPartition, sendMeshOverlap, recvMeshOverlap);
+      // Send cones
+      typedef ALE::Section<point_type, point_type>        cones_type;
+      typedef ALE::ConeSection<typename Mesh::sieve_type> cones_wrapper_type;
+      Obj<cones_wrapper_type> cones        = new cones_wrapper_type(mesh->getSieve());
+      Obj<cones_type>         overlapCones = new cones_type(mesh->comm(), mesh->debug());
+
+      ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
+      overlapCones->view("Overlap Cones");
+      // Inserts cones into parallelMesh (must renumber here)
+      ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newMesh->getSieve());
+    };
   };
   template<typename Bundle_>
   class Distribution {

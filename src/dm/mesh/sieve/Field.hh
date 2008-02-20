@@ -246,6 +246,7 @@ namespace ALE {
       }
     };
     int size(const point_type& p) {return this->getFiberDimension(p);};
+    void allocatePoint() {};
   public: // Restriction
     const value_type *restrict() const {
       return this->_value;

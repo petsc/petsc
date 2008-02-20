@@ -464,4 +464,24 @@ template<typename Bundle, typename Section>
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MeshView_Sieve_Ascii"
+template<typename Mesh, typename Section>
+PetscErrorCode MeshView_Sieve_Ascii(const Obj<Mesh>& mesh, const Obj<Section>& partition, PetscViewer viewer)
+{
+  typedef ALE::IUniformSection<typename Mesh::point_type, typename Section::point_type> partitionMap_type;
+  Obj<partitionMap_type> partitionMap = new partitionMap_type(mesh->comm(), 0, mesh->commRank() ? 0 : partition->size(), mesh->debug());
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  ALE::Partitioner<>::createPartitionMap(partition, partitionMap);
+  partitionMap->view("Partition Map");
+  ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
+  ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
+  ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+  ierr = SectionView_Sieve_Ascii(mesh, partitionMap, "Partition", viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #endif // __PETSCMESH_VIEWERS_HH

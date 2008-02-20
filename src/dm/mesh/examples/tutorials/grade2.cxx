@@ -81,6 +81,8 @@ static char help[] = "This example uses a Grade 2 Fluid model on a journal beari
 
 using ALE::Obj;
 
+typedef enum {VISC_CONSTANT, VISC_VARIABLE} ViscosityType;
+
 // ---------------------------------------------------------------------------------------------------------------------
 // Top level data definitions
 typedef struct {
@@ -99,10 +101,20 @@ typedef struct {
   std::string   paramName;                                    // Name of the parameter section
   SectionReal   exactU;                                       // Discrete exact Stokes velocity solution
   SectionReal   exactW;                                       // Discrete exact Stokes pressure potential solution
+  ViscosityType viscosityModel;                               // The viscosity model
+  double        (*viscosity)(const double []);                // A variable viscosity function
 } Options;
 
 double zero(const double x[]) {
   return 0.0;
+}
+
+double one(const double x[]) {
+  return 1.0;
+}
+
+double linearViscosity(const double x[]) {
+  return x[0]+0.01;
 }
 
 double constant(const double x[]) {
@@ -294,12 +306,12 @@ PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
     SectionReal sol;
 
     ierr = MeshGetSectionReal(mesh, "default", &sol);CHKERRQ(ierr);
-    ierr = SectionRealView(sol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    if (options->debug) {ierr = SectionRealView(sol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = CheckError((DM) mesh, sol, options);CHKERRQ(ierr);
     ierr = SectionRealDestroy(sol);CHKERRQ(ierr);
     ierr = IterateStokes(dmmg, options);CHKERRQ(ierr);
     ierr = MeshGetSectionReal((Mesh) options->paramDM, "default", &sol);CHKERRQ(ierr);
-    ierr = SectionRealView(sol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    if (options->debug) {ierr = SectionRealView(sol, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     ierr = CheckError(options->paramDM, sol, options);CHKERRQ(ierr);
     ierr = SectionRealDestroy(sol);CHKERRQ(ierr);
     ierr = CheckStokesConvergence(dmmg, &iterate, options);CHKERRQ(ierr);
@@ -325,9 +337,9 @@ PetscErrorCode IterateStokes(DMMG *dmmg, Options *options)
   const Obj<ALE::Mesh::real_section_type>& u = m->getRealSection("default");
   const Obj<ALE::Mesh::real_section_type>& w = pM->getRealSection(options->paramName);
 
-  w->view("w before");
+  if (m->debug()) {w->view("w before");}
   w->axpy(options->rho, u);
-  w->view("w after");
+  if (m->debug()) {w->view("w after");}
   PetscFunctionReturn(0);
 }
 
@@ -379,8 +391,7 @@ PetscErrorCode DivNorm_L2(Mesh mesh, SectionReal X, PetscReal *norm, Options *op
       elemNorm += divU*divU*quadWeights[q];
     }    
     elemNorm *= detJ;
-    //if (m->debug()) {
-    if (1) {
+    if (m->debug()) {
       std::cout << "Element " << *c_iter << " norm^2: " << elemNorm << std::endl;
     }
     localNorm += elemNorm;
@@ -582,22 +593,24 @@ PetscErrorCode WriteSolution(DM dm, Options *options)
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
+  const char    *viscTypes[2] = {"constant", "variable"};
   ostringstream  filename;
+  PetscInt       visc;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug            = 0;
-  options->dim              = 2;
-  options->generateMesh     = PETSC_TRUE;
-  options->interpolate      = PETSC_TRUE;
-  options->refinementLimit  = 0.0;
-  options->radius           = 0.5;
-  options->r                = -1.0e5;
-  options->rho              =  1.0e5;
-  options->mu               = 1;
-  options->alpha            = 1;
-  options->square           = PETSC_FALSE;
-
+  options->debug           = 0;
+  options->dim             = 2;
+  options->generateMesh    = PETSC_TRUE;
+  options->interpolate     = PETSC_TRUE;
+  options->refinementLimit = 0.0;
+  options->radius          = 0.5;
+  options->r               = -1.0e5;
+  options->rho             =  1.0e5;
+  options->mu              = 1;
+  options->alpha           = 1;
+  options->square          = PETSC_FALSE;
+  options->viscosityModel  = VISC_CONSTANT;
 
   ierr = PetscOptionsBegin(comm, "", "Grade 2 journal bearing Options", "DMMG");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "grade2.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
@@ -615,6 +628,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   filename << "data/journal_bearing";
   ierr = PetscStrcpy(options->baseFilename, filename.str().c_str());CHKERRQ(ierr);
   ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "grade2.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+  visc = options->viscosityModel;
+  ierr = PetscOptionsEList("-viscosity_model", "The viscosity model", "grade2.cxx", viscTypes, 2, viscTypes[options->viscosityModel], &visc, PETSC_NULL);CHKERRQ(ierr);
+  options->viscosityModel = (ViscosityType) visc;
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -867,6 +883,14 @@ PetscErrorCode CreateProblem(DM stokesDM, DM paramDM, DM transportDM, Options *o
   ierr = CreateProblem_gen_1(stokesDM, "u1", 1, velMarkers, velFuncs, velFuncs[0]);CHKERRQ(ierr);
   options->funcs[0] = constant;
   options->funcs[1] = constant;
+  // Create viscosity model
+  if (options->viscosityModel == VISC_CONSTANT) {
+    options->viscosity = one;
+  } else if (options->viscosityModel == VISC_VARIABLE) {
+    options->viscosity = linearViscosity;
+  } else {
+    SETERRQ(PETSC_ERR_ARG_WRONG, "Unrecognized viscosity model");
+  }
   // Create the default Stokes section
   Obj<ALE::Mesh> m;
 
@@ -1107,7 +1131,8 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
 {
   Options       *options   = (Options *) ctx;
   Mesh           paramMesh = (Mesh) options->paramDM;
-  double      (**funcs)(const double *) = options->funcs;
+  double      (**funcs)(const double *)    = options->funcs;
+  double      (*viscosity)(const double *) = options->viscosity;
   Obj<ALE::Mesh> m;
   Obj<ALE::Mesh> pM;
   Obj<ALE::Mesh::real_section_type> sX;
@@ -1167,6 +1192,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
           }
         }
         PetscScalar funcVal = (*funcs[field])(coords);
+        PetscScalar visc    = (*viscosity)(coords);
 
         // Loop over trial functions
         for(int f = 0; f < numBasisFuncs; ++f) {
@@ -1187,7 +1213,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
                 bDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
               }
             }
-            elemMat[f*totBasisFuncs+indices[g]]     += r*tDiv*bDiv*quadWeights[q]*detJ;
+            elemMat[f*totBasisFuncs+indices[g]]     += r*tDiv*visc*bDiv*quadWeights[q]*detJ;
             div_elemMat[f*totBasisFuncs+indices[g]] +=   tDiv*bDiv*quadWeights[q]*detJ;
           }
           // Laplacian of u or v
@@ -1202,7 +1228,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
             }
             PetscScalar product = 0.0;
 
-            for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
+            for(int d = 0; d < dim; ++d) product += t_der[d]*visc*b_der[d];
             elemMat[f*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
           }
         }
@@ -1269,6 +1295,7 @@ PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal sec
 PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ctx)
 {
   Options       *options = (Options *) ctx;
+  double       (*viscosity)(const double *) = options->viscosity;
   Obj<ALE::Mesh> m;
   Obj<ALE::Mesh::real_section_type> sX;
   PetscErrorCode ierr;
@@ -1283,7 +1310,7 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
   const Obj<std::set<std::string> >&       discs         = m->getDiscretizations();
   const double                             r             = options->r;
   int                                      totBasisFuncs = 0;
-  double      *t_der, *b_der, *v0, *J, *invJ, detJ;
+  double      *t_der, *b_der, *coords, *v0, *J, *invJ, detJ;
   PetscScalar *elemMat;
 
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
@@ -1291,7 +1318,7 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
     totBasisFuncs += m->getDiscretization(*f_iter)->getBasisSize();
   }
   ierr = PetscMalloc(totBasisFuncs*totBasisFuncs * sizeof(PetscScalar), &elemMat);CHKERRQ(ierr);
-  ierr = PetscMalloc5(dim,double,&t_der,dim,double,&b_der,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc6(dim,double,&t_der,dim,double,&b_der,dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     int field = 0;
@@ -1302,6 +1329,7 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
       const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
       const int                       numQuadPoints = disc->getQuadratureSize();
+      const double                   *quadPoints    = disc->getQuadraturePoints();
       const double                   *quadWeights   = disc->getQuadratureWeights();
       const int                       numBasisFuncs = disc->getBasisSize();
       const double                   *basisDer      = disc->getBasisDerivatives();
@@ -1309,6 +1337,14 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
 
       // Loop over quadrature points
       for(int q = 0; q < numQuadPoints; ++q) {
+        for(int d = 0; d < dim; d++) {
+          coords[d] = v0[d];
+          for(int e = 0; e < dim; e++) {
+            coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
+          }
+        }
+        PetscScalar visc = (*viscosity)(coords);
+
         // Loop over trial functions
         for(int f = 0; f < numBasisFuncs; ++f) {
           // The div-div term for u or v
@@ -1325,7 +1361,7 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
                 bDiv += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
               }
             }
-            elemMat[indices[f]*totBasisFuncs+indices[g]] += r*tDiv*bDiv*quadWeights[q]*detJ;
+            elemMat[indices[f]*totBasisFuncs+indices[g]] += r*tDiv*visc*bDiv*quadWeights[q]*detJ;
           }
           // Laplacian of u or v
           for(int d = 0; d < dim; ++d) {
@@ -1339,7 +1375,7 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
             }
             PetscScalar product = 0.0;
             
-            for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
+            for(int d = 0; d < dim; ++d) product += t_der[d]*visc*b_der[d];
             elemMat[indices[f]*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
           }
         }
@@ -1348,7 +1384,7 @@ PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal X, Mat A, void *ct
     ierr = updateOperator(A, m, sX, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree(elemMat);CHKERRQ(ierr);
-  ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
+  ierr = PetscFree6(t_der,b_der,coords,v0,J,invJ);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);

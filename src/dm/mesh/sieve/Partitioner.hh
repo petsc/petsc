@@ -705,6 +705,25 @@ namespace ALE {
       }
       delete [] values;
     };
+    // Create a section mapping points to partitions
+    template<typename Section, typename MapSection>
+    static void createPartitionMap(const Obj<Section>& partition, const Obj<MapSection>& partitionMap) {
+      const typename Section::chart_type& chart = partition->getChart();
+
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        partitionMap->setFiberDimension(*p_iter, 1);
+      }
+      partitionMap->allocatePoint();
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const typename Section::value_type *points = partition->restrictPoint(*p_iter);
+        const int                           size   = partition->getFiberDimension(*p_iter);
+        const typename Section::point_type  part   = *p_iter;
+
+        for(int i = 0; i < size; ++i) {
+          partitionMap->updatePoint(points[i], &part);
+        }
+      }
+    };
   };
 #endif
 

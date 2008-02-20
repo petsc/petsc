@@ -120,10 +120,10 @@ PetscErrorCode ConstantSectionTest(const Options *options)
   serialSection->addPoint(sendOverlap->cap());
   if (!options->rank) {
     serialSection->update(0, &value);
+    parallelSection->update(0, &value);
   }
-  serialSection->view("");
-  ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, serialSection, parallelSection);
-  parallelSection->view("");
+  ALE::Completion::completeSection(sendOverlap, recvOverlap, serialSection, parallelSection);
+  if (options->debug) {parallelSection->view("Parallel ConstantSection");}
   PetscFunctionReturn(0);
 }
 
@@ -151,8 +151,16 @@ PetscErrorCode UniformSectionTest(const Options *options)
       serialSection->setFiberDimension(c, 4);
       serialSection->updatePoint(c, value);
     }
+    const PetscInt rStart = 0;
+    const PetscInt rEnd   = options->numCells/options->size + PetscMin(1, options->numCells%options->size);
+
+    for(PetscInt c = rStart, locC = 0; c < rEnd; ++c, ++locC) {
+      parallelSection->setFiberDimension(locC, 4);
+      parallelSection->updatePoint(locC, serialSection->restrictPoint(c));
+    }
   }
   ALE::Completion::completeSection(sendOverlap, recvOverlap, serialSection, parallelSection);
+  if (options->debug) {parallelSection->view("Parallel UniformSection");}
   PetscFunctionReturn(0);
 }
 
@@ -222,6 +230,19 @@ PetscErrorCode SectionTest(const Options *options)
   }
   ierr = PetscFree(value);CHKERRQ(ierr);
   ALE::Completion::completeSection(sendOverlap, recvOverlap, serialSection, parallelSection);
+  if (!options->rank) {
+    const PetscInt rStart = 0;
+    const PetscInt rEnd   = options->numCells/options->size + PetscMin(1, options->numCells%options->size);
+
+    for(PetscInt c = rStart, locC = 0; c < rEnd; ++c, ++locC) {
+      parallelSection->setFiberDimension(locC, serialSection->getFiberDimension(c));
+    }
+    parallelSection->allocatePoint();
+    for(PetscInt c = rStart, locC = 0; c < rEnd; ++c, ++locC) {
+      parallelSection->updatePoint(locC, serialSection->restrictPoint(c));
+    }
+  }
+  if (options->debug) {parallelSection->view("Parallel Section");}
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +277,9 @@ PetscErrorCode SectionToISectionTest(const Options *options)
   PetscFunctionBegin;
   ierr = PetscMalloc(options->components * sizeof(double), &value);CHKERRQ(ierr);
   ierr = CreateScatterOverlap(sendOverlap, recvOverlap, true, options);CHKERRQ(ierr);
-  Obj<isection> parallelSection = new isection(options->comm, 0, recvOverlap->base()->size(), options->debug);
+  const int     localSize       = options->rank ? recvOverlap->base()->size() : options->numCells/options->size + PetscMin(1, options->numCells%options->size);
+  Obj<isection> parallelSection = new isection(options->comm, 0, localSize, options->debug);
+
   if (!options->rank) {
     for(PetscInt c = 0; c < options->numCells; ++c) {
       serialSection->setFiberDimension(c, options->components);
@@ -271,6 +294,19 @@ PetscErrorCode SectionToISectionTest(const Options *options)
   }
   ierr = PetscFree(value);CHKERRQ(ierr);
   ALE::Completion::completeSection(sendOverlap, recvOverlap, serialSection, parallelSection);
+  if (!options->rank) {
+    const PetscInt rStart = 0;
+    const PetscInt rEnd   = options->numCells/options->size + PetscMin(1, options->numCells%options->size);
+
+    for(PetscInt c = rStart, locC = 0; c < rEnd; ++c, ++locC) {
+      parallelSection->setFiberDimension(locC, serialSection->getFiberDimension(c));
+    }
+    parallelSection->allocatePoint();
+    for(PetscInt c = rStart, locC = 0; c < rEnd; ++c, ++locC) {
+      parallelSection->updatePoint(locC, serialSection->restrictPoint(c));
+    }
+  }
+  if (options->debug) {parallelSection->view("Parallel ISection");}
   PetscFunctionReturn(0);
 }
 
@@ -286,6 +322,25 @@ PetscErrorCode ISectionTests(const Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "ViewMesh"
+template<typename Partition>
+PetscErrorCode ViewMesh(const Obj<ALE::Mesh>& mesh, const Obj<Partition>& partition, const Options *options)
+{
+  PetscFunctionBegin;
+  if (options->debug) {
+    PetscViewer    viewer;
+    PetscErrorCode ierr;
+
+    ierr = PetscViewerCreate(options->comm, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRQ(ierr);
+    ierr = MeshView_Sieve_Ascii(mesh, partition, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PartitionTests"
 PetscErrorCode PartitionTests(const Options *options)
 {
@@ -296,56 +351,36 @@ PetscErrorCode PartitionTests(const Options *options)
   typedef ALE::ISection<rank_type, point_type>        partition_type;
   Obj<part_send_overlap_type> sendOverlap   = new part_send_overlap_type(options->comm);
   Obj<part_recv_overlap_type> recvOverlap   = new part_recv_overlap_type(options->comm);
-  Obj<partition_type>         cellPartition = new partition_type(options->comm, 0, options->rank ? 0 : options->size, options->debug);
-  Obj<partition_type>         partition     = new partition_type(options->comm, 0, options->rank ? 0 : options->size, options->debug);
+  Obj<partition_type>         cellPartition = new partition_type(options->comm, 0, options->size, options->debug);
+  Obj<partition_type>         partition     = new partition_type(options->comm, 0, options->size, options->debug);
   const int                   height        = 0;
   double                      lower[2]      = {0.0, 0.0};
   double                      upper[2]      = {1.0, 1.0};
   int                         edges[2]      = {2, 2};
   const Obj<ALE::Mesh>        mB            = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
   const Obj<ALE::Mesh>        mesh          = ALE::Generator::generateMesh(mB, false);
+  Obj<ALE::Mesh>              parallelMesh  = new ALE::Mesh(options->comm, mesh->getDimension(), options->debug);
+  Obj<ALE::Mesh::sieve_type>  parallelSieve = new ALE::Mesh::sieve_type(options->comm, options->debug);
+  std::map<point_type,point_type> renumbering;
+  PetscErrorCode              ierr;
 
   PetscFunctionBegin;
+  parallelMesh->setSieve(parallelSieve);
   ALE::Partitioner<>::createPartition(mesh, cellPartition, height);
   cellPartition->view("Cell Partition");
-  if (options->debug) {
-    typedef ALE::IUniformSection<point_type, rank_type> partition2_type;
-    Obj<partition2_type>              partition2 = new partition2_type(options->comm, 0, options->rank ? 0 : options->numCells, options->debug);
-    const partition_type::chart_type& chart      = cellPartition->getChart();
-    PetscViewer    viewer;
-    PetscErrorCode ierr;
-
-    partition2->allocatePoint();
-    for(partition_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-      const partition_type::value_type *points = cellPartition->restrictPoint(*p_iter);
-      const int                         size   = cellPartition->getFiberDimension(*p_iter);
-      const partition_type::point_type  part   = *p_iter;
-
-      for(int i = 0; i < size; ++i) {
-        partition2->updatePoint(points[i], &part);
-      }
-    }
-    partition2->view("Partition2");
-    ierr = PetscViewerCreate(options->comm, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRQ(ierr);
-    ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
-    ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
-    ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
-    ierr = SectionView_Sieve_Ascii(mesh, partition2, "Partition", viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  }
+  ierr = ViewMesh(mesh, cellPartition, options);CHKERRQ(ierr);
   ALE::Partitioner<>::createPartitionClosure(mesh, cellPartition, partition, height);
+  mesh->view("Serial Mesh");
   partition->view("Partition");
+
+#if 0
   ALE::Partitioner<>::createDistributionPartOverlap(sendOverlap, recvOverlap);
   // Create mesh overlap from partition overlap
   typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
   typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
-  Obj<mesh_send_overlap_type> sendMeshOverlap  = new mesh_send_overlap_type(options->comm, options->debug);
-  Obj<mesh_recv_overlap_type> recvMeshOverlap  = new mesh_recv_overlap_type(options->comm, options->debug);
-  Obj<partition_type>         overlapPartition = new partition_type(options->comm, 0, options->size, options->debug);
-  std::map<point_type,point_type> renumbering;
+  Obj<mesh_send_overlap_type>     sendMeshOverlap  = new mesh_send_overlap_type(options->comm, options->debug);
+  Obj<mesh_recv_overlap_type>     recvMeshOverlap  = new mesh_recv_overlap_type(options->comm, options->debug);
+  Obj<partition_type>             overlapPartition = new partition_type(options->comm, 0, options->size, options->debug);
 
   partition->view("Serial Partition");
   ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, partition, overlapPartition);
@@ -375,17 +410,21 @@ PetscErrorCode PartitionTests(const Options *options)
   // Send cones
   typedef ALE::Section<point_type, point_type>    cones_type;
   typedef ALE::ConeSection<ALE::Mesh::sieve_type> cones_wrapper_type;
-  Obj<ALE::Mesh>             parallelMesh  = new ALE::Mesh(options->comm, mesh->getDimension(), options->debug);
-  Obj<ALE::Mesh::sieve_type> parallelSieve = new ALE::Mesh::sieve_type(options->comm, options->debug);
   Obj<cones_wrapper_type>    cones         = new cones_wrapper_type(mesh->getSieve());
   Obj<cones_type>            overlapCones  = new cones_type(options->comm, options->debug);
 
-  parallelMesh->setSieve(parallelSieve);
-  mesh->view("Serial Mesh");
   ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
   overlapCones->view("Overlap Cones");
   //   Fusion inserts cones into parallelMesh (must renumber here)
   ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, parallelSieve);
+#else
+  typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
+  typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
+  Obj<mesh_send_overlap_type> sendMeshOverlap = new mesh_send_overlap_type(mesh->comm(), mesh->debug());
+  Obj<mesh_recv_overlap_type> recvMeshOverlap = new mesh_recv_overlap_type(mesh->comm(), mesh->debug());
+
+  ALE::DistributionNew::completeMesh(mesh, partition, renumbering, parallelMesh, sendMeshOverlap, recvMeshOverlap);
+#endif
   //   Create the local mesh
   ALE::Partitioner<>::createLocalMesh(mesh, partition, renumbering, parallelMesh, height);
   parallelMesh->stratify();
@@ -400,6 +439,7 @@ PetscErrorCode PartitionTests(const Options *options)
   coordinates->setDebug(options->debug);
   ALE::Partitioner<>::createLocalSection(coordinates, partition, renumbering, parallelCoordinates);
   ALE::Completion::completeSection(sendMeshOverlap, recvMeshOverlap, coordinates, parallelCoordinates);
+  parallelCoordinates->view("Parallel Coordinates");
   //   Create the parallel overlap
   Obj<mesh_send_overlap_type> sendParallelMeshOverlap  = new mesh_send_overlap_type(options->comm);
   Obj<mesh_recv_overlap_type> recvParallelMeshOverlap  = new mesh_recv_overlap_type(options->comm);

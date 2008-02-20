@@ -542,7 +542,7 @@ namespace ALE {
 
     template<typename ostream_type>
     void view(ostream_type& os, const char* label = NULL, bool rawData = false){
-      int rank = this->commRank();
+      const int rank = this->commRank();
 
       if(label != NULL) {
         os << "["<<rank<<"]Viewing LabelSifter '" << label << "':" << std::endl;
