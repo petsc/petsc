@@ -479,7 +479,6 @@ PetscErrorCode MeshView_Sieve_Ascii(const Obj<Mesh>& mesh, const Obj<Section>& p
 
   PetscFunctionBegin;
   ALE::Partitioner<>::createPartitionMap(partition, partitionMap);
-  partitionMap->view("Partition Map");
   ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
   ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
   ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);

@@ -327,16 +327,6 @@ template<typename Partition>
 PetscErrorCode ViewMesh(const Obj<ALE::Mesh>& mesh, const Obj<Partition>& partition, const Options *options)
 {
   PetscFunctionBegin;
-  if (options->debug) {
-    PetscViewer    viewer;
-    PetscErrorCode ierr;
-
-    ierr = PetscViewerCreate(options->comm, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRQ(ierr);
-    ierr = MeshView_Sieve_Ascii(mesh, partition, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -344,102 +334,41 @@ PetscErrorCode ViewMesh(const Obj<ALE::Mesh>& mesh, const Obj<Partition>& partit
 #define __FUNCT__ "PartitionTests"
 PetscErrorCode PartitionTests(const Options *options)
 {
-  typedef int                                         point_type;
-  typedef ALE::Partitioner<>::part_type               rank_type;
-  typedef ALE::Sifter<rank_type,rank_type,rank_type>  part_send_overlap_type;
-  typedef ALE::Sifter<rank_type,rank_type,rank_type>  part_recv_overlap_type;
-  typedef ALE::ISection<rank_type, point_type>        partition_type;
-  Obj<part_send_overlap_type> sendOverlap   = new part_send_overlap_type(options->comm);
-  Obj<part_recv_overlap_type> recvOverlap   = new part_recv_overlap_type(options->comm);
-  Obj<partition_type>         cellPartition = new partition_type(options->comm, 0, options->size, options->debug);
-  Obj<partition_type>         partition     = new partition_type(options->comm, 0, options->size, options->debug);
-  const int                   height        = 0;
-  double                      lower[2]      = {0.0, 0.0};
-  double                      upper[2]      = {1.0, 1.0};
-  int                         edges[2]      = {2, 2};
-  const Obj<ALE::Mesh>        mB            = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-  const Obj<ALE::Mesh>        mesh          = ALE::Generator::generateMesh(mB, false);
-  Obj<ALE::Mesh>              parallelMesh  = new ALE::Mesh(options->comm, mesh->getDimension(), options->debug);
-  Obj<ALE::Mesh::sieve_type>  parallelSieve = new ALE::Mesh::sieve_type(options->comm, options->debug);
-  std::map<point_type,point_type> renumbering;
-  PetscErrorCode              ierr;
+  double                     lower[2]      = {0.0, 0.0};
+  double                     upper[2]      = {1.0, 1.0};
+  int                        edges[2]      = {2, 2};
+  const Obj<ALE::Mesh>       mB            = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+  const Obj<ALE::Mesh>       mesh          = ALE::Generator::generateMesh(mB, false);
+  Obj<ALE::Mesh>             parallelMesh  = new ALE::Mesh(options->comm, mesh->getDimension(), options->debug);
+  Obj<ALE::Mesh::sieve_type> parallelSieve = new ALE::Mesh::sieve_type(options->comm, options->debug);
 
   PetscFunctionBegin;
+  mesh->setDebug(options->debug);
   parallelMesh->setSieve(parallelSieve);
-  ALE::Partitioner<>::createPartition(mesh, cellPartition, height);
-  cellPartition->view("Cell Partition");
-  ierr = ViewMesh(mesh, cellPartition, options);CHKERRQ(ierr);
-  ALE::Partitioner<>::createPartitionClosure(mesh, cellPartition, partition, height);
-  mesh->view("Serial Mesh");
-  partition->view("Partition");
-
-#if 0
-  ALE::Partitioner<>::createDistributionPartOverlap(sendOverlap, recvOverlap);
-  // Create mesh overlap from partition overlap
+  if (options->debug) {mesh->view("Serial Mesh");}
+  typedef ALE::Mesh::point_type                        point_type;
+  typedef ALE::Partitioner<>::part_type                rank_type;
   typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
   typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
-  Obj<mesh_send_overlap_type>     sendMeshOverlap  = new mesh_send_overlap_type(options->comm, options->debug);
-  Obj<mesh_recv_overlap_type>     recvMeshOverlap  = new mesh_recv_overlap_type(options->comm, options->debug);
-  Obj<partition_type>             overlapPartition = new partition_type(options->comm, 0, options->size, options->debug);
+  typedef ALE::DistributionNew<ALE::Mesh>              distribution_type;
+  typedef distribution_type::partition_type            partition_type;
+  const Obj<mesh_send_overlap_type> sendMeshOverlap = new mesh_send_overlap_type(mesh->comm(), mesh->debug());
+  const Obj<mesh_recv_overlap_type> recvMeshOverlap = new mesh_recv_overlap_type(mesh->comm(), mesh->debug());
+  const int                         height          = 0;
+  std::map<point_type,point_type>   renumbering;
 
-  partition->view("Serial Partition");
-  ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, partition, overlapPartition);
-  overlapPartition->view("Overlap Partition");
-  // Create renumbering
-  const partition_type::value_type *localPoints    = partition->restrictPoint(options->rank);
-  const int                         numLocalPoints = partition->getFiberDimension(options->rank);
-
-  for(point_type p = 0; p < numLocalPoints; ++p) {
-    renumbering[localPoints[p]] = p;
-  }
-  const Obj<part_recv_overlap_type::traits::baseSequence> rPoints    = recvOverlap->base();
-  partition_type::value_type                              localPoint = numLocalPoints;
-
-  for(part_recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
-    const Obj<part_recv_overlap_type::coneSequence>& ranks           = recvOverlap->cone(*p_iter);
-    const partition_type::point_type&                remotePartPoint = ranks->begin().color();
-    const partition_type::value_type                *points          = overlapPartition->restrictPoint(remotePartPoint);
-    const int                                        numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
-
-    for(int i = 0; i < numPoints; ++i) {
-      renumbering[points[i]] = localPoint++;
-    }
-  }
-  // TODO: Generalize to redistribution (receive from multiple sources)
-  ALE::Partitioner<>::createDistributionMeshOverlap(partition, recvOverlap, renumbering, overlapPartition, sendMeshOverlap, recvMeshOverlap);
-  // Send cones
-  typedef ALE::Section<point_type, point_type>    cones_type;
-  typedef ALE::ConeSection<ALE::Mesh::sieve_type> cones_wrapper_type;
-  Obj<cones_wrapper_type>    cones         = new cones_wrapper_type(mesh->getSieve());
-  Obj<cones_type>            overlapCones  = new cones_type(options->comm, options->debug);
-
-  ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
-  overlapCones->view("Overlap Cones");
-  //   Fusion inserts cones into parallelMesh (must renumber here)
-  ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, parallelSieve);
-#else
-  typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
-  typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
-  Obj<mesh_send_overlap_type> sendMeshOverlap = new mesh_send_overlap_type(mesh->comm(), mesh->debug());
-  Obj<mesh_recv_overlap_type> recvMeshOverlap = new mesh_recv_overlap_type(mesh->comm(), mesh->debug());
-
-  ALE::DistributionNew::completeMesh(mesh, partition, renumbering, parallelMesh, sendMeshOverlap, recvMeshOverlap);
-#endif
-  //   Create the local mesh
-  ALE::Partitioner<>::createLocalMesh(mesh, partition, renumbering, parallelMesh, height);
-  parallelMesh->stratify();
-  parallelMesh->view("Parallel Mesh");
-  //   Distribute the coordinates
+  Obj<partition_type> partition = distribution_type::distributeMesh(mesh, parallelMesh, renumbering, sendMeshOverlap, recvMeshOverlap, height);
+  if (options->debug) {parallelMesh->view("Parallel Mesh");}
+  // Distribute the coordinates
   typedef ALE::ISection<point_type, double> real_section_type;
-  const int              firstVertex = parallelMesh->heightStratum(0)->size();
-  const int              lastVertex  = firstVertex+parallelMesh->depthStratum(0)->size();
-  Obj<real_section_type> parallelCoordinates = new real_section_type(options->comm, firstVertex, lastVertex, options->debug);
-  const Obj<ALE::Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+  const Obj<ALE::Mesh::real_section_type>& coordinates    = mesh->getRealSection("coordinates");
+  const int                                    firstVertex    = parallelMesh->heightStratum(0)->size();
+  const int                                    lastVertex     = firstVertex+parallelMesh->depthStratum(0)->size();
+  const Obj<real_section_type>                 newCoordinates = new real_section_type(parallelMesh->comm(), firstVertex, lastVertex, parallelMesh->debug());
 
-  coordinates->setDebug(options->debug);
-  ALE::Partitioner<>::createLocalSection(coordinates, partition, renumbering, parallelCoordinates);
-  ALE::Completion::completeSection(sendMeshOverlap, recvMeshOverlap, coordinates, parallelCoordinates);
-  parallelCoordinates->view("Parallel Coordinates");
+  ALE::Partitioner<>::createLocalSection(coordinates, partition, renumbering, newCoordinates);
+  ALE::Completion::completeSection(sendMeshOverlap, recvMeshOverlap, coordinates, newCoordinates);
+  if (options->debug) {newCoordinates->view("Parallel Coordinates");}
   //   Create the parallel overlap
   Obj<mesh_send_overlap_type> sendParallelMeshOverlap  = new mesh_send_overlap_type(options->comm);
   Obj<mesh_recv_overlap_type> recvParallelMeshOverlap  = new mesh_recv_overlap_type(options->comm);
