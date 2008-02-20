@@ -95,7 +95,7 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
 
   PetscFunctionBegin;
   if (!jac->hypre_type) {
-    ierr = PCHYPRESetType(pc,"pilut");CHKERRQ(ierr);
+    ierr = PCHYPRESetType(pc,"boomeramg");CHKERRQ(ierr);
   }
 
   if (pc->setupcalled) {
@@ -903,7 +903,6 @@ EXTERN_C_END
 #define __FUNCT__ "PCSetFromOptions_HYPRE"
 static PetscErrorCode PCSetFromOptions_HYPRE(PC pc)
 {
-  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
   int            indx;
   const char     *type[] = {"pilut","parasails","boomeramg","euclid"};
@@ -911,16 +910,12 @@ static PetscErrorCode PCSetFromOptions_HYPRE(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("HYPRE preconditioner options");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,4,"pilut",&indx,&flg);CHKERRQ(ierr);
-  if (PetscOptionsPublishCount) {   /* force the default if it was not yet set and user did not set with option */
-    if (!flg && !jac->hypre_type) {
-      flg   = PETSC_TRUE;
-      indx = 0;
-    }
-  }
+  ierr = PetscOptionsEList("-pc_hypre_type","HYPRE preconditioner type","PCHYPRESetType",type,4,"boomeramg",&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = PCHYPRESetType_HYPRE(pc,type[indx]);CHKERRQ(ierr);
-  } 
+  } else {
+    ierr = PCHYPRESetType_HYPRE(pc,"boomeramg");CHKERRQ(ierr);
+  }
   if (pc->ops->setfromoptions) {
     ierr = pc->ops->setfromoptions(pc);CHKERRQ(ierr);
   }
