@@ -286,7 +286,7 @@ namespace ALE {
       int dim = fiberDim;
       this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
     };
-    const Obj<atlas_type>& getAtlas() {return this->_atlas;};
+    const Obj<atlas_type>& getAtlas() const {return this->_atlas;};
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
     void addPoint(const point_type& point) {
       this->setFiberDimension(point, fiberDim);
