@@ -89,8 +89,11 @@ class Configure(script.Script):
     self.logWrite('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')\n')
     self.logPrint('TESTING: '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')', debugSection = 'screen', indent = 0)
     if test.__doc__: self.logWrite('  '+test.__doc__+'\n')
+    t = time()
     if not isinstance(args, list): args = [args]
-    return apply(test, args,kargs)
+    ret = apply(test, args,kargs)
+    self.logPrint('  TIME: '+str(time() - t)+' sec', debugSection = 'screen', indent = 0)
+    return ret
 
   #################################
   # Define and Substitution Support
