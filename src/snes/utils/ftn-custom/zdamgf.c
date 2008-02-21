@@ -1,4 +1,4 @@
-#include "private/zpetsc.h"
+#include "private/fortranimpl.h"
 #include "petscdmmg.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -99,7 +99,6 @@ void PETSC_STDCALL dmmgsetdm_(DMMG **dmmg,DM *dm,PetscErrorCode *ierr)
   /* loop over the levels added a place to hang the function pointers in the DM for each level*/
   for (i=0; i<(**dmmg)->nlevels; i++) {
         PetscObjectAllocateFortranPointers((*dmmg)[i]->dm,4);
-	//*ierr = PetscMalloc(4*sizeof(PetscVoidFunction),&((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers);if (*ierr) return;
   }
 }
 

@@ -505,7 +505,7 @@ void PETSC_STDCALL mpi_get_count_(int *status,int *datatype,int *count,int *ierr
   *ierr = MPI_Abort(MPI_COMM_WORLD,0);
 }
 
-/* duplicate from zpetsc.h */
+/* duplicate from fortranimpl.h */
 #if defined(PETSC_HAVE_FORTRAN_MIXED_STR_ARG)
 #define PETSC_MIXED_LEN(len) ,int len
 #define PETSC_END_LEN(len)

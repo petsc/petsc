@@ -61,7 +61,7 @@
 
 !
 !     The numbers used below should match those in 
-!     include/private/zpetsc.h
+!     include/private/fortranimpl.h
 !
       parameter (PETSC_VIEWER_DRAW_WORLD   = -4) 
       parameter (PETSC_VIEWER_DRAW_SELF    = -5)
