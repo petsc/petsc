@@ -468,6 +468,7 @@ namespace ALE {
     typedef typename base::bc_alloc_type    bc_alloc_type;
     typedef typename base::bc_ptr           bc_ptr;
   public:
+    IGeneralSection(MPI_Comm comm, const int debug = 0) : GeneralSection<Point_, Value_, Alloc_, IUniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other>, ISection<Point_, int, typename Alloc_::template rebind<int>::other> >(comm, debug) {};
     IGeneralSection(MPI_Comm comm, const point_type& min, const point_type& max, const int debug = 0) : GeneralSection<Point_, Value_, Alloc_, IUniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other>, ISection<Point_, int, typename Alloc_::template rebind<int>::other> >(comm, debug) {
       this->_atlas->setChart(chart_type(min, max));
       this->_atlas->allocatePoint();
@@ -477,6 +478,11 @@ namespace ALE {
       this->_bc->setChart(atlas->getChart());
     };
     ~IGeneralSection() {};
+  public:
+    void setChart(const chart_type& chart) {
+      this->_atlas->setChart(chart);
+      this->_atlas->allocatePoint();
+    };
   };
 }
 

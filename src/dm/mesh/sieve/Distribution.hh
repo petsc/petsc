@@ -151,6 +151,11 @@ namespace ALE {
       newMesh->stratify();
       return partition;
     };
+    template<typename Section, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewSection>
+    static void distributeSection(const Obj<Section>& s, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<NewSection>& newS) {
+      Partitioner::createLocalSection(s, partition, renumbering, newS);
+      ALE::Completion::completeSection(sendOverlap, recvOverlap, s, newS);
+    };
   };
   template<typename Bundle_>
   class Distribution {

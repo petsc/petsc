@@ -209,7 +209,7 @@ namespace ALE {
       for(size_t i = 0; i < points.size()*2; ++i) {point_allocator.construct(sendBuf+i, point_type());}
       int            size     = 0;
       for(typename Sequence::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
-        std::cout << "["<<commRank<<"]Send point["<<size<<"]: " << *l_iter << " " << renumbering[*l_iter] << std::endl;
+        //std::cout << "["<<commRank<<"]Send point["<<size<<"]: " << *l_iter << " " << renumbering[*l_iter] << std::endl;
         sendBuf[size++] = *l_iter;
         sendBuf[size++] = renumbering[*l_iter];
       }
@@ -296,7 +296,7 @@ namespace ALE {
             for(typename std::set<pointTriple>::const_iterator p_iter = (overlapInfo[p][rank]).begin(); p_iter != (overlapInfo[p][rank]).end(); ++p_iter) {
               sendPoints[k++] = p_iter->first;
               sendPoints[k++] = p_iter->second.second;
-              std::cout << "["<<commRank<<"]Sending points " << p_iter->first << " " << p_iter->second.second << " to rank " << rank << std::endl;
+              //std::cout << "["<<commRank<<"]Sending points " << p_iter->first << " " << p_iter->second.second << " to rank " << rank << std::endl;
             }
           }
         }
@@ -316,7 +316,7 @@ namespace ALE {
           point_type point       = overlapPoints[k++];
           point_type remotePoint = overlapPoints[k++];
 
-          std::cout << "["<<commRank<<"]Matched up remote point " << remotePoint << "("<<point<<") to local " << renumbering[point] << std::endl;
+          //std::cout << "["<<commRank<<"]Matched up remote point " << remotePoint << "("<<point<<") to local " << renumbering[point] << std::endl;
           sendOverlap->addArrow(renumbering[point], rank, remotePoint);
           recvOverlap->addArrow(rank, renumbering[point], remotePoint);
         }

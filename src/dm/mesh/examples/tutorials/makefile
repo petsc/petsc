@@ -98,6 +98,10 @@ bratu: bratu_quadrature.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o br
 	-${CLINKER} -o bratu  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu.o ${PETSC_SNES_LIB}
 	${RM} -f bratu.o
 
+bratu2: bratu2_quadrature.h bratu2.o chkopts
+	-${CLINKER} -o bratu2 bratu2.o ${PETSC_SNES_LIB}
+	${RM} -f bratu2.o
+
 electrostatic: electrostatic_quadrature.h electrostatic.o chkopts
 	-${CLINKER} -o electrostatic electrostatic.o ${PETSC_SNES_LIB}
 	${RM} -f electrostatic.o
