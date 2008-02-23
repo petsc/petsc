@@ -446,7 +446,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
 $       call PetscInitialize(file,ierr)
 
 +   ierr - error return code
--  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_CHARACTER_NULL to not check for
+-  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL_CHARACTER to not check for
           code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
            
    Important Fortran Note:
