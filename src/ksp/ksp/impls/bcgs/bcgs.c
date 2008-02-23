@@ -65,15 +65,12 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
   i=0;
   do {
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
-    if (rho == 0.0) {
-      ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      break;
-    }
     beta = (rho/rhoold) * (alpha/omegaold);
     ierr = VecAXPY(P,-omegaold,V);CHKERRQ(ierr);         /*   p <- p - w v       */
     ierr = VecAYPX(P,beta,R);CHKERRQ(ierr);      /*   p <- r + p beta    */
     ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);  /*   v <- K p           */
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
+    if (d1 == 0.0) SETERRQ(PETSC_ERR_PLIB,"Divide by zero");
     alpha = rho / d1;                 /*   a <- rho / (v,rp)  */
     ierr = VecWAXPY(S,-alpha,V,R);CHKERRQ(ierr);      /*   s <- r - a v       */
     ierr = KSP_PCApplyBAorAB(ksp,S,T,R);CHKERRQ(ierr);/*   t <- K s    */
@@ -82,7 +79,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
       /* t is 0.  if s is 0, then alpha v == r, and hence alpha p
 	 may be our solution.  Give it a try? */
       ierr = VecDot(S,S,&d1);CHKERRQ(ierr);
-      if (d1 == 0.0) {
+      if (d1 != 0.0) {
         ksp->reason = KSP_DIVERGED_BREAKDOWN;
         break;
       }
@@ -115,6 +112,10 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
     KSPMonitor(ksp,i+1,dp);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;    
+    if (rho == 0.0) {
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      break;
+    }
     i++;
   } while (i<ksp->max_it);
 

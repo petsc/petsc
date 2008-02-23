@@ -312,6 +312,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatS
   if (Pmat) PetscCheckSameComm(ksp,1,Pmat,3);
   ierr = PCSetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
   if (ksp->setupcalled > 1) ksp->setupcalled = 1;  /* so that next solve call will call setup */
+  if (ksp->guess) {
+    ierr = KSPGuessFischerReset(ksp->guess);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
