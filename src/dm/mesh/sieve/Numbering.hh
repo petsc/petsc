@@ -309,41 +309,13 @@ namespace ALE {
     // Order all local points
     //   points in the overlap are only ordered by the owner with the lowest rank
     template<typename Sequence_, typename Section_>
-    void constructLocalOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<Sequence_>& points, const Obj<Section_>& section) {
+    void constructLocalOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Sequence_& points, const Obj<Section_>& section) {
       int localSize = 0;
 
-      order->setFiberDimension(points, 1);
-      for(typename Sequence_::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
-        oValue_type val;
-
-        if (sendOverlap->capContains(*l_iter)) {
-          const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*l_iter);
-          int minRank = sendOverlap->commSize();
-
-          for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
-            if (*p_iter < minRank) minRank = *p_iter;
-          }
-          if (minRank < sendOverlap->commRank()) {
-            val = this->_unknownOrder;
-          } else {
-            val.prefix = localSize;
-            val.index  = section->getConstrainedFiberDimension(*l_iter);
-          }
-        } else {
-          val.prefix = localSize;
-          val.index  = section->getConstrainedFiberDimension(*l_iter);
-        }
-        localSize += val.index;
-        order->updatePoint(*l_iter, &val);
+      for(typename Sequence_::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
+        order->setFiberDimension(*l_iter, 1);
       }
-      order->setLocalSize(localSize);
-    };
-    template<typename Point_, typename Section_>
-    void constructLocalOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const std::set<Point_>& points, const Obj<Section_>& section) {
-      int localSize = 0;
-
-      order->setFiberDimension(points, 1);
-      for(typename std::set<Point_>::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
+      for(typename Sequence_::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
         oValue_type val;
 
         if (sendOverlap->capContains(*l_iter)) {
@@ -383,21 +355,12 @@ namespace ALE {
       delete [] offsets;
     };
     // Update local offsets based upon process offsets
+    //   TODO: The sequence should be const, but LabelSifter has no proper const_iterator
     template<typename Numbering, typename Sequence>
-    void updateOrder(const Obj<Numbering>& numbering, const Obj<Sequence>& points) {
+    void updateOrder(const Obj<Numbering>& numbering, Sequence& points) {
       const typename Numbering::value_type val = numbering->getGlobalOffset(numbering->commRank());
 
-      for(typename Sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
-        if (numbering->isLocal(*l_iter)) {
-          numbering->updateAddPoint(*l_iter, &val);
-        }
-      }
-    };
-    template<typename Numbering, typename Point>
-    void updateOrder(const Obj<Numbering>& numbering, const std::set<Point>& points) {
-      const typename Numbering::value_type val = numbering->getGlobalOffset(numbering->commRank());
-
-      for(typename std::set<Point>::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
+      for(typename Sequence::const_iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
         if (numbering->isLocal(*l_iter)) {
           numbering->updateAddPoint(*l_iter, &val);
         }
@@ -496,22 +459,22 @@ namespace ALE {
     void constructNumbering(const Obj<numbering_type>& numbering, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Sequence>& points) {
       this->constructLocalNumbering(numbering, sendOverlap, points);
       this->calculateOffsets(numbering);
-      this->updateOrder(numbering, points);
+      this->updateOrder(numbering, *points.ptr());
       this->completeNumbering(numbering, sendOverlap, recvOverlap);
     };
     // Construct a full global order
     template<typename Sequence, typename Section>
-    void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Sequence>& points, const Obj<Section>& section) {
+    void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Sequence& points, const Obj<Section>& section) {
       this->constructLocalOrder(order, sendOverlap, points, section);
       this->calculateOffsets(order);
       this->updateOrder(order, points);
       this->completeOrder(order, sendOverlap, recvOverlap);
     };
-    template<typename PointType, typename Section>
-    void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const std::set<PointType>& points, const Obj<Section>& section) {
-      this->constructLocalOrder(order, sendOverlap, points, section);
+    template<typename Sequence, typename Section>
+    void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Sequence>& points, const Obj<Section>& section) {
+      this->constructLocalOrder(order, sendOverlap, *points.ptr(), section);
       this->calculateOffsets(order);
-      this->updateOrder(order, points);
+      this->updateOrder(order, *points.ptr());
       this->completeOrder(order, sendOverlap, recvOverlap);
     };
   public:

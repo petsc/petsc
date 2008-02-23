@@ -49,6 +49,7 @@ namespace ALE {
     const_iterator begin() const {return const_iterator(this->_min);};
     const_iterator end() const {return const_iterator(this->_max);};
     size_t size() const {return this->_max - this->_min;};
+    size_t count(const point_type& p) const {return ((p >= _min) && (p < _max)) ? 1 : 0;};
     point_type min() const {return this->_min;};
     point_type max() const {return this->_max;};
   };
@@ -121,7 +122,7 @@ namespace ALE {
     void copy(const Obj<IConstantSection>& section) {
       const chart_type& chart = section->getChart();
 
-      this->_chart.copy(chart);
+      this->_chart = chart;
       this->_value[0] = section->restrict(*chart.begin())[0];
       this->_value[1] = section->restrict(*chart.begin())[1];
     };
@@ -152,6 +153,7 @@ namespace ALE {
     };
     int size(const point_type& p) {return this->getFiberDimension(p);};
   public: // Restriction
+    void clear() {};
     const value_type *restrict() const {
       return this->_value;
     };

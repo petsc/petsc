@@ -357,6 +357,7 @@ namespace ALE {
         // Encapsulated types
         typedef typename base_type::traits traits;
         typedef typename base_type::iterator iterator;
+        typedef typename base_type::iterator const_iterator;
         typedef typename base_type::reverse_iterator reverse_iterator;
         // Basic interface
         supportSequence(const supportSequence& seq) : base_type(seq), _graph(seq._graph) {};

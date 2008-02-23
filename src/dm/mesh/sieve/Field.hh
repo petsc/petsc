@@ -1480,7 +1480,8 @@ namespace ALE {
     void setConstraintDof(const point_type& p, const int dofs[]) {
       this->_bc->updatePoint(p, dofs);
     };
-    void copyBC(const Obj<GeneralSection>& section) {
+    template<typename OtherSection>
+    void copyBC(const Obj<OtherSection>& section) {
       this->setBC(section->getBC());
       const chart_type& chart = this->getChart();
 
@@ -2210,7 +2211,8 @@ namespace ALE {
     int getConstrainedFiberDimension(const point_type& p, const int space) const {
       return this->getFiberDimension(p, space) - this->getConstraintDimension(p, space);
     };
-    void copyFibration(const Obj<GeneralSection>& section) {
+    template<typename OtherSection>
+    void copyFibration(const Obj<OtherSection>& section) {
       const std::vector<Obj<atlas_type> >& spaces = section->getSpaces();
       const std::vector<Obj<bc_type> >&    bcs    = section->getBCs();
 
