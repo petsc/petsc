@@ -31,6 +31,7 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.setupHelp(self, help)
     import nargs
     help.addArgument('Sieve', '-with-new-section=<bool>', nargs.ArgBool(None, 0, 'Use GeneralSections which allow flexible BC'))
+    help.addArgument('Sieve', '-with-opt-section=<bool>', nargs.ArgBool(None, 0, 'Use IGeneralSections which are optimized for interval point sets'))
     return
 
   def Install(self):
@@ -48,4 +49,6 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Sieve requires boost, and configure could not locate it. Suggest using --download-boost=1')
       if 'with-new-section' in self.argDB:
         self.framework.addDefine('NEW_SECTION', 1)
+      if 'with-opt-section' in self.argDB:
+        self.framework.addDefine('OPT', 1)
     return PETSc.package.Package.configure(self)
