@@ -11,6 +11,10 @@
 #include <Field.hh>
 #endif
 
+#ifndef  included_ALE_IField_hh
+#include <IField.hh>
+#endif
+
 #ifndef  included_ALE_SieveBuilder_hh
 #include <SieveBuilder.hh>
 #endif
@@ -1148,12 +1152,16 @@ namespace ALE {
 namespace ALE {
 #ifdef NEW_SECTION
   class Mesh : public Bundle<ALE::Sieve<int,int,int>, GeneralSection<int, double> > {
+#elif defined(OPT_SECTION)
+  class Mesh : public Bundle<ALE::Sieve<int,int,int>, IGeneralSection<int, double>, IGeneralSection<int, int> > {
 #else
   class Mesh : public Bundle<ALE::Sieve<int,int,int> > {
 #endif
   public:
 #ifdef NEW_SECTION
     typedef Bundle<ALE::Sieve<int,int,int>, GeneralSection<int, double> > base_type;
+#elif defined(OPT_SECTION)
+    typedef Bundle<ALE::Sieve<int,int,int>, IGeneralSection<int, double>, IGeneralSection<int, int> > base_type;
 #else
     typedef Bundle<ALE::Sieve<int,int,int> > base_type;
 #endif
@@ -1218,6 +1226,14 @@ namespace ALE {
       this->setArrowSection("orientation", m->getArrowSection("orientation"));
     };
   public: // Mesh geometry
+    void setupCoordinates(const Obj<real_section_type>& coordinates) {
+#ifdef OPT_SECTION
+      const int firstVertex = this->heightStratum(0)->size();
+      const int numVertices = this->depthStratum(0)->size();
+
+      coordinates->setChart(real_section_type::chart_type(firstVertex, firstVertex+numVertices));
+#endif
+    };
     void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
       const double *coords = this->restrict(coordinates, e);
       const int     dim    = 2;
@@ -1678,17 +1694,35 @@ namespace ALE {
       for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
         s->addSpace();
       }
+#ifdef OPT_SECTION
+      point_type min = INT_MAX;
+      point_type max = INT_MIN;
+
+      for(int d = 0; d <= this->_dim; ++d) {
+        for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+          const Obj<ALE::Discretization>& disc = this->getDiscretization(*f_iter);
+
+          if (disc->getNumDof(d)) {
+            min = std::min(min, *this->depthStratum(d)->begin());
+            max = std::max(max, *this->depthStratum(d)->rbegin());
+            break;
+          }
+        }
+      }
+      s->setChart(real_section_type::chart_type(min, max+1));
+#endif
       for(int d = 0; d <= this->_dim; ++d) {
         int numDof = 0;
         int f      = 0;
 
         for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
           const Obj<ALE::Discretization>& disc = this->getDiscretization(*f_iter);
+          const int                       sDof = disc->getNumDof(d);
 
-          numDof += disc->getNumDof(d);
-          s->setFiberDimension(this->depthStratum(d), disc->getNumDof(d), f);
+          numDof += sDof;
+          if (sDof) s->setFiberDimension(this->depthStratum(d), sDof, f);
         }
-        s->setFiberDimension(this->depthStratum(d), numDof);
+        if (numDof) s->setFiberDimension(this->depthStratum(d), numDof);
         maxDof = std::max(maxDof, numDof);
       }
       // Process exclusions
@@ -1738,14 +1772,18 @@ namespace ALE {
 
             for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
               if (!this->getValue(label, *e_iter)) {
-                s->addConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)));
-                s->setConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)), f);
+                const int numDof = disc->getNumDof(this->depth(*e_iter));
+
+                if (numDof) s->addConstraintDimension(*e_iter, numDof);
+                if (numDof) s->setConstraintDimension(*e_iter, numDof, f);
               }
             }
           } else {
             for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-              s->addConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)));
-              s->setConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)), f);
+              const int numDof = disc->getNumDof(this->depth(*e_iter));
+
+              if (numDof) s->addConstraintDimension(*e_iter, numDof);
+              if (numDof) s->setConstraintDimension(*e_iter, numDof, f);
             }
           }
         }

@@ -427,6 +427,7 @@ namespace ALE {
       const int numCells = bundle->heightStratum(0)->size();
       const int debug    = bundle->debug();
 
+      bundle->setupCoordinates(coordinates);
       coordinates->setFiberDimension(vertices, embedDim);
       bundle->allocate(coordinates);
       for(typename Bundle_::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {

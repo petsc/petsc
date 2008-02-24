@@ -1780,11 +1780,12 @@ namespace ALE {
       }
     };
     // this = this + alpha * x
-    void axpy(const value_type alpha, const Obj<GeneralSection>& x) {
+    template<typename OtherSection>
+    void axpy(const value_type alpha, const Obj<OtherSection>& x) {
       // Check atlases
       const chart_type& chart = this->getChart();
 
-      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         value_type       *array  = (value_type *) this->restrictPoint(*c_iter);
         const value_type *xArray = x->restrictPoint(*c_iter);
         const int&        dim    = this->getFiberDimension(*c_iter);
