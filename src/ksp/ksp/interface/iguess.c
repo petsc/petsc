@@ -54,6 +54,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy_Model1(KSPFischerGuess_
 
 /*
         Given a basis generated already this computes a new guess x from the new right hand side b
+     Figures out the components of b in each btilde direction and adds them to x
 */
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessFormGuess_Model1"

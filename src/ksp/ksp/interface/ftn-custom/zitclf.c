@@ -5,10 +5,20 @@
 #define kspgetoptionsprefix_       KSPGETOPTIONSPREFIX
 #define kspappendoptionsprefix_    KSPAPPENDOPTIONSPREFIX
 #define kspsetoptionsprefix_       KSPSETOPTIONSPREFIX
+#define kspsetfischerguess_        KSPSETFISCHERGUESS
+#define kspsetusefischerguess_     KSPSETUSEFISCHERGUESS
+#define kspgetfischerguess_        KSPGETFISCHERGUESS
+#define kspfischerguesscreate_     KSPFISCHERGUESSCREATE
+#define kspfischerguessdestroy_    KSPFISCHERGUESSDESTROY
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define kspgetoptionsprefix_       kspgetoptionsprefix
 #define kspappendoptionsprefix_    kspappendoptionsprefix
 #define kspsetoptionsprefix_       kspsetoptionsprefix
+#define kspsetfischerguess_        kspsetfischerguess
+#define kspsetusefischerguess_     kspsetusefischerguess
+#define kspgetfischerguess_        kspgetfischerguess
+#define kspfischerguesscreate_     kspfischerguesscreate
+#define kspfischerguessdestroy_    kspfischerguessdestroy
 #endif
 
 EXTERN_C_BEGIN
@@ -19,8 +29,7 @@ void PETSC_STDCALL kspgetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len
   *ierr = KSPGetOptionsPrefix(*ksp,&tname);
   *ierr = PetscStrncpy(prefix,tname,len); if (*ierr) return;
 }
-void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),
-                                           PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -29,8 +38,7 @@ void PETSC_STDCALL kspappendoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(
   FREECHAR(prefix,t);
 }
 
-void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len),
-                                        PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;
 
@@ -39,5 +47,29 @@ void PETSC_STDCALL kspsetoptionsprefix_(KSP *ksp,CHAR prefix PETSC_MIXED_LEN(len
   FREECHAR(prefix,t);
 }
 
+void PETSC_STDCALL kspsetfischerguess_(KSP *ksp,KSPFischerGuess *guess, PetscErrorCode *ierr)
+{
+  *ierr = KSPSetFischerGuess(*ksp,*guess);
+}
+
+void PETSC_STDCALL kspgetfischerguess_(KSP *ksp,KSPFischerGuess *guess, PetscErrorCode *ierr)
+{
+  *ierr = KSPGetFischerGuess(*ksp,guess);
+}
+
+void PETSC_STDCALL kspsetusefischerguess_(KSP *ksp,PetscInt model,PetscInt size, PetscErrorCode *ierr)
+{
+  *ierr = KSPSetUseFischerGuess(*ksp,model,size);
+}
+
+void PETSC_STDCALL kspfischerguesscreate_(KSP *ksp,PetscInt model,PetscInt size, KSPFischerGuess *guess,PetscErrorCode *ierr)
+{
+  *ierr = KSPFischerGuessCreate(*ksp,model,size,guess);
+}
+
+void PETSC_STDCALL kspfischerguessdestroy_(KSPFischerGuess *guess,PetscErrorCode *ierr)
+{
+  *ierr = KSPFischerGuessDestroy(*guess);
+}
 
 EXTERN_C_END

@@ -11,6 +11,7 @@
 #define KSP_HIDE KSP
 
 #define KSP PetscFortranAddr
+#define KSPFischerGuess PetscFortranAddr
 #endif
 
 #define KSPType character*(80)
