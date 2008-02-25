@@ -891,11 +891,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsRealArray(const char opt[],const char
 +  opt - the option one is seeking
 .  text - short string describing option
 .  man - manual page for option
--  nmax - maximum number of values
+-  n - maximum number of values
 
    Output Parameter:
 +  value - location to copy values
-.  nmax - actual number of values found
+.  n - actual number of values found
 -  set - PETSC_TRUE if found, else PETSC_FALSE
 
    Level: beginner

@@ -343,7 +343,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   ksp->transpose_solve = PETSC_FALSE;
 
   if (ksp->guess) {
-    ierr = KSPGuessFischerFormGuess(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+    ierr = KSPFischerGuessFormGuess(ksp->guess,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
+    ksp->guess_zero = PETSC_FALSE;
   }  
   /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
@@ -409,7 +410,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   ierr = PetscLogEventEnd(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   if (ksp->guess) {
-    ierr = KSPGuessFischerUpdate(ksp->guess,ksp->vec_sol);CHKERRQ(ierr);
+    ierr = KSPFischerGuessUpdate(ksp->guess,ksp->vec_sol);CHKERRQ(ierr);
   }  
 
   ierr = MPI_Comm_rank(((PetscObject)ksp)->comm,&rank);CHKERRQ(ierr);
@@ -636,7 +637,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
     ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
   }
   if (ksp->guess) {
-    ierr = KSPGuessFischerDestroy(ksp->guess);CHKERRQ(ierr);
+    ierr = KSPFischerGuessDestroy(ksp->guess);CHKERRQ(ierr);
   }  
   ierr = PetscFree(ksp->res_hist_alloc);CHKERRQ(ierr);
   ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);

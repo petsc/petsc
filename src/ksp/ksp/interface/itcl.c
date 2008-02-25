@@ -123,6 +123,103 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP ksp,const char pref
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPSetUseFischerGuess"
+/*@C
+   KSPSetUseFischerGuess - Use the Paul Fischer algorithm, see KSPFischerGuessCreate()
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - the Krylov context
+.  model - use model 1, model 2 or 0 to turn it off
+-  size - size of subspace used to generate initial guess
+
+   Level: advanced
+
+.keywords: KSP, set, options, prefix, database
+
+.seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetFischerGuess(), KSPGetFischerInitialGuess()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP ksp,PetscInt model,PetscInt size)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (ksp->guess) {
+    ierr = KSPFischerGuessDestroy(ksp->guess);CHKERRQ(ierr);
+    ksp->guess = PETSC_NULL;
+  }
+  if (model == 1 || model == 2) {
+    ierr = KSPFischerGuessCreate(ksp,model,size,&ksp->guess);CHKERRQ(ierr);
+  } else {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Model must be 1 or 2 (or 0 to turn off guess generation)");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetFischerGuess"
+/*@C
+   KSPSetFischerGuess - Use the Paul Fischer algorithm created by KSPFischerGuessCreate()
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp - the Krylov context
+-  guess - the object created with KSPFischerGuessCreate()
+
+   Level: advanced
+
+   Notes: this allows a single KSP to be used with several different initial guess generators (likely for different linear
+          solvers, see KSPSetPC()).
+
+          This increases the reference count of the guess object, you must destroy the object with KSPFischerGuessDestroy()
+          before the end of the program.
+
+.keywords: KSP, set, options, prefix, database
+
+.seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetFischerGuess(), KSPGetFischerGuess()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFischerGuess(KSP ksp,KSPFischerGuess guess)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (ksp->guess) {
+    ierr = KSPFischerGuessDestroy(ksp->guess);CHKERRQ(ierr);
+  }
+  ksp->guess = guess;
+  if (guess) guess->refcnt++;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetFischerGuess"
+/*@C
+   KSPGetFischerGuess - Gets the initial guess generator set with either KSPSetFischerGuess() or KSPCreateFischerGuess()/KSPSetFischerGuess()
+
+   Collective on KSP
+
+   Input Parameters:
+.  ksp - the Krylov context
+
+   Output Parameters:
+.   guess - the object
+
+   Level: developer
+
+.keywords: KSP, set, options, prefix, database
+
+.seealso: KSPSetOptionsPrefix(), KSPAppendOptionsPrefix(), KSPSetUseFischerGuess(), KSPSetFischerGuess()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetFischerGuess(KSP ksp,KSPFischerGuess *guess)
+{
+  PetscFunctionBegin;
+  *guess = ksp->guess;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPGetOptionsPrefix"
 /*@C
    KSPGetOptionsPrefix - Gets the prefix used for searching for all 
@@ -183,6 +280,7 @@ $                    unpreconditioned - see KSPSetNormType()
 $                    natural - see KSPSetNormType()
 .   -ksp_check_norm_iteration it - do not compute residual norm until iteration number it (does compute at 0th iteration)
 $       works only for PCBCGS and and PCCG
+.   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
 .   -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
 .   -ksp_test_null_space - tests the null space set with KSPSetNullSpace() to see if it truly is a null space
 .   -ksp_knoll - compute initial guess by applying the preconditioner to the right hand side
@@ -200,7 +298,8 @@ $       works only for PCBCGS and and PCCG
 
 .keywords: KSP, set, from, options, database
 
-.seealso: 
+.seealso: KSPSetUseFischerInitialGuess()
+
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
 {
@@ -210,7 +309,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
   char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewerASCIIMonitor monviewer;
   PetscTruth              flg,flag;
-  PetscInt                i;
+  PetscInt                i,model[2],nmax = 2;
   void                    *ctx;
 
   PetscFunctionBegin;
@@ -240,8 +339,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsName("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPDefaultConvergedSetUMIRNorm",&flag);CHKERRQ(ierr);
     if (flag) {ierr = KSPDefaultConvergedSetUMIRNorm(ksp);CHKERRQ(ierr);}
 
-    ierr = PetscOptionsTruth("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,
-                                  &ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,&ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsIntArray("-ksp_fischer_guess","Use Paul Fischer's algorihtm for initial guess","KSPSetUseFischerGuess",model,&nmax,&flag);CHKERRQ(ierr);
+    if (flag) {
+      if (nmax != 2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must pass in model,size as arguments");
+      ierr = KSPSetUseFischerGuess(ksp,model[0],model[1]);CHKERRQ(ierr);
+    }
 
     ierr = PetscOptionsEList("-ksp_convergence_test","Convergence test","KSPSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
