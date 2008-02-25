@@ -60,6 +60,7 @@ such as Fortran whose preprocessor can sometimes fail at these statements.
 import script
 
 import os
+import time
 
 class ConfigureSetupError(Exception):
   pass
