@@ -111,12 +111,42 @@ snapshot at <a href="ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">ftp://in
 &nbsp; Both methods above create a local directory with the name
 petsc-dev. <br>
       <br>
-      <strong></strong>1) To use<strong> mercurial</strong> - install
-the software from <a
- href="http://www.selenic.com/mercurial/wiki/index.cgi/Download">http://www.selenic.com/mercurial/wiki/index.cgi/Download</a>
-[follow instructions provided].
-We recommend using&nbsp; mercurial-0.9.3 version or newer [avoid
-versions older than 0.9.0].&nbsp; Obtain petsc-dev with the
+      <strong></strong>1) To use<strong> mercurial</strong> - first
+install
+the software <br>
+      <ul>
+      </ul>
+      <ul>
+        <li>Linux&nbsp;</li>
+        <ul>
+          <li>Debian and Ubuntu<br>
+&nbsp; apt-get install mercurial</li>
+          <li>Fedora<br>
+&nbsp; yum install mercurial</li>
+          <li>Gentoo<br>
+&nbsp; emerge mercurial</li>
+          <li>SuSE<br>
+&lt;unknown&gt;</li>
+        </ul>
+        <li>MacOS: <a
+ href="http://www.selenic.com/mercurial/wiki/index.cgi/BinaryPackages">Prebuilt
+binaries</a> are available. For eg: <a
+ href="http://mercurial.berkwood.com/binaries/Mercurial-0.9.5-py2.5-macosx10.5.zip">Mercurial
+0.9.5 for <span class="release"> OS X 10.5</span></a></li>
+        <li>Windows: <a
+ href="http://www.selenic.com/mercurial/wiki/index.cgi/BinaryPackages">Prebuilt
+binaries</a> are available. For ex: <a
+ href="http://mercurial.berkwood.com/binaries/Mercurial-0.9.5.exe">mercurial-0.9.5.exe</a><br>
+        </li>
+        <li><a
+ href="http://www.selenic.com/mercurial/wiki/index.cgi/Download">From
+source</a>
+- on Linux this requires that python be built with zlib and include the
+python C include files. You may need to ask your sysadmin to install
+python-devel, zlib-devel [or equivalnet] packages before building
+Mercurial.</li>
+      </ul>
+&nbsp; Once Mercurial is installed obtain petsc-dev with the
 following:
       <ul style="color: rgb(128, 0, 0);">
         <li>hg clone http://petsc.cs.iit.edu/petsc/petsc-dev</li>

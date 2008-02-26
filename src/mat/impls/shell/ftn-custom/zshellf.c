@@ -1,4 +1,4 @@
-#include "private/zpetsc.h"
+#include "private/fortranimpl.h"
 #include "petscmat.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -59,10 +59,7 @@ static PetscErrorCode ourgetdiagonal(Mat mat,Vec x)
 
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  if (!((PetscObject)*mat)->fortran_func_pointers) {
-    *ierr = PetscMalloc(5*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
-    if (*ierr) return;
-  }
+  PetscObjectAllocateFortranPointers(*mat,5);
   if (*op == MATOP_MULT) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourmult);
     ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscVoidFunction)f;

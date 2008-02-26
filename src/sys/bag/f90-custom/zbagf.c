@@ -1,5 +1,5 @@
 #include "src/sys/f90/f90impl.h"
-#include "private/zpetsc.h"
+#include "private/fortranimpl.h"
 #include "petscbag.h"
 #include "src/sys/bag/bagimpl.h"
 

@@ -1,5 +1,5 @@
 
-#include "private/zpetsc.h"
+#include "private/fortranimpl.h"
 #include "petscda.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

@@ -1,7 +1,7 @@
 /*
      Fortran interface for SDA routines.
 */
-#include "private/zpetsc.h"
+#include "private/fortranimpl.h"
 #include "petscda.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS

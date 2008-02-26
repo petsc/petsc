@@ -4,7 +4,7 @@
   between Fortran and C.
 */
 
-#include "private/zpetsc.h" 
+#include "private/fortranimpl.h" 
 #include "petscsys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS

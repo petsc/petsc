@@ -23,6 +23,15 @@ struct _KSPOps {
   PetscErrorCode (*view)(KSP,PetscViewer);
 };
 
+/* see src/ksp/ksp/interface/iguess.c */
+typedef struct {PetscInt model,curl,maxl;Mat mat; KSP ksp;}* KSPGuessFischer;
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFischerCreate(KSP,PetscInt,PetscInt,KSPGuessFischer*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFischerDestroy(KSPGuessFischer);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFischerReset(KSPGuessFischer);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFischerUpdate(KSPGuessFischer,Vec);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFischerFormGuess(KSPGuessFischer,Vec,Vec);
+
 /*
      Maximum number of monitors you can run with a single KSP
 */
@@ -34,10 +43,11 @@ struct _KSPOps {
 struct _p_KSP {
   PETSCHEADER(struct _KSPOps);
   /*------------------------- User parameters--------------------------*/
-  PetscInt max_it;                     /* maximum number of iterations */
-  PetscTruth    guess_zero,                  /* flag for whether initial guess is 0 */
-                calc_sings,                  /* calculate extreme Singular Values */
-                guess_knoll;                /* use initial guess of PCApply(ksp->B,b */
+  PetscInt        max_it;                     /* maximum number of iterations */
+  KSPGuessFischer guess;
+  PetscTruth      guess_zero,                  /* flag for whether initial guess is 0 */
+                  calc_sings,                  /* calculate extreme Singular Values */
+                  guess_knoll;                /* use initial guess of PCApply(ksp->B,b */
   PCSide pc_side;                  /* flag for left, right, or symmetric 
                                       preconditioning */
   PetscReal rtol,                     /* relative tolerance */
@@ -127,5 +137,6 @@ EXTERN PetscErrorCode KSPDefaultFreeWork(KSP);
 #define KSP_PCApplyBAorAB(ksp,x,y,w)    (!ksp->transpose_solve) ? (PCApplyBAorAB(ksp->pc,ksp->pc_side,x,y,w) || KSP_RemoveNullSpace(ksp,y)) : PCApplyBAorABTranspose(ksp->pc,ksp->pc_side,x,y,w)
 
 extern PetscEvent    KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
+
 
 #endif

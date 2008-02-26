@@ -176,3 +176,12 @@ extern void *PETSCNULLPOINTERADDRESS;
       v = *vin; \
     } \
 }
+
+/*
+      Allocates enough space to store Fortran function pointers in PETSc object
+   that are needed by the Fortran interface.
+*/
+#define PetscObjectAllocateFortranPointers(obj,N)	\
+  if (!((PetscObject)(obj))->fortran_func_pointers) { \
+    *ierr = PetscMalloc(N*sizeof(void*),&((PetscObject)(obj))->fortran_func_pointers);if (*ierr) return; \
+  }

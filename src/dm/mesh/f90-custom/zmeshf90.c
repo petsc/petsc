@@ -1,4 +1,4 @@
-#include "private/zpetsc.h"
+#include "private/fortranimpl.h"
 #include "petscmesh.h"
 #include "src/sys/f90/f90impl.h"
 

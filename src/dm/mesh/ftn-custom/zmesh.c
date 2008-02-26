@@ -1,4 +1,4 @@
-#include "private/zpetsc.h"
+#include "private/fortranimpl.h"
 #include "petscmesh.h"
 /* mesh.c */
 /* Fortran interface file */
