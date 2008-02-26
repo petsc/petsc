@@ -542,5 +542,18 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatMFFDKSPMonitor(KSP,PetscInt,PetscReal,void *);
 
+/* see src/ksp/ksp/interface/iguess.c */
+typedef struct {PetscInt model,curl,maxl,refcnt;Mat mat; KSP ksp;}* KSPFischerGuess;
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate(KSP,PetscInt,PetscInt,KSPFischerGuess*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy(KSPFischerGuess);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessReset(KSPFischerGuess);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate(KSPFischerGuess,Vec);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess(KSPFischerGuess,Vec,Vec);
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP,PetscInt,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFischerGuess(KSP,KSPFischerGuess);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetFischerGuess(KSP,KSPFischerGuess*);
+
 PETSC_EXTERN_CXX_END
 #endif

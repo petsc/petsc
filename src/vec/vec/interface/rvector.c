@@ -191,19 +191,20 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)
 PetscErrorCode PETSCVEC_DLLEXPORT VecNormalize(Vec x,PetscReal *val)
 {
   PetscErrorCode ierr;
+  PetscReal      norm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
-  PetscValidScalarPointer(val,2);
   PetscValidType(x,1);
   ierr = PetscLogEventBegin(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
-  ierr = VecNorm(x,NORM_2,val);CHKERRQ(ierr);
-  if (!*val) {
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  if (!norm) {
     ierr = PetscInfo(x,"Vector of zero norm can not be normalized; Returning only the zero norm\n");CHKERRQ(ierr);
-  } else if (*val != 1.0) {
-    PetscScalar tmp = 1.0/(*val);
+  } else if (norm != 1.0) {
+    PetscScalar tmp = 1.0/norm;
     ierr = VecScale(x,tmp);CHKERRQ(ierr);
   }
+  if (val) *val = norm;
   ierr = PetscLogEventEnd(VEC_Normalize,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

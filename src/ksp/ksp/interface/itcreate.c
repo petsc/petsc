@@ -81,6 +81,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
     if (ksp->pc_side == PC_RIGHT)          {ierr = PetscViewerASCIIPrintf(viewer,"  right preconditioning\n");CHKERRQ(ierr);}
     else if (ksp->pc_side == PC_SYMMETRIC) {ierr = PetscViewerASCIIPrintf(viewer,"  symmetric preconditioning\n");CHKERRQ(ierr);}
     else                                   {ierr = PetscViewerASCIIPrintf(viewer,"  left preconditioning\n");CHKERRQ(ierr);}
+    if (ksp->guess) {ierr = PetscViewerASCIIPrintf(viewer,"  using Fischers initial guess model %D with size %D\n",ksp->guess->model,ksp->guess->maxl);CHKERRQ(ierr);}
   } else {
     if (ksp->ops->view) {
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
@@ -313,7 +314,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatS
   ierr = PCSetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
   if (ksp->setupcalled > 1) ksp->setupcalled = 1;  /* so that next solve call will call setup */
   if (ksp->guess) {
-    ierr = KSPGuessFischerReset(ksp->guess);CHKERRQ(ierr);
+    ierr = KSPFischerGuessReset(ksp->guess);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -358,9 +358,14 @@ int main(int argc,char **args)
         ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
       } else {
         PetscInt  num_rhs=1;
+	  PetscRandom rand;
+          PetscRandomCreate(PETSC_COMM_SELF,&rand);
+	  PetscRandomSetFromOptions(rand);
         ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
         ierr = PetscOptionsHasName(PETSC_NULL,"-cknorm",&cknorm);CHKERRQ(ierr);
         while ( num_rhs-- ) {
+	  VecSetRandom(b,rand);
+	  VecNormalize(b,0);
           ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
         }
         ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
