@@ -2,7 +2,7 @@
 
 #include "include/private/kspimpl.h"
 
-
+/* ---------------------------------------Model 1------------------------------------------------------------*/
 typedef struct {
     PetscInt    model,    /* 1 or 2 */
                 curl,     /* Current number of basis vectors */
@@ -105,6 +105,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate_Model1(KSPFischerGuess_M
   PetscFunctionReturn(0);
 }
 
+/* ---------------------------------------Model 2------------------------------------------------------------*/
+typedef struct {
+    PetscInt    model,    /* 1 or 2 */
+                curl,     /* Current number of basis vectors */
+                maxl,     /* Maximum number of basis vectors */
+                refcnt;
+    Mat         mat;
+    KSP         ksp;
+    PetscScalar *alpha;   /* */
+    Vec         *xtilde;  /* Saved x vectors */
+} KSPFischerGuess_Model1;
+
+
+/* ---------------------------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPFischerGuessCreate" 
 /*@C

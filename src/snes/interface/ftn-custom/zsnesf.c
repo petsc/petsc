@@ -57,7 +57,6 @@
 #define snesgetapplicationcontext_       snesgetapplicationcontext
 #endif
 
-EXTERN_C_END
 
 static PetscErrorCode oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
 {
