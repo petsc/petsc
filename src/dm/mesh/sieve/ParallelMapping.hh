@@ -434,8 +434,8 @@ namespace ALE {
         vMover.start();
         vMover.end();
 
-        typename SendSection::point_type min = INT_MAX;
-        typename SendSection::point_type max = INT_MIN;
+        typename SendSection::point_type min = SHRT_MAX;
+        typename SendSection::point_type max = -1;
 
         for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rRanks->end(); ++r_iter) {
           const typename RecvSection::point_type *v = recvPoints[*r_iter];
@@ -443,6 +443,7 @@ namespace ALE {
           min = std::min(min, v[0]);
           max = std::max(max, v[1]);
         }
+        if (!rRanks->size()) {min = max = 0;}
         recvSection->setChart(typename RecvSection::chart_type(min, max));
       };
       // Copy the overlap section to the related processes

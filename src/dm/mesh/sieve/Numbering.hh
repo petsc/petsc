@@ -122,8 +122,9 @@ namespace ALE {
     typedef typename order_type::value_type                 oValue_type;
     typedef typename alloc_type::template rebind<oValue_type>::other oValue_alloc_type;
     typedef std::map<bundle_type*, std::map<std::string, Obj<order_type> > > orders_type;
-    typedef typename ALE::Sifter<int,point_type,point_type> send_overlap_type;
-    typedef typename ALE::Sifter<point_type,int,point_type> recv_overlap_type;
+    typedef short int                                       rank_type;
+    typedef typename ALE::Sifter<point_type,rank_type,point_type> send_overlap_type;
+    typedef typename ALE::Sifter<rank_type,point_type,point_type> recv_overlap_type;
   protected:
     numberings_type   _localNumberings;
     numberings_type   _numberings;

@@ -5,10 +5,6 @@
 #include <Mesh.hh>
 #endif
 
-#ifndef  included_ALE_Partitioner_hh
-#include <Partitioner.hh>
-#endif
-
 #ifndef  included_ALE_Completion_hh
 #include <Completion.hh>
 #endif
