@@ -6,7 +6,7 @@
 #endif
 
 namespace ALE {
-  template<typename Sieve_, typename Alloc_ = std::allocator<typename Sieve_::target_type> >
+  template<typename Sieve_, typename Alloc_ = malloc_allocator<typename Sieve_::target_type> >
   class BaseSection : public ALE::ParallelObject {
   public:
     typedef Sieve_                                    sieve_type;
@@ -39,7 +39,7 @@ namespace ALE {
     };
   };
 
-  template<typename Sieve_, typename Alloc_ = std::allocator<int> >
+  template<typename Sieve_, typename Alloc_ = malloc_allocator<int> >
   class ConeSizeSection : public ALE::ParallelObject {
   public:
     typedef Sieve_                              sieve_type;
@@ -78,7 +78,7 @@ namespace ALE {
     };
   };
 
-  template<typename Sieve_, typename Alloc_ = std::allocator<typename Sieve_::source_type> >
+  template<typename Sieve_, typename Alloc_ = malloc_allocator<typename Sieve_::source_type> >
   class ConeSection : public ALE::ParallelObject {
   public:
     typedef Sieve_                                  sieve_type;

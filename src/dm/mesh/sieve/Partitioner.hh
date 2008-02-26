@@ -57,7 +57,7 @@ namespace ALE {
 #if 1
 #ifdef PETSC_HAVE_CHACO
   namespace Chaco {
-    template<typename Alloc_ = std::allocator<short int> >
+    template<typename Alloc_ = malloc_allocator<short int> >
     class Partitioner {
     public:
       typedef short int part_type;
@@ -165,9 +165,9 @@ namespace ALE {
   }
 #endif
 #ifdef PETSC_HAVE_CHACO
-  template<typename GraphPartitioner = ALE::Chaco::Partitioner<>, typename Alloc_ = std::allocator<int> >
+  template<typename GraphPartitioner = ALE::Chaco::Partitioner<>, typename Alloc_ = malloc_allocator<int> >
 #else
-  template<typename GraphPartitioner, typename Alloc_ = std::allocator<int> >
+  template<typename GraphPartitioner, typename Alloc_ = malloc_allocator<int> >
 #endif
   class Partitioner {
   public:

@@ -29,7 +29,7 @@ extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_v
 //     This means restrict to a provided overlap, and exchange in the restricted sections
 //     Completion does not use hierarchy, so we see the Topology as a DiscreteTopology
 namespace ALE {
-  template<typename Point_, typename Alloc_ = std::allocator<Point_> >
+  template<typename Point_, typename Alloc_ = malloc_allocator<Point_> >
   class DiscreteSieve {
   public:
     typedef Point_                              point_type;
@@ -153,7 +153,7 @@ namespace ALE {
   //   All fibers are dimension 1
   //   All values are equal to a constant
   //     We need no value storage and no communication for completion
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Point_> >
+  template<typename Point_, typename Value_, typename Alloc_ = malloc_allocator<Point_> >
   class ConstantSection : public ALE::ParallelObject {
   public:
     typedef Point_                                                  point_type;
@@ -296,7 +296,7 @@ namespace ALE {
   //     Note we can use a ConstantSection for this Atlas
   //   Each point may have a different vector
   //     Thus we need storage for values, and hence must implement completion
-  template<typename Point_, typename Value_, int fiberDim = 1, typename Alloc_ = std::allocator<Value_> >
+  template<typename Point_, typename Value_, int fiberDim = 1, typename Alloc_ = malloc_allocator<Value_> >
   class UniformSection : public ALE::ParallelObject {
   public:
     typedef Point_                                           point_type;
@@ -550,7 +550,7 @@ namespace ALE {
   //   All fibers are dimension 1
   //   All values are equal to a constant
   //     We need no value storage and no communication for completion
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Point_> >
+  template<typename Point_, typename Value_, typename Alloc_ = malloc_allocator<Point_> >
   class FauxConstantSection : public ALE::ParallelObject {
   public:
     typedef Point_ point_type;
@@ -685,7 +685,7 @@ namespace ALE {
   //     Note we can use a ConstantSection for this Atlas
   //   Each point may have a different vector
   //     Thus we need storage for values, and hence must implement completion
-  template<typename Point_, typename Value_, int fiberDim = 1, typename Alloc_ = std::allocator<Value_> >
+  template<typename Point_, typename Value_, int fiberDim = 1, typename Alloc_ = malloc_allocator<Value_> >
   class NewUniformSection : public ALE::ParallelObject {
   public:
     typedef Point_                                           point_type;
@@ -940,7 +940,7 @@ namespace ALE {
   // A Section is our most general construct (more general ones could be envisioned)
   //   The Atlas is a UniformSection of dimension 1 and value type Point
   //     to hold each fiber dimension and offsets into a contiguous patch array
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_>,
+  template<typename Point_, typename Value_, typename Alloc_ = malloc_allocator<Value_>,
            typename Atlas_ = UniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other> >
   class Section : public ALE::ParallelObject {
   public:
@@ -1348,7 +1348,7 @@ namespace ALE {
   //     We must eliminate restrict() since it does not correspond to the constrained system
   //   Numbering will have to be rewritten to calculate correct mappings
   //     I think we can just generate multiple tuples per point
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_>,
+  template<typename Point_, typename Value_, typename Alloc_ = malloc_allocator<Value_>,
            typename Atlas_ = UniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other>,
            typename BCAtlas_ = Section<Point_, int, typename Alloc_::template rebind<int>::other> >
   class GeneralSection : public ALE::ParallelObject {
@@ -2358,7 +2358,7 @@ namespace ALE {
   //   Storage will be contiguous by node, just as in Section
   //     This allows fast restrict(p)
   //     Then update() is accomplished by projecting constrained unknowns
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_>,
+  template<typename Point_, typename Value_, typename Alloc_ = malloc_allocator<Value_>,
            typename Atlas_ = UniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other>,
            typename BCAtlas_ = UniformSection<Point_, int, 1, typename Alloc_::template rebind<int>::other>,
            typename BC_ = Section<Point_, double, typename Alloc_::template rebind<double>::other> >

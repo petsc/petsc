@@ -19,7 +19,7 @@ namespace ALE {
     //   GlobalOrder       UniformSection
     //
     // We will use factory types to create objects which satisfy a given concept.
-  template<typename Point_, typename Value_ = int, typename Alloc_ = std::allocator<Point_> >
+  template<typename Point_, typename Value_ = int, typename Alloc_ = malloc_allocator<Point_> >
   class Numbering : public UniformSection<Point_, Value_, 1, Alloc_> {
   public:
     typedef UniformSection<Point_, Value_, 1, Alloc_> base_type;

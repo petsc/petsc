@@ -156,7 +156,7 @@ namespace ALE {
       }
     };
   };
-  template<typename Alloc_ = std::allocator<int> >
+  template<typename Alloc_ = malloc_allocator<int> >
   class OverlapBuilder {
   public:
     typedef Alloc_ alloc_type;
@@ -395,6 +395,57 @@ namespace ALE {
         }
       };
       // Copy the overlap section to the related processes
+      //   This version is for IConstant sections, meaning the same, single value over all points
+      template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection>
+      static void copyIConstant(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
+        MPIMover<typename SendSection::point_type> pMover(sendSection->comm(), sendSection->debug());
+        MPIMover<typename SendSection::value_type> vMover(sendSection->comm(), sendSection->debug());
+        std::map<int, typename SendSection::point_type *> sendPoints;
+        std::map<int, typename SendSection::point_type *> recvPoints;
+        typename SendSection::alloc_type::template rebind<typename SendSection::point_type>::other sendAllocator;
+        typename RecvSection::alloc_type::template rebind<typename SendSection::point_type>::other recvAllocator;
+
+        const Obj<typename SendOverlap::traits::baseSequence> sRanks  = sendOverlap->base();
+        const typename SendSection::value_type               *sValues = sendSection->restrictPoint(*sendSection->getChart().begin());
+
+        for(typename SendOverlap::traits::baseSequence::iterator r_iter = sRanks->begin(); r_iter != sRanks->end(); ++r_iter) {
+          typename SendSection::point_type *v = sendAllocator.allocate(2);
+
+          for(size_t i = 0; i < 2; ++i) {sendAllocator.construct(v+i, 0);}
+          v[0] = sendSection->getChart().min();
+          v[1] = sendSection->getChart().max();
+          sendPoints[*r_iter] = v;
+          pMover.send(*r_iter, 2, sendPoints[*r_iter]);
+          vMover.send(*r_iter, 2, sValues);
+        }
+        const Obj<typename RecvOverlap::traits::capSequence> rRanks  = recvOverlap->cap();
+        const typename RecvSection::value_type              *rValues = recvSection->restrict();
+
+        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rRanks->end(); ++r_iter) {
+          typename SendSection::point_type *v = recvAllocator.allocate(2);
+
+          for(size_t i = 0; i < 2; ++i) {recvAllocator.construct(v+i, 0);}
+          recvPoints[*r_iter] = v;
+          pMover.recv(*r_iter, 2, recvPoints[*r_iter]);
+          vMover.recv(*r_iter, 2, rValues);
+        }
+        pMover.start();
+        pMover.end();
+        vMover.start();
+        vMover.end();
+
+        typename SendSection::point_type min = INT_MAX;
+        typename SendSection::point_type max = INT_MIN;
+
+        for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rRanks->end(); ++r_iter) {
+          const typename RecvSection::point_type *v = recvPoints[*r_iter];
+
+          min = std::min(min, v[0]);
+          max = std::max(max, v[1]);
+        }
+        recvSection->setChart(typename RecvSection::chart_type(min, max));
+      };
+      // Copy the overlap section to the related processes
       //   This version is for different sections, possibly with different data types
       // TODO: Can cache MPIMover objects (like a VecScatter)
       template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection>
@@ -559,7 +610,7 @@ namespace ALE {
       // Specialize to an IConstantSection
       template<typename SendOverlap, typename RecvOverlap, typename Value>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<IConstantSection<typename SendOverlap::source_type, Value> >& sendSection, const Obj<IConstantSection<typename SendOverlap::source_type, Value> >& recvSection) {
-        copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
+        copyIConstant(sendOverlap, recvOverlap, sendSection, recvSection);
       };
       // Specialize to an BaseSection/ConstantSection pair
       template<typename SendOverlap, typename RecvOverlap, typename Sieve_>

@@ -7,7 +7,7 @@
 
 // An ISection (or IntervalSection) is a section over a simple interval domain
 namespace ALE {
-  template<typename Point_, typename Alloc_ = std::allocator<Point_> >
+  template<typename Point_, typename Alloc_ = malloc_allocator<Point_> >
   class Interval {
   public:
     typedef Point_            point_type;
@@ -45,6 +45,10 @@ namespace ALE {
     Interval(const Interval& interval): _min(interval.min()), _max(interval.max()) {};
   public:
     Interval& operator=(const Interval& interval) {_min = interval.min(); _max = interval.max(); return *this;};
+    friend std::ostream& operator<<(std::ostream& stream, const Interval& interval) {
+      stream << "(" << interval.min() << ", " << interval.max() << ")";
+      return stream;
+    };
   public:
     const_iterator begin() const {return const_iterator(this->_min);};
     const_iterator end() const {return const_iterator(this->_max);};
@@ -59,7 +63,7 @@ namespace ALE {
   //   All values are equal to a constant
   //     We need no value storage and no communication for completion
   //     The default value is returned for any point not in the domain
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Point_> >
+  template<typename Point_, typename Value_, typename Alloc_ = malloc_allocator<Point_> >
   class IConstantSection : public ALE::ParallelObject {
   public:
     typedef Point_ point_type;
@@ -85,7 +89,7 @@ namespace ALE {
     void checkPoint(const point_type& point) const {
       if (point < this->_chart.min() || point >= this->_chart.max()) {
         ostringstream msg;
-        msg << "Invalid section point " << point << std::endl;
+        msg << "Invalid section point " << point << " not in " << this->_chart << std::endl;
         throw ALE::Exception(msg.str().c_str());
       }
     };
@@ -203,7 +207,7 @@ namespace ALE {
   //     Note we can use a IConstantSection for this Atlas
   //   Each point may have a different vector
   //     Thus we need storage for values, and hence must implement completion
-  template<typename Point_, typename Value_, int fiberDim = 1, typename Alloc_ = std::allocator<Value_> >
+  template<typename Point_, typename Value_, int fiberDim = 1, typename Alloc_ = malloc_allocator<Value_> >
   class IUniformSection : public ALE::ParallelObject {
   public:
     typedef Point_                                                  point_type;
@@ -417,7 +421,7 @@ namespace ALE {
   // An ISection allows variable fiber sizes per point
   //   The Atlas is a UniformSection of dimension 1 and value type Point
   //     to hold each fiber dimension and offsets into a contiguous array
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_> >
+  template<typename Point_, typename Value_, typename Alloc_ = malloc_allocator<Value_> >
   class ISection : public Section<Point_, Value_, Alloc_, IUniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other> > {
   public:
     typedef Section<Point_, Value_, Alloc_, IUniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other> > base;
@@ -453,7 +457,7 @@ namespace ALE {
   };
   // IGeneralSection will support BC on a subset of unknowns on a point
   //   We use a separate constraint Atlas to mark constrained dofs on a point
-  template<typename Point_, typename Value_, typename Alloc_ = std::allocator<Value_> >
+  template<typename Point_, typename Value_, typename Alloc_ = malloc_allocator<Value_> >
   class IGeneralSection : public GeneralSection<Point_, Value_, Alloc_, IUniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other>, ISection<Point_, int, typename Alloc_::template rebind<int>::other> > {
   public:
     typedef GeneralSection<Point_, Value_, Alloc_, IUniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other>, ISection<Point_, int, typename Alloc_::template rebind<int>::other> > base;

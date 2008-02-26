@@ -27,7 +27,7 @@ namespace ALE {
     };
   };
   namespace New {
-    template<typename Bundle_, typename Value_, typename Alloc_ = std::allocator<typename Bundle_::point_type> >
+    template<typename Bundle_, typename Value_, typename Alloc_ = malloc_allocator<typename Bundle_::point_type> >
     class Completion {
     public:
       typedef int                                                                         point_type;

@@ -11,7 +11,7 @@ namespace ALE {
   //   The collection itself we call a \emph{sheaf}
   //   The main operation we provide in Topology is the creation of a \emph{label}
   //     A label is a bidirectional mapping of Sieve points to integers, implemented with a Sifter
-  template<typename Patch_, typename Sieve_, typename Alloc_ = std::allocator<typename Sieve_::point_type> >
+  template<typename Patch_, typename Sieve_, typename Alloc_ = malloc_allocator<typename Sieve_::point_type> >
   class Topology : public ALE::ParallelObject {
   public:
     typedef Patch_                                                patch_type;
