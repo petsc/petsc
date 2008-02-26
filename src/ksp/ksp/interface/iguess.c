@@ -115,7 +115,7 @@ typedef struct {
     KSP         ksp;
     PetscScalar *alpha;   /* */
     Vec         *xtilde;  /* Saved x vectors */
-} KSPFischerGuess_Model1;
+} KSPFischerGuess_Model2;
 
 
 /* ---------------------------------------------------------------------------------------------------------*/
