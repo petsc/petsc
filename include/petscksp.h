@@ -543,7 +543,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatMFFDKSPMonitor(KSP,PetscInt,PetscReal,void *);
 
 /* see src/ksp/ksp/interface/iguess.c */
-typedef struct {PetscInt model,curl,maxl,refcnt;Mat mat; KSP ksp;}* KSPFischerGuess;
+typedef struct _PETSc_KSPFischerGuess {PetscInt model,curl,maxl,refcnt;Mat mat; KSP ksp;}* KSPFischerGuess;
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate(KSP,PetscInt,PetscInt,KSPFischerGuess*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessDestroy(KSPFischerGuess);
