@@ -427,7 +427,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   PetscMPIInt       size;
   superlu_options_t options;
   PetscTruth        flg;
-  const char        *pctype[] = {"MMD_AT_PLUS_A","NATURAL","MMD_ATA"}; 
+  const char        *pctype[] = {"MMD_AT_PLUS_A","NATURAL","MMD_ATA","PARMETIS"}; 
   const char        *prtype[] = {"LargeDiag","NATURAL"}; 
   const char        *factPattern[] = {"SamePattern","SamePattern_SameRowPerm"};
 
@@ -498,7 +498,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
       }
     } 
 
-    ierr = PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",pctype,3,pctype[0],&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-mat_superlu_dist_colperm","Column permutation","None",pctype,4,pctype[0],&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
       case 0:
@@ -509,6 +509,9 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
         break;
       case 2:
         options.ColPerm = MMD_ATA;
+        break;
+      case 3:
+        options.ColPerm = PARMETIS;
         break;
       }
     }
@@ -523,7 +526,6 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
     if (flg){
 #ifdef PETSC_HAVE_PARMETIS
       options.ParSymbFact = YES;
-      options.ColPerm     = PARMETIS;
 #else
       printf("parsymbfact needs PARMETIS");
 #endif
@@ -611,9 +613,13 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_AT_PLUS_A\n");CHKERRQ(ierr);
   } else if (options.ColPerm == MMD_ATA) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation MMD_ATA\n");CHKERRQ(ierr);
+  } else if (options.ColPerm == PARMETIS) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  Column permutation PARMETIS\n");CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Unknown column permutation");
   }
+
+  ierr = PetscViewerASCIIPrintf(viewer,"  Parallel symbolic factorization %s \n",PetscTruths[options.ParSymbFact != NO]);CHKERRQ(ierr);
   
   if (lu->FactPattern == SamePattern){
     ierr = PetscViewerASCIIPrintf(viewer,"  Repeated factorization SamePattern\n");CHKERRQ(ierr);
