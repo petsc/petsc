@@ -57,8 +57,6 @@
 #define snesgetapplicationcontext_       snesgetapplicationcontext
 #endif
 
-EXTERN_C_END
-
 static PetscErrorCode oursnesfunction(SNES snes,Vec x,Vec f,void *ctx)
 {
   PetscErrorCode ierr = 0;
@@ -84,7 +82,7 @@ static PetscErrorCode oursnesmonitor(SNES snes,PetscInt i,PetscReal d,void*ctx)
   PetscErrorCode ierr = 0;
 
   void           (*mctx)(void) = ((PetscObject)snes)->fortran_func_pointers[4];
-  (*(void (PETSC_STDCALL *)(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[3]))(&snes,&i,&d,mctx,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[3]))(&snes,&i,&d,(void*)mctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 static PetscErrorCode ourmondestroy(void* ctx)

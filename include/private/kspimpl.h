@@ -24,7 +24,7 @@ struct _KSPOps {
 };
 
 /* see src/ksp/ksp/interface/iguess.c */
-typedef struct {PetscInt model,curl,maxl;Mat mat; KSP ksp;}* KSPGuessFischer;
+typedef struct _PETSc_KSPGuessFischer {PetscInt model,curl,maxl;Mat mat; KSP ksp;}* KSPGuessFischer;
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFischerCreate(KSP,PetscInt,PetscInt,KSPGuessFischer*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGuessFischerDestroy(KSPGuessFischer);
