@@ -22,8 +22,10 @@ namespace ALE {
       typedef typename mesh_topology_type::sieve_type                                 sieve_type;
       typedef typename ALE::DiscreteSieve<point_type, point_alloc_type>               dsieve_type;
       typedef typename ALE::Topology<int, dsieve_type, alloc_type>                    topology_type;
-      typedef typename ALE::Sifter<int, point_type, point_type>                       send_overlap_type;
-      typedef typename ALE::Sifter<point_type, int, point_type>                       recv_overlap_type;
+      // TODO: Fix this typedef typename ALE::Partitioner<>::part_type                                  rank_type;
+      typedef short int                                                               rank_type;
+      typedef typename ALE::Sifter<point_type, rank_type, point_type>                 send_overlap_type;
+      typedef typename ALE::Sifter<rank_type, point_type, point_type>                 recv_overlap_type;
       typedef typename ALE::Field<send_overlap_type, int, ALE::ConstantSection<point_type, int> > constant_sizer;
       typedef typename ALE::New::SectionCompletion<mesh_topology_type, int, alloc_type>           int_completion;
       typedef typename ALE::New::SectionCompletion<mesh_topology_type, value_type, alloc_type>    completion;
@@ -41,7 +43,7 @@ namespace ALE {
         //topology->stratify();
         return topology;
       };
-      static Obj<topology_type> createRecvTopology(const Obj<send_overlap_type>& recvOverlap) {
+      static Obj<topology_type> createRecvTopology(const Obj<recv_overlap_type>& recvOverlap) {
         const Obj<recv_overlap_type::traits::capSequence> ranks = recvOverlap->cap();
         Obj<topology_type> topology = new topology_type(recvOverlap->comm(), recvOverlap->debug());
 

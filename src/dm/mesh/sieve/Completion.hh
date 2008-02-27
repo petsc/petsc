@@ -39,8 +39,9 @@ namespace ALE {
       typedef typename bundle_type::sieve_type                                            sieve_type;
       typedef typename ALE::DiscreteSieve<point_type, alloc_type>                         dsieve_type;
       typedef typename ALE::Topology<int, dsieve_type, alloc_type>                        topology_type;
-      typedef typename ALE::Sifter<int, point_type, point_type>                           send_overlap_type;
-      typedef typename ALE::Sifter<point_type, int, point_type>                           recv_overlap_type;
+      typedef short int                                                                   rank_type;
+      typedef typename ALE::Sifter<point_type, rank_type, point_type>                     send_overlap_type;
+      typedef typename ALE::Sifter<rank_type, point_type, point_type>                     recv_overlap_type;
       typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, int, int_alloc_type> > send_sizer_type;
       typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, int, int_alloc_type> > recv_sizer_type;
       typedef typename ALE::New::ConeSizeSection<bundle_type, sieve_type>                 cone_size_section;

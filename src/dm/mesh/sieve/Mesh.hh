@@ -23,6 +23,10 @@
 #include <LabelSifter.hh>
 #endif
 
+#ifndef  included_ALE_Partitioner_hh
+#include <Partitioner.hh>
+#endif
+
 namespace ALE {
   class indexSet : public std::valarray<int> {
   public:
@@ -102,8 +106,9 @@ namespace ALE {
     typedef NumberingFactory<this_type>                               NumberingFactory;
     typedef typename NumberingFactory::numbering_type                 numbering_type;
     typedef typename NumberingFactory::order_type                     order_type;
-    typedef typename ALE::Sifter<int,point_type,point_type>           send_overlap_type;
-    typedef typename ALE::Sifter<point_type,int,point_type>           recv_overlap_type;
+    typedef typename ALE::Partitioner<>::part_type                    rank_type;
+    typedef typename ALE::Sifter<point_type,rank_type,point_type>     send_overlap_type;
+    typedef typename ALE::Sifter<rank_type,point_type,point_type>     recv_overlap_type;
     typedef typename ALE::SieveAlg<this_type>                         sieve_alg_type;
     typedef typename sieve_alg_type::coneArray                        coneArray;
     typedef typename sieve_alg_type::orientedConeArray                oConeArray;
@@ -1702,7 +1707,7 @@ namespace ALE {
         for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
           const Obj<ALE::Discretization>& disc = this->getDiscretization(*f_iter);
 
-          if (disc->getNumDof(d)) {
+          if (disc->getNumDof(d) && this->depthStratum(d)->size()) {
             min = std::min(min, *this->depthStratum(d)->begin());
             max = std::max(max, *this->depthStratum(d)->rbegin());
             break;

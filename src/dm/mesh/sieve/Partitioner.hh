@@ -1314,7 +1314,7 @@ namespace ALECompat {
       // This creates a CSR representation of the adjacency matrix for cells
       static void buildDualCSR(const Obj<topology_type>& topology, const int dim, const patch_type& patch, int **offsets, int **adjacency) {
         ALE_LOG_EVENT_BEGIN;
-        typedef typename ALECompat::New::Completion<topology_type, typename Mesh::sieve_type::point_type> completion;
+        typedef typename ALECompat::New::Completion<topology_type, point_type> completion;
         const Obj<sieve_type>&                             sieve        = topology->getPatch(patch);
         const Obj<typename topology_type::label_sequence>& elements     = topology->heightStratum(patch, 0);
         Obj<sieve_type>                                    overlapSieve = new sieve_type(topology->comm(), topology->debug());
