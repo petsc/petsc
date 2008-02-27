@@ -151,6 +151,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP ksp,PetscInt model,P
   }
   if (model == 1 || model == 2) {
     ierr = KSPFischerGuessCreate(ksp,model,size,&ksp->guess);CHKERRQ(ierr);
+    ierr = KSPFischerGuessSetFromOptions(ksp->guess);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Model must be 1 or 2 (or 0 to turn off guess generation)");
   }
