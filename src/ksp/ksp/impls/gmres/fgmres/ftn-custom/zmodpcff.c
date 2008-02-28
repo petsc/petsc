@@ -7,22 +7,18 @@
 #define kspfgmressetmodifypc_      kspfgmressetmodifypc
 #endif
 
-EXTERN_C_BEGIN
-static void (PETSC_STDCALL *f109)(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*);
-static void (PETSC_STDCALL *f210)(void*,PetscErrorCode*);
-EXTERN_C_END
-
 static PetscErrorCode ourmodify(KSP ksp,PetscInt i,PetscInt i2,PetscReal d,void* ctx)
 {
   PetscErrorCode ierr = 0;
-  (*f109)(&ksp,&i,&i2,&d,ctx,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(KSP*,PetscInt*,PetscInt*,PetscReal*,void *,PetscErrorCode*))(((PetscObject)ksp)->fortran_func_pointers[0]))(&ksp,&i,&i2,&d,((PetscObject)ksp)->fortran_func_pointers[2],&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static PetscErrorCode ourmoddestroy(void* ctx)
 {
   PetscErrorCode ierr = 0;
-  (*f210)(ctx,&ierr);CHKERRQ(ierr);
+  KSP            ksp = (KSP) ctx;
+  (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)ksp)->fortran_func_pointers[1]))(((PetscObject)ksp)->fortran_func_pointers[2],&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -32,17 +28,19 @@ extern void PETSC_STDCALL kspfgmresmodifypcksp_(KSP*,PetscInt*,PetscInt*,PetscRe
 
 void PETSC_STDCALL kspfgmressetmodifypc_(KSP *ksp,void (PETSC_STDCALL *fcn)(KSP*,PetscInt*,PetscInt*,PetscReal*,void*,PetscErrorCode*),void* ctx,void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
+  PetscObjectAllocateFortranPointers(*ksp,3);
   if ((PetscVoidFunction)fcn == (PetscVoidFunction)kspfgmresmodifypcksp_) {
     *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCKSP,0,0);
   } else if ((PetscVoidFunction)fcn == (PetscVoidFunction)kspfgmresmodifypcnochange_) {
     *ierr = KSPFGMRESSetModifyPC(*ksp,KSPFGMRESModifyPCNoChange,0,0);
   } else {
-    f109 = fcn;
+    ((PetscObject)*ksp)->fortran_func_pointers[0] = (PetscVoidFunction)fcn;
+    ((PetscObject)*ksp)->fortran_func_pointers[2] = (PetscVoidFunction)ctx;
     if (FORTRANNULLFUNCTION(d)) {
-      *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,ctx,0);
+      *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,*ksp,0);
     } else {
-      f210 = d;
-      *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,ctx,ourmoddestroy);
+    ((PetscObject)*ksp)->fortran_func_pointers[1] = (PetscVoidFunction)d;
+      *ierr = KSPFGMRESSetModifyPC(*ksp,ourmodify,*ksp,ourmoddestroy);
     }
   }
 }

@@ -1498,6 +1498,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(VecScatter inctx,Vec x,Vec y,I
   PetscValidHeaderSpecific(y,VEC_COOKIE,2);
   PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE,5);
   if (inctx->inuse) SETERRQ(PETSC_ERR_ARG_WRONGSTATE," Scatter ctx already in use");
+  CHKMEMQ;
+
 #if defined(PETSC_USE_DEBUG)
   /*
      Error checking to make sure these vectors match the vectors used
@@ -1526,6 +1528,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(VecScatter inctx,Vec x,Vec y,I
     ierr = (*inctx->end)(inctx,x,y,addv,mode);CHKERRQ(ierr);
   }
   ierr = PetscLogEventBarrierEnd(VEC_ScatterBarrier,0,0,0,0,((PetscObject)inctx)->comm);CHKERRQ(ierr);
+  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -1565,11 +1568,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterEnd(VecScatter ctx,Vec x,Vec y,Inser
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,5);
   ctx->inuse = PETSC_FALSE;
   if (!ctx->end) PetscFunctionReturn(0);
+  CHKMEMQ;
   if (!ctx->beginandendtogether) {
     ierr = PetscLogEventBegin(VEC_ScatterEnd,ctx,x,y,0);CHKERRQ(ierr);
     ierr = (*(ctx)->end)(ctx,x,y,addv,mode);CHKERRQ(ierr);
     ierr = PetscLogEventEnd(VEC_ScatterEnd,ctx,x,y,0);CHKERRQ(ierr);
   }
+  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 

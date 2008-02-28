@@ -128,6 +128,7 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
             MatStructure*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(ctx);
+  CHKFORTRANNULLFUNCTION(func);
   PetscObjectAllocateFortranPointers(*snes,6);
   if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultcomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDefaultComputeJacobian,ctx);
@@ -137,6 +138,8 @@ void PETSC_STDCALL snessetjacobian_(SNES *snes,Mat *A,Mat *B,void (PETSC_STDCALL
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobianWithAdifor,ctx);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesdacomputejacobian_) {
     *ierr = SNESSetJacobian(*snes,*A,*B,SNESDAComputeJacobian,ctx);
+  } else if (!func) {
+    *ierr = SNESSetJacobian(*snes,*A,*B,0,ctx);
   } else {
     ((PetscObject)*snes)->fortran_func_pointers[2] = (PetscVoidFunction)func;
     *ierr = SNESSetJacobian(*snes,*A,*B,oursnesjacobian,ctx);

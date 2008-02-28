@@ -1481,8 +1481,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,
-                                                        PetscErrorCode (*destroy)(void*))
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
   PetscErrorCode ierr;
 

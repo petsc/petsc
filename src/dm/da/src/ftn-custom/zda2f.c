@@ -30,7 +30,6 @@ void PETSC_STDCALL dagetneighbors_(DA *da,PetscMPIInt *ranks,PetscErrorCode *ier
 
 
 /************************************************/
-static void (PETSC_STDCALL *j1d)(DALocalInfo*,void*,void*,void*,PetscErrorCode*);
 static PetscErrorCode ourlj1d(DALocalInfo *info,PetscScalar *in,Mat m,void *ptr)
 {
   PetscErrorCode ierr = 0;
@@ -38,7 +37,6 @@ static PetscErrorCode ourlj1d(DALocalInfo *info,PetscScalar *in,Mat m,void *ptr)
   return 0;
 }
 
-static void (PETSC_STDCALL *j2d)(DALocalInfo*,void*,void*,void*,PetscErrorCode*);
 static PetscErrorCode ourlj2d(DALocalInfo *info,PetscScalar **in,Mat m,void *ptr)
 {
   PetscErrorCode ierr = 0;
@@ -46,7 +44,6 @@ static PetscErrorCode ourlj2d(DALocalInfo *info,PetscScalar **in,Mat m,void *ptr
   return 0;
 }
 
-static void (PETSC_STDCALL *j3d)(DALocalInfo*,void*,void*,void*,PetscErrorCode*);
 static PetscErrorCode ourlj3d(DALocalInfo *info,PetscScalar ***in,Mat m,void *ptr)
 {
   PetscErrorCode ierr = 0;
@@ -58,6 +55,7 @@ void PETSC_STDCALL dasetlocaljacobian_(DA *da,void (PETSC_STDCALL *jac)(DALocalI
 {
   PetscInt dim;
 
+  PetscObjectAllocateFortranPointers(*da,6);
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
   if (dim == 2) {
      j2d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,PetscErrorCode*))jac; 
@@ -72,7 +70,7 @@ void PETSC_STDCALL dasetlocaljacobian_(DA *da,void (PETSC_STDCALL *jac)(DALocalI
 }
 
 /************************************************/
-static void (PETSC_STDCALL *f1d)(DALocalInfo*,void*,void*,void*,PetscErrorCode*);
+
 static PetscErrorCode ourlf1d(DALocalInfo *info,PetscScalar *in,PetscScalar *out,void *ptr)
 {
   PetscErrorCode ierr = 0;
@@ -80,7 +78,6 @@ static PetscErrorCode ourlf1d(DALocalInfo *info,PetscScalar *in,PetscScalar *out
   return 0;
 }
 
-static void (PETSC_STDCALL *f2d)(DALocalInfo*,void*,void*,void*,PetscErrorCode*);
 static PetscErrorCode ourlf2d(DALocalInfo *info,PetscScalar **in,PetscScalar **out,void *ptr)
 {
   PetscErrorCode ierr = 0;
@@ -88,7 +85,6 @@ static PetscErrorCode ourlf2d(DALocalInfo *info,PetscScalar **in,PetscScalar **o
   return 0;
 }
 
-static void (PETSC_STDCALL *f3d)(DALocalInfo*,void*,void*,void*,PetscErrorCode*);
 static PetscErrorCode ourlf3d(DALocalInfo *info,PetscScalar ***in,PetscScalar ***out,void *ptr)
 {
   PetscErrorCode ierr = 0;
@@ -100,6 +96,7 @@ void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocal
 {
   PetscInt dim;
 
+  PetscObjectAllocateFortranPointers(*da,6);
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
   if (dim == 2) {
      f2d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,PetscErrorCode*))func; 
@@ -121,8 +118,7 @@ void PETSC_STDCALL dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
 {
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
-  *ierr = DACreate2d((MPI_Comm)PetscToPointerComm(*comm),*wrap,
-                       *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
+  *ierr = DACreate2d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
 
 void PETSC_STDCALL dagetownershiprange_(DA *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)

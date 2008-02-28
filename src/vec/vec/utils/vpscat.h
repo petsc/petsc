@@ -20,7 +20,6 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   ierr = VecGetArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);} else {yv = xv;}
   if (mode & SCATTER_REVERSE) {
@@ -96,7 +95,6 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   }
   ierr = VecRestoreArray(xin,&xv);CHKERRQ(ierr);
   if (xin != yin) {ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);}
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -115,7 +113,6 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   MPI_Status             xrstatus,*rstatus,*sstatus;
 
   PetscFunctionBegin;
-  CHKMEMQ;
   if (mode & SCATTER_LOCAL) PetscFunctionReturn(0);
   ierr = VecGetArray(yin,&yv);CHKERRQ(ierr);
 
@@ -159,7 +156,6 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
   /* wait on sends */
   if (nsends  && !to->use_alltoallv  && !to->use_window) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
   ierr = VecRestoreArray(yin,&yv);CHKERRQ(ierr);
-  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
