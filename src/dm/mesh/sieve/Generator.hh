@@ -354,7 +354,7 @@ namespace ALE {
       static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
         Obj<Mesh> serialMesh;
         if (mesh->commSize() > 1) {
-          serialMesh = ALE::Distribution<Mesh>::unifyMesh(mesh);
+          serialMesh = ALE::DistributionNew<Mesh>::unifyMesh(mesh);
         } else {
           serialMesh = mesh;
         }
@@ -463,9 +463,9 @@ namespace ALE {
         if (in.numberofholes > 0) {
           ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
         }
-	std::string args("pqezQra");
+        std::string args("pqezQra");
 
-	triangulate((char *) args.c_str(), &in, &out, NULL);
+        triangulate((char *) args.c_str(), &in, &out, NULL);
         if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
         if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
         if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
@@ -484,23 +484,22 @@ namespace ALE {
         ALE::SieveBuilder<Mesh>::buildCoordinatesMultiple(refMesh, dim, coords);
         const Obj<Mesh::label_type>& newMarkers = refMesh->createLabel("marker");
 
-	for(int v = 0; v < out.numberofpoints; v++) {
-	  if (out.pointmarkerlist[v]) {
-	    refMesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
-	  }
-	}
-	if (interpolate) {
-	  for(int e = 0; e < out.numberofedges; e++) {
-	    if (out.edgemarkerlist[e]) {
-	      const Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
-	      const Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
-	      const Obj<Mesh::sieve_type::supportSet> edge = newSieve->nJoin(vertexA, vertexB, 1);
+        for(int v = 0; v < out.numberofpoints; v++) {
+          if (out.pointmarkerlist[v]) {
+            refMesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+          }
+        }
+        if (interpolate) {
+          for(int e = 0; e < out.numberofedges; e++) {
+            if (out.edgemarkerlist[e]) {
+              const Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
+              const Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
+              const Obj<Mesh::sieve_type::supportSet> edge = newSieve->nJoin(vertexA, vertexB, 1);
 
-	      refMesh->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
-	    }
-	  }
-	}
-
+              refMesh->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
+            }
+          }
+        }
         Generator::finiOutput(&out);
         return refMesh;
       };
@@ -512,7 +511,7 @@ namespace ALE {
           localMaxVolumes[f] = maxVolume;
         }
         const Obj<Mesh> refMesh = refineMeshLocal(mesh, localMaxVolumes, interpolate);
-	const Obj<Mesh::sieve_type> refSieve = refMesh->getSieve();
+        const Obj<Mesh::sieve_type> refSieve = refMesh->getSieve();
         delete [] localMaxVolumes;
 #if 0
 	typedef typename ALE::New::Completion<Mesh, typename Mesh::sieve_type::point_type> sieveCompletion;

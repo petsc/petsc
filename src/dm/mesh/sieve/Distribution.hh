@@ -67,6 +67,18 @@ namespace ALE {
     typedef typename Partitioner::part_type      rank_type;
     typedef ALE::ISection<rank_type, point_type> partition_type;
   public:
+    template<typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap>
+    static void completeCones(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
+      typedef ALE::Section<point_type, point_type> cones_type;
+      typedef ALE::ConeSection<Sieve>              cones_wrapper_type;
+      Obj<cones_wrapper_type> cones        = new cones_wrapper_type(sieve);
+      Obj<cones_type>         overlapCones = new cones_type(sieve->comm(), sieve->debug());
+
+      ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
+      if (sieve->debug()) {overlapCones->view("Overlap Cones");}
+      // Inserts cones into parallelMesh (must renumber here)
+      ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
+    };
     // Given a partition of sieve points, copy the mesh pieces to each process and fuse into the new mesh
     //   Return overlaps for the cone communication
     template<typename Renumbering, typename NewMesh, typename SendOverlap, typename RecvOverlap>
@@ -109,15 +121,7 @@ namespace ALE {
       //   TODO: Generalize to redistribution (receive from multiple sources)
       Partitioner::createDistributionMeshOverlap(partition, recvOverlap, renumbering, overlapPartition, sendMeshOverlap, recvMeshOverlap);
       // Send cones
-      typedef ALE::Section<point_type, point_type>        cones_type;
-      typedef ALE::ConeSection<typename Mesh::sieve_type> cones_wrapper_type;
-      Obj<cones_wrapper_type> cones        = new cones_wrapper_type(mesh->getSieve());
-      Obj<cones_type>         overlapCones = new cones_type(mesh->comm(), mesh->debug());
-
-      ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
-      if (mesh->debug()) {overlapCones->view("Overlap Cones");}
-      // Inserts cones into parallelMesh (must renumber here)
-      ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newMesh->getSieve());
+      completeCones(mesh->getSieve(), newMesh->getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
     };
     template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<partition_type> distributeMesh(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
@@ -151,6 +155,91 @@ namespace ALE {
     static void distributeSection(const Obj<Section>& s, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<NewSection>& newS) {
       Partitioner::createLocalSection(s, partition, renumbering, newS);
       ALE::Completion::completeSection(sendOverlap, recvOverlap, s, newS);
+    };
+    template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
+    static Obj<partition_type> unifyMesh(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
+      const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
+      const Obj<partition_type> partition     = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
+      const Obj<typename Mesh::label_sequence>&     cells  = mesh->heightStratum(0);
+      const typename Mesh::label_sequence::iterator cEnd   = cells->end();
+      typename Mesh::point_type                    *values = new typename Mesh::point_type[cells->size()];
+      int                                           c      = 0;
+
+      cellPartition->setFiberDimension(0, cells->size());
+      cellPartition->allocatePoint();
+      for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter, ++c) {
+        values[c] = *c_iter;
+      }
+      cellPartition->updatePoint(0, values);
+      delete [] values;
+      // Close the partition over sieve points
+      Partitioner::createPartitionClosure(mesh, cellPartition, partition);
+      // Create the remote meshes
+      completeMesh(mesh, partition, renumbering, newMesh, sendMeshOverlap, recvMeshOverlap);
+      // Create the local mesh
+      Partitioner::createLocalMesh(mesh, partition, renumbering, newMesh);
+      newMesh->stratify();
+      newMesh->view("Unified mesh");
+      return partition;
+    };
+    static Obj<Mesh> unifyMesh(const Obj<Mesh>& mesh) {
+      typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
+      typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
+      const Obj<Mesh>                      newMesh         = new Mesh(mesh->comm(), mesh->getDimension(), mesh->debug());
+      const Obj<typename Mesh::sieve_type> newSieve        = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      const Obj<mesh_send_overlap_type>    sendMeshOverlap = new mesh_send_overlap_type(mesh->comm(), mesh->debug());
+      const Obj<mesh_recv_overlap_type>    recvMeshOverlap = new mesh_recv_overlap_type(mesh->comm(), mesh->debug());
+      std::map<point_type,point_type>      renumbering;
+
+      newMesh->setSieve(newSieve);
+      const Obj<partition_type> partition = unifyMesh(mesh, newMesh, renumbering, sendMeshOverlap, recvMeshOverlap);
+      // Unify coordinates
+      const Obj<typename Mesh::real_section_type>& coordinates    = mesh->getRealSection("coordinates");
+      const Obj<typename Mesh::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
+      const int                                    numCells       = newMesh->heightStratum(0)->size();
+      const int                                    numVertices    = newMesh->depthStratum(0)->size();
+
+      newCoordinates->setChart(typename Mesh::real_section_type::chart_type(numCells, numCells + numVertices));
+      distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newCoordinates);
+      // Unify labels
+      const typename Mesh::labels_type& labels = mesh->getLabels();
+
+      for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        if (newMesh->hasLabel(l_iter->first)) continue;
+        const Obj<typename Mesh::label_type>& label    = l_iter->second;
+        const Obj<typename Mesh::label_type>& newLabel = newMesh->createLabel(l_iter->first);
+
+        //completeCones(label, newLabel, renumbering, sendMeshOverlap, recvMeshOverlap);
+        {
+          typedef ALE::UniformSection<point_type, int> cones_type;
+          typedef ALE::LabelSection<typename Mesh::sieve_type,typename Mesh::label_type> cones_wrapper_type;
+          Obj<cones_wrapper_type> cones        = new cones_wrapper_type(mesh->getSieve(), label);
+          Obj<cones_type>         overlapCones = new cones_type(label->comm(), label->debug());
+
+          ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
+          if (label->debug()) {overlapCones->view("Overlap Label Values");}
+          // Inserts cones into parallelMesh (must renumber here)
+          //ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
+          {
+            const Obj<typename mesh_recv_overlap_type::traits::baseSequence> rPoints = recvMeshOverlap->base();
+
+            for(typename mesh_recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
+              const Obj<typename mesh_recv_overlap_type::coneSequence>& points      = recvMeshOverlap->cone(*p_iter);
+              const typename mesh_recv_overlap_type::target_type&       localPoint  = *p_iter;
+              const typename cones_type::point_type&                    remotePoint = points->begin().color();
+              const int                                                 size        = overlapCones->getFiberDimension(remotePoint);
+              const typename cones_type::value_type                    *values      = overlapCones->restrictPoint(remotePoint);
+
+              newLabel->clearCone(localPoint);
+              for(int i = 0; i < size; ++i) {newLabel->addCone(values[i], localPoint);}
+            }
+          }
+        }
+        //newLabel->add(label, newSieve);
+        Partitioner::createLocalSifter(label, partition, renumbering, newLabel);
+        newLabel->view(l_iter->first.c_str());
+      }
+      return newMesh;
     };
   };
   template<typename Bundle_>

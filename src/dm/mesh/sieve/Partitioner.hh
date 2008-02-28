@@ -533,24 +533,36 @@ namespace ALE {
         }
       }
     };
-    template<typename Mesh, typename Section, typename Renumbering>
-    static void createLocalMesh(const Obj<Mesh>& mesh, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Mesh>& localMesh, const int height = 0) {
-      const Obj<typename Mesh::sieve_type>& sieve      = mesh->getSieve();
-      const Obj<typename Mesh::sieve_type>& localSieve = localMesh->getSieve();
-      const typename Section::value_type   *points     = partition->restrictPoint(mesh->commRank());
-      const int                             numPoints  = partition->getFiberDimension(mesh->commRank());
+    template<typename Sifter, typename Section, typename Renumbering>
+    static void createLocalSifter(const Obj<Sifter>& sifter, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sifter>& localSifter) {
+      const typename Section::value_type *points    = partition->restrictPoint(sifter->commRank());
+      const int                           numPoints = partition->getFiberDimension(sifter->commRank());
 
       for(int p = 0; p < numPoints; ++p) {
-        Obj<typename Mesh::sieve_type::coneSet> current = new typename Mesh::sieve_type::coneSet();
-        Obj<typename Mesh::sieve_type::coneSet> next    = new typename Mesh::sieve_type::coneSet();
-        Obj<typename Mesh::sieve_type::coneSet> tmp;
+        const Obj<typename Sifter::traits::coneSequence>&     cone = sifter->cone(points[p]);
+        const typename Sifter::traits::coneSequence::iterator cEnd = cone->end();
+
+        for(typename Sifter::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cEnd; ++c_iter) {
+          localSifter->addArrow(*c_iter, renumbering[points[p]]);
+        }
+      }
+    };
+    template<typename Sieve, typename Section, typename Renumbering>
+    static void createLocalSieve(const Obj<Sieve>& sieve, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sieve>& localSieve, const int height = 0) {
+      const typename Section::value_type *points    = partition->restrictPoint(sieve->commRank());
+      const int                           numPoints = partition->getFiberDimension(sieve->commRank());
+
+      for(int p = 0; p < numPoints; ++p) {
+        Obj<typename Sieve::coneSet> current = new typename Sieve::coneSet();
+        Obj<typename Sieve::coneSet> next    = new typename Sieve::coneSet();
+        Obj<typename Sieve::coneSet> tmp;
 
         current->insert(points[p]);
         while(current->size()) {
-          for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
-            const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
+          for(typename Sieve::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+            const Obj<typename Sieve::traits::coneSequence>& cone = sieve->cone(*p_iter);
             
-            for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            for(typename Sieve::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
               localSieve->addArrow(renumbering[*c_iter], renumbering[*p_iter], c_iter.color());
               next->insert(*c_iter);
             }
@@ -561,10 +573,10 @@ namespace ALE {
         if (height) {
           current->insert(points[p]);
           while(current->size()) {
-            for(typename Mesh::sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
-              const Obj<typename Mesh::sieve_type::traits::supportSequence>& support = sieve->support(*p_iter);
+            for(typename Sieve::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+              const Obj<typename Sieve::traits::supportSequence>& support = sieve->support(*p_iter);
             
-              for(typename Mesh::sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+              for(typename Sieve::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
                 localSieve->addArrow(renumbering[*p_iter], renumbering[*s_iter], s_iter.color());
                 next->insert(*s_iter);
               }
@@ -574,6 +586,13 @@ namespace ALE {
           }
         }
       }
+    };
+    template<typename Mesh, typename Section, typename Renumbering>
+    static void createLocalMesh(const Obj<Mesh>& mesh, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Mesh>& localMesh, const int height = 0) {
+      const Obj<typename Mesh::sieve_type>& sieve      = mesh->getSieve();
+      const Obj<typename Mesh::sieve_type>& localSieve = localMesh->getSieve();
+
+      createLocalSieve(sieve, partition, renumbering, localSieve, height);
     };
   public: // Partitioning
     //   partition:    Should be properly allocated on input

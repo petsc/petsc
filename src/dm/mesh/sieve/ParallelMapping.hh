@@ -618,6 +618,11 @@ namespace ALE {
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<BaseSection<Sieve_> >& sendSection, const Obj<ConstantSection<typename SendOverlap::source_type, int> >& recvSection) {
         copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
       };
+      // Specialize to an LabelBaseSection/ConstantSection pair
+      template<typename SendOverlap, typename RecvOverlap, typename Sieve_, typename Label_>
+      static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<LabelBaseSection<Sieve_, Label_> >& sendSection, const Obj<ConstantSection<typename SendOverlap::source_type, int> >& recvSection) {
+        copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
+      };
     };
     class BinaryFusion {
     public:

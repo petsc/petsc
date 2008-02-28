@@ -362,8 +362,8 @@ namespace ALE {
       };
 
       template<typename ostream_type>
-      void view(ostream_type& os, const char* label, bool rawData);
-      void view(const char* label, MPI_Comm comm);
+      void view(ostream_type& os, const char* label = NULL, bool rawData = false);
+      void view(const char* label = NULL, MPI_Comm comm = MPI_COMM_NULL);
 
       Obj<Sieve> copy() {
         Obj<Sieve> s = Sieve(this->comm(), this->debug);
@@ -1060,7 +1060,7 @@ namespace ALE {
 
     template <typename Point_, typename Marker_, typename Color_> 
     template<typename ostream_type>
-    void Sieve<Point_,Marker_,Color_>::view(ostream_type& os, const char* label = NULL, bool rawData = false){
+    void Sieve<Point_,Marker_,Color_>::view(ostream_type& os, const char* label, bool rawData){
       if(label != NULL) {
         os << "Viewing Sieve '" << label << "':" << std::endl;
       } 
@@ -1115,7 +1115,7 @@ namespace ALE {
       }
     };
     template <typename Point_, typename Marker_, typename Color_> 
-    void Sieve<Point_,Marker_,Color_>::view(const char* label = NULL, MPI_Comm comm = MPI_COMM_NULL) {
+    void Sieve<Point_,Marker_,Color_>::view(const char* label, MPI_Comm comm) {
         ostringstream txt;
 
         if (this->debug()) {
