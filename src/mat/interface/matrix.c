@@ -2528,7 +2528,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolve(Mat mat,Vec b,Vec x)
 
    Concepts: matrices^triangular solves
 
-.seealso: MatMatSolveAdd(), MatMatSolveTranspose(), MatMatSolveTransposeAdd()
+.seealso: MatMatSolveAdd(), MatMatSolveTranspose(), MatMatSolveTransposeAdd(), MatLUFactor(), MatCholeskyFactor()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
 {
