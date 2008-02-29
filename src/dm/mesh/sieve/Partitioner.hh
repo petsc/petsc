@@ -533,6 +533,32 @@ namespace ALE {
         }
       }
     };
+    // Specialize to ArrowSection
+    template<typename OldSection, typename Partition, typename Renumbering>
+    static void createLocalSection(const Obj<OldSection>& oldSection, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<UniformSection<MinimalArrow<int,int>,int> >& newSection) {
+      typedef UniformSection<MinimalArrow<int,int>,int> NewSection;
+      const typename Partition::value_type    *points    = partition->restrictPoint(oldSection->commRank());
+      const int                                numPoints = partition->getFiberDimension(oldSection->commRank());
+      const typename OldSection::chart_type&   oldChart  = oldSection->getChart();
+      std::set<typename Partition::value_type> myPoints;
+
+      for(int p = 0; p < numPoints; ++p) {
+        myPoints.insert(points[p]);
+      }
+      for(typename OldSection::chart_type::const_iterator c_iter = oldChart.begin(); c_iter != oldChart.end(); ++c_iter) {
+        if (myPoints.count(c_iter->source) && myPoints.count(c_iter->target)) {
+          newSection->setFiberDimension(typename OldSection::point_type(renumbering[c_iter->source], renumbering[c_iter->target]), oldSection->getFiberDimension(*c_iter));
+        }
+      }
+      if (oldChart.size()) {newSection->allocatePoint();}
+      for(typename OldSection::chart_type::const_iterator c_iter = oldChart.begin(); c_iter != oldChart.end(); ++c_iter) {
+        if (myPoints.count(c_iter->source) && myPoints.count(c_iter->target)) {
+          const typename OldSection::value_type *values = oldSection->restrictPoint(*c_iter);
+
+          newSection->updatePointAll(typename OldSection::point_type(renumbering[c_iter->source], renumbering[c_iter->target]), values);
+        }
+      }
+    };
     template<typename Sifter, typename Section, typename Renumbering>
     static void createLocalSifter(const Obj<Sifter>& sifter, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sifter>& localSifter) {
       const typename Section::value_type *points    = partition->restrictPoint(sifter->commRank());

@@ -35,9 +35,11 @@ namespace ALE {
         inputCtx->regionlist = NULL;
       };
       static void initOutput(struct triangulateio *outputCtx) {
+        outputCtx->numberofpoints = 0;
         outputCtx->pointlist = NULL;
         outputCtx->pointattributelist = NULL;
         outputCtx->pointmarkerlist = NULL;
+        outputCtx->numberoftriangles = 0;
         outputCtx->trianglelist = NULL;
         outputCtx->triangleattributelist = NULL;
         outputCtx->neighborlist = NULL;
@@ -169,7 +171,7 @@ namespace ALE {
     };
     class Refiner {
     public:
-      static Obj<Mesh> refineMesh(const Obj<Mesh>& serialMesh, const double maxVolumes[], const bool interpolate = false) {
+      static Obj<Mesh> refineMesh(const Obj<Mesh>& serialMesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false) {
         const int                    dim         = serialMesh->getDimension();
         const Obj<Mesh>              refMesh     = new Mesh(serialMesh->comm(), dim, serialMesh->debug());
         const Obj<Mesh::sieve_type>& serialSieve = serialMesh->getSieve();
@@ -340,7 +342,7 @@ namespace ALE {
         }
 
         Generator::finiOutput(&out);
-        if (refMesh->commSize() > 1) {
+        if ((refMesh->commSize() > 1) && (!forceSerial)) {
           return ALE::Distribution<Mesh>::distributeMesh(refMesh);
         }
         return refMesh;
@@ -351,10 +353,10 @@ namespace ALE {
 
         return refineMesh(serialMesh, serialMaxVolumes->restrict(), interpolate);
       };
-      static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
+      static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false) {
         Obj<Mesh> serialMesh;
-        if (mesh->commSize() > 1) {
-          serialMesh = ALE::DistributionNew<Mesh>::unifyMesh(mesh);
+        if ((mesh->commSize() > 1) && (!forceSerial)) {
+          serialMesh = ALE::Distribution<Mesh>::unifyMesh(mesh);
         } else {
           serialMesh = mesh;
         }
@@ -364,7 +366,7 @@ namespace ALE {
         for(int f = 0; f < numFaces; f++) {
           serialMaxVolumes[f] = maxVolume;
         }
-        const Obj<Mesh> refMesh = refineMesh(serialMesh, serialMaxVolumes, interpolate);
+        const Obj<Mesh> refMesh = refineMesh(serialMesh, serialMaxVolumes, interpolate, forceSerial);
         delete [] serialMaxVolumes;
         return refMesh;
       };
@@ -919,12 +921,12 @@ namespace ALE {
       }
       return NULL;
     };
-    static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
+    static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false) {
       int dim = mesh->getDimension();
 
       if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
-        return ALE::Triangle::Refiner::refineMesh(mesh, maxVolume, interpolate);
+        return ALE::Triangle::Refiner::refineMesh(mesh, maxVolume, interpolate, forceSerial);
 #else
         throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif

@@ -17,10 +17,9 @@ namespace ALE {
   protected:
     Obj<sieve_type> _sieve;
     chart_type      _chart;
-    int             _size;
-    int             _empty;
+    int             _sizes[2];
   public:
-    BaseSection(const Obj<sieve_type>& sieve) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _chart(*sieve->base()), _size(1), _empty(0) {};
+    BaseSection(const Obj<sieve_type>& sieve) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _chart(*sieve->base()) {_sizes[0] = 1; _sizes[1] = 0;};
     ~BaseSection() {};
   public: // Verifiers
     bool hasPoint(const point_type& point) const {
@@ -33,9 +32,12 @@ namespace ALE {
     const int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
+    const value_type *restrict() const {
+      return this->_sizes;
+    };
     const value_type *restrictPoint(const point_type& p) const {
-      if (this->hasPoint(p)) return &this->_size;
-      return &this->_empty;
+      if (this->hasPoint(p)) return this->_sizes;
+      return &this->_sizes[1];
     };
   };
 
@@ -155,10 +157,9 @@ namespace ALE {
     Obj<sieve_type> _sieve;
     Obj<label_type> _label;
     chart_type      _chart;
-    int             _size;
-    int             _empty;
+    int             _sizes[2];
   public:
-    LabelBaseSection(const Obj<sieve_type>& sieve, const Obj<label_type>& label) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _label(label), _chart(*sieve->base()), _size(1), _empty(0) {};
+    LabelBaseSection(const Obj<sieve_type>& sieve, const Obj<label_type>& label) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _label(label), _chart(*sieve->base()) {_sizes[0] = 1; _sizes[1] = 0;};
     ~LabelBaseSection() {};
   public: // Verifiers
     bool hasPoint(const point_type& point) const {
@@ -171,9 +172,12 @@ namespace ALE {
     const int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
+    const value_type *restrict() const {
+      return this->_sizes;
+    };
     const value_type *restrictPoint(const point_type& p) const {
-      if (this->hasPoint(p)) return &this->_size;
-      return &this->_empty;
+      if (this->hasPoint(p)) return this->_sizes;
+      return &this->_sizes[1];
     };
   };
 
@@ -214,7 +218,7 @@ namespace ALE {
       return this->hasPoint(p) ? 1 : 0;
     };
     const value_type *restrictPoint(const point_type& p) {
-      this->_value = *this->_sieve->cone(p)->begin();
+      this->_value = *this->_label->cone(p)->begin();
       return &this->_value;
     };
   };
