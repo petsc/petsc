@@ -306,7 +306,7 @@ M*/
 
 M*/
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES,PetscErrorCode (*)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES,PetscErrorCode (*)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void*,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultConverged(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSkipConverged(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergedReason(SNES,SNESConvergedReason*);

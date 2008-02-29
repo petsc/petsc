@@ -2321,7 +2321,7 @@ The user can specify a customized
 routine with the command \findex{KSPSetConvergenceTest()}
 \begin{tabbing}
   KSPSetConvergenceTest\=(KSP ksp,PetscErrorCode (*test)(KSP ksp,int it,double rnorm,\\
-                       \>KSPConvergedReason *reason,void *ctx),void *ctx);
+                       \>KSPConvergedReason *reason,void *ctx),void *ctx,PetscErrorCode (*destroy)(void *ctx));
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
 data for the user-defined convergence routine, \trl{test}.  Other
@@ -3589,7 +3589,7 @@ the command \findex{SNESSetConvergenceTest()}
 \begin{tabbing}
   SNESSetConvergenceTest(\=SNES snes,PetscErrorCode (*test)(SNES snes,int it,double xnorm,\\
                          \>double gnorm,double f,SNESConvergedReason reason,\\
-                         \>void *cctx),void *cctx);
+                         \>void *cctx),void *cctx,PetscErrorCode (*destroy)(void *cctx));
 \end{tabbing}
 The final argument of the convergence test routine, \trl{cctx},
 denotes an optional user-defined context for private data.  When

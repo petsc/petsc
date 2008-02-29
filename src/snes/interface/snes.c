@@ -246,8 +246,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsEList("-snes_convergence_test","Convergence test","SNESSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
-      case 0: ierr = SNESSetConvergenceTest(snes,SNESDefaultConverged,PETSC_NULL);CHKERRQ(ierr); break;
-      case 1: ierr = SNESSetConvergenceTest(snes,SNESSkipConverged,PETSC_NULL);CHKERRQ(ierr);    break;
+      case 0: ierr = SNESSetConvergenceTest(snes,SNESDefaultConverged,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); break;
+      case 1: ierr = SNESSetConvergenceTest(snes,SNESSkipConverged,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);    break;
       }
     }
 
@@ -1304,6 +1304,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
   ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);
   if (snes->vwork) {ierr = VecDestroyVecs(snes->vwork,snes->nvwork);CHKERRQ(ierr);}
   ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
+  if (snes->ops->convergeddestroy) {ierr = (*snes->ops->convergeddestroy)(snes->cnvP);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1591,8 +1592,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorCancel(SNES snes)
    Input Parameters:
 +  snes - the SNES context
 .  func - routine to test for convergence
--  cctx - [optional] context for private data for the convergence routine 
-          (may be PETSC_NULL)
+.  cctx - [optional] context for private data for the convergence routine  (may be PETSC_NULL)
+-  destroy - [optional] destructor for the context (may be PETSC_NULL; PETSC_NULL_FUNCTION in Fortran)
 
    Calling sequence of func:
 $     PetscErrorCode func (SNES snes,PetscInt it,PetscReal xnorm,PetscReal gnorm,PetscReal f,SNESConvergedReason *reason,void *cctx)
@@ -1611,13 +1612,19 @@ $     PetscErrorCode func (SNES snes,PetscInt it,PetscReal xnorm,PetscReal gnorm
 
 .seealso: SNESDefaultConverged(), SNESSkipConverged()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES snes,PetscErrorCode (*func)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES snes,PetscErrorCode (*func)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (!func) func = SNESSkipConverged;
-  snes->ops->converged = func;
-  snes->cnvP           = cctx;
+  if (snes->ops->convergeddestroy) {
+    ierr = (*snes->ops->convergeddestroy)(snes->cnvP);CHKERRQ(ierr);
+  }
+  snes->ops->converged        = func;
+  snes->ops->convergeddestroy = destroy;
+  snes->cnvP                  = cctx;
   PetscFunctionReturn(0);
 }
 

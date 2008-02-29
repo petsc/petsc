@@ -12,6 +12,7 @@ struct _SNESOps {
   PetscErrorCode (*computescaling)(Vec,Vec,void*);       
   PetscErrorCode (*update)(SNES, PetscInt);                     /* General purpose function for update */
   PetscErrorCode (*converged)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
+  PetscErrorCode (*convergeddestroy)(void*);
   PetscErrorCode (*setup)(SNES);             /* routine to set up the nonlinear solver */
   PetscErrorCode (*solve)(SNES);             /* actual nonlinear solver */
   PetscErrorCode (*view)(SNES,PetscViewer);

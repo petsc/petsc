@@ -53,21 +53,21 @@ PetscErrorCode OurSNESSetUpdate(SNES snes,PetscInt b)
 EXTERN_C_BEGIN
 void PETSC_STDCALL sneslinesearchsetpostcheck_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec *,Vec *,void *,PetscTruth*,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*snes,10);
+  PetscObjectAllocateFortranPointers(*snes,12);
   ((PetscObject)*snes)->fortran_func_pointers[7] = (PetscVoidFunction)f;
   *ierr = SNESLineSearchSetPostCheck(*snes,OurSNESLineSearchPostCheck,ctx);
 }  
 
 void PETSC_STDCALL sneslinesearchsetprecheck_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec *,void *,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*snes,10);
+  PetscObjectAllocateFortranPointers(*snes,12);
   ((PetscObject)*snes)->fortran_func_pointers[8] = (PetscVoidFunction)f;
   *ierr = SNESLineSearchSetPreCheck(*snes,OurSNESLineSearchPreCheck,ctx);
 }  
 
 void PETSC_STDCALL snessetupdate_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,PetscInt*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*snes,10);
+  PetscObjectAllocateFortranPointers(*snes,12);
   ((PetscObject)*snes)->fortran_func_pointers[9] = (PetscVoidFunction)f;
   *ierr = SNESSetUpdate(*snes,OurSNESSetUpdate);
 }  
@@ -91,7 +91,7 @@ void sneslinesearchnonorms_(SNES *snes,void *lsctx,Vec *x,Vec *f,Vec *g,Vec *y,V
 
 void PETSC_STDCALL sneslinesearchset_(SNES *snes,void (PETSC_STDCALL *f)(SNES*,void *,Vec*,Vec*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscTruth*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*snes,10);
+  PetscObjectAllocateFortranPointers(*snes,12);
   if ((PetscVoidFunction)f == (PetscVoidFunction)sneslinesearchcubic_) {
     *ierr = SNESLineSearchSet(*snes,SNESLineSearchCubic,ctx);
   } else if ((PetscVoidFunction)f == (PetscVoidFunction)sneslinesearchquadratic_) {
