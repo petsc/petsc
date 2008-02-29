@@ -202,10 +202,12 @@ PetscErrorCode  KSPSolve_MINRES(KSP ksp)
 
    Contributed by: Robert Scheichl: maprs@maths.bath.ac.uk
 
-   Notes: The operator and the preconditioner must be positive definite for this method
-          Reference: Paige & Saunders, 1975.
+   Notes: The operator and the preconditioner must be symmetric and the preconditioner must
+          be positive definite for this method.
 
-.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG
+   Reference: Paige & Saunders, 1975.
+
+.seealso: KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPCG, KSPCR
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
