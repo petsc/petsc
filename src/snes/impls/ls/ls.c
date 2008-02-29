@@ -161,7 +161,10 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     PetscFunctionReturn(0);
   }
-  ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
+  ierr = VecNormBegin(F,NORM_2,&fnorm);CHKERRQ(ierr);	/* fnorm <- ||F||  */
+  ierr = VecNormBegin(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm <- ||x||  */
+  ierr = VecNormEnd(F,NORM_2,&fnorm);CHKERRQ(ierr);
+  ierr = VecNormEnd(X,NORM_2,&xnorm);CHKERRQ(ierr);
   if (fnorm != fnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
