@@ -68,7 +68,7 @@ static PetscErrorCode oursnestest(SNES snes,PetscInt it,PetscReal a,PetscReal d,
 {
   PetscErrorCode ierr = 0;
   void           (*mctx)(void) = ((PetscObject)snes)->fortran_func_pointers[11];
-  (*(void (PETSC_STDCALL *)(SNES*,PetscInt*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[1]))(&snes,&it,&a,&d,&c,reason,mctx,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(SNES*,PetscInt*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*))(((PetscObject)snes)->fortran_func_pointers[1]))(&snes,&it,&a,&d,&c,reason,(void*)mctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
