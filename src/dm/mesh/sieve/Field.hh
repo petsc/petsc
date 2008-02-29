@@ -215,8 +215,8 @@ namespace ALE {
       const chart_type& chart = section->getChart();
 
       this->addPoint(chart);
-      this->_value[0] = section->restrict(*chart.begin())[0];
-      this->_value[1] = section->restrict(*chart.begin())[1];
+      this->_value[0] = section->restrict()[0];
+      this->setDefaultValue(section->getDefaultValue());
     };
   public: // Sizes
     void clear() {
@@ -1458,6 +1458,7 @@ namespace ALE {
     const Obj<bc_type>& getBC() const {return this->_bc;};
     void setBC(const Obj<bc_type>& bc) {this->_bc = bc;};
     const chart_type& getChart() const {return this->_atlas->getChart();};
+    void setChart(const chart_type& chart) {throw ALE::Exception("setChart() for GeneralSection is invalid");};
   public: // BC
     // Returns the number of constraints on a point
     const int getConstraintDimension(const point_type& p) const {

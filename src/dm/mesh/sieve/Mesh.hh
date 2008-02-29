@@ -238,6 +238,8 @@ namespace ALE {
       return names;
     };
     const Obj<NumberingFactory>& getFactory() const {return this->_factory;};
+    bool getCalculatedOverlap() const {return this->_calculatedOverlap;};
+    void setCalculatedOverlap(const bool calc) {this->_calculatedOverlap = calc;};
     const Obj<send_overlap_type>& getSendOverlap() const {return this->_sendOverlap;};
     void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
     const Obj<recv_overlap_type>& getRecvOverlap() const {return this->_recvOverlap;};
@@ -1700,20 +1702,23 @@ namespace ALE {
         s->addSpace();
       }
 #ifdef OPT_SECTION
-      point_type min = INT_MAX;
-      point_type max = INT_MIN;
+      point_type min   = INT_MAX;
+      point_type max   = INT_MIN;
+      bool       found = false;
 
       for(int d = 0; d <= this->_dim; ++d) {
         for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
           const Obj<ALE::Discretization>& disc = this->getDiscretization(*f_iter);
 
           if (disc->getNumDof(d) && this->depthStratum(d)->size()) {
-            min = std::min(min, *this->depthStratum(d)->begin());
-            max = std::max(max, *this->depthStratum(d)->rbegin());
+            min   = std::min(min, *this->depthStratum(d)->begin());
+            max   = std::max(max, *this->depthStratum(d)->rbegin());
+            found = true;
             break;
           }
         }
       }
+      if (!found) {min = 0; max = -1;}
       s->setChart(real_section_type::chart_type(min, max+1));
 #endif
       for(int d = 0; d <= this->_dim; ++d) {

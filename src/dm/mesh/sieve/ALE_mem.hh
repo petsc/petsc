@@ -580,20 +580,26 @@ namespace ALE {
 #endif
 #endif
     typedef typename Allocator::size_type size_type;
+  protected:
+    Allocator& allocator() {
+      static Allocator _allocator;
+
+      return _allocator;
+    };
+    Allocator_int& int_allocator() {
+      static Allocator_int _allocator;
+
+      return _allocator;
+    };
   public:
-    // These are intended to be private or at least protected
-    // allocators
-    Allocator_int         *int_allocator;
-    Allocator             *allocator;
-    //
-    X*                     objPtr; // object pointer
-    int*                   refCnt; // reference count
-    size_type              sz;     // Size of underlying object (universal units) allocated with an allocator; indicates allocator use.
+    X*        objPtr; // object pointer
+    int*      refCnt; // reference count
+    size_type sz;     // Size of underlying object (universal units) allocated with an allocator; indicates allocator use.
     // Constructor; this can be made private, if we move operator Obj<Y> outside this class definition and make it a friend.
     Obj(X *xx, int *refCnt, size_type sz);
   public:
     // Constructors & a destructor
-    Obj() : objPtr((X *)NULL), refCnt((int*)NULL), sz(0) {this->createAllocators();};
+    Obj() : objPtr((X *)NULL), refCnt((int*)NULL), sz(0) {};
     Obj(const X& x);
     Obj(X *xx);
     Obj(X *xx, size_type sz);
@@ -603,9 +609,6 @@ namespace ALE {
     // "Factory" methods
     Obj& create(const X& x = X());
     void destroy();
-    void createAllocators();
-    void destroyAllocators();
-    void handleAllocators(const bool);
 
     // predicates & assertions
     bool isNull() const {return (this->objPtr == NULL);};
@@ -643,7 +646,6 @@ namespace ALE {
   // New reference
   template <class X, typename A>
   Obj<X,A>::Obj(const X& x) {
-    this->createAllocators();
     this->refCnt = NULL;
     this->create(x);
   }
@@ -652,10 +654,9 @@ namespace ALE {
   template <class X, typename A>
   Obj<X,A>::Obj(X *xx){// such an object will be destroyed by calling 'delete' on its pointer 
                      // (e.g., we assume the pointer was obtained with new)
-    this->createAllocators();
     if (xx) {
       this->objPtr = xx; 
-      this->refCnt = this->int_allocator->create(1);
+      this->refCnt = int_allocator().create(1);
       //this->refCnt   = new int(1);
       this->sz = 0;
     } else {
@@ -668,10 +669,9 @@ namespace ALE {
   // Work around for thing allocated with an allocator
   template <class X, typename A>
   Obj<X,A>::Obj(X *xx, size_type sz){// such an object will be destroyed by the allocator
-    this->createAllocators();
     if (xx) {
       this->objPtr = xx; 
-      this->refCnt = this->int_allocator->create(1);
+      this->refCnt = int_allocator().create(1);
       this->sz     = sz;
     } else {
       this->objPtr = NULL; 
@@ -682,7 +682,6 @@ namespace ALE {
   
   template <class X, typename A>
   Obj<X,A>::Obj(X *_xx, int *_refCnt, size_type _sz) {  // This is intended to be private.
-    this->createAllocators();
     if (!_xx) {
       throw ALE::Exception("Making an Obj with a NULL objPtr");
     }
@@ -697,7 +696,6 @@ namespace ALE {
   
   template <class X, typename A>
   Obj<X,A>::Obj(const Obj& obj) {
-    this->createAllocators();
     this->objPtr = obj.objPtr;
     this->refCnt = obj.refCnt;
     if (obj.refCnt) {
@@ -713,41 +711,6 @@ namespace ALE {
   template <class X, typename A>
   Obj<X,A>::~Obj(){
     this->destroy();
-    this->destroyAllocators();
-  }
-
-  template <class X, typename A>
-  void Obj<X,A>::createAllocators() {
-    this->handleAllocators(true);
-  }
-
-  template <class X, typename A>
-  void Obj<X,A>::destroyAllocators() {
-    this->handleAllocators(false);
-  }
-
-  template <class X, typename A>
-  void Obj<X,A>::handleAllocators(const bool create) {
-    static Allocator_int *s_int_allocator = NULL;
-    static Allocator     *s_allocator     = NULL;
-    static int            s_allocRefCnt   = 0;
-
-    if (create) {
-      if (s_allocRefCnt == 0) {
-        s_int_allocator = new Allocator_int();
-        s_allocator     = new Allocator();
-      }
-      s_allocRefCnt++;
-      this->int_allocator = s_int_allocator;
-      this->allocator     = s_allocator;
-    } else {
-      if (--s_allocRefCnt == 0) {
-        delete int_allocator;
-        delete allocator;
-      }
-      this->int_allocator = NULL;
-      this->allocator     = NULL;
-    }
   }
 
   template <class X, typename A>
@@ -755,9 +718,9 @@ namespace ALE {
     // Destroy the old state
     this->destroy();
     // Create the new state
-    this->objPtr = this->allocator->create(x); 
-    this->refCnt = this->int_allocator->create(1);
-    this->sz     = this->allocator->sz;
+    this->objPtr = allocator().create(x); 
+    this->refCnt = int_allocator().create(1);
+    this->sz     = allocator().sz;
     if (!this->sz) {
       throw ALE::Exception("Making an Obj with zero size obtained from allocator");
     }
@@ -789,7 +752,7 @@ namespace ALE {
             printf("  Calling deallocator on %p with size %d\n", this->objPtr, (int) this->sz);
           }
 #endif
-          this->allocator->del(this->objPtr, this->sz);
+          allocator().del(this->objPtr, this->sz);
           this->sz = 0;
         }
         else { // otherwise we use 'delete'
@@ -804,7 +767,7 @@ namespace ALE {
           delete this->objPtr;
         }
         // refCnt is always created/delete using the int_allocator.
-        this->int_allocator->del(this->refCnt);
+        int_allocator().del(this->refCnt);
         this->objPtr = NULL;
         this->refCnt = NULL;
       }
