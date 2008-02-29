@@ -154,8 +154,7 @@ void PETSC_STDCALL   snessolve_(SNES *snes,Vec *b,Vec *x, int *__ierr )
   *__ierr = SNESSolve(*snes,B,*x);
 }
 
-void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(len),
-                                         PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL snesgetoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   const char *tname;
 
