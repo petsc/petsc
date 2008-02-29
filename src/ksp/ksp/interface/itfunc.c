@@ -1243,7 +1243,9 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
    Several different monitoring routines may be set by calling
    KSPMonitorSet() multiple times; all will be called in the 
-   order in which they were set.
+   order in which they were set. 
+
+   Fortran notes: Only a single monitor function can be set for each KSP object
 
    Level: beginner
 
@@ -1481,8 +1483,7 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,
-                                                        PetscErrorCode (*destroy)(void*))
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,PetscErrorCode (*destroy)(void*))
 {
   PetscErrorCode ierr;
 

@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
 /* 
-        Provides an interface to the SuperLU_DIST_2.1 sparse solver
+        Provides an interface to the SuperLU_DIST_2.2 sparse solver
 */
 
 #include "src/mat/impls/aij/seq/aij.h"
@@ -445,18 +445,18 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
 
   lu = (Mat_SuperLU_DIST*)(B->spptr);
 
-  /*   Set the default input options:
-        options.Fact              = DOFACT;
-        options.Equil             = YES;
-        options.ColPerm           = MMD_AT_PLUS_A;
-        options.RowPerm           = LargeDiag;
-        options.ReplaceTinyPivot  = YES;
-        options.ParSymbFact       = NO;
-        options.Trans             = NOTRANS;
-        options.IterRefine        = DOUBLE;
-        options.SolveInitialized  = NO;
-        options.RefineInitialized = NO;
-        options.PrintStat         = YES;
+  /* Set the default input options:
+     options.Fact              = DOFACT;
+     options.Equil             = YES;
+     options.ParSymbFact       = NO;
+     options.ColPerm           = MMD_AT_PLUS_A;
+     options.RowPerm           = LargeDiag;
+     options.ReplaceTinyPivot  = YES;
+     options.IterRefine        = DOUBLE;
+     options.Trans             = NOTRANS;
+     options.SolveInitialized  = NO;
+     options.RefineInitialized = NO;
+     options.PrintStat         = YES;
   */
   set_default_options_dist(&options);
 
@@ -526,6 +526,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
     if (flg){
 #ifdef PETSC_HAVE_PARMETIS
       options.ParSymbFact = YES;
+      options.ColPerm     = PARMETIS; /* in v2.2, PARMETIS is forced for ParSymbFact regardless of user ordering setting */
 #else
       printf("parsymbfact needs PARMETIS");
 #endif

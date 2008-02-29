@@ -8,13 +8,12 @@
 #endif
 
 typedef void (PETSC_STDCALL *FCN)(PetscDraw*,void*,PetscErrorCode*); /* force argument to next function to not be extern C*/
-static FCN f1;
 
 static PetscErrorCode ourdrawzoom(PetscDraw draw,void *ctx)
 {
   PetscErrorCode ierr = 0;
 
-  (*f1)(&draw,ctx,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(PetscDraw*,void*,PetscErrorCode*))(((PetscObject)draw)->fortran_func_pointers[0]))(&draw,ctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -22,7 +21,8 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL petscdrawzoom_(PetscDraw *draw,FCN f,void *ctx,PetscErrorCode *ierr)
 {
-  f1      = f;
+  PetscObjectAllocateFortranPointers(*draw,1);
+  ((PetscObject)*draw)->fortran_func_pointers[0] = (PetscVoidFunction)f;
   *ierr = PetscDrawZoom(*draw,ourdrawzoom,ctx);
 }
 
