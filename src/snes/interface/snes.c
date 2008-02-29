@@ -1501,6 +1501,8 @@ _    -snes_monitor_cancel - cancels all monitors that have
    SNESMonitorSet() multiple times; all will be called in the 
    order in which they were set.
 
+   Fortran notes: Only a single monitor function can be set for each SNES object
+
    Level: intermediate
 
 .keywords: SNES, nonlinear, set, monitor

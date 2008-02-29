@@ -1243,7 +1243,9 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
    Several different monitoring routines may be set by calling
    KSPMonitorSet() multiple times; all will be called in the 
-   order in which they were set.
+   order in which they were set. 
+
+   Fortran notes: Only a single monitor function can be set for each KSP object
 
    Level: beginner
 

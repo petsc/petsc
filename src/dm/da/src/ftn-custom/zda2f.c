@@ -33,21 +33,21 @@ void PETSC_STDCALL dagetneighbors_(DA *da,PetscMPIInt *ranks,PetscErrorCode *ier
 static PetscErrorCode ourlj1d(DALocalInfo *info,PetscScalar *in,Mat m,void *ptr)
 {
   PetscErrorCode ierr = 0;
-  (*j1d)(info,&in[info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(DALocalInfo*,PetscScalar*,Mat*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[0]))(info,&in[info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static PetscErrorCode ourlj2d(DALocalInfo *info,PetscScalar **in,Mat m,void *ptr)
 {
   PetscErrorCode ierr = 0;
-  (*j2d)(info,&in[info->gys][info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(DALocalInfo*,PetscScalar*,Mat*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[1]))(info,&in[info->gys][info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static PetscErrorCode ourlj3d(DALocalInfo *info,PetscScalar ***in,Mat m,void *ptr)
 {
   PetscErrorCode ierr = 0;
-  (*j3d)(info,&in[info->gzs][info->gys][info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(DALocalInfo*,PetscScalar*,Mat*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[2]))(info,&in[info->gzs][info->gys][info->dof*info->gxs],&m,ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -58,13 +58,13 @@ void PETSC_STDCALL dasetlocaljacobian_(DA *da,void (PETSC_STDCALL *jac)(DALocalI
   PetscObjectAllocateFortranPointers(*da,6);
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
   if (dim == 2) {
-     j2d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,PetscErrorCode*))jac; 
+    ((PetscObject)*da)->fortran_func_pointers[1] = (PetscVoidFunction)jac;
     *ierr = DASetLocalJacobian(*da,(DALocalFunction1)ourlj2d);
   } else if (dim == 3) {
-     j3d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,PetscErrorCode*))jac;
+    ((PetscObject)*da)->fortran_func_pointers[2] = (PetscVoidFunction)jac;
     *ierr = DASetLocalJacobian(*da,(DALocalFunction1)ourlj3d);
   } else if (dim == 1) {
-     j1d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,PetscErrorCode*))jac; 
+    ((PetscObject)*da)->fortran_func_pointers[0] = (PetscVoidFunction)jac;
     *ierr = DASetLocalJacobian(*da,(DALocalFunction1)ourlj1d);
   } else *ierr = 1;
 }
@@ -74,21 +74,21 @@ void PETSC_STDCALL dasetlocaljacobian_(DA *da,void (PETSC_STDCALL *jac)(DALocalI
 static PetscErrorCode ourlf1d(DALocalInfo *info,PetscScalar *in,PetscScalar *out,void *ptr)
 {
   PetscErrorCode ierr = 0;
-  (*f1d)(info,&in[info->dof*info->gxs],&out[info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(DALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[3]))(info,&in[info->dof*info->gxs],&out[info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static PetscErrorCode ourlf2d(DALocalInfo *info,PetscScalar **in,PetscScalar **out,void *ptr)
 {
   PetscErrorCode ierr = 0;
-  (*f2d)(info,&in[info->gys][info->dof*info->gxs],&out[info->ys][info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(DALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[4]))(info,&in[info->gys][info->dof*info->gxs],&out[info->ys][info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static PetscErrorCode ourlf3d(DALocalInfo *info,PetscScalar ***in,PetscScalar ***out,void *ptr)
 {
   PetscErrorCode ierr = 0;
-  (*f3d)(info,&in[info->gzs][info->gys][info->dof*info->gxs],&out[info->zs][info->ys][info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(DALocalInfo*,PetscScalar*,PetscScalar*,void*,PetscErrorCode*))(((PetscObject)info->da)->fortran_func_pointers[5]))(info,&in[info->gzs][info->gys][info->dof*info->gxs],&out[info->zs][info->ys][info->dof*info->xs],ptr,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -99,13 +99,13 @@ void PETSC_STDCALL dasetlocalfunction_(DA *da,void (PETSC_STDCALL *func)(DALocal
   PetscObjectAllocateFortranPointers(*da,6);
   *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,0,0,0,0); if (*ierr) return;
   if (dim == 2) {
-     f2d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,PetscErrorCode*))func; 
+    ((PetscObject)*da)->fortran_func_pointers[4] = (PetscVoidFunction)func;
     *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf2d);
   } else if (dim == 3) {
-     f3d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,PetscErrorCode*))func; 
+    ((PetscObject)*da)->fortran_func_pointers[5] = (PetscVoidFunction)func;
     *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf3d);
   } else if (dim == 1) {
-     f1d    = (void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,PetscErrorCode*))func; 
+    ((PetscObject)*da)->fortran_func_pointers[3] = (PetscVoidFunction)func;
     *ierr = DASetLocalFunction(*da,(DALocalFunction1)ourlf1d);
   } else *ierr = 1;
 }
