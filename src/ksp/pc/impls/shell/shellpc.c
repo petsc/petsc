@@ -62,7 +62,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetContext(PC pc,void **ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetContext"
-/*@
+/*@C
     PCShellSetContext - sets the context for a shell PC
 
    Collective on PC
@@ -75,6 +75,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetContext(PC pc,void **ctx)
 
    Fortran Notes: The context can only be an integer or a PetscObject
       unfortunately it cannot be a Fortran array or derived type.
+
 
 .seealso: PCCreateShell(), PCShellGetContext()
 @*/

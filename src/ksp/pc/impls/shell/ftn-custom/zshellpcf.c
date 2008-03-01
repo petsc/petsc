@@ -7,26 +7,25 @@
 #define pcshellsetapplytranspose_  PCSHELLSETAPPLYTRANSPOSE
 #define pcshellsetsetup_           PCSHELLSETSETUP
 #define pcshellsetname_            PCSHELLSETNAME
+#define pcshellsetcontext_         PCSHELLSETCONTEXT
+#define pcshellgetcontext_         PCSHELLGETCONTEXT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pcshellsetapply_           pcshellsetapply
 #define pcshellsetapplyrichardson_ pcshellsetapplyrichardson
 #define pcshellsetapplytranspose_  pcshellsetapplytranspose
 #define pcshellsetsetup_           pcshellsetsetup
 #define pcshellsetname_            pcshellsetname
+#define pcshellsetcontext_         pcshellsetcontext
+#define pcshellgetcontext_         pcshellgetcontext
 #endif
-
-EXTERN_C_BEGIN
-static void (PETSC_STDCALL *f1)(void*,Vec*,Vec*,PetscErrorCode*);
-static void (PETSC_STDCALL *f2)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscErrorCode*);
-static void (PETSC_STDCALL *f3)(void*,Vec*,Vec*,PetscErrorCode*);
-static void (PETSC_STDCALL *f9)(void*,PetscErrorCode*);
-EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
 static PetscErrorCode ourshellapply(void *ctx,Vec x,Vec y)
 {
   PetscErrorCode ierr = 0;
-  (*f1)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
+  PC             pc = (PC)ctx;
+  void           *mctx = (void*) ((PetscObject)pc)->fortran_func_pointers[0];
+  (*(void (PETSC_STDCALL *)(void*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[1]))(mctx,&x,&y,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -34,14 +33,18 @@ static PetscErrorCode ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal r
 {
   PetscErrorCode ierr = 0;
 
-  (*f2)(ctx,&x,&y,&w,&rtol,&abstol,&dtol,&m,&ierr);CHKERRQ(ierr);
+  PC             pc = (PC)ctx;
+  void           *mctx = (void*) ((PetscObject)pc)->fortran_func_pointers[0];
+  (*(void (PETSC_STDCALL *)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[2]))(mctx,&x,&y,&w,&rtol,&abstol,&dtol,&m,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 static PetscErrorCode ourshellapplytranspose(void *ctx,Vec x,Vec y)
 {
   PetscErrorCode ierr = 0;
-  (*f3)(ctx,&x,&y,&ierr);CHKERRQ(ierr);
+  PC             pc = (PC)ctx;
+  void           *mctx = (void*) ((PetscObject)pc)->fortran_func_pointers[0];
+  (*(void (PETSC_STDCALL *)(void*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[3]))(mctx,&x,&y,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -49,38 +52,57 @@ static PetscErrorCode ourshellsetup(void *ctx)
 {
   PetscErrorCode ierr = 0;
 
-  (*f9)(ctx,&ierr);CHKERRQ(ierr);
+  PC             pc = (PC)ctx;
+  void           *mctx = (void*) ((PetscObject)pc)->fortran_func_pointers[0];
+  (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[4]))(mctx,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,PetscErrorCode*),
-                                    PetscErrorCode *ierr)
+void PETSC_STDCALL   pcshellsetcontext_(PC *pc,void*ctx, int *__ierr )
 {
-  f1 = apply;
-  *ierr = PCShellSetApply(*pc,ourshellapply);
+  /* the Fortran context is stored in the func_pointer container, while pc is used as the context */
+  ((PetscObject)*pc)->fortran_func_pointers[0] = (PetscVoidFunction)ctx;
+  *__ierr = PCShellSetContext(*pc,*pc);
 }
 
-void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,
-         void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscErrorCode*),
-         PetscErrorCode *ierr)
+void PETSC_STDCALL   pcshellgetcontext_(PC *pc,void**ctx, int *__ierr )
 {
-  f2 = apply;
-  *ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson);
+  /* the Fortran context is stored in the func_pointer container, while pc is used as the context */
+  *ctx = (void*) ((PetscObject)*pc)->fortran_func_pointers[0];
 }
 
-void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytranspose)(void*,Vec *,Vec *,PetscErrorCode*),
-                                             PetscErrorCode *ierr)
+void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  f3 = applytranspose;
-  *ierr = PCShellSetApplyTranspose(*pc,ourshellapplytranspose);
+  PetscObjectAllocateFortranPointers(*pc,5);
+  ((PetscObject)*pc)->fortran_func_pointers[1] = (PetscVoidFunction)apply;
+  *ierr = PCShellSetApply(*pc,ourshellapply);if (*ierr) return;
+  *ierr = PCShellSetContext(*pc,*pc);
+}
+
+void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscErrorCode*),PetscErrorCode *ierr)
+{
+  PetscObjectAllocateFortranPointers(*pc,5);
+  ((PetscObject)*pc)->fortran_func_pointers[2] = (PetscVoidFunction)apply;
+  *ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson);if (*ierr) return;
+  *ierr = PCShellSetContext(*pc,*pc);
+}
+
+void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytranspose)(void*,Vec *,Vec *,PetscErrorCode*), PetscErrorCode *ierr)
+{
+  PetscObjectAllocateFortranPointers(*pc,5);
+  ((PetscObject)*pc)->fortran_func_pointers[3] = (PetscVoidFunction)applytranspose;
+  *ierr = PCShellSetApplyTranspose(*pc,ourshellapplytranspose);if (*ierr) return;
+  *ierr = PCShellSetContext(*pc,*pc);
 }
 
 void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  f9 = setup;
-  *ierr = PCShellSetSetUp(*pc,ourshellsetup);
+  PetscObjectAllocateFortranPointers(*pc,5);
+  ((PetscObject)*pc)->fortran_func_pointers[4] = (PetscVoidFunction)setup;
+  *ierr = PCShellSetSetUp(*pc,ourshellsetup);if (*ierr) return;
+  *ierr = PCShellSetContext(*pc,*pc);
 }
 
 void PETSC_STDCALL pcshellsetname_(PC *pc,CHAR name PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len))
