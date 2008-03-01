@@ -9,7 +9,7 @@
 typedef struct {
   int type; /* Type of Picard iteration */
   /* Line Search */
-  PetscErrorCode (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscTruth*);
+  PetscErrorCode (*LineSearch)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscTruth*);
   /* Line Search Parameters */
   PetscReal        alpha;		                                                   /* used to determine sufficient reduction */
   PetscReal        maxstep;                                                        /* maximum step size */

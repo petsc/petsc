@@ -173,7 +173,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);CHKFPQ(fnorm);
     } else {
-      ierr = (*neP->LineSearch)(snes, PETSC_NULL/*neP->lsP*/,  X,  F,  F,  F,  X,  fnorm,  &dummyNorm,  &fnorm,  &lsSuccess);CHKERRQ(ierr);
+      ierr = (*neP->LineSearch)(snes, PETSC_NULL/*neP->lsP*/,  X,  F,  F,  F,  X,  fnorm,  0.0,&dummyNorm,  &fnorm,  &lsSuccess);CHKERRQ(ierr);
     }
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
@@ -220,7 +220,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck_Picard(SNES snes, F
 }
 EXTERN_C_END
 
-typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal*,PetscReal*,PetscTruth*); /* force argument to next function to not be extern C*/
+typedef PetscErrorCode (*FCN2)(SNES,void*,Vec,Vec,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal*,PetscReal*,PetscTruth*); /* force argument to next function to not be extern C*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLineSearchSet_Picard"

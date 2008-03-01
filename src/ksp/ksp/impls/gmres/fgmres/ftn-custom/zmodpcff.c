@@ -10,7 +10,7 @@
 static PetscErrorCode ourmodify(KSP ksp,PetscInt i,PetscInt i2,PetscReal d,void* ctx)
 {
   PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(KSP*,PetscInt*,PetscInt*,PetscReal*,void *,PetscErrorCode*))(((PetscObject)ksp)->fortran_func_pointers[0]))(&ksp,&i,&i2,&d,((PetscObject)ksp)->fortran_func_pointers[2],&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(KSP*,PetscInt*,PetscInt*,PetscReal*,void *,PetscErrorCode*))(((PetscObject)ksp)->fortran_func_pointers[0]))(&ksp,&i,&i2,&d,(void*)((PetscObject)ksp)->fortran_func_pointers[2],&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -18,7 +18,7 @@ static PetscErrorCode ourmoddestroy(void* ctx)
 {
   PetscErrorCode ierr = 0;
   KSP            ksp = (KSP) ctx;
-  (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)ksp)->fortran_func_pointers[1]))(((PetscObject)ksp)->fortran_func_pointers[2],&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)ksp)->fortran_func_pointers[1]))((void*)((PetscObject)ksp)->fortran_func_pointers[2],&ierr);CHKERRQ(ierr);
   return 0;
 }
 
