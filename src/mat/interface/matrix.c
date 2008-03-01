@@ -2501,6 +2501,32 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolve(Mat mat,Vec b,Vec x)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatMatSolve_Basic"
+PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve_Basic(Mat A,Mat B,Mat X)
+{
+  PetscErrorCode ierr;
+  Vec            b,x;
+  PetscInt       m,N,i;
+  PetscScalar    *bb,*xx;
+
+  PetscFunctionBegin;
+  ierr = MatGetArray(B,&bb);CHKERRQ(ierr); 
+  ierr = MatGetArray(X,&xx);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(B,&m,PETSC_NULL);CHKERRQ(ierr);  /* number local rows */
+  ierr = MatGetSize(B,PETSC_NULL,&N);CHKERRQ(ierr);       /* total columns in dense matrix */
+  ierr = VecCreateMPIWithArray(A->hdr.comm,m,PETSC_DETERMINE,PETSC_NULL,&b);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(A->hdr.comm,m,PETSC_DETERMINE,PETSC_NULL,&x);CHKERRQ(ierr);
+  for (i=0; i<N; i++) {
+    ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
+    ierr = VecPlaceArray(x,xx + i*m);CHKERRQ(ierr);
+    ierr = MatSolve(A,b,x);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatMatSolve"
 /*@
    MatMatSolve - Solves A X = B, given a factored matrix.
@@ -2509,10 +2535,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolve(Mat mat,Vec b,Vec x)
 
    Input Parameters:
 +  mat - the factored matrix
--  b - the right-hand-side matrix  (dense matrix)
+-  B - the right-hand-side matrix  (dense matrix)
 
    Output Parameter:
-.  x - the result matrix (dense matrix)
+.  B - the result matrix (dense matrix)
 
    Notes:
    The matrices b and x cannot be the same.  I.e., one cannot
@@ -2547,11 +2573,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
   if (A->rmap.N != B->rmap.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %D %D",A->rmap.N,B->rmap.N);
   if (A->rmap.n != B->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: local dim %D %D",A->rmap.n,B->rmap.n); 
   if (!A->rmap.N && !A->cmap.N) PetscFunctionReturn(0);
-  if (!A->ops->matsolve) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)A)->type_name);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
-  ierr = (*A->ops->matsolve)(A,B,X);CHKERRQ(ierr);
+  if (!A->ops->matsolve) {
+    ierr = PetscInfo1(A,"Mat type %s using basic MatMatSolve",((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatMatSolve_Basic(A,B,X);CHKERRQ(ierr);
+  } else {
+    ierr = (*A->ops->matsolve)(A,B,X);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_MatSolve,A,B,X,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
