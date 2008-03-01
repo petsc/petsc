@@ -6,6 +6,7 @@
 #define pcshellsetapplyrichardson_ PCSHELLSETAPPLYRICHARDSON
 #define pcshellsetapplytranspose_  PCSHELLSETAPPLYTRANSPOSE
 #define pcshellsetsetup_           PCSHELLSETSETUP
+#define pcshellsetdestroy_         PCSHELLSETDESTROY
 #define pcshellsetname_            PCSHELLSETNAME
 #define pcshellsetcontext_         PCSHELLSETCONTEXT
 #define pcshellgetcontext_         PCSHELLGETCONTEXT
@@ -14,6 +15,7 @@
 #define pcshellsetapplyrichardson_ pcshellsetapplyrichardson
 #define pcshellsetapplytranspose_  pcshellsetapplytranspose
 #define pcshellsetsetup_           pcshellsetsetup
+#define pcshellsetdestroy_         pcshellsetdestroy
 #define pcshellsetname_            pcshellsetname
 #define pcshellsetcontext_         pcshellsetcontext
 #define pcshellgetcontext_         pcshellgetcontext
@@ -58,13 +60,24 @@ static PetscErrorCode ourshellsetup(void *ctx)
   return 0;
 }
 
+static PetscErrorCode ourshelldestroy(void *ctx)
+{
+  PetscErrorCode ierr = 0;
+
+  PC             pc = (PC)ctx;
+  void           *mctx = (void*) ((PetscObject)pc)->fortran_func_pointers[0];
+  (*(void (PETSC_STDCALL *)(void*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[5]))(mctx,&ierr);CHKERRQ(ierr);
+  return 0;
+}
+
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL   pcshellsetcontext_(PC *pc,void*ctx, int *__ierr )
+void PETSC_STDCALL   pcshellsetcontext_(PC *pc,void*ctx, int *ierr )
 {
   /* the Fortran context is stored in the func_pointer container, while pc is used as the context */
+  PetscObjectAllocateFortranPointers(*pc,6);
   ((PetscObject)*pc)->fortran_func_pointers[0] = (PetscVoidFunction)ctx;
-  *__ierr = PCShellSetContext(*pc,*pc);
+  *ierr = PCShellSetContext(*pc,*pc);
 }
 
 void PETSC_STDCALL   pcshellgetcontext_(PC *pc,void**ctx, int *__ierr )
@@ -75,7 +88,7 @@ void PETSC_STDCALL   pcshellgetcontext_(PC *pc,void**ctx, int *__ierr )
 
 void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*pc,5);
+  PetscObjectAllocateFortranPointers(*pc,6);
   ((PetscObject)*pc)->fortran_func_pointers[1] = (PetscVoidFunction)apply;
   *ierr = PCShellSetApply(*pc,ourshellapply);if (*ierr) return;
   *ierr = PCShellSetContext(*pc,*pc);
@@ -83,7 +96,7 @@ void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec
 
 void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*pc,5);
+  PetscObjectAllocateFortranPointers(*pc,6);
   ((PetscObject)*pc)->fortran_func_pointers[2] = (PetscVoidFunction)apply;
   *ierr = PCShellSetApplyRichardson(*pc,ourapplyrichardson);if (*ierr) return;
   *ierr = PCShellSetContext(*pc,*pc);
@@ -91,7 +104,7 @@ void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,void (PETSC_STDCALL *apply)
 
 void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytranspose)(void*,Vec *,Vec *,PetscErrorCode*), PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*pc,5);
+  PetscObjectAllocateFortranPointers(*pc,6);
   ((PetscObject)*pc)->fortran_func_pointers[3] = (PetscVoidFunction)applytranspose;
   *ierr = PCShellSetApplyTranspose(*pc,ourshellapplytranspose);if (*ierr) return;
   *ierr = PCShellSetContext(*pc,*pc);
@@ -99,9 +112,17 @@ void PETSC_STDCALL pcshellsetapplytranspose_(PC *pc,void (PETSC_STDCALL *applytr
 
 void PETSC_STDCALL pcshellsetsetup_(PC *pc,void (PETSC_STDCALL *setup)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  PetscObjectAllocateFortranPointers(*pc,5);
+  PetscObjectAllocateFortranPointers(*pc,6);
   ((PetscObject)*pc)->fortran_func_pointers[4] = (PetscVoidFunction)setup;
   *ierr = PCShellSetSetUp(*pc,ourshellsetup);if (*ierr) return;
+  *ierr = PCShellSetContext(*pc,*pc);
+}
+
+void PETSC_STDCALL pcshellsetdestroy_(PC *pc,void (PETSC_STDCALL *setup)(void*,PetscErrorCode*),PetscErrorCode *ierr)
+{
+  PetscObjectAllocateFortranPointers(*pc,6);
+  ((PetscObject)*pc)->fortran_func_pointers[5] = (PetscVoidFunction)setup;
+  *ierr = PCShellSetDestroy(*pc,ourshelldestroy);if (*ierr) return;
   *ierr = PCShellSetContext(*pc,*pc);
 }
 

@@ -26,7 +26,8 @@ void PETSC_STDCALL pcview_(PC *pc,PetscViewer *viewer, PetscErrorCode *ierr)
 void PETSC_STDCALL pcgetoperators_(PC *pc,Mat *mat,Mat *pmat,MatStructure *flag,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(mat);
-  CHKFORTRANNULLOBJECT(pmat)
+  CHKFORTRANNULLOBJECT(pmat);
+  CHKFORTRANNULLINTEGER(flag);
   *ierr = PCGetOperators(*pc,mat,pmat,flag);
 }
 

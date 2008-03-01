@@ -16,7 +16,9 @@
 #define matzerorowslocal_                MATZEROROWSLOCAL
 #define matzerorowslocalis_              MATZEROROWSLOCALIS
 #define matsetoptionsprefix_             MATSETOPTIONSPREFIX
+#define matgetvecs_                      MATGETVECS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matgetvecs_                      matgetvecs
 #define matgetrowij_                     matgetrowij
 #define matrestorerowij_                 matrestorerowij
 #define matgetrow_                       matgetrow
@@ -34,6 +36,13 @@
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL   matgetvecs_(Mat *mat,Vec *right,Vec *left, int *ierr )
+{
+  CHKFORTRANNULLOBJECT(right);
+  CHKFORTRANNULLOBJECT(left);
+  *ierr = MatGetVecs(*mat,right,left);
+}
 
 void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed,PetscInt *n,PetscInt *ia,size_t *iia,
                                 PetscInt *ja,size_t *jja,PetscTruth *done,PetscErrorCode *ierr)

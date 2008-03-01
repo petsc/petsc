@@ -58,6 +58,7 @@
 !  Note: Any user-defined Fortran routines MUST be declared as external.
 
       external SampleShellPCSetUp, SampleShellPCApply
+      external  SampleShellPCDestroy
 
 !  Common block to store data for user-provided preconditioner 
       common /myshellpc/ diag
@@ -198,7 +199,11 @@
          call PCShellSetApply(pc,SampleShellPCApply,ierr)
 
 !  (Optional) Do any setup required for the preconditioner
-         call SampleShellPCSetUp(A,x,ierr)
+         call PCShellSetSetUp(pc,SampleShellPCSetUp,ierr)
+         call PCShellSetContext(pc,pc,ierr)
+
+!  (Optional) Frees any objects we created for the preconditioner
+         call PCShellSetDestroy(pc,SampleShellPCDestroy,ierr)
 
       else 
          call PCSetType(pc,PCJACOBI,ierr)
@@ -246,10 +251,6 @@
       call VecDestroy(x,ierr)
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
-      if (user_defined_pc) then
-         call VecDestroy(diag,ierr)
-      endif
-
 
 !  Always call PetscFinalize() before exiting a program. 
 
@@ -265,8 +266,7 @@
 !   preconditioner context.  
 !
 !   Input Parameters:
-!   pmat  - preconditioner matrix
-!   x     - vector
+!   pc - for this example we use the actual PC as our shell context
 !
 !   Output Parameter:
 !   ierr  - error code (nonzero if error has been detected)
@@ -277,23 +277,28 @@
 !   of the diagonal of the preconditioner matrix; this vector is then
 !   used within the routine SampleShellPCApply().
 !
-      subroutine SampleShellPCSetUp(pmat,x,ierr)
+      subroutine SampleShellPCSetUp(pc,ierr)
 
       implicit none
 
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscvec.h"
 #include "include/finclude/petscmat.h"
+      PC      pc
 
-      Vec     x
       Mat     pmat
       integer ierr
 
 !  Common block to store data for user-provided preconditioner 
+!  Normally we would recommend storing all the work data (like diag) in
+!  the context set with PCShellSetContext()
+
       common /myshellpc/ diag
       Vec    diag
 
-      call VecDuplicate(x,diag,ierr)
+      call PCGetOperators(pc,PETSC_NULL_OBJECT,pmat,PETSC_NULL_INTEGER,     &
+     &                    ierr)
+      call MatGetVecs(pmat,diag,PETSC_NULL_OBJECT,ierr)
       call MatGetDiagonal(pmat,diag,ierr)
       call VecReciprocal(diag,ierr)
 
@@ -335,3 +340,38 @@
 
       end
 
+!/***********************************************************************/
+!/*          Routines for a user-defined shell preconditioner           */
+!/***********************************************************************/
+
+!
+!   SampleShellPCDestroy - This routine destroys (frees the memory of) any
+!      objects we made for the preconditioner
+!
+!   Input Parameters:
+!   pc - for this example we use the actual PC as our shell context
+!
+!   Output Parameter:
+!   ierr  - error code (nonzero if error has been detected)
+!
+
+      subroutine SampleShellPCDestroy(pc,ierr)
+
+      implicit none
+
+#include "include/finclude/petsc.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscmat.h"
+      PC      pc
+      PetscErrorCode ierr
+
+!  Common block to store data for user-provided preconditioner 
+!  Normally we would recommend storing all the work data (like diag) in
+!  the context set with PCShellSetContext()
+
+      common /myshellpc/ diag
+      Vec    diag
+
+      call VecDestroy(diag,ierr)
+
+      end

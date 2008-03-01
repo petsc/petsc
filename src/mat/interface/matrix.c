@@ -6659,7 +6659,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStashGetInfo(Mat mat,PetscInt *nstash,Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetVecs"
-/*@
+/*@C
    MatGetVecs - Get vector(s) compatible with the matrix, i.e. with the same 
      parallel layout
    
