@@ -89,7 +89,7 @@ int main(int argc,char **args)
   ierr = MatDestroy(F);CHKERRQ(ierr);
 
   /* Test Cholesky Factorization */
-  ierr = MatTranspose(C,&C1);CHKERRQ(ierr); /* C1 = C^T */
+  ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&C1);CHKERRQ(ierr); /* C1 = C^T */
   ierr = MatAXPY(C,1.0,C1,SAME_NONZERO_PATTERN);CHKERRQ(ierr); /* make C symmetric: C <- C + C^T */
   ierr = MatShift(C,M);CHKERRQ(ierr);  /* make C positive definite */
   ierr = MatDestroy(C1);CHKERRQ(ierr);

@@ -56,10 +56,10 @@ int main(int argc,char **argv)
   /* --------------- Test MatTranspose()  -------------- */
   ierr = PetscOptionsHasName(PETSC_NULL,"-in_place",&flg);CHKERRQ(ierr);
   if (!rect && flg) {
-    ierr = MatTranspose(mat,0);CHKERRQ(ierr);   /* in-place transpose */
+    ierr = MatTranspose(mat,MAT_REUSE_MATRIX,&mat);CHKERRQ(ierr);   /* in-place transpose */
     tmat = mat; mat = 0;
   } else {      /* out-of-place transpose */
-    ierr = MatTranspose(mat,&tmat);CHKERRQ(ierr); 
+    ierr = MatTranspose(mat,MAT_INITIAL_MATRIX,&tmat);CHKERRQ(ierr); 
   }
 
   /* ----------------- Test MatNorm()  ----------------- */

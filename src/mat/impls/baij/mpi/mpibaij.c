@@ -1458,7 +1458,7 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscTruth flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_MPIBAIJ("
-PetscErrorCode MatTranspose_MPIBAIJ(Mat A,Mat *matout)
+PetscErrorCode MatTranspose_MPIBAIJ(Mat A,MatReuse reuse,Mat *matout)
 { 
   Mat_MPIBAIJ    *baij = (Mat_MPIBAIJ*)A->data;
   Mat_SeqBAIJ    *Aloc;
@@ -1469,12 +1469,16 @@ PetscErrorCode MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   MatScalar      *a;
   
   PetscFunctionBegin;
-  if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
-  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->cmap.n,A->rmap.n,N,M);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(B,A->rmap.bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-  
+  if (*matout == A && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
+  if (reuse == MAT_INITIAL_MATRIX || *matout == A) {
+    ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,A->cmap.n,A->rmap.n,N,M);CHKERRQ(ierr);
+    ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatMPIBAIJSetPreallocation(B,A->rmap.bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  } else {
+    B = *matout;
+  }
+
   /* copy over the A part */
   Aloc = (Mat_SeqBAIJ*)baij->A->data;
   ai   = Aloc->i; aj = Aloc->j; a = Aloc->a;
@@ -1509,7 +1513,7 @@ PetscErrorCode MatTranspose_MPIBAIJ(Mat A,Mat *matout)
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
-  if (matout) {
+  if (*matout != A) {
     *matout = B;
   } else {
     ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);

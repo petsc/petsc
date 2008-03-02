@@ -944,7 +944,7 @@ PetscErrorCode MatNorm_MPIDense(Mat A,NormType type,PetscReal *nrm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_MPIDense"
-PetscErrorCode MatTranspose_MPIDense(Mat A,Mat *matout)
+PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
 { 
   Mat_MPIDense   *a = (Mat_MPIDense*)A->data;
   Mat_SeqDense   *Aloc = (Mat_SeqDense*)a->A->data;
@@ -955,13 +955,17 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,Mat *matout)
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  if (!matout && M != N) {
+  if (A == *matout && M != N) {
     SETERRQ(PETSC_ERR_SUP,"Supports square matrix only in-place");
   }
-  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,N,M);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
+  if (reuse == MAT_INITIAL_MATRIX || A == *matout) {
+    ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,N,M);CHKERRQ(ierr);
+    ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
+  } else {
+    B = *matout;
+  }
 
   m = a->A->rmap.n; n = a->A->cmap.n; v = Aloc->v;
   ierr = PetscMalloc(m*sizeof(PetscInt),&rwork);CHKERRQ(ierr);
@@ -973,7 +977,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,Mat *matout)
   ierr = PetscFree(rwork);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (matout) {
+  if (*matout != A) {
     *matout = B;
   } else {
     ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);

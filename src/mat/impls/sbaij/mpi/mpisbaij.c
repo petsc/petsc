@@ -1213,11 +1213,13 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscTruth flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_MPISBAIJ"
-PetscErrorCode MatTranspose_MPISBAIJ(Mat A,Mat *B)
+PetscErrorCode MatTranspose_MPISBAIJ(Mat A,MatReuse reuse,Mat *B)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,B);CHKERRQ(ierr);
+  if (*B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

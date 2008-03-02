@@ -1445,7 +1445,7 @@ PetscErrorCode MatNorm_SeqAIJ(Mat A,NormType type,PetscReal *nrm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_SeqAIJ"
-PetscErrorCode MatTranspose_SeqAIJ(Mat A,Mat *B)
+PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
 { 
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   Mat            C;
@@ -1455,26 +1455,31 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,Mat *B)
 
   PetscFunctionBegin;
   if (!B && m != A->cmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
-  ierr = PetscMalloc((1+A->cmap.n)*sizeof(PetscInt),&col);CHKERRQ(ierr);
-  ierr = PetscMemzero(col,(1+A->cmap.n)*sizeof(PetscInt));CHKERRQ(ierr);
+
+  if (reuse == MAT_INITIAL_MATRIX || *B == A) {
+    ierr = PetscMalloc((1+A->cmap.n)*sizeof(PetscInt),&col);CHKERRQ(ierr);
+    ierr = PetscMemzero(col,(1+A->cmap.n)*sizeof(PetscInt));CHKERRQ(ierr);
   
-  for (i=0; i<ai[m]; i++) col[aj[i]] += 1;
-  ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,A->cmap.n,m,A->cmap.n,m);CHKERRQ(ierr);
-  ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation_SeqAIJ(C,0,col);CHKERRQ(ierr);
-  ierr = PetscFree(col);CHKERRQ(ierr);
-  for (i=0; i<m; i++) {
-    len    = ai[i+1]-ai[i];
-    ierr   = MatSetValues_SeqAIJ(C,len,aj,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
-    array += len; 
-    aj    += len;
+    for (i=0; i<ai[m]; i++) col[aj[i]] += 1;
+    ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
+    ierr = MatSetSizes(C,A->cmap.n,m,A->cmap.n,m);CHKERRQ(ierr);
+    ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation_SeqAIJ(C,0,col);CHKERRQ(ierr);
+    ierr = PetscFree(col);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      len    = ai[i+1]-ai[i];
+      ierr   = MatSetValues_SeqAIJ(C,len,aj,1,&i,array,INSERT_VALUES);CHKERRQ(ierr);
+      array += len; 
+      aj    += len;
+    }
+  } else {
+    C = *B;
   }
 
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (B) {
+  if (*B != A) {
     *B = C;
   } else {
     ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);

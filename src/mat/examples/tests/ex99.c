@@ -90,12 +90,12 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscOptionsHasName(PETSC_NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
     if (flg) {
       Mat Trans;
-      ierr = MatTranspose(A, &Trans);
+      ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Trans);
       ierr = MatEqual(A, Trans, &isSymmetric);
       if (!isSymmetric) SETERRQ(PETSC_ERR_USER,"A must be symmetric");
       ierr = MatDestroy(Trans);CHKERRQ(ierr);
       if (flgB && PreLoadIt){
-        ierr = MatTranspose(B, &Trans);
+        ierr = MatTranspose(B,MAT_INITIAL_MATRIX, &Trans);
         ierr = MatEqual(B, Trans, &isSymmetric);
         if (!isSymmetric) SETERRQ(PETSC_ERR_USER,"B must be symmetric");
         ierr = MatDestroy(Trans);CHKERRQ(ierr);

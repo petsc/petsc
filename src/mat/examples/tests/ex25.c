@@ -37,7 +37,7 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
  
-  ierr = MatTranspose(C,&A);CHKERRQ(ierr);
+  ierr = MatTranspose(C,MAT_INITIAL_MATRIX,&A);CHKERRQ(ierr);
 
   ierr = MatEqual(C,A,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_ERR_SUP,"C != C^T");

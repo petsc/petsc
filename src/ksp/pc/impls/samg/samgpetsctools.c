@@ -367,7 +367,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT SamgCheckGalerkin(int levels, Mat A, GridCtx* 
       /*....Compute A^h I^h_H....*/ 
       ierr = MatMatMult(FineLevelMatrix, grid[k].Interp, &HalfGalerkin); 
       /*....Get I^h_H....*/ 
-      ierr = MatTranspose(grid[k].Interp,&Restriction);
+      ierr = MatTranspose(grid[k].Interp,MAT_INITIAL_MATRIX,&Restriction);
       /*....Compute I^H_h A^h I^h_H....*/ 
       ierr = MatMatMult(Restriction, HalfGalerkin, &Galerkin);
       /*....Compute A^H - I^H_h A^h I^h_H....*/ 

@@ -23,7 +23,7 @@ int main(int argc,char **argv) {
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Form A^T*A*A to test PtAP routine. */
-  ierr = MatTranspose(A,&B);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
   ierr = MatMatMultSymbolic(C,A,fill,&D);CHKERRQ(ierr);
   ierr = MatMatMultNumeric(C,A,D);CHKERRQ(ierr);
