@@ -85,7 +85,7 @@ libfast:  ${SOURCEC} ${SOURCEF}
 	else \
 	if [ "${SOURCEC}" != "" ]; then \
                     ${PETSC_COMPILE}; \
-	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS}; \
+	            ${AR} ${AR_FLAGS} ${LIBNAME} ${OBJSC} ${SOBJS} > tmpf 2>&1 ; ${GREP} -v "has no symbols" tmpf; ${RM} tmpf; \
 		    ${RM} ${OBJSC} ${SOBJS} ${OBJSC:.o=.lo} ${SOBJS:.o=.lo}; \
 	    fi; \
 	fi

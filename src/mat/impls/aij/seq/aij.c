@@ -3010,6 +3010,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
 EXTERN_C_END
 
 #include "src/mat/impls/dense/seq/dense.h"
+#include "src/inline/axpy.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"
@@ -3028,7 +3029,7 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqDense       *sub_a = (Mat_SeqDense*)A->data;
   Mat_SeqAIJ         *sub_b = (Mat_SeqAIJ*)B->data;
   Mat_SeqDense       *sub_c = (Mat_SeqDense*)C->data;
-  PetscInt           i,n,m,q,p,j;
+  PetscInt           i,n,m,q,p;
   const PetscInt     *ii,*idx;
   const PetscScalar  *b,*a,*a_q;
   PetscScalar        *c,*c_q;
@@ -3049,9 +3050,7 @@ PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
     while (q-->0) {
       c_q = c + m*(*idx);
       a_q = a + m*i;
-      for (j=0; j<m; j++) {
-        c_q[j] += (*b)*a_q[j];
-      }
+      APXY(c_q,*b,a_q,m);
       idx++;
       b++;
     }
