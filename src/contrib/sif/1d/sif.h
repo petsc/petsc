@@ -9,7 +9,6 @@ C     vec.h    - vectors
 C     mat.h    - matrices
 C     ksp.h    - Krylov subspace methods
 C     pc.h     - preconditioners
-C     sles.h   - SLES interface
 C     snes.h   - SNES interface
 C     ts.h     - TS interface
 C     viewer.h - viewers
@@ -21,17 +20,16 @@ C  routines in a Fortran program, e.g.,
 C     is.h     - index sets
 
 #include "include/finclude/petsc.h"
-#include "include/finclude/is.h"
-#include "include/finclude/vec.h"
-#include "include/finclude/da.h"
-#include "include/finclude/mat.h"
-#include "include/finclude/ksp.h"
-#include "include/finclude/pc.h"
-#include "include/finclude/sles.h"
-#include "include/finclude/snes.h"
-#include "include/finclude/ts.h"
-#include "include/finclude/viewer.h"
-#include "include/finclude/draw.h"
+#include "include/finclude/petscis.h"
+#include "include/finclude/petscvec.h"
+#include "include/finclude/petscda.h"
+#include "include/finclude/petscmat.h"
+#include "include/finclude/petscksp.h"
+#include "include/finclude/petscpc.h"
+#include "include/finclude/petscsnes.h"
+#include "include/finclude/petscts.h"
+#include "include/finclude/petscviewer.h"
+#include "include/finclude/petscdraw.h"
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C
@@ -53,7 +51,7 @@ C             h         - mesh width h = 1/(M-1)
 C
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C  Common block data:
-      implicit none
+
       double precision hi1,hi2,hi3,hi4,h,d1p1,d2p2,d3p2
       integer npar
       integer xs,xm,xe,gxs,gxm,gxe
@@ -65,7 +63,7 @@ C
       Vec              solution
       integer          M, rank, size, debug
       MPI_Comm         comm
-      Viewer           output
+      PetscViewer      output
 C
 C     M - the total number of grid points (including final unphysical point)
 C     size - number of processors involved in the computation

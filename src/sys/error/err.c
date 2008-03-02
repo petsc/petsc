@@ -113,9 +113,10 @@ $    int handler(int line,char *func,char *file,char *dir,PetscErrorCode n,int p
    Level: intermediate
 
    Notes:
-   The
-   currently available PETSc error handlers include PetscTraceBackErrorHandler(),
+   The currently available PETSc error handlers include PetscTraceBackErrorHandler(),
    PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscMPIAbortErrorHandler(), PetscReturnErrorHandler().
+
+   Fortran Notes: You can only push one error handler from Fortran before poping it.
 
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 

@@ -363,6 +363,8 @@ struct  _p_MatFDColoring{
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
   const char     *htype;            /* "wp" or "ds" */
   ISColoringType ctype;            /* IS_COLORING_GLOBAL or IS_COLORING_GHOSTED */
+
+  void           *ftn_func_pointer,*ftn_func_cntx; /* serve the same purpose as *fortran_func_pointers in PETSc objects */
 };
 
 /*

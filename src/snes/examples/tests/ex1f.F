@@ -197,7 +197,7 @@
 !       to compute the actual Jacobians via finite differences.
 !
         call MatFDColoringCreate(J,iscoloring,fdcoloring,ierr)
-        call MatFDColoringSetFunctionSNES(fdcoloring,FormFunction,        &
+        call MatFDColoringSetFunction(fdcoloring,FormFunction,                &
      &                                PETSC_NULL_OBJECT,ierr)
         call MatFDColoringSetFromOptions(fdcoloring,ierr)
 !

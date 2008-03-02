@@ -74,7 +74,7 @@ C  See the Fortran section of the PETSc users manual for details.
       Mat               A
       ISColoring        coloring
       MatFDColoring     fd
-      Draw              draw
+      PetscDraw         draw
 
       integer           flg, ierr
       integer           time_steps, steps, kdim
@@ -114,8 +114,8 @@ C      M          = 60
 
 C  Double buffering makes graphics look better.
 C
-      call ViewerDrawGetDraw(VIEWER_DRAW_WORLD,0,draw,ierr)
-      call DrawSetDoubleBuffer(draw,ierr)
+      call PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_WORLD,0,draw,ierr)
+      call PetscDrawSetDoubleBuffer(draw,ierr)
 
 C
 C     Set the parameters in the U_t common block
@@ -244,11 +244,11 @@ C
 C    Save the solution to a file called solution in a format that
 C    Matlab can easily read in
 C
-      call ViewerASCIIOpen(comm,'solution.m',output,ierr)
-      call ViewerSetFormat(output,VIEWER_FORMAT_ASCII_MATLAB,
+      call PetscViewerASCIIOpen(comm,'solution.m',output,ierr)
+      call PetscViewerSetFormat(output,PETSC_VIEWER_FORMAT_ASCII_MATLAB,
      &                     'solution',ierr)
       call VecView(global,output,ierr)
-      call ViewerDestroy(output,ierr)
+      call PetscViewerDestroy(output,ierr)
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C  Free work space.  All PETSc objects should be destroyed when they
@@ -338,7 +338,7 @@ C  Restore vector
 
       call VecRestoreArray(global,y,idx,ierr) 
 
-      call VecView(global,VIEWER_DRAW_WORLD,ierr)
+      call VecView(global,PETSC_VIEWER_DRAW_WORLD,ierr)
 
       return
       end
@@ -375,22 +375,22 @@ C  Local variables:
 
 
 C  We use the default X windows viewer
-C       VIEWER_DRAW_WORLD
+C       PETSC_VIEWER_DRAW_WORLD
 C  that is associated with the PETSC_COMM_WORLD communicator. This
-C  saves the effort of calling ViewerDrawOpenX() to create the window.
+C  saves the effort of calling PetscViewerDrawOpenX() to create the window.
 C  Note that if we wished to plot several items in separate windows we
-C  would create each viewer with ViewerDrawOpenX() and store them in
+C  would create each viewer with PetscViewerDrawOpenX() and store them in
 C  the application context, appctx.
 C
-      call VecView(global,VIEWER_DRAW_WORLD,ierr)
+      call VecView(global,PETSC_VIEWER_DRAW_WORLD,ierr)
 
 
 C  Print debugging information if desired
       if (debug .eq. 1) then
-        call ViewerPushFormat(VIEWER_STDOUT_WORLD,
+        call PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,
      &                   VIEWER_FORMAT_ASCII_MATLAB,'solution',ierr)
         call VecView(global,VIEWER_STDOUT_WORLD,ierr)
-        call ViewerPopFormat(VIEWER_STDOUT_WORLD,ierr)
+        call PetscViewerPopFormat(VIEWER_STDOUT_WORLD,ierr)
       endif
 
       call TSSundialsGetIterations(ts,nonlin,lin,ierr)
@@ -427,7 +427,7 @@ C
 C  Input/output parameters:
       TS               ts
       double precision t
-      Vec              globalin, globalout
+      Vec   globalin, globalout
       integer          dummy
 
 C  Local variables:
@@ -439,10 +439,11 @@ C  Local variables:
 C  Print debugging information if desired
 
       if (debug .eq. 1) then
-        call ViewerPushFormat(VIEWER_STDOUT_WORLD,
-     &                   VIEWER_FORMAT_ASCII_MATLAB,'globalin',ierr)
-        call VecView(globalin,VIEWER_STDOUT_WORLD,ierr)
-        call ViewerPopFormat(VIEWER_STDOUT_WORLD,ierr)
+        call PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,
+     &                   PETSC_VIEWER_FORMAT_ASCII_MATLAB,'globalin',        &
+     &                   ierr)
+        call VecView(globalin,PETSC_VIEWER_STDOUT_WORLD,ierr)
+        call PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
 
 C  The vector 'local' will be a workspace that contains the ghost region
@@ -471,10 +472,11 @@ C  Evaluate our function on the nodes owned by this processor
 C  Print debugging information if desired
 
       if (debug .eq. 1) then
-        call ViewerPushFormat(VIEWER_STDOUT_WORLD,
-     &                   VIEWER_FORMAT_ASCII_MATLAB,'globalout',ierr)
-        call VecView(globalout,VIEWER_STDOUT_WORLD,ierr)
-        call ViewerPopFormat(VIEWER_STDOUT_WORLD,ierr)
+        call PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,
+     &                   PETSC_VIEWER_FORMAT_ASCII_MATLAB,'globalout',        &
+     &                   ierr)
+        call VecView(globalout,PETSC_VIEWER_STDOUT_WORLD,ierr)
+        call PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD,ierr)
       endif
 
       call VecDestroy(local,ierr)

@@ -1,5 +1,5 @@
 #include "private/fortranimpl.h"
-#include "petscmat.h"
+#include "private/matimpl.h"
 #include "petscts.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -12,50 +12,45 @@
 #define matfdcoloringview_               matfdcoloringview
 #endif
 
-EXTERN_C_BEGIN
-static void (PETSC_STDCALL *f7)(TS*,double*,Vec*,Vec*,void*,PetscErrorCode*);
-static void (PETSC_STDCALL *f8)(SNES*,Vec*,Vec*,void*,PetscErrorCode*);
-EXTERN_C_END
 
 /* These are not extern C because they are passed into non-extern C user level functions */
-static PetscErrorCode ourmatfdcoloringfunctionts(TS ts,double t,Vec x,Vec y,void *ctx)
+static PetscErrorCode ourmatfdcoloringfunctionts(TS ts,PetscReal t,Vec x,Vec y,MatFDColoring fd)
 {
   PetscErrorCode ierr = 0;
-  (*f7)(&ts,&t,&x,&y,ctx,&ierr);
+  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*))(fd->ftn_func_pointer)) (&ts,&t,&x,&y,fd->ftn_func_cntx,&ierr);
   return ierr;
 }
 
-static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES ts,Vec x,Vec y,void *ctx)
+static PetscErrorCode ourmatfdcoloringfunctionsnes(SNES snes,Vec x,Vec y,MatFDColoring fd)
 {
   PetscErrorCode ierr = 0;
-  (*f8)(&ts,&x,&y,ctx,&ierr);
+  (*(void (PETSC_STDCALL *)(SNES*,Vec*,Vec*,void*,PetscErrorCode*))(fd->ftn_func_pointer)) (&snes,&x,&y,fd->ftn_func_cntx,&ierr);
   return ierr;
 }
 
 EXTERN_C_BEGIN
 
 /*
-        MatFDColoringSetFunction sticks the Fortran function into the fortran_func_pointers
-    this function is then accessed by ourmatfdcoloringfunction()
+        MatFDColoringSetFunction sticks the Fortran function and its context into the MatFDColoring structure and passes the MatFDColoring object
+    in as the function context. ourmafdcoloringfunctionsnes() and ourmatfdcoloringfunctionts()  then access the function and its context from the
+    MatFDColoring that is passed in. This is the same way that fortran_func_pointers is used in PETSc objects.
 
    NOTE: FORTRAN USER CANNOT PUT IN A NEW J OR B currently.
-
-   USER CAN HAVE ONLY ONE MatFDColoring in code Because there is no place to hang f7!
 */
 
 
-void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (PETSC_STDCALL *f)(TS*,double*,Vec*,Vec*,void*,PetscErrorCode*),
-                                 void *ctx,PetscErrorCode *ierr)
+void PETSC_STDCALL matfdcoloringsetfunctionts_(MatFDColoring *fd,void (PETSC_STDCALL *f)(TS*,double*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  f7 = f;
-  *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionts,ctx);
+  (*fd)->ftn_func_pointer = (void*) f;
+  (*fd)->ftn_func_cntx = ctx;
+  *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionts,*fd);
 }
 
-void PETSC_STDCALL matfdcoloringsetfunctionsnes_(MatFDColoring *fd,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),
-                                 void *ctx,PetscErrorCode *ierr)
+void PETSC_STDCALL matfdcoloringsetfunction_(MatFDColoring *fd,void (PETSC_STDCALL *f)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
 {
-  f8 = f;
-  *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionsnes,ctx);
+  (*fd)->ftn_func_pointer = (void*) f;
+  (*fd)->ftn_func_cntx = ctx;
+  *ierr = MatFDColoringSetFunction(*fd,(PetscErrorCodeFunction)ourmatfdcoloringfunctionsnes,*fd);
 }
 
 void PETSC_STDCALL matfdcoloringview_(MatFDColoring *c,PetscViewer *vin,PetscErrorCode *ierr)

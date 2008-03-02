@@ -290,12 +290,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetFunction(MatFDColoring matfd,P
 .  f - the function
 -  fctx - the optional user-defined function context
 
-   Level: intermediate
+   Calling sequence of (*f) function:
+    For SNES:    PetscErrorCode (*f)(SNES,Vec,Vec,void*)
+    For TS:      PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*)
+    If not using SNES or TS: PetscErrorCode (*f)(void *dummy,Vec,Vec,void*) and dummy is ignored
 
-   Notes:
-    In Fortran you must call MatFDColoringSetFunctionSNES() for a coloring object to 
-  be used with the SNES solvers and MatFDColoringSetFunctionTS() if it is to be used
-  with the TS solvers.
+   Level: advanced
+
+   Notes: This function is usually used automatically by SNES or TS (when one uses SNESSetJacobian() with the argument 
+     SNESDefaultComputeJacobianColor() or TSSetRHSJacobian() with the argument TSDefaultComputeJacobianColor()) and only needs to be used
+     by someone computing a matrix via coloring directly by calling MatFDColoringApply()
+
+   Fortran Notes:
+    In Fortran you must call MatFDColoringSetFunction() for a coloring object to 
+  be used without SNES or TS or within the SNES solvers and MatFDColoringSetFunctionTS() if it is to be used
+  within the TS solvers.
 
 .keywords: Mat, Jacobian, finite differences, set, function
 @*/
@@ -558,7 +567,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDColoring
 +   mat - location to store Jacobian
 .   coloring - coloring context created with MatFDColoringCreate()
 .   x1 - location at which Jacobian is to be computed
--   sctx - optional context required by function (actually a SNES context)
+-   sctx - context required by function, if this is being used with the SNES solver then it is SNES object, otherwise it is null
 
     Options Database Keys:
 +    -mat_fd_coloring_freq <freq> - Sets coloring frequency
@@ -569,7 +578,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDColoring
 
     Level: intermediate
 
-.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
+.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView(), MatFDColoringSetFunction()
 
 .keywords: coloring, Jacobian, finite differences
 @*/
@@ -782,14 +791,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
 +   mat - location to store Jacobian
 .   coloring - coloring context created with MatFDColoringCreate()
 .   x1 - location at which Jacobian is to be computed
--   sctx - optional context required by function (actually a SNES context)
+-   sctx - context required by function, if this is being used with the TS solver then it is TS object, otherwise it is null
 
    Options Database Keys:
 .  -mat_fd_coloring_freq <freq> - Sets coloring frequency
 
    Level: intermediate
 
-.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView()
+.seealso: MatFDColoringCreate(), MatFDColoringDestroy(), MatFDColoringView(), MatFDColoringSetFunction()
 
 .keywords: coloring, Jacobian, finite differences
 @*/

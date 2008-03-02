@@ -11,7 +11,7 @@ LOCDIR          = src/contrib/sif/1d/
 EXAMPLESC       = 
 EXAMPLESF       = sif.F
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/base
+include ${PETSC_DIR}/conf/base
 
 sif: sif.o chkopts
 	-${FLINKER} -o sif sif.o  ${PETSC_LIB}
