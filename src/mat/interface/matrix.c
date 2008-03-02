@@ -6973,7 +6973,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
     ierr = PetscStrcat(multname,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = PetscStrcat(multname,"_");CHKERRQ(ierr);
     ierr = PetscStrcat(multname,((PetscObject)B)->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(multname,"_C");CHKERRQ(ierr); /* e.g., multname = "MatMatMult_aij_dense_C" */
+    ierr = PetscStrcat(multname,"_C");CHKERRQ(ierr); /* e.g., multname = "MatMatMult_seqdense_seqaij_C" */
     ierr = PetscObjectQueryFunction((PetscObject)B,multname,(void (**)(void))&mult);CHKERRQ(ierr);
     if (!mult) SETERRQ2(PETSC_ERR_ARG_INCOMP,"MatMatMult requires A, %s, to be compatible with B, %s",((PetscObject)A)->type_name,((PetscObject)B)->type_name);    
   } 

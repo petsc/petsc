@@ -45,7 +45,7 @@ int main(int argc,char **argv)
   /* create a dense matrix B */
   ierr = MatGetLocalSize(A,&am,&an);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,an,PETSC_DECIDE,PETSC_DECIDE,N);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,PETSC_DECIDE,am,N,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetType(B,MATDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
@@ -62,12 +62,20 @@ int main(int argc,char **argv)
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  /* Test MatMatMult() */
-  ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
 
-  ierr = MatMatMultSymbolic(A,B,fill,&D);CHKERRQ(ierr);
+  /* Test MatMatMult() */
+  ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
+
+  /*
+  ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
+  ierr = MatView(C,0);CHKERRQ(ierr);
+  ierr = MatView(B,0);CHKERRQ(ierr);
+  ierr = MatView(A,0);CHKERRQ(ierr);
+  */
+
+  ierr = MatMatMultSymbolic(B,A,fill,&D);CHKERRQ(ierr);
   for (i=0; i<2; i++){    
-    ierr = MatMatMultNumeric(A,B,D);CHKERRQ(ierr);
+    ierr = MatMatMultNumeric(B,A,D);CHKERRQ(ierr);
   }  
   ierr = MatEqual(C,D,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"C != D");

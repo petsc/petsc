@@ -872,11 +872,10 @@ PetscErrorCode MatMultTransposeAdd_SeqAIJ(Mat A,Vec xx,Vec zz,Vec yy)
 #define __FUNCT__ "MatMultTranspose_SeqAIJ"
 PetscErrorCode MatMultTranspose_SeqAIJ(Mat A,Vec xx,Vec yy)
 {
-  PetscScalar    zero = 0.0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin; 
-  ierr = VecSet(yy,zero);CHKERRQ(ierr);
+  ierr = VecSet(yy,0.0);CHKERRQ(ierr);
   ierr = MatMultTransposeAdd_SeqAIJ(A,xx,yy,yy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3010,6 +3009,91 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
 }
 EXTERN_C_END
 
+#include "src/mat/impls/dense/seq/dense.h"
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"
+/*
+    Computes (B'*A')' since computing B*A directly is untenable
+
+               n                       p                          p
+        (              )       (              )         (                  )
+      m (      A       )  *  n (       B      )   =   m (         C        )
+        (              )       (              )         (                  )
+
+*/
+PetscErrorCode MatMatMultNumeric_SeqDense_SeqAIJ(Mat A,Mat B,Mat C)
+{
+  PetscErrorCode     ierr;
+  Mat_SeqDense       *sub_a = (Mat_SeqDense*)A->data;
+  Mat_SeqAIJ         *sub_b = (Mat_SeqAIJ*)B->data;
+  Mat_SeqDense       *sub_c = (Mat_SeqDense*)C->data;
+  PetscInt           i,n,m,q,p,j;
+  const PetscInt     *ii,*idx;
+  const PetscScalar  *b,*a,*a_q;
+  PetscScalar        *c,*c_q;
+
+  PetscFunctionBegin;
+  m = A->rmap.n;
+  n = A->cmap.n;
+  p = B->cmap.n;
+  a = sub_a->v;
+  b = sub_b->a;
+  c = sub_c->v;
+  ierr = PetscMemzero(c,m*p*sizeof(PetscScalar));CHKERRQ(ierr);
+
+  ii  = sub_b->i;
+  idx = sub_b->j;
+  for (i=0; i<n; i++) {
+    q = ii[i+1] - ii[i];
+    while (q-->0) {
+      c_q = c + m*(*idx);
+      a_q = a + m*i;
+      for (j=0; j<m; j++) {
+        c_q[j] += (*b)*a_q[j];
+      }
+      idx++;
+      b++;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic_SeqDense_SeqAIJ"
+PetscErrorCode MatMatMultSymbolic_SeqDense_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+  PetscInt       m=A->rmap.n,n=B->cmap.n;
+  Mat            Cmat;
+
+  PetscFunctionBegin;
+  if (A->cmap.n != B->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"A->cmap.n %d != B->rmap.n %d\n",A->cmap.n,B->rmap.n);
+  ierr = MatCreate(A->hdr.comm,&Cmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(Cmat,m,n,m,n);CHKERRQ(ierr);
+  ierr = MatSetType(Cmat,MATSEQDENSE);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(Cmat,PETSC_NULL);CHKERRQ(ierr);
+  Cmat->assembled = PETSC_TRUE;
+  *C = Cmat;
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult_SeqDense_SeqAIJ"
+PetscErrorCode MatMatMult_SeqDense_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = MatMatMultSymbolic_SeqDense_SeqAIJ(A,B,fill,C);CHKERRQ(ierr);
+  }
+  ierr = MatMatMultNumeric_SeqDense_SeqAIJ(A,B,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /*MC
    MATSEQAIJ - MATSEQAIJ = "seqaij" - A matrix type to be used for sequential sparse matrices, 
    based on compressed sparse row format.
@@ -3108,6 +3192,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatReorderForNonzeroDiagonal_C",
                                      "MatReorderForNonzeroDiagonal_SeqAIJ",
                                       MatReorderForNonzeroDiagonal_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMult_seqdense_seqaij_C",
+                                     "MatMatMult_SeqDense_SeqAIJ",
+                                      MatMatMult_SeqDense_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultSymbolic_seqdense_seqaij_C",
+                                     "MatMatMultSymbolic_SeqDense_SeqAIJ",
+                                      MatMatMultSymbolic_SeqDense_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultNumeric_seqdense_seqaij_C",
+                                     "MatMatMultNumeric_SeqDense_SeqAIJ",
+                                      MatMatMultNumeric_SeqDense_SeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate_Inode(B);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);

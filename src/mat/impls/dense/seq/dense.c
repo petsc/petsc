@@ -790,7 +790,7 @@ static PetscErrorCode MatView_SeqDense_ASCII(Mat A,PetscViewer viewer)
   PetscScalar       *v;
   PetscViewerFormat format;
 #if defined(PETSC_USE_COMPLEX)
-  PetscTruth allreal = PETSC_TRUE;
+  PetscTruth        allreal = PETSC_TRUE;
 #endif
 
   PetscFunctionBegin;
@@ -1496,6 +1496,7 @@ PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,Petsc
   ierr = PetscMemzero(a->v,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 /* ----------------------------------------------------------------*/
 #undef __FUNCT__
