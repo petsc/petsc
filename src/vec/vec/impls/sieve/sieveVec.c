@@ -202,7 +202,7 @@ PetscErrorCode VecMAXPY_Sieve(Vec x, PetscInt nv, const PetscScalar *alpha, Vec 
   case 1: 
     ierr = VecGetArray(y[0],&yy0);CHKERRQ(ierr);
     alpha0 = *alpha++; 
-    {PetscBLASInt nn = PetscBLASIntCast(n); APXY(xx,alpha0,yy0,nn);}
+    APXY(xx,alpha0,yy0,n);
     ierr = VecRestoreArray(y[0],&yy0);CHKERRQ(ierr);
     y     +=1;
     break;
