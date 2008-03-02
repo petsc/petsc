@@ -674,11 +674,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJSpooles(Mat A)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatConvert_SeqAIJ_SeqAIJSpooles(A,MATSEQAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
-    ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
     ierr = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

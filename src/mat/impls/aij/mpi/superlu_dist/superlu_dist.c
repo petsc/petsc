@@ -97,7 +97,6 @@ EXTERN_C_END
 PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 {
   PetscErrorCode   ierr;
-  PetscMPIInt      size;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr; 
     
   PetscFunctionBegin;
@@ -125,12 +124,7 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatConvert_SuperLU_DIST_AIJ(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  } else {
-    ierr = MatConvert_SuperLU_DIST_AIJ(A,MATMPIAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  }
+  ierr = MatConvert_SuperLU_DIST_AIJ(A,MATAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -773,15 +767,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU_DIST(Mat A)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  } else {
-    ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-    /*  A_diag = 0x0 ???  -- do we need it?
-    Mat A_diag = ((Mat_MPIAIJ *)A->data)->A;
-    ierr = MatConvert_AIJ_SuperLU_DIST(A_diag,MATSUPERLU_DIST,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
-    */
-  }
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatConvert_AIJ_SuperLU_DIST(A,MATSUPERLU_DIST,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -231,14 +231,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJSpooles(Mat A)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
-    ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
     ierr = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
-  
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

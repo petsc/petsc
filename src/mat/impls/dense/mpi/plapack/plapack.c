@@ -47,6 +47,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Plapack_Dense(Mat A,MatType type,Ma
   PetscErrorCode   ierr;
   Mat              B=*newmat;
   Mat_Plapack      *lu=(Mat_Plapack *)A->spptr;
+  PetscMPIInt      size;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -66,7 +67,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Plapack_Dense(Mat A,MatType type,Ma
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpidense_plapack_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_plapack_mpidense_C","",PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQDENSE);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIDENSE);CHKERRQ(ierr);
+  }
   *newmat = B;
   PetscFunctionReturn(0);
 }
@@ -77,7 +83,6 @@ EXTERN_C_END
 PetscErrorCode MatDestroy_Plapack(Mat A)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
   Mat_Plapack    *lu=(Mat_Plapack*)A->spptr; 
     
   PetscFunctionBegin;
@@ -92,12 +97,7 @@ PetscErrorCode MatDestroy_Plapack(Mat A)
     ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(lu->ctx);CHKERRQ(ierr);
   }
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatConvert_Plapack_Dense(A,MATSEQDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  } else {
-    ierr = MatConvert_Plapack_Dense(A,MATMPIDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  }
+  ierr = MatConvert_Plapack_Dense(A,MATDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -474,13 +474,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Dense_Plapack(Mat A,MatType type,Ma
   lu->MatDestroy           = A->ops->destroy;
   lu->CleanUpPlapack       = PETSC_FALSE;
 
-  B->spptr                 = (void*)lu;
-  B->ops->duplicate        = MatDuplicate_Plapack;
-  B->ops->view             = MatView_Plapack;
-  B->ops->assemblyend      = MatAssemblyEnd_Plapack;
-  B->ops->lufactorsymbolic = MatLUFactorSymbolic_Plapack;
+  B->spptr                       = (void*)lu;
+  B->ops->duplicate              = MatDuplicate_Plapack;
+  B->ops->view                   = MatView_Plapack;
+  B->ops->assemblyend            = MatAssemblyEnd_Plapack;
+  B->ops->lufactorsymbolic       = MatLUFactorSymbolic_Plapack;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Plapack;
-  B->ops->destroy          = MatDestroy_Plapack;
+  B->ops->destroy                = MatDestroy_Plapack;
   
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) { 
@@ -546,15 +546,9 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Plapack(Mat A) 
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
-  }
+  ierr = MatSetType(A,MATDENSE);CHKERRQ(ierr);
   ierr = MatConvert_Dense_Plapack(A,MATPLAPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }

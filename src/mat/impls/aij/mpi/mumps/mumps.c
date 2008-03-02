@@ -922,15 +922,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJMUMPS(Mat A)
   
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  } else {
-    ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-    /*
-    Mat A_diag = ((Mat_MPIAIJ *)A->data)->A;
-    ierr   = MatConvert_AIJ_AIJMUMPS(A_diag,MATAIJMUMPS,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
-    */
-  }
+  ierr = MatSetType(A,MATAIJ);CHKERRQ(ierr);
   ierr = MatConvert_AIJ_AIJMUMPS(A,MATAIJMUMPS,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1102,11 +1094,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJMUMPS(Mat A)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
-  } else {
-    ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-  }
+  ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SBAIJ_SBAIJMUMPS(A,MATSBAIJMUMPS,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

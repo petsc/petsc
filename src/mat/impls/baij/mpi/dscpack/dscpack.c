@@ -801,15 +801,9 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DSCPACK(Mat A) 
 {
   PetscErrorCode ierr;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
-  } else {
-    ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
-  }
+  ierr = MatSetType(A,MATBAIJ);CHKERRQ(ierr);
   ierr = MatConvert_BAIJ_DSCPACK(A,MATDSCPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
