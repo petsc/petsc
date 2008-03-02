@@ -1,4 +1,3 @@
-h
 #!/usr/bin/env python
 from __future__ import generators
 import user
