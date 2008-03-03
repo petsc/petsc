@@ -398,6 +398,8 @@ namespace ALE {
       const int              debug      = mesh->debug();
       const int              depth      = mesh->depth();
       const int              height     = mesh->height();
+      const bool             censor     = mesh->hasLabel("censored depth");
+      const Obj<typename mesh_type::label_type>& depthLabel = censor ? mesh->getLabel("censored depth") : mesh->getLabel("depth");
       const typename int_section_type::chart_type&          chart    = label->getChart();
       const typename int_section_type::chart_type::iterator chartEnd = chart.end();
       PointSet               submeshVertices, submeshCells;
@@ -419,6 +421,7 @@ namespace ALE {
         for(typename sieveAlg::supportArray::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
           if (debug) std::cout << "  Checking cell " << *c_iter << std::endl;
           if (submeshCells.find(*c_iter) != submeshCells.end())	continue;
+          if (censor && (!mesh->getValue(depthLabel, *c_iter)))      continue;
           const Obj<typename sieveAlg::coneArray>& cone = sieveAlg::nCone(mesh, *c_iter, height);
           const typename sieveAlg::coneArray::iterator vBegin = cone->begin();
           const typename sieveAlg::coneArray::iterator vEnd   = cone->end();

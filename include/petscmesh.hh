@@ -89,6 +89,67 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Mes
   PetscFunctionReturn(0);
 }
 
+template<typename Mesh, typename Section>
+void createOperator(const ALE::Obj<Mesh>& mesh, const ALE::Obj<Section>& s, const ALE::Obj<Mesh>& op) {
+  typedef ALE::SieveAlg<Mesh> sieve_alg_type;
+  const typename Section::chart_type& chart = s->getChart();
+
+  // Create local operator
+  //   We do not decorate arrows yet
+  for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+    const Obj<typename sieve_alg_type::supportArray>& star = sieve_alg_type::star(mesh, *p_iter);
+
+    for(typename sieve_alg_type::supportArray::const_iterator s_iter = star->begin(); s_iter != star->end(); ++s_iter) {
+      const Obj<typename sieve_alg_type::coneArray>& closure = sieve_alg_type::closure(mesh, *s_iter);
+
+      for(typename sieve_alg_type::coneArray::const_iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter) {
+        op->getSieve()->addCone(*c_iter, *p_iter);
+      }
+    }
+  }
+  op->view("Local operator");
+  // Construct overlap
+  Obj<ALE::Mesh::send_overlap_type> sendOverlap = mesh->getSendOverlap();
+  Obj<ALE::Mesh::recv_overlap_type> recvOverlap = mesh->getRecvOverlap();
+  ALE::Mesh::renumbering_type&      renumbering = mesh->getRenumbering();
+
+  sendOverlap->view("Mesh send overlap");
+  recvOverlap->view("Mesh recv overlap");
+  // Complete operator
+  typedef ALE::DistributionNew<ALE::Mesh>::cones_type ConeOverlap;
+
+  ALE::Obj<ConeOverlap> overlapCones = ALE::DistributionNew<ALE::Mesh>::completeCones(op->getSieve(), op->getSieve(), renumbering, sendOverlap, recvOverlap);
+  op->view("Completed operator");
+  // Update renumbering and overlap
+  overlapCones->view("Overlap cones");
+  Obj<ALE::Mesh::send_overlap_type>       opSendOverlap = op->getSendOverlap();
+  Obj<ALE::Mesh::recv_overlap_type>       opRecvOverlap = op->getRecvOverlap();
+  ALE::Mesh::renumbering_type&            opRenumbering = op->getRenumbering();
+  const typename ConeOverlap::chart_type& overlapChart  = overlapCones->getChart();
+  int                                     p             = renumbering.size();
+
+  opRenumbering = renumbering;
+  for(typename ConeOverlap::chart_type::const_iterator p_iter = overlapChart.begin(); p_iter != overlapChart.end(); ++p_iter) {
+    if (opRenumbering.find(*p_iter) == opRenumbering.end()) {
+      opRenumbering[*p_iter] = p++;
+    }
+  }
+  ALE::SetFromMap<ALE::Mesh::renumbering_type> opGlobalPoints(opRenumbering);
+
+  ALE::OverlapBuilder<>::constructOverlap(opGlobalPoints, opRenumbering, opSendOverlap, opRecvOverlap);
+  sendOverlap->view("Operator send overlap");
+  recvOverlap->view("Operator recv overlap");
+  // Create global order
+  Obj<ALE::Mesh::order_type> globalOrder = new ALE::Mesh::order_type(op->comm(), op->debug());
+
+  op->getFactory()->constructLocalOrder(globalOrder, opSendOverlap, opGlobalPoints, s);
+  op->getFactory()->calculateOffsets(globalOrder);
+  op->getFactory()->updateOrder(globalOrder, opGlobalPoints);
+  op->getFactory()->completeOrder(globalOrder, opSendOverlap, opRecvOverlap);
+  globalOrder->view("Operator global order");
+  // Create dnz/onz or CSR
+};
+
 #undef __FUNCT__
 #define __FUNCT__ "preallocateOperator"
 template<typename Atlas>
