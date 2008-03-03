@@ -4724,7 +4724,6 @@ EXTERN_C_END
 PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode     ierr;
-  Mat_MPIDense       *sub_c = (Mat_MPIDense*)C->data;
   Mat                At,Bt,Ct;
 
   PetscFunctionBegin;
@@ -4736,12 +4735,6 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = MatTranspose(Ct,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatDestroy(Ct);CHKERRQ(ierr);
 
-  C->assembled = PETSC_TRUE;
-  ierr = MatAssemblyBegin(sub_c->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(sub_c->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (!C->was_assembled) {
-    ierr = MatSetUpMultiply_MPIDense(C);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -4759,8 +4752,9 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat
   ierr = MatSetSizes(Cmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(Cmat,MATMPIDENSE);CHKERRQ(ierr);
   ierr = MatMPIDenseSetPreallocation(Cmat,PETSC_NULL);CHKERRQ(ierr);
-  Cmat->assembled = PETSC_TRUE;
-  *C              = Cmat;
+  ierr = MatAssemblyBegin(Cmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Cmat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *C   = Cmat;
   PetscFunctionReturn(0);
 }
 
