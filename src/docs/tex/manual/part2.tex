@@ -1668,7 +1668,7 @@ MatScale(Mat A,PetscScalar a); & $ A = a*A $ \\
 MatConvert(Mat A,MatType type,Mat *B); & $ B = A $ \\
 MatCopy(Mat A,Mat B,MatStructure); &  $ B = A $ \\
 MatGetDiagonal(Mat A,Vec x); & $ x = \hbox{diag}(A)$ \\
-MatTranspose(Mat A,Mat* B); & $ B = A^{T} $ \\
+MatTranspose(Mat A,MatReuse,Mat* B); & $ B = A^{T} $ \\
 MatZeroEntries(Mat A); & $ A = 0 $ \\
 MatShift(Mat Y,PetscScalar a); & $ Y =  Y + a*I $ \\
 \hline 

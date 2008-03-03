@@ -32,7 +32,7 @@ struct _MatOps {
   PetscErrorCode (*lufactor)(Mat,IS,IS,MatFactorInfo*);
   PetscErrorCode (*choleskyfactor)(Mat,IS,MatFactorInfo*);
   PetscErrorCode (*relax)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
-  PetscErrorCode (*transpose)(Mat,Mat *);
+  PetscErrorCode (*transpose)(Mat,MatReuse,Mat *);
   /*15*/
   PetscErrorCode (*getinfo)(Mat,MatInfoType,MatInfo*);
   PetscErrorCode (*equal)(Mat,Mat,PetscTruth *);

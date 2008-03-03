@@ -1378,7 +1378,7 @@ PetscErrorCode MatRestoreRow_SeqBAIJ(Mat A,PetscInt row,PetscInt *nz,PetscInt **
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_SeqBAIJ"
-PetscErrorCode MatTranspose_SeqBAIJ(Mat A,Mat *B)
+PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
 { 
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ *)A->data;
   Mat            C;
@@ -1389,16 +1389,22 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,Mat *B)
 
   PetscFunctionBegin;
   if (!B && mbs!=nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Square matrix only for in-place");
-  ierr = PetscMalloc((1+nbs)*sizeof(PetscInt),&col);CHKERRQ(ierr);
-  ierr = PetscMemzero(col,(1+nbs)*sizeof(PetscInt));CHKERRQ(ierr);
+
+  if (reuse == MAT_INITIAL_MATRIX || A == *B) {
+    ierr = PetscMalloc((1+nbs)*sizeof(PetscInt),&col);CHKERRQ(ierr);
+    ierr = PetscMemzero(col,(1+nbs)*sizeof(PetscInt));CHKERRQ(ierr);
+
+    for (i=0; i<ai[mbs]; i++) col[aj[i]] += 1;
+    ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
+    ierr = MatSetSizes(C,A->cmap.n,A->rmap.N,A->cmap.n,A->rmap.N);CHKERRQ(ierr);
+    ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(C,bs,PETSC_NULL,col);CHKERRQ(ierr);
+    ierr = PetscFree(col);CHKERRQ(ierr);
+  } else {
+    C = *B;
+  }
 
   array = a->a;
-  for (i=0; i<ai[mbs]; i++) col[aj[i]] += 1;
-  ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,A->cmap.n,A->rmap.N,A->cmap.n,A->rmap.N);CHKERRQ(ierr);
-  ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(C,bs,PETSC_NULL,col);CHKERRQ(ierr);
-  ierr = PetscFree(col);CHKERRQ(ierr);
   ierr = PetscMalloc(2*bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
   cols = rows + bs;
   for (i=0; i<mbs; i++) {
@@ -1417,7 +1423,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,Mat *B)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
-  if (B) {
+  if (*B != A) {
     *B = C;
   } else {
     ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);

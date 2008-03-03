@@ -182,7 +182,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsHasName(PETSC_NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
     if (flg) {
       Mat Atrans;
-      ierr = MatTranspose(A, &Atrans);
+      ierr = MatTranspose(A, MAT_INITIAL_MATRIX,&Atrans);
       ierr = MatEqual(A, Atrans, &isSymmetric);
       if (isSymmetric) {
         PetscPrintf(PETSC_COMM_WORLD,"A is symmetric \n");CHKERRQ(ierr);

@@ -329,7 +329,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
     }
     b1 += bm;
   }
-  ierr = PetscLogFlops(cn*(2*a->nz - A->rmap.n));CHKERRQ(ierr);
+  ierr = PetscLogFlops(cn*(2*a->nz));CHKERRQ(ierr);
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr);
   ierr = MatRestoreArray(C,&c);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

@@ -306,11 +306,13 @@ PetscErrorCode MatRestoreRowUpperTriangular_SeqSBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_SeqSBAIJ"
-PetscErrorCode MatTranspose_SeqSBAIJ(Mat A,Mat *B)
+PetscErrorCode MatTranspose_SeqSBAIJ(Mat A,MatReuse reuse,Mat *B)
 { 
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = MatDuplicate(A,MAT_COPY_VALUES,B);CHKERRQ(ierr);
+  if (*B != A) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,B);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

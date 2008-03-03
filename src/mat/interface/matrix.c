@@ -3196,7 +3196,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
   }
   ierr = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
-  if ((reuse==MAT_REUSE_MATRIX) && (mat != *M)) {
+  if ((reuse == MAT_REUSE_MATRIX) && (mat != *M)) {
     SETERRQ(PETSC_ERR_SUP,"MAT_REUSE_MATRIX only supported for in-place conversion currently");
   }
 
@@ -3557,13 +3557,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat mat, Vec v)
    Collective on Mat
 
    Input Parameter:
-.  mat - the matrix to transpose
++  mat - the matrix to transpose
+-  reuse - store the transpose matrix in the provided B
 
    Output Parameters:
 .  B - the transpose 
 
    Notes:
-     If you  pass in PETSC_NULL for B an in-place transpose in mat will be done
+     If you  pass in &mat for B the matrix will be done in place
 
    Level: intermediate
 
@@ -3571,7 +3572,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat mat, Vec v)
 
 .seealso: MatMultTranspose(), MatMultTransposeAdd(), MatIsTranspose()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat mat,Mat *B)
+PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat mat,MatReuse reuse,Mat *B)
 {
   PetscErrorCode ierr;
 
@@ -3580,11 +3581,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat mat,Mat *B)
   PetscValidType(mat,1);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (*B == mat && reuse == MAT_INITIAL_MATRIX) SETERRQ(PETSC_ERR_ARG_WRONG,"Must use MAT_REUSE_MATRIX if mat == *B");
   if (!mat->ops->transpose) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_Transpose,mat,0,0,0);CHKERRQ(ierr); 
-  ierr = (*mat->ops->transpose)(mat,B);CHKERRQ(ierr);
+  ierr = (*mat->ops->transpose)(mat,reuse,B);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Transpose,mat,0,0,0);CHKERRQ(ierr);
   if (B) {ierr = PetscObjectStateIncrease((PetscObject)*B);CHKERRQ(ierr);}
   PetscFunctionReturn(0);  

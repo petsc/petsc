@@ -128,7 +128,7 @@ PetscErrorCode MatGetSymbolicTransposeReduced_SeqAIJ(Mat A,PetscInt rstart,Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "MatTranspose_SeqIJ_FAST"
-PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,Mat *B) 
+PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B) 
 {
   PetscErrorCode ierr;
   PetscInt       i,j,anzj;
@@ -142,23 +142,31 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,Mat *B)
 
   ierr = PetscLogEventBegin(MAT_Transpose_SeqAIJ,A,0,0,0);CHKERRQ(ierr);
 
-  /* Allocate space for symbolic transpose info and work array */
-  ierr = PetscMalloc((an+1)*sizeof(PetscInt),&ati);CHKERRQ(ierr);
-  ierr = PetscMalloc(ai[am]*sizeof(PetscInt),&atj);CHKERRQ(ierr);
-  ierr = PetscMalloc(ai[am]*sizeof(MatScalar),&ata);CHKERRQ(ierr);
-  ierr = PetscMalloc(an*sizeof(PetscInt),&atfill);CHKERRQ(ierr);
-  ierr = PetscMemzero(ati,(an+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  /* Walk through aj and count ## of non-zeros in each row of A^T. */
-  /* Note: offset by 1 for fast conversion into csr format. */
-  for (i=0;i<ai[am];i++) {
-    ati[aj[i]+1] += 1;
-  }
-  /* Form ati for csr format of A^T. */
-  for (i=0;i<an;i++) {
-    ati[i+1] += ati[i];
+  if (reuse == MAT_INITIAL_MATRIX || *B == A) {
+    /* Allocate space for symbolic transpose info and work array */
+    ierr = PetscMalloc((an+1)*sizeof(PetscInt),&ati);CHKERRQ(ierr);
+    ierr = PetscMalloc(ai[am]*sizeof(PetscInt),&atj);CHKERRQ(ierr);
+    ierr = PetscMalloc(ai[am]*sizeof(MatScalar),&ata);CHKERRQ(ierr);
+    ierr = PetscMemzero(ati,(an+1)*sizeof(PetscInt));CHKERRQ(ierr);
+    /* Walk through aj and count ## of non-zeros in each row of A^T. */
+    /* Note: offset by 1 for fast conversion into csr format. */
+    for (i=0;i<ai[am];i++) {
+      ati[aj[i]+1] += 1;
+    }
+    /* Form ati for csr format of A^T. */
+    for (i=0;i<an;i++) {
+      ati[i+1] += ati[i];
+    }
+  } else {
+    Mat_SeqAIJ *sub_B = (Mat_SeqAIJ*) (*B)->data;
+    ati = sub_B->i;
+    atj = sub_B->j;
+    ata = sub_B->a;
+    At = *B;
   }
 
   /* Copy ati into atfill so we have locations of the next free space in atj */
+  ierr = PetscMalloc(an*sizeof(PetscInt),&atfill);CHKERRQ(ierr);
   ierr = PetscMemcpy(atfill,ati,an*sizeof(PetscInt));CHKERRQ(ierr);
 
   /* Walk through A row-wise and mark nonzero entries of A^T. */
@@ -173,12 +181,15 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,Mat *B)
 
   /* Clean up temporary space and complete requests. */
   ierr = PetscFree(atfill);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,an,am,ati,atj,ata,&At);CHKERRQ(ierr);
-  at   = (Mat_SeqAIJ *)(At->data);
-  at->free_a  = PETSC_TRUE;
-  at->free_ij  = PETSC_TRUE;
-  at->nonew   = 0;
-  if (B) {
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,an,am,ati,atj,ata,&At);CHKERRQ(ierr);
+    at   = (Mat_SeqAIJ *)(At->data);
+    at->free_a  = PETSC_TRUE;
+    at->free_ij  = PETSC_TRUE;
+    at->nonew   = 0;
+  }
+
+  if (*B != A) {
     *B = At;
   } else {
     ierr = MatHeaderCopy(A,At);

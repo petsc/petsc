@@ -74,10 +74,10 @@ int main(int argc,char **args)
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
   /* make A a symmetric matrix: A <- A^T + A */
-  ierr = MatTranspose(A, &Atrans);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);CHKERRQ(ierr);
   ierr = MatAXPY(A,one,Atrans,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
   ierr = MatDestroy(Atrans);CHKERRQ(ierr);
-  ierr = MatTranspose(A, &Atrans);
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX, &Atrans);
   ierr = MatEqual(A, Atrans, &flg);
   if (!flg) {
     SETERRQ(1,"A+A^T is non-symmetric");

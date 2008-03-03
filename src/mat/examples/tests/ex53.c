@@ -188,8 +188,8 @@ int main(int argc,char **args)
   ierr = MatDestroy(C);CHKERRQ(ierr);
 
   /* Test MatTranspose() */
-  ierr = MatTranspose(A,&At);CHKERRQ(ierr);
-  ierr = MatTranspose(B,&Bt);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
+  ierr = MatTranspose(B,MAT_INITIAL_MATRIX,&Bt);CHKERRQ(ierr);
   for (i=0; i<IMAX; i++) {
     ierr = VecSetRandom(xx,rand);CHKERRQ(ierr);
     ierr = MatMult(At,xx,s1);CHKERRQ(ierr);

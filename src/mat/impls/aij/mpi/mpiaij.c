@@ -1579,7 +1579,7 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose_MPIAIJ"
-PetscErrorCode MatTranspose_MPIAIJ(Mat A,Mat *matout)
+PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
 { 
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ     *Aloc=(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data;
@@ -1592,22 +1592,26 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,Mat *matout)
   PetscFunctionBegin;
   if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
 
-  /* compute d_nnz for preallocation; o_nnz is approximated by d_nnz to avoid communication */
-  ma = A->rmap.n; na = A->cmap.n; mb = a->B->rmap.n;
-  ai = Aloc->i; aj = Aloc->j; 
-  bi = Bloc->i; bj = Bloc->j; 
-  ierr = PetscMalloc((1+na+bi[mb])*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
-  cols = d_nnz + na + 1; /* work space to be used by B part */
-  ierr = PetscMemzero(d_nnz,(1+na)*sizeof(PetscInt));CHKERRQ(ierr);
-  for (i=0; i<ai[ma]; i++){
-    d_nnz[aj[i]] ++;  
-    aj[i] += cstart; /* global col index to be used by MatSetValues() */
-  }
+  if (reuse == MAT_INITIAL_MATRIX || *matout == A) {
+    /* compute d_nnz for preallocation; o_nnz is approximated by d_nnz to avoid communication */
+    ma = A->rmap.n; na = A->cmap.n; mb = a->B->rmap.n;
+    ai = Aloc->i; aj = Aloc->j; 
+    bi = Bloc->i; bj = Bloc->j; 
+    ierr = PetscMalloc((1+na+bi[mb])*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
+    cols = d_nnz + na + 1; /* work space to be used by B part */
+    ierr = PetscMemzero(d_nnz,(1+na)*sizeof(PetscInt));CHKERRQ(ierr);
+    for (i=0; i<ai[ma]; i++){
+      d_nnz[aj[i]] ++;  
+      aj[i] += cstart; /* global col index to be used by MatSetValues() */
+    }
 
-  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->cmap.n,A->rmap.n,N,M);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,d_nnz);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,A->cmap.n,A->rmap.n,N,M);CHKERRQ(ierr);
+    ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,d_nnz);CHKERRQ(ierr);
+  } else {
+    B = *matout;
+  }
 
   /* copy over the A part */ 
   array = Aloc->a;
@@ -1632,7 +1636,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,Mat *matout)
   ierr = PetscFree(d_nnz);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (matout) {
+  if (*matout != A) {
     *matout = B;
   } else {
     ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
@@ -4704,6 +4708,82 @@ extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat,MatType,Ma
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat,MatType,MatReuse,Mat*);
 EXTERN_C_END
 
+#include "src/mat/impls/dense/mpi/mpidense.h"
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultNumeric_MPIDense_MPIAIJ"
+/*
+    Computes (B'*A')' since computing B*A directly is untenable
+
+               n                       p                          p
+        (              )       (              )         (                  )
+      m (      A       )  *  n (       B      )   =   m (         C        )
+        (              )       (              )         (                  )
+
+*/
+PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
+{
+  PetscErrorCode     ierr;
+  Mat_MPIDense       *sub_a = (Mat_MPIDense*)A->data;
+  Mat_MPIAIJ         *sub_b = (Mat_MPIAIJ*)B->data;
+  Mat_MPIDense       *sub_c = (Mat_MPIDense*)C->data;
+  PetscInt           i,n,m,q,p;
+  const PetscInt     *ii,*idx;
+  const PetscScalar  *b,*a,*a_q;
+  PetscScalar        *c,*c_q;
+  Mat                At,Bt,Ct;
+
+  PetscFunctionBegin;
+  ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&At);CHKERRQ(ierr);
+  ierr = MatTranspose(B,MAT_INITIAL_MATRIX,&Bt);CHKERRQ(ierr);
+  ierr = MatMatMult(Bt,At,MAT_INITIAL_MATRIX,1.0,&Ct);CHKERRQ(ierr);
+  ierr = MatDestroy(At);CHKERRQ(ierr);
+  ierr = MatDestroy(Bt);CHKERRQ(ierr);
+  ierr = MatTranspose(Ct,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
+
+  C->assembled = PETSC_TRUE;
+  ierr = MatAssemblyBegin(sub_c->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(sub_c->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (!C->was_assembled) {
+    ierr = MatSetUpMultiply_MPIDense(C);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMultSymbolic_MPIDense_MPIAIJ"
+PetscErrorCode MatMatMultSymbolic_MPIDense_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+  PetscInt       m=A->rmap.n,n=B->cmap.n;
+  Mat            Cmat;
+
+  PetscFunctionBegin;
+  if (A->cmap.n != B->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"A->cmap.n %d != B->rmap.n %d\n",A->cmap.n,B->rmap.n);
+  ierr = MatCreate(A->hdr.comm,&Cmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(Cmat,m,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(Cmat,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(Cmat,PETSC_NULL);CHKERRQ(ierr);
+  Cmat->assembled = PETSC_TRUE;
+  *C              = Cmat;
+  PetscFunctionReturn(0);
+}
+
+/* ----------------------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "MatMatMult_MPIDense_MPIAIJ"
+PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fill,Mat *C)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (scall == MAT_INITIAL_MATRIX){
+    ierr = MatMatMultSymbolic_MPIDense_MPIAIJ(A,B,fill,C);CHKERRQ(ierr);
+  }
+  ierr = MatMatMultNumeric_MPIDense_MPIAIJ(A,B,*C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
    MATMPIAIJ - MATMPIAIJ = "mpiaij" - A matrix type to be used for parallel sparse matrices.
 
@@ -4783,6 +4863,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpicrl_C",
                                      "MatConvert_MPIAIJ_MPICRL",
                                       MatConvert_MPIAIJ_MPICRL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMult_mpidense_mpiaij_C",
+                                     "MatMatMult_MPIDense_MPIAIJ",
+                                      MatMatMult_MPIDense_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultSymbolic_mpidense_mpiaij_C",
+                                     "MatMatMultSymbolic_MPIDense_MPIAIJ",
+                                      MatMatMultSymbolic_MPIDense_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMatMultNumeric_mpidense_mpiaij_C",
+                                     "MatMatMultNumeric_MPIDense_MPIAIJ",
+                                      MatMatMultNumeric_MPIDense_MPIAIJ);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

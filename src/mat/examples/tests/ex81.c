@@ -46,7 +46,7 @@ int main(int argc,char **args)
   ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
 
   /* Format is in column storage so we print transpose matrix */
-  ierr = MatTranspose(A,0);CHKERRQ(ierr);
+  ierr = MatTranspose(A,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
 
   m = A->m;
   n = A->n;

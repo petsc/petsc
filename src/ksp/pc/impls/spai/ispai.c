@@ -74,7 +74,7 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
     ierr = ConvertMatToMatrix(ispai->comm_spai,pc->pmat,pc->pmat,&ispai->B);CHKERRQ(ierr);
   } else {
     /* Use the transpose to get the column nonzero structure. */
-    ierr = MatTranspose(pc->pmat,&AT);CHKERRQ(ierr);
+    ierr = MatTranspose(pc->pmat,MAT_INITIAL_MATRIX,&AT);CHKERRQ(ierr);
     ierr = ConvertMatToMatrix(ispai->comm_spai,pc->pmat,AT,&ispai->B);CHKERRQ(ierr);
     ierr = MatDestroy(AT);CHKERRQ(ierr);
   }
