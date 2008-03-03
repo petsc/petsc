@@ -4724,13 +4724,7 @@ EXTERN_C_END
 PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode     ierr;
-  Mat_MPIDense       *sub_a = (Mat_MPIDense*)A->data;
-  Mat_MPIAIJ         *sub_b = (Mat_MPIAIJ*)B->data;
   Mat_MPIDense       *sub_c = (Mat_MPIDense*)C->data;
-  PetscInt           i,n,m,q,p;
-  const PetscInt     *ii,*idx;
-  const PetscScalar  *b,*a,*a_q;
-  PetscScalar        *c,*c_q;
   Mat                At,Bt,Ct;
 
   PetscFunctionBegin;
@@ -4740,6 +4734,7 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = MatDestroy(At);CHKERRQ(ierr);
   ierr = MatDestroy(Bt);CHKERRQ(ierr);
   ierr = MatTranspose(Ct,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
+  ierr = MatDestroy(Ct);CHKERRQ(ierr);
 
   C->assembled = PETSC_TRUE;
   ierr = MatAssemblyBegin(sub_c->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
