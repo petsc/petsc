@@ -66,11 +66,11 @@ namespace ALE {
     typedef typename Mesh::point_type            point_type;
     typedef typename Partitioner::part_type      rank_type;
     typedef ALE::ISection<rank_type, point_type> partition_type;
+    typedef ALE::Section<point_type, point_type> cones_type;
   public:
     template<typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap>
-    static void completeCones(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
-      typedef ALE::Section<point_type, point_type> cones_type;
-      typedef ALE::ConeSection<Sieve>              cones_wrapper_type;
+    static Obj<cones_type> completeCones(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
+      typedef ALE::ConeSection<Sieve> cones_wrapper_type;
       Obj<cones_wrapper_type> cones        = new cones_wrapper_type(sieve);
       Obj<cones_type>         overlapCones = new cones_type(sieve->comm(), sieve->debug());
 
@@ -78,6 +78,7 @@ namespace ALE {
       if (sieve->debug()) {overlapCones->view("Overlap Cones");}
       // Inserts cones into parallelMesh (must renumber here)
       ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
+      return overlapCones;
     };
     // Given a partition of sieve points, copy the mesh pieces to each process and fuse into the new mesh
     //   Return overlaps for the cone communication

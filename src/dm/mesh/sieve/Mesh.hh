@@ -113,6 +113,7 @@ namespace ALE {
     typedef typename sieve_alg_type::coneArray                        coneArray;
     typedef typename sieve_alg_type::orientedConeArray                oConeArray;
     typedef typename sieve_alg_type::supportArray                     supportArray;
+    typedef std::map<point_type, point_type>                          renumbering_type;
   protected:
     Obj<sieve_type>       _sieve;
     labels_type           _labels;
@@ -128,6 +129,7 @@ namespace ALE {
     Obj<recv_overlap_type> _recvOverlap;
     Obj<send_overlap_type> _distSendOverlap;
     Obj<recv_overlap_type> _distRecvOverlap;
+    renumbering_type       _renumbering;
     // Work space
     Obj<std::set<point_type> > _modifiedPoints;
   public:
@@ -248,6 +250,7 @@ namespace ALE {
     void setDistSendOverlap(const Obj<send_overlap_type>& overlap) {this->_distSendOverlap = overlap;};
     const Obj<recv_overlap_type>& getDistRecvOverlap() const {return this->_distRecvOverlap;};
     void setDistRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_distRecvOverlap = overlap;};
+    renumbering_type& getRenumbering() {return this->_renumbering;};
   public: // Labels
     int getValue (const Obj<label_type>& label, const point_type& point, const int defValue = 0) {
       const Obj<typename label_type::coneSequence>& cone = label->cone(point);
