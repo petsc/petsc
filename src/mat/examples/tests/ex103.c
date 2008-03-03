@@ -14,7 +14,6 @@ int main(int argc,char **args)
   PetscInt       i,M = 10,m,n,nfact,nsolve;
   PetscScalar    *array,rval;
   PetscReal      norm;
-  PetscTruth     flg;
   IS             perm,iperm;
   MatFactorInfo  info;
   PetscRandom    rand;

@@ -4734,7 +4734,6 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = MatDestroy(Bt);CHKERRQ(ierr);
   ierr = MatTranspose(Ct,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr);
   ierr = MatDestroy(Ct);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

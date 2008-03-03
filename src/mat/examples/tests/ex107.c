@@ -52,8 +52,8 @@ int main(int argc,char **args)
   ierr = MatSetType(Cpetsc,MATDENSE);CHKERRQ(ierr); 
   ierr = MatMPIDenseSetPreallocation(Cpetsc,PETSC_NULL);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(Cpetsc);CHKERRQ(ierr);
-  ierr = MatSetOption(Cpetsc,MAT_COLUMN_ORIENTED,PETSC_TRUE);CHKERRQ(ierr); 
-  ierr = MatSetOption(C,MAT_COLUMN_ORIENTED,PETSC_TRUE);CHKERRQ(ierr); 
+  ierr = MatSetOption(Cpetsc,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr); 
+  ierr = MatSetOption(C,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr); 
 
   /* Assembly */
   /* PLAPACK doesn't support INSERT_VALUES mode, zero all entries before calling MatSetValues() */
@@ -167,7 +167,7 @@ int main(int argc,char **args)
   ierr = MatSetSizes(Csymm,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
   ierr = MatSetType(Csymm,MATPLAPACK);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(Csymm);CHKERRQ(ierr);
-  ierr = MatSetOption(Csymm,MAT_COLUMN_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(Csymm,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatSetOption(Csymm,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(Csymm,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
 
