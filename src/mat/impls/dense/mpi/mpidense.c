@@ -1453,7 +1453,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation_MPIDense(Mat mat,P
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-
 #if defined(PETSC_HAVE_PLAPACK)
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetSolverType_MPIDense_PLAPACK"
@@ -1464,6 +1463,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSolverType_MPIDense_PLAPACK(Mat mat,cons
   PetscFunctionReturn(0);
 }
 #endif
+EXTERN_C_END
 
 /*MC
    MATMPIDENSE - MATMPIDENSE = "mpidense" - A matrix type to be used for distributed dense matrices.
