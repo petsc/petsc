@@ -448,9 +448,9 @@ void PETSC_STDCALL mpi_comm_create_(int *comm,int *group,int *newcomm,int *ierr)
   *ierr = MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_address_(void*location,int *address,int *ierr)
+void PETSC_STDCALL mpi_address_(void*location,MPIUNI_INTPTR *address,int *ierr)
 {
-  *address =  (int) location;
+  *address =  (MPIUNI_INTPTR) location;
   *ierr = MPI_SUCCESS;
 }
 

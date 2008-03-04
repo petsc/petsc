@@ -224,7 +224,7 @@ extern int    MPI_Initialized(int*);
 extern int    MPI_Finalized(int*);
 
 
-#define MPI_Aint int
+#define MPI_Aint MPIUNI_INTPTR
 /* 
     Routines we have replace with macros that do nothing 
     Some return error codes others return success
