@@ -1452,6 +1452,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation_MPIDense(Mat mat,P
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+
+#if defined(PETSC_HAVE_PLAPACK)
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetSolverType_MPIDense_PLAPACK"
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetSolverType_MPIDense_PLAPACK(Mat mat,const char *type)
+{
+  PetscFunctionBegin;
+  /* dummy function so that -mat_solver_type plapack or MatSetSolverType(mat,"plapack"); silently work (since PLAPACK is on by default) */
+  PetscFunctionReturn(0);
+}
+#endif
+
 /*MC
    MATMPIDENSE - MATMPIDENSE = "mpidense" - A matrix type to be used for distributed dense matrices.
 
@@ -1460,7 +1473,19 @@ EXTERN_C_END
 
   Level: beginner
 
-.seealso: MatCreateMPIDense
+  MATMPIDENSE matrices may use direct solvers (LU, Cholesky, and QR) 
+  for parallel dense matrices via the external package PLAPACK, if PLAPACK is installed 
+  (run config/configure.py with the option --download-plapack)
+
+
+  Options Database Keys:
+. -mat_plapack_nprows <n> - number of rows in processor partition
+. -mat_plapack_npcols <n> - number of columns in processor partition
+. -mat_plapack_nb <n> - block size of template vector
+. -mat_plapack_nb_alg <n> - algorithmic block size
+- -mat_plapack_ckerror <n> - error checking flag
+
+.seealso: MatCreateMPIDense(), MATDENSE, MATSEQDENSE
 M*/
 
 EXTERN_C_BEGIN
@@ -1514,7 +1539,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultNumeric_mpiaij_mpidense_C",
                                      "MatMatMultNumeric_MPIAIJ_MPIDense",
                                       MatMatMultNumeric_MPIAIJ_MPIDense);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)mat,MATMPIDENSE);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_PLAPACK)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatSetSolverType_mpidense_plapack_C",
+                                     "MatSetSolverType_MPIDense_PLAPACK",
+                                      MatSetSolverType_MPIDense_PLAPACK);CHKERRQ(ierr);
+#endif
 
 #if defined(PETSC_HAVE_PLAPACK)
   ierr = PetscNewLog(mat,Mat_Plapack,&lu);CHKERRQ(ierr);
@@ -1536,17 +1565,6 @@ EXTERN_C_END
 
   Level: beginner
 
-  MATMPIDENSE matrices may use direct solvers (LU, Cholesky, and QR) 
-  for parallel dense matrices via the external package PLAPACK, if PLAPACK is installed 
-  (run config/configure.py with the option --download-plapack)
-
-
-  Options Database Keys:
-. -mat_plapack_nprows <n> - number of rows in processor partition
-. -mat_plapack_npcols <n> - number of columns in processor partition
-. -mat_plapack_nb <n> - block size of template vector
-. -mat_plapack_nb_alg <n> - algorithmic block size
-- -mat_plapack_ckerror <n> - error checking flag
 
 .seealso: MatCreateMPIDense,MATSEQDENSE,MATMPIDENSE
 M*/
