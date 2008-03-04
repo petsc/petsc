@@ -3169,6 +3169,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
    the first matrix.  A related routine is MatCopy(), which copies the matrix
    entries of one matrix to another already existing matrix context.
 
+   Cannot be used to convert a sequential matrix to parallel or parallel to sequential,
+   the MPI communicator of the generated matrix is always the same as the communicator
+   of the input matrix.
+
    Level: intermediate
 
    Concepts: matrices^converting between storage formats
@@ -5119,7 +5123,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreArray(Mat mat,PetscScalar *v[])
 .  submat - the array of submatrices
 
    Notes:
-   MatGetSubMatrices() can extract only sequential submatrices
+   MatGetSubMatrices() can extract ONLY sequential submatrices
    (from both sequential and parallel matrices). Use MatGetSubMatrix()
    to extract a parallel submatrix.
 
@@ -5813,6 +5817,9 @@ M*/
    to this routine with a mat of the same nonzero structure and with a call of MAT_REUSE_MATRIX  
    will reuse the matrix generated the first time.  You should call MatDestroy() on newmat when 
    you are finished using it.
+
+    The communicator of the newly obtained matrix is ALWAYS the same as the communicator of
+    the input matrix.
 
     Concepts: matrices^submatrices
 

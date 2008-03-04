@@ -1592,13 +1592,12 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   PetscFunctionBegin;
   if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
 
+  ma = A->rmap.n; na = A->cmap.n; mb = a->B->rmap.n;
+  ai = Aloc->i; aj = Aloc->j; 
+  bi = Bloc->i; bj = Bloc->j; 
   if (reuse == MAT_INITIAL_MATRIX || *matout == A) {
     /* compute d_nnz for preallocation; o_nnz is approximated by d_nnz to avoid communication */
-    ma = A->rmap.n; na = A->cmap.n; mb = a->B->rmap.n;
-    ai = Aloc->i; aj = Aloc->j; 
-    bi = Bloc->i; bj = Bloc->j; 
-    ierr = PetscMalloc((1+na+bi[mb])*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
-    cols = d_nnz + na + 1; /* work space to be used by B part */
+    ierr = PetscMalloc((1+na)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
     ierr = PetscMemzero(d_nnz,(1+na)*sizeof(PetscInt));CHKERRQ(ierr);
     for (i=0; i<ai[ma]; i++){
       d_nnz[aj[i]] ++;  
@@ -1609,6 +1608,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
     ierr = MatSetSizes(B,A->cmap.n,A->rmap.n,N,M);CHKERRQ(ierr);
     ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,d_nnz);CHKERRQ(ierr);
+    ierr = PetscFree(d_nnz);CHKERRQ(ierr);
   } else {
     B = *matout;
   }
@@ -1625,6 +1625,8 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   for (i=0; i<ai[ma]; i++) aj[i] -= cstart; /* resume local col index */
 
   /* copy over the B part */
+  ierr = PetscMalloc(bi[mb]*sizeof(PetscInt),&cols);CHKERRQ(ierr);
+  ierr = PetscMemzero(cols,bi[mb]*sizeof(PetscInt));CHKERRQ(ierr);
   array = Bloc->a;
   row = A->rmap.rstart; 
   for (i=0; i<bi[mb]; i++) {cols[i] = a->garray[bj[i]];}
@@ -1632,8 +1634,9 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
     ncol = bi[i+1]-bi[i];
     ierr = MatSetValues(B,ncol,cols,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
     row++; array += ncol; cols += ncol;
-  } 
-  ierr = PetscFree(d_nnz);CHKERRQ(ierr);
+  }
+  ierr = PetscFree(cols);CHKERRQ(ierr);
+ 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (*matout != A) {
