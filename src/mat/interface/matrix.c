@@ -3275,6 +3275,62 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetSolverType"
+/*@C  
+   MatSetSolverType - Sets the type of LU or Cholesky factorization/solver routines that are used
+   or different type.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+-  type - name of solver type, for example, spooles, superlu, plapack, petsc (to use PETSc's default)
+
+
+   Notes:
+      Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
+     such as superlu, mumps, spooles etc. 
+
+      PETSc must have been config/configure.py to use the external solver, using the option --download-package
+
+   Level: intermediate
+
+
+.seealso: MatCopy(), MatDuplicate()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSolverSetType(Mat mat, const char* type)
+{
+  PetscErrorCode         ierr;
+  char                   convname[256];
+  PetscErrorCode         (*conv)(Mat,const char *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,((PetscObject)mat)->type_name);CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,type);CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+  if (!conv) {
+    PetscTruth flag;
+    ierr = PetscStrcasecmp("petsc",type,&flag);CHKERRQ(ierr);
+    if (flag) {
+      SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc solver",mat->hdr.type_name);
+    } else {
+      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %d. Perhaps you must config/configure.py with --download-%s",mat->hdr.type_name,type,type);
+    }
+  }
+  ierr = (*conv)(mat,type);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDuplicate"
