@@ -22,12 +22,11 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD, &nproc);CHKERRQ(ierr);
 
-#ifdef PETSC_HAVE_PLAPACK
   /* Create matrix and vectors */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATPLAPACK);CHKERRQ(ierr); 
+  ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(C);CHKERRQ(ierr); 
   
   ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
@@ -135,9 +134,6 @@ int main(int argc,char **args)
   ierr = VecDestroy(u);CHKERRQ(ierr); 
   ierr = MatDestroy(C);CHKERRQ(ierr); 
 
-#else
-  if (!rank) printf("This example needs PLAPLAPACK\n");
-#endif
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

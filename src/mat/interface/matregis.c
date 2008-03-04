@@ -72,9 +72,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DSCPACK(Mat);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Matlab(Mat);
 #endif
-#if defined(PETSC_HAVE_PLAPACK)
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Plapack(Mat);
-#endif
 EXTERN_C_END
   
 /*
@@ -176,9 +173,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = MatRegisterDynamic(MATMATLAB,         path,"MatCreate_Matlab",MatCreate_Matlab);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_PLAPACK)
-  ierr = MatRegisterDynamic(MATPLAPACK,        path,"MatCreate_Plapack",MatCreate_Plapack);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

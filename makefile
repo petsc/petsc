@@ -131,7 +131,7 @@ build:
 #
 test: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
-	-@${OMAKE} test_build 2>&1 | tee ${PETSC_ARCH}/test_log
+	-@${OMAKE} test_build 2>&1 | tee ${PETSC_ARCH}/conf/test.log
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
