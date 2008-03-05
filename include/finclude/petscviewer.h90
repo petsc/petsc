@@ -52,7 +52,7 @@
         End Subroutine
 
 #if defined(PETSC_USE_COMPLEX)        
-        Subroutine PetscViewerBinaryReadReal(v,a,cnt,ie rr)
+        Subroutine PetscViewerBinaryReadReal(v,a,cnt,ierr)
           USE_PETSC_HIDE
           PETSCVIEWER_HIDE v
           PetscReal a(*)

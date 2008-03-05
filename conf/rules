@@ -245,6 +245,8 @@ getmpiexec:
 	convert $< $*.jpg
 .eps.pdf:
 	epstopdf $< -o=$*.pdf
+.ps.pdf:
+	ps2pdf $< $*.pdf
 .dvi.ps:
 	dvips -o $*.ps $<
 .svg.png:

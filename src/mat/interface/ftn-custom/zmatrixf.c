@@ -17,6 +17,7 @@
 #define matzerorowslocalis_              MATZEROROWSLOCALIS
 #define matsetoptionsprefix_             MATSETOPTIONSPREFIX
 #define matgetvecs_                      MATGETVECS
+#define matnullspaceremove_              MATNULLSPACEREMOVE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matgetvecs_                      matgetvecs
 #define matgetrowij_                     matgetrowij
@@ -33,6 +34,7 @@
 #define matzerorowslocal_                matzerorowslocal
 #define matzerorowslocalis_              matzerorowslocalis
 #define matsetoptionsprefix_             matsetoptionsprefix
+#define matnullspaceremove_              matnullspaceremove
 #endif
 
 EXTERN_C_BEGIN
@@ -199,5 +201,10 @@ void PETSC_STDCALL matsetoptionsprefix_(Mat *mat,CHAR prefix PETSC_MIXED_LEN(len
   FREECHAR(prefix,t);
 }
 
+void PETSC_STDCALL matnullspaceremove_(MatNullSpace *sp,Vec *vec,Vec *out,PetscErrorCode *ierr)
+{
+  CHKFORTRANNULLOBJECT(out);
+  *ierr = MatNullSpaceRemove(*sp,*vec,out);
+}
 
 EXTERN_C_END
