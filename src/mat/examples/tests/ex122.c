@@ -72,6 +72,7 @@ int main(int argc,char **argv)
   ierr = MatView(B,0);CHKERRQ(ierr);
   ierr = MatView(A,0);CHKERRQ(ierr);
   */
+  
 
   ierr = MatMatMultSymbolic(B,A,fill,&D);CHKERRQ(ierr);
   for (i=0; i<2; i++){    

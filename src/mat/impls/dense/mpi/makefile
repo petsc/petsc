@@ -1,12 +1,12 @@
 
 ALL: lib
 
-CFLAGS   =
+CFLAGS   = ${PLAPACK_INCLUDE}
 FFLAGS   =
-SOURCEC  = mpidense.c mmdense.c
+SOURCEC  = mpidense.c mmdense.c 
 SOURCEF  =
 SOURCEH  = mpidense.h
-OBJSC    = mpidense.o mmdense.o
+OBJSC    = mpidense.o mmdense.o 
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = plapack

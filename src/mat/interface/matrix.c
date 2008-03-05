@@ -3169,6 +3169,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
    the first matrix.  A related routine is MatCopy(), which copies the matrix
    entries of one matrix to another already existing matrix context.
 
+   Cannot be used to convert a sequential matrix to parallel or parallel to sequential,
+   the MPI communicator of the generated matrix is always the same as the communicator
+   of the input matrix.
+
    Level: intermediate
 
    Concepts: matrices^converting between storage formats
@@ -3268,6 +3272,62 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
     ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)*M);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetSolverType"
+/*@C  
+   MatSetSolverType - Sets the type of LU or Cholesky factorization/solver routines that are used
+   or different type.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+-  type - name of solver type, for example, spooles, superlu, plapack, petsc (to use PETSc's default)
+
+
+   Notes:
+      Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
+     such as superlu, mumps, spooles etc. 
+
+      PETSc must have been config/configure.py to use the external solver, using the option --download-package
+
+   Level: intermediate
+
+
+.seealso: MatCopy(), MatDuplicate()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSolverSetType(Mat mat, const char* type)
+{
+  PetscErrorCode         ierr;
+  char                   convname[256];
+  PetscErrorCode         (*conv)(Mat,const char *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,((PetscObject)mat)->type_name);CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,type);CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+  if (!conv) {
+    PetscTruth flag;
+    ierr = PetscStrcasecmp("petsc",type,&flag);CHKERRQ(ierr);
+    if (flag) {
+      SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc solver",mat->hdr.type_name);
+    } else {
+      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %d. Perhaps you must config/configure.py with --download-%s",mat->hdr.type_name,type,type);
+    }
+  }
+  ierr = (*conv)(mat,type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -4391,6 +4451,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscTruth f
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
+  if (((int) op) < 0 || ((int) op) > 16) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Options %d is out of range",(int)op);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   switch (op) {
   case MAT_SYMMETRIC:
@@ -5118,7 +5179,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreArray(Mat mat,PetscScalar *v[])
 .  submat - the array of submatrices
 
    Notes:
-   MatGetSubMatrices() can extract only sequential submatrices
+   MatGetSubMatrices() can extract ONLY sequential submatrices
    (from both sequential and parallel matrices). Use MatGetSubMatrix()
    to extract a parallel submatrix.
 
@@ -5812,6 +5873,9 @@ M*/
    to this routine with a mat of the same nonzero structure and with a call of MAT_REUSE_MATRIX  
    will reuse the matrix generated the first time.  You should call MatDestroy() on newmat when 
    you are finished using it.
+
+    The communicator of the newly obtained matrix is ALWAYS the same as the communicator of
+    the input matrix.
 
     Concepts: matrices^submatrices
 

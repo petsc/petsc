@@ -8,8 +8,8 @@ static char help[] = "Test memory leak when user switches from one matrix type t
 int main(int argc,char **args)
 {
   Mat            C=0;               
-  PetscScalar    v,none = -1.0;
-  PetscInt       Ii,J,ldim,low,high,iglobal,Istart,Iend;
+  PetscScalar    v;
+  PetscInt       Ii,J,Istart,Iend;
   PetscErrorCode ierr;
   PetscInt       i,j,m = 3,n = 2;
   PetscMPIInt    size,rank;
@@ -28,13 +28,13 @@ int main(int argc,char **args)
 
   for (solve_count=0; solve_count<3; solve_count++){
     if (solve_count == 1){
-      //ierr = MatSetType(C,MATSBAIJMUMPS);CHKERRQ(ierr);
-      ierr = MatSetType(C,MATSBAIJSPOOLES);CHKERRQ(ierr);
+      /*ierr = MatSetType(C,MATSBAIJMUMPS);CHKERRQ(ierr); */
+      /* ierr = MatSetType(C,MATSBAIJSPOOLES);CHKERRQ(ierr);*/
       ierr = MatSetOption(C,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     } else {
-      ierr = MatSetType(C,MATPLAPACK);CHKERRQ(ierr);
-      //ierr = MatSetType(C,MATAIJSPOOLES);CHKERRQ(ierr);
-      //ierr = MatSetType(C,MATAIJMUMPS);CHKERRQ(ierr);
+      ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
+      /*ierr = MatSetType(C,MATAIJSPOOLES);CHKERRQ(ierr);*/
+	/*ierr = MatSetType(C,MATAIJMUMPS);CHKERRQ(ierr);*/
     }
    
     ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);

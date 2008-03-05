@@ -372,8 +372,6 @@ PetscErrorCode MatLUFactorSymbolic_Plapack(Mat A,IS r,IS c,MatFactorInfo *info,M
 
   PetscFunctionBegin;
   ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
-  (*F)->ops->lufactornumeric  = MatLUFactorNumeric_Plapack;
-  (*F)->factor                = FACTOR_LU;  
   PetscFunctionReturn(0);
 }
 
@@ -436,7 +434,6 @@ PetscErrorCode MatView_Plapack(Mat A,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
-  /* Mat_Plapack       *lu=(Mat_Plapack*)(A->spptr); */
 
   PetscFunctionBegin;
   /* ierr = (*lu->MatView)(A,viewer);CHKERRQ(ierr); MatView_MPIDense() crash! */ 
@@ -510,7 +507,6 @@ PetscErrorCode MatDuplicate_Plapack(Mat A, MatDuplicateOption op, Mat *M)
 
   PetscFunctionBegin;
   ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Plapack));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

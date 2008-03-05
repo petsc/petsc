@@ -1170,6 +1170,7 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm 
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
+TESTEXAMPLES_PLAPACK 	       = ex103.PETSc ex103.rm ex107.PETSc ex107.rm ex115.PETSc ex115.rm
 TESTEXAMPLES_FFTW	       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc runex121 ex121.rm
 
 include ${PETSC_DIR}/conf/test

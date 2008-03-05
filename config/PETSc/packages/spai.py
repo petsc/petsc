@@ -55,8 +55,7 @@ class Configure(PETSc.package.Package):
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by SPAI'''
     '''Normally you do not need to provide this method'''
-    if self.blasLapack.f2cpkg:
-      raise RuntimeError('SPAI requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
+
     # SPAI requires dormqr() LAPACK routine
     if not self.blasLapack.checkForRoutine('dormqr'): 
       raise RuntimeError('SPAI requires the LAPACK routine dormqr(), the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option \nIf you are using the IBM ESSL library, it does not contain this function.')

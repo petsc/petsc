@@ -206,9 +206,9 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
 .seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
 E*/
 typedef enum {/* converged */
-              SNES_CONVERGED_FNORM_ABS         =  2, /* F < F_minabs */
-              SNES_CONVERGED_FNORM_RELATIVE    =  3, /* F < F_mintol*F_initial */
-              SNES_CONVERGED_PNORM_RELATIVE    =  4, /* step size small */
+              SNES_CONVERGED_FNORM_ABS         =  2, /* ||F|| < atol */
+              SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */
+              SNES_CONVERGED_PNORM_RELATIVE    =  4, /* Newton computed step size small || delta x || < tol */
               SNES_CONVERGED_ITS               =  5, /* maximum iterations reached */
               SNES_CONVERGED_TR_DELTA          =  7,
               /* diverged */

@@ -72,7 +72,6 @@ E*/
 #define MATSEQCRL          "seqcrl"
 #define MATMPICRL          "mpicrl"
 #define MATCRL             "crl"
-#define MATPLAPACK         "plapack"
 #define MATSCATTER         "scatter"
 #define MATBLOCKMAT        "blockmat"
 #define MATCOMPOSITE       "composite"
@@ -394,6 +393,7 @@ PetscPolymorphicFunction(MatConvert,(Mat A,MatType t),(A,t,MAT_INITIAL_MATRIX,&a
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat,MatDuplicateOption,Mat*);
 PetscPolymorphicFunction(MatDuplicate,(Mat A,MatDuplicateOption o),(A,o,&a),Mat,a)
 PetscPolymorphicFunction(MatDuplicate,(Mat A),(A,MAT_COPY_VALUES,&a),Mat,a)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSolverSetType(Mat,const char*);
 
 /*E
     MatStructure - Indicates if the matrix has the same nonzero structure

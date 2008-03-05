@@ -3,32 +3,6 @@
 
   /*  Data stuctures for basic parallel dense matrix  */
 
-/* Structure to hold the information for factorization of a dense matrix */
-/* Most of this info is used in the pipe send/recv routines */
-typedef struct {
-  PetscInt    nlnr;        /* number of local rows downstream */
-  PetscInt    nrend;       /* rend for downstream processor */
-  PetscInt    nbr,pnbr;   /* Down and upstream neighbors */
-  PetscInt    *tag;        /* message tags */
-  PetscInt    currow;      /* current row number */
-  PetscInt    phase;       /* phase (used to indicate tag) */
-  PetscInt    up;          /* Are we moving up or down in row number? */
-  PetscInt    use_bcast;   /* Are we broadcasting max length? */
-  PetscInt    nsend;       /* number of sends */
-  PetscInt    nrecv;       /* number of receives */
-
-  /* data initially in matrix context */
-  PetscInt    k;           /* Blocking factor (unused as yet) */
-  PetscInt    k2;          /* Blocking factor for solves */
-  PetscScalar *temp;
-  PetscInt    nlptr;
-  PetscInt    *lrows;
-  PetscInt    *nlrows;
-  PetscInt    *pivots;
-} FactorCtx;
-
-#define PIPEPHASE (ctx->phase == 0)
-
 typedef struct {
   PetscInt      nvec;                   /* this is the n size for the vector one multiplies with */
   Mat           A;                      /* local submatrix */
@@ -48,7 +22,6 @@ typedef struct {
   VecScatter    Mvctx;                  /* scatter context for vector */
 
   PetscTruth    roworiented;            /* if true, row oriented input (default) */
-  FactorCtx     *factor;                /* factorization context */
 } Mat_MPIDense;
 
 EXTERN PetscErrorCode MatLoad_MPIDense(PetscViewer, MatType,Mat*);
@@ -59,3 +32,26 @@ EXTERN PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat,Mat,PetscReal,Mat
 EXTERN PetscErrorCode MatMatMult_MPIAIJ_MPIDense(Mat,Mat,MatReuse,PetscReal,Mat*);
 EXTERN PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat,Mat,PetscReal,Mat*); 
 EXTERN PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIDense(Mat,Mat,Mat);
+
+#if defined(PETSC_HAVE_PLAPACK)
+EXTERN_C_BEGIN 
+#include "PLA.h"
+EXTERN_C_END 
+
+typedef struct {
+  MPI_Comm       comm_2d;
+  PLA_Obj        A,pivots;
+  PLA_Template   templ;
+  MPI_Datatype   datatype;
+  PetscInt       nb,nb_alg,ierror,rstart;
+  VecScatter     ctx;
+  IS             is_pla,is_petsc;
+  PetscTruth     pla_solved;
+  MatStructure   mstruct;
+  PetscMPIInt    nprows,npcols;
+
+  /* Flag to clean up (non-global) Plapack objects during Destroy */
+  PetscTruth CleanUpPlapack;
+} Mat_Plapack;
+
+#endif
