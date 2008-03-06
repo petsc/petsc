@@ -5,7 +5,7 @@
 
 static MPI_Comm saved_PETSC_COMM_WORLD = 0;
 MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;           /* comm for a single node (local set of processes) */
-PetscTruth used_PetscOpenMP            = PETSC_TRUE;  /* this is a regular process, nonworker process */
+PetscTruth used_PetscOpenMP            = PETSC_FALSE;  /* this is a regular process, nonworker process */
 
 extern PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm);
 
