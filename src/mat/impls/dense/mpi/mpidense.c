@@ -542,7 +542,7 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
     ierr = PLA_Obj_free(&lu->A);CHKERRQ(ierr);
     ierr = PLA_Obj_free (&lu->pivots);CHKERRQ(ierr);
     ierr = PLA_Temp_free(&lu->templ);CHKERRQ(ierr);
-    ierr = PLA_Finalize();CHKERRQ(ierr);
+
 
     ierr = ISDestroy(lu->is_pla);CHKERRQ(ierr);
     ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
@@ -1239,9 +1239,6 @@ PetscErrorCode MatFactorSymbolic_MPIDense_Private(Mat A,MatFactorInfo *info,Mat 
   /* Create a 2D communicator */
   ierr = PLA_Comm_1D_to_2D(comm,lu->nprows,lu->npcols,&comm_2d);CHKERRQ(ierr);
   lu->comm_2d = comm_2d;
-
-  /* Initialize PLAPACK */
-  ierr = PLA_Init(comm_2d);CHKERRQ(ierr);
 
   /* Create object distribution template */
   lu->templ = NULL;
@@ -1981,5 +1978,61 @@ PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_PLAPACK)
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscPLAPACKFinalizePackage" 
+/*@C
+  PetscPLAPACKFinalizePackage - This function destroys everything in the Petsc interface to PLAPACK.
+  Level: developer
+
+.keywords: Petsc, destroy, package, PLAPACK
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void) 
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PLA_Finalize();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscPLAPACKInitializePackage" 
+/*@C
+  PetscPLAPACKInitializePackage - This function initializes everything in the Petsc interface to PLAPACK. It is
+  called from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
+  when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Petsc, initialize, package, PLAPACK
+.seealso: PetscInitializePackage(), PetscInitialize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(const char path[]) 
+{
+  MPI_Comm       comm = PETSC_COMM_WORLD,comm_2d;
+  int            initPLA;
+  PetscMPIInt    size,nprows,npcols;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!PLA_Initialized(PETSC_NULL)) {
+
+    ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+    nprows = 1;
+    npcols = size; 
+
+    ierr = PLA_Comm_1D_to_2D(comm,nprows,npcols,&comm_2d);CHKERRQ(ierr);
+    ierr = PLA_Init(comm_2d);CHKERRQ(ierr);
+    ierr = PetscRegisterFinalize(PetscPLAPACKFinalizePackage);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 
+#endif
