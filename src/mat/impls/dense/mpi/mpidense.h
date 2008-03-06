@@ -39,7 +39,6 @@ EXTERN_C_BEGIN
 EXTERN_C_END 
 
 typedef struct {
-  MPI_Comm       comm_2d;
   PLA_Obj        A,pivots;
   PLA_Template   templ;
   MPI_Datatype   datatype;
@@ -47,7 +46,6 @@ typedef struct {
   VecScatter     ctx;
   IS             is_pla,is_petsc;
   PetscTruth     pla_solved;
-  PetscMPIInt    nprows,npcols;
 
   /* Flag to clean up (non-global) Plapack objects during Destroy */
   PetscTruth CleanUpPlapack;

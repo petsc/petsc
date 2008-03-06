@@ -3,8 +3,11 @@
 /*
    Basic functions for basic parallel dense matrices.
 */
+
     
 #include "src/mat/impls/dense/mpi/mpidense.h"    /*I   "petscmat.h"  I*/
+PetscInt Plapack_nprows,Plapack_npcols;
+MPI_Comm Plapack_comm_2d;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDenseGetLocalMatrix"
@@ -667,7 +670,7 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
       ierr = VecScatterView(mdn->Mvctx,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PLAPACK)
       ierr = PetscViewerASCIIPrintf(viewer,"PLAPACK run parameters:\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Processor mesh: nprows %d, npcols %d\n",lu->nprows, lu->npcols);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Processor mesh: nprows %d, npcols %d\n",Plapack_nprows, Plapack_npcols);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Distr. block size nb: %d \n",lu->nb);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Error checking: %d\n",lu->ierror);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Algorithmic block size: %d\n",lu->nb_alg);CHKERRQ(ierr);
@@ -1031,7 +1034,7 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,M
 #define __FUNCT__ "MatSolve_MPIDense"
 PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
 {
-  MPI_Comm       comm = ((PetscObject)A)->comm;
+  MPI_Comm       comm = ((PetscObject)A)->comm,dummy_comm;
   Mat_Plapack    *lu = (Mat_Plapack*)A->spptr;
   PetscErrorCode ierr;
   PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,i,j,*idx_pla,*idx_petsc,loc_m,loc_stride;
@@ -1080,8 +1083,8 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,loc_m*loc_stride,loc_buf,&loc_x);CHKERRQ(ierr);
   if (!lu->pla_solved){
     
-    ierr = PLA_Temp_comm_row_info(lu->templ,&lu->comm_2d,&r_rank,&r_nproc);CHKERRQ(ierr);
-    ierr = PLA_Temp_comm_col_info(lu->templ,&lu->comm_2d,&c_rank,&c_nproc);CHKERRQ(ierr);
+    ierr = PLA_Temp_comm_row_info(lu->templ,&dummy_comm,&r_rank,&r_nproc);CHKERRQ(ierr);
+    ierr = PLA_Temp_comm_col_info(lu->templ,&dummy_comm,&c_rank,&c_nproc);CHKERRQ(ierr);
     /* printf(" [%d] rank: %d %d, nproc: %d %d\n",rank,r_rank,c_rank,r_nproc,c_nproc); */
 
     /* Create IS and cts for VecScatterring */
@@ -1195,7 +1198,7 @@ PetscErrorCode MatFactorSymbolic_MPIDense_Private(Mat A,MatFactorInfo *info,Mat 
   Mat_Plapack    *lu;   
   PetscErrorCode ierr;
   PetscInt       M=A->rmap.N,N=A->cmap.N;
-  MPI_Comm       comm=((PetscObject)A)->comm,comm_2d;
+  MPI_Comm       comm=((PetscObject)A)->comm;
   PetscMPIInt    size;
   PetscInt       ierror;
 
@@ -1209,15 +1212,14 @@ PetscErrorCode MatFactorSymbolic_MPIDense_Private(Mat A,MatFactorInfo *info,Mat 
 
   /* Set default Plapack parameters */
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  lu->nprows = 1; lu->npcols = size; 
   ierror = 0;
   lu->nb     = M/size;
   if (M - lu->nb*size) lu->nb++; /* without cyclic distribution */
  
   /* Set runtime options */
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"PLAPACK Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_plapack_nprows","row dimension of 2D processor mesh","None",lu->nprows,&lu->nprows,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-mat_plapack_npcols","column dimension of 2D processor mesh","None",lu->npcols,&lu->npcols,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_plapack_nprows","row dimension of 2D processor mesh","None",Plapack_nprows,&Plapack_nprows,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-mat_plapack_npcols","column dimension of 2D processor mesh","None",Plapack_npcols,&Plapack_npcols,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = PetscOptionsInt("-mat_plapack_nb","block size of template vector","None",lu->nb,&lu->nb,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsInt("-mat_plapack_ckerror","error checking flag","None",ierror,&ierror,PETSC_NULL);CHKERRQ(ierr);  
@@ -1235,10 +1237,6 @@ PetscErrorCode MatFactorSymbolic_MPIDense_Private(Mat A,MatFactorInfo *info,Mat 
   }
   PetscOptionsEnd(); 
 
-
-  /* Create a 2D communicator */
-  ierr = PLA_Comm_1D_to_2D(comm,lu->nprows,lu->npcols,&comm_2d);CHKERRQ(ierr);
-  lu->comm_2d = comm_2d;
 
   /* Create object distribution template */
   lu->templ = NULL;
@@ -2015,20 +2013,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(const char path[]) 
 {
-  MPI_Comm       comm = PETSC_COMM_WORLD,comm_2d;
-  int            initPLA;
-  PetscMPIInt    size,nprows,npcols;
+  MPI_Comm       comm = PETSC_COMM_WORLD;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!PLA_Initialized(PETSC_NULL)) {
 
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-    nprows = 1;
-    npcols = size; 
+    Plapack_nprows = 1;
+    Plapack_npcols = size; 
 
-    ierr = PLA_Comm_1D_to_2D(comm,nprows,npcols,&comm_2d);CHKERRQ(ierr);
-    ierr = PLA_Init(comm_2d);CHKERRQ(ierr);
+    ierr = PLA_Comm_1D_to_2D(comm,Plapack_nprows,Plapack_npcols,&Plapack_comm_2d);CHKERRQ(ierr);
+    ierr = PLA_Init(Plapack_comm_2d);CHKERRQ(ierr);
     ierr = PetscRegisterFinalize(PetscPLAPACKFinalizePackage);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
