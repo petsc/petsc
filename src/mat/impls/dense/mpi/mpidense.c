@@ -1040,14 +1040,13 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
   PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,i,j,*idx_pla,*idx_petsc,loc_m,loc_stride;
   PetscScalar    *array;
   PetscReal      one = 1.0;
-  PetscMPIInt    size,rank,r_rank,r_nproc,c_rank,c_nproc;;
+  PetscMPIInt    size,r_rank,r_nproc,c_rank,c_nproc;;
   PLA_Obj        v_pla = NULL;
   PetscScalar    *loc_buf;
   Vec            loc_x;
    
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* Create PLAPACK vector objects, then copy b into PLAPACK b */
   ierr = PLA_Mvector_create(lu->datatype,M,1,lu->templ,PLA_ALIGN_FIRST,&v_pla);CHKERRQ(ierr);
@@ -2014,8 +2013,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void)
 PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(const char path[]) 
 {
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscMPIInt    size;
+  PetscMPIInt    size,nb_alg;
   PetscErrorCode ierr;
+  PetscTruth     ierror;
 
   PetscFunctionBegin;
   if (!PLA_Initialized(PETSC_NULL)) {
@@ -2023,6 +2023,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(const char path[])
     ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
     Plapack_nprows = 1;
     Plapack_npcols = size; 
+
+    ierr = PetscOptionsBegin(comm,PETSC_NULL,"PLAPACK Options","Mat");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-plapack_nprows","row dimension of 2D processor mesh","None",Plapack_nprows,&Plapack_nprows,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-plapack_npcols","column dimension of 2D processor mesh","None",Plapack_npcols,&Plapack_npcols,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsTruth("-plapack_ckerror","error checking flag","None",ierror,&ierror,PETSC_NULL);CHKERRQ(ierr);  
+      if (ierror){
+	ierr = PLA_Set_error_checking(ierror,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE );CHKERRQ(ierr);
+      } else {
+	ierr = PLA_Set_error_checking(ierror,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE );CHKERRQ(ierr);
+      }
+  
+      nb_alg = 0;
+      ierr = PetscOptionsInt("-mat_plapack_nb_alg","algorithmic block size","None",nb_alg,&nb_alg,PETSC_NULL);CHKERRQ(ierr);
+      if (nb_alg) {
+        ierr = pla_Environ_set_nb_alg (PLA_OP_ALL_ALG,nb_alg);CHKERRQ(ierr);
+      }
+    PetscOptionsEnd(); 
 
     ierr = PLA_Comm_1D_to_2D(comm,Plapack_nprows,Plapack_npcols,&Plapack_comm_2d);CHKERRQ(ierr);
     ierr = PLA_Init(Plapack_comm_2d);CHKERRQ(ierr);
