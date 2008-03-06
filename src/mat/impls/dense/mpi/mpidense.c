@@ -1132,11 +1132,6 @@ PetscErrorCode MatLUFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *F)
   PetscScalar    *array,one = 1.0;
 
   PetscFunctionBegin;
-  /* Create PLAPACK matrix object */
-  if (!lu->A) {
-    PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
-    PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);
-  }
   PLA_Obj_set_to_zero(lu->A);
 
   /* Copy A into lu->A */
@@ -1173,10 +1168,6 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *
 
   PetscFunctionBegin;
 
-  /* Create PLAPACK matrix object */
-  if (!lu->A) {
-    PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
-  }
   PLA_Obj_set_to_zero(lu->A);
 
   /* Copy A into lu->A */
@@ -1274,6 +1265,8 @@ PetscErrorCode MatFactorSymbolic_MPIDense_Private(Mat A,MatFactorInfo *info,Mat 
   lu->datatype = MPI_DOUBLE;
 #endif
 
+  ierr = PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);CHKERRQ(ierr);
+
   lu->pla_solved     = PETSC_FALSE; /* MatSolve_Plapack() is called yet */
   lu->CleanUpPlapack = PETSC_TRUE;
   *F                 = B;
@@ -1286,9 +1279,13 @@ PetscErrorCode MatFactorSymbolic_MPIDense_Private(Mat A,MatFactorInfo *info,Mat 
 PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {  
   PetscErrorCode ierr;
+  PetscInt       M = A->rmap.N;
+  Mat_Plapack    *lu;
 
   PetscFunctionBegin;
   ierr = MatFactorSymbolic_MPIDense_Private(A,info,F);CHKERRQ(ierr);
+  lu = (Mat_Plapack*)(*F)->spptr;
+  ierr = PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);CHKERRQ(ierr);
   (*F)->factor = FACTOR_LU;  
   PetscFunctionReturn(0);
 }
