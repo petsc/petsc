@@ -330,11 +330,22 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMax(PetscReal*,PetscReal*,MPI_C
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMin(PetscReal*,PetscReal*,MPI_Comm);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar*,PetscScalar*,MPI_Comm);
 
+/*MC
+      PetscIsInfOrNan - Returns 1 if the input double has an infinity for Not-a-number (Nan) value, otherwise 0.
 
+    Input Parameter:
+.     a - the double
+
+
+     Notes: uses the C99 standard isinf() and isnan() on systems where they exist.
+      Otherwises uses ( (a - a) != 0.0), not that some optimizing compiles compile
+      out this form, thus removing the check.
+
+*/
 #if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
 #define PetscIsInfOrNan(a) (isinf(a) || isnan(a))
 #else
-#define PetscIsInfOrNan(a) (a - a != 0.0)
+#define PetscIsInfOrNan(a) ((a - a) != 0.0)
 #endif
 
 
