@@ -42,7 +42,7 @@ typedef struct {
   PLA_Obj        A,pivots;
   PLA_Template   templ;
   MPI_Datatype   datatype;
-  PetscInt       nb,nb_alg,ierror,rstart;
+  PetscInt       nb,rstart;
   VecScatter     ctx;
   IS             is_pla,is_petsc;
   PetscTruth     pla_solved;
