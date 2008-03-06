@@ -6861,9 +6861,7 @@ ${PETSC_DIR}/${PETSC_ARCH}/conf}, discussed in Section
 
 \subsection{Sample Makefiles}
 
-Maintaining portable PETSc makefiles is very simple. In Figures
-\ref{fig_make1}, \ref{fig_make2}, and \ref{fig_make3} we present three
-sample makefiles.  
+Maintaining portable PETSc makefiles is very simple.
 
 The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraires.
@@ -6917,8 +6915,20 @@ include variables instead of base. That is use something like
            mylinkercommand -o ex2 ex2.o  ${PETSC_LIB}
 \end{verbatim}
 }
+\caption{Sample PETSc Makefile that does {\bf not} use PETSc's rules for compiling}
+\label{fig_make1}
+\end{figure}
 The variables \trl{${PETSC_CC_INCLUDES}} and \trl{${PETSC_FC_INCLUDES}}
 and PETSC_LIB are defined by the included conf/variables file.
+
+If you do not wish to include any PETSc makefiles in your makefile,
+you can use the commands (run in the PETSc root directory) to get the information
+needed by your makefile: make getlinklibs getincludedirs getpetscflags.
+All the libraries listed need to be linked into your executable and the 
+include directories and flags need to be passed to the compiler usually
+this is done with "CFLAGS = list of -I and other flags" and
+"FFLAGS = list of -I and other flags" in your makefile.
+
 
 
 \findex{PETSC_LIB} \findex{PETSC_LIB}

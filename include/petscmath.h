@@ -331,6 +331,13 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalMin(PetscReal*,PetscReal*,MPI_C
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar*,PetscScalar*,MPI_Comm);
 
 
+#if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
+#define PetscIsInfOrNan(a) (isinf(a) || isnan(a))
+#else
+#define PetscIsInfOrNan(a) (a - a != 0.0)
+#endif
+
+
 /* ----------------------------------------------------------------------------*/
 /*
     PetscLogDouble variables are used to contain double precision numbers
