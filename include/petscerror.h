@@ -240,7 +240,6 @@ M*/
 #define CHKERRV(n)             if (n) {n = PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");return;}
 #define CHKERRABORT(comm,n)    if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");MPI_Abort(comm,n);}
 #define CHKERRCONTINUE(n)      if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
-#define CHKFPQ(f)              if PetscIsInfOrNan(f) {SETERRQ(PETSC_ERR_FP, "Invalid value: Inf or NaN");}
 
 #ifdef PETSC_CLANGUAGE_CXX
 
@@ -455,7 +454,6 @@ extern PetscErrorCode PetscExceptionTmp;
 #define CHKERRQ(n)     ;
 #define CHKERRABORT(comm,n) ;
 #define CHKERRCONTINUE(n) ;
-#define CHKFPQ(f) ;
 #define CHKMEMQ        ;
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
