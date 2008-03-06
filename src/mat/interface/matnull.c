@@ -140,7 +140,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceRemove"
-/*@
+/*@C
    MatNullSpaceRemove - Removes all the components of a null space from a vector.
 
    Collective on MatNullSpace
