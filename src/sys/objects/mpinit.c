@@ -4,8 +4,8 @@
 #include "petscsys.h"
 
 static MPI_Comm saved_PETSC_COMM_WORLD = 0;
-MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;        /* comm for a single node (local set of processes) */
-static PetscTruth used_PetscOpenMP     = PETSC_FALSE;
+MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;           /* comm for a single node (local set of processes) */
+PetscTruth used_PetscOpenMP            = PETSC_TRUE;  /* this is a regular process, nonworker process */
 
 extern PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm);
 
@@ -70,7 +70,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
 							   
   PetscFunctionBegin;
   ierr = MPI_Comm_get_parent(&parent);CHKERRQ(ierr);
-  if (parent == MPI_COMM_NULL) {
+  if (parent == MPI_COMM_NULL) {  /* the original processes started by user */
     char programname[PETSC_MAX_PATH_LEN];
     char **argv;
 
@@ -209,8 +209,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void)
   PetscInt       command = 3;
 
   PetscFunctionBegin;
-  if (!used_PetscOpenMP) PetscFunctionReturn(0);
-  ierr = MPI_Bcast(&command,1,MPIU_INT,0,PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+  if (!used_PetscOpenMP) PetscFunctionReturn(0);  /* I am a worker, just return */
+  ierr = MPI_Bcast(&command,1,MPIU_INT,0,PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); /* broadcast to my worker group to end program */
   PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
   PetscFunctionReturn(ierr);
 }
@@ -240,7 +240,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
   while (!exitwhileloop) {
     ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
     switch (command) {
-    case 0: { 
+    case 0: { /* allocate some memory on this worker process */
       PetscInt n;
       void     *ptr;
       ierr = MPI_Bcast(&n,1,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -250,14 +250,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
       objects[numberobjects++] = ptr;
       break;
     }
-    case 1: {
+    case 1: {  /* free some memory on this worker process */
       PetscInt i;
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
       ierr = PetscFree(objects[i]);CHKERRQ(ierr);
       objects[i] = 0;
       break;
     }
-    case 2: {
+    case 2: {  /* run a function on this worker process */
       PetscInt       i;
       PetscErrorCode (*f)(MPI_Comm,void*);
       ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
