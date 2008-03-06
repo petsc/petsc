@@ -47,7 +47,6 @@ typedef struct {
   VecScatter     ctx;
   IS             is_pla,is_petsc;
   PetscTruth     pla_solved;
-  MatStructure   mstruct;
   PetscMPIInt    nprows,npcols;
 
   /* Flag to clean up (non-global) Plapack objects during Destroy */

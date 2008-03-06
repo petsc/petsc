@@ -1132,15 +1132,12 @@ PetscErrorCode MatLUFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *F)
   PetscScalar    *array,one = 1.0;
 
   PetscFunctionBegin;
-  if (lu->mstruct == SAME_NONZERO_PATTERN){
-    PLA_Obj_free(&lu->A);
-    PLA_Obj_free (&lu->pivots);
-  }
   /* Create PLAPACK matrix object */
-  lu->A = NULL; lu->pivots = NULL;
-  PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
+  if (!lu->A) {
+    PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
+    PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);
+  }
   PLA_Obj_set_to_zero(lu->A);
-  PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);
 
   /* Copy A into lu->A */
   PLA_API_begin();
@@ -1159,7 +1156,6 @@ PetscErrorCode MatLUFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *F)
 
   lu->CleanUpPlapack = PETSC_TRUE;
   lu->rstart         = rstart;
-  lu->mstruct        = SAME_NONZERO_PATTERN;
   
   (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
   PetscFunctionReturn(0);
@@ -1176,13 +1172,12 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *
   PetscScalar    *array,one = 1.0;
 
   PetscFunctionBegin;
-  if (lu->mstruct == SAME_NONZERO_PATTERN){
-    PLA_Obj_free(&lu->A);
-  }
+
   /* Create PLAPACK matrix object */
-  lu->A      = NULL; 
-  lu->pivots = NULL; 
-  PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
+  if (!lu->A) {
+    PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
+  }
+  PLA_Obj_set_to_zero(lu->A);
 
   /* Copy A into lu->A */
   PLA_API_begin();
@@ -1201,7 +1196,6 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *
 
   lu->CleanUpPlapack = PETSC_TRUE;
   lu->rstart         = rstart;
-  lu->mstruct        = SAME_NONZERO_PATTERN;
   
   (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
   PetscFunctionReturn(0);
@@ -1281,7 +1275,6 @@ PetscErrorCode MatFactorSymbolic_MPIDense_Private(Mat A,MatFactorInfo *info,Mat 
 #endif
 
   lu->pla_solved     = PETSC_FALSE; /* MatSolve_Plapack() is called yet */
-  lu->mstruct        = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpPlapack = PETSC_TRUE;
   *F                 = B;
   PetscFunctionReturn(0);
