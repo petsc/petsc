@@ -183,8 +183,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
   PetscValidHeaderSpecific(B,MAT_COOKIE,1);
 
   ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Matrix options","Mat");CHKERRQ(ierr); 
-
-    if (((PetscObject)B)->type_name) { deft = ((PetscObject)B)->type_name; }
     ierr = PetscOptionsList("-mat_type","Matrix type","MatSetType",MatList,deft,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatSetType(B,type);CHKERRQ(ierr);

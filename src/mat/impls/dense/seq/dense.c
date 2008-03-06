@@ -1537,7 +1537,7 @@ PetscErrorCode MatMatMultSymbolic_SeqDense_SeqDense(Mat A,Mat B,PetscReal fill,M
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
+#Undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqDense"
 PetscErrorCode MatMatMultNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
 {

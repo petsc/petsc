@@ -1544,6 +1544,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
                                      "MatSetSolverType_MPIDense_PLAPACK",
                                       MatSetSolverType_MPIDense_PLAPACK);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectChangeTypeName((PetscObject)mat,MATMPIDENSE);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PLAPACK)
   ierr = PetscNewLog(mat,Mat_Plapack,&lu);CHKERRQ(ierr);
