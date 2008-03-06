@@ -5,7 +5,7 @@
 
 static MPI_Comm saved_PETSC_COMM_WORLD = 0;
 MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;           /* comm for a single node (local set of processes) */
-PetscTruth used_PetscOpenMP            = PETSC_FALSE;  /* this is a regular process, nonworker process */
+PetscTruth PetscOpenMPWorker           = PETSC_FALSE;  /* this is a regular process, nonworker process */
 
 extern PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm);
 
@@ -83,12 +83,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     ierr = PetscInfo2(0,"PETSc OpenMP successfully spawned: number of nodes = %d node size = %d\n",size,nodesize);CHKERRQ(ierr);
     saved_PETSC_COMM_WORLD = PETSC_COMM_WORLD;
-    used_PetscOpenMP       = PETSC_TRUE;
   } else { /* worker nodes that get spawned */
-    ierr             = MPI_Intercomm_merge(parent,1,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); 
-    ierr             = PetscOpenMPHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
-    used_PetscOpenMP = PETSC_FALSE; /* so that PetscOpenMPFinalize() will not attempt a broadcast from this process */
-    ierr             = PetscEnd();  /* cannot continue into user code */
+    ierr              = MPI_Intercomm_merge(parent,1,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); 
+    ierr              = PetscOpenMPHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+    PetscOpenMPWorker = PETSC_TRUE; /* so that PetscOpenMPIFinalize() will not attempt a broadcast from this process */
+    ierr              = PetscEnd();  /* cannot continue into user code */
   }
   PetscFunctionReturn(0);
 }
@@ -177,15 +176,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize)
   ierr = PetscInfo2(0,"PETSc OpenMP successfully started: number of nodes = %d node size = %d\n",size/nodesize,nodesize);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"PETSc OpenMP process %sactive\n",(rank % nodesize) ? "in" : "");CHKERRQ(ierr);
 
-  used_PetscOpenMP = PETSC_TRUE;
   /* 
      All process not involved in user application code wait here
   */
   if (!PETSC_COMM_WORLD) {
     ierr             = PetscOpenMPHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
-    PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
-    used_PetscOpenMP = PETSC_FALSE; /* so that PetscOpenMPIFinalize() will not attempt a broadcast from this process */
-    ierr             = PetscEnd();  /* cannot continue into user code */
+    PETSC_COMM_WORLD  = saved_PETSC_COMM_WORLD;
+    PetscOpenMPWorker = PETSC_TRUE; /* so that PetscOpenMPIFinalize() will not attempt a broadcast from this process */
+    ierr              = PetscEnd();  /* cannot continue into user code */
   }
   PetscFunctionReturn(0);
 }
@@ -209,9 +207,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void)
   PetscInt       command = 3;
 
   PetscFunctionBegin;
-  if (!used_PetscOpenMP) PetscFunctionReturn(0);  /* I am a worker, just return */
-  ierr = MPI_Bcast(&command,1,MPIU_INT,0,PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); /* broadcast to my worker group to end program */
-  PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
+  if (!PetscOpenMPWorker && PETSC_COMM_LOCAL_WORLD) {
+    ierr = MPI_Bcast(&command,1,MPIU_INT,0,PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); /* broadcast to my worker group to end program */
+    PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
+  }
   PetscFunctionReturn(ierr);
 }
 
@@ -296,7 +295,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,PetscInt n,void **pt
   PetscInt       command = 0;
 
   PetscFunctionBegin;
-  if (!used_PetscOpenMP) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+  if (PetscOpenMPWorker) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&n,1,MPIU_INT,0,comm);CHKERRQ(ierr); 
@@ -325,7 +324,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
   PetscInt       command = 1,i;
 
   PetscFunctionBegin;
-  if (!used_PetscOpenMP) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+  if (PetscOpenMPWorker) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   for (i=0; i<numberobjects; i++) {
@@ -358,7 +357,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*f)(
   PetscInt       command = 2,i;
 
   PetscFunctionBegin;
-  if (!used_PetscOpenMP) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+  if (PetscOpenMPWorker) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   for (i=0; i<numberobjects; i++) {
