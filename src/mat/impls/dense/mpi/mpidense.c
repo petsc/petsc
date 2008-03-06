@@ -539,10 +539,10 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
   if (mdn->Mvctx)  {ierr = VecScatterDestroy(mdn->Mvctx);CHKERRQ(ierr);}
 #if defined(PETSC_HAVE_PLAPACK)
   if (lu->CleanUpPlapack) {
-    PLA_Obj_free(&lu->A);
-    PLA_Obj_free (&lu->pivots);
-    PLA_Temp_free(&lu->templ);
-    PLA_Finalize();
+    ierr = PLA_Obj_free(&lu->A);CHKERRQ(ierr);
+    ierr = PLA_Obj_free (&lu->pivots);CHKERRQ(ierr);
+    ierr = PLA_Temp_free(&lu->templ);CHKERRQ(ierr);
+    ierr = PLA_Finalize();CHKERRQ(ierr);
 
     ierr = ISDestroy(lu->is_pla);CHKERRQ(ierr);
     ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
@@ -1047,50 +1047,46 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   /* Create PLAPACK vector objects, then copy b into PLAPACK b */
-  PLA_Mvector_create(lu->datatype,M,1,lu->templ,PLA_ALIGN_FIRST,&v_pla);  
-  PLA_Obj_set_to_zero(v_pla);
+  ierr = PLA_Mvector_create(lu->datatype,M,1,lu->templ,PLA_ALIGN_FIRST,&v_pla);CHKERRQ(ierr);
+  ierr = PLA_Obj_set_to_zero(v_pla);CHKERRQ(ierr);
 
   /* Copy b into rhs_pla */
-  PLA_API_begin();   
-  PLA_Obj_API_open(v_pla);
+  ierr = PLA_API_begin();CHKERRQ(ierr);
+  ierr = PLA_Obj_API_open(v_pla);CHKERRQ(ierr);
   ierr = VecGetArray(b,&array);CHKERRQ(ierr);
-  PLA_API_axpy_vector_to_global(m,&one,(void *)array,1,v_pla,lu->rstart);
+  ierr = PLA_API_axpy_vector_to_global(m,&one,(void *)array,1,v_pla,lu->rstart);CHKERRQ(ierr);
   ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);
-  PLA_Obj_API_close(v_pla);
-  PLA_API_end(); 
+  ierr = PLA_Obj_API_close(v_pla);CHKERRQ(ierr);
+  ierr = PLA_API_end();CHKERRQ(ierr);
 
   if (A->factor == FACTOR_LU){
     /* Apply the permutations to the right hand sides */
-    PLA_Apply_pivots_to_rows (v_pla,lu->pivots);
+    ierr = PLA_Apply_pivots_to_rows (v_pla,lu->pivots);CHKERRQ(ierr);
 
     /* Solve L y = b, overwriting b with y */
-    PLA_Trsv( PLA_LOWER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_UNIT_DIAG,lu->A,v_pla );
+    ierr = PLA_Trsv( PLA_LOWER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_UNIT_DIAG,lu->A,v_pla );CHKERRQ(ierr);
 
     /* Solve U x = y (=b), overwriting b with x */
-    PLA_Trsv( PLA_UPPER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla );
+    ierr = PLA_Trsv( PLA_UPPER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla );CHKERRQ(ierr);
   } else { /* FACTOR_CHOLESKY */
-    PLA_Trsv( PLA_LOWER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla);
-    PLA_Trsv( PLA_LOWER_TRIANGULAR,(lu->datatype == MPI_DOUBLE ? PLA_TRANSPOSE : PLA_CONJUGATE_TRANSPOSE),
-                                    PLA_NONUNIT_DIAG,lu->A,v_pla);
+    ierr = PLA_Trsv( PLA_LOWER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla);CHKERRQ(ierr);
+    ierr = PLA_Trsv( PLA_LOWER_TRIANGULAR,(lu->datatype == MPI_DOUBLE ? PLA_TRANSPOSE : PLA_CONJUGATE_TRANSPOSE),PLA_NONUNIT_DIAG,lu->A,v_pla);CHKERRQ(ierr);
   }
 
   /* Copy PLAPACK x into Petsc vector x  */   
-  PLA_Obj_local_length(v_pla, &loc_m);
-  PLA_Obj_local_buffer(v_pla, (void**)&loc_buf);
-  PLA_Obj_local_stride(v_pla, &loc_stride);
-  /*
-    PetscPrintf(PETSC_COMM_SELF," [%d] b - local_m %d local_stride %d, loc_buf: %g %g, nb: %d\n",rank,loc_m,loc_stride,loc_buf[0],loc_buf[(loc_m-1)*loc_stride],lu->nb); 
-  */
+  ierr = PLA_Obj_local_length(v_pla, &loc_m);CHKERRQ(ierr);
+  ierr = PLA_Obj_local_buffer(v_pla, (void**)&loc_buf);CHKERRQ(ierr);
+  ierr = PLA_Obj_local_stride(v_pla, &loc_stride);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,loc_m*loc_stride,loc_buf,&loc_x);CHKERRQ(ierr);
   if (!lu->pla_solved){
     
-    PLA_Temp_comm_row_info(lu->templ,&lu->comm_2d,&r_rank,&r_nproc);
-    PLA_Temp_comm_col_info(lu->templ,&lu->comm_2d,&c_rank,&c_nproc);
+    ierr = PLA_Temp_comm_row_info(lu->templ,&lu->comm_2d,&r_rank,&r_nproc);CHKERRQ(ierr);
+    ierr = PLA_Temp_comm_col_info(lu->templ,&lu->comm_2d,&c_rank,&c_nproc);CHKERRQ(ierr);
     /* printf(" [%d] rank: %d %d, nproc: %d %d\n",rank,r_rank,c_rank,r_nproc,c_nproc); */
 
     /* Create IS and cts for VecScatterring */
-    PLA_Obj_local_length(v_pla, &loc_m);
-    PLA_Obj_local_stride(v_pla, &loc_stride);
+    ierr = PLA_Obj_local_length(v_pla, &loc_m);CHKERRQ(ierr);
+    ierr = PLA_Obj_local_stride(v_pla, &loc_stride);CHKERRQ(ierr);
     ierr = PetscMalloc((2*loc_m+1)*sizeof(PetscInt),&idx_pla);CHKERRQ(ierr);
     idx_petsc = idx_pla + loc_m;
 
@@ -1115,7 +1111,7 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
   
   /* Free data */
   ierr = VecDestroy(loc_x);CHKERRQ(ierr);
-  PLA_Obj_free(&v_pla); 
+  ierr = PLA_Obj_free(&v_pla);CHKERRQ(ierr);
 
   lu->pla_solved = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -1132,17 +1128,17 @@ PetscErrorCode MatLUFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *F)
   PetscScalar    *array,one = 1.0;
 
   PetscFunctionBegin;
-  PLA_Obj_set_to_zero(lu->A);
+  ierr = PLA_Obj_set_to_zero(lu->A);CHKERRQ(ierr);
 
   /* Copy A into lu->A */
-  PLA_API_begin();
-  PLA_Obj_API_open(lu->A);  
+  ierr = PLA_API_begin();CHKERRQ(ierr);
+  ierr = PLA_Obj_API_open(lu->A);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   ierr = MatGetArray(A,&array);CHKERRQ(ierr);
-  PLA_API_axpy_matrix_to_global(m,M, &one,(void *)array,m,lu->A,rstart,0); 
+  ierr = PLA_API_axpy_matrix_to_global(m,M, &one,(void *)array,m,lu->A,rstart,0);CHKERRQ(ierr);
   ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
-  PLA_Obj_API_close(lu->A); 
-  PLA_API_end(); 
+  ierr = PLA_Obj_API_close(lu->A);CHKERRQ(ierr);
+  ierr = PLA_API_end();CHKERRQ(ierr); 
 
   /* Factor P A -> L U overwriting lower triangular portion of A with L, upper, U */
   info_pla = PLA_LU(lu->A,lu->pivots);
@@ -1168,17 +1164,16 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *
 
   PetscFunctionBegin;
 
-  PLA_Obj_set_to_zero(lu->A);
-
   /* Copy A into lu->A */
-  PLA_API_begin();
-  PLA_Obj_API_open(lu->A);  
+  ierr = PLA_Obj_set_to_zero(lu->A);CHKERRQ(ierr);
+  ierr = PLA_API_begin();CHKERRQ(ierr);
+  ierr = PLA_Obj_API_open(lu->A);CHKERRQ(ierr);  
   ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
   ierr = MatGetArray(A,&array);CHKERRQ(ierr);
-  PLA_API_axpy_matrix_to_global(m,M, &one,(void *)array,m,lu->A,rstart,0); 
+  ierr = PLA_API_axpy_matrix_to_global(m,M, &one,(void *)array,m,lu->A,rstart,0);CHKERRQ(ierr);
   ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
-  PLA_Obj_API_close(lu->A); 
-  PLA_API_end(); 
+  ierr = PLA_Obj_API_close(lu->A);CHKERRQ(ierr); 
+  ierr = PLA_API_end();CHKERRQ(ierr); 
 
   /* Factor P A -> Chol */
   info_pla = PLA_Chol(PLA_LOWER_TRIANGULAR,lu->A);
@@ -1227,35 +1222,35 @@ PetscErrorCode MatFactorSymbolic_MPIDense_Private(Mat A,MatFactorInfo *info,Mat 
   ierr = PetscOptionsInt("-mat_plapack_nb","block size of template vector","None",lu->nb,&lu->nb,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsInt("-mat_plapack_ckerror","error checking flag","None",ierror,&ierror,PETSC_NULL);CHKERRQ(ierr);  
   if (ierror){
-    PLA_Set_error_checking(ierror,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE );
+    ierr = PLA_Set_error_checking(ierror,PETSC_TRUE,PETSC_TRUE,PETSC_FALSE );CHKERRQ(ierr);
   } else {
-    PLA_Set_error_checking(ierror,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE );
+    ierr = PLA_Set_error_checking(ierror,PETSC_FALSE,PETSC_FALSE,PETSC_FALSE );CHKERRQ(ierr);
   }
   lu->ierror = ierror;
   
   lu->nb_alg = 0;
   ierr = PetscOptionsInt("-mat_plapack_nb_alg","algorithmic block size","None",lu->nb_alg,&lu->nb_alg,PETSC_NULL);CHKERRQ(ierr);
   if (lu->nb_alg){
-    pla_Environ_set_nb_alg (PLA_OP_ALL_ALG,lu->nb_alg);
+    ierr = pla_Environ_set_nb_alg (PLA_OP_ALL_ALG,lu->nb_alg);CHKERRQ(ierr);
   }
   PetscOptionsEnd(); 
 
 
   /* Create a 2D communicator */
-  PLA_Comm_1D_to_2D(comm,lu->nprows,lu->npcols,&comm_2d); 
+  ierr = PLA_Comm_1D_to_2D(comm,lu->nprows,lu->npcols,&comm_2d);CHKERRQ(ierr);
   lu->comm_2d = comm_2d;
 
   /* Initialize PLAPACK */
-  PLA_Init(comm_2d);
+  ierr = PLA_Init(comm_2d);CHKERRQ(ierr);
 
   /* Create object distribution template */
   lu->templ = NULL;
-  PLA_Temp_create(lu->nb, 0, &lu->templ);
+  ierr = PLA_Temp_create(lu->nb, 0, &lu->templ);CHKERRQ(ierr);
 
   /* Use suggested nb_alg if it is not provided by user */
   if (lu->nb_alg == 0){
-    PLA_Environ_nb_alg(PLA_OP_PAN_PAN,lu->templ,&lu->nb_alg);
-    pla_Environ_set_nb_alg(PLA_OP_ALL_ALG,lu->nb_alg);
+    ierr = PLA_Environ_nb_alg(PLA_OP_PAN_PAN,lu->templ,&lu->nb_alg);CHKERRQ(ierr);
+    ierr = pla_Environ_set_nb_alg(PLA_OP_ALL_ALG,lu->nb_alg);CHKERRQ(ierr);
   }
 
   /* Set the datatype */
