@@ -36,11 +36,11 @@ int main(int argc,char **argv)
 
   /* Test MatMatMult() */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
-  ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A = A^T*A */
-
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
-  ierr = MatView(B,0);CHKERRQ(ierr);
-  ierr = MatView(A,0);CHKERRQ(ierr);
+    ierr = MatView(B,0);CHKERRQ(ierr);
+      ierr = MatView(A,0);CHKERRQ(ierr);
+      /*ierr = */ MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A = A^T*A */
+
   ierr = MatView(C,0);CHKERRQ(ierr);
 
   ierr = MatMatMultSymbolic(B,A,fill,&D);CHKERRQ(ierr); /* D = B*A = A^T*A */
