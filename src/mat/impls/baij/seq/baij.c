@@ -1388,8 +1388,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
   MatScalar      *array;
 
   PetscFunctionBegin;
-  if (!B && mbs!=nbs) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Square matrix only for in-place");
-
+  if (reuse == MAT_REUSE_MATRIX && A == *B && mbs != nbs) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
   if (reuse == MAT_INITIAL_MATRIX || A == *B) {
     ierr = PetscMalloc((1+nbs)*sizeof(PetscInt),&col);CHKERRQ(ierr);
     ierr = PetscMemzero(col,(1+nbs)*sizeof(PetscInt));CHKERRQ(ierr);

@@ -1085,7 +1085,7 @@ PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
 
   PetscFunctionBegin;
   v = mat->v; m = A->rmap.n; M = mat->lda; n = A->cmap.n;
-  if (*matout == A) { /* in place transpose */
+  if (reuse == MAT_REUSE_MATRIX && *matout == A) { /* in place transpose */
     if (m != n) {
       SETERRQ(PETSC_ERR_SUP,"Can not transpose non-square matrix in place");
     } else {

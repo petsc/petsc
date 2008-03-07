@@ -952,9 +952,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   PetscScalar    *v;
 
   PetscFunctionBegin;
-  if (A == *matout && M != N) {
-    SETERRQ(PETSC_ERR_SUP,"Supports square matrix only in-place");
-  }
+  if (reuse == MAT_REUSE_MATRIX && A == *matout && M != N) SETERRQ(PETSC_ERR_SUP,"Supports square matrix only in-place");
   if (reuse == MAT_INITIAL_MATRIX || A == *matout) {
     ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,N,M);CHKERRQ(ierr);
