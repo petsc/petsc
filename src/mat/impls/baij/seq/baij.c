@@ -1422,7 +1422,7 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,MatReuse reuse,Mat *B)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
-  if (*B != A) {
+  if (reuse == MAT_INITIAL_MATRIX || *B != A) {
     *B = C;
   } else {
     ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);

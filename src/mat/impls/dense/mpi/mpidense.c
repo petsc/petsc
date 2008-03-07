@@ -972,7 +972,7 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,MatReuse reuse,Mat *matout)
   ierr = PetscFree(rwork);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*matout != A) {
+  if (reuse == MAT_INITIAL_MATRIX || *matout != A) {
     *matout = B;
   } else {
     ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
