@@ -15,7 +15,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
                    ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c \
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c ex122.c\
-                   ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c
+                   ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c ex121.c ex122.c ex123.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F
 
 include ${PETSC_DIR}/conf/base
@@ -461,6 +461,10 @@ ex121: ex121.o chkopts
 ex122: ex122.o chkopts
 	-${CLINKER} -o ex122 ex122.o ${PETSC_MAT_LIB}
 	${RM} ex122.o
+
+ex123: ex123.o chkopts
+	-${CLINKER} -o ex123 ex123.o ${PETSC_MAT_LIB}
+	${RM} ex123.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -1140,7 +1144,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PET
                                  ex16.rm ex55.PETSc runex55 runex55_2 ex55.rm ex59.PETSc runex59 runex59_2 runex59_3 \
                                  ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
                                  ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
-                                 ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm \
+                                 ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm ex104.PETSc ex104.rm\
                                  ex109.PETSc runex109 runex109_2 ex109.rm ex110.PETSc runex110 ex110.rm ex122.PETSc runex122 ex122.rm \
                                  ex114.PETSc runex114 ex114.rm ex118.PETSc ex118.rm ex119.PETSc ex119.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc runex7 ex7.rm \
@@ -1170,7 +1174,7 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm 
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
-TESTEXAMPLES_PLAPACK 	       = ex103.PETSc ex103.rm ex107.PETSc ex107.rm ex115.PETSc ex115.rm
+TESTEXAMPLES_PLAPACK 	       = ex103.PETSc ex103.rm ex107.PETSc ex107.rm ex115.PETSc ex115.rm ex123.PETSc ex123.rm
 TESTEXAMPLES_FFTW	       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm ex121.PETSc runex121 ex121.rm
 
 include ${PETSC_DIR}/conf/test

@@ -1599,9 +1599,12 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   PetscScalar    _DOne=1.0,_DZero=0.0;
 
   PetscFunctionBegin;
-  m = PetscBLASIntCast(A->rmap.n);
+  m = PetscBLASIntCast(A->cmap.n);
   n = PetscBLASIntCast(B->cmap.n);
-  k = PetscBLASIntCast(A->cmap.n);
+  k = PetscBLASIntCast(A->rmap.n);
+  /*
+     Note the m and n arguments below are the number rows and columns of A', not A!
+  */
   BLASgemm_("T","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda);
   PetscFunctionReturn(0);
 }
