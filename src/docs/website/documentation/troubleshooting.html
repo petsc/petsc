@@ -166,6 +166,9 @@ problem.<br>
 &nbsp; <br>
  If -malloc_debug does not help for GNU/Linux you can try using&nbsp;<a href="http://valgrind.org">http://valgrind.org </a>to look for memory corruption,
 &nbsp;on the Apple do "man libgmalloc" to see how to detect memory corruption.</span></font></p>
+
+mpiexec -np <np> valgrind -q --tool=memcheck --num-callers=20 petscprogram petscoptions
+
   </li>
   <li><font color="#ff0000"><span style="color: rgb(0, 0, 0);"><span style="font-weight: bold;"></span></span></font><font color="#ff0000"><strong><a name="signal"></a>Symptom</strong></font><font color="#ff0000"><span style="color: rgb(0, 0, 0);">: Caught signal</span></font><font face="Terminal">: </font>
     <p><font color="#ff0000"><strong>Problem:&nbsp;</strong></font><font color="#ff0000"><span style="color: rgb(0, 0, 0);">this is most likely due to memory corruption, see <a href="#corrupt">Corrupt Argument</a></span></font><font color="#ff0000"><strong><span style="color: rgb(0, 0, 0);"></span><br>

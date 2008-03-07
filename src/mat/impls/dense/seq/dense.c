@@ -1085,7 +1085,7 @@ PetscErrorCode MatTranspose_SeqDense(Mat A,MatReuse reuse,Mat *matout)
 
   PetscFunctionBegin;
   v = mat->v; m = A->rmap.n; M = mat->lda; n = A->cmap.n;
-  if (*matout == A) { /* in place transpose */
+  if (reuse == MAT_REUSE_MATRIX && *matout == A) { /* in place transpose */
     if (m != n) {
       SETERRQ(PETSC_ERR_SUP,"Can not transpose non-square matrix in place");
     } else {
@@ -1599,9 +1599,12 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   PetscScalar    _DOne=1.0,_DZero=0.0;
 
   PetscFunctionBegin;
-  m = PetscBLASIntCast(A->rmap.n);
+  m = PetscBLASIntCast(A->cmap.n);
   n = PetscBLASIntCast(B->cmap.n);
-  k = PetscBLASIntCast(A->cmap.n);
+  k = PetscBLASIntCast(A->rmap.n);
+  /*
+     Note the m and n arguments below are the number rows and columns of A', not A!
+  */
   BLASgemm_("T","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda);
   PetscFunctionReturn(0);
 }

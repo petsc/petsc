@@ -106,7 +106,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscViewer viewer
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType() but before PetscViewerBinarySetFilename()
+    Notes: This must be called after PetscViewerSetType() but before PetscViewerFileSetName()
 
    Concepts: PetscViewerBinary^accessing info file
 

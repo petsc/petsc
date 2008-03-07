@@ -1454,7 +1454,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   MatScalar      *array = a->a;
 
   PetscFunctionBegin;
-  if (!B && m != A->cmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
+  if (reuse == MAT_REUSE_MATRIX && A == *B && m != A->cmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
 
   if (reuse == MAT_INITIAL_MATRIX || *B == A) {
     ierr = PetscMalloc((1+A->cmap.n)*sizeof(PetscInt),&col);CHKERRQ(ierr);
@@ -1479,7 +1479,7 @@ PetscErrorCode MatTranspose_SeqAIJ(Mat A,MatReuse reuse,Mat *B)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (*B != A) {
+  if (reuse == MAT_INITIAL_MATRIX || *B != A) {
     *B = C;
   } else {
     ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);

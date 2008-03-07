@@ -1590,7 +1590,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   MatScalar      *array;
 
   PetscFunctionBegin;
-  if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
+  if (reuse == MAT_REUSE_MATRIX && A == *matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
 
   ma = A->rmap.n; na = A->cmap.n; mb = a->B->rmap.n;
   ai = Aloc->i; aj = Aloc->j; 
@@ -1640,7 +1640,7 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
  
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*matout != A) {
+  if (reuse == MAT_INITIAL_MATRIX || *matout != A) {
     *matout = B;
   } else {
     ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
