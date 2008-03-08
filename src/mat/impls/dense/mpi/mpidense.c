@@ -1121,8 +1121,10 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   ierr = MatMPIDenseCopyToPlapack(A,A);CHKERRQ(ierr);
   ierr = MatMPIDenseCopyToPlapack(B,B);CHKERRQ(ierr);
 
+  /* 
   ierr = PLA_Global_show("A = ",luA->A,"%g ","");CHKERRQ(ierr);
   ierr = PLA_Global_show("B = ",luB->A,"%g ","");CHKERRQ(ierr);
+  */
 
   /* do the multiply in PLA  */
   ierr = PLA_Create_constants_conf_to(luA->A,NULL,NULL,&alpha);CHKERRQ(ierr);
@@ -1134,7 +1136,9 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   ierr = PLA_Obj_free(&alpha);CHKERRQ(ierr);
   ierr = PLA_Obj_free(&beta);CHKERRQ(ierr);
 
+  /*
   ierr = PLA_Global_show("C = ",luC->A,"%g ","");CHKERRQ(ierr);
+  */
   ierr = MatMPIDenseCopyFromPlapack(C,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1149,6 +1153,7 @@ PetscErrorCode MatMatMultSymbolic_MPIDense_MPIDense(Mat A,Mat B,PetscReal fill,M
 
   PetscFunctionBegin;
   if (A->cmap.n != B->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"A->cmap.n %d != B->rmap.n %d\n",A->cmap.n,B->rmap.n);
+  SETERRQ(PETSC_ERR_LIB,"Due to aparent bugs in PLAPACK,this is not currently supported");
   ierr = MatCreate(((PetscObject)B)->comm,&Cmat);CHKERRQ(ierr);
   ierr = MatSetSizes(Cmat,m,n,A->rmap.N,B->cmap.N);CHKERRQ(ierr);
   ierr = MatSetType(Cmat,MATMPIDENSE);CHKERRQ(ierr);
