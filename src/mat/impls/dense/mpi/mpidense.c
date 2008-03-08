@@ -1121,16 +1121,20 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   ierr = MatMPIDenseCopyToPlapack(A,A);CHKERRQ(ierr);
   ierr = MatMPIDenseCopyToPlapack(B,B);CHKERRQ(ierr);
 
+  ierr = PLA_Global_show("A = ",luA->A,"%g ","");CHKERRQ(ierr);
+  ierr = PLA_Global_show("B = ",luB->A,"%g ","");CHKERRQ(ierr);
+
   /* do the multiply in PLA  */
   ierr = PLA_Create_constants_conf_to(luA->A,NULL,NULL,&alpha);CHKERRQ(ierr);
   ierr = PLA_Create_constants_conf_to(luC->A,NULL,&beta,NULL);CHKERRQ(ierr);
   CHKMEMQ;
 
-  ierr = PLA_Gemm(PLA_NO_TRANSPOSE,PLA_NO_TRANSPOSE,alpha,luA->A,luB->A,beta,luC->A);CHKERRQ(ierr);
+  ierr = PLA_Gemm(PLA_NO_TRANSPOSE,PLA_NO_TRANSPOSE,alpha,luA->A,luB->A,beta,luC->A);//CHKERRQ(ierr);
   CHKMEMQ;
   ierr = PLA_Obj_free(&alpha);CHKERRQ(ierr);
   ierr = PLA_Obj_free(&beta);CHKERRQ(ierr);
 
+  ierr = PLA_Global_show("C = ",luC->A,"%g ","");CHKERRQ(ierr);
   ierr = MatMPIDenseCopyFromPlapack(C,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

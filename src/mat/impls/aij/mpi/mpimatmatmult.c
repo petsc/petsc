@@ -218,9 +218,14 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   VecScatter             ctx = aij->Mvctx; 
   VecScatter_MPI_General *from = (VecScatter_MPI_General*) ctx->fromdata;
   VecScatter_MPI_General *to   = ( VecScatter_MPI_General*) ctx->todata;
+  PetscInt               m=A->rmap.n,n=B->cmap.n;
 
   PetscFunctionBegin; 
-  ierr = MatMatMultSymbolic_MPIDense_MPIDense(A,B,0.0,C);
+  ierr = MatCreate(((PetscObject)B)->comm,C);CHKERRQ(ierr);
+  ierr = MatSetSizes(*C,m,n,A->rmap.N,B->cmap.N);CHKERRQ(ierr);
+  ierr = MatSetType(*C,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscContainerCreate(((PetscObject)A)->comm,&cont);CHKERRQ(ierr);
   ierr = PetscNew(MPIAIJ_MPIDense,&contents);CHKERRQ(ierr);
