@@ -97,7 +97,7 @@ class Configure(script.Script):
     return ret
 
   #################################
-  # Define and Substitution Support
+  # Define and Substitution Supported
   def addMakeRule(self, name, dependencies, rule = []):
     '''Designate that "name" should be rule in the makefile header (bmake file)'''
     self.framework.logPrint('Defined make rule "'+name+'" with dependencies "'+str(dependencies)+'" and code '+str(rule))

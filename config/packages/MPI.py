@@ -410,6 +410,10 @@ class Configure(config.package.Package):
       args.append('--with-device='+self.argDB['download-mpich-device'])
     args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
+    # make MPICH behave properly for valgrind
+    if self.argDB['with-debugging']:
+      args.append('--enable-g=meminit')    
+      args.append('--enable-fast')    
     args = ' '.join(args)
     configArgsFilename = os.path.join(confDir,self.package)
     try:
