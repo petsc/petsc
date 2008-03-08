@@ -86,6 +86,8 @@ class Configure(script.Script):
     return ''
 
   def executeTest(self, test, args = [], kargs = {}):
+    import time
+
     self.logWrite('================================================================================\n')
     self.logWrite('TEST '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')\n')
     self.logPrint('TESTING: '+str(test.im_func.func_name)+' from '+str(test.im_class.__module__)+'('+str(test.im_func.func_code.co_filename)+':'+str(test.im_func.func_code.co_firstlineno)+')', debugSection = 'screen', indent = 0)

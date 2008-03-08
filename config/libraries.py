@@ -296,7 +296,7 @@ int checkInit(void) {
     ''' % guard
     body = '''
   int   argc    = 1;
-  char *argv[1] = {(char *) "conftest"};
+  char *argv[2] = {(char *) "conftest", NULL};
   void *lib;
   int (*init)(int, char **);
   int (*checkInit)(void);

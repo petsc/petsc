@@ -118,7 +118,7 @@ class Configure(config.package.Package):
       if foundBlas and foundLapack:
         self.framework.logPrint('Found cblaslapack (underscore) name mangling')
         self.f2c = 1
-    self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack_id_')
+    self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack311_id_')
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
@@ -133,12 +133,14 @@ class Configure(config.package.Package):
       raise RuntimeError('You cannot set both the library containing BLAS/LAPACK with --with-blas-lapack-lib=<lib>\nand the directory to search with --with-blas-lapack-dir=<dir>')
 
     if self.framework.argDB['download-c-blas-lapack']:
-      self.download= 'ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack.tar.gz'
+      self.download= 'ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack-3.1.1.tar.gz'
       self.downloadname = 'c-blas-lapack'
+      self.downloaddirname = 'f2cblaslapack-3.1.1'
     elif self.framework.argDB['download-f-blas-lapack']:
-      self.download= 'ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack.tar.gz'
+      self.download= 'ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack-3.1.1.tar.gz'
       self.downloadname = 'f-blas-lapack'
-        
+      self.downloaddirname = 'fblaslapack-3.1.1'
+
     if self.framework.argDB['download-c-blas-lapack'] == 1 or isinstance(self.framework.argDB['download-c-blas-lapack'], str):
       if isinstance(self.framework.argDB['download-c-blas-lapack'], str):
         self.download= 'file://'+os.path.abspath(self.framework.argDB['download-c-blas-lapack'])
@@ -152,6 +154,7 @@ class Configure(config.package.Package):
         f2cLibs = f2cLibs+self.libraries.math
       yield ('Downloaded BLAS/LAPACK library', f2cLibs, os.path.join(libdir,'libf2clapack.a'), 0)
       raise RuntimeError('Could not use downloaded c-blas-lapack?')
+
     if self.framework.argDB['download-f-blas-lapack'] == 1  or isinstance(self.framework.argDB['download-f-blas-lapack'], str):
       if isinstance(self.framework.argDB['download-f-blas-lapack'], str):
         self.download= 'file://'+os.path.abspath(self.framework.argDB['download-f-blas-lapack'])
@@ -283,15 +286,13 @@ class Configure(config.package.Package):
     return ''
 
   def downLoadBlasLapack(self, f2c, l):
-    self.framework.log.write('Downloading '+l+'blaslapack\n')
+    self.framework.log.write('Downloading '+self.downloaddirname+'\n')
     if self.framework.externalPackagesDir is None:
       packages = os.path.abspath('externalpackages')
     else:
       packages = self.framework.externalPackagesDir
     if not os.path.isdir(packages):
       os.mkdir(packages)
-    if f2c == 'f2c':
-      self.f2c = 1
     if f2c == 'f':
       self.setCompilers.pushLanguage('FC')
       if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
@@ -299,8 +300,8 @@ class Configure(config.package.Package):
       self.setCompilers.popLanguage()
     libdir = os.path.join(self.defaultInstallDir,self.arch,'lib')
     confdir = os.path.join(self.defaultInstallDir,self.arch,'conf')
-    if not os.path.isdir(os.path.join(packages,f2c+'blaslapack')):
-      self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
+    if not os.path.isdir(os.path.join(packages,self.downloaddirname)):
+      self.framework.log.write('Actually need to ftp '+self.downloaddirname+'\n')
 
       import install.retrieval
       retriever = install.retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
@@ -310,12 +311,12 @@ class Configure(config.package.Package):
         retriever.genericRetrieve(self.download,packages,self.downloadname)
       except RuntimeError, e:
         raise RuntimeError(e)
-      self.framework.actions.addArgument('BLAS/LAPACK', 'Download', 'Downloaded PETSc '+f2c+'blaslapack into '+os.path.dirname(libdir))
+      self.framework.actions.addArgument('BLAS/LAPACK', 'Download', 'Downloaded PETSc '+self.downloaddirname + ' into '+os.path.dirname(libdir))
     else:
-      self.framework.log.write('Found '+l+'blaslapack, do not need to download\n')
+      self.framework.log.write('Found '+self.downloaddirname+', do not need to download\n')
     if not os.path.isdir(libdir):
       os.mkdir(libdir)
-    blasDir = os.path.join(packages,f2c+'blaslapack')
+    blasDir = os.path.join(packages,self.downloaddirname)
     g = open(os.path.join(blasDir,'tmpmakefile'),'w')
     f = open(os.path.join(blasDir,'makefile'),'r')    
     line = f.readline()
@@ -379,17 +380,17 @@ class Configure(config.package.Package):
     f.close()
     g.close()
     if os.path.isfile(os.path.join(confdir,self.package)) and (SourceDB.getChecksum(os.path.join(confdir,self.package)) == SourceDB.getChecksum(os.path.join(blasDir,'tmpmakefile'))):
-      self.framework.log.write('Do not need to compile '+l+'blaslapack, already compiled\n')
+      self.framework.log.write('Do not need to compile '+self.downloaddirname+', already compiled\n')
       return libdir
     try:
       self.logPrintBox('Compiling '+l.upper()+'BLASLAPACK; this may take several minutes')
       output  = config.base.Configure.executeShellCommand('cd '+blasDir+';make -f tmpmakefile cleanblaslapck cleanlib; make -f tmpmakefile', timeout=2500, log = self.framework.log)[0]
     except RuntimeError, e:
-      raise RuntimeError('Error running make on '+l+'blaslapack: '+str(e))
+      raise RuntimeError('Error running make on '+self.downloaddirname+': '+str(e))
     try:
       output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f lib'+f2c+'blas.'+self.setCompilers.AR_LIB_SUFFIX+' lib'+f2c+'lapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)[0]
     except RuntimeError, e:
-      raise RuntimeError('Error moving '+l+'blaslapack libraries: '+str(e))
+      raise RuntimeError('Error moving '+self.downloaddirname+' libraries: '+str(e))
     try:
       output  = config.base.Configure.executeShellCommand('cd '+blasDir+';cp -f tmpmakefile '+os.path.join(confdir,self.package), timeout=30, log = self.framework.log)[0]
     except RuntimeError, e:
