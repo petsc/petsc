@@ -6882,10 +6882,11 @@ within the makefile.
 {\small
 \begin{verbatim}
    ALL: ex2
-   CFLAGS   =
-   FFLAGS   =
-   CPPFLAGS =
-   FPPFLAGS =
+   CFLAGS     =
+   FFLAGS     =
+   CPPFLAGS   =
+   FPPFLAGS   =
+   CLEANFILES = ex2
 
    include ${PETSC_DIR}/conf/base
 
@@ -6918,8 +6919,8 @@ include variables instead of base. That is use something like
 \caption{Sample PETSc Makefile that does {\bf not} use PETSc's rules for compiling}
 \label{fig_make1}
 \end{figure}
-The variables \trl{${PETSC_CC_INCLUDES}} and \trl{${PETSC_FC_INCLUDES}}
-and PETSC_LIB are defined by the included conf/variables file.
+The variables \trl{${PETSC_CC_INCLUDES}}, \trl{${PETSC_FC_INCLUDES}}
+and \trl{${PETSC_LIB}} are defined by the included conf/variables file.
 
 If you do not wish to include any PETSc makefiles in your makefile,
 you can use the commands (run in the PETSc root directory) to get the information
