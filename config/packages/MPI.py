@@ -524,6 +524,25 @@ class Configure(config.package.Package):
       self.logPrint('SGI MPI test failure')
       return 0
 
+  def CxxMPICheck(self):
+    '''Make sure C++ can compiel and link'''
+    if not hasattr(self.compilers, 'CXX'):
+      return 0
+    # Fortran compiler is being used - so make sure mpif.h exists
+    self.libraries.pushLanguage('Cxx')
+    oldFlags = self.compilers.CPPFLAGS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.framework.log.write('Checking for header mpi.h\n')
+    if not self.libraries.checkCompile(includes = '#include <mpi.h>\n'):
+      raise RuntimeError('C++ error! mpi.h could not be located at: '+str(self.include))
+    # check if MPI_Finalize from c++ works
+    self.framework.log.write('Checking for C++ MPI_Finalize()\n')
+    if not self.libraries.check(self.lib, 'MPI_Finalize', prototype = '#include <mpi.h>', call = 'int ierr;\nierr = MPI_Finalize();', cxxMangle = 1):
+      raise RuntimeError('C++ error! MPI_Finalize() could not be located!')
+    self.compilers.CPPFLAGS = oldFlags
+    self.libraries.popLanguage()
+    return
+
   def FortranMPICheck(self):
     '''Make sure fortran include [mpif.h] and library symbols are found'''
     if not hasattr(self.compilers, 'FC'):
@@ -563,6 +582,7 @@ class Configure(config.package.Package):
     self.executeTest(self.configureTypes)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.SGIMPICheck)
+    self.executeTest(self.CxxMPICheck)
     self.executeTest(self.FortranMPICheck)
     if self.libraries.check(self.dlib, "MPI_Alltoallw") and self.libraries.check(self.dlib, "MPI_Type_create_indexed_block"):
       self.addDefine('HAVE_MPI_ALLTOALLW',1)
