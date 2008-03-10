@@ -91,6 +91,9 @@ class Configure(config.base.Configure):
           if not bopt == '' and self.getOptionalFlagsName(language) in self.framework.argDB:
             # treat user supplied optons as single option - as it coud include options separated by spaces '-tp k8-64'
             flags = [self.framework.argDB[self.getOptionalFlagsName(language)]]
+          elif bopt == '' and self.getCompilerFlagsName(language) in self.framework.argDB:
+            self.logPrint('Ignoring default options which were overridden using --'+self.getCompilerFlagsName(language))
+            flags = []
           else:
             flags = options.getCompilerFlags(language, self.setCompilers.getCompiler(), bopt)
           for testFlag in flags:
