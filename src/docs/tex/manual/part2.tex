@@ -6798,7 +6798,7 @@ with the C++ compiler, one should use the config/configure.py option \trl{--with
 
 \subsection{Makefile Commands} \label{sec_common}
 
-The directory \trl{${PETSC_DIR}/bmake} contains virtually all
+The directory \trl{${PETSC_DIR}/conf} contains virtually all
 makefile commands and customizations to enable portability across
 different architectures.  Most makefile commands for maintaining the
 PETSc system are defined in the file \trl{${PETSC_DIR}/conf}.  
@@ -6827,22 +6827,19 @@ the debugging library for all Krylov subspace solvers would be built.
 \subsection{Customized Makefiles}
 \label{sec_custom}
 
-The directory \trl{${PETSC_DIR}/bmake} contains a subdirectory for each 
+The directory \trl{${PETSC_DIR}/} contains a subdirectory for each 
 architecture that contains machine-specific information, enabling the
-portability of our makefile system.
-For instance, for Sun workstations running OS 5.7, the 
-directory is called \trl{solaris}.  Each architecture directory contains
-three makefiles:
+portability of our makefile system, these are \trl{${PETSC_DIR}/${PETSC_ARCH}/conf}.
+ Each architecture directory contains
+two makefiles:
 \begin{itemize}
-\item \trl{packages} - locations of all needed packages for a particular site. 
-      This file (discussed below) is usually the only one that the user 
-      needs to alter.
-\item \trl{variables} - definitions of the compilers, linkers, etc.
-\item \trl{rules} - some build rules specific to this machine.
+\item \trl{petscvariables} - definitions of the compilers, linkers, etc.
+\item \trl{petscrules} - some build rules specific to this machine.
 \end{itemize}
+These files are generated automatically when you run config/configure.py.
 
 The architecture independent makefiles, are located in
-\trl{${PETSC_DIR}/conf}, and the machine-spcecific
+\trl{${PETSC_DIR}/conf}, and the machine-specific
 makefiles get included from here.
 
 \section{PETSc Flags}
@@ -6851,7 +6848,7 @@ makefiles get included from here.
 PETSc has several flags that determine how the source code will be
 compiled.  The default flags for particular versions are specified by
 the variable \trl{PETSCFLAGS} within the base files of \trl{
-${PETSC_DIR}/bmake/${PETSC_ARCH}}, discussed in Section
+${PETSC_DIR}/${PETSC_ARCH}/conf}, discussed in Section
 ~\ref{sec_custom}.  The flags include
 \begin{itemize}
 \item \trl{PETSC_USE_DEBUG} - The PETSc debugging options are activated. We 
@@ -6864,9 +6861,7 @@ ${PETSC_DIR}/bmake/${PETSC_ARCH}}, discussed in Section
 
 \subsection{Sample Makefiles}
 
-Maintaining portable PETSc makefiles is very simple. In Figures
-\ref{fig_make1}, \ref{fig_make2}, and \ref{fig_make3} we present three
-sample makefiles.  
+Maintaining portable PETSc makefiles is very simple.
 
 The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraires.
@@ -6887,10 +6882,11 @@ within the makefile.
 {\small
 \begin{verbatim}
    ALL: ex2
-   CFLAGS   =
-   FFLAGS   =
-   CPPFLAGS =
-   FPPFLAGS =
+   CFLAGS     =
+   FFLAGS     =
+   CPPFLAGS   =
+   FPPFLAGS   =
+   CLEANFILES = ex2
 
    include ${PETSC_DIR}/conf/base
 
@@ -6902,6 +6898,38 @@ within the makefile.
 \caption{Sample PETSc Makefile for a Single Program}
 \label{fig_make1}
 \end{figure}
+
+For users who wish to manage the compile process themselves
+and {\bf not} use the rules PETSc uses for compiling programs
+include variables instead of base. That is use something like
+
+\begin{figure}[H]
+{\small
+\begin{verbatim}
+   ALL: ex2
+   CFLAGS   = ${PETSC_CC_INCLUDES}
+   FFLAGS   = ${PETSC_FC_INCLUDES}
+
+   include ${PETSC_DIR}/conf/variables
+
+   ex2: ex2.o
+           mylinkercommand -o ex2 ex2.o  ${PETSC_LIB}
+\end{verbatim}
+}
+\caption{Sample PETSc Makefile that does {\bf not} use PETSc's rules for compiling}
+\label{fig_make1}
+\end{figure}
+The variables \trl{${PETSC_CC_INCLUDES}}, \trl{${PETSC_FC_INCLUDES}}
+and \trl{${PETSC_LIB}} are defined by the included conf/variables file.
+
+If you do not wish to include any PETSc makefiles in your makefile,
+you can use the commands (run in the PETSc root directory) to get the information
+needed by your makefile: make getlinklibs getincludedirs getpetscflags.
+All the libraries listed need to be linked into your executable and the 
+include directories and flags need to be passed to the compiler usually
+this is done with "CFLAGS = list of -I and other flags" and
+"FFLAGS = list of -I and other flags" in your makefile.
+
 
 
 \findex{PETSC_LIB} \findex{PETSC_LIB}

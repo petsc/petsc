@@ -189,7 +189,7 @@ PetscErrorCode MatTranspose_SeqAIJ_FAST(Mat A,MatReuse reuse,Mat *B)
     at->nonew   = 0;
   }
 
-  if (*B != A) {
+  if (reuse == MAT_INITIAL_MATRIX || *B != A) {
     *B = At;
   } else {
     ierr = MatHeaderCopy(A,At);

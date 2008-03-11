@@ -9,6 +9,7 @@
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
 #endif
+extern PetscTruth PetscOpenMPWorker;
 
 /* -----------------------------------------------------------------------------------------*/
 
@@ -743,31 +744,33 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg1);CHKERRQ(ierr)
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr)
 
-  flg3 = PETSC_FALSE; /* default value is required */
-  ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
-  if (flg3) {
-    if (!flg2) { /* have not yet printed the options */
-      ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);
-    }
-    if (!nopt) { 
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
-    } else if (nopt == 1) {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
-    } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);CHKERRQ(ierr);
-    }
-  } 
+  if (PetscOpenMPWorker) { /* worker processes skip this because they do not usually process options */
+    flg3 = PETSC_FALSE; /* default value is required */
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
+    if (flg3) {
+      if (!flg2) { /* have not yet printed the options */
+	ierr = PetscOptionsPrint(stdout);CHKERRQ(ierr);
+      }
+      if (!nopt) { 
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are no unused options.\n");CHKERRQ(ierr);
+      } else if (nopt == 1) {
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"There is one unused database option. It is:\n");CHKERRQ(ierr);
+      } else {
+	ierr = PetscPrintf(PETSC_COMM_WORLD,"There are %d unused database options. They are:\n",nopt);CHKERRQ(ierr);
+      }
+    } 
 #if defined(PETSC_USE_DEBUG)
-  if (nopt && !flg3 && !flg1) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
-    ierr = PetscOptionsLeft();CHKERRQ(ierr);
-  } else if (nopt && flg3) {
+    if (nopt && !flg3 && !flg1) {
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! There are options you set that were not used!\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"WARNING! could be spelling mistake, etc!\n");CHKERRQ(ierr);
+      ierr = PetscOptionsLeft();CHKERRQ(ierr);
+    } else if (nopt && flg3) {
 #else 
-  if (nopt && flg3) {
+    if (nopt && flg3) {
 #endif
-    ierr = PetscOptionsLeft();CHKERRQ(ierr);
+      ierr = PetscOptionsLeft();CHKERRQ(ierr);
+    }
   }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-log_history",&flg1);CHKERRQ(ierr);

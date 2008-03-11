@@ -4,11 +4,11 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matfdcoloringsetfunctionts_      MATFDCOLORINGSETFUNCTIONTS
-#define matfdcoloringsetfunctionsnes_    MATFDCOLORINGSETFUNCTIONSNES
+#define matfdcoloringsetfunction_        MATFDCOLORINGSETFUNCTIONS
 #define matfdcoloringview_               MATFDCOLORINGVIEW
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matfdcoloringsetfunctionts_      matfdcoloringsetfunctionts
-#define matfdcoloringsetfunctionsnes_    matfdcoloringsetfunctionsnes
+#define matfdcoloringsetfunction_        matfdcoloringsetfunction
 #define matfdcoloringview_               matfdcoloringview
 #endif
 

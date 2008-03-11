@@ -98,7 +98,7 @@ if [ $? -eq 0 ]; then
   flag2=`echo $file | sed -e "s?ftp://[-a-zA-Z_0-9.]*.gz?yes?g"`
 
   if [ "$flag1" = "yes" -o "$flag2" = "yes" ] ; then 
-    wget $* > /dev/null 2>&1
+    wget -r $* > /dev/null 2>&1
     if [ $? -ne 0 ]; then
       exit 0
     fi

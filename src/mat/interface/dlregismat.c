@@ -16,6 +16,7 @@ const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
               "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","MatOption","MAT_",0};
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscPLAPACKInitializePackage(const char[]);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatInitializePackage"
@@ -42,8 +43,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
 
   PetscFunctionBegin;
   /* Inialize subpackage */
-  ierr = MatMFFDInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   if (initialized) PetscFunctionReturn(0);
+  ierr = MatMFFDInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_PLAPACK)
+  ierr = PetscPLAPACKInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&MAT_COOKIE,              "Matrix");CHKERRQ(ierr);

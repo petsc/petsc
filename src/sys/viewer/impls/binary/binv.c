@@ -106,7 +106,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscViewer viewer
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType() but before PetscViewerBinarySetFilename()
+    Notes: This must be called after PetscViewerSetType() but before PetscViewerFileSetName()
 
    Concepts: PetscViewerBinary^accessing info file
 
@@ -235,7 +235,7 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
       char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
       FILE *fp;
       /* compress the file */
-      ierr = PetscStrcpy(par,"gzip ");CHKERRQ(ierr);
+      ierr = PetscStrcpy(par,"gzip -f ");CHKERRQ(ierr);
       ierr = PetscStrcat(par,vbinary->filename);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)
       ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);

@@ -1584,13 +1584,13 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   Mat_SeqAIJ     *Aloc=(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data;
   PetscErrorCode ierr;
-  PetscInt       M = A->rmap.N,N = A->cmap.N,ma,na,mb,*ai,*aj,*bi,*bj,row,*cols,i,*d_nnz;
+  PetscInt       M = A->rmap.N,N = A->cmap.N,ma,na,mb,*ai,*aj,*bi,*bj,row,*cols,*cols_tmp,i,*d_nnz;
   PetscInt       cstart=A->cmap.rstart,ncol;
   Mat            B;
   MatScalar      *array;
 
   PetscFunctionBegin;
-  if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
+  if (reuse == MAT_REUSE_MATRIX && A == *matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
 
   ma = A->rmap.n; na = A->cmap.n; mb = a->B->rmap.n;
   ai = Aloc->i; aj = Aloc->j; 
@@ -1630,16 +1630,17 @@ PetscErrorCode MatTranspose_MPIAIJ(Mat A,MatReuse reuse,Mat *matout)
   array = Bloc->a;
   row = A->rmap.rstart; 
   for (i=0; i<bi[mb]; i++) {cols[i] = a->garray[bj[i]];}
+  cols_tmp = cols;
   for (i=0; i<mb; i++) {
     ncol = bi[i+1]-bi[i];
-    ierr = MatSetValues(B,ncol,cols,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
-    row++; array += ncol; cols += ncol;
+    ierr = MatSetValues(B,ncol,cols_tmp,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
+    row++; array += ncol; cols_tmp += ncol;
   }
-  ierr = PetscFree(cols);CHKERRQ(ierr);
+  ierr = PetscFree(cols);CHKERRQ(ierr);  
  
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  if (*matout != A) {
+  if (reuse == MAT_INITIAL_MATRIX || *matout != A) {
     *matout = B;
   } else {
     ierr = MatHeaderCopy(A,B);CHKERRQ(ierr);
