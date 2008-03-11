@@ -19,10 +19,10 @@ class Configure(PETSc.package.Package):
     else:
        args = ['--prefix='+self.installDir, '--with-cc='+'"'+self.setCompilers.CC+'"']          
     args = ' '.join(args)
-    fd = file(os.path.join(self.installDir,'cproto'), 'w')
+    fd = file(os.path.join(self.packageDir,'cproto.args'), 'w')
     fd.write(args)
     fd.close()
-    if self.installNeeded('cproto'):
+    if self.installNeeded('cproto.args'):
       try:
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
@@ -31,6 +31,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make; make install on cproto: '+str(e))
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir,'cproto.args')+' '+self.confDir+'/cproto', timeout=5, log = self.framework.log)[0]
       self.framework.actions.addArgument('CPROTO', 'Install', 'Installed cproto into '+self.installDir)
     self.binDir = os.path.join(self.installDir, 'bin')
     self.cproto = os.path.join(self.binDir, 'cproto')
@@ -43,7 +44,6 @@ class Configure(PETSc.package.Package):
   def configure(self):
     '''Determine whether the cproto exist or not'''
     if self.framework.argDB.has_key('download-cproto') and self.framework.argDB['download-cproto']:
-      print 'herrlo'
 
       self.getExecutable('cproto', getFullPath = 1)
       
@@ -52,7 +52,6 @@ class Configure(PETSc.package.Package):
         self.framework.logPrint('Found cproto, will not install cproto')
       else:
         self.framework.logPrint('Installing cproto')
-        print 'herrlo'
         PETSc.package.Package.configure(self)
     return
 
