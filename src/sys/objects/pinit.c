@@ -744,7 +744,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&flg1);CHKERRQ(ierr)
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr)
 
-  if (PetscOpenMPWorker) { /* worker processes skip this because they do not usually process options */
+  if (!PetscOpenMPWorker) { /* worker processes skip this because they do not usually process options */
     flg3 = PETSC_FALSE; /* default value is required */
     ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsAllUsed(&nopt);CHKERRQ(ierr);
