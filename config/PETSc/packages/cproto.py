@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+from __future__ import generators
+import config.base
+import os
+import re
+import PETSc.package
+    
+class Configure(PETSc.package.Package):
+  def __init__(self, framework):
+    PETSc.package.Package.__init__(self, framework)
+    self.download         = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/cproto-4.6.tar.gz']
+    self.complex          = 1
+    self.double           = 0;
+    self.requires32bitint = 0;
+    
+  def Install(self):
+    if self.framework.argDB['with-batch']:
+       args = ['--prefix='+self.installDir]
+    else:
+       args = ['--prefix='+self.installDir, '--with-cc='+'"'+self.setCompilers.CC+'"']          
+    args = ' '.join(args)
+    fd = file(os.path.join(self.installDir,'cproto'), 'w')
+    fd.write(args)
+    fd.close()
+    if self.installNeeded('cproto'):
+      try:
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running configure on cproto: '+str(e))
+      try:
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running make; make install on cproto: '+str(e))
+      self.framework.actions.addArgument('CPROTO', 'Install', 'Installed cproto into '+self.installDir)
+    self.binDir = os.path.join(self.installDir, 'bin')
+    self.cproto = os.path.join(self.binDir, 'cproto')
+    self.addMakeMacro('CPROTO',self.cproto)
+    return self.installDir
+
+  def alternateConfigureLibrary(self):
+    self.checkDownload(1)
+    
+  def configure(self):
+    '''Determine whether the cproto exist or not'''
+    if self.framework.argDB.has_key('download-cproto') and self.framework.argDB['download-cproto']:
+      print 'herrlo'
+
+      self.getExecutable('cproto', getFullPath = 1)
+      
+      if hasattr(self, 'cproto'):
+        self.addMakeMacro('CPROTO ', self.cproto)
+        self.framework.logPrint('Found cproto, will not install cproto')
+      else:
+        self.framework.logPrint('Installing cproto')
+        print 'herrlo'
+        PETSc.package.Package.configure(self)
+    return
+
+
+if __name__ == '__main__':
+  import config.framework
+  import sys
+  framework = config.framework.Framework(sys.argv[1:])
+  framework.setupLogging(sys.argv[1:])
+  framework.children.append(Configure(framework))
+  framework.configure()
+  framework.dumpSubstitutions()
