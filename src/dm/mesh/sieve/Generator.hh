@@ -123,7 +123,7 @@ namespace ALE {
             args += "c";
           }
           if (constrained) {
-	    args = "zepQ";
+	    args = "zepDQ";
           }
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }

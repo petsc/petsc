@@ -72,6 +72,10 @@ mesh2: mesh2.o chkopts
 	-${CLINKER} -o mesh2 mesh2.o ${PETSC_DM_LIB}
 	${RM} -f mesh2.o
 
+meshing: meshing.o chkopts
+	-${CLINKER} -o meshing meshing.o ${PETSC_DM_LIB}
+	${RM} -f meshing.o
+
 overlap1: overlap1.o chkopts
 	-${CLINKER} -o overlap1 overlap1.o ${PETSC_DM_LIB}
 	${RM} -f overlap1.o
