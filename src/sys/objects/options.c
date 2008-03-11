@@ -268,7 +268,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
 {
-  char           string[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*final;
+  char           string[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],*first,*second,*third;
   PetscErrorCode ierr;
   size_t         i,len,startIndex;
   FILE           *fd;
@@ -287,9 +287,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
 
       ierr = PetscStrlen(string,&len);CHKERRQ(ierr);
 
-      /* replace tabs, ^M with " " */
+      /* replace tabs, ^M, \n with " " */
       for (i=0; i<len; i++) {
-        if (string[i] == '\t' || string[i] == '\r') {
+        if (string[i] == '\t' || string[i] == '\r' || string[i] == '\n') {
           string[i] = ' ';
         }
       }
@@ -300,11 +300,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
       if (first && first[0] == '-') {
-        if (second) {final = second;} else {final = first;}
-        ierr = PetscStrlen(final,&len);CHKERRQ(ierr);
-        while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
-          len--; final[len] = 0;
-        }
         ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
       } else if (first) {
         PetscTruth match;
@@ -313,8 +308,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
         if (match) {
           ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
           if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",second);
-          ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
-          if (third[len-1] == '\n') third[len-1] = 0;
           ierr = PetscOptionsSetAlias(second,third);CHKERRQ(ierr);
         }
       }
