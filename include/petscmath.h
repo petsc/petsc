@@ -345,7 +345,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar*,PetscScalar*,M
 #if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
 #define PetscIsInfOrNan(a) (isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a)))
 #elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
-#define PetscIsInfOrNan(a) (!_finite((PetscAbsScalar(a)) || _isnan(PetscAbsScalar(a)))
+#define PetscIsInfOrNan(a) (!_finite(PetscAbsScalar(a)) || _isnan(PetscAbsScalar(a)))
 #else
 #define PetscIsInfOrNan(a) ((a - a) != 0.0)
 #endif
