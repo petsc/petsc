@@ -83,9 +83,24 @@ class VTKViewer {
         if (!numbering->hasPoint(*p_iter)) continue;
         const value_type *array = field->restrictPoint(*p_iter);
         const int&        dim   = field->getFiberDimension(*p_iter);
+        ostringstream     line;
 
         // Perhaps there should be a flag for excluding boundary values
         if (dim != 0) {
+#if 1
+          if (verify) {line << *p_iter << " ";}
+          for(int d = 0; d < fiberDim; d++) {
+            if (d > 0) {
+              line << " ";
+            }
+            line << array[d];
+          }
+          for(int d = fiberDim; d < enforceDim; d++) {
+            line << " 0.0";
+          }
+          line << std::endl;
+          ierr = PetscViewerASCIIPrintf(viewer, "%s", line.str().c_str());CHKERRQ(ierr);
+#else
           if (verify) {ierr = PetscViewerASCIIPrintf(viewer, "%d ", *p_iter);CHKERRQ(ierr);}
           for(int d = 0; d < fiberDim; d++) {
             if (d > 0) {
@@ -101,6 +116,7 @@ class VTKViewer {
             ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+#endif
         }
       }
       for(int p = 1; p < field->commSize(); p++) {

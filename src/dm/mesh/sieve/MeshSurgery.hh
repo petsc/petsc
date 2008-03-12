@@ -128,10 +128,20 @@ d = vertices[3];
 1 = cells[0];
 2 = cells[1];
 
+a = order[0];
+b = order[1];
+c = order[2];
+
+a = order[3];
+b = order[4];
+d = order[5];
+
+//NOTE: REWRITE TO BE ORDERED
+
 */
 
 
-  void Surgery_2D_22Flip_Setup(Obj<Mesh> m, Mesh::point_type a, Mesh::point_type b, Mesh::point_type * cells, Mesh::point_type * vertices) {
+  void Surgery_2D_22Flip_Setup(Obj<Mesh> m, Mesh::point_type a, Mesh::point_type b, Mesh::point_type * cells, Mesh::point_type * vertices, int * order) {
     //given a and b, set up the rest of the data structure needed for the 2-2 ear flip
     vertices[0] = a;
     vertices[1] = b;
@@ -149,22 +159,39 @@ d = vertices[3];
     Obj<Mesh::sieve_type::coneSequence> corners = m->getSieve()->cone(cells[0]);
     Mesh::sieve_type::coneSequence::iterator c_iter     = corners->begin();
     Mesh::sieve_type::coneSequence::iterator c_iter_end = corners->end();
+    int index = 0;
     while (c_iter != c_iter_end) {
-      if (*c_iter != a && *c_iter != b) vertices[2] = *c_iter;
+      //PetscPrintf(m->comm(), "color: %d\n", c_iter.color());
+      if (*c_iter != a && *c_iter != b) {
+	vertices[2] = *c_iter;
+	order[2] = index;
+      } else if (*c_iter == a) {
+	order[0] = index;
+      } else {
+	order[1] = index;
+      }
       c_iter++;
+      index++;
     }
+    index = 0;
     corners = m->getSieve()->cone(cells[1]);
     c_iter      = corners->begin();
     c_iter_end  = corners->end();
     while (c_iter != c_iter_end) {
-      if (*c_iter != a && *c_iter != b) vertices[3] = *c_iter;
+      if (*c_iter != a && *c_iter != b) {
+	vertices[3] = *c_iter;
+	order[5] = index;
+      } else if (*c_iter == a) {
+	order[3] = index;
+      } else order[4] = index;
       c_iter++;
+      index++;
     }
     //PetscPrintf(m->comm(), "2-2 Ear: %d %d %d %d, %d %d\n", vertices[0], vertices[1], vertices[2], vertices[3], cells[0], cells[1]);
     return;
   }
 
-  PetscTruth Surgery_2D_22Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
+  PetscTruth Surgery_2D_22Flip_Possible(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices, int * order) {
     const double pi = M_PI;
     //VALIDITY CONDITION FOR THIS FLIP: cad and cbd must be (much) less than 180. 
     //we could probably have some angle heuristic for local delaunay approximation, but whatever.
@@ -189,7 +216,7 @@ d = vertices[3];
 
   //if this flip improves the ratio between the maximum angle, do it
 
-  PetscTruth Surgery_2D_22Flip_Preferable(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices) {
+  PetscTruth Surgery_2D_22Flip_Preferable(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices, int * order) {
     //does a BASIC test to see if this edge would do better flipped
     //change of plan: ALWAYS chuck the maximum angle
     //if abc + abd + bac + bad < cda + cdb + dca + dcb then flip (divide the larger angle)
@@ -215,7 +242,7 @@ d = vertices[3];
     return PETSC_FALSE;
   }
 
-  int Surgery_2D_22Flip(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices, Mesh::point_type maxIndex) {
+  int Surgery_2D_22Flip(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices, int * order, Mesh::point_type maxIndex) {
     //if (m->getDimension() != 2) {
     //  throw Exception("Wrong Flip Performed - Wrong ear or dimension");
     //}
@@ -225,14 +252,23 @@ d = vertices[3];
     s->removeCapPoint(cells[0]);
     s->removeBasePoint(cells[1]);
     s->removeCapPoint(cells[1]);  
-    s->addArrow(vertices[0], cells[0]);
-    s->addArrow(vertices[2], cells[0]);
     s->addArrow(vertices[3], cells[0]);
-    
-    s->addArrow(vertices[1], cells[1]);
+    if (order[0] < order[2]) {
+      s->addArrow(vertices[0], cells[0]);
+      s->addArrow(vertices[2], cells[0]);
+    } else {
+      s->addArrow(vertices[2], cells[0]);
+      s->addArrow(vertices[0], cells[0]);
+    }
     s->addArrow(vertices[2], cells[1]);
-    s->addArrow(vertices[3], cells[1]);
-    if (m->debug()) {
+    if (order[4] < order[5]) {
+      s->addArrow(vertices[1], cells[1]);
+      s->addArrow(vertices[3], cells[1]);
+    } else {
+      s->addArrow(vertices[3], cells[1]);
+      s->addArrow(vertices[1], cells[1]);
+    }
+    if (1) {
       //TEST the validity of the flip
       if (s->cone(cells[0])->size() != 3 || s->cone(cells[1])->size() != 3) throw Exception("Flip Failed -> 2->2");
   
@@ -336,7 +372,6 @@ a---------------b     a---------------b
       }
       v_iter++;
     }
-
     //check the validity of what we just did
     //PetscPrintf(m->comm(), "3-1 Flip: %d %d %d %d, %d %d %d\n", vertices[0], vertices[1], vertices[2], vertices[3], cells[0], cells[1], cells[2]);
   }
@@ -347,14 +382,15 @@ a---------------b     a---------------b
     return PETSC_TRUE;
   }
 
+  //EDIT: SEE IF THIS NOW PRESERVES ORDERINGS
   int Surgery_2D_31Flip(Obj<Mesh> m, Mesh::point_type * cells, Mesh::point_type * vertices, Mesh::point_type maxIndex) {
     Obj<Mesh::sieve_type> s = m->getSieve();
-    s->removeBasePoint(cells[0]);
+    //s->removeBasePoint(cells[0]);
     s->removeBasePoint(cells[1]);
     s->removeBasePoint(cells[2]);
     s->removeCapPoint(vertices[3]);
-    s->addArrow(vertices[0], cells[0]);
-    s->addArrow(vertices[1], cells[0]);
+    //s->addArrow(vertices[0], cells[0]);
+    //s->addArrow(vertices[1], cells[0]);
     s->addArrow(vertices[2], cells[0]);
     return maxIndex;
   }
@@ -746,7 +782,7 @@ b------a------c ->  b-------------c
     Mesh::sieve_type::supportSet remove_elements;
     while (as_iter != as_iter_end) {
       //shrink every element to b
-      s->addArrow(vertices[1], *as_iter);
+      s->addArrow(vertices[1], *as_iter, as_iter.color());
       if (s->cone(*as_iter)->size() != 4) remove_elements.insert(*as_iter);
       as_iter++;
     }
@@ -1667,6 +1703,7 @@ a, b, c, and d are on the boundary in question
     //if (on_boundary) PetscPrintf(m->comm(), "Boundary node.");
     Mesh::point_type cells[4];
     Mesh::point_type vertices[5];
+    int order[9];
     Obj<Mesh::sieve_type::supportSet> line = new Mesh::sieve_type::supportSet();
     Obj<Mesh::sieve_type::coneSet> neighbors = s->cone(s->support(vertex));
     //go through neighbors seeing if they are legitimate two-ears; if so then flip and repeat.
@@ -1710,9 +1747,9 @@ a, b, c, and d are on the boundary in question
           } else {
             //2->2 flip
             //PetscPrintf(m->comm(), "2-2 attempt\n");
-            Surgery_2D_22Flip_Setup(m, vertex, *n_iter, cells, vertices); 
-            if (Surgery_2D_22Flip_Possible(m, cells, vertices) == PETSC_TRUE) {
-              Surgery_2D_22Flip(m, cells, vertices, maxIndex);  //in 2D there are no cases where we have to take the maxIndex into account
+            Surgery_2D_22Flip_Setup(m, vertex, *n_iter, cells, vertices, order); 
+            if (Surgery_2D_22Flip_Possible(m, cells, vertices, order) == PETSC_TRUE) {
+              Surgery_2D_22Flip(m, cells, vertices, order, maxIndex);  //in 2D there are no cases where we have to take the maxIndex into account
               changed_neighbors = true;
             }
           }
@@ -1904,6 +1941,7 @@ a, b, c, and d are on the boundary in question
     //improve the edges of a vertex and traverse outwards to its neighbors; do until all vertices are done.  
     //DO NOT do edges that are in the boundary.
     Mesh::point_type cells_points[2], vertices_points[4];
+    int order[6];
     Obj<Mesh::sieve_type> s = m->getSieve();
     Obj<Mesh::label_sequence> vertices = m->depthStratum(0);
     ALE::Mesh::label_sequence::iterator v_iter = vertices->begin();
@@ -1923,19 +1961,19 @@ a, b, c, and d are on the boundary in question
           if (bound_m->getSieve()->nJoin1(line)->size() == 0) { //this line is NOT in the boundary mesh and therefore cool
             //now just check
             if (s->nJoin1(line)->size() == 2) {
-              Surgery_2D_22Flip_Setup(m, *n_iter, *v_iter, cells_points, vertices_points);
-              if (Surgery_2D_22Flip_Possible(m, cells_points, vertices_points)) 
-		if (Surgery_2D_22Flip_Preferable(m, cells_points, vertices_points)) {
-                  Surgery_2D_22Flip(m, cells_points, vertices_points, 0);
+              Surgery_2D_22Flip_Setup(m, *n_iter, *v_iter, cells_points, vertices_points, order);
+              if (Surgery_2D_22Flip_Possible(m, cells_points, vertices_points, order)) 
+		if (Surgery_2D_22Flip_Preferable(m, cells_points, vertices_points, order)) {
+                  Surgery_2D_22Flip(m, cells_points, vertices_points, order, 0);
                 }
             }
           }
         } else if (s->nJoin1(line)->size() == 2) { //quick error check; njoin1 of this thing in the mesh-to-be-improved should be of cardinality 2
           if (s->nJoin1(line)->size() == 2) {
-            Surgery_2D_22Flip_Setup(m, *n_iter, *v_iter, cells_points, vertices_points);
-            if (Surgery_2D_22Flip_Possible(m, cells_points, vertices_points)) 
-              if (Surgery_2D_22Flip_Preferable(m, cells_points, vertices_points)) {
-                Surgery_2D_22Flip(m, cells_points, vertices_points, 0);
+            Surgery_2D_22Flip_Setup(m, *n_iter, *v_iter, cells_points, vertices_points, order);
+            if (Surgery_2D_22Flip_Possible(m, cells_points, vertices_points, order)) 
+              if (Surgery_2D_22Flip_Preferable(m, cells_points, vertices_points, order)) {
+                Surgery_2D_22Flip(m, cells_points, vertices_points, order, 0);
               }
           }
         }
@@ -2013,37 +2051,56 @@ a, b, c, and d are on the boundary in question
 	Obj<Mesh::sieve_type::supportSequence> v_support = new_sieve->support(*vtr_iter);
 	Mesh::sieve_type::supportSequence::iterator vs_iter = v_support->begin();
 	Mesh::sieve_type::supportSequence::iterator vs_iter_end = v_support->end();
-	//find a reasonable neighbor to contract to
-	Mesh::point_type neighbor = *vtr_iter;
-	Obj<Mesh::sieve_type::coneSet> neighbors = new_sieve->cone(v_support);
-        if (neighbors->size() <= 1) {
+        if (v_support->size() != 2) {
           //leave this vertex alone
         } else {
-	  Mesh::sieve_type::coneSet::iterator n_iter = neighbors->begin();
-	  Mesh::sieve_type::coneSet::iterator n_iter_end = neighbors->end(); 
-          while (n_iter != n_iter_end && neighbor == *vtr_iter) {
-            neighbor = *n_iter;
-            n_iter++;
-          }
-          //next, contract all edges to this neighbor
-          edges_to_remove.clear();
-          while (vs_iter != vs_iter_end) {
-            new_sieve->addArrow(neighbor, *vs_iter);
-            if(new_sieve->cone(*vs_iter)->size() < 3) edges_to_remove.insert(*vs_iter);
-            vs_iter++;
-          }
-        //next, remove the vertex and the edges that should be removed
-          new_sieve->removeBasePoint(*vtr_iter);
-          new_sieve->removeCapPoint(*vtr_iter);
-          Mesh::sieve_type::supportSet::iterator etr_iter = edges_to_remove.begin();
-          Mesh::sieve_type::supportSet::iterator etr_iter_end = edges_to_remove.end();
-          while (etr_iter != etr_iter_end) {
-            new_sieve->removeBasePoint(*etr_iter);
-            new_sieve->removeCapPoint(*etr_iter);
-            etr_iter++;
-          }
+	  Mesh::point_type involved_edges[2];
+	  Mesh::point_type involved_vertices[2];
+	  int involved_index = 0;
+	  while (vs_iter != vs_iter_end) {
+	    involved_edges[involved_index] = *vs_iter;
+	    Obj<Mesh::sieve_type::coneSequence> s_cone = new_sieve->cone(*vs_iter);
+	    Mesh::sieve_type::coneSequence::iterator sc_iter = s_cone->begin();
+	    Mesh::sieve_type::coneSequence::iterator sc_iter_end = s_cone->end();
+	    if (s_cone->size() != 2) throw Exception("Bad edge in 1D Coarsen");
+	    while (sc_iter != sc_iter_end) {
+	      if (*sc_iter != *vtr_iter) involved_vertices[involved_index] = *sc_iter;
+	      sc_iter++;
+	    }
+	    involved_index++;
+	    vs_iter++;
+	  }
+	  new_sieve->removeBasePoint(involved_edges[0]);
+	  new_sieve->removeCapPoint(*vtr_iter);
+	  new_sieve->addArrow(involved_vertices[0], involved_edges[1]);
+	  
+	    /*
+	      Mesh::sieve_type::coneSet::iterator n_iter = neighbors->begin();
+	      Mesh::sieve_type::coneSet::iterator n_iter_end = neighbors->end(); 
+	      while (n_iter != n_iter_end && neighbor == *vtr_iter) {
+	      neighbor = *n_iter;
+	      n_iter++;
+	      }
+	      //next, contract all edges to this neighbor
+	      edges_to_remove.clear();
+	      while (vs_iter != vs_iter_end) {
+	      new_sieve->addArrow(neighbor, *vs_iter);
+	      if(new_sieve->cone(*vs_iter)->size() < 3) edges_to_remove.insert(*vs_iter);
+	      vs_iter++;
+	      }
+	      //next, remove the vertex and the edges that should be removed
+	      new_sieve->removeBasePoint(*vtr_iter);
+	      new_sieve->removeCapPoint(*vtr_iter);
+	      Mesh::sieve_type::supportSet::iterator etr_iter = edges_to_remove.begin();
+	      Mesh::sieve_type::supportSet::iterator etr_iter_end = edges_to_remove.end();
+	      while (etr_iter != etr_iter_end) {
+	      new_sieve->removeBasePoint(*etr_iter);
+	      new_sieve->removeCapPoint(*etr_iter);
+	      etr_iter++;
+	      }
+	    */
         }
-      vtr_iter++;
+	vtr_iter++;
     }
     new_mesh->stratify();
     new_mesh->setRealSection("coordinates", m->getRealSection("coordinates"));

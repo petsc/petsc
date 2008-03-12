@@ -121,9 +121,9 @@ PetscErrorCode SupportTest(const ALE::Obj<sifter_type>& sifter, Options *options
   PetscFunctionReturn(0);
 }
 
-class TestSifter : public CppUnit::TestFixture
+class StressTestSifter : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE(TestSifter);
+  CPPUNIT_TEST_SUITE(StressTestSifter);
 
   CPPUNIT_TEST(testCone);
   CPPUNIT_TEST(testSupport);
@@ -156,9 +156,9 @@ public :
 
 
 #undef __FUNCT__
-#define __FUNCT__ "RegisterSifterSuite"
-PetscErrorCode RegisterSifterSuite() {
-  CPPUNIT_TEST_SUITE_REGISTRATION (TestSifter);
+#define __FUNCT__ "RegisterSifterStressSuite"
+PetscErrorCode RegisterSifterStressSuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION (StressTestSifter);
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
