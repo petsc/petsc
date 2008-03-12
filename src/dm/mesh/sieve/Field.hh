@@ -1148,7 +1148,11 @@ namespace ALE {
       ///PetscMemzero(this->_array, totalSize * sizeof(value_type));
     };
     void replaceStorage(value_type *newArray) {
-      delete [] this->_array;
+      const int totalSize = this->sizeWithBC();
+
+      for(int i = 0; i < totalSize; ++i) {this->_allocator.destroy(this->_array+i);}
+      this->_allocator.deallocate(this->_array, totalSize);
+      ///delete [] this->_array;
       this->_array    = newArray;
       this->_atlasNew = NULL;
     };
