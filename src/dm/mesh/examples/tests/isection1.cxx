@@ -6,7 +6,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 template<typename Section_>
-class TestSection : public CppUnit::TestFixture
+class StressTestSection : public CppUnit::TestFixture
 {
 public:
   typedef Section_ section_type;
@@ -74,9 +74,9 @@ public :
   };
 };
 
-class TestIConstantSection : public TestSection<ALE::IConstantSection<int, double> >
+class StressTestIConstantSection : public StressTestSection<ALE::IConstantSection<int, double> >
 {
-  CPPUNIT_TEST_SUITE(TestIConstantSection);
+  CPPUNIT_TEST_SUITE(StressTestIConstantSection);
 
   CPPUNIT_TEST(testConstantRestrictPoint);
 
@@ -95,9 +95,9 @@ public:
   }
 };
 
-class TestIUniformSection : public TestSection<ALE::IUniformSection<int, double> >
+class StressTestIUniformSection : public StressTestSection<ALE::IUniformSection<int, double> >
 {
-  CPPUNIT_TEST_SUITE(TestIUniformSection);
+  CPPUNIT_TEST_SUITE(StressTestIUniformSection);
 
   CPPUNIT_TEST(testUniformRestrictPoint);
 
@@ -117,10 +117,10 @@ public:
 };
 
 #undef __FUNCT__
-#define __FUNCT__ "RegisterISectionSuite"
-PetscErrorCode RegisterISectionSuite() {
-  CPPUNIT_TEST_SUITE_REGISTRATION(TestIConstantSection);
-  CPPUNIT_TEST_SUITE_REGISTRATION(TestIUniformSection);
+#define __FUNCT__ "RegisterISectionStressSuite"
+PetscErrorCode RegisterISectionStressSuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestIConstantSection);
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestIUniformSection);
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

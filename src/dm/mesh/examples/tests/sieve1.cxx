@@ -15,9 +15,9 @@ typedef ALE::Mesh                        mesh_type;
 typedef ALE::SieveAlg<bundle_type>       sieveAlg_type;
 typedef ALE::SieveAlg<mesh_type>         sieveAlgM_type;
 
-class TestHatSieve : public CppUnit::TestFixture
+class StressTestHatSieve : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE(TestHatSieve);
+  CPPUNIT_TEST_SUITE(StressTestHatSieve);
 
   CPPUNIT_TEST(testClosure);
   CPPUNIT_TEST(testStar);
@@ -141,7 +141,7 @@ public :
   };
 };
 
-class TestGeneralSieve : public CppUnit::TestFixture
+class StressTestGeneralSieve : public CppUnit::TestFixture
 {
 protected:
   ALE::Obj<mesh_type>  _bundle;
@@ -240,9 +240,9 @@ public :
   };
 };
 
-class TestSquareSieve : public TestGeneralSieve
+class StressTestSquareSieve : public StressTestGeneralSieve
 {
-  CPPUNIT_TEST_SUITE(TestSquareSieve);
+  CPPUNIT_TEST_SUITE(StressTestSquareSieve);
 
   CPPUNIT_TEST(testClosure);
   CPPUNIT_TEST(testStar);
@@ -277,9 +277,9 @@ public:
   };
 };
 
-class TestCubeSieve : public TestGeneralSieve
+class StressTestCubeSieve : public StressTestGeneralSieve
 {
-  CPPUNIT_TEST_SUITE(TestCubeSieve);
+  CPPUNIT_TEST_SUITE(StressTestCubeSieve);
 
   CPPUNIT_TEST(testClosure);
   CPPUNIT_TEST(testStar);
@@ -315,11 +315,79 @@ public:
 };
 
 #undef __FUNCT__
-#define __FUNCT__ "RegisterSieveSuite"
-PetscErrorCode RegisterSieveSuite() {
-  CPPUNIT_TEST_SUITE_REGISTRATION(TestHatSieve);
-  CPPUNIT_TEST_SUITE_REGISTRATION(TestSquareSieve);
-  CPPUNIT_TEST_SUITE_REGISTRATION(TestCubeSieve);
+#define __FUNCT__ "RegisterSieveStressSuite"
+PetscErrorCode RegisterSieveStressSuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestHatSieve);
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestSquareSieve);
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestCubeSieve);
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+class FunctionTestHatSieve : public CppUnit::TestFixture
+{
+  CPPUNIT_TEST_SUITE(FunctionTestHatSieve);
+
+  CPPUNIT_TEST(testJoin);
+
+  CPPUNIT_TEST_SUITE_END();
+protected:
+  ALE::Obj<bundle_type> _bundle;
+  ALE::Obj<sieve_type>  _sieve;
+  int                   _debug; // The debugging level
+  PetscInt              _iters; // The number of test repetitions
+
+public :
+  PetscErrorCode processOptions() {
+    PetscErrorCode ierr;
+
+    this->_debug = 0;
+    this->_iters = 1;
+
+    PetscFunctionBegin;
+    ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for sieve functionality test", "Sieve");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "sieve1.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "sieve1.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  };
+  /// Setup data.
+  void setUp(void) {
+    this->processOptions();
+    this->_bundle = new bundle_type(PETSC_COMM_WORLD, this->_debug);
+    this->_sieve  = ALE::Test::SifterBuilder::createHatSifter<sieve_type>(this->_bundle->comm());
+    this->_bundle->setSieve(this->_sieve);
+    this->_bundle->getArrowSection("orientation");
+  };
+
+  /// Tear down data.
+  void tearDown(void) {};
+
+  /// Test join().
+  void testJoin(void) {
+    const ALE::Obj<sieve_type::traits::baseSequence>& base  = this->_sieve->base();
+    sieve_type::point_type                            prior = *base->begin();
+    sieve_type::traits::baseSequence::iterator        begin = base->begin();
+    const sieve_type::traits::baseSequence::iterator  end   = base->end();
+
+    this->_sieve->view("");
+    ++begin;
+    for(int r = 0; r < this->_iters; r++) {
+      for(sieve_type::traits::baseSequence::iterator b_iter = begin; b_iter != end; ++b_iter) {
+        const ALE::Obj<sieve_type::supportSet> cells = this->_sieve->nJoin(prior, *b_iter, 1);
+
+        CPPUNIT_ASSERT_EQUAL((int) cells->size(), 1);
+        CPPUNIT_ASSERT_EQUAL(*cells->begin(), (*b_iter)/2);
+        prior = *b_iter;
+      }
+    }
+  };
+};
+
+#undef __FUNCT__
+#define __FUNCT__ "RegisterSieveFunctionSuite"
+PetscErrorCode RegisterSieveFunctionSuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION(FunctionTestHatSieve);
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

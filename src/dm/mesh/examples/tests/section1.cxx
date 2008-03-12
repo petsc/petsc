@@ -14,7 +14,7 @@ typedef ALE::Mesh::sieve_type        sieve_type;
 typedef ALE::Mesh::real_section_type section_type;
 typedef ALE::SieveAlg<mesh_type>     sieveAlg_type;
 
-class TestGeneralMeshSection : public CppUnit::TestFixture
+class StressTestGeneralMeshSection : public CppUnit::TestFixture
 {
 protected:
   ALE::Obj<mesh_type>    _mesh;
@@ -118,9 +118,9 @@ public :
   };
 };
 
-class TestSquareMeshSection : public TestGeneralMeshSection
+class StressTestSquareMeshSection : public StressTestGeneralMeshSection
 {
-  CPPUNIT_TEST_SUITE(TestSquareMeshSection);
+  CPPUNIT_TEST_SUITE(StressTestSquareMeshSection);
 
   CPPUNIT_TEST(testLinearRestrict);
   CPPUNIT_TEST(testLinearRestrictPrecomp);
@@ -175,9 +175,9 @@ public:
   }
 };
 
-class TestBigSquareMeshSection : public TestGeneralMeshSection
+class StressTestBigSquareMeshSection : public StressTestGeneralMeshSection
 {
-  CPPUNIT_TEST_SUITE(TestBigSquareMeshSection);
+  CPPUNIT_TEST_SUITE(StressTestBigSquareMeshSection);
 
   CPPUNIT_TEST(testNSRestrict);
   CPPUNIT_TEST(testNSRestrictPrecomp);
@@ -218,9 +218,9 @@ public:
   }
 };
 
-class TestCubeMeshSection : public TestGeneralMeshSection
+class StressTestCubeMeshSection : public StressTestGeneralMeshSection
 {
-  CPPUNIT_TEST_SUITE(TestCubeMeshSection);
+  CPPUNIT_TEST_SUITE(StressTestCubeMeshSection);
 
   CPPUNIT_TEST(testLinearRestrict);
   CPPUNIT_TEST(testLinearRestrictPrecomp);
@@ -272,9 +272,9 @@ public:
   }
 };
 
-class TestCubeMeshSectionNonInterp : public TestGeneralMeshSection
+class StressTestCubeMeshSectionNonInterp : public StressTestGeneralMeshSection
 {
-  CPPUNIT_TEST_SUITE(TestCubeMeshSectionNonInterp);
+  CPPUNIT_TEST_SUITE(StressTestCubeMeshSectionNonInterp);
 
   CPPUNIT_TEST(testLinearRestrict);
   CPPUNIT_TEST(testLinearRestrictPrecomp);
@@ -306,9 +306,9 @@ public:
   }
 };
 
-class TestBigCubeMeshSection : public TestGeneralMeshSection
+class StressTestBigCubeMeshSection : public StressTestGeneralMeshSection
 {
-  CPPUNIT_TEST_SUITE(TestBigCubeMeshSection);
+  CPPUNIT_TEST_SUITE(StressTestBigCubeMeshSection);
 
   CPPUNIT_TEST(testNSRestrict);
   CPPUNIT_TEST(testNSRestrictPrecomp);
@@ -347,13 +347,13 @@ public:
 };
 
 #undef __FUNCT__
-#define __FUNCT__ "RegisterSectionSuite"
-PetscErrorCode RegisterSectionSuite() {
-  CPPUNIT_TEST_SUITE_REGISTRATION(TestSquareMeshSection);
-  CPPUNIT_TEST_SUITE_REGISTRATION(TestBigSquareMeshSection);
-  CPPUNIT_TEST_SUITE_REGISTRATION(TestCubeMeshSection);
-  CPPUNIT_TEST_SUITE_REGISTRATION(TestCubeMeshSectionNonInterp);
-  CPPUNIT_TEST_SUITE_REGISTRATION(TestBigCubeMeshSection);
+#define __FUNCT__ "RegisterSectionStressSuite"
+PetscErrorCode RegisterSectionStressSuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestSquareMeshSection);
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestBigSquareMeshSection);
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestCubeMeshSection);
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestCubeMeshSectionNonInterp);
+  CPPUNIT_TEST_SUITE_REGISTRATION(StressTestBigCubeMeshSection);
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
