@@ -246,6 +246,7 @@ struct _p_VecScatter {
   PetscTruth     beginandendtogether;  /* indicates that the scatter begin and end  function are called together, VecScatterEnd()
                                           is then treated as a nop */
   PetscTruth     packtogether;         /* packs all the messages before sending, same with receive */
+  PetscTruth     reproduce;            /* always receive the ghost points in the same order of processes */
   PetscErrorCode (*begin)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
   PetscErrorCode (*end)(VecScatter,Vec,Vec,InsertMode,ScatterMode);
   PetscErrorCode (*copy)(VecScatter,VecScatter);
