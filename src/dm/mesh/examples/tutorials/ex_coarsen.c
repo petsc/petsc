@@ -121,13 +121,15 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(ALE::Obj<ALE::Mes
     }
     */
     //determine: the per-dimension distance: cases
-    for (int i = 0; i < dim; i++) {
-      cornerdist = 0.;
-      if (centerCoords[i] > singularity[i]) {
-        for (int j = 0; j < dim; j++) {
-          if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
-        }
-        if (cornerdist < dist || dist == 0.) dist = cornerdist; 
+    if (dim > 2) {
+      for (int i = 0; i < dim; i++) {
+	cornerdist = 0.;
+	if (centerCoords[i] > singularity[i]) {
+	  for (int j = 0; j < dim; j++) {
+	    if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
+	  }
+	  if (cornerdist < dist || dist == 0.) dist = cornerdist; 
+	}
       }
     }
     //patch up AROUND the corner by minimizing between the distance from the relevant axis and the singular vertex
@@ -182,11 +184,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
       mesh2 = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->interpolate), options->refinementLimit, options->interpolate);
       ierr = MeshRefineSingularity_Fichera(mesh2, comm, offset, 0.75, &mesh);CHKERRQ(ierr);
     } else if (options->dim == 2) {
-      double lower[2] = {0.0, 0.0};
-      double upper[2] = {1.0, 1.0};
-      double offset[2] = {0.5, 0.5};
-      ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createReentrantBoundary(comm, lower, upper, offset);
-      mesh = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->interpolate), options->refinementLimit, options->interpolate);
+      //double lower[2] = {0.0, 0.0};
+      //double upper[2] = {1.0, 1.0};
+      double offset[2] = {0.0, 0.0};
+      //ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createReentrantBoundary(comm, lower, upper, offset);
+      ALE::Obj<ALE::Mesh> mb = ALE::MeshBuilder::createCircularReentrantBoundary(comm, 100, 1.0, 0.9);
+      mesh2 = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mb, options->interpolate), options->refinementLimit, options->interpolate);
+      ierr = MeshRefineSingularity_Fichera(mesh2, comm, offset, 0.9, &mesh, PETSC_TRUE);CHKERRQ(ierr);
       //mesh = ALE::Generator::generateMesh(mb, options->debug);
     }
   } else {
@@ -259,7 +263,7 @@ int main(int argc, char *argv[])
     //    PetscPrintf(m->comm(), "marked the boundary cells\n");
 
     int nMeshes;
-    Obj<ALE::Mesh> * coarsened_mesh = Hierarchy_createHierarchy_adaptive(m, 100, 10, options.coarseFactor, &nMeshes);
+    Obj<ALE::Mesh> * coarsened_mesh = Hierarchy_createHierarchy_adaptive(m, 60, 10, options.coarseFactor, &nMeshes);
     Hierarchy_qualityInfo(coarsened_mesh, nMeshes);
     char vtkfilename[256];
     sprintf(vtkfilename, "fine_mesh.vtk");

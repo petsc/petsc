@@ -404,6 +404,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective1DBoundary (ALE::Obj<ALE::Mesh> ori
   ALE::Obj<ALE::Mesh> output_mesh = new ALE::Mesh(original_mesh->comm(), dim, original_mesh->debug());
   ALE::Obj<ALE::Mesh::sieve_type> output_sieve = new ALE::Mesh::sieve_type(original_mesh->comm(), original_mesh->debug());
   output_mesh->setSieve(output_sieve);
+  ALE::Obj<ALE::Mesh::label_type> marker = output_mesh->createLabel("marker"); //EVERYTHING here gets the marker name
   ALE::Obj<ALE::Mesh::sieve_type::supportSet> line = new ALE::Mesh::sieve_type::supportSet();
   ALE::Obj<ALE::Mesh::sieve_type::supportSet> link;
 
@@ -513,7 +514,22 @@ ALE::Obj<ALE::Mesh> Hierarchy_createEffective1DBoundary (ALE::Obj<ALE::Mesh> ori
     }
   }
   output_mesh->stratify();
+  ALE::Obj<ALE::Mesh::label_sequence> points = output_mesh->depthStratum(0); //boundary vertices;
+  ALE::Mesh::label_sequence::iterator p_iter = points->begin();
+  ALE::Mesh::label_sequence::iterator p_iter_end = points->end();
+  while (p_iter != p_iter_end) {
+    output_mesh->setValue(marker, *p_iter, 1);
+    p_iter++;
+  }
+  points = output_mesh->heightStratum(0); //boundary edges;
+  p_iter = points->begin();
+  p_iter_end = points->end();
+  while (p_iter != p_iter_end) {
+    output_mesh->setValue(marker, *p_iter, 1);
+    p_iter++;
+  }
   output_mesh->setRealSection("coordinates", original_mesh->getRealSection("coordinates"));
+  output_mesh->stratify();
   //PetscPrintf(output_mesh->comm(), "leaving 1D Boundary Building\n");
   delete [] a_coords; delete [] b_coords; delete [] c_coords; delete [] d_coords;
   return output_mesh;
@@ -712,10 +728,13 @@ void Hierarchy_insertVerticesIntoMesh(ALE::Obj<ALE::Mesh> bound_mesh, ALE::Obj<A
   ALE::Mesh::sieve_type::supportSet::iterator vs_iter_end = vertex_set->end();
   ALE::Obj<ALE::Mesh::sieve_type> s = bound_mesh->getSieve();
   while (vs_iter != vs_iter_end) {
-    s->addCapPoint(*vs_iter);
+    if (!bound_mesh->getSieve()->hasPoint(*vs_iter)) {
+      s->addCapPoint(*vs_iter);
+    }
     vs_iter++;
   }
   bound_mesh->stratify();
+  vs_iter = vertex_set->begin();
   //PetscPrintf(bound_mesh->comm(), "%d is the depth of the inserted points\n", bound_mesh->depth(*vertex_set->begin()));
 }
 
@@ -826,9 +845,9 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
       b0_iter++;
     }
     ALE::Obj<ALE::Mesh> coarse_bound = ALE::Surgery_1D_Coarsen_Mesh(bound_1, coarse_bound_set);
-    //PetscPrintf(original_mesh->comm(), "%d v, %d e in new coarse boundary\n", coarse_bound->depthStratum(0)->size(), coarse_bound->depthStratum(1)->size());			
+    PetscPrintf(original_mesh->comm(), "%d v, %d e in new coarse boundary\n", coarse_bound->depthStratum(0)->size(), coarse_bound->depthStratum(1)->size());			
     Hierarchy_insertVerticesIntoMesh(coarse_bound, coarse_interior);
-    //PetscPrintf(original_mesh->comm(), "%d v, %d e in the thing we feed triangle\n", coarse_bound->depthStratum(0)->size(), coarse_bound->depthStratum(1)->size());
+    PetscPrintf(original_mesh->comm(), "%d v, %d e in the thing we feed triangle\n", coarse_bound->depthStratum(0)->size(), coarse_bound->depthStratum(1)->size());
     //copy over the "marker" label
     ALE::Obj<ALE::Mesh::label_type> bound_marker_label = coarse_bound->createLabel("marker");
     ALE::Obj<ALE::Mesh::label_type> marker = original_mesh->getLabel("marker");
@@ -844,7 +863,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
     coarse_bound->setDimension(1);
     output_mesh = ALE::Generator::generateMesh(coarse_bound, (original_mesh->depth() != 1), true);
     output_mesh->stratify();
-    //PetscPrintf(original_mesh->comm(), "%d v, %d cells in the output mesh\n", output_mesh->depthStratum(0)->size(), output_mesh->heightStratum(0)->size());
+    PetscPrintf(original_mesh->comm(), "%d v, %d cells in the output mesh\n", output_mesh->depthStratum(0)->size(), output_mesh->heightStratum(0)->size());
   }
   if (dim == 3) {
     ALE::Obj<ALE::Mesh::sieve_type::supportSet> bound_0;
@@ -1270,11 +1289,11 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
         //PetscPrintf(m->comm(), "%f inscribed radius %f area %f perimeter\n", current_inscribed_radius, area, perimeter);
       } else if (dim == 3) {
 	double volume = 0.5*fabs((coords[1*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) +
-                             (coords[2*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]) +
-                             (coords[3*3+0] - coords[0*3+0])*(coords[1*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) -
-			     (coords[1*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) -
-			     (coords[2*3+0] - coords[0*3+0])*(coords[1*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) -
-			     (coords[3*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]));
+				 (coords[2*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]) +
+				 (coords[3*3+0] - coords[0*3+0])*(coords[1*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) -
+				 (coords[1*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) -
+				 (coords[2*3+0] - coords[0*3+0])*(coords[1*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) -
+				 (coords[3*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]));
         double area = 0.;
         //0,1,2
         double area_term_1 = (coords[1*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1]) - (coords[1*3+1] - coords[0*3+1])*(coords[2*3+0] - coords[0*3+0]);
@@ -1285,23 +1304,24 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
         area_term_1 = (coords[2*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1]) - (coords[2*3+1] - coords[0*3+1])*(coords[3*3+0] - coords[0*3+0]);
         area_term_2 = (coords[2*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) - (coords[2*3+2] - coords[0*3+2])*(coords[3*3+1] - coords[0*3+1]);
         area_term_3 = (coords[2*3+2] - coords[0*3+2])*(coords[3*3+0] - coords[0*3+0]) - (coords[2*3+0] - coords[0*3+0])*(coords[3*3+2] - coords[0*3+2]);
-	area += sqrt(area_term_1*area_term_1 + area_term_2*area_term_2 + area_term_3*area_term_3);
+	area += 0.5*sqrt(area_term_1*area_term_1 + area_term_2*area_term_2 + area_term_3*area_term_3);
         //0,1,3
         area_term_1 = (coords[1*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1]) - (coords[1*3+1] - coords[0*3+1])*(coords[3*3+0] - coords[0*3+0]);
         area_term_2 = (coords[1*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) - (coords[1*3+2] - coords[0*3+2])*(coords[3*3+1] - coords[0*3+1]);
         area_term_3 = (coords[1*3+2] - coords[0*3+2])*(coords[3*3+0] - coords[0*3+0]) - (coords[1*3+0] - coords[0*3+0])*(coords[3*3+2] - coords[0*3+2]);
-	area += sqrt(area_term_1*area_term_1 + area_term_2*area_term_2 + area_term_3*area_term_3);
+	area += 0.5*sqrt(area_term_1*area_term_1 + area_term_2*area_term_2 + area_term_3*area_term_3);
         //1,2,3
         area_term_1 = (coords[2*3+0] - coords[1*3+0])*(coords[3*3+1] - coords[1*3+1]) - (coords[2*3+1] - coords[1*3+1])*(coords[3*3+0] - coords[1*3+0]);
-        area_term_2 = (coords[2*3+1] - coords[1*3+1])*(coords[3*3+2] - coords[1*3+2]) - (coords[3*3+2] - coords[1*3+2])*(coords[3*3+1] - coords[1*3+1]);
-        area_term_3 = (coords[2*3+2] - coords[1*3+2])*(coords[3*3+0] - coords[1*3+0]) - (coords[3*3+0] - coords[1*3+0])*(coords[3*3+2] - coords[1*3+2]);
-	area += sqrt(area_term_1*area_term_1 + area_term_2*area_term_2 + area_term_3*area_term_3);
+        area_term_2 = (coords[2*3+1] - coords[1*3+1])*(coords[3*3+2] - coords[1*3+2]) - (coords[2*3+2] - coords[1*3+2])*(coords[3*3+1] - coords[1*3+1]);
+        area_term_3 = (coords[2*3+2] - coords[1*3+2])*(coords[3*3+0] - coords[1*3+0]) - (coords[2*3+0] - coords[1*3+0])*(coords[3*3+2] - coords[1*3+2]);
+	area += 0.5*sqrt(area_term_1*area_term_1 + area_term_2*area_term_2 + area_term_3*area_term_3);
 	current_inscribed_radius = 3.*volume/area;
         //PetscPrintf(m->comm(), "%f inscribed radius, %f volume, %f surface area\n", current_inscribed_radius, volume, area);
       }
       current_aspect_ratio = max_cell_edge/(current_inscribed_radius*2);
       if (current_aspect_ratio > max_aspect_ratio) max_aspect_ratio = current_aspect_ratio;
       if (current_aspect_ratio < min_aspect_ratio) min_aspect_ratio = current_aspect_ratio;
+      avg_aspect_ratio += current_aspect_ratio;
       //PetscPrintf(m->comm(), "%f aspect ratio\n", current_aspect_ratio);
       c_iter++;
     } //end of loop over cells
@@ -1387,6 +1407,11 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 	      //if we have yet to find the box, then we have an unrestricted search; if we have found the box, then we only search within the box
 	      if (bbox_collide || !found_the_boundbox) {
 		if (bbox_collide) {
+		  if (!found_the_boundbox) {
+		    //clear the current queue and traversal list
+		    f_traversal->clear();
+		    f_cell_list.clear();
+		  }
 		  found_the_boundbox = true;
 		  f_current_guess = f_current_cell;
 		  nBBoxCollisions++;
@@ -1424,7 +1449,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 	    }
 	    if (max_cell_collisions < nCollisions) max_cell_collisions = nCollisions;
 	    avg_cell_collisions += nCollisions;
-	    //PetscPrintf(m->comm(), "collisions: %d, bound-box collisions: %d, comparisons %d\n", nCollisions, nBBoxCollisions, nComparisons);
+	    // PetscPrintf(m->comm(), "collisions: %d, bound-box collisions: %d, comparisons %d\n", nCollisions, nBBoxCollisions, nComparisons);
 	  }
 	}
 	c_iter++;

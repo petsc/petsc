@@ -268,54 +268,53 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
 {
-  char           string[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],*first,*second,*third,*final;
+  char           string[PETSC_MAX_PATH_LEN],fname[PETSC_MAX_PATH_LEN],*first,*second,*third;
   PetscErrorCode ierr;
-  size_t         i,len,startIndex;
+  size_t         i,len;
   FILE           *fd;
   PetscToken     token;
   int            err;
+  char           cmt[3]={'#','!','%'},*cmatch;
 
   PetscFunctionBegin;
   ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
   fd   = fopen(fname,"r"); 
   if (fd) {
-    while (fgets(string,128,fd)) {
-      /* Comments are indicated by #, ! or % in the first column */
-      if (string[0] == '#') continue;
-      if (string[0] == '!') continue;
-      if (string[0] == '%') continue;
-
+    while (fgets(string,PETSC_MAX_PATH_LEN,fd)) {
+      /* eliminate commnets from each line */
+      for (i=0; i<3; i++){
+        ierr = PetscStrchr(string,cmt[i],&cmatch);
+        if (cmatch) *cmatch = 0;
+      }
       ierr = PetscStrlen(string,&len);CHKERRQ(ierr);
-
-      /* replace tabs, ^M with " " */
+      /* replace tabs, ^M, \n with " " */
       for (i=0; i<len; i++) {
-        if (string[i] == '\t' || string[i] == '\r') {
+        if (string[i] == '\t' || string[i] == '\r' || string[i] == '\n') {
           string[i] = ' ';
         }
       }
-      for(startIndex = 0; startIndex < len-1; startIndex++) {
-        if (string[startIndex] != ' ') break;
-      }
-      ierr = PetscTokenCreate(&string[startIndex],' ',&token);CHKERRQ(ierr);
+      ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
+      if (!first) {
+        continue;
+      } else if (!first[0]) { /* if first token is empty spaces, redo first token */
+        ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
+      }
       ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
-      if (first && first[0] == '-') {
-        if (second) {final = second;} else {final = first;}
-        ierr = PetscStrlen(final,&len);CHKERRQ(ierr);
-        while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
-          len--; final[len] = 0;
-        }
+      if (!first) {
+        continue;
+      } else if (first[0] == '-') {
         ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
-      } else if (first) {
+      } else {
         PetscTruth match;
 
         ierr = PetscStrcasecmp(first,"alias",&match);CHKERRQ(ierr);
         if (match) {
           ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
           if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",second);
-          ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
-          if (third[len-1] == '\n') third[len-1] = 0;
           ierr = PetscOptionsSetAlias(second,third);CHKERRQ(ierr);
+        } else {
+          SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
         }
       }
       ierr = PetscTokenDestroy(token);CHKERRQ(ierr);

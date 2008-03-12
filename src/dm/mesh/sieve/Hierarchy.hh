@@ -415,10 +415,10 @@ PetscErrorCode MeshSpacingFunction(Mesh mesh) {
 	d_tmp = nCoords[d] - vCoords[d];
 	dist += d_tmp * d_tmp;
       }
+      dist = 0.5*sqrt(dist);
       if ((dist < minDist && dist > 0.) || minDist == 0.) minDist = dist;
       n_iter++;
     }
-    minDist = sqrt(minDist);
     spacing->updatePoint(*v_iter, &minDist);
     v_iter++;
   }
@@ -967,10 +967,10 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
         }
         nComparisons++;
         PetscMemcpy(c_coords, coordinates->restrictPoint(c_point), dim*sizeof(double));
-        n_space = *spacing->restrictPoint(c_point);
+        c_space = *spacing->restrictPoint(c_point);
         PetscMemcpy(n_coords, coordinates->restrictPoint(n_point), dim*sizeof(double));
         n_space = *spacing->restrictPoint(n_point);
-        dist = 0;
+        dist = 0.;
         for (int i = 0; i < dim; i++) {
             dist += (n_coords[i] - c_coords[i])*(n_coords[i] - c_coords[i]);
         }
@@ -1090,10 +1090,10 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
         }
         nComparisons++;
         PetscMemcpy(c_coords, coordinates->restrictPoint(c_point), dim*sizeof(double));
-        n_space = *spacing->restrictPoint(c_point);
+        c_space = *spacing->restrictPoint(c_point);
         PetscMemcpy(n_coords, coordinates->restrictPoint(n_point), dim*sizeof(double));
         n_space = *spacing->restrictPoint(n_point);
-        dist = 0;
+        dist = 0.;
         for (int i = 0; i < dim; i++) {
             dist += (n_coords[i] - c_coords[i])*(n_coords[i] - c_coords[i]);
         }

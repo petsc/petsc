@@ -1851,6 +1851,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_General(Mesh coarse_mesh, Mesh fine_mes
 
   const ALE::Obj<ALE::Mesh::int_section_type> & node_locations = fm->getIntSection("node_locations");
   const ALE::Obj<ALE::Mesh::real_section_type> & fine_default = fm->getRealSection("default");
+  int total_dimension
   for (int i = 0; i < dim; i++) {
     const ALE::Obj<ALE::Mesh::label_sequence> & present_level = fm->depthStratum(i);
     int current_dimension = fine_default->getFiberDimension(*present_level->begin());
@@ -1858,13 +1859,27 @@ PetscErrorCode MeshGetInterpolation_Mesh_General(Mesh coarse_mesh, Mesh fine_mes
   }
   node_locations->allocate();
   //traverse!
-  ALE::Obj<ALE::Mesh::label_sequence> fine_vertices = fm->depthStratum(0);
+
+  
+
+  ALE::Obj<ALE::Mesh::label_sequence> fine_cells = fm->heightStratum(0);
   ALE::Obj<ALE::Mesh::label_sequence> coarse_cells = cm->heightStratum(0);
 
+  ALE::Mesh::label_sequence::iterator fc_iter = fine_cells->begin();
+  ALE::Mesh::label_sequence::iterator fc_iter_end = fine_cells->end();
+  while (fc_iter != fc_iter_end) {
+    //locate an initial coarse cell that overlaps with this fine cell in terms of their bounding boxes;
+    ALE::Mesh::label_sequence::iterator cc_iter = coarse_cells->begin();
+    ALE::Mesh::label_sequence::iterator cc_iter_end = coarse_cells->end();
+    while (cc_iter != cc_iter_end) {
+      
+      cc_iter++;
+    }
+    fc_iter++;
+  }
 }
 
 #endif
-
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshGetInterpolation_Mesh_New"
