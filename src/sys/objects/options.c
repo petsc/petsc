@@ -296,13 +296,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
       ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
       if (!first) {
-        continue;
+        goto destroy;
       } else if (!first[0]) { /* if first token is empty spaces, redo first token */
         ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
       }
       ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
       if (!first) {
-        continue;
+        goto destroy;
       } else if (first[0] == '-') {
         ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
       } else {
@@ -317,6 +317,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
           SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
         }
       }
+      destroy:
       ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
     }
     err = fclose(fd);
