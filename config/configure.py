@@ -55,6 +55,16 @@ def chkcygwinpythonver():
       return 0
   return 0
 
+def chkincompletecygwin():
+  if os.path.exists('/usr/bin/cygcheck.exe'):
+    if not os.path.exists('/usr/bin/make') or not os.path.exists('/usr/bin/diff'):
+      print '================================================================================='
+      print ' *** Incomplete cygwin install detected *****************************************'
+      print ' *** Please rerun cygwin-setup and install module make [and its dependencies]****'
+      print '================================================================================='
+      sys.exit(3)
+  return 0
+
 def rhl9():
   try:
     file = open('/etc/redhat-release','r')
@@ -70,6 +80,15 @@ def rhl9():
     return 1
   else:
     return 0
+
+def chkBrokenF8Diff():
+  if os.path.exists('/bin/rpm'):
+    buf = os.popen('/bin/rpm -q diffutils').read()
+  if buf.find('diffutils-2.8.1-17.fc8') > -1:
+    return 1
+  else:
+    return 0
+  
 
 def petsc_configure(configure_options): 
   print '================================================================================='
@@ -144,6 +163,9 @@ def petsc_configure(configure_options):
     print '================================================================================='
     sys.exit(3)
 
+  # Check if cygwin install is incomplete
+  chkincompletecygwin()
+  
   # Disable threads on RHL9
   if rhl9():
     sys.argv.append('--useThreads=0')
@@ -152,6 +174,15 @@ def petsc_configure(configure_options):
    *** RHL9 detected. Threads do not work correctly with this distribution ***
     ****** Disabling thread usage for this run of config/configure.py *******
 ================================================================================''')
+
+  # Check for broken diff on Fedora8
+  if chkBrokenF8Diff():
+    print '================================================================================='
+    print ' *** Fedora 8 Linux with broken diffutils-2.8.1-17.fc8 detected. ****************'
+    print ' *** Please run "sudo yum update diffutils" to get the latest bugfixed version.**'
+    print '================================================================================='
+    sys.exit(3)
+
   # Make sure cygwin-python is used on windows
   if chkusingwindowspython():
     print '================================================================================='
