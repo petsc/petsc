@@ -1,0 +1,20 @@
+#
+# a dummy target which does nothing - just in case
+# 'ALL: get mapped into this file'
+#
+tao_all_dummy:
+	-@true
+
+#
+# TAO uses the portable makefile system provided by the PETSc library.  
+# The following include files set customized site, optimization, and version
+# options.  Do NOT remove any of these include files!  You should generally
+# NOT need to edit these files, PETSc's configure script should do this for
+# you.  See the PETSc users manual for details.
+#
+
+include ${PETSC_DIR}/conf/base
+include ${TAO_DIR}/conf/tao_variables
+include ${TAO_DIR}/conf/tao_rules
+
+# ??include ${PETSC_DIR}/conf/test

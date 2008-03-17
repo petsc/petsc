@@ -1,0 +1,65 @@
+#
+# TAO uses PETSc for linear algebra tools, system utilities, and
+# portable makefiles
+#
+# TAO-specific definitions:
+#
+# TAO_LIB_DIR (defined from $TAO_DIR) determines the libraries that are linked.
+# ??TAO_PDIR (defined from $TAO_DIR) determines where the libraries are built.
+# TAO_LIB_DIR and TAO_PDIR will usually be identical.
+#
+# ??If you change TAO_PDIR in your makefile you MUST put it after the
+# ??include line.
+#
+# LIBNAME       - library name
+# TAO_INCLUDE   - locations of include files
+#
+# Definitions from the PETSc makefile system:
+#
+# SOURCE        - source files
+# SSOURCE       - single precision versions of some source code
+# OBJS          - object files
+# SOBJS         - single precision versions of some object files
+# DOCS          - files that contain documentation, readmes etc.
+# CPPFLAGS      - preprocessor flags for *.c, *.F preprocessing
+# ??PETSC_PARCH   - corresponds to the PARCH_arch in the source files, set in 
+#                 the file bmake/${PETSC_ARCH}/base
+#
+
+# Get values for OOQP_LIB, APPSPACK_LIB
+# ??include ${TAO_DIR}/bmake/packages
+
+INSTALL_LIB_DIR	= ${TAO_DIR}/lib/${PETSC_ARCH}
+TAO_LIB_DIR     = ${TAO_DIR}/lib/${PETSC_ARCH}
+TAO_INCLUDE	= -I${TAO_DIR} -I${TAO_DIR}/include 
+CPP_FLAGS	= ${TAO_INCLUDE} 
+
+FPP_FLAGS	= ${TAO_INCLUDE} 
+
+
+C_SH_LIB_PATH	= ${CC_LINKER_SLFLAG}${TAO_LIB_DIR} ${TAO_C_SH_LIB_PATH}
+F_SH_LIB_PATH	= ${FC_LINKER_SLFLAG}${TAO_LIB_DIR} ${TAO_F_SH_LIB_PATH}
+
+#
+# Defines all libraries needed for using TAO as well as all lower-level PETSc 
+# components (such as vectors and matrices). The order of listing these libraries 
+# is important!
+#
+TAO_BLIB	= -L${TAO_LIB_DIR} -ltao ${PETSC_SYS_LIB}
+TAO_LIB		= -L${TAO_LIB_DIR} -ltaopetsc -ltao
+
+#
+# Link if you are using the TAO Fortran interface.
+#
+TAO_FORTRAN_LIB = -L${TAO_LIB_DIR} -ltaofortran
+#
+#
+# Some variables used to build shared libraries
+#
+SHLIBS       = libtao libtaopetsc libtaofortran 
+#??libtaoga libappspacktao libooqptao libesitao taoadic ${SIDL_SHLIBS} ${CCA_SHLIBS}
+
+
+tao_clean: clean
+tao_chkopts: chkopts
+tao_testexamples_1: testexamples_1

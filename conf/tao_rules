@@ -1,0 +1,12 @@
+# Check that TAO_DIR is set and is the current working directory
+tao_chk_tao_dir:
+	@mypwd=`pwd`; cd ${TAO_DIR} 2>&1 > /dev/null; true_TAO_DIR=`pwd`; cd $${mypwd} 2>&1 >/dev/null; \
+        newpwd=`echo $${mypwd} | sed "s+$${true_TAO_DIR}+DUMMY+g"`;\
+        hastao=`echo $${mypwd} | sed "s+tao-+DUMMY+g"`;\
+        if [ $${mypwd} = $${newpwd} -a $${hastao} != $${mypwd} ]; then \
+          echo "*********************Warning*************************" ; \
+          echo "Your TAO_DIR may not match the directory you are in";\
+          echo "TAO_DIR " $${true_TAO_DIR} "Current directory" $${mypwd};\
+          echo "******************************************************" ; \
+        fi
+

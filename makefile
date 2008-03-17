@@ -9,17 +9,16 @@ ALL: all
 # Call make recursively in these directory
 DIRS = src include docs 
 
-include ${TAO_DIR}/bmake/packages
-include ${TAO_DIR}/bmake/tao_common
+include ${TAO_DIR}/conf/tao_base
 
 #
 # Basic targets to build TAO libraries.
 # all     : builds the C/C++ and Fortran libraries
-all       : info tao_chkcxx chktao_dir tao_chklib_dir tao_deletelibs tao_build_c tao_build_fortran tao_shared 
+all       : tao_info tao_chk_tao_dir tao_deletelibs tao_build tao_shared 
 #
 # Prints information about the system and version of TAO being compiled
 #
-info:
+tao_info:
 	-@echo "=========================================="
 	-@echo " "
 	-@echo "See docs/troubleshooting.html and docs/bugreporting.html"
@@ -57,6 +56,59 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using libraries: ${TAO_LIB}"
 	-@echo "------------------------------------------"
-	-@echo "Using mpirun: ${MPIEXEC}"
+	-@echo "Using mpiexec: ${MPIEXEC}"
 	-@echo "=========================================="
 
+MINFO = ${PETSC_DIR}/${PETSC_ARCH}/include/petscmachineinfo.h
+tao_info_h:
+	-@$(RM) -f ${MINFO} MINFO
+	-@echo  "static const char *petscmachineinfo = \"\__n__\"" >> MINFO
+	-@echo  "\"-----------------------------------------\__n__\"" >> MINFO
+	-@if [ -f /usr/bin/cygcheck.exe ]; then \
+	  echo  "\"Libraries compiled on `date` on `hostname|/usr/bin/dos2unix` \__n__\"" >> MINFO; \
+          else \
+	  echo  "\"Libraries compiled on `date` on `hostname` \__n__\"" >> MINFO; \
+          fi
+	-@echo  "\"Machine characteristics: `uname -a` \__n__\"" >> MINFO
+	-@echo  "\"Using PETSc directory: ${PETSC_DIR}\__n__\"" >> MINFO
+	-@echo  "\"Using PETSc arch: ${PETSC_ARCH}\__n__\"" >> MINFO
+	-@echo  "\"-----------------------------------------\"; " >> MINFO
+	-@echo  "static const char *petsccompilerinfo = \"\__n__\"" >> MINFO
+	-@echo  "\"Using C compiler: ${PCC} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS}\__n__\"" >> MINFO
+	-@echo  "\"Using Fortran compiler: ${FC} ${FC_FLAGS} ${FFLAGS} ${FPP_FLAGS}\__n__\"" >> MINFO
+	-@echo  "\"-----------------------------------------\"; " >> MINFO
+	-@echo  "static const char *petsccompilerflagsinfo = \"\__n__\"" >> MINFO
+	-@echo  "\"Using include paths: ${PETSC_INCLUDE}\__n__\"" >> MINFO
+	-@echo  "\"------------------------------------------\"; " >> MINFO
+	-@echo  "static const char *petsclinkerinfo = \"\__n__\"" >> MINFO
+	-@echo  "\"Using C linker: ${CLINKER}\__n__\"" >> MINFO
+	-@echo  "\"Using Fortran linker: ${FLINKER}\__n__\"" >> MINFO
+	-@echo  "\"Using libraries: ${PETSC_LIB} \__n__\"" >> MINFO
+	-@echo  "\"------------------------------------------\"; " >> MINFO
+	-@cat MINFO | ${SED} -e 's/\\ /\\\\ /g' | ${SED} -e 's/__n__/n/g' > ${MINFO}
+	-@ if [ -f /usr/bin/cygcheck.exe ]; then /usr/bin/dos2unix ${MINFO} 2> /dev/null; fi
+	-@$(RM) -f MINFO
+
+
+
+
+
+#
+# Builds the TAO libraries
+# This target also builds fortran77 and f90 interface
+# files and compiles .F files
+#
+tao_build:
+	-@echo "BEGINNING TO COMPILE LIBRARIES IN ALL DIRECTORIES"
+	-@echo "========================================="
+	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=libfast tree
+	-@${RANLIB} ${TAO_LIB_DIR}/*.${AR_LIB_SUFFIX}
+	-@echo "Completed building libraries"
+	-@echo "========================================="
+
+
+
+
+# Deletes TAO libraries
+tao_deletelibs: 
+	-${RM} -f ${PETSC_LIB_DIR}/libtao*.*
