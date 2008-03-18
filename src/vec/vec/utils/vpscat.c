@@ -1704,6 +1704,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   ierr = PetscObjectGetNewTag((PetscObject)ctx,&tagr);CHKERRQ(ierr);
   ctx->destroy = VecScatterDestroy_PtoP;
 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_reproduce",&ctx->reproduce);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&to->sendfirst);CHKERRQ(ierr);
   from->sendfirst = to->sendfirst;
 

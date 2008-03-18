@@ -4,7 +4,8 @@
 
 
 set dir=`dirname $0`
-set pdir=`dirname $dir`
+set bdir=`dirname $dir`
+set pdir=`dirname $bdir`
 set day=`date | cut -f1 -d" "`
 
 foreach CONF ($*)

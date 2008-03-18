@@ -142,7 +142,12 @@ PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMod
     /* unpack one at a time */
     count = nrecvs;
     while (count) {
-      ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
+      if (ctx->reproduce) {
+	imdex = count - 1;
+	ierr = MPI_Wait(rwaits+imdex,&xrstatus);CHKERRQ(ierr);
+      } else {
+	ierr = MPI_Waitany(nrecvs,rwaits,&imdex,&xrstatus);CHKERRQ(ierr);
+      }
       /* unpack receives into our local space */
       PETSCMAP1(UnPack)(rstarts[imdex+1] - rstarts[imdex],rvalues + bs*rstarts[imdex],indices + rstarts[imdex],yv,addv);
       count--;
