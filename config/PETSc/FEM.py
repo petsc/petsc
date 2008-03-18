@@ -34,6 +34,21 @@ class QuadratureGenerator(script.Script):
     import FIAT.quadrature
     return FIAT.quadrature.make_quadrature_by_degree(shape, degree)
 
+  def createFaceQuadrature(self, shape, degree):
+    import FIAT.shapes
+
+    if shape == FIAT.shapes.TRIANGLE:
+      q0 = self.createQuadrature(FIAT.shapes.LINE, degree)
+      q0.x = [[p, -1.0] for p in q0.x]
+      q1 = self.createQuadrature(FIAT.shapes.LINE, degree)
+      q1.x = [[-1.0, p] for p in q1.x]
+      q2 = self.createQuadrature(FIAT.shapes.LINE, degree)
+      q2.x = [[p, p] for p in q2.x]
+      return (q0, q1, q2)
+    else:
+      raise RuntimeError("ERROR: not yet implemented")
+    return
+
   def getArray(self, name, values, comment = None, typeName = 'double'):
     from Cxx import Array
     from Cxx import Initializer
