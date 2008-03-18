@@ -84,10 +84,10 @@ def rhl9():
 def chkBrokenF8Diff():
   if os.path.exists('/bin/rpm'):
     buf = os.popen('/bin/rpm -q diffutils').read()
-  if buf.find('diffutils-2.8.1-17.fc8') > -1:
-    return 1
-  else:
-    return 0
+    if buf.find('diffutils-2.8.1-17.fc8') > -1:
+      return 1
+    else:
+      return 0
   
 
 def petsc_configure(configure_options): 
