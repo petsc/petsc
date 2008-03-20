@@ -42,7 +42,7 @@ EXTERN_C_END
 PetscErrorCode MeshFinalize()
 {
   PetscFunctionBegin;
-  ALE::Mesh::NumberingFactory::singleton(0, 0, true);
+  ALE::Mesh::MeshNumberingFactory::singleton(0, 0, true);
   PetscFunctionReturn(0);
 }
 
