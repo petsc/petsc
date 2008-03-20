@@ -121,28 +121,27 @@ class VTKViewer {
       }
       for(int p = 1; p < field->commSize(); p++) {
         value_type *remoteValues;
-        int         numLocalElements;
+        int         numLocalElementsAndFiberDim[2];
         int         size;
-        const int   newDim = fiberDim+verify;
         MPI_Status  status;
 
-        ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, field->comm(), &status);CHKERRQ(ierr);
-        size = numLocalElements*newDim;
+        ierr = MPI_Recv(numLocalElementsAndFiberDim, 2, MPI_INT, p, 1, field->comm(), &status);CHKERRQ(ierr);
+        size = numLocalElementsAndFiberDim[0]*numLocalElementsAndFiberDim[1];
         ierr = PetscMalloc(size * sizeof(value_type), &remoteValues);CHKERRQ(ierr);
         ierr = MPI_Recv(remoteValues, size, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
-        for(int e = 0; e < numLocalElements; e++) {
-          if (verify) {ierr = PetscViewerASCIIPrintf(viewer, "%d ", (int) remoteValues[e*newDim+0]);CHKERRQ(ierr);}
-          for(int d = verify; d < newDim; d++) {
+        for(int e = 0; e < numLocalElementsAndFiberDim[0]; e++) {
+          if (verify) {ierr = PetscViewerASCIIPrintf(viewer, "%d ", (int) remoteValues[e*numLocalElementsAndFiberDim[1]+0]);CHKERRQ(ierr);}
+          for(int d = verify; d < numLocalElementsAndFiberDim[1]; d++) {
             if (d > verify) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
             }
             if (mpiType == MPI_INT) {
-              ierr = PetscViewerASCIIPrintf(viewer, "%d", remoteValues[e*newDim+d]);CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer, "%d", remoteValues[e*numLocalElementsAndFiberDim[1]+d]);CHKERRQ(ierr);
             } else {
-              ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteValues[e*newDim+d]);CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteValues[e*numLocalElementsAndFiberDim[1]+d]);CHKERRQ(ierr);
             }
           }
-          for(int d = fiberDim; d < enforceDim; d++) {
+          for(int d = numLocalElementsAndFiberDim[1]; d < enforceDim; d++) {
             ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -171,7 +170,8 @@ class VTKViewer {
       if (k != size) {
         SETERRQ2(PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, size);
       }
-      ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, field->comm());CHKERRQ(ierr);
+      int numLocalElementsAndFiberDim[2] = {numLocalElements, fiberDim+verify};
+      ierr = MPI_Send(numLocalElementsAndFiberDim, 2, MPI_INT, 0, 1, field->comm());CHKERRQ(ierr);
       ierr = MPI_Send(localValues, size, mpiType, 0, 1, field->comm());CHKERRQ(ierr);
       ierr = PetscFree(localValues);CHKERRQ(ierr);
     }
@@ -266,17 +266,17 @@ class VTKViewer {
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
       for(int p = 1; p < mesh->commSize(); p++) {
-        int        numLocalElements;
+        int        numLocalElementsAndCorners[2];
         int       *remoteVertices;
         MPI_Status status;
 
-        ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
-        ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &remoteVertices);CHKERRQ(ierr);
-        ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
-        for(int e = 0; e < numLocalElements; e++) {
-          ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-          for(int c = 0; c < corners; c++) {
-            ierr = PetscViewerASCIIPrintf(viewer, " %d", remoteVertices[e*corners+c]);CHKERRQ(ierr);
+        ierr = MPI_Recv(numLocalElementsAndCorners, 2, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+        ierr = PetscMalloc(numLocalElementsAndCorners[0]*numLocalElementsAndCorners[1] * sizeof(int), &remoteVertices);CHKERRQ(ierr);
+        ierr = MPI_Recv(remoteVertices, numLocalElementsAndCorners[0]*numLocalElementsAndCorners[1], MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+        for(int e = 0; e < numLocalElementsAndCorners[0]; e++) {
+          ierr = PetscViewerASCIIPrintf(viewer, "%d ", numLocalElementsAndCorners[1]);CHKERRQ(ierr);
+          for(int c = 0; c < numLocalElementsAndCorners[1]; c++) {
+            ierr = PetscViewerASCIIPrintf(viewer, " %d", remoteVertices[e*numLocalElementsAndCorners[1]+c]);CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         }
@@ -300,7 +300,8 @@ class VTKViewer {
       if (k != numLocalElements*corners) {
         SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
       }
-      ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
+      int numLocalElementsAndCorners[2] = {numLocalElements, corners};
+      ierr = MPI_Send(numLocalElementsAndCorners, 2, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
       ierr = MPI_Send(localVertices, numLocalElements*corners, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
       ierr = PetscFree(localVertices);CHKERRQ(ierr);
     }
