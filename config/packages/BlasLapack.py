@@ -146,7 +146,7 @@ class Configure(config.package.Package):
         self.download= 'file://'+os.path.abspath(self.framework.argDB['download-c-blas-lapack'])
       self.f2c = 1
       
-      if hasattr(self.compilers, 'FC') and not (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int'):
+      if hasattr(self.compilers, 'FC') and not (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int'  or self.defaultPrecision == 'quad'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
       f2cLibs = [os.path.join(libdir,'libf2cblas.a')]
@@ -327,10 +327,13 @@ class Configure(config.package.Package):
       if line.startswith('COPTFLAGS '):
         self.setCompilers.pushLanguage('C')
         line = 'COPTFLAGS  = '+self.setCompilers.getCompilerFlags()
+        self.framework.log.write('Found default precision of '+self.defaultPrecision+'\n')        
         if self.defaultPrecision == 'int':
           line += ' -DDOUBLE=int -DLONG=""\n'
         elif self.defaultPrecision == 'longdouble':
           line += ' -DDOUBLE=double -DLONG=long\n'
+        elif self.defaultPrecision == 'quad':
+          line += ' -DDOUBLE=_Quad -DLONG=""\n'
         else:
           line += ' -DDOUBLE=double -DLONG=""\n'
         self.setCompilers.popLanguage()
@@ -341,6 +344,10 @@ class Configure(config.package.Package):
           line += ' -DDOUBLE=int -DLONG=""\n'
         elif self.defaultPrecision == 'longdouble':
           line += ' -DDOUBLE=double -DLONG=long\n'
+        elif self.defaultPrecision == 'quad':
+          # hack for Intel compilers when 
+          line += ' -Qoption,cpp,--extended_float_type '
+          line += ' -DDOUBLE=_Quad -DLONG=""\n'
         else:
           line += ' -DDOUBLE=double -DLONG=""\n'
         self.setCompilers.popLanguage()

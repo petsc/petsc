@@ -475,7 +475,8 @@ class Configure(config.base.Configure):
                          'unchanged': ('void d1chk(void);', 'void d1chk(void){return;}\n', '       call d1chk()\n'),
                          'capitalize': ('void D1CHK(void);', 'void D1CHK(void){return;}\n', '       call d1chk()\n'),
                          'stdcall': ('void __stdcall D1CHK(void);', 'void __stdcall D1CHK(void){return;}\n', '       call d1chk()\n'),
-                         'double': ('void d1_chk__(void)', 'void d1_chk__(void){return;}\n', '       call d1_chk()\n')}
+                         'double': ('void d1_chk__(void)', 'void d1_chk__(void){return;}\n', '       call d1_chk()\n'),
+                         'doubleatend': ('void d1_chk__(void)', 'void d1_chk__(void){return;}\n', '       call d1_chk_()\n')}    
     #some compilers silently ignore '__stdcall' directive, so do stdcall test last
     # double test is not done here, so its not listed
     key_list = ['underscore','unchanged','capitalize','stdcall']
@@ -503,13 +504,19 @@ class Configure(config.base.Configure):
     return
 
   def checkFortranNameManglingDouble(self):
-    '''Checks if symbols containing and underscore append and extra underscore, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
+    '''Checks if symbols containing an underscore append an extra underscore, and defines HAVE_FORTRAN_UNDERSCORE_UNDERSCORE if necessary'''
     if self.testMangling(self.manglerFuncs['double'][1], self.manglerFuncs['double'][2]):
-      self.logPrint('Fortran appends and extra underscore to names containing underscores', 4, 'compilers')
+      self.logPrint('Fortran appends an extra underscore to names containing underscores', 4, 'compilers')
       self.fortranManglingDoubleUnderscore = 1
       self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE',1)
     else:
       self.fortranManglingDoubleUnderscore = 0
+    if self.testMangling(self.manglerFuncs['doubleatend'][1], self.manglerFuncs['doubleatend'][2]):
+      self.logPrint('Fortran appends an extra underscore to names ending with underscores', 4, 'compilers')
+      self.fortranManglingDoubleUnderscoreAtEnd = 1
+      self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE_AT_END',1)
+    else:
+      self.fortranManglingDoubleUnderscoreAtEnd = 0
     return
 
   def checkFortranPreprocessor(self):

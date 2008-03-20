@@ -46,6 +46,7 @@ class CompilerOptions(config.base.Configure):
       if config.setCompilers.Configure.isIntel(compiler) and not compiler.find('win32fe') >=0:
         if bopt == '':
           flags.append('-wd1572')
+          flags.append('-Qoption,cpp,--extended_float_type')
         elif bopt == 'g':
           flags.append('-g')
         elif bopt == 'O':
