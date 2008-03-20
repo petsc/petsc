@@ -20,7 +20,7 @@ ex1e: ex1e.o  chkopts
 
 ex1f: ex1f.o  chkopts
 	-${FLINKER} -o ex1f ex1f.o ${PETSC_VEC_LIB}
-	${RM} -f ex1f.o
+#	${RM} -f ex1f.o
 
 ex1f90: ex1f90.o  chkopts
 	-${FLINKER} -o ex1f90 ex1f90.o ${PETSC_VEC_LIB}

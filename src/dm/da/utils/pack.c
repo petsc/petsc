@@ -1397,20 +1397,46 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
   Mat                    Atmp;
   PetscMPIInt            rank;
   PetscScalar            zero = 0.0;
+  PetscTruth             dense = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(packer,DA_COOKIE,1);
-  next = packer->next;
 
   /* use global vector to determine layout needed for matrix */
   m = packer->n;
   ierr = MPI_Comm_rank(((PetscObject)packer)->comm,&rank);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)packer)->comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
+  ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
+
+  /*
+     Extremely inefficient but will compute entire Jacobian for testing
+  */
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
+  if (dense) {
+    PetscInt    rstart,rend,*indices;
+    PetscScalar *values;
+
+    mA    = packer->N;
+    ierr = MatMPIAIJSetPreallocation(*J,mA,PETSC_NULL,mA-m,PETSC_NULL);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocation(*J,mA,PETSC_NULL);CHKERRQ(ierr);
+
+    ierr = MatGetOwnershipRange(*J,&rstart,&rend);CHKERRQ(ierr);
+    ierr = PetscMalloc2(mA,PetscScalar,&values,mA,PetscInt,&indices);CHKERRQ(ierr);
+    ierr = PetscMemzero(values,mA*sizeof(PetscScalar));CHKERRQ(ierr);
+    for (i=0; i<mA; i++) indices[i] = i;
+    for (i=rstart; i<rend; i++) {
+      ierr = MatSetValues(*J,1,&i,mA,indices,values,INSERT_VALUES);CHKERRQ(ierr);
+    }
+    ierr = PetscFree2(values,indices);CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+    ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+    PetscFunctionReturn(0);
+  }
 
   ierr = MatPreallocateInitialize(((PetscObject)packer)->comm,m,m,dnz,onz);CHKERRQ(ierr);
   /* loop over packed objects, handling one at at time */
+  next = packer->next;
   while (next) {
     if (next->type == DMCOMPOSITE_ARRAY) {
       if (rank == next->rank) {  /* zero the "little" block */
@@ -1545,7 +1571,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmcomposite,DA_COOKIE,1);
   if (ctype == IS_COLORING_GHOSTED) {
-    SETERRQ(PETSC_ERR_SUP,"Lazy Barry");
+    SETERRQ(PETSC_ERR_SUP,"Currently you must use -dmmg_iscoloring_type global" );
   } else if (ctype == IS_COLORING_GLOBAL) {
     n = dmcomposite->n;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");

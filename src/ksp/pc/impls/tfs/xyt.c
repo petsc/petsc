@@ -113,7 +113,7 @@ PetscInt XYT_factor(xyt_ADT xyt_handle, /* prev. allocated xyt  handle */
 }
 
 /**************************************xyt.c***********************************/
-PetscInt XYT_solve(xyt_ADT xyt_handle, double *x, double *b)
+PetscInt XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b)
 {
   comm_init();
   check_handle(xyt_handle);
@@ -692,8 +692,8 @@ static PetscErrorCode det_separators(xyt_ADT xyt_handle)
   ivec_set (fo   ,-1,n+1);
   ivec_zero(used,n);
 
-  lhs  = (double*)malloc(sizeof(PetscScalar)*m);
-  rhs  = (double*)malloc(sizeof(PetscScalar)*m);
+  lhs  = (PetscScalar*)malloc(sizeof(PetscScalar)*m);
+  rhs  = (PetscScalar*)malloc(sizeof(PetscScalar)*m);
 
   /* determine the # of unique dof */
   rvec_zero(lhs,m);

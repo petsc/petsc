@@ -163,6 +163,9 @@ ex38: ex38.o  chkopts
 ex39f90: ex39f90.o  chkopts
 	-${FLINKER} -o ex39f90 ex39f90.o ${PETSC_SNES_LIB}
 	${RM} ex39f90.o
+ex40f90: ex40f90.o  chkopts
+	-${FLINKER} -o ex40f90 ex40f90.o ${PETSC_SNES_LIB}
+	${RM} ex40f90.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -np 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \

@@ -98,7 +98,9 @@
 
 !  Set the vectors to entries to a constant value.
 
+      print*,one
       call VecSet(x,one,ierr)
+
       call VecSet(y,two,ierr)
       call VecSet(z(1),one,ierr)
       call VecSet(z(2),two,ierr)
@@ -130,11 +132,14 @@
  120  format ('All other values should be near zero')
 
       call VecScale(x,two,ierr)
+      call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call VecNorm(x,NORM_2,norm,ierr)
       v = norm-2.0*sqrt(dble(n))
       if (v .gt. -PETSC_SMALL .and. v .lt. PETSC_SMALL) v = 0.0
       if (rank .eq. 0) write(6,130) v
  130  format ('VecScale ',1pe8.2)
+      print*,v,norm,2.0*sqrt(dble(n))
+      call VecView(x,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
       call VecCopy(x,w,ierr)
       call VecNorm(w,NORM_2,norm,ierr)

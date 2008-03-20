@@ -282,7 +282,7 @@ valid
    Use this macro to check if the type is set
 */
 #define PetscValidType(a,arg) \
-  if (!((PetscObject)a)->type_name) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Object Type not set: Argument # %d",arg);
+  if (!((PetscObject)a)->type_name) SETERRQ2(PETSC_ERR_ARG_WRONGSTATE,"%s object's type is not set: Argument # %d",((PetscObject)a)->class_name,arg);
 /*
    Sometimes object must live on same communicator to inter-operate
 */

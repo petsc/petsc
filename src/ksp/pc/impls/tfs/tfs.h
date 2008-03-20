@@ -101,8 +101,8 @@ File Description:
 #define SWAP(a,b)       temp=(a); (a)=(b); (b)=temp;
 #define P_SWAP(a,b)     ptr=(a); (a)=(b); (b)=ptr;
 
-#define MAX_FABS(x,y)   ((double)fabs(x)>(double)fabs(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
-#define MIN_FABS(x,y)   ((double)fabs(x)<(double)fabs(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
+#define MAX_FABS(x,y)   (PetscAbsScalar(x)>PetscAbsScalar(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
+#define MIN_FABS(x,y)   (PetscAbsScalar(x)<PetscAbsScalar(y)) ? ((PetscScalar)x) : ((PetscScalar)y)
 
 /* specer's existence ... can be done w/MAX_ABS */
 #define EXISTS(x,y)     ((x)==0.0) ? (y) : (x)
@@ -350,7 +350,7 @@ XXT_solve(xxt_handle, double *x, double *b)
 XXT_solve(xxt_handle, double *x, NULL)
 assumes x has been initialized to be b
 **************************************xxt.h***********************************/
-extern PetscInt XXT_solve(xxt_ADT xxt_handle, double *x, double *b);
+extern PetscInt XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b);
 
 /*************************************xxt.h************************************
 Function: XXT_stats
@@ -462,7 +462,7 @@ Return:
 Description: This function performs x = E^-1.b
 Usage: XYT_solve(xyt_handle, double *x, double *b)
 **************************************xyt.h***********************************/
-extern PetscInt XYT_solve(xyt_ADT xyt_handle, double *x, double *b);
+extern PetscInt XYT_solve(xyt_ADT xyt_handle, PetscScalar *x, PetscScalar *b);
 
 
 /*************************************xyt.h************************************
