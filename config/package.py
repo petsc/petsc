@@ -353,9 +353,10 @@ class Package(config.base.Configure):
         self.lib = lib	
         self.framework.logPrint('Checking for headers '+location+': '+str(incl))
         if (not self.includes) or self.checkInclude(incl, self.includes, incls, timeout = 1800.0):
-          self.include = incl
-          self.found   = 1
-          self.dlib    = self.lib+libs
+          if self.includes:
+            self.include = incl
+          self.found     = 1
+          self.dlib      = self.lib+libs
           if not hasattr(self.framework, 'packages'):
             self.framework.packages = []
           self.directory = directory
