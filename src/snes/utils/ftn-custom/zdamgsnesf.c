@@ -5,9 +5,11 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dmmgsetsnes_                     DMMGSETSNES
 #define snesgetsolutionupdate_           SNESGETSOLUTIONUPDATE
+#define dmmggetsnes_                     DMMGGETSNES
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmgsetsnes_                     dmmgsetsnes
 #define snesgetsolutionupdate_           snesgetsolutionupdate
+#define dmmggetsnes_                     dmmggetsnes
 #endif
 
 EXTERN_C_BEGIN
@@ -31,6 +33,11 @@ void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,PetscErrorCode (PETSC_STDCALL *rhs)(
     ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[0] = (PetscVoidFunction)rhs;
     ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[1] = (PetscVoidFunction)mat;
   }
+}
+
+void PETSC_STDCALL dmmggetsnes_(DMMG **dmmg,SNES *snes,PetscErrorCode *ierr)
+{
+  *snes = DMMGGetSNES(*dmmg);
 }
 
 EXTERN_C_END

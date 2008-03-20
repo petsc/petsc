@@ -25,7 +25,9 @@ class Configure(config.base.Configure):
     config.base.Configure.setupDependencies(self, framework)
     self.types     = framework.require('config.types', self)
     self.languages = framework.require('PETSc.utilities.languages', self)
+    self.compilers = framework.require('config.compilers', self)
     return
+
 
   def configureScalarType(self):
     '''Choose between real and complex numbers'''
@@ -51,6 +53,13 @@ class Configure(config.base.Configure):
     elif self.precision == 'matsingle':
       self.addDefine('USE_MAT_SINGLE', '1')
     elif self.precision == 'longdouble':
+      self.compilers.pushLanguage('C')
+      if config.setCompilers.Configure.isIntel(self.compilers.getCompiler()):
+        # Intel's C long double is 80 bits, so does not match Fortran's real*16, but
+        # Intel C has a _Quad that is 128 bits
+        self.precision = 'quad'
+        self.addDefine('USE__QUAD', '1')        
+      self.compilers.popLanguage()
       self.addDefine('USE_LONG_DOUBLE', '1')
     elif self.precision == 'int':
       self.addDefine('USE_INT', '1')

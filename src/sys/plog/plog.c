@@ -1380,8 +1380,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = PetscFPrintf(comm, fd, "See the 'Profiling' chapter of the users' manual for details on interpreting output.\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "Phase summary info:\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Count: number of times phase was executed\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "   Time and Flops/sec: Max - maximum over all processors\n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm, fd, "                       Ratio - ratio of maximum to minimum over all processors\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "   Time and Flops: Max - maximum over all processors\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm, fd, "                   Ratio - ratio of maximum to minimum over all processors\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Mess: number of messages sent\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Avg. len: average message length\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm, fd, "   Reduct: number of global reductions\n");CHKERRQ(ierr);

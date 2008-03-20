@@ -448,7 +448,9 @@ PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscTruth flg)
    Level: advanced
 
    Notes: See MATIS for more details
-          m and n are NOT related to the size of the map
+          m and n are NOT related to the size of the map, they are the size of the part of the vector owned
+          by that process. m + nghosts (or n + nghosts) is the length of map since map maps all local points 
+          plus the ghost points to global indices.
 
 .seealso: MATIS, MatSetLocalToGlobalMapping()
 @*/

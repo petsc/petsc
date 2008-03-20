@@ -38,6 +38,8 @@
       type PetscViewer
         PetscFortranAddr:: v
       end type PetscViewer
+#else
+      PetscViewer PETSC_VIEWER_STDOUT_
 #endif
 !
 !  Flags for binary I/O

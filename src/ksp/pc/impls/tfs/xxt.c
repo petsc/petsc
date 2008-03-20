@@ -108,7 +108,7 @@ PetscInt XXT_factor(xxt_ADT xxt_handle, /* prev. allocated xxt  handle */
 }
 
 /**************************************xxt.c***********************************/
-PetscInt XXT_solve(xxt_ADT xxt_handle, double *x, double *b)
+PetscInt XXT_solve(xxt_ADT xxt_handle, PetscScalar *x, PetscScalar *b)
 {
 
   comm_init();
@@ -600,8 +600,8 @@ static  PetscErrorCode det_separators(xxt_ADT xxt_handle)
   ivec_set (fo   ,-1,n+1);
   ivec_zero(used,n);
 
-  lhs  = (double*)malloc(sizeof(PetscScalar)*m);
-  rhs  = (double*)malloc(sizeof(PetscScalar)*m);
+  lhs  = (PetscScalar*)malloc(sizeof(PetscScalar)*m);
+  rhs  = (PetscScalar*)malloc(sizeof(PetscScalar)*m);
 
   /* determine the # of unique dof */
   rvec_zero(lhs,m);

@@ -60,10 +60,10 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_ARG_NOTSAMETYPE  69   /* two args must be same object type */
 #define PETSC_ERR_ARG_NOTSAMECOMM  80   /* two args must be same communicators */
 #define PETSC_ERR_ARG_WRONGSTATE   73   /* object in argument is in wrong state, e.g. unassembled mat */
+#define PETSC_ERR_ARG_TYPENOTSET   89   /* the type of the object has not yet been set */
 #define PETSC_ERR_ARG_INCOMP       75   /* two arguments are incompatible */
 #define PETSC_ERR_ARG_NULL         85   /* argument is null that should not be */
 #define PETSC_ERR_ARG_UNKNOWN_TYPE 86   /* type name doesn't match any registered type */
-#define PETSC_ERR_ARG_DOMAIN       87   /* argument is not in domain of function */
 
 #define PETSC_ERR_FILE_OPEN        65   /* unable to open file */
 #define PETSC_ERR_FILE_READ        66   /* unable to read from file */
@@ -73,7 +73,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_MAT_LU_ZRPVT     71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT     81   /* detected a zero pivot during Cholesky factorization */
 
-#define PETSC_ERR_MAX_VALUE        89   /* this is always the one more than the largest error code */
+#define PETSC_ERR_MAX_VALUE        90  /* this is always the one more than the largest error code */
 
 #if defined(PETSC_USE_ERRORCHECKING)
 
