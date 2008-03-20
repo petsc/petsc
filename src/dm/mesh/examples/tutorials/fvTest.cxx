@@ -132,7 +132,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   PetscFunctionBegin;
   Obj<ALE::Mesh>             m     = new ALE::Mesh(comm, options->dim, options->debug);
   Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(comm, options->debug);
-#if 1
+#if 0
   PetscInt                   numCells  = 17;
   PetscInt                   numFaces  = 32;
   PetscInt                   connect[64] = { 1,  2,  2,  3,  4,  9,  4, 12,  4, 15,  9, 10, 12, 13,
@@ -159,32 +159,40 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
                                                 0.333, 0.333, 0.333, 0.333, 0.333, 0.333, 0.333, 0.333, 0.333,
                                                 0.333, 0.333, 1.0, 1.0};
 #endif
-  //PetscInt numCells;
-  //PetscInt numFaces;
+  PetscInt numCells;
+  PetscInt numFaces;
   int     *cellIds, *downCells, *upCells;
   double  *cellX, *cellY, *cellZ, *cellVols;
   double  *faceAreas, *downX, *downY, *downZ, *upX, *upY, *upZ;
 
-  //ierr = ReadMesh(comm, &numCells, cellIds, cellX, cellY, cellZ, cellVols, &numFaces, faceAreas, downCells, upCells, downX, downY, downZ, upX, upY, upZ, options);CHKERRQ(ierr);
+  ierr = ReadMesh(comm, &numCells, cellIds, cellX, cellY, cellZ, cellVols, &numFaces, faceAreas, downCells, upCells, downX, downY, downZ, upX, upY, upZ, options);CHKERRQ(ierr);
   if (!m->commRank()) {
     for(int f = 0; f < numFaces; ++f) {
-      sieve->addCone(f+numCells+1, connect[f*2+0]);
-      sieve->addCone(f+numCells+1, connect[f*2+1]);
+      sieve->addCone(f+numCells+1, downCells[f]);
+      sieve->addCone(f+numCells+1, upCells[f]);
     }
   }
   m->setSieve(sieve);
   m->stratify();
-  const Obj<ALE::Mesh::real_section_type>& cellVol = m->getRealSection("cell volumes");
-  const Obj<ALE::Mesh::real_section_type>& cellCen = m->getRealSection("cell centers");
-  const Obj<ALE::Mesh::label_sequence>&    cells   = m->heightStratum(0);
+  const Obj<ALE::Mesh::real_section_type>& sCellVols = m->getRealSection("cell volumes");
+  const Obj<ALE::Mesh::real_section_type>& sCellX    = m->getRealSection("cell centers X");
+  const Obj<ALE::Mesh::real_section_type>& sCellY    = m->getRealSection("cell centers Y");
+  const Obj<ALE::Mesh::real_section_type>& sCellZ    = m->getRealSection("cell centers Z");
+  const Obj<ALE::Mesh::label_sequence>&    cells     = m->heightStratum(0);
 
-  cellVol->setFiberDimension(cells, 1);
-  cellCen->setFiberDimension(cells, options->dim);
-  m->allocate(cellVol);
-  m->allocate(cellCen);
+  sCellVols->setFiberDimension(cells, 1);
+  sCellX->setFiberDimension(cells, 1);
+  sCellY->setFiberDimension(cells, 1);
+  sCellZ->setFiberDimension(cells, 1);
+  m->allocate(sCellVols);
+  m->allocate(sCellX);
+  m->allocate(sCellY);
+  m->allocate(sCellZ);
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-    cellVol->updatePoint(*c_iter, &cellVolumes[*c_iter-1]);
-    cellCen->updatePoint(*c_iter, &cellCenters[(*c_iter-1)*options->dim]);
+    sCellVols->updatePoint(*c_iter, &cellVolumes[*c_iter-1]);
+    sCellX->updatePoint(*c_iter, &cellX[*c_iter-1]);
+    sCellY->updatePoint(*c_iter, &cellY[*c_iter-1]);
+    sCellZ->updatePoint(*c_iter, &cellZ[*c_iter-1]);
   }
   const Obj<ALE::Mesh::real_section_type>& faceVol = m->getRealSection("face volumes");
   const Obj<ALE::Mesh::real_section_type>& faceCen = m->getRealSection("face centers");
@@ -198,9 +206,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     faceVol->updatePoint(*f_iter, &faceVolumes[*f_iter - numCells-1]);
     faceCen->updatePoint(*f_iter, &faceCenters[(*f_iter - numCells-1)*options->dim]);
   }
-  //ierr = PetscFree5(cellIds,cellVols,cellX,cellY,cellZ);CHKERRQ(ierr);
-  //ierr = PetscFree5(faceAreas,downCells,downX,downY,downZ);CHKERRQ(ierr);
-  //ierr = PetscFree4(upCells,upX,upY,upZ);CHKERRQ(ierr);
+  ierr = PetscFree5(cellIds,cellVols,cellX,cellY,cellZ);CHKERRQ(ierr);
+  ierr = PetscFree5(faceAreas,downCells,downX,downY,downZ);CHKERRQ(ierr);
+  ierr = PetscFree4(upCells,upX,upY,upZ);CHKERRQ(ierr);
 
   ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
   ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
