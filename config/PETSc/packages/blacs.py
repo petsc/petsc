@@ -41,11 +41,13 @@ class Configure(PETSc.package.Package):
     g.write('MPILIB    = '+self.libraries.toString(self.mpi.lib)+'\n')
     g.write('SYSINC    = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('BTLIBS    = $(BLACSLIB)  $(MPILIB) \n')
+
+    # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag
     if self.compilers.fortranManglingDoubleUnderscore:
       blah = 'f77IsF2C'
     elif self.compilers.fortranMangling == 'underscore':
       blah = 'Add_'
-    elif self.compilers.fortranMangling == 'capitalize':
+    elif self.compilers.fortranMangling == 'caps':
       blah = 'UpCase'
     else:
       blah = 'NoChange'

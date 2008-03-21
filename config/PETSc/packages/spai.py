@@ -27,9 +27,9 @@ class Configure(PETSc.package.Package):
   def Install(self):
 
     self.framework.pushLanguage('C')
-    if self.compilers.fortranMangling == 'underscore' or self.blasLapack.f2c:  FTNOPT = ''
-    elif self.compilers.fortranMangling == 'capitalize':                       FTNOPT = ''
-    else:                                                                      FTNOPT = '-DSP2'
+    if self.blasLapack.mangling == 'underscore':   FTNOPT = ''
+    elif self.blasLapack.mangling == 'caps': FTNOPT = ''
+    else:                                          FTNOPT = '-DSP2'
     
     args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+FTNOPT+' '+self.framework.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+'\n'
     args = args+'AR         = '+self.setCompilers.AR+'\n'

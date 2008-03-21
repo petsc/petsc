@@ -39,17 +39,18 @@ class Configure(PETSc.package.Package):
     g.write('LOADER       = '+self.setCompilers.getLinker()+'\n') 
     g.write('LOADOPTS     = \n') 
     self.setCompilers.popLanguage()
+
+    # set blas name mangling
+    if self.blasLapack.mangling == 'underscore':
+      g.write('CDEFS   = -DAdd_\n')
+    elif self.blasLapack.mangling == 'caps':
+      g.write('CDEFS   = -DUpCase\n')
+    else:
+      g.write('CDEFS   = -DNoChange\n')
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
       g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
-      # set fortran name mangling
-      if self.compilers.fortranMangling == 'underscore':
-        g.write('CDEFS   = -DAdd_\n')
-      elif self.compilers.fortranMangling == 'capitalize':
-        g.write('CDEFS   = -DUpCase\n')
-      else:
-        g.write('CDEFS   = -DNoChange\n')
       self.setCompilers.popLanguage()
     else:
       g.write('FORTRAN    = \n')
@@ -70,10 +71,6 @@ class Configure(PETSc.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by SuperLU'''
     '''Normally you do not need to provide this method'''
     PETSc.package.Package.configureLibrary(self) 
-    if self.blasLapack.f2c:
-      raise RuntimeError('SuperLU requires a COMPLETE BLAS and LAPACK, it cannot be used with or --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
-
-    errormsg = ', the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option or see \nhttp://www-unix.mcs.anl.gov/petsc/petsc-as/documentation/installation.html#BLAS/LAPACK'
     if not self.blasLapack.checkForRoutine('slamch'): 
       raise RuntimeError('SuperLU requires the LAPACK routine slamch()'+errormsg)
     self.framework.log.write('Found slamch() in Lapack library as needed by SuperLU\n')
@@ -81,10 +78,6 @@ class Configure(PETSc.package.Package):
     if not self.blasLapack.checkForRoutine('dlamch'): 
       raise RuntimeError('SuperLU requires the LAPACK routine dlamch()'+errormsg)
     self.framework.log.write('Found dlamch() in Lapack library as needed by SuperLU\n')
-
-    if not self.blasLapack.checkForRoutine('xerbla'): 
-      raise RuntimeError('SuperLU requires the BLAS routine xerbla()'+errormsg)
-    self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU\n')
 
     return
   

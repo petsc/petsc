@@ -51,19 +51,16 @@ class Configure(PETSc.package.Package):
     self.framework.pushLanguage('C++')
     args += 'CXX            = '+self.framework.getCompiler()
     args += ' -DPROM_HAVE_METIS'
-    # Instead of doing all this, we could try to have Prometheus just use the PETSc bmake
-    # files. But need to pass in USE_EXTERN_CXX flag AND have a C and C++ compiler
-    if self.compilers.fortranMangling == 'underscore':
+
+    if self.blasLapack.mangling == 'underscore':
       args += ' -DHAVE_FORTRAN_UNDERSCORE=1'
       if self.compilers.fortranManglingDoubleUnderscore:
         args += ' -DHAVE_FORTRAN_UNDERSCORE_UNDERSCORE=1'
-    elif self.blasLapack.f2c:
-      args += ' -DBLASLAPACK_UNDERSCORE=1'
-    elif self.compilers.fortranMangling == 'unchanged':
+    elif self.blasLapack.mangling == 'unchanged':
       args += ' -DHAVE_FORTRAN_NOUNDERSCORE=1'
-    elif self.compilers.fortranMangling == 'capitalize':
+    elif self.blasLapack.mangling == 'caps':
       args += ' -DHAVE_FORTRAN_CAPS=1'
-    elif self.compilers.fortranMangling == 'stdcall':
+    elif self.blasLapack.mangling == 'stdcall':
       args += ' -DHAVE_FORTRAN_STDCALL=1'
       args += ' -DSTDCALL=__stdcall'
       args += ' -DHAVE_FORTRAN_CAPS=1'

@@ -48,9 +48,10 @@ class Configure(PETSc.package.Package):
       g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
       g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
       # set fortran name mangling
+      # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag      
       if self.compilers.fortranMangling == 'underscore':
         g.write('CDEFS   = -DAdd_\n')
-      elif self.compilers.fortranMangling == 'capitalize':
+      elif self.compilers.fortranMangling == 'caps':
         g.write('CDEFS   = -DUpCase\n')
       else:
         g.write('CDEFS   = -DNoChange\n')
@@ -73,20 +74,12 @@ class Configure(PETSc.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by SuperLU_DIST'''
     '''Normally you do not need to provide this method'''
     PETSc.package.Package.configureLibrary(self)
-    if self.blasLapack.f2c:
-      raise RuntimeError('SuperLU_DIST requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
-
-    errormsg = ', the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option or see \nhttp://www-unix.mcs.anl.gov/petsc/petsc-as/documentation/installation.html#BLAS/LAPACK'
     if not self.blasLapack.checkForRoutine('slamch'): 
       raise RuntimeError('SuperLU_DIST requires the BLAS routine slamch()'+errormsg)
     self.framework.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
-
     if not self.blasLapack.checkForRoutine('dlamch'): 
       raise RuntimeError('SuperLU_DIST requires the BLAS routine dlamch()'+errormsg)
     self.framework.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
-    if not self.blasLapack.checkForRoutine('xerbla'): 
-      raise RuntimeError('SuperLU_DIST requires the BLAS routine xerbla()'+errormsg)
-    self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
     return
   
 if __name__ == '__main__':

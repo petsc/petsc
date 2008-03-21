@@ -44,11 +44,12 @@ class Configure(PETSc.package.Package):
     g.write('SCALAPACKLIB = '+os.path.join(self.installDir,self.libdir,'libscalapack.a')+' \n')
     g.write('CBLACSLIB    = $(BLACSCINIT) $(BLACSLIB) $(BLACSCINIT)\n')
     g.write('FBLACSLIB    = $(BLACSFINIT) $(BLACSLIB) $(BLACSFINIT)\n')
+    # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag    
     if self.compilers.fortranManglingDoubleUnderscore:
       blah = 'f77IsF2C'
     elif self.compilers.fortranMangling == 'underscore':
       blah = 'Add_'
-    elif self.compilers.fortranMangling == 'capitalize':
+    elif self.compilers.fortranMangling == 'caps':
       blah = 'UpCase'
     else:
       blah = 'NoChange'
