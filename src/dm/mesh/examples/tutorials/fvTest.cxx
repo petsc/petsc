@@ -27,9 +27,28 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionReturn(0);
 }
 
+typedef struct {
+  int     numCells;
+  int    *cellIds; /* Id of each cell */
+  double *cellX;   /* X of cell center */
+  double *cellY;   /* Y of cell center */
+  double *cellZ;   /* Z of cell center */
+  double *cellVols;
+  int     numFaces;
+  double *faceAreas;
+  int    *downCells;
+  int    *upCells;
+  double *downX;
+  double *downY;
+  double *downZ;
+  double *upX;
+  double *upY;
+  double *upZ;
+} PFLOTRANMesh;
+
 #undef __FUNCT__
 #define __FUNCT__ "ReadMesh"
-PetscErrorCode ReadMesh(MPI_Comm comm, PetscInt *numCells, int *cellIds, double *cellX, double *cellY, double *cellZ, double *cellVols, PetscInt *numFaces, double *faceAreas, int *downCells, int *upCells, double *downX, double *downY, double *downZ, double *upX, double *upY, double *upZ, Options *options)
+PetscErrorCode ReadMesh(MPI_Comm comm, PFLOTRANMesh *data, Options *options)
 {
   PetscViewer    viewer;
   hid_t          file_id, dataset_id, dataspace_id;
@@ -52,63 +71,63 @@ PetscErrorCode ReadMesh(MPI_Comm comm, PetscInt *numCells, int *cellIds, double 
   status = H5Sget_simple_extent_dims(dataspace_id, dims, NULL);
   /* Close the dataspace. */
   status = H5Sclose(dataspace_id);
-  ierr = PetscMalloc5(dims[0],int,&cellIds,dims[0],double,&cellVols,dims[0],double,&cellX,dims[0],double,&cellY,dims[0],double,&cellZ);CHKERRQ(ierr);
+  ierr = PetscMalloc5(dims[0],int,&data->cellIds,dims[0],double,&data->cellVols,dims[0],double,&data->cellX,dims[0],double,&data->cellY,dims[0],double,&data->cellZ);CHKERRQ(ierr);
   /* Read the data. */
-  status = H5Dread(dataset_id, H5T_STD_I32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, cellIds);
+  status = H5Dread(dataset_id, H5T_STD_I32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->cellIds);
   /* Close the dataset. */
   status = H5Dclose(dataset_id);
   /* Repeat */
   dataset_id = H5Dopen(file_id, "/Cells/Volumes");
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, cellVols);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->cellVols);
   status = H5Dclose(dataset_id);
   dataset_id = H5Dopen(file_id, "/Cells/X-Coordinates");
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, cellX);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->cellX);
   status = H5Dclose(dataset_id);
   dataset_id = H5Dopen(file_id, "/Cells/Y-Coordinates");
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, cellY);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->cellY);
   status = H5Dclose(dataset_id);
   dataset_id = H5Dopen(file_id, "/Cells/Z-Coordinates");
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, cellZ);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->cellZ);
   status = H5Dclose(dataset_id);
   /* Get Connections */
   dataset_id = H5Dopen(file_id, "/Connections/Areas");
   dataspace_id = H5Dget_space(dataset_id);
   status = H5Sget_simple_extent_dims(dataspace_id, &dims[1], NULL);
   status = H5Sclose(dataspace_id);
-  ierr = PetscMalloc5(dims[1],double,&faceAreas,dims[1],int,&downCells,dims[1],double,&downX,dims[1],double,&downY,dims[1],double,&downZ);CHKERRQ(ierr);
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, faceAreas);
+  ierr = PetscMalloc5(dims[1],double,&data->faceAreas,dims[1],int,&data->downCells,dims[1],double,&data->downX,dims[1],double,&data->downY,dims[1],double,&data->downZ);CHKERRQ(ierr);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->faceAreas);
   status = H5Dclose(dataset_id);
   dataset_id = H5Dopen(file_id, "/Connections/Downwind Cell IDs");
-  status = H5Dread(dataset_id, H5T_STD_I32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, downCells);
+  status = H5Dread(dataset_id, H5T_STD_I32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->downCells);
   status = H5Dclose(dataset_id);
   dataset_id = H5Dopen(file_id, "/Connections/Downwind Distance X");
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, downX);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->downX);
   status = H5Dclose(dataset_id);
   dataset_id = H5Dopen(file_id, "/Connections/Downwind Distance Y");
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, downY);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->downY);
   status = H5Dclose(dataset_id);
   dataset_id = H5Dopen(file_id, "/Connections/Downwind Distance Z");
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, downZ);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->downZ);
   status = H5Dclose(dataset_id);
-  ierr = PetscMalloc4(dims[1],int,&upCells,dims[1],double,&upX,dims[1],double,&upY,dims[1],double,&upZ);CHKERRQ(ierr);
+  ierr = PetscMalloc4(dims[1],int,&data->upCells,dims[1],double,&data->upX,dims[1],double,&data->upY,dims[1],double,&data->upZ);CHKERRQ(ierr);
   dataset_id = H5Dopen(file_id, "/Connections/Upwind Cell IDs");
-  status = H5Dread(dataset_id, H5T_STD_I32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, downCells);
+  status = H5Dread(dataset_id, H5T_STD_I32LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->upCells);
   status = H5Dclose(dataset_id);
   dataset_id = H5Dopen(file_id, "/Connections/Upwind Distance X");
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, downX);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->upX);
   status = H5Dclose(dataset_id);
   dataset_id = H5Dopen(file_id, "/Connections/Upwind Distance Y");
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, downY);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->upY);
   status = H5Dclose(dataset_id);
   dataset_id = H5Dopen(file_id, "/Connections/Upwind Distance Z");
-  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, downZ);
+  status = H5Dread(dataset_id, H5T_IEEE_F64LE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data->upZ);
   status = H5Dclose(dataset_id);
   /* Cleanup */
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  *numCells = dims[0];
-  *numFaces = dims[1];
-  for(int c = 0; c < *numCells; ++c) {
-    std::cout << "Cell: " << cellIds[c] << " Center: " << cellX[c]<<","<<cellY[c]<<","<<cellZ[c] << " Vol: " << cellVols[c] << std::endl;
+  data->numCells = dims[0];
+  data->numFaces = dims[1];
+  for(int c = 0; c < data->numCells; ++c) {
+    std::cout << "Cell: " << data->cellIds[c] << " Center: " << data->cellX[c]<<","<<data->cellY[c]<<","<<data->cellZ[c] << " Vol: " << data->cellVols[c] << std::endl;
   }
 #endif
   PetscFunctionReturn(0);
@@ -159,17 +178,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
                                                 0.333, 0.333, 0.333, 0.333, 0.333, 0.333, 0.333, 0.333, 0.333,
                                                 0.333, 0.333, 1.0, 1.0};
 #endif
-  PetscInt numCells;
-  PetscInt numFaces;
-  int     *cellIds, *downCells, *upCells;
-  double  *cellX, *cellY, *cellZ, *cellVols;
-  double  *faceAreas, *downX, *downY, *downZ, *upX, *upY, *upZ;
+  PFLOTRANMesh data;
 
-  ierr = ReadMesh(comm, &numCells, cellIds, cellX, cellY, cellZ, cellVols, &numFaces, faceAreas, downCells, upCells, downX, downY, downZ, upX, upY, upZ, options);CHKERRQ(ierr);
+  ierr = ReadMesh(comm, &data, options);CHKERRQ(ierr);
   if (!m->commRank()) {
-    for(int f = 0; f < numFaces; ++f) {
-      sieve->addCone(f+numCells+1, downCells[f]);
-      sieve->addCone(f+numCells+1, upCells[f]);
+    for(int f = 0; f < data.numFaces; ++f) {
+      sieve->addCone(f+data.numCells, data.downCells[f]);
+      sieve->addCone(f+data.numCells, data.upCells[f]);
     }
   }
   m->setSieve(sieve);
@@ -189,26 +204,38 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   m->allocate(sCellY);
   m->allocate(sCellZ);
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-    sCellVols->updatePoint(*c_iter, &cellVolumes[*c_iter-1]);
-    sCellX->updatePoint(*c_iter, &cellX[*c_iter-1]);
-    sCellY->updatePoint(*c_iter, &cellY[*c_iter-1]);
-    sCellZ->updatePoint(*c_iter, &cellZ[*c_iter-1]);
+    sCellVols->updatePoint(*c_iter, &data.cellVols[*c_iter]);
+    sCellX->updatePoint(*c_iter, &data.cellX[*c_iter]);
+    sCellY->updatePoint(*c_iter, &data.cellY[*c_iter]);
+    sCellZ->updatePoint(*c_iter, &data.cellZ[*c_iter]);
   }
-  const Obj<ALE::Mesh::real_section_type>& faceVol = m->getRealSection("face volumes");
-  const Obj<ALE::Mesh::real_section_type>& faceCen = m->getRealSection("face centers");
-  const Obj<ALE::Mesh::label_sequence>&    faces   = m->depthStratum(0);
+  const Obj<ALE::Mesh::real_section_type>& faceArea = m->getRealSection("face areas");
+  // magnitude, upwind fraction, unit_x, unit_y, unit_z
+  const Obj<ALE::Mesh::real_section_type>& faceInfo = m->getRealSection("face info");
+  const Obj<ALE::Mesh::label_sequence>&    faces    = m->depthStratum(0);
 
-  faceVol->setFiberDimension(faces, 1);
-  faceCen->setFiberDimension(faces, options->dim);
-  m->allocate(faceVol);
-  m->allocate(faceCen);
+  faceArea->setFiberDimension(faces, 1);
+  faceInfo->setFiberDimension(faces, 5);
+  m->allocate(faceArea);
+  m->allocate(faceInfo);
   for(ALE::Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-    faceVol->updatePoint(*f_iter, &faceVolumes[*f_iter - numCells-1]);
-    faceCen->updatePoint(*f_iter, &faceCenters[(*f_iter - numCells-1)*options->dim]);
+    double dirX = data.upX[*f_iter - data.numCells] + data.downX[*f_iter - data.numCells];
+    double dirY = data.upY[*f_iter - data.numCells] + data.downY[*f_iter - data.numCells];
+    double dirZ = data.upZ[*f_iter - data.numCells] + data.downZ[*f_iter - data.numCells];
+    double mag  = sqrt(dirX*dirX + dirY*dirY + dirZ*dirZ);
+    double info[5];
+
+    faceArea->updatePoint(*f_iter, &data.faceAreas[*f_iter - data.numCells]);
+    info[0] = mag;
+    info[1] = (data.upX[*f_iter - data.numCells]+data.upY[*f_iter - data.numCells]+data.upZ[*f_iter - data.numCells])/(dirX+dirY+dirZ);
+    info[2] = dirX/mag;
+    info[3] = dirY/mag;
+    info[4] = dirZ/mag;
+    faceInfo->updatePoint(*f_iter, info);
   }
-  ierr = PetscFree5(cellIds,cellVols,cellX,cellY,cellZ);CHKERRQ(ierr);
-  ierr = PetscFree5(faceAreas,downCells,downX,downY,downZ);CHKERRQ(ierr);
-  ierr = PetscFree4(upCells,upX,upY,upZ);CHKERRQ(ierr);
+  ierr = PetscFree5(data.cellIds,data.cellVols,data.cellX,data.cellY,data.cellZ);CHKERRQ(ierr);
+  ierr = PetscFree5(data.faceAreas,data.downCells,data.downX,data.downY,data.downZ);CHKERRQ(ierr);
+  ierr = PetscFree4(data.upCells,data.upX,data.upY,data.upZ);CHKERRQ(ierr);
 
   ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
   ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
