@@ -70,6 +70,10 @@ ionChannel: ionChannel.o chkopts
 	-${CLINKER} -o ionChannel ionChannel.o ${PETSC_DM_LIB}
 	${RM} -f ionChannel.o
 
+mixedpoisson: mixedpoisson_quadrature.h mixedpoisson.o chkopts
+	-${CLINKER} -o mixedpoisson mixedpoisson.o ${PETSC_SNES_LIB}
+	${RM} -f mixedpoisson.o
+
 stokes: stokes_quadrature.h stokes.o chkopts
 	-${CLINKER} -o stokes stokes.o ${PETSC_SNES_LIB}
 	${RM} -f stokes.o
@@ -139,6 +143,9 @@ fvTest: fvTest.o chkopts
 	${RM} -f fvTest.o
 
 #-----------------------------------------------------------------
+runmixedpoisson:
+	${MPIEXEC} -np ${NP} ./mixedpoisson ${EXTRA_ARGS}
+
 runstokes:
 	-@${MPIEXEC} -np ${NP} ./stokes ${EXTRA_ARGS}
 
