@@ -111,12 +111,15 @@ class Configure(config.package.Package):
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
     if foundBlas:
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
+      if foundLapack:
+        self.mangling = self.compilers.fortranMangling
     elif not hasattr(self.compilers, 'FC'):
       self.framework.logPrint('Checking for cblaslapack (underscore) namemangling')
       foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot_')
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs_', 'dgeev_'])
       if foundBlas and foundLapack:
         self.framework.logPrint('Found cblaslapack (underscore) name mangling')
+        self.mangling = 'underscore'
         self.f2c = 1
     self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack311_id_')
     return (foundBlas, foundLapack)
@@ -430,8 +433,6 @@ class Configure(config.package.Package):
       if self.useCompatibilityLibs:
         self.dlib.extend(self.compilers.flibs)
       self.framework.packages.append(self)
-      if self.f2c:
-        self.addDefine('BLASLAPACK_UNDERSCORE', 1)
     else:
       if not self.foundBlas:
         # check for split blas/blas-dev packages
@@ -451,6 +452,12 @@ class Configure(config.package.Package):
         if hasattr(self.compilers, 'FC'): C = 'f'
         else: C = 'c'
         raise RuntimeError('Could not find a functional LAPACK. Run with --with-lapack-lib=<lib> to indicate the library containing LAPACK.\n Or --download-'+C+'-blas-lapack=1 to have one automatically downloaded and installed\n')
+    if self.mangling == 'underscore':
+        self.addDefine('BLASLAPACK_UNDERSCORE', 1)
+    elif self.mangling == 'caps':
+        self.addDefine('BLASLAPACK_CAPS', 1)
+    elif self.mangling == 'stdcall':
+        self.addDefine('BLASLAPACK_STDCALL', 1)
     self.found = 1
     return
 

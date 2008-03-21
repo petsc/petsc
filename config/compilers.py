@@ -434,7 +434,7 @@ class Configure(config.base.Configure):
         return name+'_'
     elif self.fortranMangling == 'unchanged':
       return name
-    elif self.fortranMangling == 'capitalize':
+    elif self.fortranMangling == 'caps':
       return name.upper()
     elif self.fortranMangling == 'stdcall':
       return name.upper()
@@ -473,13 +473,12 @@ class Configure(config.base.Configure):
     '''Checks Fortran name mangling, and defines HAVE_FORTRAN_UNDERSCORE, HAVE_FORTRAN_NOUNDERSCORE, HAVE_FORTRAN_CAPS, or HAVE_FORTRAN_STDCALL'''
     self.manglerFuncs = {'underscore': ('void d1chk_(void);', 'void d1chk_(void){return;}\n', '       call d1chk()\n'),
                          'unchanged': ('void d1chk(void);', 'void d1chk(void){return;}\n', '       call d1chk()\n'),
-                         'capitalize': ('void D1CHK(void);', 'void D1CHK(void){return;}\n', '       call d1chk()\n'),
+                         'caps': ('void D1CHK(void);', 'void D1CHK(void){return;}\n', '       call d1chk()\n'),
                          'stdcall': ('void __stdcall D1CHK(void);', 'void __stdcall D1CHK(void){return;}\n', '       call d1chk()\n'),
-                         'double': ('void d1_chk__(void)', 'void d1_chk__(void){return;}\n', '       call d1_chk()\n'),
-                         'doubleatend': ('void d1_chk__(void)', 'void d1_chk__(void){return;}\n', '       call d1_chk_()\n')}    
+                         'double': ('void d1_chk__(void)', 'void d1_chk__(void){return;}\n', '       call d1_chk()\n')}
     #some compilers silently ignore '__stdcall' directive, so do stdcall test last
     # double test is not done here, so its not listed
-    key_list = ['underscore','unchanged','capitalize','stdcall']
+    key_list = ['underscore','unchanged','caps','stdcall']
     for mangler in key_list:
       cfunc = self.manglerFuncs[mangler][1]
       ffunc = self.manglerFuncs[mangler][2]
@@ -494,7 +493,7 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_FORTRAN_UNDERSCORE', 1)
     elif self.fortranMangling == 'unchanged':
       self.addDefine('HAVE_FORTRAN_NOUNDERSCORE', 1)
-    elif self.fortranMangling == 'capitalize':
+    elif self.fortranMangling == 'caps':
       self.addDefine('HAVE_FORTRAN_CAPS', 1)
     elif self.fortranMangling == 'stdcall':
       self.addDefine('HAVE_FORTRAN_STDCALL', 1)
@@ -511,12 +510,6 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE',1)
     else:
       self.fortranManglingDoubleUnderscore = 0
-    if self.testMangling(self.manglerFuncs['doubleatend'][1], self.manglerFuncs['doubleatend'][2]):
-      self.logPrint('Fortran appends an extra underscore to names ending with underscores', 4, 'compilers')
-      self.fortranManglingDoubleUnderscoreAtEnd = 1
-      self.addDefine('HAVE_FORTRAN_UNDERSCORE_UNDERSCORE_AT_END',1)
-    else:
-      self.fortranManglingDoubleUnderscoreAtEnd = 0
     return
 
   def checkFortranPreprocessor(self):
