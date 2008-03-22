@@ -219,15 +219,16 @@ install:
           fi;\
           ${CP} -fr include ${INSTALL_DIR};\
           ${CP}  ${PETSC_ARCH}/include/* ${INSTALL_DIR}/include;\
-          if [ ! -d ${INSTALL_DIR}/conf ]; then \
-	    ${MKDIR} ${INSTALL_DIR}/conf ; \
-          fi;\
           ${CP} -fr conf ${INSTALL_DIR} ; \
+          ${CP}  ${PETSC_ARCH}/conf/* ${INSTALL_DIR}/conf;\
+          ${CP} -fr bin ${INSTALL_DIR} ; \
+          ${CP}  ${PETSC_ARCH}/bin/* ${INSTALL_DIR}/bin;\
           ${RM} -fr ${INSTALL_DIR}/docsonly ;\
           sed -i "" 's?$${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
+          sed -i "" 's?${PETSC_DIR}/${PETSC_ARCH}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
+          sed -i "" 's?${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
           sed -i "" s?TMP_INSTALL_DIR?${INSTALL_DIR}?g ${INSTALL_DIR}/conf/* ;\
           sed -i "" 's?/$${PETSC_ARCH}??g' ${INSTALL_DIR}/conf/* ;\
-          ${CP} -fr ${PETSC_ARCH}/conf/* ${INSTALL_DIR}/conf;\
           ${CP} -fr ${PETSC_ARCH}/lib ${INSTALL_DIR} ;\
           ${RANLIB} ${INSTALL_DIR}/lib/*.a ;\
           ${OMAKE} PETSC_ARCH="" PETSC_DIR=${INSTALL_DIR} shared; \
