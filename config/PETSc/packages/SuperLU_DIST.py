@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.2-Feb_21_2008.tar.gz']
+    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.2-March_21_2008.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
     self.liblist    = [['libsuperlu_dist_2.2.a']]
@@ -43,21 +43,19 @@ class Configure(PETSc.package.Package):
     g.write('LOADER       = '+self.setCompilers.getLinker()+'\n') 
     g.write('LOADOPTS     = \n')
     self.setCompilers.popLanguage()
+    if self.blasLapack.mangling == 'underscore':
+      g.write('CDEFS   = -DAdd_\n')
+    elif self.blasLapack.mangling == 'caps':
+      g.write('CDEFS   = -DUpCase\n')
+    else:
+      g.write('CDEFS   = -DNoChange\n')
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
       g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
       # set fortran name mangling
       # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag      
-      if self.compilers.fortranMangling == 'underscore':
-        g.write('CDEFS   = -DAdd_\n')
-      elif self.compilers.fortranMangling == 'caps':
-        g.write('CDEFS   = -DUpCase\n')
-      else:
-        g.write('CDEFS   = -DNoChange\n')
       self.setCompilers.popLanguage()
-    else:
-      raise RuntimeError('SuperLU_DIST requires a fortran compiler! No fortran compiler configured!')
     g.write('NOOPTS       =  -O0\n')
     g.close()
 
