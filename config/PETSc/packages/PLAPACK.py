@@ -30,7 +30,8 @@ class Configure(PETSc.package.Package):
     plapackInstallMakefile = os.path.join(self.confDir,'PLAPACK')
     g = open(plapackMakefile,'w')
     g.write('PLAPACK_ROOT = '+self.installDir+'\n')
-    g.write('MANUFACTURE  = 50\n')  #PC
+    if self.blasLapack.mangler == 'underscore': g.write('MANUFACTURE  = 50\n') # PC
+    else:  g.write('MANUFACTURE  = 20\n')  #IBM
     g.write('MACHINE_TYPE = 500\n')  #LINUX
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('MPILIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
@@ -46,7 +47,7 @@ class Configure(PETSc.package.Package):
       g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
       self.setCompilers.popLanguage()
     else:
-      raise RuntimeError('PLAPACK requires Fortran to build')
+      raise RuntimeError('PLAPACK requires a fortran compiler! No fortran compiler configured!')
     g.write('LINKER       = $(CC)\n')     #required by PLAPACK's examples
     g.write('LFLAGS       = $(CFLAGS)\n') #required by PLAPACK's examples
     g.write('AR           = '+self.setCompilers.AR+'\n')
