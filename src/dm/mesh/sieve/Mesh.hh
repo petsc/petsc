@@ -103,9 +103,9 @@ namespace ALE {
     typedef std::pair<index_type, int>                                oIndex_type;
     typedef std::vector<oIndex_type>                                  oIndexArray;
     typedef std::pair<int *, int>                                     indices_type;
-    typedef NumberingFactory<this_type>                               NumberingFactory;
-    typedef typename NumberingFactory::numbering_type                 numbering_type;
-    typedef typename NumberingFactory::order_type                     order_type;
+    typedef NumberingFactory<this_type>                               MeshNumberingFactory;
+    typedef typename MeshNumberingFactory::numbering_type             numbering_type;
+    typedef typename MeshNumberingFactory::order_type                 order_type;
     typedef typename ALE::Partitioner<>::part_type                    rank_type;
     typedef typename ALE::Sifter<point_type,rank_type,point_type>     send_overlap_type;
     typedef typename ALE::Sifter<rank_type,point_type,point_type>     recv_overlap_type;
@@ -123,7 +123,7 @@ namespace ALE {
     real_sections_type    _realSections;
     int_sections_type     _intSections;
     Obj<oIndexArray>      _indexArray;
-    Obj<NumberingFactory> _factory;
+    Obj<MeshNumberingFactory> _factory;
     bool                   _calculatedOverlap;
     Obj<send_overlap_type> _sendOverlap;
     Obj<recv_overlap_type> _recvOverlap;
@@ -136,7 +136,7 @@ namespace ALE {
     Bundle(MPI_Comm comm, int debug = 0) : ALE::ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1) {
       this->_indexArray        = new oIndexArray();
       this->_modifiedPoints    = new std::set<point_type>();
-      this->_factory           = NumberingFactory::singleton(this->comm(), this->debug());
+      this->_factory           = MeshNumberingFactory::singleton(this->comm(), this->debug());
       this->_calculatedOverlap = false;
       this->_sendOverlap       = new send_overlap_type(comm, debug);
       this->_recvOverlap       = new recv_overlap_type(comm, debug);
@@ -144,7 +144,7 @@ namespace ALE {
     Bundle(const Obj<sieve_type>& sieve) : ALE::ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _maxHeight(-1), _maxDepth(-1) {
       this->_indexArray        = new oIndexArray();
       this->_modifiedPoints    = new std::set<point_type>();
-      this->_factory           = NumberingFactory::singleton(this->comm(), this->debug());
+      this->_factory           = MeshNumberingFactory::singleton(this->comm(), this->debug());
       this->_calculatedOverlap = false;
       this->_sendOverlap       = new send_overlap_type(comm, debug);
       this->_recvOverlap       = new recv_overlap_type(comm, debug);
@@ -239,7 +239,7 @@ namespace ALE {
       }
       return names;
     };
-    const Obj<NumberingFactory>& getFactory() const {return this->_factory;};
+    const Obj<MeshNumberingFactory>& getFactory() const {return this->_factory;};
     bool getCalculatedOverlap() const {return this->_calculatedOverlap;};
     void setCalculatedOverlap(const bool calc) {this->_calculatedOverlap = calc;};
     const Obj<send_overlap_type>& getSendOverlap() const {return this->_sendOverlap;};
@@ -1195,7 +1195,7 @@ namespace ALE {
     holes_type           _holes;
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
-      ///this->_factory = NumberingFactory::singleton(debug);
+      ///this->_factory = MeshNumberingFactory::singleton(debug);
     };
   public: // Accessors
     int getDimension() const {return this->_dim;};

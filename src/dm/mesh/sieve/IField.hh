@@ -5,59 +5,12 @@
 #include <Field.hh>
 #endif
 
+#ifndef  included_ALE_ISieve_hh
+#include <ISieve.hh>
+#endif
+
 // An ISection (or IntervalSection) is a section over a simple interval domain
 namespace ALE {
-  template<typename Point_, typename Alloc_ = malloc_allocator<Point_> >
-  class Interval {
-  public:
-    typedef Point_            point_type;
-    typedef Alloc_            alloc_type;
-  public:
-    class const_iterator {
-    protected:
-      point_type _p;
-    public:
-      const_iterator(const point_type p): _p(p) {};
-      ~const_iterator() {};
-    public:
-      const_iterator& operator=(const const_iterator& iter) {this->_p = iter._p;};
-      bool operator==(const const_iterator& iter) const {return this->_p == iter._p;};
-      bool operator!=(const const_iterator& iter) const {return this->_p != iter._p;};
-      const_iterator& operator++() {++this->_p; return *this;}
-      const_iterator& operator++(int) {
-        const_iterator tmp(*this);
-        ++(*this);
-        return tmp;
-      };
-      const_iterator& operator--() {--this->_p; return *this;}
-      const_iterator& operator--(int) {
-        const_iterator tmp(*this);
-        --(*this);
-        return tmp;
-      };
-      point_type operator*() const {return this->_p;};
-    };
-  protected:
-    point_type _min, _max;
-  public:
-    Interval(): _min(point_type()), _max(point_type()) {};
-    Interval(const point_type& min, const point_type& max): _min(min), _max(max) {};
-    Interval(const Interval& interval): _min(interval.min()), _max(interval.max()) {};
-  public:
-    Interval& operator=(const Interval& interval) {_min = interval.min(); _max = interval.max(); return *this;};
-    friend std::ostream& operator<<(std::ostream& stream, const Interval& interval) {
-      stream << "(" << interval.min() << ", " << interval.max() << ")";
-      return stream;
-    };
-  public:
-    const_iterator begin() const {return const_iterator(this->_min);};
-    const_iterator end() const {return const_iterator(this->_max);};
-    size_t size() const {return this->_max - this->_min;};
-    size_t count(const point_type& p) const {return ((p >= _min) && (p < _max)) ? 1 : 0;};
-    point_type min() const {return this->_min;};
-    point_type max() const {return this->_max;};
-  };
-
   // An IConstantSection is the simplest ISection
   //   All fibers are dimension 1
   //   All values are equal to a constant

@@ -14,6 +14,7 @@ static char help[] = "Sieve Package Correctness and Performance Unit Tests.\n\n"
 extern PetscErrorCode RegisterSifterStressSuite();
 extern PetscErrorCode RegisterSieveFunctionSuite();
 extern PetscErrorCode RegisterSieveStressSuite();
+extern PetscErrorCode RegisterISieveFunctionSuite();
 extern PetscErrorCode RegisterSectionStressSuite();
 extern PetscErrorCode RegisterISectionStressSuite();
 
@@ -22,6 +23,7 @@ typedef struct {
   PetscTruth stress;   // Run the stress tests
   PetscTruth sifter;   // Run the Sifter tests
   PetscTruth sieve;    // Run the Sieve tests
+  PetscTruth isieve;   // Run the ISieve tests
   PetscTruth section;  // Run the Section tests
   PetscTruth isection; // Run the ISection tests
 } Options;
@@ -37,6 +39,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->stress   = PETSC_FALSE;
   options->sifter   = PETSC_FALSE;
   options->sieve    = PETSC_FALSE;
+  options->isieve   = PETSC_FALSE;
   options->section  = PETSC_FALSE;
   options->isection = PETSC_FALSE;
 
@@ -45,6 +48,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-stress", "Run stress tests", "unitTests", options->stress, &options->stress, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-sifter", "Run Sifter tests", "unitTests", options->sifter, &options->sifter, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-sieve", "Run Sieve tests", "unitTests", options->sieve, &options->sieve, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-isieve", "Run ISieve tests", "unitTests", options->isieve, &options->isieve, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-section", "Run Section tests", "unitTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-isection", "Run ISection tests", "unitTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -63,6 +67,9 @@ PetscErrorCode RegisterSuites(Options *options) {
   if (options->sieve) {
     if (options->function) {ierr = RegisterSieveFunctionSuite();CHKERRQ(ierr);}
     if (options->stress)   {ierr = RegisterSieveStressSuite();CHKERRQ(ierr);}
+  }
+  if (options->isieve) {
+    if (options->function) {ierr = RegisterISieveFunctionSuite();CHKERRQ(ierr);}
   }
   if (options->section) {
     if (options->stress)   {ierr = RegisterSectionStressSuite();CHKERRQ(ierr);}
