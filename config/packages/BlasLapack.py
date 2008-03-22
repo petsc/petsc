@@ -247,6 +247,7 @@ class Configure(config.package.Package):
     yield ('Default Atlas location /usr/local/lib',[os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
     yield ('Default Atlas location /usr/local/lib',[os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
     yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'], 1)
+    yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'], 1)
     # Try MacOSX location
     dir = os.path.join('/Library', 'Frameworks', 'Intel_MKL.framework','Libraries','32')
     yield ('MacOSX with Intel MKL', None, [os.path.join(dir,'libmkl_lapack.a'),'libmkl_ia32.a','libguide.a'], 1)    
