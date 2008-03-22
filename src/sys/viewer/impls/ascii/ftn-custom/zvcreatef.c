@@ -11,6 +11,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
 #define petsc_viewer_stdout__      petsc_viewer_stdout___
+#endif
 
 EXTERN_C_BEGIN
 void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LEN(len),PetscViewer *lab,
