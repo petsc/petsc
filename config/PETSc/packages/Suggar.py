@@ -9,8 +9,8 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download     = ['Not available for download: use --download-Suggar=Suggar.tar.gz']
-    self.functions = ['']
-    self.liblist   = [['libsuggar_3d.a']]
+    self.functions = ['ctkSortAllDonorsInGrid']
+    self.liblist   = [['libsuggar_3d_macosx.a']]
     return
 
   def setupDependencies(self, framework):
@@ -19,6 +19,7 @@ class Configure(PETSc.package.Package):
     self.expat      = framework.require('PETSc.packages.expat',self)
     self.cproto     = framework.require('PETSc.packages.cproto',self)
     self.p3dlib     = framework.require('PETSc.packages.P3Dlib',self)
+    self.deps       = [self.p3dlib,self.expat,self.mpi]
     return
 
   def Install(self):
@@ -40,10 +41,10 @@ class Configure(PETSc.package.Package):
     if self.installNeeded(os.path.join('src','FLAGS.local')):
       try:
         self.logPrintBox('Compiling SUGGAR; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/src; make libs', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/src; make makedirs libs', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUGGAR: '+str(e))
-      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir,'src','libsuggar*')+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)[0]      
+      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir,'bin','libsuggar*')+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)[0]      
                           
       self.checkInstall(output,os.path.join('src','FLAGS.local'))
     return self.installDir
