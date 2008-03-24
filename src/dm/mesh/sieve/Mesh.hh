@@ -1160,6 +1160,400 @@ namespace ALE {
 }
 
 namespace ALE {
+  template<typename Sieve_,
+           typename RealSection_  = Section<typename Sieve_::point_type, double>,
+           typename IntSection_   = Section<typename Sieve_::point_type, int>,
+           typename ArrowSection_ = UniformSection<MinimalArrow<typename Sieve_::point_type, typename Sieve_::point_type>, int> >
+  class IBundle : public ALE::ParallelObject {
+  public:
+    typedef Sieve_                                                    sieve_type;
+    typedef RealSection_                                              real_section_type;
+    typedef IntSection_                                               int_section_type;
+    typedef ArrowSection_                                             arrow_section_type;
+    typedef Bundle<Sieve_,RealSection_,IntSection_,ArrowSection_>     this_type;
+    typedef typename sieve_type::point_type                           point_type;
+    typedef malloc_allocator<point_type>                              alloc_type;
+#define NEW_LABEL
+#ifdef NEW_LABEL
+    typedef typename ALE::LabelSifter<int, point_type>                label_type;
+#else
+    typedef typename ALE::Sifter<int, point_type, int>                label_type;
+#endif
+    typedef typename std::map<const std::string, Obj<label_type> >    labels_type;
+    typedef typename label_type::supportSequence                      label_sequence;
+    typedef std::map<std::string, Obj<arrow_section_type> >           arrow_sections_type;
+    typedef std::map<std::string, Obj<real_section_type> >            real_sections_type;
+    typedef std::map<std::string, Obj<int_section_type> >             int_sections_type;
+    typedef ALE::Point                                                index_type;
+    typedef std::pair<index_type, int>                                oIndex_type;
+    typedef std::vector<oIndex_type>                                  oIndexArray;
+    typedef std::pair<int *, int>                                     indices_type;
+    typedef NumberingFactory<this_type>                               MeshNumberingFactory;
+    typedef typename MeshNumberingFactory::numbering_type             numbering_type;
+    typedef typename MeshNumberingFactory::order_type                 order_type;
+    typedef typename ALE::Partitioner<>::part_type                    rank_type;
+    typedef typename ALE::Sifter<point_type,rank_type,point_type>     send_overlap_type;
+    typedef typename ALE::Sifter<rank_type,point_type,point_type>     recv_overlap_type;
+    typedef typename ALE::SieveAlg<this_type>                         sieve_alg_type;
+    typedef typename sieve_alg_type::coneArray                        coneArray;
+    typedef typename sieve_alg_type::orientedConeArray                oConeArray;
+    typedef typename sieve_alg_type::supportArray                     supportArray;
+    typedef std::map<point_type, point_type>                          renumbering_type;
+  public:
+    class LabelVisitor {
+    protected:
+      label_type& label;
+      int         defaultValue;
+      int         value;
+    public:
+      LabelVisitor(label_type& l, const int defValue) : label(l), defaultValue(defValue), value(defValue) {};
+      int getLabelValue(const point_type& point) const {
+        const Obj<typename label_type::coneSequence>& cone = this->label.cone(point);
+
+        if (cone->size() == 0) return this->defaultValue;
+        return *cone->begin();
+      };
+      void setLabelValue(const point_type& point, const int value) {
+        this->label.setCone(value, point);
+      };
+      int getValue() const {return this->value;};
+    };
+    class MaxConeVisitor : public LabelVisitor {
+    public:
+      MaxConeVisitor(label_type& l, const int defValue) : LabelVisitor(l, defValue) {};
+      void visitArrow(const typename sieve_type::arrow_type& arrow) {
+        this->value = std::max(this->value, this->getLabelValue(arrow.source));
+      };
+    };
+    class MaxSupportVisitor : public LabelVisitor {
+    public:
+      MaxSupportVisitor(label_type& l, const int defValue) : LabelVisitor(l, defValue) {};
+      void visitArrow(const typename sieve_type::arrow_type& arrow) {
+        this->value = std::max(this->value, this->getLabelValue(arrow.target));
+      };
+    };
+    class HeightVisitor {
+    protected:
+      const sieve_type& sieve;
+      label_type&       height;
+      int               maxHeight;
+      std::set<typename sieve_type::point_type> modifiedPoints;
+    public:
+      HeightVisitor(const sieve_type& s, label_type& h) : sieve(s), height(h), maxHeight(-1) {};
+      void visitPoint(const typename sieve_type::point_type& point) {
+        MaxSupportVisitor v(height, -1);
+
+        // Compute the max height of the points in the support of p, and add 1
+        this->sieve.support(point, v);
+        const int h0 = v.getLabelValue(point);
+        const int h1 = v.getValue() + 1;
+
+        if(h1 != h0) {
+          v.setLabelValue(point, h1);
+          if (h1 > this->maxHeight) this->maxHeight = h1;
+          this->modifiedPoints.insert(point);
+        }
+      };
+      void visitArrow(const typename sieve_type::arrow_type& arrow) {
+        this->visitPoint(arrow.source);
+      };
+      int getMaxHeight() const {return this->maxHeight;};
+      bool isModified() const {return this->modifiedPoints.size() > 0;};
+      const std::set<typename sieve_type::point_type>& getModifiedPoints() const {return this->modifiedPoints;};
+      void clear() {this->modifiedPoints.clear();};
+    };
+    class DepthVisitor {
+    protected:
+      const sieve_type& sieve;
+      label_type&       depth;
+      int               maxDepth;
+      std::set<typename sieve_type::point_type> modifiedPoints;
+    public:
+      DepthVisitor(const sieve_type& s, label_type& d) : sieve(s), depth(d), maxDepth(-1) {};
+      void visitPoint(const typename sieve_type::point_type& point) {
+        MaxConeVisitor v(depth, -1);
+
+        // Compute the max height of the points in the support of p, and add 1
+        this->sieve.cone(point, v);
+        const int d0 = v.getLabelValue(point);
+        const int d1 = v.getValue() + 1;
+
+        if(d1 != d0) {
+          v.setLabelValue(point, d1);
+          if (d1 > this->maxDepth) this->maxDepth = d1;
+          this->modifiedPoints.insert(point);
+        }
+      };
+      void visitArrow(const typename sieve_type::arrow_type& arrow) {
+        this->visitPoint(arrow.target);
+      };
+      int getMaxDepth() const {return this->maxDepth;};
+      bool isModified() const {return this->modifiedPoints.size() > 0;};
+      const std::set<typename sieve_type::point_type>& getModifiedPoints() const {return this->modifiedPoints;};
+      void clear() {this->modifiedPoints.clear();};
+    };
+  protected:
+    Obj<sieve_type>       _sieve;
+    labels_type           _labels;
+    int                   _maxHeight;
+    int                   _maxDepth;
+    arrow_sections_type   _arrowSections;
+    real_sections_type    _realSections;
+    int_sections_type     _intSections;
+    Obj<oIndexArray>      _indexArray;
+    Obj<MeshNumberingFactory> _factory;
+    bool                   _calculatedOverlap;
+    Obj<send_overlap_type> _sendOverlap;
+    Obj<recv_overlap_type> _recvOverlap;
+    Obj<send_overlap_type> _distSendOverlap;
+    Obj<recv_overlap_type> _distRecvOverlap;
+    renumbering_type       _renumbering;
+    // Work space
+    Obj<std::set<point_type> > _modifiedPoints;
+  public:
+    IBundle(MPI_Comm comm, int debug = 0) : ALE::ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1) {
+      this->_indexArray        = new oIndexArray();
+      this->_modifiedPoints    = new std::set<point_type>();
+      this->_factory           = MeshNumberingFactory::singleton(this->comm(), this->debug());
+      this->_calculatedOverlap = false;
+      this->_sendOverlap       = new send_overlap_type(comm, debug);
+      this->_recvOverlap       = new recv_overlap_type(comm, debug);
+    };
+    IBundle(const Obj<sieve_type>& sieve) : ALE::ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _maxHeight(-1), _maxDepth(-1) {
+      this->_indexArray        = new oIndexArray();
+      this->_modifiedPoints    = new std::set<point_type>();
+      this->_factory           = MeshNumberingFactory::singleton(this->comm(), this->debug());
+      this->_calculatedOverlap = false;
+      this->_sendOverlap       = new send_overlap_type(comm, debug);
+      this->_recvOverlap       = new recv_overlap_type(comm, debug);
+    };
+    virtual ~IBundle() {};
+  public: // Verifiers
+    bool hasLabel(const std::string& name) {
+      if (this->_labels.find(name) != this->_labels.end()) {
+        return true;
+      }
+      return false;
+    };
+    void checkLabel(const std::string& name) {
+      if (!this->hasLabel(name)) {
+        ostringstream msg;
+        msg << "Invalid label name: " << name << std::endl;
+        throw ALE::Exception(msg.str().c_str());
+      }
+    };
+  public: // Accessors
+    const Obj<sieve_type>& getSieve() const {return this->_sieve;};
+    void setSieve(const Obj<sieve_type>& sieve) {this->_sieve = sieve;};
+    bool hasArrowSection(const std::string& name) const {
+      return this->_arrowSections.find(name) != this->_arrowSections.end();
+    };
+    const Obj<arrow_section_type>& getArrowSection(const std::string& name) {
+      if (!this->hasArrowSection(name)) {
+        Obj<arrow_section_type> section = new arrow_section_type(this->comm(), this->debug());
+
+        section->setName(name);
+        if (this->_debug) {std::cout << "Creating new arrow section: " << name << std::endl;}
+        this->_arrowSections[name] = section;
+      }
+      return this->_arrowSections[name];
+    };
+    void setArrowSection(const std::string& name, const Obj<arrow_section_type>& section) {
+      this->_arrowSections[name] = section;
+    };
+    Obj<std::set<std::string> > getArrowSections() const {
+      Obj<std::set<std::string> > names = std::set<std::string>();
+
+      for(typename arrow_sections_type::const_iterator s_iter = this->_arrowSections.begin(); s_iter != this->_arrowSections.end(); ++s_iter) {
+        names->insert(s_iter->first);
+      }
+      return names;
+    };
+    bool hasRealSection(const std::string& name) const {
+      return this->_realSections.find(name) != this->_realSections.end();
+    };
+    const Obj<real_section_type>& getRealSection(const std::string& name) {
+      if (!this->hasRealSection(name)) {
+        Obj<real_section_type> section = new real_section_type(this->comm(), this->debug());
+
+        section->setName(name);
+        if (this->_debug) {std::cout << "Creating new real section: " << name << std::endl;}
+        this->_realSections[name] = section;
+      }
+      return this->_realSections[name];
+    };
+    void setRealSection(const std::string& name, const Obj<real_section_type>& section) {
+      this->_realSections[name] = section;
+    };
+    Obj<std::set<std::string> > getRealSections() const {
+      Obj<std::set<std::string> > names = std::set<std::string>();
+
+      for(typename real_sections_type::const_iterator s_iter = this->_realSections.begin(); s_iter != this->_realSections.end(); ++s_iter) {
+        names->insert(s_iter->first);
+      }
+      return names;
+    };
+    bool hasIntSection(const std::string& name) const {
+      return this->_intSections.find(name) != this->_intSections.end();
+    };
+    const Obj<int_section_type>& getIntSection(const std::string& name) {
+      if (!this->hasIntSection(name)) {
+        Obj<int_section_type> section = new int_section_type(this->comm(), this->debug());
+
+        section->setName(name);
+        if (this->_debug) {std::cout << "Creating new int section: " << name << std::endl;}
+        this->_intSections[name] = section;
+      }
+      return this->_intSections[name];
+    };
+    void setIntSection(const std::string& name, const Obj<int_section_type>& section) {
+      this->_intSections[name] = section;
+    };
+    Obj<std::set<std::string> > getIntSections() const {
+      Obj<std::set<std::string> > names = std::set<std::string>();
+
+      for(typename int_sections_type::const_iterator s_iter = this->_intSections.begin(); s_iter != this->_intSections.end(); ++s_iter) {
+        names->insert(s_iter->first);
+      }
+      return names;
+    };
+    const Obj<MeshNumberingFactory>& getFactory() const {return this->_factory;};
+    renumbering_type& getRenumbering() {return this->_renumbering;};
+  public: // Labels
+    int getValue (const Obj<label_type>& label, const point_type& point, const int defValue = 0) {
+      const Obj<typename label_type::coneSequence>& cone = label->cone(point);
+
+      if (cone->size() == 0) return defValue;
+      return *cone->begin();
+    };
+    void setValue(const Obj<label_type>& label, const point_type& point, const int value) {
+      label->setCone(value, point);
+    };
+    template<typename InputPoints>
+    int getMaxValue (const Obj<label_type>& label, const Obj<InputPoints>& points, const int defValue = 0) {
+      int maxValue = defValue;
+
+      for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        maxValue = std::max(maxValue, this->getValue(label, *p_iter, defValue));
+      }
+      return maxValue;
+    };
+    const Obj<label_type>& createLabel(const std::string& name) {
+      this->_labels[name] = new label_type(this->comm(), this->debug());
+      return this->_labels[name];
+    };
+    const Obj<label_type>& getLabel(const std::string& name) {
+      this->checkLabel(name);
+      return this->_labels[name];
+    };
+    void setLabel(const std::string& name, const Obj<label_type>& label) {
+      this->_labels[name] = label;
+    };
+    const labels_type& getLabels() {
+      return this->_labels;
+    };
+    virtual const Obj<label_sequence>& getLabelStratum(const std::string& name, int value) {
+      this->checkLabel(name);
+      return this->_labels[name]->support(value);
+    };
+  public: // Stratification
+    void computeHeights() {
+      const Obj<label_type>& label = this->createLabel(std::string("height"));
+      HeightVisitor          h(*this->_sieve, *label);
+
+      this->_sieve->leaves(h);
+      while(h.isModified()) {
+        // FIX: Avoid the copy here somehow by fixing the traversal
+        std::vector<point_type> modifiedPoints(h.getModifiedPoints().begin(), h.getModifiedPoints().end());
+
+        h.clear();
+        this->_sieve->cone(modifiedPoints, h);
+      }
+      this->_maxHeight = h.getMaxHeight();
+    };
+    virtual int height() const {return this->_maxHeight;};
+    virtual int height(const point_type& point) {
+      return this->getValue(this->_labels["height"], point, -1);
+    };
+    virtual const Obj<label_sequence>& heightStratum(int height) {
+      return this->getLabelStratum("height", height);
+    };
+    void computeDepths() {
+      const Obj<label_type>& label = this->createLabel(std::string("depth"));
+      DepthVisitor           d(*this->_sieve, *label);
+
+      this->_sieve->roots(d);
+      while(d.isModified()) {
+        // FIX: Avoid the copy here somehow by fixing the traversal
+        std::vector<point_type> modifiedPoints(d.getModifiedPoints().begin(), d.getModifiedPoints().end());
+
+        d.clear();
+        this->_sieve->support(modifiedPoints, d);
+      }
+      this->_maxDepth = d.getMaxDepth();
+    };
+    virtual int depth() const {return this->_maxDepth;};
+    virtual int depth(const point_type& point) {
+      return this->getValue(this->_labels["depth"], point, -1);
+    };
+    virtual const Obj<label_sequence>& depthStratum(int depth) {
+      return this->getLabelStratum("depth", depth);
+    };
+    void stratify() {
+      this->computeHeights();
+      this->computeDepths();
+    };
+  };
+  class IMesh : public IBundle<IFSieve<int>, IGeneralSection<int, double>, IGeneralSection<int, int> > {
+  public:
+    typedef IBundle<IFSieve<int>, IGeneralSection<int, double>, IGeneralSection<int, int> > base_type;
+    typedef base_type::sieve_type            sieve_type;
+    typedef sieve_type::point_type           point_type;
+    typedef base_type::alloc_type            alloc_type;
+    typedef base_type::label_sequence        label_sequence;
+    typedef base_type::real_section_type     real_section_type;
+    typedef base_type::numbering_type        numbering_type;
+    typedef base_type::order_type            order_type;
+    typedef base_type::send_overlap_type     send_overlap_type;
+    typedef base_type::recv_overlap_type     recv_overlap_type;
+    typedef std::set<std::string>            names_type;
+  protected:
+    int _dim;
+  public:
+    IMesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
+    };
+  public: // Accessors
+    int getDimension() const {return this->_dim;};
+    void setDimension(const int dim) {this->_dim = dim;};
+  public:
+    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
+      if (comm == MPI_COMM_NULL) {
+        comm = this->comm();
+      }
+      if (name == "") {
+        PetscPrintf(comm, "viewing a Mesh\n");
+      } else {
+        PetscPrintf(comm, "viewing Mesh '%s'\n", name.c_str());
+      }
+      this->getSieve()->view("mesh sieve", comm);
+      Obj<names_type> sections = this->getRealSections();
+
+      for(names_type::iterator name = sections->begin(); name != sections->end(); ++name) {
+        this->getRealSection(*name)->view(*name);
+      }
+      sections = this->getIntSections();
+      for(names_type::iterator name = sections->begin(); name != sections->end(); ++name) {
+        this->getIntSection(*name)->view(*name);
+      }
+      sections = this->getArrowSections();
+      for(names_type::iterator name = sections->begin(); name != sections->end(); ++name) {
+        this->getArrowSection(*name)->view(*name);
+      }
+    };
+  };
+}
+
+namespace ALE {
 #ifdef NEW_SECTION
   class Mesh : public Bundle<ALE::Sieve<int,int,int>, GeneralSection<int, double> > {
 #elif defined(OPT_SECTION)
