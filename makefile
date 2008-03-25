@@ -7,7 +7,7 @@ ALL: all
 
 
 # Call make recursively in these directory
-DIRS = src include docs 
+DIRS = src include docs tests
 
 include ${TAO_DIR}/conf/tao_base
 
@@ -112,3 +112,11 @@ tao_build:
 # Deletes TAO libraries
 tao_deletelibs: 
 	-${RM} -f ${PETSC_LIB_DIR}/libtao*.*
+
+
+tao_shared:
+	-@echo "tao_shared not implemented yet..."
+
+
+tao_testexamples_c: 
+	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=testexamples_C tree

@@ -45,8 +45,8 @@ F_SH_LIB_PATH	= ${FC_LINKER_SLFLAG}${TAO_LIB_DIR} ${TAO_F_SH_LIB_PATH}
 # components (such as vectors and matrices). The order of listing these libraries 
 # is important!
 #
-TAO_BLIB	= -L${TAO_LIB_DIR} -ltao ${PETSC_SYS_LIB}
-TAO_LIB		= -L${TAO_LIB_DIR} -ltaopetsc -ltao
+# ??TAO_BLIB	= -L${TAO_LIB_DIR} -ltao ${PETSC_SYS_LIB}
+TAO_LIB		= -L${TAO_LIB_DIR}  -ltaolinesearch -ltao
 
 #
 # Link if you are using the TAO Fortran interface.
@@ -56,10 +56,11 @@ TAO_FORTRAN_LIB = -L${TAO_LIB_DIR} -ltaofortran
 #
 # Some variables used to build shared libraries
 #
-SHLIBS       = libtao libtaopetsc libtaofortran 
+SHLIBS       = libtao libtaolinesearch
+
 #??libtaoga libappspacktao libooqptao libesitao taoadic ${SIDL_SHLIBS} ${CCA_SHLIBS}
 
 
 tao_clean: clean
 tao_chkopts: chkopts
-tao_testexamples_1: testexamples_1
+tao_testexamples_C: testexamples_1

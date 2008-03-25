@@ -17,4 +17,4 @@ include ${PETSC_DIR}/conf/base
 include ${TAO_DIR}/conf/tao_variables
 include ${TAO_DIR}/conf/tao_rules
 
-# ??include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/conf/test

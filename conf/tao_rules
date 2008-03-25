@@ -10,3 +10,51 @@ tao_chk_tao_dir:
           echo "******************************************************" ; \
         fi
 
+.SUFFIXES: ${SUFFIXES} .tao
+
+#
+#  These rules are for compiling the test examples.
+#
+.c.tao:
+	@echo "Testing $<..."
+	-@${OMAKE} -f makefile PETSC_ARCH=${PETSC_ARCH} $* > trashz 2>&1
+	-@grep -v clog trashz | grep -v "information sections" | \
+          grep -v "WARNING: TOC" | \
+          grep -v "Extra instructions" | \
+          grep -v "Unused external reference" | \
+          grep -v "f90 continuing despite warning messages" | \
+          grep -v "symbol if the" | \
+          grep -v "ignoring symbol version info" | \
+          grep -v "preempts that definition" | \
+          grep -v "is an array from" | \
+          grep -v "Cannot cast" | \
+          grep -v "WARNING 134: weak definition of" | \
+          grep -v "Warning(s) detected" | \
+          grep -v EXTERNAL  |\
+          grep -v volatile  |\
+          grep -v -i inconsistent | grep -v Anachronism | \
+	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; ${RM} trashz
+.F.tao:
+	-@${OMAKE} -f makefile PETSC_ARCH=${PETSC_ARCH} $* > trashz 2>&1
+	-@grep -v EXTERNAL trashz | grep -v Wall | \
+          grep -v "Unused external reference" | \
+          grep -v "WARNING: TOC overflow." | \
+          grep -v "Extra instructions are being" | \
+          grep -v "symbol if the symbol" | \
+          grep -v -i inconsistent | \
+          grep -v -i "unused dummy" | \
+	  grep -v "WARNING:  -cpp is ignored" | \
+          grep -v "ignoring symbol version info" | \
+	  grep -v "Inconsistent structure" | \
+	  grep -v "ex20.F:30:" | \
+	  grep -v "f90 continuing despite warning messages" | \
+          grep -v "is an array from" | \
+	  grep -v "Unused external reference" | \
+          grep -v "WARNING 134: weak definition of" | \
+          grep -v 'continuing despite warning messages' | \
+	  grep -v "Unused dummy argument" | \
+	  egrep -i '(Error|warning|Can|Unresolved)'  >> /dev/null ; \
+	  if [ "$$?" != 1 ]; then \
+	  cat trashz ; fi; ${RM} trashz;
