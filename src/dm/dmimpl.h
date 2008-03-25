@@ -31,8 +31,10 @@
   PetscErrorCode (*globaltolocalend)(type,Vec,InsertMode,Vec); \
   PetscErrorCode (*localtoglobal)(type,Vec,InsertMode,Vec); \
 \
-  PetscErrorCode (*getelements)(DM,PetscInt*,const PetscInt*[]);   \
-  PetscErrorCode (*restoreelements)(DM,PetscInt*,const PetscInt*[]);
+  PetscErrorCode (*getelements)(type,PetscInt*,const PetscInt*[]);   \
+  PetscErrorCode (*restoreelements)(type,PetscInt*,const PetscInt*[]); \
+\
+  PetscErrorCode (*destroy)(type);
 
 
 typedef struct _DMOps *DMOps;

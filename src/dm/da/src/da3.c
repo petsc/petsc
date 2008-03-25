@@ -266,6 +266,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->ops->refine             = DARefine;
   da->ops->coarsen            = DACoarsen;
   da->ops->getaggregates      = DAGetAggregates;
+  da->ops->destroy            = DADestroy;
 
   da->dim        = 3;
   da->interptype = DA_Q1;

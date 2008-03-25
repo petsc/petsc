@@ -32,6 +32,7 @@ struct DMCompositeLink {
 
 struct _p_DMComposite {
   PETSCHEADER(struct _DMCompositeOps);
+  DMHEADER
   PetscInt               n,N,rstart;     /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
   PetscInt               nghost;         /* number of all local entries include DA ghost points and any shared redundant arrays */
   PetscInt               nDM,nredundant; /* how many DA's and seperate redundant arrays used to build DMComposite */
@@ -80,14 +81,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreate(MPI_Comm comm,DMComposite *pa
   p->nDM          = 0;
 
   p->ops->createglobalvector = DMCompositeCreateGlobalVector;
+  p->ops->createglobalvector = DMCompositeCreateLocalVector;
   p->ops->refine             = DMCompositeRefine;
   p->ops->getinterpolation   = DMCompositeGetInterpolation;
   p->ops->getmatrix          = DMCompositeGetMatrix;
   p->ops->getcoloring        = DMCompositeGetColoring;
+  p->ops->destroy            = DMCompositeDestroy;
 
   *packer = p;
   PetscFunctionReturn(0);
 }
+
+extern PetscErrorCode DMDestroy_Private(DM,PetscTruth*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeDestroy"
@@ -109,11 +114,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeDestroy(DMComposite packer)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next, *prev;
+  PetscTruth             done;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(packer,DA_COOKIE,1);
+  ierr = DMDestroy_Private((DM)packer,&done);CHKERRQ(ierr);
+  if (!done) PetscFunctionReturn(0);
+
   next = packer->next;
-  if (--((PetscObject)packer)->refct > 0) PetscFunctionReturn(0);
   while (next) {
     prev = next;
     next = next->next;
@@ -703,6 +711,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_DMComposite(Vec gvec,PetscViewer viewer
 }
 EXTERN_C_END
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeCreateGlobalVector"
 /*@C
@@ -723,7 +732,8 @@ EXTERN_C_END
 
 .seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeScatter(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(),
+         DMCompositeCreateLocalVector()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreateGlobalVector(DMComposite packer,Vec *gvec)
@@ -738,6 +748,44 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreateGlobalVector(DMComposite packe
   ierr = VecCreateMPI(((PetscObject)packer)->comm,packer->n,packer->N,gvec);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)*gvec,"DMComposite",(PetscObject)packer);CHKERRQ(ierr);
   ierr = VecSetOperation(*gvec,VECOP_VIEW,(void(*)(void))VecView_DMComposite);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeCreateLocalVector"
+/*@C
+    DMCompositeCreateLocalVector - Creates a vector of the correct size to contain all ghost points
+        and redundant arrays.
+
+    Collective on DMComposite
+
+    Input Parameter:
+.    packer - the packer object
+
+    Output Parameters:
+.   lvec - the local vector
+
+    Level: advanced
+
+    Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeScatter(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(),
+         DMCompositeCreateGlobalVector()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreateLocalVector(DMComposite packer,Vec *lvec)
+{
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(packer,DA_COOKIE,1);
+  if (!packer->setup) {
+    ierr = DMCompositeSetUp(packer);CHKERRQ(ierr);
+  }
+  ierr = VecCreateSeq(((PetscObject)packer)->comm,packer->nghost,lvec);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject)*lvec,"DMComposite",(PetscObject)packer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

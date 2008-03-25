@@ -366,7 +366,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->ops->coarsen            = DACoarsen;
   da->ops->getinjection       = DAGetInjection;
   da->ops->getaggregates      = DAGetAggregates;
-  da->ops->getelements        = (PetscErrorCode (*)(DM,PetscInt*,const PetscInt**))DAGetElements_2d_P1;
+  da->ops->getelements        = DAGetElements_2d_P1;
+  da->ops->destroy            = DADestroy;
   da->elementtype             = DA_ELEMENT_P1;
 
   da->dim        = 2;

@@ -117,6 +117,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToGlobalBegin(DA,Vec,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToGlobalEnd(DA,Vec,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetOwnershipRange(DA,PetscInt **,PetscInt **,PetscInt **);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateGlobalVector(DA,Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateLocalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateNaturalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateLocalVector(DA,Vec *);
 #define  DAGetLocalVector(da,v)      DMGetLocalVector((DM)da,v)
@@ -480,6 +481,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetLocalVectors(DMComposite,
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetEntries(DMComposite,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreLocalVectors(DMComposite,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreateGlobalVector(DMComposite,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreateLocalVector(DMComposite,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetGlobalIndices(DMComposite,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRefine(DMComposite,MPI_Comm,DMComposite*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetInterpolation(DMComposite,DMComposite,Mat*,Vec*);
@@ -501,10 +503,13 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedView(Sliced,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedCreate(MPI_Comm,Sliced*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedDestroy(Sliced);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedCreateGlobalVector(Sliced,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedCreateLocalVector(Sliced,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGetMatrix(Sliced, MatType,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGetGlobalIndices(Sliced,PetscInt*[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetPreallocation(Sliced,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetGhosts(Sliced,PetscInt,PetscInt,PetscInt,const PetscInt[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGlobalToLocalBegin(Sliced,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGlobalToLocalEnd(Sliced,Vec,InsertMode,Vec);
 
 
 typedef struct NLF_DAAD* NLF;
