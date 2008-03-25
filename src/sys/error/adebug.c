@@ -303,7 +303,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
         args[2] = Debugger; args[3] = program; 
         args[4] = pid;      args[5] = 0;
         if (isidb) {
-          args[3] = "-gdb";
+          args[3] = "-pid";
           args[4] = pid;
           args[5] = "-gdb";
           args[6] = program;

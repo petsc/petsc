@@ -348,6 +348,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
     k   = it - ii;
     tt  = *GRS(k);
     for (j=k+1; j<=it; j++) tt  = tt - *HH(k,j) * nrs[j];
+    if (*HH(k,k) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(k,k) is identically zero; it = %D k = %D",it,k);
     nrs[k]   = tt / *HH(k,k);
   }
 

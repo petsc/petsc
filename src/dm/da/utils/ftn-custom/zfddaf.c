@@ -11,7 +11,7 @@
 #define dmcompositegetentries4_      DMCOMPOSITEGETENTRIES4
 #define dmcompositegetentries5_      DMCOMPOSITEGETENTRIES5
 #define dmcompositecreate_           DMCOMPOSITECREATE
-#define dmcompositeaddda_            DMCOMPOSITEADDDA
+#define dmcompositeadddm_            DMCOMPOSITEADDDM
 #define dmcompositeaddarray_         DMCOMPOSITEADDARRAY
 #define dmcompositedestroy_          DMCOMPOSITEDESTROY
 #define dmcompositegetaccess4_       DMCOMPOSITEGETACCESS4
@@ -28,7 +28,7 @@
 #define dmcompositegetentries4_      dmcompositegetentries4
 #define dmcompositegetentries5_      dmcompositegetentries5
 #define dmcompositecreate_           dmcompositecreate
-#define dmcompositeaddda_            dmcompositeaddda
+#define dmcompositeadddm_            dmcompositeadddm
 #define dmcompositedestroy_          dmcompositedestroy
 #define dmcompositeaddarray_         dmcompositeaddarray
 #define dmcompositegetaccess4_       dmcompositegetaccess4
@@ -84,9 +84,9 @@ void PETSC_STDCALL  dmcompositecreate_(MPI_Fint * comm,DMComposite *A, int *ierr
   *ierr = DMCompositeCreate(MPI_Comm_f2c( *(comm) ),A);
 }
 
-void PETSC_STDCALL dmcompositeaddda_(DMComposite *dm,DA *da,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcompositeadddm_(DMComposite *dm,DM *da,PetscErrorCode *ierr)
 {
-  *ierr = DMCompositeAddDA(*dm,*da);
+  *ierr = DMCompositeAddDM(*dm,*da);
 }
 
 void PETSC_STDCALL dmcompositedestroy_(DMComposite *dm,PetscErrorCode *ierr)

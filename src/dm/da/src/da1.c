@@ -161,6 +161,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   da->ops->globaltolocalend   = DAGlobalToLocalEnd;
   da->ops->localtoglobal      = DALocalToGlobal;
   da->ops->createglobalvector = DACreateGlobalVector;
+  da->ops->createlocalvector  = DACreateLocalVector;
   da->ops->getinterpolation   = DAGetInterpolation;
   da->ops->getcoloring        = DAGetColoring;
   da->ops->getmatrix          = DAGetMatrix;

@@ -85,8 +85,8 @@ E*/
 typedef enum { DA_ELEMENT_P1, DA_ELEMENT_Q1 } DAElementType;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetElementType(DA,DAElementType);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetElements(DA,PetscInt *,const PetscInt*[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DARestoreElements(DA,PetscInt *,const PetscInt*[]);
+#define DAGetElements(da,a,b)      DMGetElements((DM)da,a,b)
+#define DARestoreElements(da,a,b)  DMRestoreElements((DM)da,a,b)
 
 
 #define DAXPeriodic(pt) ((pt)==DA_XPERIODIC||(pt)==DA_XYPERIODIC||(pt)==DA_XZPERIODIC||(pt)==DA_XYZPERIODIC)
@@ -119,10 +119,10 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetOwnershipRange(DA,PetscInt **,Pe
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateGlobalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateNaturalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateLocalVector(DA,Vec *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetLocalVector(DA,Vec *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARestoreLocalVector(DA,Vec *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetGlobalVector(DA,Vec *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DARestoreGlobalVector(DA,Vec *);
+#define  DAGetLocalVector(da,v)      DMGetLocalVector((DM)da,v)
+#define  DARestoreLocalVector(da,v)  DMRestoreLocalVector((DM)da,v)
+#define  DAGetGlobalVector(da,v)     DMGetGlobalVector((DM)da,v)
+#define  DARestoreGlobalVector(da,v) DMRestoreGlobalVector((DM)da,v)
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALoad(PetscViewer,PetscInt,PetscInt,PetscInt,DA *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetCorners(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetGhostCorners(DA,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
@@ -382,6 +382,49 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetLocalAdicMFFunctionib_Private(DA,P
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAFormFunctioniTest1(DA,void*);
 
 #include "petscmat.h"
+
+/*S
+     DM - Abstract PETSc object that manages an abstract grid object
+          
+   Level: intermediate
+
+  Concepts: grids, grid refinement
+
+   Notes: The DA object and the DMComposite object are examples of DMs
+
+          Though the DA objects require the petscsnes.h include files the DM library is
+    NOT dependent on the SNES or KSP library. In fact, the KSP and SNES libraries depend on
+    DM. (This is not great design, but not trivial to fix).
+
+.seealso:  DMCompositeCreate(), DA, DMComposite
+S*/
+typedef struct _p_DM* DM;
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMView(DM,PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDestroy(DM);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCreateGlobalVector(DM,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCreateLocalVector(DM,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetLocalVector(DM,Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRestoreLocalVector(DM,Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetGlobalVector(DM,Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRestoreGlobalVector(DM,Vec *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetColoring(DM,ISColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetMatrix(DM, MatType,Mat*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolation(DM,DM,Mat*,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInjection(DM,DM,VecScatter*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefine(DM,MPI_Comm,DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCoarsen(DM,MPI_Comm,DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefineHierarchy(DM,PetscInt,DM**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCoarsenHierarchy(DM,PetscInt,DM**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolationScale(DM,DM,Mat,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetAggregates(DM,DM,Mat*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMLocalToGlobal(DM,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetElements(DM,PetscInt *,const PetscInt*[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRestoreElements(DM,PetscInt *,const PetscInt*[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
+
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetColoring(DA,ISColoringType,ISColoring *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetMatrix(DA, MatType,Mat *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetGetMatrix(DA,PetscErrorCode (*)(DA, MatType,Mat *));
@@ -427,7 +470,7 @@ typedef struct _p_DMComposite* DMComposite;
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreate(MPI_Comm,DMComposite*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeDestroy(DMComposite);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddArray(DMComposite,PetscMPIInt,PetscInt);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddDA(DMComposite,DA);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddDM(DMComposite,DM);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddVecScatter(DMComposite,VecScatter);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeScatter(DMComposite,Vec,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGather(DMComposite,Vec,...);
@@ -463,42 +506,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedGetGlobalIndices(Sliced,PetscInt*
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetPreallocation(Sliced,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetGhosts(Sliced,PetscInt,PetscInt,PetscInt,const PetscInt[]);
 
-/*S
-     DM - Abstract PETSc object that manages an abstract grid object
-          
-   Level: intermediate
-
-  Concepts: grids, grid refinement
-
-   Notes: The DA object and the DMComposite object are examples of DMs
-
-          Though the DA objects require the petscsnes.h include files the DM library is
-    NOT dependent on the SNES or KSP library. In fact, the KSP and SNES libraries depend on
-    DM. (This is not great design, but not trivial to fix).
-
-.seealso:  DMCompositeCreate(), DA, DMComposite
-S*/
-typedef struct _p_DM* DM;
-
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMView(DM,PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMDestroy(DM);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCreateGlobalVector(DM,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCreateLocalVector(DM,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetColoring(DM,ISColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetMatrix(DM, MatType,Mat*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolation(DM,DM,Mat*,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInjection(DM,DM,VecScatter*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefine(DM,MPI_Comm,DM*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCoarsen(DM,MPI_Comm,DM*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefineHierarchy(DM,PetscInt,DM**);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCoarsenHierarchy(DM,PetscInt,DM**);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolationScale(DM,DM,Mat,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetAggregates(DM,DM,Mat*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalBegin(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMLocalToGlobal(DM,Vec,InsertMode,Vec);
-
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
 
 typedef struct NLF_DAAD* NLF;
 

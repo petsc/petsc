@@ -130,18 +130,18 @@ int main(int argc,char **argv)
     ierr = DASetFieldName(da,3,"alfg");CHKERRQ(ierr);
     ierr = DASetFieldName(da,4,"velg");CHKERRQ(ierr);
     ierr = DASetFieldName(da,5,"velf");CHKERRQ(ierr);
-    ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
+    ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
     ierr = DACreate2d(app.comm,DA_YPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"Tempature");CHKERRQ(ierr);
-    ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
+    ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
     ierr = DACreate2d(app.comm,DA_XYPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"Phi");CHKERRQ(ierr);
     ierr = DASetFieldName(da,1,"Pre");CHKERRQ(ierr);
-    ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
+    ierr = DMCompositeAddDM(app.pack,(DM)da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
    
     app.pri = 1.0135e+5;

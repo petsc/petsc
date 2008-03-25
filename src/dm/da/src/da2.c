@@ -35,15 +35,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscInt *ranks[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetElements"
+#define __FUNCT__ "DMGetElements"
 /*@C
-      DAGetElements - Gets an array containing the indices (in local coordinates) 
+      DMGetElements - Gets an array containing the indices (in local coordinates) 
                  of all the local elements
 
     Not Collective
 
    Input Parameter:
-.     da - the DA object
+.     dm - the DM object
 
    Output Parameters:
 +     n - number of local elements
@@ -51,41 +51,41 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscInt *ranks[])
 
    Level: intermediate
 
-.seealso: DAElementType, DASetElementType(), DARestoreElements()
+.seealso: DMElementType, DMSetElementType(), DMRestoreElements()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetElements(DA da,PetscInt *n,const PetscInt *e[])
+PetscErrorCode PETSCDM_DLLEXPORT DMGetElements(DM dm,PetscInt *n,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
-  ierr = (da->ops->getelements)(da,n,e);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
+  ierr = (dm->ops->getelements)(dm,n,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DARestoreElements"
+#define __FUNCT__ "DMRestoreElements"
 /*@C
-      DARestoreElements - Returns an array containing the indices (in local coordinates) 
-                 of all the local elements obtained with DAGetElements()
+      DMRestoreElements - Returns an array containing the indices (in local coordinates) 
+                 of all the local elements obtained with DMGetElements()
 
     Not Collective
 
    Input Parameter:
-+     da - the DA object
++     dm - the DM object
 .     n - number of local elements
 -     e - the indices of the elements vertices
 
    Level: intermediate
 
-.seealso: DAElementType, DASetElementType(), DAGetElements()
+.seealso: DMElementType, DMSetElementType(), DMGetElements()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreElements(DA da,PetscInt *n,const PetscInt *e[])
+PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const PetscInt *e[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
-  if (da->ops->restoreelements) {
-    ierr = (da->ops->restoreelements)(da,n,e);CHKERRQ(ierr);
+  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
+  if (dm->ops->restoreelements) {
+    ierr = (dm->ops->restoreelements)(dm,n,e);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -355,6 +355,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 
   ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
   da->ops->createglobalvector = DACreateGlobalVector;
+  da->ops->createlocalvector  = DACreateLocalVector;
   da->ops->globaltolocalbegin = DAGlobalToLocalBegin;
   da->ops->globaltolocalend   = DAGlobalToLocalEnd;
   da->ops->localtoglobal      = DALocalToGlobal;
@@ -365,7 +366,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->ops->coarsen            = DACoarsen;
   da->ops->getinjection       = DAGetInjection;
   da->ops->getaggregates      = DAGetAggregates;
-  da->ops->getelements        = DAGetElements_2d_P1;
+  da->ops->getelements        = (PetscErrorCode (*)(DM,PetscInt*,const PetscInt**))DAGetElements_2d_P1;
   da->elementtype             = DA_ELEMENT_P1;
 
   da->dim        = 2;

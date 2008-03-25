@@ -236,8 +236,8 @@ int main(int argc,char **argv)
     Create the DMComposite object to manage the two grids/physics. 
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCompositeCreate(comm,&user.pack);CHKERRQ(ierr);
-  ierr = DMCompositeAddDA(user.pack,DMMGGetDA(dmmg1));CHKERRQ(ierr);
-  ierr = DMCompositeAddDA(user.pack,DMMGGetDA(dmmg2));CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(user.pack,(DM)DMMGGetDA(dmmg1));CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(user.pack,(DM)DMMGGetDA(dmmg2));CHKERRQ(ierr);
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,nlevels,&user,&dmmg_comp);CHKERRQ(ierr);

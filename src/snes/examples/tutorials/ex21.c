@@ -63,9 +63,9 @@ int main(int argc,char **argv)
   user.nredundant = 1;
   ierr = DMCompositeAddArray(user.packer,0,user.nredundant);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
-  ierr = DMCompositeAddDA(user.packer,user.da1);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(user.packer,(DM)user.da1);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&user.da2);CHKERRQ(ierr);
-  ierr = DMCompositeAddDA(user.packer,user.da2);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(user.packer,(DM)user.da2);CHKERRQ(ierr);
   ierr = DMCompositeCreateGlobalVector(user.packer,&U);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&FU);CHKERRQ(ierr);
 
