@@ -26,7 +26,7 @@
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscInt *ranks[])
+PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscMPIInt *ranks[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

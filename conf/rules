@@ -420,6 +420,7 @@ getmpiexec:
 	  grep -v "ex20f.F:31: warning" | \
 	  grep -v "f90 continuing despite warning messages" | \
           grep -v "is an array from" | \
+          grep -v "warning, duplicate dylib" | \
           grep -v "consider using mkstemp"  |\
 	  grep -v "Unused external reference" | \
           grep -v "WARNING 134: weak definition of" | \

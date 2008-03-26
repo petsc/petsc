@@ -2,13 +2,15 @@
 #include "petsc.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petsc_viewer_stdout_       PETSC_VIEWER_STDOUT
+#define petsc_viewer_stdout__      PETSC_VIEWER_STDOUT_
 #define petscviewerasciiopen_      PETSCVIEWERASCIIOPEN
-#elif defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE_AT_END)
-#define petsc_viewer_stdout_      petsc_viewer_stdout__
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewerasciiopen_      petscviewerasciiopen
-#define petsc_viewer_stdout        petsc_viewer_stdout
+#define petsc_viewer_stdout__      petsc_viewer_stdout_
+#endif
+
+#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
+#define petsc_viewer_stdout__      petsc_viewer_stdout___
 #endif
 
 EXTERN_C_BEGIN
@@ -21,7 +23,7 @@ void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LE
   FREECHAR(name,c1);
 }
 
-PetscViewer PETSC_STDCALL petsc_viewer_stdout_(MPI_Comm *comm)
+PetscViewer PETSC_STDCALL petsc_viewer_stdout__(MPI_Comm *comm)
 {
   return PETSC_VIEWER_STDOUT_(*comm);
 }

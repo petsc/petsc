@@ -58,11 +58,12 @@ class Configure(PETSc.package.Package):
     self.setCompilers.popLanguage()
 
     # set fortran name mangling
+    # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag    
     if self.compilers.fortranManglingDoubleUnderscore:
       g.write('CDEFS   = -DAdd__\n')
     elif self.compilers.fortranMangling == 'underscore':
       g.write('CDEFS   = -DAdd_\n')
-    elif self.compilers.fortranMangling == 'capitalize':
+    elif self.compilers.fortranMangling == 'caps':
       g.write('CDEFS   = -DUPPPER\n')
 
     g.write('AR      = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'\n')

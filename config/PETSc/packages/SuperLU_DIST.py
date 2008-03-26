@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.2-Feb_21_2008.tar.gz']
+    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.2-Mar_21_2008.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
     self.liblist    = [['libsuperlu_dist_2.2.a']]
@@ -43,20 +43,19 @@ class Configure(PETSc.package.Package):
     g.write('LOADER       = '+self.setCompilers.getLinker()+'\n') 
     g.write('LOADOPTS     = \n')
     self.setCompilers.popLanguage()
+    if self.blasLapack.mangling == 'underscore':
+      g.write('CDEFS   = -DAdd_\n')
+    elif self.blasLapack.mangling == 'caps':
+      g.write('CDEFS   = -DUpCase\n')
+    else:
+      g.write('CDEFS   = -DNoChange\n')
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
       g.write('FFLAGS       = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n')
       # set fortran name mangling
-      if self.compilers.fortranMangling == 'underscore':
-        g.write('CDEFS   = -DAdd_\n')
-      elif self.compilers.fortranMangling == 'capitalize':
-        g.write('CDEFS   = -DUpCase\n')
-      else:
-        g.write('CDEFS   = -DNoChange\n')
+      # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag      
       self.setCompilers.popLanguage()
-    else:
-      raise RuntimeError('SuperLU_DIST requires a fortran compiler! No fortran compiler configured!')
     g.write('NOOPTS       =  -O0\n')
     g.close()
 
@@ -73,20 +72,12 @@ class Configure(PETSc.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by SuperLU_DIST'''
     '''Normally you do not need to provide this method'''
     PETSc.package.Package.configureLibrary(self)
-    if self.blasLapack.f2c:
-      raise RuntimeError('SuperLU_DIST requires a COMPLETE BLAS and LAPACK, it cannot be used with --download-c-blas-lapack=1 \nUse --download-f-blas-lapack option instead.')
-
-    errormsg = ', the current Lapack libraries '+str(self.blasLapack.lib)+' does not have it\nTry using --download-f-blas-lapack=1 option or see \nhttp://www-unix.mcs.anl.gov/petsc/petsc-as/documentation/installation.html#BLAS/LAPACK'
     if not self.blasLapack.checkForRoutine('slamch'): 
       raise RuntimeError('SuperLU_DIST requires the BLAS routine slamch()'+errormsg)
     self.framework.log.write('Found slamch() in BLAS library as needed by SuperLU_DIST\n')
-
     if not self.blasLapack.checkForRoutine('dlamch'): 
       raise RuntimeError('SuperLU_DIST requires the BLAS routine dlamch()'+errormsg)
     self.framework.log.write('Found dlamch() in BLAS library as needed by SuperLU_DIST\n')
-    if not self.blasLapack.checkForRoutine('xerbla'): 
-      raise RuntimeError('SuperLU_DIST requires the BLAS routine xerbla()'+errormsg)
-    self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU_DIST\n')
     return
   
 if __name__ == '__main__':

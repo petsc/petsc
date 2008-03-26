@@ -5,13 +5,13 @@
 #define _BLASLAPACK_H
 #include "petsc.h"
 
-#if defined(PETSC_HAVE_FORTRAN_STDCALL)
+#if defined(PETSC_BLASLAPACK_STDCALL)
 #include "petscblaslapack_stdcall.h"
 #else
 
-#if defined(PETSC_HAVE_FORTRAN_UNDERSCORE) || defined(PETSC_BLASLAPACK_UNDERSCORE)
+#if defined(PETSC_BLASLAPACK_UNDERSCORE)
 #include "petscblaslapack_uscore.h"
-#elif defined(PETSC_HAVE_FORTRAN_CAPS)
+#elif defined(PETSC_BLASLAPACK_CAPS)
 #include "petscblaslapack_caps.h"
 #else
 #include "petscblaslapack_c.h"

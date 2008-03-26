@@ -40,6 +40,7 @@ class Configure(config.base.Configure):
     self.compilers      = framework.require('config.compilers', self)
     self.mpi            = framework.require('config.packages.MPI', self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    self.libraries      = framework.require('config.libraries',self)
     return
 
   def checkLib(self, libraries):
@@ -102,6 +103,7 @@ class Configure(config.base.Configure):
   def getDir(self):
     '''Find the directory containing Jostle'''
     jostleDir = None
+    packages = self.petscdir.externalPackagesDir
     for dir in os.listdir(packages):
       if dir.startswith('jostle') and os.path.isdir(os.path.join(packages, dir)):
         jostleDir = dir
