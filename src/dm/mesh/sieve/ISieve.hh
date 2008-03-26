@@ -86,6 +86,12 @@ namespace ALE {
   };
 
   namespace ISieveVisitor {
+    template<typename Sieve>
+    class NullVisitor {
+    public:
+      void visitArrow(const typename Sieve::arrow_type&) {};
+      void visitPoint(const typename Sieve::point_type&) {};
+    };
     template<typename Sieve, int coneSize>
     class ConeRetriever {
     protected:
@@ -115,6 +121,22 @@ namespace ALE {
       };
       const typename Sieve::point_type *getSupport() const {return this->support;};
       const size_t                      getSupportSize() const {return this->i;};
+    };
+    template<typename Sieve, typename Visitor>
+    class SupportVisitor {
+    protected:
+      const Sieve& sieve;
+      Visitor&     visitor;
+      bool         useSource;
+    public:
+      SupportVisitor(const Sieve& s, Visitor& v, bool useSource = true) : sieve(s), visitor(v), useSource(useSource) {};
+      void visitArrow(const typename Sieve::arrow_type& arrow) {
+        if (this->useSource) {
+          this->sieve.support(arrow.source, visitor);
+        } else {
+          this->sieve.support(arrow.target, visitor);
+        }
+      };
     };
     class PrintVisitor {
     protected:
@@ -153,6 +175,35 @@ namespace ALE {
       void visitPoint(const typename Sieve::point_type& p) const {
         this->s.support(p, *this);
       };
+    };
+    template<typename Sieve, typename Visitor = NullVisitor<Sieve> >
+    class TransitiveClosureVisitor {
+    public:
+      typedef Visitor visitor_type;
+    protected:
+      const Sieve& sieve;
+      Visitor&     visitor;
+      bool         isCone;
+      std::set<typename Sieve::point_type> seen;
+    public:
+      TransitiveClosureVisitor(const Sieve& s, Visitor& v) : sieve(s), visitor(v), isCone(true) {};
+      void visitArrow(const typename Sieve::arrow_type& arrow) const {
+        if (this->isCone) {
+          if (this->seen.find(arrow.source) != this->seen.end()) return;
+          this->seen.insert(arrow.source);
+          this->visitor.visitArrow(arrow);
+          this->sieve.cone(arrow.source, *this);
+        } else {
+          if (this->seen.find(arrow.target) != this->seen.end()) return;
+          this->seen.insert(arrow.target);
+          this->visitor.visitArrow(arrow);
+          this->sieve.support(arrow.target, *this);
+        }
+      };
+    public:
+      bool getIsCone() {return this->isCone;};
+      void setIsCone(const bool isCone) {this->isCone = isCone;};
+      const std::set<typename Sieve::point_type>& getPoints() {return this->seen;};
     };
   };
 
@@ -266,11 +317,23 @@ namespace ALE {
       this->createIndices();
     };
   public: // Construction
+    index_type getConeSize(const point_type& p) {
+      if (!this->indexAllocated) {throw ALE::Exception("IFSieve indices have not been allocated.");}
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      this->chart.checkPoint(p);
+      return this->coneOffsets[p+1]-this->coneOffsets[p];
+    };
     void setConeSize(const point_type& p, const index_type c) {
       if (!this->indexAllocated) {throw ALE::Exception("IFSieve indices have not been allocated.");}
       if (this->pointAllocated) {throw ALE::Exception("IFSieve points have already been allocated.");}
       this->chart.checkPoint(p);
       this->coneOffsets[p+1] = c;
+    };
+    index_type getSupportSize(const point_type& p) {
+      if (!this->indexAllocated) {throw ALE::Exception("IFSieve indices have not been allocated.");}
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      this->chart.checkPoint(p);
+      return this->supportOffsets[p+1]-this->supportOffsets[p];
     };
     void setSupportSize(const point_type& p, const index_type s) {
       if (!this->indexAllocated) {throw ALE::Exception("IFSieve indices have not been allocated.");}

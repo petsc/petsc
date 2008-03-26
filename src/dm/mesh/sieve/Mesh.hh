@@ -1170,7 +1170,7 @@ namespace ALE {
     typedef RealSection_                                              real_section_type;
     typedef IntSection_                                               int_section_type;
     typedef ArrowSection_                                             arrow_section_type;
-    typedef Bundle<Sieve_,RealSection_,IntSection_,ArrowSection_>     this_type;
+    typedef IBundle<Sieve_,RealSection_,IntSection_,ArrowSection_>    this_type;
     typedef typename sieve_type::point_type                           point_type;
     typedef malloc_allocator<point_type>                              alloc_type;
 #define NEW_LABEL
