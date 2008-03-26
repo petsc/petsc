@@ -321,8 +321,7 @@ static PetscErrorCode PetscDrawSetDoubleBuffer_X(PetscDraw draw)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawGetMouseButton_X" 
-static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,
-                                PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
+static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *button,PetscReal* x_user,PetscReal *y_user,PetscReal *x_phys,PetscReal *y_phys)
 {
   XEvent       report;
   PetscDraw_X* win = (PetscDraw_X*)draw->data;
@@ -338,7 +337,6 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
     if (!cursor) SETERRQ(PETSC_ERR_LIB,"Unable to create X cursor");
   }
   XDefineCursor(win->disp,win->win,cursor);
-
   XSelectInput(win->disp,win->win,ButtonPressMask | ButtonReleaseMask);
 
   while (XCheckTypedEvent(win->disp,ButtonPress,&report));
@@ -368,11 +366,8 @@ static PetscErrorCode PetscDrawGetMouseButton_X(PetscDraw draw,PetscDrawButton *
   if (x_phys) *x_phys = ((double)px)/((double)win->w);
   if (y_phys) *y_phys = 1.0 - ((double)py)/((double)win->h);
 
-  if (x_user) *x_user = draw->coor_xl + ((((double)px)/((double)win->w)-draw->port_xl))*
-                        (draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
-  if (y_user) *y_user = draw->coor_yl + 
-                        ((1.0 - ((double)py)/((double)win->h)-draw->port_yl))*
-                        (draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
+  if (x_user) *x_user = draw->coor_xl + ((((double)px)/((double)win->w)-draw->port_xl))*(draw->coor_xr - draw->coor_xl)/(draw->port_xr - draw->port_xl);
+  if (y_user) *y_user = draw->coor_yl + ((1.0 - ((double)py)/((double)win->h)-draw->port_yl))*(draw->coor_yr - draw->coor_yl)/(draw->port_yr - draw->port_yl);
 
   XUndefineCursor(win->disp,win->win);
   XFlush(win->disp); XSync(win->disp,False);

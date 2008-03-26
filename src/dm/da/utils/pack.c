@@ -19,24 +19,24 @@ typedef enum {DMCOMPOSITE_ARRAY, DMCOMPOSITE_DM} DMCompositeLinkType;
 struct DMCompositeLink {
   DMCompositeLinkType    type;
   struct DMCompositeLink *next;
-  PetscInt               n,rstart;      /* rstart is relative to this processor */
+  PetscInt               n,rstart;      /* rstart is relative to this process */
+  PetscInt               grstart;       /* grstart is relative to all processes */
 
   /* only used for DMCOMPOSITE_DM */
   PetscInt               *grstarts;     /* global row for first unknown of this DA on each process */
   DM                     dm;
 
   /* only used for DMCOMPOSITE_ARRAY */
-  PetscInt               grstart;        /* global row for first array unknown */
   PetscMPIInt            rank;          /* process where array unknowns live */
 };
 
 struct _p_DMComposite {
   PETSCHEADER(struct _DMCompositeOps);
   DMHEADER
-  PetscInt               n,N,rstart;     /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
-  PetscInt               nghost;         /* number of all local entries include DA ghost points and any shared redundant arrays */
-  PetscInt               nDM,nredundant; /* how many DA's and seperate redundant arrays used to build DMComposite */
-  PetscTruth             setup;          /* after this is set, cannot add new links to the DMComposite */
+  PetscInt               n,N,rstart;           /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
+  PetscInt               nghost;               /* number of all local entries include DA ghost points and any shared redundant arrays */
+  PetscInt               nDM,nredundant,nmine; /* how many DA's and seperate redundant arrays used to build DMComposite (nmine is ones on this process) */
+  PetscTruth             setup;                /* after this is set, cannot add new links to the DMComposite */
   struct DMCompositeLink *next;
 };
 
@@ -593,7 +593,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddArray(DMComposite packer,PetscMPI
   mine->dm            = PETSC_NULL;
   mine->type          = DMCOMPOSITE_ARRAY;
   mine->next          = PETSC_NULL;
-  if (rank == mine->rank) packer->n += n;
+  if (rank == mine->rank) {packer->n += n;packer->nmine++;}
 
   /* add to end of list */
   if (!next) {
@@ -659,6 +659,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddDM(DMComposite packer,DM dm)
     next->next = mine;
   }
   packer->nDM++;
+  packer->nmine++;
   PetscFunctionReturn(0);
 }
 
@@ -885,6 +886,69 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,
   }
   va_end(Argp);
   ierr = VecDestroy(global);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeGetISs"
+/*@C
+    DMCompositeGetGlobalISs - Gets the index sets for each composed object
+
+    Collective on DMComposite
+
+    Input Parameter:
+.    packer - the packer object
+
+    Output Parameters:
+.    idx - the array of index sets
+ 
+    Level: advanced
+
+    Notes:
+       The idx entries should be destroyed with ISDestroy(), the idx array should be freed with PetscFree()
+
+       The number of IS on each process will/may be different when redundant arrays are used
+
+       These could be used to extract a subset of vector entries for a "multi-physics" preconditioner
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetAccess(), DMCompositeScatter(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalISs(DMComposite packer,IS *is[])
+{
+  PetscErrorCode         ierr;
+  PetscInt               cnt = 0;
+  struct DMCompositeLink *next;
+  PetscMPIInt            rank;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(packer,DA_COOKIE,1);
+  ierr = PetscMalloc(packer->nmine*sizeof(IS),is);CHKERRQ(ierr);
+  next = packer->next;
+  ierr = MPI_Comm_rank(((PetscObject)packer)->comm,&rank);CHKERRQ(ierr);
+
+  /* loop over packed objects, handling one at at time */
+  while (next) {
+
+    if (next->type == DMCOMPOSITE_ARRAY) {
+      
+      if (rank == next->rank) {
+        ierr = ISCreateBlock(PETSC_COMM_SELF,next->n,1,&next->grstart,&(*is)[cnt]);CHKERRQ(ierr);
+        cnt++;
+      }
+
+    } else if (next->type == DMCOMPOSITE_DM) {
+
+      ierr = ISCreateBlock(PETSC_COMM_SELF,next->n,1,&next->grstart,&(*is)[cnt]);CHKERRQ(ierr);
+      cnt++;
+
+    } else {
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+    }
+    next = next->next;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1454,7 +1518,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
   ierr = MPI_Comm_rank(((PetscObject)packer)->comm,&rank);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)packer)->comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*J,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatSetType(*J,MATAIJ);CHKERRQ(ierr);
 
   /*
      Extremely inefficient but will compute entire Jacobian for testing
