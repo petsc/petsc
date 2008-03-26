@@ -81,11 +81,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreate(MPI_Comm comm,DMComposite *pa
   p->nDM          = 0;
 
   p->ops->createglobalvector = DMCompositeCreateGlobalVector;
-  p->ops->createglobalvector = DMCompositeCreateLocalVector;
+  p->ops->createlocalvector  = DMCompositeCreateLocalVector;
   p->ops->refine             = DMCompositeRefine;
   p->ops->getinterpolation   = DMCompositeGetInterpolation;
   p->ops->getmatrix          = DMCompositeGetMatrix;
   p->ops->getcoloring        = DMCompositeGetColoring;
+  p->ops->globaltolocalbegin = DMCompositeGlobalToLocalBegin;
+  p->ops->globaltolocalend   = DMCompositeGlobalToLocalEnd;
   p->ops->destroy            = DMCompositeDestroy;
 
   *packer = p;
@@ -939,7 +941,7 @@ PetscErrorCode DMCompositeRestoreLocalVectors_DM(DMComposite packer,struct DMCom
 #define __FUNCT__ "DMCompositeGetLocalVectors"
 /*@C
     DMCompositeGetLocalVectors - Gets local vectors and arrays for each part of a DMComposite.'
-       Use VecPakcRestoreLocalVectors() to return them.
+       Use DMCompositeRestoreLocalVectors() to return them.
 
     Collective on DMComposite
 
@@ -1629,3 +1631,103 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeGlobalToLocalBegin"
+/*@C
+    DMCompositeGlobalToLocalBegin - begin update of single local vector from global vector
+
+    Collective on DMComposite
+
+    Input Parameter:
++    packer - the packer object
+.    gvec - the global vector
+-    lvec - single local vector
+ 
+    Level: advanced
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGlobalToLocalBegin(DMComposite packer,Vec gvec,InsertMode mode,Vec lvec)
+{
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next;
+  PetscInt               cnt = 3;
+  PetscMPIInt            rank;
+  PetscScalar            *garray,*larray;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(packer,DA_COOKIE,1);
+  PetscValidHeaderSpecific(gvec,VEC_COOKIE,2);
+  next = packer->next;
+  if (!packer->setup) {
+    ierr = DMCompositeSetUp(packer);CHKERRQ(ierr);
+  }
+  ierr = MPI_Comm_rank(((PetscObject)packer)->comm,&rank);CHKERRQ(ierr);
+  ierr = VecGetArray(gvec,&garray);CHKERRQ(ierr);
+  ierr = VecGetArray(lvec,&larray);CHKERRQ(ierr);
+
+  /* loop over packed objects, handling one at at time */
+  while (next) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
+      if (rank == next->rank) {
+        ierr    = PetscMemcpy(larray,garray,next->n*sizeof(PetscScalar));CHKERRQ(ierr);
+        garray += next->n;
+      }
+      /* does not handle ADD_VALUES */
+      ierr = MPI_Bcast(larray,next->n,MPIU_SCALAR,next->rank,((PetscObject)packer)->comm);CHKERRQ(ierr);
+      larray += next->n;
+    } else if (next->type == DMCOMPOSITE_DM) {
+      Vec      local,global;
+      PetscInt N;
+
+      ierr = DMGetGlobalVector(next->dm,&global);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(global,&N);CHKERRQ(ierr);
+      ierr = VecPlaceArray(global,garray);CHKERRQ(ierr);
+      ierr = DMGetLocalVector(next->dm,&local);CHKERRQ(ierr);
+      ierr = VecPlaceArray(local,larray);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalBegin(next->dm,global,mode,local);CHKERRQ(ierr);
+      ierr = DMGlobalToLocalEnd(next->dm,global,mode,local);CHKERRQ(ierr);
+      ierr = VecResetArray(global);CHKERRQ(ierr);
+      ierr = VecResetArray(local);CHKERRQ(ierr);
+      ierr = DMRestoreGlobalVector(next->dm,&global);CHKERRQ(ierr)
+      ierr = DMRestoreGlobalVector(next->dm,&local);CHKERRQ(ierr);
+      larray += next->n;
+    } else {
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+    }
+    cnt++;
+    next = next->next;
+  }
+
+  ierr = VecRestoreArray(gvec,PETSC_NULL);CHKERRQ(ierr);
+  ierr = VecRestoreArray(lvec,PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeGlobalToLocalEnd"
+/*@C
+    DMCompositeGlobalToLocalEnd - All communication is handled in the Begin phase
+
+    Collective on DMComposite
+
+    Input Parameter:
++    packer - the packer object
+.    gvec - the global vector
+-    lvec - single local vector
+ 
+    Level: advanced
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGlobalToLocalEnd(DMComposite packer,Vec gvec,InsertMode mode,Vec lvec)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}

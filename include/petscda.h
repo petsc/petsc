@@ -487,6 +487,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRefine(DMComposite,MPI_Comm,
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetInterpolation(DMComposite,DMComposite,Mat*,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetMatrix(DMComposite,MatType,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetColoring(DMComposite,ISColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGlobalToLocalBegin(DMComposite,Vec,InsertMode,Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGlobalToLocalEnd(DMComposite,Vec,InsertMode,Vec);
 
 /*S
      Slice - Abstract PETSc object that manages distributed field data for a simple unstructured matrix

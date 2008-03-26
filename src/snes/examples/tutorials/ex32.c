@@ -70,7 +70,7 @@ typedef struct {
   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
   PetscTruth   draw_contours;                /* flag - 1 indicates drawing contours */
   DMMG         *dmmg,*dmmg_comp;             /* used by MySolutionView() */
-  DMMG         *dmmg1,*dmmg2; /* passing objects of sub-physics into the composite physics - used by FormInitialGuessLocalComp() */
+  DMMG         *dmmg1,*dmmg2; /* passing objects of sub-physics into the composite physics - used by FormInitialGuessComp() */
   DMComposite  pack;
   PetscTruth   COMPOSITE_MODEL;
   Field        **x;   /* passing DMMGGetx(dmmg) - final solution of original coupled physics */
@@ -81,12 +81,12 @@ typedef struct {
 extern PetscErrorCode FormInitialGuessLocal(DMMG,Vec);
 extern PetscErrorCode FormInitialGuessLocal1(DMMG,Vec);
 extern PetscErrorCode FormInitialGuessLocal2(DMMG,Vec);
-extern PetscErrorCode FormInitialGuessLocalComp(DMMG,Vec);
+extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
 
 extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 extern PetscErrorCode FormFunctionLocal1(DALocalInfo*,Field1**,Field1**,void*);
 extern PetscErrorCode FormFunctionLocal2(DALocalInfo*,Field2**,Field2**,void*);
-extern PetscErrorCode FormFunctionLocalComp(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormFunctionComp(SNES,Vec,Vec,void*);
 
 extern PetscErrorCode MySolutionView(MPI_Comm,PetscInt,void*);
 
@@ -248,8 +248,8 @@ int main(int argc,char **argv)
   user.dmmg1 = dmmg1;
   user.dmmg2 = dmmg2;
   user.COMPOSITE_MODEL = PETSC_TRUE;
-  ierr = DMMGSetInitialGuess(dmmg_comp,FormInitialGuessLocalComp);CHKERRQ(ierr);
-  ierr = DMMGSetSNES(dmmg_comp,FormFunctionLocalComp,0);CHKERRQ(ierr);
+  ierr = DMMGSetInitialGuess(dmmg_comp,FormInitialGuessComp);CHKERRQ(ierr);
+  ierr = DMMGSetSNES(dmmg_comp,FormFunctionComp,0);CHKERRQ(ierr);
 
   /* Solve the nonlinear system */
   ierr = DMMGSolve(dmmg_comp);CHKERRQ(ierr); 
@@ -397,13 +397,13 @@ PetscErrorCode FormInitialGuessLocal2(DMMG dmmg,Vec X)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormInitialGuessLocalComp"
+#define __FUNCT__ "FormInitialGuessComp"
 /* 
-   FormInitialGuessLocalComp - 
+   FormInitialGuessComp - 
               Forms the initial guess for the composite model
               Unwraps the global solution vector and passes its local pieces into the user functions
  */
-PetscErrorCode FormInitialGuessLocalComp(DMMG dmmg,Vec X)
+PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
 {
   PetscErrorCode ierr;
   AppCtx         *user = (AppCtx*)dmmg->user;
@@ -783,11 +783,11 @@ PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field2 **x,Field2 **f,void *
 } 
 
 #undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocalComp"
+#define __FUNCT__ "FormFunctionComp"
 /* 
-   FormFunctionLocalComp  - Unwraps the input vector and passes its local ghosted pieces into the user function
+   FormFunctionComp  - Unwraps the input vector and passes its local ghosted pieces into the user function
 */
-PetscErrorCode FormFunctionLocalComp(SNES snes,Vec X,Vec F,void *ctx)
+PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
 {
   PetscErrorCode ierr;
   DMMG           dmmg = (DMMG)ctx;
