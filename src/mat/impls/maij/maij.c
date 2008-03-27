@@ -2627,7 +2627,6 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
 {
   /* This routine requires testing -- first draft only */
   PetscErrorCode ierr;
-  PetscInt       flops=0;
   Mat_SeqMAIJ    *pp=(Mat_SeqMAIJ*)PP->data;
   Mat            P=pp->AIJ;
   Mat_SeqAIJ     *a  = (Mat_SeqAIJ *) A->data;
@@ -2670,7 +2669,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
         }
         apa[poffset] += (*aa)*paj[k];
       }
-      flops += 2*pnzj;
+      ierr = PetscLogFlops(2*pnzj);CHKERRQ(ierr);
       aa++;
     }
 
@@ -2697,7 +2696,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
           caj[k] += (*pA)*apa[apj[nextap++]];
         }
       }
-      flops += 2*apnzj;
+      ierr = PetscLogFlops(2*apnzj);CHKERRQ(ierr);
       pA++;
     }
 
@@ -2712,7 +2711,6 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(apa);CHKERRQ(ierr);
-  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
