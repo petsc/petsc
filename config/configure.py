@@ -59,8 +59,9 @@ def chkincompletecygwin():
   if os.path.exists('/usr/bin/cygcheck.exe'):
     if not os.path.exists('/usr/bin/make') or not os.path.exists('/usr/bin/diff'):
       print '================================================================================='
-      print ' *** Incomplete cygwin install detected *****************************************'
-      print ' *** Please rerun cygwin-setup and install module make [and its dependencies]****'
+      print ' *** Incomplete cygwin install detected . Either /usr/bin/make or /usr/bin/diff **'
+      print ' *** is missing. Please rerun cygwin-setup and select module "make" **************'
+      print ' *** [This should install "make" and its dependencies like "diff"] ***************'
       print '================================================================================='
       sys.exit(3)
   return 0
