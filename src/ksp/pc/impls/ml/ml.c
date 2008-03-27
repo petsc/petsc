@@ -10,7 +10,10 @@
 
 #include <math.h>
 EXTERN_C_BEGIN
-#include "ml_config.h"
+/* HAVE_CONFIG_H flag is required by ML include files */
+#if !defined(HAVE_CONFIG_H)
+#define HAVE_CONFIG_H
+#endif
 #include "ml_include.h"
 EXTERN_C_END
 
