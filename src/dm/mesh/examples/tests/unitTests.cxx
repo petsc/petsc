@@ -17,6 +17,7 @@ extern PetscErrorCode RegisterSieveStressSuite();
 extern PetscErrorCode RegisterISieveFunctionSuite();
 extern PetscErrorCode RegisterSectionStressSuite();
 extern PetscErrorCode RegisterISectionStressSuite();
+extern PetscErrorCode RegisterIMeshFunctionSuite();
 
 typedef struct {
   PetscTruth function; // Run the functionality tests
@@ -26,6 +27,7 @@ typedef struct {
   PetscTruth isieve;   // Run the ISieve tests
   PetscTruth section;  // Run the Section tests
   PetscTruth isection; // Run the ISection tests
+  PetscTruth imesh;    // Run the IMesh tests
 } Options;
 
 #undef __FUNCT__
@@ -42,6 +44,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->isieve   = PETSC_FALSE;
   options->section  = PETSC_FALSE;
   options->isection = PETSC_FALSE;
+  options->imesh    = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-function", "Run functionality tests", "unitTests", options->function, &options->function, PETSC_NULL);CHKERRQ(ierr);
@@ -51,6 +54,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-isieve", "Run ISieve tests", "unitTests", options->isieve, &options->isieve, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-section", "Run Section tests", "unitTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-isection", "Run ISection tests", "unitTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-imesh", "Run IMesh tests", "unitTests", options->imesh, &options->imesh, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -76,6 +80,9 @@ PetscErrorCode RegisterSuites(Options *options) {
   }
   if (options->isection) {
     if (options->stress)   {ierr = RegisterISectionStressSuite();CHKERRQ(ierr);}
+  }
+  if (options->imesh) {
+    if (options->function) {ierr = RegisterIMeshFunctionSuite();CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

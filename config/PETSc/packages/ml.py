@@ -39,23 +39,27 @@ class Configure(PETSc.package.Package):
   def Install(self):
 
     args = ['--prefix='+self.installDir]
+    args.append('--disable-ml-epetra')
+    args.append('--disable-ml-aztecoo')
+    args.append('--disable-ml-examples')
+    args.append('--disable-tests')
     
     self.framework.pushLanguage('C')
-    CCenv = self.framework.getCompiler()
+    args.append('CC="'+self.framework.getCompiler()+'"')
     args.append('--with-cflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX"')
     self.framework.popLanguage()
 
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
-      F77env = self.framework.getCompiler()
+      args.append('F77="'+self.framework.getCompiler()+'"')
       args.append('--with-fflags="'+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     else:
-      F77env = ''
+      args.append('F77=""')
 
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      CXXenv = self.framework.getCompiler()
+      args.append('CXX="'+self.framework.getCompiler()+'"')
       args.append('--with-cxxflags="'+self.framework.getCompilerFlags()+' -DMPICH_SKIP_MPICXX"')
       self.framework.popLanguage()
     else:
@@ -76,12 +80,13 @@ class Configure(PETSc.package.Package):
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'ml'), 'w')
     fd.write(args)
+    fd.write('\n')
     fd.close()
 
     if self.installNeeded('ml'):
       try:
         self.logPrintBox('Configuring ml; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+self.packageDir+'; ./configure '+args+' --disable-ml-epetra --disable-ml-aztecoo --disable-ml-examples --disable-tests', timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ML: '+str(e))
       # Build ML
