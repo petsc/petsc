@@ -1525,6 +1525,62 @@ namespace ALE {
   public: // Accessors
     int getDimension() const {return this->_dim;};
     void setDimension(const int dim) {this->_dim = dim;};
+  public: // Sizes
+    template<typename Section>
+    int size(const Obj<Section>& section, const point_type& p) {
+      typedef ISieveVisitor::SizeVisitor<sieve_type,Section>                        size_visitor_type;
+      typedef ISieveVisitor::TransitiveClosureVisitor<sieve_type,size_visitor_type> closure_visitor_type;
+      size_visitor_type    sV(*section);
+      closure_visitor_type cV(*this->getSieve(), sV);
+
+      this->getSieve()->cone(p, cV);
+      return sV->getSize();
+    };
+    template<typename Section>
+    int sizeWithBC(const Obj<Section>& section, const point_type& p) {
+      typedef ISieveVisitor::SizeWithBCVisitor<sieve_type,Section>                  size_visitor_type;
+      typedef ISieveVisitor::TransitiveClosureVisitor<sieve_type,size_visitor_type> closure_visitor_type;
+      size_visitor_type    sV(*section);
+      closure_visitor_type cV(*this->getSieve(), sV);
+
+      this->getSieve()->cone(p, cV);
+      return sV->getSize();
+    };
+  public: // Restrict/Update closures
+    // Return the values for the closure of this point
+    template<typename Section_>
+    const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p, typename Section_::value_type  *values, const int valuesSize) {
+      const int size = this->sizeWithBC(section, p);
+      int       j    = -1;
+      if (valuesSize < size) throw ALE::Exception("Input array too small");
+
+      const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+      typename oConeArray::iterator end     = closure->end();
+
+      for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+        const typename Section_::value_type *array = section->restrictPoint(p_iter->first);
+        const int& dim = section->getFiberDimension(p_iter->first);
+
+        if (p_iter->second >= 0) {
+          for(int i = 0; i < dim; ++i) {
+            values[++j] = array[i];
+          }
+        } else {
+          for(int i = dim-1; i >= 0; --i) {
+            values[++j] = array[i];
+          }
+        }
+      }
+      if (j != size-1) {
+        ostringstream txt;
+
+        txt << "Invalid restrict to point " << p << std::endl;
+        txt << "  j " << j << " should be " << (size-1) << std::endl;
+        std::cout << txt.str();
+        throw ALE::Exception(txt.str().c_str());
+      }
+      return values;
+    };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
       if (comm == MPI_COMM_NULL) {

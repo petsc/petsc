@@ -248,8 +248,8 @@ namespace ALE {
     class AdjVisitor {
     protected:
       int       cell;
-      const int cellOffset;
       int      *adjacency;
+      const int cellOffset;
       int       offset;
     public:
       AdjVisitor(int adj[], const bool zeroBase) : adjacency(adj), cellOffset(zeroBase ? 0 : 1), offset(0) {};
@@ -826,7 +826,10 @@ namespace ALE {
       } else if (height == 1) {
         int numEdges;
 
+        throw ALE::Exception("Not yet implemented");
+#if 0
         buildFaceDualCSRV(mesh, mesh->getFactory()->getNumbering(mesh, mesh->depth()-1), &numEdges, &start, &adjacency, GraphPartitioner::zeroBase());
+#endif
         GraphPartitioner().partition(numEdges, start, adjacency, partition, manager);
         destroyCSR(numEdges, start, adjacency);
       } else {
