@@ -11,6 +11,7 @@ class Configure(PETSc.package.Package):
     self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/expat-2.0.0.tar.gz']
     self.functions = ['XML_ExpatVersion']
     self.liblist   = [['libexpat.a']]
+    self.includes  = ['expat.h']
     return
 
   def setupDependencies(self, framework):
