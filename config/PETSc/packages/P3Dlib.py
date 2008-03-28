@@ -11,6 +11,7 @@ class Configure(PETSc.package.Package):
     self.download     = ['Not available for download: use --download-P3Dlib=P3Dlib.tar.gz']
     self.functions = ['p3d_ReadStructGridFileHeader']
     self.liblist   = [['libp3d.a']]
+    self.includes  = ['p3dlib.h']
     return
 
   def setupDependencies(self, framework):
