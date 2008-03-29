@@ -246,14 +246,18 @@ class VTKViewer {
   static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh::label_sequence>& elements, const Obj<ALE::Mesh::numbering_type>& cNumbering, const Obj<ALE::Mesh::numbering_type>& vNumbering, PetscViewer viewer)
   {
     typedef ALE::SieveAlg<ALE::Mesh>  sieve_alg_type;
-    const Obj<ALE::Mesh::sieve_type>& sieve   = mesh->getSieve();
-    int                               depth   = mesh->depth();
-    int                               corners = sieve->nCone(*elements->begin(), depth)->size();
+    const Obj<ALE::Mesh::sieve_type>& sieve        = mesh->getSieve();
+    int                               depth        = mesh->depth();
+    int                               localCorners = 0;
+    int                               corners;
     int                               numElements;
     PetscErrorCode                    ierr;
 
     PetscFunctionBegin;
+    if (elements->size()) localCorners = sieve->nCone(*elements->begin(), depth)->size();
+    corners     = localCorners;
     numElements = cNumbering->getGlobalSize();
+    ierr = MPI_Reduce(&localCorners, &corners, 1, MPI_INT, MPI_MAX, 0, mesh->comm());CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     if (mesh->commRank() == 0) {
       for(ALE::Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
