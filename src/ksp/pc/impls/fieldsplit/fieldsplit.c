@@ -28,6 +28,11 @@ typedef struct {
   PC_FieldSplitLink head;
 } PC_FieldSplit;
 
+/* 
+    Notes: there is no particular reason that pmat, x, and y are stored as arrays in PC_FieldSplit instead of 
+   inside PC_FieldSplitLink, just historical. If you want to be able to add new fields after already using the 
+   PC you could change this.
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_FieldSplit"
 static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
@@ -253,7 +258,7 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
 	ilink = ilink->next;
       }
     }
-  } else {
+  } else if (jac->type == PC_COMPOSITE_MULTIPLICATIVE || jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
     if (!jac->w1) {
       ierr = VecDuplicate(x,&jac->w1);CHKERRQ(ierr);
       ierr = VecDuplicate(x,&jac->w2);CHKERRQ(ierr);
@@ -274,7 +279,7 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
         ierr  = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
       }
     }
-  }
+    } else SETERRQ1(PETSC_ERR_SUP,"Unsupported or unknown composition",(int) jac->type);
   CHKMEMQ;
   PetscFunctionReturn(0);
 }
@@ -500,8 +505,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,IS is)
   char              prefix[128];
 
   PetscFunctionBegin;
-  ierr = PetscMalloc2(1,struct _PC_FieldSplitLink,&ilink,0,PetscInt,&ilink->fields);CHKERRQ(ierr);
-  ilink->nfields = -1;
+  ierr = PetscNew(struct _PC_FieldSplitLink,&ilink);CHKERRQ(ierr);
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
