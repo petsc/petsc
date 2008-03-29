@@ -9,8 +9,9 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download     = ['Not available for download: use --download-Suggar=Suggar.tar.gz']
-    self.functions = ['ctkSortAllDonorsInGrid']
-    self.liblist   = [['libsuggar_3d_macosx.a']]
+    self.functions    = ['ctkSortAllDonorsInGrid']
+    self.machinename  = 'linux'
+    self.liblist      = [['libsuggar_3d_'+self.machinename+'.a']]
     return
 
   def setupDependencies(self, framework):
@@ -29,11 +30,11 @@ class Configure(PETSc.package.Package):
     g.write('MPICC ='+self.framework.getCompiler()+'\n')
     g.write('CFLAGS ='+self.framework.getCompilerFlags()+'\n')
     g.write('CPROTO = '+self.cproto.cproto+' -D__THROW= -D_STDARG_H ${TRACEMEM} -I..\n')
-    g.write('P3DLIB_DIR = '+os.path.join(self.p3dlib.installDir,'lib')+' \n')
-    g.write('P3DINC_DIR = '+os.path.join(self.p3dlib.installDir,'include')+' \n')    
-    g.write('EXPATLIB_DIR = '+os.path.join(self.expat.installDir,'lib')+' \n')
-    g.write('EXPATINC_DIR = '+os.path.join(self.expat.installDir,'include')+'\n')
-    g.write('MACHINE = '+'macosx\n')    
+    g.write('P3DLIB_DIR = '+self.libraries.toString(self.p3dlib.lib)+'\n')
+    g.write('P3DINC_DIR = '+self.headers.toString(self.p3dlib.include)+'\n')
+    g.write('EXPATLIB_DIR = '+self.libraries.toString(self.expat.lib)+'\n')
+    g.write('EXPATINC_DIR = '+self.headers.toString(self.expat.include)+'\n')
+    g.write('MACHINE = '+self.machinename+'\n')    
 
     g.close()
     self.framework.popLanguage()

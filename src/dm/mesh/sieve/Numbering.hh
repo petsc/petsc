@@ -513,9 +513,12 @@ namespace ALE {
         Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
         Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
 
+//         std::cout << "["<<bundle->commRank()<<"]Creating new numbering: fixed depth value " << depth << std::endl;
         this->constructNumbering(numbering, sendOverlap, recvOverlap, bundle->depthStratum(depth));
         if (this->_debug) {std::cout << "Creating new numbering: depth " << depth << std::endl;}
         this->_numberings[bundle.ptr()]["depth"][depth] = numbering;
+//       } else {
+//         std::cout << "["<<bundle->commRank()<<"]Using old numbering: fixed depth value " << depth << std::endl;
       }
       return this->_numberings[bundle.ptr()]["depth"][depth];
     };
@@ -529,9 +532,12 @@ namespace ALE {
         Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
         Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
 
+//         std::cout << "["<<bundle->commRank()<<"]Creating new numbering: " << labelname << " value " << value << std::endl;
         this->constructNumbering(numbering, sendOverlap, recvOverlap, bundle->getLabelStratum(labelname, value));
         if (this->_debug) {std::cout << "Creating new numbering: labelname " << labelname << " value " << value << std::endl;}
         this->_numberings[bundle.ptr()][labelname][value] = numbering;
+//       } else {
+//         std::cout << "["<<bundle->commRank()<<"]Using old numbering: " << labelname << " value " << value << std::endl;
       }
       return this->_numberings[bundle.ptr()][labelname][value];
     };

@@ -1,0 +1,15 @@
+row 0: (0, -1)  (1, 0)  (2, 1)  (3, 3)  (4, 4)  (5, -5) 
+row 1: (0, -1)  (1, 0)  (2, 1) 
+row 2:
+row 3:
+row 4: (4, 4)  (5, -5) 
+
+Matrix type: mpiaij
+Row Maximum Absolute Values:
+Process [0]
+5
+1
+0
+Process [1]
+0
+5

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <cstdlib>
 #include <typeinfo>
 #include <petsc.h>
 #include <ALE_log.hh>

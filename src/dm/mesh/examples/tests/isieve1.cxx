@@ -1,6 +1,7 @@
 #include <petsc.h>
 #include <ISieve.hh>
 #include <Mesh.hh>
+#include <Generator.hh>
 #include "unitTests.hh"
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -12,6 +13,7 @@ class FunctionTestISieve : public CppUnit::TestFixture
 
   CPPUNIT_TEST(testBase);
   CPPUNIT_TEST(testConversion);
+  CPPUNIT_TEST(testOrientedClosure);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -55,7 +57,7 @@ public:
   void testBase(void) {
   };
 
-  void testConversion() {
+  void testConversion(void) {
     typedef ALE::Mesh::sieve_type Sieve;
     typedef sieve_type            ISieve;
     double lower[2] = {0.0, 0.0};
@@ -71,13 +73,13 @@ public:
 
     for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
       const ALE::Obj<Sieve::coneSequence>& cone = m->getSieve()->cone(*b_iter);
-      ALE::ISieveVisitor::ConeRetriever<ISieve, 2> retriever;
+      ALE::ISieveVisitor::PointRetriever<ISieve, 2> retriever;
 
       this->_sieve->cone(renumbering[*b_iter], retriever);
-      const ISieve::point_type *icone = retriever.getCone();
+      const ISieve::point_type *icone = retriever.getPoints();
       int i = 0;
 
-      CPPUNIT_ASSERT_EQUAL(cone->size(), retriever.getConeSize());
+      CPPUNIT_ASSERT_EQUAL(cone->size(), retriever.getSize());
       for(Sieve::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++i) {
         CPPUNIT_ASSERT_EQUAL(renumbering[*c_iter], icone[i]);
       }
@@ -86,15 +88,53 @@ public:
 
     for(Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
       const ALE::Obj<Sieve::supportSequence>& support = m->getSieve()->support(*c_iter);
-      ALE::ISieveVisitor::SupportRetriever<ISieve, 4> retriever;
+      ALE::ISieveVisitor::PointRetriever<ISieve, 4> retriever;
 
       this->_sieve->support(renumbering[*c_iter], retriever);
-      const ISieve::point_type *isupport = retriever.getSupport();
+      const ISieve::point_type *isupport = retriever.getPoints();
       int i = 0;
 
-      CPPUNIT_ASSERT_EQUAL(support->size(), retriever.getSupportSize());
+      CPPUNIT_ASSERT_EQUAL(support->size(), retriever.getSize());
       for(Sieve::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter, ++i) {
         CPPUNIT_ASSERT_EQUAL(renumbering[*s_iter], isupport[i]);
+      }
+    }
+  };
+
+  void testOrientedClosure() {
+    typedef ALE::Mesh::sieve_type                         Sieve;
+    typedef ALE::SieveAlg<ALE::Mesh>                      sieve_alg_type;
+    typedef sieve_alg_type::orientedConeArray             oConeArray;
+    typedef sieve_type                                    ISieve;
+    typedef ALE::ISieveVisitor::PointSetRetriever<ISieve> Visitor;
+    double lower[2] = {0.0, 0.0};
+    double upper[2] = {1.0, 1.0};
+    int    edges[2] = {2, 2};
+    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+    const ALE::Obj<ALE::Mesh> m  = ALE::Generator::generateMesh(mB, true);
+    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+
+    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
+    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
+    m->view("Square Mesh");
+    this->_sieve->view("Square Sieve");
+    const ALE::Obj<Sieve::baseSequence>& base = m->getSieve()->base();
+
+    for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+      const ALE::Obj<oConeArray>& closure = sieve_alg_type::orientedClosure(m, *b_iter);
+      Visitor retriever;
+
+      ALE::ISieveTraversal<ISieve>::orientedClosure(*this->_sieve, renumbering[*b_iter], retriever);
+      const Visitor::oriented_points_type&          icone   = retriever.getOrientedPoints();
+      Visitor::oriented_points_type::const_iterator ic_iter = icone.begin();
+
+      CPPUNIT_ASSERT_EQUAL(closure->size(), retriever.getOrientedSize());
+      std::cout << "Closure of " << *b_iter <<":"<< renumbering[*b_iter] << std::endl;
+      for(oConeArray::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter, ++ic_iter) {
+        std::cout << "  point " << ic_iter->first << "  " << c_iter->first<<":"<<renumbering[c_iter->first] << std::endl;
+        CPPUNIT_ASSERT_EQUAL(renumbering[c_iter->first], ic_iter->first);
+        std::cout << "  order " << ic_iter->second << "  " << c_iter->second << std::endl;
+        CPPUNIT_ASSERT_EQUAL(c_iter->second, ic_iter->second);
       }
     }
   };

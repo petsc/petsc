@@ -2339,6 +2339,49 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMaxAbs_MPIAIJ"
+PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
+{
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,*idxb = 0;
+  PetscScalar    *va,*vb;
+  Vec            vtmp;
+
+  PetscFunctionBegin;  
+  ierr = PetscMemzero(idx,A->cmap.n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = MatGetRowMaxAbs(a->A,v,idx);CHKERRQ(ierr); 
+  ierr = VecGetArray(v,&va);CHKERRQ(ierr);
+  if (idx) {
+    for (i=0; i<A->cmap.n; i++) {
+      if (PetscAbsScalar(va[i])) idx[i] += A->cmap.rstart;
+    }
+  }
+
+  ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap.n,&vtmp);CHKERRQ(ierr);
+  if (idx) {
+    ierr = PetscMalloc(A->rmap.n*sizeof(PetscInt),&idxb);CHKERRQ(ierr);
+  }
+  ierr = MatGetRowMaxAbs(a->B,vtmp,idxb);CHKERRQ(ierr);
+  ierr = VecGetArray(vtmp,&vb);CHKERRQ(ierr);
+
+  for (i=0; i<A->rmap.n; i++){
+    if (PetscAbsScalar(va[i]) < PetscAbsScalar(vb[i])) {
+      va[i] = vb[i]; 
+      if (idx) idx[i] = a->garray[idxb[i]];
+    }
+  }
+
+  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
+  if (idxb) {
+    ierr = PetscFree(idxb);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(vtmp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetRowMin_MPIAIJ"
 PetscErrorCode MatGetRowMin_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 {
@@ -2473,7 +2516,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
        0,
-/*70*/ 0,
+/*70*/ MatGetRowMaxAbs_MPIAIJ,
        0,
        MatSetColoring_MPIAIJ,
 #if defined(PETSC_HAVE_ADIC)

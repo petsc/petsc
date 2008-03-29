@@ -225,6 +225,88 @@ namespace ALE {
         float_alloc_type().deallocate(x, numVertices*3);
       };
     };
+    template<typename Sieve>
+    class OffsetVisitor {
+      const Sieve& sieve;
+      const Sieve& overlapSieve;
+      int         *offsets;
+    public:
+      OffsetVisitor(const Sieve& s, const Sieve& ovS, int off[]) : sieve(s), overlapSieve(ovS), offsets(off) {};
+      void visitPoint(const typename Sieve::point_type& point) {};
+      void visitArrow(const typename Sieve::arrow_type& arrow) {
+        const typename Sieve::point_type cell   = arrow.target;
+        const typename Sieve::point_type face   = arrow.source;
+        const int                        size   = this->sieve.getSupportSize(face);
+        const int                        ovSize = this->overlapSieve.getSupportSize(face);
+
+        if (size == 2) {
+          offsets[cell+1]++;
+        } else if ((size == 1) && (ovSize == 1)) {
+          offsets[cell+1]++;
+        }
+      };
+    };
+    template<typename Sieve>
+    class AdjVisitor {
+    protected:
+      typename Sieve::point_type cell;
+      int                       *adjacency;
+      const int                  cellOffset;
+      int                        offset;
+    public:
+      AdjVisitor(int adj[], const bool zeroBase) : adjacency(adj), cellOffset(zeroBase ? 0 : 1), offset(0) {};
+      void visitPoint(const typename Sieve::point_type& point) {};
+      void visitArrow(const typename Sieve::arrow_type& arrow) {
+        const int neighbor = arrow.target;
+
+        if (neighbor != this->cell) {
+          std::cout << "Adding dual edge from " << cell << " to " << neighbor << std::endl;
+          this->adjacency[this->offset++] = neighbor + this->cellOffset;
+        }
+      };
+    public:
+      void setCell(const typename Sieve::point_type cell) {this->cell = cell;};
+      int  getOffset() {return this->offset;}
+    };
+    template<typename Sieve>
+    class MeetVisitor {
+    protected:
+      const Sieve& sieve;
+      const typename Sieve::point_type cell;
+      const int faceVertices;
+      const int numCells;
+      std::set<typename Sieve::point_type> *neighborCells;
+      std::map<typename Sieve::point_type, typename Sieve::point_type> newCells;
+      typename Sieve::point_type newCell;
+    public:
+      MeetVisitor(const Sieve& s) : sieve(s) {
+        this->neighborCells = new std::set<typename Sieve::point_type>[numCells];
+        newCell = numCells;
+      };
+      void visitPoint(const typename Sieve::point_type& point) {};
+      void visitArrow(const typename Sieve::arrow_type& arrow) {
+        const typename Sieve::point_type neighbor = arrow.target;
+
+        if (cell == neighbor) return;
+        if ((int) sieve->nMeet(cell, neighbor, 1)->size() == faceVertices) {
+          if ((cell < numCells) && (neighbor < numCells)) {
+            neighborCells[cell].insert(neighbor);
+          } else {
+            typename Sieve::point_type e = cell, n = neighbor;
+
+            if (cell >= numCells) {
+              if (newCells.find(cell) == newCells.end()) newCells[cell] = --newCell;
+              e = newCells[cell];
+            }
+            if (neighbor >= numCells) {
+              if (newCells.find(neighbor) == newCells.end()) newCells[neighbor] = --newCell;
+              n = newCells[neighbor];
+            }
+            neighborCells[e].insert(n);
+          }
+        }
+      };
+    };
   public: // Creating overlaps
     // Create a partition point overlap for distribution
     //   This is the default overlap which comes from distributing a serial mesh on process 0
@@ -467,6 +549,99 @@ namespace ALE {
       *offsets     = off;
       *adjacency   = adj;
     };
+    template<typename Mesh>
+    static void buildDualCSRV(const Obj<Mesh>& mesh, int *numVertices, int **offsets, int **adjacency, const bool zeroBase = true) {
+      const Obj<typename Mesh::sieve_type>&         sieve        = mesh->getSieve();
+      const Obj<typename Mesh::label_sequence>&     cells        = mesh->heightStratum(0);
+      const typename Mesh::label_sequence::iterator cEnd         = cells->end();
+      const int                                     numCells     = cells->size();
+      int                                           newCell      = numCells;
+      Obj<typename Mesh::sieve_type>                overlapSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      int                                           offset       = 0;
+      const int                                     cellOffset   = zeroBase ? 0 : 1;
+      const int                                     dim          = mesh->getDimension();
+      std::map<typename Mesh::point_type, typename Mesh::point_type> newCells;
+
+      // TODO: This is necessary for parallel partitioning
+      //completion::scatterSupports(sieve, overlapSieve, mesh->getSendOverlap(), mesh->getRecvOverlap(), mesh);
+      overlapSieve->setChart(sieve->getChart());
+      overlapSieve->allocate();
+      if (numCells == 0) {
+        *numVertices = 0;
+        *offsets     = NULL;
+        *adjacency   = NULL;
+        return;
+      }
+      int *off = alloc_type().allocate(numCells+1);
+      int *adj;
+      for(int i = 0; i < numCells+1; ++i) {alloc_type().construct(off+i, 0);}
+      if (mesh->depth() == dim) {
+        OffsetVisitor<typename Mesh::sieve_type> oV(*sieve, *overlapSieve, off);
+
+        for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+          sieve->cone(*c_iter, oV);
+        }
+        for(int p = 1; p <= numCells; ++p) {
+          off[p] = off[p] + off[p-1];
+        }
+        adj = alloc_type().allocate(off[numCells]);
+        for(int i = 0; i < off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+        AdjVisitor<typename Mesh::sieve_type> aV(adj, zeroBase);
+        ISieveVisitor::SupportVisitor<typename Mesh::sieve_type, AdjVisitor<typename Mesh::sieve_type> > sV(*sieve, aV);
+        ISieveVisitor::SupportVisitor<typename Mesh::sieve_type, AdjVisitor<typename Mesh::sieve_type> > ovSV(*overlapSieve, aV);
+
+        for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+          aV.setCell(*c_iter);
+          sieve->cone(*c_iter, sV);
+          sieve->cone(*c_iter, ovSV);
+        }
+        offset = aV.getOffset();
+      } else if (mesh->depth() == 1) {
+        std::set<typename Mesh::point_type> *neighborCells = new std::set<typename Mesh::point_type>[numCells];
+        const int                            corners       = sieve->getConeSize(*cells->begin());
+        int                                  faceVertices;
+
+        if (corners == dim+1) {
+          faceVertices = dim;
+        } else if ((dim == 2) && (corners == 4)) {
+          faceVertices = 2;
+        } else if ((dim == 3) && (corners == 8)) {
+          faceVertices = 4;
+        } else {
+          throw ALE::Exception("Could not determine number of face vertices");
+        }
+        throw ALE::Exception("Not yet implemented");
+#if 0
+        for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+          MeetVisitor<typename Mesh::sieve_type>    mV();
+          SupportVisitor<typename Mesh::sieve_type> sV(sieve, mV);
+
+          sieve->cone(*c_iter, sV);
+          off[0] = 0;
+          for(int c = 1; c <= numCells; c++) {
+            off[c] = neighborCells[c-1].size() + off[c-1];
+          }
+          adj = alloc_type().allocate(off[numCells]);
+          for(int i = 0; i < off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+          for(int c = 0; c < numCells; c++) {
+            for(typename std::set<typename Mesh::point_type>::iterator n_iter = neighborCells[c].begin(); n_iter != neighborCells[c].end(); ++n_iter) {
+              adj[offset++] = *n_iter + cellOffset;
+            }
+          }
+          delete [] neighborCells;
+#endif
+      } else {
+        throw ALE::Exception("Dual creation not defined for partially interpolated meshes");
+      }
+      if (offset != off[numCells]) {
+        ostringstream msg;
+        msg << "ERROR: Total number of neighbors " << offset << " does not match the offset array " << off[numCells];
+        throw ALE::Exception(msg.str().c_str());
+      }
+      *numVertices = numCells;
+      *offsets     = off;
+      *adjacency   = adj;
+    };
     // This produces a hypergraph (each face is a vertex and each cell is a hyperedge)
     //   numbering: A contiguous numbering of the faces
     //   numEdges:  The number of edges in the hypergraph
@@ -505,6 +680,10 @@ namespace ALE {
       *numEdges  = numCells;
       *offsets   = off;
       *adjacency = adj;
+    };
+    template<typename Mesh>
+    static void buildFaceDualCSRV(const Obj<Mesh>& mesh, const Obj<typename Mesh::numbering_type>& numbering, int *numEdges, int **offsets, int **adjacency, const bool zeroBase = true) {
+      throw ALE::Exception("Not implemented");
     };
     static void destroyCSR(int numPoints, int *offsets, int *adjacency) {
       if (adjacency) {
@@ -646,6 +825,31 @@ namespace ALE {
         throw ALE::Exception("Invalid partition height");
       }
     };
+    template<typename Mesh, typename Section>
+    static void createPartitionV(const Obj<Mesh>& mesh, const Obj<Section>& partition, const int height = 0) {
+      MeshManager<Mesh> manager(mesh);
+      int              *start     = NULL;
+      int              *adjacency = NULL;
+
+      if (height == 0) {
+        int numVertices;
+
+        buildDualCSRV(mesh, &numVertices, &start, &adjacency, GraphPartitioner::zeroBase());
+        GraphPartitioner().partition(numVertices, start, adjacency, partition, manager);
+        destroyCSR(numVertices, start, adjacency);
+      } else if (height == 1) {
+        int numEdges;
+
+        throw ALE::Exception("Not yet implemented");
+#if 0
+        buildFaceDualCSRV(mesh, mesh->getFactory()->getNumbering(mesh, mesh->depth()-1), &numEdges, &start, &adjacency, GraphPartitioner::zeroBase());
+#endif
+        GraphPartitioner().partition(numEdges, start, adjacency, partition, manager);
+        destroyCSR(numEdges, start, adjacency);
+      } else {
+        throw ALE::Exception("Invalid partition height");
+      }
+    };
     // Add in the points in the closure (and star) of the partitioned points
     template<typename Mesh, typename Section>
     static void createPartitionClosure(const Obj<Mesh>& mesh, const Obj<Section>& pointPartition, const Obj<Section>& partition, const int height = 0) {
@@ -744,6 +948,55 @@ namespace ALE {
         int i = 0;
 
         for(typename std::set<typename Section::value_type>::const_iterator p_iter = closure.begin(); p_iter != closure.end(); ++p_iter, ++i) {
+          values[i] = *p_iter;
+        }
+        partition->updatePoint(*r_iter, values);
+      }
+      delete [] values;
+    };
+    template<typename Mesh, typename Section>
+    static void createPartitionClosureV(const Obj<Mesh>& mesh, const Obj<Section>& pointPartition, const Obj<Section>& partition, const int height = 0) {
+      typedef ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type> visitor_type;
+      const Obj<typename Mesh::sieve_type>& sieve = mesh->getSieve();
+      const typename Section::chart_type&   chart = pointPartition->getChart();
+      size_t                                size  = 0;
+
+      for(typename Section::chart_type::const_iterator r_iter = chart.begin(); r_iter != chart.end(); ++r_iter) {
+        const typename Section::value_type *points    = pointPartition->restrictPoint(*r_iter);
+        const int                           numPoints = pointPartition->getFiberDimension(*r_iter);
+        typename visitor_type::visitor_type nV;
+        visitor_type                        cV(*sieve, nV);
+
+        for(int p = 0; p < numPoints; ++p) {
+          sieve->cone(points[p], cV);
+          if (height) {
+            cV.setIsCone(false);
+            sieve->support(points[p], cV);
+          }
+        }
+        partition->setFiberDimension(*r_iter, cV.getPoints().size());
+        size = std::max(size, cV.getPoints().size());
+      }
+      partition->allocatePoint();
+      typename Section::value_type *values = new typename Section::value_type[size];
+
+      for(typename Section::chart_type::const_iterator r_iter = chart.begin(); r_iter != chart.end(); ++r_iter) {
+        const typename Section::value_type *points    = pointPartition->restrictPoint(*r_iter);
+        const int                           numPoints = pointPartition->getFiberDimension(*r_iter);
+        typename visitor_type::visitor_type nV;
+        visitor_type                        cV(*sieve, nV);
+
+        // TODO: Use Quiver's closure() here instead
+        for(int p = 0; p < numPoints; ++p) {
+          sieve->cone(points[p], cV);
+          if (height) {
+            cV.setIsCone(false);
+            sieve->support(points[p], cV);
+          }
+        }
+        int i = 0;
+
+        for(typename std::set<typename Mesh::point_type>::const_iterator p_iter = cV.getPoints().begin(); p_iter != cV.getPoints().end(); ++p_iter, ++i) {
           values[i] = *p_iter;
         }
         partition->updatePoint(*r_iter, values);

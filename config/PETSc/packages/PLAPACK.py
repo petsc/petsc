@@ -30,9 +30,12 @@ class Configure(PETSc.package.Package):
     plapackInstallMakefile = os.path.join(self.confDir,'PLAPACK')
     g = open(plapackMakefile,'w')
     g.write('PLAPACK_ROOT = '+self.installDir+'\n')
-    if self.blasLapack.mangler == 'underscore': g.write('MANUFACTURE  = 50\n') # PC
-    else:  g.write('MANUFACTURE  = 20\n')  #IBM
-    g.write('MACHINE_TYPE = 500\n')  #LINUX
+    if self.blasLapack.mangling == 'underscore':
+      g.write('MANUFACTURE  = 50\n')  #PC
+      g.write('MACHINE_TYPE = 500\n') #LINUX
+    else:
+      g.write('MANUFACTURE  = 20\n')  #IBM
+      g.write('MACHINE_TYPE = 500\n') #SP2
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('MPILIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
     g.write('MPI_INCLUDE  = '+self.headers.toString(self.mpi.include)+'\n') 

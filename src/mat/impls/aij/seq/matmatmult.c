@@ -125,7 +125,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
 PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr;
-  PetscInt       flops=0;
+  PetscLogDouble flops=0.0;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ *)A->data;
   Mat_SeqAIJ     *b = (Mat_SeqAIJ *)B->data;
   Mat_SeqAIJ     *c = (Mat_SeqAIJ *)C->data;
@@ -211,7 +211,8 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
   PetscInt       am=A->rmap.n,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
-  PetscInt       cm=C->rmap.n,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k,flops=0;
+  PetscInt       cm=C->rmap.n,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k;
+  PetscLogDouble flops=0.0;
   MatScalar      *aa=a->a,*ba,*ca=c->a,*caj;
  
   PetscFunctionBegin;

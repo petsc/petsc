@@ -1,5 +1,5 @@
 
-static char help[] = "Tests sequential MatGetRowMax(), MatGetRowMin(), MatGetRowMaxAbs()\n";
+static char help[] = "Tests MatGetRowMax(), MatGetRowMin(), MatGetRowMaxAbs()\n";
 
 #include "petscmat.h"
 
@@ -9,13 +9,20 @@ int main(int argc,char **args)
 {
   Mat            A;
   Vec            min,max,maxabs;
-  PetscInt       imin[5],imax[5],imaxabs[5],indices[6],row;
-  PetscScalar    values[6];
+  PetscInt       M=5,N=6,m,n;
+  PetscInt       imin[M],imax[M],imaxabs[M],indices[N],row;
+  PetscScalar    values[N];
   PetscErrorCode ierr;
+  MatType        type;
+  PetscMPIInt    size;
+  PetscTruth     doTest;
 
   PetscInitialize(&argc,&args,(char *)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
-  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,5,6,0,PETSC_NULL,&A);CHKERRQ(ierr);  
+  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,M,N);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   row  = 0; 
   indices[0] = 0; indices[1] = 1; indices[2] = 2; indices[3] = 3; indices[4] = 4; indices[5] = 5;
   values[0] = -1.0; values[1] = 0.0; values[2] = 1.0; values[3] = 3.0; values[4] = 4.0; values[5] = -5.0;
@@ -28,42 +35,68 @@ int main(int argc,char **args)
   ierr = MatSetValues(A,1,&row,2,indices+4,values+4,INSERT_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF,5,&min);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,5,&max);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,5,&maxabs);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A, &m,&n);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD,&min);CHKERRQ(ierr);
+  ierr = VecSetSizes(min,m,PETSC_DECIDE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(min);CHKERRQ(ierr);
+  ierr = VecDuplicate(min,&max);CHKERRQ(ierr);
+  ierr = VecDuplicate(min,&maxabs);CHKERRQ(ierr);
 
-  ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
-  ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
-  ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
+  /* Test MatGetRowMin, MatGetRowMax and MatGetRowMaxAbs */
+  if (size == 1) {
+    ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
+    ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
+    ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
 
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Minimums\n");CHKERRQ(ierr);
-  ierr = VecView(min,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscIntView(5,imin,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximums\n");CHKERRQ(ierr);
-  ierr = VecView(max,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscIntView(5,imax,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values\n");CHKERRQ(ierr);
-  ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscIntView(5,imaxabs,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Minimums\n");CHKERRQ(ierr);
+    ierr = VecView(min,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(5,imin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximums\n");CHKERRQ(ierr);
+    ierr = VecView(max,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(5,imax,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values\n");CHKERRQ(ierr);
+    ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(5,imaxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
-  ierr = MatConvert(A,MATSEQDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetType(A,&type);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"\nMatrix type: %s\n",type);
+    /* AIJ */
+    ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&doTest);CHKERRQ(ierr);
+    if (doTest){
+      ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values:\n");CHKERRQ(ierr);
+      ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+    /* BAIJ */
+    ierr = PetscTypeCompare((PetscObject)A,MATMPIBAIJ,&doTest);CHKERRQ(ierr);
+    if (doTest){
+      ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values:\n");CHKERRQ(ierr);
+      ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    }
+  }
 
-  ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
-  ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
-  ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = MatConvert(A,MATDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
 
-  ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Minimums\n");CHKERRQ(ierr);
-  ierr = VecView(min,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscIntView(5,imin,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximums\n");CHKERRQ(ierr);
-  ierr = VecView(max,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscIntView(5,imax,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values\n");CHKERRQ(ierr);
-  ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = PetscIntView(5,imaxabs,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    ierr = MatGetRowMin(A,min,imin);CHKERRQ(ierr);
+    ierr = MatGetRowMax(A,max,imax);CHKERRQ(ierr);
+    ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
+
+    ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Minimums\n");CHKERRQ(ierr);
+    ierr = VecView(min,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(5,imin,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximums\n");CHKERRQ(ierr);
+    ierr = VecView(max,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(5,imax,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values\n");CHKERRQ(ierr);
+    ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscIntView(5,imaxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
 
   ierr = VecDestroy(min);CHKERRQ(ierr);
   ierr = VecDestroy(max);CHKERRQ(ierr);
