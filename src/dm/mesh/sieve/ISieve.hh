@@ -94,6 +94,34 @@ namespace ALE {
       void visitArrow(const typename Sieve::arrow_type&, const int orientation) {};
       void visitPoint(const typename Sieve::point_type&, const int orientation) {};
     };
+    class PrintVisitor {
+    protected:
+      ostringstream& os;
+    public:
+      PrintVisitor(ostringstream& s) : os(s) {};
+      template<typename Arrow>
+      void visitArrow(const Arrow& arrow) const {
+        this->os << arrow << std::endl;
+      };
+      template<typename Point>
+      void visitPoint(const Point&) const {};
+    };
+    class ReversePrintVisitor : public PrintVisitor {
+    public:
+      ReversePrintVisitor(ostringstream& s) : PrintVisitor(s) {};
+      template<typename Arrow>
+      void visitArrow(const Arrow& arrow) const {
+        this->os << arrow.target << "<----" << arrow.source << std::endl;
+      };
+      template<typename Arrow>
+      void visitArrow(const Arrow& arrow, const int orientation) const {
+        this->os << arrow.target << "<----" << arrow.source << ": " << orientation << std::endl;
+      };
+      template<typename Point>
+      void visitPoint(const Point&) const {};
+      template<typename Point>
+      void visitPoint(const Point&, const int) const {};
+    };
     template<typename Sieve, int size, typename Visitor = NullVisitor<Sieve> >
     class PointRetriever {
     public:
@@ -223,6 +251,46 @@ namespace ALE {
       void clear() {this->i = this->o = 0;};
     };
     template<typename Sieve, typename Visitor>
+    class ConeVisitor {
+    protected:
+      const Sieve& sieve;
+      Visitor&     visitor;
+      bool         useSource;
+    public:
+      ConeVisitor(const Sieve& s, Visitor& v, bool useSource = false) : sieve(s), visitor(v), useSource(useSource) {};
+      void visitPoint(const typename Sieve::point_type& point) {
+        this->sieve.cone(point, visitor);
+      };
+      void visitArrow(const typename Sieve::arrow_type& arrow) {
+        if (this->useSource) {
+          this->sieve.cone(arrow.source, visitor);
+        } else {
+          this->sieve.cone(arrow.target, visitor);
+        }
+      };
+    };
+    template<typename Sieve, typename Visitor>
+    class OrientedConeVisitor {
+    protected:
+      const Sieve& sieve;
+      Visitor&     visitor;
+      bool         useSource;
+    public:
+      OrientedConeVisitor(const Sieve& s, Visitor& v, bool useSource = false) : sieve(s), visitor(v), useSource(useSource) {};
+      void visitPoint(const typename Sieve::point_type& point) {
+        this->sieve.orientedCone(point, visitor);
+      };
+      void visitArrow(const typename Sieve::arrow_type& arrow) {
+#if 0
+        if (this->useSource) {
+          this->sieve.orientedCone(arrow.source, visitor);
+        } else {
+          this->sieve.orientedCone(arrow.target, visitor);
+        }
+#endif
+      };
+    };
+    template<typename Sieve, typename Visitor>
     class SupportVisitor {
     protected:
       const Sieve& sieve;
@@ -230,50 +298,17 @@ namespace ALE {
       bool         useSource;
     public:
       SupportVisitor(const Sieve& s, Visitor& v, bool useSource = true) : sieve(s), visitor(v), useSource(useSource) {};
+      void visitPoint(const typename Sieve::point_type& point) {
+        this->sieve.support(point, visitor);
+      };
       void visitArrow(const typename Sieve::arrow_type& arrow) {
+#if 0
         if (this->useSource) {
           this->sieve.support(arrow.source, visitor);
         } else {
           this->sieve.support(arrow.target, visitor);
         }
-      };
-    };
-    class PrintVisitor {
-    protected:
-      ostringstream& os;
-    public:
-      PrintVisitor(ostringstream& s) : os(s) {};
-      template<typename Arrow>
-      void visitArrow(const Arrow& arrow) const {
-        this->os << arrow << std::endl;
-      };
-    };
-    class ReversePrintVisitor : public PrintVisitor {
-    public:
-      ReversePrintVisitor(ostringstream& s) : PrintVisitor(s) {};
-      template<typename Arrow>
-      void visitArrow(const Arrow& arrow) const {
-        this->os << arrow.target << "<----" << arrow.source << std::endl;
-      };
-    };
-    template<typename Sieve>
-    class ConePrintVisitor : public ReversePrintVisitor {
-    protected:
-      const Sieve& s;
-    public:
-      ConePrintVisitor(const Sieve& sieve, ostringstream& s) : ReversePrintVisitor(s), s(sieve) {};
-      void visitPoint(const typename Sieve::point_type& p) const {
-        this->s.cone(p, *this);
-      };
-    };
-    template<typename Sieve>
-    class SupportPrintVisitor : public PrintVisitor {
-    protected:
-      const Sieve& s;
-    public:
-      SupportPrintVisitor(const Sieve& sieve, ostringstream& s) : PrintVisitor(s), s(sieve) {};
-      void visitPoint(const typename Sieve::point_type& p) const {
-        this->s.support(p, *this);
+#endif
       };
     };
     template<typename Sieve, typename Visitor = NullVisitor<Sieve> >
@@ -287,7 +322,8 @@ namespace ALE {
       std::set<typename Sieve::point_type> seen;
     public:
       TransitiveClosureVisitor(const Sieve& s, Visitor& v) : sieve(s), visitor(v), isCone(true) {};
-      void visitArrow(const typename Sieve::arrow_type& arrow) const {
+      void visitPoint(const typename Sieve::point_type& point) const {};
+      void visitArrow(const typename Sieve::arrow_type& arrow) {
         if (this->isCone) {
           if (this->seen.find(arrow.source) != this->seen.end()) return;
           this->seen.insert(arrow.source);
@@ -322,9 +358,10 @@ namespace ALE {
       int            size;
     public:
       SizeVisitor(const Section& s) : section(s), size(0) {};
-      void visitPoint(const typename Sieve::point_type& point) const {
+      void visitPoint(const typename Sieve::point_type& point) {
         this->size += section.getConstrainedFiberDimension(point);
       };
+      void visitArrow(const typename Sieve::arrow_type&) {};
     public:
       int getSize() {return this->size;};
     };
@@ -335,11 +372,65 @@ namespace ALE {
       int            size;
     public:
       SizeWithBCVisitor(const Section& s) : section(s), size(0) {};
-      void visitPoint(const typename Sieve::point_type& point) const {
+      void visitPoint(const typename Sieve::point_type& point) {
         this->size += section.getFiberDimension(point);
       };
+      void visitArrow(const typename Sieve::arrow_type&) {};
     public:
       int getSize() {return this->size;};
+    };
+    template<typename Section>
+    class RestrictVisitor {
+    public:
+      typedef typename Section::value_type value_type;
+    protected:
+      const Section& section;
+      int            size;
+      int            i;
+      value_type    *values;
+      bool           allocated;
+    public:
+      RestrictVisitor(const Section& s, const int size) : section(s), size(size), i(0) {
+        this->values    = new value_type[this->size];
+        this->allocated = true;
+      };
+      RestrictVisitor(const Section& s, const int size, value_type *values) : section(s), size(size), i(0) {
+        this->values    = values;
+        this->allocated = false;
+      };
+      ~RestrictVisitor() {if (this->allocated) {delete [] this->values;}};
+      template<typename Point>
+      void visitPoint(const Point& point, const int orientation) {
+        const int         dim = section.getFiberDimension(point);
+        if (i+dim >= size) {throw ALE::Exception("Too many values for RestrictVisitor.");}
+        const value_type *v   = section.restrictPoint(point);
+
+        if (orientation >= 0) {
+          for(int d = 0; d < dim; ++d, ++i) {
+            this->values[i] = v[d];
+          }
+        } else {
+          for(int d = dim-1; d >= 0; --d, ++i) {
+            this->values[i] = v[d];
+          }
+        }
+      };
+      template<typename Arrow>
+      void visitArrow(const Arrow& arrow, const int orientation) {};
+    public:
+      const value_type *getValues() const {return this->values;};
+      int  getSize() const {return this->i;};
+      int  getMaxSize() const {return this->size;};
+      void ensureSize(const int size) {
+        this->clear();
+        if (size > this->size) {
+          this->size = size;
+          if (this->allocated) {delete [] this->values;}
+          this->values = new value_type[this->size];
+          this->allocated = true;
+        }
+      };
+      void clear() {this->i = 0;};
     };
   };
 
@@ -378,6 +469,12 @@ namespace ALE {
             o = -(o+1);
           }
           if (o < 0) {
+            if (o == -sieve.getConeSize(point)) {
+              std::cout << "Getting reverse cone from " << point << std::endl;
+              sieve.orientedReverseCone(point, cV[c]);
+            } else {
+              throw ALE::Exception("Not yet implemented");
+            }
 #if 0
             const int size = pCone->size();
 
@@ -452,6 +549,8 @@ namespace ALE {
                 }
               }
 #endif
+            } else {
+              throw ALE::Exception("Not yet implemented");
             }
           }
         }
@@ -863,7 +962,7 @@ namespace ALE {
         const index_type start = this->coneOffsets[p];
         const index_type end   = this->coneOffsets[p+1];
 
-        for(index_type c = start, i = 0; c < end; ++c, ++i) {
+        for(index_type c = start; c < end; ++c) {
           v.visitArrow(arrow_type(this->cones[c], p));
           v.visitPoint(this->cones[c]);
         }
@@ -876,7 +975,7 @@ namespace ALE {
       const index_type start = this->coneOffsets[p];
       const index_type end   = this->coneOffsets[p+1];
 
-      for(index_type c = start, i = 0; c < end; ++c, ++i) {
+      for(index_type c = start; c < end; ++c) {
         v.visitArrow(arrow_type(this->cones[c], p));
         v.visitPoint(this->cones[c]);
       }
@@ -890,7 +989,7 @@ namespace ALE {
         const index_type start = this->supportOffsets[p];
         const index_type end   = this->supportOffsets[p+1];
 
-        for(index_type s = start, i = 0; s < end; ++s, ++i) {
+        for(index_type s = start; s < end; ++s) {
           v.visitArrow(arrow_type(p, this->supports[s]));
           v.visitPoint(this->supports[s]);
         }
@@ -903,7 +1002,7 @@ namespace ALE {
       const index_type start = this->supportOffsets[p];
       const index_type end   = this->supportOffsets[p+1];
 
-      for(index_type s = start, i = 0; s < end; ++s, ++i) {
+      for(index_type s = start; s < end; ++s) {
         v.visitArrow(arrow_type(p, this->supports[s]));
         v.visitPoint(this->supports[s]);
       }
@@ -916,7 +1015,20 @@ namespace ALE {
       const index_type start = this->coneOffsets[p];
       const index_type end   = this->coneOffsets[p+1];
 
-      for(index_type c = start, i = 0; c < end; ++c, ++i) {
+      for(index_type c = start; c < end; ++c) {
+        v.visitArrow(arrow_type(this->cones[c], p), this->coneOrientations[c]);
+        v.visitPoint(this->cones[c], this->coneOrientations[c]);
+      }
+    };
+    template<typename Visitor>
+    void orientedReverseCone(const point_type& p, Visitor& v) const {
+      if (!this->orientCones) {throw ALE::Exception("IFSieve cones have not been oriented.");}
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      this->chart.checkPoint(p);
+      const index_type start = this->coneOffsets[p];
+      const index_type end   = this->coneOffsets[p+1];
+
+      for(index_type c = end-1; c >= start; --c) {
         v.visitArrow(arrow_type(this->cones[c], p), this->coneOrientations[c]);
         v.visitPoint(this->cones[c], this->coneOrientations[c]);
       }
@@ -944,11 +1056,19 @@ namespace ALE {
       if(rank == 0) {
         txt << "cap --> base:" << std::endl;
       }
-      this->cap(ISieveVisitor::SupportPrintVisitor<this_type>(*this, txt));
+      ISieveVisitor::PrintVisitor pV(txt);
+      this->cap(ISieveVisitor::SupportVisitor<IFSieve,ISieveVisitor::PrintVisitor>(*this, pV));
       if(rank == 0) {
         txt << "base <-- cap:" << std::endl;
       }
-      this->base(ISieveVisitor::ConePrintVisitor<this_type>(*this, txt));
+      ISieveVisitor::ReversePrintVisitor rV(txt);
+      this->base(ISieveVisitor::ConeVisitor<IFSieve,ISieveVisitor::ReversePrintVisitor>(*this, rV));
+      if (orientCones) {
+        if(rank == 0) {
+          txt << "Orientation:" << std::endl;
+        }
+        this->base(ISieveVisitor::OrientedConeVisitor<IFSieve,ISieveVisitor::ReversePrintVisitor>(*this, rV));
+      }
       PetscSynchronizedPrintf(comm, txt.str().c_str());
       PetscSynchronizedFlush(comm);
     };
@@ -1012,6 +1132,24 @@ namespace ALE {
         isieve.setSupport(renumbering[*c_iter], points);
       }
       delete [] points;
+    };
+    template<typename Sieve, typename ISieve, typename Renumbering, typename ArrowSection>
+    static void convertOrientation(Sieve& sieve, ISieve& isieve, Renumbering& renumbering, ArrowSection *orientation) {
+      const Obj<typename Sieve::baseSequence>& base = sieve.base();
+      int *orientations = new int[isieve.getMaxConeSize()];
+
+      for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+        const Obj<typename Sieve::coneSequence>& cone = sieve.cone(*b_iter);
+        int i = 0;
+
+        for(typename Sieve::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++i) {
+          typename ArrowSection::point_type arrow(*c_iter, *b_iter);
+
+          orientations[i] = orientation->restrictPoint(arrow)[0];
+        }
+        isieve.setConeOrientation(orientations, renumbering[*b_iter]);
+      }
+      delete [] orientations;
     };
   };
 }

@@ -394,7 +394,7 @@ PetscErrorCode ISieveISectionPartitionTest(const Options *options)
   double                            upper[2]        = {1.0, 1.0};
   int                               edges[2]        = {2, 2};
   const Obj<ALE::Mesh>              mB              = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-  const Obj<ALE::Mesh>              m               = ALE::Generator::generateMesh(mB, false);
+  const Obj<ALE::Mesh>              m               = ALE::Generator::generateMesh(mB, true);
   Obj<mesh_type>                    mesh            = new mesh_type(options->comm, m->getDimension(), options->debug);
   Obj<mesh_type::sieve_type>        sieve           = new mesh_type::sieve_type(options->comm, options->debug);
   Obj<mesh_type>                    parallelMesh    = new mesh_type(options->comm, m->getDimension(), options->debug);
@@ -407,6 +407,7 @@ PetscErrorCode ISieveISectionPartitionTest(const Options *options)
   PetscFunctionBegin;
   mesh->setSieve(sieve);
   ALE::ISieveConverter::convertSieve(*m->getSieve(), *mesh->getSieve(), renumbering);
+  mesh->stratify();
   renumbering.clear();
   parallelMesh->setSieve(parallelSieve);
   if (options->debug) {mesh->view("Serial Mesh");}
@@ -428,7 +429,7 @@ PetscErrorCode PartitionTests(const Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SieveISectionPartitionTest(options);CHKERRQ(ierr);
+  //ierr = SieveISectionPartitionTest(options);CHKERRQ(ierr);
   ierr = ISieveISectionPartitionTest(options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -115,6 +115,9 @@ public:
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
+    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
+    m->view("Square Mesh");
+    this->_sieve->view("Square Sieve");
     const ALE::Obj<Sieve::baseSequence>& base = m->getSieve()->base();
 
     for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
@@ -131,7 +134,7 @@ public:
         std::cout << "  point " << ic_iter->first << "  " << c_iter->first<<":"<<renumbering[c_iter->first] << std::endl;
         CPPUNIT_ASSERT_EQUAL(renumbering[c_iter->first], ic_iter->first);
         std::cout << "  order " << ic_iter->second << "  " << c_iter->second << std::endl;
-        //CPPUNIT_ASSERT_EQUAL(c_iter->second, ic_iter->second);
+        CPPUNIT_ASSERT_EQUAL(c_iter->second, ic_iter->second);
       }
     }
   };
