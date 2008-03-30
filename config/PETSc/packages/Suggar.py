@@ -10,7 +10,7 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.__init__(self, framework)
     self.download     = ['Not available for download: use --download-Suggar=Suggar.tar.gz']
     self.functions = ['ctkSortAllDonorsInGrid']
-    self.liblist   = [['libsuggar_3d_petsc.a'],['libsuggar_3d_petsc.a']]
+    self.liblist   = [['libsuggar_3d_opt_petsc.a'],['libsuggar_3d_opt_linux.a']]
     return
 
   def setupDependencies(self, framework):
@@ -45,7 +45,14 @@ class Configure(PETSc.package.Package):
       cdefs = '-DF77_APPEND_'
     else:
       cdefs = ''
-    g.write('DEFINES   =  -DDUMP_FLEX -Dmacosx '+cdefs+'\n')
+    import config.setCompilers
+    if config.setCompilers.Configure.isDarwin():
+      ddefs = ' -Dmacosx '
+    elif config.setCompilers.isIBM():
+      ddefs = ' -Dibm '
+    else:  # need to test for Linux
+      ddefs = ' -Dlinux '
+    g.write('DEFINES   =  -DDUMP_FLEX '+ddefs+cdefs+'\n')
     g.write('DEFINES2D =  -DTWOD   $(DEFINES) \n')
     g.write('DEFINES3D =  -DTHREED $(DEFINES) \n')
     g.close()
@@ -57,10 +64,10 @@ class Configure(PETSc.package.Package):
     if self.installNeeded(os.path.join('src','FLAGS.local')):
       try:
         self.logPrintBox('Compiling SUGGAR; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/src; rm -f ../petsc/*/*.o ;make makedirs  libs', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/src; rm -f ../petsc/*/*.o ;make makedirs libsuggar_3d_opt', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUGGAR: '+str(e))
-      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir,'bin','libsuggar*')+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)[0]      
+      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(self.packageDir,'bin','libsuggar_3d_opt_petsc.a')+' '+os.path.join(self.installDir,'lib'), timeout=5, log = self.framework.log)[0]      
                           
       self.checkInstall(output,os.path.join('src','FLAGS.local'))
     return self.installDir
