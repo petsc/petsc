@@ -37,10 +37,10 @@
       call DMCompositeCreate(PETSC_COMM_WORLD,dm,ierr)
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,app%nxc,app%nc,1, &
      &                PETSC_NULL_INTEGER,da,ierr)
-      call DMCompositeAddDA(dm,da,ierr)
+      call DMCompositeAddDM(dm,da,ierr)
       call DADestroy(da,ierr)
       call DMCompositeAddArray(dm,0,app%np,ierr)
-      call DMCompositeAddDA(dm,da,ierr)
+      call DMCompositeAddDM(dm,da,ierr)
       call DMCompositeAddArray(dm,0,app%np,ierr)
 
 !       Create solver object and associate it with the unknowns (on the grid)

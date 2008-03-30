@@ -86,9 +86,9 @@
       call DMCompositeCreate(PETSC_COMM_WORLD,dm,ierr);CHKR(ierr)
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,app%nxc,app%nc,1,PETSC_NULL_INTEGER,da,ierr)
       CHKR(ierr)
-      call DMCompositeAddDA(dm,da,ierr);CHKR(ierr)
+      call DMCompositeAddDM(dm,da,ierr);CHKR(ierr)
       call DMCompositeAddArray(dm,0,app%np,ierr);CHKR(ierr)
-      call DMCompositeAddDA(dm,da,ierr);CHKR(ierr)
+      call DMCompositeAddDM(dm,da,ierr);CHKR(ierr)
       call DADestroy(da,ierr);CHKR(ierr)
       call DMCompositeAddArray(dm,0,app%np,ierr);CHKR(ierr)
 

@@ -228,9 +228,11 @@ namespace ALE {
     template<typename Sieve>
     class OffsetVisitor {
       const Sieve& sieve;
+      const Sieve& overlapSieve;
       int         *offsets;
     public:
-      OffsetVisitor(const Sieve& s, int off[]) : sieve(s), offsets(off) {};
+      OffsetVisitor(const Sieve& s, const Sieve& ovS, int off[]) : sieve(s), overlapSieve(ovS), offsets(off) {};
+      void visitPoint(const typename Sieve::point_type& point) {};
       void visitArrow(const typename Sieve::arrow_type& arrow) {
         const typename Sieve::point_type cell   = arrow.target;
         const typename Sieve::point_type face   = arrow.source;
@@ -247,17 +249,24 @@ namespace ALE {
     template<typename Sieve>
     class AdjVisitor {
     protected:
-      int       cell;
-      int      *adjacency;
-      const int cellOffset;
-      int       offset;
+      typename Sieve::point_type cell;
+      int                       *adjacency;
+      const int                  cellOffset;
+      int                        offset;
     public:
       AdjVisitor(int adj[], const bool zeroBase) : adjacency(adj), cellOffset(zeroBase ? 0 : 1), offset(0) {};
+      void visitPoint(const typename Sieve::point_type& point) {};
       void visitArrow(const typename Sieve::arrow_type& arrow) {
         const int neighbor = arrow.target;
 
-        if (neighbor != this->cell) this->adj[this->offset++] = neighbor + this->cellOffset;
+        if (neighbor != this->cell) {
+          std::cout << "Adding dual edge from " << cell << " to " << neighbor << std::endl;
+          this->adjacency[this->offset++] = neighbor + this->cellOffset;
+        }
       };
+    public:
+      void setCell(const typename Sieve::point_type cell) {this->cell = cell;};
+      int  getOffset() {return this->offset;}
     };
     template<typename Sieve>
     class MeetVisitor {
@@ -274,6 +283,7 @@ namespace ALE {
         this->neighborCells = new std::set<typename Sieve::point_type>[numCells];
         newCell = numCells;
       };
+      void visitPoint(const typename Sieve::point_type& point) {};
       void visitArrow(const typename Sieve::arrow_type& arrow) {
         const typename Sieve::point_type neighbor = arrow.target;
 
@@ -554,6 +564,8 @@ namespace ALE {
 
       // TODO: This is necessary for parallel partitioning
       //completion::scatterSupports(sieve, overlapSieve, mesh->getSendOverlap(), mesh->getRecvOverlap(), mesh);
+      overlapSieve->setChart(sieve->getChart());
+      overlapSieve->allocate();
       if (numCells == 0) {
         *numVertices = 0;
         *offsets     = NULL;
@@ -564,7 +576,7 @@ namespace ALE {
       int *adj;
       for(int i = 0; i < numCells+1; ++i) {alloc_type().construct(off+i, 0);}
       if (mesh->depth() == dim) {
-        OffsetVisitor<typename Mesh::sieve_type> oV(*sieve, off);
+        OffsetVisitor<typename Mesh::sieve_type> oV(*sieve, *overlapSieve, off);
 
         for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
           sieve->cone(*c_iter, oV);
@@ -579,9 +591,11 @@ namespace ALE {
         ISieveVisitor::SupportVisitor<typename Mesh::sieve_type, AdjVisitor<typename Mesh::sieve_type> > ovSV(*overlapSieve, aV);
 
         for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+          aV.setCell(*c_iter);
           sieve->cone(*c_iter, sV);
           sieve->cone(*c_iter, ovSV);
         }
+        offset = aV.getOffset();
       } else if (mesh->depth() == 1) {
         std::set<typename Mesh::point_type> *neighborCells = new std::set<typename Mesh::point_type>[numCells];
         const int                            corners       = sieve->getConeSize(*cells->begin());

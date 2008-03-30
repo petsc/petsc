@@ -103,7 +103,7 @@ int main(int argc,char **argv)
   ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
   ierr = DMCompositeAddArray(packer,0,1);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DMCompositeAddDA(packer,da);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(packer,(DM)da);CHKERRQ(ierr);
 
 
   /* create nonlinear multi-level solver */

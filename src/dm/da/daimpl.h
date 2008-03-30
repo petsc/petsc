@@ -10,12 +10,11 @@
 typedef struct _DAOps *DAOps;
 struct _DAOps {
   DMOPS(DA)
-  PetscErrorCode (*getelements)(DA,PetscInt*,const PetscInt*[]);
-  PetscErrorCode (*restoreelements)(DA,PetscInt*,const PetscInt*[]);
 };
 
 struct _p_DA {
   PETSCHEADER(struct _DAOps);
+  DMHEADER
   PetscInt            M,N,P;                 /* array dimensions */
   PetscInt            m,n,p;                 /* processor layout */
   PetscInt            w;                     /* degrees of freedom per node */
@@ -52,10 +51,6 @@ struct _p_DA {
   DAElementType          elementtype;
   PetscInt               ne;                  /* number of elements */
   PetscInt               *e;                  /* the elements */
-
-#define DA_MAX_WORK_VECTORS 10 /* work vectors available to users  via DAVecGetArray() */
-  Vec                    localin[DA_MAX_WORK_VECTORS],localout[DA_MAX_WORK_VECTORS];   
-  Vec                    globalin[DA_MAX_WORK_VECTORS],globalout[DA_MAX_WORK_VECTORS]; 
 
   PetscInt               refine_x,refine_y,refine_z; /* ratio used in refining */
 

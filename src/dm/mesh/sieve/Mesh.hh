@@ -1221,6 +1221,7 @@ namespace ALE {
     class MaxConeVisitor : public LabelVisitor {
     public:
       MaxConeVisitor(label_type& l, const int defValue) : LabelVisitor(l, defValue) {};
+      void visitPoint(const typename sieve_type::point_type& point) {};
       void visitArrow(const typename sieve_type::arrow_type& arrow) {
         this->value = std::max(this->value, this->getLabelValue(arrow.source));
       };
@@ -1228,6 +1229,7 @@ namespace ALE {
     class MaxSupportVisitor : public LabelVisitor {
     public:
       MaxSupportVisitor(label_type& l, const int defValue) : LabelVisitor(l, defValue) {};
+      void visitPoint(const typename sieve_type::point_type& point) {};
       void visitArrow(const typename sieve_type::arrow_type& arrow) {
         this->value = std::max(this->value, this->getLabelValue(arrow.target));
       };
@@ -1534,7 +1536,7 @@ namespace ALE {
       closure_visitor_type cV(*this->getSieve(), sV);
 
       this->getSieve()->cone(p, cV);
-      return sV->getSize();
+      return sV.getSize();
     };
     template<typename Section>
     int sizeWithBC(const Obj<Section>& section, const point_type& p) {
@@ -1544,42 +1546,16 @@ namespace ALE {
       closure_visitor_type cV(*this->getSieve(), sV);
 
       this->getSieve()->cone(p, cV);
-      return sV->getSize();
+      return sV.getSize();
     };
   public: // Restrict/Update closures
     // Return the values for the closure of this point
-    template<typename Section_>
-    const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p, typename Section_::value_type  *values, const int valuesSize) {
+    template<typename Section>
+    const typename Section::value_type *restrict(const Obj<Section>& section, const point_type& p) {
       const int size = this->sizeWithBC(section, p);
-      int       j    = -1;
-      if (valuesSize < size) throw ALE::Exception("Input array too small");
-
-      const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
-      typename oConeArray::iterator end     = closure->end();
-
-      for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-        const typename Section_::value_type *array = section->restrictPoint(p_iter->first);
-        const int& dim = section->getFiberDimension(p_iter->first);
-
-        if (p_iter->second >= 0) {
-          for(int i = 0; i < dim; ++i) {
-            values[++j] = array[i];
-          }
-        } else {
-          for(int i = dim-1; i >= 0; --i) {
-            values[++j] = array[i];
-          }
-        }
-      }
-      if (j != size-1) {
-        ostringstream txt;
-
-        txt << "Invalid restrict to point " << p << std::endl;
-        txt << "  j " << j << " should be " << (size-1) << std::endl;
-        std::cout << txt.str();
-        throw ALE::Exception(txt.str().c_str());
-      }
-      return values;
+      ISieveVisitor::RestrictVisitor<Section> rV(*section, size, section->getRawArray(size));
+      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+      return rV.getValues();
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
@@ -1646,6 +1622,10 @@ namespace ALE {
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       ///this->_factory = MeshNumberingFactory::singleton(debug);
+      std::cout << "["<<this->commRank()<<"]: Creating an ALE::Mesh" << std::endl;
+    };
+    ~Mesh() {
+      std::cout << "["<<this->commRank()<<"]: Destroying an ALE::Mesh" << std::endl;
     };
   public: // Accessors
     int getDimension() const {return this->_dim;};

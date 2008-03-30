@@ -380,7 +380,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
       ierr = MatInterpolate(dmmg[i+1]->R,dmmg[i]->x,dmmg[i+1]->x);CHKERRQ(ierr);
       if (dmmg[i+1]->ksp && !dmmg[i+1]->snes) {
         ierr = KSPSetInitialGuessNonzero(dmmg[i+1]->ksp,PETSC_TRUE);CHKERRQ(ierr);
-      }
+     }
     }
   } else {
     if (dmmg[nlevels-1]->initialguess) {

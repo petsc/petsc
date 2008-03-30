@@ -2,20 +2,17 @@
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
+#include "src/dm/dmimpl.h"    /*I      "petscmat.h"    I*/
 
 
 typedef struct _SlicedOps *SlicedOps;
 struct _SlicedOps {
-  PetscErrorCode (*view)(Sliced,PetscViewer);
-  PetscErrorCode (*createglobalvector)(Sliced,Vec*);
-  PetscErrorCode (*getcoloring)(Sliced,ISColoringType,ISColoring*);
-  PetscErrorCode (*getmatrix)(Sliced,MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(Sliced,Sliced,Mat*,Vec*);
-  PetscErrorCode (*refine)(Sliced,MPI_Comm,Sliced*);
+  DMOPS(Sliced);
 };
 
 struct _p_Sliced {
   PETSCHEADER(struct _SlicedOps);
+  DMHEADER
   Vec      globalvector;
   PetscInt bs,n,N,Nghosts,*ghosts;
   PetscInt d_nz,o_nz,*d_nnz,*o_nnz;
@@ -174,10 +171,16 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreate(MPI_Comm comm,Sliced *slice)
 
   ierr = PetscHeaderCreate(p,_p_Sliced,struct _SlicedOps,DA_COOKIE,0,"Sliced",comm,SlicedDestroy,0);CHKERRQ(ierr);
   p->ops->createglobalvector = SlicedCreateGlobalVector;
+  p->ops->createlocalvector  = SlicedCreateLocalVector;
+  p->ops->globaltolocalbegin = SlicedGlobalToLocalBegin;
+  p->ops->globaltolocalend   = SlicedGlobalToLocalEnd;
   p->ops->getmatrix          = SlicedGetMatrix;
+  p->ops->destroy            = SlicedDestroy;
   *slice = p;
   PetscFunctionReturn(0);
 }
+
+extern PetscErrorCode DMDestroy_Private(DM,PetscTruth*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "SlicedDestroy"
@@ -196,14 +199,18 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreate(MPI_Comm comm,Sliced *slice)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT SlicedDestroy(Sliced slice)
 {
-  PetscErrorCode     ierr;
+  PetscErrorCode ierr;
+  PetscTruth     done;
 
   PetscFunctionBegin;
-  if (--((PetscObject)slice)->refct > 0) PetscFunctionReturn(0);
+  ierr = DMDestroy_Private((DM)slice,&done);CHKERRQ(ierr);
+  if (!done) PetscFunctionReturn(0);
+
   if (slice->globalvector) {ierr = VecDestroy(slice->globalvector);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(slice);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "SlicedCreateGlobalVector"
@@ -243,6 +250,44 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreateGlobalVector(Sliced slice,Vec *gvec
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SlicedCreateLocalVector"
+/*@C
+    SlicedCreateLocalVector - Creates a vector of the correct size to be gatherer from
+        by the slice.
+
+    Collective on Sliced
+
+    Input Parameter:
+.    slice - the slice object
+
+    Output Parameters:
+.   gvec - the global vector
+
+    Level: advanced
+
+    Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
+
+.seealso SlicedDestroy(), SlicedCreate(), SlicedGetGlobalIndices(), SlicedCreateGlobalVector()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SlicedCreateLocalVector(Sliced slice,Vec *lvec)
+{
+  PetscErrorCode ierr;
+  Vec            gvec;
+
+  PetscFunctionBegin;
+  if (slice->globalvector) {
+    ierr = VecDuplicate(slice->globalvector,&gvec);CHKERRQ(ierr);
+  } else {
+    ierr  = VecCreateGhostBlock(((PetscObject)slice)->comm,slice->bs,slice->n,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,&slice->globalvector);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)slice->globalvector);CHKERRQ(ierr); 
+    gvec = slice->globalvector;
+  }
+  ierr = VecGhostGetLocalForm(gvec,lvec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SlicedGetGlobalIndices"
 /*@C
     SlicedGetGlobalIndices - Gets the global indices for all the local entries
@@ -268,3 +313,82 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGetGlobalIndices(Sliced slice,PetscInt *i
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SlicedGlobalToLocalBegin"
+/*@
+   SlicedGlobalToLocalBegin - Begins the communication from a global sliced vector to a local one
+
+   Collective on DA
+
+   Input Parameters:
++  sliced - the sliced context
+.  g - the global vector
+-  mode - one of INSERT_VALUES or ADD_VALUES
+
+   Output Parameter:
+.  l  - the local values
+
+   Level: beginner
+
+.keywords: distributed array, global to local, begin
+
+.seealso: SlicedCreate(), SlicedGlobalToLocalEnd()
+          
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SlicedGlobalToLocalBegin(Sliced sliced,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+  Vec            lform;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sliced,DA_COOKIE,1);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,4);
+  /* only works if local vector l is shared with global vector */
+  ierr = VecGhostGetLocalForm(g,&lform);CHKERRQ(ierr);
+  ierr = VecGhostRestoreLocalForm(g,&lform);CHKERRQ(ierr);
+  if (lform != l) SETERRQ(PETSC_ERR_ARG_INCOMP,"Local vector must be local form of global vector (see VecGhostUpdate())");
+  ierr = VecGhostUpdateBegin(g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SlicedGlobalToLocalEnd"
+/*@
+   SlicedGlobalToLocalEnd - Ends the communication from a global sliced vector to a local one
+
+   Collective on DA
+
+   Input Parameters:
++  sliced - the sliced context
+.  g - the global vector
+-  mode - one of INSERT_VALUES or ADD_VALUES
+
+   Output Parameter:
+.  l  - the local values
+
+   Level: beginner
+
+.keywords: distributed array, global to local, begin
+
+.seealso: SlicedCreate(), SlicedGlobalToLocalEnd()
+          
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SlicedGlobalToLocalEnd(Sliced sliced,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+  Vec            lform;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(sliced,DA_COOKIE,1);
+  PetscValidHeaderSpecific(g,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(l,VEC_COOKIE,4);
+  /* only works if local vector l is shared with global vector */
+  ierr = VecGhostGetLocalForm(g,&lform);CHKERRQ(ierr);
+  ierr = VecGhostRestoreLocalForm(g,&lform);CHKERRQ(ierr);
+  if (lform != l) SETERRQ(PETSC_ERR_ARG_INCOMP,"Local vector must be local form of global vector (see VecGhostUpdate())");
+  ierr = VecGhostUpdateEnd(g,mode,SCATTER_FORWARD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
