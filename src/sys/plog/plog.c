@@ -41,6 +41,7 @@ int        numObjectsDestroyed = 0;
 /* Global counters */
 PetscLogDouble PETSC_DLLEXPORT BaseTime        = 0.0;
 PetscLogDouble PETSC_DLLEXPORT _TotalFlops     = 0.0; /* The number of flops */
+PetscLogDouble PETSC_DLLEXPORT petsc_tmp_flops = 0.0; /* The incremental number of flops */
 PetscLogDouble PETSC_DLLEXPORT send_ct         = 0.0; /* The number of sends */
 PetscLogDouble PETSC_DLLEXPORT recv_ct         = 0.0; /* The number of receives */
 PetscLogDouble PETSC_DLLEXPORT send_len        = 0.0; /* The total length of all sent messages */

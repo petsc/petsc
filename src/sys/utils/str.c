@@ -479,7 +479,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenFind(PetscToken a,char *result[])
   *result = a->current;
   if (ptr && !*ptr) {*result = 0;PetscFunctionReturn(0);}
   token = a->token;
-  if (*ptr == '"') {token = '"';(*result)++;ptr++;}
+  if (ptr && (*ptr == '"')) {token = '"';(*result)++;ptr++;}
   while (ptr) {
     if (*ptr == token) {
       *ptr++ = 0; 
