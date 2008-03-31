@@ -205,6 +205,39 @@ namespace ALE {
       newMesh->stratify();
       return partition;
     };
+    template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
+    static Obj<partition_type> distributeMeshV(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
+      const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
+      const Obj<partition_type> partition     = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
+
+      // Create the cell partition
+      Partitioner::createPartitionV(mesh, cellPartition, height);
+      if (mesh->debug()) {
+        PetscViewer    viewer;
+        PetscErrorCode ierr;
+
+        cellPartition->view("Cell Partition");
+        ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRXX(ierr);
+        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRXX(ierr);
+        ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRXX(ierr);
+        ///TODO ierr = MeshView_Sieve_Ascii(mesh, cellPartition, viewer);CHKERRXX(ierr);
+        ierr = PetscViewerDestroy(viewer);CHKERRXX(ierr);
+      }
+      // Close the partition over sieve points
+      Partitioner::createPartitionClosureV(mesh, cellPartition, partition, height);
+      if (mesh->debug()) {partition->view("Partition");}
+      // Create the remote bases
+      completeBaseV(mesh, partition, renumbering, newMesh, sendMeshOverlap, recvMeshOverlap);
+      // Size the local mesh
+      Partitioner::sizeLocalMeshV(mesh, partition, renumbering, newMesh, height);
+      // Create the remote meshes
+      completeConesV(mesh->getSieve(), newMesh->getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
+      // Create the local mesh
+      Partitioner::createLocalMeshV(mesh, partition, renumbering, newMesh, height);
+      newMesh->getSieve()->symmetrize();
+      newMesh->stratify();
+      return partition;
+    };
     template<typename Label, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewLabel>
     static void distributeLabel(const Obj<typename Mesh::sieve_type>& sieve, const Obj<Label>& l, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<NewLabel>& newL) {
       Partitioner::createLocalSifter(l, partition, renumbering, newL);

@@ -411,21 +411,8 @@ PetscErrorCode ISieveISectionPartitionTest(const Options *options)
   renumbering.clear();
   parallelMesh->setSieve(parallelSieve);
   if (options->debug) {mesh->view("Serial Mesh");}
-  //Obj<partition_type> partition = distribution_type::distributeMesh(mesh, parallelMesh, renumbering, sendMeshOverlap, recvMeshOverlap, height);
-  const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
-  const Obj<partition_type> partition     = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
-
-  ALE::Partitioner<>::createPartitionV(mesh, cellPartition, height);
-  cellPartition->view("Cell Partition");
-  ALE::Partitioner<>::createPartitionClosureV(mesh, cellPartition, partition, height);
-  partition->view("Partition");
-  distribution_type::completeBaseV(mesh, partition, renumbering, parallelMesh, sendMeshOverlap, recvMeshOverlap);
-  ALE::Partitioner<>::sizeLocalMeshV(mesh, partition, renumbering, parallelMesh, height);
-  distribution_type::completeConesV(mesh->getSieve(), parallelMesh->getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
-  ALE::Partitioner<>::createLocalMeshV(mesh, partition, renumbering, parallelMesh, height);
-  parallelMesh->getSieve()->symmetrize();
-  parallelMesh->stratify();
-  parallelMesh->view("Parallel Mesh");
+  Obj<partition_type> partition = distribution_type::distributeMeshV(mesh, parallelMesh, renumbering, sendMeshOverlap, recvMeshOverlap, height);
+  if (options->debug) {parallelMesh->view("Parallel Mesh");}
   PetscFunctionReturn(0);
 }
 
