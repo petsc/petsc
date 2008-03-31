@@ -799,6 +799,56 @@ namespace ALE {
 
       createLocalSieve(sieve, partition, renumbering, localSieve, height);
     };
+    template<typename Sieve, typename Section, typename Renumbering>
+    static void sizeLocalSieveV(const Obj<Sieve>& sieve, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sieve>& localSieve, const int height = 0) {
+      typedef std::set<typename Sieve::point_type> pointSet;
+      const typename Section::value_type *points    = partition->restrictPoint(sieve->commRank());
+      const int                           numPoints = partition->getFiberDimension(sieve->commRank());
+      int                                 maxSize   = std::max(0, std::max(sieve->getMaxConeSize(), sieve->getMaxSupportSize()));
+      const pointSet                      pSet(points, &points[numPoints]);
+      ISieveVisitor::FilteredPointRetriever<Sieve,pointSet,Renumbering> fV(pSet, renumbering, maxSize);
+
+      for(int p = 0; p < numPoints; ++p) {
+        sieve->cone(points[p], fV);
+        localSieve->setConeSize(renumbering[points[p]], fV.getSize());
+        fV.clear();
+        sieve->support(points[p], fV);
+        localSieve->setSupportSize(renumbering[points[p]], fV.getSize());
+        fV.clear();
+      }
+    };
+    template<typename Mesh, typename Section, typename Renumbering>
+    static void sizeLocalMeshV(const Obj<Mesh>& mesh, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Mesh>& localMesh, const int height = 0) {
+      const Obj<typename Mesh::sieve_type>& sieve      = mesh->getSieve();
+      const Obj<typename Mesh::sieve_type>& localSieve = localMesh->getSieve();
+
+      sizeLocalSieveV(sieve, partition, renumbering, localSieve, height);
+    };
+    template<typename Sieve, typename Section, typename Renumbering>
+    static void createLocalSieveV(const Obj<Sieve>& sieve, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sieve>& localSieve, const int height = 0) {
+      typedef std::set<typename Sieve::point_type> pointSet;
+      const typename Section::value_type *points    = partition->restrictPoint(sieve->commRank());
+      const int                           numPoints = partition->getFiberDimension(sieve->commRank());
+      int                                 maxSize   = std::max(0, std::max(sieve->getMaxConeSize(), sieve->getMaxSupportSize()));
+      const pointSet                      pSet(points, &points[numPoints]);
+      ISieveVisitor::FilteredPointRetriever<Sieve,pointSet,Renumbering> fV(pSet, renumbering, maxSize);
+
+      for(int p = 0; p < numPoints; ++p) {
+        sieve->cone(points[p], fV);
+        localSieve->setCone(fV.getPoints(), renumbering[points[p]]);
+        fV.clear();
+        sieve->support(points[p], fV);
+        localSieve->setSupport(renumbering[points[p]], fV.getPoints());
+        fV.clear();
+      }
+    };
+    template<typename Mesh, typename Section, typename Renumbering>
+    static void createLocalMeshV(const Obj<Mesh>& mesh, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Mesh>& localMesh, const int height = 0) {
+      const Obj<typename Mesh::sieve_type>& sieve      = mesh->getSieve();
+      const Obj<typename Mesh::sieve_type>& localSieve = localMesh->getSieve();
+
+      createLocalSieveV(sieve, partition, renumbering, localSieve, height);
+    };
   public: // Partitioning
     //   partition:    Should be properly allocated on input
     //   height:       Height of the point set to uniquely partition
@@ -986,7 +1036,6 @@ namespace ALE {
         typename visitor_type::visitor_type nV;
         visitor_type                        cV(*sieve, nV);
 
-        // TODO: Use Quiver's closure() here instead
         for(int p = 0; p < numPoints; ++p) {
           sieve->cone(points[p], cV);
           if (height) {

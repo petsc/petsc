@@ -419,6 +419,13 @@ PetscErrorCode ISieveISectionPartitionTest(const Options *options)
   cellPartition->view("Cell Partition");
   ALE::Partitioner<>::createPartitionClosureV(mesh, cellPartition, partition, height);
   partition->view("Partition");
+  distribution_type::completeBaseV(mesh, partition, renumbering, parallelMesh, sendMeshOverlap, recvMeshOverlap);
+  ALE::Partitioner<>::sizeLocalMeshV(mesh, partition, renumbering, parallelMesh, height);
+  distribution_type::completeConesV(mesh->getSieve(), parallelMesh->getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
+  ALE::Partitioner<>::createLocalMeshV(mesh, partition, renumbering, parallelMesh, height);
+  parallelMesh->getSieve()->symmetrize();
+  parallelMesh->stratify();
+  parallelMesh->view("Parallel Mesh");
   PetscFunctionReturn(0);
 }
 
@@ -458,7 +465,11 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   ierr = PetscLogBegin();CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &options);CHKERRQ(ierr);
-  ierr = RunUnitTests(&options);CHKERRQ(ierr);
+  try {
+    ierr = RunUnitTests(&options);CHKERRQ(ierr);
+  } catch (ALE::Exception e) {
+    std::cerr << e << std::endl;
+  }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
