@@ -98,8 +98,7 @@ ex18: ex18.o chkopts
 	-${CLINKER} -o ex18 ex18.o ${PETSC_SNES_LIB}
 	${RM} ex18.o
 ex19:  ex19.o chkopts
-#	-${CLINKER} -o ex19  ex19.o ${PETSC_SNES_LIB}
-	tau_cc.sh -o ex19  ex19.o ${PETSC_SNES_LIB}
+	-${CLINKER} -o ex19  ex19.o ${PETSC_SNES_LIB}
 	${RM} ex19.o
 ex19tu:  ex19tu.o chkopts
 	-${CLINKER} -o ex19tu  ex19tu.o ${PETSC_SNES_LIB}
