@@ -1622,10 +1622,10 @@ namespace ALE {
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       ///this->_factory = MeshNumberingFactory::singleton(debug);
-      std::cout << "["<<this->commRank()<<"]: Creating an ALE::Mesh" << std::endl;
+      //std::cout << "["<<this->commRank()<<"]: Creating an ALE::Mesh" << std::endl;
     };
     ~Mesh() {
-      std::cout << "["<<this->commRank()<<"]: Destroying an ALE::Mesh" << std::endl;
+      //std::cout << "["<<this->commRank()<<"]: Destroying an ALE::Mesh" << std::endl;
     };
   public: // Accessors
     int getDimension() const {return this->_dim;};
