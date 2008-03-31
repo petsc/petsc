@@ -372,7 +372,7 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr
   /*
      Flop count (multiply-adds are counted as 2 operations)
   */
-  ierr = PetscLogFlops(84*info->ym*info->xm);CHKERRQ(ierr);
+  ierr = PetscLogFlopsn(84*info->ym*info->xm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 

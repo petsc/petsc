@@ -338,7 +338,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar*,PetscScalar*,M
 
 
      Notes: uses the C99 standard isinf() and isnan() on systems where they exist.
-      Otherwises uses ( (a - a) != 0.0), not that some optimizing compiles compile
+      Otherwises uses ( (a - a) != 0.0), note that some optimizing compiles compile
       out this form, thus removing the check.
 
 */

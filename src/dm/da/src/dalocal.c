@@ -91,15 +91,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateLocalVector(DA da,Vec* g)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetLocalVector"
+#define __FUNCT__ "DMGetLocalVector"
 /*@
-   DAGetLocalVector - Gets a Seq PETSc vector that
-   may be used with the DAXXX routines. This vector has spaces for the ghost values.
+   DMGetLocalVector - Gets a Seq PETSc vector that
+   may be used with the DMXXX routines. This vector has spaces for the ghost values.
 
    Not Collective
 
    Input Parameter:
-.  da - the distributed array
+.  dm - the distributed array
 
    Output Parameter:
 .  g - the local vector
@@ -111,37 +111,37 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateLocalVector(DA da,Vec* g)
    to zero them.
 
    The output parameter, g, is a regular PETSc vector that should be returned with 
-   DARestoreLocalVector() DO NOT call VecDestroy() on it.
+   DMRestoreLocalVector() DO NOT call VecDestroy() on it.
 
-   VecStride*() operations can be useful when using DA with dof > 1
+   VecStride*() operations can be useful when using DM with dof > 1
 
 .keywords: distributed array, create, local, vector
 
-.seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DARestoreLocalVector(),
+.seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
+          DMGlobalToLocalEnd(), DMLocalToGlobal(), DMCreateLocalVector(), DMRestoreLocalVector(),
           VecStrideMax(), VecStrideMin(), VecStrideNorm()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetLocalVector(DM dm,Vec* g)
 {
   PetscErrorCode ierr,i;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
   PetscValidPointer(g,2);
-  for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
-    if (da->localin[i]) {
-      *g             = da->localin[i];
-      da->localin[i] = PETSC_NULL;
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (dm->localin[i]) {
+      *g             = dm->localin[i];
+      dm->localin[i] = PETSC_NULL;
       goto alldone;
     }
   }
-  ierr = DACreateLocalVector(da,g);CHKERRQ(ierr);
+  ierr = DMCreateLocalVector(dm,g);CHKERRQ(ierr);
 
   alldone:
-  for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
-    if (!da->localout[i]) {
-      da->localout[i] = *g;
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (!dm->localout[i]) {
+      dm->localout[i] = *g;
       break;
     }
   }
@@ -149,40 +149,40 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalVector(DA da,Vec* g)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DARestoreLocalVector"
+#define __FUNCT__ "DMRestoreLocalVector"
 /*@
-   DARestoreLocalVector - Returns a Seq PETSc vector that
-     obtained from DAGetLocalVector(). Do not use with vector obtained via
-     DACreateLocalVector().
+   DMRestoreLocalVector - Returns a Seq PETSc vector that
+     obtained from DMGetLocalVector(). Do not use with vector obtained via
+     DMCreateLocalVector().
 
    Not Collective
 
    Input Parameter:
-+  da - the distributed array
++  dm - the distributed array
 -  g - the local vector
 
    Level: beginner
 
 .keywords: distributed array, create, local, vector
 
-.seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DAGetLocalVector()
+.seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
+          DMGlobalToLocalEnd(), DMLocalToGlobal(), DMCreateLocalVector(), DMGetLocalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreLocalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DMRestoreLocalVector(DM dm,Vec* g)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
   PetscValidPointer(g,2);
-  for (j=0; j<DA_MAX_WORK_VECTORS; j++) {
-    if (*g == da->localout[j]) {
-      da->localout[j] = PETSC_NULL;
-      for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
-        if (!da->localin[i]) {
-          da->localin[i] = *g;
+  for (j=0; j<DM_MAX_WORK_VECTORS; j++) {
+    if (*g == dm->localout[j]) {
+      dm->localout[j] = PETSC_NULL;
+      for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+        if (!dm->localin[i]) {
+          dm->localin[i] = *g;
           goto alldone;
         }
       }
@@ -194,15 +194,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreLocalVector(DA da,Vec* g)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetGlobalVector"
+#define __FUNCT__ "DMGetGlobalVector"
 /*@
-   DAGetGlobalVector - Gets a MPI PETSc vector that
-   may be used with the DAXXX routines.
+   DMGetGlobalVector - Gets a MPI PETSc vector that
+   may be used with the DMXXX routines.
 
-   Collective on DA
+   Collective on DM
 
    Input Parameter:
-.  da - the distributed array
+.  dm - the distributed array
 
    Output Parameter:
 .  g - the global vector
@@ -214,39 +214,39 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreLocalVector(DA da,Vec* g)
    to zero them.
 
    The output parameter, g, is a regular PETSc vector that should be returned with 
-   DARestoreGlobalVector() DO NOT call VecDestroy() on it.
+   DMRestoreGlobalVector() DO NOT call VecDestroy() on it.
 
-   VecStride*() operations can be useful when using DA with dof > 1
+   VecStride*() operations can be useful when using DM with dof > 1
 
 .keywords: distributed array, create, Global, vector
 
-.seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(),
-          DAGlobalToLocalEnd(), DALocalToGlobal(), DACreateLocalVector(), DARestoreLocalVector()
+.seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToLocalBegin(),
+          DMGlobalToLocalEnd(), DMLocalToGlobal(), DMCreateLocalVector(), DMRestoreLocalVector()
           VecStrideMax(), VecStrideMin(), VecStrideNorm()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetGlobalVector(DM dm,Vec* g)
 {
   PetscErrorCode ierr;
   PetscInt       i;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
   PetscValidPointer(g,2);
-  for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
-    if (da->globalin[i]) {
-      *g             = da->globalin[i];
-      da->globalin[i] = PETSC_NULL;
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (dm->globalin[i]) {
+      *g             = dm->globalin[i];
+      dm->globalin[i] = PETSC_NULL;
       goto alldone;
     }
   }
-  ierr = DACreateGlobalVector(da,g);CHKERRQ(ierr);
+  ierr = DMCreateGlobalVector(dm,g);CHKERRQ(ierr);
 
   alldone:
-  for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
-    if (!da->globalout[i]) {
-      da->globalout[i] = *g;
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (!dm->globalout[i]) {
+      dm->globalout[i] = *g;
       break;
     }
   }
@@ -254,40 +254,40 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalVector(DA da,Vec* g)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DARestoreGlobalVector"
+#define __FUNCT__ "DMRestoreGlobalVector"
 /*@
-   DARestoreGlobalVector - Returns a Seq PETSc vector that
-     obtained from DAGetGlobalVector(). Do not use with vector obtained via
-     DACreateGlobalVector().
+   DMRestoreGlobalVector - Returns a Seq PETSc vector that
+     obtained from DMGetGlobalVector(). Do not use with vector obtained via
+     DMCreateGlobalVector().
 
    Not Collective
 
    Input Parameter:
-+  da - the distributed array
++  dm - the distributed array
 -  g - the global vector
 
    Level: beginner
 
 .keywords: distributed array, create, global, vector
 
-.seealso: DACreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
-          DACreate1d(), DACreate2d(), DACreate3d(), DAGlobalToGlobalBegin(),
-          DAGlobalToGlobalEnd(), DAGlobalToGlobal(), DACreateLocalVector(), DAGetGlobalVector()
+.seealso: DMCreateGlobalVector(), VecDuplicate(), VecDuplicateVecs(),
+          DACreate1d(), DACreate2d(), DACreate3d(), DMGlobalToGlobalBegin(),
+          DMGlobalToGlobalEnd(), DMGlobalToGlobal(), DMCreateLocalVector(), DMGetGlobalVector()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DARestoreGlobalVector(DA da,Vec* g)
+PetscErrorCode PETSCDM_DLLEXPORT DMRestoreGlobalVector(DM dm,Vec* g)
 {
   PetscErrorCode ierr;
   PetscInt       i,j;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
   PetscValidPointer(g,2);
-  for (j=0; j<DA_MAX_WORK_VECTORS; j++) {
-    if (*g == da->globalout[j]) {
-      da->globalout[j] = PETSC_NULL;
-      for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
-        if (!da->globalin[i]) {
-          da->globalin[i] = *g;
+  for (j=0; j<DM_MAX_WORK_VECTORS; j++) {
+    if (*g == dm->globalout[j]) {
+      dm->globalout[j] = PETSC_NULL;
+      for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+        if (!dm->globalin[i]) {
+          dm->globalin[i] = *g;
           goto alldone;
         }
       }

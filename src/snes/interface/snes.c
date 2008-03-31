@@ -1093,6 +1093,9 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
+   If the A matrix and B matrix are different you must call MatAssemblyBegin/End() on
+   each matrix.
+
    Level: beginner
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix

@@ -73,7 +73,8 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_MAT_LU_ZRPVT     71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT     81   /* detected a zero pivot during Cholesky factorization */
 
-#define PETSC_ERR_MAX_VALUE        90  /* this is always the one more than the largest error code */
+#define PETSC_ERR_FLOP_COUNT       90
+#define PETSC_ERR_MAX_VALUE        91  /* this is always the one more than the largest error code */
 
 #if defined(PETSC_USE_ERRORCHECKING)
 

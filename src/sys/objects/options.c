@@ -281,7 +281,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
   fd   = fopen(fname,"r"); 
   if (fd) {
     while (fgets(string,PETSC_MAX_PATH_LEN,fd)) {
-      /* eliminate commnets from each line */
+      /* eliminate comments from each line */
       for (i=0; i<3; i++){
         ierr = PetscStrchr(string,cmt[i],&cmatch);
         if (cmatch) *cmatch = 0;
@@ -301,9 +301,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
         ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
       }
       ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
-      if (!first) {
-        goto destroy;
-      } else if (first[0] == '-') {
+      if (first[0] == '-') {
         ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
       } else {
         PetscTruth match;
@@ -313,8 +311,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
           ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
           if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options file:alias missing (%s)",second);
           ierr = PetscOptionsSetAlias(second,third);CHKERRQ(ierr);
-        } else {
-          SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown statement in options file: (%s)",string);
         }
       }
       destroy:

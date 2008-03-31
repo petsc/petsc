@@ -28,14 +28,14 @@ int main(int argc,char **argv)
 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL,&da1);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da1,&local1);CHKERRQ(ierr);
-  ierr = DMCompositeAddDA(packer,da1);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(packer,(DM)da1);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nredundant2*sizeof(PetscScalar),&redundant2);CHKERRQ(ierr);
   ierr = DMCompositeAddArray(packer,0,nredundant2);CHKERRQ(ierr);
 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,6,1,1,PETSC_NULL,&da2);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da2,&local2);CHKERRQ(ierr);
-  ierr = DMCompositeAddDA(packer,da2);CHKERRQ(ierr);
+  ierr = DMCompositeAddDM(packer,(DM)da2);CHKERRQ(ierr);
 
   ierr = DMCompositeCreateGlobalVector(packer,&global);CHKERRQ(ierr);
   ierr = PFCreate(PETSC_COMM_WORLD,1,1,&pf);CHKERRQ(ierr);

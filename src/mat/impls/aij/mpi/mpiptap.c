@@ -496,7 +496,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ           *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data;
   Mat_SeqAIJ           *p_loc,*p_oth; 
-  PetscInt             *adi=ad->i,*aoi=ao->i,*adj=ad->j,*aoj=ao->j,*apJ,nextp,flops=0; 
+  PetscInt             *adi=ad->i,*aoi=ao->i,*adj=ad->j,*aoj=ao->j,*apJ,nextp;
   PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pJ,*pj;
   PetscInt             i,j,k,anz,pnz,apnz,nextap,row,*cj;
   MatScalar            *ada=ad->a,*aoa=ao->a,*apa,*pa,*ca,*pa_loc,*pa_oth;
@@ -574,7 +574,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
           apa[k] += (*ada)*pa[nextp++];
         }
       }
-      flops += 2*pnz;
+      ierr = PetscLogFlops(2*pnz);CHKERRQ(ierr);
       ada++;
     }
     /* off-diagonal portion of A */
@@ -590,7 +590,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
           apa[k] += (*aoa)*pa[nextp++];
         }
       }
-      flops += 2*pnz;
+      ierr = PetscLogFlops(2*pnz);CHKERRQ(ierr);
       aoa++;
     }
 
@@ -609,7 +609,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       for (k=0; nextap<apnz; k++) {
         if (cj[k]==apJ[nextap]) ca[k] += (*pA)*apa[nextap++]; 
       }
-      flops += 2*apnz;
+      ierr = PetscLogFlops(2*apnz);CHKERRQ(ierr);
       pA++;
     }
 
@@ -677,7 +677,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
       } 
     }
     ierr = MatSetValues(C,1,&row,bnz,bj_i,ba_i,INSERT_VALUES);CHKERRQ(ierr); 
-    flops += 2*cnz;
+    ierr = PetscLogFlops(2*cnz);CHKERRQ(ierr);
   } 
   ierr = MatSetBlockSize(C,1);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -685,7 +685,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   ierr = PetscFree(ba);CHKERRQ(ierr);
   ierr = PetscFree(abuf_r);CHKERRQ(ierr);
-  ierr = PetscFree(buf_ri_k);CHKERRQ(ierr);
-  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+  ierr = PetscFree(buf_ri_k);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }

@@ -11,6 +11,46 @@ PetscCookie PETSCDM_DLLEXPORT DA_COOKIE = 0;
 PetscEvent  DA_GlobalToLocal = 0, DA_LocalToGlobal = 0, DA_LocalADFunction = 0;
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMDestroy_Private"
+/*
+   DMDestroy_Private - handles the work vectors created by DMGetGlobalVector() and DMGetLocalVector()
+
+*/
+PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Private(DM dm,PetscTruth *done)
+{
+  PetscErrorCode ierr;
+  PetscErrorCode i,cnt = 0;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
+  *done = PETSC_FALSE;
+
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (dm->localin[i])  {cnt++;}
+    if (dm->globalin[i]) {cnt++;}
+  }
+
+  if (--((PetscObject)dm)->refct - cnt > 0) PetscFunctionReturn(0);
+
+  /*
+         Need this test because the dm references the vectors that 
+     reference the dm, so destroying the dm calls destroy on the 
+     vectors that cause another destroy on the dm
+  */
+  if (((PetscObject)dm)->refct < 0) PetscFunctionReturn(0);
+  ((PetscObject)dm)->refct = 0;
+
+  for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
+    if (dm->localout[i]) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a local vector obtained with DMGetLocalVector()");
+    if (dm->localin[i]) {ierr = VecDestroy(dm->localin[i]);CHKERRQ(ierr);}
+    if (dm->globalout[i]) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a global vector obtained with DMGetGlobalVector()");
+    if (dm->globalin[i]) {ierr = VecDestroy(dm->globalin[i]);CHKERRQ(ierr);}
+  }
+  *done = PETSC_FALSE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DADestroy"
 /*@
    DADestroy - Destroys a distributed array.
@@ -29,31 +69,14 @@ PetscEvent  DA_GlobalToLocal = 0, DA_LocalToGlobal = 0, DA_LocalADFunction = 0;
 PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
 {
   PetscErrorCode ierr;
-  PetscErrorCode i,cnt = 0;
+  PetscErrorCode i;
+  PetscTruth     done;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
 
-  for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
-    if (da->localin[i])  {cnt++;}
-    if (da->globalin[i]) {cnt++;}
-  }
-
-  if (--((PetscObject)da)->refct - cnt > 0) PetscFunctionReturn(0);
-  /*
-         Need this test because the da references the vectors that 
-     reference the da, so destroying the da calls destroy on the 
-     vectors that cause another destroy on the da
-  */
-  if (((PetscObject)da)->refct < 0) PetscFunctionReturn(0);
-  ((PetscObject)da)->refct = 0;
-
-  for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
-    if (da->localout[i]) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Destroying a DA that has a local vector obtained with DAGetLocalVector()");
-    if (da->localin[i]) {ierr = VecDestroy(da->localin[i]);CHKERRQ(ierr);}
-    if (da->globalout[i]) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Destroying a DA that has a global vector obtained with DAGetGlobalVector()");
-    if (da->globalin[i]) {ierr = VecDestroy(da->globalin[i]);CHKERRQ(ierr);}
-  }
+  ierr = DMDestroy_Private((DM)da,&done);CHKERRQ(ierr);
+  if (!done) PetscFunctionReturn(0);
 
   for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
     ierr = PetscFree(da->adstartghostedout[i]);CHKERRQ(ierr);
