@@ -251,6 +251,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
       break;
     }
   }
+  if (j<0) {
+    PetscStrncpy(name,"Unknown Name",256);
+  }
 #endif
   *ierr = PetscSetProgramName(name);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize: Calling PetscSetProgramName()");return;}
