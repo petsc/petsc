@@ -204,7 +204,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,ISColo
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetMatrix"
-/*@
+/*@C
     DMGetMatrix - Gets empty Jacobian for a DA or DMComposite
 
     Collective on DM
