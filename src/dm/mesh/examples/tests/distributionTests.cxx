@@ -23,6 +23,7 @@ typedef struct {
   PetscInt   number;      // Number of each class to create
   // Mesh flags
   PetscInt   numCells;    // If possible, set the total number of cells
+  PetscTruth interpolate; // Interpolate the mesh
   // Section flags
   PetscInt   components;  // Number of section components
 } Options;
@@ -35,22 +36,24 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  options->debug      = 0;
-  options->section    = PETSC_FALSE;
-  options->isection   = PETSC_FALSE;
-  options->partition  = PETSC_FALSE;
-  options->number     = 0;
-  options->numCells   = 8;
-  options->components = 3;
+  options->debug       = 0;
+  options->section     = PETSC_FALSE;
+  options->isection    = PETSC_FALSE;
+  options->partition   = PETSC_FALSE;
+  options->number      = 0;
+  options->numCells    = 8;
+  options->interpolate = PETSC_FALSE;
+  options->components  = 3;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "Debugging flag", "memTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-section", "Run Section tests", "memTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-isection", "Run ISection tests", "memTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-partition", "Run Partition tests", "memTests", options->partition, &options->partition, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-num", "Number of each class to create", "memTests", options->number, &options->number, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-numCells", "Number of mesh cells", "memTests", options->numCells, &options->numCells, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-components", "Number of section components", "memTests", options->components, &options->components, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "Debugging flag", "distTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-section", "Run Section tests", "distTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-isection", "Run ISection tests", "distTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-partition", "Run Partition tests", "distTests", options->partition, &options->partition, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-num", "Number of each class to create", "distTests", options->number, &options->number, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-numCells", "Number of mesh cells", "distTests", options->numCells, &options->numCells, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-interpolate", "Interpolate the flag", "distTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-components", "Number of section components", "distTests", options->components, &options->components, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   options->comm = comm;
@@ -344,7 +347,7 @@ PetscErrorCode SieveISectionPartitionTest(const Options *options)
   double                            upper[2]        = {1.0, 1.0};
   int                               edges[2]        = {2, 2};
   const Obj<ALE::Mesh>              mB              = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-  const Obj<ALE::Mesh>              mesh            = ALE::Generator::generateMesh(mB, false);
+  const Obj<ALE::Mesh>              mesh            = ALE::Generator::generateMesh(mB, options->interpolate);
   Obj<ALE::Mesh>                    parallelMesh    = new ALE::Mesh(options->comm, mesh->getDimension(), options->debug);
   Obj<ALE::Mesh::sieve_type>        parallelSieve   = new ALE::Mesh::sieve_type(options->comm, options->debug);
   const Obj<mesh_send_overlap_type> sendMeshOverlap = new mesh_send_overlap_type(mesh->comm(), mesh->debug());
@@ -394,7 +397,7 @@ PetscErrorCode ISieveISectionPartitionTest(const Options *options)
   double                            upper[2]        = {1.0, 1.0};
   int                               edges[2]        = {2, 2};
   const Obj<ALE::Mesh>              mB              = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-  const Obj<ALE::Mesh>              m               = ALE::Generator::generateMesh(mB, true);
+  const Obj<ALE::Mesh>              m               = ALE::Generator::generateMesh(mB, options->interpolate);
   Obj<mesh_type>                    mesh            = new mesh_type(options->comm, m->getDimension(), options->debug);
   Obj<mesh_type::sieve_type>        sieve           = new mesh_type::sieve_type(options->comm, options->debug);
   Obj<mesh_type>                    parallelMesh    = new mesh_type(options->comm, m->getDimension(), options->debug);

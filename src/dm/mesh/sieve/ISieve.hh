@@ -1125,6 +1125,26 @@ namespace ALE {
         v.visitPoint(this->cones[c], this->coneOrientations[c]);
       }
     };
+    // Currently does only 1 level
+    template<typename Visitor>
+    void meet(const point_type& p, const point_type& q, Visitor& v) const {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      this->chart.checkPoint(p);
+      this->chart.checkPoint(q);
+      const index_type startP = this->coneOffsets[p];
+      const index_type endP   = this->coneOffsets[p+1];
+      const index_type startQ = this->coneOffsets[q];
+      const index_type endQ   = this->coneOffsets[q+1];
+
+      for(index_type cP = startP; cP < endP; ++cP) {
+        const point_type& c1 = this->cones[cP];
+
+        for(index_type cQ = startQ; cQ < endQ; ++cQ) {
+          if (c1 == this->cones[cQ]) v.visitPoint(c1);
+        }
+        if (this->coneOffsets[c1+1] > this->coneOffsets[c1]) {throw ALE::Exception("Cannot handle multiple level meet()");}
+      }
+    };
   public: // Viewing
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
       ostringstream txt;

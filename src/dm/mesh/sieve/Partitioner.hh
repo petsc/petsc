@@ -270,42 +270,51 @@ namespace ALE {
     };
     template<typename Sieve>
     class MeetVisitor {
+    public:
+      typedef std::set<typename Sieve::point_type> neighbors_type;
     protected:
       const Sieve& sieve;
-      const typename Sieve::point_type cell;
-      const int faceVertices;
       const int numCells;
-      std::set<typename Sieve::point_type> *neighborCells;
-      std::map<typename Sieve::point_type, typename Sieve::point_type> newCells;
+      const int faceVertices;
       typename Sieve::point_type newCell;
+      neighbors_type *neighborCells;
+      typename ISieveVisitor::PointRetriever<Sieve> *pR;
+      typename Sieve::point_type cell;
+      std::map<typename Sieve::point_type, typename Sieve::point_type> newCells;
     public:
-      MeetVisitor(const Sieve& s) : sieve(s) {
+      MeetVisitor(const Sieve& s, const int n, const int fV) : sieve(s), numCells(n), faceVertices(fV), newCell(n) {
         this->neighborCells = new std::set<typename Sieve::point_type>[numCells];
-        newCell = numCells;
+        this->pR            = new typename ISieveVisitor::PointRetriever<Sieve>(this->sieve.getMaxConeSize());
       };
-      void visitPoint(const typename Sieve::point_type& point) {};
-      void visitArrow(const typename Sieve::arrow_type& arrow) {
-        const typename Sieve::point_type neighbor = arrow.target;
+      ~MeetVisitor() {delete [] this->neighborCells; delete this->pR;};
+      void visitArrow(const typename Sieve::arrow_type& arrow) {};
+      void visitPoint(const typename Sieve::point_type& point) {
+        const typename Sieve::point_type& neighbor = point;
 
-        if (cell == neighbor) return;
-        if ((int) sieve->nMeet(cell, neighbor, 1)->size() == faceVertices) {
-          if ((cell < numCells) && (neighbor < numCells)) {
-            neighborCells[cell].insert(neighbor);
+        if (this->cell == neighbor) return;
+        this->pR->clear();
+        this->sieve.meet(this->cell, neighbor, *this->pR);
+        if (this->pR->getSize() == this->faceVertices) {
+          if ((this->cell < numCells) && (neighbor < numCells)) {
+            this->neighborCells[this->cell].insert(neighbor);
           } else {
-            typename Sieve::point_type e = cell, n = neighbor;
+            typename Sieve::point_type e = this->cell, n = neighbor;
 
-            if (cell >= numCells) {
-              if (newCells.find(cell) == newCells.end()) newCells[cell] = --newCell;
-              e = newCells[cell];
+            if (this->cell >= numCells) {
+              if (this->newCells.find(cell) == this->newCells.end()) this->newCells[cell] = --newCell;
+              e = this->newCells[cell];
             }
             if (neighbor >= numCells) {
-              if (newCells.find(neighbor) == newCells.end()) newCells[neighbor] = --newCell;
-              n = newCells[neighbor];
+              if (this->newCells.find(neighbor) == this->newCells.end()) this->newCells[neighbor] = --newCell;
+              n = this->newCells[neighbor];
             }
-            neighborCells[e].insert(n);
+            this->neighborCells[e].insert(n);
           }
         }
       };
+    public:
+      void setCell(const typename Sieve::point_type& c) {this->cell = c;};
+      const neighbors_type *getNeighbors() {return this->neighborCells;};
     };
   public: // Creating overlaps
     // Create a partition point overlap for distribution
@@ -597,9 +606,10 @@ namespace ALE {
         }
         offset = aV.getOffset();
       } else if (mesh->depth() == 1) {
-        std::set<typename Mesh::point_type> *neighborCells = new std::set<typename Mesh::point_type>[numCells];
-        const int                            corners       = sieve->getConeSize(*cells->begin());
-        int                                  faceVertices;
+        typedef MeetVisitor<typename Mesh::sieve_type>    mv_type;
+        typedef typename ISieveVisitor::SupportVisitor<typename Mesh::sieve_type, mv_type> sv_type;
+        const int corners = sieve->getConeSize(*cells->begin());
+        int       faceVertices;
 
         if (corners == dim+1) {
           faceVertices = dim;
@@ -610,26 +620,27 @@ namespace ALE {
         } else {
           throw ALE::Exception("Could not determine number of face vertices");
         }
-        throw ALE::Exception("Not yet implemented");
-#if 0
-        for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-          MeetVisitor<typename Mesh::sieve_type>    mV();
-          SupportVisitor<typename Mesh::sieve_type> sV(sieve, mV);
+        mv_type mV(*sieve, numCells, faceVertices);
+        sv_type sV(*sieve, mV);
 
+        for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+          mV.setCell(*c_iter);
           sieve->cone(*c_iter, sV);
-          off[0] = 0;
-          for(int c = 1; c <= numCells; c++) {
-            off[c] = neighborCells[c-1].size() + off[c-1];
+        }
+        const typename mv_type::neighbors_type *neighborCells = mV.getNeighbors();
+
+        off[0] = 0;
+        for(int c = 1; c <= numCells; c++) {
+          off[c] = neighborCells[c-1].size() + off[c-1];
+        }
+        adj = alloc_type().allocate(off[numCells]);
+        for(int i = 0; i < off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
+        for(int c = 0; c < numCells; c++) {
+          for(typename mv_type::neighbors_type::iterator n_iter = neighborCells[c].begin(); n_iter != neighborCells[c].end(); ++n_iter) {
+            std::cout << "Adding dual edge from " << c << " to " << *n_iter << std::endl;
+            adj[offset++] = *n_iter + cellOffset;
           }
-          adj = alloc_type().allocate(off[numCells]);
-          for(int i = 0; i < off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
-          for(int c = 0; c < numCells; c++) {
-            for(typename std::set<typename Mesh::point_type>::iterator n_iter = neighborCells[c].begin(); n_iter != neighborCells[c].end(); ++n_iter) {
-              adj[offset++] = *n_iter + cellOffset;
-            }
-          }
-          delete [] neighborCells;
-#endif
+        }
       } else {
         throw ALE::Exception("Dual creation not defined for partially interpolated meshes");
       }
