@@ -4449,7 +4449,7 @@ namespace ALECompat {
           for(int i = pInd.index; i < pInd.prefix + pInd.index; ++i) {
             a[i] = v[++j];
           }
-          j += std::max(0, -pInd.prefix);
+          j += std::max((index_type::prefix_type) 0, -pInd.prefix);
           const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
           typename sieve_type::coneSequence::iterator   end  = cone->end();
 
@@ -4492,7 +4492,7 @@ namespace ALECompat {
           for(int i = pInd.index; i < pInd.prefix + pInd.index; ++i) {
             a[i] += v[++j];
           }
-          j += std::max(0, -pInd.prefix);
+          j += std::max((index_type::prefix_type) 0, -pInd.prefix);
           const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
           typename sieve_type::coneSequence::iterator   end  = cone->end();
 
