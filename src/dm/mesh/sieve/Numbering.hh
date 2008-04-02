@@ -810,7 +810,7 @@ namespace ALECompat {
             val.prefix = localSize;
             val.index  = atlas->restrictPoint(patch, *l_iter)[0].prefix;
           }
-          localSize += std::max(0, val.index);
+          localSize += std::max((typename oValue_type::index_type) 0, val.index);
           order->updatePoint(patch, *l_iter, &val);
         }
         order->setLocalSize(localSize);
