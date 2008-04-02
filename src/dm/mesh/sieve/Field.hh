@@ -1075,7 +1075,7 @@ namespace ALE {
     //   If constrained, this is equal to the fiber dimension
     //   Otherwise, 0
     int getConstrainedFiberDimension(const point_type& p) const {
-      return std::max(0, this->_atlas->restrictPoint(p)->prefix);
+      return std::max((index_type::prefix_type) 0, this->_atlas->restrictPoint(p)->prefix);
     };
     // Return the total number of free dofs
     int size() const {
