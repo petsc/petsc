@@ -289,6 +289,11 @@ class Configure(config.package.Package):
       if cflags.find(flag) >=0: return flag
     return ''
 
+  def getPrecisionFlag(self,cflags):
+    for flag in ['-m32', '-m64', '-xarch=v9','-q64']:
+      if cflags.find(flag) >=0: return flag
+    return ''
+
   def downLoadBlasLapack(self, f2c, l):
     self.framework.log.write('Downloading '+self.downloaddirname+'\n')
     if self.framework.externalPackagesDir is None:
@@ -343,7 +348,7 @@ class Configure(config.package.Package):
         self.setCompilers.popLanguage()
       if line.startswith('CNOOPT'):
         self.setCompilers.pushLanguage('C')
-        line = 'CNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())
+        line = 'CNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())
         if self.defaultPrecision == 'int':
           line += ' -DDOUBLE=int -DLONG=""\n'
         elif self.defaultPrecision == 'longdouble':
@@ -370,7 +375,7 @@ class Configure(config.package.Package):
         self.setCompilers.popLanguage()       
       if line.startswith('FNOOPT'):
         self.setCompilers.pushLanguage('FC')
-        line = 'FNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+'\n'
+        line = 'FNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+'\n'
         self.setCompilers.popLanguage()
       if line.startswith('AR  '):
         line = 'AR      = '+self.setCompilers.AR+'\n'
