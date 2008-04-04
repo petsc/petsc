@@ -10,7 +10,6 @@
 typedef struct _MeshOps *MeshOps;
 struct _MeshOps {
   DMOPS(Mesh)
-  PetscErrorCode (*destroy)(Mesh);
 };
 
 struct _p_Mesh {

@@ -780,6 +780,11 @@ namespace ALE {
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<BaseSection<Sieve_> >& sendSection, const Obj<ConstantSection<typename SendOverlap::source_type, int> >& recvSection) {
         copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
       };
+      // Specialize to an BaseSectionV/ConstantSection pair
+      template<typename SendOverlap, typename RecvOverlap, typename Sieve_>
+      static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<BaseSectionV<Sieve_> >& sendSection, const Obj<ConstantSection<typename SendOverlap::source_type, int> >& recvSection) {
+        copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
+      };
       // Specialize to an LabelBaseSection/ConstantSection pair
       template<typename SendOverlap, typename RecvOverlap, typename Sieve_, typename Label_>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<LabelBaseSection<Sieve_, Label_> >& sendSection, const Obj<ConstantSection<typename SendOverlap::source_type, int> >& recvSection) {
@@ -930,6 +935,38 @@ namespace ALE {
           sieve->clearCone(localPoint);
           for(int i = 0; i < size; ++i, ++c) {sieve->addCone(renumbering[values[i]], localPoint, c);}
         }
+      };
+      // Specialize to the ISieve
+      template<typename OverlapSection, typename RecvOverlap, typename Renumbering, typename Point>
+      static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, Renumbering& renumbering, const Obj<IFSieve<Point> >& sieve) {
+        const Obj<typename RecvOverlap::traits::baseSequence> rPoints = recvOverlap->base();
+        int                                                   maxSize = 0;
+
+        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
+          const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
+          const Point&                                   localPoint  = *p_iter;
+          const typename OverlapSection::point_type&     remotePoint = points->begin().color();
+          const int                                      size        = overlapSection->getFiberDimension(remotePoint);
+          const typename OverlapSection::value_type     *values      = overlapSection->restrictPoint(remotePoint);
+
+          sieve->setConeSize(localPoint, size);
+          for(int i = 0; i < size; ++i) {sieve->addSupportSize(renumbering[values[i]], 1);}
+          maxSize = std::max(maxSize, size);
+        }
+        sieve->allocate();
+        typename OverlapSection::value_type *localValues = new typename OverlapSection::value_type[maxSize];
+
+        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
+          const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
+          const Point&                                   localPoint  = *p_iter;
+          const typename OverlapSection::point_type&     remotePoint = points->begin().color();
+          const int                                      size        = overlapSection->getFiberDimension(remotePoint);
+          const typename OverlapSection::value_type     *values      = overlapSection->restrictPoint(remotePoint);
+
+          for(int i = 0; i < size; ++i) {localValues[i] = renumbering[values[i]];}
+          sieve->setCone(localValues, localPoint);
+        }
+        delete [] localValues;
       };
       template<typename OverlapSection, typename RecvOverlap, typename Section, typename Bundle>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& section, const Obj<Bundle>& bundle) {

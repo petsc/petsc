@@ -29,10 +29,10 @@ class Configure(PETSc.package.Package):
     g.write('CC ='+self.framework.getCompiler()+'\n')
     g.write('CFLAGS ='+self.framework.getCompilerFlags()+'\n')
     g.write('CPROTO = '+self.cproto.cproto+' -D__THROW= -D_STDARG_H ${TRACEMEM} -I..\n')
-    g.write('P3DLIB_DIR = '+os.path.join(self.p3dlib.installDir,'lib')+' \n')
-    g.write('P3DINC_DIR = '+os.path.join(self.p3dlib.installDir,'include')+' \n')    
-    g.write('EXPATLIB_DIR = '+os.path.join(self.expat.installDir,'lib')+' \n')
-    g.write('EXPATINC_DIR = '+os.path.join(self.expat.installDir,'include')+'\n')
+    g.write('P3DLIB_DIR = '+self.libraries.toString(self.p3dlib.lib)+'\n')
+    g.write('P3DINC_DIR = '+self.headers.toString(self.p3dlib.include)+'\n')
+    g.write('EXPATLIB_DIR = '+self.libraries.toString(self.expat.lib)+'\n')
+    g.write('EXPATINC_DIR = '+self.headers.toString(self.expat.include)+'\n')
     g.write('MACHINE = '+'petsc\n')
     # from FLAGS.machine
     g.write('LD ='+self.framework.getCompiler()+'\n')    
@@ -48,8 +48,8 @@ class Configure(PETSc.package.Package):
     import config.setCompilers
     if config.setCompilers.Configure.isDarwin():
       ddefs = ' -Dmacosx '
-    elif config.setCompilers.isIBM():
-      ddefs = ' -Dibm '
+#    elif config.setCompilers.isIBM():
+#      ddefs = ' -Dibm '
     else:  # need to test for Linux
       ddefs = ' -Dlinux '
     g.write('DEFINES   =  -DDUMP_FLEX '+ddefs+cdefs+'\n')

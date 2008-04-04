@@ -12,6 +12,7 @@ extern PetscEvent PETSC_LARGEST_EVENT;
 
 /* Global flop counter */
 extern PetscLogDouble PETSC_DLLEXPORT _TotalFlops;
+extern PetscLogDouble petsc_tmp_flops;
 
 /* General logging of information; different from event logging */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char[],void*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
@@ -157,7 +158,6 @@ struct _n_StageLog {
 #else
 #define PETSC_FLOPS_PER_OP 1
 #endif
-PetscLogDouble petsc_tmp_flops;
 
 #if defined(PETSC_USE_DEBUG)
 #define PetscLogFlops(n) (petsc_tmp_flops = (PETSC_FLOPS_PER_OP*(n)), ((petsc_tmp_flops < 0) ? PETSC_ERR_FLOP_COUNT : (_TotalFlops += petsc_tmp_flops,0)))

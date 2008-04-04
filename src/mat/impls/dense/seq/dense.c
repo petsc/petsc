@@ -1655,7 +1655,7 @@ PetscErrorCode MatGetRowMaxAbs_SeqDense(Mat A,Vec v,PetscInt idx[])
   ierr = VecGetLocalSize(v,&p);CHKERRQ(ierr);
   if (p != A->rmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<m; i++) {
-    x[i] = PetscAbsScalar(aa[i]); if (idx) idx[i] = 0;
+    x[i] = PetscAbsScalar(aa[i]); 
     for (j=1; j<n; j++){
       atmp = PetscAbsScalar(aa[i+m*j]);
       if (PetscAbsScalar(x[i]) < atmp) {x[i] = atmp; if (idx) idx[i] = j;}

@@ -2244,9 +2244,6 @@ PetscErrorCode MatGetRowMaxAbs_SeqBAIJ(Mat A,Vec v,PetscInt idx[])
   mbs  = a->mbs;
 
   ierr = VecSet(v,zero);CHKERRQ(ierr);
-  if (idx) {
-    for (i=0; i<A->rmap.n;i++) idx[i] = 0;
-  }
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");

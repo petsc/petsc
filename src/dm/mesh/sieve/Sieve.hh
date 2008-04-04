@@ -341,10 +341,10 @@ namespace ALE {
       Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Sifter<Point_, Point_, Color_, ::boost::multi_index::composite_key_compare<std::less<Point_>, std::less<Color_>, std::less<Point_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > >(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {
         this->_markers = new markerSet();
         this->_meetSet = new coneSet();
-        std::cout << "["<<this->commRank()<<"]: Creating an ALE::Sieve" << std::endl;
+        //std::cout << "["<<this->commRank()<<"]: Creating an ALE::Sieve" << std::endl;
       };
       virtual ~Sieve() {
-        std::cout << "["<<this->commRank()<<"]: Destroying an ALE::Sieve" << std::endl;
+        //std::cout << "["<<this->commRank()<<"]: Destroying an ALE::Sieve" << std::endl;
       };
       // Printing
       friend std::ostream& operator<<(std::ostream& os, Obj<Sieve<Point_,Marker_,Color_> > s) { 

@@ -30,6 +30,7 @@ typedef struct {
   PetscTruth    interpolate;                 // Generate intermediate mesh elements
   PetscReal     refinementLimit;             // The largest allowable cell volume
   char          baseFilename[2048];          // The base filename for mesh files
+  char          partitioner[2048];           // The graph partitioner
   PetscScalar (*func)(const double []);      // The function to project
   BCType        bcType;                      // The type of boundary conditions
   PetscScalar (*exactFunc)(const double []); // The exact solution function
@@ -155,6 +156,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     filename << "data/bratu_" << options->dim <<"d";
     ierr = PetscStrcpy(options->baseFilename, filename.str().c_str());CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "bratu.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
+    ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
     bc = options->bcType;
     ierr = PetscOptionsEList("-bc_type","Type of boundary condition","bratu.cxx",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
     options->bcType = (BCType) bc;
@@ -515,7 +518,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     if (size > 1) {
       Mesh parallelMesh;
 
-      ierr = MeshDistribute(mesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
+      ierr = MeshDistribute(mesh, options->partitioner, &parallelMesh);CHKERRQ(ierr);
       ierr = MeshDestroy(mesh);CHKERRQ(ierr);
       mesh = parallelMesh;
     }

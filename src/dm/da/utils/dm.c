@@ -37,7 +37,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy(DM dm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMView"
-/*@C
+/*@
     DMView - Views a vector packer or DA.
 
     Collective on DM
@@ -118,7 +118,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector(DM dm,Vec *vec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolation"
-/*@C
+/*@
     DMGetInterpolation - Gets interpolation matrix between two DA or DMComposite objects
 
     Collective on DM
@@ -175,7 +175,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring"
-/*@C
+/*@
     DMGetColoring - Gets coloring and empty Jacobian for a DA or DMComposite
 
     Collective on DM
@@ -233,7 +233,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm, MatType mtype,Mat *mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefine"
-/*@C
+/*@
     DMRefine - Refines a DM object
 
     Collective on DM
@@ -345,7 +345,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobal(DM dm,Vec g,InsertMode mode,Vec
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCoarsen"
-/*@C
+/*@
     DMCoarsen - Coarsens a DM object
 
     Collective on DM

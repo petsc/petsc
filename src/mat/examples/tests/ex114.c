@@ -66,6 +66,7 @@ int main(int argc,char **args)
     /* AIJ */
     ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&doTest);CHKERRQ(ierr);
     if (doTest){
+      ierr = MatGetRowMaxAbs(A,maxabs,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values:\n");CHKERRQ(ierr);
       ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
@@ -73,6 +74,7 @@ int main(int argc,char **args)
     /* BAIJ */
     ierr = PetscTypeCompare((PetscObject)A,MATMPIBAIJ,&doTest);CHKERRQ(ierr);
     if (doTest){
+      ierr = MatGetRowMaxAbs(A,maxabs,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetRowMaxAbs(A,maxabs,imaxabs);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD,"Row Maximum Absolute Values:\n");CHKERRQ(ierr);
       ierr = VecView(maxabs,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
