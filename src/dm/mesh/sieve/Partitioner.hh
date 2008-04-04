@@ -260,7 +260,7 @@ namespace ALE {
         const int neighbor = arrow.target;
 
         if (neighbor != this->cell) {
-          std::cout << "Adding dual edge from " << cell << " to " << neighbor << std::endl;
+          //std::cout << "Adding dual edge from " << cell << " to " << neighbor << std::endl;
           this->adjacency[this->offset++] = neighbor + this->cellOffset;
         }
       };
@@ -637,7 +637,7 @@ namespace ALE {
         for(int i = 0; i < off[numCells]; ++i) {alloc_type().construct(adj+i, 0);}
         for(int c = 0; c < numCells; c++) {
           for(typename mv_type::neighbors_type::iterator n_iter = neighborCells[c].begin(); n_iter != neighborCells[c].end(); ++n_iter) {
-            std::cout << "Adding dual edge from " << c << " to " << *n_iter << std::endl;
+            //std::cout << "Adding dual edge from " << c << " to " << *n_iter << std::endl;
             adj[offset++] = *n_iter + cellOffset;
           }
         }

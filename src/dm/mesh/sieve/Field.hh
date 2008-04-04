@@ -1762,7 +1762,7 @@ namespace ALE {
       // Check atlases
       const chart_type& chart = this->getChart();
 
-      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         value_type       *array  = (value_type *) this->restrictPoint(*c_iter);
         const value_type *xArray = x->restrictPoint(*c_iter);
         const value_type *yArray = y->restrictPoint(*c_iter);
@@ -2241,7 +2241,7 @@ namespace ALE {
       const chart_type& chart = this->getChart();
 
       // Copy sizes
-      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         const int fDim = this->getFiberDimension(*c_iter, space);
         const int cDim = this->getConstraintDimension(*c_iter, space);
 
@@ -2258,7 +2258,7 @@ namespace ALE {
       Obj<atlas_type>   newAtlas = new atlas_type(this->comm(), this->debug());
       const chart_type& newChart = field->getChart();
 
-      for(typename chart_type::iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
         const int cDim   = field->getConstraintDimension(*c_iter);
         const int dof[1] = {0};
 
@@ -2267,7 +2267,7 @@ namespace ALE {
         }
       }
       // Copy offsets
-      for(typename chart_type::iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
         index_type idx;
 
         idx.prefix = field->getFiberDimension(*c_iter);
@@ -2601,7 +2601,7 @@ namespace ALE {
       // Check atlases
       const chart_type& chart = this->getChart();
 
-      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         value_type       *array  = (value_type *) this->restrictPoint(*c_iter);
         const value_type *xArray = x->restrictPoint(*c_iter);
         const value_type *yArray = y->restrictPoint(*c_iter);
@@ -2628,7 +2628,7 @@ namespace ALE {
       // Check atlases
       const chart_type& chart = this->getChart();
 
-      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         value_type       *array  = (value_type *) this->restrictPoint(*c_iter);
         const value_type *xArray = x->restrictPoint(*c_iter);
         const int&        dim    = this->getFiberDimension(*c_iter);
@@ -3078,7 +3078,7 @@ namespace ALE {
       const chart_type& chart = this->getChart();
 
       // Copy sizes
-      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         const int fDim = this->getFiberDimension(*c_iter, space);
         const int cDim = this->getConstraintDimension(*c_iter, space);
 
@@ -3095,7 +3095,7 @@ namespace ALE {
       Obj<atlas_type>   newAtlas = new atlas_type(this->comm(), this->debug());
       const chart_type& newChart = field->getChart();
 
-      for(typename chart_type::iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
         const int cDim   = field->getConstraintDimension(*c_iter);
         const int dof[1] = {0};
 
@@ -3104,7 +3104,7 @@ namespace ALE {
         }
       }
       // Copy offsets
-      for(typename chart_type::iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+      for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
         index_type idx;
 
         idx.prefix = field->getFiberDimension(*c_iter);
@@ -3308,7 +3308,7 @@ namespace ALE {
         const Obj<section_type>& section = this->getSection(rank);
         const chart_type&        chart   = section->getChart();
 
-        for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
           section->setFiberDimension(*c_iter, size);
         }
       }

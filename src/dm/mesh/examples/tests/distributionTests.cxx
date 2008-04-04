@@ -409,13 +409,30 @@ PetscErrorCode ISieveISectionPartitionTest(const Options *options)
 
   PetscFunctionBegin;
   mesh->setSieve(sieve);
-  ALE::ISieveConverter::convertSieve(*m->getSieve(), *mesh->getSieve(), renumbering);
-  mesh->stratify();
+  ALE::ISieveConverter::convertMesh(*m, *mesh, renumbering);
   renumbering.clear();
   parallelMesh->setSieve(parallelSieve);
   if (options->debug) {mesh->view("Serial Mesh");}
   Obj<partition_type> partition = distribution_type::distributeMeshV(mesh, parallelMesh, renumbering, sendMeshOverlap, recvMeshOverlap, height);
   if (options->debug) {parallelMesh->view("Parallel Mesh");}
+  // Distribute the coordinates
+  typedef mesh_type::real_section_type real_section_type;
+  const Obj<real_section_type>& coordinates         = mesh->getRealSection("coordinates");
+  const Obj<real_section_type>& parallelCoordinates = parallelMesh->getRealSection("coordinates");
+
+  if (options->debug) {coordinates->view("Serial Coordinates");}
+  parallelMesh->setupCoordinates(parallelCoordinates);
+  distribution_type::distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+  if (options->debug) {parallelCoordinates->view("Parallel Coordinates");}
+  // Create the parallel overlap
+  Obj<mesh_send_overlap_type> sendParallelMeshOverlap = new mesh_send_overlap_type(options->comm);
+  Obj<mesh_recv_overlap_type> recvParallelMeshOverlap = new mesh_recv_overlap_type(options->comm);
+  //   Can I figure this out in a nicer way?
+  ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(renumbering);
+
+  ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
+  sendParallelMeshOverlap->view("Send parallel mesh overlap");
+  recvParallelMeshOverlap->view("Receive parallel mesh overlap");
   PetscFunctionReturn(0);
 }
 
@@ -426,7 +443,7 @@ PetscErrorCode PartitionTests(const Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  //ierr = SieveISectionPartitionTest(options);CHKERRQ(ierr);
+  ierr = SieveISectionPartitionTest(options);CHKERRQ(ierr);
   ierr = ISieveISectionPartitionTest(options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

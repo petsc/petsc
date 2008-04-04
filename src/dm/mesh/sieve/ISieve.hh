@@ -483,6 +483,44 @@ namespace ALE {
       };
       void clear() {this->i = 0;};
     };
+    template<typename Section>
+    class UpdateVisitor {
+    public:
+      typedef typename Section::value_type value_type;
+    protected:
+      Section&          section;
+      const value_type *values;
+      int               i;
+    public:
+      UpdateVisitor(Section& s, const value_type *v) : section(s), values(v), i(0) {};
+      template<typename Point>
+      void visitPoint(const Point& point, const int orientation) {
+        const int dim = section.getFiberDimension(point);
+        this->section.updatePoint(point, &this->values[this->i], orientation);
+        this->i += dim;
+      };
+      template<typename Arrow>
+      void visitArrow(const Arrow& arrow, const int orientation) {};
+    };
+    template<typename Section>
+    class UpdateAddVisitor {
+    public:
+      typedef typename Section::value_type value_type;
+    protected:
+      Section&          section;
+      const value_type *values;
+      int               i;
+    public:
+      UpdateAddVisitor(Section& s, const value_type *v) : section(s), values(v), i(0) {};
+      template<typename Point>
+      void visitPoint(const Point& point, const int orientation) {
+        const int dim = section.getFiberDimension(point);
+        this->section.updateAddPoint(point, &this->values[this->i], orientation);
+        this->i += dim;
+      };
+      template<typename Arrow>
+      void visitArrow(const Arrow& arrow, const int orientation) {};
+    };
   };
 
   template<typename Sieve>
@@ -1271,6 +1309,31 @@ namespace ALE {
         isieve.setConeOrientation(orientations, renumbering[*b_iter]);
       }
       delete [] orientations;
+    };
+    template<typename Section, typename ISection, typename Renumbering>
+    static void convertCoordinates(Section& coordinates, ISection& icoordinates, Renumbering& renumbering) {
+      const typename Section::chart_type& chart = coordinates.getChart();
+      typename ISection::point_type       min   = *chart.begin();
+      typename ISection::point_type       max   = *chart.begin();
+
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        min = std::min(min, *p_iter);
+        max = std::max(max, *p_iter);
+      }
+      icoordinates.setChart(typename ISection::chart_type(min, max+1));
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        icoordinates.setFiberDimension(*p_iter, coordinates.getFiberDimension(*p_iter));
+      }
+      icoordinates.allocatePoint();
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        icoordinates.updatePoint(*p_iter, coordinates.restrictPoint(*p_iter));
+      }
+    };
+    template<typename Mesh, typename IMesh, typename Renumbering>
+    static void convertMesh(Mesh& mesh, IMesh& imesh, Renumbering& renumbering) {
+      convertSieve(*mesh.getSieve(), *imesh.getSieve(), renumbering);
+      imesh.stratify();
+      convertCoordinates(*mesh.getRealSection("coordinates"), *imesh.getRealSection("coordinates"), renumbering);
     };
   };
 }
