@@ -58,6 +58,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
     ksp->normtype = KSP_NORM_NO;
     ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit);CHKERRQ(ierr);
+    ksp->its = maxit;
     if (ksp->normtype != KSP_NORM_NO) {
       ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);
       ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
@@ -229,6 +230,9 @@ is described in
   L. F. Richardson, Philosophical Transactions of the Royal Society of London. Series A,
   Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911), pp. 307-357.
 
+   Notes: For some preconditioners, like SOR, the convergence test is skipped to improve speed,
+    thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor is
+    turned on, the norm is computed at each iteration and so the convergence test is run.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPRichardsonSetScale()
