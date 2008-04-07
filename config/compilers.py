@@ -536,8 +536,7 @@ class Configure(config.base.Configure):
       try:
         flagsArg = self.setCompilers.getCompilerFlagsArg()
         oldFlags = getattr(self.setCompilers, flagsArg)
-        setattr(self.setCompilers, flagsArg, oldFlags+' '+'-DPTesting')
-        self.setCompilers.addCompilerFlag(flag, body = '#define dummy \n           dummy\n#ifndef PTesting\n       fooey\n#endif')
+        self.setCompilers.addCompilerFlag(flag, body = '#define dummy \n           dummy\n#ifndef dummy\n       fooey\n#endif')
         setattr(self.setCompilers, flagsArg, oldFlags+' '+flag)
         self.fortranPreprocess = 1
         self.setCompilers.popLanguage()
@@ -549,6 +548,23 @@ class Configure(config.base.Configure):
     self.fortranPreprocess = 0
     self.logPrint('Fortran does NOT use CPP preprocessor', 3, 'compilers')
     return
+
+  def checkFortranDefineCompilerOption(self):
+    '''Check if -WF,-Dfoobar or -Dfoobar is the compiler option to define a macro'''
+    self.FortranDefineCompilerOption = 0
+    if not self.fortranPreprocess:
+      return
+    self.setCompilers.pushLanguage('FC')
+    for flag in ['-D', '-WF,-D']:
+      if self.setCompilers.checkCompilerFlag(flag+'Testing', body = '#define dummy \n           dummy\n#ifndef Testing\n       fooey\n#endif'):
+        self.FortranDefineCompilerOption = flag
+        self.setCompilers.popLanguage()
+        self.logPrint('Fortran uses '+flag+' for defining macro', 3, 'compilers')
+        return
+    self.setCompilers.popLanguage()
+    self.logPrint('Fortran does not support defining macro', 3, 'compilers')
+    return
+    
 
   def checkFortranLibraries(self):
     '''Substitutes for FLIBS the libraries needed to link with Fortran
@@ -1074,6 +1090,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranNameManglingDouble)
       self.executeTest(self.checkFortranPreprocessor)
+      self.executeTest(self.checkFortranDefineCompilerOption)
       if self.framework.argDB['with-fortranlib-autodetect']:
         self.executeTest(self.checkFortranLibraries)
       if hasattr(self.setCompilers, 'CXX'):
