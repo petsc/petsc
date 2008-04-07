@@ -6,7 +6,7 @@
 #define petsctestfile_             PETSCTESTFILE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscbinaryopen_           petscbinaryopen
-#defin petsctestfile_              petsctestfile
+#define petsctestfile_             petsctestfile
 #endif
 
 EXTERN_C_BEGIN
