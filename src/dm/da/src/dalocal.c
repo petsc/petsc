@@ -1285,6 +1285,8 @@ PetscErrorCode PETSCDM_DLLEXPORT admf_DARestoreArray(DA da,PetscTruth ghosted,vo
 
   Synopsis:
   PetscErrorCode DAGetLocalVector(DM dm,Vec* g)
+
+  Level: beginner
 M*/
 
 
@@ -1293,6 +1295,8 @@ M*/
 
   Synopsis:
   PetscErrorCode DARestoreLocalVector(DM dm,Vec* g)
+
+  Level: beginner
 M*/
 
 
@@ -1301,6 +1305,8 @@ M*/
 
   Synopsis:
   PetscErrorCode  DAGetGlobalVector(DM dm,Vec* g)
+
+  Level: beginner
 M*/
 
 
@@ -1309,4 +1315,6 @@ M*/
 
   Synopsis:
   PetscErrorCode DARestoreGlobalVector(DM dm,Vec* g)
+
+  Level: beginner
 M*/
