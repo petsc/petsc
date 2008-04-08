@@ -13,33 +13,9 @@ T*/
     See ex19.c for discussion of the problem 
 
   ------------------------------------------------------------------------- */
-#include "petscsnes.h"
-#include "petscda.h"
-#include "petscdmmg.h"
+#include "mp.h"
 
-typedef struct {
-  PetscScalar u,v,omega;
-} Field1;
-
-typedef struct {
-  PetscScalar temp;
-} Field2;
-
-typedef struct {
-  PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
-  DMMG         *dmmg1,*dmmg2,*dmmg_comp;             /* used by MySolutionView() */
-  DMComposite  pack;
-  PetscTruth   COMPOSITE_MODEL;
-  Field1       **x1;  /* passing local ghosted vector array of Physics 1 */
-  Field2       **x2;  /* passing local ghosted vector array of Physics 2 */
-} AppCtx;
-
-extern PetscErrorCode FormInitialLocalGuess1(DALocalInfo*,Field1**,Field1**,void*);
-extern PetscErrorCode FormInitialLocalGuess2(DALocalInfo*,Field2**,Field2**,void*);
 extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
-
-extern PetscErrorCode FormFunctionLocal1(DALocalInfo*,Field1**,Field1**,void*);
-extern PetscErrorCode FormFunctionLocal2(DALocalInfo*,Field2**,Field2**,void*);
 extern PetscErrorCode FormFunctionComp(SNES,Vec,Vec,void*);
 
 #undef __FUNCT__
@@ -209,18 +185,15 @@ PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal1"
 /* 
-    Form function for Physics 1: 
-      same as FormFunctionLocal() except without f.temp and x.temp.
-      the input x.temp comes from the solu_true 
+      x2 contains given tempature field
 */
-PetscErrorCode FormFunctionLocal1(DALocalInfo *info,Field1 **x,Field1 **f,void *ptr)
+PetscErrorCode FormFunctionLocal1(DALocalInfo *info,Field1 **x,Field2 **x2,Field1 **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
   PetscInt       xints,xinte,yints,yinte,i,j;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal      grashof,prandtl,lid;
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
-  Field2         **solu=user->x2;
 
   PetscFunctionBegin;
   grashof = user->grashof;  
@@ -306,10 +279,8 @@ PetscErrorCode FormFunctionLocal1(DALocalInfo *info,Field1 **x,Field1 **f,void *
         u          = x[j][i].omega;
         uxx        = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
         uyy        = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;   
-	f[j][i].omega = uxx + uyy 
-			+ (vxp*(u - x[j][i-1].omega) + vxm*(x[j][i+1].omega - u)) * hy 
-          + (vyp*(u - x[j-1][i].omega) + vym*(x[j+1][i].omega - u)) * hx;
-        f[j][i].omega += - .5 * grashof * (solu[j][i+1].temp - solu[j][i-1].temp) * hy;
+	f[j][i].omega = uxx + uyy + (vxp*(u - x[j][i-1].omega) + vxm*(x[j][i+1].omega - u))*hy + (vyp*(u - x[j-1][i].omega) + vym*(x[j+1][i].omega - u))*hx;
+        f[j][i].omega += - .5 * grashof * (x2[j][i+1].temp - x2[j][i-1].temp) * hy;
     }
   }
   PetscFunctionReturn(0);
@@ -318,18 +289,17 @@ PetscErrorCode FormFunctionLocal1(DALocalInfo *info,Field1 **x,Field1 **f,void *
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal2"
 /* 
-    Form function for Physics 2: 
-      same as FormFunctionLocal() but only has f.temp and x.temp.
-      the input x.u and x.v come from solu_true 
+      
+     x1 contains given velocity field
+
 */
-PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field2 **x,Field2 **f,void *ptr)
+PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field1**x1,Field2 **x,Field2 **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
   PetscInt       xints,xinte,yints,yinte,i,j;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal      grashof,prandtl,lid;
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
-  Field1         **solu=user->x1;
 
   PetscFunctionBegin;
   grashof = user->grashof;  
@@ -386,7 +356,7 @@ PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field2 **x,Field2 **f,void *
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
       /* convective coefficients for upwinding */
-      vx = solu[j][i].u; vy = solu[j][i].v; 
+      vx = x1[j][i].u; vy = x1[j][i].v; 
       avx = PetscAbsScalar(vx); 
       vxp = .5*(vx+avx); vxm = .5*(vx-avx);
       avy = PetscAbsScalar(vy); 
@@ -445,10 +415,8 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DAVecGetArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
 
   /* Evaluate local user provided function */    
-  user->x2 = x2; /* used by FormFunction1() */
-  ierr = FormFunctionLocal1(&info1,x1,f1,(void**)user);CHKERRQ(ierr);
-  user->x1 = x1; /* used by FormFunction2() */
-  ierr = FormFunctionLocal2(&info2,x2,f2,(void**)user);CHKERRQ(ierr);
+  ierr = FormFunctionLocal1(&info1,x1,x2,f1,(void**)user);CHKERRQ(ierr);
+  ierr = FormFunctionLocal2(&info2,x1,x2,f2,(void**)user);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
