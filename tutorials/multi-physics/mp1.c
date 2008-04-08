@@ -34,8 +34,8 @@ typedef struct {
   Field2       **x2;  /* passing local ghosted vector array of Physics 2 */
 } AppCtx;
 
-extern PetscErrorCode FormInitialGuess1(DMMG,Vec);
-extern PetscErrorCode FormInitialGuess2(DMMG,Vec);
+extern PetscErrorCode FormInitialLocalGuess1(DALocalInfo*,Field1**,Field1**,void*);
+extern PetscErrorCode FormInitialLocalGuess2(DALocalInfo*,Field2**,Field2**,void*);
 extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
 
 extern PetscErrorCode FormFunctionLocal1(DALocalInfo*,Field1**,Field1**,void*);
@@ -136,55 +136,35 @@ int main(int argc,char **argv)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess1"
-/* Form initial guess for Physic 1 */
-PetscErrorCode FormInitialGuess1(DMMG dmmg,Vec X)
+#define __FUNCT__ "FormInitialGuessLocal1"
+PetscErrorCode FormInitialGuessLocal1(DALocalInfo *info,Field1 **x)
 {
-  DA             da = (DA)dmmg->dm;
-  PetscInt       i,j,mx,xs,ys,xm,ym;
+  PetscInt       i,j;
   PetscErrorCode ierr;
-  Field1         **x;
 
-  ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-
-  ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i<xs+xm; i++) {
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
       x[j][i].u     = 0.0;
       x[j][i].v     = 0.0;
       x[j][i].omega = 0.0;
     }
   }
-  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   return 0;
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess2"
-/* Form initial guess for Physic 2 */
-PetscErrorCode FormInitialGuess2(DMMG dmmg,Vec X)
+#define __FUNCT__ "FormInitialGuessLocal2"
+PetscErrorCode FormInitialGuessLocal2(DALocalInfo *info,Field2 **x,AppCtx *user)
 {
-  AppCtx         *user = (AppCtx*)dmmg->user;
-  DA             da = (DA)dmmg->dm;
-  PetscInt       i,j,mx,xs,ys,xm,ym;
-  PetscErrorCode ierr;
-  PetscReal      grashof,dx;
-  Field2         **x;
+  PetscInt       i,j;
+  PetscScalar    dx;
 
-  grashof = user->grashof;
-  ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-  dx  = 1.0/(mx-1);
-
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
-
-  ierr = DAVecGetArray(da,X,&x);CHKERRQ(ierr);
-  for (j=ys; j<ys+ym; j++) {
-    for (i=xs; i<xs+xm; i++) {
-      x[j][i].temp  = (grashof>0)*i*dx;  
+  dx  = 1.0/(info->mx-1);
+  for (j=info->ys; j<info->ys+info->ym; j++) {
+    for (i=info->xs; i<info->xs+info->xm; i++) {
+      x[j][i].temp  = (user->grashof>0)*i*dx;  
     }
   }
-  ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   return 0;
 }
 
@@ -202,15 +182,26 @@ PetscErrorCode FormInitialGuessComp(DMMG dmmg,Vec X)
   DMMG           *dmmg1 = user->dmmg1,*dmmg2=user->dmmg2;
   DMComposite    dm = (DMComposite)dmmg->dm;
   Vec            X1,X2;
+  Field1         **x1;
+  Field2         **x2;
+  DALocalInfo    info1,info2;
 
   PetscFunctionBegin;
   /* Access the subvectors in X */
   ierr = DMCompositeGetAccess(dm,X,&X1,&X2);CHKERRQ(ierr);
+  /* Access the arrays inside the subvectors of X */
+  ierr = DAVecGetArray((DA)DMMGGetDM(dmmg1),X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DAVecGetArray((DA)DMMGGetDM(dmmg2),X2,(void**)&x2);CHKERRQ(ierr);
+
+  ierr = DAGetLocalInfo((DA)DMMGGetDM(dmmg1),&info1);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo((DA)DMMGGetDM(dmmg2),&info2);CHKERRQ(ierr);
 
   /* Evaluate local user provided function */
-  ierr = FormInitialGuess1(*dmmg1,X1);CHKERRQ(ierr);
-  ierr = FormInitialGuess2(*dmmg2,X2);CHKERRQ(ierr);
+  ierr = FormInitialGuessLocal1(&info1,x1);CHKERRQ(ierr);
+  ierr = FormInitialGuessLocal2(&info2,x2,user);CHKERRQ(ierr);
 
+  ierr = DAVecRestoreArray((DA)DMMGGetDM(dmmg1),X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray((DA)DMMGGetDM(dmmg2),X2,(void**)&x2);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(dm,X,&X1,&X2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
