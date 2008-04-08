@@ -9,8 +9,6 @@ class Configure(config.base.Configure):
     self.headerPrefix = 'PETSC'
     self.substPrefix  = 'PETSC'
     self.defineAutoconfMacros()
-    # List of packages actually found
-    self.framework.packages = []
     return
 
   def __str__(self):

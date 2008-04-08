@@ -2277,7 +2277,7 @@ PetscErrorCode MatGetRowMaxAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   if (n != A->rmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<m; i++) {
     ncols = ai[1] - ai[0]; ai++;
-    x[i] = 0.0; if (idx) idx[i] = 0;
+    x[i] = 0.0; 
     for (j=0; j<ncols; j++){
       atmp = PetscAbsScalar(*aa);         
       if (PetscAbsScalar(x[i]) < atmp) {x[i] = atmp; if (idx) idx[i] = *aj;}

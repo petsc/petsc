@@ -464,19 +464,24 @@ struct _p_PetscToken {char token;char *array;char *current;};
      This version is different from the system version in that
   it allows you to pass a read-only string into the function.
 
+     This version also treats all characters etc. inside a double quote "
+   as a single token.
+
    Level: intermediate
 
 .seealso: PetscTokenCreate(), PetscTokenDestroy()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscTokenFind(PetscToken a,char *result[])
 {
-  char *ptr = a->current;
+  char *ptr = a->current,token;
 
   PetscFunctionBegin;
   *result = a->current;
-  if (ptr && !*ptr) *result = 0;
+  if (ptr && !*ptr) {*result = 0;PetscFunctionReturn(0);}
+  token = a->token;
+  if (ptr && (*ptr == '"')) {token = '"';(*result)++;ptr++;}
   while (ptr) {
-    if (*ptr == a->token) {
+    if (*ptr == token) {
       *ptr++ = 0; 
       while (*ptr == a->token) ptr++;
       a->current = ptr;

@@ -279,4 +279,20 @@ PetscErrorCode MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
 }
 
 
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define petscisinfornan_            PETSCISINFORNAN
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define petscisinfornan_           petscisinfornan
+#endif
+
+EXTERN_C_BEGIN
+
+int PETSC_STDCALL petscisinfornan_(PetscScalar *v)
+{
+  return (int) PetscIsInfOrNan(*v);
+}
+
+EXTERN_C_END
+
+
 

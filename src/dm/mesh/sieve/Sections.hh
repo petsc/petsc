@@ -144,6 +144,128 @@ namespace ALE {
     };
   };
 
+  template<typename Sieve_, typename Alloc_ = malloc_allocator<typename Sieve_::target_type> >
+  class BaseSectionV : public ALE::ParallelObject {
+  public:
+    typedef Sieve_                                    sieve_type;
+    typedef Alloc_                                    alloc_type;
+    typedef int                                       value_type;
+    typedef typename sieve_type::target_type          point_type;
+    //typedef typename sieve_type::traits::baseSequence chart_type;
+    typedef int chart_type;
+  protected:
+    Obj<sieve_type> _sieve;
+    //chart_type      _chart;
+    int             _sizes[2];
+  public:
+    //BaseSectionV(const Obj<sieve_type>& sieve) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _chart(*sieve->base()) {_sizes[0] = 1; _sizes[1] = 0;};
+    BaseSectionV(const Obj<sieve_type>& sieve) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve) {_sizes[0] = 1; _sizes[1] = 0;};
+    ~BaseSectionV() {};
+  public: // Verifiers
+    bool hasPoint(const point_type& point) const {
+      return this->_sieve->baseContains(point);
+    };
+  public:
+    //const chart_type& getChart() const {
+    //  return this->_chart;
+    //};
+    const int getFiberDimension(const point_type& p) const {
+      return this->hasPoint(p) ? 1 : 0;
+    };
+    const value_type *restrict() const {
+      return this->_sizes;
+    };
+    const value_type *restrictPoint(const point_type& p) const {
+      if (this->hasPoint(p)) return this->_sizes;
+      return &this->_sizes[1];
+    };
+  };
+
+  template<typename Sieve_, typename Alloc_ = malloc_allocator<int> >
+  class ConeSizeSectionV : public ALE::ParallelObject {
+  public:
+    typedef Sieve_                               sieve_type;
+    typedef Alloc_                               alloc_type;
+    typedef int                                  value_type;
+    typedef typename sieve_type::target_type     point_type;
+    typedef BaseSectionV<sieve_type, alloc_type> atlas_type;
+    typedef typename atlas_type::chart_type      chart_type;
+    typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
+    typedef typename atlas_alloc_type::pointer                      atlas_ptr;
+  protected:
+    Obj<sieve_type> _sieve;
+    Obj<atlas_type> _atlas;
+    int             _size;
+  public:
+    ConeSizeSectionV(const Obj<sieve_type>& sieve) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve) {
+      atlas_ptr pAtlas = atlas_alloc_type().allocate(1);
+      atlas_alloc_type().construct(pAtlas, atlas_type(sieve));
+      this->_atlas     = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
+    };
+    ~ConeSizeSectionV() {};
+  public: // Verifiers
+    bool hasPoint(const point_type& point) {
+      return this->_atlas->hasPoint(point);
+    };
+  public: // Accessors
+    const Obj<atlas_type>& getAtlas() {return this->_atlas;};
+    void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
+  public:
+    const int getFiberDimension(const point_type& p) {
+      return this->hasPoint(p) ? 1 : 0;
+    };
+    const value_type *restrictPoint(const point_type& p) {
+      this->_size = this->_sieve->getConeSize(p);
+      return &this->_size;
+    };
+  };
+
+  template<typename Sieve_, typename Alloc_ = malloc_allocator<typename Sieve_::source_type> >
+  class ConeSectionV : public ALE::ParallelObject {
+  public:
+    typedef Sieve_                                   sieve_type;
+    typedef Alloc_                                   alloc_type;
+    typedef typename sieve_type::target_type         point_type;
+    typedef typename sieve_type::source_type         value_type;
+    typedef ConeSizeSectionV<sieve_type, alloc_type> atlas_type;
+    typedef typename atlas_type::chart_type          chart_type;
+    typedef typename ISieveVisitor::PointRetriever<sieve_type> visitor_type;
+    typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
+    typedef typename atlas_alloc_type::pointer                      atlas_ptr;
+  protected:
+    Obj<sieve_type> _sieve;
+    Obj<atlas_type> _atlas;
+    visitor_type   *_cV;
+    alloc_type      _allocator;
+  public:
+    ConeSectionV(const Obj<sieve_type>& sieve) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve) {
+      atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
+      atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(sieve));
+      this->_atlas     = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
+      this->_cV        = new visitor_type(std::max(0, sieve->getMaxConeSize()));
+    };
+    ~ConeSectionV() {
+      delete this->_cV;
+    };
+  public: // Verifiers
+    bool hasPoint(const point_type& point) {
+      return this->_atlas->hasPoint(point);
+    };
+  public: // Accessors
+    const Obj<atlas_type>& getAtlas() {return this->_atlas;};
+    void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
+  public: // Sizes and storage
+    int getFiberDimension(const point_type& p) {
+      return this->_atlas->restrictPoint(p)[0];
+    };
+  public: // Restriction and update
+    const value_type *restrictPoint(const point_type& p) {
+      this->_cV->clear();
+      this->_sieve->cone(p, *this->_cV);
+      return this->_cV->getPoints();
+    };
+  };
+
   template<typename Sieve_, typename Label_, typename Alloc_ = malloc_allocator<typename Sieve_::target_type> >
   class LabelBaseSection : public ALE::ParallelObject {
   public:

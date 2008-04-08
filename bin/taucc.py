@@ -27,7 +27,11 @@ def runcmd(cmd,verbose):
 
 def getTauFlags(tau_lib_dir):
   fd,name=tempfile.mkstemp(prefix='taucc-')
-  buf  = 'include ' + str(os.path.join(tau_lib_dir,'Makefile.tau-mpi-pdt'))
+  try:
+    tau_makefile = str(os.path.join(tau_lib_dir, os.path.basename(os.environ['TAU_MAKEFILE'])))
+  except:
+    tau_makefile = str(os.path.join(tau_lib_dir, 'Makefile.tau-mpi-pdt'))
+  buf  = 'include ' + tau_makefile
   buf += '''
 tauflags:
 	-@echo TAU_INSTRUMENT0R:${TAU_PREFIX_INSTALL_DIR}/${CONFIG_ARCH}/bin/tau_instrumentor

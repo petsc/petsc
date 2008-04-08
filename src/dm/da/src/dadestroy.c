@@ -46,7 +46,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy_Private(DM dm,PetscTruth *done)
     if (dm->globalout[i]) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Destroying a DM that has a global vector obtained with DMGetGlobalVector()");
     if (dm->globalin[i]) {ierr = VecDestroy(dm->globalin[i]);CHKERRQ(ierr);}
   }
-  *done = PETSC_FALSE;
+  *done = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 

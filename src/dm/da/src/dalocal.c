@@ -1279,3 +1279,42 @@ PetscErrorCode PETSCDM_DLLEXPORT admf_DARestoreArray(DA da,PetscTruth ghosted,vo
   ierr = DARestoreAdicMFArray(da,ghosted,iptr,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/*M
+  DAGetLocalVector - same as DMGetLocalVector
+
+  Synopsis:
+  PetscErrorCode DAGetLocalVector(DM dm,Vec* g)
+
+  Level: beginner
+M*/
+
+
+/*M
+  DARestoreLocalVector - same as DMRestoreLocalVector
+
+  Synopsis:
+  PetscErrorCode DARestoreLocalVector(DM dm,Vec* g)
+
+  Level: beginner
+M*/
+
+
+/*M
+  DAGetGlobalVector - same as DMGetGlobalVector
+
+  Synopsis:
+  PetscErrorCode  DAGetGlobalVector(DM dm,Vec* g)
+
+  Level: beginner
+M*/
+
+
+/*M
+  DARestoreGlobalVector - same as DMRestoreGlobalVector
+
+  Synopsis:
+  PetscErrorCode DARestoreGlobalVector(DM dm,Vec* g)
+
+  Level: beginner
+M*/
