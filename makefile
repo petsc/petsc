@@ -376,7 +376,7 @@ update-web-snapshot: dist web-snapshot
 
 # This target updates website main pages
 update-web:
-	@cd ${PETSC_DIR}/src/docs; PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} bib2html; \
+	@cd ${PETSC_DIR}/src/docs; make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} bib2html; \
 	/usr/bin/rsync -az -C --exclude=BitKeeper --exclude=documentation/installation.html \
 	  ${PETSC_DIR}/src/docs/website/ petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as
 	@cd ${PETSC_DIR}/src/docs/tex/manual; make developers.pdf PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} LOC=${PETSC_DIR}; \
