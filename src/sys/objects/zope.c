@@ -4,6 +4,9 @@
  * Opens a socket to the PETSc remote server
  * returns a file descriptor for the socket
  *
+ * Note: PETSC_HAVE_SYS_SOCKET_H is not defined on Windows
+ * and SO_REUSEADDR is not defined on BGL. In either case,
+ * this functionality gets disabled.  
  */  
 
 extern FILE *petsc_history;
@@ -19,7 +22,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
     host = gethostbyname(hostname);
     if(!host){
         SETERRQ(PETSC_ERR_ARG_CORRUPT, "unknown host");}
-#ifdef PETSC_HAVE_SYS_SOCKET_H
+#if defined(PETSC_HAVE_SYS_SOCKET_H) && defined(SO_REUSEADDR)
     sin.sin_family = AF_INET;
     ierr = PetscMemcpy((char *)&sin.sin_addr,host->h_addr, host->h_length); CHKERRQ(ierr);
     sin.sin_port = htons(portnum);
@@ -40,12 +43,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
  *
  */
 PetscErrorCode PETSC_DLLEXPORT PetscFdRecv(int fd, void *buf, size_t len, int flags, unsigned int *size){
-#ifdef PETSC_HAVE_SYS_SOCKET_H
+#if defined(PETSC_HAVE_SYS_SOCKET_H) && defined(SO_REUSEADDR)
   ssize_t recvLen;
 #endif
 
   PetscFunctionBegin;
-#ifdef PETSC_HAVE_SYS_SOCKET_H
+#if defined(PETSC_HAVE_SYS_SOCKET_H) && defined(SO_REUSEADDR)
   recvLen = recv(fd, buf, len, flags);
   if(recvLen < 0) {SETERRQ(PETSC_ERR_ARG_CORRUPT,"Could not complete recv");}
   *size = (unsigned int) recvLen;
@@ -60,12 +63,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscFdRecv(int fd, void *buf, size_t len, int fl
  *
  */
 PetscErrorCode PETSC_DLLEXPORT PetscFdWrite(int fd, void *buf, size_t len, unsigned int *size){
-#ifdef PETSC_HAVE_SYS_SOCKET_H
+#if defined(PETSC_HAVE_SYS_SOCKET_H) && defined(SO_REUSEADDR)
   ssize_t sendLen;
 #endif
 
   PetscFunctionBegin;
-#ifdef PETSC_HAVE_SYS_SOCKET_H
+#if defined(PETSC_HAVE_SYS_SOCKET_H) && defined(SO_REUSEADDR)
   sendLen = write(fd, buf, len);
   if(sendLen < 0) {SETERRQ(PETSC_ERR_ARG_CORRUPT, "Could not complete write: ");}
   *size = (unsigned int) sendLen;
@@ -89,7 +92,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSocketListen(char * hostname, int portnum, i
     unsigned int len2 = 0;
     int newfd,flags;
     PetscErrorCode ierr;
-#ifdef PETSC_HAVE_SYS_SOCKET_H
+#if defined(PETSC_HAVE_SYS_SOCKET_H) && defined(SO_REUSEADDR)
     struct sockaddr_in sin;
     typedef struct sockaddr SA;
     socklen_t sin_size, sout_size;
@@ -97,7 +100,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSocketListen(char * hostname, int portnum, i
 #endif
     
     PetscFunctionBegin;
-#ifdef PETSC_HAVE_SYS_SOCKET_H
+#if defined(PETSC_HAVE_SYS_SOCKET_H) && defined(SO_REUSEADDR)
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_port = htons(portnum);
