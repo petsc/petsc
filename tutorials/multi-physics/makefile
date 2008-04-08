@@ -14,12 +14,12 @@ DIRS		 =
 
 include ${PETSC_DIR}/conf/base
 
-mp1: mp1.o  chkopts
-	-${CLINKER} -o mp1 mp1.o ${PETSC_SNES_LIB}
+mp1: mp1.o  ff1.o ff2.o chkopts
+	-${CLINKER} -o mp1 mp1.o ff1.o ff2.o ${PETSC_SNES_LIB}
 	${RM} mp1.o
 #--------------------------------------------------------------------------
 runmp1:
-	-@${MPIEXEC} -np 1 ./mp1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > mp1_1.tmp 2>&1;   \
+	-@${MPIEXEC} -np 1 ./mp1 > mp1_1.tmp 2>&1;   \
 	   if (${DIFF} output/mp1_1.out mp1_1.tmp) then true; \
 	   else echo "Possible problem with mp1_1, diffs above"; fi; \
 	   ${RM} -f mp1_1.tmp

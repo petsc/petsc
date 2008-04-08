@@ -11,13 +11,11 @@ typedef struct {
 
 typedef struct {
   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
-  DMMG         *dmmg1,*dmmg2,*dmmg_comp;             /* used by MySolutionView() */
-  DMComposite  pack;
 } AppCtx;
 
-extern PetscErrorCode FormInitialLocalGuess1(DALocalInfo*,Field1**,Field1**,void*);
+extern PetscErrorCode FormInitialGuessLocal1(DALocalInfo*,Field1**);
 extern PetscErrorCode FormFunctionLocal1(DALocalInfo*,Field1**,Field2**,Field1**,void*);
 
-extern PetscErrorCode FormInitialLocalGuess2(DALocalInfo*,Field2**,Field2**,void*);
+extern PetscErrorCode FormInitialGuessLocal2(DALocalInfo*,Field2**,AppCtx*);
 extern PetscErrorCode FormFunctionLocal2(DALocalInfo*,Field1**,Field2**,Field2**,void*);
 
