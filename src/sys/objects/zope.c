@@ -12,6 +12,7 @@
 extern FILE *petsc_history;
 
 PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int * clientfd){
+#if defined(PETSC_HAVE_SYS_SOCKET_H) && defined(SO_REUSEADDR)
     struct sockaddr_in sin;
     typedef struct sockaddr SA;
     struct hostent *host;
@@ -22,7 +23,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
     host = gethostbyname(hostname);
     if(!host){
         SETERRQ(PETSC_ERR_ARG_CORRUPT, "unknown host");}
-#if defined(PETSC_HAVE_SYS_SOCKET_H) && defined(SO_REUSEADDR)
     sin.sin_family = AF_INET;
     ierr = PetscMemcpy((char *)&sin.sin_addr,host->h_addr, host->h_length); CHKERRQ(ierr);
     sin.sin_port = htons(portnum);
@@ -32,10 +32,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
     if(connect(*clientfd, (SA*)&sin, sizeof(sin)) < 0){
         SETERRQ(PETSC_ERR_ARG_CORRUPT,"could not create new connection for client");
         close(*clientfd);}
+    PetscFunctionReturn(0);
 #else
   SETERRQ(PETSC_ERR_SUP,"Sockets not supported");
 #endif
-    PetscFunctionReturn(0);
 }
 
 /*
