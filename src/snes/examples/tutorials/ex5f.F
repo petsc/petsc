@@ -283,7 +283,7 @@
 !    - Note that the Fortran interface to VecGetArray() differs from the
 !      C version.  See the users manual for details.
 
-      call DAGetLocalVector(da,localX,ierr)
+      call DMGetLocalVector(da,localX,ierr)
       call VecGetArray(localX,lx_v,lx_i,ierr)
 
 !  Compute initial guess over the locally owned part of the grid
@@ -297,7 +297,7 @@
 !  Insert values into global vector
 
       call DALocalToGlobal(da,localX,INSERT_VALUES,X,ierr)
-      call DARestoreLocalVector(da,localX,ierr)
+      call DMRestoreLocalVector(da,localX,ierr)
       return
       end
 

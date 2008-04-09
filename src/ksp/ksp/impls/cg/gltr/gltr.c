@@ -1597,7 +1597,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP ksp)
   PetscFunctionBegin;
 
   ierr = PetscNewLog(ksp, KSP_GLTR, &cg); CHKERRQ(ierr);
-  ksp->data = (void *) cg;
 
   cg->radius = 0.0;
   cg->dtype = GLTR_UNPRECONDITIONED_DIRECTION;
@@ -1612,7 +1611,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP ksp)
   cg->max_lanczos_its = 20;
   cg->max_newton_its  = 10;
 
+  ksp->data = (void *) cg;
   ksp->pc_side = PC_LEFT;
+  ksp->normtype = KSP_NORM_UNPRECONDITIONED;
 
   /***************************************************************************/
   /* Sets the functions that are associated with this data structure         */

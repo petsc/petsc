@@ -80,6 +80,18 @@ namespace ALE {
       ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
       return overlapCones;
     };
+    template<typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap>
+    static Obj<cones_type> completeConesV(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
+      typedef ALE::ConeSectionV<Sieve> cones_wrapper_type;
+      Obj<cones_wrapper_type> cones        = new cones_wrapper_type(sieve);
+      Obj<cones_type>         overlapCones = new cones_type(sieve->comm(), sieve->debug());
+
+      ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
+      if (sieve->debug()) {overlapCones->view("Overlap Cones");}
+      // Inserts cones into parallelMesh (must renumber here)
+      ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
+      return overlapCones;
+    };
     // Given a partition of sieve points, copy the mesh pieces to each process and fuse into the new mesh
     //   Return overlaps for the cone communication
     template<typename Renumbering, typename NewMesh, typename SendOverlap, typename RecvOverlap>
@@ -124,6 +136,47 @@ namespace ALE {
       // Send cones
       completeCones(mesh->getSieve(), newMesh->getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
     };
+    template<typename Renumbering, typename NewMesh, typename SendOverlap, typename RecvOverlap>
+    static void completeBaseV(const Obj<Mesh>& mesh, const Obj<partition_type>& partition, Renumbering& renumbering, const Obj<NewMesh>& newMesh, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
+      typedef ALE::Sifter<rank_type,rank_type,rank_type> part_send_overlap_type;
+      typedef ALE::Sifter<rank_type,rank_type,rank_type> part_recv_overlap_type;
+      const Obj<part_send_overlap_type> sendOverlap = new part_send_overlap_type(partition->comm());
+      const Obj<part_recv_overlap_type> recvOverlap = new part_recv_overlap_type(partition->comm());
+
+      // Create overlap for partition points
+      //   TODO: This needs to be generalized for multiple sources
+      Partitioner::createDistributionPartOverlap(sendOverlap, recvOverlap);
+      // Communicate partition pieces to processes
+      Obj<partition_type> overlapPartition = new partition_type(partition->comm(), partition->debug());
+
+      overlapPartition->setChart(partition->getChart());
+      ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, partition, overlapPartition);
+      // Create renumbering
+      const int         rank           = partition->commRank();
+      const point_type *localPoints    = partition->restrictPoint(rank);
+      const int         numLocalPoints = partition->getFiberDimension(rank);
+
+      for(point_type p = 0; p < numLocalPoints; ++p) {
+        renumbering[localPoints[p]] = p;
+      }
+      const Obj<typename part_recv_overlap_type::traits::baseSequence> rPoints    = recvOverlap->base();
+      point_type                                                       localPoint = numLocalPoints;
+
+      for(typename part_recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
+        const Obj<typename part_recv_overlap_type::coneSequence>& ranks           = recvOverlap->cone(*p_iter);
+        const rank_type&                                          remotePartPoint = ranks->begin().color();
+        const point_type                                         *points          = overlapPartition->restrictPoint(remotePartPoint);
+        const int                                                 numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
+
+        for(int i = 0; i < numPoints; ++i) {
+          renumbering[points[i]] = localPoint++;
+        }
+      }
+      newMesh->getSieve()->setChart(typename NewMesh::sieve_type::chart_type(0, renumbering.size()));
+      // Create mesh overlap from partition overlap
+      //   TODO: Generalize to redistribution (receive from multiple sources)
+      Partitioner::createDistributionMeshOverlap(partition, recvOverlap, renumbering, overlapPartition, sendMeshOverlap, recvMeshOverlap);
+    };
     template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<partition_type> distributeMesh(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
       const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
@@ -149,6 +202,39 @@ namespace ALE {
       completeMesh(mesh, partition, renumbering, newMesh, sendMeshOverlap, recvMeshOverlap);
       // Create the local mesh
       Partitioner::createLocalMesh(mesh, partition, renumbering, newMesh, height);
+      newMesh->stratify();
+      return partition;
+    };
+    template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
+    static Obj<partition_type> distributeMeshV(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
+      const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
+      const Obj<partition_type> partition     = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
+
+      // Create the cell partition
+      Partitioner::createPartitionV(mesh, cellPartition, height);
+      if (mesh->debug()) {
+        PetscViewer    viewer;
+        PetscErrorCode ierr;
+
+        cellPartition->view("Cell Partition");
+        ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRXX(ierr);
+        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRXX(ierr);
+        ierr = PetscViewerFileSetName(viewer, "mesh.vtk");CHKERRXX(ierr);
+        ///TODO ierr = MeshView_Sieve_Ascii(mesh, cellPartition, viewer);CHKERRXX(ierr);
+        ierr = PetscViewerDestroy(viewer);CHKERRXX(ierr);
+      }
+      // Close the partition over sieve points
+      Partitioner::createPartitionClosureV(mesh, cellPartition, partition, height);
+      if (mesh->debug()) {partition->view("Partition");}
+      // Create the remote bases
+      completeBaseV(mesh, partition, renumbering, newMesh, sendMeshOverlap, recvMeshOverlap);
+      // Size the local mesh
+      Partitioner::sizeLocalMeshV(mesh, partition, renumbering, newMesh, height);
+      // Create the remote meshes
+      completeConesV(mesh->getSieve(), newMesh->getSieve(), renumbering, sendMeshOverlap, recvMeshOverlap);
+      // Create the local mesh
+      Partitioner::createLocalMeshV(mesh, partition, renumbering, newMesh, height);
+      newMesh->getSieve()->symmetrize();
       newMesh->stratify();
       return partition;
     };

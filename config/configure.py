@@ -243,7 +243,7 @@ def petsc_configure(configure_options):
 
   framework = None
   try:
-    framework = config.framework.Framework(sys.argv[1:]+['--configModules=PETSc.Configure','--optionsModule=PETSc.compilerOptions'], loadArgDB = 0)
+    framework = config.framework.Framework(['--configModules=PETSc.Configure','--optionsModule=PETSc.compilerOptions']+sys.argv[1:], loadArgDB = 0)
     framework.setup()
     framework.logPrint('\n'.join(extraLogs))
     framework.configure(out = sys.stdout)
@@ -255,8 +255,9 @@ def petsc_configure(configure_options):
         i.postProcess()
     framework.logClear()
     framework.closeLog()
-    import shutil
-    shutil.move(framework.logName,os.path.join(framework.arch,'conf',framework.logName))
+    if hasattr(framework, 'arch'):
+      import shutil
+      shutil.move(framework.logName,os.path.join(framework.arch,'conf',framework.logName))
     return 0
   except (RuntimeError, config.base.ConfigureSetupError), e:
     emsg = str(e)

@@ -22,8 +22,7 @@ void PETSC_STDCALL petsclogeventend_(PetscEvent *e,PetscErrorCode *ierr){
 }
 
 void PETSC_STDCALL petsclogflops_(int *f,PetscErrorCode *ierr) {
-  PetscLogFlopsNoCheck(*f);
-  *ierr = 0;
+  *ierr = PetscLogFlops(*f);
 }
 
 

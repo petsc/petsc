@@ -118,7 +118,9 @@ PetscErrorCode FormFunctionLocal1(DALocalInfo *info,Field1 **x,Field2 **x2,Field
         uxx        = (2.0*u - x[j][i-1].omega - x[j][i+1].omega)*hydhx;
         uyy        = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;   
 	f[j][i].omega = uxx + uyy + (vxp*(u - x[j][i-1].omega) + vxm*(x[j][i+1].omega - u))*hy + (vyp*(u - x[j-1][i].omega) + vym*(x[j+1][i].omega - u))*hx;
-        f[j][i].omega += - .5 * grashof * (x2[j][i+1].temp - x2[j][i-1].temp) * hy;
+        if (x2) {
+          f[j][i].omega += - .5 * grashof * (x2[j][i+1].temp - x2[j][i-1].temp) * hy;
+        }
     }
   }
   PetscFunctionReturn(0);

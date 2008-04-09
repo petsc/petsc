@@ -1773,6 +1773,8 @@ $      Vec v
 
     See the example src/vec/vec/examples/tutorials/ex20f90.F90
 
+    Level: beginner
+
 M*/
 PETSC_EXTERN_CXX_END
 #endif

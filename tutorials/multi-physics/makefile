@@ -5,26 +5,34 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = tutorials/multi-physics
 MANSEC           = SNES
-EXAMPLESC	 = mp1.c
+EXAMPLESC	 = mp.c p1.c p2.c ff1.c ff2.c
 EXAMPLESF	 = 
-EXAMPLESCH	 = 
+EXAMPLESCH	 = mp.h
 EXAMPLESFH       = 
 EXAMPLESMATLAB   = 
 DIRS		 = 
 
 include ${PETSC_DIR}/conf/base
 
-mp1: mp1.o  ff1.o ff2.o chkopts
-	-${CLINKER} -o mp1 mp1.o ff1.o ff2.o ${PETSC_SNES_LIB}
-	${RM} mp1.o
-#--------------------------------------------------------------------------
-runmp1:
-	-@${MPIEXEC} -np 1 ./mp1 > mp1_1.tmp 2>&1;   \
-	   if (${DIFF} output/mp1_1.out mp1_1.tmp) then true; \
-	   else echo "Possible problem with mp1_1, diffs above"; fi; \
-	   ${RM} -f mp1_1.tmp
+p1: p1.o  ff1.o ff2.o chkopts
+	-${CLINKER} -o p1 p1.o ff1.o ff2.o ${PETSC_SNES_LIB}
+	${RM} p1.o ff1.o ff2.o
 
-TESTEXAMPLES_C		       = mp1.PETSc runmp1 mp1.rm 
+p2: p2.o  ff1.o ff2.o chkopts
+	-${CLINKER} -o p2 p2.o ff1.o ff2.o ${PETSC_SNES_LIB}
+	${RM} p2.o ff1.o ff2.o
+
+mp: mp.o  ff1.o ff2.o chkopts
+	-${CLINKER} -o mp mp.o ff1.o ff2.o ${PETSC_SNES_LIB}
+	${RM} mp.o ff1.o ff2.o
+#--------------------------------------------------------------------------
+runmp:
+	-@${MPIEXEC} -np 1 ./mp > mp_1.tmp 2>&1;   \
+	   if (${DIFF} output/mp_1.out mp_1.tmp) then true; \
+	   else echo "Possible problem with mp_1, diffs above"; fi; \
+	   ${RM} -f mp_1.tmp
+
+TESTEXAMPLES_C		       = mp.PETSc runmp mp.rm 
 TESTEXAMPLES_C_X11	       = 
 TESTEXAMPLES_FORTRAN	       = 
 TESTEXAMPLES_C_NOCOMPLEX       = 

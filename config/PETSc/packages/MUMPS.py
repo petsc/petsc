@@ -37,11 +37,11 @@ class Configure(PETSc.package.Package):
     else:
       g.write('ORDERINGSC = -Dpord\n')
 
-    # assume AIX if fortranPreprocess=0
-    if self.compilers.fortranPreprocess:
-      g.write('ORDERINGSF = -Dpord\n')
+    if self.compilers.FortranDefineCompilerOption:
+      g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'pord\n')
     else:
-      g.write('ORDERINGSF = -WF,-Dpord\n')
+      raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')
+      
     g.write('LORDERINGS = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
     g.write('IORDERINGS = $(IMETIS) $(IPORD) $(ISCOTCH)\n')
     g.write('RM = /bin/rm -f\n')

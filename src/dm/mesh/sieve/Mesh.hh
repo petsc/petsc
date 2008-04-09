@@ -1521,12 +1521,21 @@ namespace ALE {
     typedef std::set<std::string>            names_type;
   protected:
     int _dim;
+    bool                   _calculatedOverlap;
+    Obj<send_overlap_type> _sendOverlap;
+    Obj<recv_overlap_type> _recvOverlap;
   public:
     IMesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
     };
   public: // Accessors
     int getDimension() const {return this->_dim;};
     void setDimension(const int dim) {this->_dim = dim;};
+    bool getCalculatedOverlap() const {return this->_calculatedOverlap;};
+    void setCalculatedOverlap(const bool calc) {this->_calculatedOverlap = calc;};
+    const Obj<send_overlap_type>& getSendOverlap() const {return this->_sendOverlap;};
+    void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
+    const Obj<recv_overlap_type>& getRecvOverlap() const {return this->_recvOverlap;};
+    void setRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_recvOverlap = overlap;};
   public: // Sizes
     template<typename Section>
     int size(const Obj<Section>& section, const point_type& p) {
@@ -1548,6 +1557,10 @@ namespace ALE {
       this->getSieve()->cone(p, cV);
       return sV.getSize();
     };
+    template<typename Section>
+    void allocate(const Obj<Section>& section) {
+      section->allocatePoint();
+    };
   public: // Restrict/Update closures
     // Return the values for the closure of this point
     template<typename Section>
@@ -1556,6 +1569,46 @@ namespace ALE {
       ISieveVisitor::RestrictVisitor<Section> rV(*section, size, section->getRawArray(size));
       ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
       return rV.getValues();
+    };
+    template<typename Section>
+    const typename Section::value_type *restrict(const Obj<Section>& section, const point_type& p, typename Section::value_type *values, const int valuesSize) {
+      const int size = this->sizeWithBC(section, p);
+      if (valuesSize < size) {throw ALE::Exception("Input array to small for restrict()");}
+      ISieveVisitor::RestrictVisitor<Section> rV(*section, size, values);
+      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+      return rV.getValues();
+    };
+    // replace the values for the closure of this point
+    template<typename Section>
+    void update(const Obj<Section>& section, const point_type& p, const typename Section::value_type *v) {
+      ISieveVisitor::UpdateVisitor<Section> uV(*section, v);
+      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+    };
+    // Augment the values for the closure of this point
+    template<typename Section>
+    void updateAdd(const Obj<Section>& section, const point_type& p, const typename Section::value_type *v) {
+      ISieveVisitor::UpdateAddVisitor<Section> uV(*section, v);
+      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+    };
+  public: // Overlap
+    void constructOverlap() {
+      if (!this->_calculatedOverlap) {throw ALE::Exception("Must calculate overlap during distribution");}
+    };
+  public: // Cell topology and geometry
+    int getNumCellCorners(const point_type& p, const int depth = -1) const {
+      if (depth == 1) {
+        return this->_sieve->getConeSize(p);
+      }
+      throw ALE::Exception("Have not yet implemented nCone");
+    };
+    int getNumCellCorners() {
+      return getNumCellCorners(*this->heightStratum(0)->begin());
+    };
+    void setupCoordinates(const Obj<real_section_type>& coordinates) {
+      const int firstVertex = this->heightStratum(0)->size();
+      const int numVertices = this->depthStratum(0)->size();
+
+      coordinates->setChart(real_section_type::chart_type(firstVertex, firstVertex+numVertices));
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
@@ -1622,10 +1675,10 @@ namespace ALE {
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       ///this->_factory = MeshNumberingFactory::singleton(debug);
-      std::cout << "["<<this->commRank()<<"]: Creating an ALE::Mesh" << std::endl;
+      //std::cout << "["<<this->commRank()<<"]: Creating an ALE::Mesh" << std::endl;
     };
     ~Mesh() {
-      std::cout << "["<<this->commRank()<<"]: Destroying an ALE::Mesh" << std::endl;
+      //std::cout << "["<<this->commRank()<<"]: Destroying an ALE::Mesh" << std::endl;
     };
   public: // Accessors
     int getDimension() const {return this->_dim;};
@@ -1665,7 +1718,13 @@ namespace ALE {
       this->setRealSection("coordinates", m->getRealSection("coordinates"));
       this->setArrowSection("orientation", m->getArrowSection("orientation"));
     };
-  public: // Mesh geometry
+  public: // Cell topology and geometry
+    int getNumCellCorners(const point_type& p, const int depth = -1) const {
+      return (this->getDimension() > 0) ? this->_sieve->nCone(p, depth < 0 ? this->depth() : depth)->size() : 1;
+    };
+    int getNumCellCorners() {
+      return getNumCellCorners(*(this->heightStratum(0)->begin()));
+    };
     void setupCoordinates(const Obj<real_section_type>& coordinates) {
 #ifdef OPT_SECTION
       const int firstVertex = this->heightStratum(0)->size();
@@ -1708,7 +1767,7 @@ namespace ALE {
           }
           detJ = J[0]*J[3] - J[1]*J[2];
         }
-        PetscLogFlopsNoCheck(8 + 3);
+        PetscLogFlops(8 + 3);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -1716,7 +1775,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlopsNoCheck(5);
+        PetscLogFlops(5);
       }
     };
     void computeQuadrilateralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
@@ -1742,7 +1801,7 @@ namespace ALE {
         J[2] = y_1 + (y_3 - y_1 - y_2)*point[1];
         J[3] = y_1 + (y_3 - y_1 - y_2)*point[0];
         detJ = J[0]*J[3] - J[1]*J[2];
-        PetscLogFlopsNoCheck(6 + 16 + 3);
+        PetscLogFlops(6 + 16 + 3);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -1750,7 +1809,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlopsNoCheck(5);
+        PetscLogFlops(5);
       }
     };
     void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
@@ -1773,7 +1832,7 @@ namespace ALE {
         detJ = -(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                  J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                  J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlopsNoCheck(18 + 12);
+        PetscLogFlops(18 + 12);
       }
       if (invJ) {
         invDet  = -1.0/detJ;
@@ -1786,7 +1845,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlopsNoCheck(37);
+        PetscLogFlops(37);
       }
     };
     void computeHexahedralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
@@ -1837,7 +1896,7 @@ namespace ALE {
         detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                 J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                 J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlopsNoCheck(39 + 81 + 12);
+        PetscLogFlops(39 + 81 + 12);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -1850,7 +1909,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlopsNoCheck(37);
+        PetscLogFlops(37);
       }
     };
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {

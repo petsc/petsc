@@ -13,7 +13,7 @@ PetscErrorCode FormInitialGuessLocal2(DALocalInfo *info,Field2 **x,AppCtx *user)
   dx  = 1.0/(info->mx-1);
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
-      x[j][i].temp  = (user->grashof>0)*i*dx;  
+      x[j][i].temp  = .1 + (user->grashof>0)*i*dx;  
     }
   }
   return 0;
@@ -89,7 +89,11 @@ PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field1**x1,Field2 **x,Field2
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
       /* convective coefficients for upwinding */
-      vx = x1[j][i].u; vy = x1[j][i].v; 
+      if (x1) {
+        vx = x1[j][i].u; vy = x1[j][i].v; 
+      } else {
+        vx = vy = 0;
+      }
       avx = PetscAbsScalar(vx); 
       vxp = .5*(vx+avx); vxm = .5*(vx-avx);
       avy = PetscAbsScalar(vy); 

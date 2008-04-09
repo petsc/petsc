@@ -281,7 +281,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
   fd   = fopen(fname,"r"); 
   if (fd) {
     while (fgets(string,PETSC_MAX_PATH_LEN,fd)) {
-      /* eliminate commnets from each line */
+      /* eliminate comments from each line */
       for (i=0; i<3; i++){
         ierr = PetscStrchr(string,cmt[i],&cmatch);
         if (cmatch) *cmatch = 0;
