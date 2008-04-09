@@ -1,0 +1,38 @@
+<HTML>
+<HEAD>
+<TITLE>Nonlinear solvers - SNES</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> Nonlinear solvers - SNES: <A HREF="tutorials/..-physics/src/snes/examples/tutorials/index.html">Examples</A></H2>
+
+The Scalable Nonlinear Equations Solvers (SNES) component provides an
+easy-to-use interface to Newton-based methods for solving systems of
+nonlinear equations.  SNES users can set various algorithmic options
+at runtime via the options database (e.g., specifying a trust region
+method via
+<font face ="Courier">
+-snes_type tr
+</font face>
+).  
+
+SNES internally employs <A HREF="tutorials/..-physics/docs/manualpages/KSP/index.html">KSP</A> for the solution of 
+its linear systems.
+SNES users can also set KSP options directly in application
+codes by first extracting the KSP context from the SNES context via
+<A HREF="tutorials/..-physics/docs/manualpages/SNES/SNESGetKSP.html">SNESGetKSP()</A>
+and then directly calling various KSP (and KSP and PC) routines (e.g., 
+<A HREF="tutorials/..-physics/docs/manualpages/PC/PCSetType.html">PCSetType()</A>
+).
+
+<P>
+
+
+<p>
+<a href="mp.c.html">mp.c: Model multi-physics solver</a><br>
+<a href="p1.c.html">p1.c: Model single-physics solver</a><br>
+<a href="p2.c.html">p2.c: Model single-physics solver</a><br>
+<a href="ff1.c.html">ff1.c: </a><br>
+<a href="ff2.c.html">ff2.c: </a><br>
+ 
+<a href="makefile.html">makefile</a><br>

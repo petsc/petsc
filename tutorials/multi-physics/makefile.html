@@ -1,0 +1,63 @@
+
+<html>
+<head>
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2008-04-09T21:45:40+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+<pre width="80">
+CFLAGS           =
+FFLAGS		 = -I${PETSC_DIR}/include/finclude
+CPPFLAGS         =
+FPPFLAGS         =
+LOCDIR		 = tutorials/multi-physics
+MANSEC           = <A href="ROOT/docs/manualpages/SNES/SNES.html#SNES">SNES</A>
+EXAMPLESC	 = mp.c p1.c p2.c ff1.c ff2.c
+EXAMPLESF	 = 
+EXAMPLESCH	 = mp.h
+EXAMPLESFH       = 
+EXAMPLESMATLAB   = 
+DIRS		 = 
+
+include ${PETSC_DIR}/conf/base
+
+<strong><font color="#FF0000">p1:</font></strong> p1.o  ff1.o ff2.o chkopts
+	-${CLINKER} -o p1 p1.o ff1.o ff2.o ${PETSC_SNES_LIB}
+	${RM} p1.o ff1.o ff2.o
+
+<strong><font color="#FF0000">p2:</font></strong> p2.o  ff1.o ff2.o chkopts
+	-${CLINKER} -o p2 p2.o ff1.o ff2.o ${PETSC_SNES_LIB}
+	${RM} p2.o ff1.o ff2.o
+
+<strong><font color="#FF0000">mp:</font></strong> mp.o  ff1.o ff2.o chkopts
+	-${CLINKER} -o mp mp.o ff1.o ff2.o ${PETSC_SNES_LIB}
+	${RM} mp.o ff1.o ff2.o
+<font color="#A020F0">#--------------------------------------------------------------------------</font>
+<strong><font color="#FF0000">runmp:</font></strong>
+	-@${MPIEXEC} -np 1 ./mp &gt; mp_1.tmp 2&gt;&amp;1;   \
+	   <font color="#4169E1">if</font> (${DIFF} output/mp_1.out mp_1.tmp) then true; \
+	   <font color="#4169E1">else</font> echo <font color="#666666">"Possible problem with mp_1, diffs above"</font>; fi; \
+	   ${RM} -f mp_1.tmp
+
+TESTEXAMPLES_C		       = mp.PETSc runmp mp.rm 
+TESTEXAMPLES_C_X11	       = 
+TESTEXAMPLES_FORTRAN	       = 
+TESTEXAMPLES_C_NOCOMPLEX       = 
+TESTEXAMPLES_FORTRAN_NOCOMPLEX = 
+TESTEXAMPLES_FORTRAN_MPIUNI    = 
+TESTEXAMPLES_C_X11_MPIUNI      = 
+                                 
+TESTEXAMPLES_F90	       = 
+TESTEXAMPLES_13		       = 
+TESTEXAMPLES_MATLAB_ENGINE     =
+TESTEXAMPLES_AMS	       = 
+TESTEXAMPLES_ADIFOR	       =
+TESTEXAMPLES_MUMPS             =
+
+include ${PETSC_DIR}/conf/test
+</pre>
+</body>
+
+</html>
