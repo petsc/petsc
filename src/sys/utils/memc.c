@@ -13,7 +13,9 @@
     On the IBM Rs6000 using the Gnu G++ compiler you may have to include 
   <string.h> instead of <memory.h> 
 */
+#if defined(PETSC_HAVE_MEMORY_H)
 #include <memory.h>
+#endif
 #if defined(PETSC_HAVE_STRINGS_H)
 #include <strings.h>
 #endif

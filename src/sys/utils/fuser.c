@@ -60,11 +60,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetUserName(char name[],size_t nlen)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscGetUserName(char name[],size_t nlen)
 {
-  struct passwd *pw;
+  struct passwd *pw=0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+#if defined(PETSC_HAVE_GETPWUID)
   pw = getpwuid(getuid());
+#endif
   if (!pw) {ierr = PetscStrncpy(name,"Unknown",nlen);CHKERRQ(ierr);}
   else     {ierr = PetscStrncpy(name,pw->pw_name,nlen);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
