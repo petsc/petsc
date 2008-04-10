@@ -345,7 +345,7 @@ static struct _MatOps MatOps_Values = {0,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetBase_AD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatSNESMFSetBase_AD(Mat J,Vec U,Vec F)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_AD(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
   Mat_DAAD       *a = (Mat_DAAD*)J->data;

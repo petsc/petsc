@@ -1248,7 +1248,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
   PetscFunctionBegin;
 
 
- if (!snes->solve) SETERRQ(PETSC_ERR_ORDER,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
+ if (!snes->ops->solve) SETERRQ(PETSC_ERR_ORDER,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
 
   ierr = VecDuplicate(dmmg[level]->x,&Sk);CHKERRQ(ierr);
   snes->vec_sol = snes->vec_sol_always = dmmg[level]->x;
