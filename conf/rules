@@ -291,7 +291,7 @@ getmpiexec:
 	   egrep "Process adiC" $< > /dev/null ; \
               if [ "$$?" = 0 ]; then \
                 if [ ! -f $<.tmp1 ]; then \
-                  c=`grep "Process adiC" $< | Sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
+                  c=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
                   r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
                   echo Running adiC on function $${r};\
                   ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
