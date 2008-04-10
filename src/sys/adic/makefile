@@ -1,4 +1,8 @@
 
+#requirespackage  'PETSC_HAVE_ADIC'
+#requiresscalar real 
+#requiresprecision double
+
 ALL: lib
 
 SOURCEH  =  ../../../include/adic/ad_deriv.h             ../../../include/adic/run-map.h \
