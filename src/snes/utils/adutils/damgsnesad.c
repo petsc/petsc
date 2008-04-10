@@ -1316,7 +1316,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
    
     // X=x_c, F=F(x_c),Y search direction; G=F(x_new), W=x_new, 
     ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); 
-    ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
+    ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,xnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"SNESSolve_LS: fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",fnorm,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
     if (snes->reason == SNES_DIVERGED_FUNCTION_COUNT) break;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"step=%g,oldnorm=%g,norm=%g ",ynorm,fnorm,gnorm);CHKERRQ(ierr);
@@ -1552,7 +1552,7 @@ PetscErrorCode DMMGSolveFAS_NGMRES(DMMG *dmmg, PetscInt level)
       Hinv[4]=H[1][0];Hinv[5]=H[1][1];Hinv[6]=H[1][2];Hinv[7]=H[1][3];
       Hinv[8]=H[2][0];Hinv[9]=H[2][1];Hinv[10]=H[2][2];Hinv[11]=H[2][3];
       Hinv[12]=H[3][0];Hinv[13]=H[3][1];Hinv[14]=H[3][2];Hinv[15]=H[3][3];
-      Kernel_A_gets_inverse_A_4(Hinv,shift);   
+      Kernel_A_gets_inverse_A_4(Hinv,0.0);   
       for(i=0;i<l;i++)
         alpha[i]=Hinv[4*i]*beta[0]+Hinv[4*i+1]*beta[1]+Hinv[4*i+2]*beta[2]+Hinv[4*i+3]*beta[3];
           
