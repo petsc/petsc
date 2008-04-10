@@ -6,7 +6,7 @@
 PETSC_EXTERN_CXX_BEGIN
 
 typedef struct _p_TaoSolver*   TaoSolver;
-#define TaoSolverType const char*;
+#define TaoSolverType const char*
 extern PetscCookie PETSC_DLLEXPORT TAOSOLVER_COOKIE;
 
 /*  Convergence flags.
