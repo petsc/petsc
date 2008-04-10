@@ -26,10 +26,11 @@ class VTKViewer {
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteVertices"
-  static PetscErrorCode writeVertices(const Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
-    const Obj<ALE::Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
-    const int                                embedDim    = coordinates->getFiberDimension(*mesh->depthStratum(0)->begin());
-    Obj<ALE::Mesh::numbering_type>           vNumbering;
+  template<typename Mesh>
+  static PetscErrorCode writeVertices(const Obj<Mesh>& mesh, PetscViewer viewer) {
+    const Obj<typename Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+    const int                                    embedDim    = coordinates->getFiberDimension(*mesh->depthStratum(0)->begin());
+    Obj<typename Mesh::numbering_type>           vNumbering;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
@@ -87,7 +88,6 @@ class VTKViewer {
 
         // Perhaps there should be a flag for excluding boundary values
         if (dim != 0) {
-#if 1
           if (verify) {line << *p_iter << " ";}
           for(int d = 0; d < fiberDim; d++) {
             if (d > 0) {
@@ -100,23 +100,6 @@ class VTKViewer {
           }
           line << std::endl;
           ierr = PetscViewerASCIIPrintf(viewer, "%s", line.str().c_str());CHKERRQ(ierr);
-#else
-          if (verify) {ierr = PetscViewerASCIIPrintf(viewer, "%d ", *p_iter);CHKERRQ(ierr);}
-          for(int d = 0; d < fiberDim; d++) {
-            if (d > 0) {
-              ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
-            }
-            if (mpiType == MPI_INT || mpiType == MPI_SHORT) {
-              ierr = PetscViewerASCIIPrintf(viewer, "%d", array[d]);CHKERRQ(ierr);
-            } else {
-              ierr = PetscViewerASCIIPrintf(viewer, "%G", array[d]);CHKERRQ(ierr);
-            }
-          }
-          for(int d = fiberDim; d < enforceDim; d++) {
-            ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
-          }
-          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
-#endif
         }
       }
       for(int p = 1; p < field->commSize(); p++) {
@@ -202,12 +185,13 @@ class VTKViewer {
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteElements"
-  static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, PetscViewer viewer)
+  template<typename Mesh>
+  static PetscErrorCode writeElements(const Obj<Mesh>& mesh, PetscViewer viewer)
   {
-    int                            depth = mesh->depth();
-    Obj<ALE::Mesh::label_sequence> elements;
-    Obj<ALE::Mesh::numbering_type> cNumbering;
-    Obj<ALE::Mesh::numbering_type> vNumbering;
+    int                                depth = mesh->depth();
+    Obj<typename Mesh::label_sequence> elements;
+    Obj<typename Mesh::numbering_type> cNumbering;
+    Obj<typename Mesh::numbering_type> vNumbering;
 
     if (mesh->hasLabel("censored depth")) {
       elements   = mesh->getLabelStratum("censored depth", depth);
@@ -222,11 +206,12 @@ class VTKViewer {
   };
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteElements"
-  static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const std::string& cLabelName, const int cLabelValue, const std::string& vLabelName, const int vLabelValue, PetscViewer viewer)
+  template<typename Mesh>
+  static PetscErrorCode writeElements(const Obj<Mesh>& mesh, const std::string& cLabelName, const int cLabelValue, const std::string& vLabelName, const int vLabelValue, PetscViewer viewer)
   {
-    Obj<ALE::Mesh::label_sequence> elements;
-    Obj<ALE::Mesh::numbering_type> cNumbering;
-    Obj<ALE::Mesh::numbering_type> vNumbering;
+    Obj<typename Mesh::label_sequence> elements;
+    Obj<typename Mesh::numbering_type> cNumbering;
+    Obj<typename Mesh::numbering_type> vNumbering;
 
     if (mesh->hasLabel(cLabelName)) {
       elements   = mesh->getLabelStratum(cLabelName, cLabelValue);
@@ -243,6 +228,85 @@ class VTKViewer {
   };
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteElements"
+  template<typename Mesh>
+  static PetscErrorCode writeElements(const Obj<Mesh>& mesh, const Obj<typename Mesh::label_sequence>& elements, const Obj<typename Mesh::numbering_type>& cNumbering, const Obj<typename Mesh::numbering_type>& vNumbering, PetscViewer viewer)
+  {
+    typedef typename Mesh::sieve_type                      sieve_type;
+    typedef ALE::ISieveVisitor::NConeRetriever<sieve_type> visitor_type;
+    const Obj<sieve_type>& sieve        = mesh->getSieve();
+    int                    localCorners = 0;
+    int                    corners;
+    int                    numElements;
+    PetscErrorCode         ierr;
+    visitor_type           ncV(*sieve, (size_t) pow(sieve->getMaxConeSize(), mesh->depth()));
+
+    PetscFunctionBegin;
+    if (elements->size()) localCorners = mesh->getNumCellCorners();
+    corners     = localCorners;
+    numElements = cNumbering->getGlobalSize();
+    ierr = MPI_Reduce(&localCorners, &corners, 1, MPI_INT, MPI_MAX, 0, mesh->comm());CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
+    if (mesh->commRank() == 0) {
+      for(typename Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        ALE::ISieveTraversal<sieve_type>::orientedClosure(*sieve, *e_iter, ncV);
+        const typename visitor_type::oriented_point_type *cone = ncV.getOrientedPoints();
+
+        ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
+        for(int c = 0; c < ncV.getOrientedSize(); ++c) {
+          ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(cone[c].first));CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        ncV.clear();
+      }
+      for(int p = 1; p < mesh->commSize(); p++) {
+        int        numLocalElementsAndCorners[2];
+        int       *remoteVertices;
+        MPI_Status status;
+
+        ierr = MPI_Recv(numLocalElementsAndCorners, 2, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+        ierr = PetscMalloc(numLocalElementsAndCorners[0]*numLocalElementsAndCorners[1] * sizeof(int), &remoteVertices);CHKERRQ(ierr);
+        ierr = MPI_Recv(remoteVertices, numLocalElementsAndCorners[0]*numLocalElementsAndCorners[1], MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+        for(int e = 0; e < numLocalElementsAndCorners[0]; e++) {
+          ierr = PetscViewerASCIIPrintf(viewer, "%d ", numLocalElementsAndCorners[1]);CHKERRQ(ierr);
+          for(int c = 0; c < numLocalElementsAndCorners[1]; c++) {
+            ierr = PetscViewerASCIIPrintf(viewer, " %d", remoteVertices[e*numLocalElementsAndCorners[1]+c]);CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        }
+        ierr = PetscFree(remoteVertices);CHKERRQ(ierr);
+      }
+    } else {
+      int  numLocalElements = cNumbering->getLocalSize();
+      int *localVertices;
+      int  k = 0;
+
+      ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
+      for(typename Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        if (cNumbering->isLocal(*e_iter)) {
+          ALE::ISieveTraversal<sieve_type>::orientedClosure(*sieve, *e_iter, ncV);
+          const typename visitor_type::oriented_point_type *cone = ncV.getOrientedPoints();
+
+          for(int c = 0; c < ncV.getOrientedSize(); ++c) {
+            localVertices[k++] = vNumbering->getIndex(cone[c].first);
+          }
+          ncV.clear();
+        }
+      }
+      if (k != numLocalElements*corners) {
+        SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
+      }
+      int numLocalElementsAndCorners[2] = {numLocalElements, corners};
+      ierr = MPI_Send(numLocalElementsAndCorners, 2, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
+      ierr = MPI_Send(localVertices, numLocalElements*corners, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
+      ierr = PetscFree(localVertices);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
+    const int cellType = getCellType(mesh->getDimension(), corners);
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscViewerASCIIPrintf(viewer, "%d\n", cellType);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  };
   static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh::label_sequence>& elements, const Obj<ALE::Mesh::numbering_type>& cNumbering, const Obj<ALE::Mesh::numbering_type>& vNumbering, PetscViewer viewer)
   {
     typedef ALE::SieveAlg<ALE::Mesh>  sieve_alg_type;
@@ -254,7 +318,7 @@ class VTKViewer {
     PetscErrorCode                    ierr;
 
     PetscFunctionBegin;
-    if (elements->size()) localCorners = sieve->nCone(*elements->begin(), depth)->size();
+    if (elements->size()) localCorners = mesh->getNumCellCorners();
     corners     = localCorners;
     numElements = cNumbering->getGlobalSize();
     ierr = MPI_Reduce(&localCorners, &corners, 1, MPI_INT, MPI_MAX, 0, mesh->comm());CHKERRQ(ierr);

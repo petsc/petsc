@@ -40,11 +40,7 @@ namespace ALE {
     };
   public: // Verifiers
     void checkPoint(const point_type& point) const {
-      if (point < this->_chart.min() || point >= this->_chart.max()) {
-        ostringstream msg;
-        msg << "Invalid section point " << point << " not in " << this->_chart << std::endl;
-        throw ALE::Exception(msg.str().c_str());
-      }
+      this->_chart.checkPoint(point);
     };
     void checkDimension(const int& dim) {
       if (dim != 1) {
@@ -54,7 +50,7 @@ namespace ALE {
       }
     };
     bool hasPoint(const point_type& point) const {
-      return (point >= this->_chart.min() && point < this->_chart.max());
+      return this->_chart.hasPoint(point);
     };
   public: // Accessors
     const chart_type& getChart() const {return this->_chart;};
@@ -169,6 +165,7 @@ namespace ALE {
     typedef typename alloc_type::template rebind<point_type>::other point_alloc_type;
     typedef IConstantSection<point_type, int, point_alloc_type>     atlas_type;
     typedef typename atlas_type::chart_type                         chart_type;
+    typedef point_type                                              index_type;
     typedef struct {value_type v[fiberDim];}                        fiber_type;
     typedef value_type*                                             values_type;
     typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
@@ -201,10 +198,9 @@ namespace ALE {
     };
     virtual ~IUniformSection() {
       if (this->_array) {
-        const int size = this->size();
-
-        for(int i = 0; i < size; ++i) {this->_allocator.destroy(this->_array+i);}
-        this->_allocator.deallocate(this->_array, size);
+        for(int i = this->getChart().min()*fiberDim; i < this->getChart().max()*fiberDim; ++i) {this->_allocator.destroy(this->_array+i);}
+        this->_array += this->getChart().min()*fiberDim;
+        this->_allocator.deallocate(this->_array, this->sizeWithBC());
         this->_array = NULL;
         this->_atlas = NULL;
       }
@@ -243,7 +239,12 @@ namespace ALE {
     void setChart(const chart_type& chart) {
       this->_atlas->setChart(chart);
       int dim = fiberDim;
-      this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
+      this->_atlas->update(*this->getChart().begin(), &dim);
+    };
+    bool resizeChart(const chart_type& chart) {
+      if ((chart.min() >= this->getChart().min()) && (chart.max() <= this->getChart().max())) return false;
+      this->setChart(chart);
+      return true;
     };
     const Obj<atlas_type>& getAtlas() const {return this->_atlas;};
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
@@ -300,9 +301,34 @@ namespace ALE {
     int sizeWithBC() const {return this->size();};
     void allocatePoint() {
       const value_type dummy = 0;
-      const int        size  = this->size();
+      this->_array = this->_allocator.allocate(this->sizeWithBC());
+      this->_array -= this->getChart().min()*fiberDim;
+      for(index_type i = this->getChart().min()*fiberDim; i < this->getChart().max()*fiberDim; ++i) {this->_allocator.construct(this->_array+i, dummy);}
+    };
+    bool reallocatePoint(const chart_type& chart, values_type *oldData = NULL) {
+      const chart_type  oldChart = this->getChart();
+      const int         oldSize  = this->sizeWithBC();
+      const values_type oldArray = this->_array;
+      if (!this->resizeChart(chart)) return false;
+      const int         size     = this->sizeWithBC();
+      const value_type  dummy    = 0;
+
       this->_array = this->_allocator.allocate(size);
-      for(int i = 0; i < size; ++i) {this->_allocator.construct(this->_array+i, dummy);}
+      this->_array -= this->getChart().min()*fiberDim;
+      for(index_type i = this->getChart().min()*fiberDim; i < this->getChart().max()*fiberDim; ++i) {this->_allocator.construct(this->_array+i, dummy);}
+      for(int i = oldChart.min()*fiberDim; i < oldChart.max()*fiberDim; ++i) {
+        this->_array[i] = oldArray[i];
+      }
+      if (!oldData) {
+        for(index_type i = oldChart.min()*fiberDim; i < oldChart.max()*fiberDim; ++i) {this->_allocator.destroy(oldArray+i);}
+        this->_array += this->getChart().min()*fiberDim;
+        this->_allocator.deallocate(oldArray, oldSize);
+        std::cout << "Freed IUniformSection data" << std::endl;
+      } else {
+        std::cout << "Did not free IUniformSection data" << std::endl;
+        *oldData = oldArray;
+      }
+      return true;
     };
   public: // Restriction
     // Return a pointer to the entire contiguous storage array
@@ -312,18 +338,17 @@ namespace ALE {
     // Return only the values associated to this point, not its closure
     const value_type *restrictPoint(const point_type& p) const {
       if (!this->hasPoint(p)) return this->_emptyValue.v;
-      const int offset = (p - this->getChart().min())*fiberDim;
-      return &this->_array[offset];
+      return &this->_array[p*fiberDim];
     };
     // Update only the values associated to this point, not its closure
     void updatePoint(const point_type& p, const value_type v[]) {
-      for(int i = 0, idx = (p - this->getChart().min())*fiberDim; i < fiberDim; ++i, ++idx) {
+      for(int i = 0, idx = p*fiberDim; i < fiberDim; ++i, ++idx) {
         this->_array[idx] = v[i];
       }
     };
     // Update only the values associated to this point, not its closure
     void updateAddPoint(const point_type& p, const value_type v[]) {
-      for(int i = 0, idx = (p - this->getChart().min())*fiberDim; i < fiberDim; ++i, ++idx) {
+      for(int i = 0, idx = p*fiberDim; i < fiberDim; ++i, ++idx) {
         this->_array[idx] += v[i];
       }
     };
@@ -354,7 +379,7 @@ namespace ALE {
       values_type                            array = this->_array;
 
       for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        const int idx = (*p_iter - this->getChart().min())*fiberDim;
+        const int idx = (*p_iter)*fiberDim;
 
         if (fiberDim != 0) {
           txt << "[" << this->commRank() << "]:   " << *p_iter << " dim " << fiberDim << "  ";
@@ -401,6 +426,37 @@ namespace ALE {
       this->_atlas->setChart(chart);
       this->_atlas->allocatePoint();
     };
+    bool resizeChart(const chart_type& chart) {
+      if (!this->_atlas->reallocatePoint(chart)) return false;
+      return true;
+    };
+    bool reallocatePoint(const chart_type& chart) {
+      typedef typename atlas_type::alloc_type atlas_alloc_type;
+      const chart_type        oldChart = this->getChart();
+      const int               oldSize  = this->sizeWithBC();
+      const values_type       oldArray = this->_array;
+      const int               oldAtlasSize = this->_atlas->sizeWithBC();
+      typename atlas_type::values_type oldAtlasArray;
+      if (!this->_atlas->reallocatePoint(chart, &oldAtlasArray)) return false;
+
+      this->orderPoints(this->_atlas);
+      this->allocateStorage();
+      for(int i = oldChart.min(); i < oldChart.max(); ++i) {
+        const typename atlas_type::value_type& idx = this->_atlas->restrictPoint(i)[0];
+        const int                              dim = idx.prefix;
+        const int                              off = idx.index;
+
+        for(int d = 0; d < dim; ++d) {
+          this->_array[off+d] = oldArray[oldAtlasArray[i].index+d];
+        }
+      }
+      for(int i = 0; i < oldSize; ++i) {this->_allocator.destroy(oldArray+i);}
+      this->_allocator.deallocate(oldArray, oldSize);
+      for(int i = oldChart.min(); i < oldChart.max(); ++i) {atlas_alloc_type(this->_allocator).destroy(oldAtlasArray+i);}
+      oldAtlasArray += oldChart.min();
+      atlas_alloc_type(this->_allocator).deallocate(oldAtlasArray, oldAtlasSize);
+      std::cout << "In ISection, Freed IUniformSection data" << std::endl;
+    };
   public:
     // Return the free values on a point
     //   This is overridden, because the one in Section cannot be const due to problem in the interface with UniformSection
@@ -426,6 +482,9 @@ namespace ALE {
     typedef typename base::atlas_ptr        atlas_ptr;
     typedef typename base::bc_alloc_type    bc_alloc_type;
     typedef typename base::bc_ptr           bc_ptr;
+    typedef std::pair<point_type,int>       newpoint_type;
+  protected:
+    std::set<newpoint_type> newPoints;
   public:
     IGeneralSection(MPI_Comm comm, const int debug = 0) : GeneralSection<Point_, Value_, Alloc_, IUniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other>, ISection<Point_, int, typename Alloc_::template rebind<int>::other> >(comm, debug) {};
     IGeneralSection(MPI_Comm comm, const point_type& min, const point_type& max, const int debug = 0) : GeneralSection<Point_, Value_, Alloc_, IUniformSection<Point_, Point, 1, typename Alloc_::template rebind<Point>::other>, ISection<Point_, int, typename Alloc_::template rebind<int>::other> >(comm, debug) {
@@ -449,6 +508,59 @@ namespace ALE {
         this->_bcs[s]->setChart(chart);
         this->_bcs[s]->getAtlas()->allocatePoint();
       }
+    };
+    // Returns true if the chart was changed
+    bool resizeChart(const chart_type& chart) {
+      if (!this->_atlas->reallocatePoint(chart)) return false;
+      this->_bc->reallocatePoint(chart);
+      for(int s = 0; s < (int) this->_spaces.size(); ++s) {
+        this->_spaces[s]->reallocatePoint(chart);
+        this->_bcs[s]->reallocatePoint(chart);
+      }
+      return true;
+    };
+    // Returns true if the chart was changed
+    bool reallocatePoint(const chart_type& chart) {
+      typedef typename alloc_type::template rebind<typename atlas_type::value_type>::other atlas_alloc_type;
+      const chart_type        oldChart = this->getChart();
+      const int               oldSize  = this->sizeWithBC();
+      const values_type       oldArray = this->_array;
+      const int               oldAtlasSize = this->_atlas->sizeWithBC();
+      typename atlas_type::values_type oldAtlasArray;
+      if (!this->_atlas->reallocatePoint(chart, &oldAtlasArray)) return false;
+      this->_bc->reallocatePoint(chart);
+      for(int s = 0; s < (int) this->_spaces.size(); ++s) {
+        this->_spaces[s]->reallocatePoint(chart);
+        this->_bcs[s]->reallocatePoint(chart);
+      }
+      for(typename std::set<newpoint_type>::const_iterator p_iter = this->newPoints.begin(); p_iter != this->newPoints.end(); ++p_iter) {
+        this->setFiberDimension(p_iter->first, p_iter->second);
+      }
+      this->orderPoints(this->_atlas);
+      this->allocateStorage();
+      for(int i = oldChart.min(); i < oldChart.max(); ++i) {
+        const typename atlas_type::value_type& idx = this->_atlas->restrictPoint(i)[0];
+        const int                              dim = idx.prefix;
+        const int                              off = idx.index;
+
+        for(int d = 0; d < dim; ++d) {
+          this->_array[off+d] = oldArray[oldAtlasArray[i].index+d];
+        }
+      }
+      for(int i = 0; i < oldSize; ++i) {this->_allocator.destroy(oldArray+i);}
+      this->_allocator.deallocate(oldArray, oldSize);
+      for(int i = oldChart.min(); i < oldChart.max(); ++i) {atlas_alloc_type(this->_allocator).destroy(oldAtlasArray+i);}
+      oldAtlasArray += oldChart.min();
+      atlas_alloc_type(this->_allocator).deallocate(oldAtlasArray, oldAtlasSize);
+      this->newPoints.clear();
+      return true;
+    };
+  public:
+    bool hasNewPoints() {return this->newPoints.size() > 0;};
+    const std::set<newpoint_type>& getNewPoints() {return this->newPoints;};
+    void addPoint(const point_type& point, const int dim) {
+      if (dim == 0) return;
+      this->newPoints.insert(newpoint_type(point, dim));
     };
   };
 }

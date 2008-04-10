@@ -55,6 +55,10 @@ namespace ALE {
     size_t count(const point_type& p) const {return ((p >= _min) && (p < _max)) ? 1 : 0;};
     point_type min() const {return this->_min;};
     point_type max() const {return this->_max;};
+    bool hasPoint(const point_type& point) const {
+      if (point < this->_min || point >= this->_max) return false;
+      return true;
+    };
     void checkPoint(const point_type& point) const {
       if (point < this->_min || point >= this->_max) {
         ostringstream msg;
@@ -135,6 +139,8 @@ namespace ALE {
       Visitor             *visitor;
       point_type          *points;
       oriented_point_type *oPoints;
+    protected:
+      inline virtual bool accept(const point_type& point) {return true;};
     public:
       PointRetriever(const size_t size) : size(size), i(0), o(0) {
         static Visitor nV;
@@ -162,8 +168,10 @@ namespace ALE {
           msg << "Too many points (>" << size << ")for PointRetriever visitor";
           throw ALE::Exception(msg.str().c_str());
         }
-        points[i++] = point;
-        this->visitor->visitPoint(point);
+        if (this->accept(point)) {
+          points[i++] = point;
+          this->visitor->visitPoint(point);
+        }
       };
       void visitPoint(const point_type& point, const int orientation) {
         if (o >= size) {
@@ -171,8 +179,10 @@ namespace ALE {
           msg << "Too many ordered points (>" << size << ")for PointRetriever visitor";
           throw ALE::Exception(msg.str().c_str());
         }
-        oPoints[o++] = oriented_point_type(point, orientation);
-        this->visitor->visitPoint(point, orientation);
+        if (this->accept(point)) {
+          oPoints[o++] = oriented_point_type(point, orientation);
+          this->visitor->visitPoint(point, orientation);
+        }
       };
     public:
       const size_t               getSize() const {return this->i;};
@@ -180,6 +190,25 @@ namespace ALE {
       const size_t               getOrientedSize() const {return this->o;};
       const oriented_point_type *getOrientedPoints() const {return this->oPoints;};
       void clear() {this->i = this->o = 0;};
+    };
+    template<typename Sieve, typename Visitor = NullVisitor<Sieve> >
+    class NConeRetriever : public PointRetriever<Sieve,Visitor> {
+    public:
+      typedef PointRetriever<Sieve,Visitor>           base_type;
+      typedef typename Sieve::point_type              point_type;
+      typedef typename Sieve::arrow_type              arrow_type;
+      typedef typename base_type::oriented_point_type oriented_point_type;
+    protected:
+      const Sieve& sieve;
+    protected:
+      inline virtual bool accept(const point_type& point) {
+        if (!this->sieve.getConeSize(point))
+          return true;
+        return false;
+      };
+    public:
+      NConeRetriever(const Sieve& s, const size_t size) : PointRetriever<Sieve,Visitor>(size), sieve(s) {};
+      NConeRetriever(const Sieve& s, const size_t size, Visitor& v) : PointRetriever<Sieve,Visitor>(size, v), sieve(s) {};
     };
     template<typename Sieve, typename Visitor = NullVisitor<Sieve> >
     class PointSetRetriever {
@@ -224,7 +253,7 @@ namespace ALE {
       };
     public:
       const size_t                getSize() const {return this->points.size();};
-      const points_type           getPoints() const {return this->points;};
+      const points_type&          getPoints() const {return this->points;};
       const size_t                getOrientedSize() const {return this->oPoints.size();};
       const oriented_points_type& getOrientedPoints() const {return this->oPoints;};
       void clear() {this->points.clear(); this->oPoints.clear();};
@@ -774,6 +803,8 @@ namespace ALE {
     typedef typename point_allocator_type::template rebind<int>::other        int_allocator_type;
     // Interval
     typedef Interval<point_type, point_allocator_type> chart_type;
+    // Dynamic structure
+    typedef std::map<point_type, std::vector<point_type> > newpoints_type;
     // Compatibility types for SieveAlgorithms (until we rewrite for visitors)
     typedef std::set<point_type>   pointSet;
     typedef ALE::array<point_type> pointArray;
@@ -796,6 +827,8 @@ namespace ALE {
     bool                 pointAllocated;
     index_type           maxConeSize;
     index_type           maxSupportSize;
+    index_type           baseSize;
+    index_type           capSize;
     cones_type           cones;
     supports_type        supports;
     bool                 orientCones;
@@ -804,6 +837,8 @@ namespace ALE {
     int_allocator_type   intAlloc;
     index_allocator_type indexAlloc;
     point_allocator_type pointAlloc;
+    newpoints_type       newCones;
+    newpoints_type       newSupports;
   protected: // Memory Management
     void createIndices() {
       this->coneOffsets = indexAlloc.allocate(this->chart.size()+1);
@@ -814,22 +849,27 @@ namespace ALE {
       for(index_type i = this->chart.min(); i <= this->chart.max(); ++i) {indexAlloc.construct(this->supportOffsets+i, index_type(0));}
       this->indexAllocated = true;
     };
+    void destroyIndices(const chart_type& chart, offsets_type *coneOffsets, offsets_type *supportOffsets) {
+      if (*coneOffsets) {
+        for(index_type i = chart.min(); i <= chart.max(); ++i) {indexAlloc.destroy((*coneOffsets)+i);}
+        *coneOffsets += chart.min();
+        indexAlloc.deallocate(*coneOffsets, chart.size()+1);
+        *coneOffsets = NULL;
+      }
+      if (*supportOffsets) {
+        for(index_type i = chart.min(); i <= chart.max(); ++i) {indexAlloc.destroy((*supportOffsets)+i);}
+        *supportOffsets += chart.min();
+        indexAlloc.deallocate(*supportOffsets, chart.size()+1);
+        *supportOffsets = NULL;
+      }
+    };
     void destroyIndices() {
-      if (this->coneOffsets) {
-        for(index_type i = this->chart.min(); i <= this->chart.max(); ++i) {indexAlloc.destroy(this->coneOffsets+i);}
-        this->coneOffsets += this->chart.min();
-        indexAlloc.deallocate(this->coneOffsets, this->chart.size()+1);
-        this->coneOffsets = NULL;
-      }
-      if (this->supportOffsets) {
-        for(index_type i = this->chart.min(); i <= this->chart.max(); ++i) {indexAlloc.destroy(this->supportOffsets+i);}
-        this->supportOffsets += this->chart.min();
-        indexAlloc.deallocate(this->supportOffsets, this->chart.size()+1);
-        this->supportOffsets = NULL;
-      }
+      this->destroyIndices(this->chart, &this->coneOffsets, &this->supportOffsets);
       this->indexAllocated = false;
       this->maxConeSize    = -1;
       this->maxSupportSize = -1;
+      this->baseSize       = -1;
+      this->capSize        = -1;
     };
     void createPoints() {
       this->cones = pointAlloc.allocate(this->coneOffsets[this->chart.max()]-this->coneOffsets[this->chart.min()]);
@@ -842,22 +882,25 @@ namespace ALE {
       }
       this->pointAllocated = true;
     };
+    void destroyPoints(const chart_type& chart, const offsets_type coneOffsets, cones_type *cones, const offsets_type supportOffsets, supports_type *supports, orientations_type *coneOrientations) {
+      if (*cones) {
+        for(index_type i = coneOffsets[chart.min()]; i < coneOffsets[chart.max()]; ++i) {pointAlloc.destroy((*cones)+i);}
+        pointAlloc.deallocate(*cones, coneOffsets[chart.max()]-coneOffsets[chart.min()]);
+        *cones = NULL;
+      }
+      if (*supports) {
+        for(index_type i = supportOffsets[chart.min()]; i < supportOffsets[chart.max()]; ++i) {pointAlloc.destroy((*supports)+i);}
+        pointAlloc.deallocate(*supports, supportOffsets[chart.max()]-supportOffsets[chart.min()]);
+        *supports = NULL;
+      }
+      if (*coneOrientations) {
+        for(index_type i = coneOffsets[chart.min()]; i < coneOffsets[chart.max()]; ++i) {pointAlloc.destroy((*coneOrientations)+i);}
+        intAlloc.deallocate(*coneOrientations, coneOffsets[chart.max()]-coneOffsets[chart.min()]);
+        *coneOrientations = NULL;
+      }
+    };
     void destroyPoints() {
-      if (this->cones) {
-        for(index_type i = this->coneOffsets[this->chart.min()]; i < this->coneOffsets[this->chart.max()]; ++i) {pointAlloc.destroy(this->cones+i);}
-        pointAlloc.deallocate(this->cones, this->coneOffsets[this->chart.max()]-this->coneOffsets[this->chart.min()]);
-        this->cones = NULL;
-      }
-      if (this->supports) {
-        for(index_type i = this->supportOffsets[this->chart.min()]; i < this->supportOffsets[this->chart.max()]; ++i) {pointAlloc.destroy(this->supports+i);}
-        pointAlloc.deallocate(this->supports, this->supportOffsets[this->chart.max()]-this->supportOffsets[this->chart.min()]);
-        this->supports = NULL;
-      }
-      if (this->coneOrientations) {
-        for(index_type i = this->coneOffsets[this->chart.min()]; i < this->coneOffsets[this->chart.max()]; ++i) {pointAlloc.destroy(this->coneOrientations+i);}
-        intAlloc.deallocate(this->coneOrientations, this->coneOffsets[this->chart.max()]-this->coneOffsets[this->chart.min()]);
-        this->coneOrientations = NULL;
-      }
+      this->destroyPoints(this->chart, this->coneOffsets, &this->cones, this->supportOffsets, &this->supports, &this->coneOrientations);
       this->pointAllocated = false;
     };
     void prefixSum(const offsets_type array) {
@@ -865,9 +908,23 @@ namespace ALE {
         array[p] = array[p] + array[p-1];
       }
     };
+    void calculateBaseAndCapSize() {
+      this->baseSize = 0;
+      for(point_type p = this->chart.min(); p < this->chart.max(); ++p) {
+        if (this->coneOffsets[p+1]-this->coneOffsets[p] > 0) {
+          ++this->baseSize;
+        }
+      }
+      this->capSize = 0;
+      for(point_type p = this->chart.min(); p < this->chart.max(); ++p) {
+        if (this->supportOffsets[p+1]-this->supportOffsets[p] > 0) {
+          ++this->capSize;
+        }
+      }
+    };
   public:
-    IFSieve(const MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), indexAllocated(false), coneOffsets(NULL), supportOffsets(NULL), pointAllocated(false), maxConeSize(-1), maxSupportSize(-1), cones(NULL), supports(NULL), orientCones(true), coneOrientations(NULL) {};
-    IFSieve(const MPI_Comm comm, const point_type& min, const point_type& max, const int debug = 0) : ParallelObject(comm, debug), indexAllocated(false), coneOffsets(NULL), supportOffsets(NULL), pointAllocated(false), maxConeSize(-1), maxSupportSize(-1), cones(NULL), supports(NULL), orientCones(true), coneOrientations(NULL) {
+    IFSieve(const MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), indexAllocated(false), coneOffsets(NULL), supportOffsets(NULL), pointAllocated(false), maxConeSize(-1), maxSupportSize(-1), baseSize(-1), capSize(-1), cones(NULL), supports(NULL), orientCones(true), coneOrientations(NULL) {};
+    IFSieve(const MPI_Comm comm, const point_type& min, const point_type& max, const int debug = 0) : ParallelObject(comm, debug), indexAllocated(false), coneOffsets(NULL), supportOffsets(NULL), pointAllocated(false), maxConeSize(-1), maxSupportSize(-1), baseSize(-1), capSize(-1), cones(NULL), supports(NULL), orientCones(true), coneOrientations(NULL) {
       this->setChart(chart_type(min, max));
     };
     ~IFSieve() {
@@ -899,40 +956,34 @@ namespace ALE {
     };
   public: // Construction
     index_type getConeSize(const point_type& p) const {
-      if (!this->indexAllocated) {throw ALE::Exception("IFSieve indices have not been allocated.");}
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
       this->chart.checkPoint(p);
       return this->coneOffsets[p+1]-this->coneOffsets[p];
     };
     void setConeSize(const point_type& p, const index_type c) {
-      if (!this->indexAllocated) {throw ALE::Exception("IFSieve indices have not been allocated.");}
       if (this->pointAllocated) {throw ALE::Exception("IFSieve points have already been allocated.");}
       this->chart.checkPoint(p);
       this->coneOffsets[p+1] = c;
       this->maxConeSize = std::max(this->maxConeSize, c);
     };
     void addConeSize(const point_type& p, const index_type c) {
-      if (!this->indexAllocated) {throw ALE::Exception("IFSieve indices have not been allocated.");}
       if (this->pointAllocated) {throw ALE::Exception("IFSieve points have already been allocated.");}
       this->chart.checkPoint(p);
       this->coneOffsets[p+1] += c;
       this->maxConeSize = std::max(this->maxConeSize, this->coneOffsets[p+1]);
     };
     index_type getSupportSize(const point_type& p) const {
-      if (!this->indexAllocated) {throw ALE::Exception("IFSieve indices have not been allocated.");}
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
       this->chart.checkPoint(p);
       return this->supportOffsets[p+1]-this->supportOffsets[p];
     };
     void setSupportSize(const point_type& p, const index_type s) {
-      if (!this->indexAllocated) {throw ALE::Exception("IFSieve indices have not been allocated.");}
       if (this->pointAllocated) {throw ALE::Exception("IFSieve points have already been allocated.");}
       this->chart.checkPoint(p);
       this->supportOffsets[p+1] = s;
       this->maxSupportSize = std::max(this->maxSupportSize, s);
     };
     void addSupportSize(const point_type& p, const index_type s) {
-      if (!this->indexAllocated) {throw ALE::Exception("IFSieve indices have not been allocated.");}
       if (this->pointAllocated) {throw ALE::Exception("IFSieve points have already been allocated.");}
       this->chart.checkPoint(p);
       this->supportOffsets[p+1] += s;
@@ -943,6 +994,114 @@ namespace ALE {
       this->prefixSum(this->coneOffsets);
       this->prefixSum(this->supportOffsets);
       this->createPoints();
+      this->calculateBaseAndCapSize();
+    };
+    void addArrow(const point_type& p, const point_type& q) {
+      if (!this->chart.hasPoint(q)) {
+        if (!this->newCones[q].size() && this->chart.hasPoint(q)) {
+          const index_type start = this->coneOffsets[q];
+          const index_type end   = this->coneOffsets[q+1];
+
+          for(int c = start; c < end; ++c) {
+            this->newCones[q].push_back(this->cones[c]);
+          }
+        }
+        this->newCones[q].push_back(p);
+      }
+      if (!this->chart.hasPoint(p)) {
+        if (!this->newSupports[p].size() && this->chart.hasPoint(p)) {
+          const index_type start = this->supportOffsets[p];
+          const index_type end   = this->supportOffsets[p+1];
+
+          for(int s = start; s < end; ++s) {
+            this->newSupports[p].push_back(this->supports[s]);
+          }
+        }
+        this->newSupports[p].push_back(q);
+      }
+    };
+    void reallocate() {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      if (!this->newCones.size() && !this->newSupports.size()) return;
+      const chart_type     oldChart            = this->chart;
+      offsets_type         oldConeOffsets      = this->coneOffsets;
+      offsets_type         oldSupportOffsets   = this->supportOffsets;
+      cones_type           oldCones            = this->cones;
+      supports_type        oldSupports         = this->supports;
+      orientations_type    oldConeOrientations = this->coneOrientations;
+      point_type           min                 = this->chart.min();
+      point_type           max                 = this->chart.max()-1;
+
+      for(typename newpoints_type::const_iterator c_iter = this->newCones.begin(); c_iter != this->newCones.end(); ++c_iter) {
+        min = std::min(min, c_iter->first);
+        max = std::max(max, c_iter->first);
+      }
+      for(typename newpoints_type::const_iterator s_iter = this->newSupports.begin(); s_iter != this->newSupports.end(); ++s_iter) {
+        min = std::min(min, s_iter->first);
+        max = std::max(max, s_iter->first);
+      }
+      this->chart = chart_type(min, max+1);
+      this->createIndices();
+      // Copy sizes (converted from offsets)
+      for(point_type p = oldChart.min(); p < oldChart.max(); ++p) {
+        this->coneOffsets[p+1]    = oldConeOffsets[p+1]-oldConeOffsets[p];
+        this->supportOffsets[p+1] = oldSupportOffsets[p+1]-oldSupportOffsets[p];
+      }
+      // Inject new sizes
+      for(typename newpoints_type::const_iterator c_iter = this->newCones.begin(); c_iter != this->newCones.end(); ++c_iter) {
+        this->coneOffsets[c_iter->first+1]    = c_iter->second.size();
+        this->maxConeSize                     = std::max(this->maxConeSize,    (int) c_iter->second.size());
+      }
+      for(typename newpoints_type::const_iterator s_iter = this->newSupports.begin(); s_iter != this->newSupports.end(); ++s_iter) {
+        this->supportOffsets[s_iter->first+1] = s_iter->second.size();
+        this->maxSupportSize                  = std::max(this->maxSupportSize, (int) s_iter->second.size());
+      }
+      this->prefixSum(this->coneOffsets);
+      this->prefixSum(this->supportOffsets);
+      this->createPoints();
+      this->calculateBaseAndCapSize();
+      // Copy cones and supports
+      for(point_type p = oldChart.min(); p < oldChart.max(); ++p) {
+        const index_type cStart  = this->coneOffsets[p];
+        const index_type cEnd    = this->coneOffsets[p+1];
+        const index_type cOStart = oldConeOffsets[p];
+        const index_type cOEnd   = oldConeOffsets[p+1];
+        const index_type sStart  = this->supportOffsets[p];
+        const index_type sEnd    = this->supportOffsets[p+1];
+        const index_type sOStart = oldSupportOffsets[p];
+        const index_type sOEnd   = oldSupportOffsets[p+1];
+
+        for(int cO = cOStart, c = cStart; cO < cOEnd; ++cO, ++c) {
+          this->cones[c] = oldCones[cO];
+        }
+        for(int sO = sOStart, s = sStart; sO < sOEnd; ++sO, ++s) {
+          this->supports[s] = oldSupports[sO];
+        }
+        if (this->orientCones) {
+          for(int cO = cOStart, c = cStart; cO < cOEnd; ++cO, ++c) {
+            this->coneOrientations[c] = oldConeOrientations[cO];
+          }
+        }
+      }
+      // Inject new cones and supports
+      for(typename newpoints_type::const_iterator c_iter = this->newCones.begin(); c_iter != this->newCones.end(); ++c_iter) {
+        index_type start = this->coneOffsets[c_iter->first];
+
+        for(typename std::vector<point_type>::const_iterator p_iter = c_iter->second.begin(); p_iter != c_iter->second.end(); ++p_iter) {
+          this->cones[start++] = *p_iter;
+        }
+      }
+      for(typename newpoints_type::const_iterator s_iter = this->newSupports.begin(); s_iter != this->newSupports.end(); ++s_iter) {
+        index_type start = this->supportOffsets[s_iter->first];
+
+        for(typename std::vector<point_type>::const_iterator p_iter = s_iter->second.begin(); p_iter != s_iter->second.end(); ++p_iter) {
+          this->supports[start++] = *p_iter;
+        }
+      }
+      this->newCones.clear();
+      this->newSupports.clear();
+      this->destroyPoints(oldChart, oldConeOffsets, &oldCones, oldSupportOffsets, &oldSupports, &oldConeOrientations);
+      this->destroyIndices(oldChart, &oldConeOffsets, &oldSupportOffsets);
     };
     void setCone(const point_type cone[], const point_type& p) {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1021,6 +1180,14 @@ namespace ALE {
           ++offsets[q];
         }
       }      
+    };
+    index_type getBaseSize() const {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      return this->baseSize;
+    };
+    index_type getCapSize() const {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      return this->capSize;
     };
   public: // Traversals
     template<typename Visitor>
@@ -1164,6 +1331,7 @@ namespace ALE {
       }
     };
     // Currently does only 1 level
+    //   Does not check for uniqueness
     template<typename Visitor>
     void meet(const point_type& p, const point_type& q, Visitor& v) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1236,23 +1404,39 @@ namespace ALE {
   class ISieveConverter {
   public:
     template<typename Sieve, typename ISieve, typename Renumbering>
-    static void convertSieve(Sieve& sieve, ISieve& isieve, Renumbering& renumbering) {
+    static void convertSieve(Sieve& sieve, ISieve& isieve, Renumbering& renumbering, bool renumber = true) {
       // First construct a renumbering of the sieve points
-      const Obj<typename Sieve::baseSequence>& base     = sieve.base();
-      typename ISieve::point_type              newPoint = 0;
+      const Obj<typename Sieve::baseSequence>& base = sieve.base();
+      const Obj<typename Sieve::capSequence>&  cap  = sieve.cap();
+      typename ISieve::point_type              min  = 0;
+      typename ISieve::point_type              max  = 0;
 
-      for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-        renumbering[*b_iter] = newPoint++;
-      }
-      const Obj<typename Sieve::capSequence>& cap = sieve.cap();
-
-      for(typename Sieve::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
-        if (renumbering.find(*c_iter) == renumbering.end()) {
-          renumbering[*c_iter] = newPoint++;
+      if (renumber) {
+        for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          renumbering[*b_iter] = max++;
+        }
+        for(typename Sieve::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+          if (renumbering.find(*c_iter) == renumbering.end()) {
+            renumbering[*c_iter] = max++;
+          }
+        }
+      } else {
+        min = *base->begin();
+        for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          min = std::min(min, *b_iter);
+          max = std::max(max, *b_iter);
+        }
+        for(typename Sieve::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+          min = std::min(min, *c_iter);
+          max = std::max(max, *c_iter);
+        }
+        ++max;
+        for(typename ISieve::point_type p = min; p < max; ++p) {
+          renumbering[p] = p;
         }
       }
       // Create the ISieve
-      isieve.setChart(typename ISieve::chart_type(0, newPoint));
+      isieve.setChart(typename ISieve::chart_type(min, max));
       // Set cone and support sizes
       size_t maxSize = 0;
 
@@ -1330,8 +1514,8 @@ namespace ALE {
       }
     };
     template<typename Mesh, typename IMesh, typename Renumbering>
-    static void convertMesh(Mesh& mesh, IMesh& imesh, Renumbering& renumbering) {
-      convertSieve(*mesh.getSieve(), *imesh.getSieve(), renumbering);
+    static void convertMesh(Mesh& mesh, IMesh& imesh, Renumbering& renumbering, bool renumber = true) {
+      convertSieve(*mesh.getSieve(), *imesh.getSieve(), renumbering, renumber);
       imesh.stratify();
       convertCoordinates(*mesh.getRealSection("coordinates"), *imesh.getRealSection("coordinates"), renumbering);
     };

@@ -22,6 +22,37 @@ namespace ALE {
     typedef std::pair<typename sieve_type::point_type, int> oPoint_type;
     typedef std::vector<oPoint_type>                        oPointArray;
     typedef typename ALE::SieveAlg<mesh_type>    sieveAlg;
+  protected:
+    template<typename Sieve, typename FaceType>
+    class FaceVisitor {
+    public:
+      typedef typename Sieve::point_type point_type;
+      typedef typename Sieve::arrow_type arrow_type;
+    protected:
+      const FaceType& face;
+      PointArray&     origVertices;
+      PointArray&     faceVertices;
+      int            *indices;
+      const int       debug;
+      int             oppositeVertex;
+      int             v;
+    public:
+      FaceVisitor(const FaceType& f, PointArray& oV, PointArray& fV, int *i, const int debug) : face(f), origVertices(oV), faceVertices(fV), indices(i), debug(debug), oppositeVertex(-1), v(0) {};
+      void visitPoint(const point_type& point) {
+        if (face->find(point) != face->end()) {
+          if (debug) std::cout << "    vertex " << point << std::endl;
+          indices[origVertices.size()] = v;
+          origVertices.insert(origVertices.end(), point);
+        } else {
+          if (debug) std::cout << "    vertex " << point << std::endl;
+          oppositeVertex = v;
+        }
+        ++v;
+      };
+      void visitArrow(const arrow_type&) {};
+    public:
+      int getOppositeVertex() {return this->oppositeVertex;};
+    };
   public:
     template<typename Processor>
     static void subsets(const Obj<PointArray>& v, const int size, Processor& processor, Obj<PointArray> *out = NULL, const int min = 0) {
@@ -40,10 +71,10 @@ namespace ALE {
       }
       if (min == 0) {delete out;}
     };
-    static int numFaceVertices(const point_type& cell, const Obj<mesh_type>& mesh, const int depth = -1) {
+    template<typename Mesh>
+    static int numFaceVertices(const typename Mesh::point_type& cell, const Obj<Mesh>& mesh, const int depth = -1) {
       const int    cellDim    = mesh->getDimension();
-      const int    meshDepth  = (depth < 0) ? mesh->depth() : depth;
-      unsigned int numCorners = mesh->getSieve()->nCone(cell, meshDepth)->size();
+      unsigned int numCorners = mesh->getNumCellCorners(cell, depth);
 
       unsigned int _numFaceVertices = 0;
       switch (cellDim) {
@@ -91,7 +122,8 @@ namespace ALE {
     //     orientation since these sets are always valid faces
     //   - This is not true with hexes, so we just sort and check explicit cases
     //   - This means for hexes that we have to alter the vertex container as well
-    static bool faceOrientation(const point_type& cell, const Obj<mesh_type>& mesh, const int numCorners,
+    template<typename Mesh>
+    static bool faceOrientation(const point_type& cell, const Obj<Mesh>& mesh, const int numCorners,
                                 const int indices[], const int oppositeVertex, PointArray *origVertices, PointArray *faceVertices) {
       const int cellDim   = mesh->getDimension();
       const int debug     = mesh->debug();
@@ -294,18 +326,29 @@ namespace ALE {
     // Given a cell and a face, as a set of vertices,
     //   return the oriented face, as a set of vertices, in faceVertices
     // The orientation is such that the face normal points out of the cell
-    template<typename FaceType>
-    static bool getOrientedFace(const Obj<mesh_type>& mesh, const point_type& cell, FaceType face,
+    template<typename Mesh, typename FaceType>
+    static bool getOrientedFace(const Obj<Mesh>& mesh, const point_type& cell, FaceType face,
                                 const int numCorners, int indices[], PointArray *origVertices, PointArray *faceVertices)
     {
-      const Obj<typename sieve_type::traits::coneSequence>& cone = mesh->getSieve()->cone(cell);
+      FaceVisitor<typename Mesh::sieve_type,FaceType> v(face, *origVertices, *faceVertices, indices, mesh->debug());
+
+      origVertices->clear();
+      faceVertices->clear();
+      mesh->getSieve()->cone(cell, v);
+      return faceOrientation(cell, mesh, numCorners, indices, v.getOppositeVertex(), origVertices, faceVertices);
+    };
+    template<typename FaceType>
+    static bool getOrientedFace(const Obj<ALE::Mesh>& mesh, const point_type& cell, FaceType face,
+                                const int numCorners, int indices[], PointArray *origVertices, PointArray *faceVertices)
+    {
+      const Obj<typename ALE::Mesh::sieve_type::traits::coneSequence>& cone = mesh->getSieve()->cone(cell);
       const int debug = mesh->debug();
       int       v     = 0;
       int       oppositeVertex;
 
       origVertices->clear();
       faceVertices->clear();
-      for(typename sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter, ++v) {
+      for(typename ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter, ++v) {
         if (face->find(*v_iter) != face->end()) {
           if (debug) std::cout << "    vertex " << *v_iter << std::endl;
           indices[origVertices->size()] = v;
