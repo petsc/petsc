@@ -1,4 +1,5 @@
 #include "taosolver.h"
+#include "taolinesearch.h"
 #include "private/taolinesearch_impl.h"
 
 PetscTruth TaoLineSearchRegisterAllCalled = PETSC_FALSE;
@@ -403,6 +404,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjectiveGradient(Tao
     CHKMEMQ;
     PetscStackPop;
     info = PetscLogEventEnd(TaoLineSearch_EvalEvent,ls,0,0,0); CHKERRQ(info);
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -431,6 +433,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeGradient(TaoLineSearc
     CHKMEMQ;
     PetscStackPop;
     info = PetscLogEventEnd(TaoLineSearch_EvalEvent,ls,0,0,0); CHKERRQ(info);
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
