@@ -29,7 +29,7 @@
 PetscErrorCode PETSCDM_DLLEXPORT DAGetNeighbors(DA da,const PetscMPIInt *ranks[])
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   *ranks = da->neighbors;
   PetscFunctionReturn(0);
 }
@@ -57,7 +57,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetElements(DM dm,PetscInt *n,const PetscInt 
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
   ierr = (dm->ops->getelements)(dm,n,e);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -83,7 +83,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const Petsc
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
   if (dm->ops->restoreelements) {
     ierr = (dm->ops->restoreelements)(dm,n,e);CHKERRQ(ierr);
   }
@@ -117,7 +117,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const Petsc
 PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRange(DA da,PetscInt **lx,PetscInt **ly,PetscInt **lz)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (lx) *lx = da->lx;
   if (ly) *ly = da->ly;
   if (lz) *lz = da->lz;
@@ -353,7 +353,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   M = tM; N = tN;
 
-  ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DM_COOKIE,0,"DM",comm,DADestroy,DAView);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)da,"DA");CHKERRQ(ierr);
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->createlocalvector  = DACreateLocalVector;
   da->ops->globaltolocalbegin = DAGlobalToLocalBegin;
@@ -897,7 +898,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
   DA             da2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   PetscValidPointer(daref,3);
 
   if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0){
@@ -972,7 +973,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
   DA             da2;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   PetscValidPointer(daref,3);
 
   if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0){
@@ -1192,7 +1193,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASplitComm2d(MPI_Comm comm,PetscInt M,PetscInt
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunction(DA da,DALocalFunction1 lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->lf    = lf;
   PetscFunctionReturn(0);
 }
@@ -1217,7 +1218,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunction(DA da,DALocalFunction1 lf)
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->lfi = lfi;
   PetscFunctionReturn(0);
 }
@@ -1242,7 +1243,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctioni(DA da,PetscErrorCode (*lfi)
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctionib(DA da,PetscErrorCode (*lfi)(DALocalInfo*,MatStencil*,void*,PetscScalar*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->lfib = lfi;
   PetscFunctionReturn(0);
 }
@@ -1252,7 +1253,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalFunctionib(DA da,PetscErrorCode (*lfi
 PetscErrorCode DASetLocalAdicFunction_Private(DA da,DALocalFunction1 ad_lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->adic_lf = ad_lf;
   PetscFunctionReturn(0);
 }
@@ -1282,7 +1283,7 @@ M*/
 PetscErrorCode DASetLocalAdicFunctioni_Private(DA da,PetscErrorCode (*ad_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->adic_lfi = ad_lfi;
   PetscFunctionReturn(0);
 }
@@ -1312,7 +1313,7 @@ M*/
 PetscErrorCode DASetLocalAdicMFFunctioni_Private(DA da,PetscErrorCode (*admf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->adicmf_lfi = admf_lfi;
   PetscFunctionReturn(0);
 }
@@ -1342,7 +1343,7 @@ M*/
 PetscErrorCode DASetLocalAdicFunctionib_Private(DA da,PetscErrorCode (*ad_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->adic_lfib = ad_lfi;
   PetscFunctionReturn(0);
 }
@@ -1372,7 +1373,7 @@ M*/
 PetscErrorCode DASetLocalAdicMFFunctionib_Private(DA da,PetscErrorCode (*admf_lfi)(DALocalInfo*,MatStencil*,void*,void*,void*))
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->adicmf_lfib = admf_lfi;
   PetscFunctionReturn(0);
 }
@@ -1402,7 +1403,7 @@ M*/
 PetscErrorCode DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->adicmf_lf = ad_lf;
   PetscFunctionReturn(0);
 }
@@ -1430,7 +1431,7 @@ PetscErrorCode DASetLocalAdicMFFunction_Private(DA da,DALocalFunction1 ad_lf)
 PetscErrorCode PETSCDM_DLLEXPORT DASetLocalJacobian(DA da,DALocalFunction1 lj)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->lj    = lj;
   PetscFunctionReturn(0);
 }
@@ -1457,7 +1458,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalJacobian(DA da,DALocalFunction1 lj)
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (lf)       *lf = da->lf;
   PetscFunctionReturn(0);
 }
@@ -1484,7 +1485,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalJacobian(DA da,DALocalFunction1 *lj)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (lj) *lj = da->lj;
   PetscFunctionReturn(0);
 }
@@ -2272,7 +2273,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec
 PetscErrorCode PETSCDM_DLLEXPORT DASetInterpolationType(DA da,DAInterpolationType ctype)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   da->interptype = ctype;
   PetscFunctionReturn(0);
 }

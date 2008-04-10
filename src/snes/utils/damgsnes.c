@@ -670,7 +670,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     dmmg[i]->computejacobian = jacobian;
     dmmg[i]->computefunction = function;
     if (useFAS) {
-      if (cookie == DA_COOKIE) {
+      if (cookie == DM_COOKIE) {
 #if defined(PETSC_HAVE_ADIC)
         if (fasBlock) {
           dmmg[i]->solve     = DMMGSolveFASb;
@@ -736,7 +736,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 
     for(i = 0; i < nlevels; i++) {
       ierr = VecDuplicate(dmmg[i]->b,&dmmg[i]->w);CHKERRQ(ierr);
-      if (cookie == DA_COOKIE) {
+      if (cookie == DM_COOKIE) {
 #if defined(PETSC_HAVE_ADIC)
         ierr = NLFCreate_DAAD(&dmmg[i]->nlf);CHKERRQ(ierr);
         ierr = NLFDAADSetDA_DAAD(dmmg[i]->nlf,(DA)dmmg[i]->dm);CHKERRQ(ierr);
@@ -834,7 +834,7 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
 
   PetscFunctionBegin;
   ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm, &cookie);CHKERRQ(ierr);
-  if (cookie == DA_COOKIE) {
+  if (cookie == DM_COOKIE) {
     ierr = DAGetLocalFunction((DA) dmmg[0]->dm, function);CHKERRQ(ierr);
     ierr = DAGetLocalJacobian((DA) dmmg[0]->dm, jacobian);CHKERRQ(ierr);
   } else {
@@ -911,7 +911,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
 #endif
   CHKMEMQ;
   ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm,&cookie);CHKERRQ(ierr);
-  if (cookie == DA_COOKIE) {
+  if (cookie == DM_COOKIE) {
     PetscTruth flag;
     ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_form_function_ghost", &flag);CHKERRQ(ierr);
     if (flag) {

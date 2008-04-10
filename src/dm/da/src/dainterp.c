@@ -856,8 +856,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInterpolation(DA dac,DA daf,Mat *A,Vec *sc
   DAStencilType  stc,stf;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dac,DA_COOKIE,1);
-  PetscValidHeaderSpecific(daf,DA_COOKIE,2);
+  PetscValidHeaderSpecific(dac,DM_COOKIE,1);
+  PetscValidHeaderSpecific(daf,DM_COOKIE,2);
   PetscValidPointer(A,3);
   if (scale) PetscValidPointer(scale,4);
 
@@ -1004,8 +1004,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInjection(DA dac,DA daf,VecScatter *inject
   DAStencilType  stc,stf;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dac,DA_COOKIE,1);
-  PetscValidHeaderSpecific(daf,DA_COOKIE,2);
+  PetscValidHeaderSpecific(dac,DM_COOKIE,1);
+  PetscValidHeaderSpecific(daf,DM_COOKIE,2);
   PetscValidPointer(inject,3);
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
@@ -1073,8 +1073,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
   PetscInt       fn_idx;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(dac,DA_COOKIE,1);
-  PetscValidHeaderSpecific(daf,DA_COOKIE,2);
+  PetscValidHeaderSpecific(dac,DM_COOKIE,1);
+  PetscValidHeaderSpecific(daf,DM_COOKIE,2);
   PetscValidPointer(rest,3);
 
   ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);

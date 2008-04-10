@@ -169,7 +169,8 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreate(MPI_Comm comm,Sliced *slice)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(p,_p_Sliced,struct _SlicedOps,DA_COOKIE,0,"Sliced",comm,SlicedDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p,_p_Sliced,struct _SlicedOps,DM_COOKIE,0,"DM",comm,SlicedDestroy,0);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)p,"Sliced");CHKERRQ(ierr);
   p->ops->createglobalvector = SlicedCreateGlobalVector;
   p->ops->createlocalvector  = SlicedCreateLocalVector;
   p->ops->globaltolocalbegin = SlicedGlobalToLocalBegin;
@@ -342,7 +343,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGlobalToLocalBegin(Sliced sliced,Vec g,In
   Vec            lform;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sliced,DA_COOKIE,1);
+  PetscValidHeaderSpecific(sliced,DM_COOKIE,1);
   PetscValidHeaderSpecific(g,VEC_COOKIE,2);
   PetscValidHeaderSpecific(l,VEC_COOKIE,4);
   /* only works if local vector l is shared with global vector */
@@ -382,7 +383,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGlobalToLocalEnd(Sliced sliced,Vec g,Inse
   Vec            lform;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(sliced,DA_COOKIE,1);
+  PetscValidHeaderSpecific(sliced,DM_COOKIE,1);
   PetscValidHeaderSpecific(g,VEC_COOKIE,2);
   PetscValidHeaderSpecific(l,VEC_COOKIE,4);
   /* only works if local vector l is shared with global vector */

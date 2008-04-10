@@ -189,7 +189,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 #endif
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (!viewer) {
     ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&viewer);CHKERRQ(ierr);
   }
@@ -263,7 +263,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 PetscErrorCode PETSCDM_DLLEXPORT DAGetInfo(DA da,PetscInt *dim,PetscInt *M,PetscInt *N,PetscInt *P,PetscInt *m,PetscInt *n,PetscInt *p,PetscInt *dof,PetscInt *s,DAPeriodicType *wrap,DAStencilType *st)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (dim)  *dim  = da->dim;
   if (M)    *M    = da->M;
   if (N)    *N    = da->N;
@@ -302,7 +302,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalInfo(DA da,DALocalInfo *info)
   PetscInt w;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   PetscValidPointer(info,2);
   info->da   = da;
   info->dim  = da->dim;

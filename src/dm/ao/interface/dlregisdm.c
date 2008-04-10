@@ -58,7 +58,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DM_COOKIE,     "Distributed array");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&ADDA_COOKIE,   "Arbitrary Dimension Distributed array");CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = PetscLogClassRegister(&MESH_COOKIE,       "Mesh");CHKERRQ(ierr);
@@ -72,9 +72,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
   /* Register Events */
   ierr = PetscLogEventRegister(&AO_PetscToApplication,       "AOPetscToApplication", AO_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&AO_ApplicationToPetsc,       "AOApplicationToPetsc", AO_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DA_GlobalToLocal,            "DAGlobalToLocal",      DA_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DA_LocalToGlobal,            "DALocalToGlobal",      DA_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DA_LocalADFunction,          "DALocalADFunc",        DA_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DA_GlobalToLocal,            "DAGlobalToLocal",      DM_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DA_LocalToGlobal,            "DALocalToGlobal",      DM_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&DA_LocalADFunction,          "DALocalADFunc",        DM_COOKIE);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = PetscLogEventRegister(&Mesh_View,                   "MeshView",             MESH_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&Mesh_GetGlobalScatter,       "MeshGetGlobalScatter", MESH_COOKIE);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
     }
     ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscInfoDeactivateClass(DA_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(DM_COOKIE);CHKERRQ(ierr);
     }
 #ifdef PETSC_HAVE_SIEVE
     ierr = PetscStrstr(logList, "mesh", &className);CHKERRQ(ierr);
@@ -121,7 +121,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
     }
     ierr = PetscStrstr(logList, "da", &className);CHKERRQ(ierr);
     if (className) {
-      ierr = PetscLogEventDeactivateClass(DA_COOKIE);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(DM_COOKIE);CHKERRQ(ierr);
     }
 #ifdef PETSC_HAVE_SIEVE
     ierr = PetscStrstr(logList, "mesh", &className);CHKERRQ(ierr);

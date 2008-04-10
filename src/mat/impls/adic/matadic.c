@@ -466,7 +466,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(da,DA_COOKIE,2);
+  PetscValidHeaderSpecific(da,DM_COOKIE,2);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,da);CHKERRQ(ierr);
