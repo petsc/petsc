@@ -1,11 +1,13 @@
 
-static char help[] = "Model multi-physics solver. Modified from ex19.c \n\\n";
+static char help[] = "Model multi-physics solver. Modified from src/snes/examples/tutorials/ex19.c \n\\n";
 
 /* ------------------------------------------------------------------------
-
     See ex19.c for discussion of the problem 
 
-  ------------------------------------------------------------------------- */
+    Examples of command line options:
+      ./mp -dmmg_jacobian_mf_fd_operator
+      ./mp -dmcomposite_dense_jacobian #inefficient, but compute entire Jacobian for testing
+  ----------------------------------------------------------------------------------------- */
 #include "mp.h"
 
 extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
