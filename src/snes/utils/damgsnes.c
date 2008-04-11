@@ -542,7 +542,7 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal(), DMMGSetFromOptions()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
@@ -716,7 +716,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   if (!useFAS) {
     for (i=0; i<nlevels; i++) {
       ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_Multigrid,dmmg);CHKERRQ(ierr);
-      ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsGetInt(PETSC_NULL,"-dmmg_jacobian_period",&period,PETSC_NULL);CHKERRQ(ierr);
@@ -776,6 +775,40 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
         }
       }
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetFromOptions"
+/*@C
+    DMMGSetFromOptions - Sets various options associated with the DMMG object
+
+    Collective on DMMG
+
+    Input Parameter:
+.   dmmg - the context
+
+
+    Notes: this is currently only supported for use with DMMGSetSNES() NOT DMMGSetKSP()
+
+           Most options are checked in DMMGSetSNES(); this does call SNESSetFromOptions()
+
+    Level: advanced
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal(), DMMGSetSNES()
+
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetFromOptions(DMMG *dmmg)
+{
+  PetscErrorCode          ierr;
+  PetscInt                i,nlevels = dmmg[0]->nlevels;
+
+  PetscFunctionBegin;
+  if (!dmmg)     SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
+
+  for (i=0; i<nlevels; i++) {
+    ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

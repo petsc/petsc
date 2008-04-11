@@ -69,6 +69,7 @@ int main(int argc,char **argv)
   */
   /*  ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr); */
   ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,0);CHKERRQ(ierr);
+  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
   /*
       PreLoadBegin() means that the following section of code is run twice. The first time

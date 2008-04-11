@@ -51,6 +51,7 @@
       call DMMGSetUser(dmmg,0,app,ierr)  ! currently only one level solver
       call DMMGSetInitialGuess(dmmg,FormInitialGuess,ierr)
       call DMMGSetSNES(dmmg,FormFunction,PETSC_NULL_OBJECT,ierr)
+      call DMMGSetFromOptions(dmmg,ierr)
 
 !      Solve the nonlinear system
 !

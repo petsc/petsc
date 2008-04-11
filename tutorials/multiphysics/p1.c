@@ -55,6 +55,7 @@ int main(int argc,char **argv)
 
   ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
+  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
   ierr = DAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   user.lidvelocity = 1.0/(mx*my);

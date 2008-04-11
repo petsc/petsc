@@ -511,6 +511,7 @@ TOPS::StructuredSolver_impl::solve_impl ()
     residual = ::babel_cast< TOPS::System::Compute::Residual >( myServices.getPort("TOPS.System.Compute.Residual"));
     if (residual._not_nil()) {
       ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
+      ierr = DMMGSetFromOptions(this->dmmg);
     } else {
       ierr = DMMGSetKSP(this->dmmg,FormRightHandSide,FormMatrix);
     }

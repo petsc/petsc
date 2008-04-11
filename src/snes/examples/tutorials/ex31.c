@@ -180,6 +180,7 @@ int main(int argc,char **argv)
 
     ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
     ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
+    ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
     /* Supply custom shell preconditioner if requested */
     ierr = SNESGetKSP(DMMGGetSNES(dmmg),&ksp);CHKERRQ(ierr);

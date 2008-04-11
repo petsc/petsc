@@ -100,6 +100,7 @@
       call DMMGSetUser(dmmg,0,app,ierr);CHKR(ierr)  ! currently only one level solver
       call DMMGSetInitialGuess(dmmg,FormInitialGuess,ierr);CHKR(ierr)
       call DMMGSetSNES(dmmg,FormFunction,PETSC_NULL_OBJECT,ierr);CHKR(ierr)
+      call DMMGSetFromOptions(dmmg,ierr)
 !BARRY
       call PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL_CHARACTER,'core',0,0,300,300,view0,ierr)
       CHKR(ierr)

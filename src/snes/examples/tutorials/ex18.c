@@ -98,6 +98,7 @@ int main(int argc,char **argv)
      Create the nonlinear solver, and tell the DMMG structure to use it
   */
   ierr = DMMGSetSNES(dmmg,FormFunction,FormJacobian);CHKERRQ(ierr);
+  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
   /*
       PreLoadBegin() means that the following section of code is run twice. The first time

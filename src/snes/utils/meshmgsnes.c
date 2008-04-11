@@ -163,6 +163,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
         ierr = MeshSetMesh(smallMesh, sm);CHKERRQ(ierr);
         ierr = DMMGSetDM(smallDmmg, (DM) smallMesh);CHKERRQ(ierr);
         ierr = DMMGSetSNESLocal(smallDmmg, func, jac, 0, 0);CHKERRQ(ierr);
+        ierr = DMMGSetFromOptions(smallDmmg);CHKERRQ(ierr);
         // TODO: Construct null space, if necessary
         //ierr = DMMGSetNullSpace(smallDmmg, PETSC_FALSE, 1, CreateNullSpace);CHKERRQ(ierr);
         //ALE::Obj<ALE::Mesh::real_section_type> nullSpace = sm->getRealSection("nullSpace");
