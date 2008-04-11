@@ -26,13 +26,25 @@ mp: mp.o  ff1.o ff2.o chkopts
 	-${CLINKER} -o mp mp.o ff1.o ff2.o ${PETSC_SNES_LIB}
 	${RM} mp.o ff1.o ff2.o
 #--------------------------------------------------------------------------
+runp1:
+	-@${MPIEXEC} -np 1 ./p1 -snes_monitor_short > p1_1.tmp 2>&1;   \
+	   if (${DIFF} output/p1_1.out p1_1.tmp) then true; \
+	   else echo "Possible problem with p1_1, diffs above"; fi; \
+	   ${RM} -f p1_1.tmp
+
+runp2:
+	-@${MPIEXEC} -np 1 ./p2 -snes_monitor_short > p2_1.tmp 2>&1;   \
+	   if (${DIFF} output/p2_1.out p2_1.tmp) then true; \
+	   else echo "Possible problem with p2_1, diffs above"; fi; \
+	   ${RM} -f p2_1.tmp
+
 runmp:
-	-@${MPIEXEC} -np 1 ./mp > mp_1.tmp 2>&1;   \
+	-@${MPIEXEC} -np 1 ./mp -snes_monitor_short > mp_1.tmp 2>&1;   \
 	   if (${DIFF} output/mp_1.out mp_1.tmp) then true; \
 	   else echo "Possible problem with mp_1, diffs above"; fi; \
 	   ${RM} -f mp_1.tmp
 
-TESTEXAMPLES_C		       = mp.PETSc runmp mp.rm 
+TESTEXAMPLES_C		       = p1.PETSc runp1 p1.rm p2.PETSc runp2 p2.rm mp.PETSc runmp mp.rm 
 TESTEXAMPLES_C_X11	       = 
 TESTEXAMPLES_FORTRAN	       = 
 TESTEXAMPLES_C_NOCOMPLEX       = 
