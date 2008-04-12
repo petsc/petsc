@@ -7,10 +7,10 @@ using ALE::Obj;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
-template<typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<ALE::Mesh>& mesh, const Obj<Section>& section, MatType mtype, Mat *J)
+template<typename Mesh, typename Section>
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, MatType mtype, Mat *J)
 {
-  const ALE::Obj<typename ALE::Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, "default", section);
+  const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, "default", section);
   int            localSize  = order->getLocalSize();
   int            globalSize = order->getGlobalSize();
   PetscTruth     isShell, isBlock, isSeqBlock, isMPIBlock;
@@ -29,7 +29,14 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<ALE::Mesh>& mesh, co
     int bs = 1;
 
     if (isBlock || isSeqBlock || isMPIBlock) {
-      bs = section->getFiberDimension(*section->getChart().begin());
+      const typename Section::chart_type& chart = section->getChart();
+
+      for(typename Section::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        if (section->getFiberDimension(*c_iter)) {
+          bs = section->getFiberDimension(*c_iter);
+          break;
+        }
+      }
     }
     ierr = preallocateOperator(mesh, bs, section->getAtlas(), order, *J);CHKERRQ(ierr);
   }
@@ -150,28 +157,58 @@ void createOperator(const ALE::Obj<Mesh>& mesh, const ALE::Obj<Section>& s, cons
   // Create dnz/onz or CSR
 };
 
-#undef __FUNCT__
-#define __FUNCT__ "preallocateOperator"
-template<typename Atlas>
-PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
-{
-  typedef ALE::SieveAlg<ALE::Mesh> sieve_alg_type;
-  MPI_Comm                              comm      = mesh->comm();
-  const ALE::Obj<ALE::Mesh>             adjBundle = new ALE::Mesh(comm, mesh->debug());
-  const ALE::Obj<ALE::Mesh::sieve_type> adjGraph  = new ALE::Mesh::sieve_type(comm, mesh->debug());
-  PetscInt       numLocalRows, firstRow;
-  PetscInt      *dnz, *onz;
-  PetscErrorCode ierr;
+template<typename Mesh>
+class AdjVisitor {
+public:
+  typedef typename Mesh::point_type point_type;
+protected:
+  ALE::Mesh::sieve_type& adjGraph;
+  point_type             p;
+public:
+  AdjVisitor(ALE::Mesh::sieve_type& adjGraph) : adjGraph(adjGraph) {};
+  void visitPoint(const point_type& point) {adjGraph.addCone(point, p);};
+  template<typename Arrow>
+  void visitArrow(const Arrow&) {};
+public:
+  void setRoot(const point_type& point) {this->p = point;};
+};
 
-  PetscFunctionBegin;
-  adjBundle->setSieve(adjGraph);
-  numLocalRows = globalOrder->getLocalSize();
-  firstRow     = globalOrder->getGlobalOffsets()[mesh->commRank()];
-  ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
-  /* Create local adjacency graph */
-  /*   In general, we need to get FIAT info that attaches dual basis vectors to sieve points */
+#undef __FUNCT__
+#define __FUNCT__ "createLocalAdjacencyGraph"
+template<typename Mesh, typename Atlas>
+PetscErrorCode createLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph)
+{
+  typedef typename ALE::ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type, AdjVisitor<Mesh> > ClosureVisitor;
+  typedef typename ALE::ISieveVisitor::ConeVisitor<typename Mesh::sieve_type, ClosureVisitor>                 ConeVisitor;
+  typedef typename ALE::ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type, ConeVisitor>       StarVisitor;
+  AdjVisitor<Mesh> adjV(*adjGraph);
+  ClosureVisitor   closureV(*mesh->getSieve(), adjV);
+  ConeVisitor      coneV(*mesh->getSieve(), closureV);
+  StarVisitor      starV(*mesh->getSieve(), coneV);
+  /* In general, we need to get FIAT info that attaches dual basis vectors to sieve points */
   const typename Atlas::chart_type& chart = atlas->getChart();
 
+  PetscFunctionBegin;
+  starV.setIsCone(false);
+  for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    adjV.setRoot(*c_iter);
+    mesh->getSieve()->support(*c_iter, starV);
+    closureV.clear();
+    starV.clear();
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "createLocalAdjacencyGraph"
+template<typename Atlas>
+PetscErrorCode createLocalAdjacencyGraph(const ALE::Obj<ALE::Mesh>& mesh, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph)
+{
+  typedef ALE::SieveAlg<ALE::Mesh> sieve_alg_type;
+  /* In general, we need to get FIAT info that attaches dual basis vectors to sieve points */
+  const typename Atlas::chart_type& chart = atlas->getChart();
+
+  PetscFunctionBegin;
   for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const Obj<typename sieve_alg_type::supportArray>& star = sieve_alg_type::star(mesh, *c_iter);
 
@@ -183,19 +220,42 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
       }
     }
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "preallocateOperator"
+template<typename Mesh, typename Atlas>
+PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
+{
+  MPI_Comm                              comm      = mesh->comm();
+  const int                             rank      = mesh->commRank();
+  const int                             debug     = mesh->debug();
+  const ALE::Obj<ALE::Mesh>             adjBundle = new ALE::Mesh(comm, debug);
+  const ALE::Obj<ALE::Mesh::sieve_type> adjGraph  = new ALE::Mesh::sieve_type(comm, debug);
+  PetscInt       numLocalRows, firstRow;
+  PetscInt      *dnz, *onz;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  adjBundle->setSieve(adjGraph);
+  numLocalRows = globalOrder->getLocalSize();
+  firstRow     = globalOrder->getGlobalOffsets()[rank];
+  ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
+  ierr = createLocalAdjacencyGraph(mesh, atlas, adjGraph);CHKERRQ(ierr);
   /* Distribute adjacency graph */
   adjBundle->constructOverlap();
-  typedef typename ALE::Mesh::sieve_type::point_type point_type;
-  typedef typename ALE::Mesh::send_overlap_type send_overlap_type;
-  typedef typename ALE::Mesh::recv_overlap_type recv_overlap_type;
+  typedef typename Mesh::sieve_type::point_type point_type;
+  typedef typename Mesh::send_overlap_type      send_overlap_type;
+  typedef typename Mesh::recv_overlap_type      recv_overlap_type;
   typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, point_type> > send_section_type;
   typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, point_type> > recv_section_type;
   const Obj<send_overlap_type>& vertexSendOverlap = mesh->getSendOverlap();
   const Obj<recv_overlap_type>& vertexRecvOverlap = mesh->getRecvOverlap();
-  const Obj<send_overlap_type>  nbrSendOverlap    = new send_overlap_type(comm, mesh->debug());
-  const Obj<recv_overlap_type>  nbrRecvOverlap    = new recv_overlap_type(comm, mesh->debug());
-  const Obj<send_section_type>  sendSection       = new send_section_type(comm, mesh->debug());
-  const Obj<recv_section_type>  recvSection       = new recv_section_type(comm, sendSection->getTag(), mesh->debug());
+  const Obj<send_overlap_type>  nbrSendOverlap    = new send_overlap_type(comm, debug);
+  const Obj<recv_overlap_type>  nbrRecvOverlap    = new recv_overlap_type(comm, debug);
+  const Obj<send_section_type>  sendSection       = new send_section_type(comm, debug);
+  const Obj<recv_section_type>  recvSection       = new recv_section_type(comm, sendSection->getTag(), debug);
 
   ALE::Distribution<ALE::Mesh>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjBundle, sendSection, recvSection);
   /* Distribute indices for new points */
@@ -203,6 +263,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
   mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, true);
   /* Read out adjacency graph */
   const ALE::Obj<ALE::Mesh::sieve_type> graph = adjBundle->getSieve();
+  const typename Atlas::chart_type&     chart = atlas->getChart();
 
   ierr = PetscMemzero(dnz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(onz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
@@ -233,8 +294,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
       }
     }
   }
-  if (mesh->debug()) {
-    int rank = mesh->commRank();
+  if (debug) {
     for(int r = 0; r < numLocalRows/bs; r++) {
       std::cout << "["<<rank<<"]: dnz["<<r<<"]: " << dnz[r] << " onz["<<r<<"]: " << onz[r] << std::endl;
     }
@@ -344,6 +404,43 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
   ierr = MatMPIBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "updateOperator"
+template<typename Sieve, typename Visitor>
+PetscErrorCode updateOperator(Mat A, const Sieve& sieve, Visitor& iV, const ALE::IMesh::point_type& e, PetscScalar array[], InsertMode mode)
+{
+  PetscFunctionBegin;
+  ALE::ISieveTraversal<Sieve>::orientedClosure(sieve, e, iV);
+  const PetscInt *indices    = iV.getValues();
+  const int       numIndices = iV.getSize();
+  PetscErrorCode  ierr;
+
+  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  if (sieve.debug()) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]mat for element %d\n", sieve.commRank(), e);CHKERRQ(ierr);
+    for(int i = 0; i < numIndices; i++) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]mat indices[%d] = %d\n", sieve.commRank(), i, indices[i]);CHKERRQ(ierr);
+    }
+    for(int i = 0; i < numIndices; i++) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]", sieve.commRank());CHKERRQ(ierr);
+      for(int j = 0; j < numIndices; j++) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, " %g", array[i*numIndices+j]);CHKERRQ(ierr);
+      }
+      ierr = PetscPrintf(PETSC_COMM_SELF, "\n");CHKERRQ(ierr);
+    }
+  }
+  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);
+  if (ierr) {
+    ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]ERROR in updateOperator: point %d\n", sieve.commRank(), e);CHKERRQ(ierr);
+    for(int i = 0; i < numIndices; i++) {
+      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]mat indices[%d] = %d\n", sieve.commRank(), i, indices[i]);CHKERRQ(ierr);
+    }
+    CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

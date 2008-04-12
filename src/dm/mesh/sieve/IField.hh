@@ -509,6 +509,13 @@ namespace ALE {
         this->_bcs[s]->getAtlas()->allocatePoint();
       }
     };
+  public:
+    bool hasNewPoints() {return this->newPoints.size() > 0;};
+    const std::set<newpoint_type>& getNewPoints() {return this->newPoints;};
+    void addPoint(const point_type& point, const int dim) {
+      if (dim == 0) return;
+      this->newPoints.insert(newpoint_type(point, dim));
+    };
     // Returns true if the chart was changed
     bool resizeChart(const chart_type& chart) {
       if (!this->_atlas->reallocatePoint(chart)) return false;
@@ -556,11 +563,57 @@ namespace ALE {
       return true;
     };
   public:
-    bool hasNewPoints() {return this->newPoints.size() > 0;};
-    const std::set<newpoint_type>& getNewPoints() {return this->newPoints;};
-    void addPoint(const point_type& point, const int dim) {
-      if (dim == 0) return;
-      this->newPoints.insert(newpoint_type(point, dim));
+    Obj<IGeneralSection> getFibration(const int space) const {
+      Obj<IGeneralSection> field = new IGeneralSection(this->comm(), this->debug());
+//     Obj<atlas_type> _atlas;
+//     std::vector<Obj<atlas_type> > _spaces;
+//     Obj<bc_type>    _bc;
+//     std::vector<Obj<bc_type> >    _bcs;
+      field->setChart(this->getChart());
+      field->addSpace();
+      const chart_type& chart = this->getChart();
+
+      // Copy sizes
+      for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        const int fDim = this->getFiberDimension(*c_iter, space);
+        const int cDim = this->getConstraintDimension(*c_iter, space);
+
+        if (fDim) {
+          field->setFiberDimension(*c_iter, fDim);
+          field->setFiberDimension(*c_iter, fDim, 0);
+        }
+        if (cDim) {
+          field->setConstraintDimension(*c_iter, cDim);
+          field->setConstraintDimension(*c_iter, cDim, 0);
+        }
+      }
+      field->allocateStorage();
+      Obj<atlas_type>   newAtlas = new atlas_type(this->comm(), this->debug());
+      const chart_type& newChart = field->getChart();
+
+      for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+        const int cDim   = field->getConstraintDimension(*c_iter);
+        const int dof[1] = {0};
+
+        if (cDim) {
+          field->setConstraintDof(*c_iter, dof);
+        }
+      }
+      // Copy offsets
+      for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+        index_type idx;
+
+        idx.prefix = field->getFiberDimension(*c_iter);
+        idx.index  = this->_atlas->restrictPoint(*c_iter)[0].index;
+        for(int s = 0; s < space; ++s) {
+          idx.index += this->getFiberDimension(*c_iter, s);
+        }
+        newAtlas->addPoint(*c_iter);
+        newAtlas->updatePoint(*c_iter, &idx);
+      }
+      field->replaceStorage(this->_array, true, this->getStorageSize());
+      field->setAtlas(newAtlas);
+      return field;
     };
   };
 }
