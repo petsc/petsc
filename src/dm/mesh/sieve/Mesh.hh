@@ -1566,6 +1566,7 @@ namespace ALE {
       closure_visitor_type cV(*this->getSieve(), sV);
 
       this->getSieve()->cone(p, cV);
+      if (!sV.getSize()) sV.visitPoint(p);
       return sV.getSize();
     };
     template<typename Section>
@@ -1576,6 +1577,7 @@ namespace ALE {
       closure_visitor_type cV(*this->getSieve(), sV);
 
       this->getSieve()->cone(p, cV);
+      if (!sV.getSize()) sV.visitPoint(p);
       return sV.getSize();
     };
     template<typename Section>

@@ -1445,6 +1445,33 @@ namespace ALE {
         if (this->coneOffsets[c1+1] > this->coneOffsets[c1]) {throw ALE::Exception("Cannot handle multiple level meet()");}
       }
     };
+    // Currently does only 1 level
+    template<typename Sequence, typename Visitor>
+    void join(const Sequence& points, Visitor& v) const {
+      typedef std::set<point_type> pointSet;
+      pointSet intersect[2] = {pointSet(), pointSet()};
+      pointSet tmp;
+      int      p = 0;
+      int      c = 0;
+
+      for(typename Sequence::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        this->chart.checkPoint(*p_iter);
+        tmp.insert(&this->supports[this->supportOffsets[*p_iter]], &this->supports[this->supportOffsets[(*p_iter)+1]]);
+        if (p == 0) {
+          intersect[1-c].insert(tmp.begin(), tmp.end());
+          p++;
+        } else {
+          std::set_intersection(intersect[c].begin(), intersect[c].end(), tmp.begin(), tmp.end(),
+                                std::insert_iterator<pointSet>(intersect[1-c], intersect[1-c].begin()));
+          intersect[c].clear();
+        }
+        c = 1 - c;
+        tmp.clear();
+      }
+      for(typename pointSet::const_iterator p_iter = intersect[c].begin(); p_iter != intersect[c].end(); ++p_iter) {
+        v.visitPoint(*p_iter);
+      }
+    };
   public: // Viewing
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
       ostringstream txt;
@@ -1515,7 +1542,13 @@ namespace ALE {
           }
         }
       } else {
-        min = *base->begin();
+        if (base->size()) {
+          min = *base->begin();
+          max = *base->begin();
+        } else if (cap->size()) {
+          min = *cap->begin();
+          max = *cap->begin();
+        }
         for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
           min = std::min(min, *b_iter);
           max = std::max(max, *b_iter);
