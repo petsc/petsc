@@ -77,7 +77,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateLocalVector(DA da,Vec* g)
   PetscErrorCode ierr;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   PetscValidPointer(g,2);
   ierr = VecCreateSeq(PETSC_COMM_SELF,da->nlocal,g);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*g,da->w);CHKERRQ(ierr);
@@ -127,7 +127,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetLocalVector(DM dm,Vec* g)
   PetscErrorCode ierr,i;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
   PetscValidPointer(g,2);
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     if (dm->localin[i]) {
@@ -175,7 +175,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreLocalVector(DM dm,Vec* g)
   PetscInt       i,j;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
   PetscValidPointer(g,2);
   for (j=0; j<DM_MAX_WORK_VECTORS; j++) {
     if (*g == dm->localout[j]) {
@@ -232,7 +232,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetGlobalVector(DM dm,Vec* g)
   PetscInt       i;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
   PetscValidPointer(g,2);
   for (i=0; i<DM_MAX_WORK_VECTORS; i++) {
     if (dm->globalin[i]) {
@@ -280,7 +280,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreGlobalVector(DM dm,Vec* g)
   PetscInt       i,j;
 
   PetscFunctionBegin; 
-  PetscValidHeaderSpecific(dm,DA_COOKIE,1);
+  PetscValidHeaderSpecific(dm,DM_COOKIE,1);
   PetscValidPointer(g,2);
   for (j=0; j<DM_MAX_WORK_VECTORS; j++) {
     if (*g == dm->globalout[j]) {
@@ -338,7 +338,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void **
   char           *iarray_start;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (da->adarrayghostedin[i]) {
@@ -476,7 +476,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscTruth ghosted,voi
   void      *iarray_start = 0;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (da->adarrayghostedout[i] == *iptr) {
@@ -564,7 +564,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void **iptr
   char           *iarray_start;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
       if (da->arrayghostedin[i]) {
@@ -686,7 +686,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscTruth ghosted,void **
   void      *iarray_start = 0;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_WORK_ARRAYS; i++) {
       if (da->arrayghostedout[i] == *iptr) {
@@ -756,7 +756,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
   char           *iarray_start;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (da->admfarrayghostedin[i]) {
@@ -876,7 +876,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void
   char           *iarray_start;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (da->admfarrayghostedin[i]) {
@@ -968,7 +968,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void
   char           *iarray_start;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (da->admfarrayghostedin[i]) {
@@ -1085,7 +1085,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void
   PetscInt       bs = da->w,bs1 = bs+1;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (da->admfarrayghostedin[i]) {
@@ -1221,7 +1221,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscTruth ghosted,v
   void      *iarray_start = 0;
   
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (ghosted) {
     for (i=0; i<DA_MAX_AD_ARRAYS; i++) {
       if (da->admfarrayghostedout[i] == *iptr) {
@@ -1285,6 +1285,8 @@ PetscErrorCode PETSCDM_DLLEXPORT admf_DARestoreArray(DA da,PetscTruth ghosted,vo
 
   Synopsis:
   PetscErrorCode DAGetLocalVector(DM dm,Vec* g)
+
+  Level: beginner
 M*/
 
 
@@ -1293,6 +1295,8 @@ M*/
 
   Synopsis:
   PetscErrorCode DARestoreLocalVector(DM dm,Vec* g)
+
+  Level: beginner
 M*/
 
 
@@ -1301,6 +1305,8 @@ M*/
 
   Synopsis:
   PetscErrorCode  DAGetGlobalVector(DM dm,Vec* g)
+
+  Level: beginner
 M*/
 
 
@@ -1309,4 +1315,6 @@ M*/
 
   Synopsis:
   PetscErrorCode DARestoreGlobalVector(DM dm,Vec* g)
+
+  Level: beginner
 M*/

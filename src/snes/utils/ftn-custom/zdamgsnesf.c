@@ -6,10 +6,12 @@
 #define dmmgsetsnes_                     DMMGSETSNES
 #define snesgetsolutionupdate_           SNESGETSOLUTIONUPDATE
 #define dmmggetsnes_                     DMMGGETSNES
+#define dmmgsetfromoptions_              DMMGSETFROMOPTIONS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dmmgsetsnes_                     dmmgsetsnes
 #define snesgetsolutionupdate_           snesgetsolutionupdate
 #define dmmggetsnes_                     dmmggetsnes
+#define dmmgsetfromoptions_              dmmgsetfromoptions
 #endif
 
 EXTERN_C_BEGIN
@@ -38,6 +40,11 @@ void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,PetscErrorCode (PETSC_STDCALL *rhs)(
 void PETSC_STDCALL dmmggetsnes_(DMMG **dmmg,SNES *snes,PetscErrorCode *ierr)
 {
   *snes = DMMGGetSNES(*dmmg);
+}
+
+void PETSC_STDCALL dmmgsetfromoptions_(DMMG **dmmg,PetscErrorCode *ierr)
+{
+  *ierr = DMMGSetFromOptions(*dmmg);
 }
 
 EXTERN_C_END

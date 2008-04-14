@@ -1913,9 +1913,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation_SeqDense(Mat B,Pet
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
   b               = (Mat_SeqDense*)B->data;
+  if (b->lda <= 0) b->lda = B->rmap.n;
   if (!data) { /* petsc-allocated storage */
     if (!b->user_alloc) { ierr = PetscFree(b->v);CHKERRQ(ierr); }
-    ierr = PetscMalloc((b->lda*b->Nmax+1)*sizeof(PetscScalar),&b->v);CHKERRQ(ierr);
+    ierr = PetscMalloc(b->lda*b->Nmax*sizeof(PetscScalar),&b->v);CHKERRQ(ierr);
     ierr = PetscMemzero(b->v,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(B,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
     b->user_alloc = PETSC_FALSE;

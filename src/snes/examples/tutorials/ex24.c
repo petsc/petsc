@@ -154,6 +154,7 @@ int main(int argc,char **argv)
   }
 
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-bdp",&bdp);CHKERRQ(ierr);
   if (bdp) {

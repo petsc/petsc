@@ -145,6 +145,7 @@ int main(int argc,char **argv)
 
   /* Create nonlinear solver context */
   ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",
 		       user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
   ierr = DMMGSetInitialGuess(dmmg,FormInitialGuessLocal);CHKERRQ(ierr);
@@ -192,6 +193,7 @@ int main(int argc,char **argv)
 
   if (DoSubPhysics){
     ierr = DMMGSetSNESLocal(dmmg1,FormFunctionLocal1,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+    ierr = DMMGSetFromOptions(dmmg1);CHKERRQ(ierr);
     ierr = DMMGSetInitialGuess(dmmg1,FormInitialGuessLocal1);CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg1);CHKERRQ(ierr); 
@@ -220,6 +222,7 @@ int main(int argc,char **argv)
 
   if (DoSubPhysics){
     ierr = DMMGSetSNESLocal(dmmg2,FormFunctionLocal2,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+    ierr = DMMGSetFromOptions(dmmg2);CHKERRQ(ierr);
     ierr = DMMGSetInitialGuess(dmmg2,FormInitialGuessLocal2);CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg2);CHKERRQ(ierr); 
@@ -250,6 +253,7 @@ int main(int argc,char **argv)
   user.COMPOSITE_MODEL = PETSC_TRUE;
   ierr = DMMGSetInitialGuess(dmmg_comp,FormInitialGuessComp);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg_comp,FormFunctionComp,0);CHKERRQ(ierr);
+  ierr = DMMGSetFromOptions(dmmg_comp);CHKERRQ(ierr);
 
   /* Solve the nonlinear system */
   ierr = DMMGSolve(dmmg_comp);CHKERRQ(ierr); 

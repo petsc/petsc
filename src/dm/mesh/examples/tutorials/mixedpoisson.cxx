@@ -836,6 +836,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
   ierr = DMMGCreate(comm, 1, options, dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(*dmmg, dm);CHKERRQ(ierr);
   ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured, 0, 0);CHKERRQ(ierr);
+  ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

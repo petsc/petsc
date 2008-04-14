@@ -265,6 +265,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessUpdate_Method2(KSPFischerGuess_
     This is not currently programmed as a PETSc class because there are only two methods; if more methods
     are introduced it should be changed. For example the Knoll guess should be included
 
+    Level: advanced
+
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessCreate(KSP ksp,PetscInt method,PetscInt maxl,KSPFischerGuess *itg)
 {

@@ -110,6 +110,7 @@ int main(int argc,char **argv)
   ierr = DMMGCreate(PETSC_COMM_WORLD,2,&user,&dmmg);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg,(DM)packer);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
 
   if (use_monitor) {
     /* create graphics windows */

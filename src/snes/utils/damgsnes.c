@@ -542,7 +542,7 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 
     Level: advanced
 
-.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal()
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal(), DMMGSetFromOptions()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
@@ -670,7 +670,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     dmmg[i]->computejacobian = jacobian;
     dmmg[i]->computefunction = function;
     if (useFAS) {
-      if (cookie == DA_COOKIE) {
+      if (cookie == DM_COOKIE) {
 #if defined(PETSC_HAVE_ADIC)
         if (fasBlock) {
           dmmg[i]->solve     = DMMGSolveFASb;
@@ -716,7 +716,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   if (!useFAS) {
     for (i=0; i<nlevels; i++) {
       ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_Multigrid,dmmg);CHKERRQ(ierr);
-      ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsGetInt(PETSC_NULL,"-dmmg_jacobian_period",&period,PETSC_NULL);CHKERRQ(ierr);
@@ -736,7 +735,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 
     for(i = 0; i < nlevels; i++) {
       ierr = VecDuplicate(dmmg[i]->b,&dmmg[i]->w);CHKERRQ(ierr);
-      if (cookie == DA_COOKIE) {
+      if (cookie == DM_COOKIE) {
 #if defined(PETSC_HAVE_ADIC)
         ierr = NLFCreate_DAAD(&dmmg[i]->nlf);CHKERRQ(ierr);
         ierr = NLFDAADSetDA_DAAD(dmmg[i]->nlf,(DA)dmmg[i]->dm);CHKERRQ(ierr);
@@ -776,6 +775,40 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
         }
       }
     }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetFromOptions"
+/*@C
+    DMMGSetFromOptions - Sets various options associated with the DMMG object
+
+    Collective on DMMG
+
+    Input Parameter:
+.   dmmg - the context
+
+
+    Notes: this is currently only supported for use with DMMGSetSNES() NOT DMMGSetKSP()
+
+           Most options are checked in DMMGSetSNES(); this does call SNESSetFromOptions()
+
+    Level: advanced
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNESLocal(), DMMGSetSNES()
+
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetFromOptions(DMMG *dmmg)
+{
+  PetscErrorCode          ierr;
+  PetscInt                i,nlevels = dmmg[0]->nlevels;
+
+  PetscFunctionBegin;
+  if (!dmmg)     SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
+
+  for (i=0; i<nlevels; i++) {
+    ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -834,7 +867,7 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
 
   PetscFunctionBegin;
   ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm, &cookie);CHKERRQ(ierr);
-  if (cookie == DA_COOKIE) {
+  if (cookie == DM_COOKIE) {
     ierr = DAGetLocalFunction((DA) dmmg[0]->dm, function);CHKERRQ(ierr);
     ierr = DAGetLocalJacobian((DA) dmmg[0]->dm, jacobian);CHKERRQ(ierr);
   } else {
@@ -911,7 +944,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
 #endif
   CHKMEMQ;
   ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm,&cookie);CHKERRQ(ierr);
-  if (cookie == DA_COOKIE) {
+  if (cookie == DM_COOKIE) {
     PetscTruth flag;
     ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_form_function_ghost", &flag);CHKERRQ(ierr);
     if (flag) {

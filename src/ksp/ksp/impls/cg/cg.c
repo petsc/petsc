@@ -364,7 +364,7 @@ EXTERN_C_END
    Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
    pp. 409--436.
 
-.Seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPCGSetType()
 
 M*/

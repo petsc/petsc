@@ -126,7 +126,7 @@ int main(int argc,char **argv)
     ierr = PetscOptionsGetReal(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsGetReal(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);    
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-re",&user.re,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetReal(PETSC_NULL,"-re",&user.re,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-contours",&user.draw_contours);CHKERRQ(ierr);
 
     ierr = DASetFieldName(DMMGGetDA(dmmg),0,"x-velocity");CHKERRQ(ierr);
@@ -145,6 +145,7 @@ int main(int argc,char **argv)
        Process adiC(36): FormFunctionLocal FormFunctionLocali FormFunctionLocali4
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+    ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
     ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,ad_FormFunctionLocali,admf_FormFunctionLocali);CHKERRQ(ierr);
     ierr = DMMGSetSNESLocalib(dmmg,FormFunctionLocali4,ad_FormFunctionLocali4,admf_FormFunctionLocali4);CHKERRQ(ierr);
 

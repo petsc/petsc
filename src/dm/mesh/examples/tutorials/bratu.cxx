@@ -1769,6 +1769,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
+    ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
     for(int l = 0; l < DMMGGetLevels(*dmmg); l++) {
       ierr = DASetUniformCoordinates((DA) (*dmmg)[l]->dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
     }
@@ -1784,6 +1785,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
     } else {
       SETERRQ1(PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", options->operatorAssembly);
     }
+    ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
   }
   if (options->bcType == NEUMANN) {
     // With Neumann conditions, we tell DMMG that constants are in the null space of the operator

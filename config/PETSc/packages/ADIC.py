@@ -35,14 +35,13 @@ class Configure(config.base.Configure):
 
   def configureLibrary(self):
     '''Set adic make variables'''
-    self.addMakeMacro('ADIC_DEFINES', '')
-    self.addDefine('HAVE_ADIC', 1)
     if self.generateADIC():
+      self.addMakeMacro('ADIC_DEFINES', '')
+      self.addDefine('HAVE_ADIC', 1)
       self.addMakeMacro('ADIC_CC',self.adiC+' -a -d gradient')
       self.foundADIC = 1
-    else: 
-      self.addMakeMacro('ADIC_CC','')
-      self.foundADIC = 0
+    else:
+      raise RuntimeError('with-adic is enabled - however adiC executable is not found. Please specify with -with-adic-path option\n')
     return
 
   def configure(self):

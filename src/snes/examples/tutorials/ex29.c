@@ -252,6 +252,7 @@ int main(int argc,char **argv)
        Process blockadiC(4):  FormFunctionLocali4
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, 0,ad_FormFunctionLocal, admf_FormFunctionLocal);CHKERRQ(ierr);
+    ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
     ierr = DMMGSetSNESLocali(dmmg,FormFunctionLocali,0,admf_FormFunctionLocali);CHKERRQ(ierr);
     ierr = DMMGSetSNESLocalib(dmmg,FormFunctionLocali4,0,admfb_FormFunctionLocali4);CHKERRQ(ierr);
   

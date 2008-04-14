@@ -42,7 +42,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DA da,DADirection dir,Pets
   PetscMPIInt    size,*ranks = PETSC_NULL;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   flag = 0; 
   ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);

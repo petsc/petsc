@@ -341,7 +341,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar*,PetscScalar*,M
       Otherwises uses ( (a - a) != 0.0), note that some optimizing compiles compile
       out this form, thus removing the check.
 
-*/
+     Level: beginner
+
+M*/
 #if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
 #define PetscIsInfOrNan(a) (isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a)))
 #elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)

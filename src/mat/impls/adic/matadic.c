@@ -345,7 +345,7 @@ static struct _MatOps MatOps_Values = {0,
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetBase_AD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatSNESMFSetBase_AD(Mat J,Vec U,Vec F)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_AD(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
   Mat_DAAD       *a = (Mat_DAAD*)J->data;
@@ -466,7 +466,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidHeaderSpecific(da,DA_COOKIE,2);
+  PetscValidHeaderSpecific(da,DM_COOKIE,2);
   ierr = PetscObjectQueryFunction((PetscObject)A,"MatDAADSetDA_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(A,da);CHKERRQ(ierr);

@@ -40,7 +40,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *sc
   AO  ao;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   PetscValidPointer(scatter,2);
   ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
@@ -91,7 +91,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DANaturalAllToGlobalCreate(DA da,VecScatter *sc
   AO  ao;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   PetscValidPointer(scatter,2);
   ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 

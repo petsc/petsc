@@ -156,7 +156,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   M = tM;
 
-  ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DM_COOKIE,0,"DM",comm,DADestroy,DAView);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)da,"DA");CHKERRQ(ierr);
   da->ops->globaltolocalbegin = DAGlobalToLocalBegin;
   da->ops->globaltolocalend   = DAGlobalToLocalEnd;
   da->ops->localtoglobal      = DALocalToGlobal;

@@ -55,7 +55,7 @@
 PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalIndices(DA da,PetscInt *n,PetscInt **idx)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   if (n)   *n   = da->Nl;
   if (idx) *idx = da->idx;
   PetscFunctionReturn(0);
@@ -141,7 +141,7 @@ PetscErrorCode DAGetNatural_Private(DA da,PetscInt *outNlocal,IS *isnatural)
 PetscErrorCode PETSCDM_DLLEXPORT DAGetAO(DA da,AO *ao)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidHeaderSpecific(da,DM_COOKIE,1);
   PetscValidPointer(ao,2);
 
   /* 
