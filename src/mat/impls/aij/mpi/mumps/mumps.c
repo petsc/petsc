@@ -209,8 +209,8 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
       ierr = PetscFree(lu->id.sol_loc);CHKERRQ(ierr);
       ierr = VecScatterDestroy(lu->scat_rhs);CHKERRQ(ierr);
       ierr = VecDestroy(lu->b_seq);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);  
-      ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);
+      if (lu->scat_sol){ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);}
+      if (lu->x_seq){ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);}
       ierr = PetscFree(lu->val);CHKERRQ(ierr);
     }
     lu->id.job=JOB_END; 
