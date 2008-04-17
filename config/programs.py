@@ -46,6 +46,19 @@ class Configure(config.base.Configure):
     if not hasattr(self, 'SHELL'): raise RuntimeError('Could not locate sh executable')
     self.getExecutable('sed',  getFullPath = 1)
     if not hasattr(self, 'sed'): raise RuntimeError('Could not locate sed executable')
+    # check if sed supports -i "" or -i option
+    f = file('sed1', 'w')
+    f.write('sed\n')
+    f.close()
+    try:
+      (out,err,status) = Configure.executeShellCommand(self.sed+' -i "" s/sed/sd/g sed1')
+    except RuntimeError:
+      status = 1
+    os.unlink('sed1')
+    if not status:    
+      self.addMakeMacro('SEDINPLACE',self.sed+' -i ""')
+    else:
+      self.addMakeMacro('SEDINPLACE',self.sed+' -i')
     self.getExecutable('mv',   getFullPath = 1)
     if not hasattr(self, 'mv'): raise RuntimeError('Could not locate mv executable')
     self.getExecutable('cp',   getFullPath = 1)
