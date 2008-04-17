@@ -208,7 +208,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crt2.o|crtbegin.o|c|gcc|crt1.10.5.o)$', arg)
         if m: continue
         # Check for special library arguments
-        m = re.match(r'^-[lLR].*$', arg)
+        m = re.match(r'^-[lL].*$', arg)
         if m:
           if not arg in lflags:
             if arg == '-lkernel32':
@@ -220,9 +220,17 @@ class Configure(config.base.Configure):
             self.logPrint('Found library or library directory: '+arg, 4, 'compilers')
             clibs.append(arg)
           continue
-        if arg == '-rpath':
+        # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
+        if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
-          self.logPrint('Found -rpath library: '+lib, 4, 'compilers')
+          self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
+          clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          continue
+        # Check for '-R/sharedlibpath/'
+        m = re.match(r'^-R.*$', arg)
+        if m:
+          lib = arg+argIter.next()
+          self.logPrint('Found -R library: '+lib, 4, 'compilers')
           clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
         self.logPrint('Unknown arg '+arg, 4, 'compilers')
@@ -356,7 +364,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crt2.o|crtbegin.o|c|gcc|crt1.10.5.o)$', arg)
         if m: continue
         # Check for special library arguments
-        m = re.match(r'^-[lLR].*$', arg)
+        m = re.match(r'^-[lL].*$', arg)
         if m:
           if not arg in lflags:
             if arg == '-lkernel32':
@@ -371,9 +379,17 @@ class Configure(config.base.Configure):
             else:
               cxxlibs.append(arg)
           continue
-        if arg == '-rpath':
+        # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
+        if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
-          self.logPrint('Found -rpath library: '+lib, 4, 'compilers')
+          self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
+          cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          continue
+        # Check for '-R/sharedlibpath/'
+        m = re.match(r'^-R.*$', arg)
+        if m:
+          lib = arg+argIter.next()
+          self.logPrint('Found -R library: '+lib, 4, 'compilers')
           cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
         self.logPrint('Unknown arg '+arg, 4, 'compilers')
@@ -520,8 +536,7 @@ class Configure(config.base.Configure):
       try:
         flagsArg = self.setCompilers.getCompilerFlagsArg()
         oldFlags = getattr(self.setCompilers, flagsArg)
-        setattr(self.setCompilers, flagsArg, oldFlags+' '+'-DPTesting')
-        self.setCompilers.addCompilerFlag(flag, body = '#define dummy \n           dummy\n#ifndef PTesting\n       fooey\n#endif')
+        self.setCompilers.addCompilerFlag(flag, body = '#define dummy \n           dummy\n#ifndef dummy\n       fooey\n#endif')
         setattr(self.setCompilers, flagsArg, oldFlags+' '+flag)
         self.fortranPreprocess = 1
         self.setCompilers.popLanguage()
@@ -533,6 +548,23 @@ class Configure(config.base.Configure):
     self.fortranPreprocess = 0
     self.logPrint('Fortran does NOT use CPP preprocessor', 3, 'compilers')
     return
+
+  def checkFortranDefineCompilerOption(self):
+    '''Check if -WF,-Dfoobar or -Dfoobar is the compiler option to define a macro'''
+    self.FortranDefineCompilerOption = 0
+    if not self.fortranPreprocess:
+      return
+    self.setCompilers.pushLanguage('FC')
+    for flag in ['-D', '-WF,-D']:
+      if self.setCompilers.checkCompilerFlag(flag+'Testing', body = '#define dummy \n           dummy\n#ifndef Testing\n       fooey\n#endif'):
+        self.FortranDefineCompilerOption = flag
+        self.setCompilers.popLanguage()
+        self.logPrint('Fortran uses '+flag+' for defining macro', 3, 'compilers')
+        return
+    self.setCompilers.popLanguage()
+    self.logPrint('Fortran does not support defining macro', 3, 'compilers')
+    return
+    
 
   def checkFortranLibraries(self):
     '''Substitutes for FLIBS the libraries needed to link with Fortran
@@ -653,14 +685,14 @@ class Configure(config.base.Configure):
         m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crt2.o|crtbegin.o|c|gcc|crt1.10.5.o)$', arg)
         if m: continue
         # Check for canonical library argument
-        m = re.match(r'^-[lLR]$', arg)
+        m = re.match(r'^-[lL]$', arg)
         if m:
           lib = arg+argIter.next()
           self.logPrint('Found canonical library: '+lib, 4, 'compilers')
           flibs.append(lib)
           continue
         # Check for special library arguments
-        m = re.match(r'^-[lLR].*$', arg)
+        m = re.match(r'^-[lL].*$', arg)
         if m:
           # HP Fortran prints these libraries in a very strange way
           if arg == '-l:libU77.a':  arg = '-lU77'
@@ -681,10 +713,18 @@ class Configure(config.base.Configure):
             self.logPrint('Found library or library directory: '+arg, 4, 'compilers')
             flibs.append(arg)
           continue
-        if arg == '-rpath':
+        # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
+        if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
           if lib == '\\': lib = argIter.next()
-          self.logPrint('Found -rpath library: '+lib, 4, 'compilers')
+          self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
+          flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          continue
+        # Check for '-R/sharedlibpath/'
+        m = re.match(r'^-R.*$', arg)
+        if m:
+          lib = arg+argIter.next()
+          self.logPrint('Found -R library: '+lib, 4, 'compilers')
           flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
         if arg.startswith('-zallextract') or arg.startswith('-zdefaultextract') or arg.startswith('-zweakextract'):
@@ -1050,6 +1090,7 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranNameManglingDouble)
       self.executeTest(self.checkFortranPreprocessor)
+      self.executeTest(self.checkFortranDefineCompilerOption)
       if self.framework.argDB['with-fortranlib-autodetect']:
         self.executeTest(self.checkFortranLibraries)
       if hasattr(self.setCompilers, 'CXX'):

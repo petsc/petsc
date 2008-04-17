@@ -247,6 +247,7 @@ class Configure(config.package.Package):
     yield ('Default Atlas location /usr/local/lib',[os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
     yield ('Default Atlas location /usr/local/lib',[os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
     yield ('Default compiler locations with G77', None, ['liblapack.a', 'libblas.a','libg2c.a'], 1)
+    yield ('Default compiler locations with gfortran', None, ['liblapack.a', 'libblas.a','libgfortran.a'], 1)
     # Try MacOSX location
     dir = os.path.join('/Library', 'Frameworks', 'Intel_MKL.framework','Libraries','32')
     yield ('MacOSX with Intel MKL', None, [os.path.join(dir,'libmkl_lapack.a'),'libmkl_ia32.a','libguide.a'], 1)    
@@ -285,6 +286,11 @@ class Configure(config.package.Package):
 
   def getSharedFlag(self,cflags):
     for flag in ['-PIC', '-fPIC', '-KPIC']:
+      if cflags.find(flag) >=0: return flag
+    return ''
+
+  def getPrecisionFlag(self,cflags):
+    for flag in ['-m32', '-m64', '-xarch=v9','-q64']:
       if cflags.find(flag) >=0: return flag
     return ''
 
@@ -342,7 +348,7 @@ class Configure(config.package.Package):
         self.setCompilers.popLanguage()
       if line.startswith('CNOOPT'):
         self.setCompilers.pushLanguage('C')
-        line = 'CNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())
+        line = 'CNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())
         if self.defaultPrecision == 'int':
           line += ' -DDOUBLE=int -DLONG=""\n'
         elif self.defaultPrecision == 'longdouble':
@@ -369,7 +375,7 @@ class Configure(config.package.Package):
         self.setCompilers.popLanguage()       
       if line.startswith('FNOOPT'):
         self.setCompilers.pushLanguage('FC')
-        line = 'FNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+'\n'
+        line = 'FNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+'\n'
         self.setCompilers.popLanguage()
       if line.startswith('AR  '):
         line = 'AR      = '+self.setCompilers.AR+'\n'

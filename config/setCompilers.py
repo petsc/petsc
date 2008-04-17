@@ -210,6 +210,15 @@ class Configure(config.base.Configure):
     return 0
   isPGI = staticmethod(isPGI)
   
+  def isLinux():
+    '''Returns true if system is linux'''
+    (output, error, status) = config.base.Configure.executeShellCommand('uname -s')
+    if not status and output.lower().strip().find('linux') >= 0:
+      return 1
+    else:
+      return 0
+  isLinux = staticmethod(isLinux)
+
   def isCygwin():
     '''Returns true if system is cygwin'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s')

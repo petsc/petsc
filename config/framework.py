@@ -88,6 +88,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.batchIncludeDirs   = []
     self.dependencies       = {}
     self.configureParent    = None
+    # List of packages actually found
+    self.packages           = []
     self.createChildren()
     return
 
