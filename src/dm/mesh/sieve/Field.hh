@@ -1478,7 +1478,7 @@ namespace ALE {
       this->_bc->addFiberDimension(p, numConstraints);
     };
     // Return the local dofs which are constrained on a point
-    const int *getConstraintDof(const point_type& p) {
+    const int *getConstraintDof(const point_type& p) const {
       return this->_bc->restrictPoint(p);
     };
     // Set the local dofs which are constrained on a point

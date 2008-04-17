@@ -1265,14 +1265,19 @@ namespace ALE {
       void clear() {this->modifiedPoints.clear();};
     };
     class DepthVisitor {
+    public:
+      typedef typename sieve_type::point_type point_type;
     protected:
       const sieve_type& sieve;
       label_type&       depth;
       int               maxDepth;
-      std::set<typename sieve_type::point_type> modifiedPoints;
+      const point_type  limitPoint;
+      std::set<point_type> modifiedPoints;
     public:
-      DepthVisitor(const sieve_type& s, label_type& d) : sieve(s), depth(d), maxDepth(-1) {};
-      void visitPoint(const typename sieve_type::point_type& point) {
+      DepthVisitor(const sieve_type& s, label_type& d) : sieve(s), depth(d), maxDepth(-1), limitPoint(sieve.getChart().max()+1) {};
+      DepthVisitor(const sieve_type& s, const point_type& limit, label_type& d) : sieve(s), depth(d), maxDepth(-1), limitPoint(limit) {};
+      void visitPoint(const point_type& point) {
+        if (point >= this->limitPoint) return;
         MaxConeVisitor v(depth, -1);
 
         // Compute the max height of the points in the support of p, and add 1
@@ -1505,6 +1510,19 @@ namespace ALE {
       this->computeHeights();
       this->computeDepths();
     };
+  protected:
+    template<typename Value>
+    static bool lt1(const Value& a, const Value& b) {
+      return a.first < b.first;
+    };
+  public: // Allocation
+    template<typename Section_>
+    void reallocate(const Obj<Section_>& section) {
+      if (!section->hasNewPoints()) return;
+      typename Section_::chart_type newChart(std::min(std::min_element(section->getNewPoints().begin(), section->getNewPoints().end(), lt1<typename Section_::newpoint_type>)->first, section->getChart().min()),
+                                             std::max(std::max_element(section->getNewPoints().begin(), section->getNewPoints().end(), lt1<typename Section_::newpoint_type>)->first, section->getChart().max()-1)+1);
+      section->reallocatePoint(newChart);
+    };
   };
   class IMesh : public IBundle<IFSieve<int>, IGeneralSection<int, double>, IGeneralSection<int, int> > {
   public:
@@ -1526,6 +1544,9 @@ namespace ALE {
     Obj<recv_overlap_type> _recvOverlap;
   public:
     IMesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
+      this->_calculatedOverlap = false;
+      this->_sendOverlap       = new send_overlap_type(comm, debug);
+      this->_recvOverlap       = new recv_overlap_type(comm, debug);
     };
   public: // Accessors
     int getDimension() const {return this->_dim;};
@@ -1545,6 +1566,7 @@ namespace ALE {
       closure_visitor_type cV(*this->getSieve(), sV);
 
       this->getSieve()->cone(p, cV);
+      if (!sV.getSize()) sV.visitPoint(p);
       return sV.getSize();
     };
     template<typename Section>
@@ -1555,6 +1577,7 @@ namespace ALE {
       closure_visitor_type cV(*this->getSieve(), sV);
 
       this->getSieve()->cone(p, cV);
+      if (!sV.getSize()) sV.visitPoint(p);
       return sV.getSize();
     };
     template<typename Section>
@@ -1592,12 +1615,16 @@ namespace ALE {
     };
   public: // Overlap
     void constructOverlap() {
-      if (!this->_calculatedOverlap) {throw ALE::Exception("Must calculate overlap during distribution");}
+      if (!this->_calculatedOverlap && (this->commSize() > 1)) {throw ALE::Exception("Must calculate overlap during distribution");}
     };
   public: // Cell topology and geometry
     int getNumCellCorners(const point_type& p, const int depth = -1) const {
-      if (depth == 1) {
+      const int d = depth < 0 ? this->depth() : depth;
+
+      if (d == 1) {
         return this->_sieve->getConeSize(p);
+      } else if (d <= 0) {
+        return 0;
       }
       throw ALE::Exception("Have not yet implemented nCone");
     };
