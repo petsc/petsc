@@ -2520,6 +2520,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve_Basic(Mat A,Mat B,Mat X)
     ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
     ierr = VecPlaceArray(x,xx + i*m);CHKERRQ(ierr);
     ierr = MatSolve(A,b,x);CHKERRQ(ierr);
+    ierr = VecResetArray(x);CHKERRQ(ierr);
+    ierr = VecResetArray(b);CHKERRQ(ierr);
   }
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);

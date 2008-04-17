@@ -1152,3 +1152,41 @@ PetscErrorCode DMMGSetISColoringType(DMMG *dmmg,ISColoringType isctype)
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetUp"
+/*@C
+    DMMGSetUp - Called after DMMGSetSNES() and (optionally) DMMGSetFromOptions()
+
+    Collective on DMMG
+
+    Input Parameter:
+.   dmmg - the context
+
+    Notes: Currently this must be called by the user (if they want to). It checks to see if fieldsplit preconditioner
+           is being used and manages it.
+
+    Level: advanced
+
+.seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSolve(), DMMGSetMatType()
+
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
+  PetscTruth     fieldsplit,dmcomposite;
+  KSP            ksp;
+  PC             pc;
+  DM             dm;
+
+  PetscFunctionBegin;
+  ierr = SNESGetKSP(DMMGGetSNES(dmmg),&ksp);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCFIELDSPLIT,&fieldsplit);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)DMMGGetDM(dmmg),"DMComposite",&dmcomposite);CHKERRQ(ierr);
+  if (fieldsplit && dmcomposite) {
+    ierr = PetscInfo(ksp,"Setting up physics based fieldsplit preconditioner\n");CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
