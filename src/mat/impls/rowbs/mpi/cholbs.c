@@ -46,6 +46,8 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat
 #endif
 
   mbs->factor = FACTOR_CHOLESKY;
+  (*factp)->assembled = PETSC_TRUE;
+
   PetscFunctionReturn(0);
 }
 

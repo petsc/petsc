@@ -292,31 +292,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
     if (dmmg[i]->B) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr); dmmg[i]->B = PETSC_NULL;}
     if (dmmg[i]->J) {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr); dmmg[i]->J = PETSC_NULL;}
   }
-  ierr = DMMGSetUp(dmmg);CHKERRQ(ierr); 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DMMGSetUp"
-/*@C
-    DMMGSetUp - Prepares the DMMG to solve a system
-
-    Collective on DMMG
-
-    Input Parameter:
-.   dmmg - the context
-
-    Level: advanced
-
-.seealso DMMGCreate(), DMMGDestroy(), DMMG, DMMGSetSNES(), DMMGSetKSP(), DMMGSolve(), DMMGSetMatType()
-
-@*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
-{
-  PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels;
-
-  PetscFunctionBegin;
 
   /* Create work vectors and matrix for each level */
   for (i=0; i<nlevels; i++) {
@@ -329,9 +304,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
   for (i=1; i<nlevels; i++) {
     ierr = DMGetInterpolation(dmmg[i-1]->dm,dmmg[i]->dm,&dmmg[i]->R,PETSC_NULL);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSolve"
