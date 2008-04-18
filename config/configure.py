@@ -29,60 +29,73 @@ def check_petsc_arch(opts):
       if not filename.startswith('configure') and not filename.startswith('reconfigure'):
         useName = 'PETSC_ARCH='+os.path.splitext(os.path.basename(sys.argv[0]))[0]
         opts.append(useName)
-  return
+  return 0
 
 def chkbrokencygwin():
   if os.path.exists('/usr/bin/cygcheck.exe'):
     buf = os.popen('/usr/bin/cygcheck.exe -c cygwin').read()
     if buf.find('1.5.11-1') > -1:
-      return 1
-    else:
-      return 0
+      print '================================================================================='
+      print ' *** cygwin-1.5.11-1 detected. config/configure.py fails with this version   ***'
+      print ' *** Please upgrade to cygwin-1.5.12-1 or newer version. This can  ***'
+      print ' *** be done by running cygwin-setup, selecting "next" all the way.***'
+      print '================================================================================='
+      sys.exit(3)
   return 0
 
 def chkusingwindowspython():
-  if os.path.exists('/usr/bin/cygcheck.exe'):
-    if sys.platform != 'cygwin':
-      return 1
+  if os.path.exists('/usr/bin/cygcheck.exe') and sys.platform != 'cygwin':
+    print '================================================================================='
+    print ' *** Non-cygwin python detected. Please rerun config/configure.py with cygwin-python ***'
+    print '================================================================================='
+    sys.exit(3)
   return 0
 
 def chkcygwinpythonver():
   if os.path.exists('/usr/bin/cygcheck.exe'):
     buf = os.popen('/usr/bin/cygcheck.exe -c python').read()
     if (buf.find('2.4') > -1) or (buf.find('2.5') > -1) or (buf.find('2.6') > -1):
-      return 1
-    else:
-      return 0
+      sys.argv.append('--useThreads=0')
+      extraLogs.append('''\
+================================================================================
+** Cygwin-python-2.4/2.5 detected. Threads do not work correctly with this version *
+ ********* Disabling thread usage for this run of config/configure.py **********
+================================================================================''')
   return 0
 
 def chkincompletecygwin():
   if os.path.exists('/usr/bin/cygcheck.exe'):
-    if not os.path.exists('/usr/bin/make') or not os.path.exists('/usr/bin/diff'):
+    if not os.path.exists('/usr/bin/make'):
       print '================================================================================='
-      print ' *** Incomplete cygwin install detected . Either /usr/bin/make or /usr/bin/diff **'
-      print ' *** is missing. Please rerun cygwin-setup and select module "make" **************'
-      print ' *** [This should install "make" and its dependencies like "diff"] ***************'
+      print ' *** Incomplete cygwin install detected . /usr/bin/make is missing. **************'
+      print ' *** Please rerun cygwin-setup and select module "make" for install.**************'
       print '================================================================================='
       sys.exit(3)
+    elif not os.path.exists('/usr/bin/diff'):
+      print '================================================================================='
+      print ' *** Incomplete cygwin install detected . /usr/bin/diff is missing. **************'
+      print ' *** Please rerun cygwin-setup and select module "make" for install.**************'
+      print '================================================================================='
+      sys.exit(3)        
   return 0
 
-def rhl9():
-  try:
-    file = open('/etc/redhat-release','r')
-  except:
-    return 0
-  try:
-    buf = file.read()
-    file.close()
-  except:
-    # can't read file - assume dangerous RHL9
-    return 1
-  if buf.find('Shrike') > -1:
-    return 1
-  else:
-    return 0
-
-  
+def chkrhl9():
+  if os.path.exists('/etc/redhat-release'):
+    try:
+      file = open('/etc/redhat-release','r')
+      buf = file.read()
+      file.close()
+    except:
+      # can't read file - assume dangerous RHL9
+      buf = 'Shrike'
+    if buf.find('Shrike') > -1: 
+      sys.argv.append('--useThreads=0')
+      extraLogs.append('''\
+================================================================================
+   *** RHL9 detected. Threads do not work correctly with this distribution ***
+    ****** Disabling thread usage for this run of config/configure.py *******
+================================================================================''')
+  return 0
 
 def petsc_configure(configure_options): 
   print '================================================================================='
@@ -149,43 +162,16 @@ def petsc_configure(configure_options):
     sys.exit(3)
 
   # Check for broken cygwin
-  if chkbrokencygwin():
-    print '================================================================================='
-    print ' *** cygwin-1.5.11-1 detected. config/configure.py fails with this version   ***'
-    print ' *** Please upgrade to cygwin-1.5.12-1 or newer version. This can  ***'
-    print ' *** be done by running cygwin-setup, selecting "next" all the way.***'
-    print '================================================================================='
-    sys.exit(3)
-
+  chkbrokencygwin()
   # Check if cygwin install is incomplete
   chkincompletecygwin()
-  
   # Disable threads on RHL9
-  if rhl9():
-    sys.argv.append('--useThreads=0')
-    extraLogs.append('''\
-================================================================================
-   *** RHL9 detected. Threads do not work correctly with this distribution ***
-    ****** Disabling thread usage for this run of config/configure.py *******
-================================================================================''')
-
-
+  chkrhl9()
   # Make sure cygwin-python is used on windows
-  if chkusingwindowspython():
-    print '================================================================================='
-    print ' *** Non-cygwin python detected. Please rerun config/configure.py with cygwin-python ***'
-    print '================================================================================='
-    sys.exit(3)
-    
+  chkusingwindowspython()
   # Threads don't work for cygwin & python-2.4, 2.5 etc..
-  if chkcygwinpythonver():
-    sys.argv.append('--useThreads=0')
-    extraLogs.append('''\
-================================================================================
-** Cygwin-python-2.4/2.5 detected. Threads do not work correctly with this version *
- ********* Disabling thread usage for this run of config/configure.py **********
-================================================================================''')
-          
+  chkcygwinpythonver()
+
   # Should be run from the toplevel
   configDir = os.path.abspath('config')
   bsDir     = os.path.join(configDir, 'BuildSystem')
