@@ -79,7 +79,7 @@ class Configure(config.base.Configure):
     help.addArgument('Compilers', '-AR',                     nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', '-AR_FLAGS',               nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', '-with-ranlib',            nargs.Arg(None, None,   'Specify ranlib'))
-    help.addArgument('Compilers', '-with-pic',               nargs.ArgBool(None, 1, 'Compile with -fPIC or equivalent flag if possible'))
+    help.addArgument('Compilers', '-with-pic',               nargs.ArgBool(None, 0, 'Compile with -fPIC or equivalent flag if possible'))
     help.addArgument('Compilers', '-with-shared-ld=<prog>',  nargs.Arg(None, None, 'Specify the shared linker'))
     help.addArgument('Compilers', '-sharedLibraryFlags',     nargs.Arg(None, [], 'Specify the shared library flags'))
     help.addArgument('Compilers', '-dynamicLibraryFlags',    nargs.Arg(None, [], 'Specify the dynamic library flags'))
@@ -808,19 +808,8 @@ class Configure(config.base.Configure):
   def checkPIC(self):
     '''Determine the PIC option for each compiler
        - There needs to be a test that checks that the functionality is actually working'''
-    # Instead of this, I need to add a link check
-    #
-    #if self.framework.argDB['PETSC_ARCH'].startswith('hpux') and not self.setCompilers.isGNU(self.framework.argDB['CC']):
-    #  return
-    #
-    # Borland compiler accepts -PIC as -P, which means compile as C++ code,
-    # Using this will force compilation, not linking when used as a link flag!!!
-    # Since this is not what we intend with -PIC, just kick out if using borland.
     self.usePIC=0
-    if self.CC.find('bcc32') >= 0:
-      self.framework.logPrint("Skip checking PIC options since we have a Borland compiler")
-      return
-    if not self.framework.argDB['with-pic']:
+    if not self.framework.argDB['with-pic'] and not self.framework.argDB['with-shared']:
       self.framework.logPrint("Skip checking PIC options on user request")
       return
     languages = ['C']
@@ -1008,7 +997,7 @@ class Configure(config.base.Configure):
     return self.framework.setSharedLinkerObject(language, self.framework.getLanguageModule(language).StaticLinker(self.framework.argDB))
 
   def generateSharedLinkerGuesses(self):
-    if not self.framework.argDB['with-pic']:
+    if not self.framework.argDB['with-pic'] and not self.framework.argDB['with-shared']:
       self.setStaticLinker()
       self.staticLinker = self.AR
       self.staticLibraries = 1
