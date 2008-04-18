@@ -82,8 +82,13 @@ class Configure(config.base.Configure):
         status = 1
       os.unlink('diff1')
       os.unlink('diff2')
-      if not status:    
-        self.diff = self.diff + ' -w'
+      if status:
+        (buf,err,status) = Configure.executeShellCommand('/bin/rpm -q diffutils')
+        if buf.find('diffutils-2.8.1-17.fc8') > -1:
+          raise RuntimeError(''' *** Fedora 8 Linux with broken diffutils-2.8.1-17.fc8 detected. ****************
+             Run "sudo yum update diffutils" to get the latest bugfixed version. Then run config/configure.py again.''')
+        raise RuntimeError(self.diff+' executable does not properly handle -w (whitespace) option')        
+      self.diff = self.diff + ' -w'
       self.addMakeMacro('DIFF',self.diff)
     else:
       raise RuntimeError('Could not locate diff executable')
