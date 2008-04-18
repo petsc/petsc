@@ -208,7 +208,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crt2.o|crtbegin.o|c|gcc|crt1.10.5.o)$', arg)
         if m: continue
         # Check for special library arguments
-        m = re.match(r'^-[lL].*$', arg)
+        m = re.match(r'^-l.*$', arg)
         if m:
           if not arg in lflags:
             if arg == '-lkernel32':
@@ -217,8 +217,15 @@ class Configure(config.base.Configure):
               continue
             else:
               lflags.append(arg)
-            self.logPrint('Found library or library directory: '+arg, 4, 'compilers')
+            self.logPrint('Found library : '+arg, 4, 'compilers')
             clibs.append(arg)
+          continue
+        m = re.match(r'^-L.*$', arg)
+        if m:
+          arg = '-L'+os.path.abspath(arg[2:])
+          lflags.append(arg)
+          self.logPrint('Found library directory: '+arg, 4, 'compilers')
+          clibs.append(arg)
           continue
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
@@ -364,7 +371,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crt2.o|crtbegin.o|c|gcc|crt1.10.5.o)$', arg)
         if m: continue
         # Check for special library arguments
-        m = re.match(r'^-[lL].*$', arg)
+        m = re.match(r'^-l.*$', arg)
         if m:
           if not arg in lflags:
             if arg == '-lkernel32':
@@ -373,9 +380,20 @@ class Configure(config.base.Configure):
               continue
             else:
               lflags.append(arg)
-            self.logPrint('Found library or library directory: '+arg, 4, 'compilers')
+            self.logPrint('Found library: '+arg, 4, 'compilers')
             if arg in self.clibs:
               self.logPrint('Library already in C list so skipping in C++')
+            else:
+              cxxlibs.append(arg)
+          continue
+        m = re.match(r'^-L.*$', arg)
+        if m:
+          arg = '-L'+os.path.abspath(arg[2:])
+          if not arg in lflags:
+            lflags.append(arg)
+            self.logPrint('Found library directory: '+arg, 4, 'compilers')
+            if arg in self.clibs:
+              self.logPrint('Library directory already in C list so skipping in C++')
             else:
               cxxlibs.append(arg)
           continue
@@ -692,7 +710,7 @@ class Configure(config.base.Configure):
           flibs.append(lib)
           continue
         # Check for special library arguments
-        m = re.match(r'^-[lL].*$', arg)
+        m = re.match(r'^-l.*$', arg)
         if m:
           # HP Fortran prints these libraries in a very strange way
           if arg == '-l:libU77.a':  arg = '-lU77'
@@ -710,7 +728,17 @@ class Configure(config.base.Configure):
               continue
             else:
               lflags.append(arg)
-            self.logPrint('Found library or library directory: '+arg, 4, 'compilers')
+            self.logPrint('Found library: '+arg, 4, 'compilers')
+            flibs.append(arg)
+          continue
+        m = re.match(r'^-L.*$', arg)
+        if m:
+          arg = '-L'+os.path.abspath(arg[2:])          
+          if not arg in lflags:
+            
+            #TODO: if arg == '-lkernel32' and host_os.startswith('cygwin'):
+            lflags.append(arg)
+            self.logPrint('Found library directory: '+arg, 4, 'compilers')
             flibs.append(arg)
           continue
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
