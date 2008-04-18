@@ -146,9 +146,10 @@ namespace ALE {
           maxSize = std::max(maxSize, partition->getFiberDimension(p));
         }
         typename Section::value_type *values = new typename Section::value_type[maxSize];
-        int                           k;
+
         for(int p = 0; p < partition->commSize(); ++p) {
-          k = 0;
+          int k = 0;
+
           for(int v = 0; v < nvtxs; ++v) {
             if (assignment[v] == p) values[k++] = v;
           }
@@ -164,10 +165,160 @@ namespace ALE {
     };
   }
 #endif
+#ifdef PETSC_HAVE_PARMETIS
+  namespace ParMetis {
+    template<typename Alloc_ = malloc_allocator<int> >
+    class Partitioner {
+    public:
+      typedef int    part_type;
+      typedef Alloc_ alloc_type;
+    public:
+      static bool zeroBase() {return false;}
+      // This method returns the partition section mapping sieve points (here cells) to partitions
+      //   start:     start of edge list for each vertex
+      //   adjacency: adj[start[v]] is edge list data for vertex v
+      //   partition: this section is over the partitions and takes points as values
+      // TODO: Read parameters from options
+      template<typename Section, typename MeshManager>
+      void partition(const int numVertices, const int start[], const int adjacency[], const Obj<Section>& partition, const MeshManager& manager) {
+        //static part_type *partitionSieve(const Obj<bundle_type>& bundle, const int dim) {
+        int    nvtxs      = numVertices; // The number of vertices in full graph
+        int   *vtxdist;                  // Distribution of vertices across processes
+        int   *xadj       = start;       // Start of edge list for each vertex
+        int   *adjncy     = adjacency;   // Edge lists for all vertices
+        int   *vwgt       = NULL;        // Vertex weights
+        int   *adjwgt     = NULL;        // Edge weights
+        int    wgtflag    = 0;           // Indicates which weights are present
+        int    numflag    = 0;           // Indicates initial offset (0 or 1)
+        int    ncon       = 1;           // The number of weights per vertex
+        int    nparts     = partition->commSize(); // The number of partitions
+        float *tpwgts;                   // The fraction of vertex weights assigned to each partition
+        float *ubvec;                    // The balance intolerance for vertex weights
+        int    options[5];               // Options
+        int    maxSize    = 0;
+        // Outputs
+        int        edgeCut;              // The number of edges cut by the partition
+        part_type *assignment;
+
+        options[0] = 0; // Use all defaults
+        // Calculate vertex distribution
+        //   Not sure this still works in parallel
+        vtxdist    = new int[nparts+1];
+        vtxdist[0] = 0;
+        MPI_Allgather(&nvtxs, 1, MPI_INT, &vtxdist[1], 1, MPI_INT, partition->comm());
+        for(int p = 2; p <= nparts; ++p) {
+          vtxdist[p] += vtxdist[p-1];
+        }
+        // Calculate weights
+        tpwgts     = new float[ncon*nparts];
+        for(int p = 0; p < nparts; ++p) {
+          tpwgts[p] = 1.0/nparts;
+        }
+        ubvec      = new float[ncon];
+        ubvec[0]   = 1.05;
+
+        assignment = this->_allocator.allocate(nvtxs);
+        for(int i = 0; i < nvtxs; ++i) {this->_allocator.construct(assignment+i, 0);}
+
+        if (partition->commSize() == 1) {
+          PetscMemzero(assignment, nvtxs * sizeof(part_type));
+        } else {
+          if (partition->debug() && nvtxs) {
+            for(int p = 0; p <= nvtxs; ++p) {
+              std::cout << "["<<partition->commRank()<<"]xadj["<<p<<"] = " << xadj[p] << std::endl;
+            }
+            for(int i = 0; i < xadj[nvtxs]; ++i) {
+              std::cout << "["<<partition->commRank()<<"]adjncy["<<i<<"] = " << adjncy[i] << std::endl;
+            }
+          }
+          if (vtxdist[1] == vtxdist[nparts]) {
+            if (partition->commRank() == 0) {
+              METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+              if (partition->debug()) {std::cout << "Metis: edgecut is " << edgeCut << std::endl;}
+            }
+          } else {
+            MPI_Comm comm = partition->comm();
+
+            ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgeCut, assignment, &comm);
+            if (partition->debug()) {std::cout << "ParMetis: edgecut is " << edgeCut << std::endl;}
+          }
+        }
+        delete [] vtxdist;
+        delete [] tpwgts;
+        delete [] ubvec;
+
+        for(int v = 0; v < nvtxs; ++v) {partition->addFiberDimension(assignment[v], 1);}
+        partition->allocatePoint();
+        for(int p = 0; p < partition->commSize(); ++p) {
+          maxSize = std::max(maxSize, partition->getFiberDimension(p));
+        }
+        typename Section::value_type *values = new typename Section::value_type[maxSize];
+
+        for(int p = 0; p < partition->commSize(); ++p) {
+          int k = 0;
+
+          for(int v = 0; v < nvtxs; ++v) {
+            if (assignment[v] == p) values[k++] = v;
+          }
+          if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
+          partition->updatePoint(p, values);
+        }
+        delete [] values;
+
+        for(int i = 0; i < nvtxs; ++i) {this->_allocator.destroy(assignment+i);}
+        this->_allocator.deallocate(assignment, nvtxs);
+          return assignment;
+        };
+      };
+    };
+#endif
+  namespace Simple {
+    template<typename Alloc_ = malloc_allocator<short int> >
+    class Partitioner {
+    public:
+      typedef int    part_type;
+      typedef Alloc_ alloc_type;
+    protected:
+      alloc_type _allocator;
+    public:
+      Partitioner() {};
+      ~Partitioner() {};
+    public:
+      static bool zeroBase() {return true;}
+      template<typename Section, typename MeshManager>
+      void partition(const int numVertices, const int start[], const int adjacency[], const Obj<Section>& partition, const MeshManager& manager) {
+        const int numProcs = partition->commSize();
+        const int rank     = partition->commRank();
+        int       maxSize  = 0;
+
+        for(int p = 0; p < numProcs; ++p) {
+          partition->setFiberDimension(p, numVertices/numProcs + ((numVertices % numProcs) > rank));
+          maxSize = std::max(maxSize, partition->getFiberDimension(p));
+        }
+        partition->allocatePoint();
+        typename Section::value_type *values = new typename Section::value_type[maxSize];
+
+        for(int p = 0; p < partition->commSize(); ++p) {
+          const int start = p*(numVertices/numProcs)     + p*((numVertices % numProcs) > p+1);
+          const int end   = (p+1)*(numVertices/numProcs) + (p+1)*((numVertices % numProcs) > p+2);
+          int       k     = 0;
+
+          for(int v = start; v < end; ++v, ++k) {
+            values[k] = v;
+          }
+          if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
+          partition->updatePoint(p, values);
+        }
+        delete [] values;
+      };
+    };
+  }
 #ifdef PETSC_HAVE_CHACO
   template<typename GraphPartitioner = ALE::Chaco::Partitioner<>, typename Alloc_ = malloc_allocator<int> >
+#elif defined(PETSC_HAVE_PARMETIS)
+  template<typename GraphPartitioner = ALE::ParMetis::Partitioner<>, typename Alloc_ = malloc_allocator<int> >
 #else
-  template<typename GraphPartitioner, typename Alloc_ = malloc_allocator<int> >
+  template<typename GraphPartitioner = ALE::Simple::Partitioner<>, typename Alloc_ = malloc_allocator<int> >
 #endif
   class Partitioner {
   public:
