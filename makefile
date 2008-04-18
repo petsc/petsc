@@ -16,12 +16,6 @@ include ${PETSC_DIR}/conf/test
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
 all: 
-	@if [ "`whoami`" = "root" ]; then \
-      echo "********************************************************************"; \
-      echo "  Do not run configure as root, or using sudo.";\
-      echo "    That should be reserved for installation";\
-      echo "********************************************************************"; \
-      exit 1; fi
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
 	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/conf/make.log
 	-@egrep -i "( error | error:)" ${PETSC_ARCH}/conf/make.log > /dev/null; if [ "$$?" = "0" ]; then \
