@@ -206,6 +206,7 @@ extern "C" {
 
   def checkDynamic(self):
     '''Check for the header and libraries necessary for dynamic library manipulation'''
+    if 'with-dynamic' in self.framework.argDB and not self.framework.argDB['with-dynamic']: return
     self.check(['dl'], 'dlopen')
     self.headers.check('dlfcn.h')
     return
