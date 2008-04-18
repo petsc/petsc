@@ -224,6 +224,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-L.*$', arg)
         if m:
           arg = '-L'+os.path.abspath(arg[2:])
+          if arg == '-L/usr/lib': continue
           lflags.append(arg)
           self.logPrint('Found library directory: '+arg, 4, 'compilers')
           clibs.append(arg)
@@ -233,6 +234,7 @@ class Configure(config.base.Configure):
           lib = argIter.next()
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
+          if lib == '/usr/lib': continue          
           if not lib in rpathflags:          
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
@@ -397,6 +399,7 @@ class Configure(config.base.Configure):
         m = re.match(r'^-L.*$', arg)
         if m:
           arg = '-L'+os.path.abspath(arg[2:])
+          if arg == '-L/usr/lib': continue                    
           if not arg in lflags:
             lflags.append(arg)
             self.logPrint('Found library directory: '+arg, 4, 'compilers')
@@ -410,6 +413,7 @@ class Configure(config.base.Configure):
           lib = argIter.next()
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
+          if lib == '/usr/lib': continue
           if not lib in rpathflags:          
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
@@ -748,7 +752,8 @@ class Configure(config.base.Configure):
           continue
         m = re.match(r'^-L.*$', arg)
         if m:
-          arg = '-L'+os.path.abspath(arg[2:])          
+          arg = '-L'+os.path.abspath(arg[2:])
+          if arg == '-L/usr/lib': continue          
           if not arg in lflags:
             
             #TODO: if arg == '-lkernel32' and host_os.startswith('cygwin'):
@@ -762,6 +767,7 @@ class Configure(config.base.Configure):
           if lib == '\\': lib = argIter.next()
           if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
           lib = os.path.abspath(lib)
+          if lib == '/usr/lib': continue
           if not lib in rpathflags:
             rpathflags.append(lib)
             self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
