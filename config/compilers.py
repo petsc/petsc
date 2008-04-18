@@ -177,6 +177,7 @@ class Configure(config.base.Configure):
     argIter = iter(output.split())
     clibs = []
     lflags  = []
+    rpathflags = []
     try:
       while 1:
         arg = argIter.next()
@@ -230,15 +231,21 @@ class Configure(config.base.Configure):
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
-          self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
-          clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
+          lib = os.path.abspath(lib)
+          if not lib in rpathflags:          
+            rpathflags.append(lib)
+            self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
+            clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
         # Check for '-R/sharedlibpath/'
         m = re.match(r'^-R.*$', arg)
         if m:
-          lib = arg+argIter.next()
-          self.logPrint('Found -R library: '+lib, 4, 'compilers')
-          clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          lib = arg+os.path.abspath(argIter.next())
+          if not lib in rpathflags:          
+            rpathflags.append(lib)
+            self.logPrint('Found -R library: '+lib, 4, 'compilers')
+            clibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
         self.logPrint('Unknown arg '+arg, 4, 'compilers')
     except StopIteration:
@@ -340,6 +347,7 @@ class Configure(config.base.Configure):
     argIter = iter(output.split())
     cxxlibs = []
     lflags  = []
+    rpathflags = []
     try:
       while 1:
         arg = argIter.next()
@@ -400,15 +408,21 @@ class Configure(config.base.Configure):
         # Check for '-rpath /sharedlibpath/ or -R /sharedlibpath/'
         if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
-          self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
-          cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
+          lib = os.path.abspath(lib)
+          if not lib in rpathflags:          
+            rpathflags.append(lib)
+            self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
+            cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
         # Check for '-R/sharedlibpath/'
         m = re.match(r'^-R.*$', arg)
         if m:
-          lib = arg+argIter.next()
-          self.logPrint('Found -R library: '+lib, 4, 'compilers')
-          cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          lib = arg+os.path.abspath(argIter.next())
+          if not lib in rpathflags:
+            rpathflags.append(lib)
+            self.logPrint('Found -R library: '+lib, 4, 'compilers')
+            cxxlibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
         self.logPrint('Unknown arg '+arg, 4, 'compilers')
     except StopIteration:
@@ -661,6 +675,7 @@ class Configure(config.base.Configure):
     flibs   = []
     fmainlibs = []
     lflags  = []
+    rpathflags = []
     try:
       while 1:
         arg = argIter.next()
@@ -745,15 +760,21 @@ class Configure(config.base.Configure):
         if arg == '-rpath' or arg == '-R':
           lib = argIter.next()
           if lib == '\\': lib = argIter.next()
-          self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
-          flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          if lib.startswith('"') and lib.endswith('"') and lib.find(' ') == -1: lib = lib[1:-1]
+          lib = os.path.abspath(lib)
+          if not lib in rpathflags:
+            rpathflags.append(lib)
+            self.logPrint('Found '+arg+' library: '+lib, 4, 'compilers')
+            flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
         # Check for '-R/sharedlibpath/'
         m = re.match(r'^-R.*$', arg)
         if m:
-          lib = arg+argIter.next()
-          self.logPrint('Found -R library: '+lib, 4, 'compilers')
-          flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
+          lib = arg+os.path.abspath(argIter.next())
+          if not lib in rpathflags:
+            rpathflags.append(lib)
+            self.logPrint('Found -R library: '+lib, 4, 'compilers')
+            flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
         if arg.startswith('-zallextract') or arg.startswith('-zdefaultextract') or arg.startswith('-zweakextract'):
           self.framework.log.write( 'Found Solaris -z option: '+arg+'\n')
