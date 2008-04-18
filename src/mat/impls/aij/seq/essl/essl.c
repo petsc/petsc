@@ -197,6 +197,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Essl(Mat A,MatType type,MatR
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
+  B->ops->matsolve          = 0;
 
   ierr                      = PetscNewLog(B,Mat_Essl,&essl);CHKERRQ(ierr);
   essl->MatDuplicate        = A->ops->duplicate;

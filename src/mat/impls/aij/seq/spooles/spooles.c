@@ -541,6 +541,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,MatType 
     lu->MatAssemblyEnd             = A->ops->assemblyend;
     lu->MatDestroy                 = A->ops->destroy;
   }
+  B->ops->matsolve = 0;
   B->spptr = (void*)lu;
   lu->basetype                   = MATSEQAIJ;
   lu->useQR                      = PETSC_FALSE;
