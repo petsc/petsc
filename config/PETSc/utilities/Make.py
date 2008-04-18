@@ -23,7 +23,12 @@ class Configure(config.base.Configure):
     self.getExecutable(self.framework.argDB['with-make'], getFullPath = 1,resultName = 'make')
 
     if not hasattr(self,'make'):
-      raise RuntimeError('Could not locate the make utility on your system, make sure\n it is in your path or use --with-make=/fullpathnameofmake\n and run config/configure.py again')    
+      if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/make'):
+        raise RuntimeError('''\
+*** Incomplete cygwin install detected . /usr/bin/make is missing. **************
+*** Please rerun cygwin-setup and select module "make" for install.**************''')
+      else:
+        raise RuntimeError('Could not locate the make utility on your system, make sure\n it is in your path or use --with-make=/fullpathnameofmake\n and run config/configure.py again')    
     # Check for GNU make
     haveGNUMake = 0
     try:
