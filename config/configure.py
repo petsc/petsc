@@ -63,22 +63,6 @@ def chkcygwinpythonver():
 ================================================================================''')
   return 0
 
-def chkincompletecygwin():
-  if os.path.exists('/usr/bin/cygcheck.exe'):
-    if not os.path.exists('/usr/bin/make'):
-      print '================================================================================='
-      print ' *** Incomplete cygwin install detected . /usr/bin/make is missing. **************'
-      print ' *** Please rerun cygwin-setup and select module "make" for install.**************'
-      print '================================================================================='
-      sys.exit(3)
-    elif not os.path.exists('/usr/bin/diff'):
-      print '================================================================================='
-      print ' *** Incomplete cygwin install detected . /usr/bin/diff is missing. **************'
-      print ' *** Please rerun cygwin-setup and select module "make" for install.**************'
-      print '================================================================================='
-      sys.exit(3)        
-  return 0
-
 def chkrhl9():
   if os.path.exists('/etc/redhat-release'):
     try:
@@ -163,8 +147,6 @@ def petsc_configure(configure_options):
 
   # Check for broken cygwin
   chkbrokencygwin()
-  # Check if cygwin install is incomplete
-  chkincompletecygwin()
   # Disable threads on RHL9
   chkrhl9()
   # Make sure cygwin-python is used on windows
