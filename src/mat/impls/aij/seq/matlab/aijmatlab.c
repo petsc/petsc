@@ -341,6 +341,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Matlab(Mat A,MatType type,Ma
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
+  B->ops->matsolve = 0;
 
   ierr = PetscNewLog(B,Mat_Matlab,&lu);CHKERRQ(ierr);
   lu->MatDuplicate         = A->ops->duplicate;
