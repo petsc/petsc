@@ -50,16 +50,20 @@ static PetscErrorCode PCView_FieldSplit(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  Solver info for each split is in the following KSP objects:\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
     for (i=0; i<jac->nsplits; i++) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Split number %D Fields ",i);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
-      for (j=0; j<ilink->nfields; j++) {
-        if (j > 0) {
-          ierr = PetscViewerASCIIPrintf(viewer,",");CHKERRQ(ierr);
-        }
-        ierr = PetscViewerASCIIPrintf(viewer," %D",ilink->fields[j]);CHKERRQ(ierr);
+      if (ilink->fields) {
+	ierr = PetscViewerASCIIPrintf(viewer,"Split number %D Fields ",i);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);CHKERRQ(ierr);
+	for (j=0; j<ilink->nfields; j++) {
+	  if (j > 0) {
+	    ierr = PetscViewerASCIIPrintf(viewer,",");CHKERRQ(ierr);
+	  }
+	  ierr = PetscViewerASCIIPrintf(viewer," %D",ilink->fields[j]);CHKERRQ(ierr);
+	}
+	ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
+      } else {
+	ierr = PetscViewerASCIIPrintf(viewer,"Split number %D Defined by IS\n",i);CHKERRQ(ierr);
       }
-      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);CHKERRQ(ierr);
       ierr = KSPView(ilink->ksp,viewer);CHKERRQ(ierr);
       ilink = ilink->next;
     }
@@ -267,14 +271,14 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
     ierr = FieldSplitSplitSolveAdd(ilink,x,y);CHKERRQ(ierr);
     while (ilink->next) {
       ilink = ilink->next;
-      ierr  = MatMult(pc->pmat,y,jac->w1);CHKERRQ(ierr);
+      ierr  = MatMult(pc->mat,y,jac->w1);CHKERRQ(ierr);
       ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
       ierr  = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
     }
     if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
       while (ilink->previous) {
         ilink = ilink->previous;
-        ierr  = MatMult(pc->pmat,y,jac->w1);CHKERRQ(ierr);
+        ierr  = MatMult(pc->mat,y,jac->w1);CHKERRQ(ierr);
         ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
         ierr  = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
       }
@@ -506,6 +510,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,IS is)
 
   PetscFunctionBegin;
   ierr = PetscNew(struct _PC_FieldSplitLink,&ilink);CHKERRQ(ierr);
+  ilink->is      = is;
+  ierr           = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);

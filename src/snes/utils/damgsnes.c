@@ -1173,11 +1173,12 @@ PetscErrorCode DMMGSetISColoringType(DMMG *dmmg,ISColoringType isctype)
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels;
+  PetscInt       i,nlevels = dmmg[0]->nlevels,nDM;
   PetscTruth     fieldsplit,dmcomposite;
   KSP            ksp;
   PC             pc;
   DM             dm;
+  IS             *fields;
 
   PetscFunctionBegin;
   ierr = SNESGetKSP(DMMGGetSNES(dmmg),&ksp);CHKERRQ(ierr);
@@ -1186,6 +1187,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
   ierr = PetscTypeCompare((PetscObject)DMMGGetDM(dmmg),"DMComposite",&dmcomposite);CHKERRQ(ierr);
   if (fieldsplit && dmcomposite) {
     ierr = PetscInfo(ksp,"Setting up physics based fieldsplit preconditioner\n");CHKERRQ(ierr);
+    ierr = DMCompositeGetNumberDM((DMComposite)DMMGGetDM(dmmg),&nDM);CHKERRQ(ierr);
+    ierr = DMCompositeGetGlobalISs((DMComposite)DMMGGetDM(dmmg),&fields);CHKERRQ(ierr);
+    for (i=0; i<nDM; i++) {
+      ierr = PCFieldSplitSetIS(pc,fields[i]);CHKERRQ(ierr);
+      ierr = ISDestroy(fields[i]);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(fields);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
