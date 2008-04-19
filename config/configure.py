@@ -93,11 +93,6 @@ def petsc_configure(configure_options):
   extraLogs = []
 
   # support a few standard configure option types
-  foundsudo = 0
-  for l in range(0,len(sys.argv)):
-    if sys.argv[l] == '--with-sudo=sudo':
-      foundsudo = 1
-  
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
     if name.find('enable-') >= 0:
@@ -120,30 +115,6 @@ def petsc_configure(configure_options):
         head, tail = name.split('=', 1)
         if tail == '1': tail = '0'
         sys.argv[l] = head.replace('without-','with-')+'='+tail
-    if name.find('prefix=') >= 0 and not foundsudo:
-      head, installdir = name.split('=', 1)      
-      if os.path.exists(installdir):
-        if not os.access(installdir,os.W_OK):
-          print 'You do not have write access to requested install directory given with --prefix='+installdir+' perhaps use --with-sudo=sudo also'
-          sys.exit(3)
-      else:
-         try:
-           os.mkdir(installdir)
-         except:
-           print 'You do not have write access to create install directory given with --prefix='+installdir+' perhaps use --with-sudo=sudo also'
-           sys.exit(3)
-        
-
-  # Check for sudo
-  if os.getuid() == 0:
-    print '================================================================================='
-    print '             *** Do not run configure as root, or using sudo. ***'
-    print '             *** Use the --with-sudo=sudo option to have      ***'
-    print '             *** installs of external packages done with sudo ***'
-    print '             *** use only with --prefix= when installing in   ***'
-    print '             *** system directories                           ***'
-    print '================================================================================='
-    sys.exit(3)
 
   # Check for broken cygwin
   chkbrokencygwin()
