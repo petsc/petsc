@@ -4,8 +4,8 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = lu.c
-SOURCEF  = lu.h
-SOURCEH  = 
+SOURCEF  = 
+SOURCEH  = lu.h
 OBJSC    = lu.o
 OBJSF    =
 LIBBASE  = libpetscksp

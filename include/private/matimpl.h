@@ -155,6 +155,7 @@ struct _MatOps {
   PetscErrorCode (*missingdiagonal)(Mat,PetscTruth*,PetscInt*);
   /*115*/
   PetscErrorCode (*getseqnonzerostructure)(Mat,Mat *[]);
+  PetscErrorCode (*destroysolver)(Mat);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -271,6 +272,7 @@ struct _p_Mat {
   PetscTruth             symmetric_set,hermitian_set,structurally_symmetric_set; /* if true, then corresponding flag is correct*/
   PetscTruth             symmetric_eternal;
   void                   *spptr;          /* pointer for special library like SuperLU */
+  MatSolverType          solvertype;
 };
 
 #define MatPreallocated(A)  ((!(A)->preallocated) ? MatSetUpPreallocation(A) : 0)

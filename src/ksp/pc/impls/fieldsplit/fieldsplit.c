@@ -335,13 +335,13 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
       ierr = FieldSplitSplitSolveAddTranspose(ilink,x,y);CHKERRQ(ierr);
       while (ilink->next) {
         ilink = ilink->next;
-        ierr  = MatMultTranspose(pc->pmat,y,jac->w1);CHKERRQ(ierr);
+        ierr  = MatMultTranspose(pc->mat,y,jac->w1);CHKERRQ(ierr);
         ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
         ierr  = FieldSplitSplitSolveAddTranspose(ilink,jac->w2,y);CHKERRQ(ierr);
       }
       while (ilink->previous) {
         ilink = ilink->previous;
-        ierr  = MatMultTranspose(pc->pmat,y,jac->w1);CHKERRQ(ierr);
+        ierr  = MatMultTranspose(pc->mat,y,jac->w1);CHKERRQ(ierr);
         ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
         ierr  = FieldSplitSplitSolveAddTranspose(ilink,jac->w2,y);CHKERRQ(ierr);
       }
@@ -352,7 +352,7 @@ static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
       ierr = FieldSplitSplitSolveAddTranspose(ilink,x,y);CHKERRQ(ierr);
       while (ilink->previous) {
 	ilink = ilink->previous;
-	ierr  = MatMultTranspose(pc->pmat,y,jac->w1);CHKERRQ(ierr);
+	ierr  = MatMultTranspose(pc->mat,y,jac->w1);CHKERRQ(ierr);
 	ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
 	ierr  = FieldSplitSplitSolveAddTranspose(ilink,jac->w2,y);CHKERRQ(ierr);
       }

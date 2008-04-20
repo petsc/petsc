@@ -77,6 +77,19 @@ E*/
 #define MATCOMPOSITE       "composite"
 #define MATSEQFFTW         "seqfftw"
 
+/*E
+    MatSolverType - String with the name of a PETSc matrix solver type. 
+
+    For example: "petsc" indicates what PETSc provides, "superlu" indicates either 
+       SuperLU or SuperLU_Dist etc.
+
+
+   Level: beginner
+
+.seealso: MatSetSolverType(), Mat, MatSetType(), MatType
+E*/
+#define MatSolverType char*
+
 /* Logging support */
 #define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE;
@@ -114,6 +127,8 @@ PetscPolymorphicFunction(MatCreate,(MPI_Comm comm),(comm,&A),Mat,A)
 PetscPolymorphicFunction(MatCreate,(),(PETSC_COMM_WORLD,&A),Mat,A)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,MatType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSolverType(Mat,MatSolverType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSolverType(Mat,MatSolverType*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char[]);
@@ -393,7 +408,6 @@ PetscPolymorphicFunction(MatConvert,(Mat A,MatType t),(A,t,MAT_INITIAL_MATRIX,&a
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat,MatDuplicateOption,Mat*);
 PetscPolymorphicFunction(MatDuplicate,(Mat A,MatDuplicateOption o),(A,o,&a),Mat,a)
 PetscPolymorphicFunction(MatDuplicate,(Mat A),(A,MAT_COPY_VALUES,&a),Mat,a)
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSolverSetType(Mat,const char*);
 
 /*E
     MatStructure - Indicates if the matrix has the same nonzero structure

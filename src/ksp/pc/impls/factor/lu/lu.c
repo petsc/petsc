@@ -113,7 +113,8 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
   PC_LU          *lu = (PC_LU*)pc->data;
   PetscErrorCode ierr;
   PetscTruth     flg,set;
-  char           tname[256];
+  char           tname[256],solvertype[64];
+  MatSolverType  stype;
   PetscFList     ordlist;
   PetscReal      tol;
 
@@ -165,6 +166,11 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     ierr = PetscOptionsTruth("-pc_factor_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
     if (set) {
       ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
+    }
+    ierr = MatGetSolverType(pc->pmat,&stype);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-pc_factor_solver_type","Type of solver to use for factorization","MatSetSolverType",stype,solvertype,64,&set);CHKERRQ(ierr);
+    if (set) {
+      ierr = MatSetSolverType(pc->pmat,solvertype);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
