@@ -19,11 +19,11 @@ Additional SNES example programs are available at ${PETSC_DIR}/<a href="http://w
           or ~/petsc_examples/snes/ex5f.F and ex5f.h<br>
           or ~/petsc_examples/snes/ex5f90.F<br>
    Runtime commands:<br>
-     % mpiexec -np 3 ex5 -snes_monitor -snes_view<br>
+     % mpiexec -n 3 ex5 -snes_monitor -snes_view<br>
     or<br>
-     % mpiexec -np 3 ex5f -snes_monitor -snes_view<br>
+     % mpiexec -n 3 ex5f -snes_monitor -snes_view<br>
     or<br>
-     % mpiexec -np 3 ex5f90 -snes_monitor -snes_view<br>
+     % mpiexec -n 3 ex5f90 -snes_monitor -snes_view<br>
       where<br>
         -snes_monitor : print residual norm at each iteration<br>
         -snes_view : print information about the particular<br>

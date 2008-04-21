@@ -35,7 +35,7 @@ unsigned long divWork(int id, unsigned long num, int np);
    Contributed by Xiaoyan Zeng <zengxia@iit.edu> and Liu, Kwong Ip" <kiliu@math.hkbu.edu.hk>
 
    Example of usage: 
-     mpiexec -np 4 ./ex2 -num_of_stocks 30 -interest_rate 0.4 -time_interval 0.01 -num_of_simulations 10000
+     mpiexec -n 4 ./ex2 -num_of_stocks 30 -interest_rate 0.4 -time_interval 0.01 -num_of_simulations 10000
 */
 
 #undef __FUNCT__

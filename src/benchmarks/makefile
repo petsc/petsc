@@ -71,33 +71,33 @@ test: ${TESTS}
 runtest: 
 	-@echo "Time Taken by some PETSc routines are as follows:"
 	-@echo "------------------------------------------------"
-	-@${MPIEXEC} -np 1 ./PetscTime
-	-@${MPIEXEC} -np 1 ./PetscGetTime
-	-@${MPIEXEC} -np 1 ./PetscGetCPUTime
-	-@${MPIEXEC} -np 1 ./MPI_Wtime
+	-@${MPIEXEC} -n 1 ./PetscTime
+	-@${MPIEXEC} -n 1 ./PetscGetTime
+	-@${MPIEXEC} -n 1 ./PetscGetCPUTime
+	-@${MPIEXEC} -n 1 ./MPI_Wtime
 	-@echo " "
 	-@echo "PLogEventBegin and PLogEventEnd together with options"
 	-@echo "------------------------------------------------"
-	-@${MPIEXEC} -np 1 ./PLogEvent              > /dev/null
-	-@${MPIEXEC} -np 1 ./PLogEvent -log_summary > /dev/null
-	-@${MPIEXEC} -np 1 ./PLogEvent -log_mpe     > /dev/null
+	-@${MPIEXEC} -n 1 ./PLogEvent              > /dev/null
+	-@${MPIEXEC} -n 1 ./PLogEvent -log_summary > /dev/null
+	-@${MPIEXEC} -n 1 ./PLogEvent -log_mpe     > /dev/null
 	-@echo " "
 	-@echo "PetscMalloc and PetscFree together  with options"
 	-@echo "------------------------------------------------"
-	-@${MPIEXEC} -np 1 ./PetscMalloc
-	-@${MPIEXEC} -np 1 ./PetscMalloc -malloc
+	-@${MPIEXEC} -n 1 ./PetscMalloc
+	-@${MPIEXEC} -n 1 ./PetscMalloc -malloc
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
-	-@${MPIEXEC} -np 1 ./PetscMemcpy
-	-@${MPIEXEC} -np 1 ./PetscMemzero
-	-@${MPIEXEC} -np 1 ./PetscMemcmp
+	-@${MPIEXEC} -n 1 ./PetscMemcpy
+	-@${MPIEXEC} -n 1 ./PetscMemzero
+	-@${MPIEXEC} -n 1 ./PetscMemcmp
 	-@echo " "
 	-@echo "Memory Operations "
 	-@echo "------------------------------------------------"
-	-@${MPIEXEC} -np 1 ./Index
+	-@${MPIEXEC} -n 1 ./Index
 	-@echo " "
 	-@echo "Datatype Sizes "
 	-@echo "------------------------------------------------"
-	-@${MPIEXEC} -np 1 ./sizeof
+	-@${MPIEXEC} -n 1 ./sizeof
 	-@echo "------------------------------------------------"

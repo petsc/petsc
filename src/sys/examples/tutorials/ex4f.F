@@ -1,5 +1,5 @@
 !
-!     Program usage: mpiexec -np 2 ex4f [-help] [all PETSc options]
+!     Program usage: mpiexec -n 2 ex4f [-help] [all PETSc options]
 !
 !     This introductory example illustrates running PETSc on a subset
 !     of processes

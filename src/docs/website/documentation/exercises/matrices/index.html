@@ -24,11 +24,11 @@ the code</a></p>
 information about matrices</font></p>
 <p>
    Runtime commands:</p>
-<p>% mpiexec -np 1 ex3 -mat_view_info<br>
-% mpiexec -np 2 ex3 -mat_view_info_detailed<br>
-     % mpiexec -np 2 ex3 -mat_view<br>
+<p>% mpiexec -n 1 ex3 -mat_view_info<br>
+% mpiexec -n 2 ex3 -mat_view_info_detailed<br>
+     % mpiexec -n 2 ex3 -mat_view<br>
     and<br>
-     % mpiexec -np 2 ex3 -mat_view_draw -draw_pause -1<br>
+     % mpiexec -n 2 ex3 -mat_view_draw -draw_pause -1<br>
       where<br>
         -mat_view      : print matrix elements to screen<br>
         -mat_view_draw : draw the matrix sparsity structure<br>

@@ -71,7 +71,7 @@ while [ $# -gt 0 ] ; do
     set -x
     ;;
     -u|-usage|-help)
-    echo "$0       [-np n] [-maxtime min] [-showoutput ] "
+    echo "$0       [-n n] [-maxtime min] [-showoutput ] "
     echo "         [-showtimesoff] [-shared] prog [ progs args ]"
     exit 0;
     ;;
@@ -199,7 +199,7 @@ else
   MPIEXEC="/soft/apps/packages/mpich-1.2.4-gcc/bin/mpirun"
 fi
 
-MPIEXEC_CMD="\$MPIEXEC -np $np -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs"
+MPIEXEC_CMD="\$MPIEXEC -n $np -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs"
 
 if [ $shared = "yes" ]; then
   rsh \$masternode "cd $rundir; \$MPIEXEC_CMD"

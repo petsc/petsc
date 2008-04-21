@@ -35,10 +35,10 @@ ex8: ex8.o  chkopts
 	${RM} ex8.o
 
 runex1: 
-	-@${MPIEXEC} -np 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
+	-@${MPIEXEC} -n 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
 runex5: 
-	-@${MPIEXEC} -np 2 ./ex5 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
+	-@${MPIEXEC} -n 2 ./ex5 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
 #-------------------------------------------------------------
 TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm

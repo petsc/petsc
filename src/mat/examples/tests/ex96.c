@@ -9,7 +9,7 @@ static char help[] ="Tests sequential and parallel DAGetMatrix(), MatMatMult() a
 
 /*  
     This test is modified from ~src/ksp/examples/tests/ex19.c. 
-    Example of usage: mpiexec -np 3 ex96 -Mx 10 -My 10 -Mz 10
+    Example of usage: mpiexec -n 3 ex96 -Mx 10 -My 10 -Mz 10
 */
 
 #include "petscksp.h"

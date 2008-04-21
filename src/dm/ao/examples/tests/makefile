@@ -23,38 +23,38 @@ ex7: ex7.o  chkopts
 	${RM} -f ex7.o
 #-------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -np 1 ./ex1 > ex1_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex1 > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIEXEC}  -np 2 ./ex1 > ex1_2.tmp 2>&1;\
+	-@${MPIEXEC}  -n 2 ./ex1 > ex1_2.tmp 2>&1;\
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true ;  \
 	   else echo "Possible problem with ex1_2, diffs above"; fi ;\
 	   ${RM} -f ex1_2.tmp
 runex1_3:
-	-@${MPIEXEC}  -np 3 ./ex1 > ex1_3.tmp 2>&1;\
+	-@${MPIEXEC}  -n 3 ./ex1 > ex1_3.tmp 2>&1;\
 	   if (${DIFF} output/ex1_3.out ex1_3.tmp) then true ;  \
 	   else echo "Possible problem with ex1_3, diffs above"; fi ;\
 	   ${RM} -f ex1_3.tmp
 runex2:
-	-@${MPIEXEC} -np 1  ./ex2 > ex2_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1  ./ex2 > ex2_1.tmp 2>&1;\
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi;\
 	   ${RM} -f ex2_1.tmp
 runex2_2:
-	-@${MPIEXEC}  -np 2 ./ex2 > ex2_2.tmp 2>&1;\
+	-@${MPIEXEC}  -n 2 ./ex2 > ex2_2.tmp 2>&1;\
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi;\
 	   ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIEXEC} -np 3 ./ex2 > ex2_3.tmp 2>&1;\
+	-@${MPIEXEC} -n 3 ./ex2 > ex2_3.tmp 2>&1;\
 	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi;\
 	   ${RM} -f ex2_3.tmp
 
 runex7:
-	-@${MPIEXEC}  -np 2 ./ex7 > ex7_1.tmp 2>&1;\
+	-@${MPIEXEC}  -n 2 ./ex7 > ex7_1.tmp 2>&1;\
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true ;  \
 	   else echo "Possible problem with ex7_1, diffs above"; fi ;\
 	   ${RM} -f ex7_1.tmp

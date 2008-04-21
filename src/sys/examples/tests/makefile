@@ -75,29 +75,29 @@ ex19: ex19.o chkopts
 	${RM} -f ex19.o
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -np 1 ./ex1
+	-@${MPIEXEC} -n 1 ./ex1
 	-@echo "This is a contrived error to test error handling."
 
 runex1f:
-	-@${MPIEXEC} -np 1 ./ex1f
+	-@${MPIEXEC} -n 1 ./ex1f
 	-@echo "This is a contrived error to test error handling."
 
 runex2:
-	-@${MPIEXEC} -np 1 ./ex2
+	-@${MPIEXEC} -n 1 ./ex2
 	-@echo "This is a contrived error to test error handling."
 
 runex3:
-	-@${MPIEXEC} -np 1 ./ex3 -fp_trap
+	-@${MPIEXEC} -n 1 ./ex3 -fp_trap
 	-@echo "This is a contrived error to test error handling of floating point exceptions."
 
 runex10:
-	-@${MPIEXEC} -np 1 ./ex10 > ex10_1.tmp 2>&1;\
+	-@${MPIEXEC} -n 1 ./ex10 > ex10_1.tmp 2>&1;\
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Error in PetscMemmove."; fi; \
 	   ${RM} -f ex10_1.tmp ex10_1.tmp
 
 runex19:
-	-@${MPIEXEC} -np 1 ./ex19 > ex19_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./ex19 > ex19_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_1, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp

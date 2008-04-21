@@ -322,7 +322,7 @@
 !   SOR preconditioner
 !
 ! YOU CAN GET THE EXACT SAME EFFECT WITH THE PCCOMPOSITE preconditioner using
-! mpiexec -np 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
+! mpiexec -n 1 ex21f -ksp_monitor -pc_type composite -pc_composite_pcs jacobi,sor -pc_composite_type additive
 !
       subroutine SampleShellPCApply(dummy,x,y,ierr)
 

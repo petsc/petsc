@@ -23,14 +23,14 @@ ex4: ex4.o  chkopts
 	${RM} -f ex4.o
 #----------------------------------------------------------------------
 runex2:
-	-@${MPIEXEC} -np 1 ./ex2  >\
+	-@${MPIEXEC} -n 1 ./ex2  >\
 	   ex2_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
 
 runex2_2:
-	-@${MPIEXEC} -np 2 ./ex2  >\
+	-@${MPIEXEC} -n 2 ./ex2  >\
 	   ex2_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
