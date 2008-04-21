@@ -603,7 +603,7 @@ static PetscErrorCode PCSetFromOptions_SPAI(PC pc)
      as a preconditioner (SIAM J. Sci. Comput.; vol 18, nr 3)
 
    Options Database Keys:
-+  -pc_spai_set_epsilon <eps> - set tolerance
++  -pc_spai_epsilon <eps> - set tolerance
 .  -pc_spai_nbstep <n> - set nbsteps
 .  -pc_spai_max <m> - set max
 .  -pc_spai_max_new <m> - set maxnew
