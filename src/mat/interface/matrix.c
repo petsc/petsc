@@ -7025,13 +7025,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat
 +  A - the left matrix
 .  B - the right matrix
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), if the result is a dense matrix this is irrelevent
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use PETSC_DEFAULT if you do not have a good estimate
+          if the result is a dense matrix this is irrelevent
 
    Output Parameters:
 .  C - the product matrix
 
    Notes:
    Unless scall is MAT_REUSE_MATRIX C will be created.
+
+   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call
+   
+   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
+   actually needed.
 
    If you have many matrices with the same non-zero structure to multiply, you 
    should either 
@@ -7102,10 +7108,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
    Input Parameters:
 +  A - the left matrix
 .  B - the right matrix
--  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), if C is a dense matrix this is irrelevent
-
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use PETSC_DEFAULT if you do not have a good estimate,
+      if C is a dense matrix this is irrelevent
+ 
    Output Parameters:
-.  C - the matrix ready for the numeric part of the multiplication
+.  C - the product matrix
+
+   Notes:
+   Unless scall is MAT_REUSE_MATRIX C will be created.
+
+   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
+   actually needed.
 
    This routine is currently implemented for 
     - pairs of AIJ matrices and classes which inherit from AIJ, C will be of type AIJ
@@ -7252,13 +7265,18 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultNumeric(Mat A,Mat B,Mat C)
 +  A - the left matrix
 .  B - the right matrix
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B))
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use PETSC_DEFAULT if not known
 
    Output Parameters:
 .  C - the product matrix
 
    Notes:
-   C will be created and must be destroyed by the user with MatDestroy().
+   C will be created if MAT_INITIAL_MATRIX and must be destroyed by the user with MatDestroy().
+
+   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call
+
+  To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
+   actually needed.
 
    This routine is currently only implemented for pairs of SeqAIJ matrices and pairs of SeqDense matrices and classes
    which inherit from SeqAIJ.  C will be of type MATSEQAIJ.
