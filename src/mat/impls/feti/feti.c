@@ -510,7 +510,7 @@ int MatFetiCreateScatter(Mat A)         /* name may be misleading */
        even though lambda is shared/distributed (PETSC_COMM_WORLD).
        make sure you understand the difference */
 
-#if 0 /* The PetscScatterView can not view a scatter on only one processor => does not work for  mpiexec -np 1 */
+#if 0 /* The PetscScatterView can not view a scatter on only one processor => does not work for  mpiexec -n 1 */
     {
     char a[256]={0};
     int rank;

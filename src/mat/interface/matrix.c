@@ -3278,6 +3278,42 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetSolverType"
+/*@C  
+   MatGetSolverType - Gets the type of LU or Cholesky factorization/solver routines that are used
+
+   Collective on Mat
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
+.  type - name of solver type, for example, spooles, superlu, plapack, petsc (to use PETSc's default)
+
+
+   Notes:
+      Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
+     such as superlu, mumps, spooles etc. 
+
+      PETSc must have been config/configure.py to use the external solver, using the option --download-package
+
+   Level: intermediate
+
+
+.seealso: MatCopy(), MatDuplicate(), MatSetSolverType()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetSolverType(Mat mat, MatSolverType *type)
+{
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  *type = mat->solvertype;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatSetSolverType"
 /*@C  
    MatSetSolverType - Sets the type of LU or Cholesky factorization/solver routines that are used
@@ -3299,9 +3335,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
    Level: intermediate
 
 
-.seealso: MatCopy(), MatDuplicate()
+.seealso: MatCopy(), MatDuplicate(), MatGetSolverType()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSolverSetType(Mat mat, const char* type)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetSolverType(Mat mat, MatSolverType type)
 {
   PetscErrorCode         ierr;
   char                   convname[256];
@@ -3314,7 +3350,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolverSetType(Mat mat, const char* type)
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
+  ierr = PetscStrcpy(convname,"MatSetSolverType_");CHKERRQ(ierr);
   ierr = PetscStrcat(convname,((PetscObject)mat)->type_name);CHKERRQ(ierr);
   ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
   ierr = PetscStrcat(convname,type);CHKERRQ(ierr);
@@ -3329,7 +3365,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolverSetType(Mat mat, const char* type)
       SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %d. Perhaps you must config/configure.py with --download-%s",mat->hdr.type_name,type,type);
     }
   }
+  if (mat->ops->destroysolver) {
+    ierr = (*mat->ops->destroysolver)(mat);CHKERRQ(ierr);
+  }
   ierr = (*conv)(mat,type);CHKERRQ(ierr);
+  ierr = PetscStrfree(mat->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(type,&mat->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6984,13 +7025,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat
 +  A - the left matrix
 .  B - the right matrix
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), if the result is a dense matrix this is irrelevent
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use PETSC_DEFAULT if you do not have a good estimate
+          if the result is a dense matrix this is irrelevent
 
    Output Parameters:
 .  C - the product matrix
 
    Notes:
    Unless scall is MAT_REUSE_MATRIX C will be created.
+
+   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call
+   
+   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
+   actually needed.
 
    If you have many matrices with the same non-zero structure to multiply, you 
    should either 
@@ -7061,10 +7108,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
    Input Parameters:
 +  A - the left matrix
 .  B - the right matrix
--  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), if C is a dense matrix this is irrelevent
-
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use PETSC_DEFAULT if you do not have a good estimate,
+      if C is a dense matrix this is irrelevent
+ 
    Output Parameters:
-.  C - the matrix ready for the numeric part of the multiplication
+.  C - the product matrix
+
+   Notes:
+   Unless scall is MAT_REUSE_MATRIX C will be created.
+
+   To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
+   actually needed.
 
    This routine is currently implemented for 
     - pairs of AIJ matrices and classes which inherit from AIJ, C will be of type AIJ
@@ -7211,13 +7265,18 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultNumeric(Mat A,Mat B,Mat C)
 +  A - the left matrix
 .  B - the right matrix
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B))
+-  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(B)), use PETSC_DEFAULT if not known
 
    Output Parameters:
 .  C - the product matrix
 
    Notes:
-   C will be created and must be destroyed by the user with MatDestroy().
+   C will be created if MAT_INITIAL_MATRIX and must be destroyed by the user with MatDestroy().
+
+   MAT_REUSE_MATRIX can only be used if the matrices A and B have the same nonzero pattern as in the previous call
+
+  To determine the correct fill value, run with -info and search for the string "Fill ratio" to see the value
+   actually needed.
 
    This routine is currently only implemented for pairs of SeqAIJ matrices and pairs of SeqDense matrices and classes
    which inherit from SeqAIJ.  C will be of type MATSEQAIJ.

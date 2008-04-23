@@ -35,7 +35,7 @@ struct _p_DMComposite {
   DMHEADER
   PetscInt               n,N,rstart;           /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
   PetscInt               nghost;               /* number of all local entries include DA ghost points and any shared redundant arrays */
-  PetscInt               nDM,nredundant,nmine; /* how many DA's and seperate redundant arrays used to build DMComposite (nmine is ones on this process) */
+  PetscInt               nDM,nredundant,nmine; /* how many DM's and seperate redundant arrays used to build DMComposite (nmine is ones on this process) */
   PetscTruth             setup;                /* after this is set, cannot add new links to the DMComposite */
   struct DMCompositeLink *next;
 };
@@ -323,6 +323,39 @@ PetscErrorCode DMCompositeGather_DM(DMComposite packer,struct DMCompositeLink *m
 /* ----------------------------------------------------------------------------------*/
 
 #include <stdarg.h>
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeGetNumberDM"
+/*@C
+    DMCompositeGetNumberDM - Get's the number of DM objects in the DMComposite
+       representation.
+
+    Collective on DMComposite
+
+    Input Parameter:
+.    packer - the packer object
+
+    Output Parameter:
+.     nDM - the number of DMs
+
+    Level: beginner
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeScatter(),
+         DMCompositeRestoreAccess(), DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(),
+         DMCompositeGetEntries()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetNumberDM(DMComposite packer,PetscInt *nDM)
+{
+  PetscErrorCode         ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(packer,DM_COOKIE,1);
+  *nDM = packer->nDM;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeGetAccess"
@@ -794,10 +827,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreateLocalVector(DMComposite packer
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMCompositeGetGlobalIndices"
+#define __FUNCT__ "DMCompositeGetLocalISs"
 /*@C
-    DMCompositeGetGlobalIndices - Gets the global indices for all the entries in the packed
-      vectors.
+    DMCompositeGetLocalISs - gets an IS for each DM/array in the DMComposite, include ghost points
 
     Collective on DMComposite
 
@@ -805,24 +837,26 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreateLocalVector(DMComposite packer
 .    packer - the packer object
 
     Output Parameters:
-.    idx - the individual indices for each packed vector/array. Note that this includes
-           all the ghost points that individual ghosted DA's may have.
+.    is - the individual indices for each packed vector/array. Note that this includes
+           all the ghost points that individual ghosted DA's may have. Also each process has an 
+           is for EACH redundant array (not just the local redundant arrays).
  
     Level: advanced
 
     Notes:
-       The idx parameters should be freed by the calling routine with PetscFree()
+       The is entries should be destroyed with ISDestroy(), the is array should be freed with PetscFree()
+
+       Use DMCompositeGetGlobalISs() for non-ghosted ISs.
 
 .seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetAccess(), DMCompositeScatter(),
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(),DMCompositeGetEntries()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,...)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,IS *is[])
 {
-  va_list                Argp;
   PetscErrorCode         ierr;
-  PetscInt               i,**idx,n;
+  PetscInt               i,*idx,n,cnt;
   struct DMCompositeLink *next;
   Vec                    global,dglobal;
   PF                     pf;
@@ -831,6 +865,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(packer,DM_COOKIE,1);
+  ierr = PetscMalloc(packer->nmine*sizeof(IS),is);CHKERRQ(ierr);
   next = packer->next;
   ierr = DMCompositeCreateGlobalVector(packer,&global);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(((PetscObject)packer)->comm,&rank);CHKERRQ(ierr);
@@ -842,22 +877,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,
   ierr = PFDestroy(pf);CHKERRQ(ierr);
 
   /* loop over packed objects, handling one at at time */
-  va_start(Argp,packer);
+  cnt = 0;
   while (next) {
-    idx = va_arg(Argp, PetscInt**);
 
     if (next->type == DMCOMPOSITE_ARRAY) {
       
-      ierr = PetscMalloc(next->n*sizeof(PetscInt),idx);CHKERRQ(ierr);
+      ierr = PetscMalloc(next->n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
       if (rank == next->rank) {
         ierr   = VecGetArray(global,&array);CHKERRQ(ierr);
         array += next->rstart;
-        for (i=0; i<next->n; i++) (*idx)[i] = (PetscInt)PetscRealPart(array[i]);
+        for (i=0; i<next->n; i++) idx[i] = (PetscInt)PetscRealPart(array[i]);
         array -= next->rstart;
         ierr   = VecRestoreArray(global,&array);CHKERRQ(ierr);
       }
-      ierr = MPI_Bcast(*idx,next->n,MPIU_INT,next->rank,((PetscObject)packer)->comm);CHKERRQ(ierr);
-
+      ierr = MPI_Bcast(idx,next->n,MPIU_INT,next->rank,((PetscObject)packer)->comm);CHKERRQ(ierr);
+      ierr = ISCreateGeneral(PETSC_COMM_SELF,next->n,idx,&(*is)[cnt]);CHKERRQ(ierr);
+      ierr = PetscFree(idx);CHKERRQ(ierr);
     } else if (next->type == DMCOMPOSITE_DM) {
       Vec local;
 
@@ -875,23 +910,25 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,
 
       ierr   = VecGetArray(local,&array);CHKERRQ(ierr);
       ierr   = VecGetSize(local,&n);CHKERRQ(ierr);
-      ierr   = PetscMalloc(n*sizeof(PetscInt),idx);CHKERRQ(ierr);
-      for (i=0; i<n; i++) (*idx)[i] = (PetscInt)PetscRealPart(array[i]);
+      ierr   = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+      for (i=0; i<n; i++) idx[i] = (PetscInt)PetscRealPart(array[i]);
       ierr    = VecRestoreArray(local,&array);CHKERRQ(ierr);
       ierr    = VecDestroy(local);CHKERRQ(ierr);
+      ierr    = ISCreateGeneral(PETSC_COMM_SELF,next->n,idx,&(*is)[cnt]);CHKERRQ(ierr);
+      ierr    = PetscFree(idx);CHKERRQ(ierr);
 
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
+    cnt++;
   }
-  va_end(Argp);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMCompositeGetISs"
+#define __FUNCT__ "DMCompositeGetGlobalISs"
 /*@C
     DMCompositeGetGlobalISs - Gets the index sets for each composed object
 
@@ -901,16 +938,18 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,
 .    packer - the packer object
 
     Output Parameters:
-.    idx - the array of index sets
+.    is - the array of index sets
  
     Level: advanced
 
     Notes:
-       The idx entries should be destroyed with ISDestroy(), the idx array should be freed with PetscFree()
+       The is entries should be destroyed with ISDestroy(), the is array should be freed with PetscFree()
 
        The number of IS on each process will/may be different when redundant arrays are used
 
        These could be used to extract a subset of vector entries for a "multi-physics" preconditioner
+
+       Use DMCompositeGetLocalISs() for index sets that include ghost points
 
 .seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetAccess(), DMCompositeScatter(),

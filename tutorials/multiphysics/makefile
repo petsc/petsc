@@ -27,31 +27,31 @@ mp: mp.o  ff1.o ff2.o chkopts
 	${RM} mp.o ff1.o ff2.o
 #--------------------------------------------------------------------------
 runp1:
-	-@${MPIEXEC} -np 1 ./p1 -snes_monitor_short > p1_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./p1 -snes_monitor_short > p1_1.tmp 2>&1;   \
 	   if (${DIFF} output/p1_1.out p1_1.tmp) then true; \
 	   else echo "Possible problem with p1_1, diffs above"; fi; \
 	   ${RM} -f p1_1.tmp
 
 runp2:
-	-@${MPIEXEC} -np 1 ./p2 -snes_monitor_short > p2_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./p2 -snes_monitor_short > p2_1.tmp 2>&1;   \
 	   if (${DIFF} output/p2_1.out p2_1.tmp) then true; \
 	   else echo "Possible problem with p2_1, diffs above"; fi; \
 	   ${RM} -f p2_1.tmp
 
 runmp:
-	-@${MPIEXEC} -np 1 ./mp -snes_monitor_short > mp_1.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -snes_monitor_short > mp_1.tmp 2>&1;   \
 	   if (${DIFF} output/mp_1.out mp_1.tmp) then true; \
 	   else echo "Possible problem with mp_1, diffs above"; fi; \
 	   ${RM} -f mp_1.tmp
 
 runmp_2:
-	-@${MPIEXEC} -np 1 ./mp -dmmg_jacobian_mf_fd_operator > mp_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -dmmg_jacobian_mf_fd_operator > mp_2.tmp 2>&1;   \
 	   if (${DIFF} output/mp_2.out mp_2.tmp) then true; \
 	   else echo "Possible problem with mp_2, diffs above"; fi; \
 	   ${RM} -f mp_2.tmp
 
 runmp_3:
-	-@${MPIEXEC} -np 1 ./mp -dmmg_jacobian_mf_fd_operator -dmcomposite_dense_jacobian > mp_3.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -dmmg_jacobian_mf_fd_operator -dmcomposite_dense_jacobian > mp_3.tmp 2>&1;   \
 	   if (${DIFF} output/mp_3.out mp_3.tmp) then true; \
 	   else echo "Possible problem with mp_3, diffs above"; fi; \
 	   ${RM} -f mp_3.tmp

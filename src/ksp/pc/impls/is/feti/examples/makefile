@@ -21,7 +21,7 @@ ex1: chkopts ${EXAMPLESO}
 	-$(RM) ${EXAMPLESO}
 
 run: 
-	mpiexec -np 3 ex1 -N 27
+	mpiexec -n 3 ex1 -N 27
 
 # provide input files e.g. fetidp_data.tgz
 

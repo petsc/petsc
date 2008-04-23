@@ -16,12 +16,6 @@ include ${PETSC_DIR}/conf/test
 # Basic targets to build PETSc libraries.
 # all: builds the c, fortran, and f90 libraries
 all: 
-	@if [ "`whoami`" = "root" ]; then \
-      echo "********************************************************************"; \
-      echo "  Do not run configure as root, or using sudo.";\
-      echo "    That should be reserved for installation";\
-      echo "********************************************************************"; \
-      exit 1; fi
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
 	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/conf/make.log
 	-@egrep -i "( error | error:)" ${PETSC_ARCH}/conf/make.log > /dev/null; if [ "$$?" = "0" ]; then \
@@ -131,7 +125,7 @@ build:
 #
 test: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
-	-@${OMAKE} test_build 2>&1 | tee ${PETSC_ARCH}/conf/test.log
+	-@${OMAKE} test_build 2>&1 | tee ${PETSC_DIR}/${PETSC_ARCH}/conf/test.log
 test_build:
 	-@echo "Running test examples to verify correct installation"
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} clean
@@ -213,31 +207,42 @@ install:
 	  echo "Install directory is current directory; nothing needs to be done";\
         else \
 	  echo Installing PETSc at ${INSTALL_DIR};\
-          if [ ! -d `dirname ${INSTALL_DIR}` ]; then \
-	    ${MKDIR} `dirname ${INSTALL_DIR}` ; \
-          fi;\
           if [ ! -d ${INSTALL_DIR} ]; then \
 	    ${MKDIR} ${INSTALL_DIR} ; \
+            if [ "$$?" -ne "0" ]; then \
+              echo "********************************************************************"; \
+              echo "Unable to crate ${INSTALL_DIR}. Perhaps you need to do 'sudo make install'"; \
+              echo "********************************************************************"; \
+              exit;\
+            fi;\
           fi;\
           ${CP} -fr include ${INSTALL_DIR};\
-          ${CP}  ${PETSC_ARCH}/include/* ${INSTALL_DIR}/include;\
+          ${CP} -fr ${PETSC_ARCH}/include ${INSTALL_DIR};\
           ${CP} -fr conf ${INSTALL_DIR} ; \
-          ${CP}  ${PETSC_ARCH}/conf/* ${INSTALL_DIR}/conf;\
+          ${CP} -fr ${PETSC_ARCH}/conf ${INSTALL_DIR};\
           ${CP} -fr bin ${INSTALL_DIR} ; \
-          ${CP}  ${PETSC_ARCH}/bin/* ${INSTALL_DIR}/bin;\
+          ${CP} -fr ${PETSC_ARCH}/bin ${INSTALL_DIR};\
+	  grep -w PETSC_HAVE_SIEVE asterix-sieve/include/petscconf.h > /dev/null; \
+	  if [ "$$?" = 0 ]; then \
+            ${CP} -f  src/dm/mesh/sieve/*.hh ${INSTALL_DIR}/include;\
+	    ${SEDINPLACE} 's?SIEVE_INCLUDE?REMOVE_SIEVE_INCLUDE?g' ${INSTALL_DIR}/conf/petscvariables ;\
+          fi;\
           ${SEDINPLACE} 's?$${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
           ${SEDINPLACE} 's?${PETSC_DIR}/${PETSC_ARCH}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
           ${SEDINPLACE} 's?${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
           ${SEDINPLACE} 's?TMP_INSTALL_DIR?${INSTALL_DIR}?g' ${INSTALL_DIR}/conf/* ;\
           ${SEDINPLACE} 's?/$${PETSC_ARCH}??g' ${INSTALL_DIR}/conf/* ;\
           ${CP} -fr ${PETSC_ARCH}/lib ${INSTALL_DIR} ;\
-          ${RANLIB} ${INSTALL_DIR}/lib/*.a ;\
+          ${RANLIB} ${INSTALL_DIR}/lib/*.${AR_LIB_SUFFIX} ;\
           ${OMAKE} PETSC_ARCH="" PETSC_DIR=${INSTALL_DIR} shared; \
-          echo "sh/bash: PETSC_DIR="${INSTALL_DIR}"; export PETSC_DIR";\
-          echo "sh/bash: unset PETSC_ARCH" ;\
-          echo "csh/tcsh: setenv PETSC_DIR " ${INSTALL_DIR} ;\
-          echo "csh/tcsh: unsetenv PETSC_ARCH"; \
-          echo "Then do make test to verify correct install";\
+          echo "If using sh/bash, do the following:";\
+          echo "  PETSC_DIR=${INSTALL_DIR}; export PETSC_DIR";\
+          echo "  unset PETSC_ARCH" ;\
+          echo "If using csh/tcsh, do the following:";\
+          echo "  setenv PETSC_DIR ${INSTALL_DIR}" ;\
+          echo "  csh/tcsh: unsetenv PETSC_ARCH";\
+          echo "Now run the testsuite to verify the install with the following:" ;\
+          echo "  make test";\
         fi;
 
 install_src:

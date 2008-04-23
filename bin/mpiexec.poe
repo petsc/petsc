@@ -3,7 +3,7 @@
 # This script is for IBM SP machines running POE that do not 
 # have mpiexec installed. 
 #
-# Usage: bin/mpirun.poe [-np n] programname programoptions
+# Usage: bin/mpirun.poe [-n n] programname programoptions
 #
 two=$2
 if [ $1 = "-np" ]; then

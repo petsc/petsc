@@ -116,36 +116,36 @@ ex26: ex26.o   chkopts
 	${RM} -f ex26.o
 #-------------------------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -np 2 ./ex1 -nox > ex1_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex1 -nox > ex1_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex2:
-	-@${MPIEXEC} -np 2 ./ex2 > ex2_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex2 > ex2_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
 runex2_2:
-	-@${MPIEXEC} -np 3 ./ex2 -wrap nonperiodic -local_print > ex2_2.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex2 -wrap nonperiodic -local_print > ex2_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIEXEC} -np 3 ./ex2 -wrap xyzghosted -local_print > ex2_3.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex2 -wrap xyzghosted -local_print > ex2_3.tmp 2>&1;	  \
 	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
 	   ${RM} -f ex2_3.tmp
 runex3:
-	-@${MPIEXEC} -np 3 ./ex3 -time 50
+	-@${MPIEXEC} -n 3 ./ex3 -time 50
 runex4:
-	-@${MPIEXEC} -np 4 ./ex4  -nox > ex4_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex4  -nox > ex4_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp
 runex5:
-	-@${MPIEXEC} -np 3 ./ex5 -time 50
+	-@${MPIEXEC} -n 3 ./ex5 -time 50
 runex6:
-	-@${MPIEXEC} -np 6 ./ex6 -test_order
+	-@${MPIEXEC} -n 6 ./ex6 -test_order
 runex12:
 	-@echo "path([getenv('PETSC_DIR') '/bin/matlab'],path); ex12(2) ; exit" | ${MATLAB_COMMAND} -display ${DISPLAY} > ex12_1.tmp 2>&1; grep -v flops ex12_1.tmp | grep -v Completed | grep -v About | grep -v Color | grep -v "at line 27" > ex12_1.tmp2 ; if (${DIFF} output/ex12_1.out ex12_1.tmp2) then true; \
 	   else echo "Possible problem with PETSC SOCKET MATLAB INTERFACE ex12_1, diffs above"; fi; \
@@ -153,13 +153,13 @@ runex12:
 
 # ex13 uses the output of ex14
 runex13:
-	-@${MPIEXEC} -np 3 ./ex13
+	-@${MPIEXEC} -n 3 ./ex13
 	-@${RM} -f daoutput daoutput.info 
 runex14:
-	-@${MPIEXEC} -np 4 ./ex14 ; sleep 1
+	-@${MPIEXEC} -n 4 ./ex14 ; sleep 1
 
 runex20:
-	-@${MPIEXEC} -np 2 ./ex20 -2d -periodic 1 -dof 2 -stencil_width 1 -stencil_type 0
+	-@${MPIEXEC} -n 2 ./ex20 -2d -periodic 1 -dof 2 -stencil_width 1 -stencil_type 0
 
 runex20_2:
 	-@for d in -1d -2d -3d; do \
@@ -168,7 +168,7 @@ runex20_2:
                 for dof in 1 2 3; do \
                   for stencil_width in 1 2; do \
                     for stencil_type in 0 1; do \
-                      ${MPIEXEC} -np $$np ./ex20 $$d -periodic $$per -dof $$dof -stencil_width $$stencil_width -stencil_type $$stencil_type ;\
+                      ${MPIEXEC} -n $$np ./ex20 $$d -periodic $$per -dof $$dof -stencil_width $$stencil_width -stencil_type $$stencil_type ;\
                     done; \
                   done; \
                 done; \
@@ -181,50 +181,50 @@ runex23:
             for np in 1 2 3 4; do \
               for dof in 1 2 3; do \
                 for stencil_type in 0 1; do \
-                  ${MPIEXEC} -np $$np ./ex23 $$d -dof $$dof -stencil_type $$stencil_type ;\
+                  ${MPIEXEC} -n $$np ./ex23 $$d -dof $$dof -stencil_type $$stencil_type ;\
                 done; \
               done; \
             done; \
           done;
 
 runex24:
-	-@${MPIEXEC} -np 1 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1 1 process, diffs above"; fi; ${RM} -f ex24_1.tmp
-	-@${MPIEXEC} -np 2 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1 2 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
-	-@${MPIEXEC} -np 3 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1 3 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
-	-@${MPIEXEC} -np 4 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1 4 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
-	-@${MPIEXEC} -np 5 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 5 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1 5 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
-	-@${MPIEXEC} -np 6 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 6 ./ex24  | grep -v Process > ex24_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex24_1.out ex24_1.tmp) then true; \
 	   else echo "Possible problem with ex24_1 6 processes, diffs above"; fi; ${RM} -f ex24_1.tmp
 
 
 runex25:
-	-@${MPIEXEC} -np 1 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1 1 process, diffs above"; fi; ${RM} -f ex25_1.tmp
-	-@${MPIEXEC} -np 2 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 2 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1 2 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
-	-@${MPIEXEC} -np 3 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 3 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1 3 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
-	-@${MPIEXEC} -np 4 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 4 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1 4 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
-	-@${MPIEXEC} -np 5 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 5 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1 5 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
-	-@${MPIEXEC} -np 6 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 6 ./ex25  | grep -v Process > ex25_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
 	   else echo "Possible problem with ex25_1 6 processes, diffs above"; fi; ${RM} -f ex25_1.tmp
 

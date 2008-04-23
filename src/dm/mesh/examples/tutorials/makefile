@@ -144,127 +144,127 @@ fvTest: fvTest.o chkopts
 
 #-----------------------------------------------------------------
 runmixedpoisson:
-	${MPIEXEC} -np ${NP} ./mixedpoisson ${EXTRA_ARGS}
+	${MPIEXEC} -n ${NP} ./mixedpoisson ${EXTRA_ARGS}
 
 runstokes:
-	-@${MPIEXEC} -np ${NP} ./stokes ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./stokes ${EXTRA_ARGS}
 
 rungrade2test:
-	${MPIEXEC} -np ${NP} ./grade2test ${EXTRA_ARGS}
+	${MPIEXEC} -n ${NP} ./grade2test ${EXTRA_ARGS}
 
 rungrade2:
-	${MPIEXEC} -np ${NP} ./grade2 ${EXTRA_ARGS}
+	${MPIEXEC} -n ${NP} ./grade2 ${EXTRA_ARGS}
 
 debuggrade2:
-	-@${MPIEXEC} -np ${NP} ./grade2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./grade2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 runex1:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 
 debugex1:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 valex1:
-	-@${MPIEXEC} -np ${NP} valgrind --tool=memcheck ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 
 runex1_pylith:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
 
 debugex1_pylith:
-	-${MPIEXEC} -np ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 valex1_pylith:
-	-@${MPIEXEC} -np ${NP} valgrind --tool=memcheck ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
 
 runex1_pylith2:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS}
 
 debugex1_pylith2:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 runex1_pylith_split:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/splitFaultTest/splittest ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/splitFaultTest/splittest ${EXTRA_ARGS}
 
 runex1_2:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
 
 valex1_2:
-	-@${MPIEXEC} -np ${NP} valgrind --tool=memcheck ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
 
 runex1_2_hex:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d_hex ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d_hex ${EXTRA_ARGS}
 
 runex1_3:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d ${EXTRA_ARGS}
 
 runex1_3_hex:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d_hex ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d_hex ${EXTRA_ARGS}
 
 runex2:
-	-@${MPIEXEC} -np ${NP} ./ex2 -dim 2 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex2 -dim 2 ${EXTRA_ARGS}
 
 valex2:
-	-@${MPIEXEC} -np ${NP} valgrind --tool=memcheck ./ex2 -dim 2 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex2 -dim 2 ${EXTRA_ARGS}
 
 valex2_3:
 	-@valgrind --tool=memcheck ./ex2 -dim 3 -refinement_limit 0.05 ${EXTRA_ARGS}
 
 debugex2:
-	-@${MPIEXEC} -np ${NP} ./ex2 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex2 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 runex2_3:
-	-@${MPIEXEC} -np ${NP} ./ex2 -dim 3 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex2 -dim 3 ${EXTRA_ARGS}
 
 runex3:
-	-@${MPIEXEC} -np ${NP} ./ex3 -dim 2 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex3 -dim 2 ${EXTRA_ARGS}
 
 valex3:
-	-@${MPIEXEC} -np ${NP} valgrind --tool=memcheck ./ex3 -dim 2 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} valgrind --tool=memcheck ./ex3 -dim 2 ${EXTRA_ARGS}
 
 valex3_3:
 	-@valgrind --tool=memcheck ./ex3 -dim 3 -refinement_limit 0.05 ${EXTRA_ARGS}
 
 debugex3:
-	-@${MPIEXEC} -np ${NP} ./ex3 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex3 -dim 2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 runex4:
-	-@${MPIEXEC} -np ${NP} ./ex4 -dim 2 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex4 -dim 2 ${EXTRA_ARGS}
 
 runex5:
-	-@${MPIEXEC} -np ${NP} ./ex5 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex5 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 
 runex5_2:
-	-@${MPIEXEC} -np ${NP} ./ex5 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex5 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
 
 runex5_3:
-	-@${MPIEXEC} -np ${NP} ./ex5 -dim 3 -use_zero_base 1 -base_file data/ex1_3d ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex5 -dim 3 -use_zero_base 1 -base_file data/ex1_3d ${EXTRA_ARGS}
 
 runex6:
-	-@${MPIEXEC} -np ${NP} ./ex6 -dim 2 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex6 -dim 2 ${EXTRA_ARGS}
 
 testex1_1:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d > /dev/null 2>&1; \
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d > /dev/null 2>&1; \
     if (${DIFF} data/ex1_1d.lcon testMesh.lcon) then true; \
 	else echo "Possible problem with ex1_1, diffs above"; fi; \
     if (${DIFF} data/ex1_1d.nodes testMesh.nodes) then true; \
 	else echo "Possible problem with ex1_1, diffs above"; fi
 
 testex1_2:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d > /dev/null 2>&1; \
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d > /dev/null 2>&1; \
     if (${DIFF} data/ex1_2d.lcon testMesh.lcon) then true; \
 	else echo "Possible problem with ex1_2, diffs above"; fi; \
     if (${DIFF} data/ex1_2d.nodes testMesh.nodes) then true; \
 	else echo "Possible problem with ex1_2, diffs above"; fi
 
 testex1_3:
-	-@${MPIEXEC} -np ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d > /dev/null 2>&1; \
+	-@${MPIEXEC} -n ${NP} ./ex1 -dim 3 -use_zero_base 1 -base_file data/ex1_3d > /dev/null 2>&1; \
     if (${DIFF} data/ex1_3d.lcon testMesh.lcon) then true; \
 	else echo "Possible problem with ex1_3, diffs above"; fi; \
     if (${DIFF} data/ex1_3d.nodes testMesh.nodes) then true; \
 	else echo "Possible problem with ex1_3, diffs above"; fi
 
 testex1_4:
-	-@${MPIEXEC} -np 5 ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b > /dev/null 2>&1; \
+	-@${MPIEXEC} -n 5 ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b > /dev/null 2>&1; \
     if (${DIFF} data/bm1b/bm1b.0.connect testMesh.0.connect) then true; \
 	else echo "Possible problem with ex1_4, diffs above"; fi; \
     if (${DIFF} data/bm1b/bm1b.0.coord testMesh.0.coord) then true; \
@@ -287,25 +287,25 @@ testex1_4:
 	else echo "Possible problem with ex1_4, diffs above"; fi
 
 testex2_1:
-	-@${MPIEXEC} -np 1 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
     if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
 	else echo "Possible problem with ex2_1, diffs above"; fi
 
 testex2_2:
-	-@${MPIEXEC} -np 2 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
     if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
 	else echo "Possible problem with ex2_1, diffs above"; fi
 
 testex2_3:
-	-@${MPIEXEC} -np 3 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex2 -dim 2 -refinement_limit 0.0625 > /dev/null 2>&1; \
     if (${DIFF} data/ex2_1.vtk testMesh.vtk) then true; \
 	else echo "Possible problem with ex2_1, diffs above"; fi
 
 debugex4:
-	-@${MPIEXEC} -np ${NP} ./ex4 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex4 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 runex10:
-	-@${MPIEXEC} -np 2 ./ex10 -partitioner zoltan -test 1 > ex10_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -partitioner zoltan -test 1 > ex10_1.tmp 2>&1; \
     if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
     else echo "Possible problem with ex10_1, diffs above"; fi; \
     ${RM} -f ex10_1.tmp

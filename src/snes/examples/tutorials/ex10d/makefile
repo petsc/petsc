@@ -15,13 +15,13 @@ ex10: ex10.o  chkopts
 	$(RM) ex10.o
 #-----------------------------------------------------------------
 runex10:
-	-@$(MPIEXEC) -np 2 ./ex10 -snes_monitor_short > ex10_1.tmp 2>&1;   \
+	-@$(MPIEXEC) -n 2 ./ex10 -snes_monitor_short > ex10_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
 
 runex10_2:
-	-@$(MPIEXEC) -np 2 ./ex10 -snes_monitor_short -fd_jacobian_coloring > ex10_2.tmp 2>&1;   \
+	-@$(MPIEXEC) -n 2 ./ex10 -snes_monitor_short -fd_jacobian_coloring > ex10_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex10_2.out ex10_2.tmp) then true; \
 	   else echo "Possible problem with ex10_2, diffs above"; fi; \
 	   ${RM} -f ex10_2.tmp

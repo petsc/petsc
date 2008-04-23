@@ -128,77 +128,77 @@ ex17: ex17.o  chkopts
 	${RM} ex17.o
 
 runex1:
-	-@${MPIEXEC} -np 1 ex1 -ksp_monitor_short > ex1_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ex1 -ksp_monitor_short > ex1_1.tmp 2>&1;	  \
 	   if (diff output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 
 runex1_2:
-	-@${MPIEXEC} -np 1 ex1 -pc_type sor -pc_sor_symmetric -ksp_monitor_short >\
+	-@${MPIEXEC} -n 1 ex1 -pc_type sor -pc_sor_symmetric -ksp_monitor_short >\
 	   ex1_2.tmp 2>&1;   \
 	   if (diff output/ex1_2.out ex1_2.tmp) then true; \
 	   else echo "Possible problem with ex1_2, diffs above"; fi; \
 	   ${RM} -f ex1_2.tmp
 
 runex1_3:
-	-@${MPIEXEC} -np 1 ex1 -pc_type eisenstat -ksp_monitor_short >\
+	-@${MPIEXEC} -n 1 ex1 -pc_type eisenstat -ksp_monitor_short >\
 	   ex1_3.tmp 2>&1;   \
 	   if (diff output/ex1_3.out ex1_3.tmp) then true; \
 	   else echo "Possible problem with ex1_3, diffs above"; fi; \
 	   ${RM} -f ex1_3.tmp
 
 runex1f:
-	-@${MPIEXEC} -np 1 ex1f -ksp_monitor_short > ex1f_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ex1f -ksp_monitor_short > ex1f_1.tmp 2>&1;	  \
 	   if (diff output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 
 runex2:
-	-@${MPIEXEC} -np 1 ex2 -ksp_monitor_short -m 5 -n 5 > ex2_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ex2 -ksp_monitor_short -m 5 -n 5 > ex2_1.tmp 2>&1; \
 	   if (diff output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
 
 runex2_2:
-	-@${MPIEXEC} -np 2 ex2 -ksp_monitor_short -m 5 -n 5 > ex2_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ex2 -ksp_monitor_short -m 5 -n 5 > ex2_2.tmp 2>&1; \
 	   if (diff output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
 
 runex2_3:
-	-@${MPIEXEC} -np 1 ex2 -pc_type sor -pc_sor_symmetric -ksp_monitor_short > \
+	-@${MPIEXEC} -n 1 ex2 -pc_type sor -pc_sor_symmetric -ksp_monitor_short > \
 	    ex2_3.tmp 2>&1;   \
 	   if (diff output/ex2_3.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
 	   ${RM} -f ex2_3.tmp
 
 runex2_4:
-	-@${MPIEXEC} -np 1 ex2 -pc_type eisenstat -ksp_monitor_short >\
+	-@${MPIEXEC} -n 1 ex2 -pc_type eisenstat -ksp_monitor_short >\
 	    ex2_4.tmp 2>&1;   \
 	   if (diff output/ex2_4.out ex2_4.tmp) then true; \
 	   else echo "Possible problem with ex2_4, diffs above"; fi; \
 	   ${RM} -f ex2_4.tmp
 
 runex2f:
-	-@${MPIEXEC} -np 2 ex2f -pc_type jacobi -ksp_monitor_short > ex2f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ex2f -pc_type jacobi -ksp_monitor_short > ex2f_1.tmp 2>&1; \
 	   if (diff output/ex2f_1.out ex2f_1.tmp) then true; \
 	   else echo "Possible problem with ex2f_1, diffs above"; fi; \
 	   ${RM} -f ex2f_1.tmp
 
 runex4:
-	-@${MPIEXEC} -np 3  ex4 -ksp_monitor_short > ex4_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 3  ex4 -ksp_monitor_short > ex4_1.tmp 2>&1; \
 	   if (diff output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp
 
 runex5:
-	-@${MPIEXEC} -np 1 ex5 -pc_type jacobi -ksp_monitor_short > ex5_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ex5 -pc_type jacobi -ksp_monitor_short > ex5_1.tmp 2>&1; \
 	   if (diff output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp
 
 runex5_2:
-	-@${MPIEXEC} -np 2 ex5 -pc_type jacobi -ksp_monitor_short \
+	-@${MPIEXEC} -n 2 ex5 -pc_type jacobi -ksp_monitor_short \
 	   -ksp_rtol .000001 > ex5_2.tmp 2>&1;   \
 	   if (diff output/ex5_2.out ex5_2.tmp) then true; \
 	   else echo "Possible problem with ex5_2, diffs above"; fi; \
@@ -208,34 +208,34 @@ runex5_2:
 # because the coloring heuristic is machine-dependent; convergence rates
 # may differ slightly on various architectures.
 runex5_3:
-	-@${MPIEXEC} -np 2 ex5 -pc_type icc -ksp_type cg -mat_mpirowbs -ksp_rtol .000001;\
+	-@${MPIEXEC} -n 2 ex5 -pc_type icc -ksp_type cg -mat_mpirowbs -ksp_rtol .000001;\
 	echo "ex5_3: This program tested the ICC preconditioner in BlockSolve95."
 
 runex5_4:
-	-@${MPIEXEC} -np 2 ex5 -pc_type ilu -mat_nonsym -mat_mpirowbs \
+	-@${MPIEXEC} -n 2 ex5 -pc_type ilu -mat_nonsym -mat_mpirowbs \
 	   -ksp_rtol .000001;\
 	echo "ex5_4: This program tested the ILU preconditioner in BlockSolve95."
 
 runex5_5:
-	-@${MPIEXEC} -np 2 ex5  -mat_block_size 2 > ex5_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ex5  -mat_block_size 2 > ex5_5.tmp 2>&1; \
 	   if (diff output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   ${RM} -f ex5_5.tmp
 
 runex6f:
-	-@${MPIEXEC} -np 1 ex6f -pc_type jacobi -mat_view -ksp_monitor_short > ex6f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ex6f -pc_type jacobi -mat_view -ksp_monitor_short > ex6f_1.tmp 2>&1; \
 	   if (diff output/ex6f_1.out ex6f_1.tmp) then true; \
 	   else echo "Possible problem with ex6f_1, diffs above"; fi; \
 	   ${RM} -f ex6f_1.tmp
 
 runex7:
-	-@${MPIEXEC} -np 2 ex7 -ksp_monitor_short -noslesview> ex7_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ex7 -ksp_monitor_short -noslesview> ex7_1.tmp 2>&1; \
 	   if (diff output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   ${RM} -f ex7_1.tmp
 
 runex9:
-	-@${MPIEXEC} -np 1 ex9 -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres \
+	-@${MPIEXEC} -n 1 ex9 -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres \
 	   -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short \
            > ex9_1.tmp 2>&1; \
 	   if (diff output/ex9_1.out ex9_1.tmp) then true; \
@@ -243,75 +243,75 @@ runex9:
 	   ${RM} -f ex9_1.tmp
 
 runex10:
-	-@${MPIEXEC} -np 2 ex10 -f0 ../../../mat/examples/matbinary.cplx.ex > ex10_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ex10 -f0 ../../../mat/examples/matbinary.cplx.ex > ex10_1.tmp 2>&1; \
 	   if (diff output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Possible problem with ex10_1, diffs above"; fi; \
 	   ${RM} -f ex10_1.tmp
 
 runex11:
-	-@${MPIEXEC} -np 1 ex11 -n 6 -norandom -pc_type none -ksp_monitor_short > ex11_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ex11 -n 6 -norandom -pc_type none -ksp_monitor_short > ex11_1.tmp 2>&1; \
 	   if (diff output/ex11_1.out ex11_1.tmp) then true; \
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
 
 runex11f:
-	-@${MPIEXEC} -np 1 ex11f -n 6 -norandom -pc_type none -ksp_monitor_short > ex11f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ex11f -n 6 -norandom -pc_type none -ksp_monitor_short > ex11f_1.tmp 2>&1; \
 	   if (diff output/ex11f_1.out ex11f_1.tmp) then true; \
 	   else echo "Possible problem with ex11f_1, diffs above"; fi; \
 	   ${RM} -f ex11f_1.tmp
 
 runex12:
-	-@${MPIEXEC} -np 1 ex12 -mat_aij -mat_view_info_detailed -pc_type jacobi -ksp_monitor_short > ex12_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ex12 -mat_aij -mat_view_info_detailed -pc_type jacobi -ksp_monitor_short > ex12_1.tmp 2>&1; \
 	   if (diff output/ex12_1.out ex12_1.tmp) then true; \
 	   else echo "Possible problem with ex12_1, diffs above"; fi; \
 	   ${RM} -f ex12_1.tmp
 
 runex12_2:
-	-@${MPIEXEC} -np 4 ex12 -m_eta 10 -m_xi 11 -mat_aij -mat_view_info \
+	-@${MPIEXEC} -n 4 ex12 -m_eta 10 -m_xi 11 -mat_aij -mat_view_info \
 	   -ksp_monitor_short -pc_type bjacobi > ex12_2.tmp 2>&1;	  \
 	   if (diff output/ex12_2.out ex12_2.tmp) then true; \
 	   else echo "Possible problem with ex12_2, diffs above"; fi; \
 	   ${RM} -f ex12_2.tmp
 
 runex12_3:
-	-@${MPIEXEC} -np 1 ex12 -mat_aij -print_debug -modify_submat \
+	-@${MPIEXEC} -n 1 ex12 -mat_aij -print_debug -modify_submat \
 	   -ksp_monitor_short -pc_type bjacobi -pc_bjacobi_blocks 4 > ex12_3.tmp 2>&1;	  \
 	   if (diff output/ex12_3.out ex12_3.tmp) then true; \
 	   else echo "Possible problem with ex12_3, diffs above"; fi; \
 	   ${RM} -f ex12_3.tmp
 
 runex13:
-	-@${MPIEXEC} -np 1 ex13 -m 19 -n 20 > ex13_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ex13 -m 19 -n 20 > ex13_1.tmp 2>&1; \
 	   if (diff output/ex13_1.out ex13_1.tmp) then true; \
 	   else echo "Possible problem with ex13_1, diffs above"; fi; \
 	   ${RM} -f ex13_1.tmp
 
 runex14:
-	-@${MPIEXEC} -np 1 ex14 -no_output > ex14_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ex14 -no_output > ex14_1.tmp 2>&1; \
 	   if (diff output/ex14_1.out ex14_1.tmp) then true; \
 	   else echo "Possible problem with ex14_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
 
 runex14_2:
-	-@${MPIEXEC} -np 1 ex14 -no_output > ex14_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ex14 -no_output > ex14_2.tmp 2>&1; \
 	   if (diff output/ex14_2.out ex14_2.tmp) then true; \
 	   else echo "Possible problem with ex14_2, diffs above"; fi; \
 	   ${RM} -f ex14_2.tmp
 
 runex15:
-	-@${MPIEXEC} -np 2 ex15 -sles_view -user_defined_pc > ex15_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ex15 -sles_view -user_defined_pc > ex15_1.tmp 2>&1; \
 	   if (diff output/ex15_1.out ex15_1.tmp) then true; \
 	   else echo "Possible problem with ex15_1, diffs above"; fi; \
 	   ${RM} -f ex15_1.tmp
 
 runex15f:
-	-@${MPIEXEC} -np 2 ex15f -sles_view -user_defined_pc > ex15f_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ex15f -sles_view -user_defined_pc > ex15f_1.tmp 2>&1; \
 	   if (diff output/ex15f_1.out ex15f_1.tmp) then true; \
 	   else echo "Possible problem with ex15f_1, diffs above"; fi; \
 	   ${RM} -f ex15f_1.tmp
 
 runex16:
-	-@${MPIEXEC} -np 2 ex16 -ntimes 4 > ex16_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ex16 -ntimes 4 > ex16_1.tmp 2>&1; \
 	   if (diff output/ex16_1.out ex16_1.tmp) then true; \
 	   else echo "Possible problem with ex16_1, diffs above"; fi; \
 	   ${RM} -f ex16_1.tmp

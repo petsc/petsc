@@ -24,22 +24,22 @@ knmg: knmg.o chkopts
 	${RM} knmg.o
 
 run32:
-	-@${MPIEXEC} -np 1 knmgcv -mx 32 -my 32 -snes_monitor -snes_fd  -ncycles 50 -snes_rtol 5.0e-3 -ksp_rtol 1.0e-5 -dt 2.e-3 -on_error_attach_debugger nox -ksp_monitor -contours
+	-@${MPIEXEC} -n 1 knmgcv -mx 32 -my 32 -snes_monitor -snes_fd  -ncycles 50 -snes_rtol 5.0e-3 -ksp_rtol 1.0e-5 -dt 2.e-3 -on_error_attach_debugger nox -ksp_monitor -contours
 
 run64:
-	-@${MPIEXEC} -np 1 knmgcv -mx 64 -my 64 -snes_monitor -ksp_monitor -snes_fd  -ncycles 110 -snes_rtol 5.0e-3 -ksp_rtol 1.0e-5 -dt 2.e-3 -on_error_attach_debugger nox -ksp_monitor
+	-@${MPIEXEC} -n 1 knmgcv -mx 64 -my 64 -snes_monitor -ksp_monitor -snes_fd  -ncycles 110 -snes_rtol 5.0e-3 -ksp_rtol 1.0e-5 -dt 2.e-3 -on_error_attach_debugger nox -ksp_monitor
 
 runmgcv:
-	-@${MPIEXEC} -np 1 knmgcv -mx 16 -my 16 -snes_monitor -snes_fd  -ncycles 1 -dt 1.e9 -on_error_attach_debugger nox -ksp_monitor
+	-@${MPIEXEC} -n 1 knmgcv -mx 16 -my 16 -snes_monitor -snes_fd  -ncycles 1 -dt 1.e9 -on_error_attach_debugger nox -ksp_monitor
 
 runmgcvunsteady:
-	-@${MPIEXEC} -np 1 knmgcv -mx 16 -my 16 -snes_monitor -snes_fd  -ncycles 20 -dt 1.e-3 -on_error_attach_debugger nox -ksp_monitor
+	-@${MPIEXEC} -n 1 knmgcv -mx 16 -my 16 -snes_monitor -snes_fd  -ncycles 20 -dt 1.e-3 -on_error_attach_debugger nox -ksp_monitor
 
 runmg:
-	-@${MPIEXEC} -np 1 knmg -mx 16 -my 16 -snes_monitor -snes_fd  -ncycles 1 -dt 1.e9 -on_error_attach_debugger nox -ksp_monitor
+	-@${MPIEXEC} -n 1 knmg -mx 16 -my 16 -snes_monitor -snes_fd  -ncycles 1 -dt 1.e9 -on_error_attach_debugger nox -ksp_monitor
 
 runk:
-	-@${MPIEXEC} -np 1 knoll -mx 6 -my 6 -snes_monitor -snes_fd  -ksp_monitor -ncycles 10 -dt 1.e-4 -on_error_attach_debugger nos
+	-@${MPIEXEC} -n 1 knoll -mx 6 -my 6 -snes_monitor -snes_fd  -ksp_monitor -ncycles 10 -dt 1.e-4 -on_error_attach_debugger nos
 
 
 ex11: ex11.o  chkopts
@@ -55,7 +55,7 @@ ex17: ex17.o  chkopts
 	${RM} ex17.o
 
 runex11s:
-	-@${MPIEXEC} -np 1 ex11 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
+	-@${MPIEXEC} -n 1 ex11 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-coarse_ksp_type preonly -coarse_pc_type lu \
 	-fine_ksp_type richardson \
 	-fine_ksp_max_it 1 \
@@ -64,7 +64,7 @@ runex11s:
 	-optionsleft
 
 runex11p:
-	-@${MPIEXEC} -np 4 ex11 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
+	-@${MPIEXEC} -n 4 ex11 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-coarse_pc_type redundant -coarse_ksp_type preonly \
 	-coarse_redundant_pc_type lu \
 	-fine_ksp_type richardson \
@@ -74,7 +74,7 @@ runex11p:
 	-optionsleft
 
 runex15linear:
-	-@${MPIEXEC} -np 1 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
+	-@${MPIEXEC} -n 1 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-beta 0. -bm1 0. -coef 0. \
 	-coarse_ksp_type preonly -coarse_pc_type lu \
 	-fine_ksp_type richardson \
@@ -85,7 +85,7 @@ runex15linear:
 	-optionsleft
 
 runex15quasi:
-	-@${MPIEXEC} -np 1 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
+	-@${MPIEXEC} -n 1 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-beta 1.5 -bm1 0.5 -coef 0.75 \
 	-coarse_ksp_type preonly -coarse_pc_type lu \
 	-fine_ksp_type richardson \
@@ -96,7 +96,7 @@ runex15quasi:
 	-optionsleft
 
 runex15:
-	-@${MPIEXEC} -np 1 ex15 -Mx 10 -My 10 -snes_monitor_short -ksp_monitor \
+	-@${MPIEXEC} -n 1 ex15 -Mx 10 -My 10 -snes_monitor_short -ksp_monitor \
 	-coarse_ksp_type preonly -coarse_pc_type lu \
 	-fine_ksp_type gmres \
 	-fine_ksp_max_it 1 \
@@ -106,7 +106,7 @@ runex15:
 	-snes_view -optionsleft
 
 runex15s:
-	-@${MPIEXEC} -np 1 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
+	-@${MPIEXEC} -n 1 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-coarse_ksp_type preonly -coarse_pc_type lu \
 	-fine_ksp_type richardson \
 	-fine_ksp_max_it 1 \
@@ -116,7 +116,7 @@ runex15s:
 	-optionsleft
 
 runex15p:
-	-@${MPIEXEC} -np 4 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
+	-@${MPIEXEC} -n 4 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-coarse_pc_type redundant -coarse_ksp_type preonly  \
 	-coarse_redundant_pc_type lu \
 	-fine_ksp_type richardson \
@@ -127,7 +127,7 @@ runex15p:
 	-optionsleft
 
 runex15a:
-	-@${MPIEXEC} -np 4 ex15 -Mx 17 -My 17 \
+	-@${MPIEXEC} -n 4 ex15 -Mx 17 -My 17 \
 	-coarse_pc_type redundant -coarse_ksp_type preonly  \
 	-coarse_redundant_pc_type lu \
 	-fine_ksp_type richardson \

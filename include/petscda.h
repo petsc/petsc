@@ -476,13 +476,15 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddVecScatter(DMComposite,Ve
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeScatter(DMComposite,Vec,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGather(DMComposite,Vec,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetAccess(DMComposite,Vec,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetNumberDM(DMComposite,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreAccess(DMComposite,Vec,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetLocalVectors(DMComposite,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetEntries(DMComposite,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreLocalVectors(DMComposite,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreateGlobalVector(DMComposite,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreateLocalVector(DMComposite,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetGlobalIndices(DMComposite,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetLocalISs(DMComposite,IS*[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetGlobalISs(DMComposite,IS*[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRefine(DMComposite,MPI_Comm,DMComposite*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetInterpolation(DMComposite,DMComposite,Mat*,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetMatrix(DMComposite,MatType,Mat*);

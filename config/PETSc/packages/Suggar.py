@@ -38,7 +38,7 @@ class Configure(PETSc.package.Package):
     g.write('LD ='+self.framework.getCompiler()+'\n')    
     g.write('CFLAGS_G   ='+self.framework.getCompilerFlags()+'\n')
     g.write('CFLAGS_O   ='+self.framework.getCompilerFlags()+'\n')
-    g.write('CFLAGS_EXP = -I./Proto -I${P3DINC_DIR} -I${EXPATINC_DIR} -I/usr/include/malloc\n')
+    g.write('CFLAGS_EXP = -I./Proto ${P3DINC_DIR} ${EXPATINC_DIR} -I/usr/include/malloc\n')
     if self.compilers.fortranManglingDoubleUnderscore:
       cdefs = '-DF77_APPEND__'
     elif self.compilers.fortranMangling == 'underscore':

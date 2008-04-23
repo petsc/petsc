@@ -113,10 +113,10 @@ ppargs0: chkopts
 	-${CXCPP} args0.cxx
 
 runargs0:
-	-@${MPIEXEC} -np ${NP} ./args0 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./args0 ${EXTRA_ARGS}
 
 debugargs0:
-	-@${MPIEXEC} -np ${NP} ./args0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./args0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
@@ -124,9 +124,9 @@ xsifter0: xsifter0.o chkopts
 	${RM} -f xsifter0.o
 NP = 1
 runxsifter0:
-	-@${MPIEXEC} -np ${NP} ./xsifter0 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsifter0 ${EXTRA_ARGS}
 debugxsifter0:
-	-@${MPIEXEC} -np ${NP} ./xsifter0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsifter0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 xsifter1: xsifter1.o chkopts
@@ -134,12 +134,12 @@ xsifter1: xsifter1.o chkopts
 	${RM} -f xsifter1.o
 NP = 1
 runxsifter1:
-	-@${MPIEXEC} -np ${NP} ./xsifter1 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsifter1 ${EXTRA_ARGS}
 debugxsifter1:
-	-@${MPIEXEC} -np ${NP} ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 
 valgrindxsifter1:
-	-@${MPIEXEC} -np ${NP} valgrind ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} valgrind ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsifter2: xsifter2.o chkopts
@@ -147,11 +147,11 @@ xsifter2: xsifter2.o chkopts
 	${RM} -f xsifter2.o
 NP = 1
 runxsifter2:
-	-@${MPIEXEC} -np ${NP} ./xsifter2 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsifter2 ${EXTRA_ARGS}
 debugxsifter2:
-	-@${MPIEXEC} -np ${NP} ./xsifter2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsifter2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 valgrindxsifter2:
-	-@${MPIEXEC} -np ${NP} valgrind ./xsifter2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} valgrind ./xsifter2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 
 #-----------------------------------------------------------------
@@ -160,11 +160,11 @@ xsifter3: xsifter3.o chkopts
 	${RM} -f xsifter3.o
 NP = 1
 runxsifter3:
-	-@${MPIEXEC} -np ${NP} ./xsifter3 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsifter3 ${EXTRA_ARGS}
 debugxsifter3:
-	-@${MPIEXEC} -np ${NP} ./xsifter3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsifter3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 valgrindxsifter3:
-	-@${MPIEXEC} -np ${NP} valgrind ./xsifter3 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} valgrind ./xsifter3 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve0: xsieve0.o chkopts
@@ -172,11 +172,11 @@ xsieve0: xsieve0.o chkopts
 	${RM} -f xsieve0.o
 NP = 1
 runxsieve0:
-	-@${MPIEXEC} -np ${NP} ./xsieve0 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsieve0 ${EXTRA_ARGS}
 debugxsieve0:
-	-@${MPIEXEC} -np ${NP} ./xsieve0 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsieve0 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 valgrindxsieve0:
-	-@${MPIEXEC} -np ${NP} valgrind ./xsieve0 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} valgrind ./xsieve0 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 
 #-----------------------------------------------------------------
@@ -185,11 +185,11 @@ xsieve1: xsieve1.o chkopts
 	${RM} -f xsieve1.o
 NP = 1
 runxsieve1:
-	-@${MPIEXEC} -np ${NP} ./xsieve1 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsieve1 ${EXTRA_ARGS}
 debugxsieve1:
-	-@${MPIEXEC} -np ${NP} ./xsieve1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsieve1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 valgrindxsieve1:
-	-@${MPIEXEC} -np ${NP} valgrind ./xsieve1 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} valgrind ./xsieve1 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve2: xsieve2.o chkopts
@@ -197,11 +197,11 @@ xsieve2: xsieve2.o chkopts
 	${RM} -f xsieve2.o
 NP = 1
 runxsieve2:
-	-@${MPIEXEC} -np ${NP} ./xsieve2 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsieve2 ${EXTRA_ARGS}
 debugxsieve2:
-	-@${MPIEXEC} -np ${NP} ./xsieve2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsieve2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 valgrindxsieve2:
-	-@${MPIEXEC} -np ${NP} valgrind ./xsieve2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} valgrind ./xsieve2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve3: xsieve3.o chkopts
@@ -209,11 +209,11 @@ xsieve3: xsieve3.o chkopts
 	${RM} -f xsieve3.o
 NP = 1
 runxsieve3:
-	-@${MPIEXEC} -np ${NP} ./xsieve3 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsieve3 ${EXTRA_ARGS}
 debugxsieve3:
-	-@${MPIEXEC} -np ${NP} ./xsieve3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsieve3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 valgrindxsieve3:
-	-@${MPIEXEC} -np ${NP} valgrind ./xsieve3 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} valgrind ./xsieve3 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsieve4: xsieve4.o chkopts
@@ -221,109 +221,109 @@ xsieve4: xsieve4.o chkopts
 	${RM} -f xsieve4.o
 NP = 1
 runxsieve4:
-	-@${MPIEXEC} -np ${NP} ./xsieve4 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./xsieve4 ${EXTRA_ARGS}
 debugxsieve4:
-	-@${MPIEXEC} -np ${NP} ./xsieve4 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./xsieve4 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 valgrindxsieve4:
-	-@${MPIEXEC} -np ${NP} valgrind ./xsieve4 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} valgrind ./xsieve4 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 
 #-----------------------------------------------------------------
 runex00:
-	-@${MPIEXEC} -np ${NP} ./ex00 -log_summary ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex00 -log_summary ${EXTRA_ARGS}
 
 debugex00:
-	-@${MPIEXEC} -np ${NP} ./ex00 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex00 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 valex00:
 	-@valgrind --tool=memcheck ./ex00 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex01:
-	-@${MPIEXEC} -np ${NP} ./ex01 -log_summary ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex01 -log_summary ${EXTRA_ARGS}
 
 debugex01:
-	-@${MPIEXEC} -np ${NP} ./ex01 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex01 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 valex01:
 	-@valgrind --tool=memcheck ./ex01 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex02:
-	-@${MPIEXEC} -np ${NP} ./ex02 -log_summary ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex02 -log_summary ${EXTRA_ARGS}
 
 debugex02:
-	-@${MPIEXEC} -np ${NP} ./ex02 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex02 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 valex02:
 	-@valgrind --tool=memcheck ./ex02 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex03:
-	-@${MPIEXEC} -np ${NP} ./ex03 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex03 ${EXTRA_ARGS}
 
 debugex03:
-	-@${MPIEXEC} -np ${NP} ./ex03 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex03 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 valex03:
 	-@valgrind --tool=memcheck ./ex03 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex04:
-	-@${MPIEXEC} -np ${NP} ./ex04 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex04 ${EXTRA_ARGS}
 
 debugex04:
-	-@${MPIEXEC} -np ${NP} ./ex04 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./ex04 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex04:
 	-@valgrind --tool=memcheck ./ex04 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex05:
-	-@${MPIEXEC} -np ${NP} ./ex05 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex05 ${EXTRA_ARGS}
 
 debugex05:
-	-@${MPIEXEC} -np ${NP} ./ex05 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./ex05 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex05:
 	-@valgrind --tool=memcheck ./ex05 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex06:
-	-@${MPIEXEC} -np ${NP} ./ex06 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex06 ${EXTRA_ARGS}
 
 debugex06:
-	-@${MPIEXEC} -np ${NP} ./ex06 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./ex06 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex06:
 	-@valgrind --tool=memcheck ./ex06 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex07:
-	-@${MPIEXEC} -np ${NP} ./ex07 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex07 ${EXTRA_ARGS}
 
 debugex07:
-	-@${MPIEXEC} -np ${NP} ./ex07 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./ex07 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex07:
 	-@valgrind --tool=memcheck ./ex07 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex08:
-	-@${MPIEXEC} -np ${NP} ./ex08 ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex08 ${EXTRA_ARGS}
 
 debugex08:
-	-@${MPIEXEC} -np ${NP} ./ex08 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -n ${NP} ./ex08 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex08:
 	-@valgrind --tool=memcheck ./ex08 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -np ${NP} ./ex1 -log_summary ${EXTRA_ARGS}
+	-@${MPIEXEC} -n ${NP} ./ex1 -log_summary ${EXTRA_ARGS}
 
 debugex1:
-	-@${MPIEXEC} -np ${NP} ./ex1 -log_summary ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -n ${NP} ./ex1 -log_summary ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 valex1:
 	-@valgrind --tool=memcheck ./ex1 ${EXTRA_ARGS}

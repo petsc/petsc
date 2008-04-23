@@ -494,6 +494,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_LUSOL(Mat A,const MatType ty
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
+  B->ops->matsolve           = 0;
 		
   ierr                       = PetscNewLog(B,Mat_LUSOL,&lusol);CHKERRQ(ierr);
   lusol->MatDuplicate        = A->ops->duplicate;

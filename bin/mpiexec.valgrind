@@ -25,6 +25,6 @@ mpisupp=/home/petsc/soft/linux-rh73-mpich2/valgrind-2.1.2/lib/valgrind/mpich2-0.
 #
 # Now execute the mpiexec command
 #
-#$mpiexec -np $np $valgrind -q --suppressions=$mpisupp --tool=memcheck --num-callers=20 $progname $options
-$mpiexec -np $np $valgrind -q --tool=memcheck --num-callers=20 $progname $options
+#$mpiexec -n $np $valgrind -q --suppressions=$mpisupp --tool=memcheck --num-callers=20 $progname $options
+$mpiexec -n $np $valgrind -q --tool=memcheck --num-callers=20 $progname $options
 

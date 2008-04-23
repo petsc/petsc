@@ -13,6 +13,6 @@ pdir=$1
 shift
 dir=$1
 shift
-echo "petscmpiexec -np $np $*"
-rsh $machine "cd $pdir/$dir ; setenv PETSC_DIR $pdir ; setenv PETSC_ARCH $arch; petscmpiexec -np $np $* -error_output_stderr"
+echo "petscmpiexec -n $np $*"
+rsh $machine "cd $pdir/$dir ; setenv PETSC_DIR $pdir ; setenv PETSC_ARCH $arch; petscmpiexec -n $np $* -error_output_stderr"
 

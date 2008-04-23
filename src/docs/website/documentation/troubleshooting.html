@@ -254,7 +254,7 @@ problem.<br>
 &nbsp;on the Apple do "man libgmalloc" to see how to detect memory corruption.</span></font></p>
 
 
-mpiexec -np <np> valgrind -q --tool=memcheck --num-callers=20 petscprogram petscoptions
+mpiexec -n <np> valgrind -q --tool=memcheck --num-callers=20 petscprogram petscoptions
 
   </np></li>
 

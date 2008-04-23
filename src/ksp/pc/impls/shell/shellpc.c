@@ -449,6 +449,8 @@ EXTERN_C_END
 
 .  ptr - the application context
 
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+
    Level: developer
 
 .keywords: PC, shell, set, destroy, user-provided
@@ -487,6 +489,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetDestroy(PC pc,PetscErrorCode (*destr
 .ve
 
 .  ptr - the application context
+
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -527,6 +531,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetSetUp(PC pc,PetscErrorCode (*setup)(
 +  ptr - the application context
 -  v   - viewer
 
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+
    Level: developer
 
 .keywords: PC, shell, set, apply, user-provided
@@ -565,6 +571,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetView(PC pc,PetscErrorCode (*view)(vo
 +  ptr - the application context
 .  xin - input vector
 -  xout - output vector
+
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -605,6 +613,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply(PC pc,PetscErrorCode (*apply)(
 .  xin - input vector
 -  xout - output vector
 
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+
    Level: developer
 
 .keywords: PC, shell, set, apply, user-provided
@@ -643,6 +653,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyBA(PC pc,PetscErrorCode (*apply
 +  ptr - the application context
 .  xin - input vector
 -  xout - output vector
+
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -688,6 +700,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose(PC pc,PetscErrorCode 
 .  xin - input vector
 -  xout - output vector
 
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
+
    Level: developer
 
 .keywords: PC, shell, set, apply, user-provided
@@ -728,6 +742,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC pc,PetscErrorCode (*pres
 +  ptr - the application context
 .  xin - input vector
 -  xout - output vector
+
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 
@@ -840,6 +856,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC pc,char *name[])
 .  abstol - absolute tolerance of residual norm to stop at
 .  dtol - if residual norm increases by this factor than return
 -  maxits - number of iterations to run
+
+   Notes: the function MUST return an error code of 0 on success and nonzero on failure.
 
    Level: developer
 

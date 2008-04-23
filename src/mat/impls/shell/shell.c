@@ -497,6 +497,9 @@ $      ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)(void))usermult);
     routines, e.g., 
 $       MatMult(Mat,Vec,Vec) -> usermult(Mat,Vec,Vec)
 
+    In particular each function MUST return an error code of 0 on success and 
+    nonzero on failure.
+
     Within each user-defined routine, the user should call
     MatShellGetContext() to obtain the user-defined context that was
     set by MatCreateShell().

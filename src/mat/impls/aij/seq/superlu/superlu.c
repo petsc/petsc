@@ -119,6 +119,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,M
   if (reuse == MAT_INITIAL_MATRIX){
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
+  B->ops->matsolve = 0;
 
   ierr = PetscNewLog(B,Mat_SuperLU,&lu);CHKERRQ(ierr);
   /* save the original SeqAIJ methods that we are changing */

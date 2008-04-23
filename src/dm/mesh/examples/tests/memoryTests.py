@@ -24,7 +24,7 @@ class MemoryTests(script.Script):
 
   def createCmdLine(self, numProcs, test, num, numCells):
     args = ['$MPIEXEC']
-    args.append('-np '+str(numProcs))
+    args.append('-n '+str(numProcs))
     args.append(self.executable)
     args.append('-'+test)
     args.append('-num '+str(num))

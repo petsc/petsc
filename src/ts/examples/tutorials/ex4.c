@@ -1,5 +1,5 @@
 
-/* Program usage:  mpiexec -np <procs> ex4 [-help] [all PETSc options] */
+/* Program usage:  mpiexec -n <procs> ex4 [-help] [all PETSc options] */
 
 static char help[] ="Solves a simple time-dependent linear PDE (the heat equation).\n\
 Input parameters include:\n\
@@ -31,7 +31,7 @@ Input parameters include:\n\
        u_xx = (u_{i+1} - 2u_{i} + u_{i-1})/(h^2)
    We then demonstrate time evolution using the various TS methods by
    running the program via
-       mpiexec -np <procs> ex3 -ts_type <timestepping solver>
+       mpiexec -n <procs> ex3 -ts_type <timestepping solver>
 
    We compare the approximate solution with the exact solution, given by
        u_exact(x,t) = exp(-36*pi*pi*t) * sin(6*pi*x) +

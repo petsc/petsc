@@ -18,7 +18,6 @@ class Configure(config.base.Configure):
     import nargs
 
     help.addArgument('PETSc', '-prefix=<path>',            nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
-    help.addArgument('PETSc', '-with-sudo=sudo',           nargs.Arg(None, '', 'Use sudo when installing packages'))
     help.addArgument('PETSc', '-with-default-arch=<bool>', nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     return
 
@@ -113,7 +112,7 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('PCC_LINKER_LIBS',self.libraries.toString(self.compilers.flibs)+' '+self.libraries.toString(self.compilers.cxxlibs)+' '+self.compilers.LIBS)
+    self.addMakeMacro('PCC_LINKER_LIBS',self.toString(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
 
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
@@ -139,7 +138,7 @@ class Configure(config.base.Configure):
       self.setCompilers.popLanguage()
       # '' for Unix, .exe for Windows
       self.addMakeMacro('FC_LINKER_SUFFIX','')
-      self.addMakeMacro('FC_LINKER_LIBS',' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs])+' '+self.compilers.LIBS)
+      self.addMakeMacro('FC_LINKER_LIBS',self.toString(self.compilers.flibs+self.compilers.LIBS.split(' ')))      
     else:
       self.addMakeMacro('FC','')
 
@@ -156,9 +155,9 @@ class Configure(config.base.Configure):
     else:
       self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
     if self.setCompilers.isDarwin() and self.languages.clanguage == 'Cxx':
-      self.addMakeMacro('SL_LINKER_LIBS',' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs])+' '+' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.cxxlibs])+' '+self.compilers.LIBS)
+      self.addMakeMacro('SL_LINKER_LIBS',self.toString(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
     else:
-      self.addMakeMacro('SL_LINKER_LIBS',' '.join([self.libraries.getLibArgument(lib) for lib in self.compilers.flibs])+' '+ self.compilers.LIBS)
+      self.addMakeMacro('SL_LINKER_LIBS',self.toString(self.compilers.flibs+self.compilers.LIBS.split(' ')))            
 #-----------------------------------------------------------------------------------------------------
 
     # CONLY or CPP. We should change the PETSc makefiles to do this better
@@ -206,6 +205,22 @@ class Configure(config.base.Configure):
     # add a makefile entry for configure options
     self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"'))
     return
+
+  def toString(self,libs):
+    '''Converts a list of libraries to a string suitable for a linker, removes duplicates'''
+    libs = [self.libraries.getLibArgument(lib) for lib in libs]
+    newlibs = []
+    # sometimes a single entry in the list is actually several items (why?)
+    for j in libs:
+      newlibs.extend(j.split(' '))
+    libs = newlibs
+    newlibs = []
+    # do not remove duplicate -l, because there is a tiny chance that order may matter
+    for j in libs:
+      if j in newlibs and (j.startswith('-L') or j.startswith('-Wl,-rpath')): continue
+      newlibs.append(j)
+    libs = newlibs
+    return ' '.join(libs)
 
   def dumpConfigInfo(self):
     import time
