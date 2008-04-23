@@ -76,7 +76,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess_Method1(KSPFischerGue
   if (itg->monitor) {
     ierr = PetscPrintf(itg->ksp->hdr.comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++ ){
-      ierr = PetscPrintf(itg->ksp->hdr.comm,"%G ",itg->alpha[i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(itg->ksp->hdr.comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(itg->ksp->hdr.comm,"\n");CHKERRQ(ierr);
   }
@@ -195,7 +195,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess_Method2(KSPFischerGue
   if (itg->monitor) {
     ierr = PetscPrintf(itg->ksp->hdr.comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++ ){
-      ierr = PetscPrintf(itg->ksp->hdr.comm,"%G ",itg->alpha[i]);CHKERRQ(ierr);
+      ierr = PetscPrintf(itg->ksp->hdr.comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
     ierr = PetscPrintf(itg->ksp->hdr.comm,"\n");CHKERRQ(ierr);
   }
