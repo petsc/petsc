@@ -1173,12 +1173,7 @@ namespace ALE {
     typedef IBundle<Sieve_,RealSection_,IntSection_,ArrowSection_>    this_type;
     typedef typename sieve_type::point_type                           point_type;
     typedef malloc_allocator<point_type>                              alloc_type;
-#define NEW_LABEL
-#ifdef NEW_LABEL
     typedef typename ALE::LabelSifter<int, point_type>                label_type;
-#else
-    typedef typename ALE::Sifter<int, point_type, int>                label_type;
-#endif
     typedef typename std::map<const std::string, Obj<label_type> >    labels_type;
     typedef typename label_type::supportSequence                      label_sequence;
     typedef std::map<std::string, Obj<arrow_section_type> >           arrow_sections_type;

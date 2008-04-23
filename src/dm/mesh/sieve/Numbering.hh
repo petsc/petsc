@@ -284,10 +284,12 @@ namespace ALE {
     void constructLocalNumbering(const Obj<numbering_type>& numbering, const Obj<send_overlap_type>& sendOverlap, const Obj<Sequence_>& points) {
       int localSize = 0;
 
+      //std::cout << "["<<numbering->commRank()<<"] Constructing local numbering" << std::endl;
       numbering->setFiberDimension(points, 1);
       for(typename Sequence_::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
         value_type val;
 
+        //std::cout << "["<<numbering->commRank()<<"]   Checking point " << *l_iter << std::endl;
         if (sendOverlap->capContains(*l_iter)) {
           const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*l_iter);
           int minRank = sendOverlap->commSize();
@@ -296,15 +298,19 @@ namespace ALE {
             if (*p_iter < minRank) minRank = *p_iter;
           }
           if (minRank < sendOverlap->commRank()) {
+            //std::cout << "["<<numbering->commRank()<<"]     remote point, on proc " << minRank << std::endl;
             val = this->_unknownNumber;
           } else {
+            //std::cout << "["<<numbering->commRank()<<"]     local point" << std::endl;
             val = localSize++;
           }
         } else {
+          //std::cout << "["<<numbering->commRank()<<"]     local point" << std::endl;
           val = localSize++;
         }
         numbering->updatePoint(*l_iter, &val);
       }
+      //std::cout << "["<<numbering->commRank()<<"]   local points" << std::endl;
       numbering->setLocalSize(localSize);
     };
     // Order all local points
@@ -377,7 +383,40 @@ namespace ALE {
       const Obj<send_section_type> sendSection = new send_section_type(numbering->comm(), this->debug());
       const Obj<recv_section_type> recvSection = new recv_section_type(numbering->comm(), sendSection->getTag(), this->debug());
 
+      //std::cout << "["<<numbering->commRank()<<"] Completing numbering" << std::endl;
       completion::completeSection(sendOverlap, recvOverlap, numbering->getAtlas(), numbering, sendSection, recvSection);
+#if 1
+      const Obj<typename recv_overlap_type::traits::baseSequence> rPoints = recvOverlap->base();
+
+      for(typename recv_overlap_type::traits::baseSequence::iterator rp_iter = rPoints->begin(); rp_iter != rPoints->end(); ++rp_iter) {
+        const Obj<typename recv_overlap_type::coneSequence>& points     = recvOverlap->cone(*rp_iter);
+        const typename recv_overlap_type::target_type&       localPoint = *rp_iter;
+
+        for(typename recv_overlap_type::coneSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          const typename recv_overlap_type::target_type&       remotePoint = p_iter.color();
+          const int                                            rank        = *p_iter;
+          const Obj<typename recv_section_type::section_type>& section     = recvSection->getSection(rank);
+          const typename recv_section_type::value_type        *values      = section->restrictPoint(remotePoint);
+
+          if (section->getFiberDimension(remotePoint) == 0) continue;
+          //std::cout << "["<<numbering->commRank()<<"]     local point " << localPoint << " remote point " << remotePoint << " number " << values[0] << std::endl;
+          if (values[0] >= 0) {
+            if (numbering->isLocal(localPoint) && !allowDuplicates) {
+              ostringstream msg;
+              msg << "["<<numbering->commRank()<<"]Multiple indices for local point " << localPoint << " remote point " << remotePoint << " from " << rank << " with index " << values[0];
+              throw ALE::Exception(msg.str().c_str());
+            }
+            if (numbering->getAtlas()->getFiberDimension(localPoint) == 0) {
+              ostringstream msg;
+              msg << "["<<numbering->commRank()<<"]Unexpected local point " << localPoint << " remote point " << remotePoint << " from " << rank << " with index " << values[0];
+              throw ALE::Exception(msg.str().c_str());
+            }
+            int val = -(values[0]+1);
+            numbering->updatePoint(localPoint, &val);
+          }
+        }
+      }
+#else
       const typename recv_section_type::sheaf_type& patches = recvSection->getPatches();
 
       for(typename recv_section_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
@@ -406,6 +445,7 @@ namespace ALE {
           }
         }
       }
+#endif
     };
     // Communicate (size,offset)s in the overlap
     void completeOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false) {

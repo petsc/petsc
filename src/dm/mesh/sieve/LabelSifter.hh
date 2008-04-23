@@ -713,9 +713,21 @@ namespace ALE {
       
       for(typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
         if (baseRestrict) {
-          if (!baseRestriction->support(a_iter->target)->size() && !baseRestriction->cone(a_iter->target)->size()) continue;
+          if (!baseRestriction->getSupportSize(a_iter->target) && !baseRestriction->getConeSize(a_iter->target)) continue;
         }
         this->addArrow(*a_iter);
+      }
+    };
+    template<typename Sifter_, typename AnotherSifter_, typename Renumbering_>
+    void add(const Obj<Sifter_>& cbg, const Obj<AnotherSifter_>& baseRestriction, Renumbering_& renumbering) {
+      typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename Sifter_::traits::arrowInd>(cbg->_arrows.set);
+
+      for(typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
+        if (renumbering.find(a_iter->target) == renumbering.end()) continue;
+        target_type target = renumbering[a_iter->target];
+
+        if (!baseRestriction->getSupportSize(target) && !baseRestriction->getConeSize(target)) continue;
+        this->addArrow(a_iter->source, target);
       }
     };
   }; // class LabelSifter

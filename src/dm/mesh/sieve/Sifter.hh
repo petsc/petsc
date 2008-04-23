@@ -795,6 +795,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         processor(*c_iter, p);
       }
     };
+    int getConeSize(const typename traits::target_type& p) {
+      return this->cone(p)->size();
+    }
 #ifdef SLOW
     Obj<typename traits::supportSequence> 
     support(const typename traits::source_type& p) {
@@ -859,6 +862,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         processor(*s_iter, p);
       }
     };
+    int getSupportSize(const typename traits::source_type& p) {
+      return this->support(p)->size();
+    }
 
     template<typename ostream_type>
     void view(ostream_type& os, const char* label = NULL, bool rawData = false){

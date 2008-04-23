@@ -210,6 +210,37 @@ namespace ALE {
           }
         }
       };
+      template<typename SifterType, typename Renumbering>
+      static void scatterCones(const Obj<SifterType>& sifter, const Obj<SifterType>& sifterNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, Renumbering& renumbering, const Obj<bundle_type>& bundle = NULL) {
+        typedef typename ALE::New::ConeSizeSection<bundle_type, SifterType> cone_size_section;
+        typedef typename ALE::New::ConeSection<SifterType>                  cone_section;
+        typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > send_section_type;
+        typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type, value_alloc_type> > recv_section_type;
+        Obj<topology_type>     secTopology     = completion::createSendTopology(sendOverlap);
+        Obj<cone_size_section> coneSizeSection = new cone_size_section(bundle, sifter);
+        Obj<cone_section>      coneSection     = new cone_section(sifter);
+        Obj<send_section_type> sendSection     = new send_section_type(sifter->comm(), sifter->debug());
+        Obj<recv_section_type> recvSection     = new recv_section_type(sifter->comm(), sendSection->getTag(), sifter->debug());
+
+        completion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
+        // Unpack the section into the sieve
+        const typename recv_section_type::sheaf_type& patches = recvSection->getPatches();
+
+        for(typename recv_section_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const Obj<typename recv_section_type::section_type>&        section = p_iter->second;
+          const typename recv_section_type::section_type::chart_type& chart   = section->getChart();
+
+          for(typename recv_section_type::section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+            const typename recv_section_type::value_type *points = section->restrictPoint(*c_iter);
+            int size = section->getFiberDimension(*c_iter);
+            int c    = 0;
+
+            for(int p = 0; p < size; p++) {
+              sifterNew->addArrow(points[p], renumbering[*c_iter], c++);
+            }
+          }
+        }
+      };
       template<typename SifterType>
       static void scatterSupports(const Obj<SifterType>& sifter, const Obj<SifterType>& sifterNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<bundle_type>& bundle = NULL, const int minimumDepth = 0) {
         typedef typename ALE::New::SupportSizeSection<bundle_type, SifterType> support_size_section;
