@@ -264,7 +264,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate_Cartesian(Mesh mesh)
   mesh->globalScatter = PETSC_NULL;
   mesh->lf            = PETSC_NULL;
   mesh->lj            = PETSC_NULL;
-  mesh->mcompat       = PETSC_NULL;
   mesh->data          = cm;
   PetscFunctionReturn(0);
 }

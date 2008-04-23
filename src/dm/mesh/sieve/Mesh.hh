@@ -104,16 +104,16 @@ namespace ALE {
     typedef std::vector<oIndex_type>                                  oIndexArray;
     typedef std::pair<int *, int>                                     indices_type;
     typedef NumberingFactory<this_type>                               MeshNumberingFactory;
-    typedef typename MeshNumberingFactory::numbering_type             numbering_type;
-    typedef typename MeshNumberingFactory::order_type                 order_type;
     typedef typename ALE::Partitioner<>::part_type                    rank_type;
     typedef typename ALE::Sifter<point_type,rank_type,point_type>     send_overlap_type;
     typedef typename ALE::Sifter<rank_type,point_type,point_type>     recv_overlap_type;
+    typedef typename MeshNumberingFactory::numbering_type             numbering_type;
+    typedef typename MeshNumberingFactory::order_type                 order_type;
+    typedef std::map<point_type, point_type>                          renumbering_type;
     typedef typename ALE::SieveAlg<this_type>                         sieve_alg_type;
     typedef typename sieve_alg_type::coneArray                        coneArray;
     typedef typename sieve_alg_type::orientedConeArray                oConeArray;
     typedef typename sieve_alg_type::supportArray                     supportArray;
-    typedef std::map<point_type, point_type>                          renumbering_type;
   protected:
     Obj<sieve_type>       _sieve;
     labels_type           _labels;
@@ -1189,16 +1189,17 @@ namespace ALE {
     typedef std::vector<oIndex_type>                                  oIndexArray;
     typedef std::pair<int *, int>                                     indices_type;
     typedef NumberingFactory<this_type>                               MeshNumberingFactory;
-    typedef typename MeshNumberingFactory::numbering_type             numbering_type;
-    typedef typename MeshNumberingFactory::order_type                 order_type;
     typedef typename ALE::Partitioner<>::part_type                    rank_type;
     typedef typename ALE::Sifter<point_type,rank_type,point_type>     send_overlap_type;
     typedef typename ALE::Sifter<rank_type,point_type,point_type>     recv_overlap_type;
+    typedef typename MeshNumberingFactory::numbering_type             numbering_type;
+    typedef typename MeshNumberingFactory::order_type                 order_type;
+    typedef std::map<point_type, point_type>                          renumbering_type;
+    // These should go away
     typedef typename ALE::SieveAlg<this_type>                         sieve_alg_type;
     typedef typename sieve_alg_type::coneArray                        coneArray;
     typedef typename sieve_alg_type::orientedConeArray                oConeArray;
     typedef typename sieve_alg_type::supportArray                     supportArray;
-    typedef std::map<point_type, point_type>                          renumbering_type;
   public:
     class LabelVisitor {
     protected:

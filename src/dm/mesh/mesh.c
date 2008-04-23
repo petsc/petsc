@@ -165,11 +165,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView_Mesh(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mesh->mcompat.isNull()) {
-    ierr = MeshCompatView_Sieve_Ascii(mesh->mcompat, viewer);CHKERRQ(ierr);
-  } else {
-    ierr = MeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
-  }
+  ierr = MeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

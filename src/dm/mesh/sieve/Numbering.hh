@@ -112,19 +112,19 @@ namespace ALE {
   public:
     typedef Bundle_                                         bundle_type;
     typedef Alloc_                                          alloc_type;
-    typedef typename bundle_type::sieve_type                sieve_type;
-    typedef typename sieve_type::point_type                 point_type;
     typedef Value_                                          value_type;
-    typedef typename alloc_type::template rebind<value_type>::other value_alloc_type;
+    typedef typename bundle_type::sieve_type                sieve_type;
+    typedef typename bundle_type::point_type                point_type;
+    typedef typename bundle_type::rank_type                 rank_type;
+    typedef typename bundle_type::send_overlap_type         send_overlap_type;
+    typedef typename bundle_type::recv_overlap_type         recv_overlap_type;
     typedef Numbering<point_type, value_type, alloc_type>   numbering_type;
+    typedef typename alloc_type::template rebind<value_type>::other                              value_alloc_type;
     typedef std::map<bundle_type*, std::map<std::string, std::map<int, Obj<numbering_type> > > > numberings_type;
     typedef GlobalOrder<point_type>                         order_type;
     typedef typename order_type::value_type                 oValue_type;
-    typedef typename alloc_type::template rebind<oValue_type>::other oValue_alloc_type;
+    typedef typename alloc_type::template rebind<oValue_type>::other         oValue_alloc_type;
     typedef std::map<bundle_type*, std::map<std::string, Obj<order_type> > > orders_type;
-    typedef short int                                       rank_type;
-    typedef typename ALE::Sifter<point_type,rank_type,point_type> send_overlap_type;
-    typedef typename ALE::Sifter<rank_type,point_type,point_type> recv_overlap_type;
   protected:
     numberings_type   _localNumberings;
     numberings_type   _numberings;
