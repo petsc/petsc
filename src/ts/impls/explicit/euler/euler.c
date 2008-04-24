@@ -29,14 +29,15 @@ static PetscErrorCode TSStep_Euler(TS ts,PetscInt *steps,PetscReal *ptime)
   Vec            sol = ts->vec_sol,update = euler->update;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps;
-  PetscScalar    dt = ts->time_step;
   
   PetscFunctionBegin;
   *steps = -ts->steps;
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   for (i=0; i<max_steps; i++) {
-    ts->ptime += ts->time_step;
+    PetscReal dt = ts->time_step;
+
+    ts->ptime += dt;
     ierr = TSComputeRHSFunction(ts,ts->ptime,sol,update);CHKERRQ(ierr);
     ierr = VecAXPY(sol,dt,update);CHKERRQ(ierr);
     ts->steps++;
