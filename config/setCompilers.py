@@ -1255,6 +1255,27 @@ if (dlclose(handle)) {
       self.addSubstitution('SHARED_LIBRARY_FLAG','')
     return
 
+  def updateMPICompilers(self, mpicc, mpicxx, mpifc):
+    '''Reset compilers by an external module aka MPI'''
+    self.CC = mpicc
+    self.delMakeMacro("CC")
+    self.addMakeMacro("CC",mpicc)
+
+    self.CXX = mpicxx
+    self.delMakeMacro("CXX")
+    self.addMakeMacro("CXX",mpicxx)
+
+    self.FC = mpifc
+    self.delMakeMacro("FC")
+    self.addMakeMacro("FC",mpifc)
+    
+    self.output()
+    self.checkSharedLinker()
+    self.checkDynamicLinker()
+    self.usedMPICompilers=1
+    return
+
+
   def configure(self):
     self.executeTest(self.checkVendor)
     self.executeTest(self.checkInitialFlags)

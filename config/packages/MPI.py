@@ -339,29 +339,7 @@ class Configure(config.package.Package):
         pass
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed LAM/MPI into '+installDir)
 
-    # Reset compilers to MPI compilers. Perhaps there should be self.setCompilers.reintializeCompilers()?
-    mpicc = os.path.join(installDir,"bin","mpicc")
-    if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
-    self.setCompilers.CC = mpicc
-    self.setCompilers.delMakeMacro("CC")
-    self.setCompilers.addMakeMacro("CC",mpicc)
-    if hasattr(self.compilers, 'CXX'):
-      mpicxx = os.path.join(installDir,"bin","mpic++")
-      if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
-      self.setCompilers.CXX = mpicxx
-      self.setCompilers.delMakeMacro("CXX")
-      self.setCompilers.addMakeMacro("CXX",mpicxx)
-    if hasattr(self.compilers, 'FC'):
-      mpif77 = os.path.join(installDir,"bin","mpif77")
-      if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
-      self.setCompilers.FC = mpif77
-      self.setCompilers.delMakeMacro("FC")
-      self.setCompilers.addMakeMacro("FC",mpif77)
-    # redo the shared and dynamic linker check
-    self.setCompilers.output()
-    self.setCompilers.checkSharedLinker()
-    self.setCompilers.checkDynamicLinker()
-    self.setCompilers.usedMPICompilers=1
+    self.updateCompilers(installDir,'mpicc','mpic++','mpif77','mpif77')
     return installDir
 
   def InstallMPICH(self):
@@ -489,37 +467,26 @@ class Configure(config.package.Package):
           self.framework.logPrint('Error trying to run mpdboot:'+str(e))
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
 
-    # Reset compilers to MPI compilers. Perhaps there should be self.setCompilers.reintializeCompilers()?
-    mpicc = os.path.join(installDir,"bin","mpicc")
+    self.updateCompilers(installDir,'mpicc','mpicxx','mpif77','mpif90')
+    return installDir
+
+  def updateCompilers(self, installDir, mpiccName, mpicxxName, mpif77Name, mpif90Name):
+    '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.
+    The input arguments are the names of the binaries specified by the respective pacakges MPICH/LAM.'''
+    
+    mpicc = os.path.join(installDir,"bin",mpiccName)
     if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
-    self.setCompilers.CC = mpicc
-    self.setCompilers.delMakeMacro("CC")
-    self.setCompilers.addMakeMacro("CC",mpicc)
     if hasattr(self.compilers, 'CXX'):
-      mpicxx = os.path.join(installDir,"bin","mpicxx")
+      mpicxx = os.path.join(installDir,"bin",mpicxxName)
       if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
-      self.setCompilers.CXX = mpicxx
-      self.setCompilers.delMakeMacro("CXX")
-      self.setCompilers.addMakeMacro("CXX",mpicxx)
     if hasattr(self.compilers, 'FC'):
       if self.compilers.fortranIsF90:
-        mpif90 = os.path.join(installDir,"bin","mpif90")
-        if not os.path.isfile(mpif90): raise RuntimeError('Could not locate installed MPI compiler: '+mpif90)
-        self.setCompilers.FC = mpif90
-        self.setCompilers.delMakeMacro("FC")
-        self.setCompilers.addMakeMacro("FC",mpif90)
+        mpifc = os.path.join(installDir,"bin",mpif90Name)
       else:
-        mpif77 = os.path.join(installDir,"bin","mpif77")
-        if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
-        self.setCompilers.FC = mpif77
-        self.setCompilers.delMakeMacro("FC")
-        self.setCompilers.addMakeMacro("FC",mpif77)
-    # redo the shared and dynamic linker check
-    self.setCompilers.output()
-    self.setCompilers.checkSharedLinker()
-    self.setCompilers.checkDynamicLinker()
-    self.setCompilers.usedMPICompilers=1
-    return installDir
+        mpifc = os.path.join(installDir,"bin",mpif77Name)
+      if not os.path.isfile(mpifc): raise RuntimeError('Could not locate installed MPI compiler: '+mpifc)
+    self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
+    return
 
   def addExtraLibraries(self):
     '''Check for various auxiliary libraries we may need'''
