@@ -344,19 +344,19 @@ class Configure(config.package.Package):
     if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
     self.setCompilers.CC = mpicc
     self.setCompilers.delMakeMacro("CC")
-    self.addMakeMacro("CC",mpicc)
+    self.setCompilers.addMakeMacro("CC",mpicc)
     if hasattr(self.compilers, 'CXX'):
       mpicxx = os.path.join(installDir,"bin","mpic++")
       if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
       self.setCompilers.CXX = mpicxx
       self.setCompilers.delMakeMacro("CXX")
-      self.addMakeMacro("CXX",mpicxx)
+      self.setCompilers.addMakeMacro("CXX",mpicxx)
     if hasattr(self.compilers, 'FC'):
       mpif77 = os.path.join(installDir,"bin","mpif77")
       if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
       self.setCompilers.FC = mpif77
       self.setCompilers.delMakeMacro("FC")
-      self.addMakeMacro("FC",mpif77)
+      self.setCompilers.addMakeMacro("FC",mpif77)
     # redo the shared and dynamic linker check
     self.setCompilers.output()
     self.setCompilers.checkSharedLinker()
@@ -500,20 +500,20 @@ class Configure(config.package.Package):
       if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
       self.setCompilers.CXX = mpicxx
       self.setCompilers.delMakeMacro("CXX")
-      self.addMakeMacro("CXX",mpicxx)
+      self.setCompilers.addMakeMacro("CXX",mpicxx)
     if hasattr(self.compilers, 'FC'):
       if self.compilers.fortranIsF90:
         mpif90 = os.path.join(installDir,"bin","mpif90")
         if not os.path.isfile(mpif90): raise RuntimeError('Could not locate installed MPI compiler: '+mpif90)
         self.setCompilers.FC = mpif90
         self.setCompilers.delMakeMacro("FC")
-        self.addMakeMacro("FC",mpif90)
+        self.setCompilers.addMakeMacro("FC",mpif90)
       else:
         mpif77 = os.path.join(installDir,"bin","mpif77")
         if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
         self.setCompilers.FC = mpif77
         self.setCompilers.delMakeMacro("FC")
-        self.addMakeMacro("FC",mpif77)
+        self.setCompilers.addMakeMacro("FC",mpif77)
     # redo the shared and dynamic linker check
     self.setCompilers.output()
     self.setCompilers.checkSharedLinker()
