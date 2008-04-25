@@ -264,7 +264,7 @@ class Configure(config.base.Configure):
       return 0
     if ('with-fc' in self.argDB and self.argDB['with-fc'] != '0') or 'FC' in self.argDB:
       return 0
-    if 'with-mpi' in self.argDB and self.argDB['with-mpi'] and self.argDB['with-mpi-compilers'] and not self.argDB['download-mpich'] == 1 and not self.argDB['download-lam'] == 1:
+    if 'with-mpi' in self.argDB and self.argDB['with-mpi'] and self.argDB['with-mpi-compilers'] and not self.argDB['download-mpich'] == 1 and not self.argDB['download-lam'] == 1 and not self.argDB['download-openmpi'] == 1:
       return 1
     return 0
 
