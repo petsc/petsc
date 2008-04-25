@@ -1418,15 +1418,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE*);
 #define PetscObjectDepublish(obj)    0
 
 /*
-      This code allows one to pass a MPI communicator between 
-    C and Fortran. MPI 2.0 defines a standard API for doing this.
-    The code here is provided to allow PETSc to work with MPI 1.1
-    standard MPI libraries.
-*/
-EXTERN PetscErrorCode MPICCommToFortranComm(MPI_Comm,int *);
-EXTERN PetscErrorCode MPIFortranCommToCComm(int,MPI_Comm*);
-
-/*
       Simple PETSc parallel IO for ASCII printing
 */
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscFixFilename(const char[],char[]);

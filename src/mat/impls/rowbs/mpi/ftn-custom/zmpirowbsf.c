@@ -15,7 +15,7 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL matcreatempirowbs_(MPI_Comm *comm,PetscInt *m,PetscInt *M,PetscInt *nz,PetscInt *nnz,Mat *newmat,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLINTEGER(nnz);
-  *ierr = MatCreateMPIRowbs((MPI_Comm)PetscToPointerComm(*comm),*m,*M,*nz,nnz,newmat);
+  *ierr = MatCreateMPIRowbs(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*m,*M,*nz,nnz,newmat);
 }
 
 void PETSC_STDCALL matmpirowbssetpreallocation_(Mat *mat,PetscInt *nz,PetscInt *nnz,PetscErrorCode *ierr)

@@ -14,7 +14,7 @@ void PETSC_STDCALL matcreatempidense_(MPI_Comm *comm,PetscInt *m,PetscInt *n,Pet
                         PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(data);
-  *ierr = MatCreateMPIDense((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,data,newmat);
+  *ierr = MatCreateMPIDense(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*m,*n,*M,*N,data,newmat);
 }
 
 void PETSC_STDCALL matmpidensesetpreallocation_(Mat *mat,PetscScalar *data,PetscErrorCode *ierr)

@@ -40,6 +40,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsInsert(int*,char ***,const ch
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsInsertFile(const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsInsertString(const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsDestroy(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsClear(void);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsReject(const char[],const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetAll(char*[]);

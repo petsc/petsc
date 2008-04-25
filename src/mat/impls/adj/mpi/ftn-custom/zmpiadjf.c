@@ -16,7 +16,7 @@ void PETSC_STDCALL matcreatempiadj_(MPI_Comm *comm,PetscInt *m,PetscInt *n,Petsc
   Mat_MPIAdj *adj;
 
   CHKFORTRANNULLINTEGER(values);
-  *ierr = MatCreateMPIAdj((MPI_Comm)PetscToPointerComm(*comm),*m,*n,i,j,values,A);
+  *ierr = MatCreateMPIAdj(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*m,*n,i,j,values,A);
   adj = (Mat_MPIAdj*)(*A)->data;
   adj->freeaij = PETSC_FALSE;
 }

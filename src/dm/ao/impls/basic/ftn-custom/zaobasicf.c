@@ -18,7 +18,7 @@ void PETSC_STDCALL aocreatebasic_(MPI_Comm *comm,PetscInt *napp,PetscInt *myapp,
     CHKFORTRANNULLINTEGER(myapp);
     CHKFORTRANNULLINTEGER(mypetsc);
   }
-  *ierr = AOCreateBasic((MPI_Comm)PetscToPointerComm(*comm),*napp,myapp,mypetsc,aoout);
+  *ierr = AOCreateBasic(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*napp,myapp,mypetsc,aoout);
 }
 
 void PETSC_STDCALL aocreatebasicis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)

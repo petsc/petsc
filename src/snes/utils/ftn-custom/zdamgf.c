@@ -116,7 +116,7 @@ void PETSC_STDCALL dmmgsolve_(DMMG **dmmg,PetscErrorCode *ierr)
 
 void PETSC_STDCALL dmmgcreate_(MPI_Comm *comm,PetscInt *nlevels,void *user,DMMG **dmmg,PetscErrorCode *ierr)
 {
-  *ierr = DMMGCreate((MPI_Comm)PetscToPointerComm(*comm),*nlevels,user,dmmg);
+  *ierr = DMMGCreate(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*nlevels,user,dmmg);
 }
 
 void PETSC_STDCALL dmmgdestroy_(DMMG **dmmg,PetscErrorCode *ierr)

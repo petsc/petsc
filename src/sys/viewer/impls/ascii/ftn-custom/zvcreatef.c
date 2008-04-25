@@ -19,7 +19,7 @@ void PETSC_STDCALL petscviewerasciiopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_LE
 {
   char   *c1;
   FIXCHAR(name,len,c1);
-  *ierr = PetscViewerASCIIOpen((MPI_Comm)PetscToPointerComm(*comm),c1,lab);
+  *ierr = PetscViewerASCIIOpen(MPI_Comm_f2c(*(MPI_Fint *)&*comm),c1,lab);
   FREECHAR(name,c1);
 }
 

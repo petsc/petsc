@@ -12,7 +12,7 @@ void PETSC_STDCALL petscviewersocketopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
 {
   char   *c1;
   FIXCHAR(name,len,c1);
-  *ierr = PetscViewerSocketOpen((MPI_Comm)PetscToPointerComm(*comm),c1,*port,lab);
+  *ierr = PetscViewerSocketOpen(MPI_Comm_f2c(*(MPI_Fint *)&*comm),c1,*port,lab);
   FREECHAR(name,c1);
 }
 

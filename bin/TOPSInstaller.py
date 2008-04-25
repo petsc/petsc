@@ -1328,10 +1328,10 @@ can also install additional packages that are used by the TOPS packages."""
            if not reply: sys.exit()
            args.append('--with-blas-lapack-dir='+reply)
 
-        reply = indexbox('Which version of MPI do you wish to use?',title,['Have installer locate it', 'Install MPICH-2','Install LAM','None',"I'll indicate its location"])
+        reply = indexbox('Which version of MPI do you wish to use?',title,['Have installer locate it', 'Install MPICH-2','Install OpenMPI','None',"I'll indicate its location"])
         if reply == 3: args.append( '--with-mpi=0')
         elif reply == 1: args.append('--download-mpich=1')
-        elif reply == 2: args.append('--download-lam=1')
+        elif reply == 2: args.append('--download-openmpi=1')        
         elif reply == 4:
            reply = diropenbox("Directory of MPI installation","Directory of MPI installation")
            if not reply: sys.exit()

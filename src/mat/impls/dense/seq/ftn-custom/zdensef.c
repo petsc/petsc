@@ -13,7 +13,7 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL matcreateseqdense_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscScalar *data,Mat *newmat,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLSCALAR(data);
-  *ierr = MatCreateSeqDense((MPI_Comm)PetscToPointerComm(*comm),*m,*n,data,newmat);
+  *ierr = MatCreateSeqDense(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*m,*n,data,newmat);
 }
 
 void PETSC_STDCALL matseqdensesetpreallocation_(Mat *mat,PetscScalar *data,PetscErrorCode *ierr)

@@ -17,7 +17,7 @@ void PETSC_STDCALL dacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
   CHKFORTRANNULLINTEGER(lz);
-  *ierr = DACreate3d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
+  *ierr = DACreate3d(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*wrap,*stencil_type,
                         *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,inra);
 }
 
