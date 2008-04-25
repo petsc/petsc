@@ -209,8 +209,8 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
       ierr = PetscFree(lu->id.sol_loc);CHKERRQ(ierr);
       ierr = VecScatterDestroy(lu->scat_rhs);CHKERRQ(ierr);
       ierr = VecDestroy(lu->b_seq);CHKERRQ(ierr);
-      if (lu->scat_sol){ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);}
-      if (lu->x_seq){ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);}
+      if (lu->nSolve && lu->scat_sol){ierr = VecScatterDestroy(lu->scat_sol);CHKERRQ(ierr);}
+      if (lu->nSolve && lu->x_seq){ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);}
       ierr = PetscFree(lu->val);CHKERRQ(ierr);
     }
     lu->id.job=JOB_END; 
@@ -843,6 +843,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_AIJMUMPS(Mat A,MatType newtype,
   mumps->specialdestroy            = MatDestroy_AIJMUMPS;
   mumps->CleanUpMUMPS              = PETSC_FALSE;
   mumps->isAIJ                     = PETSC_TRUE;
+  mumps->scat_rhs                  = PETSC_NULL;
+  mumps->scat_sol                  = PETSC_NULL;
+  mumps->nSolve                    = 0;
 
   B->spptr                         = (void*)mumps;
   B->ops->duplicate                = MatDuplicate_MUMPS;
@@ -995,6 +998,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat A,MatType newt
   mumps->specialdestroy            = MatDestroy_SBAIJMUMPS;
   mumps->CleanUpMUMPS              = PETSC_FALSE;
   mumps->isAIJ                     = PETSC_FALSE;
+  mumps->scat_rhs                  = PETSC_NULL;
+  mumps->scat_sol                  = PETSC_NULL;
+  mumps->nSolve                    = 0;
   
   B->spptr                         = (void*)mumps;
   B->ops->duplicate                = MatDuplicate_MUMPS;

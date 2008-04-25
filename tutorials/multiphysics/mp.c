@@ -29,11 +29,6 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
 
-  /* Problem parameters (velocity of lid, prandtl, and grashof numbers) */
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      Also, compute the initial guess.
@@ -76,10 +71,14 @@ int main(int argc,char **argv)
   ierr = DMMGSetFromOptions(dmmg_comp);CHKERRQ(ierr);
   ierr = DMMGSetUp(dmmg_comp);CHKERRQ(ierr);
 
+  /* Problem parameters (velocity of lid, prandtl, and grashof numbers) */
   ierr = DAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   user.lidvelocity = 1.0/(mx*my);
   user.prandtl     = 1.0;
-  user.grashof     = 1.0;
+  user.grashof     = 1000.0; 
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
 
   /* Solve the nonlinear system */
   ierr = DMMGSolve(dmmg_comp);CHKERRQ(ierr); 

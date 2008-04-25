@@ -66,7 +66,7 @@ info:
 	   echo "Fortran Compiler version: " `${FCV}`;\
          fi
 	-@echo "-----------------------------------------"
-	-@echo "Using C/C++ linker: ${CC_LINKER}"
+	-@echo "Using C/C++ linker: ${PCC_LINKER}"
 	-@if [ "${FC}" != "" ]; then \
 	   echo "Using Fortran linker: ${FC_LINKER}";\
          fi

@@ -35,7 +35,7 @@ int main(int argc,char **argv)
   DMComposite    pack;
 
   DMMG           *dmmg1,*dmmg2;
-  PetscTruth     SolveSubPhysics=PETSC_FALSE,GaussSeidel=PETSC_TRUE;
+  PetscTruth     SolveSubPhysics=PETSC_FALSE,GaussSeidel=PETSC_TRUE,Jacobi=PETSC_FALSE;
   Vec            X1,X1_local,X2,X2_local;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -71,11 +71,14 @@ int main(int argc,char **argv)
   ierr = DAGetInfo(da1,PETSC_NULL,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   user.lidvelocity = 1.0/(mx*my);
   user.prandtl     = 1.0;
-  user.grashof     = 1.0;
+  user.grashof     = 1000.0; 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-lidvelocity",&user.lidvelocity,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-prandtl",&user.prandtl,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetReal(PETSC_NULL,"-grashof",&user.grashof,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-solvesubphysics",&SolveSubPhysics);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-Jacobi",&Jacobi);CHKERRQ(ierr);
+  if (Jacobi) GaussSeidel=PETSC_FALSE;
+  
   ierr = PetscPrintf(comm,"grashof: %g, ",user.grashof);CHKERRQ(ierr);
   if (GaussSeidel){
     ierr = PetscPrintf(comm,"use Block Gauss-Seidel\n");CHKERRQ(ierr);

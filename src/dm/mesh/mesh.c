@@ -16,8 +16,6 @@ EXTERN PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh, int, Mesh **);
 EXTERN PetscErrorCode MeshGetInterpolation_Mesh(Mesh, Mesh, Mat *, Vec *);
 EXTERN PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh, Mesh, Mat *, Vec *);
 
-EXTERN PetscErrorCode updateOperatorCompat(Mat, const ALE::Obj<ALECompat::Mesh::real_section_type>&, const ALE::Obj<ALECompat::Mesh::order_type>&, const ALECompat::Mesh::point_type&, PetscScalar[], InsertMode);
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "Mesh_DelTag" 
@@ -137,98 +135,6 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MeshCompatView_Sieve_Ascii"
-PetscErrorCode MeshCompatView_Sieve_Ascii(const ALE::Obj<ALECompat::Mesh>& mesh, PetscViewer viewer)
-{
-  PetscViewerFormat format;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_PYLITH) {
-    char *filename;
-    char  connectFilename[2048];
-    char  coordFilename[2048];
-
-    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_WRITE);CHKERRQ(ierr);
-    ierr = PetscStrcpy(connectFilename, filename);CHKERRQ(ierr);
-    ierr = PetscStrcat(connectFilename, ".connect");CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, connectFilename);CHKERRQ(ierr);
-    ierr = ALECompat::PyLith::Viewer::writeElements(mesh, mesh->getIntSection("material"), viewer);CHKERRQ(ierr);
-    ierr = PetscStrcpy(coordFilename, filename);CHKERRQ(ierr);
-    ierr = PetscStrcat(coordFilename, ".coord");CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
-    ierr = ALECompat::PyLith::Viewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
-    ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename), PETSC_ERR_FILE_OPEN);
-    if (PetscExceptionValue(ierr)) {
-      /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
-    } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
-      ierr = 0;
-    } 
-    CHKERRQ(ierr);
-  } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
-    PetscViewer connectViewer, coordViewer;
-    char       *filename;
-    char        localFilename[2048];
-    int         rank = mesh->commRank();
-
-    ierr = PetscViewerFileGetName(viewer, &filename);CHKERRQ(ierr);
-
-    sprintf(localFilename, "%s.%d.connect", filename, rank);
-    ierr = PetscViewerCreate(PETSC_COMM_SELF, &connectViewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(connectViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(connectViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(connectViewer, localFilename);CHKERRQ(ierr);
-    ierr = ALECompat::PyLith::Viewer::writeElementsLocal(mesh, mesh->getIntSection("material"), connectViewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(connectViewer);CHKERRQ(ierr);
-
-    sprintf(localFilename, "%s.%d.coord", filename, rank);
-    ierr = PetscViewerCreate(PETSC_COMM_SELF, &coordViewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(coordViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(coordViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
-    ierr = ALECompat::PyLith::Viewer::writeVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
-
-    if (mesh->hasPairSection("split")) {
-      PetscViewer splitViewer;
-
-      sprintf(localFilename, "%s.%d.split", filename, rank);
-      ierr = PetscViewerCreate(PETSC_COMM_SELF, &splitViewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(splitViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(splitViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetName(splitViewer, localFilename);CHKERRQ(ierr);
-      ierr = ALECompat::PyLith::Viewer::writeSplitLocal(mesh, mesh->getPairSection("split"), splitViewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(splitViewer);CHKERRQ(ierr);
-    }
-
-    if (mesh->hasRealSection("traction")) {
-      PetscViewer tractionViewer;
-
-      sprintf(localFilename, "%s.%d.traction", filename, rank);
-      ierr = PetscViewerCreate(PETSC_COMM_SELF, &tractionViewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(tractionViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(tractionViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetName(tractionViewer, localFilename);CHKERRQ(ierr);
-      ierr = ALECompat::PyLith::Viewer::writeTractionsLocal(mesh, mesh->getRealSection("traction"), tractionViewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(tractionViewer);CHKERRQ(ierr);
-    }
-  } else {
-    int dim = mesh->getDimension();
-
-    ierr = PetscViewerASCIIPrintf(viewer, "Mesh in %d dimensions:\n", dim);CHKERRQ(ierr);
-    for(int d = 0; d <= dim; d++) {
-      // FIX: Need to globalize
-      ierr = PetscViewerASCIIPrintf(viewer, "  %d %d-cells\n", mesh->getTopology()->depthStratum(0, d)->size(), d);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve"
 PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer)
 {
@@ -259,11 +165,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView_Mesh(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!mesh->mcompat.isNull()) {
-    ierr = MeshCompatView_Sieve_Ascii(mesh->mcompat, viewer);CHKERRQ(ierr);
-  } else {
-    ierr = MeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
-  }
+  ierr = MeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -528,7 +430,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
   p->globalScatter = PETSC_NULL;
   p->lf            = PETSC_NULL;
   p->lj            = PETSC_NULL;
-  new(&p->mcompat) ALE::Obj<ALECompat::Mesh>(PETSC_NULL);
   p->data          = PETSC_NULL;
   *mesh = p;
   PetscFunctionReturn(0);
@@ -1257,32 +1158,17 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   ierr = PetscLogEventBegin(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
   try {
-    if (!mesh->mcompat.isNull()) {
-      Obj<ALECompat::Mesh> m;
+    Obj<ALE::Mesh> m;
 
-      ierr = MeshCompatGetMesh(mesh, m);CHKERRQ(ierr);
-      const ALE::Obj<ALECompat::Mesh::topology_type>&     topology    = m->getTopology();
-      const ALE::Obj<ALECompat::Mesh::numbering_type>&    cNumbering  = m->getFactory()->getLocalNumbering(topology, 0, topology->depth());
-      const ALE::Obj<ALECompat::Mesh::real_section_type>& s           = m->getRealSection("default");
-      const ALE::Obj<ALECompat::Mesh::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(topology, 0, "default", s->getAtlas());
+    ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+    const ALE::Obj<ALE::Mesh::numbering_type>&    cNumbering  = m->getFactory()->getLocalNumbering(m, m->depth());
+    const ALE::Obj<ALE::Mesh::real_section_type>& s           = m->getRealSection("default");
+    const ALE::Obj<ALE::Mesh::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
 
-      if (m->debug()) {
-        std::cout << "Assembling matrix for element number " << e << " --> point " << cNumbering->getPoint(e) << std::endl;
-      }
-      ierr = updateOperatorCompat(A, s, globalOrder, cNumbering->getPoint(e), v, mode);CHKERRQ(ierr);
-    } else {
-      Obj<ALE::Mesh> m;
-
-      ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-      const ALE::Obj<ALE::Mesh::numbering_type>&    cNumbering  = m->getFactory()->getLocalNumbering(m, m->depth());
-      const ALE::Obj<ALE::Mesh::real_section_type>& s           = m->getRealSection("default");
-      const ALE::Obj<ALE::Mesh::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
-
-      if (m->debug()) {
-        std::cout << "Assembling matrix for element number " << e << " --> point " << cNumbering->getPoint(e) << std::endl;
-      }
-      ierr = updateOperator(A, m, s, globalOrder, cNumbering->getPoint(e), v, mode);CHKERRQ(ierr);
+    if (m->debug()) {
+      std::cout << "Assembling matrix for element number " << e << " --> point " << cNumbering->getPoint(e) << std::endl;
     }
+    ierr = updateOperator(A, m, s, globalOrder, cNumbering->getPoint(e), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
@@ -2498,62 +2384,6 @@ PetscErrorCode WritePyLithTractionsLocal(Mesh mesh, PetscViewer viewer)
 }
 #endif
 
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCompatGetMesh"
-/*@C
-    MeshCompatGetMesh - Gets the internal mesh object
-
-    Not collective
-
-    Input Parameter:
-.    mesh - the mesh object
-
-    Output Parameter:
-.    m - the internal mesh object
-
-    Notes: This is part of the PyLith 0.8 compatibility layer. DO NOT USE unless you are
-    developing for that tool.
- 
-    Level: developer
-
-.seealso MeshCreate(), MeshSetMesh()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCompatGetMesh(Mesh mesh, ALE::Obj<ALECompat::Mesh>& m)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
-  m = mesh->mcompat;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCompatSetMesh"
-/*@C
-    MeshCompatSetMesh - Sets the internal mesh object
-
-    Not collective
-
-    Input Parameters:
-+    mesh - the mesh object
--    m - the internal mesh object
-
-    Notes: This is part of the PyLith 0.8 compatibility layer. DO NOT USE unless you are
-    developing for that tool.
- 
-    Level: developer
-
-.seealso MeshCreate(), MeshGetMesh()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCompatSetMesh(Mesh mesh, const ALE::Obj<ALECompat::Mesh>& m)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
-  mesh->mcompat = m;
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "ExpandInterval"
 inline void ExpandInterval(const ALE::Point& interval, int indices[], int& indx)
@@ -2574,279 +2404,4 @@ inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt
   for(int i = 0; i < -interval.prefix; i++) {
     indices[(*indx)++] = -1;
   }
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ExpandIntervals"
-PetscErrorCode ExpandIntervals(ALE::Obj<ALECompat::Mesh::real_section_type::IndexArray> intervals, PetscInt *indices)
-{
-  int k = 0;
-
-  PetscFunctionBegin;
-  for(ALECompat::Mesh::real_section_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    ExpandInterval_New(*i_itor, indices, &k);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshCompatCreateGlobalScatter"
-template<typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCompatCreateGlobalScatter(const ALE::Obj<ALECompat::Mesh>& m, const ALE::Obj<Section>& s, VecScatter *scatter)
-{
-  typedef ALECompat::Mesh::real_section_type::index_type index_type;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
-  const ALE::Obj<ALECompat::Mesh::topology_type>&                   topology = m->getTopology();
-  const ALE::Obj<ALECompat::Mesh::real_section_type::atlas_type>&   atlas    = s->getAtlas();
-  const ALECompat::Mesh::real_section_type::patch_type              patch    = 0;
-  const ALECompat::Mesh::real_section_type::atlas_type::chart_type& chart    = atlas->getPatch(patch);
-  const ALE::Obj<ALECompat::Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(topology, patch, s->getName(), atlas);
-  int *localIndices, *globalIndices;
-  int  localSize = s->size(patch);
-  int  localIndx = 0, globalIndx = 0;
-  Vec  globalVec, localVec;
-  IS   localIS, globalIS;
-
-  ierr = VecCreate(m->comm(), &globalVec);CHKERRQ(ierr);
-  ierr = VecSetSizes(globalVec, globalOrder->getLocalSize(), PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(globalVec);CHKERRQ(ierr);
-  // Loop over all local points
-  ierr = PetscMalloc(localSize*sizeof(int), &localIndices); CHKERRQ(ierr);
-  ierr = PetscMalloc(localSize*sizeof(int), &globalIndices); CHKERRQ(ierr);
-  for(ALECompat::Mesh::real_section_type::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-    const ALECompat::Mesh::real_section_type::index_type& idx = atlas->restrictPoint(patch, *p_iter)[0];
-
-    // Map local indices to global indices
-    ExpandInterval(idx, localIndices, localIndx);
-    ExpandInterval(index_type(idx.prefix, globalOrder->getIndex(*p_iter)), globalIndices, globalIndx);
-  }
-  if (localIndx  != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, localSize);
-  if (globalIndx != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
-  if (m->debug()) {
-    globalOrder->view("Global Order");
-    for(int i = 0; i < localSize; ++i) {
-      printf("[%d] localIndex[%d]: %d globalIndex[%d]: %d\n", m->commRank(), i, localIndices[i], i, globalIndices[i]);
-    }
-  }
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, localIndices,  &localIS);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, globalIndices, &globalIS);CHKERRQ(ierr);
-  ierr = PetscFree(localIndices);CHKERRQ(ierr);
-  ierr = PetscFree(globalIndices);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, localSize, s->restrict(patch), &localVec);CHKERRQ(ierr);
-  ierr = VecScatterCreate(localVec, localIS, globalVec, globalIS, scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(globalIS);CHKERRQ(ierr);
-  ierr = ISDestroy(localIS);CHKERRQ(ierr);
-  ierr = VecDestroy(localVec);CHKERRQ(ierr);
-  ierr = VecDestroy(globalVec);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MeshCompatGetGlobalScatter"
-PetscErrorCode PETSCDM_DLLEXPORT MeshCompatGetGlobalScatter(Mesh mesh, VecScatter *scatter)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
-  PetscValidPointer(scatter, 2);
-  if (!mesh->globalScatter) {
-    ALE::Obj<ALECompat::Mesh> m;
-
-    ierr = MeshCompatGetMesh(mesh, m);CHKERRQ(ierr);
-    ierr = MeshCompatCreateGlobalScatter(m, m->getRealSection("default"), &mesh->globalScatter);CHKERRQ(ierr);
-  }
-  *scatter = mesh->globalScatter;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "preallocateOperatorCompat"
-template<typename Atlas>
-PetscErrorCode preallocateOperatorCompat(const ALE::Obj<ALECompat::Mesh::topology_type>& topology, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALECompat::Mesh::order_type>& globalOrder, Mat A)
-{
-  typedef ALECompat::New::NumberingFactory<ALECompat::Mesh::topology_type> NumberingFactory;
-  const ALE::Obj<ALECompat::Mesh::sieve_type>     adjGraph    = new ALECompat::Mesh::sieve_type(topology->comm(), topology->debug());
-  const ALE::Obj<ALECompat::Mesh::topology_type>  adjTopology = new ALECompat::Mesh::topology_type(topology->comm(), topology->debug());
-  const ALECompat::Mesh::real_section_type::patch_type patch  = 0;
-  const ALE::Obj<ALECompat::Mesh::sieve_type>&    sieve       = topology->getPatch(patch);
-  PetscInt       numLocalRows, firstRow;
-  PetscInt      *dnz, *onz;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  adjTopology->setPatch(patch, adjGraph);
-  numLocalRows = globalOrder->getLocalSize();
-  firstRow     = globalOrder->getGlobalOffsets()[topology->commRank()];
-  ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
-  /* Create local adjacency graph */
-  /*   In general, we need to get FIAT info that attaches dual basis vectors to sieve points */
-  const ALECompat::Mesh::real_section_type::atlas_type::chart_type& chart = atlas->getPatch(patch);
-
-  for(ALECompat::Mesh::real_section_type::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-    const ALECompat::Mesh::real_section_type::atlas_type::point_type& point = *c_iter;
-
-    adjGraph->addCone(sieve->cone(sieve->support(point)), point);
-  }
-  /* Distribute adjacency graph */
-  topology->constructOverlap(patch);
-  const Obj<ALECompat::Mesh::send_overlap_type>& vertexSendOverlap = topology->getSendOverlap();
-  const Obj<ALECompat::Mesh::recv_overlap_type>& vertexRecvOverlap = topology->getRecvOverlap();
-  const Obj<ALECompat::Mesh::send_overlap_type>  nbrSendOverlap    = new ALECompat::Mesh::send_overlap_type(topology->comm(), topology->debug());
-  const Obj<ALECompat::Mesh::recv_overlap_type>  nbrRecvOverlap    = new ALECompat::Mesh::recv_overlap_type(topology->comm(), topology->debug());
-  const Obj<ALECompat::Mesh::send_section_type>  sendSection       = new ALECompat::Mesh::send_section_type(topology->comm(), topology->debug());
-  const Obj<ALECompat::Mesh::recv_section_type>  recvSection       = new ALECompat::Mesh::recv_section_type(topology->comm(), sendSection->getTag(), topology->debug());
-
-  ALECompat::New::Distribution<ALECompat::Mesh::topology_type>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjTopology, sendSection, recvSection);
-  /* Distribute indices for new points */
-  ALECompat::New::Distribution<ALECompat::Mesh::topology_type>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
-  NumberingFactory::singleton(topology->debug())->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, patch, true);
-  /* Read out adjacency graph */
-  const ALE::Obj<ALECompat::Mesh::sieve_type> graph = adjTopology->getPatch(patch);
-
-  ierr = PetscMemzero(dnz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(onz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
-  for(ALECompat::Mesh::real_section_type::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-    const ALECompat::Mesh::real_section_type::atlas_type::point_type& point = *c_iter;
-
-    if (globalOrder->isLocal(point)) {
-      const ALE::Obj<ALECompat::Mesh::sieve_type::traits::coneSequence>& adj   = graph->cone(point);
-      const ALECompat::Mesh::order_type::value_type&          rIdx  = globalOrder->restrictPoint(patch, point)[0];
-      const int                                               row   = rIdx.prefix;
-      const int                                               rSize = rIdx.index;
-
-      for(ALECompat::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
-        const ALECompat::Mesh::real_section_type::atlas_type::point_type& neighbor = *v_iter;
-        const ALECompat::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(patch, neighbor)[0];
-        const int&                                     cSize    = cIdx.index;
-
-        if (cSize > 0) {
-          if (globalOrder->isLocal(neighbor)) {
-            for(int r = 0; r < rSize; ++r) {dnz[row - firstRow + r] += cSize;}
-          } else {
-            for(int r = 0; r < rSize; ++r) {onz[row - firstRow + r] += cSize;}
-          }
-        }
-      }
-    }
-  }
-  if (topology->debug()) {
-    int rank = topology->commRank();
-    for(int r = 0; r < numLocalRows; r++) {
-      std::cout << "["<<rank<<"]: dnz["<<r<<"]: " << dnz[r] << " onz["<<r<<"]: " << onz[r] << std::endl;
-    }
-  }
-  ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
-  ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
-  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "preallocateMatrixCompat"
-PetscErrorCode preallocateMatrixCompat(const ALE::Obj<ALECompat::Mesh::topology_type>& topology, const ALE::Obj<ALECompat::Mesh::real_section_type::atlas_type>& atlas, const ALE::Obj<ALECompat::Mesh::order_type>& globalOrder, Mat A)
-{
-  return preallocateOperatorCompat(topology, atlas, globalOrder, A);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "updateOperatorCompat"
-PetscErrorCode updateOperatorCompat(Mat A, const ALE::Obj<ALECompat::Mesh::real_section_type>& section, const ALE::Obj<ALECompat::Mesh::order_type>& globalOrder, const ALECompat::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
-{
-  ALECompat::Mesh::real_section_type::patch_type patch = 0;
-  static PetscInt  indicesSize = 0;
-  static PetscInt *indices = NULL;
-  PetscInt         numIndices = 0;
-  PetscErrorCode   ierr;
-
-  PetscFunctionBegin;
-  const ALE::Obj<ALECompat::Mesh::real_section_type::IndexArray> intervals = section->getIndices(patch, e, globalOrder);
-
-  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  if (section->debug()) {printf("[%d]mat for element %d\n", section->commRank(), e);}
-  for(ALECompat::Mesh::real_section_type::IndexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-    numIndices += std::abs(i_iter->prefix);
-    if (section->debug()) {
-      printf("[%d]mat interval (%d, %d)\n", section->commRank(), i_iter->prefix, i_iter->index);
-    }
-  }
-  if (indicesSize && (indicesSize != numIndices)) {
-    ierr = PetscFree(indices); CHKERRQ(ierr);
-    indices = NULL;
-  }
-  if (!indices) {
-    indicesSize = numIndices;
-    ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
-  }
-  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  if (section->debug()) {
-    for(int i = 0; i < numIndices; i++) {
-      printf("[%d]mat indices[%d] = %d\n", section->commRank(), i, indices[i]);
-    }
-    for(int i = 0; i < numIndices; i++) {
-      printf("[%d]", section->commRank());
-      for(int j = 0; j < numIndices; j++) {
-        printf(" %g", array[i*numIndices+j]);
-      }
-      printf("\n");
-    }
-  }
-  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);
-  if (ierr) {
-    printf("[%d]ERROR in updateOperator: point %d\n", section->commRank(), e);
-    for(int i = 0; i < numIndices; i++) {
-      printf("[%d]mat indices[%d] = %d\n", section->commRank(), i, indices[i]);
-    }
-    CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshCompatCreatePyLith"
-/*@C
-  MeshCompatCreatePyLith - Create a Mesh from PyLith files.
-
-  Not Collective
-
-  Input Parameters:
-+ dim - The topological mesh dimension
-. baseFilename - The basename for mesh files
-. zeroBase - Use 0 to start numbering
-- interpolate - The flag for mesh interpolation
-
-  Output Parameter:
-. mesh - The Mesh object
-
-  Notes: This is part of the PyLith 0.8 compatibility layer. DO NOT USE unless you are
-  developing for that tool.
-
-  Level: developer
-
-.keywords: mesh, PCICE
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshCompatCreatePyLith(MPI_Comm comm, const int dim, const char baseFilename[], PetscTruth zeroBase, PetscTruth interpolate, Mesh *mesh)
-{
-  ALE::Obj<ALECompat::Mesh> m;
-  PetscInt            debug = 0;
-  PetscTruth          flag;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
-  try {
-    m  = ALECompat::PyLith::Builder::readMesh(comm, dim, std::string(baseFilename), zeroBase, interpolate, debug);
-  } catch(ALE::Exception e) {
-    SETERRQ(PETSC_ERR_FILE_OPEN, e.message());
-  }
-  ierr = MeshCompatSetMesh(*mesh, m);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
 }
