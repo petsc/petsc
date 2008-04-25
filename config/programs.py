@@ -85,13 +85,19 @@ class Configure(config.base.Configure):
       if status:
         (buf,err,status) = Configure.executeShellCommand('/bin/rpm -q diffutils')
         if buf.find('diffutils-2.8.1-17.fc8') > -1:
-          raise RuntimeError(''' *** Fedora 8 Linux with broken diffutils-2.8.1-17.fc8 detected. ****************
-             Run "sudo yum update diffutils" to get the latest bugfixed version. Then run config/configure.py again.''')
+          raise RuntimeError('''\
+*** Fedora 8 Linux with broken diffutils-2.8.1-17.fc8 detected. ****************
+*** Run "sudo yum update diffutils" to get the latest bugfixed version. ********''')
         raise RuntimeError(self.diff+' executable does not properly handle -w (whitespace) option')        
       self.diff = self.diff + ' -w'
       self.addMakeMacro('DIFF',self.diff)
     else:
-      raise RuntimeError('Could not locate diff executable')
+      if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/diff'):
+        raise RuntimeError('''\
+*** Incomplete cygwin install detected . /usr/bin/diff is missing. **************
+*** Please rerun cygwin-setup and select module "diff" for install.**************''')
+      else:
+        raise RuntimeError('Could not locate diff executable')
     self.getExecutable('ps', path = '/usr/ucb:/usr/usb', resultName = 'UCBPS')
     if hasattr(self, 'UCBPS'):
       self.addDefine('HAVE_UCBPS', 1)
