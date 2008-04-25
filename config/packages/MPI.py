@@ -11,7 +11,6 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_lam       = ['http://www.lam-mpi.org/download/files/lam-7.1.3.tar.gz']
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.2/downloads/openmpi-1.2.6.tar.gz']
     self.download_mpich     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.6.tar.gz']
     self.download           = ['redefine']
@@ -52,7 +51,6 @@ class Configure(config.package.Package):
   def setupHelp(self, help):
     config.package.Package.setupHelp(self,help)
     import nargs
-    help.addArgument('MPI', '-download-lam=<no,yes,ifneeded,filename>',      nargs.ArgDownload(None, 0, 'Download and install LAM/MPI'))
     help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',    nargs.ArgDownload(None, 0, 'Download and install MPICH-2'))
     help.addArgument('MPI', '-download-openmpi=<no,yes,ifneeded,filename>',  nargs.ArgDownload(None, 0, 'Download and install OpenMPI'))
     help.addArgument('MPI', '-with-mpiexec=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
@@ -240,20 +238,11 @@ class Configure(config.package.Package):
     return
 
   def checkDownload(self, requireDownload = 1):
-    '''Check if we should download LAM or MPICH'''
+    '''Check if we should download MPICH or OpenMPI'''
 
-    if self.framework.argDB['download-lam']  + self.framework.argDB['download-mpich'] + self.framework.argDB['download-openmpi'] > 1:
-      raise RuntimeError('Sorry, cannot install more than one of LAM, OpenMPI, or  MPICH-2. Install only one.')
+    if self.framework.argDB['download-mpich'] + self.framework.argDB['download-openmpi'] > 1:
+      raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration.')
 
-    # check for LAM
-    if self.framework.argDB['download-lam']:
-      if config.setCompilers.Configure.isCygwin():
-        raise RuntimeError('Sorry, cannot download-install LAM on Windows. Sugest installing windows version of MPICH manually')
-      self.liblist      = [[]]
-      self.download     = self.download_lam
-      self.downloadname = 'lam'
-      return config.package.Package.checkDownload(self, requireDownload)
-        
     # Check for MPICH
     if self.framework.argDB['download-mpich']:
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
@@ -274,9 +263,7 @@ class Configure(config.package.Package):
     return None
 
   def Install(self):
-    if self.framework.argDB['download-lam']:
-      return self.InstallLAM()
-    elif self.framework.argDB['download-mpich']:
+    if self.framework.argDB['download-mpich']:
       return self.InstallMPICH()
     elif self.framework.argDB['download-openmpi']:
       return self.InstallOpenMPI()
@@ -306,77 +293,6 @@ class Configure(config.package.Package):
     self.setCompilers.checkDynamicLinker()
     self.setCompilers.usedMPICompilers=1
 
-  def InstallLAM(self):
-    lamDir = self.getDir()
-
-    # Get the LAM directories
-    installDir = os.path.join(self.defaultInstallDir,self.arch)
-    confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
-    # Configure and Build LAM
-    self.framework.pushLanguage('C')
-    args = ['--prefix='+installDir, '--with-rsh=ssh','CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
-    if self.framework.argDB['with-shared']:
-      if self.setCompilers.staticLibraries:
-        raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
-      args.append('--enable-shared')
-    self.framework.popLanguage()
-    # c++ can't be disabled with LAM
-    if hasattr(self.compilers, 'CXX'):
-      self.framework.pushLanguage('Cxx')
-      args.append('CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
-      self.framework.popLanguage()
-    # no separate F90 options for LAM
-    if hasattr(self.compilers, 'FC'):
-      self.framework.pushLanguage('FC')
-      args.append('FC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
-      self.framework.popLanguage()
-    else:
-      args.append('--without-fc')
-    args = ' '.join(args)
-
-    try:
-      fd      = file(os.path.join(confDir,self.package))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild LAM oldargs = '+oldargs+'\n new args = '+args+'\n')
-      try:
-        self.logPrintBox('Configuring LAM/MPI; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+lamDir+';CXX='';export CXX; ./configure '+args, timeout=1500, log = self.framework.log)[0]
-      except RuntimeError, e:
-        raise RuntimeError('Error running configure on LAM/MPI: '+str(e))
-      try:
-        self.logPrintBox('Compiling LAM/MPI; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+lamDir+';LAM_INSTALL_DIR='+installDir+';export LAM_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
-        output  = config.base.Configure.executeShellCommand('cd '+lamDir+';LAM_INSTALL_DIR='+installDir+';export LAM_INSTALL_DIR; make clean', timeout=200, log = self.framework.log)[0]        
-      except RuntimeError, e:
-        raise RuntimeError('Error running make on LAM/MPI: '+str(e))
-      if not os.path.isdir(os.path.join(installDir,'lib')):
-        self.framework.log.write('Error running make on LAM/MPI   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on LAM follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on LAM *******\n')
-        raise RuntimeError('Error running make on LAM, libraries not installed')
-      
-      fd = file(os.path.join(confDir,'LAM'), 'w')
-      fd.write(args)
-      fd.close()
-      #need to run ranlib on the libraries using the full path
-      try:
-        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
-      except RuntimeError, e:
-        raise RuntimeError('Error running ranlib on LAM/MPI libraries: '+str(e))
-      # start up LAM demon; note lamboot does not close stdout, so call will ALWAYS timeout.
-      try:
-        output  = config.base.Configure.executeShellCommand('PATH=${PATH}:'+os.path.join(installDir,'bin')+' '+os.path.join(installDir,'bin','lamboot'), timeout=10, log = self.framework.log)[0]
-      except:
-        pass
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed LAM/MPI into '+installDir)
-
-    self.ResetCompilers(installDir,'mpic++')
-    return installDir
 
   def InstallOpenMPI(self):
     openmpiDir = self.getDir()
