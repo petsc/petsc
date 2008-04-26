@@ -41,7 +41,7 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
 
   /* 
-     Call Fortran routine - the use of MPICCommToFortranComm() allows 
+     Call Fortran routine - the use of MPI_Comm_c2f() allows
      translation of the MPI_Comm from C so that it can be properly 
      interpreted from Fortran.
   */
