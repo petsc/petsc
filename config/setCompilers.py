@@ -1261,13 +1261,15 @@ if (dlclose(handle)) {
     self.delMakeMacro("CC")
     self.addMakeMacro("CC",mpicc)
 
-    self.CXX = mpicxx
-    self.delMakeMacro("CXX")
-    self.addMakeMacro("CXX",mpicxx)
+    if hasattr(self, 'CXX'):
+      self.CXX = mpicxx
+      self.delMakeMacro("CXX")
+      self.addMakeMacro("CXX",mpicxx)
 
-    self.FC = mpifc
-    self.delMakeMacro("FC")
-    self.addMakeMacro("FC",mpifc)
+    if hasattr(self, 'FC'):
+      self.FC = mpifc
+      self.delMakeMacro("FC")
+      self.addMakeMacro("FC",mpifc)
     
     self.output()
     self.checkSharedLinker()
