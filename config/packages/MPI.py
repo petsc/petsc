@@ -297,7 +297,8 @@ class Configure(config.package.Package):
     else:
       args.append('--without-fc')
     if not self.framework.argDB['with-shared']:
-      args.append('--enable-sharedlibs=0')
+      args.append('--enable-shared=no')
+      args.append('--enable-static=yes')
         
     args = ' '.join(args)
 
@@ -337,7 +338,8 @@ class Configure(config.package.Package):
       fd.close()
       #need to run ranlib on the libraries using the full path
       try:
-        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+        if not self.framework.argDB['with-shared']:
+          output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on OPENMPI/MPI libraries: '+str(e))
       # start up OPENMPI demon; note openmpiboot does not close stdout, so call will ALWAYS timeout.
