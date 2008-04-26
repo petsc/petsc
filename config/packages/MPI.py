@@ -301,9 +301,9 @@ class Configure(config.package.Package):
       args.append('--enable-static=yes')
         
     args = ' '.join(args)
-
+    configArgsFilename = os.path.join(confDir,self.downloadname)
     try:
-      fd      = file(os.path.join(confDir,self.package))
+      fd      = file(configArgsFilename)
       oldargs = fd.readline()
       fd.close()
     except:
@@ -333,7 +333,7 @@ class Configure(config.package.Package):
       except RuntimeError, e:
         pass
     
-      fd = file(os.path.join(confDir,'OPENMPI'), 'w')
+      fd = file(configArgsFilename, 'w')
       fd.write(args)
       fd.close()
       #need to run ranlib on the libraries using the full path
@@ -410,7 +410,7 @@ class Configure(config.package.Package):
       args.append('--enable-g=meminit')    
       args.append('--enable-fast')    
     args = ' '.join(args)
-    configArgsFilename = os.path.join(confDir,self.package)
+    configArgsFilename = os.path.join(confDir,self.downloadname)
     try:
       fd      = file(configArgsFilename)
       oldargs = fd.readline()
