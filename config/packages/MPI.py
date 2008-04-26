@@ -483,7 +483,12 @@ class Configure(config.package.Package):
   def updateCompilers(self, installDir, mpiccName, mpicxxName, mpif77Name, mpif90Name):
     '''Check if mpicc, mpicxx etc binaries exist - and update setCompilers() database.
     The input arguments are the names of the binaries specified by the respective pacakges MPICH/LAM.'''
-    
+
+    # Initialize to empty
+    mpicc=''
+    mpicxx=''
+    mpifc=''
+
     mpicc = os.path.join(installDir,"bin",mpiccName)
     if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
     if hasattr(self.compilers, 'CXX'):
