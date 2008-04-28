@@ -815,7 +815,13 @@ namespace ALE {
     // This is just crappy. We could introduce another phase to find out exactly what
     //   indices people do not have in the global order after communication
     template<typename SendSection, typename RecvSection>
-    static void updateOverlap(const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+    static void updateOverlap(const Obj<send_overlap_type>& origSendOverlap, const Obj<recv_overlap_type>& origRecvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+#if 0
+      const Obj<typename recv_overlap_type::traits::baseSequence> rPoints = origRecvOverlap->base();
+
+      for(typename recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
+      }
+#else
       const typename SendSection::sheaf_type& sendRanks = sendSection->getPatches();
       const typename RecvSection::sheaf_type& recvRanks = recvSection->getPatches();
 
@@ -847,6 +853,7 @@ namespace ALE {
           }
         }
       }
+#endif
     };
     #undef __FUNCT__
     #define __FUNCT__ "updateSieve"
