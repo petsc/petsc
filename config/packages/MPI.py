@@ -500,7 +500,10 @@ class Configure(config.package.Package):
       else:
         mpifc = os.path.join(installDir,"bin",mpif77Name)
       if not os.path.isfile(mpifc): raise RuntimeError('Could not locate installed MPI compiler: '+mpifc)
+    # redo compiler detection
     self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
+    self.compilers.__init__(self.framework)
+    self.compilers.configure()
     return
 
   def addExtraLibraries(self):
