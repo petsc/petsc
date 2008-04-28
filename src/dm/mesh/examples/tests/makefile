@@ -94,7 +94,7 @@ subset: subset.o chkopts
 
 unitTests: sifter1.o sieve1.o isieve1.o section1.o isection1.o imesh1.o unitTests.o chkopts
 	-${CLINKER} -o unitTests sifter1.o sieve1.o isieve1.o section1.o isection1.o imesh1.o unitTests.o ${PETSC_DM_LIB} -lcppunit
-	#${RM} -f sifter1.o sieve1.o isieve1.o section1.o isection1.o imesh1.o unitTests.o
+	${RM} -f sifter1.o sieve1.o isieve1.o section1.o isection1.o imesh1.o unitTests.o
 
 memoryTests: memoryTests.o chkopts
 	-${CLINKER} -o memoryTests memoryTests.o ${PETSC_DM_LIB}
