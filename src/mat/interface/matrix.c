@@ -1333,7 +1333,24 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   if (!mat->ops->setvaluesblocked) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
+  if (mat->ops->setvaluesblocked) {
+    ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
+  } else {
+    PetscInt i,j,*iidxm,*iidxn,bs = mat->rmap.bs;
+    ierr = PetscMalloc2(m*bs,PetscInt,&iidxm,n*bs,PetscInt,&iidxn);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      for (j=0; j<bs; j++) {
+	iidxm[i*bs+j] = bs*idxm[i] + j;
+      }
+    }
+    for (i=0; i<n; i++) {
+      for (j=0; j<bs; j++) {
+	iidxn[i*bs+j] = bs*idxn[i] + j;
+      }
+    }
+    ierr = MatSetValues(mat,bs*m,iidxm,bs*n,iidxn,v,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(iidxm,iidxn);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
