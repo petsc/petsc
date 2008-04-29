@@ -116,11 +116,12 @@ public:
 
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
     ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
-    m->view("Square Mesh");
-    this->_sieve->view("Square Sieve");
+    //m->view("Square Mesh");
+    //this->_sieve->view("Square Sieve");
     const ALE::Obj<Sieve::baseSequence>& base = m->getSieve()->base();
 
-    Visitor retriever((int) pow(this->_sieve->getConeSize(*base->begin()), m->depth()), true);
+    const int closureSize = std::max(0, (int) pow(this->_sieve->getConeSize(*base->begin()), m->depth()));
+    Visitor retriever(closureSize, true);
     for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
       const ALE::Obj<oConeArray>& closure = sieve_alg_type::orientedClosure(m, *b_iter);
 
