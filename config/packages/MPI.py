@@ -503,6 +503,7 @@ class Configure(config.package.Package):
     # redo compiler detection
     self.setCompilers.updateMPICompilers(mpicc,mpicxx,mpifc)
     self.compilers.__init__(self.framework)
+    self.compilers.headerPrefix = self.headerPrefix
     self.compilers.configure()
     return
 
