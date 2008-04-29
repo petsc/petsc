@@ -316,7 +316,10 @@ class Configure(config.base.Configure):
        - Any given category can be excluded'''
     import os
 
-    if self.framework.argDB.has_key('with-cc'):
+
+    if hasattr(self, 'CC'):
+      yield self.CC
+    elif self.framework.argDB.has_key('with-cc'):
       if self.isWindows(self.framework.argDB['with-cc']):
         yield 'win32fe '+self.framework.argDB['with-cc']
       else:
@@ -463,7 +466,9 @@ class Configure(config.base.Configure):
        - Any given category can be excluded'''
     import os
 
-    if self.framework.argDB.has_key('with-c++'):
+    if hasattr(self, 'CXX'):
+      yield self.CXX
+    elif self.framework.argDB.has_key('with-c++'):
       raise RuntimeError('Keyword --with-c++ is WRONG, use --with-cxx')
     if self.framework.argDB.has_key('with-CC'):
       raise RuntimeError('Keyword --with-CC is WRONG, use --with-cxx')
@@ -632,7 +637,9 @@ class Configure(config.base.Configure):
        - Any given category can be excluded'''
     import os
 
-    if self.framework.argDB.has_key('with-fc'):
+    if hasattr(self, 'FC'):
+      yield self.FC
+    elif self.framework.argDB.has_key('with-fc'):
       if self.isWindows(self.framework.argDB['with-fc']):
         yield 'win32fe '+self.framework.argDB['with-fc']
       else:
@@ -1259,21 +1266,16 @@ if (dlclose(handle)) {
     '''Reset compilers by an external module aka MPI'''
     self.CC = mpicc
     self.delMakeMacro("CC")
-    self.addMakeMacro("CC",mpicc)
 
     if hasattr(self, 'CXX'):
       self.CXX = mpicxx
       self.delMakeMacro("CXX")
-      self.addMakeMacro("CXX",mpicxx)
 
     if hasattr(self, 'FC'):
       self.FC = mpifc
       self.delMakeMacro("FC")
-      self.addMakeMacro("FC",mpifc)
-    
-    self.output()
-    self.checkSharedLinker()
-    self.checkDynamicLinker()
+
+    self.configure()
     self.usedMPICompilers=1
     return
 
