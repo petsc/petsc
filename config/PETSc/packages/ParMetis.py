@@ -5,7 +5,7 @@ import config.base
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['hg://petsc.cs.iit.edu/petsc/ParMetis-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis-dev-p2.tar.gz']
+    self.download     = ['hg://petsc.cs.iit.edu/petsc/ParMetis-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ParMetis-dev-p3.tar.gz']
     self.functions    = ['ParMETIS_V3_PartKway']
     self.includes     = ['parmetis.h']
     self.liblist      = [['libparmetis.a','libmetis.a']]
@@ -55,8 +55,8 @@ class Configure(PETSc.package.Package):
     g.close()
 
     if self.installNeeded('make.inc'):    # Now compile & install
-      self.framework.outputHeader(metisconfigheader)
-      self.framework.outputHeader(parmetisconfigheader)
+      self.framework.outputHeader(metisconfigheader,prefix='METIS')
+      self.framework.outputHeader(parmetisconfigheader,prefix='PARMETIS')
       try:
         self.logPrintBox('Compiling & installing Parmetis; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)[0]
