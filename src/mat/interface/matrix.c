@@ -1640,7 +1640,25 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   if (!mat->ops->setvaluesblocked) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = ISLocalToGlobalMappingApply(mat->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(mat->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
+  if (mat->ops->setvaluesblocked) {
   ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+  } else {
+    PetscInt i,j,*iirowm,*iicolm,bs = mat->rmap.bs;
+    ierr = PetscMalloc2(nrow*bs,PetscInt,&iirowm,ncol*bs,PetscInt,&iicolm);CHKERRQ(ierr);
+    for (i=0; i<nrow; i++) {
+      for (j=0; j<bs; j++) {
+	iirowm[i*bs+j] = bs*irowm[i] + j;
+      }
+    }
+    for (i=0; i<ncol; i++) {
+      for (j=0; j<bs; j++) {
+	iicolm[i*bs+j] = bs*icolm[i] + j;
+      }
+    }
+    ierr = MatSetValues(mat,bs*nrow,iirowm,bs*ncol,iicolm,y,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(iirowm,iicolm);CHKERRQ(ierr);
+
+  }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
