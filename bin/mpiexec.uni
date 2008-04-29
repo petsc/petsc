@@ -1,5 +1,5 @@
 #!/bin/sh
-if [ $1 !=  "-np" ]; then
+if [ $1 !=  "-np" -a $1 != "-n" ]; then
 progname=$*
 elif  [ $2 =  "1" ]; then
 shift ; shift
