@@ -722,7 +722,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       f.close()
     return
 
-  def outputHeader(self, name):
+  def outputHeader(self, name, prefix = None):
     '''Write the configuration header'''
     if isinstance(name, file):
       f = name
@@ -738,9 +738,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     f.write('#define '+guard+'\n\n')
     if hasattr(self, 'headerTop'):
       f.write(str(self.headerTop)+'\n')
-    self.outputDefines(f, self)
+    self.outputDefines(f, self, prefix)
     for child in self.childGraph.vertices:
-      self.outputDefines(f, child)
+      self.outputDefines(f, child, prefix)
     if hasattr(self, 'headerBottom'):
       f.write(str(self.headerBottom)+'\n')
     f.write('#endif\n')
