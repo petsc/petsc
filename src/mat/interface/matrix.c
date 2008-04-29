@@ -1296,9 +1296,6 @@ $
 $   v[] should be passed in like
 $   v[] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
 
-   Restrictions:
-   MatSetValuesBlocked() is currently supported only for the BAIJ and SBAIJ formats
-
    Level: intermediate
 
    Concepts: matrices^putting entries in blocked
