@@ -275,7 +275,7 @@
      &     '-my_ksp_convergence',flg,ierr)
       if (flg) then
         call KSPSetConvergenceTest(ksp,MyKSPConverged,                  &
-     &          PETSC_NULL_OBJECT,ierr)
+     &          PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,ierr)
       endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -7,7 +7,7 @@
 
 typedef struct _SlicedOps *SlicedOps;
 struct _SlicedOps {
-  DMOPS(Sliced);
+  DMOPS(Sliced)
 };
 
 struct _p_Sliced {
