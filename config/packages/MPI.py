@@ -64,6 +64,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.compilers = framework.require('config.compilers', self)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
     self.types = framework.require('config.types', self)
     return
 
@@ -505,6 +506,7 @@ class Configure(config.package.Package):
     self.compilers.__init__(self.framework)
     self.compilers.headerPrefix = self.headerPrefix
     self.compilers.configure()
+    self.compilerFlags.configure()
     return
 
   def addExtraLibraries(self):
