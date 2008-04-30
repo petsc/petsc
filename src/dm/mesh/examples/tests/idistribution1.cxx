@@ -17,9 +17,10 @@ class FunctionTestIDistribution : public CppUnit::TestFixture
 
   CPPUNIT_TEST_SUITE_END();
 public:
-  typedef ALE::IMesh            mesh_type;
-  typedef mesh_type::sieve_type sieve_type;
-  typedef mesh_type::point_type point_type;
+  typedef ALE::IMesh                   mesh_type;
+  typedef mesh_type::sieve_type        sieve_type;
+  typedef mesh_type::point_type        point_type;
+  typedef mesh_type::real_section_type real_section_type;
 protected:
   ALE::Obj<mesh_type> _mesh;
   int                 _debug; // The debugging level
@@ -73,9 +74,8 @@ public:
       sieve->setChart(sieve_type::chart_type(std::min(*std::min_element(base->begin(), base->end()), *std::min_element(cap->begin(), cap->end())),
                                              std::max(*std::max_element(base->begin(), base->end()), *std::max_element(cap->begin(), cap->end()))));
     }
-    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_mesh->getSieve(), this->_renumbering);
+    ALE::ISieveConverter::convertMesh(*m, *this->_mesh, this->_renumbering, false);
     this->_renumbering.clear();
-    this->_mesh->stratify();
   };
 
   void checkMesh(const ALE::Obj<mesh_type>& mesh, const char basename[]) {
@@ -151,7 +151,65 @@ public:
     delete [] supportSizes;
     delete [] supports;
     // Check coordinates
+    const ALE::Obj<real_section_type>&         coordinates = mesh->getRealSection("coordinates");
+    const ALE::Obj<mesh_type::label_sequence>& vertices    = mesh->depthStratum(0);
+    const int                                  dim         = mesh->getDimension();
+    size_t                                     numVertices;
+
+    f >> numVertices;
+    CPPUNIT_ASSERT_EQUAL(numVertices, vertices->size());
+    for(mesh_type::label_sequence::const_iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+      const real_section_type::value_type *coords = coordinates->restrictPoint(*v_iter);
+      point_type vertex;
+
+      f >> vertex;
+      CPPUNIT_ASSERT_EQUAL(this->_renumbering[vertex], *v_iter);
+      CPPUNIT_ASSERT_EQUAL(dim, coordinates->getFiberDimension(*v_iter));
+      for(int d = 0; d < dim; ++d) {
+        real_section_type::value_type coord;
+
+        f >> coord;
+        CPPUNIT_ASSERT_DOUBLES_EQUAL(coord, coords[d], 1.0e-12);
+      }
+    }
     // Check overlap
+    const ALE::Obj<mesh_type::send_overlap_type>&                      sendOverlap = mesh->getSendOverlap();
+    const ALE::Obj<mesh_type::recv_overlap_type>&                      recvOverlap = mesh->getRecvOverlap();
+    const ALE::Obj<mesh_type::send_overlap_type::traits::capSequence>  sendCap     = sendOverlap->cap();
+    const ALE::Obj<mesh_type::recv_overlap_type::traits::baseSequence> recvBase    = recvOverlap->base();
+    size_t                                                             numPoints;
+
+    f >> numPoints;
+    CPPUNIT_ASSERT_EQUAL(numPoints, sendCap->size());
+    for(mesh_type::send_overlap_type::traits::capSequence::iterator p_iter = sendCap->begin(); p_iter != sendCap->end(); ++p_iter) {
+      const ALE::Obj<mesh_type::send_overlap_type::supportSequence>& ranks = sendOverlap->support(*p_iter);
+      point_type           point, remotePoint;
+      mesh_type::rank_type rank;
+
+      for(mesh_type::send_overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+        f >> point;
+        CPPUNIT_ASSERT_EQUAL(point, *p_iter);
+        f >> remotePoint;
+        CPPUNIT_ASSERT_EQUAL(remotePoint, r_iter.color());
+        f >> rank;
+        CPPUNIT_ASSERT_EQUAL(rank, *r_iter);
+      }
+    }
+    CPPUNIT_ASSERT_EQUAL(numPoints, recvBase->size());
+    for(mesh_type::recv_overlap_type::traits::baseSequence::iterator p_iter = recvBase->begin(); p_iter != recvBase->end(); ++p_iter) {
+      const ALE::Obj<mesh_type::recv_overlap_type::coneSequence>& ranks = recvOverlap->cone(*p_iter);
+      point_type           point, remotePoint;
+      mesh_type::rank_type rank;
+
+      for(mesh_type::recv_overlap_type::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+        f >> point;
+        CPPUNIT_ASSERT_EQUAL(point, *p_iter);
+        f >> remotePoint;
+        CPPUNIT_ASSERT_EQUAL(remotePoint, r_iter.color());
+        f >> rank;
+        CPPUNIT_ASSERT_EQUAL(rank, *r_iter);
+      }
+    }
     f.close();
   };
 
@@ -171,8 +229,6 @@ public:
 
     parallelMesh->setSieve(parallelSieve);
     ALE::Obj<partition_type> partition = distribution_type::distributeMeshV(this->_mesh, parallelMesh, this->_renumbering, sendMeshOverlap, recvMeshOverlap);
-    partition->view("Partition");
-    typedef mesh_type::real_section_type real_section_type;
     const ALE::Obj<real_section_type>& coordinates         = this->_mesh->getRealSection("coordinates");
     const ALE::Obj<real_section_type>& parallelCoordinates = parallelMesh->getRealSection("coordinates");
 
@@ -180,7 +236,7 @@ public:
     distribution_type::distributeSection(coordinates, partition, this->_renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
     ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(this->_renumbering);
 
-    ALE::OverlapBuilder<>::constructOverlap(globalPoints, this->_renumbering, this->_mesh->getSendOverlap(), this->_mesh->getRecvOverlap());
+    ALE::OverlapBuilder<>::constructOverlap(globalPoints, this->_renumbering, parallelMesh->getSendOverlap(), parallelMesh->getRecvOverlap());
     this->checkMesh(parallelMesh, "2DUninterpolatedDist");
     } catch(ALE::Exception e) {
       std::cerr << "ERROR: " << e << std::endl;

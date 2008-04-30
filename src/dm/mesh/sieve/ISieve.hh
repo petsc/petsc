@@ -1605,6 +1605,7 @@ namespace ALE {
     };
     template<typename Sieve, typename ISieve, typename Renumbering, typename ArrowSection>
     static void convertOrientation(Sieve& sieve, ISieve& isieve, Renumbering& renumbering, ArrowSection *orientation) {
+      if (isieve.getMaxConeSize() < 0) return;
       const Obj<typename Sieve::baseSequence>& base = sieve.base();
       int *orientations = new int[isieve.getMaxConeSize()];
 
