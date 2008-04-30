@@ -1,18 +1,22 @@
 #!/usr/bin/env python
 #
+# use 'scmpicc --pathscale' etc on cross-compile node
 configure_options = [
-  '--with-cc=scmpicc --pathscale',
-  '--with-cxx=scmpicxx --pathscale',
-  '--with-fc=scmpif90 --pathscale',
+  '--with-cc=mpicc',
+  '--with-cxx=mpicxx',
+  '--with-fc=mpif90',
   '--LIBS=-lpathfstart -lpathfortran -lpathfstart',
   '--with-fortranlib-autodetect=0',
-
-  # -G0 is to avoid the following error at linktime:
-  # "relocation truncated to fit: R_MIPS_GPREL16"
+  #
+  # For link errors of type: "relocation truncated to fit: R_MIPS_GPREL16"
+  # -G0 option would be needed, along with fblaslapack
+  # '--download-f-blas-lapack=1',
+  #
+  # Recommend: -Ofast -IPA -ffast-math -CG:locs_best=1
   '--with-debugging=0',
-  'COPTFLAGS=-g -O2 -G0',
-  'FOPTFLAGS=-g -O2 -G0',
-  'CXXOPTFLAGS=-g -O2 -G0',
+  'COPTFLAGS=-O3 -ffast-math',
+  'FOPTFLAGS=-O3 -ffast-math',
+  'CXXOPTFLAGS=-O3 -ffast-math',
 
   '--with-batch=1',
   '--with-mpi-shared=0',
@@ -52,9 +56,6 @@ configure_options = [
   #'--download-sundials=1',
   #'--download-hypre=1',
 
-  # not required normally. Its used due to -G0 [all sources should be
-  # compiled with it]
-  '--download-f-blas-lapack=1',
   ]
 
 if __name__ == '__main__':

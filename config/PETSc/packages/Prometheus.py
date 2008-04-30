@@ -95,7 +95,7 @@ class Configure(PETSc.package.Package):
     if self.compilePrometheus:
       try:
         self.logPrintBox('Compiling Prometheus; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean cleanlib; make prom minstall',timeout=250, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean cleanlib; make prom minstall',timeout=1000, log = self.framework.log)[0]
         self.framework.log.write(output)
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMetis: '+str(e))
