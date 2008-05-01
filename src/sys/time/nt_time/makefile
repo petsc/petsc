@@ -1,4 +1,4 @@
-#requirespackage PETSC_USE_NT_TIME
+#requirespackage 'PETSC_USE_NT_TIME'
 ALL: lib 
 
 CFLAGS    =
