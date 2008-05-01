@@ -1049,8 +1049,8 @@ class Configure(config.base.Configure):
         self.logPrint('PGI F90 compiler detected & using --with-batch', 3, 'compilers')
       return
     # do not check on windows - as it pops up the annoying debugger
-    if config.setCompilers.Configure.isWindows(self.setCompilers.FC):
-      self.logPrint('Windows compiler detected ignoring HAVE_F90_2PTR_ARG test')
+    if config.setCompilers.Configure.isCygwin():
+      self.logPrint('Cygwin detected: ignoring HAVE_F90_2PTR_ARG test')
       return
 
     # Compile the C test object
