@@ -2,7 +2,7 @@
 #include "petsc.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petsc_viewer_stdout__      PETSC_VIEWER_STDOUT_
+#define petsc_viewer_stdout__      PETSC_VIEWER_STDOUT_BROKEN
 #define petscviewerasciiopen_      PETSCVIEWERASCIIOPEN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewerasciiopen_      petscviewerasciiopen
