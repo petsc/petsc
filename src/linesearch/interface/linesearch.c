@@ -323,6 +323,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchObjectiveGradient_Default(Ta
     } else {
 	//TaoSolverComputeObjectiveGradient(ls->taosolver,x,f,g); CHKERRQ(info);
     }
+    PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
