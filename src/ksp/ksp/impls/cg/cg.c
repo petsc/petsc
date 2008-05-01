@@ -152,7 +152,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);                     /*  beta <- z'*r       */
-    if PetscIsInfOrNan(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
     dp = sqrt(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
   } else dp = 0.0;
   KSPLogResidualHistory(ksp,dp);
@@ -167,7 +167,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   }
   if (ksp->normtype != KSP_NORM_NATURAL){
     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);         /*  beta <- z'*r       */
-    if PetscIsInfOrNan(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+    if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
   }
 
   i = 0;
@@ -200,7 +200,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      betaold = beta;
      ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);          /*     z <- Kp         */
      ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
-     if PetscIsInfOrNan(dpi) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+     if PetscIsInfOrNanScalar(dpi) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
 
      if (PetscRealPart(dpi) <= 0.0) {
        ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
@@ -221,7 +221,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      } else if (ksp->normtype == KSP_NORM_NATURAL) {
        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
        ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*  beta <- r'*z       */
-       if PetscIsInfOrNan(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+       if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
        dp = sqrt(PetscAbsScalar(beta));
      } else {
        dp = 0.0;
@@ -237,7 +237,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      }
      if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i+2)){
        ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);        /*  beta <- z'*r       */
-       if PetscIsInfOrNan(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
+       if PetscIsInfOrNanScalar(beta) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in dot product");
      }
 
      i++;
