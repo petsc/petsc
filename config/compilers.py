@@ -1048,7 +1048,11 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_F90_2PTR_ARG', 1)
         self.logPrint('PGI F90 compiler detected & using --with-batch', 3, 'compilers')
       return
-    
+    # do not check on windows - as it pops up the annoying debugger
+    if config.setCompilers.Configure.isWindows(self.setCompilers.FC):
+      self.logPrint('Windows compiler detected ignoring HAVE_F90_2PTR_ARG test')
+      return
+
     # Compile the C test object
     cinc  = '#include<stdio.h>\n#include <stdlib.h>\n'
     ccode = 'void '+self.mangleFortranFunction('f90arraytest')+'''(void* a1, void* a2,void* a3, void* i)
