@@ -795,16 +795,22 @@ class Configure(config.base.Configure):
             #solaris gnu g77 has this extra P, here, not sure why it means
             if lib.startswith('P,'):lib = lib[2:]
             self.logPrint('Handling -Y option: '+lib, 4, 'compilers')
-            flibs.append('-L'+lib)
+            lib1 = '-L'+os.path.abspath(lib)
+            if lib1 == '-L/usr/lib': continue
+            flibs.append(lib1)
           continue
         # HPUX lists a bunch of library directories seperated by :
         if arg.find(':') >=0:
           founddir = 0
           for l in arg.split(':'):
             if os.path.isdir(l):
-              flibs.append('-L'+l)
-              self.logPrint('Handling HPUX list of directories: '+l, 4, 'compilers')
-              founddir = 1
+              lib1 = '-L'+os.path.abspath(l)
+              if lib1 == '-L/usr/lib': continue
+              if not arg in lflags:              
+                flibs.append(lib1)
+                lflags.append(lib1)
+                self.logPrint('Handling HPUX list of directories: '+l, 4, 'compilers')
+                founddir = 1
           if founddir:
             continue
         if arg.find('quickfit.o')>=0:
