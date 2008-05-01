@@ -3112,7 +3112,9 @@ M*/
 
 EXTERN_C_BEGIN
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
 EXTERN_C_END
+
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -3160,6 +3162,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_petsc_C",
+                                     "MatGetFactor_seqaij_petsc",
+                                     MatGetFactor_seqaij_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetColumnIndices_C",
                                      "MatSeqAIJSetColumnIndices_SeqAIJ",
                                      MatSeqAIJSetColumnIndices_SeqAIJ);CHKERRQ(ierr);
@@ -3212,24 +3217,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatDuplicate_SeqAIJ"
-PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
+#define __FUNCT__ "MatDuplicateNoCreate_SeqAIJ"
+/*
+    Given a matrix generated with MatGetFactor() duplicates all the information in A into B
+*/
+PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
-  Mat            C;
+  Mat            C = *B;
   Mat_SeqAIJ     *c,*a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,m = A->rmap.n;
 
   PetscFunctionBegin;
-  *B = 0;
-  ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
-  ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   
-  ierr = PetscMapCopy(((PetscObject)A)->comm,&A->rmap,&C->rmap);CHKERRQ(ierr);  
-  ierr = PetscMapCopy(((PetscObject)A)->comm,&A->cmap,&C->cmap);CHKERRQ(ierr);  
-
   c = (Mat_SeqAIJ*)C->data;
 
   C->factor           = A->factor;
@@ -3303,8 +3304,22 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   C->same_nonzero = A->same_nonzero;
   ierr = MatDuplicate_Inode(A,cpvalues,&C);CHKERRQ(ierr);
 
-  *B = C;
   ierr = PetscFListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatDuplicate_SeqAIJ"
+PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
+{
+  PetscErrorCode ierr;
+  PetscInt       n = A->rmap.n;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
+  ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
+  ierr = MatSetType(*B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = MatDuplicateNoCreate_SeqAIJ(A,cpvalues,B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

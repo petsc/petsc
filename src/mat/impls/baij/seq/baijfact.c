@@ -251,6 +251,24 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat A,MatFactorInfo *info,Mat *B)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_seqbaij_petsc"
+PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
+{
+  PetscInt           n = A->rmap.n;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
+  ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
+  if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
+    ierr = MatSetType(*B,MATSEQBAIJ);CHKERRQ(ierr);
+  } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
+    ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+  PetscFunctionReturn(0);
+}
+
 
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
@@ -261,6 +279,7 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
   Mat            C;
 
   PetscFunctionBegin;
+  ierr = MatGetFactor(A,"petsc",MAT_FACTOR_LU,&C);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,info,&C);CHKERRQ(ierr);
   ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
@@ -575,11 +594,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Ma
     for (i=0; i<am; i++) {
       ui[i] = ai[i+1] - a->diag[i]; /* ui: rowlengths - changes when !perm_identity */
     }
-    ierr = MatCreate(PETSC_COMM_SELF,fact);CHKERRQ(ierr);
-    ierr = MatSetSizes(*fact,am,am,am,am);CHKERRQ(ierr);
     B = *fact;
-    ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(B,1,0,ui);CHKERRQ(ierr);
+
 
     b  = (Mat_SeqSBAIJ*)B->data;
     uj = b->j;
@@ -720,10 +737,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Ma
   ierr = PetscFreeSpaceDestroy(free_space_lvl);CHKERRQ(ierr);
 
   /* put together the new matrix in MATSEQSBAIJ format */
-  ierr = MatCreate(PETSC_COMM_SELF,fact);CHKERRQ(ierr);
-  ierr = MatSetSizes(*fact,am,am,am,am);CHKERRQ(ierr);
   B = *fact;
-  ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
 
   b = (Mat_SeqSBAIJ*)B->data;
@@ -898,10 +912,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
 
   /* put together the new matrix in MATSEQSBAIJ format */
-  ierr = MatCreate(PETSC_COMM_SELF,fact);CHKERRQ(ierr);
-  ierr = MatSetSizes(*fact,mbs,mbs,mbs,mbs);CHKERRQ(ierr);
   B    = *fact;
-  ierr = MatSetType(B,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
 
   b = (Mat_SeqSBAIJ*)B->data;

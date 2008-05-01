@@ -134,6 +134,32 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatDuplicateNoCreate_SeqDense"
+PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
+{
+  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data,*l;
+  PetscErrorCode ierr;
+  PetscInt       lda = (PetscInt)mat->lda,j,m;
+  Mat            newi = *newmat;
+
+  PetscFunctionBegin;
+  if (cpvalues == MAT_COPY_VALUES) {
+    l = (Mat_SeqDense*)newi->data;
+    if (lda>A->rmap.n) {
+      m = A->rmap.n;
+      for (j=0; j<A->cmap.n; j++) {
+	ierr = PetscMemcpy(l->v+j*m,mat->v+j*lda,m*sizeof(PetscScalar));CHKERRQ(ierr);
+      }
+    } else {
+      ierr = PetscMemcpy(l->v,mat->v,A->rmap.n*A->cmap.n*sizeof(PetscScalar));CHKERRQ(ierr);
+    }
+  }
+  newi->assembled = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatDuplicate_SeqDense"
 PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
@@ -148,19 +174,19 @@ PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newm
   ierr = MatSetSizes(newi,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
   ierr = MatSetType(newi,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(newi,PETSC_NULL);CHKERRQ(ierr);
-  if (cpvalues == MAT_COPY_VALUES) {
-    l = (Mat_SeqDense*)newi->data;
-    if (lda>A->rmap.n) {
-      m = A->rmap.n;
-      for (j=0; j<A->cmap.n; j++) {
-	ierr = PetscMemcpy(l->v+j*m,mat->v+j*lda,m*sizeof(PetscScalar));CHKERRQ(ierr);
-      }
-    } else {
-      ierr = PetscMemcpy(l->v,mat->v,A->rmap.n*A->cmap.n*sizeof(PetscScalar));CHKERRQ(ierr);
-    }
-  }
-  newi->assembled = PETSC_TRUE;
   *newmat = newi;
+  ierr = MatDuplicateNoCreate_SeqDense(A,cpvalues,newmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
+PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,MatFactorInfo *info,Mat *fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDuplicateNoCreate_SeqDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -171,7 +197,21 @@ PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatFactorInfo *i
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDuplicate_SeqDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+  ierr = MatDuplicateNoCreate_SeqDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_seqdense_petsc"
+PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,Mat *fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
+  ierr = MatSetSizes(*fact,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -195,17 +235,6 @@ PetscErrorCode MatLUFactorNumeric_SeqDense(Mat A,MatFactorInfo *info_dummy,Mat *
   }
   (*fact)->factor = 0;
   ierr = MatLUFactor(*fact,0,0,&info);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,MatFactorInfo *info,Mat *fact)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2005,6 +2034,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   b->Mmax         = B->rmap.n;
   b->Nmax         = B->cmap.n;
 
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqdense_petsc_C",
+                                     "MatGetFactor_seqdense_petsc",
+                                      MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqDenseSetPreallocation_C",
                                     "MatSeqDenseSetPreallocation_SeqDense",
                                      MatSeqDenseSetPreallocation_SeqDense);CHKERRQ(ierr);

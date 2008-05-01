@@ -12,6 +12,7 @@
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
 EXTERN int SetSpoolesOptions(Mat, Spooles_options *);
+EXTERN PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_MPIAIJSpooles"
@@ -40,8 +41,7 @@ PetscErrorCode MatDestroy_MPIAIJSpooles(Mat A)
       ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
     }
   }
-  ierr = MatConvert_Spooles_Base(A,lu->basetype,MAT_REUSE_MATRIX,&A);
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -214,8 +214,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     /* get input parameters */
     ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
 
-    (*F)->ops->solve   = MatSolve_MPISpooles;
-    (*F)->ops->destroy = MatDestroy_MPIAIJSpooles;  
     (*F)->assembled    = PETSC_TRUE;
     if ((*F)->factor == FACTOR_LU){
       F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
@@ -628,53 +626,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJSpooles"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
-{
-  PetscErrorCode ierr;
-  Mat            B=*newmat;
-  Mat_Spooles    *lu;
-
-  PetscFunctionBegin;
-  ierr     = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-    lu->MatDuplicate              = B->ops->duplicate;
-    lu->MatLUFactorSymbolic       = B->ops->lufactorsymbolic;
-    lu->MatCholeskyFactorSymbolic = B->ops->choleskyfactorsymbolic;
-    lu->MatView                   = B->ops->view;
-    lu->MatAssemblyEnd            = B->ops->assemblyend;
-    lu->MatDestroy                = B->ops->destroy;
-  } else {
-    lu->MatDuplicate              = A->ops->duplicate;
-    lu->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
-    lu->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
-    lu->MatView                   = A->ops->view;
-    lu->MatAssemblyEnd            = A->ops->assemblyend;
-    lu->MatDestroy                = A->ops->destroy;
-  }
-  lu->basetype                  = MATMPIAIJ;
-  lu->CleanUpSpooles            = PETSC_FALSE;
-
-  B->spptr = (void*)lu;
-  B->ops->duplicate             = MatDuplicate_Spooles;
-  B->ops->lufactorsymbolic      = MatLUFactorSymbolic_MPIAIJSpooles;  
-  B->ops->view                  = MatView_Spooles;
-  B->ops->assemblyend           = MatAssemblyEnd_MPIAIJSpooles;
-  B->ops->destroy               = MatDestroy_MPIAIJSpooles;
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaijspooles_mpiaij_C",
-                                           "MatConvert_Spooles_Base",MatConvert_Spooles_Base);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpiaijspooles_C",
-                                           "MatConvert_MPIAIJ_MPIAIJSpooles",MatConvert_MPIAIJ_MPIAIJSpooles);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJSPOOLES);CHKERRQ(ierr);
-  *newmat = B;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 /*MC
   MATMPIAIJSPOOLES - MATMPIAIJSPOOLES = "mpiaijspooles" - A matrix type providing direct solvers (LU) for distributed matrices 
   via the external package Spooles.
@@ -714,21 +665,4 @@ EXTERN_C_END
 .seealso: PCLU
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPIAIJSpooles"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJSpooles(Mat A) 
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
-  /*
-  Mat A_diag = ((Mat_MPIAIJ *)A->data)->A;
-  ierr   = MatConvert_SeqAIJ_SeqAIJSpooles(A_diag,MATSEQAIJSPOOLES,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
-  */
-  ierr   = MatConvert_MPIAIJ_MPIAIJSpooles(A,MATMPIAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
 

@@ -5,6 +5,7 @@
 
 */
 #include "src/mat/impls/aij/seq/aij.h"
+
 /* #include <essl.h> This doesn't work!  */
 
 EXTERN_C_BEGIN
@@ -24,43 +25,8 @@ typedef struct {
   PetscScalar *aux;
   int         naux;
 
-  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  PetscErrorCode (*MatDestroy)(Mat);
   PetscTruth CleanUpESSL;
 } Mat_Essl;
-
-EXTERN PetscErrorCode MatDuplicate_Essl(Mat,MatDuplicateOption,Mat*);
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_Essl_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Essl_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat) {
-  PetscErrorCode ierr;
-  Mat            B=*newmat;
-  Mat_Essl       *essl=(Mat_Essl*)A->spptr;
-  
-  PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);
-  }
-  B->ops->duplicate        = essl->MatDuplicate;
-  B->ops->assemblyend      = essl->MatAssemblyEnd;
-  B->ops->lufactorsymbolic = essl->MatLUFactorSymbolic;
-  B->ops->destroy          = essl->MatDestroy;
-
-  /* free the Essl datastructures */
-  ierr = PetscFree(essl);CHKERRQ(ierr);
-
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_essl_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_essl_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
-
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
-  *newmat = B;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END  
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_Essl"
@@ -73,14 +39,15 @@ PetscErrorCode MatDestroy_Essl(Mat A)
   if (essl->CleanUpESSL) {
     ierr = PetscFree(essl->a);CHKERRQ(ierr);
   }
-  ierr = MatConvert_Essl_SeqAIJ(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  ierr = PetscFree(essl);CHKERRQ(ierr);
+  ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_Essl"
-PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x) {
+PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x) 
+{
   Mat_Essl       *essl = (Mat_Essl*)A->spptr;
   PetscScalar    *xx;
   PetscErrorCode ierr;
@@ -97,7 +64,8 @@ PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x) {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_Essl"
-PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F) {
+PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F) 
+{
   Mat_SeqAIJ     *aa=(Mat_SeqAIJ*)(A)->data;
   Mat_Essl       *essl=(Mat_Essl*)(*F)->spptr;
   PetscErrorCode ierr;
@@ -119,16 +87,17 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F) {
   essl->rparm[1] = 1.0;
   ierr = PetscOptionsGetReal(((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],PETSC_NULL);CHKERRQ(ierr);
 
-  dgsf(&one,&A->rmap.n,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,
-               essl->rparm,essl->oparm,essl->aux,&essl->naux);
+  dgsf(&one,&A->rmap.n,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
   (*F)->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_Essl"
-PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) {
+PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) 
+{
   Mat            B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -168,74 +137,6 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_Essl"
-PetscErrorCode MatAssemblyEnd_Essl(Mat A,MatAssemblyType mode) 
-{
-  PetscErrorCode ierr;
-  Mat_Essl       *essl=(Mat_Essl*)(A->spptr);
-
-  PetscFunctionBegin;
-  ierr = (*essl->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-
-  essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
-  A->ops->lufactorsymbolic  = MatLUFactorSymbolic_Essl;
-  ierr = PetscInfo(A,"Using ESSL for LU factorization and solves\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqAIJ_Essl"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Essl(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
-{
-  Mat            B=*newmat;
-  PetscErrorCode ierr;
-  Mat_Essl       *essl;
-
-  PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  }
-  B->ops->matsolve          = 0;
-
-  ierr                      = PetscNewLog(B,Mat_Essl,&essl);CHKERRQ(ierr);
-  essl->MatDuplicate        = A->ops->duplicate;
-  essl->MatAssemblyEnd      = A->ops->assemblyend;
-  essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
-  essl->MatDestroy          = A->ops->destroy;
-  essl->CleanUpESSL         = PETSC_FALSE;
-
-  B->spptr                  = (void*)essl;
-  B->ops->duplicate         = MatDuplicate_Essl;
-  B->ops->assemblyend       = MatAssemblyEnd_Essl;
-  B->ops->lufactorsymbolic  = MatLUFactorSymbolic_Essl;
-  B->ops->destroy           = MatDestroy_Essl;
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_essl_C",
-                                           "MatConvert_SeqAIJ_Essl",MatConvert_SeqAIJ_Essl);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_essl_seqaij_C",
-                                           "MatConvert_Essl_SeqAIJ",MatConvert_Essl_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,type);CHKERRQ(ierr);
-
-  *newmat = B;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_Essl"
-PetscErrorCode MatDuplicate_Essl(Mat A, MatDuplicateOption op, Mat *M) 
-{
-  PetscErrorCode ierr;
-  Mat_Essl       *lu = (Mat_Essl *)A->spptr;
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  ierr = PetscMemcpy((*M)->spptr,lu,sizeof(Mat_Essl));CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /*MC
   MATESSL - MATESSL = "essl" - A matrix type providing direct solvers (LU) for sequential matrices 
   via the external package ESSL.
@@ -258,16 +159,28 @@ PetscErrorCode MatDuplicate_Essl(Mat A, MatDuplicateOption op, Mat *M)
 .seealso: PCLU
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_Essl"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Essl(Mat A) 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_seqaij_essl"
+PetscErrorCode MatGetFactor_seqaij_essl(Mat A,Mat *F) 
 {
+  Mat            B;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
+  Mat_Essl       *essl;
 
   PetscFunctionBegin;
-  ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_SeqAIJ_Essl(A,MATESSL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  if (A->cmap.N != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscNewLog(B,Mat_Essl,&essl);CHKERRQ(ierr);
+  B->spptr                 = essl;
+  B->ops->solve            = MatSolve_Essl;
+  B->ops->lufactornumeric  = MatLUFactorNumeric_Essl;
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_Essl;
+  B->factor                = FACTOR_LU;
+  *F                       = B;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END

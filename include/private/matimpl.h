@@ -155,7 +155,6 @@ struct _MatOps {
   PetscErrorCode (*missingdiagonal)(Mat,PetscTruth*,PetscInt*);
   /*115*/
   PetscErrorCode (*getseqnonzerostructure)(Mat,Mat *[]);
-  PetscErrorCode (*destroysolver)(Mat);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

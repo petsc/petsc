@@ -167,13 +167,6 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     if (set) {
       ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
     }
-    if (pc->pmat) {
-      ierr = MatGetSolverType(pc->pmat,&stype);CHKERRQ(ierr);
-      ierr = PetscOptionsString("-pc_factor_solver_type","Type of solver to use for factorization","MatSetSolverType",stype,solvertype,64,&set);CHKERRQ(ierr);
-      if (set) {
-	ierr = MatSetSolverType(pc->pmat,solvertype);CHKERRQ(ierr);
-      }
-    }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -262,6 +255,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
         ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr); 
         ierr = PetscLogObjectParent(pc,dir->col);CHKERRQ(ierr);
       }
+      ierr = MatGetFactor(pc->pmat,"petsc",MAT_FACTOR_LU,&dir->fact);CHKERRQ(ierr);
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
@@ -280,6 +274,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
         }
       }
       ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
+      ierr = MatGetFactor(pc->pmat,"petsc",MAT_FACTOR_LU,&dir->fact);CHKERRQ(ierr);
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;

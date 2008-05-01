@@ -47,6 +47,7 @@ int main(int argc,char **args)
   luinfo.shiftnz = 0.0; 
   luinfo.zeropivot = 1.e-14; 
   luinfo.pivotinblocks = 1.0; 
+  ierr = MatGetFactor(C,"petsc",MAT_FACTOR_LU,&LU);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(C,perm,iperm,&luinfo,&LU);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(C,&luinfo,&LU);CHKERRQ(ierr);
   ierr = MatView(LU,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

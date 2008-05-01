@@ -2708,6 +2708,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqbaij_petsc(Mat,MatFactorType,Mat*);
+EXTERN_C_END
+
 /*MC
    MATSEQBAIJ - MATSEQBAIJ = "seqbaij" - A matrix type to be used for sequential block sparse matrices, based on 
    block sparse compressed row format.
@@ -2719,6 +2723,7 @@ EXTERN_C_END
 
 .seealso: MatCreateSeqBAIJ()
 M*/
+
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -2761,6 +2766,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
   b->compressedrow.checked = PETSC_FALSE;
   B->same_nonzero          = PETSC_FALSE;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqbaij_petsc_C",
+                                     "MatGetFactor_seqbaij_petsc",
+                                     MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqBAIJInvertBlockDiagonal_C",
                                      "MatInvertBlockDiagonal_SeqBAIJ",
                                       MatInvertBlockDiagonal_SeqBAIJ);CHKERRQ(ierr);
@@ -2788,30 +2796,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
 EXTERN_C_END
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatDuplicate_SeqBAIJ"
-PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
+#define __FUNCT__ "MatDuplicateNoCreate_SeqBAIJ"
+PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
-  Mat            C;
-  Mat_SeqBAIJ    *c,*a = (Mat_SeqBAIJ*)A->data;
+  Mat            C = *B;
+  Mat_SeqBAIJ    *c = (Mat_SeqBAIJ*)C->data,*a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,mbs = a->mbs,nz = a->nz,bs2 = a->bs2;
 
   PetscFunctionBegin;
   if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,"Corrupt matrix");
-
-  *B = 0;
-  ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,A->rmap.N,A->cmap.n,A->rmap.N,A->cmap.n);CHKERRQ(ierr);
-  ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  c    = (Mat_SeqBAIJ*)C->data;
-
-  C->rmap.N   = A->rmap.N;
-  C->cmap.N   = A->cmap.N;
-  C->rmap.bs  = A->rmap.bs;
-  c->bs2 = a->bs2;
-  c->mbs = a->mbs;
-  c->nbs = a->nbs;
 
   ierr = PetscMalloc2(mbs,PetscInt,&c->imax,mbs,PetscInt,&c->ilen);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
@@ -2867,6 +2861,23 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   C->same_nonzero = A->same_nonzero;
   *B = C;
   ierr = PetscFListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatDuplicate_SeqBAIJ"
+PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
+{
+  Mat            C;
+  Mat_SeqBAIJ    *c,*a = (Mat_SeqBAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,mbs = a->mbs,nz = a->nz,bs2 = a->bs2;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
+  ierr = MatSetSizes(C,A->rmap.N,A->cmap.n,A->rmap.N,A->cmap.n);CHKERRQ(ierr);
+  ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
+  ierr = MatDuplicateNoCreate_SeqBAIJ(A,cpvalues,B);
   PetscFunctionReturn(0);
 }
 

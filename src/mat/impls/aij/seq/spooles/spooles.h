@@ -45,16 +45,6 @@ typedef struct {
   IS              iden,is_petsc;
   VecScatter      scat;
   
-  /* A few function pointers for inheritance */
-  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  PetscErrorCode (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
-  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  PetscErrorCode (*MatView)(Mat,PetscViewer);
-  PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  PetscErrorCode (*MatDestroy)(Mat);
-  PetscErrorCode (*MatPreallocate)(Mat,PetscInt,PetscInt,PetscInt*,PetscInt,PetscInt*);
-
-  MatType        basetype;
   PetscTruth     CleanUpSpooles,useQR;
 } Mat_Spooles;
 
@@ -66,7 +56,6 @@ EXTERN PetscErrorCode MatSolve_SeqSpooles(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatFactorNumeric_SeqSpooles(Mat,MatFactorInfo*,Mat*); 
 EXTERN PetscErrorCode MatView_Spooles(Mat,PetscViewer);
 EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJSpooles(Mat,MatAssemblyType);
-EXTERN PetscErrorCode MatQRFactorSymbolic_SeqAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatDuplicate_Spooles(Mat,MatDuplicateOption,Mat*);

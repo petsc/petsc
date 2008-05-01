@@ -188,6 +188,8 @@ EXTERN PetscErrorCode MatGetRowIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,Pets
 EXTERN PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
+EXTERN PetscErrorCode MatDestroy_SeqAIJ(Mat);
+EXTERN PetscErrorCode MatView_SeqAIJ(Mat,PetscViewer);
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat, MatType,MatReuse,Mat*);

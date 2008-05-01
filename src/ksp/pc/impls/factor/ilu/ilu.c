@@ -557,6 +557,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       if (ilu->nonzerosalongdiagonal) {
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
+      ierr = MatGetFactor(pc->pmat,"petsc",MAT_FACTOR_ILU,&ilu->fact);CHKERRQ(ierr);
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(ilu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ilu->actualfill = info.fill_ratio_needed;
@@ -575,6 +576,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         }
       }
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
+      ierr = MatGetFactor(pc->pmat,"petsc",MAT_FACTOR_ILU,&ilu->fact);CHKERRQ(ierr);
       ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(ilu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ilu->actualfill = info.fill_ratio_needed;
