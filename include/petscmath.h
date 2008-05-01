@@ -347,6 +347,9 @@ M*/
 #if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
 #define PetscIsInfOrNan(a) (isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a)))
 #elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
+#if defined(PETSC_HAVE_FLOAT_H)
+#include "float.h"  /* windows defines _finite() in float.h */
+#endif
 #define PetscIsInfOrNan(a) (!_finite(PetscAbsScalar(a)) || _isnan(PetscAbsScalar(a)))
 #else
 #define PetscIsInfOrNan(a) ((a - a) != 0.0)
