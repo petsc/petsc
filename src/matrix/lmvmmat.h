@@ -1,6 +1,25 @@
 #include "private/matimpl.h"
 
 
+#define LMVMMat_Scale_None		0
+#define LMVMMat_Scale_Scalar		1
+#define LMVMMat_Scale_Broyden		2
+#define LMVMMat_Scale_Types             3
+
+#define LMVMMat_Rescale_None		0
+#define LMVMMat_Rescale_Scalar		1
+#define LMVMMat_Rescale_GL		2
+#define LMVMMat_Rescale_Types          	3
+
+#define LMVMMat_Limit_None		0
+#define LMVMMat_Limit_Average		1
+#define LMVMMat_Limit_Relative		2
+#define LMVMMat_Limit_Absolute		3
+#define LMVMMat_Limit_Types		4
+
+#define TAO_ZER_SAFEGUARD	1e-8
+#define TAO_INF_SAFEGUARD	1e+8
+
 typedef struct{
     PetscInt lm;
     PetscReale eps;
@@ -50,21 +69,27 @@ typedef struct{
   PetscReal *rho;
   PetscReal *beta;
 
-  PetscTruth H0default;
+  PetscTruth useDefaultH0;
   Mat H0;
 
+  PetscTruth useScale;
   Vec scale;
-    
+     
 
 } _p_LmvmMatCtx;
 
 typedef  _p_MatLMVMCtx* MatLMVMCtx;
 
-int MatCreateLMVM(Mat,Vec,Vec,Mat*);
+/* Move to header in include directory? */
+PETSC_EXTERN_CXX_BEGIN
+EXTERN MatCreateLMVM(Vec,Mat*);
+PETSC_EXTERN_CXX_END
+
 
 /* PETSc Mat overrides */
-int MatMult_LMVM(Mat,Vec,Vec);
-int MatView_LMVM(Mat,PetscViewer);
+EXTERN PetscErrorCode MatView_LMVM(Mat,PetscViewer);
+EXTERN PetscErrorCode MatSolve_LMVM(Mat, Vec, Vec);
+EXTERN PetscErrorCode MatDestroy_LMVM(Mat);
 
 /*
 int MatMultTranspose_LMVM(Mat,Vec,Vec);
@@ -83,12 +108,13 @@ int MatNorm_LMVM(Mat,NormType,PetscReal *);
 */
 
 /* Functions used by TAO */
-PetscErrorCode MatLMVM_Reset();
-PetscErrorCode MatLMVM_Solve(Vec, Vec, PetscTruth*);
-PetscErrorCode MatLMVM_Update(Vec, Vec);
-PetscErrorCode MatLMVM_SetDelta(PetscReal);
-PetscErrorCode MatLMVM_SetScale(Vec);
-PetscErrorCode MatLMVM_GetRejects();
-PetscErrorCode MatLMVM_SetH0(Mat);
-PetscErrorCode MatLMVM_GetX0(Vec);
-PetscErrorCode MatLMVM_Refine(Mat, Mat, Vec, Vec);
+PetscErrorCode MatLMVMReset();
+PetscErrorCode MatLMVMUpdate(Vec, Vec);
+PetscErrorCode MatLMVMSetDelta(PetscReal);
+PetscErrorCode MatLMVMSetScale(Vec);
+PetscErrorCode MatLMVMGetRejects();
+PetscErrorCode MatLMVMSetH0(Mat);
+PetscErrorCode MatLMVMGetX0(Vec);
+PetscErrorCode MatLMVMRefine(Mat, Mat, Vec, Vec);
+
+
