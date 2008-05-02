@@ -1180,7 +1180,15 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 #define __FUNCT__ "preallocateMatrix"
 PetscErrorCode preallocateMatrix(const ALE::Obj<ALE::Mesh>& mesh, const int bs, const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
 {
-  return preallocateOperator(mesh, bs, atlas, globalOrder, A);
+  PetscInt       localSize = globalOrder->getLocalSize();
+  PetscInt      *dnz, *onz;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc2(localSize, PetscInt, &dnz, localSize, PetscInt, &onz);CHKERRQ(ierr);
+  ierr = preallocateOperator(mesh, bs, atlas, globalOrder, dnz, onz, A);CHKERRQ(ierr);
+  ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 /******************************** C Wrappers **********************************/
