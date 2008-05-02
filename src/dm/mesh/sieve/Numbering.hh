@@ -603,15 +603,11 @@ namespace ALE {
         Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
         Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
 
-        ///if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Creating new global order: " << labelname << " value " << value << std::endl;}
-          std::cout << "["<<bundle->commRank()<<"]Creating new global order: " << name << " bundle " << bundle.ptr() << std::endl;
+        if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Creating new global order: " << name << std::endl;}
         this->constructOrder(order, sendOverlap, recvOverlap, section->getChart(), section);
         this->_orders[bundle.ptr()][name] = order;
-        this->_orders[bundle.ptr()][name]->view("New Global Order");
       } else {
-        ///if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old global order: " << labelname << " value " << value << std::endl;}
-        std::cout << "["<<bundle->commRank()<<"]Using old global order: " << name << " bundle " << bundle.ptr() << std::endl;
-        this->_orders[bundle.ptr()][name]->view("Old Global Order");
+        if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old global order: " << name << std::endl;}
       }
       return this->_orders[bundle.ptr()][name];
     };

@@ -816,12 +816,6 @@ namespace ALE {
     //   indices people do not have in the global order after communication
     template<typename SendSection, typename RecvSection>
     static void updateOverlap(const Obj<send_overlap_type>& origSendOverlap, const Obj<recv_overlap_type>& origRecvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
-#if 0
-      const Obj<typename recv_overlap_type::traits::baseSequence> rPoints = origRecvOverlap->base();
-
-      for(typename recv_overlap_type::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rPoints->end(); ++p_iter) {
-      }
-#else
       const typename SendSection::sheaf_type& sendRanks = sendSection->getPatches();
       const typename RecvSection::sheaf_type& recvRanks = recvSection->getPatches();
 
@@ -853,12 +847,37 @@ namespace ALE {
           }
         }
       }
-#endif
     };
     #undef __FUNCT__
     #define __FUNCT__ "updateSieve"
     template<typename RecvSection>
-    static void updateSieve(const Obj<RecvSection>& recvSection, const Obj<sieve_type>& sieve) {
+    static void updateSieve(const Obj<recv_overlap_type>& recvOverlap, const Obj<RecvSection>& recvSection, const Obj<sieve_type>& sieve) {
+#if 1
+      Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
+
+      for(typename recv_overlap_type::traits::baseSequence::iterator p_iter = recvPoints->begin(); p_iter != recvPoints->end(); ++p_iter) {
+        const Obj<typename recv_overlap_type::traits::coneSequence>& ranks      = recvOverlap->cone(*p_iter);
+        const typename recv_overlap_type::target_type&               localPoint = *p_iter;
+
+        for(typename recv_overlap_type::traits::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+          const typename recv_overlap_type::target_type& remotePoint = r_iter.color();
+          const int                                      rank        = *r_iter;
+          const Obj<typename RecvSection::section_type>& section     = recvSection->getSection(rank);
+          const typename RecvSection::value_type        *points      = section->restrictPoint(remotePoint);
+          const int                                      size        = section->getFiberDimension(remotePoint);
+          int                                            c           = 0;
+
+          for(int p = 0; p < size; p++) {
+            //sieve->addArrow(points[p], localPoint, c++);
+            if (recvOverlap->support(rank, points[p])->size()) {
+              sieve->addArrow(points[p], recvOverlap->support(rank, points[p])->begin().color(), c);
+            } else {
+              sieve->addArrow(points[p], localPoint, c);
+            }
+          }
+        }
+      }
+#else
       const typename RecvSection::sheaf_type& ranks = recvSection->getPatches();
 
       for(typename RecvSection::sheaf_type::const_iterator p_iter = ranks.begin(); p_iter != ranks.end(); ++p_iter) {
@@ -876,6 +895,7 @@ namespace ALE {
           }
         }
       }
+#endif
     };
     #undef __FUNCT__
     #define __FUNCT__ "coneCompletion"
@@ -889,7 +909,7 @@ namespace ALE {
       const Obj<typename sieveCompletion::cone_section>      coneSection     = new typename sieveCompletion::cone_section(sieve);
       sieveCompletion::completion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
       // Update cones
-      updateSieve(recvSection, sieve);
+      updateSieve(recvOverlap, recvSection, sieve);
     };
     #undef __FUNCT__
     #define __FUNCT__ "completeSection"

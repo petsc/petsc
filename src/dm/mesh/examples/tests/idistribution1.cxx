@@ -1,4 +1,5 @@
-#include <petsc.h>
+#include <petscmat.h>
+#include <petscmesh.hh>
 #include <Mesh.hh>
 #include <Generator.hh>
 #include "unitTests.hh"
@@ -14,6 +15,7 @@ class FunctionTestIDistribution : public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE(FunctionTestIDistribution);
 
   CPPUNIT_TEST(testDistributeMesh2DUninterpolated);
+  CPPUNIT_TEST(testPreallocationMesh2DUninterpolated);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -213,10 +215,42 @@ public:
     f.close();
   };
 
+  void checkMatrix(Mat A, PetscInt dnz[], PetscInt onz[], const char basename[]) {
+    MPI_Comm comm;
+    int      commSize, commRank;
+    PetscObjectGetComm((PetscObject) A, &comm);
+    MPI_Comm_size(comm, &commSize);
+    MPI_Comm_rank(comm, &commRank);
+    ostringstream filename;
+    filename << "data/" << basename << commSize << "_p" << commRank << ".mat";
+    std::ifstream f;
+
+    f.open(filename.str().c_str());
+    // Check preallocation
+    int localSize;
+    f >> localSize;
+    int *diagonal    = new int[localSize];
+    int *offdiagonal = new int[localSize];
+    for(int i = 0; i < localSize; ++i) {
+      f >> diagonal[i];
+      f >> offdiagonal[i];
+    }
+    f.close();
+    PetscInt m, n;
+
+    MatGetLocalSize(A, &m, &n);
+    CPPUNIT_ASSERT_EQUAL(localSize, m);
+    for(int i = 0; i < localSize; ++i) {
+      CPPUNIT_ASSERT_EQUAL(diagonal[i],    dnz[i]);
+      CPPUNIT_ASSERT_EQUAL(offdiagonal[i], onz[i]);
+    }
+    delete [] diagonal;
+    delete [] offdiagonal;
+  };
+
   void testDistributeMesh2DUninterpolated(void) {
     this->createMesh(2, false);
 
-    try {
     typedef ALE::Partitioner<>::part_type                rank_type;
     typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
     typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
@@ -238,9 +272,50 @@ public:
 
     ALE::OverlapBuilder<>::constructOverlap(globalPoints, this->_renumbering, parallelMesh->getSendOverlap(), parallelMesh->getRecvOverlap());
     this->checkMesh(parallelMesh, "2DUninterpolatedDist");
-    } catch(ALE::Exception e) {
-      std::cerr << "ERROR: " << e << std::endl;
-    }
+  };
+
+  void testPreallocationMesh2DUninterpolated(void) {
+    this->createMesh(2, false);
+
+    typedef ALE::Partitioner<>::part_type                rank_type;
+    typedef ALE::Sifter<point_type,rank_type,point_type> mesh_send_overlap_type;
+    typedef ALE::Sifter<rank_type,point_type,point_type> mesh_recv_overlap_type;
+    typedef ALE::DistributionNew<mesh_type>              distribution_type;
+    typedef distribution_type::partition_type            partition_type;
+    ALE::Obj<mesh_type>                    parallelMesh    = new mesh_type(this->_mesh->comm(), this->_mesh->getDimension(), this->_mesh->debug());
+    ALE::Obj<mesh_type::sieve_type>        parallelSieve   = new mesh_type::sieve_type(this->_mesh->comm(), this->_mesh->debug());
+    const ALE::Obj<mesh_send_overlap_type> sendMeshOverlap = new mesh_send_overlap_type(this->_mesh->comm(), this->_mesh->debug());
+    const ALE::Obj<mesh_recv_overlap_type> recvMeshOverlap = new mesh_recv_overlap_type(this->_mesh->comm(), this->_mesh->debug());
+
+    parallelMesh->setSieve(parallelSieve);
+    ALE::Obj<partition_type> partition = distribution_type::distributeMeshV(this->_mesh, parallelMesh, this->_renumbering, sendMeshOverlap, recvMeshOverlap);
+    const ALE::Obj<real_section_type>& coordinates         = this->_mesh->getRealSection("coordinates");
+    const ALE::Obj<real_section_type>& parallelCoordinates = parallelMesh->getRealSection("coordinates");
+
+    parallelMesh->setupCoordinates(parallelCoordinates);
+    distribution_type::distributeSection(coordinates, partition, this->_renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+    ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(this->_renumbering);
+
+    ALE::OverlapBuilder<>::constructOverlap(globalPoints, this->_renumbering, parallelMesh->getSendOverlap(), parallelMesh->getRecvOverlap());
+    parallelMesh->setCalculatedOverlap(true);
+    const ALE::Obj<mesh_type::order_type>& globalOrder = parallelMesh->getFactory()->getGlobalOrder(parallelMesh, "default", parallelCoordinates);
+    const int                              localSize   = globalOrder->getLocalSize();
+    const int                              globalSize  = globalOrder->getGlobalSize();
+    PetscInt      *dnz;
+    PetscInt      *onz;
+    Mat            A;
+    PetscErrorCode ierr;
+
+    ierr = MatCreate(parallelMesh->comm(), &A);
+    ierr = MatSetSizes(A, localSize, localSize, globalSize, globalSize);
+    ierr = MatSetType(A, MATAIJ);
+    ierr = MatSetFromOptions(A);
+    ierr = PetscMalloc2(localSize, PetscInt, &dnz, localSize, PetscInt, &onz);
+    //ierr = preallocateOperator(parallelMesh, parallelMesh->getDimension(), parallelCoordinates->getAtlas(), globalOrder, dnz, onz, A);
+    ierr = preallocateOperator(parallelMesh, 1, parallelCoordinates->getAtlas(), globalOrder, dnz, onz, A);
+    CPPUNIT_ASSERT_EQUAL(0, ierr);
+    this->checkMatrix(A, dnz, onz, "2DUninterpolatedPreallocate");
+    ierr = PetscFree2(dnz, onz);
   };
 };
 

@@ -12,6 +12,69 @@
 extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
 namespace ALE {
+  // Creates new global point names and renames local points globally
+  template<typename Point>
+  class PointFactory : ALE::ParallelObject {
+  public:
+    typedef Point                           point_type;
+    typedef std::map<point_type,point_type> renumbering_type;
+  protected:
+    point_type       max;
+    renumbering_type renumbering;
+    renumbering_type invRenumbering;
+  protected:
+    PointFactory(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug), max(-1) {};
+    void initialize(const point_type& maxPoint) {
+      PetscErrorCode ierr = MPI_Allreduce((void *) &maxPoint, &this->max, 1, MPI_INT, MPI_MAX, this->comm());CHKERRXX(ierr);
+    };
+  public:
+    ~PointFactory() {};
+  public:
+    static PointFactory& singleton(MPI_Comm comm, const point_type& maxPoint, const int debug = 0, bool cleanup = false) {
+      static PointFactory *_singleton = NULL;
+
+      if (cleanup) {
+        if (debug) {std::cout << "Destroying PointFactory" << std::endl;}
+        if (_singleton) {delete _singleton;}
+        _singleton = NULL;
+      } else if (_singleton == NULL) {
+        if (debug) {std::cout << "Creating new PointFactory" << std::endl;}
+        _singleton  = new PointFactory(comm, debug);
+        _singleton->initialize(maxPoint);
+      }
+      return *_singleton;
+    };
+    void clear() {
+      this->max = -1;
+      this->renumbering.clear();
+      this->invRenumbering.clear();
+    };
+  public:
+    template<typename Iterator>
+    void renumberPoints(const Iterator& begin, const Iterator& end) {
+      int numPoints = 0, numGlobalPoints, firstPoint;
+
+      for(Iterator p_iter = begin; p_iter != end; ++p_iter) ++numPoints;
+      MPI_Allreduce(&numPoints, &numGlobalPoints, 1, MPI_INT, MPI_SUM, this->comm());
+      MPI_Scan(&numPoints, &firstPoint, 1, MPI_INT, MPI_SUM, this->comm());
+      firstPoint += this->max - numPoints;
+      this->max  += numGlobalPoints;
+      for(Iterator p_iter = begin; p_iter != end; ++p_iter, ++firstPoint) {
+        ///std::cout << "["<<this->commRank()<<"]: New point " << *p_iter << " --> " << firstPoint << std::endl;
+        this->renumbering[firstPoint] = *p_iter;
+        this->invRenumbering[*p_iter] = firstPoint;
+      }
+    };
+    // global point --> local point
+    renumbering_type& getRenumbering() {
+      return this->renumbering;
+    };
+    // local point --> global point
+    renumbering_type& getInvRenumbering() {
+      return this->invRenumbering;
+    };
+  };
+
   // TODO: Check MPI return values and status of Waits
   template<typename Value_>
   class MPIMover : public ALE::ParallelObject {
