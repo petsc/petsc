@@ -1,31 +1,44 @@
 LOCDIR=tests/
-EXAMPLESC = linktest1.c linesearch1.c
-TESTEXAMPLES_C = linktest1.tao runlinktest1 linktest1.rm clean \
-         linesearchtest1.tao runlinesearchtest1 linesearchtest1.rm clean 
+EXAMPLESC = test_link1.c linesearch1.c
+TESTEXAMPLES_C = test_link1.tao runtest_link1 test_link1.rm clean \
+         test_linesearch1.tao runtest_linesearch1 test_linesearch1.rm \
+         test_lmvmmat1.tao runtest_lmvmmat1 test_lmvmmat1.rm \
+	 clean 
 
 
 include ${TAO_DIR}/conf/tao_base
 
-linktest1: linktest1.o tao_chkopts
-	-${CLINKER} -o linktest1 linktest1.o ${TAO_LIB} ${PETSC_LIB}
-	${RM} linktest1.o
+test_link1: test_link1.o tao_chkopts
+	-${CLINKER} -o test_link1 test_link1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_link1.o
 
 
-linesearchtest1: linesearchtest1.o tao_chkopts
-	-${CLINKER} -o linesearchtest1 linesearchtest1.o ${TAO_LIB} ${PETSC_LIB}
-	${RM} linesearchtest1.o
+test_linesearch1: test_linesearch1.o tao_chkopts
+	-${CLINKER} -o test_linesearch1 test_linesearch1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_linesearch1.o
+
+test_lmvmmat1: test_lmvmmat1.o tao_chkopts
+	-${CLINKER} -o test_lmvmmat1 test_lmvmmat1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_lmvmmat1.o
 
 
-runlinktest1: 
-	-@${MPIEXEC} -np 1 ./linktest1 > linktest1_1.tmp 2>&1; \
-	if (${DIFF} output/linktest1_1.out linktest1_1.tmp) then true;\
-        else echo "Possible problem with linktest1_1, diffs above"; fi; \
-	${RM} -f linktest1_1.tmp
 
-runlinesearchtest1: 
-	-@${MPIEXEC} -np 1 ./linesearchtest1 > linesearchtest1_1.tmp 2>&1; \
-	if (${DIFF} output/linesearchtest1_1.out linesearchtest1_1.tmp) then true;\
-        else echo "Possible problem with linesearchtest1_1, diffs above"; fi; \
-	${RM} -f linesearchtest1_1.tmp
+runtest_link1: 
+	-@${MPIEXEC} -np 1 ./test_link1 > test_link1_1.tmp 2>&1; \
+	if (${DIFF} output/test_link1_1.out test_link1_1.tmp) then true;\
+        else echo "Possible problem with test_link1_1, diffs above"; fi; \
+	${RM} -f test_link1_1.tmp
+
+runtest_linesearch1: 
+	-@${MPIEXEC} -np 1 ./test_linesearch1 > test_linesearch1_1.tmp 2>&1; \
+	if (${DIFF} output/test_linesearch1_1.out test_linesearch1_1.tmp) then true;\
+        else echo "Possible problem with test_linesearch1_1, diffs above"; fi; \
+	${RM} -f test_linesearch1_1.tmp
+
+runtest_lmvmmat1: 
+	-@${MPIEXEC} -np 1 ./test_lmvmmat1 > test_lmvmmat1_1.tmp 2>&1; \
+	if (${DIFF} output/test_lmvmmat1_1.out test_lmvmmat1_1.tmp) then true;\
+        else echo "Possible problem with test_lmvmmat1_1, diffs above"; fi; \
+	${RM} -f test_lmvmmat1_1.tmp
 
 

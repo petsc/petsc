@@ -1,5 +1,5 @@
 #include "private/matimpl.h"
-
+#include "tao_sys.h"
 
 #define LMVMMat_Scale_None		0
 #define LMVMMat_Scale_Scalar		1
@@ -22,7 +22,7 @@
 
 typedef struct{
     PetscInt lm;
-    PetscReale eps;
+    PetscReal eps;
     PetscInt limitType;
     PetscInt scaleType;
     PetscInt rScaleType;
@@ -50,7 +50,7 @@ typedef struct{
   PetscInt lmnow;
   PetscInt iter;
   PetscInt updates;
-  PetscInt rejects
+  PetscInt rejects;
 
   Vec *S;
   Vec *Y;
@@ -76,13 +76,13 @@ typedef struct{
   Vec scale;
      
 
-} _p_LmvmMatCtx;
+} MatLMVMCtx;
 
-typedef  _p_MatLMVMCtx* MatLMVMCtx;
+//typedef  _p_MatLMVMCtx* MatLMVMCtx;
 
 /* Move to header in include directory? */
 PETSC_EXTERN_CXX_BEGIN
-EXTERN MatCreateLMVM(Vec,Mat*);
+EXTERN MatCreateLMVM(MPI_Comm,PetscInt,PetscInt,Mat*);
 PETSC_EXTERN_CXX_END
 
 

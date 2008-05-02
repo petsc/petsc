@@ -16,14 +16,15 @@
   Level: developer
 
 @*/
-EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt N, Mat *A)
+EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *A)
 {
-    MatLMVMCtx ctx;
+    MatLMVMCtx *ctx;
     PetscErrorCode info;
 
     PetscFunctionBegin;
+    info = PetscMalloc(sizeof(MatLMVMCtx),(void**)&ctx); CHKERRQ(info);
     
-    info = MatCreateShell(comm, N, N, &ctx, &B); CHKERRQ(info);
+    info = MatCreateShell(comm, n, n, N, N, &ctx, A); CHKERRQ(info);
     info = MatShellSetOperation(*A,MATOP_SOLVE,(void(*)(void))MatSolve_LMVM);
     CHKERRQ(info);
     info = MatShellSetOperation(*A,MATOP_DESTROY,(void(*)(void))MatDestroy_LMVM);
@@ -57,33 +58,33 @@ EXTERN PetscErrorCode MatSolve_LMVM(Mat A, Vec b, Vec x)
 
     info = VecCopy(b,x); CHKERRQ(info);
     for (ll = 0; ll < shell->lmnow; ++ll) {
-	info = VecDot(x,S[ll],&sq); CHKERRQ(info);
-	beta[ll] = sq * rho[ll];
-	info = VecAxpy(x,-shell->beta[ll],shell->Y[ll]); CHKERRQ(info);
+	info = VecDot(x,shell->S[ll],&sq); CHKERRQ(info);
+	shell->beta[ll] = sq * shell->rho[ll];
+	info = VecAXPY(x,-shell->beta[ll],shell->Y[ll]); CHKERRQ(info);
     }
 
-    shell->scaled = PETSC_FALSE;
-    if (!sheoll->scaled && shell->useDefaultH0) {
-	info = MatSolve(H0,x,shell->U); CHKERRQ(info);
+    scaled = PETSC_FALSE;
+    if (!scaled && shell->useDefaultH0) {
+	info = MatSolve(shell->H0,x,shell->U); CHKERRQ(info);
 	info = VecDot(x,shell->U,&dd); CHKERRQ(info);
 	if ((dd > 0.0) && !TaoInfOrNaN(dd)) {
 	    // Accept Hessian solve
 	    info = VecCopy(shell->U,x); CHKERRQ(info);
-	    shell->scaled = PETSC_TRUE;
+	    scaled = PETSC_TRUE;
 	}
     }
 
-    if (!shell->scaled && shell->useScale) {
-	invo = VecPointwiseMult(shell->U,dx,shell->scale); CHKERRQ(info);
+    if (!scaled && shell->useScale) {
+	info = VecPointwiseMult(shell->U,x,shell->scale); CHKERRQ(info);
 	info = VecDot(x,shell->U,&dd); CHKERRQ(info);
 	if ((dd > 0.0) && !TaoInfOrNaN(dd)) {
 	    // Accept scaling
 	    info = VecCopy(shell->U,x); CHKERRQ(info);	
-	    shell->scaled = TAO_TRUE;
+	    scaled = PETSC_TRUE;
 	}
     }
   
-    if (!shell->scaled) {
+    if (!scaled) {
 	switch(shell->scaleType) {
 	    case LMVMMat_Scale_None:
 		break;
@@ -93,17 +94,17 @@ EXTERN PetscErrorCode MatSolve_LMVM(Mat A, Vec b, Vec x)
 		break;
   
 	    case LMVMMat_Scale_Broyden:
-		info = VecPointwiseMult(x,x,D); CHKERRQ(info);
+		info = VecPointwiseMult(x,x,shell->D); CHKERRQ(info);
 		break;
 	}
     } 
 
     for (ll = shell->lmnow-1; ll >= 0; --ll) {
 	info = VecDot(x,shell->Y[ll],&yq); CHKERRQ(info);
-	info = VecAxpy(x,shell->beta[ll]-yq*shell->rho[ll],shell->S[ll]);
+	info = VecAXPY(x,shell->beta[ll]-yq*shell->rho[ll],shell->S[ll]);
 	CHKERRQ(info);
     }
-    TaoFunctionReturn(0);
+    PetscFunctionReturn(0);
 }
 
   
@@ -118,7 +119,13 @@ EXTERN PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
 #define __FUNCT__ "MatDestroy_LMVM"
 EXTERN PetscErrorCode MatDestroy_LMVM(Mat A)
 {
-    
+    MatLMVMCtx     *shell;
+    PetscErrorCode info;
+    PetscFunctionBegin;
+    info = MatShellGetContext(A,(void**)&shell); CHKERRQ(info);
+    info = PetscFree(shell); CHKERRQ(info);
+    PetscFunctionReturn(0);
+	
 }
 
 

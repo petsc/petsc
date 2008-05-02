@@ -24,11 +24,12 @@
 #define TAO_NULL           0
 #define TAO_EPSILON     DBL_EPSILON
 
+/*
 PetscErrorCode PETSC_DLLEXPORT TaoInitialize(int*,char ***,char[],const char[]);
 PetscErrorCode PETSC_DLLEXPORT TaoInitializeNoArguments(void);
 PetscErrorCode PETSC_DLLEXPORT TaoInitializeFortran(void);
 PetscErrorCode PETSC_DLLEXPORT TaoFinalize(void);
-
+*/
 
 
 
