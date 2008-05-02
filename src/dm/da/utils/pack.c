@@ -348,8 +348,6 @@ PetscErrorCode DMCompositeGather_DM(DMComposite packer,struct DMCompositeLink *m
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetNumberDM(DMComposite packer,PetscInt *nDM)
 {
-  PetscErrorCode         ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(packer,DM_COOKIE,1);
   *nDM = packer->nDM;

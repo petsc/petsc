@@ -18,16 +18,18 @@ extern PetscErrorCode RegisterISieveFunctionSuite();
 extern PetscErrorCode RegisterSectionStressSuite();
 extern PetscErrorCode RegisterISectionStressSuite();
 extern PetscErrorCode RegisterIMeshFunctionSuite();
+extern PetscErrorCode RegisterIDistributionFunctionSuite();
 
 typedef struct {
-  PetscTruth function; // Run the functionality tests
-  PetscTruth stress;   // Run the stress tests
-  PetscTruth sifter;   // Run the Sifter tests
-  PetscTruth sieve;    // Run the Sieve tests
-  PetscTruth isieve;   // Run the ISieve tests
-  PetscTruth section;  // Run the Section tests
-  PetscTruth isection; // Run the ISection tests
-  PetscTruth imesh;    // Run the IMesh tests
+  PetscTruth function;      // Run the functionality tests
+  PetscTruth stress;        // Run the stress tests
+  PetscTruth sifter;        // Run the Sifter tests
+  PetscTruth sieve;         // Run the Sieve tests
+  PetscTruth isieve;        // Run the ISieve tests
+  PetscTruth section;       // Run the Section tests
+  PetscTruth isection;      // Run the ISection tests
+  PetscTruth imesh;         // Run the IMesh tests
+  PetscTruth idistribution; // Run the IDistribution tests
 } Options;
 
 #undef __FUNCT__
@@ -37,14 +39,15 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->function = PETSC_FALSE;
-  options->stress   = PETSC_FALSE;
-  options->sifter   = PETSC_FALSE;
-  options->sieve    = PETSC_FALSE;
-  options->isieve   = PETSC_FALSE;
-  options->section  = PETSC_FALSE;
-  options->isection = PETSC_FALSE;
-  options->imesh    = PETSC_FALSE;
+  options->function      = PETSC_FALSE;
+  options->stress        = PETSC_FALSE;
+  options->sifter        = PETSC_FALSE;
+  options->sieve         = PETSC_FALSE;
+  options->isieve        = PETSC_FALSE;
+  options->section       = PETSC_FALSE;
+  options->isection      = PETSC_FALSE;
+  options->imesh         = PETSC_FALSE;
+  options->idistribution = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-function", "Run functionality tests", "unitTests", options->function, &options->function, PETSC_NULL);CHKERRQ(ierr);
@@ -55,6 +58,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-section", "Run Section tests", "unitTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-isection", "Run ISection tests", "unitTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-imesh", "Run IMesh tests", "unitTests", options->imesh, &options->imesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-idistribution", "Run IDistribution tests", "unitTests", options->idistribution, &options->idistribution, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -83,6 +87,9 @@ PetscErrorCode RegisterSuites(Options *options) {
   }
   if (options->imesh) {
     if (options->function) {ierr = RegisterIMeshFunctionSuite();CHKERRQ(ierr);}
+  }
+  if (options->idistribution) {
+    if (options->function) {ierr = RegisterIDistributionFunctionSuite();CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }

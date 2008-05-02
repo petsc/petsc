@@ -1,14 +1,11 @@
 #include <petscmg.h>      /*I      "petscmg.h"    I*/
 #include <petscdmmg.h>    /*I      "petscdmmg.h"  I*/
-#ifdef PETSC_HAVE_SIEVE
 #include <petscmesh.h>    /*I      "petscmesh.h"  I*/
 #include <Selection.hh>
-#endif
 
 /* Just to set iterations */
 #include "include/private/snesimpl.h"      /*I "petscsnes.h"  I*/
 
-#ifdef PETSC_HAVE_SIEVE
 PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr);
 
 #if 0
@@ -347,4 +344,3 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
   theend:
   PetscFunctionReturn(0);
 }
-#endif

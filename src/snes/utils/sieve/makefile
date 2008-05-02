@@ -1,18 +1,20 @@
+#requirespackage  'PETSC_HAVE_SIEVE'
+#requireslanguage CXXONLY
 
 ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = damg.c damgsnes.c pcdmmg.c
+SOURCEC  = meshmgsnes.c
 SOURCEF  =
-SOURCEH  = ../../../include/petscdmmg.h
-OBJSC    = damg.o damgsnes.o pcdmmg.o
+SOURCEH  =
+OBJSC    = meshmgsnes.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 MANSEC   = DA
 DIRS     = adutils
 EDIRS    = 
-LOCDIR   = src/snes/utils/
+LOCDIR   = src/snes/utils/sieve/
 
 include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test

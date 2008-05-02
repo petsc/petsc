@@ -323,6 +323,7 @@ namespace ALE {
   class Partitioner {
   public:
     typedef Alloc_                               alloc_type;
+    typedef GraphPartitioner                     graph_partitioner_type;
     typedef typename GraphPartitioner::part_type part_type;
     template<typename Mesh>
     class MeshManager {

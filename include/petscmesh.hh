@@ -26,6 +26,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
   ierr = PetscStrcmp(mtype, MATSEQBAIJ, &isSeqBlock);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATMPIBAIJ, &isMPIBlock);CHKERRQ(ierr);
   if (!isShell) {
+    PetscInt *dnz, *onz;
     int bs = 1;
 
     if (isBlock || isSeqBlock || isMPIBlock) {
@@ -38,7 +39,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
         }
       }
     }
-    ierr = preallocateOperator(mesh, bs, section->getAtlas(), order, *J);CHKERRQ(ierr);
+    ierr = PetscMalloc2(localSize, PetscInt, &dnz, localSize, PetscInt, &onz);CHKERRQ(ierr);
+    ierr = preallocateOperator(mesh, bs, section->getAtlas(), order, dnz, onz, *J);CHKERRQ(ierr);
+    ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 } 
@@ -157,16 +160,21 @@ void createOperator(const ALE::Obj<Mesh>& mesh, const ALE::Obj<Section>& s, cons
   // Create dnz/onz or CSR
 };
 
-template<typename Mesh>
+template<typename Atlas>
 class AdjVisitor {
 public:
-  typedef typename Mesh::point_type point_type;
+  typedef typename ALE::Mesh::point_type point_type;
 protected:
+  Atlas&                 atlas;
   ALE::Mesh::sieve_type& adjGraph;
   point_type             p;
 public:
-  AdjVisitor(ALE::Mesh::sieve_type& adjGraph) : adjGraph(adjGraph) {};
-  void visitPoint(const point_type& point) {adjGraph.addCone(point, p);};
+  AdjVisitor(Atlas& atlas, ALE::Mesh::sieve_type& adjGraph) : atlas(atlas), adjGraph(adjGraph) {};
+  void visitPoint(const point_type& point) {
+    if (atlas.restrictPoint(point)[0].prefix) {
+      adjGraph.addCone(point, p);
+    }
+  };
   template<typename Arrow>
   void visitArrow(const Arrow&) {};
 public:
@@ -178,13 +186,13 @@ public:
 template<typename Mesh, typename Atlas>
 PetscErrorCode createLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph)
 {
-  typedef typename ALE::ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type, AdjVisitor<Mesh> > ClosureVisitor;
-  typedef typename ALE::ISieveVisitor::ConeVisitor<typename Mesh::sieve_type, ClosureVisitor>                 ConeVisitor;
-  typedef typename ALE::ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type, ConeVisitor>       StarVisitor;
-  AdjVisitor<Mesh> adjV(*adjGraph);
-  ClosureVisitor   closureV(*mesh->getSieve(), adjV);
-  ConeVisitor      coneV(*mesh->getSieve(), closureV);
-  StarVisitor      starV(*mesh->getSieve(), coneV);
+  typedef typename ALE::ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type, AdjVisitor<Atlas> > ClosureVisitor;
+  typedef typename ALE::ISieveVisitor::ConeVisitor<typename Mesh::sieve_type, ClosureVisitor>                  ConeVisitor;
+  typedef typename ALE::ISieveVisitor::TransitiveClosureVisitor<typename Mesh::sieve_type, ConeVisitor>        StarVisitor;
+  AdjVisitor<Atlas> adjV(*atlas, *adjGraph);
+  ClosureVisitor    closureV(*mesh->getSieve(), adjV);
+  ConeVisitor       coneV(*mesh->getSieve(), closureV);
+  StarVisitor       starV(*mesh->getSieve(), coneV);
   /* In general, we need to get FIAT info that attaches dual basis vectors to sieve points */
   const typename Atlas::chart_type& chart = atlas->getChart();
 
@@ -223,10 +231,109 @@ PetscErrorCode createLocalAdjacencyGraph(const ALE::Obj<ALE::Mesh>& mesh, const 
   PetscFunctionReturn(0);
 }
 
+template<typename Mesh, typename Order>
+PetscErrorCode globalizeLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph, const ALE::Obj<ALE::Mesh::send_overlap_type>& sendOverlap, const ALE::Obj<Order>& globalOrder)
+{
+  PetscFunctionBegin;
+  ALE::PointFactory<typename Mesh::point_type>& pointFactory = ALE::PointFactory<ALE::Mesh::point_type>::singleton(mesh->comm(), mesh->getSieve()->getChart().max(), mesh->debug());
+  // Check for points not in sendOverlap
+  std::set<typename Mesh::point_type> interiorPoints;
+  const Obj<ALE::Mesh::sieve_type::traits::capSequence>& columns = adjGraph->cap();
+
+  for(ALE::Mesh::sieve_type::traits::capSequence::iterator p_iter = columns->begin(); p_iter != columns->end(); ++p_iter) {
+    if (!sendOverlap->support(*p_iter)->size() && globalOrder->restrictPoint(*p_iter)[0].index) {
+      interiorPoints.insert(*p_iter);
+    }
+  }
+  // Renumber those points
+  pointFactory.renumberPoints(interiorPoints.begin(), interiorPoints.end());
+  typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type& renumbering    = pointFactory.getRenumbering();
+  typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type& invRenumbering = pointFactory.getInvRenumbering();
+  // Replace points in local adjacency graph
+  const Obj<ALE::Mesh::sieve_type::traits::baseSequence>& base = adjGraph->base();
+
+  for(ALE::Mesh::sieve_type::traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+    const ALE::Obj<ALE::Mesh::sieve_type::coneSequence>& cone    = adjGraph->cone(*b_iter);
+    bool                                                 replace = false;
+    ALE::Obj<std::vector<typename Mesh::point_type> >    newCone = new std::vector<typename Mesh::point_type>();
+
+    for(ALE::Mesh::sieve_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+      if (interiorPoints.find(*c_iter) != interiorPoints.end()) {
+        newCone->push_back(invRenumbering[*c_iter]);
+        replace = true;
+      } else {
+        newCone->push_back(*c_iter);
+      }
+    }
+    if (interiorPoints.find(*b_iter) != interiorPoints.end()) {
+      adjGraph->clearCone(*b_iter);
+      adjGraph->setCone(newCone, invRenumbering[*b_iter]);
+    } else if (replace) {
+      adjGraph->clearCone(*b_iter);
+      adjGraph->setCone(newCone, *b_iter);
+    }
+  }
+  // Add new points into ordering
+  for(typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type::const_iterator p_iter = renumbering.begin(); p_iter != renumbering.end(); ++p_iter) {
+    ///std::cout << "["<<globalOrder->commRank()<<"]: Updating " << p_iter->first << " to " << globalOrder->restrictPoint(p_iter->second)[0] << std::endl;
+    globalOrder->addPoint(p_iter->first);
+    globalOrder->updatePoint(p_iter->first, globalOrder->restrictPoint(p_iter->second));
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode globalizeLocalAdjacencyGraph(const ALE::Obj<ALE::Mesh>& mesh, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph, const ALE::Obj<ALE::Mesh::send_overlap_type>& sendOverlap, const ALE::Obj<ALE::Mesh::order_type>& globalOrder)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+template<typename Mesh, typename Order>
+PetscErrorCode localizeLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph, const ALE::Obj<ALE::Mesh::send_overlap_type>& sendOverlap, const ALE::Obj<Order>& globalOrder)
+{
+  PetscFunctionBegin;
+  ALE::PointFactory<typename Mesh::point_type>& pointFactory = ALE::PointFactory<ALE::Mesh::point_type>::singleton(mesh->comm(), mesh->getSieve()->getChart().max(), mesh->debug());
+  typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type& renumbering = pointFactory.getRenumbering();
+  // Replace points in local adjacency graph
+  const Obj<ALE::Mesh::sieve_type::traits::baseSequence>& base = adjGraph->base();
+
+  for(ALE::Mesh::sieve_type::traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+    if (renumbering.find(*b_iter) != renumbering.end()) {
+      adjGraph->clearCone(renumbering[*b_iter]);
+      adjGraph->setCone(adjGraph->cone(*b_iter), renumbering[*b_iter]);
+      adjGraph->clearCone(*b_iter);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode localizeLocalAdjacencyGraph(const ALE::Obj<ALE::Mesh>& mesh, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph, const ALE::Obj<ALE::Mesh::send_overlap_type>& sendOverlap, const ALE::Obj<ALE::Mesh::order_type>& globalOrder)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "preallocateOperator"
+/* Problem:
+     We want to allocate an operator. This means we want to know the ordering of all unknowns in the sparsity pattern.
+     The preexisting overlap will not contain information about all unknowns (columns) in the operator.
+
+   Solution:
+     Construct the local sparsity pattern, using globally consistent names for new interior points. Cone complete this
+     pattern, which gives an augmented overlap structure. Insert offsets for the new, global point ids in the existing
+     order, and then complete the order. This argues for a recreation of the order, rather than use of an existing
+     order.
+
+   Problem:
+     Figure out sparsity pattern of the operator, when we have already locally numbered all points. The overlap can
+     establish common names for shared points, but not for interior points.
+
+   Solution:
+     Create a shared resource that bestows globally consistent names.
+*/
 template<typename Mesh, typename Atlas>
-PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
+PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], Mat A)
 {
   MPI_Comm                              comm      = mesh->comm();
   const int                             rank      = mesh->commRank();
@@ -234,17 +341,15 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
   const ALE::Obj<ALE::Mesh>             adjBundle = new ALE::Mesh(comm, debug);
   const ALE::Obj<ALE::Mesh::sieve_type> adjGraph  = new ALE::Mesh::sieve_type(comm, debug);
   PetscInt       numLocalRows, firstRow;
-  PetscInt      *dnz, *onz;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   adjBundle->setSieve(adjGraph);
   numLocalRows = globalOrder->getLocalSize();
   firstRow     = globalOrder->getGlobalOffsets()[rank];
-  ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
   ierr = createLocalAdjacencyGraph(mesh, atlas, adjGraph);CHKERRQ(ierr);
   /* Distribute adjacency graph */
-  adjBundle->constructOverlap();
+  ///adjBundle->constructOverlap();
   typedef typename Mesh::sieve_type::point_type point_type;
   typedef typename Mesh::send_overlap_type      send_overlap_type;
   typedef typename Mesh::recv_overlap_type      recv_overlap_type;
@@ -257,9 +362,11 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
   const Obj<send_section_type>  sendSection       = new send_section_type(comm, debug);
   const Obj<recv_section_type>  recvSection       = new recv_section_type(comm, sendSection->getTag(), debug);
 
+  ierr = globalizeLocalAdjacencyGraph(mesh, adjGraph, vertexSendOverlap, globalOrder);
   ALE::Distribution<ALE::Mesh>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjBundle, sendSection, recvSection);
+  ierr = localizeLocalAdjacencyGraph(mesh, adjGraph, vertexSendOverlap, globalOrder);
   /* Distribute indices for new points */
-  ALE::Distribution<ALE::Mesh>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
+  ALE::Distribution<ALE::Mesh>::updateOverlap(vertexSendOverlap, vertexRecvOverlap, sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
   mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, true);
   /* Read out adjacency graph */
   const ALE::Obj<ALE::Mesh::sieve_type> graph = adjBundle->getSieve();
@@ -303,7 +410,6 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
   ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
-  ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -357,7 +463,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
 
   ALE::Distribution<ALE::Mesh>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjBundle, sendSection, recvSection);
   /* Distribute indices for new points */
-  ALE::Distribution<ALE::Mesh>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
+  ALE::Distribution<ALE::Mesh>::updateOverlap(vertexSendOverlap, vertexRecvOverlap, sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
   mesh->getFactory()->completeOrder(rowGlobalOrder, nbrSendOverlap, nbrRecvOverlap, true);
   mesh->getFactory()->completeOrder(colGlobalOrder, nbrSendOverlap, nbrRecvOverlap, true);
   /* Read out adjacency graph */

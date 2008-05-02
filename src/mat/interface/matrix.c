@@ -3335,8 +3335,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetSolverType(Mat mat, MatSolverType *type)
 {
-  PetscErrorCode         ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);

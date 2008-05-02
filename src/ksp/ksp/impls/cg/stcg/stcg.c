@@ -196,7 +196,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad         */
   ierr = VecDot(r, r, &rr); CHKERRQ(ierr);		/* rr = r^T r        */
-  if (PetscIsInfOrNan(rr)) {
+  if (PetscIsInfOrNanScalar(rr)) {
     /*************************************************************************/
     /* The right-hand side contains not-a-number or an infinite value.       */
     /* The gradient step does not work; return a zero value for the step.    */
@@ -215,7 +215,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);		/* z = inv(M) r      */
   ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T inv(M) r */
-  if (PetscIsInfOrNan(rz)) {
+  if (PetscIsInfOrNanScalar(rz)) {
     /*************************************************************************/
     /* The preconditioner contains not-a-number or an infinite value.        */
     /* Return the gradient direction intersected with the trust region.      */
@@ -329,7 +329,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   /***************************************************************************/
 
   ierr = VecDot(p, z, &kappa); CHKERRQ(ierr);		/* kappa = p^T Q p   */
-  if (PetscIsInfOrNan(kappa)) {
+  if (PetscIsInfOrNanScalar(kappa)) {
     /*************************************************************************/
     /* The matrix produced not-a-number or an infinite value.  In this case, */
     /* we must stop and use the gradient direction.  This condition need     */

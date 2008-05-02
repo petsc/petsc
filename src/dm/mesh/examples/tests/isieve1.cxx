@@ -73,7 +73,7 @@ public:
 
     for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
       const ALE::Obj<Sieve::coneSequence>& cone = m->getSieve()->cone(*b_iter);
-      ALE::ISieveVisitor::PointRetriever<ISieve, 2> retriever;
+      ALE::ISieveVisitor::PointRetriever<ISieve> retriever(2);
 
       this->_sieve->cone(renumbering[*b_iter], retriever);
       const ISieve::point_type *icone = retriever.getPoints();
@@ -88,7 +88,7 @@ public:
 
     for(Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
       const ALE::Obj<Sieve::supportSequence>& support = m->getSieve()->support(*c_iter);
-      ALE::ISieveVisitor::PointRetriever<ISieve, 4> retriever;
+      ALE::ISieveVisitor::PointRetriever<ISieve> retriever(4);
 
       this->_sieve->support(renumbering[*c_iter], retriever);
       const ISieve::point_type *isupport = retriever.getPoints();
@@ -102,11 +102,11 @@ public:
   };
 
   void testOrientedClosure() {
-    typedef ALE::Mesh::sieve_type                         Sieve;
-    typedef ALE::SieveAlg<ALE::Mesh>                      sieve_alg_type;
-    typedef sieve_alg_type::orientedConeArray             oConeArray;
-    typedef sieve_type                                    ISieve;
-    typedef ALE::ISieveVisitor::PointSetRetriever<ISieve> Visitor;
+    typedef ALE::Mesh::sieve_type                      Sieve;
+    typedef ALE::SieveAlg<ALE::Mesh>                   sieve_alg_type;
+    typedef sieve_alg_type::orientedConeArray          oConeArray;
+    typedef sieve_type                                 ISieve;
+    typedef ALE::ISieveVisitor::PointRetriever<ISieve> Visitor;
     double lower[2] = {0.0, 0.0};
     double upper[2] = {1.0, 1.0};
     int    edges[2] = {2, 2};
@@ -116,25 +116,27 @@ public:
 
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
     ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
-    m->view("Square Mesh");
-    this->_sieve->view("Square Sieve");
+    //m->view("Square Mesh");
+    //this->_sieve->view("Square Sieve");
     const ALE::Obj<Sieve::baseSequence>& base = m->getSieve()->base();
 
+    const int closureSize = std::max(0, (int) pow(this->_sieve->getConeSize(*base->begin()), m->depth()));
+    Visitor retriever(closureSize, true);
     for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
       const ALE::Obj<oConeArray>& closure = sieve_alg_type::orientedClosure(m, *b_iter);
-      Visitor retriever;
 
+      retriever.clear();
       ALE::ISieveTraversal<ISieve>::orientedClosure(*this->_sieve, renumbering[*b_iter], retriever);
-      const Visitor::oriented_points_type&          icone   = retriever.getOrientedPoints();
-      Visitor::oriented_points_type::const_iterator ic_iter = icone.begin();
+      const Visitor::oriented_point_type *icone = retriever.getOrientedPoints();
+      int                                 ic    = 0;
 
       CPPUNIT_ASSERT_EQUAL(closure->size(), retriever.getOrientedSize());
       std::cout << "Closure of " << *b_iter <<":"<< renumbering[*b_iter] << std::endl;
-      for(oConeArray::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter, ++ic_iter) {
-        std::cout << "  point " << ic_iter->first << "  " << c_iter->first<<":"<<renumbering[c_iter->first] << std::endl;
-        CPPUNIT_ASSERT_EQUAL(renumbering[c_iter->first], ic_iter->first);
-        std::cout << "  order " << ic_iter->second << "  " << c_iter->second << std::endl;
-        CPPUNIT_ASSERT_EQUAL(c_iter->second, ic_iter->second);
+      for(oConeArray::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter, ++ic) {
+        std::cout << "  point " << icone[ic].first << "  " << c_iter->first<<":"<<renumbering[c_iter->first] << std::endl;
+        CPPUNIT_ASSERT_EQUAL(renumbering[c_iter->first], icone[ic].first);
+        std::cout << "  order " << icone[ic].second << "  " << icone[ic].second << std::endl;
+        CPPUNIT_ASSERT_EQUAL(c_iter->second, icone[ic].second);
       }
     }
   };
