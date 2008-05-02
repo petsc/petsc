@@ -347,7 +347,10 @@ class Package(config.base.Configure):
       elif not isinstance(lib, list): lib = [lib]
       if incl == '': incl = []
       elif not isinstance(incl, list): incl = [incl]
-      incl += self.compilers.fincs
+      # weed out duplicates when adding fincs
+      for loc in self.compilers.fincs:
+        if not loc in incl:
+          incl.append(loc)
       self.framework.logPrint('Checking for library in '+location+': '+str(lib))
       if self.executeTest(self.libraries.check,[lib, self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
         self.lib = lib	
