@@ -53,18 +53,20 @@ class CompilerOptions(config.base.Configure):
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
-        if bopt == 'g':
-          flags.extend(['-MT','-Z7'])
+        if bopt == '':
+          flags.extend(['-MT'])
+        elif bopt == 'g':
+          flags.extend(['-Z7'])
         elif bopt == 'O':
-          flags.extend(['-MT','-O3', '-QxW'])
+          flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
       elif compiler.find('win32fe cl') >= 0:
         if bopt == '':
-          flags.append('-wd4996')
+          flags.extend(['-MT','-wd4996'])
         elif bopt == 'g':
-          flags.extend(['-MT','-Z7'])
+          flags.extend(['-Z7'])
         elif bopt == 'O':
-          flags.extend(['-MT','-O3', '-QxW'])
+          flags.extend(['-O3', '-QxW'])
       # Windows Borland
       elif compiler.find('win32fe bcc32') >= 0:
         if bopt == '':
@@ -129,19 +131,19 @@ class CompilerOptions(config.base.Configure):
       # Windows Intel
       elif compiler.find('win32fe icl') >= 0:
         if bopt == '':
-          flags.append('-GX -GR')
+          flags.extend(['-MT','-GX','-GR'])
         elif bopt in ['g']:
-          flags.extend(['-MT','-Z7'])
+          flags.extend(['-Z7'])
         elif bopt in ['O']:
-          flags.extend(['-MT','-O3', '-QxW'])
+          flags.extend(['-O3', '-QxW'])
       # Windows Microsoft
       elif compiler.find('win32fe cl') >= 0:
         if bopt == '':
-          flags.extend(['-GR','-GX','-EHsc']) # either GX or EHsc should be used.
+          flags.extend(['-MT','-GR','-EHsc']) # removing GX in favor of EHsc
         elif bopt == 'g':
-          flags.extend(['-MT','-Z7','-Zm200'])
+          flags.extend(['-Z7','-Zm200'])
         elif bopt == 'O':
-          flags.extend(['-MT','-O2','-QxW','-Zm200'])
+          flags.extend(['-O2','-QxW','-Zm200'])
       # Windows Borland
       elif compiler.find('win32fe bcc32') >= 0:
         if bopt == '':
@@ -205,10 +207,12 @@ class CompilerOptions(config.base.Configure):
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe ifl') >= 0 or compiler.find('win32fe ifort') >= 0:
-        if bopt == 'g':
-          flags.extend(['-MT', '-Z7'])
+        if bopt == '':
+          flags.extend(['-MT'])
+        elif bopt == 'g':
+          flags.extend(['-Z7'])
         elif bopt == 'O':
-          flags.extend(['-MT', '-O3', '-QxW'])
+          flags.extend(['-O3', '-QxW'])
       # Compaq Visual FORTRAN
       elif compiler.find('win32fe f90') >= 0 or compiler.find('win32fe df') >= 0:
         if bopt == '':
