@@ -25,7 +25,7 @@ void PETSC_STDCALL matcreatempibaij_(MPI_Comm *comm,PetscInt *bs,PetscInt *m,Pet
 {
   CHKFORTRANNULLINTEGER(d_nnz);
   CHKFORTRANNULLINTEGER(o_nnz);
-  *ierr = MatCreateMPIBAIJ((MPI_Comm)PetscToPointerComm(*comm),
+  *ierr = MatCreateMPIBAIJ(MPI_Comm_f2c(*(MPI_Fint *)&*comm),
                              *bs,*m,*n,*M,*N,*d_nz,d_nnz,*o_nz,o_nnz,newmat);
 }
 

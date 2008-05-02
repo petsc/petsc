@@ -1173,11 +1173,10 @@ PetscErrorCode DMMGSetISColoringType(DMMG *dmmg,ISColoringType isctype)
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels,nDM;
+  PetscInt       i,nDM;
   PetscTruth     fieldsplit,dmcomposite;
   KSP            ksp;
   PC             pc;
-  DM             dm;
   IS             *fields;
 
   PetscFunctionBegin;

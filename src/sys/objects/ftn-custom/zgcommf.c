@@ -12,7 +12,7 @@ void PETSC_STDCALL petscobjectgetcomm_(PetscObject *obj,int *comm,PetscErrorCode
 {
   MPI_Comm c;
   *ierr = PetscObjectGetComm(*obj,&c);
-  *(int*)comm = PetscFromPointerComm(c);
+  *(int*)comm =  MPI_Comm_c2f(c);
 }
 
 EXTERN_C_END

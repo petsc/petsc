@@ -41,11 +41,11 @@ int main(int argc,char **args)
   ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
 
   /* 
-     Call Fortran routine - the use of MPICCommToFortranComm() allows 
+     Call Fortran routine - the use of MPI_Comm_c2f() allows
      translation of the MPI_Comm from C so that it can be properly 
      interpreted from Fortran.
   */
-  ierr = MPICCommToFortranComm(PETSC_COMM_WORLD,&fcomm);CHKERRQ(ierr);
+  fcomm = MPI_Comm_c2f(PETSC_COMM_WORLD);
 
   ex7f_(&vec,&fcomm);
 
@@ -67,7 +67,7 @@ void PETSC_STDCALL ex7c_(Vec *fvec,int *fcomm,PetscErrorCode* ierr)
     Translate Fortran integer pointer back to C and
     Fortran Communicator back to C communicator
   */
-  *ierr = MPIFortranCommToCComm(*fcomm,&comm);
+  comm = MPI_Comm_f2c(*fcomm);
   
   /* Some PETSc/MPI operations on Vec/Communicator objects */
   *ierr = VecGetSize(*fvec,&vsize);

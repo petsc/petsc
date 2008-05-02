@@ -118,7 +118,7 @@ void PETSC_STDCALL dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
 {
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
-  *ierr = DACreate2d((MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
+  *ierr = DACreate2d(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*wrap,*stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
 
 void PETSC_STDCALL dagetownershiprange_(DA *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)

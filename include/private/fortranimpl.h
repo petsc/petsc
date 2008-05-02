@@ -21,17 +21,10 @@ extern void   (*PETSC_NULL_FUNCTION_Fortran)(void);
 EXTERN_C_END
 /*  ----------------------------------------------------------------------*/
 /*
-   We store each PETSc object C pointer directly as a
+   PETSc object C pointers are stored directly as
    Fortran integer*4 or *8 depending on the size of pointers.
 */
-#define PetscFInt long
 
-#define PetscToPointer(a)     (*(long *)(a))
-#define PetscFromPointer(a)        (long)(a)
-
-/*  ----------------------------------------------------------------------*/
-#define PetscToPointerComm(a)        MPI_Comm_f2c(*(MPI_Fint *)(&a))
-#define PetscFromPointerComm(a)      MPI_Comm_c2f(a)
 
 /* --------------------------------------------------------------------*/
 /*

@@ -26,7 +26,7 @@ void PETSC_STDCALL petscmatlabenginecreate_(MPI_Comm *comm,CHAR m PETSC_MIXED_LE
   char *ms;
 
   FIXCHAR(m,len,ms);
-  *ierr = PetscMatlabEngineCreate((MPI_Comm)PetscToPointerComm(*comm),ms,e);
+  *ierr = PetscMatlabEngineCreate(MPI_Comm_f2c(*(MPI_Fint *)&*comm),ms,e);
   FREECHAR(m,ms);
 }
 

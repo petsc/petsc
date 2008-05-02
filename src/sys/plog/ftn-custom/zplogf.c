@@ -37,7 +37,7 @@ void PETSC_STDCALL petsclogprintsummary_(MPI_Comm *comm,CHAR filename PETSC_MIXE
 #if defined(PETSC_USE_LOG)
   char *t;
   FIXCHAR(filename,len,t);
-  *ierr = PetscLogPrintSummary((MPI_Comm)PetscToPointerComm(*comm),t);
+  *ierr = PetscLogPrintSummary(MPI_Comm_f2c(*(MPI_Fint *)&*comm),t);
   FREECHAR(filename,t);
 #endif
 }
@@ -47,7 +47,7 @@ void PETSC_STDCALL petsclogprintDetailed_(MPI_Comm *comm,CHAR filename PETSC_MIX
 #if defined(PETSC_USE_LOG)
   char *t;
   FIXCHAR(filename,len,t);
-  *ierr = PetscLogPrintDetailed((MPI_Comm)PetscToPointerComm(*comm),t);
+  *ierr = PetscLogPrintDetailed(MPI_Comm_f2c(*(MPI_Fint *)&*comm),t);
   FREECHAR(filename,t);
 #endif
 }

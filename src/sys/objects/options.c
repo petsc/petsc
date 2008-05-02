@@ -545,6 +545,34 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetAll(char *copts[])
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsClear"
+/*@C
+    PetscOptionsClear - Removes all options form the database leaving it empty.
+
+   Level: developer
+
+.seealso: PetscOptionsInsert()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsClear(void)
+{
+  PetscInt i;
+
+  PetscFunctionBegin;
+  if (!options) PetscFunctionReturn(0);
+  for (i=0; i<options->N; i++) {
+    if (options->names[i]) free(options->names[i]);
+    if (options->values[i]) free(options->values[i]);
+  }
+  for (i=0; i<options->Naliases; i++) {
+    free(options->aliases1[i]);
+    free(options->aliases2[i]);
+  }
+  options->N        = 0;
+  options->Naliases = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsDestroy"
 /*@C
     PetscOptionsDestroy - Destroys the option database. 
@@ -559,18 +587,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetAll(char *copts[])
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsDestroy(void)
 {
-  PetscInt i;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!options) PetscFunctionReturn(0);
-  for (i=0; i<options->N; i++) {
-    if (options->names[i]) free(options->names[i]);
-    if (options->values[i]) free(options->values[i]);
-  }
-  for (i=0; i<options->Naliases; i++) {
-    free(options->aliases1[i]);
-    free(options->aliases2[i]);
-  }
+  ierr = PetscOptionsClear();CHKERRQ(ierr);
   free(options);
   options = 0;
   PetscFunctionReturn(0);

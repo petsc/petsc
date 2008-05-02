@@ -57,7 +57,7 @@ void PETSC_STDCALL sdacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilTyp
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
   *ierr = SDACreate2d(
-	    (MPI_Comm)PetscToPointerComm(*comm),*wrap,
+	    MPI_Comm_f2c(*(MPI_Fint *)&*comm),*wrap,
             *stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
 
@@ -66,7 +66,7 @@ void PETSC_STDCALL sdacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,PetscInt *M,
 {
   CHKFORTRANNULLINTEGER(lc);
   *ierr = SDACreate1d(
-	   (MPI_Comm)PetscToPointerComm(*comm),*wrap,*M,*w,*s,lc,inra);
+	   MPI_Comm_f2c(*(MPI_Fint *)&*comm),*wrap,*M,*w,*s,lc,inra);
 }
 
 void PETSC_STDCALL sdacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType 
@@ -77,7 +77,7 @@ void PETSC_STDCALL sdacreate3d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilTyp
   CHKFORTRANNULLINTEGER(ly);
   CHKFORTRANNULLINTEGER(lz);
   *ierr = SDACreate3d(
-	   (MPI_Comm)PetscToPointerComm(*comm),*wrap,*stencil_type,
+	   MPI_Comm_f2c(*(MPI_Fint *)&*comm),*wrap,*stencil_type,
            *M,*N,*P,*m,*n,*p,*w,*s,lx,ly,lz,inra);
 }
 

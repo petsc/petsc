@@ -1296,9 +1296,6 @@ $
 $   v[] should be passed in like
 $   v[] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
 
-   Restrictions:
-   MatSetValuesBlocked() is currently supported only for the BAIJ and SBAIJ formats
-
    Level: intermediate
 
    Concepts: matrices^putting entries in blocked
@@ -1332,8 +1329,24 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (!mat->ops->setvaluesblocked) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
+  if (mat->ops->setvaluesblocked) {
+    ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
+  } else {
+    PetscInt i,j,*iidxm,*iidxn,bs = mat->rmap.bs;
+    ierr = PetscMalloc2(m*bs,PetscInt,&iidxm,n*bs,PetscInt,&iidxn);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      for (j=0; j<bs; j++) {
+	iidxm[i*bs+j] = bs*idxm[i] + j;
+      }
+    }
+    for (i=0; i<n; i++) {
+      for (j=0; j<bs; j++) {
+	iidxn[i*bs+j] = bs*idxn[i] + j;
+      }
+    }
+    ierr = MatSetValues(mat,bs*m,iidxm,bs*n,iidxn,v,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(iidxm,iidxn);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1622,7 +1635,25 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(mat->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(mat->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
+  if (mat->ops->setvaluesblocked) {
   ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+  } else {
+    PetscInt i,j,*iirowm,*iicolm,bs = mat->rmap.bs;
+    ierr = PetscMalloc2(nrow*bs,PetscInt,&iirowm,ncol*bs,PetscInt,&iicolm);CHKERRQ(ierr);
+    for (i=0; i<nrow; i++) {
+      for (j=0; j<bs; j++) {
+	iirowm[i*bs+j] = bs*irowm[i] + j;
+      }
+    }
+    for (i=0; i<ncol; i++) {
+      for (j=0; j<bs; j++) {
+	iicolm[i*bs+j] = bs*icolm[i] + j;
+      }
+    }
+    ierr = MatSetValues(mat,bs*nrow,iirowm,bs*ncol,iicolm,y,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(iirowm,iicolm);CHKERRQ(ierr);
+
+  }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3304,8 +3335,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetSolverType(Mat mat, MatSolverType *type)
 {
-  PetscErrorCode         ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);

@@ -16,7 +16,7 @@ void PETSC_STDCALL petscdrawopenx_(MPI_Comm *comm,CHAR display PETSC_MIXED_LEN(l
 
   FIXCHAR(display,len1,t1);
   FIXCHAR(title,len2,t2);
-  *ierr = PetscDrawOpenX((MPI_Comm)PetscToPointerComm(*comm),t1,t2,*x,*y,*w,*h,inctx);
+  *ierr = PetscDrawOpenX(MPI_Comm_f2c(*(MPI_Fint *)&*comm),t1,t2,*x,*y,*w,*h,inctx);
   FREECHAR(display,t1);
   FREECHAR(title,t2);
 }

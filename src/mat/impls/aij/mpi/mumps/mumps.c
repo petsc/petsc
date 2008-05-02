@@ -405,7 +405,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
     lua->myid = lu->myid; lua->size = lu->size;
     lu->id.job = JOB_INIT; 
     ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_mumps));CHKERRQ(ierr);
-    ierr = MPICCommToFortranComm(lu->comm_mumps,&(lu->id.comm_fortran));CHKERRQ(ierr);
+    lu->id.comm_fortran = MPI_Comm_c2f(lu->comm_mumps);
 
     /* Set mumps options */
     ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"MUMPS Options","Mat");CHKERRQ(ierr);

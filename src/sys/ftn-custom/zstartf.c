@@ -49,10 +49,10 @@ PetscErrorCode PetscInitializeFortran(void)
   PetscMPIInt c1=0,c2=0;
 
   if (PETSC_COMM_WORLD) {
-    c1 = PetscFromPointerComm(PETSC_COMM_WORLD);
+    c1 =  MPI_Comm_c2f(PETSC_COMM_WORLD);
   }
   if (PETSC_COMM_SELF) {
-    c2 = PetscFromPointerComm(PETSC_COMM_SELF);
+    c2 =  MPI_Comm_c2f(PETSC_COMM_SELF);
   }
   petscsetcommonblock_(&c1,&c2);
   return 0;

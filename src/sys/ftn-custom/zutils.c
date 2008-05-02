@@ -199,97 +199,26 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
   return 0;
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MPICCommToFortranComm"
-/*@C
-    MPICCommToFortranComm - Converts a MPI_Comm represented
-    in C to one appropriate to pass to a Fortran routine.
-
-    Not collective
-
-    Input Parameter:
-.   cobj - the C MPI_Comm
-
-    Output Parameter:
-.   fobj - the Fortran MPI_Comm
-
-    Level: advanced
-
-    Notes:
-    MPICCommToFortranComm() must be called in a C/C++ routine.
-    MPI 1 does not provide a standard for mapping between
-    Fortran and C MPI communicators; this routine handles the
-    mapping correctly on all machines.
-
-.keywords: Fortran, C, MPI_Comm, convert, interlanguage
-
-.seealso: MPIFortranCommToCComm()
-@*/
-PetscErrorCode MPICCommToFortranComm(MPI_Comm comm,int *fcomm)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  /* call to MPI_Comm_size() is for error checking on comm */
-  ierr = MPI_Comm_size(comm,&size);
-  if (ierr) SETERRQ(PETSC_ERR_ARG_CORRUPT ,"Invalid MPI communicator");
-
-  *fcomm = PetscFromPointerComm(comm);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MPIFortranCommToCComm"
-/*@C
-    MPIFortranCommToCComm - Converts a MPI_Comm represented
-    int Fortran (as an integer) to a MPI_Comm in C.
-
-    Not collective
-
-    Input Parameter:
-.   fcomm - the Fortran MPI_Comm (an integer)
-
-    Output Parameter:
-.   comm - the C MPI_Comm
-
-    Level: advanced
-
-    Notes:
-    MPIFortranCommToCComm() must be called in a C/C++ routine.
-    MPI 1 does not provide a standard for mapping between
-    Fortran and C MPI communicators; this routine handles the
-    mapping correctly on all machines.
-
-.keywords: Fortran, C, MPI_Comm, convert, interlanguage
-
-.seealso: MPICCommToFortranComm()
-@*/
-PetscErrorCode MPIFortranCommToCComm(int fcomm,MPI_Comm *comm)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
-  PetscFunctionBegin;
-  *comm = (MPI_Comm)PetscToPointerComm(fcomm);
-  /* call to MPI_Comm_size() is for error checking on comm */
-  ierr = MPI_Comm_size(*comm,&size);
-  if (ierr) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Invalid MPI communicator");
-  PetscFunctionReturn(0);
-}
 
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscisinfornan_            PETSCISINFORNAN
+#define petscisinfornanscalar_            PETSCISINFORNANSCALAR
+#define petscisinfornanreal_            PETSCISINFORNANREAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscisinfornan_           petscisinfornan
+#define petscisinfornanscalar_           petscisinfornanscalar
+#define petscisinfornanreal_           petscisinfornanreal
 #endif
 
 EXTERN_C_BEGIN
 
-int PETSC_STDCALL petscisinfornan_(PetscScalar *v)
+int PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
 {
-  return (int) PetscIsInfOrNan(*v);
+  return (int) PetscIsInfOrNanScalar(*v);
+}
+
+int PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
+{
+  return (int) PetscIsInfOrNanReal(*v);
 }
 
 EXTERN_C_END

@@ -18,7 +18,7 @@ void PETSC_STDCALL aocreatemapping_(MPI_Comm *comm,PetscInt *napp,PetscInt *myap
     CHKFORTRANNULLINTEGER(myapp);
     CHKFORTRANNULLINTEGER(mypetsc);
   }
-  *ierr = AOCreateMapping((MPI_Comm)PetscToPointerComm(*comm),*napp,myapp,mypetsc,aoout);
+  *ierr = AOCreateMapping(MPI_Comm_f2c(*(MPI_Fint*)comm),*napp,myapp,mypetsc,aoout);
 }
 
 void PETSC_STDCALL aocreatemappingis_(IS *isapp,IS *ispetsc,AO *aoout,PetscErrorCode *ierr)

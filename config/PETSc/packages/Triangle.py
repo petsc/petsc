@@ -59,7 +59,6 @@ class Configure(PETSc.package.Package):
     includeDir     = os.path.join(self.installDir, 'include')
     makeinc        = os.path.join(self.packageDir, 'make.inc')
     installmakeinc = os.path.join(self.installDir, 'make.inc')
-    configheader   = os.path.join(self.packageDir, 'configureheader.h')
 
     g = open(makeinc,'w')
     ##g.write('include '+os.path.join(self.petscdir.dir, 'conf', 'rules')+'\n')
@@ -139,14 +138,12 @@ triangle_shared:
 
     # Now compile & install
     if self.installNeeded('make.inc'):
-      self.framework.outputHeader(configheader)
       try:
         self.logPrintBox('Compiling & installing Triangle; this may take several minutes')
         output1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make '+os.path.join(libDir, 'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' triangle_shared; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on Triangle: '+str(e))
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'config.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
       self.checkInstall(output1,'make.inc')
     return self.installDir
 

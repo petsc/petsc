@@ -8,7 +8,7 @@
 #include "petscsys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define petscoptionsgettruth_            PETSCOPTIONSGETTRUTH
+#define petscoptionsgettruth_              PETSCOPTIONSGETTRUTH
 #define petscoptionsgetintarray_           PETSCOPTIONSGETINTARRAY
 #define petscoptionssetvalue_              PETSCOPTIONSSETVALUE
 #define petscoptionsclearvalue_            PETSCOPTIONSCLEARVALUE
@@ -19,8 +19,9 @@
 #define petscoptionsgetstring_             PETSCOPTIONSGETSTRING
 #define petscgetprogramname                PETSCGETPROGRAMNAME
 #define petscoptionsinsertfile_            PETSCOPTIONSINSERTFILE
+#define petscoptionsclear_                 PETSCOPTIONSCLEAR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscoptionsgettruth_            petscoptionsgettruth
+#define petscoptionsgettruth_              petscoptionsgettruth
 #define petscoptionssetvalue_              petscoptionssetvalue
 #define petscoptionsclearvalue_            petscoptionsclearvalue
 #define petscoptionshasname_               petscoptionshasname
@@ -31,6 +32,7 @@
 #define petscoptionsgetintarray_           petscoptionsgetintarray
 #define petscgetprogramname_               petscgetprogramname
 #define petscoptionsinsertfile_            petscoptionsinsertfile
+#define petscoptionsclear_                 petscoptionsclear
 #endif
 
 EXTERN_C_BEGIN
@@ -56,6 +58,11 @@ void PETSC_STDCALL petscoptionssetvalue_(CHAR name PETSC_MIXED_LEN(len1),CHAR va
   *ierr = PetscOptionsSetValue(c1,c2);
   FREECHAR(name,c1);
   FREECHAR(value,c2);
+}
+
+void PETSC_STDCALL petscoptionsclear_(PetscErrorCode *ierr)
+{
+  *ierr = PetscOptionsClear();
 }
 
 void PETSC_STDCALL petscoptionsclearvalue_(CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))

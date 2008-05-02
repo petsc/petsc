@@ -24,7 +24,7 @@ void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
 {
   char   *c1;
   FIXCHAR(name,len,c1);
-  *ierr = PetscViewerBinaryOpen((MPI_Comm)PetscToPointerComm(*comm),c1,*type,binv);
+  *ierr = PetscViewerBinaryOpen(MPI_Comm_f2c(*(MPI_Fint *)&*comm),c1,*type,binv);
   FREECHAR(name,c1);
 }
 

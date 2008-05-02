@@ -275,7 +275,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
     PetscBeganMPI    = PETSC_TRUE;
   } 
   if (f_petsc_comm_world) { /* User called MPI_INITIALIZE() and changed PETSC_COMM_WORLD */
-    PETSC_COMM_WORLD = PetscToPointerComm(f_petsc_comm_world);
+    PETSC_COMM_WORLD = MPI_Comm_f2c(*(MPI_Fint *)&f_petsc_comm_world);
   } else {
     PETSC_COMM_WORLD = MPI_COMM_WORLD;
   }

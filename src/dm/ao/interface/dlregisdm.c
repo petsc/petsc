@@ -18,7 +18,7 @@
 .keywords: AO, DA, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage() {
+PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage(void) {
 #ifdef PETSC_HAVE_SIEVE
   PetscErrorCode ierr;
 #endif

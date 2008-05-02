@@ -167,10 +167,12 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     if (set) {
       ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
     }
-    ierr = MatGetSolverType(pc->pmat,&stype);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-pc_factor_solver_type","Type of solver to use for factorization","MatSetSolverType",stype,solvertype,64,&set);CHKERRQ(ierr);
-    if (set) {
-      ierr = MatSetSolverType(pc->pmat,solvertype);CHKERRQ(ierr);
+    if (pc->pmat) {
+      ierr = MatGetSolverType(pc->pmat,&stype);CHKERRQ(ierr);
+      ierr = PetscOptionsString("-pc_factor_solver_type","Type of solver to use for factorization","MatSetSolverType",stype,solvertype,64,&set);CHKERRQ(ierr);
+      if (set) {
+	ierr = MatSetSolverType(pc->pmat,solvertype);CHKERRQ(ierr);
+      }
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
