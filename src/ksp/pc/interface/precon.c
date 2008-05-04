@@ -1567,6 +1567,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegister(const char sname[],const char path[
    
 .keywords: PC, compute, explicit, operator
 
+.seealso: KSPComputeExplicitOperator()
+
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC pc,Mat *mat)
 {

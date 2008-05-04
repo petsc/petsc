@@ -1701,7 +1701,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
 
     Level: advanced
 
-    Notes: This currentlu uses one color per column so is very slow.
+    Notes: This colors each diagonal block (associated with a single DM) with a different set of colors;
+      this it will compute the diagonal blocks of the Jacobian correctly. The off diagonal blocks are
+      not computed, hence the Jacobian computed is not the entire Jacobian. If -dmcomposite_dense_jacobian
+      is used then each column of the Jacobian is given a different color so the full Jacobian is computed
+      correctly.
 
     Notes: These compute the graph coloring of the graph of A^{T}A. The coloring used 
    for efficient (parallel or thread based) triangular solves etc is NOT yet 
@@ -1713,9 +1717,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode  ierr;
-  PetscInt        n,i;
-  ISColoringValue *colors;
+  PetscErrorCode         ierr;
+  PetscInt               n,i,cnt;
+  ISColoringValue        *colors;
+  PetscTruth             dense = PETSC_FALSE;
+  ISColoringValue        maxcol = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmcomposite,DM_COOKIE,1);
@@ -1724,12 +1730,44 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
   } else if (ctype == IS_COLORING_GLOBAL) {
     n = dmcomposite->n;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");
-
   ierr = PetscMalloc(n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr); /* freed in ISColoringDestroy() */
-  for (i=0; i<n; i++) {
-    colors[i] = (ISColoringValue)(dmcomposite->rstart + i);
+
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
+  if (dense) {
+    for (i=0; i<n; i++) {
+      colors[i] = (ISColoringValue)(dmcomposite->rstart + i);
+    }
+    maxcol = dmcomposite->N;
+  } else {
+    struct DMCompositeLink *next = dmcomposite->next;
+    PetscMPIInt            rank;
+  
+    ierr = MPI_Comm_rank(dmcomposite->hdr.comm,&rank);CHKERRQ(ierr);
+    cnt  = 0;
+    while (next) {
+      if (next->type == DMCOMPOSITE_ARRAY) {
+        if (rank == next->rank) {  /* each column gets is own color */
+          for (i=dmcomposite->rstart+next->rstart; i<dmcomposite->rstart+next->rstart+next->n; i++) {
+            colors[cnt++] = maxcol++;
+          }
+        }
+        ierr = MPI_Bcast(&maxcol,1,MPIU_COLORING_VALUE,next->rank,dmcomposite->hdr.comm);CHKERRQ(ierr);
+      } else if (next->type == DMCOMPOSITE_DM) {
+        ISColoring     lcoloring;
+
+        ierr = DMGetColoring(next->dm,IS_COLORING_GLOBAL,&lcoloring);CHKERRQ(ierr);
+        for (i=0; i<lcoloring->N; i++) {
+          colors[cnt++] = maxcol + lcoloring->colors[i];
+        }
+        maxcol += lcoloring->n;
+        ierr = ISColoringDestroy(lcoloring);CHKERRQ(ierr);
+      } else {
+        SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      }
+      next = next->next;
+    }
   }
-  ierr = ISColoringCreate(((PetscObject)dmcomposite)->comm,dmcomposite->N,n,colors,coloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(((PetscObject)dmcomposite)->comm,maxcol,n,colors,coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

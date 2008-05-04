@@ -12,6 +12,7 @@ static char help[] = "Model multi-physics solver. Modified from src/snes/example
 
 extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
 extern PetscErrorCode FormFunctionComp(SNES,Vec,Vec,void*);
+extern PetscEvent     EVENT_FORMFUNCTIONLOCAL1, EVENT_FORMFUNCTIONLOCAL2;;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -27,6 +28,8 @@ int main(int argc,char **argv)
   DMComposite    pack;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = PetscLogEventRegister(&EVENT_FORMFUNCTIONLOCAL1, "FormFunc1", 0);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&EVENT_FORMFUNCTIONLOCAL2, "FormFunc2", 0);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

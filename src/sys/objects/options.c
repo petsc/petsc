@@ -1137,6 +1137,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char o
        TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE
        FALSE, false, NO, no, and 0 all translate to PETSC_FALSE
 
+       If the user does not supply the option (as either true or false) ivalue is NOT changed. Thus
+     you NEED TO ALWAYS initialize the ivalue.
+
    Concepts: options database^has logical
 
 .seealso: PetscOptionsGetReal(), PetscOptionsHasName(), PetscOptionsGetString(),

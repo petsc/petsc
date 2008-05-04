@@ -2,6 +2,7 @@
 ALL: lib
 
 DIRS     = ao da mesh adda
+SOURCEH  = dmimpl.h
 LOCDIR   = src/dm/
 MANSEC   = DA
 
