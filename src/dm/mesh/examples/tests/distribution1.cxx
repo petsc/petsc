@@ -15,6 +15,7 @@ class FunctionTestDistribution : public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE(FunctionTestDistribution);
 
   CPPUNIT_TEST(testDistributeMesh2DUninterpolated);
+  CPPUNIT_TEST(testOldDistributeMesh2DUninterpolated);
   CPPUNIT_TEST(testPreallocationMesh2DUninterpolated);
 
   CPPUNIT_TEST_SUITE_END();
@@ -74,6 +75,10 @@ public:
     filename << "data/" << basename << mesh->commSize() << "_p" << mesh->commRank() << ".mesh";
     std::ifstream f;
 
+//     mesh->view("Mesh");
+//     for(std::map<point_type,point_type>::const_iterator r_iter = _renumbering.begin(); r_iter != _renumbering.end(); ++r_iter) {
+//       std::cout <<"["<<mesh->commRank()<<"]: renumbering " << r_iter->first << " --> " << r_iter->second << std::endl;
+//     }
     f.open(filename.str().c_str());
     // Check cones
     int numCones = 0, totConeSize = 0;
@@ -249,6 +254,23 @@ public:
 
     ALE::OverlapBuilder<>::constructOverlap(globalPoints, this->_renumbering, parallelMesh->getSendOverlap(), parallelMesh->getRecvOverlap());
     this->checkMesh(parallelMesh, "2DUninterpolatedDist");
+  };
+
+  void testOldDistributeMesh2DUninterpolated(void) {
+    this->createMesh(2, false);
+    typedef ALE::Distribution<mesh_type> distribution_type;
+
+    ALE::Obj<mesh_type> parallelMesh = distribution_type::distributeMesh(this->_mesh);
+    parallelMesh->constructOverlap();
+    const ALE::Obj<ALE::Mesh::sieve_type::traits::baseSequence> base = parallelMesh->getSieve()->base();
+    const ALE::Obj<ALE::Mesh::sieve_type::traits::capSequence>  cap  = parallelMesh->getSieve()->cap();
+    const int min = std::min(*std::min_element(base->begin(), base->end()), *std::min_element(cap->begin(), cap->end()));
+    const int max = std::max(*std::max_element(base->begin(), base->end()), *std::max_element(cap->begin(), cap->end()));
+
+    for(int i = min; i <= max; ++i) {
+      this->_renumbering[i] = i;
+    }
+    this->checkMesh(parallelMesh, "2DUninterpolatedOldDist");
   };
 
   void testPreallocationMesh2DUninterpolated(void) {
