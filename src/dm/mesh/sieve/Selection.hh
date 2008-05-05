@@ -640,7 +640,7 @@ namespace ALE {
       typedef typename int_section_type::chart_type chart_type;
       const int                           dim        = (dimension > 0) ? dimension : mesh->getDimension()-1;
       const Obj<sieve_type>&              sieve      = mesh->getSieve();
-      Obj<typename ALE::Mesh>             submesh    = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
+      Obj<ALE::Mesh>                      submesh    = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
       Obj<typename ALE::Mesh::sieve_type> subSieve   = new typename ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
       const bool                          censor     = mesh->hasLabel("censored depth");
       const Obj<label_type>&              depthLabel = censor ? mesh->getLabel("censored depth") : mesh->getLabel("depth");
