@@ -18,6 +18,7 @@ extern PetscErrorCode RegisterISieveFunctionSuite();
 extern PetscErrorCode RegisterSectionStressSuite();
 extern PetscErrorCode RegisterISectionStressSuite();
 extern PetscErrorCode RegisterIMeshFunctionSuite();
+extern PetscErrorCode RegisterDistributionFunctionSuite();
 extern PetscErrorCode RegisterIDistributionFunctionSuite();
 
 typedef struct {
@@ -29,6 +30,7 @@ typedef struct {
   PetscTruth section;       // Run the Section tests
   PetscTruth isection;      // Run the ISection tests
   PetscTruth imesh;         // Run the IMesh tests
+  PetscTruth distribution;  // Run the Distribution tests
   PetscTruth idistribution; // Run the IDistribution tests
 } Options;
 
@@ -47,6 +49,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->section       = PETSC_FALSE;
   options->isection      = PETSC_FALSE;
   options->imesh         = PETSC_FALSE;
+  options->distribution  = PETSC_FALSE;
   options->idistribution = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
@@ -58,6 +61,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-section", "Run Section tests", "unitTests", options->section, &options->section, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-isection", "Run ISection tests", "unitTests", options->isection, &options->isection, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-imesh", "Run IMesh tests", "unitTests", options->imesh, &options->imesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-distribution", "Run Distribution tests", "unitTests", options->distribution, &options->distribution, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-idistribution", "Run IDistribution tests", "unitTests", options->idistribution, &options->idistribution, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
@@ -87,6 +91,9 @@ PetscErrorCode RegisterSuites(Options *options) {
   }
   if (options->imesh) {
     if (options->function) {ierr = RegisterIMeshFunctionSuite();CHKERRQ(ierr);}
+  }
+  if (options->distribution) {
+    if (options->function) {ierr = RegisterDistributionFunctionSuite();CHKERRQ(ierr);}
   }
   if (options->idistribution) {
     if (options->function) {ierr = RegisterIDistributionFunctionSuite();CHKERRQ(ierr);}
