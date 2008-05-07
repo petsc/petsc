@@ -241,7 +241,7 @@ class Configure(config.package.Package):
   def checkDownload(self, requireDownload = 1):
     '''Check if we should download MPICH or OpenMPI'''
 
-    if self.framework.argDB['download-mpich'] + self.framework.argDB['download-openmpi'] > 1:
+    if self.framework.argDB['download-mpich'] and self.framework.argDB['download-openmpi']:
       raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration.')
 
     # Check for MPICH
