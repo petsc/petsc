@@ -104,7 +104,7 @@ public:
     ALE::SieveBuilder<mesh_type>::buildCoordinates(this->_mesh, spaceDim, coordinates);
   };
 
-  void setupSection(const char filename[], real_section_type& section) {
+  void setupSection(const char filename[], const int numCells, real_section_type& section) {
     std::ifstream f;
     int           numBC;
     int          *numPoints;
@@ -129,6 +129,7 @@ public:
         points[bc] = new int[numPoints[bc]];
         for(int p = 0; p < numPoints[bc]; ++p) {
           f >> points[bc][p];
+          points[bc][p] += numCells;
           section.setConstraintDimension(points[bc][p], numConstraints);
         }
       }
@@ -147,6 +148,7 @@ public:
       delete [] points;
       f.close();
     }
+    section.view("New Section");
   };
 
   void checkMesh(const ALE::Obj<mesh_type>& mesh, const char basename[]) {
@@ -400,7 +402,7 @@ public:
     this->readMesh("data/3DHex.mesh", 3, false);
     const ALE::Obj<real_section_type>& section = this->_mesh->getRealSection("default");
     section->setFiberDimension(this->_mesh->depthStratum(0), 3);
-    this->setupSection("data/3DHex.bc", *section);
+    this->setupSection("data/3DHex.bc", this->_mesh->heightStratum(0)->size(), *section);
     typedef ALE::Distribution<mesh_type> distribution_type;
 
     ALE::Obj<mesh_type> parallelMesh = distribution_type::distributeMesh(this->_mesh);
