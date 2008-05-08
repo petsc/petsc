@@ -296,7 +296,7 @@ class Configure(config.package.Package):
 
   def getWindowsNonOptFlags(self,cflags):
     for flag in ['-MT','-threads']:
-      if cflags.find(flag): return flag
+      if cflags.find(flag) >=0: return flag
     return ''  
 
   def downLoadBlasLapack(self, f2c, l):
