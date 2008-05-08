@@ -10,16 +10,17 @@
 #include <iostream>
 #include <fstream>
 
-class FunctionTestIDistribution : public CppUnit::TestFixture
+class FunctionTestDistribution : public CppUnit::TestFixture
 {
-  CPPUNIT_TEST_SUITE(FunctionTestIDistribution);
+  CPPUNIT_TEST_SUITE(FunctionTestDistribution);
 
   CPPUNIT_TEST(testDistributeMesh2DUninterpolated);
+  CPPUNIT_TEST(testOldDistributeMesh2DUninterpolated);
   CPPUNIT_TEST(testPreallocationMesh2DUninterpolated);
 
   CPPUNIT_TEST_SUITE_END();
 public:
-  typedef ALE::IMesh                   mesh_type;
+  typedef ALE::Mesh                    mesh_type;
   typedef mesh_type::sieve_type        sieve_type;
   typedef mesh_type::point_type        point_type;
   typedef mesh_type::real_section_type real_section_type;
@@ -55,9 +56,8 @@ public:
   void tearDown(void) {};
 
   void createMesh(const int dim, const bool interpolate) {
-    const ALE::Obj<sieve_type> sieve = new sieve_type(PETSC_COMM_WORLD, this->_debug);
-    ALE::Obj<ALE::Mesh>        mB;
-    ALE::Obj<ALE::Mesh>        m;
+    ALE::Obj<mesh_type> mB;
+    ALE::Obj<mesh_type> m;
 
     if (dim == 2) {
       double lower[2] = {0.0, 0.0};
@@ -66,18 +66,7 @@ public:
 
       mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
     }
-    m           = ALE::Generator::generateMesh(mB, interpolate);
-    this->_mesh = new mesh_type(PETSC_COMM_WORLD, dim, this->_debug);
-    this->_mesh->setSieve(sieve);
-    const ALE::Obj<ALE::Mesh::sieve_type::traits::baseSequence> base = m->getSieve()->base();
-    const ALE::Obj<ALE::Mesh::sieve_type::traits::capSequence>  cap  = m->getSieve()->cap();
-
-    if (!sieve->commRank()) {
-      sieve->setChart(sieve_type::chart_type(std::min(*std::min_element(base->begin(), base->end()), *std::min_element(cap->begin(), cap->end())),
-                                             std::max(*std::max_element(base->begin(), base->end()), *std::max_element(cap->begin(), cap->end()))));
-    }
-    ALE::ISieveConverter::convertMesh(*m, *this->_mesh, this->_renumbering, false);
-    this->_renumbering.clear();
+    this->_mesh = ALE::Generator::generateMesh(mB, interpolate);
   };
 
   void checkMesh(const ALE::Obj<mesh_type>& mesh, const char basename[]) {
@@ -86,6 +75,10 @@ public:
     filename << "data/" << basename << mesh->commSize() << "_p" << mesh->commRank() << ".mesh";
     std::ifstream f;
 
+//     mesh->view("Mesh");
+//     for(std::map<point_type,point_type>::const_iterator r_iter = _renumbering.begin(); r_iter != _renumbering.end(); ++r_iter) {
+//       std::cout <<"["<<mesh->commRank()<<"]: renumbering " << r_iter->first << " --> " << r_iter->second << std::endl;
+//     }
     f.open(filename.str().c_str());
     // Check cones
     int numCones = 0, totConeSize = 0;
@@ -97,24 +90,18 @@ public:
     int *cones = new int[totConeSize];
     for(int c = 0; c < totConeSize; ++c) f >> cones[c];
 
-    CPPUNIT_ASSERT_EQUAL(numCones, sieve->getBaseSize());
-    ALE::ISieveVisitor::PointRetriever<sieve_type> baseV(numCones);
-    ALE::ISieveVisitor::PointRetriever<sieve_type> cV(sieve->getMaxConeSize());
+    const ALE::Obj<sieve_type::traits::baseSequence> base = sieve->base();
+    int b = 0, k = 0;
 
-    sieve->base(baseV);
-    const sieve_type::point_type *base = baseV.getPoints();
+    CPPUNIT_ASSERT_EQUAL(numCones, (int) base->size());
+    for(sieve_type::traits::baseSequence::iterator p_iter = base->begin(); p_iter != base->end(); ++p_iter, ++b) {
+      CPPUNIT_ASSERT_EQUAL(this->_renumbering[coneRoots[b]], *p_iter);
+      const ALE::Obj<sieve_type::coneSequence> cone = sieve->cone(*p_iter);
 
-    for(int b = 0, k = 0; b < baseV.getSize(); ++b) {
-      CPPUNIT_ASSERT_EQUAL(this->_renumbering[coneRoots[b]], base[b]);
-      sieve->cone(base[b], cV);
-      const sieve_type::point_type *cone     = cV.getPoints();
-      const int                     coneSize = cV.getSize();
-
-      CPPUNIT_ASSERT_EQUAL(coneSizes[b], coneSize);
-      for(int c = 0; c < coneSize; ++c, ++k) {
-        CPPUNIT_ASSERT_EQUAL(this->_renumbering[cones[k]], cone[c]);
+      CPPUNIT_ASSERT_EQUAL(coneSizes[b], (int) cone->size());
+      for(sieve_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++k) {
+        CPPUNIT_ASSERT_EQUAL(this->_renumbering[cones[k]], *c_iter);
       }
-      cV.clear();
     }
     delete [] coneRoots;
     delete [] coneSizes;
@@ -130,24 +117,19 @@ public:
     int *supports = new int[totSupportSize];
     for(int c = 0; c < totSupportSize; ++c) f >> supports[c];
 
-    CPPUNIT_ASSERT_EQUAL(numSupports, sieve->getCapSize());
-    ALE::ISieveVisitor::PointRetriever<sieve_type> capV(numSupports);
-    ALE::ISieveVisitor::PointRetriever<sieve_type> sV(sieve->getMaxSupportSize());
+    const ALE::Obj<sieve_type::traits::capSequence> cap = sieve->cap();
+    int c = 0;
 
-    sieve->cap(capV);
-    const sieve_type::point_type *cap = capV.getPoints();
+    k = 0;
+    CPPUNIT_ASSERT_EQUAL(numSupports, (int) cap->size());
+    for(sieve_type::traits::capSequence::iterator p_iter = cap->begin(); p_iter != cap->end(); ++p_iter, ++c) {
+      CPPUNIT_ASSERT_EQUAL(this->_renumbering[supportRoots[c]], *p_iter);
+      const ALE::Obj<sieve_type::supportSequence> support = sieve->support(*p_iter);
 
-    for(int c = 0, k = 0; c < capV.getSize(); ++c) {
-      CPPUNIT_ASSERT_EQUAL(this->_renumbering[supportRoots[c]], cap[c]);
-      sieve->support(cap[c], sV);
-      const sieve_type::point_type *support     = sV.getPoints();
-      const int                     supportSize = sV.getSize();
-
-      CPPUNIT_ASSERT_EQUAL(supportSizes[c], supportSize);
-      for(int s = 0; s < supportSize; ++s, ++k) {
-        CPPUNIT_ASSERT_EQUAL(this->_renumbering[supports[k]], support[s]);
+      CPPUNIT_ASSERT_EQUAL(supportSizes[c], (int) support->size());
+      for(sieve_type::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter, ++k) {
+        CPPUNIT_ASSERT_EQUAL(this->_renumbering[supports[k]], *s_iter);
       }
-      sV.clear();
     }
     delete [] supportRoots;
     delete [] supportSizes;
@@ -262,7 +244,7 @@ public:
     const ALE::Obj<mesh_recv_overlap_type> recvMeshOverlap = new mesh_recv_overlap_type(this->_mesh->comm(), this->_mesh->debug());
 
     parallelMesh->setSieve(parallelSieve);
-    ALE::Obj<partition_type> partition = distribution_type::distributeMeshV(this->_mesh, parallelMesh, this->_renumbering, sendMeshOverlap, recvMeshOverlap);
+    ALE::Obj<partition_type> partition = distribution_type::distributeMesh(this->_mesh, parallelMesh, this->_renumbering, sendMeshOverlap, recvMeshOverlap);
     const ALE::Obj<real_section_type>& coordinates         = this->_mesh->getRealSection("coordinates");
     const ALE::Obj<real_section_type>& parallelCoordinates = parallelMesh->getRealSection("coordinates");
 
@@ -271,7 +253,24 @@ public:
     ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(this->_renumbering);
 
     ALE::OverlapBuilder<>::constructOverlap(globalPoints, this->_renumbering, parallelMesh->getSendOverlap(), parallelMesh->getRecvOverlap());
-    this->checkMesh(parallelMesh, "2DUninterpolatedIDist");
+    this->checkMesh(parallelMesh, "2DUninterpolatedDist");
+  };
+
+  void testOldDistributeMesh2DUninterpolated(void) {
+    this->createMesh(2, false);
+    typedef ALE::Distribution<mesh_type> distribution_type;
+
+    ALE::Obj<mesh_type> parallelMesh = distribution_type::distributeMesh(this->_mesh);
+    parallelMesh->constructOverlap();
+    const ALE::Obj<ALE::Mesh::sieve_type::traits::baseSequence> base = parallelMesh->getSieve()->base();
+    const ALE::Obj<ALE::Mesh::sieve_type::traits::capSequence>  cap  = parallelMesh->getSieve()->cap();
+    const int min = std::min(*std::min_element(base->begin(), base->end()), *std::min_element(cap->begin(), cap->end()));
+    const int max = std::max(*std::max_element(base->begin(), base->end()), *std::max_element(cap->begin(), cap->end()));
+
+    for(int i = min; i <= max; ++i) {
+      this->_renumbering[i] = i;
+    }
+    this->checkMesh(parallelMesh, "2DUninterpolatedOldDist");
   };
 
   void testPreallocationMesh2DUninterpolated(void) {
@@ -288,7 +287,7 @@ public:
     const ALE::Obj<mesh_recv_overlap_type> recvMeshOverlap = new mesh_recv_overlap_type(this->_mesh->comm(), this->_mesh->debug());
 
     parallelMesh->setSieve(parallelSieve);
-    ALE::Obj<partition_type> partition = distribution_type::distributeMeshV(this->_mesh, parallelMesh, this->_renumbering, sendMeshOverlap, recvMeshOverlap);
+    ALE::Obj<partition_type> partition = distribution_type::distributeMesh(this->_mesh, parallelMesh, this->_renumbering, sendMeshOverlap, recvMeshOverlap);
     const ALE::Obj<real_section_type>& coordinates         = this->_mesh->getRealSection("coordinates");
     const ALE::Obj<real_section_type>& parallelCoordinates = parallelMesh->getRealSection("coordinates");
 
@@ -320,9 +319,9 @@ public:
 };
 
 #undef __FUNCT__
-#define __FUNCT__ "RegisterIDistributionFunctionSuite"
-PetscErrorCode RegisterIDistributionFunctionSuite() {
-  CPPUNIT_TEST_SUITE_REGISTRATION(FunctionTestIDistribution);
+#define __FUNCT__ "RegisterDistributionFunctionSuite"
+PetscErrorCode RegisterDistributionFunctionSuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION(FunctionTestDistribution);
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

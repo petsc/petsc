@@ -19,14 +19,12 @@ namespace ALE {
     typedef Point                           point_type;
     typedef std::map<point_type,point_type> renumbering_type;
   protected:
-    point_type       max;
+    point_type       originalMax;
+    point_type       currentMax;
     renumbering_type renumbering;
     renumbering_type invRenumbering;
   protected:
-    PointFactory(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug), max(-1) {};
-    void initialize(const point_type& maxPoint) {
-      PetscErrorCode ierr = MPI_Allreduce((void *) &maxPoint, &this->max, 1, MPI_INT, MPI_MAX, this->comm());CHKERRXX(ierr);
-    };
+    PointFactory(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug), originalMax(-1) {};
   public:
     ~PointFactory() {};
   public:
@@ -40,12 +38,17 @@ namespace ALE {
       } else if (_singleton == NULL) {
         if (debug) {std::cout << "Creating new PointFactory" << std::endl;}
         _singleton  = new PointFactory(comm, debug);
-        _singleton->initialize(maxPoint);
+        _singleton->setMax(maxPoint);
       }
       return *_singleton;
     };
+    void setMax(const point_type& maxPoint) {
+      PetscErrorCode ierr = MPI_Allreduce((void *) &maxPoint, &this->originalMax, 1, MPI_INT, MPI_MAX, this->comm());CHKERRXX(ierr);
+      ++this->originalMax;
+      this->currentMax = this->originalMax;
+    };
     void clear() {
-      this->max = -1;
+      this->currentMax = this->originalMax;
       this->renumbering.clear();
       this->invRenumbering.clear();
     };
@@ -57,8 +60,8 @@ namespace ALE {
       for(Iterator p_iter = begin; p_iter != end; ++p_iter) ++numPoints;
       MPI_Allreduce(&numPoints, &numGlobalPoints, 1, MPI_INT, MPI_SUM, this->comm());
       MPI_Scan(&numPoints, &firstPoint, 1, MPI_INT, MPI_SUM, this->comm());
-      firstPoint += this->max - numPoints;
-      this->max  += numGlobalPoints;
+      firstPoint += this->currentMax - numPoints;
+      this->currentMax += numGlobalPoints;
       for(Iterator p_iter = begin; p_iter != end; ++p_iter, ++firstPoint) {
         ///std::cout << "["<<this->commRank()<<"]: New point " << *p_iter << " --> " << firstPoint << std::endl;
         this->renumbering[firstPoint] = *p_iter;
