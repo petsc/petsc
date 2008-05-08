@@ -10,6 +10,7 @@ static char help[] = "Model single-physics solver. Modified from ex19.c \n\\n";
 
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscEvent     EVENT_FORMFUNCTIONLOCAL1;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -24,6 +25,7 @@ int main(int argc,char **argv)
   DA             da1;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = PetscLogEventRegister(&EVENT_FORMFUNCTIONLOCAL1, "FormFunc1", 0);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
   /* Problem parameters (velocity of lid, prandtl, and grashof numbers) */
@@ -82,9 +84,7 @@ int main(int argc,char **argv)
 PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 {
   PetscErrorCode ierr;
-  AppCtx         *user = (AppCtx*)dmmg->user;
   DA             da1 = (DA)dmmg->dm;
-  Vec            X1;
   Field1         **x1;
   DALocalInfo    info1;
 

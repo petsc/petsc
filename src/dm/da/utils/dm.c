@@ -176,7 +176,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring"
 /*@
-    DMGetColoring - Gets coloring and empty Jacobian for a DA or DMComposite
+    DMGetColoring - Gets coloring for a DA or DMComposite
 
     Collective on DM
 

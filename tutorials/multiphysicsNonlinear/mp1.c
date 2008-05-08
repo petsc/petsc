@@ -200,10 +200,10 @@ int main(int argc,char **argv)
   ierr = DMMGSetFromOptions(dmmg_comp);CHKERRQ(ierr);
 
   /* Solve the nonlinear system */
-  ierr = DMMGSolve(dmmg_comp);CHKERRQ(ierr); 
+  /*  ierr = DMMGSolve(dmmg_comp);CHKERRQ(ierr); 
   snes = DMMGGetSNES(dmmg_comp);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm,"Composite Physics: Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm,"Composite Physics: Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);*/
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free spaces 

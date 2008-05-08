@@ -19,6 +19,8 @@ PetscErrorCode FormInitialGuessLocal2(DALocalInfo *info,Field2 **x,AppCtx *user)
   return 0;
 }
 
+PetscEvent EVENT_FORMFUNCTIONLOCAL2;
+
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal2"
 /* 
@@ -33,8 +35,10 @@ PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field1**x1,Field2 **x,Field2
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal      grashof,prandtl,lid;
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscLogEventBegin(EVENT_FORMFUNCTIONLOCAL2,0,0,0,0);CHKERRQ(ierr);
   grashof = user->grashof;  
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
@@ -107,5 +111,6 @@ PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field1**x1,Field2 **x,Field2
       f[j][i].temp  =  uxx + uyy + prandtl * ((vxp*(u - x[j][i-1].temp) + vxm*(x[j][i+1].temp - u))*hy + (vyp*(u - x[j-1][i].temp) + vym*(x[j+1][i].temp - u))*hx);
     }
   }
+  ierr = PetscLogEventEnd(EVENT_FORMFUNCTIONLOCAL2,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 

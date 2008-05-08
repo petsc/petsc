@@ -158,7 +158,7 @@ tree: ${ACTION}
             fi; \
             (cd $$dir ; \
             echo ${ACTION} in: `pwd`; \
-            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH});\
+            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR});\
 	  done
 
 # Performs the specified action throughout the directory tree
@@ -814,6 +814,12 @@ pull:
 push:
 	-@cd ${PETSC_DIR}; hg push
 	-@cd ${PETSC_DIR}/config/BuildSystem; hg push
+
+#
+sourcelist:
+	-@for i in ${SOURCEC}; do \
+	    /bin/echo -n ${LOCDIR}$${i} " " >> ${BASE_DIR}/files; \
+        done
 
 # Actions to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
