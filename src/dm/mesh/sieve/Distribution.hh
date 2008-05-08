@@ -852,7 +852,7 @@ namespace ALE {
     #define __FUNCT__ "updateSieve"
     template<typename RecvSection>
     static void updateSieve(const Obj<recv_overlap_type>& recvOverlap, const Obj<RecvSection>& recvSection, const Obj<sieve_type>& sieve) {
-#if 1
+#if 0
       Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
       for(typename recv_overlap_type::traits::baseSequence::iterator p_iter = recvPoints->begin(); p_iter != recvPoints->end(); ++p_iter) {
