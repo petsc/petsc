@@ -550,8 +550,10 @@ namespace ALE {
         Obj<send_overlap_type> sendOverlap = new send_overlap_type(bundle->comm(), bundle->debug());
 
         this->constructLocalNumbering(numbering, sendOverlap, bundle->depthStratum(depth));
-        if (this->_debug) {std::cout << "Creating new local numbering: depth " << depth << std::endl;}
+        if (this->_debug) {std::cout << "Creating new local numbering: ptr " << bundle.ptr() << " depth " << depth << std::endl;}
         this->_localNumberings[bundle.ptr()]["depth"][depth] = numbering;
+      } else {
+        if (this->_debug) {std::cout << "Using old local numbering: ptr " << bundle.ptr() << " depth " << depth << std::endl;}
       }
       return this->_localNumberings[bundle.ptr()]["depth"][depth];
     };
@@ -584,13 +586,11 @@ namespace ALE {
         Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
         Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
 
-        ///if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Creating new numbering: " << labelname << " value " << value << std::endl;}
-        std::cout << "["<<bundle->commRank()<<"]Creating new numbering: " << labelname << " value " << value << std::endl;
+        if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Creating new numbering: " << labelname << " value " << value << std::endl;}
         this->constructNumbering(numbering, sendOverlap, recvOverlap, bundle->getLabelStratum(labelname, value));
         this->_numberings[bundle.ptr()][labelname][value] = numbering;
       } else {
-        ///if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old numbering: " << labelname << " value " << value << std::endl;}
-        std::cout << "["<<bundle->commRank()<<"]Using old numbering: " << labelname << " value " << value << std::endl;
+        if (this->_debug) {std::cout << "["<<bundle->commRank()<<"]Using old numbering: " << labelname << " value " << value << std::endl;}
       }
       return this->_numberings[bundle.ptr()][labelname][value];
     };

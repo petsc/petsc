@@ -100,7 +100,6 @@ public:
       this->_mesh->getArrowSection("orientation");
     }
     this->_mesh->stratify();
-    this->_mesh->view("Mesh");
     ALE::SieveBuilder<mesh_type>::buildCoordinates(this->_mesh, spaceDim, coordinates);
   };
 
@@ -111,44 +110,39 @@ public:
     int         **constDof;
     int         **points;
 
-    if (!this->_mesh->commRank()) {
-      f.open(filename);
-      f >> numBC;
-      numPoints = new int[numBC];
-      constDof  = new int*[numBC];
-      points    = new int*[numBC];
-      for(int bc = 0; bc < numBC; ++bc) {
-        int  numConstraints;
+    f.open(filename);
+    f >> numBC;
+    numPoints = new int[numBC];
+    constDof  = new int*[numBC];
+    points    = new int*[numBC];
+    for(int bc = 0; bc < numBC; ++bc) {
+      int  numConstraints;
 
-        f >> numConstraints;
-        constDof[bc] = new int[numConstraints];
-        for(int c = 0; c < numConstraints; ++c) {
-          f >> constDof[bc][c];
-        }
-        f >> numPoints[bc];
-        points[bc] = new int[numPoints[bc]];
-        for(int p = 0; p < numPoints[bc]; ++p) {
-          f >> points[bc][p];
-          points[bc][p] += numCells;
-          section.setConstraintDimension(points[bc][p], numConstraints);
-        }
+      f >> numConstraints;
+      constDof[bc] = new int[numConstraints];
+      for(int c = 0; c < numConstraints; ++c) {
+        f >> constDof[bc][c];
+      }
+      f >> numPoints[bc];
+      points[bc] = new int[numPoints[bc]];
+      for(int p = 0; p < numPoints[bc]; ++p) {
+        f >> points[bc][p];
+        points[bc][p] += numCells;
+        if (section.hasPoint(points[bc][p])) section.setConstraintDimension(points[bc][p], numConstraints);
       }
     }
     section.allocatePoint();
-    if (!this->_mesh->commRank()) {
-      for(int bc = 0; bc < numBC; ++bc) {
-        for(int p = 0; p < numPoints[bc]; ++p) {
-          section.setConstraintDof(points[bc][p], constDof[bc]);
-        }
-        delete [] constDof[bc];
-        delete [] points[bc];
+    for(int bc = 0; bc < numBC; ++bc) {
+      for(int p = 0; p < numPoints[bc]; ++p) {
+        if (section.hasPoint(points[bc][p])) section.setConstraintDof(points[bc][p], constDof[bc]);
       }
-      delete [] numPoints;
-      delete [] constDof;
-      delete [] points;
-      f.close();
+      delete [] constDof[bc];
+      delete [] points[bc];
     }
-    section.view("New Section");
+    delete [] numPoints;
+    delete [] constDof;
+    delete [] points;
+    f.close();
   };
 
   void checkMesh(const ALE::Obj<mesh_type>& mesh, const char basename[]) {
@@ -400,13 +394,15 @@ public:
 
   void testOldPreallocationMesh3DUninterpolated(void) {
     this->readMesh("data/3DHex.mesh", 3, false);
-    const ALE::Obj<real_section_type>& section = this->_mesh->getRealSection("default");
-    section->setFiberDimension(this->_mesh->depthStratum(0), 3);
-    this->setupSection("data/3DHex.bc", this->_mesh->heightStratum(0)->size(), *section);
+    int numLocalCells = this->_mesh->heightStratum(0)->size(), numCells;
     typedef ALE::Distribution<mesh_type> distribution_type;
 
-    ALE::Obj<mesh_type> parallelMesh = distribution_type::distributeMesh(this->_mesh);
+    MPI_Allreduce(&numLocalCells, &numCells, 1, MPI_INT, MPI_MAX, this->_mesh->comm());
+    ALE::Obj<mesh_type> parallelMesh = distribution_type::distributeMesh(this->_mesh, 0, "chaco");
     parallelMesh->constructOverlap();
+    const ALE::Obj<real_section_type>&     section     = parallelMesh->getRealSection("default2");
+    section->setFiberDimension(parallelMesh->depthStratum(0), 3);
+    this->setupSection("data/3DHex.bc", numCells, *section);
     const ALE::Obj<mesh_type::order_type>& globalOrder = parallelMesh->getFactory()->getGlobalOrder(parallelMesh, "default", section);
     const int                              localSize   = globalOrder->getLocalSize();
     const int                              globalSize  = globalOrder->getGlobalSize();
