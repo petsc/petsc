@@ -361,6 +361,41 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
 
 EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
+static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth write)
+{
+  PetscErrorCode ierr;
+  MPI_File     mfdes;
+  PetscMPIInt  gsizes[4],lsizes[4],lstarts[4],asiz,dof;
+  MPI_Datatype view;
+  PetscScalar  *array;
+  MPI_Offset   off;
+  MPI_Aint     ub,ul;
+
+  PetscFunctionBegin;
+  dof = PetscMPIIntCast(da->w);
+  gsizes[0]  = dof; gsizes[1] = PetscMPIIntCast(da->M); gsizes[2] = PetscMPIIntCast(da->N); gsizes[3] = PetscMPIIntCast(da->P);
+  lsizes[0]  = dof;lsizes[1] = PetscMPIIntCast(da->xe-da->xs)/dof; lsizes[2] = PetscMPIIntCast(da->ye-da->ys); lsizes[3] = PetscMPIIntCast(da->ze-da->zs);
+  lstarts[0] = 0;  lstarts[1] = PetscMPIIntCast(da->xs)/dof; lstarts[2] = PetscMPIIntCast(da->ys); lstarts[3] = PetscMPIIntCast(da->zs);
+  ierr = MPI_Type_create_subarray(da->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_C,MPIU_SCALAR,&view);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
+  
+  ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
+  ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,"native",MPI_INFO_NULL);CHKERRQ(ierr);
+  ierr = VecGetArray(xin,&array);CHKERRQ(ierr);
+  asiz = lsizes[1]*(lsizes[2] > 0 ? lsizes[2] : 1)*(lsizes[3] > 0 ? lsizes[3] : 1)*dof;
+  if (write) {
+    ierr = MPI_File_write_all(mfdes,array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+  } else {
+    ierr = MPI_File_read_all(mfdes,array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+  }
+  ierr = MPI_Type_get_extent(view,&ul,&ub);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryAddMPIIOOffset(viewer,ub);CHKERRQ(ierr);
+  ierr = VecRestoreArray(xin,&array);CHKERRQ(ierr);
+  ierr = MPI_Type_free(&view);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_DA"
@@ -414,6 +449,17 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
     ierr = VecView_MPI_Netcdf_DA(xin,viewer);CHKERRQ(ierr);
 #endif
   } else {
+    PetscTruth isbinary,isMPIIO;
+
+    ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+    if (isbinary) {
+      ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
+      if (isMPIIO) {
+       ierr = DAArrayMPIIO(da,viewer,xin,PETSC_TRUE);CHKERRQ(ierr);
+       PetscFunctionReturn(0);
+      }
+    }
+    
     /* call viewer on natural ordering */
     ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
     ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
@@ -429,6 +475,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
 }
 EXTERN_C_END
 
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector_Binary_DA"
@@ -439,11 +486,19 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
   Vec            natural;
   const char     *prefix;
   PetscInt       bs;
-  PetscTruth     flag;
+  PetscTruth     flag,isMPIIO;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+
+  ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
+  if (isMPIIO) {
+    ierr = DAArrayMPIIO(da,viewer,xin,PETSC_FALSE);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+
   ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
   ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
