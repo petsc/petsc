@@ -136,12 +136,15 @@ extern void *MPIUNI_TMP;
 #define MPI_ERRORS_RETURN    0
 
 /* External types */
-typedef int    MPI_Comm;  
+typedef int    MPI_Comm;
 typedef void   *MPI_Request;
 typedef void   *MPI_Group;
 typedef struct {int MPI_TAG,MPI_SOURCE,MPI_ERROR;} MPI_Status;
 typedef char   *MPI_Errhandler;
 typedef int    MPI_Fint;
+typedef int    MPI_File;
+typedef int    MPI_Info;
+typedef int    MPI_Offset;
 
 extern int MPIUNI_Memcpy(void*,const void*,int);
 
@@ -171,8 +174,13 @@ extern int MPIUNI_Memcpy(void*,const void*,int);
 
 #define MPI_REQUEST_NULL    ((MPI_Request)0)
 #define MPI_GROUP_NULL      ((MPI_Group)0)
+#define MPI_INFO_NULL       ((MPI_Info)0)
 #define MPI_BOTTOM          (void *)0
 typedef int MPI_Op;
+
+#define MPI_MODE_RDONLY   0
+#define MPI_MODE_WRONLY   0
+#define MPI_MODE_CREATE   0
 
 #define MPI_SUM           0
 #define MPI_MAX           0
