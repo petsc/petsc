@@ -444,6 +444,8 @@ M*/
 
    Level: beginner
 
+   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_DOUBLE_PRECISION.
+
 .seealso: PETSC_DECIDE, PETSC_NULL, PETSC_IGNORE, PETSC_DETERMINE
 
 M*/
@@ -455,10 +457,10 @@ M*/
 
    Level: beginner
 
-   Notes: accepted by many PETSc functions to not set a parameter and instead use
+   Note: accepted by many PETSc functions to not set a parameter and instead use
           some default
 
-          This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER, 
+   Fortran Notes: This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER, 
           PETSC_NULL_DOUBLE_PRECISION etc
 
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_NULL, PETSC_DETERMINE
@@ -1044,6 +1046,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMallocSetDumpLog(void);
 
    Level: beginner
 
+   Developer comment: It would be nice if we could always just use MPI Datatypes, why can we not?
+
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),
           PetscDataTypeGetSize()
 
@@ -1077,6 +1081,7 @@ extern const char *PetscDataTypes[];
 #define PETSC_FORTRANADDR PETSC_LONG
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIDataTypeToPetscDataType(MPI_Datatype,PetscDataType*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType,size_t*);
 
 /*
@@ -1714,6 +1719,14 @@ M*/
 
 .seealso: PetscReal, PassiveReal, PassiveScalar, PetscScalar, MPIU_INT
 M*/
+
+#if !defined(PETSC_WORDS_BIGENDIAN)
+extern PetscErrorCode MPIU_File_write_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
+extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
+#else
+#define MPIU_File_write_all(a,b,c,d,e) MPI_File_write_all(a,b,c,d,e) 
+#define MPIU_File_read_all(a,b,c,d,e) MPI_File_read_all(a,b,c,d,e) 
+#endif
 
 /*
      The IBM include files define hz, here we hide it so that it may be used

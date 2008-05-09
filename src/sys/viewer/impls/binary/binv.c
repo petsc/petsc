@@ -501,6 +501,31 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm comm,const char na
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerBinaryMPIIO" 
+static PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscTruth write)
+{
+  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
+  PetscMPIInt        rank;
+  PetscErrorCode     ierr;
+  MPI_Datatype       mdtype;
+  PetscMPIInt        cnt = PetscMPIIntCast(count);
+  MPI_Status         status;
+  MPI_Aint           ul,dsize;
+
+  PetscFunctionBegin;
+  ierr = PetscDataTypeToMPIDataType(dtype,&mdtype);CHKERRQ(ierr);
+  ierr = MPI_File_set_view(vbinary->mfdes,vbinary->moff,mdtype,mdtype,"native",MPI_INFO_NULL);CHKERRQ(ierr);
+  if (write) {
+    ierr = MPIU_File_write_all(vbinary->mfdes,data,cnt,mdtype,&status);CHKERRQ(ierr);
+  } else {
+    ierr = MPIU_File_read_all(vbinary->mfdes,data,cnt,mdtype,&status);CHKERRQ(ierr);
+  }
+  ierr = MPI_Type_get_extent(mdtype,&ul,&dsize);CHKERRQ(ierr);
+  vbinary->moff += dsize*cnt;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryRead" 
 /*@C
    PetscViewerBinaryRead - Reads from a binary file, all processors get the same result
@@ -526,10 +551,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryRead(PetscViewer viewer,void *da
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
-  if (vbinary->MPIIO) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot use with MPI IO");
-  ierr = PetscBinarySynchronizedRead(((PetscObject)viewer)->comm,vbinary->fdes,data,count,dtype);CHKERRQ(ierr);
+  if (vbinary->MPIIO) {
+    ierr = PetscViewerBinaryMPIIO(viewer,data,count,dtype,PETSC_FALSE);CHKERRQ(ierr);
+  } else {
+    ierr = PetscBinarySynchronizedRead(((PetscObject)viewer)->comm,vbinary->fdes,data,count,dtype);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerBinaryWrite" 
@@ -558,8 +587,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *d
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
-  if (vbinary->MPIIO) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot use with MPI IO");
-  ierr = PetscBinarySynchronizedWrite(((PetscObject)viewer)->comm,vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
+
+  if (vbinary->MPIIO) {
+    ierr = PetscViewerBinaryMPIIO(viewer,data,count,dtype,PETSC_TRUE);CHKERRQ(ierr);
+  } else {
+    ierr = PetscBinarySynchronizedWrite(((PetscObject)viewer)->comm,vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1076,7 +1109,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetMPIIO_Binary(PetscViewer view
   if (vbinary->filename) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call before calling PetscViewerFileSetName()");
   viewer->ops->destroy = PetscViewerDestroy_Binary;
   vbinary->MPIIO       = PETSC_TRUE;
-  vbinary->skipinfo    = PETSC_TRUE;
+  /*  vbinary->skipinfo    = PETSC_TRUE; */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C",
                                     "PetscViewerFileSetName_MPIIO",
                                      PetscViewerFileSetName_MPIIO);CHKERRQ(ierr);

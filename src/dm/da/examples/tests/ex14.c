@@ -46,7 +46,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToNaturalEnd(da,global,INSERT_VALUES,natural);CHKERRQ(ierr);
 
   ierr = DASetFieldName(da,0,"First field");CHKERRQ(ierr);
-  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); 
+  /*  ierr = VecView(global,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); */
 
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"daoutput",FILE_MODE_WRITE,&bviewer);CHKERRQ(ierr);
   ierr = DAView(da,bviewer);CHKERRQ(ierr);

@@ -372,13 +372,31 @@ static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth w
   PetscScalar    *array;
   MPI_Offset     off;
   MPI_Aint       ub,ul;
+  PetscInt       type,rows,vecrows;
 
   PetscFunctionBegin;
+  ierr = VecGetSize(xin,&vecrows);CHKERRQ(ierr);
+  if (!write) {
+    /* Read vector header. */
+    ierr = PetscViewerBinaryRead(viewer,&type,1,PETSC_INT);CHKERRQ(ierr);
+    if (type != VEC_FILE_COOKIE) {
+      SETERRQ(PETSC_ERR_ARG_WRONG,"Not vector next in file");
+    }
+    ierr = PetscViewerBinaryRead(viewer,&rows,1,PETSC_INT);CHKERRQ(ierr);
+    if (rows != vecrows) SETERRQ(PETSC_ERR_ARG_SIZ,"Vector in file not same size as DA vector");
+  } else {
+    PetscInt tr[2];
+    tr[0] = VEC_FILE_COOKIE;
+    tr[1] = vecrows;
+    ierr = PetscViewerBinaryWrite(viewer,tr,1,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,tr+1,1,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+  }
+
   dof = PetscMPIIntCast(da->w);
   gsizes[0]  = dof; gsizes[1] = PetscMPIIntCast(da->M); gsizes[2] = PetscMPIIntCast(da->N); gsizes[3] = PetscMPIIntCast(da->P);
   lsizes[0]  = dof;lsizes[1] = PetscMPIIntCast((da->xe-da->xs)/dof); lsizes[2] = PetscMPIIntCast(da->ye-da->ys); lsizes[3] = PetscMPIIntCast(da->ze-da->zs);
   lstarts[0] = 0;  lstarts[1] = PetscMPIIntCast(da->xs)/dof; lstarts[2] = PetscMPIIntCast(da->ys); lstarts[3] = PetscMPIIntCast(da->zs);
-  ierr = MPI_Type_create_subarray(da->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_C,MPIU_SCALAR,&view);CHKERRQ(ierr);
+  ierr = MPI_Type_create_subarray(da->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
   
   ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
@@ -387,9 +405,9 @@ static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth w
   ierr = VecGetArray(xin,&array);CHKERRQ(ierr);
   asiz = lsizes[1]*(lsizes[2] > 0 ? lsizes[2] : 1)*(lsizes[3] > 0 ? lsizes[3] : 1)*dof;
   if (write) {
-    ierr = MPI_File_write_all(mfdes,array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPIU_File_write_all(mfdes,array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   } else {
-    ierr = MPI_File_read_all(mfdes,array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPIU_File_read_all(mfdes,array,asiz,MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
   }
   ierr = MPI_Type_get_extent(view,&ul,&ub);CHKERRQ(ierr);
   ierr = PetscViewerBinaryAddMPIIOOffset(viewer,ub);CHKERRQ(ierr);

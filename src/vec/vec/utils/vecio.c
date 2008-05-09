@@ -197,12 +197,14 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
+  /* Read vector header. */
+  ierr = PetscViewerBinaryRead(viewer,&type,1,PETSC_INT);CHKERRQ(ierr);
+  if (type != VEC_FILE_COOKIE) {
+      ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+      SETERRQ(PETSC_ERR_ARG_WRONG,"Not vector next in file");
+  }
+  ierr = PetscViewerBinaryRead(viewer,&rows,1,PETSC_INT);CHKERRQ(ierr);
   if (!rank) {
-    /* Read vector header. */
-    ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);if (ierr) goto handleerror;
-    if (type != VEC_FILE_COOKIE) {ierr = PETSC_ERR_ARG_WRONG; goto handleerror;}
-    ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);if (ierr) goto handleerror;
-    ierr = MPI_Bcast(&rows,1,MPIU_INT,0,comm);CHKERRQ(ierr);
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
     ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
     ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
@@ -234,12 +236,6 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
       ierr = PetscFree(avec);CHKERRQ(ierr);
     }
   } else {
-    ierr = MPI_Bcast(&rows,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-    /* this is a marker sent to indicate that the file does not have a vector at this location */
-    if (rows == -1)  {
-      nierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(nierr);
-      SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Error loading vector");
-    }
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
     ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
     ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
@@ -253,14 +249,6 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-  /* tell the other processors we've had an error; only used on process 0 */
-  handleerror:
-    if (PetscExceptionValue(ierr)) {
-      nierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(nierr);
-      nierr = -1; MPI_Bcast(&nierr,1,MPIU_INT,0,comm);
-    }
-    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

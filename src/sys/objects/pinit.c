@@ -270,6 +270,14 @@ void PETSC_DLLEXPORT PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Data
 EXTERN_C_END
 #endif
 
+#if !defined(PETSC_WORDS_BIGENDIAN)
+EXTERN_C_BEGIN
+extern PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype,MPI_Aint*,void*); 
+extern PetscMPIInt PetscDataRep_read_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
+extern PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*); 
+EXTERN_C_END
+#endif
+
 static int  PetscGlobalArgc   = 0;
 static char **PetscGlobalArgs = 0;
 
@@ -545,7 +553,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 
-  
   /*
      Build the options database
   */
@@ -580,6 +587,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions(); CHKERRQ(ierr);
+
+  /* 
+      Tell MPI about our own data representation converter, this would/should be used if extern32 is not supported by the MPI
+
+      Currently not used because it is not supported by MPICH.
+  */
+#if !defined(PETSC_WORDS_BIGENDIAN)
+  ierr = MPI_Register_datarep("petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,PETSC_NULL);CHKERRQ(ierr);
+#endif  
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
   if (flg) {
