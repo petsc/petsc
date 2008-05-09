@@ -17,6 +17,7 @@ class FunctionTestDistribution : public CppUnit::TestFixture
   CPPUNIT_TEST(testDistributeMesh2DUninterpolated);
   CPPUNIT_TEST(testOldDistributeMesh2DUninterpolated);
   CPPUNIT_TEST(testPreallocationMesh2DUninterpolated);
+  CPPUNIT_TEST(testOldPreallocationMesh3DUninterpolated);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -67,6 +68,81 @@ public:
       mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
     }
     this->_mesh = ALE::Generator::generateMesh(mB, interpolate);
+  };
+
+  void readMesh(const char filename[], const int dim, const bool interpolate) {
+    int           spaceDim    = 0;
+    double       *coordinates = PETSC_NULL;
+    std::ifstream f;
+
+    this->_mesh = new mesh_type(PETSC_COMM_WORLD, dim);
+    ALE::Obj<sieve_type> sieve = new sieve_type(this->_mesh->comm());
+    this->_mesh->setSieve(sieve);
+    if (!sieve->commRank()) {
+      int  numCells    = 0;
+      int  numCorners  = 0;
+      int  numVertices = 0;
+      int *cells;
+
+      f.open(filename);
+      f >> numCells;
+      f >> numCorners;
+      cells = new int[numCells*numCorners];
+      for(int k = 0; k < numCells*numCorners; ++k) f >> cells[k];
+      f >> numVertices;
+      f >> spaceDim;
+      coordinates = new double[numVertices*spaceDim];
+      for(int k = 0; k < numVertices*spaceDim; ++k) f >> coordinates[k];
+      f.close();
+      ALE::SieveBuilder<mesh_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners, -1,
+                                                  this->_mesh->getArrowSection("orientation"));
+    } else {
+      this->_mesh->getArrowSection("orientation");
+    }
+    this->_mesh->stratify();
+    ALE::SieveBuilder<mesh_type>::buildCoordinates(this->_mesh, spaceDim, coordinates);
+  };
+
+  void setupSection(const char filename[], const int numCells, real_section_type& section) {
+    std::ifstream f;
+    int           numBC;
+    int          *numPoints;
+    int         **constDof;
+    int         **points;
+
+    f.open(filename);
+    f >> numBC;
+    numPoints = new int[numBC];
+    constDof  = new int*[numBC];
+    points    = new int*[numBC];
+    for(int bc = 0; bc < numBC; ++bc) {
+      int  numConstraints;
+
+      f >> numConstraints;
+      constDof[bc] = new int[numConstraints];
+      for(int c = 0; c < numConstraints; ++c) {
+        f >> constDof[bc][c];
+      }
+      f >> numPoints[bc];
+      points[bc] = new int[numPoints[bc]];
+      for(int p = 0; p < numPoints[bc]; ++p) {
+        f >> points[bc][p];
+        points[bc][p] += numCells;
+        if (section.hasPoint(points[bc][p])) section.setConstraintDimension(points[bc][p], numConstraints);
+      }
+    }
+    section.allocatePoint();
+    for(int bc = 0; bc < numBC; ++bc) {
+      for(int p = 0; p < numPoints[bc]; ++p) {
+        if (section.hasPoint(points[bc][p])) section.setConstraintDof(points[bc][p], constDof[bc]);
+      }
+      delete [] constDof[bc];
+      delete [] points[bc];
+    }
+    delete [] numPoints;
+    delete [] constDof;
+    delete [] points;
+    f.close();
   };
 
   void checkMesh(const ALE::Obj<mesh_type>& mesh, const char basename[]) {
@@ -310,10 +386,39 @@ public:
     ierr = MatSetType(A, MATAIJ);
     ierr = MatSetFromOptions(A);
     ierr = PetscMalloc2(localSize, PetscInt, &dnz, localSize, PetscInt, &onz);
-    //ierr = preallocateOperator(parallelMesh, parallelMesh->getDimension(), parallelCoordinates->getAtlas(), globalOrder, dnz, onz, A);
     ierr = preallocateOperator(parallelMesh, 1, parallelCoordinates->getAtlas(), globalOrder, dnz, onz, A);
     CPPUNIT_ASSERT_EQUAL(0, ierr);
     this->checkMatrix(A, dnz, onz, "2DUninterpolatedPreallocate");
+    ierr = PetscFree2(dnz, onz);
+  };
+
+  void testOldPreallocationMesh3DUninterpolated(void) {
+    this->readMesh("data/3DHex.mesh", 3, false);
+    int numLocalCells = this->_mesh->heightStratum(0)->size(), numCells;
+    typedef ALE::Distribution<mesh_type> distribution_type;
+
+    MPI_Allreduce(&numLocalCells, &numCells, 1, MPI_INT, MPI_MAX, this->_mesh->comm());
+    ALE::Obj<mesh_type> parallelMesh = distribution_type::distributeMesh(this->_mesh, 0, "chaco");
+    parallelMesh->constructOverlap();
+    const ALE::Obj<real_section_type>&     section     = parallelMesh->getRealSection("default2");
+    section->setFiberDimension(parallelMesh->depthStratum(0), 3);
+    this->setupSection("data/3DHex.bc", numCells, *section);
+    const ALE::Obj<mesh_type::order_type>& globalOrder = parallelMesh->getFactory()->getGlobalOrder(parallelMesh, "default", section);
+    const int                              localSize   = globalOrder->getLocalSize();
+    const int                              globalSize  = globalOrder->getGlobalSize();
+    PetscInt      *dnz;
+    PetscInt      *onz;
+    Mat            A;
+    PetscErrorCode ierr;
+
+    ierr = MatCreate(parallelMesh->comm(), &A);
+    ierr = MatSetSizes(A, localSize, localSize, globalSize, globalSize);
+    ierr = MatSetType(A, MATAIJ);
+    ierr = MatSetFromOptions(A);
+    ierr = PetscMalloc2(localSize, PetscInt, &dnz, localSize, PetscInt, &onz);
+    ierr = preallocateOperator(parallelMesh, 1, section->getAtlas(), globalOrder, dnz, onz, A);
+    CPPUNIT_ASSERT_EQUAL(0, ierr);
+    this->checkMatrix(A, dnz, onz, "3DUninterpolatedPreallocate");
     ierr = PetscFree2(dnz, onz);
   };
 };

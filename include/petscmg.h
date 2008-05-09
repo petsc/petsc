@@ -30,7 +30,7 @@ extern const char *PCMGTypes[];
 #define PC_MG_CASCADE PC_MG_KASKADE;
 
 /*E
-    PCMGCyleType - Use V-cycle or W-cycle
+    PCMGCycleType - Use V-cycle or W-cycle
 
    Level: beginner
 
