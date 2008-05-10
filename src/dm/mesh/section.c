@@ -2,12 +2,12 @@
 #include <petscmesh_viewers.hh>
 
 /* Logging support */
-PetscCookie PETSCDM_DLLEXPORT SECTIONREAL_COOKIE = 0;
-PetscEvent  SectionReal_View = 0;
-PetscCookie PETSCDM_DLLEXPORT SECTIONINT_COOKIE = 0;
-PetscEvent  SectionInt_View = 0;
-PetscCookie PETSCDM_DLLEXPORT SECTIONPAIR_COOKIE = 0;
-PetscEvent  SectionPair_View = 0;
+PetscCookie PETSCDM_DLLEXPORT SECTIONREAL_COOKIE;
+PetscLogEvent  SectionReal_View;
+PetscCookie PETSCDM_DLLEXPORT SECTIONINT_COOKIE;
+PetscLogEvent  SectionInt_View;
+PetscCookie PETSCDM_DLLEXPORT SECTIONPAIR_COOKIE;
+PetscLogEvent  SectionPair_View;
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealView_Sieve"

@@ -45,7 +45,7 @@ public :
     std::string eventName = testName+" RestrictPoint";
 
     ALE::LogStage  stage = ALE::LogStageRegister(stageName.c_str());
-    PetscEvent     restrictEvent;
+    PetscLogEvent  restrictEvent;
     PetscErrorCode ierr;
 
     ierr = PetscLogEventRegister(eventName.c_str(), PETSC_OBJECT_COOKIE,&restrictEvent);

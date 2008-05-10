@@ -7,8 +7,8 @@
 #include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 /* Logging support */
-PetscCookie PETSCDM_DLLEXPORT DM_COOKIE = 0;
-PetscEvent  DA_GlobalToLocal = 0, DA_LocalToGlobal = 0, DA_LocalADFunction = 0;
+PetscCookie PETSCDM_DLLEXPORT DM_COOKIE;
+PetscLogEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy_Private"

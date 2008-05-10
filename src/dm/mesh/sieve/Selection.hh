@@ -1111,7 +1111,7 @@ namespace ALE {
       }
     };
     static void create(const Obj<Mesh>& mesh, Obj<Mesh> fault, const Obj<Mesh::int_section_type>& groupField) {
-      static PetscEvent CreateFaultMesh_Event = 0, OrientFaultMesh_Event = 0, AddCohesivePoints_Event = 0, SplitMesh_Event = 0;
+      static PetscLogEvent CreateFaultMesh_Event = 0, OrientFaultMesh_Event = 0, AddCohesivePoints_Event = 0, SplitMesh_Event = 0;
 
       if (!CreateFaultMesh_Event) {
         PetscLogEventRegister("CreateFaultMesh", 0,&CreateFaultMesh_Event);

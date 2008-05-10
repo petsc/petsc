@@ -6,8 +6,8 @@
 PetscFList MatMFFDPetscFList        = 0;
 PetscTruth MatMFFDRegisterAllCalled = PETSC_FALSE;
 
-PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE = 0;
-PetscEvent  MATMFFD_Mult = 0;
+PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE;
+PetscLogEvent  MATMFFD_Mult;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDInitializePackage"

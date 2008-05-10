@@ -474,7 +474,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerSetUserDestroy(PetscContainer obj, 
   PetscFunctionReturn(0);
 }
 
-PetscCookie PETSC_DLLEXPORT PETSC_CONTAINER_COOKIE = 0;
+PetscCookie PETSC_DLLEXPORT PETSC_CONTAINER_COOKIE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscContainerCreate"

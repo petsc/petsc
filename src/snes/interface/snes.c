@@ -6,8 +6,8 @@ PetscTruth SNESRegisterAllCalled = PETSC_FALSE;
 PetscFList SNESList              = PETSC_NULL;
 
 /* Logging support */
-PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE = 0;
-PetscEvent  SNES_Solve = 0, SNES_LineSearch = 0, SNES_FunctionEval = 0, SNES_JacobianEval = 0;
+PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE;
+PetscLogEvent  SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFunctionDomainError"

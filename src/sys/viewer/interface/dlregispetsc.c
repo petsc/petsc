@@ -4,7 +4,7 @@
 #include "petscdraw.h"
 #include "petscsys.h"
 
-extern PetscEvent PETSC_DLLEXPORT PETSC_Barrier;
+extern PetscLogEvent PETSC_DLLEXPORT PETSC_Barrier;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitializePackage" 

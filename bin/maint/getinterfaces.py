@@ -224,7 +224,7 @@ def getaliases():
   aliases['PetscLogDouble']     = 'double'
   aliases['PetscTablePosition'] = 'int*'
   aliases['ISColoringValue']    = 'ushort'
-  aliases['PetscEvent']         = 'int'
+  aliases['PetscLogEvent']      = 'int'
   # for HDF5
   aliases['hid_t']              = 'int'
   

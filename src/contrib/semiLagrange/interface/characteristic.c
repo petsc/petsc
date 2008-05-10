@@ -1,9 +1,9 @@
 #include "src/contrib/semiLagrange/characteristicimpl.h" /*I "src/contrib/semiLagrange/characteristic.h" I*/
 
-PetscCookie CHARACTERISTIC_COOKIE = 0;
-PetscEvent  CHARACTERISTIC_SetUp = 0, CHARACTERISTIC_Solve = 0, CHARACTERISTIC_QueueSetup = 0, CHARACTERISTIC_DAUpdate = 0;
-PetscEvent  CHARACTERISTIC_HalfTimeLocal = 0, CHARACTERISTIC_HalfTimeRemote = 0, CHARACTERISTIC_HalfTimeExchange = 0;
-PetscEvent  CHARACTERISTIC_FullTimeLocal = 0, CHARACTERISTIC_FullTimeRemote = 0, CHARACTERISTIC_FullTimeExchange = 0;
+PetscCookie CHARACTERISTIC_COOKIE;
+PetscLogEvent  CHARACTERISTIC_SetUp, CHARACTERISTIC_Solve, CHARACTERISTIC_QueueSetup, CHARACTERISTIC_DAUpdate;
+PetscLogEvent  CHARACTERISTIC_HalfTimeLocal, CHARACTERISTIC_HalfTimeRemote, CHARACTERISTIC_HalfTimeExchange;
+PetscLogEvent  CHARACTERISTIC_FullTimeLocal, CHARACTERISTIC_FullTimeRemote, CHARACTERISTIC_FullTimeExchange;
 PetscTruth  CharacteristicRegisterAllCalled = PETSC_FALSE;
 /*
    Contains the list of registered characteristic routines

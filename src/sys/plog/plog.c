@@ -19,7 +19,7 @@
 #include "petscfix.h"
 #include "plog.h"
 
-PetscEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
+PetscLogEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
 
 #if defined(PETSC_USE_LOG)
 #include "petscmachineinfo.h"
@@ -59,8 +59,8 @@ PetscLogDouble PETSC_DLLEXPORT allreduce_ct    = 0.0; /* The number of reduction
 /* Logging functions */
 PetscErrorCode PETSC_DLLEXPORT (*_PetscLogPHC)(PetscObject) = PETSC_NULL;
 PetscErrorCode PETSC_DLLEXPORT (*_PetscLogPHD)(PetscObject) = PETSC_NULL;
-PetscErrorCode PETSC_DLLEXPORT (*_PetscLogPLB)(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
-PetscErrorCode PETSC_DLLEXPORT (*_PetscLogPLE)(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode PETSC_DLLEXPORT (*_PetscLogPLB)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
+PetscErrorCode PETSC_DLLEXPORT (*_PetscLogPLE)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject) = PETSC_NULL;
 
 /* Tracing event logging variables */
 FILE          *tracefile       = PETSC_NULL;
@@ -123,8 +123,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogDestroy(void)
 
 .seealso: PetscLogDump(), PetscLogBegin(), PetscLogAllBegin(), PetscLogTraceBegin()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogSet(PetscErrorCode (*b)(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject),
-            PetscErrorCode (*e)(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject))
+PetscErrorCode PETSC_DLLEXPORT PetscLogSet(PetscErrorCode (*b)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject),
+            PetscErrorCode (*e)(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject))
 {
   PetscFunctionBegin;
   _PetscLogPLB = b;
@@ -365,10 +365,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogObjects(PetscTruth flag)
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char sname[],PetscStage *stage) 
+PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char sname[],PetscLogStage *stage) 
 {
   StageLog       stageLog;
-  PetscEvent     event;
+  PetscLogEvent  event;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -417,7 +417,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char sname[],PetscSta
 .keywords: log, push, stage
 .seealso: PetscLogStagePop(), PetscLogStageRegister(), PetscBarrier()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(PetscStage stage)
+PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(PetscLogStage stage)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -484,7 +484,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStagePop(void)
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(PetscStage stage, PetscTruth isActive) 
+PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(PetscLogStage stage, PetscTruth isActive) 
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -512,7 +512,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(PetscStage stage, PetscTru
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(PetscStage stage, PetscTruth *isActive)
+PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(PetscLogStage stage, PetscTruth *isActive)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -538,7 +538,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(PetscStage stage, PetscTru
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogPrintSummary()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(PetscStage stage, PetscTruth isVisible)
+PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(PetscLogStage stage, PetscTruth isVisible)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -566,7 +566,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(PetscStage stage, PetscTr
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogPrintSummary()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(PetscStage stage, PetscTruth *isVisible)
+PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(PetscLogStage stage, PetscTruth *isVisible)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -594,7 +594,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(PetscStage stage, PetscTr
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscStage *stage)
+PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscLogStage *stage)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -623,7 +623,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscStage 
 
   Example of Usage:
 .vb
-      PetscEvent USER_EVENT;
+      PetscLogEvent USER_EVENT;
       PetscCookie cookie;
       int user_event_flops;
       PetscCookieRegister("class name",&cookie);
@@ -660,7 +660,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscStage 
           PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
           PetscLogEventActivate(), PetscLogEventDeactivate(), PetscCookieRegister()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char name[],PetscCookie cookie,PetscEvent *event) 
+PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char name[],PetscCookie cookie,PetscLogEvent *event) 
 {
   StageLog       stageLog;
   int            stage;
@@ -704,7 +704,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char name[],PetscCook
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventDeactivate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivate(PetscEvent event)
+PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivate(PetscLogEvent event)
 {
   StageLog       stageLog;
   int            stage;
@@ -744,7 +744,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivate(PetscEvent event)
 .keywords: log, event, deactivate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscEvent event)
+PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscLogEvent event)
 {
   StageLog       stageLog;
   int            stage;
@@ -773,7 +773,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscEvent event)
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(),PetscLogEventMPEActivate(),PlogEventActivate(),PlogEventDeactivate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscEvent event, PetscTruth isActive)
+PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscLogEvent event, PetscTruth isActive)
 {
   StageLog       stageLog;
   int            stage;
@@ -1047,7 +1047,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char sname[])
   PetscLogDouble flops, _TotalTime;
   PetscMPIInt    rank;
   int            action, object, curStage;
-  PetscEvent     event;
+  PetscLogEvent  event;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -1165,7 +1165,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   PetscTruth    *localStageVisible, *stageVisible;
   int            numStages, localNumEvents, numEvents;
   int            stage, lastStage, oclass;
-  PetscEvent     event;
+  PetscLogEvent  event;
   PetscErrorCode ierr;
   char           version[256];
 
@@ -1660,7 +1660,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintDetailed(MPI_Comm comm, const char f
   PetscTruth     *stageVisible;
   int            numStages, numEvents;
   int            stage;
-  PetscEvent     event;
+  PetscLogEvent  event;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -19,7 +19,7 @@ PetscErrorCode FormInitialGuessLocal1(DALocalInfo *info,Field1 **x)
   return 0;
 }
 
-PetscEvent EVENT_FORMFUNCTIONLOCAL1;
+PetscLogEvent EVENT_FORMFUNCTIONLOCAL1;
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocal1"

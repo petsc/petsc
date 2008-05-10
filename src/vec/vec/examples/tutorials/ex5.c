@@ -18,7 +18,7 @@ int main(int argc,char **args)
   Vec            u;
   PetscViewer    viewer;
 #if defined(PETSC_USE_LOG)
-  PetscEvent     VECTOR_GENERATE,VECTOR_READ;
+  PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);

@@ -64,7 +64,7 @@ public :
     long         count             = 0;
 
     ALE::LogStage  stage = ALE::LogStageRegister("Hat Closure Test");
-    PetscEvent     closureEvent;
+    PetscLogEvent  closureEvent;
     PetscErrorCode ierr;
 
     ierr = PetscLogEventRegister("Closure", PETSC_OBJECT_COOKIE,&closureEvent);
@@ -107,7 +107,7 @@ public :
 
     PetscFunctionBegin;
     ALE::LogStage  stage = ALE::LogStageRegister("Hat Star Test");
-    PetscEvent     starEvent;
+    PetscLogEvent  starEvent;
     PetscErrorCode ierr;
 
     ierr = PetscLogEventRegister("Star", PETSC_OBJECT_COOKIE,&starEvent);
@@ -164,7 +164,7 @@ public :
     std::string  stageName         = this->getName()+" Closure Test";
 
     ALE::LogStage  stage = ALE::LogStageRegister(stageName.c_str());
-    PetscEvent     closureEvent;
+    PetscLogEvent  closureEvent;
     PetscErrorCode ierr;
 
     ierr = PetscLogEventRegister("Closure", PETSC_OBJECT_COOKIE,&closureEvent);
@@ -206,7 +206,7 @@ public :
     std::string  stageName      = this->getName()+" Star Test";
 
     ALE::LogStage  stage = ALE::LogStageRegister(stageName.c_str());
-    PetscEvent     starEvent;
+    PetscLogEvent  starEvent;
     PetscErrorCode ierr;
 
     ierr = PetscLogEventRegister("Star", PETSC_OBJECT_COOKIE,&starEvent);

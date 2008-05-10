@@ -127,8 +127,8 @@ extern PetscErrorCode DataDestroy(GridData *);
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
-  PetscEvent     READ_EVENT,PARTITION_ELEMENT_EVENT,MOVE_ELEMENT_EVENT;
-  PetscEvent     PARTITION_VERTEX_EVENT,MOVE_VERTEX_EVENT;
+  PetscLogEvent  READ_EVENT,PARTITION_ELEMENT_EVENT,MOVE_ELEMENT_EVENT;
+  PetscLogEvent  PARTITION_VERTEX_EVENT,MOVE_VERTEX_EVENT;
   GridData       gdata;
 
   PetscInitialize(&argc,&args,(char *)0,help);

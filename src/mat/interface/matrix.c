@@ -8,21 +8,21 @@
 #include "private/vecimpl.h"  
 
 /* Logging support */
-PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE = 0;
-PetscEvent  MAT_Mult = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
-PetscEvent  MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0, MAT_MatSolve = 0;
-PetscEvent  MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
-PetscEvent  MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
-PetscEvent  MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
-PetscEvent  MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetRowIJ = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0, MAT_GetRedundantMatrix = 0, MAT_GetSeqNonzeroStructure = 0;
-PetscEvent  MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
-PetscEvent  MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
-PetscEvent  MAT_MatMult = 0, MAT_MatMultSymbolic = 0, MAT_MatMultNumeric = 0;
-PetscEvent  MAT_PtAP = 0, MAT_PtAPSymbolic = 0, MAT_PtAPNumeric = 0;
-PetscEvent  MAT_MatMultTranspose = 0, MAT_MatMultTransposeSymbolic = 0, MAT_MatMultTransposeNumeric = 0;
-PetscEvent  MAT_Getsymtranspose = 0, MAT_Getsymtransreduced = 0, MAT_Transpose_SeqAIJ = 0, MAT_GetBrowsOfAcols = 0;
-PetscEvent  MAT_GetBrowsOfAocols = 0, MAT_Getlocalmat = 0, MAT_Getlocalmatcondensed = 0, MAT_Seqstompi = 0, MAT_Seqstompinum = 0, MAT_Seqstompisym = 0;
-PetscEvent  MAT_Applypapt = 0, MAT_Applypapt_numeric = 0, MAT_Applypapt_symbolic = 0, MAT_GetSequentialNonzeroStructure = 0;
+PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE;
+PetscLogEvent  MAT_Mult, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
+PetscLogEvent  MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose, MAT_MatSolve;
+PetscLogEvent  MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
+PetscLogEvent  MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
+PetscLogEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
+PetscLogEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix, MAT_GetSeqNonzeroStructure;
+PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
+PetscLogEvent  MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
+PetscLogEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
+PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
+PetscLogEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
+PetscLogEvent  MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ, MAT_GetBrowsOfAcols;
+PetscLogEvent  MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
+PetscLogEvent  MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
 
 /* nasty global values for MatSetValue() */
 PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Row = 0;

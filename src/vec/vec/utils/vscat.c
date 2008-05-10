@@ -9,7 +9,7 @@
 #include "include/private/vecimpl.h"             /*I "petscvec.h" I*/
 
 /* Logging support */
-PetscCookie PETSCVEC_DLLEXPORT VEC_SCATTER_COOKIE = 0;
+PetscCookie PETSCVEC_DLLEXPORT VEC_SCATTER_COOKIE;
 
 #if defined(PETSC_USE_DEBUG)
 /*

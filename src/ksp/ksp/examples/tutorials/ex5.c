@@ -37,7 +37,7 @@ int main(int argc,char **args)
   PetscMPIInt    size,rank;
   PetscTruth     mat_nonsymmetric;
 #if defined (PETSC_USE_LOG)
-  PetscStage     stages[2];
+  PetscLogStage  stages[2];
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);

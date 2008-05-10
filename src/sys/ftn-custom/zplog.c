@@ -13,11 +13,11 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL petsclogeventbegin_(PetscEvent *e,PetscErrorCode *ierr){
+void PETSC_STDCALL petsclogeventbegin_(PetscLogEvent *e,PetscErrorCode *ierr){
   *ierr = PetscLogEventBegin(*e,0,0,0,0);
 }
 
-void PETSC_STDCALL petsclogeventend_(PetscEvent *e,PetscErrorCode *ierr){
+void PETSC_STDCALL petsclogeventend_(PetscLogEvent *e,PetscErrorCode *ierr){
   *ierr = PetscLogEventEnd(*e,0,0,0,0);
 }
 

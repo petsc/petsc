@@ -7,8 +7,8 @@
 #include "petscsys.h"
 
 /* Logging support */
-PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE = 0;
-PetscEvent  KSP_GMRESOrthogonalization = 0, KSP_SetUp = 0, KSP_Solve = 0;
+PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;
+PetscLogEvent  KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;

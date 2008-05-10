@@ -3,9 +3,9 @@
 #include <petscmesh_formats.hh>
 
 /* Logging support */
-PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE = 0;
-PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, Mesh_assembleVector = 0,
-            Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0, Mesh_updateOperator = 0;
+PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
+PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
+            Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
 PetscTruth MeshRegisterAllCalled = PETSC_FALSE;
 PetscFList MeshList;

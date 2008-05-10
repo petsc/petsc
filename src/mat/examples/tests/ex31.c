@@ -18,7 +18,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscViewer    viewer;
 #if defined (PETSC_USE_LOG)
-  PetscEvent     MATRIX_GENERATE,MATRIX_READ;
+  PetscLogEvent  MATRIX_GENERATE,MATRIX_READ;
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);

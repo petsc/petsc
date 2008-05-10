@@ -6,7 +6,7 @@
 #include "include/private/isimpl.h"      /*I "petscis.h" I*/
 
 /* Logging support */
-PetscCookie PETSCVEC_DLLEXPORT IS_COOKIE = 0;
+PetscCookie PETSCVEC_DLLEXPORT IS_COOKIE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISIdentity" 

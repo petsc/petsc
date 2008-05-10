@@ -5,7 +5,7 @@ static char help[] = "Operator Tests.\n\n";
 #include "../tutorials/bratu_quadrature.h"
 
 using ALE::Obj;
-extern PetscEvent MAT_Mult;
+extern PetscLogEvent MAT_Mult;
 typedef ALE::MinimalArrow<ALE::Mesh::point_type, ALE::Mesh::point_type> arrow_type;
 typedef ALE::UniformSection<arrow_type, double>                         matrix_section_type;
 
@@ -14,7 +14,7 @@ typedef struct {
   int        dim;             // The topological mesh dimension
   PetscTruth interpolate;     // Construct missing elements of the mesh
   PetscReal  refinementLimit; // The largest allowable cell volume
-  PetscEvent assemblyEvent;
+  PetscLogEvent assemblyEvent;
 } Options;
 
 #undef __FUNCT__
@@ -235,7 +235,7 @@ PetscErrorCode FullAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   Mesh           mesh;
   Mat            A;
   Vec            x, y;
-  PetscStage     stage;
+  PetscLogStage  stage;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -335,7 +335,7 @@ PetscErrorCode NoAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
 {
   const Obj<ALE::Mesh::real_section_type>& s = m->getRealSection("default");
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
-  PetscStage     stage;
+  PetscLogStage  stage;
   PetscTruth     view;
   PetscErrorCode ierr;
 
@@ -458,7 +458,7 @@ PetscErrorCode StoredAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   const Obj<ALE::Mesh::real_section_type>& s = m->getRealSection("default");
   const Obj<ALE::Mesh::real_section_type>& o = m->getRealSection("operator");
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
-  PetscStage     stage;
+  PetscLogStage  stage;
   PetscTruth     view;
   PetscErrorCode ierr;
 
@@ -601,7 +601,7 @@ PetscErrorCode PartialAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   const Obj<ALE::Mesh::real_section_type>& s = m->getRealSection("default");
   const Obj<matrix_section_type>&          o = new matrix_section_type(s->comm(), s->debug());
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
-  PetscStage     stage;
+  PetscLogStage  stage;
   PetscTruth     view;
   PetscErrorCode ierr;
 

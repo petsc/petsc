@@ -6,7 +6,7 @@
 int main(int argc,char **argv)
 {
   PetscLogDouble x,y;
-  PetscEvent     e1;
+  PetscLogEvent  e1;
   PetscErrorCode ierr;
   PetscTruth     flg;
 

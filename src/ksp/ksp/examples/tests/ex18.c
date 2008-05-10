@@ -22,7 +22,7 @@ int main(int argc,char **args)
   KSP            ksp;
   char           file[PETSC_MAX_PATH_LEN]; 
   PetscViewer    fd;
-  PetscStage     stage1;
+  PetscLogStage  stage1;
   
   PetscInitialize(&argc,&args,(char *)0,help);
 

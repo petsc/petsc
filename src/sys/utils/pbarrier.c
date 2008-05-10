@@ -3,7 +3,7 @@
 #include "petsc.h"              /*I "petsc.h" I*/
 
 /* Logging support */
-PetscEvent PETSC_Barrier = 0;
+PetscLogEvent PETSC_Barrier;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBarrier"

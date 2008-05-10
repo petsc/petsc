@@ -24,7 +24,7 @@ T*/
 /* 
    Declare user-defined routines
 */
-extern PetscErrorCode CheckError(Vec,Vec,Vec,PetscInt,PetscEvent);
+extern PetscErrorCode CheckError(Vec,Vec,Vec,PetscInt,PetscLogEvent);
 extern PetscErrorCode MyKSPMonitor(KSP,PetscInt,PetscReal,void*);
 
 #undef __FUNCT__
@@ -36,7 +36,7 @@ int main(int argc,char **args)
   Mat            C1,C2;         /* matrices for systems #1 and #2 */
   KSP            ksp1,ksp2;   /* KSP contexts for systems #1 and #2 */
   PetscInt       ntimes = 3;     /* number of times to solve the linear systems */
-  PetscEvent     CHECK_ERROR;    /* event number for error checking */
+  PetscLogEvent  CHECK_ERROR;    /* event number for error checking */
   PetscInt       ldim,low,high,iglobal,Istart,Iend,Istart2,Iend2;
   PetscInt       Ii,J,i,j,m = 3,n = 2,its,t;
   PetscErrorCode ierr;
@@ -44,7 +44,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   PetscMPIInt    rank,size;
 #if defined (PETSC_USE_LOG)
-  PetscStage     stages[3];
+  PetscLogStage  stages[3];
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -389,7 +389,7 @@ int main(int argc,char **args)
     the event (the vectors u,x,b).  Such information is optional;
     we could instead just use 0 instead for all objects.
 */
-PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscEvent CHECK_ERROR)
+PetscErrorCode CheckError(Vec u,Vec x,Vec b,PetscInt its,PetscLogEvent CHECK_ERROR)
 {
   PetscScalar    none = -1.0;
   PetscReal      norm;

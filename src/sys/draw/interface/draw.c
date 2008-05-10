@@ -4,7 +4,7 @@
 */
 #include "src/sys/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
-PetscCookie PETSC_DRAW_COOKIE = 0;
+PetscCookie PETSC_DRAW_COOKIE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawInitializePackage" 

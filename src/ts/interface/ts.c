@@ -3,8 +3,8 @@
 #include "include/private/tsimpl.h"        /*I "petscts.h"  I*/
 
 /* Logging support */
-PetscCookie PETSCTS_DLLEXPORT TS_COOKIE = 0;
-PetscEvent  TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS_JacobianEval = 0;
+PetscCookie PETSCTS_DLLEXPORT TS_COOKIE;
+PetscLogEvent  TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetTypeFromOptions"

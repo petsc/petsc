@@ -29,7 +29,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscScalar    sigma,one=1.0,*arrayA,*arrayB,*evecs_array,*work,*evals;
   PetscMPIInt    size;
   PetscInt       m,n,i,j,nevs,il,iu;
-  PetscStage     stages[2];
+  PetscLogStage  stages[2];
   PetscReal      vl,vu,abstol=1.e-8; 
   PetscBLASInt   *iwork,*ifail,lone=1,lwork,lierr,bn;
   PetscInt       ievbd_loc[2],offset=0,cklvl=2;

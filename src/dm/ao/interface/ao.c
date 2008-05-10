@@ -6,8 +6,8 @@
 #include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 /* Logging support */
-PetscCookie PETSCDM_DLLEXPORT AO_COOKIE = 0;
-PetscEvent  AO_PetscToApplication = 0, AO_ApplicationToPetsc = 0;
+PetscCookie PETSCDM_DLLEXPORT AO_COOKIE;
+PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 
 #undef __FUNCT__  
 #define __FUNCT__ "AOView" 

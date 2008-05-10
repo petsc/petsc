@@ -51,7 +51,7 @@ public :
     std::string eventName = testName+" Restrict";
 
     ALE::LogStage  stage = ALE::LogStageRegister(stageName.c_str());
-    PetscEvent     restrictEvent;
+    PetscLogEvent  restrictEvent;
     PetscErrorCode ierr;
 
     ierr = PetscLogEventRegister(eventName.c_str(), PETSC_OBJECT_COOKIE,&restrictEvent);
@@ -89,7 +89,7 @@ public :
     const int tag = this->_mesh->calculateCustomAtlas(this->_section, cells);
 
     ALE::LogStage  stage = ALE::LogStageRegister(stageName.c_str());
-    PetscEvent     restrictEvent;
+    PetscLogEvent  restrictEvent;
     PetscErrorCode ierr;
 
     ierr = PetscLogEventRegister(eventName.c_str(), PETSC_OBJECT_COOKIE,&restrictEvent);

@@ -55,7 +55,7 @@ int main(int argc,char **argv)
   PetscTruth     matrix_free;
   PetscMPIInt    size; 
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
-  PetscStage     stages[2];
+  PetscLogStage  stages[2];
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 

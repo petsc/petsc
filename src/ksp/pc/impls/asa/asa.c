@@ -54,8 +54,8 @@
 
 /* Event logging */
 
-PetscEvent PC_InitializationStage_ASA, PC_GeneralSetupStage_ASA;
-PetscEvent PC_CreateTransferOp_ASA, PC_CreateVcycle_ASA;
+PetscLogEvent PC_InitializationStage_ASA, PC_GeneralSetupStage_ASA;
+PetscLogEvent PC_CreateTransferOp_ASA, PC_CreateVcycle_ASA;
 PetscTruth asa_events_registered = PETSC_FALSE;
 
 

@@ -3,7 +3,7 @@
 #include "include/private/matimpl.h"               /*I "petscmat.h" I*/
 
 /* Logging support */
-PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE = 0;
+PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE;
 
 /*
    Simplest partitioning, keeps the current partitioning.

@@ -5533,7 +5533,7 @@ One must register the event by calling \trl{
 PetscLogEventRegister()}, which assigns a unique integer to identify the
 event for profiling purposes: \findex{PetscLogEventRegister()}
 \begin{tabbing}
-  PetscLogEventRegister(const char string[],PetscEvent *e);
+  PetscLogEventRegister(const char string[],PetscLogEvent *e);
 \end{tabbing}
 Here \trl{string} is a user-defined event name, and \trl{color} is an
 optional user-defined event color (for use with {\em Upshot/Nupshot} logging);
@@ -5575,13 +5575,13 @@ calls within a program.  One can independently monitor up to ten
 stages of code by switching among the various stages with the comands
 \findex{PetscLogStagePush()} \findex{PetscLogStagePop()}
 \begin{tabbing}
-   PetscLogStagePush(PetscStage stage);\\
+   PetscLogStagePush(PetscLogStage stage);\\
    PetscLogStagePop();
 \end{tabbing}
 where \trl{stage} is an integer (0-9); see the manual pages for details.
 The command  \findex{PetscLogStageRegister()}
 \begin{tabbing}
-   PetscLogStageRegister(const char *name,PetscStage *stage)
+   PetscLogStageRegister(const char *name,PetscLogStage *stage)
 \end{tabbing}
 allows one to associate a name with a stage; these names are printed whenever
 summaries are generated with \trl{-log_summary} or PetscLogPrintSummary().

@@ -8,7 +8,7 @@
 PETSC_EXTERN_CXX_BEGIN
 
 #define PETSC_EVENT  1311311
-extern PetscEvent PETSC_LARGEST_EVENT;
+extern PetscLogEvent PETSC_LARGEST_EVENT;
 
 /* Global flop counter */
 extern PetscLogDouble PETSC_DLLEXPORT _TotalFlops;
@@ -183,8 +183,8 @@ extern PetscTruth UseMPE;
 #define PETSC_LOG_EVENT_MPE_END(e)   0
 #endif
 
-EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPLB)(PetscEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
-EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPLE)(PetscEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPLB)(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPLE)(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
 EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPHC)(PetscObject);
 EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPHD)(PetscObject);
 
@@ -214,19 +214,19 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char[]);
 /* Counter functions */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetFlops(PetscLogDouble *);
 /* Stage functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char[],PetscStage*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(PetscStage);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char[],PetscLogStage*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(PetscLogStage);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePop(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(PetscStage, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(PetscStage, PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(PetscStage, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(PetscStage, PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char [], PetscStage *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(PetscLogStage, PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(PetscLogStage, PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(PetscLogStage, PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(PetscLogStage, PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char [], PetscLogStage *);
 /* Event functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char[], PetscCookie,PetscEvent*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivate(PetscEvent);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscEvent);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscEvent, PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char[], PetscCookie,PetscLogEvent*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivate(PetscLogEvent);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscLogEvent);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscLogEvent, PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie);
 
@@ -429,9 +429,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
 
 #define PreLoadBegin(flag,name) \
 {\
-  PetscTruth    PreLoading = flag;\
-  int           PreLoadMax,PreLoadIt;\
-  PetscStage     _stageNum;\
+  PetscTruth     PreLoading = flag;\
+  int            PreLoadMax,PreLoadIt;\
+  PetscLogStage  _stageNum;\
   PetscErrorCode _3_ierr;	\
   _3_ierr = PetscOptionsGetTruth(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
   PreLoadMax = (int)(PreLoading);\

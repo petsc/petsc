@@ -10,7 +10,7 @@ static char help[] = "Model single-physics solver. Modified from ex19.c \n\\n";
 
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscEvent     EVENT_FORMFUNCTIONLOCAL2;
+extern PetscLogEvent  EVENT_FORMFUNCTIONLOCAL2;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

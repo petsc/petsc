@@ -7,7 +7,7 @@
 */
 #include "src/dm/adda/addaimpl.h"                          /*I "petscda.h" I*/
 
-PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE = 0;
+PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ADDACreate"

@@ -23,7 +23,7 @@ struct _p_Mesh {
 };
 
 extern PetscCookie MESH_COOKIE;
-extern PetscEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
+extern PetscLogEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
                   Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
 typedef struct _SectionRealOps *SectionRealOps;
@@ -40,7 +40,7 @@ struct _p_SectionReal {
 };
 
 extern PetscCookie SECTIONREAL_COOKIE;
-extern PetscEvent SectionReal_View;
+extern PetscLogEvent SectionReal_View;
 
 typedef struct _SectionIntOps *SectionIntOps;
 struct _SectionIntOps {
@@ -56,6 +56,6 @@ struct _p_SectionInt {
 };
 
 extern PetscCookie SECTIONINT_COOKIE;
-extern PetscEvent SectionInt_View;
+extern PetscLogEvent SectionInt_View;
 
 #endif

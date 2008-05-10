@@ -27,7 +27,7 @@ typedef struct _p_Mesh* Mesh;
 
 /* Logging support */
 extern PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
-extern PetscEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
+extern PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
   Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFinalize();

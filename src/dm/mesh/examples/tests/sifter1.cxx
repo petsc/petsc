@@ -41,7 +41,7 @@ PetscErrorCode ConeTest(const ALE::Obj<sifter_type>& sifter, Options *options)
 
   PetscFunctionBegin;
   ALE::LogStage  stage = ALE::LogStageRegister("Cone Test");
-  PetscEvent     coneEvent;
+  PetscLogEvent  coneEvent;
   PetscErrorCode ierr;
 
   ierr = PetscLogEventRegister("Cone", PETSC_OBJECT_COOKIE,&coneEvent);
@@ -87,7 +87,7 @@ PetscErrorCode SupportTest(const ALE::Obj<sifter_type>& sifter, Options *options
 
   PetscFunctionBegin;
   ALE::LogStage  stage = ALE::LogStageRegister("Support Test");
-  PetscEvent     supportEvent;
+  PetscLogEvent  supportEvent;
   PetscErrorCode ierr;
 
   ierr = PetscLogEventRegister("Support", PETSC_OBJECT_COOKIE,&supportEvent);
