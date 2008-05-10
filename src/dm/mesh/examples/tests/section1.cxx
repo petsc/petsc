@@ -54,7 +54,7 @@ public :
     PetscEvent     restrictEvent;
     PetscErrorCode ierr;
 
-    ierr = PetscLogEventRegister(&restrictEvent, eventName.c_str(), PETSC_OBJECT_COOKIE);
+    ierr = PetscLogEventRegister(eventName.c_str(), PETSC_OBJECT_COOKIE,&restrictEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(restrictEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {
@@ -92,7 +92,7 @@ public :
     PetscEvent     restrictEvent;
     PetscErrorCode ierr;
 
-    ierr = PetscLogEventRegister(&restrictEvent, eventName.c_str(), PETSC_OBJECT_COOKIE);
+    ierr = PetscLogEventRegister(eventName.c_str(), PETSC_OBJECT_COOKIE,&restrictEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(restrictEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {

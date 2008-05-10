@@ -36,7 +36,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "operator1.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = PetscLogEventRegister(&options->assemblyEvent, "Assembly", MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Assembly", MAT_COOKIE,&options->assemblyEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -235,7 +235,7 @@ PetscErrorCode FullAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   Mesh           mesh;
   Mat            A;
   Vec            x, y;
-  PetscInt       stage;
+  PetscStage     stage;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -335,7 +335,7 @@ PetscErrorCode NoAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
 {
   const Obj<ALE::Mesh::real_section_type>& s = m->getRealSection("default");
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
-  PetscInt       stage;
+  PetscStage     stage;
   PetscTruth     view;
   PetscErrorCode ierr;
 
@@ -458,7 +458,7 @@ PetscErrorCode StoredAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   const Obj<ALE::Mesh::real_section_type>& s = m->getRealSection("default");
   const Obj<ALE::Mesh::real_section_type>& o = m->getRealSection("operator");
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
-  PetscInt       stage;
+  PetscStage     stage;
   PetscTruth     view;
   PetscErrorCode ierr;
 
@@ -601,7 +601,7 @@ PetscErrorCode PartialAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   const Obj<ALE::Mesh::real_section_type>& s = m->getRealSection("default");
   const Obj<matrix_section_type>&          o = new matrix_section_type(s->comm(), s->debug());
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
-  PetscInt       stage;
+  PetscStage     stage;
   PetscTruth     view;
   PetscErrorCode ierr;
 

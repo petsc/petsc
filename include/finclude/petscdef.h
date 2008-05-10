@@ -63,6 +63,7 @@
 #define PetscErrorCode PetscFortranInt
 #define PetscCookie PetscFortranInt
 #define PetscEvent PetscFortranInt
+#define PetscStage PetscFortranInt
 !
 #if defined(PETSC_FORTRAN_PETSCTRUTH_INT)
 #undef PetscTruth

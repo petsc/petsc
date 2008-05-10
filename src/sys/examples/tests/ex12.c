@@ -27,7 +27,7 @@ int main(int argc,char **argv)
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister(&event,"Sort",0);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Sort",0,&event);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {

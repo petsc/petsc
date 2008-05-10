@@ -5522,7 +5522,7 @@ code fragment below:
 \begin{tabbing}
     \#include "petsclog.h"\\
     int USER\_EVENT;\\
-    PetscLogEventRegister(\&USER\_EVENT,"User event name",0);\\
+    PetscLogEventRegister("User event name",0,\&USER\_EVENT);\\
     PetscLogEventBegin(USER\_EVENT,0,0,0,0);\\
        /* application code segment to monitor */\\
        PetscLogFlops(number of flops for this code segment);\\
@@ -5533,7 +5533,7 @@ One must register the event by calling \trl{
 PetscLogEventRegister()}, which assigns a unique integer to identify the
 event for profiling purposes: \findex{PetscLogEventRegister()}
 \begin{tabbing}
-  PetscLogEventRegister(int *e,const char string[]);
+  PetscLogEventRegister(const char string[],PetscEvent *e);
 \end{tabbing}
 Here \trl{string} is a user-defined event name, and \trl{color} is an
 optional user-defined event color (for use with {\em Upshot/Nupshot} logging);
@@ -5575,13 +5575,13 @@ calls within a program.  One can independently monitor up to ten
 stages of code by switching among the various stages with the comands
 \findex{PetscLogStagePush()} \findex{PetscLogStagePop()}
 \begin{tabbing}
-   PetscLogStagePush(int stage);\\
+   PetscLogStagePush(PetscStage stage);\\
    PetscLogStagePop();
 \end{tabbing}
 where \trl{stage} is an integer (0-9); see the manual pages for details.
 The command  \findex{PetscLogStageRegister()}
 \begin{tabbing}
-   PetscLogStageRegister(int stage,char *name)
+   PetscLogStageRegister(PetscStage *stage,const char *name)
 \end{tabbing}
 allows one to associate a name with a stage; these names are printed whenever
 summaries are generated with \trl{-log_summary} or PetscLogPrintSummary().
@@ -5590,14 +5590,14 @@ The following code fragment uses three profiling stages within an program.
 \begin{tabbing}
    PetscInitialize(int *argc,char ***args,0,0);\\
    /* stage 0 of code here */\\
-   PetscLogStageRegister(0,"Stage 0 of Code");\\
+   PetscLogStageRegister(&stagenum0,"Stage 0 of Code");\\
    for (i=0; i<ntimes; i++) \{\\
-      PetscLogStagePush(1);\\
-      PetscLogStageRegister(1,"Stage 1 of Code");\\
+      PetscLogStageRegister(&stagenum1,"Stage 1 of Code");\\
+      PetscLogStagePush(stagenum1);\\
       /* stage 1 of code here */\\
       PetscLogStagePop();\\
-      PetscLogStagePush(2);\\
-      PetscLogStageRegister(1,"Stage 2 of Code");\\
+      PetscLogStageRegister(&stagenum2,"Stage 2 of Code");\\
+      PetscLogStagePush(stagenum2);\\
       /* stage 2 of code here */\\
       PetscLogStagePop();\\
    \}

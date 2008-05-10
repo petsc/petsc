@@ -17,7 +17,7 @@ int main(int argc,char **args)
   Vec            xx,s1,s2;
   PetscReal      s1norm,s2norm,rnorm,tol = 1.e-10;
   PetscTruth     flg;
-  int            stages[2];
+  PetscStage     stages[2];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

@@ -70,21 +70,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
   ierr = MeshRegisterAll(path);CHKERRQ(ierr);
 #endif
   /* Register Events */
-  ierr = PetscLogEventRegister(&AO_PetscToApplication,       "AOPetscToApplication", AO_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&AO_ApplicationToPetsc,       "AOApplicationToPetsc", AO_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DA_GlobalToLocal,            "DAGlobalToLocal",      DM_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DA_LocalToGlobal,            "DALocalToGlobal",      DM_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&DA_LocalADFunction,          "DALocalADFunc",        DM_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("AOPetscToApplication", AO_COOKIE,&AO_PetscToApplication);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("AOApplicationToPetsc", AO_COOKIE,&AO_ApplicationToPetsc);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DAGlobalToLocal",      DM_COOKIE,&DA_GlobalToLocal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DALocalToGlobal",      DM_COOKIE,&DA_LocalToGlobal);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("DALocalADFunc",        DM_COOKIE,&DA_LocalADFunction);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
-  ierr = PetscLogEventRegister(&Mesh_View,                   "MeshView",             MESH_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&Mesh_GetGlobalScatter,       "MeshGetGlobalScatter", MESH_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&Mesh_restrictVector,         "MeshRestrictVector",   MESH_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&Mesh_assembleVector,         "MeshAssembleVector",   MESH_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&Mesh_assembleVectorComplete, "MeshAssemVecComplete", MESH_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&Mesh_assembleMatrix,         "MeshAssembleMatrix",   MESH_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&Mesh_updateOperator,         "MeshUpdateOperator",   MESH_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SectionReal_View,            "SectionRealView",      SECTIONREAL_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SectionInt_View,             "SectionIntView",       SECTIONINT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshView",             MESH_COOKIE,&Mesh_View);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshGetGlobalScatter", MESH_COOKIE,&Mesh_GetGlobalScatter);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshRestrictVector",   MESH_COOKIE,&Mesh_restrictVector);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshAssembleVector",   MESH_COOKIE,&Mesh_assembleVector);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshAssemVecComplete", MESH_COOKIE,&Mesh_assembleVectorComplete);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshAssembleMatrix",   MESH_COOKIE,&Mesh_assembleMatrix);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MeshUpdateOperator",   MESH_COOKIE,&Mesh_updateOperator);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SectionRealView",      SECTIONREAL_COOKIE,&SectionReal_View);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SectionIntView",       SECTIONINT_COOKIE,&SectionInt_View);CHKERRQ(ierr);
 #endif
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);

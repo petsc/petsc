@@ -40,7 +40,7 @@ int main(int argc,char **argv)
       - The user can also optionally log floating point operations
         with the routine PetscLogFlops().
   */
-  ierr = PetscLogEventRegister(&USER_EVENT,"User event",PETSC_VIEWER_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("User event",PETSC_VIEWER_COOKIE,&USER_EVENT);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(USER_EVENT,0,0,0,0);CHKERRQ(ierr);
   icount = 0;
   for (i=0; i<imax; i++) icount++;

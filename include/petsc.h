@@ -172,9 +172,18 @@ typedef int PetscCookie;
 
     Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
+.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscStage
 M*/
 typedef int PetscEvent;
+
+/*MC
+    PetscStage - id used to identify user stages of runs - for logging
+
+    Level: intermediate
+
+.seealso: PetscLogStageRegister(), PetscLogStageBegin(), PetscLogStageEnd(), PetscEvent
+M*/
+typedef int PetscStage;
 
 /*MC
     PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.

@@ -296,14 +296,14 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       levels = mg[0]->levels;
       for (i=0; i<levels; i++) {  
         sprintf(eventname,"MGSetup Level %d",(int)i);
-        ierr = PetscLogEventRegister(&mg[i]->eventsmoothsetup,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
+        ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->cookie,&mg[i]->eventsmoothsetup);CHKERRQ(ierr);
         sprintf(eventname,"MGSmooth Level %d",(int)i);
-        ierr = PetscLogEventRegister(&mg[i]->eventsmoothsolve,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
+        ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->cookie,&mg[i]->eventsmoothsolve);CHKERRQ(ierr);
         if (i) {
           sprintf(eventname,"MGResid Level %d",(int)i);
-          ierr = PetscLogEventRegister(&mg[i]->eventresidual,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
+          ierr = PetscLogEventRegister(((PetscObject)pc)->cookie,&mg[i]->eventresidual,eventname);CHKERRQ(ierr);
           sprintf(eventname,"MGInterp Level %d",(int)i);
-          ierr = PetscLogEventRegister(&mg[i]->eventinterprestrict,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
+          ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->cookie,&mg[i]->eventinterprestrict);CHKERRQ(ierr);
         }
       }
     }

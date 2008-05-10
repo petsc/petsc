@@ -67,7 +67,7 @@ public :
     PetscEvent     closureEvent;
     PetscErrorCode ierr;
 
-    ierr = PetscLogEventRegister(&closureEvent, "Closure", PETSC_OBJECT_COOKIE);
+    ierr = PetscLogEventRegister("Closure", PETSC_OBJECT_COOKIE,&closureEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(closureEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {
@@ -110,7 +110,7 @@ public :
     PetscEvent     starEvent;
     PetscErrorCode ierr;
 
-    ierr = PetscLogEventRegister(&starEvent, "Star", PETSC_OBJECT_COOKIE);
+    ierr = PetscLogEventRegister("Star", PETSC_OBJECT_COOKIE,&starEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(starEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {
@@ -167,7 +167,7 @@ public :
     PetscEvent     closureEvent;
     PetscErrorCode ierr;
 
-    ierr = PetscLogEventRegister(&closureEvent, "Closure", PETSC_OBJECT_COOKIE);
+    ierr = PetscLogEventRegister("Closure", PETSC_OBJECT_COOKIE,&closureEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(closureEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {
@@ -209,7 +209,7 @@ public :
     PetscEvent     starEvent;
     PetscErrorCode ierr;
 
-    ierr = PetscLogEventRegister(&starEvent, "Star", PETSC_OBJECT_COOKIE);
+    ierr = PetscLogEventRegister("Star", PETSC_OBJECT_COOKIE,&starEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(starEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {

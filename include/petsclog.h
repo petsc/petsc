@@ -214,16 +214,16 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char[]);
 /* Counter functions */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetFlops(PetscLogDouble *);
 /* Stage functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(int*, const char[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(int);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(PetscStage*, const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(PetscStage);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePop(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(int, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(int, PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(int, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(int, PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char [], int *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(PetscStage, PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(PetscStage, PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(PetscStage, PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(PetscStage, PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char [], PetscStage *);
 /* Event functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(PetscEvent*, const char[], PetscCookie);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char[], PetscCookie,PetscEvent*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivate(PetscEvent);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscEvent);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscEvent, PetscTruth);
@@ -431,8 +431,10 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
 
 #define PreLoadBegin(flag,name) \
 {\
-  PetscTruth PreLoading = flag;\
-  int        PreLoadMax,PreLoadIt,_stageNum,_3_ierr;\
+  PetscTruth    PreLoading = flag;\
+  int           PreLoadMax,PreLoadIt;\
+  PetscStage     _stageNum;\
+  PetscErrorCode _3_ierr;	\
   _3_ierr = PetscOptionsGetTruth(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
   PreLoadMax = (int)(PreLoading);\
   PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\

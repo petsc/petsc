@@ -1115,8 +1115,8 @@
        save flux_event, fun3d_class, flag, flux_label
        if (flag .eq. -1) then
           call PetscLogClassRegister(fun3d_class,'PetscFun3d',ierr)
-          call PetscLogEventRegister(flux_event,flux_label,             &
-     &         fun3d_class,ierr)         
+          call PetscLogEventRegister(flux_label,                        &
+     &         fun3d_class,flux_event,ierr)         
           flag = 1
        endif
        call PetscLogEventBegin(flux_event,PETSC_NULL_OBJECT,            &

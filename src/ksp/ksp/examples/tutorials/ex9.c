@@ -44,7 +44,7 @@ int main(int argc,char **args)
   PetscScalar    v;
   PetscMPIInt    rank,size;
 #if defined (PETSC_USE_LOG)
-  int            stages[3];
+  PetscStage     stages[3];
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -65,7 +65,7 @@ int main(int argc,char **args)
      Register a user-defined event for profiling (error checking).
   */
   CHECK_ERROR = 0;
-  ierr = PetscLogEventRegister(&CHECK_ERROR,"Check Error",KSP_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Check Error",KSP_COOKIE,&CHECK_ERROR);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - Stage 0: - - - - - - - - - - - - - -
                         Preliminary Setup

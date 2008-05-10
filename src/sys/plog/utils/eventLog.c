@@ -240,7 +240,7 @@ PetscErrorCode EventPerfLogEnsureSize(EventPerfLog eventLog, int size)
 .vb
       int USER_EVENT;
       int user_event_flops;
-      PetscLogEventRegister(&USER_EVENT,"User event name");
+      PetscLogEventRegister("User event name",0,&USER_EVENT);
       PetscLogEventBegin(USER_EVENT,0,0,0,0);
          [code segment to monitor]
          PetscLogFlops(user_event_flops);

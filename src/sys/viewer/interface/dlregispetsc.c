@@ -36,7 +36,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
   ierr = PetscLogClassRegister(&PETSC_OBJECT_COOKIE, "Object");CHKERRQ(ierr);
 
   /* Register Events */
-  ierr = PetscLogEventRegister(&PETSC_Barrier, "PetscBarrier", PETSC_SMALLEST_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_COOKIE,&PETSC_Barrier);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

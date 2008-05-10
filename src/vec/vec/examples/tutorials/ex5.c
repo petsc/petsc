@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   /* PART 1:  Generate vector, then write it in binary format */
 
-  ierr = PetscLogEventRegister(&VECTOR_GENERATE,"Generate Vector",VEC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Generate Vector",VEC_COOKIE,&VECTOR_GENERATE);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
   /* Generate vector */
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ int main(int argc,char **args)
   ierr = PetscSleep(10);CHKERRQ(ierr);
 
   /* Read new vector in binary format */
-  ierr = PetscLogEventRegister(&VECTOR_READ,"Read Vector",VEC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Read Vector",VEC_COOKIE,&VECTOR_READ);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);

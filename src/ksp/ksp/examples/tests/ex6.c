@@ -14,7 +14,7 @@ int main(int argc,char **args)
 #if !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
   PetscInt       its;
-  int            stage1,stage2;
+  PetscStage     stage1,stage2;
   PetscReal      norm;
   PetscLogDouble tsetup1,tsetup2,tsetup,tsolve1,tsolve2,tsolve;
   Vec            x,b,u;

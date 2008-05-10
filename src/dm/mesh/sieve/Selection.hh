@@ -1114,16 +1114,16 @@ namespace ALE {
       static PetscEvent CreateFaultMesh_Event = 0, OrientFaultMesh_Event = 0, AddCohesivePoints_Event = 0, SplitMesh_Event = 0;
 
       if (!CreateFaultMesh_Event) {
-        PetscLogEventRegister(&CreateFaultMesh_Event, "CreateFaultMesh", 0);
+        PetscLogEventRegister("CreateFaultMesh", 0,&CreateFaultMesh_Event);
       }
       if (!OrientFaultMesh_Event) {
-        PetscLogEventRegister(&OrientFaultMesh_Event, "OrientFaultMesh", 0);
+        PetscLogEventRegister("OrientFaultMesh", 0,&OrientFaultMesh_Event);
       }
       if (!AddCohesivePoints_Event) {
-        PetscLogEventRegister(&AddCohesivePoints_Event, "AddCohesivePoints", 0);
+        PetscLogEventRegister("AddCohesivePoints", 0,&AddCohesivePoints_Event);
       }
       if (!SplitMesh_Event) {
-        PetscLogEventRegister(&SplitMesh_Event, "SplitMesh", 0);
+        PetscLogEventRegister("SplitMesh", 0,&SplitMesh_Event);
       }
 
       const Obj<sieve_type>& sieve = mesh->getSieve();

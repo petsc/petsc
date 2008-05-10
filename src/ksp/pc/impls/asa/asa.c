@@ -2080,10 +2080,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
 
   /* register events */
   if (! asa_events_registered) {
-    ierr = PetscLogEventRegister(&PC_InitializationStage_ASA, "PCInitializationStage_ASA", PC_COOKIE);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister(&PC_GeneralSetupStage_ASA,   "PCGeneralSetupStage_ASA",   PC_COOKIE);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister(&PC_CreateTransferOp_ASA,    "PCCreateTransferOp_ASA",    PC_COOKIE);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister(&PC_CreateVcycle_ASA,        "PCCreateVcycle_ASA",   PC_COOKIE);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCInitializationStage_ASA", PC_COOKIE,&PC_InitializationStage_ASA);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCGeneralSetupStage_ASA",   PC_COOKIE,&PC_GeneralSetupStage_ASA);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCCreateTransferOp_ASA",    PC_COOKIE,&PC_CreateTransferOp_ASA);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCCreateVcycle_ASA",        PC_COOKIE,&PC_CreateVcycle_ASA);CHKERRQ(ierr);
     asa_events_registered = PETSC_TRUE;
   }
 

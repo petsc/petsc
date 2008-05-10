@@ -55,11 +55,14 @@ int main(int argc,char **argv)
   PetscTruth     matrix_free;
   PetscMPIInt    size; 
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
+  PetscStage     stages[2];
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
+  ierr = PetscLogStageRegister(&stages[0],"stage 1");
+  ierr = PetscLogStageRegister(&stages[1],"stage 2");
   for (i=0; i<2; i++) {
-    ierr = PetscLogStagePush(i);CHKERRQ(ierr);
+    ierr = PetscLogStagePush(stages[i]);CHKERRQ(ierr);
     user.mx = 4; user.my = 4; user.param = 6.0;
     
     if (i!=0) {

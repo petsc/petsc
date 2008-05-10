@@ -47,7 +47,7 @@ int main(int argc,char **argv)
   }
   ierr = PetscSortInt(n,values);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister(&event,"Sort",0);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Sort",0,&event);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(event,0,0,0,0);CHKERRQ(ierr);
  
   ierr = PetscRandomSeed(rnd);CHKERRQ(ierr);

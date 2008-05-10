@@ -6,11 +6,12 @@
 int main(int argc,char **argv)
 {
   PetscLogDouble x,y;
-  int        e1,ierr;
-  PetscTruth flg;
+  PetscEvent     e1;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&argv,0,0);
-  PetscLogEventRegister(&e1,"*DummyEvent",0);
+  PetscLogEventRegister("*DummyEvent",0,&e1);
   /* To take care of the paging effects */
   ierr = PetscGetTime(&x);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(e1,&x,0,0,0);CHKERRQ(ierr);
