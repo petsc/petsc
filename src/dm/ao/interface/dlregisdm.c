@@ -57,13 +57,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DM_COOKIE,     "Distributed array");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&ADDA_COOKIE,   "Arbitrary Dimension Distributed array");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Application Order",&AO_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Distributed array",&DM_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Arbitrary Dimension Distributed array",&ADDA_COOKIE);CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
-  ierr = PetscLogClassRegister(&MESH_COOKIE,       "Mesh");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&SECTIONREAL_COOKIE,"SectionReal");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&SECTIONINT_COOKIE, "SectionInt");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Mesh",&MESH_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("SectionReal",&SECTIONREAL_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("SectionInt",&SECTIONINT_COOKIE);CHKERRQ(ierr);
 #endif
   /* Register Constructors */
 #ifdef PETSC_HAVE_SIEVE

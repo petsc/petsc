@@ -26,7 +26,7 @@ PetscErrorCode CharacteristicInitializePackage(const char path[]) {
   if (initialized == PETSC_TRUE) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&CHARACTERISTIC_COOKIE,  "Method of Characteristics");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Method of Characteristics",&CHARACTERISTIC_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = CharacteristicRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */

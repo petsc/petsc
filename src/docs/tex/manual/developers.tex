@@ -564,11 +564,11 @@ Each PETSc object begins with a PetscCookie which is used for error checking.
 Each different class of objects has its value for the cookie; these are used
 to distinguish between classes. When a new class is created one needs to call
 \begin{tabbing}
-  ierr = PetscLogClassRegister(PetscCookie *cookie,char *classname);CHKERRQ(ierr);
+  ierr = PetscCookieRegister(char *classname,PetscCookie *cookie);CHKERRQ(ierr);
 \end{tabbing}
 For example,
 \begin{tabbing}
-  ierr = PetscLogClassRegister(\&IS\_COOKIE,''index set'');CHKERRQ(ierr);
+  ierr = PetscCookieRegister(''index set'',\&IS\_COOKIE);CHKERRQ(ierr);
 \end{tabbing}
 {\bf Question: Why is a fundamental part of PETSc objects defined in PetscLog when PETSc Log
 is something that can be "turned off"} On can verify that an object is valid of a particular

@@ -522,7 +522,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&PF_COOKIE,          "PointFunction");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("PointFunction",&PF_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PFRegisterAll(path);CHKERRQ(ierr);
   /* Process info exclusions */

@@ -163,7 +163,7 @@ typedef int PetscErrorCode;
 
     Level: advanced
 
-.seealso: PetscLogClassRegister(), PetscLogEventRegister(), PetscHeaderCreate()
+.seealso: PetscCookieRegister(), PetscLogEventRegister(), PetscHeaderCreate()
 M*/
 typedef int PetscCookie;
 
@@ -1191,7 +1191,7 @@ typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDAT
 #define PETSC_SMALLEST_COOKIE 1211211
 extern PETSC_DLLEXPORT PetscCookie PETSC_LARGEST_COOKIE;
 extern PETSC_DLLEXPORT PetscCookie PETSC_OBJECT_COOKIE;
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(PetscCookie *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(const char[],PetscCookie *);
 
 /*
    Routines that get memory usage information from the OS

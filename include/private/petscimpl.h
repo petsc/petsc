@@ -113,7 +113,7 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 
     Level: developer
 
-.seealso: PetscHeaderDestroy(), PetscLogClassRegister()
+.seealso: PetscHeaderDestroy(), PetscCookieRegister()
 
 @*/ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)	\

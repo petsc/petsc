@@ -34,7 +34,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&PC_COOKIE,   "Preconditioner");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Preconditioner",&PC_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PCRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
@@ -103,7 +103,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) {
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&KSP_COOKIE,  "Krylov Solver");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Krylov Solver",&KSP_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = KSPRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */

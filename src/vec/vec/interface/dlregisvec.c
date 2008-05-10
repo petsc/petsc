@@ -30,8 +30,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&IS_COOKIE,          "Index Set");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,    "IS L to G Mapping");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Index Set",&IS_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("IS L to G Mapping",&IS_LTOGM_COOKIE);CHKERRQ(ierr);
 
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
@@ -95,8 +95,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&VEC_COOKIE,         "Vec");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&VEC_SCATTER_COOKIE, "Vec Scatter");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Vec",&VEC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Vec Scatter",&VEC_SCATTER_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = VecRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */

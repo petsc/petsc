@@ -33,7 +33,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&PETSC_OBJECT_COOKIE, "Object");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Object",&PETSC_OBJECT_COOKIE);CHKERRQ(ierr);
 
   /* Register Events */
   ierr = PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_COOKIE,&PETSC_Barrier);CHKERRQ(ierr);

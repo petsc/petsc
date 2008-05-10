@@ -50,10 +50,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
 #endif
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&MAT_COOKIE,              "Matrix");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&MAT_FDCOLORING_COOKIE,   "Matrix FD Coloring");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&MAT_PARTITIONING_COOKIE, "Matrix Partitioning");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&MAT_NULLSPACE_COOKIE,    "Matrix Null Space");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Matrix",&MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Matrix FD Coloring",&MAT_FDCOLORING_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Matrix Partitioning",&MAT_PARTITIONING_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Matrix Null Space",&MAT_NULLSPACE_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = MatRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */

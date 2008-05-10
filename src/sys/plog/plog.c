@@ -616,7 +616,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscStage 
   Input Parameter:
 + name   - The name associated with the event
 - cookie - The cookie associated to the class for this event, obtain either with
-           PetscLogClassRegister() or use a predefined one such as KSP_COOKIE, SNES_COOKIE
+           PetscCookieRegister() or use a predefined one such as KSP_COOKIE, SNES_COOKIE
             
   Output Parameter:
 . event - The event id for use with PetscLogEventBegin() and PetscLogEventEnd().
@@ -626,7 +626,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscStage 
       PetscEvent USER_EVENT;
       PetscCookie cookie;
       int user_event_flops;
-      PetscLogClassRegister(&cookie,"class name");
+      PetscCookieRegister("class name",&cookie);
       PetscLogEventRegister("User event name",cookie,&USER_EVENT);
       PetscLogEventBegin(USER_EVENT,0,0,0,0);
          [code segment to monitor]
@@ -658,7 +658,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscStage 
 .keywords: log, event, register
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(),
           PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
-          PetscLogEventActivate(), PetscLogEventDeactivate(), PetscLogClassRegister()
+          PetscLogEventActivate(), PetscLogEventDeactivate(), PetscCookieRegister()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char name[],PetscCookie cookie,PetscEvent *event) 
 {
@@ -1001,39 +1001,6 @@ M*/
 .keywords: log, event, begin, barrier
 M*/
 
-/*------------------------------------------------ Class Functions --------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PetscLogClassRegister"
-/*@C
-  PetscLogClassRegister - Registers a class name for logging operations in an application code. 
-
-  Not Collective
-
-  Input Parameter:
-. name   - The class name
-            
-  Output Parameter:
-. oclass - The class id or cookie
-
-  Level: developer
-
-.keywords: log, class, register
-
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogClassRegister(PetscCookie *oclass, const char name[])
-{
-  StageLog       stageLog;
-  int            stage;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
-  ierr = ClassRegLogRegister(stageLog->classLog, name, oclass);CHKERRQ(ierr);
-  for(stage = 0; stage < stageLog->numStages; stage++) {
-    ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
 
 /*------------------------------------------------ Output Functions -------------------------------------------------*/
 #undef __FUNCT__  
@@ -2181,3 +2148,40 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject obj, const char f
 
 #endif /* PETSC_USE_LOG*/
 
+
+PetscCookie PETSC_LARGEST_COOKIE = PETSC_SMALLEST_COOKIE;
+PetscCookie PETSC_OBJECT_COOKIE  = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscCookieRegister"
+/*@C
+  PetscCookieRegister - Registers a new class name for objects and logging operations in an application code. 
+
+  Not Collective
+
+  Input Parameter:
+. name   - The class name
+            
+  Output Parameter:
+. oclass - The class id or cookie
+
+  Level: developer
+
+.keywords: log, class, register
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(const char name[],PetscCookie *oclass )
+{
+  StageLog       stageLog;
+  PetscInt       stage;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *oclass = ++PETSC_LARGEST_COOKIE;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = ClassRegLogRegister(stageLog->classLog, name, *oclass);CHKERRQ(ierr);
+  for(stage = 0; stage < stageLog->numStages; stage++) {
+    ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}

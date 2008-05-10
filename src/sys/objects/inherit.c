@@ -504,7 +504,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerCreate(MPI_Comm comm,PetscContainer
   PetscFunctionBegin;
   PetscValidPointer(container,2);
   if (!PETSC_CONTAINER_COOKIE) {
-    ierr = PetscLogClassRegister(&PETSC_CONTAINER_COOKIE, "Container");CHKERRQ(ierr);
+    ierr = PetscCookieRegister("Container",&PETSC_CONTAINER_COOKIE);CHKERRQ(ierr);
   }
   ierr = PetscHeaderCreate(contain,_p_PetscContainer,PetscInt,PETSC_CONTAINER_COOKIE,0,"PetscContainer",comm,PetscContainerDestroy,0);CHKERRQ(ierr);
   *container = contain;

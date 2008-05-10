@@ -41,7 +41,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineCreate(MPI_Comm comm,const char 
 
   PetscFunctionBegin;
   if (MATLABENGINE_COOKIE == -1) {
-    ierr = PetscLogClassRegister(&MATLABENGINE_COOKIE,"Matlab Engine");CHKERRQ(ierr);
+    ierr = PetscCookieRegister("Matlab Engine",&MATLABENGINE_COOKIE);CHKERRQ(ierr);
   }
   ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_COOKIE,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
 

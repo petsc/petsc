@@ -229,8 +229,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscEvent);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscEvent, PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie);
-/* Class functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogClassRegister(PetscCookie*, const char []);
+
 
 /* Global counters */
 extern PETSC_DLLEXPORT PetscLogDouble irecv_ct;
@@ -367,7 +366,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 
 #define PetscLogEventActivateClass(a)   0
 #define PetscLogEventDeactivateClass(a) 0
-#define PetscLogClassRegister(a,b)      PetscCookieRegister(a)
 #define PetscLogEventSetActiveAll(a,b)  0
 
 #define _PetscLogPLB                        0

@@ -29,7 +29,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&PETSC_VIEWER_COOKIE, "Viewer");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Viewer",&PETSC_VIEWER_COOKIE);CHKERRQ(ierr);
 
   /* Register Constructors */
   ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);

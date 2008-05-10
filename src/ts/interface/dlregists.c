@@ -28,7 +28,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[]) {
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&TS_COOKIE, "TS");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("TS",&TS_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = TSRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */

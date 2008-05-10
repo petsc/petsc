@@ -29,7 +29,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Class */
-  ierr = PetscLogClassRegister(&PETSC_RANDOM_COOKIE,"PetscRandom");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("PetscRandom",&PETSC_RANDOM_COOKIE);CHKERRQ(ierr);
   ierr = PetscRandomRegisterAll(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

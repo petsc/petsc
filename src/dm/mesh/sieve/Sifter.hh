@@ -658,7 +658,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       PetscErrorCode     ierr;
 
       if (sifterType < 0) {
-        ierr = PetscLogClassRegister(&sifterType, id_name);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+        ierr = PetscCookieRegister(id_name,&sifterType);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
       }
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");

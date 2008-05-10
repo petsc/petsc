@@ -36,7 +36,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&MATMFFD_COOKIE,     "MatMFFD");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("MatMFFD",&MATMFFD_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = MatMFFDRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
