@@ -74,7 +74,7 @@ int main(int argc,char **args)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
-  PetscLogStageRegister(&stage1,"mystage 1");
+  PetscLogStageRegister("mystage 1",&stage1);
   PetscLogStagePush(stage1);
   ierr = PetscGetTime(&tsetup1);CHKERRQ(ierr);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
@@ -87,7 +87,7 @@ int main(int argc,char **args)
   PetscLogStagePop();
   ierr = PetscBarrier((PetscObject)A);CHKERRQ(ierr);
 
-  PetscLogStageRegister(&stage2,"mystage 2");
+  PetscLogStageRegister("mystage 2",&stage2);
   PetscLogStagePush(stage2);
   ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);

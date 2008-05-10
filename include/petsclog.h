@@ -214,7 +214,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char[]);
 /* Counter functions */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetFlops(PetscLogDouble *);
 /* Stage functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(PetscStage*, const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char[],PetscStage*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(PetscStage);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePop(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(PetscStage, PetscTruth);
@@ -442,7 +442,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
     if (PreLoadIt>0) {\
       _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
     } else {\
-      _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
+      _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr); \
     }\
     _3_ierr = PetscLogStageSetActive(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
     _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
@@ -458,7 +458,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
   if (PreLoadIt>0) {\
     _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
   } else {\
-    _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
+    _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr);	\
   }\
   _3_ierr = PetscLogStageSetActive(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
   _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);

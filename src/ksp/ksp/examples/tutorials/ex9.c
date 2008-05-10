@@ -57,9 +57,9 @@ int main(int argc,char **args)
   /* 
      Register various stages for profiling
   */
-  ierr = PetscLogStageRegister(&stages[0],"Prelim setup");CHKERRQ(ierr);
-  ierr = PetscLogStageRegister(&stages[1],"Linear System 1");CHKERRQ(ierr);
-  ierr = PetscLogStageRegister(&stages[2],"Linear System 2");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Prelim setup",&stages[0]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Linear System 1",&stages[1]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Linear System 2",&stages[2]);CHKERRQ(ierr);
 
   /* 
      Register a user-defined event for profiling (error checking).

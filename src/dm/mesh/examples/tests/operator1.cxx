@@ -239,7 +239,7 @@ PetscErrorCode FullAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogStageRegister(&stage, "Full Assembly");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Full Assembly",&stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   ierr = MeshCreate(m->comm(), &mesh);CHKERRQ(ierr);
   ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
@@ -340,7 +340,7 @@ PetscErrorCode NoAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogStageRegister(&stage, "No Assembly");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("No Assembly",&stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   t->setAtlas(s->getAtlas());
   t->allocateStorage();
@@ -463,7 +463,7 @@ PetscErrorCode StoredAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogStageRegister(&stage, "Stored Assembly");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Stored Assembly",&stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   t->setAtlas(s->getAtlas());
   t->allocateStorage();
@@ -606,7 +606,7 @@ PetscErrorCode PartialAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogStageRegister(&stage, "Partial Assembly");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Partial Assembly",&stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   t->setAtlas(s->getAtlas());
   t->allocateStorage();

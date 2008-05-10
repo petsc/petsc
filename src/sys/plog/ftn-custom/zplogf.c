@@ -107,12 +107,12 @@ void PETSC_STDCALL petsclogstagepop_(PetscErrorCode *ierr)
 #endif
 }
 
-void PETSC_STDCALL petsclogstageregister_(PetscStage *stage,CHAR sname PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petsclogstageregister_(CHAR sname PETSC_MIXED_LEN(len),PetscStage *stage,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
 #if defined(PETSC_USE_LOG)
   char *t;
   FIXCHAR(sname,len,t);
-  *ierr = PetscLogStageRegister(stage,t);
+  *ierr = PetscLogStageRegister(t,stage);
   FREECHAR(sname,t);
 #endif
 }

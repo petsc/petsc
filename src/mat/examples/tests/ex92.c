@@ -135,8 +135,8 @@ int main(int argc,char **args)
     ierr = ISCreateGeneral(PETSC_COMM_SELF,sz*bs,idx,is2+i);CHKERRQ(ierr);
   }
 
-  ierr = PetscLogStageRegister(&stages[0],"MatOv_SBAIJ");
-  ierr = PetscLogStageRegister(&stages[1],"MatOv_ BAIJ");
+  ierr = PetscLogStageRegister("MatOv_SBAIJ",&stages[0]);
+  ierr = PetscLogStageRegister("MatOv_ BAIJ",&stages[1]);
 
   ierr = PetscLogStagePush(stages[0]);CHKERRQ(ierr);
   ierr = MatIncreaseOverlap(sA,nd,is2,ov);CHKERRQ(ierr);

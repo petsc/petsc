@@ -25,7 +25,7 @@ int main(int argc,char **argv)
   DA             da2;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscLogEventRegister(&EVENT_FORMFUNCTIONLOCAL2, "FormFunc2", 0);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("FormFunc2", 0,&EVENT_FORMFUNCTIONLOCAL2);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
   /* Problem parameters (velocity of lid, prandtl, and grashof numbers) */

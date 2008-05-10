@@ -28,8 +28,8 @@ int main(int argc,char **argv)
   DMComposite    pack;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscLogEventRegister(&EVENT_FORMFUNCTIONLOCAL1, "FormFunc1", 0);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&EVENT_FORMFUNCTIONLOCAL2, "FormFunc2", 0);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("FormFunc1", 0,&EVENT_FORMFUNCTIONLOCAL1);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("FormFunc2", 0,&EVENT_FORMFUNCTIONLOCAL2);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

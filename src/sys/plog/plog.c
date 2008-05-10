@@ -365,7 +365,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogObjects(PetscTruth flag)
 .keywords: log, stage, register
 .seealso: PetscLogStagePush(), PetscLogStagePop()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(PetscStage *stage, const char sname[]) 
+PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char sname[],PetscStage *stage) 
 {
   StageLog       stageLog;
   PetscEvent     event;
@@ -2178,10 +2178,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(const char name[],PetscCookie
 
   PetscFunctionBegin;
   *oclass = ++PETSC_LARGEST_COOKIE;
+#if defined(PETSC_USE_LOG)
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = ClassRegLogRegister(stageLog->classLog, name, *oclass);CHKERRQ(ierr);
   for(stage = 0; stage < stageLog->numStages; stage++) {
     ierr = ClassPerfLogEnsureSize(stageLog->stageInfo[stage].classLog, stageLog->classLog->numClasses);CHKERRQ(ierr);
   }
+#endif
   PetscFunctionReturn(0);
 }

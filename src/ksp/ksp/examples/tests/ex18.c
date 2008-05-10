@@ -59,7 +59,7 @@ int main(int argc,char **args)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
   /* Solve system */
-  ierr = PetscLogStageRegister(&stage1,"Stage 1");
+  ierr = PetscLogStageRegister("Stage 1",&stage1);
   ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);

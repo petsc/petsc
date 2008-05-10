@@ -43,8 +43,8 @@ PetscInt main(PetscInt argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
-  ierr = PetscLogStageRegister(&stages[0],"EigSolve");
-  ierr = PetscLogStageRegister(&stages[1],"EigCheck");
+  ierr = PetscLogStageRegister("EigSolve",&stages[0]);
+  ierr = PetscLogStageRegister("EigCheck",&stages[1]);
 
   /* Determine files from which we read the two matrices */
   ierr = PetscOptionsGetString(PETSC_NULL,"-f0",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);

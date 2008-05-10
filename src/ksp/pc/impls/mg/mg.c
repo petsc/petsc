@@ -301,7 +301,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
         ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->cookie,&mg[i]->eventsmoothsolve);CHKERRQ(ierr);
         if (i) {
           sprintf(eventname,"MGResid Level %d",(int)i);
-          ierr = PetscLogEventRegister(((PetscObject)pc)->cookie,&mg[i]->eventresidual,eventname);CHKERRQ(ierr);
+          ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->cookie,&mg[i]->eventresidual);CHKERRQ(ierr);
           sprintf(eventname,"MGInterp Level %d",(int)i);
           ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->cookie,&mg[i]->eventinterprestrict);CHKERRQ(ierr);
         }

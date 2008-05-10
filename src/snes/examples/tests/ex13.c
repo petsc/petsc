@@ -59,8 +59,8 @@ int main(int argc,char **argv)
 
   PetscInitialize(&argc,&argv,(char *)0,help);
 
-  ierr = PetscLogStageRegister(&stages[0],"stage 1");
-  ierr = PetscLogStageRegister(&stages[1],"stage 2");
+  ierr = PetscLogStageRegister("stage 1",&stages[0]);
+  ierr = PetscLogStageRegister("stage 2",&stages[1]);
   for (i=0; i<2; i++) {
     ierr = PetscLogStagePush(stages[i]);CHKERRQ(ierr);
     user.mx = 4; user.my = 4; user.param = 6.0;

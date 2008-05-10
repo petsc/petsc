@@ -33,10 +33,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[])
   /* Register Constructors */
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&SNES_Solve,                    "SNESSolve",        SNES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNES_LineSearch,               "SNESLineSearch",   SNES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNES_FunctionEval,             "SNESFunctionEval", SNES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SNES_JacobianEval,             "SNESJacobianEval", SNES_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESSolve",        SNES_COOKIE,&SNES_Solve);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESLineSearch",   SNES_COOKIE,&SNES_LineSearch);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESFunctionEval", SNES_COOKIE,&SNES_FunctionEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("SNESJacobianEval", SNES_COOKIE,&SNES_JacobianEval);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

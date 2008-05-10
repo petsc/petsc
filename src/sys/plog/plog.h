@@ -134,7 +134,7 @@ EXTERN PetscErrorCode ClassRegInfoDestroy(ClassRegInfo *);
 EXTERN PetscErrorCode ClassPerfLogEnsureSize(ClassPerfLog, int);
 EXTERN PetscErrorCode ClassPerfInfoClear(ClassPerfInfo *);
 /* Registration functions */
-EXTERN PetscErrorCode ClassRegLogRegister(ClassRegLog, const char [], PetscCookie *);
+EXTERN PetscErrorCode ClassRegLogRegister(ClassRegLog, const char [], PetscCookie);
 /* Query functions */
 EXTERN PetscErrorCode ClassRegLogGetClass(ClassRegLog, PetscCookie, int *);
 /* Logging functions */

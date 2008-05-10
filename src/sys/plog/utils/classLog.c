@@ -233,7 +233,6 @@ PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], Pet
 
   PetscFunctionBegin;
   PetscValidCharPointer(cname,2);
-  PetscValidIntPointer(cookie,3);
   c = classLog->numClasses++;
   if (classLog->numClasses > classLog->maxClasses) {
     ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(ClassRegInfo), &classInfo);CHKERRQ(ierr);
