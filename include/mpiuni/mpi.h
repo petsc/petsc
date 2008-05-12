@@ -189,6 +189,9 @@ typedef int MPI_Op;
 #define MPI_DATATYPE_NULL 0
 #define MPI_PACKED        0
 #define MPI_MAX_ERROR_STRING 2056
+#define MPI_STATUS_IGNORE (MPI_Status *)1
+#define MPI_ORDER_FORTRAN        57
+
 /*
   Prototypes of some functions which are implemented in mpi.c
 */
@@ -678,6 +681,69 @@ extern int    MPI_Finalized(int*);
 
 #define MPI_NULL_COPY_FN   0
 #define MPI_NULL_DELETE_FN 0
+
+/* MPI-IO additions */
+
+#define MPI_File_open(comm,filename,amode,info,mpi_fh) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),  \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (filename), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (amode), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (info), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (mpi_fh), \
+   MPI_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_File_close(mpi_fh) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (mpi_fh),  \
+   MPI_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_File_set_view(mpi_fh,disp,etype,filetype,datarep,info) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (mpi_fh),  \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (disp), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (etype), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (filetype), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (datarep), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (info), \
+   MPI_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_Type_get_extent(datatype,lb,extent) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (datatype),      \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (lb),     \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (extent), \
+   MPI_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_File_write_all(mpi_fh,buf,count,datatype,status) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (mpi_fh),             \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (datatype), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (status), \
+   MPI_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_File_read_all(mpi_fh,buf,count,datatype,status) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (mpi_fh),            \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (buf), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (count), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (datatype), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (status), \
+   MPI_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_Register_datarep(name,read_conv_fn,write_conv_fn,extent_fn,state) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (name),                          \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (read_conv_fn), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (write_conv_fn), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (extent_fn), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (state), \
+   MPI_Abort(MPI_COMM_WORLD,0))
+
+#define MPI_Type_create_subarray(ndims,array_of_sizes,array_of_subsizes,array_of_starts,order,oldtype,newtype) \
+  (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (ndims),                         \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (array_of_sizes), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (array_of_subsizes), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (array_of_starts), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (order), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (oldtype), \
+   MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (newtype), \
+   MPI_Abort(MPI_COMM_WORLD,0))
 
 #if defined(__cplusplus)
 }
