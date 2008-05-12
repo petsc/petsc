@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-mpi-dir=/home/balay/soft/linux-fc-sun/mpich2-1.0.7rc1',
+  '--with-mpi-dir=/home/balay/soft/linux32/mpich2-1.0.7-sun',
   '--with-shared=1',
   '--with-debugging=0',
   'CFLAGS=-g',                 # workarround for optimzier bug with gltr.c

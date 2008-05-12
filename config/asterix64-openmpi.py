@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-mpi-dir=/home/balay/soft/linux-fc-openmpi/openmpi-1.2.1',
+  #OpenMPI provides broken compilers and expects users to set LD_LIBRARY_PATH - before invoking them
+  'LIBS=-Wl,-rpath,/home/balay/soft/linux64/openmpi-1.2.6/lib',
+  '--with-mpi-dir=/home/balay/soft/linux64/openmpi-1.2.6',
   '--with-clanguage=cxx',
   '--with-debugging=0',
   '--with-log=0',
