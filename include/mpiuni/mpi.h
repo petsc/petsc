@@ -682,7 +682,7 @@ extern int    MPI_Finalized(int*);
 #define MPI_NULL_COPY_FN   0
 #define MPI_NULL_DELETE_FN 0
 
-/* MPI-IO additions */
+  /* MPI-IO additions */
 
 #define MPI_File_open(comm,filename,amode,info,mpi_fh) \
   (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),  \
@@ -727,13 +727,14 @@ extern int    MPI_Finalized(int*);
    MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (status), \
    MPI_Abort(MPI_COMM_WORLD,0))
 
+  /* called from PetscInitialize() - so return success */
 #define MPI_Register_datarep(name,read_conv_fn,write_conv_fn,extent_fn,state) \
   (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (name),                          \
    MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (read_conv_fn), \
    MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (write_conv_fn), \
    MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (extent_fn), \
    MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (state), \
-   MPI_Abort(MPI_COMM_WORLD,0))
+   MPI_SUCCESS)
 
 #define MPI_Type_create_subarray(ndims,array_of_sizes,array_of_subsizes,array_of_starts,order,oldtype,newtype) \
   (MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (ndims),                         \
