@@ -94,8 +94,8 @@ namespace ALE {
   #define __FUNCT__ "LogCookieRegister"
   LogCookie LogCookieRegister(const char *name){
     LogCookie cookie;
-    PetscErrorCode ierr = PetscLogClassRegister(&cookie, name);
-    CHKERROR(ierr, "PetscLogClassRegister failed");
+    PetscErrorCode ierr = PetscCookieRegister(name, &cookie);
+    CHKERROR(ierr, "PetscCookieRegister failed");
     return cookie;
   }
 
@@ -106,7 +106,7 @@ namespace ALE {
     std::string stage_name(name);
     if(_log_stage.find(stage_name) == _log_stage.end()) {    
       // stage by that name not yet registered, so we register it and store its registration number.
-      PetscErrorCode ierr = PetscLogStageRegister(&stage, name); CHKERROR(ierr, "PetscLogStageRegister failed");
+      PetscErrorCode ierr = PetscLogStageRegister(name, &stage); CHKERROR(ierr, "PetscLogStageRegister failed");
       _log_stage[stage_name] = stage;                   
     }                                                        
     else {                                                   
