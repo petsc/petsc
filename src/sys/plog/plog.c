@@ -2172,9 +2172,11 @@ PetscCookie PETSC_OBJECT_COOKIE  = 0;
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(const char name[],PetscCookie *oclass )
 {
+#if defined(PETSC_USE_LOG)
   StageLog       stageLog;
   PetscInt       stage;
   PetscErrorCode ierr;
+#endif
 
   PetscFunctionBegin;
   *oclass = ++PETSC_LARGEST_COOKIE;
