@@ -181,7 +181,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
 {
   PetscMPIInt    size,rank,tag;
   int            fd;
-  PetscInt       i,rows,type,n,*range,bs;
+  PetscInt       i,rows,type,n,*range,bs,tr[2];
   PetscErrorCode ierr,nierr;
   Vec            vec;
   PetscScalar    *avec;
@@ -198,12 +198,13 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   /* Read vector header. */
-  ierr = PetscViewerBinaryRead(viewer,&type,1,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+  type = tr[0];
+  rows = tr[1];
   if (type != VEC_FILE_COOKIE) {
       ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
       SETERRQ(PETSC_ERR_ARG_WRONG,"Not vector next in file");
   }
-  ierr = PetscViewerBinaryRead(viewer,&rows,1,PETSC_INT);CHKERRQ(ierr);
   if (!rank) {
     ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
     ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);

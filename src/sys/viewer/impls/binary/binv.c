@@ -15,7 +15,7 @@ typedef struct  {
   FILE          *fdes_info;      /* optional file containing info on binary file*/
   PetscTruth    storecompressed; /* gzip the write binary file when closing it*/
   char          *filename;
-  PetscTruth    skipinfo;        /* Don't create info file for writing; don't use for reading */
+   PetscTruth    skipinfo;        /* Don't create info file for writing; don't use for reading */
   PetscTruth    skipoptions;     /* don't use PETSc options database when loading */
 
   PetscTruth    MPIIO;
@@ -808,73 +808,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetMode_Binary(PetscViewer viewer,
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerBinaryLoadInfo" 
-/*@
-    PetscViewerBinaryLoadInfo - Loads options from the name.info file
-       if it exists.
-
-   Collective on PetscViewer
-
-  Input Parameter:
-.    viewer - the binary viewer whose options you wish to load
-
-   Level: developer
-
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryLoadInfo(PetscViewer viewer)
-{
-  FILE               *file;
-  char               string[256],*first,*second,*final;
-  size_t             len;
-  PetscErrorCode     ierr;
-  PetscToken         token;  
-  PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
-
-  PetscFunctionBegin;
-  if (vbinary->skipinfo) PetscFunctionReturn(0);
-
-  ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
-  if (!file) PetscFunctionReturn(0);
-
-  /* read rows of the file adding them to options database */
-  while (fgets(string,256,file)) {
-    /* Comments are indicated by #, ! or % in the first column */
-    if (string[0] == '#') continue;
-    if (string[0] == '!') continue;
-    if (string[0] == '%') continue;
-    ierr = PetscTokenCreate(string,' ',&token);CHKERRQ(ierr);
-    ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
-    ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
-    if (first && first[0] == '-') {
-      PetscTruth wrongtype;
-      /*
-         Check for -mat_complex or -mat_double
-      */
-#if defined(PETSC_USE_COMPLEX)
-      ierr = PetscStrncmp(first,"-mat_double",11,&wrongtype);CHKERRQ(ierr);
-      if (wrongtype) {
-        SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Loading double number matrix with complex number code");
-      }
-#else
-      ierr = PetscStrncmp(first,"-mat_complex",12,&wrongtype);CHKERRQ(ierr);
-      if (wrongtype) {
-        SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Loading complex number matrix with double number code");
-      }
-#endif
-
-      if (second) {final = second;} else {final = first;}
-      ierr = PetscStrlen(final,&len);CHKERRQ(ierr);
-      while (len > 0 && (final[len-1] == ' ' || final[len-1] == '\n')) {
-        len--; final[len] = 0;
-      }
-      ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
-    }
-    ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 /*
         Actually opens the file 
 */
@@ -992,15 +925,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
       ierr = PetscFileRetrieve(((PetscObject)viewer)->comm,iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-      if (found) {
-        vbinary->fdes_info = fopen(infoname,"r");
-        if (vbinary->fdes_info) {
-          ierr = PetscViewerBinaryLoadInfo(viewer);CHKERRQ(ierr);
-          err  = fclose(vbinary->fdes_info);
-          if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
-        }
-        vbinary->fdes_info = fopen(infoname,"r");
-      }
+      ierr = PetscOptionsInsertFile(viewer->hdr.comm,infoname,PETSC_FALSE);CHKERRQ(ierr);
     } else {
       vbinary->fdes_info = fopen(infoname,"w");
       if (!vbinary->fdes_info) {
@@ -1073,15 +998,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_MPIIO(PetscViewer viewer,c
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
       ierr = PetscFileRetrieve(((PetscObject)viewer)->comm,iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-      if (found) {
-        vbinary->fdes_info = fopen(infoname,"r");
-        if (vbinary->fdes_info) {
-          ierr = PetscViewerBinaryLoadInfo(viewer);CHKERRQ(ierr);
-          err  = fclose(vbinary->fdes_info);
-          if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
-        }
-        vbinary->fdes_info = fopen(infoname,"r");
-      }
+      ierr = PetscOptionsInsertFile(viewer->hdr.comm,infoname,PETSC_FALSE);CHKERRQ(ierr);
     } else {
       vbinary->fdes_info = fopen(infoname,"w");
       if (!vbinary->fdes_info) {
@@ -1110,9 +1027,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetMPIIO_Binary(PetscViewer view
   viewer->ops->destroy = PetscViewerDestroy_Binary;
   vbinary->MPIIO       = PETSC_TRUE;
   /*  vbinary->skipinfo    = PETSC_TRUE; */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C",
-                                    "PetscViewerFileSetName_MPIIO",
-                                     PetscViewerFileSetName_MPIIO);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_MPIIO",PetscViewerFileSetName_MPIIO);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

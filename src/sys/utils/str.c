@@ -176,6 +176,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrncpy(char s[],const char t[],size_t n)
 PetscErrorCode PETSC_DLLEXPORT PetscStrcat(char s[],const char t[])
 {
   PetscFunctionBegin;
+  if (!t) PetscFunctionReturn(0);
   strcat(s,t);
   PetscFunctionReturn(0);
 }

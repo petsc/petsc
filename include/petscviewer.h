@@ -235,7 +235,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawClear(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawSetInfo(PetscViewer,const char[],const char[],int,int,int,int);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer,const char[],PetscInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySkipInfo(PetscViewer);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryLoadInfo(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetSkipOptions(PetscViewer,PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetSkipOptions(PetscViewer,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryReadStringArray(PetscViewer,char***);

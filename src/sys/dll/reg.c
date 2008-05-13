@@ -137,9 +137,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
 
   PetscFunctionBegin;
   /*
-      This just initializes the draw and viewer methods, since those
-    are ALWAYS available. The other classes are initialized the first
-    time an XXSetType() is called.
+      This just initializes the most basic PETSc stuff.
+
+    The classes, from PetscDraw to PetscTS, are initialized the first
+    time an XXCreate() is called.
   */
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

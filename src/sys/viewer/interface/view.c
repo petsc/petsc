@@ -50,6 +50,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
     }
   }
+#if defined(PETSC_HAVE_MATHEMATICA)
+  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 

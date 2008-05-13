@@ -372,24 +372,23 @@ static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth w
   PetscScalar    *array;
   MPI_Offset     off;
   MPI_Aint       ub,ul;
-  PetscInt       type,rows,vecrows;
+  PetscInt       type,rows,vecrows,tr[2];
 
   PetscFunctionBegin;
   ierr = VecGetSize(xin,&vecrows);CHKERRQ(ierr);
   if (!write) {
     /* Read vector header. */
-    ierr = PetscViewerBinaryRead(viewer,&type,1,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+    type = tr[0];
+    rows = tr[1];
     if (type != VEC_FILE_COOKIE) {
       SETERRQ(PETSC_ERR_ARG_WRONG,"Not vector next in file");
     }
-    ierr = PetscViewerBinaryRead(viewer,&rows,1,PETSC_INT);CHKERRQ(ierr);
     if (rows != vecrows) SETERRQ(PETSC_ERR_ARG_SIZ,"Vector in file not same size as DA vector");
   } else {
-    PetscInt tr[2];
     tr[0] = VEC_FILE_COOKIE;
     tr[1] = vecrows;
-    ierr = PetscViewerBinaryWrite(viewer,tr,1,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryWrite(viewer,tr+1,1,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   dof = PetscMPIIntCast(da->w);

@@ -39,12 +39,12 @@ EXTERN_C_BEGIN
 
 /* ---------------------------------------------------------------------*/
 
-void PETSC_STDCALL petscoptionsinsertfile_(CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+void PETSC_STDCALL petscoptionsinsertfile_(MPI_Fint *comm,CHAR file PETSC_MIXED_LEN(len),PetscTruth *require,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *c1;
 
   FIXCHAR(file,len,c1);
-  *ierr = PetscOptionsInsertFile(c1);
+  *ierr = PetscOptionsInsertFile(MPI_Comm_f2c(*comm),c1,*require);
   FREECHAR(file,c1);
 }
 
