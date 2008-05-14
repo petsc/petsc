@@ -348,7 +348,6 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP, "Turned off");
   adjBundle->setSieve(adjGraph);
   numLocalRows = globalOrder->getLocalSize();
   firstRow     = globalOrder->getGlobalOffsets()[rank];
