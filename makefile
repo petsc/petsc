@@ -203,6 +203,9 @@ chk_petsc_dir:
 #
 #
 install:
+	-@./config/install.py --rootDir=${PETSC_DIR} --installDir=${INSTALL_DIR} --arch=${PETSC_ARCH} --ranlib=${RANLIB} --make=${OMAKE} --libSuffix=${AR_LIB_SUFFIX}
+
+install_old:
 	-@if [ "${INSTALL_DIR}" = "${PETSC_DIR}" ]; then \
 	  echo "Install directory is current directory; nothing needs to be done";\
         else \
