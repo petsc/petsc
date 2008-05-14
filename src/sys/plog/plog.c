@@ -55,6 +55,8 @@ PetscLogDouble PETSC_DLLEXPORT wait_any_ct     = 0.0; /* The number of anywaits 
 PetscLogDouble PETSC_DLLEXPORT wait_all_ct     = 0.0; /* The number of waitalls */
 PetscLogDouble PETSC_DLLEXPORT sum_of_waits_ct = 0.0; /* The total number of waits */
 PetscLogDouble PETSC_DLLEXPORT allreduce_ct    = 0.0; /* The number of reductions */
+PetscLogDouble PETSC_DLLEXPORT gather_ct       = 0.0; /* The number of gathers and gathervs */
+PetscLogDouble PETSC_DLLEXPORT scatter_ct      = 0.0; /* The number of scatters and scattervs */
 
 /* Logging functions */
 PetscErrorCode PETSC_DLLEXPORT (*_PetscLogPHC)(PetscObject) = PETSC_NULL;
