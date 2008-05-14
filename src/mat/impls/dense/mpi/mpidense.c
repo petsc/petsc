@@ -1133,7 +1133,7 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   ierr = PLA_Create_constants_conf_to(luC->A,NULL,&beta,NULL);CHKERRQ(ierr);
   CHKMEMQ;
 
-  ierr = PLA_Gemm(PLA_NO_TRANSPOSE,PLA_NO_TRANSPOSE,alpha,luA->A,luB->A,beta,luC->A);//CHKERRQ(ierr);
+  ierr = PLA_Gemm(PLA_NO_TRANSPOSE,PLA_NO_TRANSPOSE,alpha,luA->A,luB->A,beta,luC->A); /* CHKERRQ(ierr); */
   CHKMEMQ;
   ierr = PLA_Obj_free(&alpha);CHKERRQ(ierr);
   ierr = PLA_Obj_free(&beta);CHKERRQ(ierr);
