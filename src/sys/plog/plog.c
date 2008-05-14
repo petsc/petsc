@@ -1208,7 +1208,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);CHKERRQ(ierr);
 
   /* Must preserve reduction count before we go on */
-  red  = allreduce_ct/((PetscLogDouble) size);
+  red  = (allreduce_ct + gather_ct + scatter_ct)/((PetscLogDouble) size);
 
   /* Calculate summary information */
   ierr = PetscFPrintf(comm, fd, "\n                         Max       Max/Min        Avg      Total \n");CHKERRQ(ierr);
