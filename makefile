@@ -225,13 +225,13 @@ install:
 	  grep -w PETSC_HAVE_SIEVE ${PETSC_ARCH}/include/petscconf.h > /dev/null; \
 	  if [ "$$?" = 0 ]; then \
             ${CP} -f  src/dm/mesh/sieve/*.hh ${INSTALL_DIR}/include;\
-	    ${SEDINPLACE} 's?SIEVE_INCLUDE?REMOVE_SIEVE_INCLUDE?g' ${INSTALL_DIR}/conf/petscvariables ;\
+	    ${SEDINPLACE} "s?SIEVE_INCLUDE?REMOVE_SIEVE_INCLUDE?g" ${INSTALL_DIR}/conf/petscvariables ;\
           fi;\
-          ${SEDINPLACE} 's?$${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
-          ${SEDINPLACE} 's?${PETSC_DIR}/${PETSC_ARCH}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
-          ${SEDINPLACE} 's?${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
-          ${SEDINPLACE} 's?TMP_INSTALL_DIR?${INSTALL_DIR}?g' ${INSTALL_DIR}/conf/* ;\
-          ${SEDINPLACE} 's?/$${PETSC_ARCH}??g' ${INSTALL_DIR}/conf/* ;\
+          ${SEDINPLACE} "s?$${PETSC_DIR}?TMP_INSTALL_DIR?g" ${INSTALL_DIR}/conf/* ;\
+          ${SEDINPLACE} "s?${PETSC_DIR}/${PETSC_ARCH}?TMP_INSTALL_DIR?g" ${INSTALL_DIR}/conf/* ;\
+          ${SEDINPLACE} "s?${PETSC_DIR}?TMP_INSTALL_DIR?g" ${INSTALL_DIR}/conf/* ;\
+          ${SEDINPLACE} "s?TMP_INSTALL_DIR?${INSTALL_DIR}?g" ${INSTALL_DIR}/conf/* ;\
+          ${SEDINPLACE} "s?/$${PETSC_ARCH}??g" ${INSTALL_DIR}/conf/* ;\
           ${CP} -fr ${PETSC_ARCH}/lib ${INSTALL_DIR} ;\
           ${RANLIB} ${INSTALL_DIR}/lib/*.${AR_LIB_SUFFIX} ;\
           ${OMAKE} PETSC_ARCH="" PETSC_DIR=${INSTALL_DIR} shared; \
@@ -240,7 +240,7 @@ install:
           echo "  unset PETSC_ARCH" ;\
           echo "If using csh/tcsh, do the following:";\
           echo "  setenv PETSC_DIR ${INSTALL_DIR}" ;\
-          echo "  csh/tcsh: unsetenv PETSC_ARCH";\
+          echo "  unsetenv PETSC_ARCH";\
           echo "Now run the testsuite to verify the install with the following:" ;\
           echo "  make test";\
         fi;
