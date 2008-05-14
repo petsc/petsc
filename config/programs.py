@@ -50,15 +50,19 @@ class Configure(config.base.Configure):
     f = file('sed1', 'w')
     f.write('sed\n')
     f.close()
-    try:
-      (out,err,status) = Configure.executeShellCommand(self.sed+' -i "" s/sed/sd/g sed1')
-    except RuntimeError:
-      status = 1
+    for sedcmd in [self.sed+' -i',self.sed+' -i ""','perl -pi -e']:
+      try:
+        (out,err,status) = Configure.executeShellCommand(sedcmd + ' s/sed/sd/g sed1')
+        self.framework.logPrint('Adding SEDINPLACE cmd: '+sedcmd)
+        self.addMakeMacro('SEDINPLACE',sedcmd)
+        status = 1
+        break
+      except RuntimeError:
+        self.framework.logPrint('Rejected SEDINPLACE cmd: '+sedcmd)
     os.unlink('sed1')
-    if not status:    
-      self.addMakeMacro('SEDINPLACE',self.sed+' -i ""')
-    else:
-      self.addMakeMacro('SEDINPLACE',self.sed+' -i')
+    if not status:
+        self.framework.logPrint('No suitable SEDINPLACE found')
+        self.addMakeMacro('SEDINPLACE','SEDINPLACE_NOT_FOUND')
     self.getExecutable('mv',   getFullPath = 1)
     if not hasattr(self, 'mv'): raise RuntimeError('Could not locate mv executable')
     self.getExecutable('cp',   getFullPath = 1)
