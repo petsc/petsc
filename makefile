@@ -240,7 +240,7 @@ install:
           echo "  unset PETSC_ARCH" ;\
           echo "If using csh/tcsh, do the following:";\
           echo "  setenv PETSC_DIR ${INSTALL_DIR}" ;\
-          echo "  csh/tcsh: unsetenv PETSC_ARCH";\
+          echo "  unsetenv PETSC_ARCH";\
           echo "Now run the testsuite to verify the install with the following:" ;\
           echo "  make test";\
         fi;
