@@ -222,7 +222,7 @@ install:
           ${CP} -fr ${PETSC_ARCH}/conf ${INSTALL_DIR};\
           ${CP} -fr bin ${INSTALL_DIR} ; \
           ${CP} -fr ${PETSC_ARCH}/bin ${INSTALL_DIR};\
-	  grep -w PETSC_HAVE_SIEVE asterix-sieve/include/petscconf.h > /dev/null; \
+	  grep -w PETSC_HAVE_SIEVE ${PETSC_ARCH}/include/petscconf.h > /dev/null; \
 	  if [ "$$?" = 0 ]; then \
             ${CP} -f  src/dm/mesh/sieve/*.hh ${INSTALL_DIR}/include;\
 	    ${SEDINPLACE} 's?SIEVE_INCLUDE?REMOVE_SIEVE_INCLUDE?g' ${INSTALL_DIR}/conf/petscvariables ;\
