@@ -16,7 +16,9 @@ class FunctionTestDistribution : public CppUnit::TestFixture
 
   CPPUNIT_TEST(testDistributeMesh2DUninterpolated);
   CPPUNIT_TEST(testOldDistributeMesh2DUninterpolated);
+#ifdef BAD_TEST
   CPPUNIT_TEST(testPreallocationMesh2DUninterpolated);
+#endif
   CPPUNIT_TEST(testOldPreallocationMesh3DUninterpolated);
 
   CPPUNIT_TEST_SUITE_END();
@@ -349,6 +351,7 @@ public:
     this->checkMesh(parallelMesh, "2DUninterpolatedOldDist");
   };
 
+#ifdef BAD_TEST
   void testPreallocationMesh2DUninterpolated(void) {
     this->createMesh(2, false);
 
@@ -391,6 +394,7 @@ public:
     this->checkMatrix(A, dnz, onz, "2DUninterpolatedPreallocate");
     ierr = PetscFree2(dnz, onz);
   };
+#endif
 
   void testOldPreallocationMesh3DUninterpolated(void) {
     this->readMesh("data/3DHex.mesh", 3, false);
