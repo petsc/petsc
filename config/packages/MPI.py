@@ -16,27 +16,25 @@ class Configure(config.package.Package):
     self.download         = ['redefine']
     self.functions        = ['MPI_Init', 'MPI_Comm_create']
     self.includes         = ['mpi.h']
-    self.liblist_mpich    = [['libmpich.a', 'libpmpich.a'],
+    liblist_mpich         = [['fmpich2.lib','mpich2.lib'],['fmpich2.lib','mpi.lib'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a'],
-                             ['libmpich.a'],
-                             ['libmpich.a','libpthread.a'],
+                             ['libmpich.a', 'libpmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a','libssl.a','libuuid.a','libpthread.a','librt.a','libdl.a'],
                              ['libmpich.a','libnsl.a','libsocket.a','librt.a','libnsl.a','libsocket.a'],
-                             ['fmpich2.lib','mpich2.lib'],
-                             ['mpich2.lib'],['mpi.lib'],
-                             ['libmpich.a','libgm.a','libpthread.a'],
-                             ['mpich.lib'],[os.path.join('amd64','msmpi.lib')],[os.path.join('i386','msmpi.lib')]]
-    self.liblist_lam      = [['liblamf77mpi.a','libmpi++.a','libmpi.a','liblam.a'],
+                             ['libmpich.a','libgm.a','libpthread.a']]
+    liblist_lam           = [['liblamf77mpi.a','libmpi++.a','libmpi.a','liblam.a'],
                              ['liblammpi++.a','libmpi.a','liblam.a'],
-                             ['libmpi.a','libmpi++.a'],['libmpi.a'],
                              ['liblammpio.a','libpmpi.a','liblamf77mpi.a','libmpi.a','liblam.a'],
                              ['liblammpio.a','libpmpi.a','liblamf90mpi.a','libmpi.a','liblam.a'],
                              ['liblammpio.a','libpmpi.a','libmpi.a','liblam.a'],
                              ['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','liblam.a']]
-    self.liblist          = [[]] + self.liblist_lam + self.liblist_mpich
+    liblist_other         = [['libmpich.a','libpthread.a'],['libmpi++.a','libmpi.a']]
+    liblist_single        = [['libmpi.a'],['libmpich.a'],['mpich2.lib'],['mpich.lib'],
+                             [os.path.join('amd64','msmpi.lib')],[os.path.join('i386','msmpi.lib')]]
+    self.liblist          = [[]] + liblist_mpich + liblist_lam + liblist_other + liblist_single
     # defaults to --with-mpi=yes
     self.required         = 1
     self.double           = 0
