@@ -162,7 +162,7 @@ Now run the testsuite to verify the install with the following:
   def run(self):
     self.setup()
     self.setupDirectories()
-    if self.installDir == self.rootDir:
+    if os.path.samefile(self.installDir, self.rootDir):
       print 'Install directory is current directory; nothing needs to be done'
       return
     print 'Installing PETSc at',self.installDir
