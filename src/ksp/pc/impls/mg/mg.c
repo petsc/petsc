@@ -329,6 +329,9 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s, pre-smooths=%D, post-smooths=%D\n",
 				  PCMGTypes[mg[0]->am],levels,(mg[0]->cycles == PC_MG_CYCLE_V) ? "v" : "w",
                                   mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
+    if (mg[0]->am == PC_MG_MULTIPLICATIVE) {
+      ierr = PetscViewerASCIIPrintf(viewer,"    Cycles per PCApply=%d\n",mg[0]->cyclesperpcapply);CHKERRQ(ierr);
+    }
     if (mg[0]->galerkin) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
     }
