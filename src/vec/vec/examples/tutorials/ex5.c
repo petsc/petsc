@@ -46,18 +46,16 @@ int main(int argc,char **args)
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n");CHKERRQ(ierr);
-
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(u,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
+  /*  ierr = PetscOptionsClear();CHKERRQ(ierr);*/
+  ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr); 
+
   ierr = PetscLogEventEnd(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
 
   /* PART 2:  Read in vector in binary format */
-
-  /* All processors wait until test vector has been dumped */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscSleep(10);CHKERRQ(ierr);
 
   /* Read new vector in binary format */
   ierr = PetscLogEventRegister("Read Vector",VEC_COOKIE,&VECTOR_READ);CHKERRQ(ierr);

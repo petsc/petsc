@@ -1731,9 +1731,11 @@ M*/
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
 extern PetscErrorCode MPIU_File_write_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
+extern PetscErrorCode MPIU_File_write_at(MPI_File,MPI_Offset,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
 extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
 #else
 #define MPIU_File_write_all(a,b,c,d,e) MPI_File_write_all(a,b,c,d,e) 
+#define MPIU_File_write_at(a,b,c,d,e,f) MPI_File_write_at(a,b,c,d,e,f) 
 #define MPIU_File_read_all(a,b,c,d,e) MPI_File_read_all(a,b,c,d,e) 
 #endif
 

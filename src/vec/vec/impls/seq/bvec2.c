@@ -362,15 +362,37 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   int            fdes;
   PetscInt       n = xin->map.n,cookie=VEC_FILE_COOKIE;
   FILE           *file;
+  PetscTruth     isMPIIO;
 
   PetscFunctionBegin;
-  ierr  = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
+
   /* Write vector header */
-  ierr = PetscBinaryWrite(fdes,&cookie,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(fdes,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&cookie,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Write vector contents */
-  ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
+  if (!isMPIIO) {
+    ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+  } else {
+    MPI_Offset   off;
+    MPI_File     mfdes;
+    PetscMPIInt  gsizes[1],lsizes[1],lstarts[1];
+    MPI_Datatype view;
+
+    gsizes[0]  = PetscMPIIntCast(n);
+    lsizes[0]  = PetscMPIIntCast(n);
+    lstarts[0] = 0;
+    ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
+    ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
+
+    ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
+    ierr = MPIU_File_write_all(mfdes,x->array,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryAddMPIIOOffset(viewer,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = MPI_Type_free(&view);CHKERRQ(ierr);    
+  }
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file && xin->map.bs > 1) {

@@ -633,7 +633,7 @@ EXTERN_C_BEGIN
 
     Note I use PetscMPIInt for the MPI error codes since that is what MPI uses (instead of the standard PetscErrorCode)
 
-    This code is not used because MPICH does not support there use
+    The next three routines is not used because MPICH does not support their use
 
 */
 PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint *file_extent,void *extra_state) 
@@ -680,6 +680,22 @@ PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,Pets
 }
 EXTERN_C_END
 
+/*
+   Wrappers for MPI that do the byte swapping manually because MPI cannot be trusted to do it.
+*/
+PetscErrorCode MPIU_File_write_at(MPI_File fd,MPI_Offset offset,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
+{
+  PetscErrorCode ierr;
+  PetscDataType  pdtype;
+
+  PetscFunctionBegin;
+  ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
+  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
+  ierr = MPI_File_write_at(fd,offset,data,cnt,dtype,status);CHKERRQ(ierr);
+  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode MPIU_File_write_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
 {
   PetscErrorCode ierr;
@@ -690,7 +706,7 @@ PetscErrorCode MPIU_File_write_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Da
   ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
   ierr = MPI_File_write_all(fd,data,cnt,dtype,status);CHKERRQ(ierr);
   ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
-  return ierr;
+  PetscFunctionReturn(0);
 }
 
 PetscErrorCode MPIU_File_read_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
@@ -702,6 +718,6 @@ PetscErrorCode MPIU_File_read_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Dat
   ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
   ierr = MPI_File_read_all(fd,data,cnt,dtype,status);CHKERRQ(ierr);
   ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
-  return ierr;
+  PetscFunctionReturn(0);
 }
 #endif

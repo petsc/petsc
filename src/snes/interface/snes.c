@@ -613,7 +613,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES snes,PetscInt
 
    Level: intermediate
 
-   Notes: By default this is 1; that is SNES returns on the first failed linear solve
+   Notes: By default this is 0; that is SNES returns on the first failed linear solve
 
 .keywords: SNES, nonlinear, set, maximum, unsuccessful, steps
 
