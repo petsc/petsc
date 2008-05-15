@@ -17,7 +17,7 @@ class CompilerOptions(config.base.Configure):
     # GNU gcc
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-long-double', '-Wno-strict-aliasing'])
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing'])
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
@@ -90,7 +90,7 @@ class CompilerOptions(config.base.Configure):
     # GNU g++
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
-        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-long-double', '-Wno-strict-aliasing'])
+        flags.extend(['-Wall', '-Wwrite-strings', '-Wno-strict-aliasing'])
       elif bopt in ['g']:
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
