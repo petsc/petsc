@@ -53,7 +53,7 @@ struct _VecOps {
   PetscErrorCode (*set)(Vec,PetscScalar);                        /* y = alpha  */
   PetscErrorCode (*swap)(Vec,Vec);                               /* exchange x and y */
   PetscErrorCode (*axpy)(Vec,PetscScalar,Vec);                   /* y = y + alpha * x */
-  PetscErrorCode (*axpby)(Vec,PetscScalar,PetscScalar,Vec);      /* y = y + alpha * x + beta * y*/
+  PetscErrorCode (*axpby)(Vec,PetscScalar,PetscScalar,Vec);      /* y = alpha * x + beta * y*/
   PetscErrorCode (*maxpy)(Vec,PetscInt,const PetscScalar*,Vec*); /* y = y + alpha[j] x[j] */
   PetscErrorCode (*aypx)(Vec,PetscScalar,Vec);                   /* y = x + alpha * y */
   PetscErrorCode (*waxpy)(Vec,PetscScalar,Vec,Vec);         /* w = y + alpha * x */

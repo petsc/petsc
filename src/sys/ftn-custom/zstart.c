@@ -235,10 +235,10 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   { int ilen,sierr;
     getarg_(&i,name,&ilen,&sierr,256);
     if (sierr) {
-      *ierr = sierr;
-      return;
+      PetscStrncpy(name,"Unknown Name",256);
+    } else {
+      name[ilen] = 0;
     }
-    name[ilen] = 0;
   }
 #elif defined (PETSC_USE_NARGS)
   GETARG(&i,name,256,&flg);
