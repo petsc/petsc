@@ -165,6 +165,10 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
     PetscTruth lsSuccess = PETSC_TRUE;
     PetscReal  dummyNorm;
 
+    /* Call general purpose update function */
+    if (snes->ops->update) {
+      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+    }
     if (0) {
       /* Update guess Y = X^n - F(X^n) */
       ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
