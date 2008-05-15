@@ -8,7 +8,6 @@
 PetscErrorCode FormInitialGuessLocal1(DALocalInfo *info,Field1 **x)
 {
   PetscInt       i,j;
-  PetscErrorCode ierr;
 
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {

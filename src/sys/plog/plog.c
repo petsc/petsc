@@ -55,6 +55,8 @@ PetscLogDouble PETSC_DLLEXPORT wait_any_ct     = 0.0; /* The number of anywaits 
 PetscLogDouble PETSC_DLLEXPORT wait_all_ct     = 0.0; /* The number of waitalls */
 PetscLogDouble PETSC_DLLEXPORT sum_of_waits_ct = 0.0; /* The total number of waits */
 PetscLogDouble PETSC_DLLEXPORT allreduce_ct    = 0.0; /* The number of reductions */
+PetscLogDouble PETSC_DLLEXPORT gather_ct       = 0.0; /* The number of gathers and gathervs */
+PetscLogDouble PETSC_DLLEXPORT scatter_ct      = 0.0; /* The number of scatters and scattervs */
 
 /* Logging functions */
 PetscErrorCode PETSC_DLLEXPORT (*_PetscLogPHC)(PetscObject) = PETSC_NULL;
@@ -1206,7 +1208,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = PetscFPrintf(comm, fd, "Using %s\n", version);CHKERRQ(ierr);
 
   /* Must preserve reduction count before we go on */
-  red  = allreduce_ct/((PetscLogDouble) size);
+  red  = (allreduce_ct + gather_ct + scatter_ct)/((PetscLogDouble) size);
 
   /* Calculate summary information */
   ierr = PetscFPrintf(comm, fd, "\n                         Max       Max/Min        Avg      Total \n");CHKERRQ(ierr);
@@ -2172,9 +2174,11 @@ PetscCookie PETSC_OBJECT_COOKIE  = 0;
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(const char name[],PetscCookie *oclass )
 {
+#if defined(PETSC_USE_LOG)
   StageLog       stageLog;
   PetscInt       stage;
   PetscErrorCode ierr;
+#endif
 
   PetscFunctionBegin;
   *oclass = ++PETSC_LARGEST_COOKIE;

@@ -585,7 +585,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
       Currently not used because it is not supported by MPICH.
   */
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  ierr = MPI_Register_datarep("petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MPI_Register_datarep((char *)"petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,PETSC_NULL);CHKERRQ(ierr);
 #endif  
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);

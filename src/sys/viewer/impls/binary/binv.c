@@ -403,7 +403,6 @@ PetscErrorCode PetscViewerDestroy_MPIIO(PetscViewer v)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)v->data;
   PetscErrorCode     ierr;
-  PetscMPIInt        rank;
   int                err;
 
   PetscFunctionBegin;
@@ -505,7 +504,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm comm,const char na
 static PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMPIIO(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscTruth write)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
-  PetscMPIInt        rank;
   PetscErrorCode     ierr;
   MPI_Datatype       mdtype;
   PetscMPIInt        cnt = PetscMPIIntCast(count);
@@ -514,7 +512,7 @@ static PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMPIIO(PetscViewer viewer,
 
   PetscFunctionBegin;
   ierr = PetscDataTypeToMPIDataType(dtype,&mdtype);CHKERRQ(ierr);
-  ierr = MPI_File_set_view(vbinary->mfdes,vbinary->moff,mdtype,mdtype,"native",MPI_INFO_NULL);CHKERRQ(ierr);
+  ierr = MPI_File_set_view(vbinary->mfdes,vbinary->moff,mdtype,mdtype,(char *)"native",MPI_INFO_NULL);CHKERRQ(ierr);
   if (write) {
     ierr = MPIU_File_write_all(vbinary->mfdes,data,cnt,mdtype,&status);CHKERRQ(ierr);
   } else {
@@ -950,8 +948,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_MPIIO(PetscViewer viewer,c
   PetscErrorCode      ierr;
   size_t              len;
   PetscViewer_Binary  *vbinary = (PetscViewer_Binary*)viewer->data;
-  const char          *fname;
-  char                bname[PETSC_MAX_PATH_LEN],*gz;
+  char                *gz;
   PetscTruth          found;
   PetscFileMode       type = vbinary->btype;
   int                 err;

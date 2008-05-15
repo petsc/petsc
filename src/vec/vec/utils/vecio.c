@@ -182,7 +182,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
   PetscMPIInt    size,rank,tag;
   int            fd;
   PetscInt       i,rows,type,n,*range,bs,tr[2];
-  PetscErrorCode ierr,nierr;
+  PetscErrorCode ierr;
   Vec            vec;
   PetscScalar    *avec,*avecwork;
   MPI_Comm       comm;
