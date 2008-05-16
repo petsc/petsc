@@ -410,8 +410,10 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   tr[1] = xin->map.N;
   ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
   if (!isMPIIO) {
+#endif
     if (!rank) {
       ierr = PetscBinaryWrite(fdes,xarray,xin->map.n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
       
@@ -431,6 +433,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       mesgsize = PetscMPIIntCast(xin->map.n);
       ierr = MPI_Send(xarray,mesgsize,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
     }
+#if defined(PETSC_USE_MPIIO)
   } else {
     MPI_Offset   off;
     MPI_File     mfdes;
@@ -449,6 +452,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscViewerBinaryAddMPIIOOffset(viewer,xin->map.N*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = MPI_Type_free(&view);CHKERRQ(ierr);    
   }
+#endif
 
   ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   if (!rank) {

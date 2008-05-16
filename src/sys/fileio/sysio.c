@@ -624,8 +624,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedSeek(MPI_Comm comm,int fd,
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_USE_MPIIO)
 #if !defined(PETSC_WORDS_BIGENDIAN)
 
+#if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
 EXTERN_C_BEGIN
 /*
       MPICH does not provide the external32 representation for MPI_File_set_view() so we need to provide the functions.
@@ -633,7 +635,7 @@ EXTERN_C_BEGIN
 
     Note I use PetscMPIInt for the MPI error codes since that is what MPI uses (instead of the standard PetscErrorCode)
 
-    The next three routines is not used because MPICH does not support their use
+    The next three routines are not used because MPICH does not support their use
 
 */
 PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint *file_extent,void *extra_state) 
@@ -679,6 +681,7 @@ PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,Pets
   return ierr;
 }
 EXTERN_C_END
+#endif
 
 /*
    Wrappers for MPI that do the byte swapping manually because MPI cannot be trusted to do it.
@@ -720,4 +723,5 @@ PetscErrorCode MPIU_File_read_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Dat
   ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
+#endif
 #endif

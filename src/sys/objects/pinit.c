@@ -261,12 +261,14 @@ void PETSC_DLLEXPORT PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Data
 EXTERN_C_END
 #endif
 
+#if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
 #if !defined(PETSC_WORDS_BIGENDIAN)
 EXTERN_C_BEGIN
 extern PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype,MPI_Aint*,void*); 
 extern PetscMPIInt PetscDataRep_read_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
 extern PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*); 
 EXTERN_C_END
+#endif
 #endif
 
 static int  PetscGlobalArgc   = 0;
@@ -579,6 +581,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions(); CHKERRQ(ierr);
 
+#if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
   /* 
       Tell MPI about our own data representation converter, this would/should be used if extern32 is not supported by the MPI
 
@@ -587,6 +590,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 #if !defined(PETSC_WORDS_BIGENDIAN)
   ierr = MPI_Register_datarep((char *)"petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,PETSC_NULL);CHKERRQ(ierr);
 #endif  
+#endif
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
   if (flg) {

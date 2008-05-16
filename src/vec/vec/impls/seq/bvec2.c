@@ -371,10 +371,13 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Write vector contents */
+#if defined(PETSC_USE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
   if (!isMPIIO) {
+#endif
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+#if defined(PETSC_USE_MPIIO)
   } else {
     MPI_Offset   off;
     MPI_File     mfdes;
@@ -393,6 +396,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
     ierr = PetscViewerBinaryAddMPIIOOffset(viewer,n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = MPI_Type_free(&view);CHKERRQ(ierr);    
   }
+#endif
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file && xin->map.bs > 1) {
