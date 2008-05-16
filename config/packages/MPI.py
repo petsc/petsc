@@ -64,6 +64,7 @@ class Configure(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.compilers = framework.require('config.compilers', self)
+    self.compilerFlags = framework.require('config.compilerFlags', self)
     self.types = framework.require('config.types', self)
     return
 
@@ -240,7 +241,7 @@ class Configure(config.package.Package):
   def checkDownload(self, requireDownload = 1):
     '''Check if we should download MPICH or OpenMPI'''
 
-    if self.framework.argDB['download-mpich'] + self.framework.argDB['download-openmpi'] > 1:
+    if self.framework.argDB['download-mpich'] and self.framework.argDB['download-openmpi']:
       raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration.')
 
     # Check for MPICH
@@ -505,6 +506,7 @@ class Configure(config.package.Package):
     self.compilers.__init__(self.framework)
     self.compilers.headerPrefix = self.headerPrefix
     self.compilers.configure()
+    self.compilerFlags.configure()
     return
 
   def addExtraLibraries(self):
