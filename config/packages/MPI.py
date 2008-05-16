@@ -574,6 +574,43 @@ class Configure(config.package.Package):
     self.libraries.popLanguage()
     return 0
 
+  def configureIO(self):
+    '''Check for the functions in MPI/IO
+       - Define USE_MPIIO if they are present
+       - Some older MPI 1 implementations are missing these'''
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    if not self.checkLink('#include <mpi.h>\n', 'MPI_Aint lb, extent;\nif (MPI_Type_get_extent(MPI_INT, &lb, &extent));\n'):
+      self.compilers.CPPFLAGS = oldFlags
+      self.compilers.LIBS = oldLibs
+      return
+    if not self.checkLink('#include <mpi.h>\n', 'MPI_File fh;\nvoid *buf;\nMPI_Status status;\nif (MPI_File_write_all(fh, buf, 1, MPI_INT, &status));\n'):
+      self.compilers.CPPFLAGS = oldFlags
+      self.compilers.LIBS = oldLibs
+      return
+    if not self.checkLink('#include <mpi.h>\n', 'MPI_File fh;\nvoid *buf;\nMPI_Status status;\nif (MPI_File_read_all(fh, buf, 1, MPI_INT, &status));\n'):
+      self.compilers.CPPFLAGS = oldFlags
+      self.compilers.LIBS = oldLibs
+      return
+    if not self.checkLink('#include <mpi.h>\n', 'MPI_File fh;\nMPI_Offset disp;\nMPI_Info info;\nif (MPI_File_set_view(fh, disp, MPI_INT, MPI_INT, "", info));\n'):
+      self.compilers.CPPFLAGS = oldFlags
+      self.compilers.LIBS = oldLibs
+      return
+    if not self.checkLink('#include <mpi.h>\n', 'MPI_File fh;\nMPI_Info info;\nif (MPI_File_open(MPI_COMM_SELF, "", 0, info, &fh));\n'):
+      self.compilers.CPPFLAGS = oldFlags
+      self.compilers.LIBS = oldLibs
+      return
+    if not self.checkLink('#include <mpi.h>\n', 'MPI_File fh;\nMPI_Info info;\nif (MPI_File_close(&fh));\n'):
+      self.compilers.CPPFLAGS = oldFlags
+      self.compilers.LIBS = oldLibs
+      return
+    self.addDefine('USE_MPIIO', 1)
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    return
+
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     if 'with-'+self.package+'-shared' in self.framework.argDB:
@@ -590,6 +627,7 @@ class Configure(config.package.Package):
     self.executeTest(self.SGIMPICheck)
     self.executeTest(self.CxxMPICheck)
     self.executeTest(self.FortranMPICheck)
+    self.executeTest(self.configureIO)
     if self.libraries.check(self.dlib, "MPI_Alltoallw") and self.libraries.check(self.dlib, "MPI_Type_create_indexed_block"):
       self.addDefine('HAVE_MPI_ALLTOALLW',1)
     if self.libraries.check(self.dlib, "MPI_Comm_spawn"):
