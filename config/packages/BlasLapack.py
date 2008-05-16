@@ -317,8 +317,8 @@ class Configure(config.package.Package):
     if not os.path.isdir(os.path.join(packages,self.downloaddirname)):
       self.framework.log.write('Actually need to ftp '+self.downloaddirname+'\n')
 
-      import install.retrieval
-      retriever = install.retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
+      import retrieval
+      retriever = retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
       retriever.setup()
           
       try:
