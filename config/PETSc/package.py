@@ -257,9 +257,9 @@ class Package(config.base.Configure):
 
   def downLoad(self):
     '''Downloads a package; using bk or ftp; opens it in the with-external-packages-dir directory'''
-    import install.retrieval
+    import retrieval
 
-    retriever = install.retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
+    retriever = retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
     retriever.setup()
     self.framework.log.write('Downloading '+self.name+'\n')
     for url in self.download:
