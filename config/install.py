@@ -136,14 +136,20 @@ class Installer(script.Script):
     return
 
   def createUninstaller(self):
-    f = open(os.path.join(self.installConfDir, 'uninstall.py'), 'w')
+    uninstallscript = os.path.join(self.installConfDir, 'uninstall.py')
+    f = open(uninstallscript, 'w')
     # Could use the Python AST to do this
+    f.write('#!'+sys.executable+'\n')
+    f.write('import os\n')
+
     f.write('copies = '+repr(self.copies))
     f.write('''
 for src, dst in copies:
-  os.remove(dst)
+  if os.path.exists(dst):
+    os.remove(dst)
 ''')
     f.close()
+    os.chmod(uninstallscript,0744)
     return
 
   def outputHelp(self):
@@ -162,12 +168,18 @@ Now run the testsuite to verify the install with the following:
   def run(self):
     self.setup()
     self.setupDirectories()
-    if os.path.samefile(self.installDir, self.rootDir):
+    if os.path.exists(self.installDir) and os.path.samefile(self.installDir, self.rootDir):
       print 'Install directory is current directory; nothing needs to be done'
       return
     print 'Installing PETSc at',self.installDir
     if not os.path.exists(self.installDir):
-      os.makedirs(self.installDir)
+      try:
+        os.makedirs(self.installDir)
+      except:
+        print '********************************************************************'
+        print 'Unable to create', self.installDir, 'Perhaps you need to do "sudo make install"'
+        print '********************************************************************'
+        return
     self.installIncludes()
     self.installConf()
     self.installBin()
