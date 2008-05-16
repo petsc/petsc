@@ -5590,13 +5590,13 @@ The following code fragment uses three profiling stages within an program.
 \begin{tabbing}
    PetscInitialize(int *argc,char ***args,0,0);\\
    /* stage 0 of code here */\\
-   PetscLogStageRegister("Stage 0 of Code",&stagenum0);\\
+   PetscLogStageRegister("Stage 0 of Code",\&stagenum0);\\
    for (i=0; i<ntimes; i++) \{\\
-      PetscLogStageRegister("Stage 1 of Code",&stagenum1);\\
+      PetscLogStageRegister("Stage 1 of Code",\&stagenum1);\\
       PetscLogStagePush(stagenum1);\\
       /* stage 1 of code here */\\
       PetscLogStagePop();\\
-      PetscLogStageRegister("Stage 2 of Code",&stagenum2);\\
+      PetscLogStageRegister("Stage 2 of Code",\&stagenum2);\\
       PetscLogStagePush(stagenum2);\\
       /* stage 2 of code here */\\
       PetscLogStagePop();\\
