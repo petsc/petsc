@@ -188,7 +188,10 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
   MPI_Comm       comm;
   MPI_Request    request;
   MPI_Status     status;
-  PetscTruth     flag,useMPIIO;
+  PetscTruth     flag;
+#if defined(PETSC_USE_MPIIO)
+  PetscTruth     useMPIIO;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);

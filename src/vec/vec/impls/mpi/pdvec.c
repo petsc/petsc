@@ -396,7 +396,9 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
   MPI_Status     status;
   PetscScalar    *values,*xarray;
   FILE           *file;
+#if defined(PETSC_USE_MPIIO)
   PetscTruth     isMPIIO;
+#endif
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);

@@ -362,7 +362,9 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   int            fdes;
   PetscInt       n = xin->map.n,cookie=VEC_FILE_COOKIE;
   FILE           *file;
+#if defined(PETSC_USE_MPIIO)
   PetscTruth     isMPIIO;
+#endif
 
   PetscFunctionBegin;
 

@@ -1051,7 +1051,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Binary(PetscViewer v)
 {  
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary;
+#if defined(PETSC_USE_MPIIO)
   PetscTruth         useMPIIO = PETSC_FALSE;
+#endif
 
   PetscFunctionBegin;
   ierr               = PetscNewLog(v,PetscViewer_Binary,&vbinary);CHKERRQ(ierr);
