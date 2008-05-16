@@ -66,6 +66,7 @@
       PetscEnum KSP_CONVERGED_RTOL
       PetscEnum KSP_CONVERGED_ATOL
       PetscEnum KSP_CONVERGED_ITS
+      PetscEnum KSP_DIVERGED_NULL
       PetscEnum KSP_DIVERGED_ITS
       PetscEnum KSP_DIVERGED_DTOL
       PetscEnum KSP_DIVERGED_BREAKDOWN
@@ -77,21 +78,26 @@
       PetscEnum KSP_DIVERGED_BREAKDOWN_BICG
       PetscEnum KSP_DIVERGED_NONSYMMETRIC
       PetscEnum KSP_DIVERGED_INDEFINITE_PC
+      PetscEnum KSP_DIVERGED_NAN
+      PetscEnum KSP_DIVERGED_INDEFINITE_MAT
 
-      parameter (KSP_CONVERGED_RTOL      = 2)
-      parameter (KSP_CONVERGED_ATOL      = 3)
-      parameter (KSP_CONVERGED_ITS       = 4)
-      parameter (KSP_CONVERGED_QCG_NEG_CURVE = 5)
-      parameter (KSP_CONVERGED_QCG_CONSTRAINED = 6)
-      parameter (KSP_CONVERGED_STEP_LENGTH = 7)
+      parameter (KSP_CONVERGED_RTOL            = 2)
+      parameter (KSP_CONVERGED_ATOL            = 3)
+      parameter (KSP_CONVERGED_ITS             = 4)
+      parameter (KSP_CONVERGED_CG_NEG_CURVE    = 5)
+      parameter (KSP_CONVERGED_CG_CONSTRAINED  = 6)
+      parameter (KSP_CONVERGED_STEP_LENGTH     = 7)
       parameter (KSP_CONVERGED_HAPPY_BREAKDOWN = 8)
 
-      parameter (KSP_DIVERGED_ITS        = -3)
-      parameter (KSP_DIVERGED_DTOL       = -4)
-      parameter (KSP_DIVERGED_BREAKDOWN  = -5)
+      parameter (KSP_DIVERGED_NULL           = -2)
+      parameter (KSP_DIVERGED_ITS            = -3)
+      parameter (KSP_DIVERGED_DTOL           = -4)
+      parameter (KSP_DIVERGED_BREAKDOWN      = -5)
       parameter (KSP_DIVERGED_BREAKDOWN_BICG = -6)
-      parameter (KSP_DIVERGED_NONSYMMETRIC = -7)
-      parameter (KSP_DIVERGED_INDEFINITE_PC = -8)
+      parameter (KSP_DIVERGED_NONSYMMETRIC   = -7)
+      parameter (KSP_DIVERGED_INDEFINITE_PC  = -8)
+      parameter (KSP_DIVERGED_NAN            = -9)
+      parameter (KSP_DIVERGED_INDEFINITE_MAT = -10)
 
       parameter (KSP_CONVERGED_ITERATING = 0)
 !
