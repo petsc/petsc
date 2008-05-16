@@ -837,7 +837,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
   char                bname[PETSC_MAX_PATH_LEN],*gz;
   PetscTruth          found;
   PetscFileMode       type = vbinary->btype;
-  int                 err;
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) {
@@ -967,7 +966,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_MPIIO(PetscViewer viewer,c
   char                *gz;
   PetscTruth          found;
   PetscFileMode       type = vbinary->btype;
-  int                 err;
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) {

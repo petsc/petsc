@@ -258,7 +258,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
 
     ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
     ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
-    ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,"native",MPI_INFO_NULL);CHKERRQ(ierr);
+    ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,(char *)"native",MPI_INFO_NULL);CHKERRQ(ierr);
     ierr = MPIU_File_read_all(mfdes,avec,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
     ierr = MPI_Type_get_extent(view,&ul,&ub);CHKERRQ(ierr);
     ierr = PetscViewerBinaryAddMPIIOOffset(viewer,ub);CHKERRQ(ierr);
