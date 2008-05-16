@@ -72,12 +72,16 @@ class Configure(PETSc.package.Package):
     '''Normally you do not need to provide this method'''
     PETSc.package.Package.configureLibrary(self) 
     if not self.blasLapack.checkForRoutine('slamch'): 
-      raise RuntimeError('SuperLU requires the LAPACK routine slamch()'+errormsg)
+      raise RuntimeError('SuperLU requires the LAPACK routine slamch()')
     self.framework.log.write('Found slamch() in Lapack library as needed by SuperLU\n')
 
     if not self.blasLapack.checkForRoutine('dlamch'): 
-      raise RuntimeError('SuperLU requires the LAPACK routine dlamch()'+errormsg)
+      raise RuntimeError('SuperLU requires the LAPACK routine dlamch()')
     self.framework.log.write('Found dlamch() in Lapack library as needed by SuperLU\n')
+
+    if not self.blasLapack.checkForRoutine('xerbla'): 
+      raise RuntimeError('SuperLU requires the BLAS routine xerbla()')
+    self.framework.log.write('Found xerbla() in BLAS library as needed by SuperLU\n')
 
     return
   
