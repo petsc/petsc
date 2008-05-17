@@ -57,7 +57,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType ptype,MP
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMPIDataTypeToPetscDataType"
 /*@C
-     PetscMPIDataTypeToPetscDataType- Finds the PETSc name of a datatype from its MPI name
+     PetscMPIDataTypeToPetscDataType Finds the PETSc name of a datatype from its MPI name
 
    Not collective
 

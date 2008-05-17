@@ -1729,12 +1729,14 @@ M*/
 .seealso: PetscReal, PassiveReal, PassiveScalar, PetscScalar, MPIU_INT
 M*/
 
+#if defined(PETSC_USE_MPIIO)
 #if !defined(PETSC_WORDS_BIGENDIAN)
 extern PetscErrorCode MPIU_File_write_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
 extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
 #else
 #define MPIU_File_write_all(a,b,c,d,e) MPI_File_write_all(a,b,c,d,e) 
 #define MPIU_File_read_all(a,b,c,d,e) MPI_File_read_all(a,b,c,d,e) 
+#endif
 #endif
 
 /*
