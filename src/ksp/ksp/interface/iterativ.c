@@ -728,8 +728,8 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 +  KSP_CONVERGED_RTOL (residual 2-norm decreased by a factor of rtol, from 2-norm of right hand side)
 .  KSP_CONVERGED_ATOL (residual 2-norm less than abstol)
 .  KSP_CONVERGED_ITS (used by the preonly preconditioner that always uses ONE iteration) 
-.  KSP_CONVERGED_QCG_NEG_CURVE
-.  KSP_CONVERGED_QCG_CONSTRAINED
+.  KSP_CONVERGED_CG_NEG_CURVE
+.  KSP_CONVERGED_CG_CONSTRAINED
 .  KSP_CONVERGED_STEP_LENGTH
 .  KSP_DIVERGED_ITS  (required more than its to reach convergence)
 .  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
