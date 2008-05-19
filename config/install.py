@@ -178,7 +178,9 @@ Now run the testsuite to verify the install with the following:
     self.setup()
     self.setupDirectories()
     if os.path.exists(self.installDir) and os.path.samefile(self.installDir, self.rootDir):
+      print '********************************************************************'
       print 'Install directory is current directory; nothing needs to be done'
+      print '********************************************************************'
       return
     print 'Installing PETSc at',self.installDir
     if not os.path.exists(self.installDir):
@@ -189,6 +191,11 @@ Now run the testsuite to verify the install with the following:
         print 'Unable to create', self.installDir, 'Perhaps you need to do "sudo make install"'
         print '********************************************************************'
         return
+    if not os.path.isdir(os.path.realpath(self.installDir)):
+      print '********************************************************************'
+      print 'Specified prefix', self.installDir, 'is not a directory. Cannot proceed!'
+      print '********************************************************************'
+      return
     if not os.access(self.installDir, os.W_OK):
       print '********************************************************************'
       print 'Unable to write to ', self.installDir, 'Perhaps you need to do "sudo make install"'
