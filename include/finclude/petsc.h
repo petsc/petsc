@@ -188,11 +188,11 @@
       external PETSCEMACSCLIENTERRORHANDLER
       external PETSCATTACHDEBUGGERERRORHANDLER
       external PETSCIGNOREERRORHANDLER
-
-#if !defined(PETSC_USE_FORTRAN_MODULES) 
-      PetscTruth PetscIsInfOrNan
-#endif
 !
+      external PetscIsInfOrNanScalar
+      external PetscIsInfOrNanReal
+      PetscTruth PetscIsInfOrNanScalar
+      PetscTruth PetscIsInfOrNanReal
   
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------

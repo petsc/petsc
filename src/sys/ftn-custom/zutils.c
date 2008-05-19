@@ -211,14 +211,14 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
 
 EXTERN_C_BEGIN
 
-int PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
+PetscTruth PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
 {
-  return (int) PetscIsInfOrNanScalar(*v);
+  return PetscIsInfOrNanScalar(*v);
 }
 
-int PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
+PetscTruth PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
 {
-  return (int) PetscIsInfOrNanReal(*v);
+  return PetscIsInfOrNanReal(*v);
 }
 
 EXTERN_C_END
