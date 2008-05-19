@@ -189,6 +189,11 @@ Now run the testsuite to verify the install with the following:
         print 'Unable to create', self.installDir, 'Perhaps you need to do "sudo make install"'
         print '********************************************************************'
         return
+    if not os.access(self.installDir, os.W_OK):
+      print '********************************************************************'
+      print 'Unable to write to ', self.installDir, 'Perhaps you need to do "sudo make install"'
+      print '********************************************************************'
+      return
     self.installIncludes()
     self.installConf()
     self.installBin()
