@@ -367,9 +367,15 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
   const Obj<recv_section_type>  recvSection       = new recv_section_type(comm, sendSection->getTag(), debug);
 
   if (mesh->commSize() > 1) {
+    adjGraph->view("Original local graph");
     ierr = globalizeLocalAdjacencyGraph(mesh, adjGraph, vertexSendOverlap, globalOrder);
+    adjGraph->view("Globalized local graph");
+    vertexSendOverlap->view("Send Overlap");
+    vertexRecvOverlap->view("Recv Overlap");
     ALE::Distribution<ALE::Mesh>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjBundle, sendSection, recvSection);
+    adjGraph->view("Completed local graph");
     ierr = localizeLocalAdjacencyGraph(mesh, adjGraph, vertexSendOverlap, globalOrder);
+    adjGraph->view("Localized local graph");
     /* Distribute indices for new points */
     ALE::Distribution<ALE::Mesh>::updateOverlap(vertexSendOverlap, vertexRecvOverlap, sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
     mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, true);

@@ -129,7 +129,7 @@ namespace ALE {
     Obj<recv_overlap_type> _recvOverlap;
     Obj<send_overlap_type> _distSendOverlap;
     Obj<recv_overlap_type> _distRecvOverlap;
-    renumbering_type       _renumbering;
+    renumbering_type       _renumbering; // Maps global points to local points
     // Work space
     Obj<std::set<point_type> > _modifiedPoints;
   public:

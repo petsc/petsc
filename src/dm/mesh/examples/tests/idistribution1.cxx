@@ -127,7 +127,7 @@ public:
     this->_renumbering.clear();
   };
 
-  void setupSection(const char filename[], const int numCells, real_section_type& section) {
+  void setupSection(const char filename[], const int numCells, mesh_type::renumbering_type& renumbering, real_section_type& section) {
     std::ifstream f;
     int           numBC;
     int          *numPoints;
@@ -152,6 +152,20 @@ public:
       for(int p = 0; p < numPoints[bc]; ++p) {
         f >> points[bc][p];
         points[bc][p] += numCells;
+        if (renumbering.size()) {
+          if (renumbering.find(points[bc][p]) == renumbering.end()) {
+#if 1
+            continue;
+#else
+            std::cout << "Point " << points[bc][p] << std::endl;
+            for(mesh_type::renumbering_type::const_iterator r_iter = renumbering.begin(); r_iter != renumbering.end(); ++r_iter) {
+              std::cout << "Renumber " << r_iter->first << " --> " << r_iter->second << std::endl;
+            }
+            CPPUNIT_FAIL("Global point not found in renumbering");
+#endif
+          }
+          points[bc][p] = renumbering[points[bc][p]];
+        }
         if (section.hasPoint(points[bc][p])) section.setConstraintDimension(points[bc][p], numConstraints);
       }
     }
@@ -167,6 +181,7 @@ public:
     delete [] constDof;
     delete [] points;
     f.close();
+    section.view("Section");
   };
 
   void checkMesh(const ALE::Obj<mesh_type>& mesh, const char basename[]) {
@@ -330,8 +345,17 @@ public:
     MatGetLocalSize(A, &m, &n);
     CPPUNIT_ASSERT_EQUAL(localSize, m);
     for(int i = 0; i < localSize; ++i) {
+#if 1
+      if (diagonal[i] != dnz[i]) {
+        std::cerr << "["<<this->_mesh->commRank()<<"]: Local row " << i << " expected dnz: " << diagonal[i] << " actual dnz: " << dnz[i] << std::endl;
+      }
+      if (offdiagonal[i] != onz[i]) {
+        std::cerr << "["<<this->_mesh->commRank()<<"]: Local row " << i << " expected onz: " << offdiagonal[i] << " actual onz: " << onz[i] << std::endl;
+      }
+#else
       CPPUNIT_ASSERT_EQUAL(diagonal[i],    dnz[i]);
       CPPUNIT_ASSERT_EQUAL(offdiagonal[i], onz[i]);
+#endif
     }
     delete [] diagonal;
     delete [] offdiagonal;
@@ -433,7 +457,7 @@ public:
     try {
       section->setChart(real_section_type::chart_type(*vertices->begin(), *vertices->begin() + vertices->size()));
       section->setFiberDimension(parallelMesh->depthStratum(0), 3);
-      this->setupSection("data/3DHex.bc", numCells, *section);
+      this->setupSection("data/3DHex.bc", numCells, this->_renumbering, *section);
     } catch(ALE::Exception e) {
       std::cerr << "ERROR: " << e << std::endl;
     }
