@@ -7,7 +7,7 @@ extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscScala
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
 #if !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
