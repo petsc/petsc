@@ -224,7 +224,7 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   PetscInt           n, N, maxn, mx, my, dof;
   PetscInt           i, p;
   MPI_Status         status;
-  PetscMPIInt        rank, size, tag;
+  PetscMPIInt        rank, size, tag, nn;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -280,8 +280,8 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
     }
     for(p = 1; p < size; p++) {
       ierr = MPI_Recv(values, (PetscMPIInt) n, MPIU_SCALAR, p, tag, comm, &status);CHKERRQ(ierr);
-      ierr = MPI_Get_count(&status, MPIU_SCALAR, &n);CHKERRQ(ierr);        
-      for(i = 0; i < n; i++) {
+      ierr = MPI_Get_count(&status, MPIU_SCALAR, &nn);CHKERRQ(ierr);        
+      for(i = 0; i < nn; i++) {
         ierr = PetscViewerASCIIPrintf(viewer, "%G\n", PetscRealPart(array[i]));CHKERRQ(ierr);
       }
     }

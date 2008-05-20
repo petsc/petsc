@@ -245,19 +245,9 @@ M*/
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef long long PetscInt;
 #define MPIU_INT MPI_LONG_LONG_INT
-#define PETSC_MPI_INT_MAX 2147483647
-#define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
-#define PetscMPIIntCast(a) (a);PetscMPIIntCheck(a)
-#define PETSC_BLAS_INT_MAX 2147483647
-#define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
-#define PetscBLASIntCast(a) (a);PetscBLASIntCheck(a)
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
-#define PetscMPIIntCheck(a) 
-#define PetscMPIIntCast(a) a
-#define PetscBLASIntCheck(a) 
-#define PetscBLASIntCast(a) a
 #endif  
 
 /*
@@ -1738,6 +1728,29 @@ extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype
 #define MPIU_File_read_all(a,b,c,d,e) MPI_File_read_all(a,b,c,d,e) 
 #endif
 #endif
+
+/* the following petsc_static_inline require petscerror.h */
+
+#if defined(PETSC_USE_64BIT_INDICES)
+#define PETSC_MPI_INT_MAX 2147483647
+#define PETSC_BLAS_INT_MAX 2147483647
+#define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
+#define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
+PETSC_STATIC_INLINE PetscMPIInt PetscMPIIntCast(PetscInt a) {
+  PetscMPIIntCheck(a);
+  return (PetscMPIInt)a;
+}
+PETSC_STATIC_INLINE PetscBLASInt PetscBLASIntCast(PetscInt a) {
+  PetscMPIIntCheck(a);
+  return (PetscBLASInt)a;
+}
+#else
+#define PetscMPIIntCheck(a) 
+#define PetscBLASIntCheck(a) 
+#define PetscMPIIntCast(a) a
+#define PetscBLASIntCast(a) a
+#endif  
+
 
 /*
      The IBM include files define hz, here we hide it so that it may be used
