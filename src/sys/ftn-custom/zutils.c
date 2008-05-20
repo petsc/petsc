@@ -213,12 +213,12 @@ EXTERN_C_BEGIN
 
 PetscTruth PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
 {
-  return PetscIsInfOrNanScalar(*v);
+  return (PetscTruth) PetscIsInfOrNanScalar(*v);
 }
 
 PetscTruth PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
 {
-  return PetscIsInfOrNanReal(*v);
+  return (PetscTruth) PetscIsInfOrNanReal(*v);
 }
 
 EXTERN_C_END
