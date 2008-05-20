@@ -867,16 +867,15 @@ namespace ALE {
           const int                                      size        = section->getFiberDimension(remotePoint);
           int                                            c           = 0;
 
-          std::cout << "["<<recvSection->commRank()<<"]: Receiving " << size << " points from rank " << rank << std::endl;
+          ///std::cout << "["<<recvSection->commRank()<<"]: Receiving " << size << " points from rank " << rank << std::endl;
           for(int p = 0; p < size; p++) {
             // rank -- remote point --> local point
-            //sieve->addArrow(points[p], localPoint, c++);
             if (recvOverlap->support(rank, points[p])->size()) {
               sieve->addArrow(*recvOverlap->support(rank, points[p])->begin(), localPoint, c);
-              std::cout << "["<<recvSection->commRank()<<"]:   1Adding arrow " << *recvOverlap->support(rank, points[p])->begin() << "("<<points[p]<<") --> " << localPoint << std::endl;
+              ///std::cout << "["<<recvSection->commRank()<<"]:   1Adding arrow " << *recvOverlap->support(rank, points[p])->begin() << "("<<points[p]<<") --> " << localPoint << std::endl;
             } else {
               sieve->addArrow(points[p], localPoint, c);
-              std::cout << "["<<recvSection->commRank()<<"]:   2Adding arrow " << points[p] << " --> " << localPoint << std::endl;
+              ///std::cout << "["<<recvSection->commRank()<<"]:   2Adding arrow " << points[p] << " --> " << localPoint << std::endl;
             }
           }
         }

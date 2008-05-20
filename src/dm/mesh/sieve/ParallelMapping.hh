@@ -63,7 +63,7 @@ namespace ALE {
       firstPoint += this->currentMax - numPoints;
       this->currentMax += numGlobalPoints;
       for(Iterator p_iter = begin; p_iter != end; ++p_iter, ++firstPoint) {
-        std::cout << "["<<this->commRank()<<"]: New point " << *p_iter << " --> " << firstPoint << std::endl;
+        ///std::cout << "["<<this->commRank()<<"]: New point " << *p_iter << " --> " << firstPoint << std::endl;
         this->renumbering[firstPoint] = *p_iter;
         this->invRenumbering[*p_iter] = firstPoint;
       }

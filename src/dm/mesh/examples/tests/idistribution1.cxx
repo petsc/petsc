@@ -156,15 +156,7 @@ public:
         points[bc][p] += numCells;
         if (renumbering.size()) {
           if (renumbering.find(points[bc][p]) == renumbering.end()) {
-#if 1
             continue;
-#else
-            std::cout << "Point " << points[bc][p] << std::endl;
-            for(mesh_type::renumbering_type::const_iterator r_iter = renumbering.begin(); r_iter != renumbering.end(); ++r_iter) {
-              std::cout << "Renumber " << r_iter->first << " --> " << r_iter->second << std::endl;
-            }
-            CPPUNIT_FAIL("Global point not found in renumbering");
-#endif
           }
           points[bc][p] = renumbering[points[bc][p]];
         }
@@ -183,7 +175,6 @@ public:
     delete [] constDof;
     delete [] points;
     f.close();
-    section.view("Section");
   };
 
   void checkMesh(const ALE::Obj<mesh_type>& mesh, const char basename[]) {
@@ -492,9 +483,6 @@ public:
     ierr = PetscMalloc2(localSize, PetscInt, &dnz, localSize, PetscInt, &onz);
     ierr = preallocateOperator(parallelMesh, 1, section->getAtlas(), globalOrder, dnz, onz, A);
     CPPUNIT_ASSERT_EQUAL(0, ierr);
-    for(mesh_type::renumbering_type::const_iterator r_iter = this->_renumbering.begin(); r_iter != this->_renumbering.end(); ++r_iter) {
-      std::cerr << "["<<this->_mesh->commRank()<<"]: Local point " << r_iter->second << " global point " << r_iter->first << std::endl;
-    }
     this->checkMatrix(A, dnz, onz, "3DUninterpolatedPreallocate", *section, *globalOrder);
     ierr = PetscFree2(dnz, onz);
   };
