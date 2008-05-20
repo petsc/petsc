@@ -20,7 +20,7 @@
 EXTERN_C_BEGIN
 void PETSC_STDCALL dagetneighbors_(DA *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
 {
-  const PetscInt *r;
+  const PetscMPIInt *r;
   PetscInt       n;
 
   *ierr = DAGetNeighbors(*da,&r);if (*ierr) return;

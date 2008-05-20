@@ -390,7 +390,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,mesgsize,tag = ((PetscObject)viewer)->tag;
+  PetscMPIInt    rank,size,mesgsize,tag = ((PetscObject)viewer)->tag, mesglen;
   PetscInt       len,n = xin->map.n,j,tr[2];
   int            fdes;
   MPI_Status     status;
@@ -426,7 +426,8 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
       /* receive and save messages */
       for (j=1; j<size; j++) {
 	ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
-	ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
+	ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);         
+        n = (PetscInt)mesglen;
 	ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
       }
       ierr = PetscFree(values);CHKERRQ(ierr);
