@@ -14,6 +14,7 @@ class Configure(config.base.Configure):
     self.substPrefix  = ''
     self.include      = None
     self.lib          = None
+    self.isShared     = False
     return
 
   def __str__(self):
@@ -131,11 +132,9 @@ class Configure(config.base.Configure):
       self.lib.extend(self.splitLibs(distutils.sysconfig.get_config_var('SYSLIBS')))
     # Verify that the Python library is a shared library
     try:
-      shared = self.libraries.checkShared('#include <Python.h>\n', 'Py_Initialize', 'Py_IsInitialized', 'Py_Finalize', checkLink = self.checkPythonLink, libraries = self.lib, initArgs = '', noCheckArg = 1)
+      self.isShared = self.libraries.checkShared('#include <Python.h>\n', 'Py_Initialize', 'Py_IsInitialized', 'Py_Finalize', checkLink = self.checkPythonLink, libraries = self.lib, initArgs = '', noCheckArg = 1)
     except RuntimeError, e:
       raise RuntimeError('Python shared library check failed, probably due to inability to link Python libraries or a bad interaction with the shared linker.\nSuggest running with --with-python=0 if you do not need Python. Otherwise send configure.log to petsc-maint@mcs.anl.gov')
-    if not shared:
-      raise RuntimeError('Python library must be shared')
     return
 
   def setOutput(self):
@@ -144,12 +143,14 @@ class Configure(config.base.Configure):
        - PYTHON_INCLUDE_DIR is the directory containing mpi.h
        - PYTHON_LIBRARY is the list of Python libraries'''
     if self.include:
+      self.addMakeMacro('PYTHON_INCLUDE',     ' '.join(['-I'+inc for inc in self.include]))
       self.addSubstitution('PYTHON_INCLUDE',     ' '.join(['-I'+inc for inc in self.include]))
       self.addSubstitution('PYTHON_INCLUDE_DIR', self.include[0])
     else:
       self.addSubstitution('PYTHON_INCLUDE',     '')
       self.addSubstitution('PYTHON_INCLUDE_DIR', '')
     if self.lib:
+      self.addMakeMacro('PYTHON_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
       self.addSubstitution('PYTHON_LIB',     ' '.join(map(self.libraries.getLibArgument, self.lib)))
       self.addSubstitution('PYTHON_LIBRARY', self.lib)
     else:
