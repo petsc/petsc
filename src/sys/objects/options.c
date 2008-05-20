@@ -280,13 +280,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
   PetscMPIInt    rank,cnt,acnt;
 
   PetscFunctionBegin;
+  /* Warning: assume a maximum size for all options in a string */
+  ierr = PetscMalloc(64000*sizeof(char),&vstring);CHKERRQ(ierr);
+  vstring[0] = 0;
+  ierr = PetscMalloc(64000*sizeof(char),&astring);CHKERRQ(ierr);
+  astring[0] = 0;
+  cnt     = 0;
+  acnt    = 0;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    /* Warning: assume a maximum size for all options in a string */
-    ierr = PetscMalloc(64000*sizeof(char),&vstring);CHKERRQ(ierr);
-    vstring[0] = 0;
-    ierr = PetscMalloc(64000*sizeof(char),&astring);CHKERRQ(ierr);
-    astring[0] = 0;
     ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
     fd   = fopen(fname,"r"); 
     if (fd) {
@@ -349,18 +351,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
       cnt  = PetscMPIIntCast(len);CHKERRQ(ierr);
     } else if (require) {
       SETERRQ1(PETSC_ERR_USER,"Unable to open Options File %s",fname);
-    } else {
-      vstring = 0;
-      cnt     = 0;
-      acnt    = 0;
-      astring = 0;
     }
   }
   ierr = MPI_Bcast(&acnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   if (acnt) {
-    if (rank) {
-      ierr = PetscMalloc((acnt+1)*sizeof(char),&astring);CHKERRQ(ierr);
-    }
     PetscToken token;
     char       *first,*second;
 
@@ -374,7 +368,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
       ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
     }
     ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
-    ierr = PetscFree(astring);CHKERRQ(ierr);
   }
 
   ierr = MPI_Bcast(&cnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -385,8 +378,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
     ierr = MPI_Bcast(vstring,cnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
     vstring[cnt] = 0;
     ierr = PetscOptionsInsertString(vstring);CHKERRQ(ierr);
-    ierr = PetscFree(vstring);CHKERRQ(ierr);
   }
+  ierr = PetscFree(astring);CHKERRQ(ierr);
+  ierr = PetscFree(vstring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
