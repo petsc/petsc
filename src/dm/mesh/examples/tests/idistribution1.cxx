@@ -14,8 +14,10 @@ class FunctionTestIDistribution : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(FunctionTestIDistribution);
 
+#if 0
   CPPUNIT_TEST(testDistributeMesh2DUninterpolated);
   CPPUNIT_TEST(testPreallocationMesh2DUninterpolated);
+#endif
   CPPUNIT_TEST(testPreallocationMesh3DUninterpolated);
 
   CPPUNIT_TEST_SUITE_END();
@@ -319,7 +321,7 @@ public:
     f.close();
   };
 
-  void checkMatrix(Mat A, PetscInt dnz[], PetscInt onz[], const char basename[]) {
+  void checkMatrix(Mat A, PetscInt dnz[], PetscInt onz[], const char basename[], real_section_type& section, mesh_type::order_type& globalOrder) {
     MPI_Comm comm;
     int      commSize, commRank;
     PetscObjectGetComm((PetscObject) A, &comm);
@@ -345,17 +347,31 @@ public:
     MatGetLocalSize(A, &m, &n);
     CPPUNIT_ASSERT_EQUAL(localSize, m);
     for(int i = 0; i < localSize; ++i) {
-#if 1
+#if 0
       if (diagonal[i] != dnz[i]) {
-        std::cerr << "["<<this->_mesh->commRank()<<"]: Local row " << i << " expected dnz: " << diagonal[i] << " actual dnz: " << dnz[i] << std::endl;
-      }
-      if (offdiagonal[i] != onz[i]) {
-        std::cerr << "["<<this->_mesh->commRank()<<"]: Local row " << i << " expected onz: " << offdiagonal[i] << " actual onz: " << onz[i] << std::endl;
+        mesh_type::point_type p = -1;
+        for(real_section_type::chart_type::const_iterator c_iter = section.getChart().begin(); c_iter != section.getChart().end(); ++c_iter) {
+          const int idx  = globalOrder.getIndex(*c_iter);
+          const int size = section.getConstrainedFiberDimension(*c_iter);
+
+          if ((i >= idx) && (i < idx+size)) {
+            p = *c_iter;
+            break;
+          }
+        }
+        mesh_type::point_type gP = -1;
+        for(mesh_type::renumbering_type::const_iterator r_iter = this->_renumbering.begin(); r_iter != this->_renumbering.end(); ++r_iter) {
+          if (r_iter->second == p) {
+            gP = r_iter->first;
+            break;
+          }
+        }
+        std::cerr << "["<<this->_mesh->commRank()<<"]: Local row " << i << " local point " << p << " global point " << gP << " expected dnz: " << diagonal[i] << " actual dnz: " << dnz[i] << std::endl;
       }
 #else
       CPPUNIT_ASSERT_EQUAL(diagonal[i],    dnz[i]);
-      CPPUNIT_ASSERT_EQUAL(offdiagonal[i], onz[i]);
 #endif
+      CPPUNIT_ASSERT_EQUAL(offdiagonal[i], onz[i]);
     }
     delete [] diagonal;
     delete [] offdiagonal;
@@ -427,7 +443,7 @@ public:
     //ierr = preallocateOperator(parallelMesh, parallelMesh->getDimension(), parallelCoordinates->getAtlas(), globalOrder, dnz, onz, A);
     ierr = preallocateOperator(parallelMesh, 1, parallelCoordinates->getAtlas(), globalOrder, dnz, onz, A);
     CPPUNIT_ASSERT_EQUAL(0, ierr);
-    this->checkMatrix(A, dnz, onz, "2DUninterpolatedPreallocate");
+    this->checkMatrix(A, dnz, onz, "2DUninterpolatedPreallocate", *parallelCoordinates, *globalOrder);
     ierr = PetscFree2(dnz, onz);
   };
 
@@ -476,7 +492,10 @@ public:
     ierr = PetscMalloc2(localSize, PetscInt, &dnz, localSize, PetscInt, &onz);
     ierr = preallocateOperator(parallelMesh, 1, section->getAtlas(), globalOrder, dnz, onz, A);
     CPPUNIT_ASSERT_EQUAL(0, ierr);
-    this->checkMatrix(A, dnz, onz, "3DUninterpolatedPreallocate");
+    for(mesh_type::renumbering_type::const_iterator r_iter = this->_renumbering.begin(); r_iter != this->_renumbering.end(); ++r_iter) {
+      std::cerr << "["<<this->_mesh->commRank()<<"]: Local point " << r_iter->second << " global point " << r_iter->first << std::endl;
+    }
+    this->checkMatrix(A, dnz, onz, "3DUninterpolatedPreallocate", *section, *globalOrder);
     ierr = PetscFree2(dnz, onz);
   };
 };
