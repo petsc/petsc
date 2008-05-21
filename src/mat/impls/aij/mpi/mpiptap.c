@@ -249,7 +249,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
     /* If free space is not available, double the total space in the list */
     if (current_space->local_remaining<nnz) {
-      ierr = PetscFreeSpaceGet(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(nnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
     }
 
     /* Copy data into free space, and zero out denserows */
@@ -426,7 +426,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<nnz) {
-      ierr = PetscFreeSpaceGet(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(nnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
     }
     /* copy data into free space, then initialize lnk */
     ierr = PetscLLClean(pN,pN,nnz,lnk,current_space->array,lnkbt);CHKERRQ(ierr);
