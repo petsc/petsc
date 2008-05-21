@@ -201,7 +201,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
     /* if free space is not available, double the total space in the list */
     if (current_space->local_remaining<apnz) {
-      ierr = PetscFreeSpaceGet(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(apnz+current_space->total_array_size,&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
 
