@@ -251,15 +251,15 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
     if (jac->defaultsplit) {
       ierr = VecStrideGatherAll(x,jac->x,INSERT_VALUES);CHKERRQ(ierr);
       while (ilink) {
-	ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
-	ilink = ilink->next;
+        ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+        ilink = ilink->next;
       }
       ierr = VecStrideScatterAll(jac->y,y,INSERT_VALUES);CHKERRQ(ierr);
     } else {
       ierr = VecSet(y,0.0);CHKERRQ(ierr);
       while (ilink) {
         ierr = FieldSplitSplitSolveAdd(ilink,x,y);CHKERRQ(ierr);
-	ilink = ilink->next;
+        ilink = ilink->next;
       }
     }
   } else if (jac->type == PC_COMPOSITE_MULTIPLICATIVE || jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
@@ -283,7 +283,7 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
         ierr  = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
       }
     }
-    } else SETERRQ1(PETSC_ERR_SUP,"Unsupported or unknown composition",(int) jac->type);
+  } else SETERRQ1(PETSC_ERR_SUP,"Unsupported or unknown composition",(int) jac->type);
   CHKMEMQ;
   PetscFunctionReturn(0);
 }
