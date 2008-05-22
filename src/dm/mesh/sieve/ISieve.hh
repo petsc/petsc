@@ -160,7 +160,7 @@ namespace ALE {
         this->oPoints = NULL;
         this->setSize(size);
       };
-      ~PointRetriever() {
+      virtual ~PointRetriever() {
         delete [] this->points;
         delete [] this->oPoints;
         this->points  = NULL;
@@ -239,6 +239,7 @@ namespace ALE {
     public:
       NConeRetriever(const Sieve& s, const size_t size) : PointRetriever<Sieve,Visitor>(size, true), sieve(s) {};
       NConeRetriever(const Sieve& s, const size_t size, Visitor& v) : PointRetriever<Sieve,Visitor>(size, v, true), sieve(s) {};
+      virtual ~NConeRetriever() {};
     };
     template<typename Sieve, typename Set, typename Renumbering>
     class FilteredPointRetriever {
