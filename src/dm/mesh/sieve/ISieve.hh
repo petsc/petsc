@@ -659,7 +659,7 @@ namespace ALE {
 
       v.visitPoint(p, 0);
       // Cone is guarateed to be ordered correctly
-      std::cout << "Getting cone from " << p << std::endl;
+      ///std::cout << "Getting cone from " << p << std::endl;
       sieve.orientedCone(p, cV[c]);
 
       while(cV[c].getOrientedSize()) {
@@ -682,7 +682,7 @@ namespace ALE {
           }
           if (o < 0) {
             if (o == -sieve.getConeSize(point)) {
-              std::cout << "Getting reverse cone from " << point << std::endl;
+              ///std::cout << "Getting reverse cone from " << point << std::endl;
               sieve.orientedReverseCone(point, cV[c]);
             } else {
               throw ALE::Exception("Not yet implemented");
@@ -732,7 +732,7 @@ namespace ALE {
 #endif
           } else {
             if (o == 1) {
-              std::cout << "Getting cone from " << point << std::endl;
+              ///std::cout << "Getting cone from " << point << std::endl;
               sieve.orientedCone(point, cV[c]);
 #if 0
             } else {

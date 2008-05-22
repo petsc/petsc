@@ -1622,7 +1622,10 @@ namespace ALE {
       } else if (d <= 0) {
         return 0;
       }
-      throw ALE::Exception("Have not yet implemented nCone");
+      // Warning: this is slow
+      ISieveVisitor::NConeRetriever<sieve_type> ncV(*this->_sieve, (int) pow(this->_sieve->getMaxConeSize(), this->depth()));
+      this->_sieve->cone(p, ncV);
+      return ncV.getOrientedSize();
     };
     int getNumCellCorners() {
       return getNumCellCorners(*this->heightStratum(0)->begin());
