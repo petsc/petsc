@@ -563,6 +563,15 @@ namespace ALE {
       return true;
     };
   public:
+    void addSpace() {
+      Obj<atlas_type> space = new atlas_type(this->comm(), this->debug());
+      Obj<bc_type>    bc    = new bc_type(this->comm(), this->debug());
+      space->setChart(this->_atlas->getChart());
+      space->allocatePoint();
+      bc->setChart(this->_bc->getChart());
+      this->_spaces.push_back(space);
+      this->_bcs.push_back(bc);
+    };
     Obj<IGeneralSection> getFibration(const int space) const {
       Obj<IGeneralSection> field = new IGeneralSection(this->comm(), this->debug());
 //     Obj<atlas_type> _atlas;
@@ -600,6 +609,8 @@ namespace ALE {
         }
       }
       // Copy offsets
+      newAtlas->setChart(newChart);
+      newAtlas->allocatePoint();
       for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
         index_type idx;
 
