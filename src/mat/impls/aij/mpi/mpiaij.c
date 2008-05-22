@@ -4176,7 +4176,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
     /* if free space is not available, make more free space */
     if (current_space->local_remaining<bnzi) {
-      ierr = PetscFreeSpaceGet(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      ierr = PetscFreeSpaceGet(bnzi+current_space->total_array_size,&current_space);CHKERRQ(ierr);
       nspacedouble++;
     }
     /* copy data into free space, then initialize lnk */
