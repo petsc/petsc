@@ -683,22 +683,6 @@ PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,Pets
 EXTERN_C_END
 #endif
 
-/*
-   Wrappers for MPI that do the byte swapping manually because MPI cannot be trusted to do it.
-*/
-PetscErrorCode MPIU_File_write_at(MPI_File fd,MPI_Offset offset,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
-{
-  PetscErrorCode ierr;
-  PetscDataType  pdtype;
-
-  PetscFunctionBegin;
-  ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
-  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
-  ierr = MPI_File_write_at(fd,offset,data,cnt,dtype,status);CHKERRQ(ierr);
-  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
-  PetscFunctionReturn(0);
-}
-
 PetscErrorCode MPIU_File_write_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
 {
   PetscErrorCode ierr;
