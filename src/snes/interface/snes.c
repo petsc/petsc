@@ -11,7 +11,7 @@ PetscLogEvent  SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFunctionDomainError"
-/*@C
+/*@
    SNESSetFunctionDomainError - tells SNES that the input vector to your FormFunction is not
      in the functions domain. For example, negative pressure.
 
