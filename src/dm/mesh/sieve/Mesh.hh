@@ -1624,7 +1624,7 @@ namespace ALE {
       }
       // Warning: this is slow
       ISieveVisitor::NConeRetriever<sieve_type> ncV(*this->_sieve, (int) pow(this->_sieve->getMaxConeSize(), this->depth()));
-      this->_sieve->cone(p, ncV);
+      ALE::ISieveTraversal<sieve_type>::orientedClosure(*this->_sieve, p, ncV);
       return ncV.getOrientedSize();
     };
     int getNumCellCorners() {
