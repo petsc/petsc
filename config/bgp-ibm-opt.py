@@ -36,6 +36,7 @@ configure_options = [
   '--sizeof_MPI_Comm=4',
   '--sizeof_MPI_Fint=4',
 
+  '--download-hypre=1',
   '--download-plapack=1',
   '--download-parmetis=1',
   '--download-umfpack=1',

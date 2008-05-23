@@ -325,9 +325,11 @@ class Configure(config.base.Configure):
     scriptName = os.path.join(self.arch.arch,'conf', 'configure.py')
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     if 'configModules' in args:
-      del args['configModules']
+      if nargs.Arg.parseArgument(args['configModules'])[1] == ['PETSc.Configure']:
+        del args['configModules']
     if 'optionsModule' in args:
-      del args['optionsModule']
+      if nargs.Arg.parseArgument(args['optionsModule'])[1] == 'PETSc.compilerOptions':
+        del args['optionsModule']
     if not 'PETSC_ARCH' in args:
       args['PETSC_ARCH'] = '-PETSC_ARCH='+str(self.arch.arch)
     f = file(scriptName, 'w')

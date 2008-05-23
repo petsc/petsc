@@ -852,7 +852,7 @@ namespace ALE {
     #define __FUNCT__ "updateSieve"
     template<typename RecvSection>
     static void updateSieve(const Obj<recv_overlap_type>& recvOverlap, const Obj<RecvSection>& recvSection, const Obj<sieve_type>& sieve) {
-#if 0
+#if 1
       Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
       for(typename recv_overlap_type::traits::baseSequence::iterator p_iter = recvPoints->begin(); p_iter != recvPoints->end(); ++p_iter) {
@@ -867,12 +867,15 @@ namespace ALE {
           const int                                      size        = section->getFiberDimension(remotePoint);
           int                                            c           = 0;
 
+          ///std::cout << "["<<recvSection->commRank()<<"]: Receiving " << size << " points from rank " << rank << std::endl;
           for(int p = 0; p < size; p++) {
-            //sieve->addArrow(points[p], localPoint, c++);
+            // rank -- remote point --> local point
             if (recvOverlap->support(rank, points[p])->size()) {
-              sieve->addArrow(points[p], recvOverlap->support(rank, points[p])->begin().color(), c);
+              sieve->addArrow(*recvOverlap->support(rank, points[p])->begin(), localPoint, c);
+              ///std::cout << "["<<recvSection->commRank()<<"]:   1Adding arrow " << *recvOverlap->support(rank, points[p])->begin() << "("<<points[p]<<") --> " << localPoint << std::endl;
             } else {
               sieve->addArrow(points[p], localPoint, c);
+              ///std::cout << "["<<recvSection->commRank()<<"]:   2Adding arrow " << points[p] << " --> " << localPoint << std::endl;
             }
           }
         }
@@ -889,9 +892,11 @@ namespace ALE {
           int                                     size   = section->getFiberDimension(*b_iter);
           int                                     c      = 0;
 
+          std::cout << "["<<recvSection->commRank()<<"]: Receiving " << size << " points from rank " << p_iter->first << std::endl;
           for(int p = 0; p < size; p++) {
             //sieve->addArrow(points[p], *b_iter, c++);
             sieve->addArrow(points[p], *b_iter, c);
+            std::cout << "["<<recvSection->commRank()<<"]:   Adding arrow " << points[p] << " --> " << *b_iter << std::endl;
           }
         }
       }

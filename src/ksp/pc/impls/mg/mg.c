@@ -326,9 +326,7 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s, pre-smooths=%D, post-smooths=%D\n",
-				  PCMGTypes[mg[0]->am],levels,(mg[0]->cycles == PC_MG_CYCLE_V) ? "v" : "w",
-                                  mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s\n", PCMGTypes[mg[0]->am],levels,(mg[0]->cycles == PC_MG_CYCLE_V) ? "v" : "w");CHKERRQ(ierr);
     if (mg[0]->am == PC_MG_MULTIPLICATIVE) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Cycles per PCApply=%d\n",mg[0]->cyclesperpcapply);CHKERRQ(ierr);
     }
@@ -337,9 +335,9 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     }
     for (i=0; i<levels; i++) {
       if (!i) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Coarse gride solver -- level %D -------------------------------\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Coarse gride solver -- level %D presmooths=%D postsmooths=%D -----\n",i,mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D smooths=%D --------------------\n",i,mg[i]->default_smoothd);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(mg[i]->smoothd,viewer);CHKERRQ(ierr);
@@ -347,7 +345,7 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
       if (i && mg[i]->smoothd == mg[i]->smoothu) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
       } else if (i){
-        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D smooths=%D --------------------\n",i,mg[i]->default_smoothu);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(mg[i]->smoothu,viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);

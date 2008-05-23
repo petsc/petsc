@@ -241,7 +241,8 @@ PetscErrorCode globalizeLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const AL
   const Obj<ALE::Mesh::sieve_type::traits::capSequence>& columns = adjGraph->cap();
 
   for(ALE::Mesh::sieve_type::traits::capSequence::iterator p_iter = columns->begin(); p_iter != columns->end(); ++p_iter) {
-    if (!sendOverlap->support(*p_iter)->size() && globalOrder->restrictPoint(*p_iter)[0].index) {
+    //if (!sendOverlap->support(*p_iter)->size() && globalOrder->restrictPoint(*p_iter)[0].index) {
+    if (!sendOverlap->support(*p_iter)->size()) {
       interiorPoints.insert(*p_iter);
     }
   }

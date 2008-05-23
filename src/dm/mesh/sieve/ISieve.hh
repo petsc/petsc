@@ -160,7 +160,7 @@ namespace ALE {
         this->oPoints = NULL;
         this->setSize(size);
       };
-      ~PointRetriever() {
+      virtual ~PointRetriever() {
         delete [] this->points;
         delete [] this->oPoints;
         this->points  = NULL;
@@ -239,6 +239,7 @@ namespace ALE {
     public:
       NConeRetriever(const Sieve& s, const size_t size) : PointRetriever<Sieve,Visitor>(size, true), sieve(s) {};
       NConeRetriever(const Sieve& s, const size_t size, Visitor& v) : PointRetriever<Sieve,Visitor>(size, v, true), sieve(s) {};
+      virtual ~NConeRetriever() {};
     };
     template<typename Sieve, typename Set, typename Renumbering>
     class FilteredPointRetriever {
@@ -659,7 +660,7 @@ namespace ALE {
 
       v.visitPoint(p, 0);
       // Cone is guarateed to be ordered correctly
-      std::cout << "Getting cone from " << p << std::endl;
+      ///std::cout << "Getting cone from " << p << std::endl;
       sieve.orientedCone(p, cV[c]);
 
       while(cV[c].getOrientedSize()) {
@@ -682,7 +683,7 @@ namespace ALE {
           }
           if (o < 0) {
             if (o == -sieve.getConeSize(point)) {
-              std::cout << "Getting reverse cone from " << point << std::endl;
+              ///std::cout << "Getting reverse cone from " << point << std::endl;
               sieve.orientedReverseCone(point, cV[c]);
             } else {
               throw ALE::Exception("Not yet implemented");
@@ -732,7 +733,7 @@ namespace ALE {
 #endif
           } else {
             if (o == 1) {
-              std::cout << "Getting cone from " << point << std::endl;
+              ///std::cout << "Getting cone from " << point << std::endl;
               sieve.orientedCone(point, cV[c]);
 #if 0
             } else {

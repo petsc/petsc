@@ -241,7 +241,7 @@ class VTKViewer {
     visitor_type           ncV(*sieve, (size_t) pow(sieve->getMaxConeSize(), mesh->depth()));
 
     PetscFunctionBegin;
-    if (elements->size()) localCorners = mesh->getNumCellCorners();
+    if (elements->size()) localCorners = mesh->getNumCellCorners(*elements->begin());
     corners     = localCorners;
     numElements = cNumbering->getGlobalSize();
     ierr = MPI_Reduce(&localCorners, &corners, 1, MPI_INT, MPI_MAX, 0, mesh->comm());CHKERRQ(ierr);

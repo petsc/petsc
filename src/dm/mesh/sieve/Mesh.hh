@@ -129,7 +129,7 @@ namespace ALE {
     Obj<recv_overlap_type> _recvOverlap;
     Obj<send_overlap_type> _distSendOverlap;
     Obj<recv_overlap_type> _distRecvOverlap;
-    renumbering_type       _renumbering;
+    renumbering_type       _renumbering; // Maps global points to local points
     // Work space
     Obj<std::set<point_type> > _modifiedPoints;
   public:
@@ -1622,7 +1622,10 @@ namespace ALE {
       } else if (d <= 0) {
         return 0;
       }
-      throw ALE::Exception("Have not yet implemented nCone");
+      // Warning: this is slow
+      ISieveVisitor::NConeRetriever<sieve_type> ncV(*this->_sieve, (int) pow(this->_sieve->getMaxConeSize(), this->depth()));
+      ALE::ISieveTraversal<sieve_type>::orientedClosure(*this->_sieve, p, ncV);
+      return ncV.getOrientedSize();
     };
     int getNumCellCorners() {
       return getNumCellCorners(*this->heightStratum(0)->begin());
