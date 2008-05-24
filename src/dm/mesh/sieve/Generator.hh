@@ -351,7 +351,7 @@ namespace ALE {
         Obj<Mesh>                          serialMesh       = ALE::Distribution<Mesh>::unifyMesh(mesh);
         const Obj<Mesh::real_section_type> serialMaxVolumes = ALE::Distribution<Mesh>::distributeSection(maxVolumes, serialMesh, serialMesh->getDistSendOverlap(), serialMesh->getDistRecvOverlap());
 
-        return refineMesh(serialMesh, serialMaxVolumes->restrict(), interpolate);
+        return refineMesh(serialMesh, serialMaxVolumes->restrictSpace(), interpolate);
       };
       static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false) {
         Obj<Mesh> serialMesh;
@@ -860,7 +860,7 @@ namespace ALE {
         Obj<Mesh>                          serialMesh       = ALE::Distribution<Mesh>::unifyMesh(mesh);
         const Obj<Mesh::real_section_type> serialMaxVolumes = ALE::Distribution<Mesh>::distributeSection(maxVolumes, serialMesh, serialMesh->getDistSendOverlap(), serialMesh->getDistRecvOverlap());
 
-        return refineMesh(serialMesh, serialMaxVolumes->restrict(), interpolate);
+        return refineMesh(serialMesh, serialMaxVolumes->restrictSpace(), interpolate);
       };
       static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
         Obj<Mesh> serialMesh;

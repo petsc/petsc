@@ -78,7 +78,7 @@ PetscErrorCode TraverseCells(const Obj<MeshType>& m, Options *options)
     for(MeshType::sieve_type::coneSequence::iterator v_iter = vertices->begin(); v_iter != end; ++v_iter) {
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "      vertex %d, with coordinates ", *v_iter);CHKERRQ(ierr);
 #if 0
-      const MeshType::real_section_type::value_type *array = coordinates->restrict(*v_iter);
+      const MeshType::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
 
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " %d (", *v_iter);CHKERRQ(ierr);
       for(int d = 0; d < m->getDimension(); ++d) {

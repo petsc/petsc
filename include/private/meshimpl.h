@@ -29,7 +29,7 @@ extern PetscLogEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh
 typedef struct _SectionRealOps *SectionRealOps;
 struct _SectionRealOps {
   PetscErrorCode (*view)(SectionReal,PetscViewer);
-  PetscErrorCode (*restrict)(SectionReal,int,PetscScalar**);
+  PetscErrorCode (*restrictClosure)(SectionReal,int,PetscScalar**);
   PetscErrorCode (*update)(SectionReal,int,const PetscScalar*);
 };
 
@@ -45,7 +45,7 @@ extern PetscLogEvent SectionReal_View;
 typedef struct _SectionIntOps *SectionIntOps;
 struct _SectionIntOps {
   PetscErrorCode (*view)(SectionInt,PetscViewer);
-  PetscErrorCode (*restrict)(SectionInt,int,PetscInt**);
+  PetscErrorCode (*restrictClosure)(SectionInt,int,PetscInt**);
   PetscErrorCode (*update)(SectionInt,int,const PetscInt*);
 };
 

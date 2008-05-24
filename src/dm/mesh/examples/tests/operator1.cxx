@@ -310,7 +310,7 @@ PetscErrorCode AssembleMatrix_None(const Obj<ALE::Mesh>& m, const Obj<ALE::Mesh:
         }
       }
     }
-    const ALE::Mesh::real_section_type::value_type *ev = m->restrict(s, *c_iter);
+    const ALE::Mesh::real_section_type::value_type *ev = m->restrictClosure(s, *c_iter);
 
     // Do local matvec
     for(int f = 0; f < numBasisFuncs; ++f) {
@@ -433,7 +433,7 @@ PetscErrorCode ApplyMatrix_Stored(const Obj<ALE::Mesh>& m, const Obj<ALE::Mesh::
 
   for(ALE::Mesh::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
     const ALE::Mesh::real_section_type::value_type *elemMat = o->restrictPoint(*c_iter);
-    const ALE::Mesh::real_section_type::value_type *ev      = m->restrict(s, *c_iter);
+    const ALE::Mesh::real_section_type::value_type *ev      = m->restrictClosure(s, *c_iter);
 
     // Do local matvec
     for(int f = 0; f < numBasisFuncs; ++f) {

@@ -71,7 +71,7 @@ PetscErrorCode GeometryTest(const Obj<ALE::Mesh>& mesh, const Obj<section_type>&
     const sieve_type::point_type& e = *c_iter;
 
     if (debug) {
-      const std::string elem = ALE::Test::MeshProcessor::printElement(e, dim, mesh->restrict(coordinates, e), rank);
+      const std::string elem = ALE::Test::MeshProcessor::printElement(e, dim, mesh->restrictClosure(coordinates, e), rank);
       ierr = PetscSynchronizedPrintf(comm, "%s", elem.c_str());CHKERRQ(ierr);
     }
     mesh->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);

@@ -76,8 +76,8 @@ namespace ALE {
       const chart_type& chart = section->getChart();
 
       this->_chart = chart;
-      this->_value[0] = section->restrict(*chart.begin())[0];
-      this->_value[1] = section->restrict(*chart.begin())[1];
+      this->_value[0] = section->restrictPoint(*chart.begin())[0];
+      this->_value[1] = section->restrictPoint(*chart.begin())[1];
     };
   public: // Sizes
     ///void clear() {};
@@ -107,24 +107,21 @@ namespace ALE {
     int size(const point_type& p) {return this->getFiberDimension(p);};
   public: // Restriction
     void clear() {};
-    const value_type *restrict() const {
+    const value_type *restrictSpace() const {
       return this->_value;
     };
-    const value_type *restrict(const point_type& p) const {
+    const value_type *restrictPoint(const point_type& p) const {
       if (this->hasPoint(p)) {
         return this->_value;
       }
       return &this->_value[1];
     };
-    const value_type *restrictPoint(const point_type& p) const {return this->restrict(p);};
-    void update(const point_type& p, const value_type v[]) {
+    void updatePoint(const point_type& p, const value_type v[]) {
       this->_value[0] = v[0];
     };
-    void updatePoint(const point_type& p, const value_type v[]) {return this->update(p, v);};
-    void updateAdd(const point_type& p, const value_type v[]) {
+    void updateAddPoint(const point_type& p, const value_type v[]) {
       this->_value[0] += v[0];
     };
-    void updateAddPoint(const point_type& p, const value_type v[]) {return this->updateAdd(p, v);};
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
       ostringstream txt;
@@ -239,7 +236,7 @@ namespace ALE {
     void setChart(const chart_type& chart) {
       this->_atlas->setChart(chart);
       int dim = fiberDim;
-      this->_atlas->update(*this->getChart().begin(), &dim);
+      this->_atlas->updatePoint(*this->getChart().begin(), &dim);
     };
     bool resizeChart(const chart_type& chart) {
       if ((chart.min() >= this->getChart().min()) && (chart.max() <= this->getChart().max())) return false;
@@ -332,7 +329,7 @@ namespace ALE {
     };
   public: // Restriction
     // Return a pointer to the entire contiguous storage array
-    const values_type& restrict() const {
+    const values_type& restrictSpace() const {
       return this->_array;
     };
     // Return only the values associated to this point, not its closure

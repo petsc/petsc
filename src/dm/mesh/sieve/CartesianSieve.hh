@@ -111,7 +111,7 @@ namespace ALE {
         virtual bool             operator!=(const iterator& iter) const {return this->_value != iter._value;};
         virtual const value_type operator*() const {return this->_value;};
         virtual iterator&        operator++() {++this->_value; return *this;};
-        virtual iterator         operator++(const int n) {iterator tmp(*this); ++this->_value; return tmp;};
+        virtual iterator         operator++(int n) {iterator tmp(*this); ++this->_value; return tmp;};
       };
     protected:
       point_type _start;
@@ -904,7 +904,7 @@ namespace ALE {
     // Return the values for the closure of this point
     //   use a smart pointer?
     template<typename Section_>
-    const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p) {
+    const typename Section_::value_type *restrictClosure(const Obj<Section_>& section, const point_type& p) {
       const int                       size   = this->sizeWithBC(section, p);
       typename Section_::value_type  *values = section->getRawArray(size);
       int                             j      = -1;
@@ -929,7 +929,7 @@ namespace ALE {
       if (j != size-1) {
         ostringstream txt;
 
-        txt << "Invalid restrict to point " << p << std::endl;
+        txt << "Invalid restrictClosure to point " << p << std::endl;
         txt << "  j " << j << " should be " << (size-1) << std::endl;
         std::cout << txt.str();
         throw ALE::Exception(txt.str().c_str());
@@ -990,7 +990,7 @@ namespace ALE {
     };
   public: // Mesh geometry
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const double *coords = this->restrict(coordinates, e);
+      const double *coords = this->restrictClosure(coordinates, e);
       const int     dim    = this->_dim;
       const int     last   = 1 << dim;
 

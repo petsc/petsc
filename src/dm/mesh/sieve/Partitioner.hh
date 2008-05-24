@@ -350,7 +350,7 @@ namespace ALE {
         int       c       = 0;
 
         for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
-          const double *coords = mesh->restrict(coordinates, *c_iter);
+          const double *coords = mesh->restrictClosure(coordinates, *c_iter);
 
           for(int d = 0; d < dim; ++d) {
             vCoords[d][c] = 0.0;
@@ -1513,7 +1513,7 @@ namespace ALE {
 	      int       c       = 0;
 
 	      for(typename bundle_type::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
-		const double *coords = bundle->restrict(coordinates, *c_iter);
+		const double *coords = bundle->restrictClosure(coordinates, *c_iter);
 
 		for(int d = 0; d < dim; ++d) {
 		  vCoords[d][c] = 0.0;

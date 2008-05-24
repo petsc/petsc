@@ -2327,7 +2327,7 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   }
   *numElements = numElem;
   *fiberDim    = fiberDimMin;
-  *array       = (PetscScalar *) section->restrict();
+  *array       = (PetscScalar *) section->restrictSpace();
   PetscFunctionReturn(0);
 }
 

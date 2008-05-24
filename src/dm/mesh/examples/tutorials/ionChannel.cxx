@@ -239,7 +239,7 @@ PetscErrorCode CreateDielectric(Mesh mesh, SectionReal *dielectric)
 
   s->setName("epsilon");
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
-    const double *coords = m->restrict(coordinates, *c_iter);
+    const double *coords = m->restrictClosure(coordinates, *c_iter);
     double centroidX = (coords[0]+coords[2]+coords[4])/3.0;
     double centroidY = (coords[1]+coords[3]+coords[5])/3.0;
     double eps;
