@@ -793,6 +793,39 @@ journal = {Ocean Modelling},
 volume = {10},
 pages = {185--191}
 }
+@article{0266-5611-24-3-034015,
+ author={I Epanomeritakis and V Ak\c{c}elik and O Ghattas and J Bielak},
+ title={A Newton-CG method for large-scale three-dimensional elastic
+full-waveform seismic inversion},
+ journal={Inverse Problems},
+ volume={24},
+ number={3},
+ pages={034015 (26pp)},
+ url={http://stacks.iop.org/0266-5611/24/034015},
+ year={2008},
+ abstract={We present a nonlinear optimization method for large-scale
+3D elastic full-waveform seismic inversion. The method combines outer
+Gauss-Newton nonlinear iterations with inner conjugate gradient linear
+iterations, globalized by an Armijo backtracking line search, solved
+on a sequence of finer grids and higher frequencies to remain in the
+vicinity of the global optimum, inexactly terminated to prevent
+oversolving, preconditioned by L-BFGS/Frankel, regularized by a total
+variation operator to capture sharp interfaces, finely discretized by
+finite elements in the Lam\'{e} parameter space to provide flexibility
+and avoid bias, implemented in matrix-free fashion with adjoint-based
+computation of reduced gradient and reduced Hessian-vector products,
+checkpointed to avoid full spacetime waveform storage, and partitioned
+spatially across processors to parallelize the solutions of the
+forward and adjoint wave equations and the evaluation of gradient-like
+information. Several numerical examples demonstrate the grid
+independence of linear and nonlinear iterations, the effectiveness of
+the preconditioner, the ability to solve inverse problems with up to
+17 million inversion parameters on up to 2048 processors, the
+effectiveness of multiscale continuation in keeping iterates in the
+basin of attraction of the global minimum, and the ability to fit the
+observational data while reconstructing the model with reasonable
+resolution and capturing sharp interfaces.}
+}
 %
 %  <a name="environmental"><H3><center>Environmental/Subsurface Flow</center></H3>
 %
