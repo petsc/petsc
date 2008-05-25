@@ -1254,7 +1254,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
     while (c_iter != c_iter_end) {
       //restrict the coordinates of the closure
       //Compute the longest edge and perimeter:
-      PetscMemcpy(coords, m->restrict(coordinates, *c_iter), sizeof(double)*dim*(dim+1));
+      PetscMemcpy(coords, m->restrictClosure(coordinates, *c_iter), sizeof(double)*dim*(dim+1));
       double max_cell_edge = 0.;
       for (int edge = 0; edge < dim+1; edge++) {
 	//compute the max edge length
@@ -1340,7 +1340,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 	ALE::Mesh::label_sequence::iterator fc_iter = f_cells->begin();
 	ALE::Mesh::label_sequence::iterator fc_iter_end = f_cells->end();
 	while (fc_iter != fc_iter_end) {
-	  PetscMemcpy(fcoords, f_m->restrict(f_coordinates, *fc_iter), sizeof(double)*dim*(dim+1));
+	  PetscMemcpy(fcoords, f_m->restrictClosure(f_coordinates, *fc_iter), sizeof(double)*dim*(dim+1));
 	  if (Hierarchy_CellsCollide(dim, coords, fcoords) == PETSC_TRUE) cell_collisions++;
 	  fc_iter++;
 	}
@@ -1368,14 +1368,14 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
       c_traversal->clear();
       f_traversal->clear();
       while(c_iter != c_iter_end) {
-	PetscMemcpy(coords, m->restrict(coordinates, *c_iter), sizeof(double)*dim*(dim+1));
+	PetscMemcpy(coords, m->restrictClosure(coordinates, *c_iter), sizeof(double)*dim*(dim+1));
 	if (c_traversal->find(*c_iter) == c_traversal->end()) {
 	  //locate an initial colliding cell
 	  ALE::Mesh::label_sequence::iterator f_iter = fcells->begin();
 	  ALE::Mesh::label_sequence::iterator f_iter_end = fcells->end();
 	  bool outer_located = false;
 	  while (f_iter != f_iter_end && !outer_located) {
-	    PetscMemcpy(fcoords, f_m->restrict(f_coordinates, *f_iter), sizeof(double)*dim*(dim+1));
+	    PetscMemcpy(fcoords, f_m->restrictClosure(f_coordinates, *f_iter), sizeof(double)*dim*(dim+1));
 	    if (Hierarchy_BBoxesCollide(dim, coords, fcoords) == PETSC_TRUE) {
 	      outer_located = true;
 	      c_cell_list.push_front(*c_iter);
@@ -1391,7 +1391,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 	    int nBBoxCollisions = 0;
 	    ALE::Mesh::point_type c_current_cell = c_cell_list.front();
 	    c_cell_list.pop_front();
-	    PetscMemcpy(coords, m->restrict(coordinates, c_current_cell), sizeof(double)*dim*(dim+1));
+	    PetscMemcpy(coords, m->restrictClosure(coordinates, c_current_cell), sizeof(double)*dim*(dim+1));
 	    ALE::Mesh::point_type f_current_guess = f_cell_guesses.front();
 	    f_cell_guesses.pop_front();
 	    bool found_the_boundbox = false;
@@ -1402,7 +1402,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 	      nComparisons++;
 	      ALE::Mesh::point_type f_current_cell = f_cell_list.front();
 	      f_cell_list.pop_front();
-	      PetscMemcpy(fcoords, f_m->restrict(f_coordinates, f_current_cell), sizeof(double)*dim*(dim+1));
+	      PetscMemcpy(fcoords, f_m->restrictClosure(f_coordinates, f_current_cell), sizeof(double)*dim*(dim+1));
 	      bool bbox_collide = (Hierarchy_BBoxesCollide(dim, coords, fcoords) == PETSC_TRUE);
 	      //if we have yet to find the box, then we have an unrestricted search; if we have found the box, then we only search within the box
 	      if (bbox_collide || !found_the_boundbox) {

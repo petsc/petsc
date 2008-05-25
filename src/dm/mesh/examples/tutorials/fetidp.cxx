@@ -253,7 +253,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
   ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
   double centerCoords[dim];
   while (c_iter != c_iter_end) {
-    const double * coords = oldMesh->restrict(coordinates, *c_iter);
+    const double * coords = oldMesh->restrictClosure(coordinates, *c_iter);
     for (int i = 0; i < dim; i++) {
       centerCoords[i] = 0;
       for (int j = 0; j < dim+1; j++) {

@@ -59,7 +59,7 @@ public :
     ierr = PetscLogEventBegin(restrictEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {
       for(mesh_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-        const double *restrict = this->_mesh->restrict(this->_section, *c_iter);
+        const double *restrict = this->_mesh->restrictClosure(this->_section, *c_iter);
       }
     }
     ierr = PetscLogEventEnd(restrictEvent,0,0,0,0);
@@ -97,7 +97,7 @@ public :
     ierr = PetscLogEventBegin(restrictEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {
       for(int c = 0; c < numCells; ++c) {
-        const double *restrict = this->_mesh->restrict(this->_section, tag, c);
+        const double *restrict = this->_mesh->restrictClosure(this->_section, tag, c);
       }
     }
     ierr = PetscLogEventEnd(restrictEvent,0,0,0,0);

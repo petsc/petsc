@@ -364,6 +364,8 @@ int main(int argc,char **args)
         ierr = PetscOptionsHasName(PETSC_NULL,"-cknorm",&cknorm);CHKERRQ(ierr);
         while ( num_rhs-- ) {
           ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+          ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+          ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
         }
         ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
         if (cknorm){   /* Check error for each rhs */

@@ -516,11 +516,35 @@ namespace ALE {
       int diameter();
       int diameter(const point_type& p);
 
-      Obj<typename traits::depthSequence> depthStratum(int d);
-      Obj<typename traits::depthSequence> depthStratum(int d, marker_type m);
+      Obj<typename traits::depthSequence> depthStratum(int d) {
+        if (d == 0) {
+          return typename traits::depthSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::depthMarkerTag>(this->_cap.set), d);
+        } else {
+          return typename traits::depthSequence(::boost::multi_index::get<typename traits::base_container_type::traits::depthMarkerTag>(this->_base.set), d);
+        }
+      };
+      Obj<typename traits::depthSequence> depthStratum(int d, marker_type m) {
+        if (d == 0) {
+          return typename traits::depthSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::depthMarkerTag>(this->_cap.set), d, m);
+        } else {
+          return typename traits::depthSequence(::boost::multi_index::get<typename traits::base_container_type::traits::depthMarkerTag>(this->_base.set), d, m);
+        }
+      };
 
-      Obj<typename traits::heightSequence> heightStratum(int h);
-      Obj<typename traits::heightSequence> heightStratum(int h, marker_type m);
+      Obj<typename traits::heightSequence> heightStratum(int h) {
+        if (h == 0) {
+          return typename traits::heightSequence(::boost::multi_index::get<typename traits::base_container_type::traits::heightMarkerTag>(this->_base.set), h);
+        } else {
+          return typename traits::heightSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::heightMarkerTag>(this->_cap.set), h);
+        }
+      };
+      Obj<typename traits::heightSequence> heightStratum(int h, marker_type m) {
+        if (h == 0) {
+          return typename traits::heightSequence(::boost::multi_index::get<typename traits::base_container_type::traits::heightMarkerTag>(this->_base.set), h, m);
+        } else {
+          return typename traits::heightSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::heightMarkerTag>(this->_cap.set), h, m);
+        }
+      };
 
       Obj<typename traits::markerSequence> markerStratum(marker_type m);
  
@@ -1286,38 +1310,6 @@ namespace ALE {
       return this->depth(p) + this->height(p);
     };
 
-    template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::traits::depthSequence> Sieve<Point_,Marker_,Color_>::depthStratum(int d) {
-      if (d == 0) {
-        return typename traits::depthSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::depthMarkerTag>(this->_cap.set), d);
-      } else {
-        return typename traits::depthSequence(::boost::multi_index::get<typename traits::base_container_type::traits::depthMarkerTag>(this->_base.set), d);
-      }
-    };
-    template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::traits::depthSequence> Sieve<Point_,Marker_,Color_>::depthStratum(int d, marker_type m) {
-      if (d == 0) {
-        return typename traits::depthSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::depthMarkerTag>(this->_cap.set), d, m);
-      } else {
-        return typename traits::depthSequence(::boost::multi_index::get<typename traits::base_container_type::traits::depthMarkerTag>(this->_base.set), d, m);
-      }
-    };
-    template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::traits::heightSequence> Sieve<Point_,Marker_,Color_>::heightStratum(int h) {
-      if (h == 0) {
-        return typename traits::heightSequence(::boost::multi_index::get<typename traits::base_container_type::traits::heightMarkerTag>(this->_base.set), h);
-      } else {
-        return typename traits::heightSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::heightMarkerTag>(this->_cap.set), h);
-      }
-    };
-    template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::traits::heightSequence> Sieve<Point_,Marker_,Color_>::heightStratum(int h, marker_type m) {
-      if (h == 0) {
-        return typename traits::heightSequence(::boost::multi_index::get<typename traits::base_container_type::traits::heightMarkerTag>(this->_base.set), h, m);
-      } else {
-        return typename traits::heightSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::heightMarkerTag>(this->_cap.set), h, m);
-      }
-    };
     template <typename Point_, typename Marker_, typename Color_> 
     template<class InputSequence> 
     void Sieve<Point_,Marker_,Color_>::__computeClosureHeights(const Obj<InputSequence>& points) {

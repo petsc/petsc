@@ -101,6 +101,34 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerHDF5Open" 
+/*@C
+   PetscViewerHDF5Open - Opens a file for HDF5 input/output.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - MPI communicator
+.  name - name of file 
+-  type - type of file
+$    FILE_MODE_WRITE - create new file for binary output
+$    FILE_MODE_READ - open existing file for binary input
+$    FILE_MODE_APPEND - open existing file for binary output
+
+   Output Parameter:
+.  hd5v - PetscViewer for HDF5 input/output to use with the specified file
+
+   Level: beginner
+
+   Note:
+   This PetscViewer should be destroyed with PetscViewerDestroy().
+
+   Concepts: HDF5 files
+   Concepts: PetscViewerHDF5^creating
+
+.seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
+          VecView(), MatView(), VecLoad(), MatLoad(),
+          PetscFileMode, PetscViewer
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5Open(MPI_Comm comm, const char name[], PetscFileMode type, PetscViewer *hdf5v)
 {
   PetscErrorCode ierr;

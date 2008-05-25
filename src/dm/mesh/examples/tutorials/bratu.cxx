@@ -269,7 +269,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
   ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
   double centerCoords[dim];
   while (c_iter != c_iter_end) {
-    const double * coords = oldMesh->restrict(coordinates, *c_iter);
+    const double * coords = oldMesh->restrictClosure(coordinates, *c_iter);
     for (int i = 0; i < dim; i++) {
       centerCoords[i] = 0;
       for (int j = 0; j < dim+1; j++) {
@@ -331,7 +331,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(Mesh mesh, MPI_Co
   ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
   double centerCoords[dim];
   while (c_iter != c_iter_end) {
-    const double * coords = oldMesh->restrict(coordinates, *c_iter);
+    const double * coords = oldMesh->restrictClosure(coordinates, *c_iter);
     for (int i = 0; i < dim; i++) {
       centerCoords[i] = 0;
       for (int j = 0; j < dim+1; j++) {
@@ -861,7 +861,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
 #ifdef FASTER
-    const PetscScalar *x = m->restrict(xSection, xTag, c);
+    const PetscScalar *x = m->restrictClosure(xSection, xTag, c);
 #else
     PetscScalar *x;
 

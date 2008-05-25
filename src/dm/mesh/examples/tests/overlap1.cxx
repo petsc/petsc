@@ -73,7 +73,7 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
 
       if (debug) {
         std::cout << "[" << sendOverlap->commRank() << "]  Receiver " << *p_iter << " Matching Point " << p_iter.color() << std::endl;
-        const send_section_type::value_type *values = sendSection->restrict(*p_iter, *s_iter);
+        const send_section_type::value_type *values = sendSection->restrictPoint(*p_iter, *s_iter);
         for(int i = 0; i < sendSection->getAtlas()->size(*p_iter, *s_iter); i++) {
           std::cout << "[" << recvOverlap->commRank() << "]    " << values[i] << std::endl;
         }
@@ -96,7 +96,7 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
     
     if (debug) {std::cout << "[" << recvOverlap->commRank() << "]Point " << *r_iter << std::endl;}
     for(recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != recvPatches->end(); ++p_iter) {
-      const recv_section_type::value_type *values = recvSection->restrict(*p_iter, *r_iter);
+      const recv_section_type::value_type *values = recvSection->restrictPoint(*p_iter, *r_iter);
 
       if (debug) {
         std::cout << "[" << recvOverlap->commRank() << "]  Sender " << *p_iter << " Matching Point " << p_iter.color() << std::endl;

@@ -32,7 +32,7 @@ namespace ALE {
     const int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
-    const value_type *restrict() const {
+    const value_type *restrictSpace() const {
       return this->_sizes;
     };
     const value_type *restrictPoint(const point_type& p) const {
@@ -172,7 +172,7 @@ namespace ALE {
     const int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
-    const value_type *restrict() const {
+    const value_type *restrictSpace() const {
       return this->_sizes;
     };
     const value_type *restrictPoint(const point_type& p) const {
@@ -294,7 +294,7 @@ namespace ALE {
     const int getFiberDimension(const point_type& p) const {
       return this->hasPoint(p) ? 1 : 0;
     };
-    const value_type *restrict() const {
+    const value_type *restrictSpace() const {
       return this->_sizes;
     };
     const value_type *restrictPoint(const point_type& p) const {
@@ -362,10 +362,6 @@ namespace ALE {
     public:
       bool hasPoint(const point_type& point) {
         return this->_section->hasPoint(point);
-      };
-      const value_type *restrict(const point_type& p) {
-        this->_size = this->_section->getFiberDimension(p); // Could be size()
-        return &this->_size;
       };
       const value_type *restrictPoint(const point_type& p) {
         this->_size = this->_section->getFiberDimension(p);

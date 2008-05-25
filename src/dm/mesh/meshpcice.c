@@ -80,7 +80,7 @@ PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElem
   }
   *numElements = numElem;
   *fiberDim    = fiberDimMin;
-  *array       = (PetscInt *) section->restrict();
+  *array       = (PetscInt *) section->restrictSpace();
   PetscFunctionReturn(0);
 }
 
@@ -170,7 +170,7 @@ PetscErrorCode BCSectionRealGetArray(Mesh mesh, const char name[], PetscInt *num
   }
   *numElements = numElem;
   *fiberDim    = fiberDimMin;
-  *array       = (PetscReal *) section->restrict();
+  *array       = (PetscReal *) section->restrictSpace();
   PetscFunctionReturn(0);
 }
 

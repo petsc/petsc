@@ -264,7 +264,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreate(MPI_Comm comm, SectionReal *s
 
   ierr = PetscHeaderCreate(s,_p_SectionReal,struct _SectionRealOps,SECTIONREAL_COOKIE,0,"SectionReal",comm,SectionRealDestroy,0);CHKERRQ(ierr);
   s->ops->view     = SectionRealView_Sieve;
-  s->ops->restrict = SectionRealRestrict;
+  s->ops->restrictClosure = SectionRealRestrict;
   s->ops->update   = SectionRealUpdate;
 
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
@@ -358,7 +358,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal section, PetscI
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidScalarPointer(values,3);
-  *values = (PetscScalar *) section->b->restrict(section->s, point);
+  *values = (PetscScalar *) section->b->restrictClosure(section->s, point);
   PetscFunctionReturn(0);
 }
 
@@ -534,7 +534,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal sectio
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), s->restrict(), localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), s->restrictSpace(), localVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1038,7 +1038,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntCreate(MPI_Comm comm, SectionInt *sec
 
   ierr = PetscHeaderCreate(s,_p_SectionInt,struct _SectionIntOps,SECTIONINT_COOKIE,0,"SectionInt",comm,SectionIntDestroy,0);CHKERRQ(ierr);
   s->ops->view     = SectionIntView_Sieve;
-  s->ops->restrict = SectionIntRestrict;
+  s->ops->restrictClosure = SectionIntRestrict;
   s->ops->update   = SectionIntUpdate;
 
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
@@ -1132,7 +1132,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt section, PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   PetscValidPointer(values,3);
-  *values = (PetscInt *) section->b->restrict(section->s, point);
+  *values = (PetscInt *) section->b->restrictClosure(section->s, point);
   PetscFunctionReturn(0);
 }
 

@@ -586,12 +586,12 @@ namespace ALE {
     // Return the values for the closure of this point
     //   use a smart pointer?
     template<typename Section_>
-    const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p) {
+    const typename Section_::value_type *restrictClosure(const Obj<Section_>& section, const point_type& p) {
       const int size = this->sizeWithBC(section, p);
-      return this->restrict(section, p, section->getRawArray(size), size);
+      return this->restrictClosure(section, p, section->getRawArray(size), size);
     };
     template<typename Section_>
-    const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p, typename Section_::value_type  *values, const int valuesSize) {
+    const typename Section_::value_type *restrictClosure(const Obj<Section_>& section, const point_type& p, typename Section_::value_type  *values, const int valuesSize) {
       const int size = this->sizeWithBC(section, p);
       int       j    = -1;
       if (valuesSize < size) throw ALE::Exception("Input array too small");
@@ -839,25 +839,25 @@ namespace ALE {
       return section->setCustomAtlas(rOffsets, rIndices, uOffsets, uIndices);
     };
     template<typename Section_>
-    const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p) {
+    const typename Section_::value_type *restrictClosure(const Obj<Section_>& section, const int tag, const int p) {
       const int *offsets, *indices;
 
       section->getCustomRestrictAtlas(tag, &offsets, &indices);
       const int size = offsets[p+1] - offsets[p];
-      return this->restrict(section, tag, p, section->getRawArray(size), offsets, indices);
+      return this->restrictClosure(section, tag, p, section->getRawArray(size), offsets, indices);
     };
     template<typename Section_>
-    const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p, typename Section_::value_type  *values, const int valuesSize) {
+    const typename Section_::value_type *restrictClosure(const Obj<Section_>& section, const int tag, const int p, typename Section_::value_type  *values, const int valuesSize) {
       const int *offsets, *indices;
 
       section->getCustomRestrictAtlas(tag, &offsets, &indices);
       const int size = offsets[p+1] - offsets[p];
       if (valuesSize < size) {throw ALE::Exception("Input array too small");}
-      return this->restrict(section, tag, p, values, offsets, indices);
+      return this->restrictClosure(section, tag, p, values, offsets, indices);
     };
     template<typename Section_>
-    const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p, typename Section_::value_type  *values, const int offsets[], const int indices[]) {
-      const typename Section_::value_type *array = section->restrict();
+    const typename Section_::value_type *restrictClosure(const Obj<Section_>& section, const int tag, const int p, typename Section_::value_type  *values, const int offsets[], const int indices[]) {
+      const typename Section_::value_type *array = section->restrictSpace();
 
       const int size = offsets[p+1] - offsets[p];
       for(int j = 0, k = offsets[p]; j < size; ++j, ++k) {
@@ -867,7 +867,7 @@ namespace ALE {
     };
     template<typename Section_>
     void updateAdd(const Obj<Section_>& section, const int tag, const int p, const typename Section_::value_type values[]) {
-      typename Section_::value_type *array = (typename Section_::value_type *) section->restrict();
+      typename Section_::value_type *array = (typename Section_::value_type *) section->restrictSpace();
       const int *offsets, *indices;
 
       section->getCustomUpdateAtlas(tag, &offsets, &indices);
@@ -922,7 +922,7 @@ namespace ALE {
       typename Section_::value_type                   *newArray = value_allocator.allocate(newSize);
       for(int i = 0; i < newSize; ++i) {value_allocator.construct(newArray+i, typename Section_::value_type());}
       ///typename Section_::value_type                   *newArray = new typename Section_::value_type[newSize];
-      const typename Section_::value_type             *array    = section->restrict();
+      const typename Section_::value_type             *array    = section->restrictSpace();
 
       for(typename Section_::atlas_type::chart_type::const_iterator c_iter = oldChart.begin(); c_iter != oldChart.end(); ++c_iter) {
         const int& dim       = section->getFiberDimension(*c_iter);
@@ -1583,16 +1583,16 @@ namespace ALE {
   public: // Restrict/Update closures
     // Return the values for the closure of this point
     template<typename Section>
-    const typename Section::value_type *restrict(const Obj<Section>& section, const point_type& p) {
+    const typename Section::value_type *restrictClosure(const Obj<Section>& section, const point_type& p) {
       const int size = this->sizeWithBC(section, p);
       ISieveVisitor::RestrictVisitor<Section> rV(*section, size, section->getRawArray(size));
       ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
       return rV.getValues();
     };
     template<typename Section>
-    const typename Section::value_type *restrict(const Obj<Section>& section, const point_type& p, typename Section::value_type *values, const int valuesSize) {
+    const typename Section::value_type *restrictClosure(const Obj<Section>& section, const point_type& p, typename Section::value_type *values, const int valuesSize) {
       const int size = this->sizeWithBC(section, p);
-      if (valuesSize < size) {throw ALE::Exception("Input array to small for restrict()");}
+      if (valuesSize < size) {throw ALE::Exception("Input array to small for restrictClosure()");}
       ISieveVisitor::RestrictVisitor<Section> rV(*section, size, values);
       ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
       return rV.getValues();
@@ -1760,7 +1760,7 @@ namespace ALE {
 #endif
     };
     void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const double *coords = this->restrict(coordinates, e);
+      const double *coords = this->restrictClosure(coordinates, e);
       const int     dim    = 2;
       double        invDet;
 
@@ -1805,7 +1805,7 @@ namespace ALE {
       }
     };
     void computeQuadrilateralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
-      const double *coords = this->restrict(coordinates, e);
+      const double *coords = this->restrictClosure(coordinates, e);
       const int     dim    = 2;
       double        invDet;
 
@@ -1839,7 +1839,7 @@ namespace ALE {
       }
     };
     void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const double *coords = this->restrict(coordinates, e);
+      const double *coords = this->restrictClosure(coordinates, e);
       const int     dim    = 3;
       double        invDet;
 
@@ -1875,7 +1875,7 @@ namespace ALE {
       }
     };
     void computeHexahedralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
-      const double *coords = this->restrict(coordinates, e);
+      const double *coords = this->restrictClosure(coordinates, e);
       const int     dim    = 3;
       double        invDet;
 
@@ -1981,7 +1981,7 @@ namespace ALE {
       }
       // Now get 1D Jacobian info
       //   Should be a way to get this directly
-      const double *coords = this->restrict(this->getRealSection("coordinates"), face);
+      const double *coords = this->restrictClosure(this->getRealSection("coordinates"), face);
       detJ    = std::sqrt(PetscSqr(coords[1*2+0] - coords[0*2+0]) + PetscSqr(coords[1*2+1] - coords[0*2+1]))/2.0;
       invJ[0] = 1.0/detJ;
     };
@@ -2035,7 +2035,7 @@ namespace ALE {
       }
       // Now get 2D Jacobian info
       //   Should be a way to get this directly
-      const double *coords = this->restrict(this->getRealSection("coordinates"), face);
+      const double *coords = this->restrictClosure(this->getRealSection("coordinates"), face);
       // Rotate so that normal in z
       double invR[9], R[9];
       double detR, invDetR;
