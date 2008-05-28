@@ -24,6 +24,7 @@ EXTERN PetscErrorCode VecSetRandom_Seq(Vec,PetscRandom);
 EXTERN PetscErrorCode VecMAXPY_Seq(Vec,PetscInt,const PetscScalar *,Vec *);
 EXTERN PetscErrorCode VecAYPX_Seq(Vec,PetscScalar,Vec);
 EXTERN PetscErrorCode VecWAXPY_Seq(Vec,PetscScalar,Vec,Vec);
+EXTERN PetscErrorCode VecAXPBYPCZ_Seq(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode VecPointwiseMult_Seq(Vec,Vec,Vec);
 EXTERN PetscErrorCode VecPointwiseMax_Seq(Vec,Vec,Vec);
 EXTERN PetscErrorCode VecPointwiseMaxAbs_Seq(Vec,Vec,Vec);

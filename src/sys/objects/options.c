@@ -321,7 +321,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
           /* warning: should be making sure we do not overfill vstring */
           ierr = PetscStrcat(vstring,first);CHKERRQ(ierr);
           ierr = PetscStrcat(vstring," ");CHKERRQ(ierr);
-          ierr = PetscStrcat(vstring,second);CHKERRQ(ierr);
+          if (second) {
+            /* protect second with quotes in case it contains strings */
+            ierr = PetscStrcat(vstring,"\"");CHKERRQ(ierr);
+	    ierr = PetscStrcat(vstring,second);CHKERRQ(ierr);
+            ierr = PetscStrcat(vstring,"\"");CHKERRQ(ierr);
+          }
           ierr = PetscStrcat(vstring," ");CHKERRQ(ierr);
 	  /* ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr); */
 	} else {

@@ -660,6 +660,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecMAXPY_Seq,
             VecAYPX_Seq,
             VecWAXPY_Seq,
+            VecAXPBYPCZ_Seq,
             VecPointwiseMult_Seq,
             VecPointwiseDivide_Seq, 
             VecSetValues_Seq, /* 20 */
