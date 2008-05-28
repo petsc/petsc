@@ -98,7 +98,7 @@
       PetscEnum VECOP_VIEW
       PetscEnum VECOP_LOADINTOVECTOR
 
-      parameter (VECOP_VIEW=33,VECOP_LOADINTOVECTOR=40)
+      parameter (VECOP_VIEW=34,VECOP_LOADINTOVECTOR=41)
 !
 !  End of Fortran include file for the Vec package in PETSc
 

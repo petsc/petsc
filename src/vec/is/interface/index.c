@@ -4,6 +4,7 @@
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
 #include "include/private/isimpl.h"      /*I "petscis.h" I*/
+#include "petscsys.h"
 
 /* Logging support */
 PetscCookie PETSCVEC_DLLEXPORT IS_COOKIE;
@@ -113,12 +114,36 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPermutation(IS is,PetscTruth *perm)
   Concepts: permutation
   Concepts: index sets^permutation
 
+   The debug version of the libraries (config/configure.py --with-debugging=1) checks if the 
+  index set is actually a permutation. The optimized version just believes you.
+
 .seealso: ISPermutation()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISSetPermutation(IS is)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
+#if defined(PETSC_USE_DEBUG)
+  {
+    PetscMPIInt    size;
+    PetscErrorCode ierr;
+
+    ierr = MPI_Comm_size(is->hdr.comm,&size);CHKERRQ(ierr);
+    if (size == 1) {
+      PetscInt i,n,*idx,*iidx;
+    
+      ierr = ISGetSize(is,&n);CHKERRQ(ierr);
+      ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
+      ierr = ISGetIndices(is,&iidx);CHKERRQ(ierr);
+      ierr = PetscMemcpy(idx,iidx,n*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscSortInt(n,idx);CHKERRQ(ierr);
+      for (i=0; i<n; i++) {
+        if (idx[i] != i) SETERRQ(PETSC_ERR_ARG_WRONG,"Index set is not a permutation");
+      }
+      ierr = PetscFree(idx);CHKERRQ(ierr);
+    }
+  }
+#endif
   is->isperm = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
