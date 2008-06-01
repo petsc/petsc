@@ -578,7 +578,7 @@ class Configure(config.package.Package):
 
   def configureIO(self):
     '''Check for the functions in MPI/IO
-       - Define USE_MPIIO if they are present
+       - Define HAVE_MPIIO if they are present
        - Some older MPI 1 implementations are missing these'''
     oldFlags = self.compilers.CPPFLAGS
     oldLibs  = self.compilers.LIBS
@@ -608,7 +608,7 @@ class Configure(config.package.Package):
       self.compilers.CPPFLAGS = oldFlags
       self.compilers.LIBS = oldLibs
       return
-    self.addDefine('USE_MPIIO', 1)
+    self.addDefine('HAVE_MPIIO', 1)
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     return
