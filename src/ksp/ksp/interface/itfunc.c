@@ -1423,6 +1423,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetResidualHistory(KSP ksp,PetscReal a[],Pe
 
      The Fortran version of this routine has a calling sequence
 $   call KSPGetResidualHistory(KSP ksp, integer na, integer ierr)
+    note that you have passed a Fortran array into KSPSetResidualHistory() and you need
+    to access the residual values from this Fortran array you provided. Only the na (number of
+    residual norms currently held) is set.
 
 .keywords: KSP, get, residual, history, norm
 

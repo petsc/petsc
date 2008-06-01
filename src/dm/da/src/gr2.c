@@ -361,7 +361,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
 
 EXTERN PetscErrorCode VecView_MPI_Draw_DA1d(Vec,PetscViewer);
 
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
 #undef __FUNCT__  
 #define __FUNCT__ "DAArrayMPIIO"
 static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth write)
@@ -470,7 +470,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
     ierr = VecView_MPI_Netcdf_DA(xin,viewer);CHKERRQ(ierr);
 #endif
   } else {
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
     PetscTruth isbinary,isMPIIO;
 
     ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
@@ -510,7 +510,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
   const char     *prefix;
   PetscInt       bs;
   PetscTruth     flag;
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
   PetscTruth     isMPIIO;
 #endif
 
@@ -518,7 +518,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
   if (isMPIIO) {
     ierr = DAArrayMPIIO(da,viewer,xin,PETSC_FALSE);CHKERRQ(ierr);

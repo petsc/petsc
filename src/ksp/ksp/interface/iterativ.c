@@ -557,7 +557,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
 
   if (n <= ksp->chknorm) PetscFunctionReturn(0);
 
-  if (rnorm != rnorm) {
+  if (PetscIsInfOrNanScalar(rnorm)) {
     ierr = PetscInfo(ksp,"Linear solver has created a not a number (NaN) as the residual norm, declaring divergence \n");CHKERRQ(ierr);
     *reason = KSP_DIVERGED_NAN;
   } else if (rnorm <= ksp->ttol) {

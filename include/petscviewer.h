@@ -123,7 +123,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryCreate(MPI_Comm,PetscView
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinarySetMPIIO(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetMPIIO(PetscViewer,PetscTruth*);
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetMPIIODescriptor(PetscViewer,MPI_File*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetMPIIOOffset(PetscViewer,MPI_Offset*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryAddMPIIOOffset(PetscViewer,MPI_Offset);

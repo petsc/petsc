@@ -1719,7 +1719,7 @@ M*/
 .seealso: PetscReal, PassiveReal, PassiveScalar, PetscScalar, MPIU_INT
 M*/
 
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
 #if !defined(PETSC_WORDS_BIGENDIAN)
 extern PetscErrorCode MPIU_File_write_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
 extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);

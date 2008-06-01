@@ -112,8 +112,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatMatMultTrans",  MAT_COOKIE,&MAT_MatMultTranspose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultTrnSym" ,MAT_COOKIE,&MAT_MatMultTransposeSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultTrnNum", MAT_COOKIE,&MAT_MatMultTransposeNumeric);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MAT_GetRedundantMatrix",MAT_COOKIE,&MAT_GetRedundantMatrix);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MAT_GetSequentialNonzeroStructure",MAT_COOKIE,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetRedundant",  MAT_COOKIE,&MAT_GetRedundantMatrix);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetSeqNZStrct", MAT_COOKIE,&MAT_GetSequentialNonzeroStructure);CHKERRQ(ierr);
 
   /* these may be specific to MPIAIJ matrices */
   ierr = PetscLogEventRegister("MatMerge_SeqsToMPINumeric",MAT_COOKIE,&MAT_Seqstompinum);
@@ -128,8 +128,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatApplyPAPt_Numeric",MAT_COOKIE,&MAT_Applypapt_numeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatApplyPAPt",MAT_COOKIE,&MAT_Applypapt);CHKERRQ(ierr);
 
-  ierr = PetscLogEventRegister("MatGetSymbolicTranspose",MAT_COOKIE,&MAT_Getsymtranspose);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("MatGetSymbolicTransposeReduced",MAT_COOKIE,&MAT_Getsymtransreduced);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetSymTrans",MAT_COOKIE,&MAT_Getsymtranspose);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatGetSymTransR",MAT_COOKIE,&MAT_Getsymtransreduced);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTranspose_SeqAIJ_FAST",MAT_COOKIE,&MAT_Transpose_SeqAIJ);CHKERRQ(ierr);
 
   /* Turn off high traffic events by default */
