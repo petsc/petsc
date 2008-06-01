@@ -829,7 +829,9 @@ namespace ALE {
           const int                               size   = section->getFiberDimension(*b_iter);
 
           for(int p = 0; p < size; p++) {
-            sendOverlap->addArrow(points[p], rank, points[p]);
+            if (origSendOverlap->support(points[p])->size() == 0) {
+              sendOverlap->addArrow(points[p], rank, points[p]);
+            }
           }
         }
       }
@@ -843,7 +845,9 @@ namespace ALE {
           const int                               size   = section->getFiberDimension(*b_iter);
 
           for(int p = 0; p < size; p++) {
-            recvOverlap->addArrow(rank, points[p], points[p]);
+            if (origRecvOverlap->support(rank, points[p])->size() == 0) {
+              recvOverlap->addArrow(rank, points[p], points[p]);
+            }
           }
         }
       }

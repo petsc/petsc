@@ -14,10 +14,8 @@ class FunctionTestIDistribution : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(FunctionTestIDistribution);
 
-#if 0
   CPPUNIT_TEST(testDistributeMesh2DUninterpolated);
   CPPUNIT_TEST(testPreallocationMesh2DUninterpolated);
-#endif
   CPPUNIT_TEST(testPreallocationMesh3DUninterpolated);
 
   CPPUNIT_TEST_SUITE_END();
@@ -312,6 +310,34 @@ public:
     f.close();
   };
 
+  void checkOrder(mesh_type::order_type& globalOrder, const char basename[]) {
+    ostringstream filename;
+    filename << "data/" << basename << globalOrder.commSize() << "_p" << globalOrder.commRank() << ".order";
+    std::ifstream f;
+
+    f.open(filename.str().c_str());
+    size_t localSize;
+    f >> localSize;
+    int *ordering = new int[localSize*3];
+    for(int i = 0; i < localSize; ++i) {
+      f >> ordering[i*3+0]; // point
+      f >> ordering[i*3+1]; // offset
+      f >> ordering[i*3+2]; // dim
+    }
+    f.close();
+
+    const mesh_type::order_type::chart_type& chart = globalOrder.getChart();
+    int i = 0;
+
+    CPPUNIT_ASSERT_EQUAL(localSize, chart.size());
+    for(mesh_type::order_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter, ++i) {
+      CPPUNIT_ASSERT_EQUAL(ordering[i*3+0], *p_iter);
+      CPPUNIT_ASSERT_EQUAL(ordering[i*3+1], globalOrder.restrictPoint(*p_iter)[0].prefix);
+      CPPUNIT_ASSERT_EQUAL(ordering[i*3+2], globalOrder.restrictPoint(*p_iter)[0].index);
+    }
+    delete [] ordering;
+  };
+
   void checkMatrix(Mat A, PetscInt dnz[], PetscInt onz[], const char basename[], real_section_type& section, mesh_type::order_type& globalOrder) {
     MPI_Comm comm;
     int      commSize, commRank;
@@ -484,6 +510,7 @@ public:
     ierr = preallocateOperator(parallelMesh, 1, section->getAtlas(), globalOrder, dnz, onz, A);
     CPPUNIT_ASSERT_EQUAL(0, ierr);
     this->checkMatrix(A, dnz, onz, "3DUninterpolatedPreallocate", *section, *globalOrder);
+    this->checkOrder(*globalOrder, "3DUninterpolatedPreallocate");
     ierr = PetscFree2(dnz, onz);
   };
 };

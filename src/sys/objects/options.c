@@ -377,7 +377,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(MPI_Comm comm,const char f
 
   ierr = MPI_Bcast(&cnt,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   if (cnt) {
-    if (rank) {
+    if (rank && vstring && cnt>64000 ) {
+      ierr = PetscFree(vstring);CHKERRQ(ierr);
       ierr = PetscMalloc((cnt+1)*sizeof(char),&vstring);CHKERRQ(ierr);
     }
     ierr = MPI_Bcast(vstring,cnt,MPI_CHAR,0,comm);CHKERRQ(ierr);
