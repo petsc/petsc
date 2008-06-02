@@ -1,23 +1,23 @@
 #include "private/matimpl.h"
 #include "tao_sys.h"
 
-#define LMVMMat_Scale_None		0
-#define LMVMMat_Scale_Scalar		1
-#define LMVMMat_Scale_Broyden		2
-#define LMVMMat_Scale_Types             3
+#define MatLMVM_Scale_None		0
+#define MatLMVM_Scale_Scalar		1
+#define MatLMVM_Scale_Broyden		2
+#define MatLMVM_Scale_Types             3
 
-#define LMVMMat_Rescale_None		0
-#define LMVMMat_Rescale_Scalar		1
-#define LMVMMat_Rescale_GL		2
-#define LMVMMat_Rescale_Types          	3
+#define MatLMVM_Rescale_None		0
+#define MatLMVM_Rescale_Scalar		1
+#define MatLMVM_Rescale_GL		2
+#define MatLMVM_Rescale_Types          	3
 
-#define LMVMMat_Limit_None		0
-#define LMVMMat_Limit_Average		1
-#define LMVMMat_Limit_Relative		2
-#define LMVMMat_Limit_Absolute		3
-#define LMVMMat_Limit_Types		4
+#define MatLMVM_Limit_None		0
+#define MatLMVM_Limit_Average		1
+#define MatLMVM_Limit_Relative		2
+#define MatLMVM_Limit_Absolute		3
+#define MatLMVM_Limit_Types		4
 
-#define TAO_ZER_SAFEGUARD	1e-8
+#define TAO_ZERO_SAFEGUARD	1e-8
 #define TAO_INF_SAFEGUARD	1e+8
 
 typedef struct{
