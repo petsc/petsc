@@ -56,6 +56,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   ierr = PetscCookieRegister("Matrix Null Space",&MAT_NULLSPACE_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = MatRegisterAll(path);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("MatMult",          MAT_COOKIE,&MAT_Mult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMults",         MAT_COOKIE,&MAT_Mults);CHKERRQ(ierr);
