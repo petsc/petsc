@@ -38,7 +38,7 @@ struct _p_TaoSolver {
     PetscScalar rtol;
 };
 
-extern PetscEvent TaoSolver_Solve, TaoSolver_FunctionEval, TaoSolver_GradientEval;
+extern PetscLogEvent TaoSolver_Solve, TaoSolver_FunctionEval, TaoSolver_GradientEval;
     
 
 

@@ -6,7 +6,7 @@ PetscTruth TaoLineSearchRegisterAllCalled = PETSC_FALSE;
 PetscFList TaoLineSearchList              = PETSC_NULL;
 
 PetscCookie TAOLINESEARCH_COOKIE=0;
-PetscEvent TaoLineSearch_ApplyEvent = 0, TaoLineSearch_EvalEvent=0;
+PetscLogEvent TaoLineSearch_ApplyEvent = 0, TaoLineSearch_EvalEvent=0;
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchView"

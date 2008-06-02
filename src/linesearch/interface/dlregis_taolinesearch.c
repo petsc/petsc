@@ -1,6 +1,7 @@
 #define TAOLINESEARCH_DLL
 #include "private/taolinesearch_impl.h"
 
+PetscCookie TAOLINESEARCH_COOKIE=0;
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 #define TaoLineSearchRegisterDynamic(a,b,c,d) TaoLineSearchRegister(a,b,c,0)
@@ -48,10 +49,10 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchInitializePackage(const char
     PetscFunctionBegin;
     if (initialized) PetscFunctionReturn(0);
     initialized = PETSC_TRUE;
-    info = PetscLogClassRegister(&TAOLINESEARCH_COOKIE,"TaoLineSearch"); CHKERRQ(info);
+    info = PetscCookieRegister("TaoLineSearch",&TAOLINESEARCH_COOKIE); CHKERRQ(info);
     info = TaoLineSearchRegisterAll(path);
-    info = PetscLogEventRegister(&TaoLineSearch_ApplyEvent, "TaoLineSearchApply", TAOLINESEARCH_COOKIE); CHKERRQ(info);
-    info = PetscLogEventRegister(&TaoLineSearch_EvalEvent, "TaoLineSearchComputeObjective[Gradient]",TAOLINESEARCH_COOKIE); CHKERRQ(info);
+    info = PetscLogEventRegister(  "TaoLineSearchApply",TAOLINESEARCH_COOKIE,&TaoLineSearch_ApplyEvent); CHKERRQ(info);
+    info = PetscLogEventRegister("TaoLineSearchComputeObjective[Gradient]",TAOLINESEARCH_COOKIE,&TaoLineSearch_EvalEvent); CHKERRQ(info);
     PetscFunctionReturn(0);
 }
 

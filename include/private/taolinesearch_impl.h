@@ -3,6 +3,7 @@
 #include "petscvec.h"
 #include "taosolver.h"
 #include "taolinesearch.h"
+
     
 typedef struct _TaoLineSearchOps *TaoLineSearchOps;
 struct _TaoLineSearchOps {
@@ -52,5 +53,5 @@ struct _p_TaoLineSearch {
     
 };
 
-extern PetscEvent TaoLineSearch_ApplyEvent, TaoLineSearch_EvalEvent;
+extern PetscLogEvent TaoLineSearch_ApplyEvent, TaoLineSearch_EvalEvent;
 #endif
