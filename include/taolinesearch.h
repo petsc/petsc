@@ -30,6 +30,8 @@ EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch,V
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetStepLength(TaoLineSearch, PetscReal*);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetStepLength(TaoLineSearch, PetscReal);
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetSolution(TaoLineSearch, Vec, PetscReal*, Vec, TaoLineSearchTerminationReason*);
+EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetType(TaoLineSearch, TaoLineSearchType *);
+EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetType(TaoLineSearch, TaoLineSearchType);
 
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchUseTaoSolverRoutines(TaoLineSearch, TaoSolver);
 
