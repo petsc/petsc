@@ -175,7 +175,10 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,MatFactorInfo *info,Mat *F)
     umfpack_zl_free_numeric(&lu->Numeric);
   }
   status = umfpack_zl_numeric(ai,aj,(double*)av,NULL,lu->Symbolic,&lu->Numeric,lu->Control,lu->Info);
-  if (status < 0) SETERRQ(PETSC_ERR_LIB,"umfpack_zl_numeric failed");
+  if (status < 0) {
+    umfpack_zl_report_status(lu->Control, status);
+    SETERRQ(PETSC_ERR_LIB,"umfpack_zl_numeric failed");
+  }
   /* report numeric factorization of A' when Control[PRL] > 3 */
   (void) umfpack_zl_report_numeric(lu->Numeric, lu->Control);
 #else
@@ -183,7 +186,10 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,MatFactorInfo *info,Mat *F)
     umfpack_dl_free_numeric(&lu->Numeric);
   }
   status = umfpack_dl_numeric(ai,aj,av,lu->Symbolic,&lu->Numeric,lu->Control,lu->Info);
-  if (status < 0) SETERRQ(PETSC_ERR_LIB,"umfpack_dl_numeric failed");
+  if (status < 0) {
+    umfpack_zl_report_status(lu->Control, status);
+    SETERRQ(PETSC_ERR_LIB,"umfpack_dl_numeric failed");
+  }
   /* report numeric factorization of A' when Control[PRL] > 3 */
   (void) umfpack_dl_report_numeric(lu->Numeric, lu->Control);
 #endif
