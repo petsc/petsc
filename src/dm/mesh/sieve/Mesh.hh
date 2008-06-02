@@ -1631,10 +1631,10 @@ namespace ALE {
       return getNumCellCorners(*this->heightStratum(0)->begin());
     };
     void setupCoordinates(const Obj<real_section_type>& coordinates) {
-      const int firstVertex = this->heightStratum(0)->size();
-      const int numVertices = this->depthStratum(0)->size();
+      const Obj<label_sequence>& vertices = this->depthStratum(0);
 
-      coordinates->setChart(real_section_type::chart_type(firstVertex, firstVertex+numVertices));
+      coordinates->setChart(real_section_type::chart_type(*std::min_element(vertices->begin(), vertices->end()),
+                                                          *std::max_element(vertices->begin(), vertices->end())+1));
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
