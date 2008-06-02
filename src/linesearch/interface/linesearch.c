@@ -79,7 +79,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate(MPI_Comm comm, TaoLin
     *newls = PETSC_NULL;
 
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-    info = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(info);
+    //    info = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(info);
 #endif 
 
     info = PetscHeaderCreate(ls,_p_TaoLineSearch,struct _TaoLineSearchOps,
@@ -271,7 +271,6 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetType(TaoLineSearch ls, Ta
 #define __FUNCT__ "TaoLineSearchSetObjective"
 PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjective(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, PetscReal*, void*), void *ctx)
 {
-    PetscErrorCode info;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
     
@@ -287,7 +286,6 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjective(TaoLineSearch l
 #define __FUNCT__ "TaoLineSearchSetGradient"
 PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetGradient(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, Vec g, void*), void *ctx)
 {
-    PetscErrorCode info;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
     
@@ -300,7 +298,6 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetGradient(TaoLineSearch ls
 #define __FUNCT__ "TaoLineSearchSetObjectiveGradient"
 PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjectiveGradient(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, PetscReal *, Vec g, void*), void *ctx)
 {
-    PetscErrorCode info;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
     
@@ -313,7 +310,6 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjectiveGradient(TaoLine
 #define __FUNCT__ "TaoLineSearchObjective_Default"
 PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchObjectiveGradient_Default(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, void *ctx) 
 { 
-    PetscErrorCode info;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
     PetscValidHeaderSpecific(x,VEC_COOKIE,2);
