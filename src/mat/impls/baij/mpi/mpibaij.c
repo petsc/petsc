@@ -1965,19 +1965,15 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_OPT_g)
-  if (Ii[0]) SETERRQ1(PETSC_ERR_ARG_RANGE,"Ii[0] must be 0 it is %D",Ii[0]);
-#endif
+  if (Ii[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %D",Ii[0]);
   ierr  = PetscMalloc((2*m+1)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
   o_nnz = d_nnz + m;
 
   for (i=0; i<m; i++) {
-    nnz     = Ii[i+1]- Ii[i];
-    JJ      = J + Ii[i];
+    JJ  = J + Ii[i];
+    nnz = Ii[i+1]- Ii[i];
+    if (nnz < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative %D number of columns",i,nnz);
     nnz_max = PetscMax(nnz_max,nnz);
-#if defined(PETSC_OPT_g)
-    if (nnz < 0) SETERRQ1(PETSC_ERR_ARG_RANGE,"Local row %D has a negative %D number of columns",i,nnz);
-#endif
     for (j=0; j<nnz; j++) {
       if (*JJ >= cstart) break;
       JJ++;
