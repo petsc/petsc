@@ -251,7 +251,7 @@ int main(int argc,char **args)
       ierr = MatPartitioningApply(mpart, &mis);CHKERRQ(ierr);
       ierr = MatPartitioningDestroy(mpart);CHKERRQ(ierr);
       ierr = ISPartitioningToNumbering(mis,&nis);CHKERRQ(ierr);
-      ierr = ISPartitioningCount(mis,size,count,PETSC_NULL);CHKERRQ(ierr);
+      ierr = ISPartitioningCount(mis,size,count);CHKERRQ(ierr);
       ierr = ISDestroy(mis);CHKERRQ(ierr);
       ierr = ISInvertPermutation(nis, count[rank], &is);CHKERRQ(ierr);
       ierr = PetscFree(count);CHKERRQ(ierr);

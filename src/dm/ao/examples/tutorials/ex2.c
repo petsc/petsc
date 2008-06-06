@@ -477,7 +477,7 @@ PetscErrorCode DataMoveElements(GridData *gdata)
       Determine how many elements are assigned to each processor 
   */
   ierr = PetscMalloc(size*sizeof(PetscInt),&counts);CHKERRQ(ierr);
-  ierr = ISPartitioningCount(gdata->isnewproc,size,counts,PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISPartitioningCount(gdata->isnewproc,size,counts);CHKERRQ(ierr);
 
   /* 
      Create a vector to contain the newly ordered element information 

@@ -189,7 +189,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISColoringRestoreIS(ISColoring,IS*[]);
 /* --------------------------------------------------------------------------*/
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS,IS*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS,PetscInt,PetscInt[],PetscInt*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS,PetscInt,PetscInt[]);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt,PetscInt,PetscInt,const IS[],IS[]);
