@@ -282,14 +282,15 @@ namespace ALE {
     //   points in the overlap are only numbered by the owner with the lowest rank
     template<typename Sequence_>
     void constructLocalNumbering(const Obj<numbering_type>& numbering, const Obj<send_overlap_type>& sendOverlap, const Obj<Sequence_>& points) {
+      const int debug = sendOverlap->debug();
       int localSize = 0;
 
-      ///std::cout << "["<<numbering->commRank()<<"] Constructing local numbering" << std::endl;
+      if (debug) {std::cout << "["<<numbering->commRank()<<"] Constructing local numbering" << std::endl;}
       numbering->setFiberDimension(points, 1);
       for(typename Sequence_::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
         value_type val;
 
-        ///std::cout << "["<<numbering->commRank()<<"]   Checking point " << *l_iter << std::endl;
+        if (debug) {std::cout << "["<<numbering->commRank()<<"]   Checking point " << *l_iter << std::endl;}
         if (sendOverlap->capContains(*l_iter)) {
           const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*l_iter);
           int minRank = sendOverlap->commSize();
@@ -298,20 +299,20 @@ namespace ALE {
             if (*p_iter < minRank) minRank = *p_iter;
           }
           if (minRank < sendOverlap->commRank()) {
-            ///std::cout << "["<<numbering->commRank()<<"]     remote point, on proc " << minRank << std::endl;
+            if (debug) {std::cout << "["<<numbering->commRank()<<"]     remote point, on proc " << minRank << std::endl;}
             val = this->_unknownNumber;
           } else {
-            ///std::cout << "["<<numbering->commRank()<<"]     local point" << std::endl;
+            if (debug) {std::cout << "["<<numbering->commRank()<<"]     local point" << std::endl;}
             val = localSize++;
           }
         } else {
-          ///std::cout << "["<<numbering->commRank()<<"]     local point" << std::endl;
+          if (debug) {std::cout << "["<<numbering->commRank()<<"]     local point" << std::endl;}
           val = localSize++;
         }
-        ///std::cout << "["<<numbering->commRank()<<"]     has number " << val << std::endl;
+        if (debug) {std::cout << "["<<numbering->commRank()<<"]     has number " << val << std::endl;}
         numbering->updatePoint(*l_iter, &val);
       }
-      ///std::cout << "["<<numbering->commRank()<<"]   local points" << std::endl;
+      if (debug) {std::cout << "["<<numbering->commRank()<<"]   local points" << std::endl;}
       numbering->setLocalSize(localSize);
     };
     // Order all local points
@@ -390,8 +391,9 @@ namespace ALE {
       typedef typename ALE::New::SectionCompletion<dtopology_type, int, alloc_type> completion;
       const Obj<send_section_type> sendSection = new send_section_type(numbering->comm(), this->debug());
       const Obj<recv_section_type> recvSection = new recv_section_type(numbering->comm(), sendSection->getTag(), this->debug());
+      const int debug = sendOverlap->debug();
 
-      ///std::cout << "["<<numbering->commRank()<<"] Completing numbering" << std::endl;
+      if (debug) {std::cout << "["<<numbering->commRank()<<"] Completing numbering" << std::endl;}
       completion::completeSection(sendOverlap, recvOverlap, numbering->getAtlas(), numbering, sendSection, recvSection);
 #if 1
       const Obj<typename recv_overlap_type::traits::baseSequence> rPoints = recvOverlap->base();
@@ -407,8 +409,9 @@ namespace ALE {
           const typename recv_section_type::value_type        *values      = section->restrictPoint(remotePoint);
 
           if (section->getFiberDimension(remotePoint) == 0) continue;
-          ///std::cout << "["<<numbering->commRank()<<"]     local point " << localPoint << " remote point " << remotePoint << " number " << values[0] << std::endl;
+          if (debug) {std::cout << "["<<numbering->commRank()<<"]     local point " << localPoint << " remote point " << remotePoint << " number " << values[0] << std::endl;}
           if (values[0] >= 0) {
+            if (debug) {std::cout << "["<<numbering->commRank()<<"] local point " << localPoint << " dim " << numbering->getAtlas()->getFiberDimension(localPoint) << std::endl;}
             if (numbering->isLocal(localPoint) && !allowDuplicates) {
               ostringstream msg;
               msg << "["<<numbering->commRank()<<"]Multiple indices for local point " << localPoint << " remote point " << remotePoint << " from " << rank << " with index " << values[0];

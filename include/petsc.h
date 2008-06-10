@@ -1736,14 +1736,8 @@ extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype
 #define PETSC_BLAS_INT_MAX 2147483647
 #define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
 #define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
-PETSC_STATIC_INLINE PetscMPIInt PetscMPIIntCast(PetscInt a) {
-  PetscMPIIntCheck(a);
-  return (PetscMPIInt)a;
-}
-PETSC_STATIC_INLINE PetscBLASInt PetscBLASIntCast(PetscInt a) {
-  PetscMPIIntCheck(a);
-  return (PetscBLASInt)a;
-}
+#define PetscMPIIntCast(a) (a);PetscMPIIntCheck(a)
+#define PetscBLASIntCast(a) (a);PetscBLASIntCheck(a)
 #else
 #define PetscMPIIntCheck(a) 
 #define PetscBLASIntCheck(a) 

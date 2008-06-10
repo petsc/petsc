@@ -151,7 +151,7 @@ namespace ALE {
           int k = 0;
 
           for(int v = 0; v < nvtxs; ++v) {
-            if (assignment[v] == p) values[k++] = v;
+            if (assignment[v] == p) values[k++] = manager.getCell(v);
           }
           if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
           partition->updatePoint(p, values);
@@ -258,7 +258,7 @@ namespace ALE {
           int k = 0;
 
           for(int v = 0; v < nvtxs; ++v) {
-            if (assignment[v] == p) values[k++] = v;
+            if (assignment[v] == p) values[k++] = manager.getCell(v);
           }
           if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
           partition->updatePoint(p, values);
@@ -304,7 +304,7 @@ namespace ALE {
           int       k     = 0;
 
           for(int v = start; v < end; ++v, ++k) {
-            values[k] = v;
+            values[k] = manager.getCell(v);
           }
           if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
           partition->updatePoint(p, values);
@@ -327,11 +327,42 @@ namespace ALE {
     typedef typename GraphPartitioner::part_type part_type;
     template<typename Mesh>
     class MeshManager {
+    public:
+      typedef typename Mesh::point_type point_type;
     protected:
       const Obj<Mesh>& mesh;
+      bool             simpleCellNumbering;
+      point_type      *cells;
+    protected:
+      void createCells(const int height) {
+        const Obj<typename Mesh::label_sequence>&     mcells   = mesh->heightStratum(height);
+        const typename Mesh::label_sequence::iterator cEnd     = mcells->end();
+        const int                                     numCells = mcells->size();
+        int                                           c        = 0;
+
+        this->cells               = NULL;
+        this->simpleCellNumbering = true;
+        for(typename Mesh::label_sequence::iterator c_iter = mcells->begin(); c_iter != cEnd; ++c_iter, ++c) {
+          if (*c_iter != c) {
+            this->simpleCellNumbering = false;
+            break;
+          }
+        }
+        if (!this->simpleCellNumbering) {
+          this->cells = new point_type[numCells];
+          c           = 0;
+          for(typename Mesh::label_sequence::iterator c_iter = mcells->begin(); c_iter != cEnd; ++c_iter, ++c) {
+            this->cells[c] = *c_iter;
+          }
+        }
+      };
     public:
-      MeshManager(const Obj<Mesh>& mesh): mesh(mesh) {};
-      ~MeshManager() {};
+      MeshManager(const Obj<Mesh>& mesh, const int height = 0): mesh(mesh) {
+        this->createCells(height);
+      };
+      ~MeshManager() {
+        if (this->cells) {delete [] this->cells;}
+      };
     public:
       template<typename Float>
       void createCellCoordinates(const int numVertices, Float *X[], Float *Y[], Float *Z[]) const {
@@ -375,6 +406,12 @@ namespace ALE {
 
         for(int i = 0; i < numVertices*3; ++i) {float_alloc_type().destroy(x+i);}
         float_alloc_type().deallocate(x, numVertices*3);
+      };
+      point_type getCell(const int cellNumber) const {
+        if (this->simpleCellNumbering) {
+          return cellNumber;
+        }
+        return this->cells[cellNumber];
       };
     };
     template<typename Sieve>
@@ -1018,7 +1055,7 @@ namespace ALE {
     // TODO: Could rebind assignment section to the type of the output
     template<typename Mesh, typename Section>
     static void createPartition(const Obj<Mesh>& mesh, const Obj<Section>& partition, const int height = 0) {
-      MeshManager<Mesh> manager(mesh);
+      MeshManager<Mesh> manager(mesh, height);
       int              *start     = NULL;
       int              *adjacency = NULL;
 
@@ -1040,7 +1077,7 @@ namespace ALE {
     };
     template<typename Mesh, typename Section>
     static void createPartitionV(const Obj<Mesh>& mesh, const Obj<Section>& partition, const int height = 0) {
-      MeshManager<Mesh> manager(mesh);
+      MeshManager<Mesh> manager(mesh, height);
       int              *start     = NULL;
       int              *adjacency = NULL;
 
