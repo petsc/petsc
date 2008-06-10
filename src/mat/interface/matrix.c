@@ -3473,9 +3473,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
    Output Parameter:
 .  v - the diagonal of the matrix
 
-   Notes: The result of this call are the same as if one converted the matrix to dense format
-      and found the minimum value in each row (i.e. the implicit zeros are counted as zeros).
-
    Level: intermediate
 
    Concepts: matrices^accessing diagonals
