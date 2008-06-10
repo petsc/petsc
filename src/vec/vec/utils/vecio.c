@@ -189,7 +189,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
   MPI_Request    request;
   MPI_Status     status;
   PetscTruth     flag;
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
   PetscTruth     useMPIIO;
 #endif
 
@@ -218,7 +218,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
   ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
   if (!useMPIIO) {
 #endif
@@ -245,7 +245,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
     } else {
       ierr = MPI_Recv(avec,n,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
     }
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
   } else {
     PetscMPIInt  gsizes[1],lsizes[1],lstarts[1];
     MPI_Datatype view;

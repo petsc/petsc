@@ -401,6 +401,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartiti
   PetscFunctionBegin;
   *newp          = 0;
 
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_COOKIE,-1,"MatPartitioning",comm,MatPartitioningDestroy,
                     MatPartitioningView);CHKERRQ(ierr);
   part->vertex_weights = PETSC_NULL;
@@ -556,7 +559,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetFromOptions(MatPartitioning 
   const char *def;
 
   PetscFunctionBegin;
-  if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(((PetscObject)part)->comm,((PetscObject)part)->prefix,"Partitioning options","MatOrderings");CHKERRQ(ierr);
     if (!((PetscObject)part)->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)

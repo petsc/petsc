@@ -64,13 +64,22 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
     ierr = PetscMemoryGetCurrentUsage(&usage);CHKERRQ(ierr);
     if (usage > PetscMemoryMaximumUsage) PetscMemoryMaximumUsage = usage;
   }
-  ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
-  ierr = PetscFree(h->bops);CHKERRQ(ierr);
+  /* first destroy things that could execute arbitrary code */
+  if (h->python_destroy) {
+    void           *python_context          = h->python_context;
+    PetscErrorCode (*python_destroy)(void*) = h->python_destroy;
+    h->python_context = 0;
+    h->python_destroy = 0;
+    ierr = (*python_destroy)(python_context);CHKERRQ(ierr);
+  }
   ierr = PetscOListDestroy(h->olist);CHKERRQ(ierr);
+  ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
+  /* next destroy other things */
+  h->cookie = PETSCFREEDHEADER;
+  ierr = PetscFree(h->bops);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&h->qlist);CHKERRQ(ierr);
   ierr = PetscStrfree(h->type_name);CHKERRQ(ierr);
   ierr = PetscStrfree(h->name);CHKERRQ(ierr);
-  h->cookie = PETSCFREEDHEADER;
   ierr = PetscStrfree(h->prefix);CHKERRQ(ierr);
   ierr = PetscFree(h->fortran_func_pointers);CHKERRQ(ierr);
   ierr = PetscFree(h->intcomposeddata);CHKERRQ(ierr);

@@ -68,7 +68,7 @@ int main(int argc,char **args)
   ierr = ISPartitioningToNumbering(is,&isn);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscInt),&nlocal);CHKERRQ(ierr);
   /* get number of new vertices for each processor */
-  ierr = ISPartitioningCount(is,nlocal);CHKERRQ(ierr); 
+  ierr = ISPartitioningCount(is,size,nlocal);CHKERRQ(ierr); 
   ierr = ISDestroy(is);CHKERRQ(ierr);
 
   /* get old global number of each new global number */

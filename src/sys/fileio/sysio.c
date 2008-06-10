@@ -624,7 +624,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedSeek(MPI_Comm comm,int fd,
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
 #if !defined(PETSC_WORDS_BIGENDIAN)
 
 #if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)

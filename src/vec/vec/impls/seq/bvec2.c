@@ -362,7 +362,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   int            fdes;
   PetscInt       n = xin->map.n,cookie=VEC_FILE_COOKIE;
   FILE           *file;
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
   PetscTruth     isMPIIO;
 #endif
 
@@ -373,13 +373,13 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Write vector contents */
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
   if (!isMPIIO) {
 #endif
     ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
     ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
-#if defined(PETSC_USE_MPIIO)
+#if defined(PETSC_HAVE_MPIIO)
   } else {
     MPI_Offset   off;
     MPI_File     mfdes;

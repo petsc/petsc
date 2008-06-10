@@ -20,6 +20,7 @@
 #define petscgetprogramname                PETSCGETPROGRAMNAME
 #define petscoptionsinsertfile_            PETSCOPTIONSINSERTFILE
 #define petscoptionsclear_                 PETSCOPTIONSCLEAR
+#define petscoptionsinsertstring_          PETSCOPTIONSINSERTSTRING
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscoptionsgettruth_              petscoptionsgettruth
 #define petscoptionssetvalue_              petscoptionssetvalue
@@ -33,11 +34,21 @@
 #define petscgetprogramname_               petscgetprogramname
 #define petscoptionsinsertfile_            petscoptionsinsertfile
 #define petscoptionsclear_                 petscoptionsclear
+#define petscoptionsinsertstring_          petscoptionsinsertstring
 #endif
 
 EXTERN_C_BEGIN
 
 /* ---------------------------------------------------------------------*/
+
+void PETSC_STDCALL petscoptionsinsertstring_(CHAR file PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *c1;
+
+  FIXCHAR(file,len,c1);
+  *ierr = PetscOptionsInsertString(c1);
+  FREECHAR(file,c1);
+}
 
 void PETSC_STDCALL petscoptionsinsertfile_(MPI_Fint *comm,CHAR file PETSC_MIXED_LEN(len),PetscTruth *require,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
