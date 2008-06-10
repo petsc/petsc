@@ -200,11 +200,11 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate2d(), DAGlobalToLocalBegin(), DAGetRefinementFactor(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRange()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRanges()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
-               PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DA *inra)
+               PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DA *inra)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -363,11 +363,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
      [x, y, or z]s is the first local node number, [x, y, z] is the number of local nodes 
   */
   if (!lx) { /* user decided distribution */
-    ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    flx = lx;
+    ierr = PetscMalloc(m*sizeof(PetscInt),&flx);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
-      lx[i] = M/m + ((M % m) > (i % m));
+      flx[i] = M/m + ((M % m) > (i % m));
     }
+    lx = flx;
   }
   x  = lx[rank % m];
   xs = 0;
@@ -375,11 +375,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   if (m > 1 && x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
 
   if (!ly) { /* user decided distribution */
-    ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
-    fly = ly;
+    ierr = PetscMalloc(n*sizeof(PetscInt),&fly);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ly[i] = N/n + ((N % n) > (i % n));
+      fly[i] = N/n + ((N % n) > (i % n));
     }
+    ly = fly;
   }
   y  = ly[(rank % (m*n))/m];
   if (n > 1 && y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);      
@@ -387,11 +387,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
 
   if (!lz) { /* user decided distribution */
-    ierr = PetscMalloc(p*sizeof(PetscInt),&lz);CHKERRQ(ierr);
-    flz = lz;
+    ierr = PetscMalloc(p*sizeof(PetscInt),&flz);CHKERRQ(ierr);
     for (i=0; i<p; i++) {
-      lz[i] = P/p + ((P % p) > (i % p));
+      flz[i] = P/p + ((P % p) > (i % p));
     }
+    lz = flz;
   }
   z  = lz[rank/(m*n)];
   if (p > 1 && z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Plane width is too thin for stencil! %D %D",z,s);      
@@ -1785,11 +1785,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
    
 .keywords: distributed array, create, three-dimensional
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DAGetOwnershipRange()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DAGetOwnershipRanges()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate(MPI_Comm comm,PetscInt dim,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
-         PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,DA *inra)
+         PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],DA *inra)
 {
   PetscErrorCode ierr;
 

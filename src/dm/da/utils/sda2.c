@@ -56,7 +56,7 @@ $         DA_NONPERIODIC, DA_XPERIODIC
 
 .seealso: SDADestroy(), SDACreate2d(), SDACreate3d()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt w,PetscInt s,PetscInt *lc,SDA *sda)
+PetscErrorCode PETSCDM_DLLEXPORT SDACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt w,PetscInt s,const PetscInt lc[],SDA *sda)
 {
   PetscErrorCode ierr;
   DA             da;
@@ -123,7 +123,7 @@ $           the x and y coordinates, or PETSC_NULL
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT SDACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,SDA *sda)
+                PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt w,PetscInt s,const PetscInt lx[],const PetscInt ly[],SDA *sda)
 {
   PetscErrorCode ierr;
   DA             da;
@@ -190,7 +190,7 @@ $           the x, y, and z coordinates, or PETSC_NUL
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT SDACreate3d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,PetscInt M,
-                PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,PetscInt *lx,PetscInt *ly,PetscInt *lz,SDA *sda)
+                PetscInt N,PetscInt P,PetscInt m,PetscInt n,PetscInt p,PetscInt w,PetscInt s,const PetscInt lx[],const PetscInt ly[],const PetscInt lz[],SDA *sda)
 {
   PetscErrorCode ierr;
   DA             da;
