@@ -1703,6 +1703,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES snes,PetscReal
   snes->conv_hist       = a;
   snes->conv_hist_its   = its;
   snes->conv_hist_max   = na;
+  snes->conv_hist_len   = 0;
   snes->conv_hist_reset = reset;
   PetscFunctionReturn(0);
 }

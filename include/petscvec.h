@@ -181,9 +181,9 @@ PetscPolymorphicSubroutine(VecPointwiseMaxAbs,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec,Vec,Vec);    
 PetscPolymorphicSubroutine(VecPointwiseMin,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseMult,(Vec x,Vec y),(x,y,y))
+PetscPolymorphicSubroutine(VecPointwiseMult,(Vec x,Vec y),(x,x,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseDivide,(Vec x,Vec y),(x,y,y))
+PetscPolymorphicSubroutine(VecPointwiseDivide,(Vec x,Vec y),(x,x,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec,Vec,PetscReal*);    
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec,PetscScalar);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec);

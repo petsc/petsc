@@ -83,7 +83,8 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   DA                 da,dac,dag;
   PetscErrorCode     ierr;
   PetscMPIInt        rank;
-  PetscInt           igstart,N,s,M,istart,isize,jgstart,*lx,*ly,w;
+  PetscInt           igstart,N,s,M,istart,isize,jgstart,w;
+  const PetscInt     *lx,*ly;
   PetscReal          coors[4],ymin,ymax,xmin,xmax;
   PetscDraw          draw,popup;
   PetscTruth         isnull,useports;
@@ -106,7 +107,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
 
   ierr = DAGetInfo(da,0,&M,&N,0,&zctx.m,&zctx.n,0,&w,&s,&periodic,&st);CHKERRQ(ierr);
-  ierr = DAGetOwnershipRange(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGetOwnershipRanges(da,&lx,&ly,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
         Obtain a sequential vector that is going to contain the local values plus ONE layer of 
@@ -293,7 +294,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   PetscInt       ncid,xstart,xdim_num=1;
   PetscInt       dim,m,n,p,dof,swidth,M,N,P;
   PetscInt       xin_dim,xin_id,xin_n,xin_N,xyz_dim,xyz_id,xyz_n,xyz_N;
-  PetscInt       *lx,*ly,*lz;
+  const PetscInt *lx,*ly,*lz;
   PetscScalar    *xarray;
   DA             da,dac;
   Vec            natural,xyz;
@@ -308,7 +309,7 @@ PetscErrorCode VecView_MPI_Netcdf_DA(Vec xin,PetscViewer viewer)
   ierr = DAGetInfo(da,&dim,&m,&n,&p,&M,&N,&P,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
 
   /* create the appropriate DA to map the coordinates to natural ordering */
-  ierr = DAGetOwnershipRange(da,&lx,&ly,&lz);CHKERRQ(ierr);
+  ierr = DAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
   if (dim == 1) {
     ierr = DACreate1d(comm,DA_NONPERIODIC,m,dim,0,lx,&dac);CHKERRQ(ierr); 
   } else if (dim == 2) {

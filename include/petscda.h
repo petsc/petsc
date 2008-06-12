@@ -97,10 +97,10 @@ typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
 extern PetscCookie PETSCDM_DLLEXPORT DM_COOKIE;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,PetscInt*,DA *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,DA *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,DA*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate(MPI_Comm,PetscInt,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,DA*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,const PetscInt[],DA *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],DA *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DA*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate(MPI_Comm,PetscInt,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DA*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DADestroy(DA);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAView(DA,PetscViewer);
 
@@ -115,7 +115,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToLocalEnd(DA,Vec,InsertMode,V
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToGlobal(DA,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToGlobalBegin(DA,Vec,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DALocalToGlobalEnd(DA,Vec,Vec);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetOwnershipRange(DA,PetscInt **,PetscInt **,PetscInt **);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetOwnershipRanges(DA,const PetscInt*[],const PetscInt*[],const PetscInt*[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateGlobalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateLocalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateNaturalVector(DA,Vec *);
@@ -179,9 +179,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DASplitComm2d(MPI_Comm,PetscInt,Petsc
 S*/
 typedef struct _n_SDA* SDA;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,SDA*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,SDA*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,PetscInt*,SDA*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],SDA*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],SDA*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,const PetscInt[],SDA*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDADestroy(SDA);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDALocalToLocalBegin(SDA,PetscScalar*,InsertMode,PetscScalar*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDALocalToLocalEnd(SDA,PetscScalar*,InsertMode,PetscScalar*);

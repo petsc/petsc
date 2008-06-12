@@ -315,7 +315,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,char **name)
 
 .keywords: distributed array, get, corners, nodes, local indices
 
-.seealso: DAGetGhostCorners(), DAGetOwnershipRange()
+.seealso: DAGetGhostCorners(), DAGetOwnershipRanges()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {

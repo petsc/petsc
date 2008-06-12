@@ -91,9 +91,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const Petsc
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetOwnershipRange"
+#define __FUNCT__ "DAGetOwnershipRanges"
 /*@C
-      DAGetOwnershipRange - Gets the ranges of indices in the x, y and z direction that are owned by each process
+      DAGetOwnershipRanges - Gets the ranges of indices in the x, y and z direction that are owned by each process
 
     Not Collective
 
@@ -112,9 +112,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRestoreElements(DM dm,PetscInt *n,const Petsc
     In Fortran one must pass in arrays lx, ly, and lz that are long enough to hold the values; the sixth, seventh and
     eighth arguments from DAGetInfo()
 
-.seealso: DAGetCorners(), DAGetGhostCorners(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d()
+     In C you should not free these arrays, nor change the values in them. They will only have valid values while the
+    DA they came from still exists (has not been destroyed).
+
+.seealso: DAGetCorners(), DAGetGhostCorners(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d(), VecGetOwnershipRanges()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRange(DA da,PetscInt **lx,PetscInt **ly,PetscInt **lz)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRanges(DA da,const PetscInt *lx[],const PetscInt *ly[],const PetscInt *lz[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DM_COOKIE,1);
@@ -308,11 +311,11 @@ PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d(), DAGlobalToLocalBegin(), DAGetRefinementFactor(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRange()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRanges()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
-                          PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt dof,PetscInt s,PetscInt *lx,PetscInt *ly,DA *inra)
+                          PetscInt M,PetscInt N,PetscInt m,PetscInt n,PetscInt dof,PetscInt s,const PetscInt lx[],const PetscInt ly[],DA *inra)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -417,11 +420,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
      xs is the first local node number, x is the number of local nodes 
   */
   if (!lx) { /* user sets distribution */
-    ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
-    flx = lx;
+    ierr = PetscMalloc(m*sizeof(PetscInt),&flx);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
-      lx[i] = M/m + ((M % m) > i);
+      flx[i] = M/m + ((M % m) > i);
     }
+    lx = flx;
   }
   x  = lx[rank % m];
   xs = 0;
@@ -443,11 +446,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
      ys is the first local node number, y is the number of local nodes 
   */
   if (!ly) { /* user sets distribution */
-    ierr = PetscMalloc(n*sizeof(PetscInt),&ly);CHKERRQ(ierr);
-    fly  = ly;
+    ierr = PetscMalloc(n*sizeof(PetscInt),&fly);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
-      ly[i] = N/n + ((N % n) > i);
+      fly[i] = N/n + ((N % n) > i);
     }
+    ly  = fly;
   }
   y  = ly[rank/m];
   ys = 0;
@@ -889,7 +892,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 
 .keywords:  distributed array, refine
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetOwnershipRange()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetOwnershipRanges()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
 {
@@ -964,7 +967,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
 
 .keywords:  distributed array, coarsen
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetOwnershipRange()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetOwnershipRanges()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
 {
