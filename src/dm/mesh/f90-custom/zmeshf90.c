@@ -7,6 +7,8 @@
 #define meshrestorecoordinatesf90_ MESHRESTORECOORDINATESF90
 #define meshgetelementsf90_        MESHGETELEMENTSF90
 #define meshrestoreelementsf90_    MESHRESTOREELEMENTSF90
+#define meshrestrictslouref90_     MESHRESTRICTCLOSUREF90
+#define meshrestoreclosuref90_     MESHRESTORECLOSUREF90
 #define sectiongetarrayf90_        SECTIONGETARRAYF90
 #define sectiongetarray1df90_      SECTIONGETARRAY1DF90
 #define bcsectiongetarrayf90_      BCSECTIONGETARRAYF90
@@ -18,6 +20,8 @@
 #define meshrestorecoordinatesf90_ meshrestorecoordinatesf90
 #define meshgetelementsf90_        meshgetelementsf90
 #define meshrestoreelementsf90_    meshrestoreelementsf90
+#define meshrestrictslouref90_     meshrestrictclosure90
+#define meshrestoreclosuref90_     meshrestoreclosure90
 #define sectiongetarrayf90_        sectiongetarrayf90
 #define sectiongetarray1df90_      sectiongetarray1df90
 #define bcsectiongetarrayf90_      bcsectiongetarrayf90
@@ -56,6 +60,24 @@ void PETSC_STDCALL meshrestoreelementsf90_(Mesh *x,F90Array2d *ptr,int *__ierr P
   *__ierr = F90Array2dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = PetscFree(v);
 }
+
+void PETSC_STDCALL meshrestrictclosuref90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len), int *point,F90Array1d *ptr,int *ierr PETSC_END_LEN(len) PETSC_F90_2PTR_PROTO(ptrd))
+{
+  const PetscScalar *c;
+  PetscInt           n;
+  char              *nF;
+  FIXCHAR(name,len,nF);
+  *ierr = MeshRestrictClosure(*mesh,nF,*point,&n,&c); if (*ierr) return;
+  *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+void PETSC_STDCALL meshrestoreclosuref90_(Mesh *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscReal *c;
+  *__ierr = F90Array1dAccess(ptr,PETSC_REAL,(void**)&c PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(ptr,PETSC_REAL PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
+  *__ierr = PetscFree(c);
+}
+
 void PETSC_STDCALL sectiongetarrayf90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array2d *ptr,int *ierr PETSC_END_LEN(len) PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *a;

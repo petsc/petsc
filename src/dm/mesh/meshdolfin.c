@@ -238,7 +238,7 @@ namespace ALE {
     };
     void XMLMesh::closeMesh() {
       mesh->stratify();
-      ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(mesh, this->embedDim, this->coords);
+      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh, this->embedDim, this->coords);
       delete [] this->coords;
     };
   }

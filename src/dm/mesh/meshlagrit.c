@@ -62,6 +62,14 @@ namespace ALE {
       *vertices = verts;
       ierr = PetscViewerDestroy(viewer);
     };
+#ifdef PETSC_OPT_SIEVE
+    Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void Builder::readFault(Obj<Builder::Mesh> mesh, const std::string& filename) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+#else
     Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
       Obj<Mesh>       mesh  = new Mesh(comm, dim, debug);
       Obj<sieve_type> sieve = new sieve_type(comm, debug);
@@ -128,5 +136,6 @@ namespace ALE {
       }
       ierr = PetscViewerDestroy(viewer);
     };
+#endif
   }
 }

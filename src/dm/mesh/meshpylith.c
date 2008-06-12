@@ -264,6 +264,41 @@ namespace ALE {
       delete [] values;
     };
 #endif
+#ifdef PETSC_OPT_SIEVE
+    void Builder::readTractions(MPI_Comm comm, const std::string& filename, const int dim, const int& corners, const bool useZeroBase, int& numTractions, int& vertsPerFace, int *tractionVertices[], double *tractionValues[]) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void Builder::buildTractions(const Obj<real_section_type>& tractionField, const Obj<Mesh>& boundaryMesh, int numCells, int numTractions, int vertsPerFace, int tractionVertices[], double tractionValues[]) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void Builder::buildMaterials(const Obj<Mesh>& mesh, const Obj<int_section_type>& matField, const int materials[]) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = false, const bool interpolate = false, const int debug = 0) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    Obj<Builder::Mesh> Builder::createTraction(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase = false) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void Builder::createCohesiveElements(const Obj<Mesh>& mesh, const std::set<Mesh::point_type>& faultVertices) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeVertices(const Obj<Mesh>& mesh, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeElements(const Obj<Mesh>& mesh, const Obj<Builder::int_section_type>& materialField, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeElementsLocal(const Obj<Mesh>& mesh, const Obj<Builder::int_section_type>& materialField, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeTractionsLocal(const Obj<Mesh>& mesh, const Obj<Mesh>& tractionMesh, const Obj<Builder::real_section_type>& tractionField, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+#else
     void Builder::readTractions(MPI_Comm comm, const std::string& filename, const int dim, const int& corners, const bool useZeroBase, int& numTractions, int& vertsPerFace, int *tractionVertices[], double *tractionValues[]) {
       PetscViewer    viewer;
       FILE          *f;
@@ -417,34 +452,10 @@ namespace ALE {
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coordinates);
       Obj<int_section_type> material = mesh->getIntSection("material");
       buildMaterials(mesh, material, materials);
-#if 0
-      Obj<ALE::Mesh::pair_section_type> split = createSplit(mesh, basename, useZeroBase);
-      if (!split.isNull()) {mesh->setPairSection("split", split);}
-#endif
-      Obj<ALE::Mesh> tractionMesh = createTraction(mesh, basename, useZeroBase);
+      Obj<PETSC_MESH_TYPE> tractionMesh = createTraction(mesh, basename, useZeroBase);
       if (!tractionMesh.isNull()) {/* Have to carry tractions around somehow */}
       return mesh;
     };
-#if 0
-    Obj<Builder::pair_section_type> Builder::createSplit(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase = false) {
-      Obj<pair_section_type> split = NULL;
-      MPI_Comm comm     = mesh->comm();
-      int      dim      = mesh->getDimension();
-      int      numCells = mesh->getTopology()->heightStratum(0, 0)->size();
-      int     *splitInd, *loadHistory;
-      double  *splitValues;
-      int      numSplit = 0, hasSplit;
-
-      ALE::PyLith::Builder::readSplit(comm, basename+".split", dim, useZeroBase, numSplit, &splitInd, &loadHistory, &splitValues);
-      MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
-      if (hasSplit) {
-        split = new pair_section_type(mesh->getTopology());
-        Obj<int_section_type> loadField = mesh->getIntSection("loadHistory");
-        buildSplit(split, loadField, numCells, numSplit, splitInd, loadHistory, splitValues);
-      }
-      return split;
-    };
-#endif
     Obj<Builder::Mesh> Builder::createTraction(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase = false) {
       Obj<Mesh> tractionMesh = NULL;
       MPI_Comm comm       = mesh->comm();
@@ -550,7 +561,7 @@ namespace ALE {
 
         if (debug) {std::cout << "  Replacing cell " << cell << std::endl;}
         newVertices.clear();
-        for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter) {
+        for(PETSC_MESH_TYPE::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter) {
           if (vertexRenumber.find(*v_iter) != vertexRenumber.end()) {
             if (debug) {std::cout << "    vertex " << vertexRenumber[*v_iter] << std::endl;}
             newVertices.insert(newVertices.end(), vertexRenumber[*v_iter]);
@@ -873,7 +884,7 @@ namespace ALE {
 
         for(int i = 0; i < size; i++) {
           const Builder::pair_section_type::point_type& v     = values[i].first;
-          const ALE::Mesh::base_type::split_value&      split = values[i].second;
+          const PETSC_MESH_TYPE::base_type::split_value&      split = values[i].second;
 
           // No time history
           ierr = PetscViewerASCIIPrintf(viewer, "%6d %6d 0 %15.9g %15.9g %15.9g\n", eNumbering->getIndex(e)+1, vNumbering->getIndex(v)+1, split.x, split.y, split.z);CHKERRQ(ierr);
@@ -920,5 +931,6 @@ namespace ALE {
       }
       PetscFunctionReturn(0);
     };
+#endif
   };
 };

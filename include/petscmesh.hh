@@ -379,6 +379,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
   const ALE::Obj<ALE::Mesh::sieve_type> graph = adjBundle->getSieve();
   const typename Atlas::chart_type&     chart = atlas->getChart();
 
+  if (debug > 1) graph->view("Adjacency graph");
   ierr = PetscMemzero(dnz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(onz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
   for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
@@ -390,14 +391,14 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
       const int                                                    row   = rIdx.prefix;
       const int                                                    rSize = rIdx.index/bs;
 
-      //if (rIdx.index%bs) std::cout << "["<<graph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
+      if ((debug > 1) && rIdx.index%bs) std::cout << "["<<graph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
       if (rSize == 0) continue;
       for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const ALE::Mesh::point_type&             neighbor = *v_iter;
         const ALE::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
         const int&                               cSize    = cIdx.index/bs;
 
-        //if (cIdx.index%bs) std::cout << "["<<graph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
+        if ((debug > 1) && cIdx.index%bs) std::cout << "["<<graph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
         if (cSize > 0) {
           if (globalOrder->isLocal(neighbor)) {
             for(int r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
@@ -430,9 +431,10 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
   MPI_Comm                              comm      = mesh->comm();
   const ALE::Obj<ALE::Mesh>             adjBundle = new ALE::Mesh(comm, mesh->debug());
   const ALE::Obj<ALE::Mesh::sieve_type> adjGraph  = new ALE::Mesh::sieve_type(comm, mesh->debug());
-  PetscInt       numLocalRows, firstRow;
+  const bool                            bigDebug  = mesh->debug() > 1;
+  PetscInt                              numLocalRows, firstRow;
   ///PetscInt      *dnz, *onz;
-  PetscErrorCode ierr;
+  PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
   adjBundle->setSieve(adjGraph);
@@ -454,6 +456,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
       }
     }
   }
+  if (bigDebug) adjGraph->view("Adjacency graph");
   /* Distribute adjacency graph */
   adjBundle->constructOverlap();
   typedef typename ALE::Mesh::sieve_type::point_type point_type;
@@ -487,14 +490,14 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
       const int                                                    row   = rIdx.prefix;
       const int                                                    rSize = rIdx.index/bs;
 
-      //if (rIdx.index%bs) std::cout << "["<<graph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
+      if (bigDebug && rIdx.index%bs) std::cout << "["<<graph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
       if (rSize == 0) continue;
       for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const ALE::Mesh::point_type&             neighbor = *v_iter;
         const ALE::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
         const int&                               cSize    = cIdx.index/bs;
 
-        //if (cIdx.index%bs) std::cout << "["<<graph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
+        if (bigDebug && cIdx.index%bs) std::cout << "["<<graph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
         if (cSize > 0) {
           if (globalOrder->isLocal(neighbor)) {
             for(int r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
@@ -646,9 +649,10 @@ PetscErrorCode updateOperator(Mat A, const Sieve& sieve, Visitor& iV, const ALE:
   }
   ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);
   if (ierr) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]ERROR in updateOperator: point %d\n", sieve.commRank(), e);CHKERRQ(ierr);
+    PetscErrorCode ierr2;
+    ierr2 = PetscPrintf(PETSC_COMM_SELF, "[%d]ERROR in updateOperator: point %d\n", sieve.commRank(), e);CHKERRQ(ierr2);
     for(int i = 0; i < numIndices; i++) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]mat indices[%d] = %d\n", sieve.commRank(), i, indices[i]);CHKERRQ(ierr);
+      ierr2 = PetscPrintf(PETSC_COMM_SELF, "[%d]mat indices[%d] = %d\n", sieve.commRank(), i, indices[i]);CHKERRQ(ierr2);
     }
     CHKERRQ(ierr);
   }

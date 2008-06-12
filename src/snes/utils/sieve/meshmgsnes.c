@@ -18,8 +18,8 @@ PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls) {
   PetscFunctionBegin;
   ierr = MeshGetSectionReal(mesh, "nullSpace", &nullSpace);CHKERRQ(ierr);
   {
-    ALE::Obj<ALE::Mesh> m;
-    ALE::Obj<ALE::Mesh::real_section_type> s;
+    ALE::Obj<PETSC_MESH_TYPE> m;
+    ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
 
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     ierr = SectionRealGetSection(nullSpace, s);CHKERRQ(ierr);
@@ -30,11 +30,11 @@ PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls) {
       const int numDof = disc->getNumDof(d);
 
       if (numDof) {
-        const ALE::Obj<ALE::Mesh::label_sequence>& stratum = m->depthStratum(d);
-        const ALE::Mesh::label_sequence::iterator  end     = stratum->end();
+        const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& stratum = m->depthStratum(d);
+        const PETSC_MESH_TYPE::label_sequence::iterator  end     = stratum->end();
         double                                    *values  = new double[numDof];
 
-        for(ALE::Mesh::label_sequence::iterator p_iter = stratum->begin(); p_iter != end; ++p_iter) {
+        for(PETSC_MESH_TYPE::label_sequence::iterator p_iter = stratum->begin(); p_iter != end; ++p_iter) {
           for(int i = 0; i < numDof; ++i) values[i] = 1.0;
           s->updatePoint(*p_iter, values);
         }
@@ -60,9 +60,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   DMMG            *smallDmmg;
   DALocalFunction1 func;
   DALocalFunction1 jac;
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::real_section_type> sX;
-  ALE::Obj<ALE::Mesh::real_section_type> sB;
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> sX;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> sB;
   PetscTruth       fasDebug;
   PetscErrorCode   ierr;
 
@@ -84,16 +84,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   ierr = SectionRealToVec(sectionB, mesh, SCATTER_REVERSE, B);CHKERRQ(ierr);
   ierr = SectionRealGetSection(sectionB, sB);CHKERRQ(ierr);
   ierr = SectionRealCreate(PETSC_COMM_SELF, &cellX);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::sieve_type>&     sieve   = m->getSieve();
-  const ALE::Obj<ALE::Mesh::label_sequence>& cells   = m->heightStratum(0);
+  const ALE::Obj<PETSC_MESH_TYPE::sieve_type>&     sieve   = m->getSieve();
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& cells   = m->heightStratum(0);
   const int                                  depth   = m->depth();
-  const ALE::Obj<ALE::Mesh::label_type>&     marker  = m->getLabel("marker");
+  const ALE::Obj<PETSC_MESH_TYPE::label_type>&     marker  = m->getLabel("marker");
   //const int                                  cellDof = m->sizeWithBC(sX, *cells->begin());
 
-  ALE::Obj<ALE::Mesh::names_type> fields = m->getDiscretizations();
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
+#else
+  ALE::Obj<PETSC_MESH_TYPE::names_type> fields = m->getDiscretizations();
   std::map<std::string, ALE::Obj<ALE::Discretization> > sDiscs;
 
-  for(ALE::Mesh::names_type::iterator f_iter = fields->begin(); f_iter != fields->end(); ++f_iter) {
+  for(PETSC_MESH_TYPE::names_type::iterator f_iter = fields->begin(); f_iter != fields->end(); ++f_iter) {
     const ALE::Obj<ALE::Discretization>& disc  = m->getDiscretization(*f_iter);
     ALE::Obj<ALE::Discretization>        sDisc = new ALE::Discretization(disc->comm(), disc->debug());
 
@@ -123,21 +126,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
       // Loop over all cells
       //   This is an overlapping block SOR, but it is easier and seems more natural than doing each unknown
-      for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-        ALE::Obj<ALE::Mesh::sieve_type::supportSet> cellBlock  = sieve->nSupport(sieve->nCone(*c_iter, depth), depth);
-        ALE::Obj<ALE::Mesh>                         sm         = ALE::Selection<ALE::Mesh>::submesh(m, cellBlock);
-        ALE::Obj<ALE::Mesh::real_section_type>      ssX        = sm->getRealSection("default");
-        const ALE::Obj<ALE::Mesh::label_type>&      cellMarker = sm->createLabel("marker");
+      for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+        ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> cellBlock  = sieve->nSupport(sieve->nCone(*c_iter, depth), depth);
+        ALE::Obj<PETSC_MESH_TYPE>                         sm         = ALE::Selection<PETSC_MESH_TYPE>::submesh(m, cellBlock);
+        ALE::Obj<PETSC_MESH_TYPE::real_section_type>      ssX        = sm->getRealSection("default");
+        const ALE::Obj<PETSC_MESH_TYPE::label_type>&      cellMarker = sm->createLabel("marker");
 
         if (fasDebug) {ierr = PetscPrintf(dmmg[0]->comm, "    forward sweep cell %d\n", *c_iter);CHKERRQ(ierr);}
         ierr = SectionRealSetSection(cellX, ssX);CHKERRQ(ierr);
         // Assign BC to mesh
-        for(ALE::Mesh::sieve_type::supportSet::iterator b_iter = cellBlock->begin(); b_iter != cellBlock->end(); ++b_iter) {
-          const ALE::Obj<ALE::Mesh::coneArray> closure = ALE::SieveAlg<ALE::Mesh>::closure(m, *b_iter);
-          const ALE::Mesh::coneArray::iterator end     = closure->end();
+        for(PETSC_MESH_TYPE::sieve_type::supportSet::iterator b_iter = cellBlock->begin(); b_iter != cellBlock->end(); ++b_iter) {
+          const ALE::Obj<PETSC_MESH_TYPE::coneArray> closure = ALE::SieveAlg<PETSC_MESH_TYPE>::closure(m, *b_iter);
+          const PETSC_MESH_TYPE::coneArray::iterator end     = closure->end();
           const bool                           isCell  = *b_iter == *c_iter;
 
-          for(ALE::Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+          for(PETSC_MESH_TYPE::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
             if (isCell) {
               sm->setValue(cellMarker, *cl_iter, m->getValue(marker, *cl_iter));
             } else {
@@ -163,10 +166,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
         ierr = DMMGSetFromOptions(smallDmmg);CHKERRQ(ierr);
         // TODO: Construct null space, if necessary
         //ierr = DMMGSetNullSpace(smallDmmg, PETSC_FALSE, 1, CreateNullSpace);CHKERRQ(ierr);
-        //ALE::Obj<ALE::Mesh::real_section_type> nullSpace = sm->getRealSection("nullSpace");
+        //ALE::Obj<PETSC_MESH_TYPE::real_section_type> nullSpace = sm->getRealSection("nullSpace");
         //sm->setupField(nullSpace, 2, true);
         // Fill in intial guess with BC values
-        for(ALE::Mesh::sieve_type::supportSet::iterator b_iter = cellBlock->begin(); b_iter != cellBlock->end(); ++b_iter) {
+        for(PETSC_MESH_TYPE::sieve_type::supportSet::iterator b_iter = cellBlock->begin(); b_iter != cellBlock->end(); ++b_iter) {
           sm->updateAll(ssX, *b_iter, m->restrictNew(sX, *b_iter));
         }
         if (fasDebug) {
@@ -187,6 +190,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
     }
   }
+#endif
   sB->zero();
   ierr = SectionRealToVec(sectionX, mesh, SCATTER_FORWARD, X);CHKERRQ(ierr);
   ierr = SectionRealDestroy(sectionX);CHKERRQ(ierr);
