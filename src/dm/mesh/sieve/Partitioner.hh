@@ -483,7 +483,7 @@ namespace ALE {
         if (this->cell == neighbor) return;
         this->pR->clear();
         this->sieve.meet(this->cell, neighbor, *this->pR);
-        if (this->pR->getSize() == this->faceVertices) {
+        if (this->pR->getSize() == (size_t) this->faceVertices) {
           if ((this->cell < numCells) && (neighbor < numCells)) {
             this->neighborCells[this->cell].insert(neighbor);
           } else {
@@ -753,7 +753,6 @@ namespace ALE {
       const Obj<typename Mesh::label_sequence>&     cells        = mesh->heightStratum(0);
       const typename Mesh::label_sequence::iterator cEnd         = cells->end();
       const int                                     numCells     = cells->size();
-      int                                           newCell      = numCells;
       Obj<typename Mesh::sieve_type>                overlapSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       int                                           offset       = 0;
       const int                                     cellOffset   = zeroBase ? 0 : 1;

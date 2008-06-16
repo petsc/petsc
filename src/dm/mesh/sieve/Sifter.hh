@@ -1096,6 +1096,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->addBasePoint(a.target);
       this->addCapPoint(a.source);
     };
+    virtual void removeArrow(const typename traits::source_type& p, const typename traits::target_type& q) {
+      this->removeArrow(typename traits::arrow_type(p, q, typename traits::color_type()));
+    };
     virtual void removeArrow(const typename traits::arrow_type& a) {
       // First, produce an arrow sequence for the given source, target combination.
       typename traits::arrowSequence::traits::index_type& arrowIndex = 

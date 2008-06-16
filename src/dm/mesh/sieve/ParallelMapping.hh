@@ -9,6 +9,8 @@
 #include <Sections.hh>
 #endif
 
+#include <functional>
+
 extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
 namespace ALE {
@@ -55,6 +57,10 @@ namespace ALE {
   public:
     template<typename Iterator>
     void renumberPoints(const Iterator& begin, const Iterator& end) {
+      renumberPoints(begin, end, std::_Identity<typename Iterator::value_type>());
+    };
+    template<typename Iterator, typename KeyExtractor>
+    void renumberPoints(const Iterator& begin, const Iterator& end, const KeyExtractor& ex) {
       int numPoints = 0, numGlobalPoints, firstPoint;
 
       for(Iterator p_iter = begin; p_iter != end; ++p_iter) ++numPoints;
@@ -63,9 +69,9 @@ namespace ALE {
       firstPoint += this->currentMax - numPoints;
       this->currentMax += numGlobalPoints;
       for(Iterator p_iter = begin; p_iter != end; ++p_iter, ++firstPoint) {
-        ///std::cout << "["<<this->commRank()<<"]: New point " << *p_iter << " --> " << firstPoint << std::endl;
-        this->renumbering[firstPoint] = *p_iter;
-        this->invRenumbering[*p_iter] = firstPoint;
+        if (this->debug()) {std::cout << "["<<this->commRank()<<"]: New point " << ex(*p_iter) << " --> " << firstPoint << std::endl;}
+        this->renumbering[firstPoint]     = ex(*p_iter);
+        this->invRenumbering[ex(*p_iter)] = firstPoint;
       }
     };
     // global point --> local point
