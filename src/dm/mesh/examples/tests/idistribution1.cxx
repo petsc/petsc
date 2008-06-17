@@ -364,7 +364,7 @@ public:
     MatGetLocalSize(A, &m, &n);
     CPPUNIT_ASSERT_EQUAL(localSize, m);
     for(int i = 0; i < localSize; ++i) {
-#if 0
+#if 1
       if (diagonal[i] != dnz[i]) {
         mesh_type::point_type p = -1;
         for(real_section_type::chart_type::const_iterator c_iter = section.getChart().begin(); c_iter != section.getChart().end(); ++c_iter) {
