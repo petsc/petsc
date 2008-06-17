@@ -1618,7 +1618,7 @@ namespace ALE {
         return 0;
       }
       // Warning: this is slow
-      ISieveVisitor::NConeRetriever<sieve_type> ncV(*this->_sieve, (int) pow(this->_sieve->getMaxConeSize(), this->depth()));
+      ISieveVisitor::NConeRetriever<sieve_type> ncV(*this->_sieve, (int) pow((int) this->_sieve->getMaxConeSize(), this->depth()));
       ALE::ISieveTraversal<sieve_type>::orientedClosure(*this->_sieve, p, ncV);
       return ncV.getOrientedSize();
     };

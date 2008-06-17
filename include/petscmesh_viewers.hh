@@ -238,7 +238,7 @@ class VTKViewer {
     int                    corners;
     int                    numElements;
     PetscErrorCode         ierr;
-    visitor_type           ncV(*sieve, (size_t) pow(sieve->getMaxConeSize(), mesh->depth()));
+    visitor_type           ncV(*sieve, (size_t) pow((int) sieve->getMaxConeSize(), mesh->depth()));
 
     PetscFunctionBegin;
     if (elements->size()) localCorners = mesh->getNumCellCorners(*elements->begin());
@@ -325,7 +325,7 @@ class VTKViewer {
     ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     if (mesh->commRank() == 0) {
 #ifdef PETSC_OPT_SIEVE
-      ALE::ISieveVisitor::NConeRetriever<PETSC_MESH_TYPE::sieve_type> ncV(*sieve, (size_t) pow(sieve->getMaxConeSize(), depth));
+      ALE::ISieveVisitor::NConeRetriever<PETSC_MESH_TYPE::sieve_type> ncV(*sieve, (size_t) pow((int) sieve->getMaxConeSize(), depth));
 
 #endif
       for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
@@ -370,7 +370,7 @@ class VTKViewer {
       int *localVertices;
       int  k = 0;
 #ifdef PETSC_OPT_SIEVE
-      ALE::ISieveVisitor::NConeRetriever<PETSC_MESH_TYPE::sieve_type> ncV(*sieve, (size_t) pow(sieve->getMaxConeSize(), depth));
+      ALE::ISieveVisitor::NConeRetriever<PETSC_MESH_TYPE::sieve_type> ncV(*sieve, (size_t) pow((int) sieve->getMaxConeSize(), depth));
 #endif
 
       ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
@@ -483,7 +483,7 @@ class VTKViewer {
         Obj<PETSC_MESH_TYPE::label_sequence> elements   = mesh->heightStratum(0);
         Obj<PETSC_MESH_TYPE::numbering_type> vNumbering = mesh->getFactory()->getLocalNumbering(mesh, 0);
 #ifdef PETSC_OPT_SIEVE
-          ALE::ISieveVisitor::NConeRetriever<PETSC_MESH_TYPE::sieve_type> ncV(*sieve, (size_t) pow(sieve->getMaxConeSize(), mesh->depth()));
+        ALE::ISieveVisitor::NConeRetriever<PETSC_MESH_TYPE::sieve_type> ncV(*sieve, (size_t) pow((int) sieve->getMaxConeSize(), mesh->depth()));
 #endif
 
         for(PETSC_MESH_TYPE::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
