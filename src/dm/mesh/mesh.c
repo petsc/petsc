@@ -1019,8 +1019,6 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
 #define __FUNCT__ "updateOperator"
 PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, const PETSC_MESH_TYPE::point_type& e, PetscScalar array[], InsertMode mode)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
 #ifdef PETSC_OPT_SIEVE
   SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
@@ -1028,6 +1026,7 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const A
   const PETSC_MESH_TYPE::indices_type indicesBlock = m->getIndices(section, e, globalOrder);
   const PetscInt *indices    = indicesBlock.first;
   const int&      numIndices = indicesBlock.second;
+  PetscErrorCode  ierr;
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   if (section->debug()) {
@@ -1060,13 +1059,13 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const A
 #define __FUNCT__ "updateOperator"
 PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, int tag, int p, PetscScalar array[], InsertMode mode)
 {
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
+#else
   const int *offsets, *indices;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
-#else
   section->getCustomRestrictAtlas(tag, &offsets, &indices);
   const int& numIndices = offsets[p+1] - offsets[p];
 
@@ -1088,12 +1087,12 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const A
 #define __FUNCT__ "updateOperatorGeneral"
 PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& rowM, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& rowSection, const ALE::Obj<PETSC_MESH_TYPE::order_type>& rowGlobalOrder, const PETSC_MESH_TYPE::point_type& rowE, const ALE::Obj<PETSC_MESH_TYPE>& colM, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& colSection, const ALE::Obj<PETSC_MESH_TYPE::order_type>& colGlobalOrder, const PETSC_MESH_TYPE::point_type& colE, PetscScalar array[], InsertMode mode)
 {
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
 #ifdef PETSC_OPT_SIEVE
   SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
 #else
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
   const PETSC_MESH_TYPE::indices_type rowIndicesBlock = rowM->getIndices(rowSection, rowE, rowGlobalOrder);
 
   const PetscInt *tmpIndices    = rowIndicesBlock.first;
@@ -1163,13 +1162,13 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& row
 @*/
 PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
 {
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
+#else
   Mesh           mesh;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
-#else
   ierr = PetscLogEventBegin(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
   try {
@@ -1196,19 +1195,19 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 #define __FUNCT__ "preallocateMatrix"
 PetscErrorCode preallocateMatrix(const ALE::Obj<PETSC_MESH_TYPE>& mesh, const int bs, const ALE::Obj<PETSC_MESH_TYPE::real_section_type::atlas_type>& atlas, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, Mat A)
 {
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
+#else
   PetscInt       localSize = globalOrder->getLocalSize();
   PetscInt      *dnz, *onz;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
-#else
   ierr = PetscMalloc2(localSize, PetscInt, &dnz, localSize, PetscInt, &onz);CHKERRQ(ierr);
   ierr = preallocateOperator(mesh, bs, atlas, globalOrder, dnz, onz, A);CHKERRQ(ierr);
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
+#endif
 }
 
 /******************************** C Wrappers **********************************/
@@ -1582,7 +1581,11 @@ PetscErrorCode MeshGenerate(Mesh boundary, PetscTruth interpolate, Mesh *mesh)
   PetscFunctionBegin;
   ierr = MeshGetMesh(boundary, mB);CHKERRQ(ierr);
   ierr = MeshCreate(mB->comm(), mesh);CHKERRQ(ierr);
-  ALE::Obj<PETSC_MESH_TYPE> m = ALE::Generator::generateMesh(mB, interpolate);
+#ifdef PETSC_OPT_SIEVE
+  ALE::Obj<PETSC_MESH_TYPE> m = ALE::Generator<PETSC_MESH_TYPE>::generateMeshV(mB, interpolate);
+#else
+  ALE::Obj<PETSC_MESH_TYPE> m = ALE::Generator<PETSC_MESH_TYPE>::generateMesh(mB, interpolate);
+#endif
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1615,7 +1618,11 @@ PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpol
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
-  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, interpolate);
+#ifdef PETSC_OPT_SIEVE
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, refinementLimit, interpolate);
+#else
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, refinementLimit, interpolate);
+#endif
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1632,10 +1639,14 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
   ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
   refinementLimit = oldMesh->getMaxVolume()/2.0;
-  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, true);
+#ifdef PETSC_OPT_SIEVE
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, refinementLimit, true);
+#else
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, refinementLimit, true);
+#endif
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
 #ifndef PETSC_OPT_SIEVE
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
   const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
 
   for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
@@ -1817,14 +1828,14 @@ PetscErrorCode MeshGetInterpolation_Mesh_General(Mesh coarse_mesh, Mesh fine_mes
 
 PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *interpolation, Vec *scaling) {
 
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "This needs to be rewritten for optimized meshes.");
+#else
   ALE::Obj<PETSC_MESH_TYPE> fm, cm;
   Mat                 P;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "This needs to be rewritten for optimized meshes.");
-#else
   ierr = MeshGetMesh(dmFine, fm);CHKERRQ(ierr);
   ierr = MeshGetMesh(dmCoarse, cm);CHKERRQ(ierr);
   //  ALE::Obj<PETSC_MESH_TYPE::label_type> coarsetraversal = cm->createLabel("traversal");
@@ -2031,8 +2042,8 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
   delete [] fvCoords; delete [] nvCoords;
   *interpolation = P;
   if (debug) {ierr = PetscPrintf(fm->comm(), "Ending Interpolation Matrix Build\n");CHKERRQ(ierr);}
-#endif
   PetscFunctionReturn(0);
+#endif
 }
 
 
@@ -2043,15 +2054,15 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
 */
 PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interpolation, Vec *scaling)
 {
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "This has been superceded.");
+#else
   ALE::Obj<PETSC_MESH_TYPE> coarse;
   ALE::Obj<PETSC_MESH_TYPE> fine;
   Mat                 P;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "This has been superceded.");
-#else
   ierr = MeshGetMesh(dmFine,   fine);CHKERRQ(ierr);
   ierr = MeshGetMesh(dmCoarse, coarse);CHKERRQ(ierr);
   const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coarseCoordinates = coarse->getRealSection("coordinates");
@@ -2117,8 +2128,8 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   delete [] coords;
   *interpolation = P;
-#endif
   PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNCT__  

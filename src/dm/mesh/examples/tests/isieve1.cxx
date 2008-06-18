@@ -111,7 +111,7 @@ public:
     double upper[2] = {1.0, 1.0};
     int    edges[2] = {2, 2};
     const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-    const ALE::Obj<ALE::Mesh> m  = ALE::Generator::generateMesh(mB, true);
+    const ALE::Obj<ALE::Mesh> m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, true);
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);

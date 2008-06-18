@@ -67,7 +67,7 @@ public:
 
       mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
     }
-    m           = ALE::Generator::generateMesh(mB, interpolate);
+    m           = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
     this->_mesh = new mesh_type(PETSC_COMM_WORLD, dim, this->_debug);
     this->_mesh->setSieve(sieve);
     const ALE::Obj<ALE::Mesh::sieve_type::traits::baseSequence> base = m->getSieve()->base();

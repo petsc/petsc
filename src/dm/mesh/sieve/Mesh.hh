@@ -1528,11 +1528,13 @@ namespace ALE {
     typedef base_type::send_overlap_type     send_overlap_type;
     typedef base_type::recv_overlap_type     recv_overlap_type;
     typedef std::set<std::string>            names_type;
+    typedef std::vector<PETSc::Point<3> >    holes_type;
   protected:
     int _dim;
     bool                   _calculatedOverlap;
     Obj<send_overlap_type> _sendOverlap;
     Obj<recv_overlap_type> _recvOverlap;
+    holes_type             _holes;
   public:
     IMesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       this->_calculatedOverlap = false;
@@ -1548,6 +1550,10 @@ namespace ALE {
     void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
     const Obj<recv_overlap_type>& getRecvOverlap() const {return this->_recvOverlap;};
     void setRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_recvOverlap = overlap;};
+    const holes_type& getHoles() const {return this->_holes;};
+    void addHole(const double hole[]) {
+      this->_holes.push_back(hole);
+    };
   public: // Sizes
     template<typename Section>
     int size(const Obj<Section>& section, const point_type& p) {

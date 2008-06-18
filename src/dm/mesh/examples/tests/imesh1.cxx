@@ -47,7 +47,7 @@ public:
     double                    upper[3] = {1.0, 1.0, 1.0};
     int                       faces[3] = {3, 3, 3};
     const ALE::Obj<ALE::Mesh> mB       = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
-    this->_m    = ALE::Generator::generateMesh(mB, true);
+    this->_m    = ALE::Generator<ALE::Mesh>::generateMesh(mB, true);
     this->_mesh = new mesh_type(PETSC_COMM_WORLD, 1, this->_debug);
     ALE::Obj<mesh_type::sieve_type> sieve = new mesh_type::sieve_type(PETSC_COMM_WORLD, 0, 119, this->_debug);
 

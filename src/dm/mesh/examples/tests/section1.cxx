@@ -142,7 +142,7 @@ public:
     this->_section = PETSC_NULL;
     this->processOptions();
     const ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-    this->_mesh  = ALE::Generator::generateMesh(mB, true);
+    this->_mesh  = ALE::Generator<mesh_type>::generateMesh(mB, true);
     this->_sieve = this->_mesh->getSieve();
   };
 
@@ -197,7 +197,7 @@ public:
     this->_section = PETSC_NULL;
     this->processOptions();
     const ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-    this->_mesh  = ALE::Generator::generateMesh(mB, true);
+    this->_mesh  = ALE::Generator<mesh_type>::generateMesh(mB, true);
     this->_sieve = this->_mesh->getSieve();
   };
 
@@ -239,7 +239,7 @@ public:
 
     this->processOptions();
     ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
-    this->_mesh  = ALE::Generator::generateMesh(mB, true);
+    this->_mesh  = ALE::Generator<mesh_type>::generateMesh(mB, true);
     this->_sieve = this->_mesh->getSieve();
   };
 
@@ -291,7 +291,7 @@ public:
 
     this->processOptions();
     ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
-    this->_mesh  = ALE::Generator::generateMesh(mB, false);
+    this->_mesh  = ALE::Generator<mesh_type>::generateMesh(mB, false);
     this->_sieve = this->_mesh->getSieve();
   };
 
@@ -325,7 +325,7 @@ public:
 
     this->processOptions();
     ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
-    this->_mesh  = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mB, true), 1.0/6000, true);
+    this->_mesh  = ALE::Generator<mesh_type>::refineMesh(ALE::Generator<mesh_type>::generateMesh(mB, true), 1.0/6000, true);
     this->_sieve = this->_mesh->getSieve();
   };
 

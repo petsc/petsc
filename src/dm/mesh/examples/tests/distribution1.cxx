@@ -69,7 +69,7 @@ public:
 
       mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
     }
-    this->_mesh = ALE::Generator::generateMesh(mB, interpolate);
+    this->_mesh = ALE::Generator<mesh_type>::generateMesh(mB, interpolate);
   };
 
   void readMesh(const char filename[], const int dim, const bool interpolate) {

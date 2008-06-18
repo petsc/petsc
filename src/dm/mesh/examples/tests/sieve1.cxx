@@ -272,7 +272,7 @@ public:
 
     this->processOptions();
     ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-    this->_bundle = ALE::Generator::generateMesh(mB, true);
+    this->_bundle = ALE::Generator<mesh_type>::generateMesh(mB, true);
     this->_sieve  = this->_bundle->getSieve();
   };
 };
@@ -309,7 +309,7 @@ public:
 
     this->processOptions();
     ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
-    this->_bundle = ALE::Generator::generateMesh(mB, true);
+    this->_bundle = ALE::Generator<mesh_type>::generateMesh(mB, true);
     this->_sieve  = this->_bundle->getSieve();
   };
 };
@@ -364,6 +364,7 @@ public :
   void tearDown(void) {};
 
   /// Test join().
+  ///   THIS IS BROKEN
   void testJoin(void) {
     const ALE::Obj<sieve_type::traits::baseSequence>& base  = this->_sieve->base();
     sieve_type::point_type                            prior = *base->begin();
@@ -374,9 +375,14 @@ public :
     ++begin;
     for(int r = 0; r < this->_iters; r++) {
       for(sieve_type::traits::baseSequence::iterator b_iter = begin; b_iter != end; ++b_iter) {
+        std::cout << "Joining " << prior << " and " << *b_iter << std::endl;
         const ALE::Obj<sieve_type::supportSet> cells = this->_sieve->nJoin(prior, *b_iter, 1);
 
+        for(sieve_type::supportSet::iterator s_iter = cells->begin(); s_iter != cells->end(); ++s_iter) {
+          std::cout << "    --> " << *s_iter << std::endl;
+        }
         CPPUNIT_ASSERT_EQUAL((int) cells->size(), 1);
+        std::cout << "  --> " << *cells->begin() << " should be " << (*b_iter)/2 << std::endl;
         CPPUNIT_ASSERT_EQUAL(*cells->begin(), (*b_iter)/2);
         prior = *b_iter;
       }
