@@ -69,7 +69,7 @@ public:
 
       mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
     }
-    this->_mesh = ALE::Generator::generateMesh(mB, interpolate);
+    this->_mesh = ALE::Generator<mesh_type>::generateMesh(mB, interpolate);
   };
 
   void readMesh(const char filename[], const int dim, const bool interpolate) {
@@ -404,6 +404,7 @@ public:
     MPI_Allreduce(&numLocalCells, &numCells, 1, MPI_INT, MPI_MAX, this->_mesh->comm());
     ALE::Obj<mesh_type> parallelMesh = distribution_type::distributeMesh(this->_mesh, 0, "chaco");
     parallelMesh->constructOverlap();
+    parallelMesh->setDebug(2);
     const ALE::Obj<real_section_type>&     section     = parallelMesh->getRealSection("default2");
     section->setFiberDimension(parallelMesh->depthStratum(0), 3);
     this->setupSection("data/3DHex.bc", numCells, *section);

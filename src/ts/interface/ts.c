@@ -475,7 +475,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 
    The routine func() takes Mat * as the matrix arguments rather than Mat.  
    This allows the matrix evaluation routine to replace A and/or B with a 
-   completely new new matrix structure (not just different matrix elements)
+   completely new matrix structure (not just different matrix elements)
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 

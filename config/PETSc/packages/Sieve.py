@@ -31,8 +31,7 @@ class Configure(PETSc.package.Package):
   def setupHelp(self, help):
     PETSc.package.Package.setupHelp(self, help)
     import nargs
-    help.addArgument('Sieve', '-with-new-section=<bool>', nargs.ArgBool(None, 0, 'Use GeneralSections which allow flexible BC'))
-    help.addArgument('Sieve', '-with-opt-section=<bool>', nargs.ArgBool(None, 0, 'Use IGeneralSections which are optimized for interval point sets'))
+    help.addArgument('Sieve', '-with-opt-sieve=<bool>', nargs.ArgBool(None, 0, 'Use IMesh which are optimized for interval point sets'))
     return
 
   def Install(self):
@@ -48,8 +47,9 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Sieve requires C++. Suggest using --with-clanguage=cxx')
       if not self.boost.found:
         raise RuntimeError('Sieve requires boost, and configure could not locate it. Suggest using --download-boost=1')
-      if 'with-new-section' in self.argDB:
-        self.framework.addDefine('NEW_SECTION', 1)
-      if 'with-opt-section' in self.argDB:
-        self.framework.addDefine('OPT', 1)
+      if 'with-opt-sieve' in self.argDB:
+        self.addDefine('OPT_SIEVE', 1)
+        self.addDefine('MESH_TYPE', 'ALE::IMesh')
+      else:
+        self.addDefine('MESH_TYPE', 'ALE::Mesh')
     return PETSc.package.Package.configure(self)

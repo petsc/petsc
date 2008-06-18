@@ -88,12 +88,7 @@ namespace ALE {
     typedef Bundle<Sieve_,RealSection_,IntSection_,ArrowSection_>     this_type;
     typedef typename sieve_type::point_type                           point_type;
     typedef malloc_allocator<point_type>                              alloc_type;
-#define NEW_LABEL
-#ifdef NEW_LABEL
     typedef typename ALE::LabelSifter<int, point_type>                label_type;
-#else
-    typedef typename ALE::Sifter<int, point_type, int>                label_type;
-#endif
     typedef typename std::map<const std::string, Obj<label_type> >    labels_type;
     typedef typename label_type::supportSequence                      label_sequence;
     typedef std::map<std::string, Obj<arrow_section_type> >           arrow_sections_type;
@@ -1533,11 +1528,13 @@ namespace ALE {
     typedef base_type::send_overlap_type     send_overlap_type;
     typedef base_type::recv_overlap_type     recv_overlap_type;
     typedef std::set<std::string>            names_type;
+    typedef std::vector<PETSc::Point<3> >    holes_type;
   protected:
     int _dim;
     bool                   _calculatedOverlap;
     Obj<send_overlap_type> _sendOverlap;
     Obj<recv_overlap_type> _recvOverlap;
+    holes_type             _holes;
   public:
     IMesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       this->_calculatedOverlap = false;
@@ -1553,6 +1550,10 @@ namespace ALE {
     void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
     const Obj<recv_overlap_type>& getRecvOverlap() const {return this->_recvOverlap;};
     void setRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_recvOverlap = overlap;};
+    const holes_type& getHoles() const {return this->_holes;};
+    void addHole(const double hole[]) {
+      this->_holes.push_back(hole);
+    };
   public: // Sizes
     template<typename Section>
     int size(const Obj<Section>& section, const point_type& p) {
@@ -1623,7 +1624,7 @@ namespace ALE {
         return 0;
       }
       // Warning: this is slow
-      ISieveVisitor::NConeRetriever<sieve_type> ncV(*this->_sieve, (int) pow(this->_sieve->getMaxConeSize(), this->depth()));
+      ISieveVisitor::NConeRetriever<sieve_type> ncV(*this->_sieve, (int) pow((double) this->_sieve->getMaxConeSize(), this->depth()));
       ALE::ISieveTraversal<sieve_type>::orientedClosure(*this->_sieve, p, ncV);
       return ncV.getOrientedSize();
     };
@@ -1635,6 +1636,32 @@ namespace ALE {
 
       coordinates->setChart(real_section_type::chart_type(*std::min_element(vertices->begin(), vertices->end()),
                                                           *std::max_element(vertices->begin(), vertices->end())+1));
+    };
+    point_type locatePoint(const real_section_type::value_type point[], point_type guess = -1) {
+      //guess overrides this by saying that we already know the relation of this point to this mesh.  We will need to make it a more robust "guess" later for more than P1
+      if (guess != -1) {
+        return guess;
+      } else {
+        throw ALE::Exception("No point location for mesh dimension");
+      }
+    };
+    void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      throw ALE::Exception("Unsupport dimension for element geometry computation");
+    };
+    double getMaxVolume() {
+      const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
+      const Obj<label_sequence>&    cells       = this->heightStratum(0);
+      const int                     dim         = this->getDimension();
+      double v0[3], J[9], invJ[9], detJ, refVolume = 0.0, maxVolume = 0.0;
+
+      if (dim == 1) refVolume = 2.0;
+      if (dim == 2) refVolume = 2.0;
+      if (dim == 3) refVolume = 4.0/3.0;
+      for(label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+        this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+        maxVolume = std::max(maxVolume, detJ*refVolume);
+      }
+      return maxVolume;
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
@@ -1665,21 +1692,9 @@ namespace ALE {
 }
 
 namespace ALE {
-#ifdef NEW_SECTION
   class Mesh : public Bundle<ALE::Sieve<int,int,int>, GeneralSection<int, double> > {
-#elif defined(OPT_SECTION)
-  class Mesh : public Bundle<ALE::Sieve<int,int,int>, IGeneralSection<int, double>, IGeneralSection<int, int> > {
-#else
-  class Mesh : public Bundle<ALE::Sieve<int,int,int> > {
-#endif
   public:
-#ifdef NEW_SECTION
     typedef Bundle<ALE::Sieve<int,int,int>, GeneralSection<int, double> > base_type;
-#elif defined(OPT_SECTION)
-    typedef Bundle<ALE::Sieve<int,int,int>, IGeneralSection<int, double>, IGeneralSection<int, int> > base_type;
-#else
-    typedef Bundle<ALE::Sieve<int,int,int> > base_type;
-#endif
     typedef base_type::sieve_type            sieve_type;
     typedef sieve_type::point_type           point_type;
     typedef base_type::alloc_type            alloc_type;
@@ -1751,14 +1766,7 @@ namespace ALE {
     int getNumCellCorners() {
       return getNumCellCorners(*(this->heightStratum(0)->begin()));
     };
-    void setupCoordinates(const Obj<real_section_type>& coordinates) {
-#ifdef OPT_SECTION
-      const int firstVertex = this->heightStratum(0)->size();
-      const int numVertices = this->depthStratum(0)->size();
-
-      coordinates->setChart(real_section_type::chart_type(firstVertex, firstVertex+numVertices));
-#endif
-    };
+    void setupCoordinates(const Obj<real_section_type>& coordinates) {};
     void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
       const double *coords = this->restrictClosure(coordinates, e);
       const int     dim    = 2;
@@ -2219,26 +2227,6 @@ namespace ALE {
       for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
         s->addSpace();
       }
-#ifdef OPT_SECTION
-      point_type min   = INT_MAX;
-      point_type max   = INT_MIN;
-      bool       found = false;
-
-      for(int d = 0; d <= this->_dim; ++d) {
-        for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
-          const Obj<ALE::Discretization>& disc = this->getDiscretization(*f_iter);
-
-          if (disc->getNumDof(d) && this->depthStratum(d)->size()) {
-            min   = std::min(min, *this->depthStratum(d)->begin());
-            max   = std::max(max, *this->depthStratum(d)->rbegin());
-            found = true;
-            break;
-          }
-        }
-      }
-      if (!found) {min = 0; max = -1;}
-      s->setChart(real_section_type::chart_type(min, max+1));
-#endif
       for(int d = 0; d <= this->_dim; ++d) {
         int numDof = 0;
         int f      = 0;

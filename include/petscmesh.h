@@ -96,8 +96,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterDestroy(void);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRegister(const char[],const char[],const char[],PetscErrorCode (*)(Mesh));
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh,ALE::Obj<ALE::Mesh>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh,const ALE::Obj<ALE::Mesh>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh,ALE::Obj<PETSC_MESH_TYPE>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh,const ALE::Obj<PETSC_MESH_TYPE>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistribute(Mesh, const char[], Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistributeByFace(Mesh, const char[], Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGenerate(Mesh, PetscTruth, Mesh *);
@@ -109,10 +109,10 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT restrictVector(Vec, Vec, InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVectorComplete(Vec, Vec, InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVector(Vec, PetscInt, PetscScalar [], InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleMatrix(Mat, PetscInt, PetscScalar [], InsertMode);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT preallocateMatrix(const ALE::Obj<ALE::Mesh>&, const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>&, const ALE::Obj<ALE::Mesh::order_type>&, Mat);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperator(Mat, const ALE::Obj<ALE::Mesh>&, const ALE::Obj<ALE::Mesh::real_section_type>&, const ALE::Obj<ALE::Mesh::order_type>&, const ALE::Mesh::point_type&, PetscScalar [], InsertMode);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperator(Mat, const ALE::Obj<ALE::Mesh>&, const ALE::Obj<ALE::Mesh::real_section_type>&, const ALE::Obj<ALE::Mesh::order_type>&, int, int, PetscScalar [], InsertMode);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperatorGeneral(Mat, const ALE::Obj<ALE::Mesh>&, const ALE::Obj<ALE::Mesh::real_section_type>&, const ALE::Obj<ALE::Mesh::order_type>&, const ALE::Mesh::point_type&, const ALE::Obj<ALE::Mesh>&, const ALE::Obj<ALE::Mesh::real_section_type>&, const ALE::Obj<ALE::Mesh::order_type>&, const ALE::Mesh::point_type&, PetscScalar [], InsertMode);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT preallocateMatrix(const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type::atlas_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, Mat);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperator(Mat, const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, const PETSC_MESH_TYPE::point_type&, PetscScalar [], InsertMode);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperator(Mat, const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, int, int, PetscScalar [], InsertMode);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperatorGeneral(Mat, const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, const PETSC_MESH_TYPE::point_type&, const ALE::Obj<PETSC_MESH_TYPE>&, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&, const ALE::Obj<PETSC_MESH_TYPE::order_type>&, const PETSC_MESH_TYPE::point_type&, PetscScalar [], InsertMode);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePFLOTRAN(MPI_Comm, const int, const char[], PetscTruth, Mesh *);
 
@@ -129,6 +129,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCSectionRealGetArray(Mesh, const char [
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCFUNCGetArray(Mesh, PetscInt *, PetscInt *, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePCICERestart(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRestrictClosure(Mesh, const char [], PetscInt, PetscInt*, const PetscScalar *[]);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianGetMesh(Mesh,ALE::Obj<ALE::CartesianMesh>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianSetMesh(Mesh,const ALE::Obj<ALE::CartesianMesh>&);
@@ -152,10 +154,10 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDestroy(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealView(SectionReal,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal,SectionReal*);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal,ALE::Obj<ALE::Mesh::real_section_type>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal,const ALE::Obj<ALE::Mesh::real_section_type>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetBundle(SectionReal,ALE::Obj<ALE::Mesh>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetBundle(SectionReal,const ALE::Obj<ALE::Mesh>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal,ALE::Obj<PETSC_MESH_TYPE::real_section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal,const ALE::Obj<PETSC_MESH_TYPE::real_section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetBundle(SectionReal,ALE::Obj<PETSC_MESH_TYPE>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetBundle(SectionReal,const ALE::Obj<PETSC_MESH_TYPE>&);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDistribute(SectionReal, Mesh, SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal, PetscInt, PetscScalar *[]);
@@ -205,10 +207,10 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntCreate(MPI_Comm,SectionInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntDestroy(SectionInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntView(SectionInt,PetscViewer);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSection(SectionInt,ALE::Obj<ALE::Mesh::int_section_type>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt,const ALE::Obj<ALE::Mesh::int_section_type>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetBundle(SectionInt,ALE::Obj<ALE::Mesh>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetBundle(SectionInt,const ALE::Obj<ALE::Mesh>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSection(SectionInt,ALE::Obj<PETSC_MESH_TYPE::int_section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt,const ALE::Obj<PETSC_MESH_TYPE::int_section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetBundle(SectionInt,ALE::Obj<PETSC_MESH_TYPE>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetBundle(SectionInt,const ALE::Obj<PETSC_MESH_TYPE>&);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntDistribute(SectionInt, Mesh, SectionInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt, PetscInt, PetscInt *[]);
@@ -241,10 +243,10 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairCreate(MPI_Comm,SectionPair*)
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairDestroy(SectionPair);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairView(SectionPair,PetscViewer);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetSection(SectionPair,ALE::Obj<ALE::Mesh::pair_section_type>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetSection(SectionPair,const ALE::Obj<ALE::Mesh::pair_section_type>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetBundle(SectionPair,ALE::Obj<ALE::Mesh>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetBundle(SectionPair,const ALE::Obj<ALE::Mesh>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetSection(SectionPair,ALE::Obj<PETSC_MESH_TYPE::pair_section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetSection(SectionPair,const ALE::Obj<PETSC_MESH_TYPE::pair_section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetBundle(SectionPair,ALE::Obj<PETSC_MESH_TYPE>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetBundle(SectionPair,const ALE::Obj<PETSC_MESH_TYPE>&);
 
 typedef struct {
   int    i;

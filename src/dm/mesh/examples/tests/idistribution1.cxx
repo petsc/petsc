@@ -67,7 +67,7 @@ public:
 
       mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
     }
-    m           = ALE::Generator::generateMesh(mB, interpolate);
+    m           = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
     this->_mesh = new mesh_type(PETSC_COMM_WORLD, dim, this->_debug);
     this->_mesh->setSieve(sieve);
     const ALE::Obj<ALE::Mesh::sieve_type::traits::baseSequence> base = m->getSieve()->base();
@@ -199,7 +199,7 @@ public:
     sieve->base(baseV);
     const sieve_type::point_type *base = baseV.getPoints();
 
-    for(int b = 0, k = 0; b < baseV.getSize(); ++b) {
+    for(int b = 0, k = 0; b < (int) baseV.getSize(); ++b) {
       CPPUNIT_ASSERT_EQUAL(this->_renumbering[coneRoots[b]], base[b]);
       sieve->cone(base[b], cV);
       const sieve_type::point_type *cone     = cV.getPoints();
@@ -232,7 +232,7 @@ public:
     sieve->cap(capV);
     const sieve_type::point_type *cap = capV.getPoints();
 
-    for(int c = 0, k = 0; c < capV.getSize(); ++c) {
+    for(int c = 0, k = 0; c < (int) capV.getSize(); ++c) {
       CPPUNIT_ASSERT_EQUAL(this->_renumbering[supportRoots[c]], cap[c]);
       sieve->support(cap[c], sV);
       const sieve_type::point_type *support     = sV.getPoints();
@@ -319,7 +319,7 @@ public:
     size_t localSize;
     f >> localSize;
     int *ordering = new int[localSize*3];
-    for(int i = 0; i < localSize; ++i) {
+    for(int i = 0; i < (int) localSize; ++i) {
       f >> ordering[i*3+0]; // point
       f >> ordering[i*3+1]; // offset
       f >> ordering[i*3+2]; // dim
@@ -364,7 +364,7 @@ public:
     MatGetLocalSize(A, &m, &n);
     CPPUNIT_ASSERT_EQUAL(localSize, m);
     for(int i = 0; i < localSize; ++i) {
-#if 0
+#if 1
       if (diagonal[i] != dnz[i]) {
         mesh_type::point_type p = -1;
         for(real_section_type::chart_type::const_iterator c_iter = section.getChart().begin(); c_iter != section.getChart().end(); ++c_iter) {

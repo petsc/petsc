@@ -14,7 +14,7 @@ struct _MeshOps {
 
 struct _p_Mesh {
   PETSCHEADER(struct _MeshOps);
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   VecScatter          globalScatter;
   PetscErrorCode    (*lf)(Mesh, SectionReal, SectionReal, void *);
   PetscErrorCode    (*lj)(Mesh, SectionReal, Mat, void *);
@@ -35,8 +35,8 @@ struct _SectionRealOps {
 
 struct _p_SectionReal {
   PETSCHEADER(struct _SectionRealOps);
-  ALE::Obj<ALE::Mesh::real_section_type> s;
-  ALE::Obj<ALE::Mesh> b;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  ALE::Obj<PETSC_MESH_TYPE> b;
 };
 
 extern PetscCookie SECTIONREAL_COOKIE;
@@ -51,8 +51,8 @@ struct _SectionIntOps {
 
 struct _p_SectionInt {
   PETSCHEADER(struct _SectionIntOps);
-  ALE::Obj<ALE::Mesh::int_section_type> s;
-  ALE::Obj<ALE::Mesh> b;
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
+  ALE::Obj<PETSC_MESH_TYPE> b;
 };
 
 extern PetscCookie SECTIONINT_COOKIE;

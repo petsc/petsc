@@ -83,6 +83,9 @@ namespace ALE {
       typedef SimpleArrow<target_type, source_type> other;
       other arrow(const SimpleArrow& a) {return type(a.target, a.source);};
     };
+    friend bool operator<(const SimpleArrow& x, const SimpleArrow& y) {
+      return ((x.source < y.source) || ((x.source == y.source) && (x.target < y.target)));
+    };
     friend std::ostream& operator<<(std::ostream& os, const SimpleArrow& a) {
       os << a.source << " ----> " << a.target;
       return os;

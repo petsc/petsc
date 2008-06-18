@@ -2,6 +2,7 @@
 #define __PETSCMESH_HH
 
 #include <petscmesh.h>
+#include <functional>
 
 using ALE::Obj;
 
@@ -231,25 +232,78 @@ PetscErrorCode createLocalAdjacencyGraph(const ALE::Obj<ALE::Mesh>& mesh, const 
   PetscFunctionReturn(0);
 }
 
+template<typename Arrow>
+struct SelectSource : public std::unary_function<Arrow, typename Arrow::source_type>
+{
+  typename Arrow::source_type& operator()(Arrow& x) const {return x.source;}
+  const typename Arrow::source_type& operator()(const Arrow& x) const {return x.source;}
+};
+
 template<typename Mesh, typename Order>
 PetscErrorCode globalizeLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph, const ALE::Obj<ALE::Mesh::send_overlap_type>& sendOverlap, const ALE::Obj<Order>& globalOrder)
 {
+  const int debug = mesh->debug();
+
   PetscFunctionBegin;
   ALE::PointFactory<typename Mesh::point_type>& pointFactory = ALE::PointFactory<ALE::Mesh::point_type>::singleton(mesh->comm(), mesh->getSieve()->getChart().max(), mesh->debug());
   // Check for points not in sendOverlap
   std::set<typename Mesh::point_type> interiorPoints;
+  std::set<typename Mesh::sieve_type::arrow_type> overlapArrows;
   const Obj<ALE::Mesh::sieve_type::traits::capSequence>& columns = adjGraph->cap();
 
   for(ALE::Mesh::sieve_type::traits::capSequence::iterator p_iter = columns->begin(); p_iter != columns->end(); ++p_iter) {
+    // This optimization does not work because empty points are sent anyway
     //if (!sendOverlap->support(*p_iter)->size() && globalOrder->restrictPoint(*p_iter)[0].index) {
     if (!sendOverlap->support(*p_iter)->size()) {
       interiorPoints.insert(*p_iter);
+    } else {
+      // If a point p is in the overlap for process i and an adjacent point q is in the overlap for process j then:
+      //   Replace (q, p) with (q', p)
+      //   Notice I can reverse the arrow because the graph is initially symmetric
+      if (debug) {std::cout << "["<<globalOrder->commRank()<<"] Checking overlap point " << *p_iter << " for overlap neighbors" << std::endl;}
+      const Obj<typename ALE::Mesh::sieve_type::supportSequence>&     neighbors = adjGraph->support(*p_iter);
+      const typename ALE::Mesh::sieve_type::supportSequence::iterator nEnd      = neighbors->end();
+
+      for(typename ALE::Mesh::sieve_type::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
+        if (sendOverlap->support(*n_iter)->size()) {
+          if (debug) {std::cout << "["<<globalOrder->commRank()<<"]   Found overlap neighbor " << *n_iter << std::endl;}
+          const Obj<typename ALE::Mesh::send_overlap_type::supportSequence>&     ranks = sendOverlap->support(*p_iter);
+          const typename ALE::Mesh::send_overlap_type::supportSequence::iterator rEnd  = ranks->end();
+          bool equal = true;
+
+          for(typename ALE::Mesh::send_overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != rEnd; ++r_iter) {
+            const Obj<typename ALE::Mesh::send_overlap_type::supportSequence>&     nRanks = sendOverlap->support(*n_iter);
+            const typename ALE::Mesh::send_overlap_type::supportSequence::iterator nrEnd  = nRanks->end();
+            bool found = false;
+
+            if (debug) {std::cout << "["<<globalOrder->commRank()<<"]     Checking overlap rank " << *r_iter << std::endl;}
+            for(typename ALE::Mesh::send_overlap_type::supportSequence::iterator nr_iter = nRanks->begin(); nr_iter != nrEnd; ++nr_iter) {
+              if (debug) {std::cout << "["<<globalOrder->commRank()<<"]     Checking neighbor overlap rank " << *nr_iter << std::endl;}
+              if (*nr_iter == *r_iter) {
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              equal = false;
+              break;
+            }
+          }
+          if (!equal) {
+            if (debug) {std::cout << "["<<globalOrder->commRank()<<"]   Unequal rank sets, replacing arrow " << *n_iter <<" --> "<<*p_iter << std::endl;}
+            overlapArrows.insert(typename Mesh::sieve_type::arrow_type(*n_iter, *p_iter));
+          } else {
+            if (debug) {std::cout << "["<<globalOrder->commRank()<<"]   Equal rank sets, doing nothing for arrow " << *n_iter <<" --> "<<*p_iter << std::endl;}
+          }
+        }
+      }
     }
   }
   // Renumber those points
   pointFactory.clear();
   pointFactory.setMax(mesh->getSieve()->getChart().max());
   pointFactory.renumberPoints(interiorPoints.begin(), interiorPoints.end());
+  pointFactory.renumberPoints(overlapArrows.begin(), overlapArrows.end(), SelectSource<typename Mesh::sieve_type::arrow_type>());
   typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type& renumbering    = pointFactory.getRenumbering();
   typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type& invRenumbering = pointFactory.getInvRenumbering();
   // Replace points in local adjacency graph
@@ -276,9 +330,15 @@ PetscErrorCode globalizeLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const AL
       adjGraph->setCone(newCone, *b_iter);
     }
   }
+  // Replace arrows
+  for(typename std::set<typename Mesh::sieve_type::arrow_type>::const_iterator a_iter = overlapArrows.begin(); a_iter != overlapArrows.end(); ++a_iter) {
+    if (debug) {std::cout << "["<<globalOrder->commRank()<<"]: Replacing " << a_iter->source<<" --> "<<a_iter->target << " with " << invRenumbering[a_iter->source]<<" --> "<<a_iter->target << std::endl;}
+    adjGraph->removeArrow(a_iter->source, a_iter->target);
+    adjGraph->addArrow(invRenumbering[a_iter->source], a_iter->target);
+  }
   // Add new points into ordering
   for(typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type::const_iterator p_iter = renumbering.begin(); p_iter != renumbering.end(); ++p_iter) {
-    ///std::cout << "["<<globalOrder->commRank()<<"]: Updating " << p_iter->first << " to " << globalOrder->restrictPoint(p_iter->second)[0] << std::endl;
+    if (debug) {std::cout << "["<<globalOrder->commRank()<<"]: Updating " << p_iter->first << " to " << globalOrder->restrictPoint(p_iter->second)[0] << std::endl;}
     globalOrder->addPoint(p_iter->first);
     globalOrder->updatePoint(p_iter->first, globalOrder->restrictPoint(p_iter->second));
   }
@@ -369,16 +429,21 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
 
   if (mesh->commSize() > 1) {
     ierr = globalizeLocalAdjacencyGraph(mesh, adjGraph, vertexSendOverlap, globalOrder);
+    if (debug > 1) adjGraph->view("Globalized adjacency graph");
     ALE::Distribution<ALE::Mesh>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjBundle, sendSection, recvSection);
+    if (debug > 1) adjGraph->view("Completed adjacency graph");
     ierr = localizeLocalAdjacencyGraph(mesh, adjGraph, vertexSendOverlap, globalOrder);
+    if (debug > 1) adjGraph->view("Localized adjacency graph");
     /* Distribute indices for new points */
     ALE::Distribution<ALE::Mesh>::updateOverlap(vertexSendOverlap, vertexRecvOverlap, sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
     mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, true);
+    if (debug > 1) globalOrder->view("Completed global order");
   }
   /* Read out adjacency graph */
   const ALE::Obj<ALE::Mesh::sieve_type> graph = adjBundle->getSieve();
   const typename Atlas::chart_type&     chart = atlas->getChart();
 
+  if (debug > 1) graph->view("Adjacency graph");
   ierr = PetscMemzero(dnz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(onz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
   for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
@@ -390,14 +455,14 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
       const int                                                    row   = rIdx.prefix;
       const int                                                    rSize = rIdx.index/bs;
 
-      //if (rIdx.index%bs) std::cout << "["<<graph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
+      if ((debug > 1) && rIdx.index%bs) std::cout << "["<<graph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
       if (rSize == 0) continue;
       for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const ALE::Mesh::point_type&             neighbor = *v_iter;
         const ALE::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
         const int&                               cSize    = cIdx.index/bs;
 
-        //if (cIdx.index%bs) std::cout << "["<<graph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
+        if ((debug > 1) && cIdx.index%bs) std::cout << "["<<graph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
         if (cSize > 0) {
           if (globalOrder->isLocal(neighbor)) {
             for(int r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
@@ -430,9 +495,10 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
   MPI_Comm                              comm      = mesh->comm();
   const ALE::Obj<ALE::Mesh>             adjBundle = new ALE::Mesh(comm, mesh->debug());
   const ALE::Obj<ALE::Mesh::sieve_type> adjGraph  = new ALE::Mesh::sieve_type(comm, mesh->debug());
-  PetscInt       numLocalRows, firstRow;
+  const bool                            bigDebug  = mesh->debug() > 1;
+  PetscInt                              numLocalRows, firstRow;
   ///PetscInt      *dnz, *onz;
-  PetscErrorCode ierr;
+  PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
   adjBundle->setSieve(adjGraph);
@@ -454,6 +520,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
       }
     }
   }
+  if (bigDebug) adjGraph->view("Adjacency graph");
   /* Distribute adjacency graph */
   adjBundle->constructOverlap();
   typedef typename ALE::Mesh::sieve_type::point_type point_type;
@@ -487,14 +554,14 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
       const int                                                    row   = rIdx.prefix;
       const int                                                    rSize = rIdx.index/bs;
 
-      //if (rIdx.index%bs) std::cout << "["<<graph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
+      if (bigDebug && rIdx.index%bs) std::cout << "["<<graph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
       if (rSize == 0) continue;
       for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const ALE::Mesh::point_type&             neighbor = *v_iter;
         const ALE::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
         const int&                               cSize    = cIdx.index/bs;
 
-        //if (cIdx.index%bs) std::cout << "["<<graph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
+        if (bigDebug && cIdx.index%bs) std::cout << "["<<graph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
         if (cSize > 0) {
           if (globalOrder->isLocal(neighbor)) {
             for(int r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
@@ -516,7 +583,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
   ierr = MatSeqBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
   ///ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
-  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
+  ///TODO: ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -646,9 +713,10 @@ PetscErrorCode updateOperator(Mat A, const Sieve& sieve, Visitor& iV, const ALE:
   }
   ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);
   if (ierr) {
-    ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]ERROR in updateOperator: point %d\n", sieve.commRank(), e);CHKERRQ(ierr);
+    PetscErrorCode ierr2;
+    ierr2 = PetscPrintf(PETSC_COMM_SELF, "[%d]ERROR in updateOperator: point %d\n", sieve.commRank(), e);CHKERRQ(ierr2);
     for(int i = 0; i < numIndices; i++) {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "[%d]mat indices[%d] = %d\n", sieve.commRank(), i, indices[i]);CHKERRQ(ierr);
+      ierr2 = PetscPrintf(PETSC_COMM_SELF, "[%d]mat indices[%d] = %d\n", sieve.commRank(), i, indices[i]);CHKERRQ(ierr2);
     }
     CHKERRQ(ierr);
   }

@@ -277,7 +277,7 @@ typedef struct {PetscScalar x,y;} DACoor2d;
     Level: intermediate
 
     Sample Usage:
-      DACoor3d **coors;
+      DACoor3d ***coors;
       Vec      vcoors;
       DA       cda;     
 
