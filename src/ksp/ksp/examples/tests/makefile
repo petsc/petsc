@@ -183,9 +183,7 @@ runex5f:
 	   else echo "Possible problem with ex5f_1, diffs above"; fi; \
 	   ${RM} -f ex5f_1.tmp
 #
-#   The arco sparse matrices, as well as a few others are available at
-# ftp://info.mcs.anl.gov/pub/petsc/testmatrices
-#
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -ksp_type preonly  -pc_type lu -options_left no \
 	   -f ${DATAFILESPATH}/matrices/arco1 > ex6_1.tmp 2>&1; \
@@ -212,6 +210,7 @@ runex6_3:
 # Note: We test these BlockSolve95 examples differently from the usual
 # because the coloring heuristic is machine-dependent; convergence rates
 # may differ slightly on various architectures.
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex6_6:
 	-@${MPIEXEC} -n 3 ./ex6  -ksp_gmres_cgs_refinement_type refine_always -ksp_gmres_restart 100 \
 	   -f ${DATAFILESPATH}/matrices/arco1_ns \
@@ -333,6 +332,7 @@ runex24_4:
            if (${DIFF} output/ex24_4.out ex24_4.tmp) then true; \
            else echo "Possible problem with ex24_4, diffs above"; fi; \
            ${RM} -f ex24_4.tmp
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex25:
 	-@${MPIEXEC} -n 1 ./ex25 -fload ${DATAFILESPATH}/matrices/indefinite/afiro > ex25_1.tmp 2>&1; \
            if (${DIFF} output/ex25_1.out ex25_1.tmp) then true; \
@@ -354,6 +354,7 @@ runex26_2:
 	if (${DIFF} output/ex26_2.out ex26_2.tmp) then true; \
 	   else echo "Possible problem with ex26_2, diffs above"; fi; \
 	   ${RM} -f ex26_2.tmp
+# See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex27:
 	-@${MPIEXEC} -n 1 ./ex27 -f ${DATAFILESPATH}/matrices/small > ex27.tmp 2>&1; \
 	if (${DIFF} output/ex27.out ex27.tmp) then true; \
