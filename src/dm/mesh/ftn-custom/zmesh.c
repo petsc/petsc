@@ -29,6 +29,7 @@ extern void PetscRmPointer(void*);
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define meshcreatepflotran_     MESHCREATEPFLOTRAN
 #define meshcreatepcice_        MESHCREATEPCICE
+#define meshcreateexodus_       MESHCREATEEXODUS
 #define meshdistribute_         MESHDISTRIBUTE
 #define meshview_               MESHVIEW
 #define meshgetvertexsectionreal_   MESHGETVERTEXSECTIONREAL
@@ -44,6 +45,7 @@ extern void PetscRmPointer(void*);
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define meshcreatepflotran_     meshcreatepflotran_
 #define meshcreatepcice_        meshcreatepcice
+#define meshcreateexodus_       meshcreateexodus
 #define meshdistribute_         meshdistribute
 #define meshview_               meshview
 #define meshgetvertexsectionreal_   meshgetvertexsectionreal
@@ -78,6 +80,13 @@ void PETSC_STDCALL  meshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFilena
   FREECHAR(coordFilename,cF);
   FREECHAR(adjFilename,aF);
   FREECHAR(bcFilename,bF);
+}
+void PETSC_STDCALL  meshcreateexodus_(MPI_Fint * comm, CHAR filename PETSC_MIXED_LEN(len), Mesh *mesh, PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *cF;
+  FIXCHAR(filename,len,cF);
+  *ierr = MeshCreateExodus(MPI_Comm_f2c( *(comm) ),cF,mesh);
+  FREECHAR(filename,cF);
 }
 void PETSC_STDCALL  meshdistribute_(Mesh serialMesh, CHAR partitioner PETSC_MIXED_LEN(lenP), Mesh *parallelMesh, PetscErrorCode *ierr PETSC_END_LEN(lenP))
 {

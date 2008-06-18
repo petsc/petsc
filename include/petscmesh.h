@@ -122,6 +122,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetElements(Mesh, PetscTruth, PetscI
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePyLith(MPI_Comm, const int, const char[], PetscTruth, PetscTruth, Mesh *);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateExodus(MPI_Comm, const char[], Mesh *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshExodusGetInfo(Mesh, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
+
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetArray(Mesh, const char [], PetscInt *, PetscInt *, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCSectionGetArray(Mesh, const char [], PetscInt *, PetscInt *, PetscInt *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCSectionRealCreate(Mesh, const char [], PetscInt);
