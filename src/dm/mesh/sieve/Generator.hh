@@ -17,6 +17,22 @@ namespace ALE {
   namespace Triangle {
     template<typename Mesh>
     class Generator {
+      class SegmentVisitor {
+      protected:
+        const int dim;
+        int *segmentlist;
+        const typename Mesh::numbering_type& vNumbering;
+        int idx, v;
+      public:
+        SegmentVisitor(const int dim, int segmentlist[], const typename Mesh::numbering_type& vNumbering) : dim(dim), segmentlist(segmentlist), vNumbering(vNumbering), idx(0), v(0) {};
+        ~SegmentVisitor() {};
+      public:
+        template<typename Point>
+        void visitPoint(const Point& point) {
+          this->segmentlist[this->idx*dim + (this->v++)] = this->vNumbering->getIndex(point);
+        };
+        void setIndex(const int idx) {this->idx = idx; this->v = 0;};
+      };
     public:
       static void initInput(struct triangulateio *inputCtx) {
         inputCtx->numberofpoints = 0;
@@ -172,6 +188,55 @@ namespace ALE {
       #define __FUNCT__ "generateMeshV_Triangle"
       static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
         throw ALE::Exception("Not yet implemented");
+        int                                   dim   = 2;
+        Obj<Mesh>                             mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
+        const Obj<typename Mesh::sieve_type>& sieve = boundary->getSieve();
+        const bool                            createConvexHull = false;
+        struct triangulateio in;
+        struct triangulateio out;
+        PetscErrorCode       ierr;
+
+        initInput(&in);
+        initOutput(&out);
+        const Obj<typename Mesh::label_sequence>&    vertices    = boundary->depthStratum(0);
+        const Obj<typename Mesh::label_type>&        markers     = boundary->getLabel("marker");
+        const Obj<typename Mesh::real_section_type>& coordinates = boundary->getRealSection("coordinates");
+        const Obj<typename Mesh::numbering_type>&    vNumbering  = boundary->getFactory()->getLocalNumbering(boundary, 0);
+
+        in.numberofpoints = vertices->size();
+        if (in.numberofpoints > 0) {
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+            const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
+            const int                                           idx   = vNumbering->getIndex(*v_iter);
+
+            for(int d = 0; d < dim; d++) {
+              in.pointlist[idx*dim + d] = array[d];
+            }
+            in.pointmarkerlist[idx] = boundary->getValue(markers, *v_iter);
+          }
+        }
+        const Obj<typename Mesh::label_sequence>& edges      = boundary->depthStratum(1);
+        const Obj<typename Mesh::numbering_type>& eNumbering = boundary->getFactory()->getLocalNumbering(boundary, 1);
+
+        in.numberofsegments = edges->size();
+        if (in.numberofsegments > 0) {
+          ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
+          ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+          SegmentVisitor sV(dim, in.segmentlist, vNumbering);
+          for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
+            const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*e_iter);
+            const int                                          idx  = eNumbering->getIndex(*e_iter);
+            int                                                v    = 0;
+
+            sV.setIndex(eNumbering->getIndex(*e_iter));
+            for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+              in.segmentlist[idx*dim + (v++)] = vNumbering->getIndex(*c_iter);
+            }
+            in.segmentmarkerlist[idx] = boundary->getValue(markers, *e_iter);
+          }
+        }
       };
     };
     template<typename Mesh>
