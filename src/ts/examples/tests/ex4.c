@@ -29,6 +29,7 @@ typedef struct
   PetscReal     dy;     /* the grid space in y-direction */
   PetscReal     a;      /* the convection coefficient    */
   PetscReal     epsilon; /* the diffusion coefficient    */
+  PetscInt      nsteps;  /* the number of time steps     */
 } Data;
 
 /* two temporal functions */
@@ -36,8 +37,6 @@ extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
-
-/* #undef PETSC_HAVE_SUNDIALS */
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -52,7 +51,6 @@ int main(int argc,char **argv)
   PetscViewer	 viewfile;
   MatStructure   J_structure;
   Mat            J = 0;
-  //SNES  	 snes;
   Vec 		 x;
   Data		 data;
   PetscInt 	 mn;
@@ -71,8 +69,9 @@ int main(int argc,char **argv)
   data.n = 9; 
   data.a = 1.0;
   data.epsilon = 0.1;
-  data.dx = 1.0/(data.m+1.0);
-  data.dy = 1.0/(data.n+1.0);
+  data.dx      = 1.0/(data.m+1.0);
+  data.dy      = 1.0/(data.n+1.0);
+  data.nsteps  = 0;
   mn = (data.m)*(data.n);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
     
@@ -86,7 +85,7 @@ int main(int argc,char **argv)
   /* create timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr); /* Need to be TS_NONLINEAR for Sundials */
-  ierr = TSMonitorSet(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = TSMonitorSet(ts,Monitor,&data,PETSC_NULL);CHKERRQ(ierr); 
 
   /* set user provided RHSFunction and RHSJacobian */  
   ierr = TSSetRHSFunction(ts,RHSFunction,&data);CHKERRQ(ierr);
@@ -94,7 +93,13 @@ int main(int argc,char **argv)
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,mn,mn);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = RHSJacobian(ts,0.0,global,&J,&J,&J_structure,&data);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&data);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-ts_fd",&flg);CHKERRQ(ierr);
+  if (flg){
+    /* Use finite differences (slow) to compute Jacobian */
+    ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobian,&data);CHKERRQ(ierr);
+  } else {
+    ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&data);CHKERRQ(ierr);
+  }
 
   /* Use SUNDIALS */
 #if defined(PETSC_HAVE_SUNDIALS)
@@ -147,7 +152,6 @@ int main(int argc,char **argv)
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   if (J) {ierr= MatDestroy(J);CHKERRQ(ierr);}
-  //ierr = SNESDestroy(snes);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
@@ -157,6 +161,7 @@ int main(int argc,char **argv)
 PetscReal f_ini(PetscReal x,PetscReal y)
 {
   PetscReal f;
+
   f=exp(-20.0*(pow(x-0.5,2.0)+pow(y-0.5,2.0)));
   return f;
 }
@@ -172,6 +177,7 @@ PetscErrorCode Initial(Vec global,void *ctx)
   PetscInt       i,mybase,myend,locsize;
   PetscErrorCode ierr;
 
+  PetscFunctionBegin;
   /* make the local  copies of parameters */
   m = data->m;
   dx = data->dx;
@@ -193,7 +199,7 @@ PetscErrorCode Initial(Vec global,void *ctx)
   }
   
   ierr = VecRestoreArray(global,&localptr);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -206,7 +212,10 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   Vec            tmp_vec;
   PetscErrorCode ierr;
   PetscScalar    *tmp;
-
+  Data           *data = (Data*)ctx;
+  
+  PetscFunctionBegin;
+  data->nsteps++;
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
@@ -225,7 +234,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t =%14.6e u= %14.6e at the center \n",time,PetscRealPart(tmp[n/2]));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t[%d] =%14.6e u= %14.6e at the center \n",data->nsteps,time,PetscRealPart(tmp[n/2]));CHKERRQ(ierr);
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
@@ -233,7 +242,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
   ierr = VecDestroy(tmp_vec);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 /* globalout = -a*(u_x+u_y) + epsilon*(u_xx+u_yy) */
@@ -254,6 +263,7 @@ PetscErrorCode FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   VecScatter     scatter;
   Vec            tmp_in,tmp_out;
 
+  PetscFunctionBegin;
   m       = data->m;
   n       = data->n;
   mn      = m*n;
@@ -333,7 +343,7 @@ PetscErrorCode FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }  
 
 #undef __FUNCT__
@@ -347,6 +357,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,v
   PetscErrorCode ierr;
   PetscInt       m,n,mn;
 
+  PetscFunctionBegin;
   m = data->m;
   n = data->n;
   mn = (data->m)*(data->n);
@@ -389,7 +400,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,v
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
-  return 0;
+  PetscFunctionReturn(0);
 } 
 
 #undef __FUNCT__
@@ -404,6 +415,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
   PetscInt       m,n,mn;
   PetscReal      dx,dy,a,epsilon,xc,xl,xr,yl,yr;
 
+  PetscFunctionBegin;
   m = data->m;
   n = data->n;
   mn = m*n;
@@ -478,7 +490,7 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
 
   /* *flag = SAME_NONZERO_PATTERN; */
   *flag = DIFFERENT_NONZERO_PATTERN;
-  return 0;
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -488,7 +500,8 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   PetscErrorCode ierr;
   SNES           snes = PETSC_NULL;
 
+  PetscFunctionBegin;
   ierr = FormFunction(snes,globalin,globalout,ctx);CHKERRQ(ierr);
-  return 0;
+  PetscFunctionReturn(0);
 }
 
