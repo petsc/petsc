@@ -1,5 +1,7 @@
 #include<petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
+#ifdef PETSC_HAVE_EXODUS
+
 #include<netcdf.h>
 #include<exodusII.h>
 
@@ -48,6 +50,8 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], PETSC_MES
   PetscFunctionReturn(0);
 }
 
+#endif // PETSC_HAVE_EXODUS
+
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateExodus"
 /*@C
@@ -77,7 +81,11 @@ PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh
   ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   ALE::Obj<PETSC_MESH_TYPE> m = new PETSC_MESH_TYPE(comm, -1, debug);
+#ifdef PETSC_HAVE_EXODUS
   ierr = PetscReadExodusII(comm, filename, *m);CHKERRQ(ierr);
+#else
+  SETERRQ(PETSC_ERR_SUP, "This method requires ExodusII support. Reconfigure using --with-exodus-dir=/path/to/exodus");
+#endif
   if (debug) {m->view("Mesh");}
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
