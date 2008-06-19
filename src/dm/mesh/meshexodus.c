@@ -17,7 +17,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], PETSC_MES
   PetscFunctionBegin;
 
   // Open EXODUS II file
-  exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version); CHKERRQ(exoid);
+  exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);CHKERRQ(!exoid);
   // Read database parameters
   ierr = ex_get_init(exoid, title, &num_dim, &num_nodes, &num_elem, &num_elem_blk, &num_node_sets, &num_side_sets);CHKERRQ(ierr);
   printf ("database parameters:\n");
@@ -85,7 +85,7 @@ PetscErrorCode MeshCreateExodus(MPI_Comm comm, const char filename[], Mesh *mesh
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshExodusGetInfo"
-/*@C
+/*@
   MeshExodusGetInfo - Get information about an ExodusII Mesh.
 
   Not Collective
