@@ -142,7 +142,7 @@ MPI_Op PetscMaxSum_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum_Local"
-void PETSC_DLLEXPORT PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+void PETSC_DLLEXPORT MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscInt *xin = (PetscInt*)in,*xout = (PetscInt*)out,i,count = *cnt;
 
@@ -190,7 +190,7 @@ MPI_Op PETSC_DLLEXPORT PetscADMax_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMax_Local"
-void PETSC_DLLEXPORT PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSC_DLLEXPORT MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
@@ -218,7 +218,7 @@ MPI_Op PETSC_DLLEXPORT PetscADMin_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMin_Local"
-void PETSC_DLLEXPORT PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSC_DLLEXPORT MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;

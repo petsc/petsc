@@ -167,7 +167,7 @@ EXTERN_C_BEGIN
   This is called by MPI, not by users.
 
 */
-PetscMPIInt PETSC_DLLEXPORT Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelViewer(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 

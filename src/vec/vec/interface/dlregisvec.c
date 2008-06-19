@@ -8,9 +8,9 @@ extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
 
 EXTERN_C_BEGIN
-extern void PETSCVEC_DLLEXPORT VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void PETSCVEC_DLLEXPORT VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
-extern void PETSCVEC_DLLEXPORT PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void PETSCVEC_DLLEXPORT MPIAPI VecMax_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void PETSCVEC_DLLEXPORT MPIAPI VecMin_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
+extern void PETSCVEC_DLLEXPORT MPIAPI PetscSplitReduction_Local(void*,void*,PetscMPIInt*,MPI_Datatype*);
 EXTERN_C_END
 
 const char *NormTypes[] = {"1","2","FROBENIUS","INFINITY","1_AND_2","NormType","NORM_",0};

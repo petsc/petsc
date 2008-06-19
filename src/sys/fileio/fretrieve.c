@@ -28,7 +28,7 @@
 #include "petscfix.h"
 
 EXTERN_C_BEGIN
-EXTERN PetscMPIInt Petsc_DelTag(MPI_Comm,PetscMPIInt,void*,void*);
+EXTERN PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelTag(MPI_Comm,PetscMPIInt,void*,void*);
 EXTERN_C_END
 
 #undef __FUNCT__  

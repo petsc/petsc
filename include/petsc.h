@@ -144,6 +144,11 @@ M*/
 */
 #include <stdio.h>
 
+/* MSMPI on 32bit windows requires this yukky hack - that breaks MPI standard compliance */
+#if !defined(MPIAPI)
+#define MPIAPI
+#endif
+
 /*MC
     PetscErrorCode - datatype used for return error code from all PETSc functions
 
