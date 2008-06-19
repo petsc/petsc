@@ -109,13 +109,13 @@ EXTERN_C_END
 extern MPI_Op PetscSum_Op;
 
 EXTERN_C_BEGIN
-extern void PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
+extern void PETSC_DLLEXPORT MPIAPI PetscSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 #endif
 extern PETSC_DLL_IMPORT MPI_Op PetscMaxSum_Op;
 
 EXTERN_C_BEGIN
-extern void PetscMaxSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
+extern void PETSC_DLLEXPORT MPIAPI PetscMaxSum_Local(void*,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 
 EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscOptionsCheckInitial_Private(void);
@@ -193,8 +193,8 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
 extern PETSC_DLL_IMPORT MPI_Op PetscADMax_Op;
 extern PETSC_DLL_IMPORT MPI_Op PetscADMin_Op;
 EXTERN_C_BEGIN
-extern void PETSC_DLL_IMPORT PetscADMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
-extern void PETSC_DLL_IMPORT PetscADMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+extern void PETSC_DLL_IMPORT MPIAPI PetscADMax_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
+extern void PETSC_DLL_IMPORT MPIAPI PetscADMin_Local(void *,void *,PetscMPIInt *,MPI_Datatype *);
 EXTERN_C_END
 
 

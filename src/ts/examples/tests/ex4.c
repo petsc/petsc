@@ -29,7 +29,6 @@ typedef struct
   PetscReal     dy;     /* the grid space in y-direction */
   PetscReal     a;      /* the convection coefficient    */
   PetscReal     epsilon; /* the diffusion coefficient    */
-  PetscInt      nsteps;  /* the number of time steps     */
 } Data;
 
 /* two temporal functions */
@@ -59,6 +58,8 @@ int main(int argc,char **argv)
   PC		 pc;
   PetscViewer    viewer;
   char           pcinfo[120],tsinfo[120];
+  TSType         tstype;
+  PetscTruth     sundials;
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -71,7 +72,6 @@ int main(int argc,char **argv)
   data.epsilon = 0.1;
   data.dx      = 1.0/(data.m+1.0);
   data.dy      = 1.0/(data.n+1.0);
-  data.nsteps  = 0;
   mn = (data.m)*(data.n);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
     
@@ -85,7 +85,7 @@ int main(int argc,char **argv)
   /* create timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr); /* Need to be TS_NONLINEAR for Sundials */
-  ierr = TSMonitorSet(ts,Monitor,&data,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = TSMonitorSet(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
 
   /* set user provided RHSFunction and RHSJacobian */  
   ierr = TSSetRHSFunction(ts,RHSFunction,&data);CHKERRQ(ierr);
@@ -118,7 +118,6 @@ int main(int argc,char **argv)
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-  //ierr = TSSundialsSetType(ts,SUNDIALS_ADAMS);CHKERRQ(ierr);
 #endif
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
@@ -135,16 +134,20 @@ int main(int argc,char **argv)
   }
 
 #if defined(PETSC_HAVE_SUNDIALS)
-  /* extracts the PC  from ts */
+  /* extracts the PC  from ts */ 
   ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
-  ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);
-  ierr = TSView(ts,viewer);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRQ(ierr);
-  ierr = PCView(pc,viewer);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s TSType, %s Preconditioner\n",
+  ierr = TSGetType(ts,&tstype);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)ts,TS_SUNDIALS,&sundials);CHKERRQ(ierr);
+  if (sundials){
+    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);
+    ierr = TSView(ts,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRQ(ierr);
+    ierr = PCView(pc,viewer);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s TSType, %s Preconditioner\n",
                      size,tsinfo,pcinfo);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  }
 #endif
 
   /* free the memories */
@@ -208,14 +211,14 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
 {
   VecScatter     scatter;
   IS             from,to;
-  PetscInt       i,n,*idx;
+  PetscInt       i,n,*idx,nsteps;
   Vec            tmp_vec;
   PetscErrorCode ierr;
   PetscScalar    *tmp;
-  Data           *data = (Data*)ctx;
   
   PetscFunctionBegin;
-  data->nsteps++;
+  ierr = TSGetTimeStepNumber(ts,&nsteps);CHKERRQ(ierr);
+
   /* Get the size of the vector */
   ierr = VecGetSize(global,&n);CHKERRQ(ierr);
 
@@ -234,7 +237,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   ierr = VecScatterEnd(scatter,global,tmp_vec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   ierr = VecGetArray(tmp_vec,&tmp);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t[%d] =%14.6e u= %14.6e at the center \n",data->nsteps,time,PetscRealPart(tmp[n/2]));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"At t[%d] =%14.2e u= %14.2e at the center \n",nsteps,time,PetscRealPart(tmp[n/2]));CHKERRQ(ierr);
   ierr = VecRestoreArray(tmp_vec,&tmp);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
