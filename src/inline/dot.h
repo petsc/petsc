@@ -98,7 +98,7 @@ EXTERN void fortranmultaddaij_(PetscInt*,void*,PetscInt*,PetscInt*,const MatScal
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolveaij_   fortransolveaij
 #endif
-EXTERN void fortransolveaij_(PetscInt*,void*,PetscInt*,PetscInt*,PetscInt*,void*,void*);
+EXTERN void fortransolveaij_(const PetscInt*,void*,const PetscInt*,const PetscInt*,const PetscInt*,const void*,const void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_RELAXAIJ)
@@ -125,7 +125,7 @@ EXTERN void fortranrelaxaijbackwardzero_(PetscInt*,PetscReal*,void*,PetscInt*,Pe
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4_          fortransolvebaij4
 #endif
-EXTERN void fortransolvebaij4_(PetscInt*,void*,PetscInt*,PetscInt*,PetscInt*,void*,void*,void*);
+EXTERN void fortransolvebaij4_(const PetscInt*,void*,const PetscInt*,const PetscInt*,const PetscInt*,const void*,const void*,const void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJUNROLL)
@@ -134,7 +134,7 @@ EXTERN void fortransolvebaij4_(PetscInt*,void*,PetscInt*,PetscInt*,PetscInt*,voi
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4unroll_    fortransolvebaij4unroll
 #endif
-EXTERN void fortransolvebaij4unroll_(PetscInt*,void*,PetscInt*,PetscInt*,PetscInt*,void*,void*);
+EXTERN void fortransolvebaij4unroll_(const PetscInt*,void*,const PetscInt*,const PetscInt*,const PetscInt*,const void*,const void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEBAIJBLAS)
@@ -143,7 +143,7 @@ EXTERN void fortransolvebaij4unroll_(PetscInt*,void*,PetscInt*,PetscInt*,PetscIn
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define fortransolvebaij4blas_      fortransolvebaij4blas
 #endif
-EXTERN void fortransolvebaij4blas_(PetscInt*,void*,PetscInt*,PetscInt*,PetscInt*,void*,void*,void*);
+EXTERN void fortransolvebaij4blas_(const PetscInt*,void*,const PetscInt*,const PetscInt*,const PetscInt*,const void*,const void*,const void*);
 #endif
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_XTIMESY)
