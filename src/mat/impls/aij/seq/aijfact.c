@@ -908,21 +908,23 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering"
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode  ierr;
-  PetscInt        n = A->rmap.n,*ai = a->i,*aj = a->j,*adiag = a->diag;
-  PetscScalar     *x,*b;
-  const MatScalar *aa = a->a;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          n = A->rmap.n;
+  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag,*vi;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  const MatScalar   *aa = a->a;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
-  PetscInt        adiag_i,i,*vi,nz,ai_i;
-  const MatScalar *v;
-  PetscScalar     sum;
+  PetscInt          adiag_i,i,nz,ai_i;
+  const MatScalar   *v;
+  PetscScalar       sum;
 #endif
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
@@ -952,7 +954,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
 #endif
   ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
