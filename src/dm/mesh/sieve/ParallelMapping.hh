@@ -15,7 +15,7 @@ extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_v
 
 namespace ALE {
   template<class _Tp>
-  struct Identity : public unary_function<_Tp,_Tp>
+  struct Identity : public std::unary_function<_Tp,_Tp>
   {
     _Tp& operator()(_Tp& x) const {return x;}
     const _Tp& operator()(const _Tp& x) const {return x;}
