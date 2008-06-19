@@ -21,16 +21,18 @@ namespace ALE {
       protected:
         const int dim;
         int *segmentlist;
-        const typename Mesh::numbering_type& vNumbering;
+        typename Mesh::numbering_type& vNumbering;
         int idx, v;
       public:
-        SegmentVisitor(const int dim, int segmentlist[], const typename Mesh::numbering_type& vNumbering) : dim(dim), segmentlist(segmentlist), vNumbering(vNumbering), idx(0), v(0) {};
+        SegmentVisitor(const int dim, int segmentlist[], typename Mesh::numbering_type& vNumbering) : dim(dim), segmentlist(segmentlist), vNumbering(vNumbering), idx(0), v(0) {};
         ~SegmentVisitor() {};
       public:
         template<typename Point>
         void visitPoint(const Point& point) {
-          this->segmentlist[this->idx*dim + (this->v++)] = this->vNumbering->getIndex(point);
+          this->segmentlist[this->idx*dim + (this->v++)] = this->vNumbering.getIndex(point);
         };
+        template<typename Arrow>
+        void visitArrow(const Arrow& arrow) {};
         void setIndex(const int idx) {this->idx = idx; this->v = 0;};
       };
     public:
@@ -191,7 +193,7 @@ namespace ALE {
         int                                   dim   = 2;
         Obj<Mesh>                             mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
         const Obj<typename Mesh::sieve_type>& sieve = boundary->getSieve();
-        const bool                            createConvexHull = false;
+        //const bool                            createConvexHull = false;
         struct triangulateio in;
         struct triangulateio out;
         PetscErrorCode       ierr;
@@ -224,16 +226,12 @@ namespace ALE {
         if (in.numberofsegments > 0) {
           ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
           ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
-          SegmentVisitor sV(dim, in.segmentlist, vNumbering);
+          SegmentVisitor sV(dim, in.segmentlist, *vNumbering);
           for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
-            const Obj<typename Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*e_iter);
-            const int                                          idx  = eNumbering->getIndex(*e_iter);
-            int                                                v    = 0;
+            const int idx = eNumbering->getIndex(*e_iter);
 
-            sV.setIndex(eNumbering->getIndex(*e_iter));
-            for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-              in.segmentlist[idx*dim + (v++)] = vNumbering->getIndex(*c_iter);
-            }
+            sV.setIndex(idx);
+            sieve->cone(*e_iter, sV);
             in.segmentmarkerlist[idx] = boundary->getValue(markers, *e_iter);
           }
         }
