@@ -456,6 +456,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
         Vec *vec;
         ierr = KSPGetVecs(mg[i]->smoothd,1,&vec,0,PETSC_NULL);CHKERRQ(ierr);
         ierr = PCMGSetRhs(pc,i,*vec);CHKERRQ(ierr);
+        ierr = VecDestroy(*vec);CHKERRQ(ierr);
         ierr = PetscFree(vec);CHKERRQ(ierr);
       }
       if (!mg[i]->r && i) {
@@ -474,6 +475,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
       Vec *vec;
       ierr = KSPGetVecs(mg[n-1]->smoothd,1,&vec,0,PETSC_NULL);CHKERRQ(ierr);
       ierr = PCMGSetR(pc,n-1,*vec);CHKERRQ(ierr);
+      ierr = VecDestroy(*vec);CHKERRQ(ierr);
       ierr = PetscFree(vec);CHKERRQ(ierr);
     }
   }

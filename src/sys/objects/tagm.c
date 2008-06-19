@@ -37,7 +37,7 @@ EXTERN_C_BEGIN
    Note: this is declared extern "C" because it is passed to MPI_Keyval_create
 
 */
-PetscMPIInt PETSC_DLLEXPORT Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 
@@ -60,7 +60,7 @@ EXTERN_C_BEGIN
   Note: this is declared extern "C" because it is passed to MPI_Keyval_create
 
 */
-PetscMPIInt PETSC_DLLEXPORT Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+PetscMPIInt PETSC_DLLEXPORT MPIAPI Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 

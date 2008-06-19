@@ -944,7 +944,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat,void*);
 
 .seealso: MatGetOrdering()
 E*/
-#define MatOrderingType char*
+#define MatOrderingType const char*
 #define MATORDERING_NATURAL   "natural"
 #define MATORDERING_ND        "nd"
 #define MATORDERING_1WD       "1wd"
@@ -958,9 +958,9 @@ E*/
 #define MATORDERING_IDENTITY  "identity"
 #define MATORDERING_REVERSE   "reverse"
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat,MatOrderingType,IS*,IS*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrderingList(PetscFList *list);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,const MatOrderingType,IS*,IS*));
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,MatOrderingType,IS*,IS*));
 
 /*MC
    MatOrderingRegisterDynamic - Adds a new sparse matrix ordering to the 
