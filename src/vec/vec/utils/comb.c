@@ -80,7 +80,7 @@ MPI_Op PetscSplitReduction_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscSplitReduction_Local"
-void PETSCVEC_DLLEXPORT PetscSplitReduction_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSCVEC_DLLEXPORT MPIAPI PetscSplitReduction_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = (PetscInt)*cnt;
@@ -247,7 +247,7 @@ EXTERN_C_BEGIN
   The binding for the first argument changed from MPI 1.0 to 1.1; in 1.0
   it was MPI_Comm *comm.  
 */
-int PETSCVEC_DLLEXPORT Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
+int PETSCVEC_DLLEXPORT MPIAPI Petsc_DelReduction(MPI_Comm comm,int keyval,void* attr_val,void* extra_state)
 {
   PetscErrorCode ierr;
 

@@ -944,7 +944,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat,void*);
 
 .seealso: MatGetOrdering()
 E*/
-#define MatOrderingType char*
+#define MatOrderingType const char*
 #define MATORDERING_NATURAL   "natural"
 #define MATORDERING_ND        "nd"
 #define MATORDERING_1WD       "1wd"
