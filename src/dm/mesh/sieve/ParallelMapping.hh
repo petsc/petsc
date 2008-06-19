@@ -14,6 +14,13 @@
 extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
 namespace ALE {
+  template<class _Tp>
+  struct Identity : public unary_function<_Tp,_Tp>
+  {
+    _Tp& operator()(_Tp& x) const {return x;}
+    const _Tp& operator()(const _Tp& x) const {return x;}
+  };
+
   // Creates new global point names and renames local points globally
   template<typename Point>
   class PointFactory : ALE::ParallelObject {
@@ -57,7 +64,7 @@ namespace ALE {
   public:
     template<typename Iterator>
     void renumberPoints(const Iterator& begin, const Iterator& end) {
-      renumberPoints(begin, end, std::_Identity<typename Iterator::value_type>());
+      renumberPoints(begin, end, Identity<typename Iterator::value_type>());
     };
     template<typename Iterator, typename KeyExtractor>
     void renumberPoints(const Iterator& begin, const Iterator& end, const KeyExtractor& ex) {
