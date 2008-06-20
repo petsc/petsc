@@ -10,11 +10,11 @@
 PetscFList      MatOrderingList = 0;
 PetscTruth MatOrderingRegisterAllCalled = PETSC_FALSE;
 
-EXTERN PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat,const MatOrderingType,IS *,IS *);
+EXTERN PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat,MatOrderingType,IS *,IS *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_Flow"
-PetscErrorCode MatOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode MatOrdering_Flow(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscFunctionBegin;
   SETERRQ(PETSC_ERR_SUP,"Cannot do default flow ordering for matrix type");
@@ -26,7 +26,7 @@ PetscErrorCode MatOrdering_Flow(Mat mat,const MatOrderingType type,IS *irow,IS *
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_Natural"
-PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Natural(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Natural(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,i,*ii;
@@ -70,7 +70,7 @@ EXTERN_C_BEGIN
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_RowLength"
-PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat mat,const MatOrderingType type,IS *irow,IS *icol)
+PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat mat,MatOrderingType type,IS *irow,IS *icol)
 {
   PetscErrorCode ierr;
   PetscInt       n,*ia,*ja,*permr,*lens,i;
@@ -99,7 +99,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrderingRegister" 
-PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,const MatOrderingType,IS*,IS*))
+PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatOrderingType,IS*,IS*))
 {
   PetscErrorCode ierr;
   char           fullname[PETSC_MAX_PATH_LEN];
@@ -174,11 +174,11 @@ $      MATORDERING_QMD - Quotient Minimum Degree
 
 .seealso:   MatOrderingRegisterDynamic(), PCFactorSetMatOrderingType()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType type,IS *rperm,IS *cperm)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,MatOrderingType type,IS *rperm,IS *cperm)
 {
   PetscErrorCode ierr;
   PetscInt       mmat,nmat,mis,m;
-  PetscErrorCode (*r)(Mat,const MatOrderingType,IS*,IS*);
+  PetscErrorCode (*r)(Mat,MatOrderingType,IS*,IS*);
   PetscTruth     flg,isseqdense,ismpidense;
 
   PetscFunctionBegin;

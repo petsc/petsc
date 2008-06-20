@@ -153,14 +153,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_ILU(PC pc,MatOrderi
  
   PetscFunctionBegin;
   if (!pc->setupcalled) {
-     ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
-     ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
+    ierr = PetscStrfree((void*) dir->ordering);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(ordering,(char**) &dir->ordering);CHKERRQ(ierr);
   } else {
     ierr = PetscStrcmp(dir->ordering,ordering,&flg);CHKERRQ(ierr);
     if (!flg) {
       pc->setupcalled = 0;
-      ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
-      ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
+      ierr = PetscStrfree((void*) dir->ordering);CHKERRQ(ierr);
+      ierr = PetscStrallocpy(ordering,(char**) &dir->ordering);CHKERRQ(ierr);
       /* free the data structures, then create them again */
       ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
     }
@@ -594,7 +594,7 @@ static PetscErrorCode PCDestroy_ILU(PC pc)
 
   PetscFunctionBegin;
   ierr = PCDestroy_ILU_Internal(pc);CHKERRQ(ierr);
-  ierr = PetscStrfree(ilu->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree((void*) ilu->ordering);CHKERRQ(ierr);
   ierr = PetscFree(ilu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -736,7 +736,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   ilu->col                     = 0;
   ilu->row                     = 0;
   ilu->inplace                 = PETSC_FALSE;
-  ierr = PetscStrallocpy(MATORDERING_NATURAL,&ilu->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERING_NATURAL,(char**) &ilu->ordering);CHKERRQ(ierr);
   ilu->reuseordering           = PETSC_FALSE;
   ilu->usedt                   = PETSC_FALSE;
   ilu->info.dt                 = PETSC_DEFAULT;

@@ -3,13 +3,13 @@
 #include "include/private/matimpl.h"     /*I       "petscmat.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Natural(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_ND(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_1WD(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_QMD(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RCM(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat,const MatOrderingType,IS*,IS*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_DSC(Mat,const MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Natural(Mat,MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_ND(Mat,MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_1WD(Mat,MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_QMD(Mat,MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RCM(Mat,MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_RowLength(Mat,MatOrderingType,IS*,IS*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_DSC(Mat,MatOrderingType,IS*,IS*);
 EXTERN_C_END
 
 #undef __FUNCT__  

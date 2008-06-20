@@ -290,7 +290,7 @@ static PetscErrorCode PCDestroy_Cholesky(PC pc)
   if (!dir->inplace && dir->fact) {ierr = MatDestroy(dir->fact);CHKERRQ(ierr);}
   if (dir->row) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
   if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
-  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree((void*) dir->ordering);CHKERRQ(ierr);
   ierr = PetscFree(dir);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -360,8 +360,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Cholesky(PC pc,MatO
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree((void*) dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ordering,(char**) &dir->ordering);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -488,7 +488,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   dir->info.pivotinblocks     = 1.0;
   dir->col                    = 0;
   dir->row                    = 0;
-  ierr = PetscStrallocpy(MATORDERING_NATURAL,&dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERING_NATURAL,(char**) &dir->ordering);CHKERRQ(ierr);
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;
   pc->data              = (void*)dir;

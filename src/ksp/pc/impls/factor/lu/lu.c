@@ -301,7 +301,7 @@ static PetscErrorCode PCDestroy_LU(PC pc)
   if (!dir->inplace && dir->fact) {ierr = MatDestroy(dir->fact);CHKERRQ(ierr);}
   if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
   if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
-  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree((void*) dir->ordering);CHKERRQ(ierr);
   ierr = PetscFree(dir);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -371,8 +371,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_LU(PC pc,MatOrderin
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree((void*) dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ordering,(char**) &dir->ordering);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -688,9 +688,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   dir->row                 = 0;
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERING_ND,(char**) &dir->ordering);CHKERRQ(ierr);
   } else {
-    ierr = PetscStrallocpy(MATORDERING_NATURAL,&dir->ordering);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERING_NATURAL,(char**) &dir->ordering);CHKERRQ(ierr);
   }
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;
