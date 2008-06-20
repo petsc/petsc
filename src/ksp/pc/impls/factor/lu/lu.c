@@ -365,7 +365,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetMatOrderingType_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_LU(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_LU(PC pc,const MatOrderingType ordering)
 {
   PC_LU          *dir = (PC_LU*)pc->data;
   PetscErrorCode ierr;
@@ -548,9 +548,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC pc)
     SeqAIJ format in this case to get reorderings.
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType(PC pc,const MatOrderingType ordering)
 {
-  PetscErrorCode ierr,(*f)(PC,MatOrderingType);
+  PetscErrorCode ierr,(*f)(PC,const MatOrderingType);
 
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetMatOrderingType_C",(void (**)(void))&f);CHKERRQ(ierr);
