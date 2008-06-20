@@ -730,6 +730,20 @@ namespace ALE {
         this->addArrow(a_iter->source, target);
       }
     };
+    int getCapSize() const {
+      std::set<source_type> cap;
+      for(typename traits::arrow_container_type::set_type::iterator a_iter = _arrows.set.begin(); a_iter != _arrows.set.end(); ++a_iter) {
+        cap.insert(a_iter->source);
+      }
+      return cap.size();
+    };
+    int getBaseSize() const {
+      std::set<target_type> base;
+      for(typename traits::arrow_container_type::set_type::iterator a_iter = _arrows.set.begin(); a_iter != _arrows.set.end(); ++a_iter) {
+        base.insert(a_iter->target);
+      }
+      return base.size();
+    };
   }; // class LabelSifter
 } // namespace ALE
 
