@@ -62,8 +62,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_ICC(PC pc,MatOrderi
   PetscErrorCode ierr;
  
   PetscFunctionBegin;
-  ierr = PetscStrfree((void*) dir->ordering);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ordering,(char**) &dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -132,7 +132,7 @@ static PetscErrorCode PCDestroy_ICC(PC pc)
 
   PetscFunctionBegin;
   if (icc->fact) {ierr = MatDestroy(icc->fact);CHKERRQ(ierr);}
-  ierr = PetscStrfree((void*) icc->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree(icc->ordering);CHKERRQ(ierr);
   ierr = PetscFree(icc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -313,7 +313,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
   ierr = PetscNewLog(pc,PC_ICC,&icc);CHKERRQ(ierr);
 
   icc->fact	          = 0;
-  ierr = PetscStrallocpy(MATORDERING_NATURAL,(char**) &icc->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MATORDERING_NATURAL,&icc->ordering);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&icc->info);CHKERRQ(ierr);
   icc->info.levels	  = 0;
   icc->info.fill          = 1.0;
