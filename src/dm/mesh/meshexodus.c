@@ -22,25 +22,13 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
   exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);CHKERRQ(!exoid);
   // Read database parameters
   ierr = ex_get_init(exoid, title, &num_dim, &num_nodes, &num_elem, &num_elem_blk, &num_node_sets, &num_side_sets);CHKERRQ(ierr);
-  printf ("database parameters:\n");
-  printf ("title =  '%s'\n",title);
-  printf ("num_dim = %3d\n",num_dim);
-  printf ("num_nodes = %3d\n",num_nodes);
-  printf ("num_elem = %3d\n",num_elem);
-  printf ("num_elem_blk = %3d\n",num_elem_blk);
-  printf ("num_node_sets = %3d\n",num_node_sets);
-  printf ("num_side_sets = %3d\n",num_side_sets);
 
   // Read vertex coordinates
   float *x, *y, *z;
   ierr = PetscMalloc3(num_nodes,float,&x,num_nodes,float,&y,num_nodes,float,&z);CHKERRQ(ierr);
   ierr = ex_get_coord(exoid, x, y, z);CHKERRQ(ierr);
-  printf ("x coords = \n"); for(int i=0; i<num_nodes; i++) {printf ("%5.1f\n", x[i]);}
-  printf ("y coords = \n"); for(int i=0; i<num_nodes; i++) {printf ("%5.1f\n", y[i]);}
-  if (num_dim >= 3) {
-    printf ("z coords = \n"); for(int i=0; i<num_nodes; i++) {printf ("%5.1f\n", z[i]);}
-  }
 
+  // Read element connectivity
   int   *eb_ids, *num_elem_in_block, *num_nodes_per_elem, *num_attr;
   int  **connect;
   char **block_names;
@@ -53,46 +41,33 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
     ierr = ex_get_names(exoid, EX_ELEM_BLOCK, block_names);CHKERRQ(ierr);
     for(int eb = 0; eb < num_elem_blk; ++eb) {
       ierr = ex_get_elem_block(exoid, eb_ids[eb], elem_type, &num_elem_in_block[eb], &num_nodes_per_elem[eb], &num_attr[eb]);CHKERRQ(ierr);
-      printf ("element block id = %2d\n",eb_ids[eb]);
-      printf ("element type = '%s'\n", elem_type);
-      printf ("num_elem_in_block = %2d\n",num_elem_in_block[eb]);
-      printf ("num_nodes_per_elem = %2d\n",num_nodes_per_elem[eb]);
-      printf ("num_attr = %2d\n",num_attr[eb]);
-      printf ("name = '%s'\n",block_names[eb]);
       ierr = PetscFree(block_names[eb]);CHKERRQ(ierr);
     }
-
-    // Read element connectivity
     ierr = PetscMalloc(num_elem_blk * sizeof(int*),&connect);CHKERRQ(ierr);
     for(int eb = 0; eb < num_elem_blk; ++eb) {
       if (num_elem_in_block[eb] > 0) {
         ierr = PetscMalloc(num_nodes_per_elem[eb]*num_elem_in_block[eb] * sizeof(int),&connect[eb]);CHKERRQ(ierr);
         ierr = ex_get_elem_conn(exoid, eb_ids[eb], connect[eb]);CHKERRQ(ierr);
-        printf("connect array for elem block %2d\n", eb_ids[eb]);
-        for(int j = 0; j < num_nodes_per_elem[eb]; ++j) {printf("%3d\n", connect[eb][j]);}
       }
     }
   }
 
-  int *ns_ids;
+  // Read node sets
+  int  *ns_ids, *num_nodes_in_set;
+  int **node_list;
   if (num_node_sets > 0) {
-    ierr = PetscMalloc(num_node_sets * sizeof(int), &ns_ids);CHKERRQ(ierr);
+    ierr = PetscMalloc3(num_node_sets,int,&ns_ids,num_node_sets,int,&num_nodes_in_set,num_node_sets,int*,&node_list);CHKERRQ(ierr);
     ierr = ex_get_node_set_ids(exoid, ns_ids);CHKERRQ(ierr);
     for(int ns = 0; ns < num_node_sets; ++ns) {
-      int num_nodes_in_set, num_df_in_set;
-      ierr = ex_get_node_set_param (exoid, ns_ids[ns], &num_nodes_in_set, &num_df_in_set);CHKERRQ(ierr);
-      printf ("\nnode set %2d parameters: \n", ns_ids[ns]);
-      printf ("num_nodes = %2d\n", num_nodes_in_set);
-      int *node_list;
-      ierr = PetscMalloc(num_nodes_in_set * sizeof(int), &node_list);CHKERRQ(ierr);
-      ierr = ex_get_node_set(exoid, ns_ids[ns], node_list);
-      printf ("\nnode list for node set %2d\n", ns_ids[ns]);
-      for(int j = 0; j < num_nodes_in_set; ++j) {printf ("%3d\n", node_list[j]);}
-      ierr = PetscFree(node_list);CHKERRQ(ierr);
+      int num_df_in_set;
+      ierr = ex_get_node_set_param (exoid, ns_ids[ns], &num_nodes_in_set[ns], &num_df_in_set);CHKERRQ(ierr);
+      ierr = PetscMalloc(num_nodes_in_set[ns] * sizeof(int), &node_list[ns]);CHKERRQ(ierr);
+      ierr = ex_get_node_set(exoid, ns_ids[ns], node_list[ns]);
 	}
   }
   ierr = ex_close(exoid);CHKERRQ(ierr);
 
+  // Build mesh topology
   int  numCorners = num_nodes_per_elem[0];
   int *cells;
   mesh->setDimension(num_dim);
@@ -113,10 +88,20 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
   mesh->setSieve(sieve);
   mesh->stratify();
   ierr = PetscFree(cells);CHKERRQ(ierr);
+
+  // Build cell blocks
+  const ALE::Obj<PETSC_MESH_TYPE::label_type>& cellBlocks = mesh->createLabel("CellBlocks");
+  for(int eb = 0, k = 0; eb < num_elem_blk; ++eb) {
+    for(int e = 0; e < num_elem_in_block[eb]; ++e, ++k) {
+      mesh->setValue(cellBlocks, k, eb);
+    }
+  }
   if (num_elem_blk > 0) {
     ierr = PetscFree(connect);CHKERRQ(ierr);
     ierr = PetscFree5(eb_ids, num_elem_in_block, num_nodes_per_elem, num_attr, block_names);CHKERRQ(ierr);
   }
+
+  // Build coordinates
   double *coords;
   ierr = PetscMalloc(num_dim*num_nodes * sizeof(double), &coords);CHKERRQ(ierr);
   if (num_dim > 0) {for(int v = 0; v < num_nodes; ++v) {coords[v*num_dim+0] = x[v];}}
@@ -125,11 +110,23 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
   ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh, num_dim, coords);
   ierr = PetscFree(coords);CHKERRQ(ierr);
   ierr = PetscFree3(x, y, z);CHKERRQ(ierr);
-  // Do vertex and cells sets
-  if (num_node_sets > 0) {
-    ierr = PetscFree(ns_ids);CHKERRQ(ierr);
+
+  // Build vertex sets
+  const ALE::Obj<PETSC_MESH_TYPE::label_type>& vertexSets = mesh->createLabel("VertexSets");
+  for(int ns = 0; ns < num_node_sets; ++ns) {
+    for(int n = 0; n < num_nodes_in_set[ns]; ++n) {
+      mesh->setValue(vertexSets, node_list[ns][n]+num_elem, ns);
+    }
+    ierr = PetscFree(node_list[ns]);CHKERRQ(ierr);
   }
+  if (num_node_sets > 0) {
+    ierr = PetscFree3(ns_ids,num_nodes_in_set,node_list);CHKERRQ(ierr);
+  }
+
   mesh->view("Mesh");
+  cellBlocks->view("Cell Blocks");
+  vertexSets->view("Vertex Sets");
+
   // Get coords and print in F90
   // Get connectivity and print in F90
   // Calculate cost function
