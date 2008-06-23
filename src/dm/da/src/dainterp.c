@@ -521,9 +521,9 @@ PetscErrorCode DAGetInterpolation_3D_Q0(DA dac,DA daf,Mat *A)
   if (ratioi*Mx != mx) SETERRQ(PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in x");
   if (ratioj*My != my) SETERRQ(PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in y");
   if (ratiol*Mz != mz) SETERRQ(PETSC_ERR_ARG_WRONG,"Fine grid points must be multiple of coarse grid points in z");
-  if (ratioi != 2) SETERRQ(PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 2");
-  if (ratioj != 2) SETERRQ(PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 2");
-  if (ratiol != 2) SETERRQ(PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 2");
+  if (ratioi != 2 && ratioi != 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Coarsening factor in x must be 1 or 2");
+  if (ratioj != 2 && ratioj != 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Coarsening factor in y must be 1 or 2");
+  if (ratiol != 2 && ratiol != 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Coarsening factor in z must be 1 or 2");
 
   ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);

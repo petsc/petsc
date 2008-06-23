@@ -235,6 +235,7 @@ tetgen_shared:
                   ${RM} -f ${INSTALL_LIB_DIR}/tmp-tetgen-shlib/*; \\
 	          cd  ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
 	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \\
+	          ${RANLIB} -c ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \\
                   cd $$cwd;\\
 	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-tetgen-shlib shared_arch; \\
 	        fi; \\

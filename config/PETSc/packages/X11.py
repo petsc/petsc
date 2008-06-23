@@ -78,7 +78,7 @@ acfindx:
         # using them would break gcc on systems where it needs fixed includes.
         if not results['X_INCLUDE_ROOT'] == '/usr/include' and os.path.isfile(os.path.join(results['X_INCLUDE_ROOT'], 'X11', 'Xos.h')):
           includeDir = results['X_INCLUDE_ROOT']
-        if not (results['X_USR_LIB_DIR'] == '/lib' or results['X_USR_LIB_DIR'] == '/usr/lib') and os.path.isdir(results['X_USR_LIB_DIR']):
+        if not (results['X_USR_LIB_DIR'] == '/lib' or results['X_USR_LIB_DIR'] == '/usr/lib' or results['X_USR_LIB_DIR'] == '/usr/lib64') and os.path.isdir(results['X_USR_LIB_DIR']):
           libraryDir = results['X_USR_LIB_DIR']
     except RuntimeError, e:
       self.framework.log.write('Error using Xmake: '+str(e)+'\n')

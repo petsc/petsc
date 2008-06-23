@@ -1,6 +1,7 @@
 syntax: glob
 asterix*/*
 linux*/*
+darwin*/*
 arch-*/*
 c_test
 RDict.db
