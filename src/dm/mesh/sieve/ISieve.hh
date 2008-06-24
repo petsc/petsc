@@ -569,7 +569,7 @@ namespace ALE {
       };
       void getConstrainedIndices(const point_type& p, const int orientation) {
         const int cDim = this->section.getConstraintDimension(p);
-        if (i+cDim >= size) {throw ALE::Exception("Too many values for IndicesVisitor.");}
+        if (i+cDim > size) {throw ALE::Exception("Too many values for IndicesVisitor.");}
         typedef typename Section::bc_type::value_type index_type;
         const index_type *cDof  = this->section.getConstraintDof(p);
         const int         start = this->order.getIndex(p);
