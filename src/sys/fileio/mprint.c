@@ -80,11 +80,18 @@ PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newfo
 PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler */
-  char           newformat[8*1024];
-  size_t         length;
+  char          *newformat;
+  char           formatbuf[8*1024];
+  size_t         oldLength,length;
   PetscErrorCode ierr;
  
-  PetscFormatConvert(format,newformat,8*1024);
+  ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
+  if (oldLength < 8*1024) {
+    newformat = formatbuf;
+  } else {
+    ierr = PetscMalloc((oldLength+1) * sizeof(char), &newformat);CHKERRQ(ierr);
+  }
+  PetscFormatConvert(format,newformat,oldLength+1);
   ierr = PetscStrlen(newformat, &length);CHKERRQ(ierr);
   if (length > len) {
     newformat[len] = '\0';
@@ -94,6 +101,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *f
 #else
   vsprintf(str,newformat,Argp);
 #endif
+  if (oldLength >= 8*1024) {
+    ierr = PetscFree(newformat);CHKERRQ(ierr);
+  }
   return 0;
 }
 
@@ -138,11 +148,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp){
 */
 PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 {
-  /* no malloc since may be called by error handler */
-  char        newformat[8*1024];
+  /* no malloc since may be called by error handler (assume no long messages in errors) */
+  char        *newformat;
+  char         formatbuf[8*1024];
+  size_t       oldLength;
   extern FILE *PETSC_ZOPEFD;
 
-  PetscFormatConvert(format,newformat,8*1024); 
+  PetscStrlen(format, &oldLength);
+  if (oldLength < 8*1024) {
+    newformat = formatbuf;
+  } else {
+    PetscMalloc((oldLength+1) * sizeof(char), &newformat);
+  }
+  PetscFormatConvert(format,newformat,oldLength+1);
   if(PETSC_ZOPEFD != NULL && PETSC_ZOPEFD != PETSC_STDOUT){
     va_list s;
 #if defined(PETSC_HAVE_VA_COPY)
@@ -167,6 +185,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
   vfprintf(fd,newformat,Argp);
   fflush(fd);
 #endif
+  if (oldLength >= 8*1024) {
+    PetscFree(newformat);
+  }
   return 0;
 }
 

@@ -42,6 +42,7 @@ extern void PetscRmPointer(void*);
 #define assemblevector_         ASSEMBLEVECTOR
 #define assemblematrix_         ASSEMBLEMATRIX
 #define writepcicerestart_      WRITEPCICERESTART
+#define meshgetstratumsize_     MESHGETSTRATUMSIZE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define meshcreatepflotran_     meshcreatepflotran_
 #define meshcreatepcice_        meshcreatepcice
@@ -58,6 +59,7 @@ extern void PetscRmPointer(void*);
 #define assemblevector_         assemblevector
 #define assemblematrix_         assemblematrix
 #define writepcicerestart_      writepcicerestart
+#define meshgetstratumsize_     meshgetstratumsize
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -158,6 +160,12 @@ void PETSC_STDCALL  assemblematrix_(Mat A,PetscInt *e,PetscScalar v[],InsertMode
 }
 void PETSC_STDCALL  writepcicerestart_(Mesh mesh, PetscViewer viewer, int *ierr){
   *ierr = WritePCICERestart((Mesh) PetscToPointer(mesh), (PetscViewer) PetscToPointer(viewer));
+}
+void PETSC_STDCALL  meshgetstratumsize_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetStratumSize((Mesh) PetscToPointer(mesh),pN, *value, size);
+  FREECHAR(name,pN);
 }
 
 EXTERN_C_END

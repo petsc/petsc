@@ -145,7 +145,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetMatOrderingType_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_ILU(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_ILU(PC pc,const MatOrderingType ordering)
 {
   PC_ILU         *dir = (PC_ILU*)pc->data;
   PetscErrorCode ierr;

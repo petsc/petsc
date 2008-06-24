@@ -15,6 +15,7 @@
 #define bcsectiongetarray1df90_    BCSECTIONGETARRAY1DF90
 #define bcsectionrealgetarrayf90_  BCSECTIONREALGETARRAYF90
 #define bcfuncgetarrayf90_         BCFUNCGETARRAYF90
+#define meshgetstratum_         MESHGETSTRATUM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define meshgetcoordinatesf90_     meshgetcoordinatesf90
 #define meshrestorecoordinatesf90_ meshrestorecoordinatesf90
@@ -28,6 +29,7 @@
 #define bcsectiongetarray1df90_    bcsectiongetarray1df90
 #define bcsectionrealgetarrayf90_  bcsectionrealgetarrayf90
 #define bcfuncgetarrayf90_         bcfuncgetarrayf90
+#define meshgetstratum_         meshgetstratum
 #endif
 
 EXTERN_C_BEGIN
@@ -134,6 +136,14 @@ void PETSC_STDCALL bcfuncgetarrayf90_(Mesh *mesh,F90Array2d *ptr,int *ierr PETSC
   PetscInt     n, d;
   *ierr = BCFUNCGetArray(*mesh,&n,&d,&a); if (*ierr) return;
   *ierr = F90Array2dCreate(a,PETSC_SCALAR,1,d,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+void PETSC_STDCALL meshgetstratum_(Mesh *mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, F90Array1d *ptr, int *ierr PETSC_END_LEN(lenN) PETSC_F90_2PTR_PROTO(ptrd)){
+  char     *pN;
+  PetscInt *points;
+  FIXCHAR(name,lenN,pN);
+  *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &points PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = MeshGetStratum(*mesh,pN, *value, points);
+  FREECHAR(name,pN);
 }
 
 EXTERN_C_END

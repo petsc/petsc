@@ -123,6 +123,7 @@ triangle_shared:
                   ${RM} -f ${INSTALL_LIB_DIR}/tmp-triangle-shlib/*; \\
 	          cd  ${INSTALL_LIB_DIR}/tmp-triangle-shlib; \\
 	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \\
+	          ${RANLIB} ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \\
                   cd $$cwd;\\
 	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-triangle-shlib shared_arch; \\
 	        fi; \\

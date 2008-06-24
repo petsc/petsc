@@ -219,3 +219,72 @@ PetscErrorCode MeshExodusGetInfo(Mesh mesh, PetscInt *dim, PetscInt *numVertices
   *numVertexSets = m->getLabel("VertexSets")->getCapSize();
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshGetStratumSize"
+/*@C
+  MeshGetStratumSize - Get the number of points in a label stratum
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+. name - The label name
+- value - The stratum value
+
+  Output Parameter:
+. size - The stratum size
+
+  Level: beginner
+
+.keywords: mesh, ExodusII
+.seealso: MeshCreateExodus()
+@*/
+PetscErrorCode MeshGetStratumSize(Mesh mesh, const char name[], PetscInt value, PetscInt *size)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  *size = m->getLabelStratum(name, value)->size();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshGetStratum"
+/*@C
+  MeshGetStratum - Get the points in a label stratum
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+. name - The label name
+. value - The stratum value
+- points - The stratum points storage array
+
+  Output Parameter:
+. points - The stratum points
+
+  Level: beginner
+
+.keywords: mesh, ExodusII
+.seealso: MeshCreateExodus()
+@*/
+PetscErrorCode MeshGetStratum(Mesh mesh, const char name[], PetscInt value, PetscInt *points)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& stratum = m->getLabelStratum(name, value);
+  const PETSC_MESH_TYPE::label_sequence::iterator  sEnd    = stratum->end();
+  PetscInt                                         s       = 0;
+
+  for(PETSC_MESH_TYPE::label_sequence::iterator s_iter = stratum->begin(); s_iter != sEnd; ++s_iter, ++s) {
+    points[s] = *s_iter;
+  }
+  PetscFunctionReturn(0);
+}
