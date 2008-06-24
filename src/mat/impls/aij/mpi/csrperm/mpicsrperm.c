@@ -109,7 +109,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPICSRPERM(MPI_Comm comm,PetscInt m,P
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode MatConvert_SeqAIJ_SeqCSRPERM(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode MatConvert_SeqAIJ_SeqCSRPERM(Mat,const MatType,MatReuse,Mat*);
 
 /* MatConvert_MPIAIJ_MPICSRPERM() converts an MPIAIJ matrix into a 
  * SeqCSRPERM matrix.  This routine is called by the MatCreate_MPICSRPERM() 
@@ -118,7 +118,7 @@ extern PetscErrorCode MatConvert_SeqAIJ_SeqCSRPERM(Mat,MatType,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MPIAIJ_MPICSRPERM"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat A,const MatType type,MatReuse reuse,Mat *newmat)
 {
   PetscErrorCode ierr;
   Mat            B = *newmat;
