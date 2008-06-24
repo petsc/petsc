@@ -84,7 +84,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[])
 
 .seealso: MatCreateSNESMF(), MatMFFDRegisterDynamic)
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,MatMFFDType ftype)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,const MatMFFDType ftype)
 {
   PetscErrorCode ierr,(*r)(MatMFFD);
   MatMFFD        ctx = (MatMFFD)mat->data;

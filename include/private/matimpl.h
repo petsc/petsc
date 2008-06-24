@@ -91,7 +91,7 @@ struct _MatOps {
   PetscErrorCode (*getsubmatrix)(Mat,IS,IS,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
-  PetscErrorCode (*convertfrom)(Mat, MatType,MatReuse,Mat*);
+  PetscErrorCode (*convertfrom)(Mat, const MatType,MatReuse,Mat*);
   PetscErrorCode (*usescaledform)(Mat,PetscTruth);
   /*65*/
   PetscErrorCode (*scalesystem)(Mat,Vec,Vec);
@@ -101,7 +101,7 @@ struct _MatOps {
   PetscErrorCode (*zerorowslocal)(Mat,PetscInt,const PetscInt[],PetscScalar);
   /*70*/
   PetscErrorCode (*getrowmaxabs)(Mat,Vec,PetscInt[]);
-  PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
+  PetscErrorCode (*convert)(Mat, const MatType,MatReuse,Mat*);
   PetscErrorCode (*setcoloring)(Mat,ISColoring);
   PetscErrorCode (*setvaluesadic)(Mat,void*);
   PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
@@ -116,7 +116,7 @@ struct _MatOps {
   PetscErrorCode (*mults)(Mat, Vecs, Vecs);
   PetscErrorCode (*solves)(Mat, Vecs, Vecs);
   PetscErrorCode (*getinertia)(Mat,PetscInt*,PetscInt*,PetscInt*);
-  PetscErrorCode (*load)(PetscViewer, MatType,Mat*);
+  PetscErrorCode (*load)(PetscViewer, const MatType,Mat*);
   /*85*/
   PetscErrorCode (*issymmetric)(Mat,PetscReal,PetscTruth*);
   PetscErrorCode (*ishermitian)(Mat,PetscReal,PetscTruth*);
@@ -165,7 +165,7 @@ struct _MatOps {
 /*
    Utility private matrix routines
 */
-EXTERN PetscErrorCode MatConvert_Basic(Mat, MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode MatConvert_Basic(Mat, const MatType,MatReuse,Mat*);
 EXTERN PetscErrorCode MatCopy_Basic(Mat,Mat,MatStructure);
 EXTERN PetscErrorCode MatView_Private(Mat);
 

@@ -1538,7 +1538,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetInterpolation(DMComposite coarse,
 .seealso DAGetMatrix(), DMCompositeCreate()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatType mtype,Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next = packer->next;

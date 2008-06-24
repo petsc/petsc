@@ -557,7 +557,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscInt          rows,cols;
   PetscTruth        iascii;
-  const char        *cstr;
+  const MatType     cstr;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -3212,7 +3212,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
 
 .seealso: MatCopy(), MatDuplicate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, const MatType newtype,MatReuse reuse,Mat *M)
 {
   PetscErrorCode         ierr;
   PetscTruth             sametype,issame,flg;
@@ -3242,7 +3242,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
   if ((sametype || issame) && (reuse==MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
-    PetscErrorCode (*conv)(Mat, MatType,MatReuse,Mat*)=PETSC_NULL;
+    PetscErrorCode (*conv)(Mat, const MatType,MatReuse,Mat*)=PETSC_NULL;
     const char     *prefix[3] = {"seq","mpi",""};
     PetscInt       i;
     /* 
@@ -6590,7 +6590,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetric(Mat A,PetscReal tol,PetscTruth 
   PetscValidPointer(flg,2);
   if (!A->symmetric_set) {
     if (!A->ops->issymmetric) {
-      MatType mattype;
+      const MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for symmetric",mattype);
     }
@@ -6634,7 +6634,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat A,PetscReal tol,PetscTruth 
   PetscValidPointer(flg,2);
   if (!A->hermitian_set) {
     if (!A->ops->ishermitian) {
-      MatType mattype;
+      const MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for Hermitian",mattype);
     }

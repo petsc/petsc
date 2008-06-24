@@ -36,7 +36,7 @@ typedef struct _p_PC* PC;
 
 .seealso: PCSetType(), PC, PCCreate()
 E*/
-#define PCType const char*
+#define PCType char*
 #define PCNONE            "none"
 #define PCJACOBI          "jacobi"
 #define PCSOR             "sor"
@@ -83,7 +83,7 @@ typedef enum { PC_LEFT,PC_RIGHT,PC_SYMMETRIC } PCSide;
 extern const char *PCSides[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate(MPI_Comm,PC*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC,PCType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC,const PCType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetUpOnBlocks(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCApply(PC,Vec,Vec);
@@ -152,7 +152,7 @@ M*/
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDestroy(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC,PCType*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC,const PCType*);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix(PC,Mat*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetModifySubMatrices(PC,PetscErrorCode(*)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void*);

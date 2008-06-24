@@ -43,7 +43,7 @@ struct _p_Sliced {
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SlicedGetMatrix(Sliced slice, MatType mtype,Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT SlicedGetMatrix(Sliced slice, const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   PetscInt               *globals,rstart,i;

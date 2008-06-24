@@ -29,7 +29,7 @@ PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;
 .seealso: PetscRandomGetType(), PetscRandomCreate()
 @*/
 
-PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom rnd, PetscRandomType type)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom rnd, const PetscRandomType type)
 {
   PetscErrorCode (*r)(PetscRandom);
   PetscTruth     match;
@@ -71,7 +71,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom rnd, PetscRandomTy
 .keywords: random, get, type, name
 .seealso: PetscRandomSetType(), PetscRandomCreate()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom rnd, PetscRandomType *type)
+PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom rnd, const PetscRandomType *type)
 {
   PetscErrorCode ierr;
 

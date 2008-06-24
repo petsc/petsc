@@ -26,10 +26,10 @@ typedef struct _p_SNES* SNES;
 
 .seealso: SNESSetType(), SNES
 E*/
-#define SNESType const char*
-#define SNESLS          "ls"
-#define SNESTR          "tr"
-#define SNESTEST        "test"
+#define SNESType char*
+#define SNESLS   "ls"
+#define SNESTR   "tr"
+#define SNESTEST "test"
 
 /* Logging support */
 extern PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE;
@@ -38,7 +38,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char[]);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm,SNES*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES,SNESType);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES,const SNESType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSet(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorCancel(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscTruth);
@@ -123,7 +123,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDComputeJacobian(SNES,Vec,Mat*,M
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatDAADSetSNES(Mat,SNES);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES,SNESType*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES,const SNESType*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRatio(SNES,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES,PetscViewerASCIIMonitor);

@@ -1424,7 +1424,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC pc,KSP ksp)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
 {
-  PCType            cstr;
+  const PCType      cstr;
   PetscErrorCode    ierr;
   PetscTruth        mat_exists,iascii,isstring;
   PetscViewerFormat format;

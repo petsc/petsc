@@ -277,7 +277,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,PetscScalar* x,PetscS
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT PFView(PF pf,PetscViewer viewer)
 {
-  PFType            cstr;
+  const PFType      cstr;
   PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
@@ -386,7 +386,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[
 .seealso: PFSetType()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,PFType *meth)
+PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,const PFType *meth)
 {
   PetscFunctionBegin;
   *meth = (PFType) ((PetscObject)pf)->type_name;
@@ -421,7 +421,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,PFType *meth)
 .seealso: PFSet(), PFRegisterDynamic(), PFCreate(), DACreatePF()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,PFType type,void *ctx)
+PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,const PFType type,void *ctx)
 {
   PetscErrorCode ierr,(*r)(PF,void*);
   PetscTruth     match;

@@ -364,7 +364,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype, Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, const MatType mtype, Mat *J)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
   PetscTruth          flag;
@@ -485,7 +485,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 .keywords: Mesh, set, typr
 .seealso: MeshGetType(), MeshType
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, MeshType type)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, const MeshType type)
 {
   PetscErrorCode ierr,(*r)(Mesh);
   PetscTruth     match;
@@ -527,7 +527,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, MeshType type)
 .keywords: Mesh, get, type
 .seealso: MeshSetType()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,MeshType *type)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,const MeshType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,MESH_COOKIE,1);

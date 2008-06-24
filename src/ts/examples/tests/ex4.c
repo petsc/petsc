@@ -58,7 +58,7 @@ int main(int argc,char **argv)
   PC		 pc;
   PetscViewer    viewer;
   char           pcinfo[120],tsinfo[120];
-  TSType         tstype;
+  const TSType   tstype;
   PetscTruth     sundials;
 #endif
 

@@ -320,7 +320,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA adda, ISColoringType ctype
 
 .seealso: DMGetMatrix()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA adda, MatType mtype, Mat *mat) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA adda, const MatType mtype, Mat *mat) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adda, ADDA_COOKIE, 1);
@@ -352,7 +352,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA adda, MatType mtype, Mat *ma
 
 .seealso: DMGetMatrix()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(ADDA addar, ADDA addac, MatType mtype, Mat *mat) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(ADDA addar, ADDA addac, const MatType mtype, Mat *mat) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(addar, ADDA_COOKIE, 1);

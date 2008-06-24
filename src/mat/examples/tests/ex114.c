@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PetscInt       imin[M],imax[M],imaxabs[M],indices[N],row;
   PetscScalar    values[N];
   PetscErrorCode ierr;
-  MatType        type;
+  const MatType  type;
   PetscMPIInt    size;
   PetscTruth     doTest;
 

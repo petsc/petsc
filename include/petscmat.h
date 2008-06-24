@@ -26,7 +26,7 @@ typedef struct _p_Mat*           Mat;
 
 .seealso: MatSetType(), Mat
 E*/
-#define MatType const char*
+#define MatType char*
 #define MATSAME            "same"
 #define MATSEQMAIJ         "seqmaij"
 #define MATMPIMAIJ         "mpimaij"
@@ -126,7 +126,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm,Mat*);
 PetscPolymorphicFunction(MatCreate,(MPI_Comm comm),(comm,&A),Mat,A)
 PetscPolymorphicFunction(MatCreate,(),(PETSC_COMM_WORLD,&A),Mat,A)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,MatType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,const MatType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSolverType(Mat,MatSolverType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSolverType(Mat,MatSolverType*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat);
@@ -358,8 +358,8 @@ typedef enum {MAT_ROW_ORIENTED,MAT_NEW_NONZERO_LOCATIONS,
               MAT_GETROW_UPPERTRIANGULAR} MatOption;
 extern const char *MatOptions[];
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat,MatOption,PetscTruth);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat,MatType*);
-PetscPolymorphicFunction(MatGetType,(Mat mat),(mat,&t),MatType,t)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat,const MatType*);
+PetscPolymorphicFunction(MatGetType,(Mat mat),(mat,&t),const MatType,t)
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRow(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
@@ -403,8 +403,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat,Mat,Mat);
 E*/
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES} MatDuplicateOption;
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat,MatType,MatReuse,Mat*);
-PetscPolymorphicFunction(MatConvert,(Mat A,MatType t),(A,t,MAT_INITIAL_MATRIX,&a),Mat,a)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat,const MatType,MatReuse,Mat*);
+PetscPolymorphicFunction(MatConvert,(Mat A,const MatType t),(A,t,MAT_INITIAL_MATRIX,&a),Mat,a)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat,MatDuplicateOption,Mat*);
 PetscPolymorphicFunction(MatDuplicate,(Mat A,MatDuplicateOption o),(A,o,&a),Mat,a)
 PetscPolymorphicFunction(MatDuplicate,(Mat A),(A,MAT_COPY_VALUES,&a),Mat,a)
@@ -432,8 +432,8 @@ PetscPolymorphicFunction(MatIsHermitian,(Mat A),(A,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat,PetscTruth *,PetscInt *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,MatType,Mat*);
-PetscPolymorphicFunction(MatLoad,(PetscViewer v,MatType t),(v,t,&a),Mat,a)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,const MatType,Mat*);
+PetscPolymorphicFunction(MatLoad,(PetscViewer v,const MatType t),(v,t,&a),Mat,a)
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
@@ -1100,7 +1100,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPBRelax(Mat,Vec,PetscReal,MatSORType
 
 .seealso: MatGetColoring()
 E*/
-#define MatColoringType const char*
+#define MatColoringType char*
 #define MATCOLORING_NATURAL "natural"
 #define MATCOLORING_SL      "sl"
 #define MATCOLORING_LF      "lf"
@@ -1209,7 +1209,7 @@ typedef struct _p_MatPartitioning* MatPartitioning;
 
 .seealso: MatPartitioningCreate(), MatPartitioning
 E*/
-#define MatPartitioningType const char*
+#define MatPartitioningType char*
 #define MAT_PARTITIONING_CURRENT  "current"
 #define MAT_PARTITIONING_SQUARE   "square"
 #define MAT_PARTITIONING_PARMETIS "parmetis"
@@ -1220,7 +1220,7 @@ E*/
 
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm,MatPartitioning*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning,MatPartitioningType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning,const MatPartitioningType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetNParts(MatPartitioning,PetscInt);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning,Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
@@ -1280,7 +1280,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning,PetscViewer);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetFromOptions(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning,const MatPartitioningType*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 
@@ -1517,11 +1517,11 @@ typedef struct _p_MatMFFD* MatMFFD;
 
 .seealso: MatMFFDSetType(), MatMFFDRegister()
 E*/
-#define MatMFFDType const char*
+#define MatMFFDType char*
 #define MATMFFD_DS  "ds"
 #define MATMFFD_WP  "wp"
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat,MatMFFDType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat,const MatMFFDType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatMFFD));
 
 /*MC

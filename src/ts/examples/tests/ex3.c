@@ -143,7 +143,7 @@ int main(int argc,char **argv)
 
 #ifdef PETSC_HAVE_SUNDIALS
   {
-    TSType         type;
+    cosnt TSType   type;
     PetscTruth     sundialstype=PETSC_FALSE;
     ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)ts,TS_SUNDIALS,&sundialstype);CHKERRQ(ierr);

@@ -1281,7 +1281,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries (Vec vec)
 static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 {
   PetscTruth     opt;
-  const char     *defaultType;
+  const VecType  defaultType;
   char           typeName[256];
   PetscMPIInt    size;
   PetscErrorCode ierr;

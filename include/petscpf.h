@@ -19,7 +19,7 @@ extern PetscFList PFList;
 
 .seealso: PFSetType(), PF
 E*/
-#define PFType const char*
+#define PFType char*
 #define PFCONSTANT      "constant"
 #define PFMAT           "mat"
 #define PFSTRING        "string"
@@ -41,7 +41,7 @@ typedef struct _p_PF* PF;
 extern PetscCookie PF_COOKIE;
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFCreate(MPI_Comm,PetscInt,PetscInt,PF*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF,PFType,void*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF,const PFType,void*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF,PetscErrorCode(*)(void*,PetscInt,PetscScalar*,PetscScalar*),PetscErrorCode(*)(void*,Vec,Vec),PetscErrorCode(*)(void*,PetscViewer),PetscErrorCode(*)(void*),void*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF,PetscInt,PetscScalar*,PetscScalar*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF,Vec,Vec);
@@ -60,7 +60,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char[],const char[],co
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF,PFType*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF,const PFType*);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PFView(PF,PetscViewer);
 

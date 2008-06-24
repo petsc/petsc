@@ -3310,7 +3310,7 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_SeqAIJ"
-PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer, MatType type,Mat *A)
+PetscErrorCode MatLoad_SeqAIJ(PetscViewer viewer, const MatType type,Mat *A)
 {
   Mat_SeqAIJ     *a;
   Mat            B;

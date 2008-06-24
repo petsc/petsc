@@ -37,8 +37,8 @@
 !     Create large IS and test ISGetIndices(,ierr)
 
       n = 1000
-      do 10, i=1,n
-        indices(i) = rank + i
+      do 10, i=0,n-1
+        indices(i) = i
  10   continue
       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,is,ierr) 
            CHKERRQ(ierr)
