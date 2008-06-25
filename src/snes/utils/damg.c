@@ -93,13 +93,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
 .seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser(), DMMGCreate(), DMMGSetNullSpace()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,MatType mtype)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,const MatType mtype)
 {
-  PetscInt i;
-  
+  PetscInt       i;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   for (i=0; i<dmmg[0]->nlevels; i++) {
-    dmmg[i]->mtype  = mtype;
+    ierr = PetscStrallocpy(mtype,&dmmg[i]->mtype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -200,6 +201,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
   }
   for (i=0; i<nlevels; i++) {
     ierr = PetscStrfree(dmmg[i]->prefix);CHKERRQ(ierr);
+    ierr = PetscStrfree(dmmg[i]->mtype);CHKERRQ(ierr);
     if (dmmg[i]->dm)      {ierr = DMDestroy(dmmg[i]->dm);CHKERRQ(ierr);}
     if (dmmg[i]->x)       {ierr = VecDestroy(dmmg[i]->x);CHKERRQ(ierr);}
     if (dmmg[i]->b)       {ierr = VecDestroy(dmmg[i]->b);CHKERRQ(ierr);}
