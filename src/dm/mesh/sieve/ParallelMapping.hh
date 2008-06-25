@@ -27,11 +27,13 @@ namespace ALE {
   public:
     typedef Point                           point_type;
     typedef std::map<point_type,point_type> renumbering_type;
+    typedef std::map<int,std::map<point_type,point_type> > remote_renumbering_type;
   protected:
     point_type       originalMax;
     point_type       currentMax;
     renumbering_type renumbering;
     renumbering_type invRenumbering;
+    remote_renumbering_type remoteRenumbering;
   protected:
     PointFactory(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug), originalMax(-1) {};
   public:
@@ -81,6 +83,51 @@ namespace ALE {
         this->invRenumbering[ex(*p_iter)] = firstPoint;
       }
     };
+  public:
+    void constructRemoteRenumbering() {
+      const int localSize   = this->renumbering.size();
+      int      *remoteSizes = new int[this->commSize()];
+      int      *localMap    = new int[localSize*2];
+      int      *recvCounts  = new int[this->commSize()];
+      int      *displs      = new int[this->commSize()];
+
+      // Populate arrays
+      int r = 0;
+      for(typename renumbering_type::const_iterator r_iter = renumbering.begin(); r_iter != renumbering.end(); ++r_iter, ++r) {
+        localMap[r*2+0] = r_iter->first;
+        localMap[r*2+1] = r_iter->second;
+      }
+      // Communicate renumbering sizes
+      MPI_Allgather((void*) &localSize, 1, MPI_INT, remoteSizes, 1, MPI_INT, this->comm());
+      for(int p = 0; p < this->commSize(); ++p) {
+        recvCounts[p] = remoteSizes[p]*2;
+        if (p == 0) {
+          displs[p]   = 0;
+        } else {
+          displs[p]   = displs[p-1] + recvCounts[p-1];
+        }
+      }
+      int *remoteMaps = new int[displs[this->commSize()-1]+recvCounts[this->commSize()-1]];
+      // Communicate renumberings
+      MPI_Allgatherv(localMap, localSize*2, MPI_INT, remoteMaps, recvCounts, displs, MPI_INT, this->comm());
+      // Populate maps
+      for(int p = 0; p < this->commSize(); ++p) {
+        if (p == this->commRank()) continue;
+        int offset = displs[p];
+
+        for(int r = 0; r < remoteSizes[p]; ++r) {
+          this->remoteRenumbering[p][remoteMaps[r*2+0+offset]] = remoteMaps[r*2+1+offset];
+          std::cout << "["<<this->commRank()<<"]: Remote renumbering["<<p<<"] " << remoteMaps[r*2+0+offset] << " --> " << remoteMaps[r*2+1+offset] << std::endl;
+        }
+      }
+      // Cleanup
+      delete [] recvCounts;
+      delete [] displs;
+      delete [] localMap;
+      delete [] remoteMaps;
+      delete [] remoteSizes;
+    };
+  public:
     // global point --> local point
     renumbering_type& getRenumbering() {
       return this->renumbering;
@@ -88,6 +135,10 @@ namespace ALE {
     // local point --> global point
     renumbering_type& getInvRenumbering() {
       return this->invRenumbering;
+    };
+    // rank --> global point --> local point
+    remote_renumbering_type& getRemoteRenumbering() {
+      return this->remoteRenumbering;
     };
   };
 
