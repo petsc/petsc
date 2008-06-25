@@ -3111,7 +3111,7 @@ PetscErrorCode MatMatMult_SeqDense_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal f
 M*/
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 EXTERN_C_BEGIN

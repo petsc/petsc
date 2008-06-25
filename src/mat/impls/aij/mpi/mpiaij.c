@@ -4750,8 +4750,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat A, Vec *lvec, P
 }
 
 EXTERN_C_BEGIN
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat,MatType,MatReuse,Mat*);
-extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat,const MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 #include "src/mat/impls/dense/mpi/mpidense.h"
