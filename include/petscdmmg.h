@@ -60,6 +60,7 @@ struct _n_DMMG {
   PetscTruth     updatejacobian;         /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
   PetscInt       updatejacobianperiod;   /* how often, inside a SNES, the Jacobian is recomputed */
 
+  PetscTruth     getcoloringfrommat;     /* call a graph coloring algorithm on the matrix to get the coloring, instead of getting it from the DM */
   ISColoringType isctype;
   MatFDColoring  fdcoloring;             /* only used with FD coloring for Jacobian */  
   SNES           snes;                  

@@ -13,6 +13,8 @@ static char help[] = "Model multi-physics solver. Modified from src/snes/example
 extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
 extern PetscErrorCode FormFunctionComp(SNES,Vec,Vec,void*);
 extern PetscLogEvent  EVENT_FORMFUNCTIONLOCAL1, EVENT_FORMFUNCTIONLOCAL2;;
+extern PetscErrorCode FormCoupleCount(DMComposite,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
+extern PetscErrorCode FormCoupleLocations(DMComposite,Mat,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -63,6 +65,7 @@ int main(int argc,char **argv)
   ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,(DM)da1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,(DM)da2);CHKERRQ(ierr);
+  ierr = DMCompositeSetCoupling(pack,FormCoupleCount,FormCoupleLocations);CHKERRQ(ierr);
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,1,&user,&dmmg_comp);CHKERRQ(ierr);
@@ -192,79 +195,119 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormCouple1to2"
+#define __FUNCT__ "FormCoupleCounts"
 /* 
    Computes the coupling between DA1 and DA2. This determines the location of each coupling between DA1 and DA2 and counts them.
 */
-PetscErrorCode FormCouple1to2(DA da1,PetscInt *dnz,PetscInt *onz,PetscInt __rstart,PetscInt __nrows,PetscInt __start,PetscInt __end)
+PetscErrorCode FormCoupleCount(DMComposite dmcomposite,PetscInt *dnz,PetscInt *onz,PetscInt __rstart,PetscInt __nrows,PetscInt __start,PetscInt __end)
 {
-  PetscInt       i,j,cols[2],istart,jstart,in,jn,row,shift,M;
+  PetscInt       i,j,cols[2],istart,jstart,in,jn,row,col,M;
   PetscErrorCode ierr;
+  DA             da1,da2;
 
   PetscFunctionBegin;
+  ierr =  DMCompositeGetEntries(dmcomposite,&da1,&da2);CHKERRQ(ierr);
   ierr =  DAGetInfo(da1,0,&M,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr  = DAGetCorners(da1,&istart,&jstart,PETSC_NULL,&in,&jn,PETSC_NULL);CHKERRQ(ierr);
-  row   = __rstart + 2;  /* global location of first omega on this process */
-  shift = __rstart + 3*in*jn;  /* global location of first temp on this process */
 
+  /* coupling from physics 1 to physics 2 */
+  row = __rstart + 2;  /* global location of first omega on this process */
+  col = __rstart + 3*in*jn;  /* global location of first temp on this process */
   for (j=jstart; j<jstart+jn; j++) {
     for (i=istart; i<istart+in; i++) {
 
       /* each omega is coupled to the temp to the left and right */
       if (i == 0) {
-        cols[0] = shift + 1;
+        cols[0] = col + 1;
         ierr = MatPreallocateSet(row,1,cols,dnz,onz);CHKERRQ(ierr);
       } else if (i == M-1) {
-        cols[0] = shift - 1;
+        cols[0] = col - 1;
         ierr = MatPreallocateSet(row,1,cols,dnz,onz);CHKERRQ(ierr);
       } else {
-        cols[0] = shift - 1;
-        cols[1] = shift + 1;
+        cols[0] = col - 1;
+        cols[1] = col + 1;
         ierr = MatPreallocateSet(row,2,cols,dnz,onz);CHKERRQ(ierr);
       }
 
-      row   += 3;
-      shift += 1;
+      row += 3;
+      col += 1;
     }
   }
+
+  /* coupling from physics 2 to physics 1 */
+  col = __rstart;  /* global location of first u on this process */
+  row = __rstart + 3*in*jn;  /* global location of first temp on this process */
+  for (j=jstart; j<jstart+jn; j++) {
+    for (i=istart; i<istart+in; i++) {
+
+      /* temp is coupled to both u and v at each point */
+      cols[0] = col;
+      cols[1] = col + 1;
+      ierr = MatPreallocateSet(row,2,cols,dnz,onz);CHKERRQ(ierr);
+
+      row += 1;
+      col += 3;
+    }
+  }
+
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
-#define __FUNCT__ "FormMat1to2"
+#define __FUNCT__ "FormCoupleLocations"
 /* 
    Computes the coupling between DA1 and DA2. This determines the location of each coupling between DA1 and DA2 and sets the nonzero location in the matrix
 */
-PetscErrorCode FormMat1to2(DA da1,Mat A,PetscInt __rstart)
+PetscErrorCode FormCoupleLocations(DMComposite dmcomposite ,Mat A,PetscInt __rstart)
 {
-  PetscInt       i,j,cols[2],istart,jstart,in,jn,row,shift,M;
+  PetscInt       i,j,cols[2],istart,jstart,in,jn,row,col,M;
   PetscErrorCode ierr;
   PetscScalar    values[2] = {0.0,0.0};
+  DA             da1,da2;
 
   PetscFunctionBegin;
+  ierr =  DMCompositeGetEntries(dmcomposite,&da1,&da2);CHKERRQ(ierr);
   ierr =  DAGetInfo(da1,0,&M,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr  = DAGetCorners(da1,&istart,&jstart,PETSC_NULL,&in,&jn,PETSC_NULL);CHKERRQ(ierr);
-  row   = __rstart + 2;  /* global location of first omega on this process */
-  shift = __rstart + 3*in*jn;  /* global location of first temp on this process */
 
+  /* coupling from physics 1 to physics 2 */
+  row   = __rstart + 2;  /* global location of first omega on this process */
+  col = __rstart + 3*in*jn;  /* global location of first temp on this process */
   for (j=jstart; j<jstart+jn; j++) {
     for (i=istart; i<istart+in; i++) {
 
       /* each omega is coupled to the temp to the left and right */
       if (i == 0) {
-        cols[0] = shift + 1;
+        cols[0] = col + 1;
         ierr = MatSetValues(A,1,&row,1,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       } else if (i == M-1) {
-        cols[0] = shift - 1;
+        cols[0] = col - 1;
         ierr = MatSetValues(A,1,&row,1,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       } else {
-        cols[0] = shift - 1;
-        cols[1] = shift + 1;
+        cols[0] = col - 1;
+        cols[1] = col + 1;
         ierr = MatSetValues(A,1,&row,2,cols,values,INSERT_VALUES);CHKERRQ(ierr);
       }
 
       row   += 3;
-      shift += 1;
+      col += 1;
+    }
+  }
+
+  /* coupling from physics 2 to physics 1 */
+  col = __rstart;  /* global location of first u on this process */
+  row = __rstart + 3*in*jn;  /* global location of first temp on this process */
+  for (j=jstart; j<jstart+jn; j++) {
+    for (i=istart; i<istart+in; i++) {
+
+      /* temp is coupled to both u and v at each point */
+      cols[0] = col;
+      cols[1] = col + 1;
+      ierr = MatSetValues(A,1,&row,2,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+
+      row += 1;
+      col += 3;
     }
   }
   PetscFunctionReturn(0);

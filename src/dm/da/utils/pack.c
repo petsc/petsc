@@ -38,7 +38,44 @@ struct _p_DMComposite {
   PetscInt               nDM,nredundant,nmine; /* how many DM's and seperate redundant arrays used to build DMComposite (nmine is ones on this process) */
   PetscTruth             setup;                /* after this is set, cannot add new links to the DMComposite */
   struct DMCompositeLink *next;
+
+  PetscErrorCode (*FormCoupleCount)(DMComposite,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
+  PetscErrorCode (*FormCoupleLocations)(DMComposite,Mat,PetscInt);
+
 };
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeSetCoupling"
+/*@C
+    DMCompositeSetCoupling - Sets user provided routines that compute the coupling between the 
+      seperate components (DA's and arrays) in a DMComposite to build the correct matrix nonzero structure.
+
+
+    Collective on MPI_Comm
+
+    Input Parameter:
++   dmcomposite - the composite object
+.   fomcouplecount - routine to compute the counts of nonzeros
+-   formcouplelocations - routine to set the nonzero locations in the matrix
+
+    Level: advanced
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeScatter(),
+         DMCompositeGather(), DMCompositeCreateGlobalVector(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess()
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetCoupling(DMComposite dmcomposite,  PetscErrorCode (*FormCoupleCount)(DMComposite,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt),
+							PetscErrorCode (*FormCoupleLocations)(DMComposite,Mat,PetscInt))
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  dmcomposite->FormCoupleCount     = FormCoupleCount;
+  dmcomposite->FormCoupleLocations = FormCoupleLocations;
+  PetscFunctionReturn(0);
+}
+
 
 
 #undef __FUNCT__  
@@ -1630,6 +1667,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, const 
     }
     next = next->next;
   }
+  if (packer->FormCoupleCount) {
+    ierr = (*packer->FormCoupleCount)(packer,dnz,onz,__rstart,__nrows,__start,__end);CHKERRQ(ierr);
+  }
   ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -1678,6 +1718,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, const 
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
     next = next->next;
+  }
+  if (packer->FormCoupleLocations) {
+    PetscInt __rstart;
+    ierr = MatGetOwnershipRange(*J,&__rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = (*packer->FormCoupleLocations)(packer,*J,__rstart);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  

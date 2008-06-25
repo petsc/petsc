@@ -529,6 +529,7 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 
     Options Database Keys:
 +    -dmmg_snes_monitor
+.    -dmmg_coloring_from_mat - use graph coloring on the actual matrix nonzero structure instead of getting the coloring from the DM
 .    -dmmg_jacobian_fd
 .    -dmmg_jacobian_ad
 .    -dmmg_jacobian_mf_fd_operator
@@ -580,6 +581,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = PetscOptionsInt("-dmmg_fas_max_its","Maximum number of iterates per smoother","DMMG",fasMaxIter,&fasMaxIter,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-dmmg_snes_monitor","Monitor nonlinear convergence","SNESMonitorSet",&snesmonitor);CHKERRQ(ierr);
+
+    ierr = PetscOptionsTruth("-dmmg_coloring_from_mat","Compute the coloring directly from the matrix nonzero structure","DMMGSetSNES",dmmg[0]->getcoloringfrommat,&dmmg[0]->getcoloringfrommat,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-dmmg_jacobian_fd","Compute sparse Jacobian explicitly with finite differencing","DMMGSetSNES",&fdjacobian);CHKERRQ(ierr);
     if (fdjacobian) jacobian = DMMGComputeJacobianWithFD;
@@ -696,7 +699,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ISColoring iscoloring;
 
     for (i=0; i<nlevels; i++) {
-      ierr = DMGetColoring(dmmg[i]->dm,dmmg[0]->isctype,&iscoloring);CHKERRQ(ierr);
+      if (dmmg[0]->getcoloringfrommat) {
+        ierr = MatGetColoring(dmmg[i]->B,MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
+      } else {
+        ierr = DMGetColoring(dmmg[i]->dm,dmmg[0]->isctype,&iscoloring);CHKERRQ(ierr);
+      }
       ierr = MatFDColoringCreate(dmmg[i]->B,iscoloring,&dmmg[i]->fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
       if (function == DMMGFormFunction) function = DMMGFormFunctionFD;
