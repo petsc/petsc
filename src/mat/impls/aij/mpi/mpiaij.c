@@ -350,7 +350,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
       high2    = nrow2;
 
       for (j=0; j<n; j++) {
-        if (roworiented) value = v[i*n+j]; else value = v[i+j*m];
+        if (v) {if (roworiented) value = v[i*n+j]; else value = v[i+j*m];} else value = 0.0;
         if (ignorezeroentries && value == 0.0 && (addv == ADD_VALUES)) continue;
         if (in[j] >= cstart && in[j] < cend){
           col = in[j] - cstart;

@@ -852,6 +852,40 @@ M*/
 }
 
 /*MC
+   MatPreallocateLocation -  An alternative to MatPreallocationSet() that puts the nonzero locations into the matrix if it exists
+
+   Synopsis:
+   PetscErrorCode MatPreallocateLocations(Mat A,PetscInt row,PetscInt ncols,PetscInt *cols,PetscInt *dnz,PetscInt *onz)
+
+   Not Collective
+
+   Input Parameters:
+.  A - matrix
+.  row - row where values exist (must be local to this process)
+.  ncols - number of columns
+.  cols - columns with nonzeros
+.  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+
+   Level: intermediate
+
+   Notes:
+   See the chapter in the users manual on performance for more details
+
+   Do not malloc or free dnz and onz that is handled internally by these routines
+
+   This is a MACRO not a function because it uses a bunch of variables private to the MatPreallocation.... routines.
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
+          MatPreallocateSymmetricInitialize(), MatPreallocateSymmetricSetLocal()
+M*/
+#define MatPreallocateLocation(A,row,ncols,cols,dnz,onz) 0;if (A) {ierr = MatSetValues(A,1,&row,ncols,cols,PETSC_NULL,INSERT_VALUES); CHKERRQ(ierr);} else {ierr =  MatPreallocateSet(row,ncols,cols,dnz,onz);CHKERRQ(ierr);}
+
+
+/*MC
    MatPreallocateFinalize - Ends the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
@@ -861,7 +895,7 @@ M*/
    Collective on MPI_Comm
 
    Input Parameters:
-+  dnz - the array that will be passed to the matrix preallocation routines
++  dnz - the array that was be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
 
 

@@ -191,10 +191,14 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
       if (in[l] >= A->cmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->cmap.n-1);
 #endif
       col = in[l];
-      if (roworiented) {
-        value = v[l + k*n]; 
+      if (v) {
+	if (roworiented) {
+	  value = v[l + k*n]; 
+	} else {
+	  value = v[k + l*m];
+	}
       } else {
-        value = v[k + l*m];
+        value = 0;
       }
       if (value == 0.0 && ignorezeroentries && (is == ADD_VALUES)) continue;
 
