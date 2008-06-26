@@ -248,6 +248,7 @@ PetscErrorCode globalizeLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const AL
   ALE::PointFactory<typename Mesh::point_type>& pointFactory = ALE::PointFactory<ALE::Mesh::point_type>::singleton(mesh->comm(), mesh->getSieve()->getChart().max(), mesh->debug());
   // Check for points not in sendOverlap
   std::set<typename Mesh::point_type> interiorPoints;
+  std::set<typename Mesh::point_type> overlapSources;
   std::set<typename Mesh::sieve_type::arrow_type> overlapArrows;
   const Obj<ALE::Mesh::sieve_type::traits::capSequence>& columns = adjGraph->cap();
 
@@ -303,7 +304,12 @@ PetscErrorCode globalizeLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const AL
   pointFactory.clear();
   pointFactory.setMax(mesh->getSieve()->getChart().max());
   pointFactory.renumberPoints(interiorPoints.begin(), interiorPoints.end());
-  pointFactory.renumberPoints(overlapArrows.begin(), overlapArrows.end(), SelectSource<typename Mesh::sieve_type::arrow_type>());
+  //pointFactory.renumberPoints(overlapArrows.begin(), overlapArrows.end(), SelectSource<typename Mesh::sieve_type::arrow_type>());
+  // They should use a key extractor: overlapSources.insert(overlapArrows.begin(), overlapArrows.end(), SelectSource<typename Mesh::sieve_type::arrow_type>());
+  for(typename std::set<typename Mesh::sieve_type::arrow_type>::const_iterator a_iter = overlapArrows.begin(); a_iter != overlapArrows.end(); ++a_iter) {
+    overlapSources.insert(a_iter->source);
+  }
+  pointFactory.renumberPoints(overlapSources.begin(), overlapSources.end());
   typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type& renumbering    = pointFactory.getRenumbering();
   typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type& invRenumbering = pointFactory.getInvRenumbering();
   // Replace points in local adjacency graph
