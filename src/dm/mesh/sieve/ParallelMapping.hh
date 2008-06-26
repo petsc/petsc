@@ -117,7 +117,7 @@ namespace ALE {
 
         for(int r = 0; r < remoteSizes[p]; ++r) {
           this->remoteRenumbering[p][remoteMaps[r*2+0+offset]] = remoteMaps[r*2+1+offset];
-          std::cout << "["<<this->commRank()<<"]: Remote renumbering["<<p<<"] " << remoteMaps[r*2+0+offset] << " --> " << remoteMaps[r*2+1+offset] << std::endl;
+          if (this->debug()) {std::cout << "["<<this->commRank()<<"]: Remote renumbering["<<p<<"] " << remoteMaps[r*2+0+offset] << " --> " << remoteMaps[r*2+1+offset] << std::endl;}
         }
       }
       // Cleanup
