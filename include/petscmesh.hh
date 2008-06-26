@@ -9,7 +9,7 @@ using ALE::Obj;
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
 template<typename Mesh, typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, MatType mtype, Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const Obj<Section>& section, const MatType mtype, Mat *J)
 {
   const ALE::Obj<typename Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, "default", section);
   int            localSize  = order->getLocalSize();

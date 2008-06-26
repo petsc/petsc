@@ -65,8 +65,6 @@ struct _p_DMComposite {
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetCoupling(DMComposite dmcomposite,PetscErrorCode (*FormCoupleLocations)(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt))
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   dmcomposite->FormCoupleLocations = FormCoupleLocations;
   PetscFunctionReturn(0);

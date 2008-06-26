@@ -21,7 +21,16 @@ PETSC_EXTERN_CXX_BEGIN
 .seealso:  MeshCreate(), MeshDestroy(), Section, SectionCreate()
 S*/
 typedef struct _p_Mesh* Mesh;
-#define MeshType const char*
+/*E
+    MeshType - String with the name of a PETSc mesh or the creation function
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:mymatcreate()
+
+   Level: beginner
+
+.seealso: MeshSetType(), Mesh
+E*/
+#define MeshType char*
 #define MESHSIEVE     "sieve"
 #define MESHCARTESIAN "cartesian"
 
