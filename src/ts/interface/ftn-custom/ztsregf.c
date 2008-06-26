@@ -21,9 +21,9 @@ void PETSC_STDCALL tssettype_(TS *ts,CHAR type PETSC_MIXED_LEN(len),PetscErrorCo
 
 void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
-  char *tname;
+  const char *tname;
 
-  *ierr = TSGetType(*ts,(TSType *)&tname);
+  *ierr = TSGetType(*ts,&tname);
   *ierr = PetscStrncpy(name,tname,len);
   FIXRETURNCHAR(PETSC_TRUE,name,len);
 }

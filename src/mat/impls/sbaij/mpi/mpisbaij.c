@@ -2064,7 +2064,7 @@ static PetscErrorCode MatDuplicate_MPISBAIJ(Mat matin,MatDuplicateOption cpvalue
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPISBAIJ"
-PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, const MatType type,Mat *newmat)
 {
   Mat            A;
   PetscErrorCode ierr;

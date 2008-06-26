@@ -70,7 +70,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
   SNESKSPEW           *kctx;
   PetscErrorCode      ierr;
   KSP                 ksp;
-  SNESType            type;
+  const SNESType      type;
   PetscTruth          iascii,isstring;
 
   PetscFunctionBegin;
@@ -1983,7 +1983,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
 .seealso: SNESType, SNESCreate()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,SNESType type)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,const SNESType type)
 {
   PetscErrorCode ierr,(*r)(SNES);
   PetscTruth     match;
@@ -2055,7 +2055,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterDestroy(void)
 
 .keywords: SNES, nonlinear, get, type, name
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES snes,SNESType *type)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES snes,const SNESType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);

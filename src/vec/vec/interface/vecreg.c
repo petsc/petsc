@@ -30,7 +30,7 @@ PetscTruth VecRegisterAllCalled          = PETSC_FALSE;
 .keywords: vector, set, type
 .seealso: VecGetType(), VecCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, VecType method)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, const VecType method)
 {
   PetscErrorCode (*r)(Vec);
   PetscTruth     match;
@@ -73,7 +73,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, VecType method)
 .keywords: vector, get, type, name
 .seealso: VecSetType(), VecCreate()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec vec, VecType *type)
+PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec vec, const VecType *type)
 {
   PetscErrorCode ierr;
 

@@ -26,7 +26,7 @@ typedef struct _p_Mat*           Mat;
 
 .seealso: MatSetType(), Mat
 E*/
-#define MatType const char*
+#define MatType char*
 #define MATSAME            "same"
 #define MATSEQMAIJ         "seqmaij"
 #define MATMPIMAIJ         "mpimaij"
@@ -126,7 +126,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm,Mat*);
 PetscPolymorphicFunction(MatCreate,(MPI_Comm comm),(comm,&A),Mat,A)
 PetscPolymorphicFunction(MatCreate,(),(PETSC_COMM_WORLD,&A),Mat,A)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,MatType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,const MatType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSolverType(Mat,MatSolverType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSolverType(Mat,MatSolverType*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat);
@@ -358,8 +358,8 @@ typedef enum {MAT_ROW_ORIENTED,MAT_NEW_NONZERO_LOCATIONS,
               MAT_GETROW_UPPERTRIANGULAR} MatOption;
 extern const char *MatOptions[];
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat,MatOption,PetscTruth);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat,MatType*);
-PetscPolymorphicFunction(MatGetType,(Mat mat),(mat,&t),MatType,t)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat,const MatType*);
+PetscPolymorphicFunction(MatGetType,(Mat mat),(mat,&t),const MatType,t)
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRow(Mat,PetscInt,PetscInt *,const PetscInt *[],const PetscScalar*[]);
@@ -403,8 +403,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat,Mat,Mat);
 E*/
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES} MatDuplicateOption;
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat,MatType,MatReuse,Mat*);
-PetscPolymorphicFunction(MatConvert,(Mat A,MatType t),(A,t,MAT_INITIAL_MATRIX,&a),Mat,a)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat,const MatType,MatReuse,Mat*);
+PetscPolymorphicFunction(MatConvert,(Mat A,const MatType t),(A,t,MAT_INITIAL_MATRIX,&a),Mat,a)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat,MatDuplicateOption,Mat*);
 PetscPolymorphicFunction(MatDuplicate,(Mat A,MatDuplicateOption o),(A,o,&a),Mat,a)
 PetscPolymorphicFunction(MatDuplicate,(Mat A),(A,MAT_COPY_VALUES,&a),Mat,a)
@@ -432,8 +432,8 @@ PetscPolymorphicFunction(MatIsHermitian,(Mat A),(A,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat,PetscTruth *,PetscInt *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,MatType,Mat*);
-PetscPolymorphicFunction(MatLoad,(PetscViewer v,MatType t),(v,t,&a),Mat,a)
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,const MatType,Mat*);
+PetscPolymorphicFunction(MatLoad,(PetscViewer v,const MatType t),(v,t,&a),Mat,a)
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
@@ -637,11 +637,12 @@ PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,
 M*/
 #define MatPreallocateInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
-  PetscErrorCode _4_ierr; PetscInt __tmp = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
-  _4_ierr = PetscMalloc(2*__tmp*sizeof(PetscInt),&dnz);CHKERRQ(_4_ierr);onz = dnz + __tmp;\
-  _4_ierr = PetscMemzero(dnz,2*__tmp*sizeof(PetscInt));CHKERRQ(_4_ierr);\
+  PetscErrorCode _4_ierr; PetscInt __nrows = (nrows),__ctmp = (ncols),__rstart,__start,__end; \
+  _4_ierr = PetscMalloc2(__nrows,PetscInt,&dnz,__nrows,PetscInt,&onz);CHKERRQ(_4_ierr); \
+  _4_ierr = PetscMemzero(dnz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
+  _4_ierr = PetscMemzero(onz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __start = __end - __ctmp;\
-  _4_ierr = MPI_Scan(&__tmp,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __tmp;
+  _4_ierr = MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __nrows;
 
 /*MC
    MatPreallocateSymmetricInitialize - Begins the block of code that will count the number of nonzeros per
@@ -678,11 +679,12 @@ M*/
 M*/
 #define MatPreallocateSymmetricInitialize(comm,nrows,ncols,dnz,onz) 0; \
 { \
-  PetscErrorCode _4_ierr; PetscInt __tmp = (nrows),__ctmp = (ncols),__rstart,__end; \
-  _4_ierr = PetscMalloc(2*__tmp*sizeof(PetscInt),&dnz);CHKERRQ(_4_ierr);onz = dnz + __tmp;\
-  _4_ierr = PetscMemzero(dnz,2*__tmp*sizeof(PetscInt));CHKERRQ(_4_ierr);\
+  PetscErrorCode _4_ierr; PetscInt __nrows = (nrows),__ctmp = (ncols),__rstart,__end; \
+  _4_ierr = PetscMalloc2(__nrows,PetscInt,&dnz,__nrows,PetscInt,&onz);CHKERRQ(_4_ierr); \
+  _4_ierr = PetscMemzero(dnz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
+  _4_ierr = PetscMemzero(onz,__nrows*sizeof(PetscInt));CHKERRQ(_4_ierr);\
   _4_ierr = MPI_Scan(&__ctmp,&__end,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr);\
-  _4_ierr = MPI_Scan(&__tmp,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __tmp;
+  _4_ierr = MPI_Scan(&__nrows,&__rstart,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(_4_ierr); __rstart = __rstart - __nrows;
 
 /*MC
    MatPreallocateSetLocal - Indicates the locations (rows and columns) in the matrix where nonzeros will be
@@ -802,7 +804,7 @@ M*/
 #define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
 { PetscInt __i; \
   if (row < __rstart) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D less than first local row %D",row,__rstart);\
-  if (row >= __rstart+__tmp) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D greater than last local row %D",row,__rstart+__tmp-1);\
+  if (row >= __rstart+__nrows) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D greater than last local row %D",row,__rstart+__nrows-1);\
   for (__i=0; __i<nc; __i++) {\
     if ((cols)[__i] < __start || (cols)[__i] >= __end) onz[row - __rstart]++; \
     else dnz[row - __rstart]++;\
@@ -850,6 +852,40 @@ M*/
 }
 
 /*MC
+   MatPreallocateLocation -  An alternative to MatPreallocationSet() that puts the nonzero locations into the matrix if it exists
+
+   Synopsis:
+   PetscErrorCode MatPreallocateLocations(Mat A,PetscInt row,PetscInt ncols,PetscInt *cols,PetscInt *dnz,PetscInt *onz)
+
+   Not Collective
+
+   Input Parameters:
+.  A - matrix
+.  row - row where values exist (must be local to this process)
+.  ncols - number of columns
+.  cols - columns with nonzeros
+.  dnz - the array that will be passed to the matrix preallocation routines
+-  ozn - the other array passed to the matrix preallocation routines
+
+
+   Level: intermediate
+
+   Notes:
+   See the chapter in the users manual on performance for more details
+
+   Do not malloc or free dnz and onz that is handled internally by these routines
+
+   This is a MACRO not a function because it uses a bunch of variables private to the MatPreallocation.... routines.
+
+  Concepts: preallocation^Matrix
+
+.seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
+          MatPreallocateSymmetricInitialize(), MatPreallocateSymmetricSetLocal()
+M*/
+#define MatPreallocateLocation(A,row,ncols,cols,dnz,onz) 0;if (A) {ierr = MatSetValues(A,1,&row,ncols,cols,PETSC_NULL,INSERT_VALUES); CHKERRQ(ierr);} else {ierr =  MatPreallocateSet(row,ncols,cols,dnz,onz);CHKERRQ(ierr);}
+
+
+/*MC
    MatPreallocateFinalize - Ends the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
@@ -859,7 +895,7 @@ M*/
    Collective on MPI_Comm
 
    Input Parameters:
-+  dnz - the array that will be passed to the matrix preallocation routines
++  dnz - the array that was be passed to the matrix preallocation routines
 -  ozn - the other array passed to the matrix preallocation routines
 
 
@@ -877,7 +913,7 @@ M*/
 .seealso: MatPreallocateInitialize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateSetLocal(),
           MatPreallocateSymmetricInitialize(), MatPreallocateSymmetricSetLocal()
 M*/
-#define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree(dnz);CHKERRQ(_4_ierr);}
+#define MatPreallocateFinalize(dnz,onz) 0;_4_ierr = PetscFree2(dnz,onz);CHKERRQ(_4_ierr);}
 
 
 
@@ -1100,7 +1136,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPBRelax(Mat,Vec,PetscReal,MatSORType
 
 .seealso: MatGetColoring()
 E*/
-#define MatColoringType const char*
+#define MatColoringType char*
 #define MATCOLORING_NATURAL "natural"
 #define MATCOLORING_SL      "sl"
 #define MATCOLORING_LF      "lf"
@@ -1209,7 +1245,7 @@ typedef struct _p_MatPartitioning* MatPartitioning;
 
 .seealso: MatPartitioningCreate(), MatPartitioning
 E*/
-#define MatPartitioningType const char*
+#define MatPartitioningType char*
 #define MAT_PARTITIONING_CURRENT  "current"
 #define MAT_PARTITIONING_SQUARE   "square"
 #define MAT_PARTITIONING_PARMETIS "parmetis"
@@ -1220,7 +1256,7 @@ E*/
 
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm,MatPartitioning*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning,MatPartitioningType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning,const MatPartitioningType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetNParts(MatPartitioning,PetscInt);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning,Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);
@@ -1280,7 +1316,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning,PetscViewer);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetFromOptions(MatPartitioning);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning,MatPartitioningType*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning,const MatPartitioningType*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
 
@@ -1517,11 +1553,11 @@ typedef struct _p_MatMFFD* MatMFFD;
 
 .seealso: MatMFFDSetType(), MatMFFDRegister()
 E*/
-#define MatMFFDType const char*
+#define MatMFFDType char*
 #define MATMFFD_DS  "ds"
 #define MATMFFD_WP  "wp"
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat,MatMFFDType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat,const MatMFFDType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatMFFD));
 
 /*MC

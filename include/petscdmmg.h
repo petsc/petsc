@@ -60,6 +60,7 @@ struct _n_DMMG {
   PetscTruth     updatejacobian;         /* compute new Jacobian when DMMGComputeJacobian_Multigrid() is called */
   PetscInt       updatejacobianperiod;   /* how often, inside a SNES, the Jacobian is recomputed */
 
+  PetscTruth     getcoloringfrommat;     /* call a graph coloring algorithm on the matrix to get the coloring, instead of getting it from the DM */
   ISColoringType isctype;
   MatFDColoring  fdcoloring;             /* only used with FD coloring for Jacobian */  
   SNES           snes;                  
@@ -95,7 +96,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG*,DM);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG*,KSP,PetscInt);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseGalerkinCoarse(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG*,PetscTruth,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG*,MatType);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG*,const MatType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetISColoringType(DMMG*,ISColoringType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetPrefix(DMMG*,const char*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGFormFunction(SNES,Vec,Vec,void *);

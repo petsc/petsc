@@ -14,7 +14,7 @@ int main(int argc,char **args)
   PetscInt       i,j,m = 3,n = 2;
   PetscMPIInt    size,rank;
   PetscInt       solve_count;
-  MatType        type;
+  const MatType  type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);

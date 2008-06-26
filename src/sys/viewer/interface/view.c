@@ -119,7 +119,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer viewer)
 .seealso: PetscViewerCreate(), PetscViewerSetType()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer viewer,const PetscViewerType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -278,10 +278,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetUp(PetscViewer viewer)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerView(PetscViewer v,PetscViewer viewer)
 {
-  PetscErrorCode    ierr;
-  PetscTruth        iascii;
-  const char        *cstr;
-  PetscViewerFormat format;
+  PetscErrorCode        ierr;
+  PetscTruth            iascii;
+  const PetscViewerType cstr;
+  PetscViewerFormat     format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);

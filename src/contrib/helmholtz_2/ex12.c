@@ -29,7 +29,7 @@ a Helmholtz equation in a half-plane.  Input parameters include:\n\
    Routines: SLESSetUp(); SLESSetUpOnBlocks();
    Routines: SLESSolve(); SLESView(); SLESGetPC(); SLESGetKSP();
    Routines: KSPSetTolerances(); PCSetModifySubMatrices();
-   Routines: MatGetTypeFromOptions(); MatCreateSeqAIJ(); MatCreateMPIAIJ();
+   Routines: MatCreateSeqAIJ(); MatCreateMPIAIJ();
    Routines: DACreate2d(); DADestroy(); DACreateGlobalVector(); DAView();
    Routines: DAGetCorners(); DAGetGhostCorners(); DAGetGlobalIndices();
    Routines: ISCreateGeneral(); ISDestroy(); MatZeroRows();

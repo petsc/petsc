@@ -154,7 +154,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void)
 
 .keywords: Partitioning, get, method, name, type
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *type)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partitioning,const MatPartitioningType *type)
 {
   PetscFunctionBegin;
   *type = ((PetscObject)partitioning)->type_name;
@@ -445,9 +445,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartiti
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 {
-  PetscErrorCode      ierr;
-  PetscTruth          iascii;
-  MatPartitioningType name;
+  PetscErrorCode            ierr;
+  PetscTruth                iascii;
+  const MatPartitioningType name;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
@@ -500,7 +500,7 @@ $      (for instance, parmetis)
 .seealso: MatPartitioningCreate(), MatPartitioningApply(), MatPartitioningType
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)
 {
   PetscErrorCode ierr,(*r)(MatPartitioning);
   PetscTruth match;

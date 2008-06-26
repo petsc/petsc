@@ -50,7 +50,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 .seealso: PetscViewerSetType(), PetscViewer
 E*/
-#define PetscViewerType const char*
+#define PetscViewerType char*
 #define PETSC_VIEWER_SOCKET       "socket"
 #define PETSC_VIEWER_ASCII        "ascii"
 #define PETSC_VIEWER_BINARY       "binary"
@@ -136,8 +136,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaOpen(MPI_Comm, int, 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloOpen(MPI_Comm, const char[], PetscViewer *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer,PetscViewerType*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetType(PetscViewer,PetscViewerType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer,const PetscViewerType*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetType(PetscViewer,const PetscViewerType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSingleton(PetscViewer,PetscViewer*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
@@ -155,6 +155,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetOptionsPrefix(PetscViewer,co
     PetscViewerFormat - Way a viewer presents the object
 
    Level: beginner
+
+   The values below are also listed in finclude/petscviewer.h. If another values is added below it
+   must also be added there.
 
 .seealso: PetscViewerSetFormat(), PetscViewer, PetscViewerType, PetscViewerPushFormat(), PetscViewerPopFormat()
 E*/
@@ -175,6 +178,8 @@ typedef enum {
   PETSC_VIEWER_ASCII_PCICE,
   PETSC_VIEWER_ASCII_PYLITH,
   PETSC_VIEWER_ASCII_PYLITH_LOCAL,
+  PETSC_VIEWER_ASCII_PYTHON,
+  PETSC_VIEWER_ASCII_FACTOR_INFO,
   PETSC_VIEWER_BINARY_DEFAULT,
   PETSC_VIEWER_BINARY_NATIVE,
   PETSC_VIEWER_DRAW_BASIC,
@@ -182,8 +187,8 @@ typedef enum {
   PETSC_VIEWER_DRAW_CONTOUR, 
   PETSC_VIEWER_DRAW_PORTS,
   PETSC_VIEWER_NATIVE,
-  PETSC_VIEWER_NOFORMAT,
-  PETSC_VIEWER_ASCII_FACTOR_INFO} PetscViewerFormat;
+  PETSC_VIEWER_NOFORMAT
+  } PetscViewerFormat;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerPushFormat(PetscViewer,PetscViewerFormat);

@@ -158,7 +158,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
       ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
       if (!f) {
         const char *type;
-        PetscObjectGetType((PetscObject) pc->pmat,&type); 
+        ierr = PetscObjectGetType((PetscObject) pc->pmat,&type);CHKERRQ(ierr);
         SETERRQ1(PETSC_ERR_SUP,"This matrix type, %s, does not support getting diagonal block", type);
       }
       ierr = (*f)(pc->pmat,&iscopy,scall,&pmat);CHKERRQ(ierr);

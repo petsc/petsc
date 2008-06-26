@@ -303,7 +303,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_BlockMat"
-PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
+PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, const MatType type,Mat *A)
 {
   PetscErrorCode    ierr;
   Mat               tmpA;

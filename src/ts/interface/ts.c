@@ -69,7 +69,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 
 .keywords: TS, timestep, set, options, database
 
-.seealso: TSGetType
+.seealso: TSGetType()
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
 {
@@ -540,7 +540,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCo
 PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  char           *type;
+  const TSType   type;
   PetscTruth     iascii,isstring;
 
   PetscFunctionBegin;
@@ -555,7 +555,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
-    ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
+    ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     if (type) {
       ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
     } else {
@@ -573,7 +573,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->linear_its);CHKERRQ(ierr);
   } else if (isstring) {
-    ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
+    ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);

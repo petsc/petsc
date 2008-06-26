@@ -541,13 +541,13 @@ EXTERN PetscErrorCode DAGetMatrix3d_MPISBAIJ(DA,Mat);
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills(), DASetMatPreallocateOnly()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, MatType mtype,Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, const MatType mtype,Mat *J)
 {
   PetscErrorCode ierr;
   PetscInt       dim,dof,nx,ny,nz,dims[3],starts[3];
   Mat            A;
   MPI_Comm       comm;
-  MatType        Atype;
+  const MatType  Atype;
   void           (*aij)(void)=PETSC_NULL,(*baij)(void)=PETSC_NULL,(*sbaij)(void)=PETSC_NULL;
 
   PetscFunctionBegin;

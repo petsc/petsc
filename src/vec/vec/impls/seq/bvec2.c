@@ -641,7 +641,7 @@ static PetscErrorCode VecPublish_Seq(PetscObject obj)
 }
 #endif
 
-EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, VecType, Vec*);
+EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, const VecType, Vec*);
 
 static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecDuplicateVecs_Default,

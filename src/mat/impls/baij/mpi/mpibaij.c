@@ -2567,7 +2567,7 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIBAIJ"
-PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, const MatType type,Mat *newmat)
 {
   Mat            A;
   PetscErrorCode ierr;

@@ -13,6 +13,7 @@ static char help[] = "Model multi-physics solver. Modified from src/snes/example
 extern PetscErrorCode FormInitialGuessComp(DMMG,Vec);
 extern PetscErrorCode FormFunctionComp(SNES,Vec,Vec,void*);
 extern PetscLogEvent  EVENT_FORMFUNCTIONLOCAL1, EVENT_FORMFUNCTIONLOCAL2;;
+extern PetscErrorCode FormCoupleLocations(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -63,6 +64,7 @@ int main(int argc,char **argv)
   ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,(DM)da1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,(DM)da2);CHKERRQ(ierr);
+  ierr = DMCompositeSetCoupling(pack,FormCoupleLocations);CHKERRQ(ierr);
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,1,&user,&dmmg_comp);CHKERRQ(ierr);
@@ -190,4 +192,62 @@ PetscErrorCode FormFunctionComp(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DMCompositeRestoreLocalVectors(dm,&X1,&X2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "FormCoupleLocations"
+/* 
+   Computes the coupling between DA1 and DA2. This determines the location of each coupling between DA1 and DA2.
+*/
+PetscErrorCode FormCoupleLocations(DMComposite dmcomposite,Mat A,PetscInt *dnz,PetscInt *onz,PetscInt __rstart,PetscInt __nrows,PetscInt __start,PetscInt __end)
+{
+  PetscInt       i,j,cols[2],istart,jstart,in,jn,row,col,M;
+  PetscErrorCode ierr;
+  DA             da1,da2;
+
+  PetscFunctionBegin;
+  ierr =  DMCompositeGetEntries(dmcomposite,&da1,&da2);CHKERRQ(ierr);
+  ierr =  DAGetInfo(da1,0,&M,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  ierr  = DAGetCorners(da1,&istart,&jstart,PETSC_NULL,&in,&jn,PETSC_NULL);CHKERRQ(ierr);
+
+  /* coupling from physics 1 to physics 2 */
+  row = __rstart + 2;  /* global location of first omega on this process */
+  col = __rstart + 3*in*jn;  /* global location of first temp on this process */
+  for (j=jstart; j<jstart+jn; j++) {
+    for (i=istart; i<istart+in; i++) {
+
+      /* each omega is coupled to the temp to the left and right */
+      if (i == 0) {
+        cols[0] = col + 1;
+        ierr = MatPreallocateLocation(A,row,1,cols,dnz,onz);CHKERRQ(ierr);
+      } else if (i == M-1) {
+        cols[0] = col - 1;
+        ierr = MatPreallocateLocation(A,row,1,cols,dnz,onz);CHKERRQ(ierr);
+      } else {
+        cols[0] = col - 1;
+        cols[1] = col + 1;
+        ierr = MatPreallocateLocation(A,row,2,cols,dnz,onz);CHKERRQ(ierr);
+      }
+      row += 3;
+      col += 1;
+    }
+  }
+
+  /* coupling from physics 2 to physics 1 */
+  col = __rstart;  /* global location of first u on this process */
+  row = __rstart + 3*in*jn;  /* global location of first temp on this process */
+  for (j=jstart; j<jstart+jn; j++) {
+    for (i=istart; i<istart+in; i++) {
+
+      /* temp is coupled to both u and v at each point */
+      cols[0] = col;
+      cols[1] = col + 1;
+      ierr = MatPreallocateLocation(A,row,2,cols,dnz,onz);CHKERRQ(ierr);
+      row += 1;
+      col += 3;
+    }
+  }
+
+  PetscFunctionReturn(0);
+}
+
 

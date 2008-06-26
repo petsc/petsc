@@ -52,7 +52,7 @@ PetscFList PCList = 0;
 .seealso: KSPSetType(), PCType
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc, PCType type)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc,const PCType type)
 {
   PetscErrorCode ierr,(*r)(PC);
   PetscTruth     match;
@@ -127,7 +127,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
 .seealso: PCSetType()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,PCType *meth)
+PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,const PCType *meth)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);

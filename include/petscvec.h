@@ -42,7 +42,7 @@ typedef struct _p_VecScatter*  VecScatter;
 
 .seealso: VecSetType(), Vec
 E*/
-#define VecType const char*
+#define VecType char*
 #define VECSEQ         "seq"
 #define VECMPI         "mpi"
 #define VECFETI        "feti"
@@ -259,8 +259,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlocked(Vec,PetscInt,const 
 /* Dynamic creation and loading functions */
 extern PetscFList VecList;
 extern PetscTruth VecRegisterAllCalled;
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec, VecType);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec, VecType *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec, const VecType);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec, const VecType *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegister(const char[],const char[],const char[],PetscErrorCode (*)(Vec));
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterAll(const char []);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterDestroy(void);
@@ -352,7 +352,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec,PetscViewer);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec, const char *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec,Vec,PetscTruth*);
 PetscPolymorphicFunction(VecEqual,(Vec x,Vec y),(x,y,&s),PetscTruth,s)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,VecType,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,const VecType,Vec*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer,Vec);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec,PetscInt*);
