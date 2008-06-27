@@ -452,7 +452,7 @@ namespace ALE {
       for(int i = oldChart.min(); i < oldChart.max(); ++i) {atlas_alloc_type(this->_allocator).destroy(oldAtlasArray+i);}
       oldAtlasArray += oldChart.min();
       atlas_alloc_type(this->_allocator).deallocate(oldAtlasArray, oldAtlasSize);
-      std::cout << "In ISection, Freed IUniformSection data" << std::endl;
+      ///std::cout << "In ISection, Freed IUniformSection data" << std::endl;
     };
   public:
     // Return the free values on a point
