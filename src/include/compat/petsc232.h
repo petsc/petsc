@@ -1,0 +1,7 @@
+#include "petsc232/petsc.h"
+#include "petsc232/petscsys.h"
+#include "petsc232/petscvec.h"
+#include "petsc232/petscmat.h"
+#include "petsc232/petscksp.h"
+#include "petsc232/petscsnes.h"
+#include "petsc232/petscts.h"

@@ -1,0 +1,6 @@
+#ifndef _PETSC_COMPAT_SYS_H
+#define _PETSC_COMPAT_SYS_H
+
+#define PETSCSPRNG SPRNG
+
+#endif /* _PETSC_COMPAT_SYS_H */

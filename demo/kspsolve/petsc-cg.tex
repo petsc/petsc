@@ -1,0 +1,21 @@
+\begin{equation*}
+\begin{split}
+& cg(A,x,b,i_{max},\epsilon): \\
+& \quad i \Leftarrow 0 \\
+& \quad r \Leftarrow b - A x \\
+& \quad d \Leftarrow r \\
+& \quad \delta_{0} \Leftarrow r^T r \\
+& \quad \delta_{   } \Leftarrow \delta_{0} \\
+& \quad \text{while}\;\; i < i_{max} \text{ and } \\
+& \quad\quad\qquad  \delta_{   } > \delta_{0} \epsilon^2 \text{ do} :\\
+& \quad\quad\quad  q \Leftarrow Ad \\
+& \quad\quad\quad  \alpha \Leftarrow \frac{\delta_{   }}{d^T q} \\
+& \quad\quad\quad  x \Leftarrow x + \alpha d\\
+& \quad\quad\quad  r \Leftarrow r - \alpha q\\
+& \quad\quad\quad  \delta_{old} \Leftarrow \delta_{   } \\
+& \quad\quad\quad  \delta_{   } \Leftarrow r^T r \\
+& \quad\quad\quad  \beta \Leftarrow \frac{\delta_{   }}{\delta_{old}} \\
+& \quad\quad\quad  d \Leftarrow r + \beta d\\
+& \quad\quad\quad  i \Leftarrow i + 1
+\end{split}
+\end{equation*}
