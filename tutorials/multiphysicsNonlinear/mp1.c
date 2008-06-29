@@ -690,6 +690,13 @@ PetscErrorCode PetscLogPrintSummaryToPy(MPI_Comm comm, PetscViewer viewer)
        Problem: Event visibility is not implemented
     */
     
+    if (!rank){
+      ierr = PetscFPrintf(comm, fd, "class Dummy(object):\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "    def foo(x):\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "        print x\n");CHKERRQ(ierr);
+      ierr = PetscFPrintf(comm, fd, "Event = {}\n");CHKERRQ(ierr);
+    }
+
     if (localStageUsed[stage]) {
       eventInfo      = stageLog->stageInfo[stage].eventLog->eventInfo;
       localNumEvents = stageLog->stageInfo[stage].eventLog->numEvents;
@@ -762,9 +769,8 @@ PetscErrorCode PetscLogPrintSummaryToPy(MPI_Comm comm, PetscViewer viewer)
         if (maxt          != 0.0) flopr            = totf/maxt;                  else flopr            = 0.0;
         ierr = PetscFPrintf(comm, fd,"#\n");CHKERRQ(ierr);
         if (!rank){
-          ierr = PetscFPrintf(comm, fd, "class %s(object):\n", name);CHKERRQ(ierr);
-          ierr = PetscFPrintf(comm, fd, "    def dummy(x):\n");CHKERRQ(ierr);
-          ierr = PetscFPrintf(comm, fd, "        print x\n");CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fd, "%s = Dummy()\n",name);CHKERRQ(ierr);
+          ierr = PetscFPrintf(comm, fd, "Event['%s'] = %s\n",name,name);CHKERRQ(ierr);
           /* Count */
           ierr = PetscFPrintf(comm, fd, "%s.Count = [ ", name);CHKERRQ(ierr); 
           for (i=0; i<size; i++){
