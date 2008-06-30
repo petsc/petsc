@@ -39,10 +39,10 @@ SWIG_convert_ptr(PyObject *obj, void **ptr, swig_type_info *ty, int flags) {
   "in method '"name"', output value of type '"type"'"
 #define SWIG_ArgIn_Fail(code, name, type, argn)	\
   SWIG_exception_fail(SWIG_ArgError(code),SWIG_ArgFail_Fmt(type, name, argn))
-#define SWIG_ArgNullRef_Fail(name, type, argn) \
-  SWIG_exception_fail(SWIG_ValueError,SWIG_ArgNullRef_Fmt(name, type, argn))
+#define SWIG_ArgNullRef_Fail(type, name, argn) \
+  SWIG_exception_fail(SWIG_ValueError,SWIG_ArgNullRef_Fmt(type, name, argn))
 #define SWIG_ArgOut_Fail(code,  type, name)				\
-  SWIG_exception_fail(SWIG_ArgError(code), SWIG_ArgOut_Fail_Fmt(type,name))
+  SWIG_exception_fail(SWIG_ArgError(code), SWIG_ArgOut_Fail_Fmt(type, name))
 %}
 
 #undef  %argument_fail
