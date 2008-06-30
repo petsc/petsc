@@ -21,6 +21,8 @@
    Notes:
     Call DAVecRestoreArray() once you have finished accessing the vector entries.
 
+    In C, the indexing is "backwards" from what expects: array[k][j][i] NOT array[i][j][k]!
+
   Level: intermediate
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
@@ -136,6 +138,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAVecRestoreArray(DA da,Vec vec,void *array)
 
    Notes:
     Call DAVecRestoreArray() once you have finished accessing the vector entries.
+
+    In C, the indexing is "backwards" from what expects: array[k][j][i][DOF] NOT array[i][j][k][DOF]!
 
   Level: intermediate
 
