@@ -156,6 +156,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetOptionsPrefix(PetscViewer,co
 
    Level: beginner
 
+   The values below are also listed in finclude/petscviewer.h. If another values is added below it
+   must also be added there.
+
 .seealso: PetscViewerSetFormat(), PetscViewer, PetscViewerType, PetscViewerPushFormat(), PetscViewerPopFormat()
 E*/
 typedef enum { 
@@ -175,6 +178,8 @@ typedef enum {
   PETSC_VIEWER_ASCII_PCICE,
   PETSC_VIEWER_ASCII_PYLITH,
   PETSC_VIEWER_ASCII_PYLITH_LOCAL,
+  PETSC_VIEWER_ASCII_PYTHON,
+  PETSC_VIEWER_ASCII_FACTOR_INFO,
   PETSC_VIEWER_BINARY_DEFAULT,
   PETSC_VIEWER_BINARY_NATIVE,
   PETSC_VIEWER_DRAW_BASIC,
@@ -182,8 +187,8 @@ typedef enum {
   PETSC_VIEWER_DRAW_CONTOUR, 
   PETSC_VIEWER_DRAW_PORTS,
   PETSC_VIEWER_NATIVE,
-  PETSC_VIEWER_NOFORMAT,
-  PETSC_VIEWER_ASCII_FACTOR_INFO} PetscViewerFormat;
+  PETSC_VIEWER_NOFORMAT
+  } PetscViewerFormat;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer,PetscViewerFormat);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerPushFormat(PetscViewer,PetscViewerFormat);

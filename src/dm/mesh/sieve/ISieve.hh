@@ -1261,6 +1261,21 @@ namespace ALE {
         this->coneOrientations[c] = coneOrientation[i];
       }
     };
+    void symmetrizeSizes(const int numCells, const int numCorners, const int cones[]) {
+      for(point_type p = 0; p < numCells; ++p) {
+        const index_type start = p*numCorners;
+        const index_type end   = (p+1)*numCorners;
+
+        for(index_type c = start; c < end; ++c) {
+          const point_type q = cones[c]+numCells;
+
+          this->supportOffsets[q+1]++;
+        }
+      }
+      for(point_type p = numCells; p < this->chart.max(); ++p) {
+        this->maxSupportSize = std::max(this->maxSupportSize, this->supportOffsets[p+1]);
+      }
+    };
     void symmetrize() {
       index_type *offsets = indexAlloc.allocate(this->chart.size()+1);
       offsets -= this->chart.min();
@@ -1277,7 +1292,9 @@ namespace ALE {
           this->supports[this->supportOffsets[q]+offsets[q]] = p;
           ++offsets[q];
         }
-      }      
+      }
+      for(index_type i = this->chart.min(); i <= this->chart.max(); ++i) {indexAlloc.destroy(offsets+i);}
+      indexAlloc.deallocate(offsets, this->chart.size()+1);
     };
     index_type getBaseSize() const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}

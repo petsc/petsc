@@ -1470,6 +1470,7 @@ namespace ALE {
       this->_maxHeight = h.getMaxHeight();
     };
     virtual int height() const {return this->_maxHeight;};
+    virtual int setHeight(const int height) {this->_maxHeight = height;};
     virtual int height(const point_type& point) {
       return this->getValue(this->_labels["height"], point, -1);
     };
@@ -1491,6 +1492,7 @@ namespace ALE {
       this->_maxDepth = d.getMaxDepth();
     };
     virtual int depth() const {return this->_maxDepth;};
+    virtual int setDepth(const int depth) {this->_maxDepth = depth;};
     virtual int depth(const point_type& point) {
       return this->getValue(this->_labels["depth"], point, -1);
     };

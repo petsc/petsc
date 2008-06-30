@@ -320,9 +320,9 @@ namespace ALE {
         for(index_type i = oldChart.min()*fiberDim; i < oldChart.max()*fiberDim; ++i) {this->_allocator.destroy(oldArray+i);}
         this->_array += this->getChart().min()*fiberDim;
         this->_allocator.deallocate(oldArray, oldSize);
-        std::cout << "Freed IUniformSection data" << std::endl;
+        ///std::cout << "Freed IUniformSection data" << std::endl;
       } else {
-        std::cout << "Did not free IUniformSection data" << std::endl;
+        ///std::cout << "Did not free IUniformSection data" << std::endl;
         *oldData = oldArray;
       }
       return true;
@@ -452,7 +452,7 @@ namespace ALE {
       for(int i = oldChart.min(); i < oldChart.max(); ++i) {atlas_alloc_type(this->_allocator).destroy(oldAtlasArray+i);}
       oldAtlasArray += oldChart.min();
       atlas_alloc_type(this->_allocator).deallocate(oldAtlasArray, oldAtlasSize);
-      std::cout << "In ISection, Freed IUniformSection data" << std::endl;
+      ///std::cout << "In ISection, Freed IUniformSection data" << std::endl;
     };
   public:
     // Return the free values on a point
