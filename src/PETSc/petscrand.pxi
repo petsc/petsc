@@ -1,6 +1,6 @@
 cdef extern  from "petscsys.h":
 
-    ctypedef char* PetscRandomType
+    ctypedef char* PetscRandomType "const char*"
     PetscRandomType PETSCRAND
     PetscRandomType PETSCRAND48
     PetscRandomType PETSCSPRNG

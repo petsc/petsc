@@ -2,7 +2,7 @@
 
 cdef extern from "petscvec.h":
 
-    ctypedef char* PetscVecType "VecType"
+    ctypedef char* PetscVecType "const char*"
     PetscVecType VECSEQ
     PetscVecType VECMPI
     PetscVecType VECFETI

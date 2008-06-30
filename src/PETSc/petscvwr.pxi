@@ -1,6 +1,6 @@
 cdef extern  from "petsc.h":
 
-    ctypedef char* PetscViewerType
+    ctypedef char* PetscViewerType "const char*"
     PetscViewerType PETSC_VIEWER_SOCKET
     PetscViewerType PETSC_VIEWER_ASCII
     PetscViewerType PETSC_VIEWER_BINARY

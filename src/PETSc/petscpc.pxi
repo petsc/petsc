@@ -1,6 +1,6 @@
 cdef extern from "petscpc.h":
 
-    ctypedef char* PetscPCType "PCType"
+    ctypedef char* PetscPCType "const char*"
     PetscPCType PCNONE      
     PetscPCType PCJACOBI    
     PetscPCType PCSOR       

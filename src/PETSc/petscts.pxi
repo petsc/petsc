@@ -1,6 +1,6 @@
 cdef extern from "petscts.h":
 
-    ctypedef char* PetscTSType "TSType"
+    ctypedef char* PetscTSType "const char*"
     PetscTSType TS_EULER
     PetscTSType TS_RUNGE_KUTTA    
     PetscTSType TS_BEULER

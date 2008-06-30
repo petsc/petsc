@@ -2,7 +2,7 @@
 
 cdef extern from "petscmat.h":
 
-    ctypedef char* PetscMatType "MatType"
+    ctypedef char* PetscMatType "const char*"
     PetscMatType MATSAME
     PetscMatType MATSEQMAIJ
     PetscMatType MATMPIMAIJ
@@ -53,7 +53,7 @@ cdef extern from "petscmat.h":
     PetscMatType MATCOMPOSITE
     PetscMatType MATSEQFFTW
 
-    ctypedef char* PetscMatOrderingType "MatOrderingType"
+    ctypedef char* PetscMatOrderingType "const char*"
     PetscMatOrderingType MAT_ORDERING_NATURAL     "MATORDERING_NATURAL"
     PetscMatOrderingType MAT_ORDERING_ND          "MATORDERING_ND"
     PetscMatOrderingType MAT_ORDERING_1WD         "MATORDERING_1WD"

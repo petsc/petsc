@@ -1,6 +1,6 @@
 cdef extern from "petscksp.h":
 
-    ctypedef char* PetscKSPType "KSPType"
+    ctypedef char* PetscKSPType "const char*"
     PetscKSPType KSPRICHARDSON
     PetscKSPType KSPCHEBYCHEV
     PetscKSPType KSPCG

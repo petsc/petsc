@@ -1,6 +1,6 @@
 cdef extern from "petscsnes.h":
 
-    ctypedef char* PetscSNESType "SNESType"
+    ctypedef char* PetscSNESType "const char*"
     PetscSNESType SNESLS
     PetscSNESType SNESTR
     PetscSNESType SNESTEST
