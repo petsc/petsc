@@ -209,12 +209,15 @@ cdef class Vec(Object):
 
     def getArray(self, out=None):
         array = asarray(self)
-        if out is None: out = array
-        else: out[:] = array
+        if out is None:
+            out = array
+        else:
+            out = asarray(out).ravel('a')
+            out[:] = array
         return out
 
     def setArray(self, array):
-        asarray(self)[:] = array
+        asarray(self)[:] = asarray(array).ravel('a')
 
     def duplicate(self):
         cdef Vec vec = type(self)()
