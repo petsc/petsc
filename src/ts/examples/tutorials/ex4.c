@@ -83,6 +83,7 @@ typedef struct {
 */
 extern PetscErrorCode InitialConditions(Vec,AppCtx*);
 extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode RHSFunctionHeat(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern PetscErrorCode ExactSolution(PetscReal,Vec,AppCtx*);
 
@@ -102,6 +103,7 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscReal      dt,ftime;
   PetscTruth     flg;
+  TSProblemType  tsproblem = TS_LINEAR;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program and set problem parameters
@@ -162,7 +164,13 @@ int main(int argc,char **argv)
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,TS_LINEAR);CHKERRQ(ierr);
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-nonlinear",&flg);CHKERRQ(ierr);
+  if (flg) tsproblem = TS_NONLINEAR;
+#if defined(PETSC_HAVE_SUNDIALS)
+  tsproblem = TS_NONLINEAR;
+#endif
+  ierr = TSSetProblemType(ts,tsproblem);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set optional user-defined monitoring routine
@@ -197,6 +205,11 @@ int main(int argc,char **argv)
     MatStructure A_structure;
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
     ierr = TSSetMatrices(ts,A,PETSC_NULL,PETSC_NULL,PETSC_NULL,DIFFERENT_NONZERO_PATTERN,&appctx);CHKERRQ(ierr);
+  }
+ 
+  if ( tsproblem == TS_NONLINEAR){
+    ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx);CHKERRQ(ierr);
+    ierr = TSSetRHSJacobian(ts,A,A,TSDefaultComputeJacobian,&appctx);CHKERRQ(ierr); 
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -450,6 +463,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 
   return 0;
 }
+
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "RHSMatrixHeat"
@@ -561,6 +575,21 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "RHSFunctionHeat"
+PetscErrorCode RHSFunctionHeat(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
+{
+  PetscErrorCode ierr;
+  Mat            A;
+  MatStructure   A_structure;
+
+  PetscFunctionBegin;
+  ierr = TSGetMatrices(ts,&A,PETSC_NULL,&ctx);CHKERRQ(ierr);
+  ierr = RHSMatrixHeat(ts,t,&A,PETSC_NULL,&A_structure,ctx);CHKERRQ(ierr);
+  /* ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+  ierr = MatMult(A,globalin,globalout);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 
