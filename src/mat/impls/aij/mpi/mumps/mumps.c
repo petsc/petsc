@@ -348,6 +348,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x) {
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_USE_COMPLEX)
 /* 
   input:
    F:        numeric factor
@@ -381,6 +382,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
   if (npos)  *npos  = F->rmap.N - (*nneg);
   PetscFunctionReturn(0);
 }
+#endif /* !defined(PETSC_USE_COMPLEX) */
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_MUMPS"
