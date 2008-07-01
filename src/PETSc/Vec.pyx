@@ -174,8 +174,7 @@ cdef class Vec(Object):
     def getType(self):
         cdef PetscVecType vec_type = NULL
         CHKERR( VecGetType(self.vec, &vec_type) )
-        if vec_type == NULL: return None
-        return vec_type
+        return cp2str(vec_type)
 
     def getSize(self):
         cdef PetscInt N=0
