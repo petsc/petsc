@@ -50,6 +50,14 @@ cdef extern from "compat.h":
 cdef extern from "custom.h":
     pass
 
+cdef extern from "petsc.h":
+    ctypedef int    PetscInt
+    ctypedef double PetscReal
+    ctypedef double PetscScalar
+    ctypedef PetscInt    const_PetscInt    "const PetscInt"
+    ctypedef PetscReal   const_PetscReal   "const PetscReal"
+    ctypedef PetscScalar const_PetscScalar "const PetscScalar"
+
 # --------------------------------------------------------------------
 
 # NumPy support

@@ -5,16 +5,10 @@ cdef extern from "mpi.h":
     ctypedef _p_MPI_Comm* MPI_Comm
 
 cdef extern from "petsc.h":
-    ctypedef int    PetscInt
-    ctypedef double PetscReal
-    ctypedef double PetscScalar
-    ctypedef PetscInt    const_PetscInt    "const PetscInt"
-    ctypedef PetscReal   const_PetscReal   "const PetscReal"
-    ctypedef PetscScalar const_PetscScalar "const PetscScalar"
-
-cdef extern from "petsc.h":
     ctypedef struct _p_PetscObject
     ctypedef _p_PetscObject* PetscObject
+
+cdef extern from "petscviewer.h":
     struct _p_PetscViewer
     ctypedef _p_PetscViewer* PetscViewer
 
@@ -57,10 +51,6 @@ cdef extern from "petscts.h":
     ctypedef _p_TS* PetscTS "TS"
 
 # --------------------------------------------------------------------
-
-## ctypedef PetscInt    Int
-## ctypedef PetscReal   Real
-## ctypedef PetscScalar Scalar
 
 cdef public api class Comm [type PyPetscComm_Type, object PyPetscCommObject]:
     cdef MPI_Comm comm
