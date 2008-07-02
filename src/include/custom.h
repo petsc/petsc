@@ -3,7 +3,7 @@
 #undef __FUNCT__  
 #define __FUNCT__ "ISValid"
 PETSC_STATIC_INLINE PetscErrorCode
- ISValid(IS is, PetscTruth *flg)
+ISValid(IS is, PetscTruth *flg)
 {
   PetscFunctionBegin;
   PetscValidIntPointer(flg,2);
@@ -21,7 +21,7 @@ ISGetType(IS is, ISType *istype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
   PetscValidPointer(istype,3);
-  *istype = ((PetscObject)is)->type;
+  *istype = (ISType) ((PetscObject)is)->type;
   PetscFunctionReturn(0);
 }
 
