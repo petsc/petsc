@@ -2,7 +2,7 @@
 
 #include "numpy/arrayobject.h"
 
-#include "petsc4py/PETSc_npy.h"
+#include "petsc4py/petsc4py_PETSc_npy.h"
 
 /* ---------------------------------------------------------------- */
 

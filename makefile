@@ -45,10 +45,11 @@ fullclean: distclean srcclean
 
 CYTHON = cython
 CYTHON_FLAGS = --cleanup 9
+CYTHON_INCLUDE = -I. -Iinclude
 CY_SRC_DIR = src/PETSc
-CY_SRC_PXD = $(wildcard ${CY_SRC_DIR}/*.pxd)
-CY_SRC_PXI = $(wildcard ${CY_SRC_DIR}/*.pxi)
-CY_SRC_PYX = $(wildcard ${CY_SRC_DIR}/*.pyx)
+CY_SRC_PXD = $(wildcard src/include/petsc4py/*.pxd)
+CY_SRC_PXI = $(wildcard src/PETSc/*.pxi)
+CY_SRC_PYX = $(wildcard src/PETSc/*.pyx)
 src/petsc4py_PETSc.c: ${CY_SRC_PXD} ${CY_SRC_PXI} ${CY_SRC_PYX}
-	cd src && ${CYTHON} ${CYTHON_FLAGS} -I. petsc4py.PETSc.pyx -o petsc4py_PETSc.c
+	cd src && ${CYTHON} ${CYTHON_FLAGS} ${CYTHON_INCLUDE} petsc4py.PETSc.pyx -o petsc4py_PETSc.c
 	cd src && mv petsc4py_PETSc_api.h petsc4py_PETSc.h include/petsc4py
