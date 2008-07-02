@@ -294,7 +294,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
     volume_limits->updatePoint(*c_iter, &curLimit);
     c_iter++;
   }
-  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, volume_limits, true);
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, volume_limits, true);
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
   const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
@@ -380,7 +380,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(Mesh mesh, MPI_Co
     volume_limits->updatePoint(*c_iter, &curLimit);
     c_iter++;
   }
-  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, volume_limits, true);
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, volume_limits, true);
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
   const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
