@@ -190,7 +190,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetUp(DMComposite packer)
   ierr = PetscMapSetBlockSize(&map,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&map);CHKERRQ(ierr);
   ierr = PetscMapGetSize(&map,&packer->N);CHKERRQ(ierr);
-  ierr = PetscMapGetLocalRange(&map,&packer->rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMapGetRange(&map,&packer->rstart,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(map.range);CHKERRQ(ierr);
     
   /* now set the rstart for each linked array/vector */

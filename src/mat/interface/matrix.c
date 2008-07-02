@@ -4995,7 +4995,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
-  ierr = PetscMapGetGlobalRange(&mat->rmap,ranges);CHKERRQ(ierr);
+  ierr = PetscMapGetRanges(&mat->rmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

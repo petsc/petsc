@@ -29,7 +29,7 @@
       Not available from Fortran
 
 .seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap,
-          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize(), PetscMapSetUp()
+          PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetBlockSize(), PetscMapSetUp()
 
 @*/
 #undef __FUNCT__  
@@ -72,7 +72,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscMap *map
       Not available from Fortran
 
 .seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap,
-          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize(), PetscMapInitialize()
+          PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetBlockSize(), PetscMapInitialize()
 
 @*/
 #undef __FUNCT__  
@@ -148,7 +148,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCopy(MPI_Comm comm,PetscMap *in,PetscM
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMapSetUp()
-          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
+          PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
 
 @*/
 #undef __FUNCT__  
@@ -183,7 +183,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap *map,PetscInt n)
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMapSetUp()
-          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
+          PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
 
 @*/
 #undef __FUNCT__  
@@ -216,7 +216,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap *map,PetscInt *n
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapGetSize(), PetscMapSetUp()
-          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
+          PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
 
 @*/
 #undef __FUNCT__  
@@ -251,7 +251,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap *map,PetscInt n)
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapSetSize(), PetscMapSetUp()
-          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
+          PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
 
 @*/
 #undef __FUNCT__  
@@ -284,7 +284,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap *map,PetscInt *n)
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapGetBlockSize(),
-          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetSize(), PetscMapGetSize(), PetscMapSetUp()
+          PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetSize(), PetscMapGetSize(), PetscMapSetUp()
 
 @*/
 #undef __FUNCT__  
@@ -319,7 +319,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap *map,PetscInt bs
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapSetSize(), PetscMapSetUp()
-          PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetSize()
+          PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetSize()
 
 @*/
 #undef __FUNCT__  
@@ -333,7 +333,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetBlockSize(PetscMap *map,PetscInt *b
 
 
 /*@C
-     PetscMapGetLocalRange - gets the range of values owned by this process
+     PetscMapGetRange - gets the range of values owned by this process
 
     Not Collective
 
@@ -356,12 +356,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetBlockSize(PetscMap *map,PetscInt *b
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapSetSize(),
-          PetscMapGetSize(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetSize(), PetscMapSetUp()
+          PetscMapGetSize(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetSize(), PetscMapSetUp()
 
 @*/
 #undef __FUNCT__  
-#define __FUNCT__ "PetscMapGetLocalRange"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap *map,PetscInt *rstart,PetscInt *rend)
+#define __FUNCT__ "PetscMapGetRange"
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRange(PetscMap *map,PetscInt *rstart,PetscInt *rend)
 {
   PetscFunctionBegin;
   if (rstart) *rstart = map->rstart;
@@ -370,7 +370,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap *map,PetscInt *
 }
 
 /*@C
-     PetscMapGetGlobalRange - gets the range of values owned by all processes
+     PetscMapGetRanges - gets the range of values owned by all processes
 
     Not Collective
 
@@ -393,12 +393,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap *map,PetscInt *
       Not available from Fortran
 
 .seealso: PetscMapInitialize(), PetscMapSetLocalSize(), PetscMapGetLocalSize(), PetscMapSetSize(),
-          PetscMapGetSize(), PetscMapGetLocalRange(), PetscMapSetBlockSize(), PetscMapGetSize(), PetscMapSetUp()
+          PetscMapGetSize(), PetscMapGetRange(), PetscMapSetBlockSize(), PetscMapGetSize(), PetscMapSetUp()
 
 @*/
 #undef __FUNCT__  
-#define __FUNCT__ "PetscMapGetGlobalRange"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap *map,const PetscInt *range[])
+#define __FUNCT__ "PetscMapGetRanges"
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRanges(PetscMap *map,const PetscInt *range[])
 {
   PetscFunctionBegin;
   *range = map->range;
