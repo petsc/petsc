@@ -47,6 +47,7 @@ static PetscErrorCode PetscViewerDestroy_String(PetscViewer viewer)
 PetscErrorCode PETSC_DLLEXPORT PetscViewerStringSPrintf(PetscViewer viewer,const char format[],...)
 {
   va_list            Argp;
+  int                fullLength;
   size_t             shift;
   PetscErrorCode     ierr;
   PetscTruth         isstring;
@@ -61,7 +62,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerStringSPrintf(PetscViewer viewer,const
   if (!vstr->string) SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerStringSetString() before using");
 
   va_start(Argp,format);
-  ierr = PetscVSNPrintf(tmp,4096,format,Argp);CHKERRQ(ierr);
+  ierr = PetscVSNPrintf(tmp,4096,format,&fullLength,Argp);CHKERRQ(ierr);
   va_end(Argp);
 
   ierr = PetscStrlen(tmp,&shift);CHKERRQ(ierr);

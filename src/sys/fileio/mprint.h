@@ -11,10 +11,10 @@
 
 
 /* ----------------------------------------------------------------------- */
-#define QUEUESTRINGSIZE 8192
 typedef struct _PrintfQueue *PrintfQueue;
 struct _PrintfQueue {
-  char        string[QUEUESTRINGSIZE];
+  char       *string;
+  int         size;
   PrintfQueue next;
 };
 extern PrintfQueue queue,queuebase;

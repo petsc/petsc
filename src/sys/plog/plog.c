@@ -1803,12 +1803,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetFlops(PetscLogDouble *flops)
 PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject obj, const char format[], ...)
 {
   PetscErrorCode ierr;
+  int            fullLength;
   va_list        Argp;
 
   PetscFunctionBegin;
   if (!logObjects) PetscFunctionReturn(0);
   va_start(Argp, format);
-  ierr = PetscVSNPrintf(objects[obj->id].info, 64,format, Argp);CHKERRQ(ierr);
+  ierr = PetscVSNPrintf(objects[obj->id].info, 64,format,&fullLength, Argp);CHKERRQ(ierr);
   va_end(Argp);
   PetscFunctionReturn(0);
 }
