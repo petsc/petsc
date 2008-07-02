@@ -1470,9 +1470,12 @@ namespace ALE {
       this->_maxHeight = h.getMaxHeight();
     };
     virtual int height() const {return this->_maxHeight;};
-    virtual int setHeight(const int height) {this->_maxHeight = height;};
+    virtual void setHeight(const int height) {this->_maxHeight = height;};
     virtual int height(const point_type& point) {
       return this->getValue(this->_labels["height"], point, -1);
+    };
+    virtual void setHeight(const point_type& point, const int height) {
+      return this->setValue(this->_labels["height"], point, height);
     };
     virtual const Obj<label_sequence>& heightStratum(int height) {
       return this->getLabelStratum("height", height);
@@ -1492,9 +1495,12 @@ namespace ALE {
       this->_maxDepth = d.getMaxDepth();
     };
     virtual int depth() const {return this->_maxDepth;};
-    virtual int setDepth(const int depth) {this->_maxDepth = depth;};
+    virtual void setDepth(const int depth) {this->_maxDepth = depth;};
     virtual int depth(const point_type& point) {
       return this->getValue(this->_labels["depth"], point, -1);
+    };
+    virtual void setDepth(const point_type& point, const int depth) {
+      return this->setValue(this->_labels["depth"], point, depth);
     };
     virtual const Obj<label_sequence>& depthStratum(int depth) {
       return this->getLabelStratum("depth", depth);

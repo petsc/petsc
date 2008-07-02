@@ -957,6 +957,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         //
         ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+#if 0
         //
         ostringstream txt1;
         if(this->commRank() == 0) {
@@ -987,6 +988,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         //
         ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+#endif
       }
       else { // if(raw)
         ostringstream txt;
