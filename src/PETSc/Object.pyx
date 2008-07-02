@@ -91,7 +91,7 @@ cdef class Object:
     # --- general Python support ---
 
     def getDict(self):
-        return Object_getDict(self.obj[0], PETSC_TRUE)
+        return Object_getDict(self.obj[0])
 
     def getAttr(self, name):
         return Object_getAttr(self.obj[0], str2cp(name))

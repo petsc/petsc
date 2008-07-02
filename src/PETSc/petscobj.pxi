@@ -70,9 +70,9 @@ cdef inline int PetscDecref(PetscObject obj):
 
 # --------------------------------------------------------------------
 
-cdef inline object Object_getDict(PetscObject o, PetscTruth create):
+cdef inline object Object_getDict(PetscObject o):
     cdef void *dct = NULL
-    CHKERR( PetscObjectGetPyDict(o, create, &dct) )
+    CHKERR( PetscObjectGetPyDict(o, PETSC_TRUE, &dct) )
     return <object> dct
 
 cdef inline object Object_getAttr(PetscObject o, char name[]):
