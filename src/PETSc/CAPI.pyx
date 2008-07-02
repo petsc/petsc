@@ -12,23 +12,23 @@ cdef int addref(void *o) except -1:
 
 # -- Error --
 
-cdef public api int PyPetscError_Set(int ierr):
+cdef api int PyPetscError_Set(int ierr):
     return SETERR(ierr)
 
 # -- Comm --
 
-cdef public api object PyPetscComm_New(MPI_Comm arg):
+cdef api object PyPetscComm_New(MPI_Comm arg):
     cdef Comm retv = Comm()
     retv.comm = arg
     return retv
 
-cdef public api MPI_Comm PyPetscComm_Get(object arg) except *:
+cdef api MPI_Comm PyPetscComm_Get(object arg) except *:
     cdef MPI_Comm retv = MPI_COMM_NULL
     cdef Comm ob = <Comm?> arg
     retv = ob.comm
     return retv
 
-cdef public api MPI_Comm* PyPetscComm_GetPtr(object arg) except NULL:
+cdef api MPI_Comm* PyPetscComm_GetPtr(object arg) except NULL:
     cdef MPI_Comm *retv = NULL
     cdef Comm ob = <Comm?> arg
     retv = &ob.comm
@@ -36,13 +36,13 @@ cdef public api MPI_Comm* PyPetscComm_GetPtr(object arg) except NULL:
 
 # -- Object --
 
-cdef public api PetscObject PyPetscObject_Get(object arg) except ? NULL:
+cdef api PetscObject PyPetscObject_Get(object arg) except ? NULL:
     cdef PetscObject retv = NULL
     cdef Object ob = <Object?> arg
     retv = ob.obj[0]
     return retv
 
-cdef public api PetscObject* PyPetscObject_GetPtr(object arg) except NULL:
+cdef api PetscObject* PyPetscObject_GetPtr(object arg) except NULL:
     cdef PetscObject *retv = NULL
     cdef Object ob = <Object?> arg
     retv = ob.obj
@@ -50,12 +50,12 @@ cdef public api PetscObject* PyPetscObject_GetPtr(object arg) except NULL:
 
 # -- Viewer --
 
-cdef public api object PyPetscViewer_New(PetscViewer arg):
+cdef api object PyPetscViewer_New(PetscViewer arg):
     cdef Viewer retv = Viewer()
     addref(arg); retv.vwr = arg
     return retv
 
-cdef public api PetscViewer PyPetscViewer_Get(object arg) except ? NULL:
+cdef api PetscViewer PyPetscViewer_Get(object arg) except ? NULL:
     cdef PetscViewer retv = NULL
     cdef Viewer ob = <Viewer?> arg
     retv = ob.vwr
@@ -63,12 +63,12 @@ cdef public api PetscViewer PyPetscViewer_Get(object arg) except ? NULL:
 
 # -- IS --
 
-cdef public api object PyPetscIS_New(PetscIS arg):
+cdef api object PyPetscIS_New(PetscIS arg):
     cdef IS retv = IS()
     addref(arg); retv.iset = arg
     return retv
 
-cdef public api PetscIS PyPetscIS_Get(object arg) except? NULL:
+cdef api PetscIS PyPetscIS_Get(object arg) except? NULL:
     cdef PetscIS retv = NULL
     cdef IS ob = <IS?> arg
     retv = ob.iset
@@ -76,12 +76,12 @@ cdef public api PetscIS PyPetscIS_Get(object arg) except? NULL:
 
 # -- LGMap --
 
-cdef public api object PyPetscLGMap_New(PetscLGMap arg):
+cdef api object PyPetscLGMap_New(PetscLGMap arg):
     cdef LGMap retv = LGMap()
     addref(arg); retv.lgm = arg
     return retv
 
-cdef public api PetscLGMap PyPetscLGMap_Get(object arg) except ? NULL:
+cdef api PetscLGMap PyPetscLGMap_Get(object arg) except ? NULL:
     cdef PetscLGMap retv = NULL
     cdef LGMap ob = <LGMap?> arg
     retv = ob.lgm
@@ -89,12 +89,12 @@ cdef public api PetscLGMap PyPetscLGMap_Get(object arg) except ? NULL:
 
 # -- Vec --
 
-cdef public api object PyPetscVec_New(PetscVec arg):
+cdef api object PyPetscVec_New(PetscVec arg):
     cdef Vec retv = Vec()
     addref(arg); retv.vec = arg
     return retv
 
-cdef public api PetscVec PyPetscVec_Get(object arg) except ? NULL:
+cdef api PetscVec PyPetscVec_Get(object arg) except ? NULL:
     cdef PetscVec retv = NULL
     cdef Vec ob = <Vec?> arg
     retv = ob.vec
@@ -102,12 +102,12 @@ cdef public api PetscVec PyPetscVec_Get(object arg) except ? NULL:
 
 # -- Mat --
 
-cdef public api object PyPetscMat_New(PetscMat arg):
+cdef api object PyPetscMat_New(PetscMat arg):
     cdef Mat retv = Mat()
     addref(arg); retv.mat = arg
     return retv
 
-cdef public api PetscMat PyPetscMat_Get(object arg) except ? NULL:
+cdef api PetscMat PyPetscMat_Get(object arg) except ? NULL:
     cdef PetscMat retv = NULL
     cdef Mat ob = <Mat?> arg
     retv = ob.mat
@@ -115,12 +115,12 @@ cdef public api PetscMat PyPetscMat_Get(object arg) except ? NULL:
 
 # -- PC --
 
-cdef public api object PyPetscPC_New(PetscPC arg):
+cdef api object PyPetscPC_New(PetscPC arg):
     cdef PC retv = PC()
     addref(arg); retv.pc = arg
     return retv
 
-cdef public api PetscPC PyPetscPC_Get(object arg) except ? NULL:
+cdef api PetscPC PyPetscPC_Get(object arg) except ? NULL:
     cdef PetscPC retv = NULL
     cdef PC ob = <PC?> arg
     retv = ob.pc
@@ -128,12 +128,12 @@ cdef public api PetscPC PyPetscPC_Get(object arg) except ? NULL:
 
 # -- KSP --
 
-cdef public api object PyPetscKSP_New(PetscKSP arg):
+cdef api object PyPetscKSP_New(PetscKSP arg):
     cdef KSP retv = KSP()
     addref(arg); retv.ksp = arg
     return retv
 
-cdef public api PetscKSP PyPetscKSP_Get(object arg) except ? NULL:
+cdef api PetscKSP PyPetscKSP_Get(object arg) except ? NULL:
     cdef PetscKSP retv = NULL
     cdef KSP ob = <KSP?> arg
     retv = ob.ksp
@@ -141,12 +141,12 @@ cdef public api PetscKSP PyPetscKSP_Get(object arg) except ? NULL:
 
 # -- SNES --
 
-cdef public api object PyPetscSNES_New(PetscSNES arg):
+cdef api object PyPetscSNES_New(PetscSNES arg):
     cdef SNES retv = SNES()
     addref(arg); retv.snes = arg
     return retv
 
-cdef public api PetscSNES PyPetscSNES_Get(object arg) except ? NULL:
+cdef api PetscSNES PyPetscSNES_Get(object arg) except ? NULL:
     cdef PetscSNES retv = NULL
     cdef SNES ob = <SNES?> arg
     retv = ob.snes
@@ -154,12 +154,12 @@ cdef public api PetscSNES PyPetscSNES_Get(object arg) except ? NULL:
 
 # -- TS --
 
-cdef public api object PyPetscTS_New(PetscTS arg):
+cdef api object PyPetscTS_New(PetscTS arg):
     cdef TS retv = TS()
     addref(arg); retv.ts = arg
     return retv
 
-cdef public api PetscTS PyPetscTS_Get(object arg) except ? NULL:
+cdef api PetscTS PyPetscTS_Get(object arg) except ? NULL:
     cdef PetscTS retv = NULL
     cdef TS ob = <TS?> arg
     retv = ob.ts
