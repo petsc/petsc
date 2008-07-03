@@ -648,6 +648,18 @@ namespace ALE {
       };
       void clear() {this->i = 0;};
     };
+    template<typename Sieve, typename Label>
+    class MarkVisitor {
+    protected:
+      Label& label;
+      int    marker;
+    public:
+      MarkVisitor(Label& l, const int marker) : label(l), marker(marker) {};
+      void visitPoint(const typename Sieve::point_type& point) {
+        this->label.setCone(this->marker, point);
+      };
+      void visitArrow(const typename Sieve::arrow_type&) {};
+    };
   };
 
   template<typename Sieve>
@@ -1094,6 +1106,11 @@ namespace ALE {
       this->createPoints();
       this->calculateBaseAndCapSize();
     };
+    // Purely for backwards compatibility
+    template<typename Color>
+    void addArrow(const point_type& p, const point_type& q, const Color c) {
+      this->addArrow(p, q);
+    };
     void addArrow(const point_type& p, const point_type& q) {
       if (!this->chart.hasPoint(q)) {
         if (!this->newCones[q].size() && this->chart.hasPoint(q)) {
@@ -1161,11 +1178,9 @@ namespace ALE {
       // Copy cones and supports
       for(point_type p = oldChart.min(); p < oldChart.max(); ++p) {
         const index_type cStart  = this->coneOffsets[p];
-        const index_type cEnd    = this->coneOffsets[p+1];
         const index_type cOStart = oldConeOffsets[p];
         const index_type cOEnd   = oldConeOffsets[p+1];
         const index_type sStart  = this->supportOffsets[p];
-        const index_type sEnd    = this->supportOffsets[p+1];
         const index_type sOStart = oldSupportOffsets[p];
         const index_type sOEnd   = oldSupportOffsets[p+1];
 
@@ -1188,6 +1203,7 @@ namespace ALE {
         for(typename std::vector<point_type>::const_iterator p_iter = c_iter->second.begin(); p_iter != c_iter->second.end(); ++p_iter) {
           this->cones[start++] = *p_iter;
         }
+        if (start != this->coneOffsets[c_iter->first+1]) throw ALE::Exception("Invalid size for new cone array");
       }
       for(typename newpoints_type::const_iterator s_iter = this->newSupports.begin(); s_iter != this->newSupports.end(); ++s_iter) {
         index_type start = this->supportOffsets[s_iter->first];
@@ -1195,6 +1211,7 @@ namespace ALE {
         for(typename std::vector<point_type>::const_iterator p_iter = s_iter->second.begin(); p_iter != s_iter->second.end(); ++p_iter) {
           this->supports[start++] = *p_iter;
         }
+        if (start != this->supportOffsets[s_iter->first+1]) throw ALE::Exception("Invalid size for new support array");
       }
       this->newCones.clear();
       this->newSupports.clear();
