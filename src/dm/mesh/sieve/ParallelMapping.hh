@@ -625,7 +625,7 @@ namespace ALE {
           sendPoints[*r_iter] = v;
           pMover.send(*r_iter, 2, sendPoints[*r_iter]);
           vMover.send(*r_iter, 2, sValues);
-          std::cout << "["<<sendOverlap->commRank()<<"]Sending chart (" << v[0] << ", " << v[1] << ") with values (" << sValues[0] << ", " << sValues[1] << ") to process " << *r_iter << std::endl;
+          ///std::cout << "["<<sendOverlap->commRank()<<"]Sending chart (" << v[0] << ", " << v[1] << ") with values (" << sValues[0] << ", " << sValues[1] << ") to process " << *r_iter << std::endl;
         }
         const Obj<typename RecvOverlap::traits::capSequence>      rRanks  = recvOverlap->cap();
         const typename RecvOverlap::traits::capSequence::iterator rEnd    = rRanks->end();
@@ -644,15 +644,49 @@ namespace ALE {
         vMover.start();
         vMover.end();
 
-        typename SendSection::point_type min = SHRT_MAX;
+        typename SendSection::point_type min = -1;
         typename SendSection::point_type max = -1;
 
         for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
           const typename RecvSection::point_type *v = recvPoints[*r_iter];
+          typename SendSection::point_type        newMin = v[0];
+          typename SendSection::point_type        newMax = v[1]-1;
+          int                                     pSize  = 0;
 
-          min = std::min(min, v[0]);
-          max = std::max(max, v[1]);
-          std::cout << "["<<recvOverlap->commRank()<<"]Received chart (" << v[0] << ", " << v[1] << ") from process " << *r_iter << std::endl;
+          ///std::cout << "["<<recvOverlap->commRank()<<"]Received chart (" << v[0] << ", " << v[1] << ") from process " << *r_iter << std::endl;
+#if 0
+          // Translate to local numbering
+          if (recvOverlap->support(*r_iter)->size()) {
+            while(!pSize) {
+              const Obj<typename RecvOverlap::supportSequence>& points = recvOverlap->support(*r_iter, newMin);
+              pSize = points->size();
+              if (pSize) {
+                newMin = *points->begin();
+              } else {
+                newMin++;
+              }
+            }
+            pSize  = 0;
+            while(!pSize) {
+              const Obj<typename RecvOverlap::supportSequence>& points = recvOverlap->support(*r_iter, newMax);
+              pSize = points->size();
+              if (pSize) {
+                newMax = *points->begin();
+              } else {
+                newMax--;
+              }
+            }
+          }
+          std::cout << "["<<recvOverlap->commRank()<<"]Translated to chart (" << newMin << ", " << newMax+1 << ") from process " << *r_iter << std::endl;
+#endif
+          // Update chart
+          if (min < 0) {
+            min = newMin;
+            max = newMax+1;
+          } else {
+            min = std::min(min, newMin);
+            max = std::max(max, (typename SendSection::point_type) (newMax+1));
+          }
         }
         if (!rRanks->size()) {min = max = 0;}
         recvSection->setChart(typename RecvSection::chart_type(min, max));
@@ -763,9 +797,9 @@ namespace ALE {
         std::map<int, allocPair>                 recvValues;
         typename Section::alloc_type             allocator;
 
-        sendAtlas->view("Send Atlas in same type copy()");
+        ///sendAtlas->view("Send Atlas in same type copy()");
         copy(sendOverlap, recvOverlap, sendAtlas, recvAtlas);
-        recvAtlas->view("Recv Atlas after same type copy()");
+        ///recvAtlas->view("Recv Atlas after same type copy()");
         const Obj<typename SendOverlap::traits::baseSequence>      sRanks = sendOverlap->base();
         const typename SendOverlap::traits::baseSequence::iterator sEnd   = sRanks->end();
 
@@ -796,18 +830,16 @@ namespace ALE {
         const typename RecvOverlap::traits::capSequence::iterator rEnd   = rRanks->end();
 
         recvSection->allocatePoint();
-        recvSection->view("Recv Section after same type copy() allocation");
+        ///recvSection->view("Recv Section after same type copy() allocation");
         // TODO: This should be const_iterator, but Sifter sucks
         for(typename RecvOverlap::traits::capSequence::iterator r_iter = rRanks->begin(); r_iter != rEnd; ++r_iter) {
           const Obj<typename RecvOverlap::supportSequence>&     points  = recvOverlap->support(*r_iter);
           const typename RecvOverlap::supportSequence::iterator pEnd    = points->end();
           int                                                   numVals = 0;
 
-          std::cout << "["<<recvOverlap->commRank()<<"]Receving " << points->size() << " points from " << *r_iter << std::endl;
           // TODO: This should be const_iterator, but Sifter sucks
           for(typename RecvOverlap::supportSequence::iterator s_iter = points->begin(); s_iter != pEnd; ++s_iter) {
             numVals += recvSection->getFiberDimension(s_iter.color());
-            if (recvSection->getFiberDimension(s_iter.color())) std::cout << "["<<recvOverlap->commRank()<<"]  remote point " << s_iter.color() << " dim " << recvSection->getFiberDimension(s_iter.color()) << std::endl;
           }
           typename Section::value_type *v = allocator.allocate(numVals);
 
@@ -946,9 +978,20 @@ namespace ALE {
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<ConstantSection<typename SendOverlap::source_type, Value> >& sendSection, const Obj<ConstantSection<typename SendOverlap::source_type, Value> >& recvSection) {
         copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
       };
+      template<typename SendOverlap, typename RecvOverlap, typename Value>
+      static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<IConstantSection<typename SendOverlap::source_type, Value> >& sendSection, const Obj<ConstantSection<typename SendOverlap::source_type, Value> >& recvSection) {
+        copyConstant(sendOverlap, recvOverlap, sendSection, recvSection);
+      };
       // Specialize to an IConstantSection
       template<typename SendOverlap, typename RecvOverlap, typename Value>
       static void copy(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<IConstantSection<typename SendOverlap::source_type, Value> >& sendSection, const Obj<IConstantSection<typename SendOverlap::source_type, Value> >& recvSection) {
+        // Why doesn't this work?
+        //   This supposed to be a copy, BUT filtered through the sendOverlap
+        //   However, an IConstant section does not allow filtration of its
+        //   chart. Therefore, you end up with either
+        //
+        //   a) Too many items in the chart, copied from the remote sendSection
+        //   b) A chart mapped to the local numbering, which we do not want
         copyIConstant(sendOverlap, recvOverlap, sendSection, recvSection);
       };
       // Specialize to an BaseSection/ConstantSection pair
