@@ -176,17 +176,17 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 // Creates a field whose value is the processor rank on each element
 PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 {
-  Obj<ALE::Mesh> m;
+  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::label_sequence>&     cells = m->heightStratum(0);
-  const ALE::Mesh::label_sequence::iterator end   = cells->end();
+  const Obj<PETSC_MESH_TYPE::label_sequence>&     cells = m->heightStratum(0);
+  const PETSC_MESH_TYPE::label_sequence::iterator end   = cells->end();
   const int                                 rank  = m->commRank();
 
-  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
     ierr = SectionIntUpdate(*partition, *c_iter, &rank);
   }
   PetscFunctionReturn(0);
@@ -248,7 +248,7 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
 #define __FUNCT__ "MeshRefineSingularity"
 PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm, double * singularity, double factor, Mesh *refinedMesh)
 {
-  ALE::Obj<ALE::Mesh> oldMesh;
+  ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   double              oldLimit;
   PetscErrorCode      ierr;
 
@@ -260,13 +260,13 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
   //double oldLimInv = 1./oldLimit;
   double curLimit, tmpLimit;
   double minLimit = oldLimit/16384.;             //arbitrary;
-  const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = oldMesh->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::real_section_type>& volume_limits = oldMesh->getRealSection("volume_limits");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = oldMesh->getRealSection("coordinates");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& volume_limits = oldMesh->getRealSection("volume_limits");
   volume_limits->setFiberDimension(oldMesh->heightStratum(0), 1);
   oldMesh->allocate(volume_limits);
-  const ALE::Obj<ALE::Mesh::label_sequence>& cells = oldMesh->heightStratum(0);
-  ALE::Mesh::label_sequence::iterator c_iter = cells->begin();
-  ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& cells = oldMesh->heightStratum(0);
+  PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin();
+  PETSC_MESH_TYPE::label_sequence::iterator c_iter_end = cells->end();
   double centerCoords[dim];
   while (c_iter != c_iter_end) {
     const double * coords = oldMesh->restrictClosure(coordinates, *c_iter);
@@ -294,9 +294,13 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
     volume_limits->updatePoint(*c_iter, &curLimit);
     c_iter++;
   }
-  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, volume_limits, true);
+#ifdef PETSC_OPT_SIEVE
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, volume_limits, true);
+#else
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, volume_limits, true);
+#endif
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
   const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
 
   for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
@@ -310,7 +314,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
 #define __FUNCT__ "MeshRefineSingularity_Fichera"
 PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(Mesh mesh, MPI_Comm comm, double * singularity, double factor, Mesh *refinedMesh)
 {
-  ALE::Obj<ALE::Mesh> oldMesh;
+  ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   double              oldLimit;
   PetscErrorCode      ierr;
 
@@ -322,13 +326,13 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(Mesh mesh, MPI_Co
   //double oldLimInv = 1./oldLimit;
   double curLimit, tmpLimit;
   double minLimit = oldLimit/16384.;             //arbitrary;
-  const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = oldMesh->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::real_section_type>& volume_limits = oldMesh->getRealSection("volume_limits");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = oldMesh->getRealSection("coordinates");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& volume_limits = oldMesh->getRealSection("volume_limits");
   volume_limits->setFiberDimension(oldMesh->heightStratum(0), 1);
   oldMesh->allocate(volume_limits);
-  const ALE::Obj<ALE::Mesh::label_sequence>& cells = oldMesh->heightStratum(0);
-  ALE::Mesh::label_sequence::iterator c_iter = cells->begin();
-  ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& cells = oldMesh->heightStratum(0);
+  PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin();
+  PETSC_MESH_TYPE::label_sequence::iterator c_iter_end = cells->end();
   double centerCoords[dim];
   while (c_iter != c_iter_end) {
     const double * coords = oldMesh->restrictClosure(coordinates, *c_iter);
@@ -380,9 +384,13 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(Mesh mesh, MPI_Co
     volume_limits->updatePoint(*c_iter, &curLimit);
     c_iter++;
   }
-  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, volume_limits, true);
+#ifdef PETSC_OPT_SIEVE
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, volume_limits, true);
+#else
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, volume_limits, true);
+#endif
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
   const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
 
   for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
@@ -393,7 +401,10 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(Mesh mesh, MPI_Co
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MeshIDBoundary(Mesh);
+///extern PetscErrorCode MeshIDBoundary(Mesh);
+PetscErrorCode MeshIDBoundary(Mesh mesh) {
+  SETERRQ(PETSC_ERR_SUP, "Must fix the implementation in Hierarchy.hh");
+};
 
 void FlipCellOrientation(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim) {
   if (3 == meshDim && 4 == numCorners) {
@@ -441,7 +452,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
         double upper[2]  = {1.0, 1.0};
         double offset[2] = {0.5, 0.5};
         int    edges[2]  = {2, 2};
-        Obj<ALE::Mesh> mB;
+        Obj<PETSC_MESH_TYPE> mB;
 
         if (options->circularMesh) {
           double arclen = 1.;
@@ -449,29 +460,29 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
             arclen = .9;
             options->reentrant_angle = .9;
           }
-          mB = ALE::MeshBuilder::createCircularReentrantBoundary(comm, 100, 1., arclen, options->debug);
+          mB = ALE::MeshBuilder<PETSC_MESH_TYPE>::createCircularReentrantBoundary(comm, 100, 1., arclen, options->debug);
         } else if (options->reentrantMesh) {
           double reentrantlower[2] = {-1., -1.};
           options->reentrant_angle = .75;
-          mB = ALE::MeshBuilder::createReentrantBoundary(comm, reentrantlower, upper, offset, options->debug);
+          mB = ALE::MeshBuilder<PETSC_MESH_TYPE>::createReentrantBoundary(comm, reentrantlower, upper, offset, options->debug);
         } else {
-          mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+          mB = ALE::MeshBuilder<PETSC_MESH_TYPE>::createSquareBoundary(comm, lower, upper, edges, options->debug);
         }
         ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
       } else if (options->dim == 3) {
-        Obj<ALE::Mesh> mB;
+        Obj<PETSC_MESH_TYPE> mB;
         if (options->reentrantMesh) {
           double lower[3] = {-1., -1., -1.};
           double upper[3] = {1., 1., 1.};
           double offset[3] = {0.5, 0.5, 0.5};
-          mB = ALE::MeshBuilder::createFicheraCornerBoundary(comm, lower, upper, offset, options->debug);
+          mB = ALE::MeshBuilder<PETSC_MESH_TYPE>::createFicheraCornerBoundary(comm, lower, upper, offset, options->debug);
           
         } else {
           double lower[3] = {0.0, 0.0, 0.0};
           double upper[3] = {1.0, 1.0, 1.0};
           int    faces[3] = {3, 3, 3};
 
-          mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
+          mB = ALE::MeshBuilder<PETSC_MESH_TYPE>::createCubeBoundary(comm, lower, upper, faces, options->debug);
         }
         ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
       } else {
@@ -480,9 +491,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
       ierr = MeshDestroy(boundary);CHKERRQ(ierr);
     } else {
-      //Obj<ALE::Mesh> m = ALE::LaGriT::Builder::readMesh(PETSC_COMM_WORLD, 3, options->baseFilename, options->interpolate, options->debug);'
-      Obj<ALE::Mesh>             m     = new ALE::Mesh(comm, options->dim, options->debug);
-      Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(comm, options->debug);
+#ifdef PETSC_OPT_SIEVE
+      SETERRQ(PETSC_ERR_SUP, "Not supported for optimized sieves");
+#else
+      //Obj<PETSC_MESH_TYPE> m = ALE::LaGriT::Builder::readMesh(PETSC_COMM_WORLD, 3, options->baseFilename, options->interpolate, options->debug);'
+      Obj<PETSC_MESH_TYPE>             m     = new PETSC_MESH_TYPE(comm, options->dim, options->debug);
+      Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, options->debug);
       bool                 flipEndian = false;
       int                  dim;
       pylith::int_array    cells;
@@ -505,14 +519,15 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
           }
         } // if/else
       }
-      ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, numCells, const_cast<int*>(&cells[0]), numVertices, options->interpolate, numCorners, -1, m->getArrowSection("orientation"));
+      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildTopology(sieve, dim, numCells, const_cast<int*>(&cells[0]), numVertices, options->interpolate, numCorners, -1, m->getArrowSection("orientation"));
       m->setSieve(sieve);
       m->stratify();
-      ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(m, dim, const_cast<double*>(&coordinates[0]));
+      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(m, dim, const_cast<double*>(&coordinates[0]));
 
       ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
       ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
       ierr = MeshIDBoundary(mesh);CHKERRQ(ierr);
+#endif
     }
     ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
     if (size > 1) {
@@ -541,7 +556,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       }
     }
     if (options->bcType == DIRICHLET) {
-      Obj<ALE::Mesh> m;
+      Obj<PETSC_MESH_TYPE> m;
 
       ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
       m->markBoundaryCells("marker");
@@ -550,7 +565,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     if (view) {ierr = ViewMesh(mesh, "bratu.vtk");CHKERRQ(ierr);}
     ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
     if (view) {
-      Obj<ALE::Mesh> m;
+      Obj<PETSC_MESH_TYPE> m;
       ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
       m->view("Mesh");
     }
@@ -650,16 +665,16 @@ PetscErrorCode Function_Unstructured(Mesh mesh, SectionReal section, void *ctx)
 {
   Options       *options = (Options *) ctx;
   PetscScalar  (*func)(const double *) = options->func;
-  Obj<ALE::Mesh> m;
+  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    vertices    = m->depthStratum(0);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<PETSC_MESH_TYPE::label_sequence>&    vertices    = m->depthStratum(0);
 
-  for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-    const ALE::Mesh::real_section_type::value_type *coords = coordinates->restrictPoint(*v_iter);
+  for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    const PETSC_MESH_TYPE::real_section_type::value_type *coords = coordinates->restrictPoint(*v_iter);
     const PetscScalar                               value  = (*func)(coords);
 
     ierr = SectionRealUpdate(section, *v_iter, &value);CHKERRQ(ierr);
@@ -702,8 +717,8 @@ PetscErrorCode FormFunctions(DM dm, Options *options)
   } else {
     Mesh        mesh = (Mesh) dm;
     SectionReal F;
-    Obj<ALE::Mesh> m;
-    Obj<ALE::Mesh::real_section_type> s;
+    Obj<PETSC_MESH_TYPE> m;
+    Obj<PETSC_MESH_TYPE::real_section_type> s;
 
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
     ierr = MeshGetSectionReal(mesh, "default", &F);CHKERRQ(ierr);
@@ -820,7 +835,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   Options       *options = (Options *) ctx;
   PetscScalar  (*func)(const double *) = options->func;
   const double   lambda                = options->lambda;
-  Obj<ALE::Mesh> m;
+  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -832,8 +847,8 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   const int                                numBasisFuncs = disc->getBasisSize();
   const double                            *basis         = disc->getBasis();
   const double                            *basisDer      = disc->getBasisDerivatives();
-  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<PETSC_MESH_TYPE::label_sequence>&    cells         = m->heightStratum(0);
   const int                                dim           = m->getDimension();
   double      *t_der, *b_der, *coords, *v0, *J, *invJ, detJ;
   PetscScalar *elemVec, *elemMat;
@@ -842,31 +857,14 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   ierr = PetscMalloc2(numBasisFuncs,PetscScalar,&elemVec,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc6(dim,double,&t_der,dim,double,&b_der,dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
-#define FASTER 1
-#ifdef FASTER
-  Obj<ALE::Mesh::real_section_type> xSection;
-  Obj<ALE::Mesh::real_section_type> fSection;
-  int c = 0;
-
-  ierr = SectionRealGetSection(X, xSection);
-  ierr = SectionRealGetSection(section, fSection);
-  const int xTag = m->calculateCustomAtlas(xSection, cells);
-  const int fTag = fSection->copyCustomAtlas(xSection, xTag);
-  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter, ++c) {
-#else
-  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-#endif
+  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
-#ifdef FASTER
-    const PetscScalar *x = m->restrictClosure(xSection, xTag, c);
-#else
     PetscScalar *x;
 
     ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
-#endif
     // Loop over quadrature points
     for(int q = 0; q < numQuadPoints; ++q) {
       for(int d = 0; d < dim; d++) {
@@ -913,11 +911,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
         elemVec[f] += elemMat[f*numBasisFuncs+g]*x[g];
       }
     }
-#ifdef FASTER
-    m->updateAdd(fSection, fTag, c, elemVec);
-#else
     ierr = SectionRealUpdateAdd(section, *c_iter, elemVec);CHKERRQ(ierr);
-#endif
   }
   ierr = PetscFree2(elemVec,elemMat);CHKERRQ(ierr);
   ierr = PetscFree6(t_der,b_der,coords,v0,J,invJ);CHKERRQ(ierr);
@@ -925,8 +919,8 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   ierr = SectionRealComplete(section);CHKERRQ(ierr);
   // Subtract the constant
   if (m->hasRealSection("constant")) {
-    const Obj<ALE::Mesh::real_section_type>& constant = m->getRealSection("constant");
-    Obj<ALE::Mesh::real_section_type>        s;
+    const Obj<PETSC_MESH_TYPE::real_section_type>& constant = m->getRealSection("constant");
+    Obj<PETSC_MESH_TYPE::real_section_type>        s;
 
     ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
     s->axpy(-1.0, constant);
@@ -940,7 +934,7 @@ PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx
 {
   Options       *options = (Options *) ctx;
   PetscScalar  (*func)(const double *) = options->exactFunc;
-  Obj<ALE::Mesh> m;
+  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -951,15 +945,15 @@ PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx
   const double                            *quadWeights   = disc->getQuadratureWeights();
   const int                                numBasisFuncs = disc->getBasisSize();
   const double                            *basis         = disc->getBasis();
-  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<PETSC_MESH_TYPE::label_sequence>&    cells         = m->heightStratum(0);
   const int                                dim           = m->getDimension();
   double *coords, *v0, *J, *invJ, detJ;
   double  localError = 0.0;
 
   ierr = PetscMalloc4(dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
-  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     PetscScalar *x;
     double       elemError = 0.0;
 
@@ -1167,7 +1161,7 @@ EXTERN_C_BEGIN
 PetscErrorCode Laplacian_2D_MF(Mat A, Vec x, Vec y)
 {
   Mesh             mesh;
-  Obj<ALE::Mesh>   m;
+  Obj<PETSC_MESH_TYPE>   m;
   SectionReal      X, Y;
   PetscQuadrature *q;
   PetscErrorCode   ierr;
@@ -1181,8 +1175,8 @@ PetscErrorCode Laplacian_2D_MF(Mat A, Vec x, Vec y)
   ierr = MeshGetSectionReal(mesh, "work2", &Y);CHKERRQ(ierr);
   ierr = SectionRealToVec(X, mesh, SCATTER_REVERSE, x);CHKERRQ(ierr);
 
-  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<PETSC_MESH_TYPE::label_sequence>&    cells       = m->heightStratum(0);
   const int     numQuadPoints = q->numQuadPoints;
   const int     numBasisFuncs = q->numBasisFuncs;
   const double *quadWeights   = q->quadWeights;
@@ -1195,7 +1189,7 @@ PetscErrorCode Laplacian_2D_MF(Mat A, Vec x, Vec y)
   ierr = PetscMalloc5(dim,double,&t_der,dim,double,&b_der,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
   ierr = SectionRealZero(Y);CHKERRQ(ierr);
-  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     // Loop over quadrature points
@@ -1245,7 +1239,7 @@ EXTERN_C_END
 #define __FUNCT__ "Jac_Unstructured_Calculated"
 PetscErrorCode Jac_Unstructured_Calculated(Mesh mesh, SectionReal section, Mat A, void *ctx)
 {
-  Obj<ALE::Mesh>   m;
+  Obj<PETSC_MESH_TYPE>   m;
   PetscQuadrature *q;
   PetscErrorCode   ierr;
 
@@ -1255,9 +1249,9 @@ PetscErrorCode Jac_Unstructured_Calculated(Mesh mesh, SectionReal section, Mat A
   ierr = MatShellSetContext(A, (void *) q);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const Obj<ALE::Discretization>&          disc  = m->getDiscretization("u");
-  const Obj<ALE::Mesh::real_section_type>& def   = m->getRealSection("default");
-  const Obj<ALE::Mesh::real_section_type>& work1 = m->getRealSection("work1");
-  const Obj<ALE::Mesh::real_section_type>& work2 = m->getRealSection("work2");
+  const Obj<PETSC_MESH_TYPE::real_section_type>& def   = m->getRealSection("default");
+  const Obj<PETSC_MESH_TYPE::real_section_type>& work1 = m->getRealSection("work1");
+  const Obj<PETSC_MESH_TYPE::real_section_type>& work2 = m->getRealSection("work2");
   q->numQuadPoints = disc->getQuadratureSize();
   q->quadPoints    = disc->getQuadraturePoints();
   q->quadWeights   = disc->getQuadratureWeights();
@@ -1277,8 +1271,8 @@ EXTERN_C_BEGIN
 PetscErrorCode Laplacian_2D_MF2(Mat A, Vec x, Vec y)
 {
   Mesh           mesh;
-  Obj<ALE::Mesh> m;
-  Obj<ALE::Mesh::real_section_type> s;
+  Obj<PETSC_MESH_TYPE> m;
+  Obj<PETSC_MESH_TYPE::real_section_type> s;
   SectionReal    op, X, Y;
   PetscErrorCode ierr;
 
@@ -1292,15 +1286,15 @@ PetscErrorCode Laplacian_2D_MF2(Mat A, Vec x, Vec y)
   ierr = MeshGetSectionReal(mesh, "work2", &Y);CHKERRQ(ierr);
   ierr = SectionRealToVec(X, mesh, SCATTER_REVERSE, x);CHKERRQ(ierr);
 
-  const Obj<ALE::Mesh::label_sequence>& cells         = m->heightStratum(0);
+  const Obj<PETSC_MESH_TYPE::label_sequence>& cells         = m->heightStratum(0);
   int                                   numBasisFuncs = m->getDiscretization("u")->getBasisSize();
   PetscScalar                          *elemVec;
 
   ierr = PetscMalloc(numBasisFuncs *sizeof(PetscScalar), &elemVec);CHKERRQ(ierr);
   // Loop over cells
   ierr = SectionRealZero(Y);CHKERRQ(ierr);
-  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-    const ALE::Mesh::real_section_type::value_type *elemMat = s->restrictPoint(*c_iter);
+  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    const PETSC_MESH_TYPE::real_section_type::value_type *elemMat = s->restrictPoint(*c_iter);
     PetscScalar *ev;
 
     ierr = SectionRealRestrict(X,  *c_iter, &ev);CHKERRQ(ierr);
@@ -1328,7 +1322,7 @@ EXTERN_C_END
 PetscErrorCode Jac_Unstructured_Stored(Mesh mesh, SectionReal section, Mat A, void *ctx)
 {
   SectionReal    op;
-  Obj<ALE::Mesh> m;
+  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1339,8 +1333,8 @@ PetscErrorCode Jac_Unstructured_Stored(Mesh mesh, SectionReal section, Mat A, vo
   const double                            *quadWeights   = disc->getQuadratureWeights();
   const int                                numBasisFuncs = disc->getBasisSize();
   const double                            *basisDer      = disc->getBasisDerivatives();
-  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<PETSC_MESH_TYPE::label_sequence>&    cells         = m->heightStratum(0);
   const int dim = m->getDimension();
   double      *t_der, *b_der, *v0, *J, *invJ, detJ;
   PetscScalar *elemMat;
@@ -1350,7 +1344,7 @@ PetscErrorCode Jac_Unstructured_Stored(Mesh mesh, SectionReal section, Mat A, vo
   ierr = PetscMalloc(numBasisFuncs*numBasisFuncs * sizeof(PetscScalar), &elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc5(dim,double,&t_der,dim,double,&b_der,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
-  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     // Loop over quadrature points
@@ -1378,9 +1372,9 @@ PetscErrorCode Jac_Unstructured_Stored(Mesh mesh, SectionReal section, Mat A, vo
   ierr = PetscFree(elemMat);CHKERRQ(ierr);
   ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
 
-  const Obj<ALE::Mesh::real_section_type>& def   = m->getRealSection("default");
-  const Obj<ALE::Mesh::real_section_type>& work1 = m->getRealSection("work1");
-  const Obj<ALE::Mesh::real_section_type>& work2 = m->getRealSection("work2");
+  const Obj<PETSC_MESH_TYPE::real_section_type>& def   = m->getRealSection("default");
+  const Obj<PETSC_MESH_TYPE::real_section_type>& work1 = m->getRealSection("work1");
+  const Obj<PETSC_MESH_TYPE::real_section_type>& work2 = m->getRealSection("work2");
   work1->setAtlas(def->getAtlas());
   work1->allocateStorage();
   work2->setAtlas(def->getAtlas());
@@ -1394,8 +1388,8 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
 {
   Options       *options = (Options *) ctx;
   const double   lambda  = options->lambda;
-  Obj<ALE::Mesh::real_section_type> s;
-  Obj<ALE::Mesh> m;
+  Obj<PETSC_MESH_TYPE::real_section_type> s;
+  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1408,9 +1402,9 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
   const int                                numBasisFuncs = disc->getBasisSize();
   const double                            *basis         = disc->getBasis();
   const double                            *basisDer      = disc->getBasisDerivatives();
-  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
-  const Obj<ALE::Mesh::order_type>&        order         = m->getFactory()->getGlobalOrder(m, "default", s);
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<PETSC_MESH_TYPE::label_sequence>&    cells         = m->heightStratum(0);
+  const Obj<PETSC_MESH_TYPE::order_type>&        order         = m->getFactory()->getGlobalOrder(m, "default", s);
   const int                                dim           = m->getDimension();
   double      *t_der, *b_der, *v0, *J, *invJ, detJ;
   PetscScalar *elemMat;
@@ -1418,7 +1412,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
   ierr = PetscMalloc(numBasisFuncs*numBasisFuncs * sizeof(PetscScalar), &elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc5(dim,double,&t_der,dim,double,&b_der,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
-  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     PetscScalar *u;
@@ -1562,7 +1556,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     // The DA defines most of the problem during creation
   } else {
     Mesh           mesh = (Mesh) dm;
-    Obj<ALE::Mesh> m;
+    Obj<PETSC_MESH_TYPE> m;
     int            numBC = (options->bcType == DIRICHLET) ? 1 : 0;
     int            markers[1]  = {1};
     double       (*funcs[1])(const double *coords) = {options->exactFunc};
@@ -1581,7 +1575,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
-    const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
+    const ALE::Obj<PETSC_MESH_TYPE::real_section_type> s = m->getRealSection("default");
     s->setDebug(options->debug);
     m->setupField(s);
     if (options->debug) {s->view("Default field");}
@@ -1624,28 +1618,31 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
   } else {
     Mesh mesh = (Mesh) dm;
 
-    Obj<ALE::Mesh> m;
-    Obj<ALE::Mesh::real_section_type> s;
+    Obj<PETSC_MESH_TYPE> m;
+    Obj<PETSC_MESH_TYPE::real_section_type> s;
 
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     ierr = MeshGetSectionReal(mesh, "exactSolution", &options->exactSol.section);CHKERRQ(ierr);
     ierr = SectionRealGetSection(options->exactSol.section, s);CHKERRQ(ierr);
     m->setupField(s);
-    const Obj<ALE::Mesh::label_sequence>&     cells       = m->heightStratum(0);
-    const Obj<ALE::Mesh::real_section_type>&  coordinates = m->getRealSection("coordinates");
+    const Obj<PETSC_MESH_TYPE::label_sequence>&     cells       = m->heightStratum(0);
+    const Obj<PETSC_MESH_TYPE::real_section_type>&  coordinates = m->getRealSection("coordinates");
     const int                                 localDof    = m->sizeWithBC(s, *cells->begin());
-    ALE::Mesh::real_section_type::value_type *values      = new ALE::Mesh::real_section_type::value_type[localDof];
+    PETSC_MESH_TYPE::real_section_type::value_type *values      = new PETSC_MESH_TYPE::real_section_type::value_type[localDof];
     double                                   *v0          = new double[dim];
     double                                   *J           = new double[dim*dim];
     double                                    detJ;
 
-    for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-      const Obj<ALE::Mesh::coneArray>      closure = ALE::SieveAlg<ALE::Mesh>::closure(m, *c_iter);
-      const ALE::Mesh::coneArray::iterator end     = closure->end();
+#ifdef PETSC_OPT_SIEVE
+    SETERRQ(PETSC_ERR_SUP, "Not supported for optimized sieves");
+#else
+    for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+      const Obj<PETSC_MESH_TYPE::coneArray>      closure = ALE::SieveAlg<PETSC_MESH_TYPE>::closure(m, *c_iter);
+      const PETSC_MESH_TYPE::coneArray::iterator end     = closure->end();
       int                                  v       = 0;
 
       m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
-      for(ALE::Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+      for(PETSC_MESH_TYPE::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
         const int pointDim = s->getFiberDimension(*cl_iter);
 
         if (pointDim) {
@@ -1656,6 +1653,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
       }
       m->updateAll(s, *c_iter, values);
     }
+#endif
     delete [] values;
     delete [] v0;
     delete [] J;
@@ -1825,7 +1823,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   } else {
     Mesh        mesh = (Mesh) DMMGGetDM(dmmg);
     SectionReal solution;
-    Obj<ALE::Mesh::real_section_type> sol;
+    Obj<PETSC_MESH_TYPE::real_section_type> sol;
     double      error;
 
     ierr = MeshGetSectionReal(mesh, "default", &solution);CHKERRQ(ierr);
