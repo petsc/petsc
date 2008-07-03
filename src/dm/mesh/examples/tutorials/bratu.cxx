@@ -452,23 +452,29 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
         double upper[2]  = {1.0, 1.0};
         double offset[2] = {0.5, 0.5};
         int    edges[2]  = {2, 2};
-        Obj<PETSC_MESH_TYPE> mB;
+        Obj<ALE::Mesh> mB;
+        Obj<PETSC_MESH_TYPE> meshBd = new PETSC_MESH_TYPE(comm, 1, options->debug);
+        Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, options->debug);
 
+        meshBd->setSieve(sieve);
         if (options->circularMesh) {
           double arclen = 1.;
           if (options->reentrantMesh) {
             arclen = .9;
             options->reentrant_angle = .9;
           }
-          mB = ALE::MeshBuilder<PETSC_MESH_TYPE>::createCircularReentrantBoundary(comm, 100, 1., arclen, options->debug);
+          mB = ALE::MeshBuilder<ALE::Mesh>::createCircularReentrantBoundary(comm, 100, 1., arclen, options->debug);
         } else if (options->reentrantMesh) {
           double reentrantlower[2] = {-1., -1.};
           options->reentrant_angle = .75;
-          mB = ALE::MeshBuilder<PETSC_MESH_TYPE>::createReentrantBoundary(comm, reentrantlower, upper, offset, options->debug);
+          mB = ALE::MeshBuilder<ALE::Mesh>::createReentrantBoundary(comm, reentrantlower, upper, offset, options->debug);
         } else {
-          mB = ALE::MeshBuilder<PETSC_MESH_TYPE>::createSquareBoundary(comm, lower, upper, edges, options->debug);
+          mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(comm, lower, upper, edges, options->debug);
         }
-        ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
+        std::map<PETSC_MESH_TYPE::point_type,PETSC_MESH_TYPE::point_type> renumbering;
+        ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering);
+        meshBd->view("Mesh Boundary");
+        ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
       } else if (options->dim == 3) {
         Obj<PETSC_MESH_TYPE> mB;
         if (options->reentrantMesh) {
@@ -861,7 +867,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    if (detJ <= 0.0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     PetscScalar *x;
 
     ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
@@ -1632,18 +1638,17 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     double                                   *v0          = new double[dim];
     double                                   *J           = new double[dim*dim];
     double                                    detJ;
+    ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(m->getSieve()->getMaxConeSize(), m->depth()), true);
 
-#ifdef PETSC_OPT_SIEVE
-    SETERRQ(PETSC_ERR_SUP, "Not supported for optimized sieves");
-#else
     for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-      const Obj<PETSC_MESH_TYPE::coneArray>      closure = ALE::SieveAlg<PETSC_MESH_TYPE>::closure(m, *c_iter);
-      const PETSC_MESH_TYPE::coneArray::iterator end     = closure->end();
-      int                                  v       = 0;
+      ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*m->getSieve(), *c_iter, pV);
+      const PETSC_MESH_TYPE::point_type *oPoints = pV.getPoints();
+      const int                          oSize   = pV.getSize();
+      int                                v       = 0;
 
       m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
-      for(PETSC_MESH_TYPE::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
-        const int pointDim = s->getFiberDimension(*cl_iter);
+      for(int cl = 0; cl < oSize; ++cl) {
+        const int pointDim = s->getFiberDimension(oPoints[cl]);
 
         if (pointDim) {
           for(int d = 0; d < pointDim; ++d, ++v) {
@@ -1652,8 +1657,8 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
         }
       }
       m->updateAll(s, *c_iter, values);
+      pV.clear();
     }
-#endif
     delete [] values;
     delete [] v0;
     delete [] J;
@@ -1663,6 +1668,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     if (flag) {ierr = ViewSection(mesh, options->exactSol.section, "exact_sol.vtk");CHKERRQ(ierr);}
     ierr = MeshGetSectionReal(mesh, "error", &options->error.section);CHKERRQ(ierr);
     ierr = SectionRealGetSection(options->error.section, s);CHKERRQ(ierr);
+    s->setChart(PETSC_MESH_TYPE::real_section_type::chart_type(*m->heightStratum(0)));
     s->setFiberDimension(m->heightStratum(0), 1);
     m->allocate(s);
   }

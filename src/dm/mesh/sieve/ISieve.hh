@@ -42,6 +42,11 @@ namespace ALE {
     Interval(): _min(point_type()), _max(point_type()) {};
     Interval(const point_type& min, const point_type& max): _min(min), _max(max) {};
     Interval(const Interval& interval): _min(interval.min()), _max(interval.max()) {};
+    template<typename Iterator>
+    Interval(Iterator& iterator) {
+      this->_min = *std::min_element(iterator.begin(), iterator.end());
+      this->_max = (*std::max_element(iterator.begin(), iterator.end()))+1;
+    };
   public:
     Interval& operator=(const Interval& interval) {_min = interval.min(); _max = interval.max(); return *this;};
     friend std::ostream& operator<<(std::ostream& stream, const Interval& interval) {
@@ -495,6 +500,25 @@ namespace ALE {
       void visitPoint(const Point& point, const int orientation) {
         const int dim = section.getFiberDimension(point);
         this->section.updatePoint(point, &this->values[this->i], orientation);
+        this->i += dim;
+      };
+      template<typename Arrow>
+      void visitArrow(const Arrow& arrow, const int orientation) {};
+    };
+    template<typename Section>
+    class UpdateAllVisitor {
+    public:
+      typedef typename Section::value_type value_type;
+    protected:
+      Section&          section;
+      const value_type *values;
+      int               i;
+    public:
+      UpdateAllVisitor(Section& s, const value_type *v) : section(s), values(v), i(0) {};
+      template<typename Point>
+      void visitPoint(const Point& point, const int orientation) {
+        const int dim = section.getFiberDimension(point);
+        this->section.updatePointAll(point, &this->values[this->i], orientation);
         this->i += dim;
       };
       template<typename Arrow>
@@ -1685,6 +1709,11 @@ namespace ALE {
       imesh.stratify();
       convertOrientation(*mesh.getSieve(), *imesh.getSieve(), renumbering, mesh.getArrowSection("orientation").ptr());
       convertCoordinates(*mesh.getRealSection("coordinates"), *imesh.getRealSection("coordinates"), renumbering);
+      const typename Mesh::labels_type& labels = mesh.getLabels();
+
+      for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        imesh.setLabel(l_iter->first, l_iter->second);
+      }
     };
   };
 }

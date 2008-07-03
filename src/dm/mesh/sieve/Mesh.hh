@@ -1140,6 +1140,20 @@ namespace ALE {
       this->_exclusionIndices[marker] = indices;
     };
     template<typename Bundle>
+    int sizeV(Bundle& mesh) {
+      typedef typename ISieveVisitor::PointRetriever<typename Bundle::sieve_type> Visitor;
+      Visitor pV((int) pow(mesh.getSieve()->getMaxConeSize(), mesh.depth()), true);
+      ISieveTraversal<typename Bundle::sieve_type>::orientedClosure(*mesh.getSieve(), *mesh.heightStratum(0)->begin(), pV);
+      const typename Visitor::point_type *oPoints = pV.getPoints();
+      const int                           oSize   = pV.getSize();
+      int                                 size    = 0;
+
+      for(int cl = 0; cl < oSize; ++cl) {
+        size += this->_dim2dof[mesh.depth(oPoints[cl])];
+      }
+      return size;
+    };
+    template<typename Bundle>
     int size(const Obj<Bundle>& mesh) {
       const Obj<typename Bundle::label_sequence>& cells   = mesh->heightStratum(0);
       const Obj<typename Bundle::coneArray>       closure = ALE::SieveAlg<Bundle>::closure(mesh, *cells->begin());
@@ -1543,6 +1557,7 @@ namespace ALE {
     bool                   _calculatedOverlap;
     Obj<send_overlap_type> _sendOverlap;
     Obj<recv_overlap_type> _recvOverlap;
+    std::map<int,double>   _periodicity;
     holes_type             _holes;
     discretizations_type   _discretizations;
   public:
@@ -1560,6 +1575,8 @@ namespace ALE {
     void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
     const Obj<recv_overlap_type>& getRecvOverlap() const {return this->_recvOverlap;};
     void setRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_recvOverlap = overlap;};
+    bool getPeriodicity(const int d) {return this->_periodicity[d];};
+    void setPeriodicity(const int d, const double length) {this->_periodicity[d] = length;};
     const holes_type& getHoles() const {return this->_holes;};
     void addHole(const double hole[]) {
       this->_holes.push_back(hole);
@@ -1616,7 +1633,14 @@ namespace ALE {
     const typename Section::value_type *restrictClosure(const Obj<Section>& section, const point_type& p) {
       const int size = this->sizeWithBC(section, p);
       ISieveVisitor::RestrictVisitor<Section> rV(*section, size, section->getRawArray(size));
-      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+
+      if (this->depth() == 1) {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+      } else {
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), rV, true);
+
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
+      }
       return rV.getValues();
     };
     template<typename Section>
@@ -1624,20 +1648,54 @@ namespace ALE {
       const int size = this->sizeWithBC(section, p);
       if (valuesSize < size) {throw ALE::Exception("Input array to small for restrictClosure()");}
       ISieveVisitor::RestrictVisitor<Section> rV(*section, size, values);
-      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+
+      if (this->depth() == 1) {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+      } else {
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), rV, true);
+
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
+      }
       return rV.getValues();
     };
-    // replace the values for the closure of this point
+    // Replace the values for the closure of this point
     template<typename Section>
     void update(const Obj<Section>& section, const point_type& p, const typename Section::value_type *v) {
       ISieveVisitor::UpdateVisitor<Section> uV(*section, v);
-      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+
+      if (this->depth() == 1) {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+      } else {
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), uV, true);
+
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
+      }
+    };
+    // Replace the values for the closure of this point, including points constrained by BC
+    template<typename Section>
+    void updateAll(const Obj<Section>& section, const point_type& p, const typename Section::value_type *v) {
+      ISieveVisitor::UpdateAllVisitor<Section> uV(*section, v);
+
+      if (this->depth() == 1) {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+      } else {
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAllVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), uV, true);
+
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
+      }
     };
     // Augment the values for the closure of this point
     template<typename Section>
     void updateAdd(const Obj<Section>& section, const point_type& p, const typename Section::value_type *v) {
       ISieveVisitor::UpdateAddVisitor<Section> uV(*section, v);
-      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+
+      if (this->depth() == 1) {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+      } else {
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAddVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), uV, true);
+
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
+      }
     };
   public: // Overlap
     void constructOverlap() {
@@ -1674,8 +1732,95 @@ namespace ALE {
         throw ALE::Exception("No point location for mesh dimension");
       }
     };
+    void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      const double *coords = this->restrictClosure(coordinates, e);
+      const int     dim    = 2;
+      double        invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        for(int d = 0; d < dim; d++) {
+          for(int f = 0; f < dim; f++) {
+            J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+          }
+        }
+        detJ = J[0]*J[3] - J[1]*J[2];
+        if (detJ < 0.0) {
+          const double  xLength = this->_periodicity[0];
+
+          if (xLength != 0.0) {
+            double v0x = coords[0*dim+0];
+
+            if (v0x == 0.0) {
+              v0x = v0[0] = xLength;
+            }
+            for(int f = 0; f < dim; f++) {
+              const double px = coords[(f+1)*dim+0] == 0.0 ? xLength : coords[(f+1)*dim+0];
+
+              J[0*dim+f] = 0.5*(px - v0x);
+            }
+          }
+          detJ = J[0]*J[3] - J[1]*J[2];
+        }
+        PetscLogFlops(8 + 3);
+      }
+      if (invJ) {
+        invDet  = 1.0/detJ;
+        invJ[0] =  invDet*J[3];
+        invJ[1] = -invDet*J[1];
+        invJ[2] = -invDet*J[2];
+        invJ[3] =  invDet*J[0];
+        PetscLogFlops(5);
+      }
+    };
+    void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      const double *coords = this->restrictClosure(coordinates, e);
+      const int     dim    = 3;
+      double        invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        for(int d = 0; d < dim; d++) {
+          for(int f = 0; f < dim; f++) {
+            J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+          }
+        }
+        // The minus sign is here since I orient the first face to get the outward normal
+        detJ = -(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+                 J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+                 J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+        PetscLogFlops(18 + 12);
+      }
+      if (invJ) {
+        invDet  = -1.0/detJ;
+        invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
+        invJ[0*3+1] = invDet*(J[0*3+2]*J[2*3+1] - J[0*3+1]*J[2*3+2]);
+        invJ[0*3+2] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
+        invJ[1*3+0] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
+        invJ[1*3+1] = invDet*(J[0*3+0]*J[2*3+2] - J[0*3+2]*J[2*3+0]);
+        invJ[1*3+2] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
+        invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
+        invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
+        invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
+        PetscLogFlops(37);
+      }
+    };
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      throw ALE::Exception("Unsupport dimension for element geometry computation");
+      if (this->_dim == 2) {
+        computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
+      } else if (this->_dim == 3) {
+        computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+      } else {
+        throw ALE::Exception("Unsupported dimension for element geometry computation");
+      }
     };
     double getMaxVolume() {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
@@ -1757,15 +1902,257 @@ namespace ALE {
 #endif
       }
     };
+    int setFiberDimensions(const Obj<real_section_type>& s, const Obj<names_type>& discs, names_type& bcLabels) {
+      const int debug  = this->debug();
+      int       maxDof = 0;
+
+      for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+        s->addSpace();
+      }
+      for(int d = 0; d <= this->_dim; ++d) {
+        int numDof = 0;
+        int f      = 0;
+
+        for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+          const Obj<ALE::Discretization>& disc = this->getDiscretization(*f_iter);
+          const int                       sDof = disc->getNumDof(d);
+
+          numDof += sDof;
+          if (sDof) s->setFiberDimension(this->depthStratum(d), sDof, f);
+        }
+        if (numDof) s->setFiberDimension(this->depthStratum(d), numDof);
+        maxDof = std::max(maxDof, numDof);
+      }
+      // Process exclusions
+      typedef ISieveVisitor::PointRetriever<sieve_type> Visitor;
+      int f = 0;
+
+      for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+        const Obj<ALE::Discretization>& disc      = this->getDiscretization(*f_iter);
+        std::string                     labelName = "exclude-"+*f_iter;
+        std::set<point_type>            seen;
+        Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), true);
+
+        if (this->hasLabel(labelName)) {
+          const Obj<label_type>&         label     = this->getLabel(labelName);
+          const Obj<label_sequence>&     exclusion = this->getLabelStratum(labelName, 1);
+          const label_sequence::iterator end       = exclusion->end();
+          if (debug > 1) {label->view(labelName.c_str());}
+
+          for(label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
+            ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), *e_iter, pV);
+            const Visitor::point_type *oPoints = pV.getPoints();
+            const int                  oSize   = pV.getSize();
+
+            for(int cl = 0; cl < oSize; ++cl) {
+              if (seen.find(oPoints[cl]) != seen.end()) continue;
+              if (this->getValue(label, oPoints[cl]) == 1) {
+                seen.insert(oPoints[cl]);
+                s->setFiberDimension(oPoints[cl], 0, f);
+                s->addFiberDimension(oPoints[cl], -disc->getNumDof(this->depth(oPoints[cl])));
+                if (debug > 1) {std::cout << "  point: " << oPoints[cl] << " dim: " << disc->getNumDof(this->depth(oPoints[cl])) << std::endl;}
+              }
+            }
+            pV.clear();
+          }
+        }
+      }
+      // Process constraints
+      f = 0;
+      for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+        const Obj<ALE::Discretization>&    disc        = this->getDiscretization(*f_iter);
+        const Obj<std::set<std::string> >  bcs         = disc->getBoundaryConditions();
+        std::string                        excludeName = "exclude-"+*f_iter;
+
+        for(std::set<std::string>::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter) {
+          const Obj<ALE::BoundaryCondition>& bc       = disc->getBoundaryCondition(*bc_iter);
+          const Obj<label_sequence>&         boundary = this->getLabelStratum(bc->getLabelName(), bc->getMarker());
+
+          bcLabels.insert(bc->getLabelName());
+          if (this->hasLabel(excludeName)) {
+            const Obj<label_type>& label = this->getLabel(excludeName);
+
+            for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+              if (!this->getValue(label, *e_iter)) {
+                const int numDof = disc->getNumDof(this->depth(*e_iter));
+
+                if (numDof) s->addConstraintDimension(*e_iter, numDof);
+                if (numDof) s->setConstraintDimension(*e_iter, numDof, f);
+              }
+            }
+          } else {
+            for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+              const int numDof = disc->getNumDof(this->depth(*e_iter));
+
+              if (numDof) s->addConstraintDimension(*e_iter, numDof);
+              if (numDof) s->setConstraintDimension(*e_iter, numDof, f);
+            }
+          }
+        }
+      }
+      return maxDof;
+    };
+    void calculateIndices() {
+      typedef ISieveVisitor::PointRetriever<sieve_type> Visitor;
+      // Should have an iterator over the whole tree
+      Obj<names_type> discs = this->getDiscretizations();
+      const int       debug = this->debug();
+      std::map<std::string, std::pair<int, int*> > indices;
+
+      for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+        const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
+
+        indices[*d_iter] = std::pair<int, int*>(0, new int[disc->sizeV(*this)]);
+        disc->setIndices(indices[*d_iter].second);
+      }
+      const Obj<label_sequence>& cells   = this->heightStratum(0);
+      Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), true);
+      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), *cells->begin(), pV);
+      const Visitor::point_type *oPoints = pV.getPoints();
+      const int                  oSize   = pV.getSize();
+      int                        offset  = 0;
+
+      if (debug > 1) {std::cout << "Closure for first element" << std::endl;}
+      for(int cl = 0; cl < oSize; ++cl) {
+        const int dim = this->depth(oPoints[cl]);
+
+        if (debug > 1) {std::cout << "  point " << oPoints[cl] << " depth " << dim << std::endl;}
+        for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+          const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
+          const int                  num  = disc->getNumDof(dim);
+
+          if (debug > 1) {std::cout << "    disc " << disc->getName() << " numDof " << num << std::endl;}
+          for(int o = 0; o < num; ++o) {
+            indices[*d_iter].second[indices[*d_iter].first++] = offset++;
+          }
+        }
+      }
+      pV.clear();
+      if (debug > 1) {
+        for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+          const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
+
+          std::cout << "Discretization " << disc->getName() << " indices:";
+          for(int i = 0; i < indices[*d_iter].first; ++i) {
+            std::cout << " " << indices[*d_iter].second[i];
+          }
+          std::cout << std::endl;
+        }
+      }
+    };
+    void calculateIndicesExcluded(const Obj<real_section_type>& s, const Obj<names_type>& discs) {
+      typedef ISieveVisitor::PointRetriever<sieve_type> Visitor;
+      typedef std::map<std::string, std::pair<int, indexSet> > indices_type;
+      const Obj<label_type>& indexLabel = this->createLabel("cellExclusion");
+      const int debug  = this->debug();
+      int       marker = 0;
+      std::map<indices_type, int> indexMap;
+      indices_type                indices;
+      Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), true);
+
+      for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+        const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
+        const int                  size = disc->sizeV(*this);
+
+        indices[*d_iter].second.resize(size);
+      }
+      const names_type::const_iterator dBegin = discs->begin();
+      const names_type::const_iterator dEnd   = discs->end();
+      std::set<point_type> seen;
+      int f = 0;
+
+      for(names_type::const_iterator f_iter = dBegin; f_iter != dEnd; ++f_iter, ++f) {
+        std::string labelName = "exclude-"+*f_iter;
+
+        if (this->hasLabel(labelName)) {
+          const Obj<label_sequence>&     exclusion = this->getLabelStratum(labelName, 1);
+          const label_sequence::iterator end       = exclusion->end();
+
+          if (debug > 1) {std::cout << "Processing exclusion " << labelName << std::endl;}
+          for(label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
+            if (this->height(*e_iter)) continue;
+            ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), *e_iter, pV);
+            const Visitor::point_type *oPoints = pV.getPoints();
+            const int                  oSize   = pV.getSize();
+            int                        offset  = 0;
+
+            if (debug > 1) {std::cout << "  Closure for cell " << *e_iter << std::endl;}
+            for(int cl = 0; cl < oSize; ++cl) {
+              int g = 0;
+
+              if (debug > 1) {std::cout << "    point " << oPoints[cl] << std::endl;}
+              for(names_type::const_iterator g_iter = dBegin; g_iter != dEnd; ++g_iter, ++g) {
+                const int fDim = s->getFiberDimension(oPoints[cl], g);
+
+                if (debug > 1) {std::cout << "      disc " << *g_iter << " numDof " << fDim << std::endl;}
+                for(int d = 0; d < fDim; ++d) {
+                  indices[*g_iter].second[indices[*g_iter].first++] = offset++;
+                }
+              }
+            }
+            pV.clear();
+            const std::map<indices_type, int>::iterator entry = indexMap.find(indices);
+
+            if (debug > 1) {
+              for(std::map<indices_type, int>::iterator i_iter = indexMap.begin(); i_iter != indexMap.end(); ++i_iter) {
+                for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
+                  std::cout << "Discretization (" << i_iter->second << ") " << *g_iter << " indices:";
+                  for(int i = 0; i < ((indices_type) i_iter->first)[*g_iter].first; ++i) {
+                    std::cout << " " << ((indices_type) i_iter->first)[*g_iter].second[i];
+                  }
+                  std::cout << std::endl;
+                }
+                std::cout << "Comparison: " << (indices == i_iter->first) << std::endl;
+              }
+              for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
+                std::cout << "Discretization " << *g_iter << " indices:";
+                for(int i = 0; i < indices[*g_iter].first; ++i) {
+                  std::cout << " " << indices[*g_iter].second[i];
+                }
+                std::cout << std::endl;
+              }
+            }
+            if (entry != indexMap.end()) {
+              this->setValue(indexLabel, *e_iter, entry->second);
+              if (debug > 1) {std::cout << "  Found existing indices with marker " << entry->second << std::endl;}
+            } else {
+              indexMap[indices] = ++marker;
+              this->setValue(indexLabel, *e_iter, marker);
+              if (debug > 1) {std::cout << "  Created new indices with marker " << marker << std::endl;}
+            }
+            for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
+              indices[*g_iter].first  = 0;
+              for(unsigned int i = 0; i < indices[*g_iter].second.size(); ++i) indices[*g_iter].second[i] = 0;
+            }
+          }
+        }
+      }
+      if (debug > 1) {indexLabel->view("cellExclusion");}
+      for(std::map<indices_type, int>::iterator i_iter = indexMap.begin(); i_iter != indexMap.end(); ++i_iter) {
+        if (debug > 1) {std::cout << "Setting indices for marker " << i_iter->second << std::endl;}
+        for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
+          const Obj<Discretization>& disc = this->getDiscretization(*g_iter);
+          const indexSet  indSet   = ((indices_type) i_iter->first)[*g_iter].second;
+          const int       size     = indSet.size();
+          int            *_indices = new int[size];
+
+          if (debug > 1) {std::cout << "  field " << *g_iter << std::endl;}
+          for(int i = 0; i < size; ++i) {
+            _indices[i] = indSet[i];
+            if (debug > 1) {std::cout << "    indices["<<i<<"] = " << _indices[i] << std::endl;}
+          }
+          disc->setIndices(_indices, i_iter->second);
+        }
+      }
+    };
     void setupField(const Obj<real_section_type>& s, const int cellMarker = 2, const bool noUpdate = false) {
-#if 1
-      throw ALE::Exception("Not working yet");
-#else
+      typedef ISieveVisitor::PointRetriever<sieve_type> Visitor;
       const Obj<names_type>& discs  = this->getDiscretizations();
       const int              debug  = s->debug();
       names_type             bcLabels;
       int                    maxDof;
 
+      s->setChart(this->getSieve()->getChart());
       maxDof = this->setFiberDimensions(s, discs, bcLabels);
       this->calculateIndices();
       this->calculateIndicesExcluded(s, discs);
@@ -1786,33 +2173,35 @@ namespace ALE {
         double                        *v0            = new double[this->getDimension()];
         double                        *J             = new double[this->getDimension()*this->getDimension()];
         double                         detJ;
+        Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), true);
 
         for(label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
-          const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
-          const coneArray::iterator end     = closure->end();
+          ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), *c_iter, pV);
+          const Visitor::point_type *oPoints = pV.getPoints();
+          const int                  oSize   = pV.getSize();
 
           if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
           this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
           for(int f = 0; f < numFields; ++f) v[f] = 0;
-          for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
-            const int cDim = s->getConstraintDimension(*cl_iter);
+          for(int cl = 0; cl < oSize; ++cl) {
+            const int cDim = s->getConstraintDimension(oPoints[cl]);
             int       off  = 0;
             int       f    = 0;
             int       i    = -1;
 
-            if (debug > 1) {std::cout << "    point " << *cl_iter << std::endl;}
+            if (debug > 1) {std::cout << "    point " << oPoints[cl] << std::endl;}
             if (cDim) {
               if (debug > 1) {std::cout << "      constrained excMarker: " << this->getValue(cellExclusion, *c_iter) << std::endl;}
               for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
                 const Obj<ALE::Discretization>& disc    = this->getDiscretization(*f_iter);
                 const Obj<names_type>           bcs     = disc->getBoundaryConditions();
-                const int                       fDim    = s->getFiberDimension(*cl_iter, f);//disc->getNumDof(this->depth(*cl_iter));
+                const int                       fDim    = s->getFiberDimension(oPoints[cl], f);//disc->getNumDof(this->depth(oPoints[cl]));
                 const int                      *indices = disc->getIndices(this->getValue(cellExclusion, *c_iter));
                 int                             b       = 0;
 
                 for(names_type::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter, ++b) {
                   const Obj<ALE::BoundaryCondition>& bc    = disc->getBoundaryCondition(*bc_iter);
-                  const int                          value = this->getValue(this->getLabel(bc->getLabelName()), *cl_iter);
+                  const int                          value = this->getValue(this->getLabel(bc->getLabelName()), oPoints[cl]);
 
                   if (b > 0) v[f] -= fDim;
                   if (value == bc->getMarker()) {
@@ -1843,12 +2232,12 @@ namespace ALE {
                 off += fDim;
               }
               if (i != cDim-1) {throw ALE::Exception("Invalid constraint initialization");}
-              s->setConstraintDof(*cl_iter, dofs);
+              s->setConstraintDof(oPoints[cl], dofs);
             } else {
               if (debug > 1) {std::cout << "      unconstrained" << std::endl;}
               for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
                 const Obj<ALE::Discretization>& disc    = this->getDiscretization(*f_iter);
-                const int                       fDim    = s->getFiberDimension(*cl_iter, f);//disc->getNumDof(this->depth(*cl_iter));
+                const int                       fDim    = s->getFiberDimension(oPoints[cl], f);//disc->getNumDof(this->depth(oPoints[cl]));
                 const int                      *indices = disc->getIndices(this->getValue(cellExclusion, *c_iter));
 
                 if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
@@ -1860,15 +2249,12 @@ namespace ALE {
             }
           }
           if (debug > 1) {
-            const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
-            const coneArray::iterator end     = closure->end();
-
             for(int f = 0; f < numFields; ++f) v[f] = 0;
-            for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+            for(int cl = 0; cl < oSize; ++cl) {
               int f = 0;
               for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
                 const Obj<ALE::Discretization>& disc    = this->getDiscretization(*f_iter);
-                const int                       fDim    = s->getFiberDimension(*cl_iter, f);
+                const int                       fDim    = s->getFiberDimension(oPoints[cl], f);
                 const int                      *indices = disc->getIndices(this->getValue(cellExclusion, *c_iter));
 
                 for(int d = 0; d < fDim; ++d, ++v[f]) {
@@ -1880,6 +2266,7 @@ namespace ALE {
           if (!noUpdate) {
             this->updateAll(s, *c_iter, values);
           }
+          pV.clear();
         }
         delete [] dofs;
         delete [] values;
@@ -1887,7 +2274,6 @@ namespace ALE {
         delete [] J;
       }
       if (debug > 1) {s->view("");}
-#endif
     };
   };
 }
@@ -2153,7 +2539,7 @@ namespace ALE {
       } else if (this->_dim == 3) {
         computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
       } else {
-        throw ALE::Exception("Unsupport dimension for element geometry computation");
+        throw ALE::Exception("Unsupported dimension for element geometry computation");
       }
     };
     void computeLineFaceGeometry(const point_type& cell, const point_type& face, const int f, const double cellInvJ[], double invJ[], double& detJ, double normal[], double tangent[]) {
@@ -2316,7 +2702,7 @@ namespace ALE {
       } else if (this->_dim == 3) {
         computeTriangleFaceGeometry(cell, face, f, cellInvJ, invJ, detJ, normal, tangent);
       } else {
-        throw ALE::Exception("Unsupport dimension for element geometry computation");
+        throw ALE::Exception("Unsupported dimension for element geometry computation");
       }
     };
     double getMaxVolume() {
@@ -2556,9 +2942,9 @@ namespace ALE {
     void calculateIndicesExcluded(const Obj<real_section_type>& s, const Obj<names_type>& discs) {
       typedef std::map<std::string, std::pair<int, indexSet> > indices_type;
       const Obj<label_type>& indexLabel = this->createLabel("cellExclusion");
-      Obj<Mesh> mesh   = this;
       const int debug  = this->debug();
       int       marker = 0;
+      Obj<Mesh> mesh   = this;
       std::map<indices_type, int> indexMap;
       indices_type                indices;
 
@@ -2871,8 +3257,6 @@ namespace ALE {
       mesh->setSieve(sieve);
       const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
       if (mesh->commRank() == 0) {
-        sieve->setChart(typename Mesh::sieve_type::chart_type(0, numEdges+numVertices));
-        sieve->allocate();
         /* Create sieve and ordering */
         for(int v = numEdges; v < numEdges+numVertices; v++) {
           vertices[v-numEdges] = typename Mesh::point_type(v);
@@ -2909,7 +3293,6 @@ namespace ALE {
             }
           }
         }
-        sieve->reallocate();
       }
       mesh->stratify();
       for(int vy = 0; vy <= edges[1]; ++vy) {
