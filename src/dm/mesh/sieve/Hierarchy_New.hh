@@ -861,7 +861,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
     //generate the mesh
     //this is screwy... we must do this differently
     coarse_bound->setDimension(1);
-    output_mesh = ALE::Generator::generateMesh(coarse_bound, (original_mesh->depth() != 1), true);
+    output_mesh = ALE::Generator<PETSC_MESH_TYPE>::generateMesh(coarse_bound, (original_mesh->depth() != 1), true);
     output_mesh->stratify();
     PetscPrintf(original_mesh->comm(), "%d v, %d cells in the output mesh\n", output_mesh->depthStratum(0)->size(), output_mesh->heightStratum(0)->size());
   }
@@ -946,7 +946,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
     //generate the mesh
     //this is screwy... we must do this differently
     coarse_bound_mesh->setDimension(2);
-    output_mesh = ALE::Generator::generateMesh(coarse_bound_mesh, (original_mesh->depth() != 1), true);
+    output_mesh = ALE::Generator<PETSC_MESH_TYPE>::generateMesh(coarse_bound_mesh, (original_mesh->depth() != 1), true);
     output_mesh->stratify();
     //PetscPrintf(original_mesh->comm(), "%d v, %d cells in the output mesh\n", output_mesh->depthStratum(0)->size(), output_mesh->heightStratum(0)->size());
   }
@@ -1288,12 +1288,12 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
         current_inscribed_radius = 2.*area/perimeter;
         //PetscPrintf(m->comm(), "%f inscribed radius %f area %f perimeter\n", current_inscribed_radius, area, perimeter);
       } else if (dim == 3) {
-	double volume = 0.5*fabs((coords[1*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) +
+	double volume = fabs((coords[1*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) +
 				 (coords[2*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]) +
 				 (coords[3*3+0] - coords[0*3+0])*(coords[1*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) -
 				 (coords[1*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) -
 				 (coords[2*3+0] - coords[0*3+0])*(coords[1*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) -
-				 (coords[3*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]));
+				 (coords[3*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]))/6.;
         double area = 0.;
         //0,1,2
         double area_term_1 = (coords[1*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1]) - (coords[1*3+1] - coords[0*3+1])*(coords[2*3+0] - coords[0*3+0]);

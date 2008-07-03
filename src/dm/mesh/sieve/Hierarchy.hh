@@ -770,7 +770,7 @@ ALE::Obj<PETSC_MESH_TYPE> MeshCreateHierarchyMesh(ALE::Obj<PETSC_MESH_TYPE> m, A
       }
     }
     //PetscPrintf(m->comm(), "%d, %d\n", boundary_mesh->depthStratum(0)->size(), boundary_mesh->heightStratum(0)->size());
-    ALE::Obj<PETSC_MESH_TYPE> newmesh = ALE::Generator::generateMesh(boundary_mesh, (m->depth() != 1), true);
+    ALE::Obj<PETSC_MESH_TYPE> newmesh = ALE::Generator<PETSC_MESH_TYPE>::generateMesh(boundary_mesh, (m->depth() != 1), true);
     //PetscPrintf(m->comm(), "%d, %d\n", newmesh->depthStratum(0)->size(), newmesh->heightStratum(0)->size());
     ALE::Obj<PETSC_MESH_TYPE::real_section_type> s = newmesh->getRealSection("default");
     const Obj<std::set<std::string> >& discs = m->getDiscretizations();

@@ -62,6 +62,30 @@ runex1f:
 runex2f:
 	-@${MPIEXEC} -n 1 ./ex2f 
 
+runex4:
+	-@${MPIEXEC} -n 1 ./ex4 -nox > ex4_1.tmp 2>&1;	  \
+	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
+	   else echo "Possible problem with ex4_1, diffs above"; fi; \
+	   ${RM} -f ex4_1.tmp
+
+runex4_2:
+	-@${MPIEXEC} -n 3 ./ex4 -nox > ex4_2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex4_2.out ex4_2.tmp) then true; \
+	   else echo "Possible problem with ex4_2, diffs above"; fi; \
+	   ${RM} -f ex4_2.tmp
+
+runex4_3:
+	-@${MPIEXEC} -n 1 ./ex4 -nox -nonlinear > ex4_3.tmp 2>&1;	  \
+	   if (${DIFF} output/ex4_3.out ex4_3.tmp) then true; \
+	   else echo "Possible problem with ex4_3, diffs above"; fi; \
+	   ${RM} -f ex4_3.tmp
+
+runex4_4:
+	-@${MPIEXEC} -n 3 ./ex4 -nox -nonlinear > ex4_4.tmp 2>&1;	  \
+	   if (${DIFF} output/ex4_4.out ex4_4.tmp) then true; \
+	   else echo "Possible problem with ex4_4, diffs above"; fi; \
+	   ${RM} -f ex4_4.tmp
+
 runex6:
 	-@${MPIEXEC} -n 1 ./ex6 -nox -time_steps_max 4   > ex6_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
@@ -87,7 +111,8 @@ runex7_3:
 	   ${RM} -f ex7_3.tmp
 
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm
+TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex4.PETSc runex4 runex4_2 runex4_3 runex4_4 ex4.rm\
+                            ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 runex7_2 runex7_3 ex7.rm
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm
 TESTEXAMPLES_C_X11_MPIUNI = 

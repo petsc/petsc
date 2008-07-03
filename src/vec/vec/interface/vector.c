@@ -839,7 +839,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRanges(Vec x,const PetscInt *ra
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidType(x,1);
-  ierr = PetscMapGetGlobalRange(&x->map,ranges);CHKERRQ(ierr);
+  ierr = PetscMapGetRanges(&x->map,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
