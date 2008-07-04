@@ -472,7 +472,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
           mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(comm, lower, upper, edges, options->debug);
         }
         std::map<PETSC_MESH_TYPE::point_type,PETSC_MESH_TYPE::point_type> renumbering;
-        ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering);
+        ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
         meshBd->view("Mesh Boundary");
         ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
       } else if (options->dim == 3) {
