@@ -133,7 +133,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
       if (bs == bbs) {
         len = len/bs;
         ierr = ISBlockGetIndices(is_in[i],&idx);CHKERRQ(ierr);
-        for (i=0; i<len; i++) nidx[i] = idx[i]/bs;
+        for (j=0; j<len; j++) nidx[j] = idx[j]/bs;
         ierr = ISBlockRestoreIndices(is_in[i],&idx);CHKERRQ(ierr);
         ierr = ISCreateGeneral(PETSC_COMM_SELF,len,nidx,(is_out+i));CHKERRQ(ierr);
         continue;
