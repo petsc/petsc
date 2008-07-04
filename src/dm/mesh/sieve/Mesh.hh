@@ -1560,11 +1560,13 @@ namespace ALE {
     std::map<int,double>   _periodicity;
     holes_type             _holes;
     discretizations_type   _discretizations;
+    int                    _maxDof;
   public:
     IMesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       this->_calculatedOverlap = false;
       this->_sendOverlap       = new send_overlap_type(comm, debug);
       this->_recvOverlap       = new recv_overlap_type(comm, debug);
+      this->_maxDof            = -1;
     };
   public: // Accessors
     int getDimension() const {return this->_dim;};
@@ -1600,6 +1602,7 @@ namespace ALE {
       }
       return names;
     };
+    int getMaxDof() const {return this->_maxDof;};
   public: // Sizes
     template<typename Section>
     int size(const Obj<Section>& section, const point_type& p) {
@@ -2150,10 +2153,9 @@ namespace ALE {
       const Obj<names_type>& discs  = this->getDiscretizations();
       const int              debug  = s->debug();
       names_type             bcLabels;
-      int                    maxDof;
 
       s->setChart(this->getSieve()->getChart());
-      maxDof = this->setFiberDimensions(s, discs, bcLabels);
+      this->_maxDof = this->setFiberDimensions(s, discs, bcLabels);
       this->calculateIndices();
       this->calculateIndicesExcluded(s, discs);
       this->allocate(s);
@@ -2168,7 +2170,7 @@ namespace ALE {
         const point_type               firstCell     = *boundaryCells->begin();
         const int                      numFields     = discs->size();
         real_section_type::value_type *values        = new real_section_type::value_type[this->sizeWithBC(s, firstCell)];
-        int                           *dofs          = new int[maxDof];
+        int                           *dofs          = new int[this->_maxDof];
         int                           *v             = new int[numFields];
         double                        *v0            = new double[this->getDimension()];
         double                        *J             = new double[this->getDimension()*this->getDimension()];
