@@ -16,8 +16,9 @@ class FunctionTestBratu : public CppUnit::TestFixture
 public:
   // Typedefs
 protected:
-  int                 _debug; // The debugging level
-  PetscInt            _iters; // The number of test repetitions
+  ALE::Obj<ALE::Problem::Bratu> _problem;
+  int                           _debug; // The debugging level
+  PetscInt                      _iters; // The number of test repetitions
 public:
   PetscErrorCode processOptions() {
     PetscErrorCode ierr;
@@ -36,6 +37,7 @@ public:
   /// Setup data.
   void setUp(void) {
     this->processOptions();
+    this->_problem = new ALE::Problem::Bratu(PETSC_COMM_WORLD, this->_debug);
   };
 
   /// Tear down data.

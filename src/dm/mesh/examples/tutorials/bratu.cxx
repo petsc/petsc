@@ -3,7 +3,7 @@ static char help[] = "This example solves the Bratu problem.\n\n";
 
 #define ALE_HAVE_CXX_ABI
 
-#include <petscmesh.hh>
+#include <problem/Bratu.hh>
 #include <petscmesh_viewers.hh>
 #include <petscmesh_formats.hh>
 #include <petscdmmg.h>
@@ -13,34 +13,7 @@ static char help[] = "This example solves the Bratu problem.\n\n";
 #include "GMVFileBinary.hh" // USES GMVFileBinary
 
 using ALE::Obj;
-typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
-typedef enum {NEUMANN, DIRICHLET} BCType;
-typedef enum {ASSEMBLY_FULL, ASSEMBLY_STORED, ASSEMBLY_CALCULATED} AssemblyType;
-typedef union {SectionReal section; Vec vec;} ExactSolType;
-
-typedef struct {
-  PetscInt      debug;                       // The debugging level
-  RunType       run;                         // The run type
-  PetscInt      dim;                         // The topological mesh dimension
-  PetscTruth    reentrantMesh;               // Generate a reentrant mesh?
-  PetscTruth    circularMesh;                // Generate a circular mesh?
-  PetscTruth    refineSingularity;           // Generate an a priori graded mesh for the poisson problem
-  PetscTruth    structured;                  // Use a structured mesh
-  PetscTruth    generateMesh;                // Generate the unstructure mesh
-  PetscTruth    interpolate;                 // Generate intermediate mesh elements
-  PetscReal     refinementLimit;             // The largest allowable cell volume
-  char          baseFilename[2048];          // The base filename for mesh files
-  char          partitioner[2048];           // The graph partitioner
-  PetscScalar (*func)(const double []);      // The function to project
-  BCType        bcType;                      // The type of boundary conditions
-  PetscScalar (*exactFunc)(const double []); // The exact solution function
-  ExactSolType  exactSol;                    // The discrete exact solution
-  ExactSolType  error;                       // The discrete cell-wise error
-  AssemblyType  operatorAssembly;            // The type of operator assembly 
-  double (*integrate)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
-  double        lambda;                      // The parameter controlling nonlinearity
-  double        reentrant_angle;              // The angle for the reentrant corner.
-} Options;
+typedef ALE::Problem::Bratu::Options Options;
 
 #include "bratu_quadrature.h"
 
@@ -115,89 +88,10 @@ PetscScalar cos_x(const double x[]) {
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
-{
-  const char    *runTypes[3] = {"full", "test", "mesh"};
-  const char    *bcTypes[2]  = {"neumann", "dirichlet"};
-  const char    *asTypes[4]  = {"full", "stored", "calculated"};
-  ostringstream  filename;
-  PetscInt       run, bc, as;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  options->debug            = 0;
-  options->run              = RUN_FULL;
-  options->dim              = 2;
-  options->structured       = PETSC_TRUE;
-  options->generateMesh     = PETSC_TRUE;
-  options->interpolate      = PETSC_TRUE;
-  options->refinementLimit  = 0.0;
-  options->bcType           = DIRICHLET;
-  options->operatorAssembly = ASSEMBLY_FULL;
-  options->lambda           = 0.0;
-  options->reentrantMesh    = PETSC_FALSE;
-  options->circularMesh    = PETSC_FALSE;
-  options->refineSingularity= PETSC_FALSE;
-
-  ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMG");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "bratu.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    run = options->run;
-    ierr = PetscOptionsEList("-run", "The run type", "bratu.cxx", runTypes, 3, runTypes[options->run], &run, PETSC_NULL);CHKERRQ(ierr);
-    options->run = (RunType) run;
-    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "bratu.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-reentrant", "Make a reentrant-corner mesh", "bratu.cxx", options->reentrantMesh, &options->reentrantMesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-circular_mesh", "Make a reentrant-corner mesh", "bratu.cxx", options->circularMesh, &options->circularMesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-singularity", "Refine the mesh around a singularity with a priori poisson error estimation", "bratu.cxx", options->refineSingularity, &options->refineSingularity, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-structured", "Use a structured mesh", "bratu.cxx", options->structured, &options->structured, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "bratu.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "bratu.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "bratu.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
-    filename << "data/bratu_" << options->dim <<"d";
-    ierr = PetscStrcpy(options->baseFilename, filename.str().c_str());CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "bratu.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
-    bc = options->bcType;
-    ierr = PetscOptionsEList("-bc_type","Type of boundary condition","bratu.cxx",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
-    options->bcType = (BCType) bc;
-    as = options->operatorAssembly;
-    ierr = PetscOptionsEList("-assembly_type","Type of operator assembly","bratu.cxx",asTypes,3,asTypes[options->operatorAssembly],&as,PETSC_NULL);CHKERRQ(ierr);
-    options->operatorAssembly = (AssemblyType) as;
-    ierr = PetscOptionsReal("-lambda", "The parameter controlling nonlinearity", "bratu.cxx", options->lambda, &options->lambda, PETSC_NULL);CHKERRQ(ierr);
-    lambda = options->lambda;
-  ierr = PetscOptionsEnd();
-
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CreatePartition"
-// Creates a field whose value is the processor rank on each element
-PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
-{
-  Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
-  const Obj<PETSC_MESH_TYPE::label_sequence>&     cells = m->heightStratum(0);
-  const PETSC_MESH_TYPE::label_sequence::iterator end   = cells->end();
-  const int                                 rank  = m->commRank();
-
-  for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
-    ierr = SectionIntUpdate(*partition, *c_iter, &rank);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ViewSection"
 PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[], bool vertexwise = true)
 {
   MPI_Comm       comm;
-  SectionInt     partition;
   PetscViewer    viewer;
   PetscErrorCode ierr;
 
@@ -210,397 +104,13 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
   if (!vertexwise) {ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);}
   ierr = SectionRealView(section, viewer);CHKERRQ(ierr);
-  ierr = CreatePartition(mesh, &partition);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
-  ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ViewMesh"
-PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
-{
-  MPI_Comm       comm;
-  SectionInt     partition;
-  PetscViewer    viewer;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
-  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
-  ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
-  ierr = CreatePartition(mesh, &partition);CHKERRQ(ierr);
-  ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
-  ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
-  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshRefineSingularity"
-PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm, double * singularity, double factor, Mesh *refinedMesh)
-{
-  ALE::Obj<PETSC_MESH_TYPE> oldMesh;
-  double              oldLimit;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
-  ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
-  int dim = oldMesh->getDimension();
-  oldLimit = oldMesh->getMaxVolume();
-  //double oldLimInv = 1./oldLimit;
-  double curLimit, tmpLimit;
-  double minLimit = oldLimit/16384.;             //arbitrary;
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = oldMesh->getRealSection("coordinates");
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& volume_limits = oldMesh->getRealSection("volume_limits");
-  volume_limits->setFiberDimension(oldMesh->heightStratum(0), 1);
-  oldMesh->allocate(volume_limits);
-  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& cells = oldMesh->heightStratum(0);
-  PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin();
-  PETSC_MESH_TYPE::label_sequence::iterator c_iter_end = cells->end();
-  double centerCoords[dim];
-  while (c_iter != c_iter_end) {
-    const double * coords = oldMesh->restrictClosure(coordinates, *c_iter);
-    for (int i = 0; i < dim; i++) {
-      centerCoords[i] = 0;
-      for (int j = 0; j < dim+1; j++) {
-        centerCoords[i] += coords[j*dim+i];
-      }
-      centerCoords[i] = centerCoords[i]/(dim+1);
-    }
-    double dist = 0.;
-    for (int i = 0; i < dim; i++) {
-      dist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
-    }
-    if (dist > 0.) {
-      dist = sqrt(dist);
-      double mu = pow(dist, factor);
-      //PetscPrintf(oldMesh->comm(), "%f\n", mu);
-      tmpLimit = oldLimit*pow(mu, dim);
-      if (tmpLimit > minLimit) {
-        curLimit = tmpLimit;
-      } else curLimit = minLimit;
-    } else curLimit = minLimit;
-    //PetscPrintf(oldMesh->comm(), "%f, %f\n", dist, tmpLimit);
-    volume_limits->updatePoint(*c_iter, &curLimit);
-    c_iter++;
-  }
-#ifdef PETSC_OPT_SIEVE
-  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, volume_limits, true);
-#else
-  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, volume_limits, true);
-#endif
-  ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
-  const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
-
-  for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
-    newMesh->setDiscretization(*f_iter, oldMesh->getDiscretization(*f_iter));
-  }
-  newMesh->setupField(s);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshRefineSingularity_Fichera"
-PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity_Fichera(Mesh mesh, MPI_Comm comm, double * singularity, double factor, Mesh *refinedMesh)
-{
-  ALE::Obj<PETSC_MESH_TYPE> oldMesh;
-  double              oldLimit;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
-  ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
-  int dim = oldMesh->getDimension();
-  oldLimit = oldMesh->getMaxVolume();
-  //double oldLimInv = 1./oldLimit;
-  double curLimit, tmpLimit;
-  double minLimit = oldLimit/16384.;             //arbitrary;
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = oldMesh->getRealSection("coordinates");
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& volume_limits = oldMesh->getRealSection("volume_limits");
-  volume_limits->setFiberDimension(oldMesh->heightStratum(0), 1);
-  oldMesh->allocate(volume_limits);
-  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& cells = oldMesh->heightStratum(0);
-  PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin();
-  PETSC_MESH_TYPE::label_sequence::iterator c_iter_end = cells->end();
-  double centerCoords[dim];
-  while (c_iter != c_iter_end) {
-    const double * coords = oldMesh->restrictClosure(coordinates, *c_iter);
-    for (int i = 0; i < dim; i++) {
-      centerCoords[i] = 0;
-      for (int j = 0; j < dim+1; j++) {
-        centerCoords[i] += coords[j*dim+i];
-      }
-      centerCoords[i] = centerCoords[i]/(dim+1);
-      //PetscPrintf(oldMesh->comm(), "%f, ", centerCoords[i]);
-    }
-    //PetscPrintf(oldMesh->comm(), "\n");
-    double dist = 0.;
-    double cornerdist = 0.;
-    //HERE'S THE DIFFERENCE: if centercoords is less than the singularity coordinate for each direction, include that direction in the distance
-    /*
-    for (int i = 0; i < dim; i++) {
-      if (centerCoords[i] <= singularity[i]) {
-        dist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
-      }
-    }
-    */
-    //determine: the per-dimension distance: cases
-    for (int i = 0; i < dim; i++) {
-      cornerdist = 0.;
-      if (centerCoords[i] > singularity[i]) {
-        for (int j = 0; j < dim; j++) {
-          if (j != i) cornerdist += (centerCoords[j] - singularity[j])*(centerCoords[j] - singularity[j]);
-        }
-        if (cornerdist < dist || dist == 0.) dist = cornerdist; 
-      }
-    }
-    //patch up AROUND the corner by minimizing between the distance from the relevant axis and the singular vertex
-    double singdist = 0.;
-    for (int i = 0; i < dim; i++) {
-      singdist += (centerCoords[i] - singularity[i])*(centerCoords[i] - singularity[i]);
-    }
-    if (singdist < dist || dist == 0.) dist = singdist;
-    if (dist > 0.) {
-      dist = sqrt(dist);
-      double mu = pow(dist, factor);
-      //PetscPrintf(oldMesh->comm(), "%f, %f\n", mu, dist);
-      tmpLimit = oldLimit*pow(mu, dim);
-      if (tmpLimit > minLimit) {
-        curLimit = tmpLimit;
-      } else curLimit = minLimit;
-    } else curLimit = minLimit;
-    //PetscPrintf(oldMesh->comm(), "%f, %f\n", dist, tmpLimit);
-    volume_limits->updatePoint(*c_iter, &curLimit);
-    c_iter++;
-  }
-#ifdef PETSC_OPT_SIEVE
-  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, volume_limits, true);
-#else
-  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, volume_limits, true);
-#endif
-  ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
-  const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
-
-  for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
-    newMesh->setDiscretization(*f_iter, oldMesh->getDiscretization(*f_iter));
-  }
-  newMesh->setupField(s);
-  //  PetscPrintf(newMesh->comm(), "refined\n");
-  PetscFunctionReturn(0);
-}
-
-///extern PetscErrorCode MeshIDBoundary(Mesh);
-PetscErrorCode MeshIDBoundary(Mesh mesh) {
-  SETERRQ(PETSC_ERR_SUP, "Must fix the implementation in Hierarchy.hh");
-};
-
-void FlipCellOrientation(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim) {
-  if (3 == meshDim && 4 == numCorners) {
-    for(int iCell = 0; iCell < numCells; ++iCell) {
-      const int i1 = iCell*numCorners+1;
-      const int i2 = iCell*numCorners+2;
-      const int tmp = (*cells)[i1];
-      (*cells)[i1] = (*cells)[i2];
-      (*cells)[i2] = tmp;
-    }
-  }
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (options->structured) {
-    DA       da;
-    PetscInt dof = 1;
-
-    if (options->dim == 2) {
-      ierr = DACreate2d(comm, DA_NONPERIODIC, DA_STENCIL_BOX, -3, -3, PETSC_DECIDE, PETSC_DECIDE, dof, 1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
-    } else if (options->dim == 3) {
-      ierr = DACreate3d(comm, DA_NONPERIODIC, DA_STENCIL_BOX, -3, -3, -3, PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, dof, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
-    } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
-    }
-    ierr = DASetUniformCoordinates(da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
-    *dm = (DM) da;
-  } else {
-    Mesh        mesh;
-    PetscTruth  view;
-    PetscMPIInt size;
-
-    if (options->generateMesh) {
-      Mesh boundary;
-
-      ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
-      if (options->dim == 2) {
-        double lower[2]  = {0.0, 0.0};
-        double upper[2]  = {1.0, 1.0};
-        double offset[2] = {0.5, 0.5};
-        int    edges[2]  = {2, 2};
-        Obj<ALE::Mesh> mB;
-        Obj<PETSC_MESH_TYPE> meshBd = new PETSC_MESH_TYPE(comm, 1, options->debug);
-        Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, options->debug);
-
-        meshBd->setSieve(sieve);
-        if (options->circularMesh) {
-          double arclen = 1.;
-          if (options->reentrantMesh) {
-            arclen = .9;
-            options->reentrant_angle = .9;
-          }
-          mB = ALE::MeshBuilder<ALE::Mesh>::createCircularReentrantBoundary(comm, 100, 1., arclen, options->debug);
-        } else if (options->reentrantMesh) {
-          double reentrantlower[2] = {-1., -1.};
-          options->reentrant_angle = .75;
-          mB = ALE::MeshBuilder<ALE::Mesh>::createReentrantBoundary(comm, reentrantlower, upper, offset, options->debug);
-        } else {
-          mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(comm, lower, upper, edges, options->debug);
-        }
-        std::map<PETSC_MESH_TYPE::point_type,PETSC_MESH_TYPE::point_type> renumbering;
-        ALE::ISieveConverter::convertMesh(*mB, *meshBd, renumbering, false);
-        meshBd->view("Mesh Boundary");
-        ierr = MeshSetMesh(boundary, meshBd);CHKERRQ(ierr);
-      } else if (options->dim == 3) {
-        Obj<PETSC_MESH_TYPE> mB;
-        if (options->reentrantMesh) {
-          double lower[3] = {-1., -1., -1.};
-          double upper[3] = {1., 1., 1.};
-          double offset[3] = {0.5, 0.5, 0.5};
-          mB = ALE::MeshBuilder<PETSC_MESH_TYPE>::createFicheraCornerBoundary(comm, lower, upper, offset, options->debug);
-          
-        } else {
-          double lower[3] = {0.0, 0.0, 0.0};
-          double upper[3] = {1.0, 1.0, 1.0};
-          int    faces[3] = {3, 3, 3};
-
-          mB = ALE::MeshBuilder<PETSC_MESH_TYPE>::createCubeBoundary(comm, lower, upper, faces, options->debug);
-        }
-        ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
-      } else {
-        SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
-      }
-      ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
-      ierr = MeshDestroy(boundary);CHKERRQ(ierr);
-    } else {
-#ifdef PETSC_OPT_SIEVE
-      SETERRQ(PETSC_ERR_SUP, "Not supported for optimized sieves");
-#else
-      //Obj<PETSC_MESH_TYPE> m = ALE::LaGriT::Builder::readMesh(PETSC_COMM_WORLD, 3, options->baseFilename, options->interpolate, options->debug);'
-      Obj<PETSC_MESH_TYPE>             m     = new PETSC_MESH_TYPE(comm, options->dim, options->debug);
-      Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, options->debug);
-      bool                 flipEndian = false;
-      int                  dim;
-      pylith::int_array    cells;
-      pylith::double_array coordinates;
-      pylith::int_array    materialIds;
-      int                  numCells = 0, numVertices = 0, numCorners = 0;
-
-      if (!m->commRank()) {
-        if (pylith::meshio::GMVFile::isAscii(options->baseFilename)) {
-          pylith::meshio::GMVFileAscii filein(options->baseFilename);
-          filein.read(&coordinates, &cells, &materialIds, &dim, &dim, &numVertices, &numCells, &numCorners);
-          if (options->interpolate) {
-            FlipCellOrientation(&cells, numCells, numCorners, dim);
-          }
-        } else {
-          pylith::meshio::GMVFileBinary filein(options->baseFilename, flipEndian);
-          filein.read(&coordinates, &cells, &materialIds, &dim, &dim, &numVertices, &numCells, &numCorners);
-          if (!options->interpolate) {
-            FlipCellOrientation(&cells, numCells, numCorners, dim);
-          }
-        } // if/else
-      }
-      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildTopology(sieve, dim, numCells, const_cast<int*>(&cells[0]), numVertices, options->interpolate, numCorners, -1, m->getArrowSection("orientation"));
-      m->setSieve(sieve);
-      m->stratify();
-      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(m, dim, const_cast<double*>(&coordinates[0]));
-
-      ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
-      ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
-      ierr = MeshIDBoundary(mesh);CHKERRQ(ierr);
-#endif
-    }
-    ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-    if (size > 1) {
-      Mesh parallelMesh;
-
-      ierr = MeshDistribute(mesh, options->partitioner, &parallelMesh);CHKERRQ(ierr);
-      ierr = MeshDestroy(mesh);CHKERRQ(ierr);
-      mesh = parallelMesh;
-    }
-    if (options->refinementLimit > 0.0) {
-      Mesh refinedMesh, refinedMesh2;
-
-      ierr = MeshRefine(mesh, options->refinementLimit, options->interpolate, &refinedMesh);CHKERRQ(ierr);
-      ierr = MeshDestroy(mesh);CHKERRQ(ierr);
-      mesh = refinedMesh;
-      if (options->refineSingularity) {
-        double singularity[3] = {0.0, 0.0, 0.0};
-        if (options->dim == 2) {
-          ierr = MeshRefineSingularity(mesh, comm, singularity, options->reentrant_angle, &refinedMesh2);CHKERRQ(ierr);
-        } else if (options->dim == 3) {
-          ierr = MeshRefineSingularity_Fichera(mesh, comm, singularity, 0.75, &refinedMesh2);CHKERRQ(ierr);
-        }
-        ierr = MeshDestroy(mesh);CHKERRQ(ierr);
-        mesh = refinedMesh2;
-        ierr = MeshIDBoundary(mesh);CHKERRQ(ierr);
-      }
-    }
-    if (options->bcType == DIRICHLET) {
-      Obj<PETSC_MESH_TYPE> m;
-
-      ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-      m->markBoundaryCells("marker");
-    }
-    ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
-    if (view) {ierr = ViewMesh(mesh, "bratu.vtk");CHKERRQ(ierr);}
-    ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
-    if (view) {
-      Obj<PETSC_MESH_TYPE> m;
-      ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-      m->view("Mesh");
-    }
-    ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_simple", &view);CHKERRQ(ierr);
-    if (view) {ierr = MeshView(mesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
-    *dm = (DM) mesh;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "DestroyMesh"
-
-PetscErrorCode DestroyMesh(DM dm, Options *options)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (options->structured) {
-    ierr = DADestroy((DA) dm);CHKERRQ(ierr);
-  } else {
-    ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "DestroyExactSolution"
-PetscErrorCode DestroyExactSolution(ExactSolType sol, Options *options)
+PetscErrorCode DestroyExactSolution(ALE::Problem::Bratu::ExactSolType sol, Options *options)
 {
   PetscErrorCode ierr;
 
@@ -1509,7 +1019,7 @@ PetscErrorCode RunTests(DM dm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (options->run == RUN_TEST) {
+  if (options->run == ALE::Problem::Bratu::RUN_TEST) {
     ierr = FormFunctions(dm, options);CHKERRQ(ierr);
     ierr = FormWeakForms(dm, options);CHKERRQ(ierr);
     ierr = FormOperator(dm, options);CHKERRQ(ierr);
@@ -1523,7 +1033,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
 {
   PetscFunctionBegin;
   if (options->dim == 2) {
-    if (options->bcType == DIRICHLET) {
+    if (options->bcType == ALE::Problem::Bratu::DIRICHLET) {
       if (options->lambda > 0.0) {
         options->func    = nonlinear_2d;
         options->exactFunc = quadratic_2d;
@@ -1539,7 +1049,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       options->exactFunc = cubic_2d;
     }
   } else if (options->dim == 3) {
-    if (options->bcType == DIRICHLET) {
+    if (options->bcType == ALE::Problem::Bratu::DIRICHLET) {
       if (options->reentrantMesh) {
         options->func = singularity_3d;
         options->exactFunc = singularity_exact_3d;
@@ -1563,7 +1073,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   } else {
     Mesh           mesh = (Mesh) dm;
     Obj<PETSC_MESH_TYPE> m;
-    int            numBC = (options->bcType == DIRICHLET) ? 1 : 0;
+    int            numBC = (options->bcType == ALE::Problem::Bratu::DIRICHLET) ? 1 : 0;
     int            markers[1]  = {1};
     double       (*funcs[1])(const double *coords) = {options->exactFunc};
     PetscErrorCode ierr;
@@ -1638,7 +1148,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     double                                   *v0          = new double[dim];
     double                                   *J           = new double[dim*dim];
     double                                    detJ;
-    ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(m->getSieve()->getMaxConeSize(), m->depth()), true);
+    ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(m->getSieve()->getMaxConeSize(), m->depth())+1, true);
 
     for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
       ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*m->getSieve(), *c_iter, pV);
@@ -1677,7 +1187,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "CheckError"
-PetscErrorCode CheckError(DM dm, ExactSolType sol, Options *options)
+PetscErrorCode CheckError(DM dm, ALE::Problem::Bratu::ExactSolType sol, Options *options)
 {
   MPI_Comm       comm;
   const char    *name;
@@ -1708,7 +1218,7 @@ PetscErrorCode CheckError(DM dm, ExactSolType sol, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "CheckResidual"
-PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
+PetscErrorCode CheckResidual(DM dm, ALE::Problem::Bratu::ExactSolType sol, Options *options)
 {
   MPI_Comm       comm;
   const char    *name;
@@ -1778,12 +1288,12 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
       ierr = DASetUniformCoordinates((DA) (*dmmg)[l]->dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
     }
   } else {
-    if (options->operatorAssembly == ASSEMBLY_FULL) {
+    if (options->operatorAssembly == ALE::Problem::Bratu::ASSEMBLY_FULL) {
       ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured, 0, 0);CHKERRQ(ierr);
-    } else if (options->operatorAssembly == ASSEMBLY_CALCULATED) {
+    } else if (options->operatorAssembly == ALE::Problem::Bratu::ASSEMBLY_CALCULATED) {
       ierr = DMMGSetMatType(*dmmg, MATSHELL);CHKERRQ(ierr);
       ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured_Calculated, 0, 0);CHKERRQ(ierr);
-    } else if (options->operatorAssembly == ASSEMBLY_STORED) {
+    } else if (options->operatorAssembly == ALE::Problem::Bratu::ASSEMBLY_STORED) {
       ierr = DMMGSetMatType(*dmmg, MATSHELL);CHKERRQ(ierr);
       ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured_Stored, 0, 0);CHKERRQ(ierr);
     } else {
@@ -1791,7 +1301,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
     }
     ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
   }
-  if (options->bcType == NEUMANN) {
+  if (options->bcType == ALE::Problem::Bratu::NEUMANN) {
     // With Neumann conditions, we tell DMMG that constants are in the null space of the operator
     ierr = DMMGSetNullSpace(*dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
   }
@@ -1822,7 +1332,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
   if (flag && options->dim == 2) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
   if (options->structured) {
-    ExactSolType sol;
+    ALE::Problem::Bratu::ExactSolType sol;
 
     sol.vec = DMMGGetx(dmmg);
     if (DMMGGetLevels(dmmg) == 1) {ierr = CheckError(DMMGGetDM(dmmg), sol, options);CHKERRQ(ierr);}
@@ -1868,32 +1378,33 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
-  MPI_Comm       comm;
-  Options        options;
-  DM             dm;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
-  comm = PETSC_COMM_WORLD;
-  ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
-    ierr = CreateMesh(comm, &dm, &options);CHKERRQ(ierr);
-    ierr = CreateProblem(dm, &options);CHKERRQ(ierr);
-    ierr = RunTests(dm, &options);CHKERRQ(ierr);
-    if (options.run == RUN_FULL) {
+    MPI_Comm                      comm    = PETSC_COMM_WORLD;
+    ALE::Obj<ALE::Problem::Bratu> bratu   = new ALE::Problem::Bratu(comm);
+    Options                      *options = bratu->getOptions();
+    DM                            dm;
+
+    lambda = options->lambda;
+    bratu->createMesh();
+    dm   = bratu->getDM();
+    ierr = CreateProblem(dm, options);CHKERRQ(ierr);
+    ierr = RunTests(dm, options);CHKERRQ(ierr);
+    if (options->run == ALE::Problem::Bratu::RUN_FULL) {
       DMMG *dmmg;
 
-      ierr = CreateExactSolution(dm, &options);CHKERRQ(ierr);
-      ierr = CheckError(dm, options.exactSol, &options);CHKERRQ(ierr);
-      ierr = CheckResidual(dm, options.exactSol, &options);CHKERRQ(ierr);
-      ierr = CreateSolver(dm, &dmmg, &options);CHKERRQ(ierr);
-      ierr = Solve(dmmg, &options);CHKERRQ(ierr);
+      ierr = CreateExactSolution(dm, options);CHKERRQ(ierr);
+      ierr = CheckError(dm, options->exactSol, options);CHKERRQ(ierr);
+      ierr = CheckResidual(dm, options->exactSol, options);CHKERRQ(ierr);
+      ierr = CreateSolver(dm, &dmmg, options);CHKERRQ(ierr);
+      ierr = Solve(dmmg, options);CHKERRQ(ierr);
       ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-      ierr = DestroyExactSolution(options.exactSol, &options);CHKERRQ(ierr);
-      ierr = DestroyExactSolution(options.error,    &options);CHKERRQ(ierr);
+      ierr = DestroyExactSolution(options->exactSol, options);CHKERRQ(ierr);
+      ierr = DestroyExactSolution(options->error,    options);CHKERRQ(ierr);
     }
-    ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     std::cerr << e << std::endl;
   }
