@@ -109,13 +109,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine mengi
   va_list           Argp;
   char              buffer[1024];
   PetscErrorCode ierr;
-  int               flops;
+  int               flops, fullLength;
   size_t            len;
 
   PetscFunctionBegin;  
   ierr = PetscStrcpy(buffer,"flops(0);");
   va_start(Argp,string);
-  ierr = PetscVSNPrintf(buffer+9,1024-9-5,string,Argp);CHKERRQ(ierr);
+  ierr = PetscVSNPrintf(buffer+9,1024-9-5,string,&fullLength,Argp);CHKERRQ(ierr);
   va_end(Argp);
   ierr = PetscStrcat(buffer,",flops");
 

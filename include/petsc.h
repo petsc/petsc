@@ -1438,7 +1438,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSNPrintf(char*,size_t,const char [],
 
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVSNPrintf(char*,size_t,const char[],va_list);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVSNPrintf(char*,size_t,const char[],int*,va_list);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  (*PetscVFPrintf)(FILE*,const char[],va_list);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVFPrintfDefault(FILE*,const char[],va_list);
 

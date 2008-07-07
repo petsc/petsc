@@ -1140,6 +1140,20 @@ namespace ALE {
       this->_exclusionIndices[marker] = indices;
     };
     template<typename Bundle>
+    int sizeV(Bundle& mesh) {
+      typedef typename ISieveVisitor::PointRetriever<typename Bundle::sieve_type> Visitor;
+      Visitor pV((int) pow(mesh.getSieve()->getMaxConeSize(), mesh.depth())+1, true);
+      ISieveTraversal<typename Bundle::sieve_type>::orientedClosure(*mesh.getSieve(), *mesh.heightStratum(0)->begin(), pV);
+      const typename Visitor::point_type *oPoints = pV.getPoints();
+      const int                           oSize   = pV.getSize();
+      int                                 size    = 0;
+
+      for(int cl = 0; cl < oSize; ++cl) {
+        size += this->_dim2dof[mesh.depth(oPoints[cl])];
+      }
+      return size;
+    };
+    template<typename Bundle>
     int size(const Obj<Bundle>& mesh) {
       const Obj<typename Bundle::label_sequence>& cells   = mesh->heightStratum(0);
       const Obj<typename Bundle::coneArray>       closure = ALE::SieveAlg<Bundle>::closure(mesh, *cells->begin());
@@ -1470,9 +1484,12 @@ namespace ALE {
       this->_maxHeight = h.getMaxHeight();
     };
     virtual int height() const {return this->_maxHeight;};
-    virtual int setHeight(const int height) {this->_maxHeight = height;};
+    virtual void setHeight(const int height) {this->_maxHeight = height;};
     virtual int height(const point_type& point) {
       return this->getValue(this->_labels["height"], point, -1);
+    };
+    virtual void setHeight(const point_type& point, const int height) {
+      return this->setValue(this->_labels["height"], point, height);
     };
     virtual const Obj<label_sequence>& heightStratum(int height) {
       return this->getLabelStratum("height", height);
@@ -1492,9 +1509,12 @@ namespace ALE {
       this->_maxDepth = d.getMaxDepth();
     };
     virtual int depth() const {return this->_maxDepth;};
-    virtual int setDepth(const int depth) {this->_maxDepth = depth;};
+    virtual void setDepth(const int depth) {this->_maxDepth = depth;};
     virtual int depth(const point_type& point) {
       return this->getValue(this->_labels["depth"], point, -1);
+    };
+    virtual void setDepth(const point_type& point, const int depth) {
+      return this->setValue(this->_labels["depth"], point, depth);
     };
     virtual const Obj<label_sequence>& depthStratum(int depth) {
       return this->getLabelStratum("depth", depth);
@@ -1531,17 +1551,22 @@ namespace ALE {
     typedef base_type::recv_overlap_type     recv_overlap_type;
     typedef std::set<std::string>            names_type;
     typedef std::vector<PETSc::Point<3> >    holes_type;
+    typedef std::map<std::string, Obj<Discretization> > discretizations_type;
   protected:
     int _dim;
     bool                   _calculatedOverlap;
     Obj<send_overlap_type> _sendOverlap;
     Obj<recv_overlap_type> _recvOverlap;
+    std::map<int,double>   _periodicity;
     holes_type             _holes;
+    discretizations_type   _discretizations;
+    int                    _maxDof;
   public:
     IMesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       this->_calculatedOverlap = false;
       this->_sendOverlap       = new send_overlap_type(comm, debug);
       this->_recvOverlap       = new recv_overlap_type(comm, debug);
+      this->_maxDof            = -1;
     };
   public: // Accessors
     int getDimension() const {return this->_dim;};
@@ -1552,10 +1577,32 @@ namespace ALE {
     void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
     const Obj<recv_overlap_type>& getRecvOverlap() const {return this->_recvOverlap;};
     void setRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_recvOverlap = overlap;};
+    bool getPeriodicity(const int d) {return this->_periodicity[d];};
+    void setPeriodicity(const int d, const double length) {this->_periodicity[d] = length;};
     const holes_type& getHoles() const {return this->_holes;};
     void addHole(const double hole[]) {
       this->_holes.push_back(hole);
     };
+    void copyHoles(const Obj<IMesh>& m) {
+      const holes_type& holes = m->getHoles();
+
+      for(holes_type::const_iterator h_iter = holes.begin(); h_iter != holes.end(); ++h_iter) {
+        this->_holes.push_back(*h_iter);
+      }
+    };
+    const Obj<Discretization>& getDiscretization() {return this->getDiscretization("default");};
+    const Obj<Discretization>& getDiscretization(const std::string& name) {return this->_discretizations[name];};
+    void setDiscretization(const Obj<Discretization>& disc) {this->setDiscretization("default", disc);};
+    void setDiscretization(const std::string& name, const Obj<Discretization>& disc) {this->_discretizations[name] = disc;};
+    Obj<names_type> getDiscretizations() const {
+      Obj<names_type> names = names_type();
+
+      for(discretizations_type::const_iterator d_iter = this->_discretizations.begin(); d_iter != this->_discretizations.end(); ++d_iter) {
+        names->insert(d_iter->first);
+      }
+      return names;
+    };
+    int getMaxDof() const {return this->_maxDof;};
   public: // Sizes
     template<typename Section>
     int size(const Obj<Section>& section, const point_type& p) {
@@ -1589,7 +1636,14 @@ namespace ALE {
     const typename Section::value_type *restrictClosure(const Obj<Section>& section, const point_type& p) {
       const int size = this->sizeWithBC(section, p);
       ISieveVisitor::RestrictVisitor<Section> rV(*section, size, section->getRawArray(size));
-      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+
+      if (this->depth() == 1) {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+      } else {
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), rV, true);
+
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
+      }
       return rV.getValues();
     };
     template<typename Section>
@@ -1597,20 +1651,54 @@ namespace ALE {
       const int size = this->sizeWithBC(section, p);
       if (valuesSize < size) {throw ALE::Exception("Input array to small for restrictClosure()");}
       ISieveVisitor::RestrictVisitor<Section> rV(*section, size, values);
-      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+
+      if (this->depth() == 1) {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+      } else {
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), rV, true);
+
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
+      }
       return rV.getValues();
     };
-    // replace the values for the closure of this point
+    // Replace the values for the closure of this point
     template<typename Section>
     void update(const Obj<Section>& section, const point_type& p, const typename Section::value_type *v) {
       ISieveVisitor::UpdateVisitor<Section> uV(*section, v);
-      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+
+      if (this->depth() == 1) {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+      } else {
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), uV, true);
+
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
+      }
+    };
+    // Replace the values for the closure of this point, including points constrained by BC
+    template<typename Section>
+    void updateAll(const Obj<Section>& section, const point_type& p, const typename Section::value_type *v) {
+      ISieveVisitor::UpdateAllVisitor<Section> uV(*section, v);
+
+      if (this->depth() == 1) {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+      } else {
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAllVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), uV, true);
+
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
+      }
     };
     // Augment the values for the closure of this point
     template<typename Section>
     void updateAdd(const Obj<Section>& section, const point_type& p, const typename Section::value_type *v) {
       ISieveVisitor::UpdateAddVisitor<Section> uV(*section, v);
-      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+
+      if (this->depth() == 1) {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+      } else {
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAddVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), uV, true);
+
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
+      }
     };
   public: // Overlap
     void constructOverlap() {
@@ -1647,8 +1735,95 @@ namespace ALE {
         throw ALE::Exception("No point location for mesh dimension");
       }
     };
+    void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      const double *coords = this->restrictClosure(coordinates, e);
+      const int     dim    = 2;
+      double        invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        for(int d = 0; d < dim; d++) {
+          for(int f = 0; f < dim; f++) {
+            J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+          }
+        }
+        detJ = J[0]*J[3] - J[1]*J[2];
+        if (detJ < 0.0) {
+          const double  xLength = this->_periodicity[0];
+
+          if (xLength != 0.0) {
+            double v0x = coords[0*dim+0];
+
+            if (v0x == 0.0) {
+              v0x = v0[0] = xLength;
+            }
+            for(int f = 0; f < dim; f++) {
+              const double px = coords[(f+1)*dim+0] == 0.0 ? xLength : coords[(f+1)*dim+0];
+
+              J[0*dim+f] = 0.5*(px - v0x);
+            }
+          }
+          detJ = J[0]*J[3] - J[1]*J[2];
+        }
+        PetscLogFlops(8 + 3);
+      }
+      if (invJ) {
+        invDet  = 1.0/detJ;
+        invJ[0] =  invDet*J[3];
+        invJ[1] = -invDet*J[1];
+        invJ[2] = -invDet*J[2];
+        invJ[3] =  invDet*J[0];
+        PetscLogFlops(5);
+      }
+    };
+    void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      const double *coords = this->restrictClosure(coordinates, e);
+      const int     dim    = 3;
+      double        invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        for(int d = 0; d < dim; d++) {
+          for(int f = 0; f < dim; f++) {
+            J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+          }
+        }
+        // The minus sign is here since I orient the first face to get the outward normal
+        detJ = -(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+                 J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+                 J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+        PetscLogFlops(18 + 12);
+      }
+      if (invJ) {
+        invDet  = -1.0/detJ;
+        invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
+        invJ[0*3+1] = invDet*(J[0*3+2]*J[2*3+1] - J[0*3+1]*J[2*3+2]);
+        invJ[0*3+2] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
+        invJ[1*3+0] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
+        invJ[1*3+1] = invDet*(J[0*3+0]*J[2*3+2] - J[0*3+2]*J[2*3+0]);
+        invJ[1*3+2] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
+        invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
+        invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
+        invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
+        PetscLogFlops(37);
+      }
+    };
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      throw ALE::Exception("Unsupport dimension for element geometry computation");
+      if (this->_dim == 2) {
+        computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
+      } else if (this->_dim == 3) {
+        computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+      } else {
+        throw ALE::Exception("Unsupported dimension for element geometry computation");
+      }
     };
     double getMaxVolume() {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
@@ -1689,6 +1864,418 @@ namespace ALE {
       for(names_type::iterator name = sections->begin(); name != sections->end(); ++name) {
         this->getArrowSection(*name)->view(*name);
       }
+    };
+  public: // Discretization
+    void markBoundaryCells(const std::string& name, const int marker = 1, const int newMarker = 2, const bool onlyVertices = false) {
+      const Obj<label_type>&         label    = this->getLabel(name);
+      const Obj<label_sequence>&     boundary = this->getLabelStratum(name, marker);
+      const label_sequence::iterator end      = boundary->end();
+      const Obj<sieve_type>&         sieve    = this->getSieve();
+
+      if (!onlyVertices) {
+        ISieveVisitor::MarkVisitor<sieve_type,label_type> mV(*label, newMarker);
+
+        for(label_sequence::iterator e_iter = boundary->begin(); e_iter != end; ++e_iter) {
+          if (this->height(*e_iter) == 1) {
+            sieve->support(*e_iter, mV);
+          }
+        }
+      } else {
+#if 1
+        throw ALE::Exception("Rewrite this to first mark bounadry edges/faces.");
+#else
+        const int depth = this->depth();
+
+        for(label_sequence::iterator v_iter = boundary->begin(); v_iter != end; ++v_iter) {
+          const Obj<supportArray>      support = sieve->nSupport(*v_iter, depth);
+          const supportArray::iterator sEnd    = support->end();
+
+          for(supportArray::iterator c_iter = support->begin(); c_iter != sEnd; ++c_iter) {
+            const Obj<sieve_type::traits::coneSequence>&     cone = sieve->cone(*c_iter);
+            const sieve_type::traits::coneSequence::iterator cEnd = cone->end();
+
+            for(sieve_type::traits::coneSequence::iterator e_iter = cone->begin(); e_iter != cEnd; ++e_iter) {
+              if (sieve->support(*e_iter)->size() == 1) {
+                this->setValue(label, *c_iter, newMarker);
+                break;
+              }
+            }
+          }
+        }
+#endif
+      }
+    };
+    int setFiberDimensions(const Obj<real_section_type>& s, const Obj<names_type>& discs, names_type& bcLabels) {
+      const int debug  = this->debug();
+      int       maxDof = 0;
+
+      for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+        s->addSpace();
+      }
+      for(int d = 0; d <= this->_dim; ++d) {
+        int numDof = 0;
+        int f      = 0;
+
+        for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+          const Obj<ALE::Discretization>& disc = this->getDiscretization(*f_iter);
+          const int                       sDof = disc->getNumDof(d);
+
+          numDof += sDof;
+          if (sDof) s->setFiberDimension(this->depthStratum(d), sDof, f);
+        }
+        if (numDof) s->setFiberDimension(this->depthStratum(d), numDof);
+        maxDof = std::max(maxDof, numDof);
+      }
+      // Process exclusions
+      typedef ISieveVisitor::PointRetriever<sieve_type> Visitor;
+      int f = 0;
+
+      for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+        const Obj<ALE::Discretization>& disc      = this->getDiscretization(*f_iter);
+        std::string                     labelName = "exclude-"+*f_iter;
+        std::set<point_type>            seen;
+        Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), true);
+
+        if (this->hasLabel(labelName)) {
+          const Obj<label_type>&         label     = this->getLabel(labelName);
+          const Obj<label_sequence>&     exclusion = this->getLabelStratum(labelName, 1);
+          const label_sequence::iterator end       = exclusion->end();
+          if (debug > 1) {label->view(labelName.c_str());}
+
+          for(label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
+            ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), *e_iter, pV);
+            const Visitor::point_type *oPoints = pV.getPoints();
+            const int                  oSize   = pV.getSize();
+
+            for(int cl = 0; cl < oSize; ++cl) {
+              if (seen.find(oPoints[cl]) != seen.end()) continue;
+              if (this->getValue(label, oPoints[cl]) == 1) {
+                seen.insert(oPoints[cl]);
+                s->setFiberDimension(oPoints[cl], 0, f);
+                s->addFiberDimension(oPoints[cl], -disc->getNumDof(this->depth(oPoints[cl])));
+                if (debug > 1) {std::cout << "  point: " << oPoints[cl] << " dim: " << disc->getNumDof(this->depth(oPoints[cl])) << std::endl;}
+              }
+            }
+            pV.clear();
+          }
+        }
+      }
+      // Process constraints
+      f = 0;
+      for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+        const Obj<ALE::Discretization>&    disc        = this->getDiscretization(*f_iter);
+        const Obj<std::set<std::string> >  bcs         = disc->getBoundaryConditions();
+        std::string                        excludeName = "exclude-"+*f_iter;
+
+        for(std::set<std::string>::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter) {
+          const Obj<ALE::BoundaryCondition>& bc       = disc->getBoundaryCondition(*bc_iter);
+          const Obj<label_sequence>&         boundary = this->getLabelStratum(bc->getLabelName(), bc->getMarker());
+
+          bcLabels.insert(bc->getLabelName());
+          if (this->hasLabel(excludeName)) {
+            const Obj<label_type>& label = this->getLabel(excludeName);
+
+            for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+              if (!this->getValue(label, *e_iter)) {
+                const int numDof = disc->getNumDof(this->depth(*e_iter));
+
+                if (numDof) s->addConstraintDimension(*e_iter, numDof);
+                if (numDof) s->setConstraintDimension(*e_iter, numDof, f);
+              }
+            }
+          } else {
+            for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+              const int numDof = disc->getNumDof(this->depth(*e_iter));
+
+              if (numDof) s->addConstraintDimension(*e_iter, numDof);
+              if (numDof) s->setConstraintDimension(*e_iter, numDof, f);
+            }
+          }
+        }
+      }
+      return maxDof;
+    };
+    void calculateIndices() {
+      typedef ISieveVisitor::PointRetriever<sieve_type> Visitor;
+      // Should have an iterator over the whole tree
+      Obj<names_type> discs = this->getDiscretizations();
+      const int       debug = this->debug();
+      std::map<std::string, std::pair<int, int*> > indices;
+
+      for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+        const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
+
+        indices[*d_iter] = std::pair<int, int*>(0, new int[disc->sizeV(*this)]);
+        disc->setIndices(indices[*d_iter].second);
+      }
+      const Obj<label_sequence>& cells   = this->heightStratum(0);
+      Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, true);
+      ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), *cells->begin(), pV);
+      const Visitor::point_type *oPoints = pV.getPoints();
+      const int                  oSize   = pV.getSize();
+      int                        offset  = 0;
+
+      if (debug > 1) {std::cout << "Closure for first element" << std::endl;}
+      for(int cl = 0; cl < oSize; ++cl) {
+        const int dim = this->depth(oPoints[cl]);
+
+        if (debug > 1) {std::cout << "  point " << oPoints[cl] << " depth " << dim << std::endl;}
+        for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+          const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
+          const int                  num  = disc->getNumDof(dim);
+
+          if (debug > 1) {std::cout << "    disc " << disc->getName() << " numDof " << num << std::endl;}
+          for(int o = 0; o < num; ++o) {
+            indices[*d_iter].second[indices[*d_iter].first++] = offset++;
+          }
+        }
+      }
+      pV.clear();
+      if (debug > 1) {
+        for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+          const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
+
+          std::cout << "Discretization " << disc->getName() << " indices:";
+          for(int i = 0; i < indices[*d_iter].first; ++i) {
+            std::cout << " " << indices[*d_iter].second[i];
+          }
+          std::cout << std::endl;
+        }
+      }
+    };
+    void calculateIndicesExcluded(const Obj<real_section_type>& s, const Obj<names_type>& discs) {
+      typedef ISieveVisitor::PointRetriever<sieve_type> Visitor;
+      typedef std::map<std::string, std::pair<int, indexSet> > indices_type;
+      const Obj<label_type>& indexLabel = this->createLabel("cellExclusion");
+      const int debug  = this->debug();
+      int       marker = 0;
+      std::map<indices_type, int> indexMap;
+      indices_type                indices;
+      Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, true);
+
+      for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+        const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
+        const int                  size = disc->sizeV(*this);
+
+        indices[*d_iter].second.resize(size);
+      }
+      const names_type::const_iterator dBegin = discs->begin();
+      const names_type::const_iterator dEnd   = discs->end();
+      std::set<point_type> seen;
+      int f = 0;
+
+      for(names_type::const_iterator f_iter = dBegin; f_iter != dEnd; ++f_iter, ++f) {
+        std::string labelName = "exclude-"+*f_iter;
+
+        if (this->hasLabel(labelName)) {
+          const Obj<label_sequence>&     exclusion = this->getLabelStratum(labelName, 1);
+          const label_sequence::iterator end       = exclusion->end();
+
+          if (debug > 1) {std::cout << "Processing exclusion " << labelName << std::endl;}
+          for(label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
+            if (this->height(*e_iter)) continue;
+            ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), *e_iter, pV);
+            const Visitor::point_type *oPoints = pV.getPoints();
+            const int                  oSize   = pV.getSize();
+            int                        offset  = 0;
+
+            if (debug > 1) {std::cout << "  Closure for cell " << *e_iter << std::endl;}
+            for(int cl = 0; cl < oSize; ++cl) {
+              int g = 0;
+
+              if (debug > 1) {std::cout << "    point " << oPoints[cl] << std::endl;}
+              for(names_type::const_iterator g_iter = dBegin; g_iter != dEnd; ++g_iter, ++g) {
+                const int fDim = s->getFiberDimension(oPoints[cl], g);
+
+                if (debug > 1) {std::cout << "      disc " << *g_iter << " numDof " << fDim << std::endl;}
+                for(int d = 0; d < fDim; ++d) {
+                  indices[*g_iter].second[indices[*g_iter].first++] = offset++;
+                }
+              }
+            }
+            pV.clear();
+            const std::map<indices_type, int>::iterator entry = indexMap.find(indices);
+
+            if (debug > 1) {
+              for(std::map<indices_type, int>::iterator i_iter = indexMap.begin(); i_iter != indexMap.end(); ++i_iter) {
+                for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
+                  std::cout << "Discretization (" << i_iter->second << ") " << *g_iter << " indices:";
+                  for(int i = 0; i < ((indices_type) i_iter->first)[*g_iter].first; ++i) {
+                    std::cout << " " << ((indices_type) i_iter->first)[*g_iter].second[i];
+                  }
+                  std::cout << std::endl;
+                }
+                std::cout << "Comparison: " << (indices == i_iter->first) << std::endl;
+              }
+              for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
+                std::cout << "Discretization " << *g_iter << " indices:";
+                for(int i = 0; i < indices[*g_iter].first; ++i) {
+                  std::cout << " " << indices[*g_iter].second[i];
+                }
+                std::cout << std::endl;
+              }
+            }
+            if (entry != indexMap.end()) {
+              this->setValue(indexLabel, *e_iter, entry->second);
+              if (debug > 1) {std::cout << "  Found existing indices with marker " << entry->second << std::endl;}
+            } else {
+              indexMap[indices] = ++marker;
+              this->setValue(indexLabel, *e_iter, marker);
+              if (debug > 1) {std::cout << "  Created new indices with marker " << marker << std::endl;}
+            }
+            for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
+              indices[*g_iter].first  = 0;
+              for(unsigned int i = 0; i < indices[*g_iter].second.size(); ++i) indices[*g_iter].second[i] = 0;
+            }
+          }
+        }
+      }
+      if (debug > 1) {indexLabel->view("cellExclusion");}
+      for(std::map<indices_type, int>::iterator i_iter = indexMap.begin(); i_iter != indexMap.end(); ++i_iter) {
+        if (debug > 1) {std::cout << "Setting indices for marker " << i_iter->second << std::endl;}
+        for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
+          const Obj<Discretization>& disc = this->getDiscretization(*g_iter);
+          const indexSet  indSet   = ((indices_type) i_iter->first)[*g_iter].second;
+          const int       size     = indSet.size();
+          int            *_indices = new int[size];
+
+          if (debug > 1) {std::cout << "  field " << *g_iter << std::endl;}
+          for(int i = 0; i < size; ++i) {
+            _indices[i] = indSet[i];
+            if (debug > 1) {std::cout << "    indices["<<i<<"] = " << _indices[i] << std::endl;}
+          }
+          disc->setIndices(_indices, i_iter->second);
+        }
+      }
+    };
+    void setupField(const Obj<real_section_type>& s, const int cellMarker = 2, const bool noUpdate = false) {
+      typedef ISieveVisitor::PointRetriever<sieve_type> Visitor;
+      const Obj<names_type>& discs  = this->getDiscretizations();
+      const int              debug  = s->debug();
+      names_type             bcLabels;
+
+      s->setChart(this->getSieve()->getChart());
+      this->_maxDof = this->setFiberDimensions(s, discs, bcLabels);
+      this->calculateIndices();
+      this->calculateIndicesExcluded(s, discs);
+      this->allocate(s);
+      s->defaultConstraintDof();
+      const Obj<label_type>& cellExclusion = this->getLabel("cellExclusion");
+
+      if (debug > 1) {std::cout << "Setting boundary values" << std::endl;}
+      for(names_type::const_iterator n_iter = bcLabels.begin(); n_iter != bcLabels.end(); ++n_iter) {
+        const Obj<label_sequence>&     boundaryCells = this->getLabelStratum(*n_iter, cellMarker);
+        const Obj<real_section_type>&  coordinates   = this->getRealSection("coordinates");
+        const Obj<names_type>&         discs         = this->getDiscretizations();
+        const point_type               firstCell     = *boundaryCells->begin();
+        const int                      numFields     = discs->size();
+        real_section_type::value_type *values        = new real_section_type::value_type[this->sizeWithBC(s, firstCell)];
+        int                           *dofs          = new int[this->_maxDof];
+        int                           *v             = new int[numFields];
+        double                        *v0            = new double[this->getDimension()];
+        double                        *J             = new double[this->getDimension()*this->getDimension()];
+        double                         detJ;
+        Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, true);
+
+        for(label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
+          ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), *c_iter, pV);
+          const Visitor::point_type *oPoints = pV.getPoints();
+          const int                  oSize   = pV.getSize();
+
+          if (debug > 1) {std::cout << "  Boundary cell " << *c_iter << std::endl;}
+          this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+          for(int f = 0; f < numFields; ++f) v[f] = 0;
+          for(int cl = 0; cl < oSize; ++cl) {
+            const int cDim = s->getConstraintDimension(oPoints[cl]);
+            int       off  = 0;
+            int       f    = 0;
+            int       i    = -1;
+
+            if (debug > 1) {std::cout << "    point " << oPoints[cl] << std::endl;}
+            if (cDim) {
+              if (debug > 1) {std::cout << "      constrained excMarker: " << this->getValue(cellExclusion, *c_iter) << std::endl;}
+              for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+                const Obj<ALE::Discretization>& disc    = this->getDiscretization(*f_iter);
+                const Obj<names_type>           bcs     = disc->getBoundaryConditions();
+                const int                       fDim    = s->getFiberDimension(oPoints[cl], f);//disc->getNumDof(this->depth(oPoints[cl]));
+                const int                      *indices = disc->getIndices(this->getValue(cellExclusion, *c_iter));
+                int                             b       = 0;
+
+                for(names_type::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter, ++b) {
+                  const Obj<ALE::BoundaryCondition>& bc    = disc->getBoundaryCondition(*bc_iter);
+                  const int                          value = this->getValue(this->getLabel(bc->getLabelName()), oPoints[cl]);
+
+                  if (b > 0) v[f] -= fDim;
+                  if (value == bc->getMarker()) {
+                    if (debug > 1) {std::cout << "      field " << *f_iter << " marker " << value << std::endl;}
+                    for(int d = 0; d < fDim; ++d, ++v[f]) {
+                      dofs[++i] = off+d;
+                      if (!noUpdate) values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+                      if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                    }
+                    // Allow only one condition per point
+                    ++b;
+                    break;
+                  } else {
+                    if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
+                    for(int d = 0; d < fDim; ++d, ++v[f]) {
+                      values[indices[v[f]]] = 0.0;
+                      if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                    }
+                  }
+                }
+                if (b == 0) {
+                  if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
+                  for(int d = 0; d < fDim; ++d, ++v[f]) {
+                    values[indices[v[f]]] = 0.0;
+                    if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                  }
+                }
+                off += fDim;
+              }
+              if (i != cDim-1) {throw ALE::Exception("Invalid constraint initialization");}
+              s->setConstraintDof(oPoints[cl], dofs);
+            } else {
+              if (debug > 1) {std::cout << "      unconstrained" << std::endl;}
+              for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+                const Obj<ALE::Discretization>& disc    = this->getDiscretization(*f_iter);
+                const int                       fDim    = s->getFiberDimension(oPoints[cl], f);//disc->getNumDof(this->depth(oPoints[cl]));
+                const int                      *indices = disc->getIndices(this->getValue(cellExclusion, *c_iter));
+
+                if (debug > 1) {std::cout << "      field " << *f_iter << std::endl;}
+                for(int d = 0; d < fDim; ++d, ++v[f]) {
+                  values[indices[v[f]]] = 0.0;
+                  if (debug > 1) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
+                }
+              }
+            }
+          }
+          if (debug > 1) {
+            for(int f = 0; f < numFields; ++f) v[f] = 0;
+            for(int cl = 0; cl < oSize; ++cl) {
+              int f = 0;
+              for(names_type::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+                const Obj<ALE::Discretization>& disc    = this->getDiscretization(*f_iter);
+                const int                       fDim    = s->getFiberDimension(oPoints[cl], f);
+                const int                      *indices = disc->getIndices(this->getValue(cellExclusion, *c_iter));
+
+                for(int d = 0; d < fDim; ++d, ++v[f]) {
+                  std::cout << "    "<<*f_iter<<"-value["<<indices[v[f]]<<"] " << values[indices[v[f]]] << std::endl;
+                }
+              }
+            }
+          }
+          if (!noUpdate) {
+            this->updateAll(s, *c_iter, values);
+          }
+          pV.clear();
+        }
+        delete [] dofs;
+        delete [] values;
+        delete [] v0;
+        delete [] J;
+      }
+      if (debug > 1) {s->view("");}
     };
   };
 }
@@ -1954,7 +2541,7 @@ namespace ALE {
       } else if (this->_dim == 3) {
         computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
       } else {
-        throw ALE::Exception("Unsupport dimension for element geometry computation");
+        throw ALE::Exception("Unsupported dimension for element geometry computation");
       }
     };
     void computeLineFaceGeometry(const point_type& cell, const point_type& face, const int f, const double cellInvJ[], double invJ[], double& detJ, double normal[], double tangent[]) {
@@ -2117,7 +2704,7 @@ namespace ALE {
       } else if (this->_dim == 3) {
         computeTriangleFaceGeometry(cell, face, f, cellInvJ, invJ, detJ, normal, tangent);
       } else {
-        throw ALE::Exception("Unsupport dimension for element geometry computation");
+        throw ALE::Exception("Unsupported dimension for element geometry computation");
       }
     };
     double getMaxVolume() {
@@ -2357,9 +2944,9 @@ namespace ALE {
     void calculateIndicesExcluded(const Obj<real_section_type>& s, const Obj<names_type>& discs) {
       typedef std::map<std::string, std::pair<int, indexSet> > indices_type;
       const Obj<label_type>& indexLabel = this->createLabel("cellExclusion");
-      Obj<Mesh> mesh   = this;
       const int debug  = this->debug();
       int       marker = 0;
+      Obj<Mesh> mesh   = this;
       std::map<indices_type, int> indexMap;
       indices_type                indices;
 
@@ -2642,8 +3229,8 @@ namespace ALE {
       return output.str();
     };
   };
+  template<typename Mesh>
   class MeshBuilder {
-    typedef ALE::Mesh Mesh;
   public:
     #undef __FUNCT__
     #define __FUNCT__ "createSquareBoundary"
@@ -2660,25 +3247,25 @@ namespace ALE {
       |     |     |
      12--0-13--1--14
     */
-    static Obj<ALE::Mesh> createSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges[], const int debug = 0) {
+    static Obj<Mesh> createSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges[], const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
       int       numVertices = (edges[0]+1)*(edges[1]+1);
       int       numEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
       double   *coords      = new double[numVertices*2];
-      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
-      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+      const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
       int                         order    = 0;
 
       mesh->setSieve(sieve);
-      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
       if (mesh->commRank() == 0) {
         /* Create sieve and ordering */
         for(int v = numEdges; v < numEdges+numVertices; v++) {
-          vertices[v-numEdges] = Mesh::point_type(v);
+          vertices[v-numEdges] = typename Mesh::point_type(v);
         }
         for(int vy = 0; vy <= edges[1]; vy++) {
           for(int ex = 0; ex < edges[0]; ex++) {
-            Mesh::point_type edge(vy*edges[0] + ex);
+            typename Mesh::point_type edge(vy*edges[0] + ex);
             int vertex = vy*(edges[0]+1) + ex;
 
             sieve->addArrow(vertices[vertex+0], edge, order++);
@@ -2694,7 +3281,7 @@ namespace ALE {
         }
         for(int vx = 0; vx <= edges[0]; vx++) {
           for(int ey = 0; ey < edges[1]; ey++) {
-            Mesh::point_type edge(vx*edges[1] + ey + edges[0]*(edges[1]+1));
+            typename Mesh::point_type edge(vx*edges[1] + ey + edges[0]*(edges[1]+1));
             int vertex = ey*(edges[0]+1) + vx;
 
             sieve->addArrow(vertices[vertex],            edge, order++);
@@ -2735,28 +3322,28 @@ namespace ALE {
       |     |     |
      12--0-13--1--14
     */
-    static Obj<ALE::Mesh> createParticleInSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges[], const double radius, const int partEdges, const int debug = 0) {
+    static Obj<Mesh> createParticleInSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges[], const double radius, const int partEdges, const int debug = 0) {
       Obj<Mesh> mesh              = new Mesh(comm, 1, debug);
       const int numSquareVertices = (edges[0]+1)*(edges[1]+1);
       const int numVertices       = numSquareVertices + partEdges;
       const int numSquareEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
       const int numEdges          = numSquareEdges + partEdges;
       double   *coords            = new double[numVertices*2];
-      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
-      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+      const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
       int                         order    = 0;
 
       mesh->setSieve(sieve);
-      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
       if (mesh->commRank() == 0) {
         /* Create sieve and ordering */
         for(int v = numEdges; v < numEdges+numVertices; v++) {
-          vertices[v-numEdges] = Mesh::point_type(v);
+          vertices[v-numEdges] = typename Mesh::point_type(v);
         }
         // Make square
         for(int vy = 0; vy <= edges[1]; vy++) {
           for(int ex = 0; ex < edges[0]; ex++) {
-            Mesh::point_type edge(vy*edges[0] + ex);
+            typename Mesh::point_type edge(vy*edges[0] + ex);
             int vertex = vy*(edges[0]+1) + ex;
 
             sieve->addArrow(vertices[vertex+0], edge, order++);
@@ -2772,7 +3359,7 @@ namespace ALE {
         }
         for(int vx = 0; vx <= edges[0]; vx++) {
           for(int ey = 0; ey < edges[1]; ey++) {
-            Mesh::point_type edge(vx*edges[1] + ey + edges[0]*(edges[1]+1));
+            typename Mesh::point_type edge(vx*edges[1] + ey + edges[0]*(edges[1]+1));
             int vertex = ey*(edges[0]+1) + vx;
 
             sieve->addArrow(vertices[vertex],            edge, order++);
@@ -2788,7 +3375,7 @@ namespace ALE {
         }
         // Make particle
         for(int ep = 0; ep < partEdges; ++ep) {
-          Mesh::point_type edge(numSquareEdges + ep);
+          typename Mesh::point_type edge(numSquareEdges + ep);
           const int vertexA = numSquareVertices + ep;
           const int vertexB = numSquareVertices + (ep+1)%partEdges;
 
@@ -2832,16 +3419,16 @@ namespace ALE {
       |           |
       7-----1-----8
     */
-    static Obj<ALE::Mesh> createReentrantBoundary(const MPI_Comm comm, const double lower[], const double upper[], double notchpercent[], const int debug = 0) {
+    static Obj<Mesh> createReentrantBoundary(const MPI_Comm comm, const double lower[], const double upper[], double notchpercent[], const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
       int       numVertices = 6;
       int       numEdges    = numVertices;
       double   *coords      = new double[numVertices*2];
-      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
-      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+      const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
 
       mesh->setSieve(sieve);
-      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
       if (mesh->commRank() == 0) {
         /* Create sieve and ordering */
         for (int b = 0; b < numVertices; b++) {
@@ -2890,16 +3477,16 @@ namespace ALE {
       --       --
         -------
     */
-    static Obj<ALE::Mesh> createCircularReentrantBoundary(const MPI_Comm comm, const int segments, const double radius, const double arc_percent, const int debug = 0) {
+    static Obj<Mesh> createCircularReentrantBoundary(const MPI_Comm comm, const int segments, const double radius, const double arc_percent, const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
       int       numVertices = segments+2;
       int       numEdges    = numVertices;
       double   *coords      = new double[numVertices*2];
-      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
-      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+      const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
 
       mesh->setSieve(sieve);
-      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
       if (mesh->commRank() == 0) {
         /* Create sieve and ordering */
 
@@ -2934,16 +3521,16 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "createAnnularBoundary"
-    static Obj<ALE::Mesh> createAnnularBoundary(const MPI_Comm comm, const int segments, const double centers[4], const double radii[2], const int debug = 0) {
+    static Obj<Mesh> createAnnularBoundary(const MPI_Comm comm, const int segments, const double centers[4], const double radii[2], const int debug = 0) {
       Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
       int       numVertices = segments*2;
       int       numEdges    = numVertices;
       double   *coords      = new double[numVertices*2];
-      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
-      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+      const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
 
       mesh->setSieve(sieve);
-      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
       if (mesh->commRank() == 0) {
         for (int e = 0; e < segments; ++e) {
           sieve->addArrow(numEdges+e,              e);
@@ -2990,21 +3577,21 @@ namespace ALE {
       int       numVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
       int       numFaces    = 6;
       double   *coords      = new double[numVertices*3];
-      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
-      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+      const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
       int                         order    = 0;
 
       mesh->setSieve(sieve);
-      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
       if (mesh->commRank() == 0) {
         /* Create sieve and ordering */
         for(int v = numFaces; v < numFaces+numVertices; v++) {
-          vertices[v-numFaces] = Mesh::point_type(v);
+          vertices[v-numFaces] = typename Mesh::point_type(v);
           mesh->setValue(markers, vertices[v-numFaces], 1);
         }
         {
           // Side 0 (Front)
-          Mesh::point_type face(0);
+          typename Mesh::point_type face(0);
           sieve->addArrow(vertices[0], face, order++);
           sieve->addArrow(vertices[1], face, order++);
           sieve->addArrow(vertices[2], face, order++);
@@ -3013,7 +3600,7 @@ namespace ALE {
         }
         {
           // Side 1 (Back)
-          Mesh::point_type face(1);
+          typename Mesh::point_type face(1);
           sieve->addArrow(vertices[5], face, order++);
           sieve->addArrow(vertices[4], face, order++);
           sieve->addArrow(vertices[7], face, order++);
@@ -3022,7 +3609,7 @@ namespace ALE {
         }
         {
           // Side 2 (Bottom)
-          Mesh::point_type face(2);
+          typename Mesh::point_type face(2);
           sieve->addArrow(vertices[4], face, order++);
           sieve->addArrow(vertices[5], face, order++);
           sieve->addArrow(vertices[1], face, order++);
@@ -3031,7 +3618,7 @@ namespace ALE {
         }
         {
           // Side 3 (Top)
-          Mesh::point_type face(3);
+          typename Mesh::point_type face(3);
           sieve->addArrow(vertices[3], face, order++);
           sieve->addArrow(vertices[2], face, order++);
           sieve->addArrow(vertices[6], face, order++);
@@ -3040,7 +3627,7 @@ namespace ALE {
         }
         {
           // Side 4 (Left)
-          Mesh::point_type face(4);
+          typename Mesh::point_type face(4);
           sieve->addArrow(vertices[4], face, order++);
           sieve->addArrow(vertices[0], face, order++);
           sieve->addArrow(vertices[3], face, order++);
@@ -3049,7 +3636,7 @@ namespace ALE {
         }
         {
           // Side 5 (Right)
-          Mesh::point_type face(5);
+          typename Mesh::point_type face(5);
           sieve->addArrow(vertices[1], face, order++);
           sieve->addArrow(vertices[5], face, order++);
           sieve->addArrow(vertices[6], face, order++);
@@ -3175,17 +3762,17 @@ namespace ALE {
       coords[13*3+2] = ilower[2];
 
  
-      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
+      const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       mesh->setSieve(sieve);
-      Mesh::point_type p[nVertices];
-      Mesh::point_type f[nFaces];
-      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      typename Mesh::point_type p[nVertices];
+      typename Mesh::point_type f[nFaces];
+      const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
       for (int i = 0; i < nVertices; i++) {
-        p[i] = Mesh::point_type(i+nFaces);
+        p[i] = typename Mesh::point_type(i+nFaces);
         mesh->setValue(markers, p[i], 1);
       }
       for (int i = 0; i < nFaces; i++) {
-        f[i] = Mesh::point_type(i);
+        f[i] = typename Mesh::point_type(i);
       }
       int order = 0; 
      //assemble the larger square sides
@@ -3267,7 +3854,7 @@ namespace ALE {
 
       mesh->stratify();
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
-      Obj<Mesh::real_section_type> coordinates = mesh->getRealSection("coordinates");
+      Obj<typename Mesh::real_section_type> coordinates = mesh->getRealSection("coordinates");
       //coordinates->view("coordinates");
       return mesh;
 
@@ -3477,21 +4064,21 @@ namespace ALE {
       const int numCubeFaces    = 6;
       const int numFaces        = numCubeFaces + thetaEdges*phiSlices;
       double   *coords          = new double[numVertices*3];
-      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
-      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+      const Obj<typename Mesh::sieve_type> sieve    = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+      typename Mesh::point_type           *vertices = new typename Mesh::point_type[numVertices];
       int                         order    = 0;
 
       mesh->setSieve(sieve);
-      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      const Obj<typename Mesh::label_type>& markers = mesh->createLabel("marker");
       if (mesh->commRank() == 0) {
         // Make cube
         for(int v = numFaces; v < numFaces+numVertices; v++) {
-          vertices[v-numFaces] = Mesh::point_type(v);
+          vertices[v-numFaces] = typename Mesh::point_type(v);
           mesh->setValue(markers, vertices[v-numFaces], 1);
         }
         {
           // Side 0 (Front)
-          Mesh::point_type face(0);
+          typename Mesh::point_type face(0);
           sieve->addArrow(vertices[0], face, order++);
           sieve->addArrow(vertices[1], face, order++);
           sieve->addArrow(vertices[2], face, order++);
@@ -3500,7 +4087,7 @@ namespace ALE {
         }
         {
           // Side 1 (Back)
-          Mesh::point_type face(1);
+          typename Mesh::point_type face(1);
           sieve->addArrow(vertices[5], face, order++);
           sieve->addArrow(vertices[4], face, order++);
           sieve->addArrow(vertices[7], face, order++);
@@ -3509,7 +4096,7 @@ namespace ALE {
         }
         {
           // Side 2 (Bottom)
-          Mesh::point_type face(2);
+          typename Mesh::point_type face(2);
           sieve->addArrow(vertices[4], face, order++);
           sieve->addArrow(vertices[5], face, order++);
           sieve->addArrow(vertices[1], face, order++);
@@ -3518,7 +4105,7 @@ namespace ALE {
         }
         {
           // Side 3 (Top)
-          Mesh::point_type face(3);
+          typename Mesh::point_type face(3);
           sieve->addArrow(vertices[3], face, order++);
           sieve->addArrow(vertices[2], face, order++);
           sieve->addArrow(vertices[6], face, order++);
@@ -3527,7 +4114,7 @@ namespace ALE {
         }
         {
           // Side 4 (Left)
-          Mesh::point_type face(4);
+          typename Mesh::point_type face(4);
           sieve->addArrow(vertices[4], face, order++);
           sieve->addArrow(vertices[0], face, order++);
           sieve->addArrow(vertices[3], face, order++);
@@ -3536,7 +4123,7 @@ namespace ALE {
         }
         {
           // Side 5 (Right)
-          Mesh::point_type face(5);
+          typename Mesh::point_type face(5);
           sieve->addArrow(vertices[1], face, order++);
           sieve->addArrow(vertices[5], face, order++);
           sieve->addArrow(vertices[6], face, order++);
@@ -3547,7 +4134,7 @@ namespace ALE {
         for(int s = 0; s < phiSlices; ++s) {
           for(int ep = 0; ep < thetaEdges; ++ep) {
             // Vertices on each slice are 0..thetaEdges
-            Mesh::point_type face(numCubeFaces + s*thetaEdges + ep);
+            typename Mesh::point_type face(numCubeFaces + s*thetaEdges + ep);
             int vertexA = numCubeVertices + ep + 0 +     s*(thetaEdges+1);
             int vertexB = numCubeVertices + ep + 1 +     s*(thetaEdges+1);
             int vertexC = numCubeVertices + (ep + 1 + (s+1)*(thetaEdges+1))%((thetaEdges+1)*phiSlices);

@@ -40,6 +40,7 @@ PetscErrorCode MatAssemblyEnd_SeqSBAIJSpooles(Mat A,MatAssemblyType mode) \
   PetscFunctionReturn(0);
 }
 
+#if !defined(PETSC_USE_COMPLEX)
 /* 
   input:
    F:                 numeric factor
@@ -61,6 +62,7 @@ PetscErrorCode MatGetInertia_SeqSBAIJSpooles(Mat F,int *nneg,int *nzero,int *npo
   if(npos)  *npos  = pos;
   PetscFunctionReturn(0);
 }
+#endif /* !defined(PETSC_USE_COMPLEX) */
 
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  

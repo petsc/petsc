@@ -141,7 +141,7 @@ namespace ALE {
             args += "c";
           }
           if (constrained) {
-	    args = "zepDQ";
+            args = "zepDQ";
           }
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
@@ -189,11 +189,10 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "generateMeshV_Triangle"
       static Obj<Mesh> generateMeshV(const Obj<Mesh>& boundary, const bool interpolate = false, const bool constrained = false) {
-        throw ALE::Exception("Not yet implemented");
         int                                   dim   = 2;
-        Obj<Mesh>                             mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
+        const Obj<Mesh>                       mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
         const Obj<typename Mesh::sieve_type>& sieve = boundary->getSieve();
-        //const bool                            createConvexHull = false;
+        const bool                            createConvexHull = false;
         struct triangulateio in;
         struct triangulateio out;
         PetscErrorCode       ierr;
@@ -235,6 +234,75 @@ namespace ALE {
             in.segmentmarkerlist[idx] = boundary->getValue(markers, *e_iter);
           }
         }
+        const typename Mesh::holes_type& holes = boundary->getHoles();
+
+        in.numberofholes = holes.size();
+        if (in.numberofholes > 0) {
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          for(int h = 0; h < in.numberofholes; ++h) {
+            for(int d = 0; d < dim; ++d) {
+              in.holelist[h*dim+d] = holes[h][d];
+            }
+          }
+        }
+        if (mesh->commRank() == 0) {
+          std::string args("pqezQ");
+
+          if (createConvexHull) {
+            args += "c";
+          }
+          if (constrained) {
+            args = "zepDQ";
+          }
+          triangulate((char *) args.c_str(), &in, &out, NULL);
+        }
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
+        if (in.holelist)          {ierr = PetscFree(in.holelist);}
+        const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+        const Obj<ALE::Mesh>                 m        = new ALE::Mesh(boundary->comm(), dim, boundary->debug());
+        const Obj<ALE::Mesh::sieve_type>     newS     = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+        int     numCorners  = 3;
+        int     numCells    = out.numberoftriangles;
+        int    *cells       = out.trianglelist;
+        int     numVertices = out.numberofpoints;
+        double *coords      = out.pointlist;
+
+        ALE::SieveBuilder<ALE::Mesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+        m->setSieve(newS);
+        m->stratify();
+        mesh->setSieve(newSieve);
+        std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
+        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
+        mesh->stratify();
+        ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
+        ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coords);
+        mesh->view("Generated Mesh");
+        const Obj<typename Mesh::label_type>& newMarkers = mesh->createLabel("marker");
+
+        if (mesh->commRank() == 0) {
+          for(int v = 0; v < out.numberofpoints; v++) {
+            if (out.pointmarkerlist[v]) {
+              mesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+            }
+          }
+          if (interpolate) {
+            for(int e = 0; e < out.numberofedges; e++) {
+              if (out.edgemarkerlist[e]) {
+                const typename Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
+                const typename Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
+                const Obj<typename Mesh::sieve_type::supportSet> edge = newS->nJoin(vertexA, vertexB, 1);
+
+                mesh->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
+              }
+            }
+          }
+        }
+        mesh->copyHoles(boundary);
+        finiOutput(&out);
+        return mesh;
       };
     };
     template<typename Mesh>
@@ -438,6 +506,9 @@ namespace ALE {
         const Obj<Mesh> refMesh = refineMesh(serialMesh, serialMaxVolumes, interpolate, forceSerial);
         delete [] serialMaxVolumes;
         return refMesh;
+      };
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false) {
+        throw ALE::Exception("Not yet implemented");
       };
       static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false) {
         throw ALE::Exception("Not yet implemented");
@@ -956,6 +1027,9 @@ namespace ALE {
         delete [] serialMaxVolumes;
         return refMesh;
       };
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false) {
+        throw ALE::Exception("Not yet implemented");
+      };
       static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
         throw ALE::Exception("Not yet implemented");
       };
@@ -1031,6 +1105,24 @@ namespace ALE {
       } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
         return ALE::TetGen::Refiner<Mesh>::refineMesh(mesh, maxVolume, interpolate);
+#else
+        throw ALE::Exception("Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
+#endif
+      }
+      return NULL;
+    };
+    static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false) {
+      int dim = mesh->getDimension();
+
+      if (dim == 2) {
+#ifdef PETSC_HAVE_TRIANGLE
+        return ALE::Triangle::Refiner<Mesh>::refineMeshV(mesh, maxVolumes, interpolate);
+#else
+        throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
+#endif
+      } else if (dim == 3) {
+#ifdef PETSC_HAVE_TETGEN
+        return ALE::TetGen::Refiner<Mesh>::refineMeshV(mesh, maxVolumes, interpolate);
 #else
         throw ALE::Exception("Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif

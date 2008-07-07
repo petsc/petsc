@@ -1111,6 +1111,7 @@ namespace ALE {
             os << *basei <<  "<--(" << conei.color() << ")--" << *conei << std::endl;
           }
         }
+#if 0
         os << "cap --> (outdegree, marker, depth, height):" << std::endl;
         for(typename traits::capSequence::iterator capi = cap->begin(); capi != cap->end(); ++capi) {
           os << *capi <<  "-->" << capi.degree() << ", " << capi.marker() << ", " << capi.depth() << ", " << capi.height() << std::endl;
@@ -1119,6 +1120,7 @@ namespace ALE {
         for(typename traits::baseSequence::iterator basei = base->begin(); basei != base->end(); ++basei) {
           os << *basei <<  "-->" << basei.degree() << ", " << basei.marker() << ", " << basei.depth() << ", " << basei.height() << std::endl;
         }
+#endif
       }
       else {
         os << "'raw' arrow set:" << std::endl;
@@ -1195,6 +1197,7 @@ namespace ALE {
         //
         PetscSynchronizedPrintf(this->comm(), txt1.str().c_str());
         PetscSynchronizedFlush(this->comm());
+#if 0
         //
         ostringstream txt2;
         if(this->commRank() == 0) {
@@ -1221,6 +1224,7 @@ namespace ALE {
         //
         PetscSynchronizedPrintf(this->comm(), txt3.str().c_str());
         PetscSynchronizedFlush(this->comm());
+#endif
     };
     //
     // Structural queries

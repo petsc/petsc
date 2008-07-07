@@ -142,6 +142,7 @@ namespace ALE {
           txt << "viewing IConstantSection '" << name << "'" << std::endl;
         }
       }
+      txt <<"["<<this->commRank()<<"]: chart " << this->_chart << std::endl;
       txt <<"["<<this->commRank()<<"]: Value " << this->_value[0] << " Default Value " << this->_value[1] << std::endl;
       PetscSynchronizedPrintf(comm, txt.str().c_str());
       PetscSynchronizedFlush(comm);
