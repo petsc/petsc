@@ -6,7 +6,7 @@ cdef class Object:
 
     def __cinit__(self):
         self.oval = NULL
-        self.obj = &(self.oval)
+        self.obj = &self.oval
 
     def __dealloc__(self):
         CHKERR( PetscDEALLOC(self.obj) )
@@ -30,6 +30,20 @@ cdef class Object:
         if self.obj == NULL: return False
         return self.obj[0] != NULL
 
+    # --- reference management ---
+
+    cdef int incRef(self) except -1:
+        cdef PetscObject obj = self.obj[0]
+        if obj != NULL: CHKERR( PetscObjectReference(obj) )
+        return 0
+
+    cdef int decRef(self) except -1:
+        cdef PetscObject *obj = self.obj
+        cdef PetscInt refct = 0
+        if obj[0] != NULL: CHKERR( PetscObjectGetReference(obj[0], &refct) )
+        if refct != 0: CHKERR( PetscObjectDereference(obj[0]) )
+        if refct == 1: obj[0] = NULL
+        return 0
     #
 
     def view(self, Viewer viewer=None):
@@ -90,14 +104,15 @@ cdef class Object:
 
     # --- general Python support ---
 
+    cpdef object getAttr(self, char name[]):
+        return Object_getAttr(self.obj[0], name)
+
+    cpdef object setAttr(self, char name[], object attr):
+        Object_setAttr(self.obj[0], name, attr)
+        return None
+
     def getDict(self):
         return Object_getDict(self.obj[0])
-
-    def getAttr(self, name):
-        return Object_getAttr(self.obj[0], str2cp(name))
-
-    def setAttr(self, name, attr):
-        Object_setAttr(self.obj[0], str2cp(name), attr)
 
     # --- properties ---
 
