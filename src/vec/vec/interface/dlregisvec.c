@@ -162,12 +162,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   /* Special processing */
   ierr = PetscOptionsHasName(PETSC_NULL, "-log_sync", &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscLogEventActivate(VEC_ScatterBarrier);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(VEC_NormBarrier);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(VEC_DotBarrier);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(VEC_DotNormBarrier);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(VEC_MDotBarrier);CHKERRQ(ierr);
-    ierr = PetscLogEventActivate(VEC_ReduceBarrier);CHKERRQ(ierr);
+    ierr = PetscLogEventSetActiveAll(VEC_ScatterBarrier, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscLogEventSetActiveAll(VEC_NormBarrier, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscLogEventSetActiveAll(VEC_DotNormBarrier, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscLogEventSetActiveAll(VEC_MDotBarrier, PETSC_TRUE);CHKERRQ(ierr);
+    ierr = PetscLogEventSetActiveAll(VEC_ReduceBarrier, PETSC_TRUE);CHKERRQ(ierr);
   }
 
   /*
