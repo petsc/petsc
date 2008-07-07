@@ -176,82 +176,6 @@ PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], Pets
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "Function_Unstructured"
-PetscErrorCode Function_Unstructured(Mesh mesh, SectionReal section, void *ctx)
-{
-  Options       *options = (Options *) ctx;
-  PetscScalar  (*func)(const double *) = options->func;
-  Obj<PETSC_MESH_TYPE> m;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<PETSC_MESH_TYPE::label_sequence>&    vertices    = m->depthStratum(0);
-
-  for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-    const PETSC_MESH_TYPE::real_section_type::value_type *coords = coordinates->restrictPoint(*v_iter);
-    const PetscScalar                               value  = (*func)(coords);
-
-    ierr = SectionRealUpdate(section, *v_iter, &value);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "FormFunctions"
-PetscErrorCode FormFunctions(DM dm, Options *options)
-{
-  PetscTruth     flag;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (options->structured) {
-    DA  da = (DA) dm;
-    Vec X, F;
-
-    ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
-    ierr = DAGetGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = DAGetGlobalVector(da, &F);CHKERRQ(ierr);
-    if (options->dim == 2) {
-      options->func = linear_2d;
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_2d, X, F, (void *) options);CHKERRQ(ierr);
-      if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-      options->func = cos_x;
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_2d, X, F, (void *) options);CHKERRQ(ierr);
-      if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-    } else {
-      options->func = linear_3d;
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_3d, X, F, (void *) options);CHKERRQ(ierr);
-      if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-      options->func = cos_x;
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_3d, X, F, (void *) options);CHKERRQ(ierr);
-      if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-    }
-    ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = DARestoreGlobalVector(da, &F);CHKERRQ(ierr);
-  } else {
-    Mesh        mesh = (Mesh) dm;
-    SectionReal F;
-    Obj<PETSC_MESH_TYPE> m;
-    Obj<PETSC_MESH_TYPE::real_section_type> s;
-
-    ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
-    ierr = MeshGetSectionReal(mesh, "default", &F);CHKERRQ(ierr);
-    ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-    ierr = SectionRealGetSection(F, s);CHKERRQ(ierr);
-    options->func = linear_2d;
-    ierr = Function_Unstructured(mesh, F, (void *) options);CHKERRQ(ierr);
-    if (flag) {ierr = ViewSection(mesh, F, "linear.vtk");CHKERRQ(ierr);}
-    options->func = cos_x;
-    ierr = Function_Unstructured(mesh, F, (void *) options);CHKERRQ(ierr);
-    if (flag) {ierr = ViewSection(mesh, F, "cos.vtk");CHKERRQ(ierr);}
-    ierr = SectionRealDestroy(F);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "Rhs_Structured_2d_FD"
 PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx)
 {
@@ -474,6 +398,9 @@ PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx
     double       elemError = 0.0;
 
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+    if (options->debug) {
+      std::cout << "Element " << *c_iter << " v0: (" << v0[0]<<","<<v0[1]<<")" << "J " << J[0]<<","<<J[1]<<","<<J[2]<<","<<J[3] << " detJ " << detJ << std::endl;
+    }
     ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
     // Loop over quadrature points
     for(int q = 0; q < numQuadPoints; ++q) {
@@ -482,14 +409,18 @@ PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx
         for(int e = 0; e < dim; e++) {
           coords[d] += J[d*dim+e]*(quadPoints[q*dim+e] + 1.0);
         }
+        if (options->debug) {std::cout << "q: "<<q<<"  coords["<<d<<"] " << coords[d] << std::endl;}
       }
       const PetscScalar funcVal = (*func)(coords);
+      if (options->debug) {std::cout << "q: "<<q<<"  funcVal " << funcVal << std::endl;}
 
       double interpolant = 0.0;
       for(int f = 0; f < numBasisFuncs; ++f) {
         interpolant += x[f]*basis[q*numBasisFuncs+f];
       }
+      if (options->debug) {std::cout << "q: "<<q<<"  interpolant " << interpolant << std::endl;}
       elemError += (interpolant - funcVal)*(interpolant - funcVal)*quadWeights[q];
+      if (options->debug) {std::cout << "q: "<<q<<"  elemError " << elemError << std::endl;}
     }    
     if (options->debug) {
       std::cout << "Element " << *c_iter << " error: " << elemError << std::endl;
@@ -500,66 +431,6 @@ PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx
   ierr = MPI_Allreduce(&localError, error, 1, MPI_DOUBLE, MPI_SUM, m->comm());CHKERRQ(ierr);
   ierr = PetscFree4(coords,v0,J,invJ);CHKERRQ(ierr);
   *error = sqrt(*error);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "FormWeakForms"
-PetscErrorCode FormWeakForms(DM dm, Options *options)
-{
-  PetscTruth     flag;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (options->structured) {
-    DA  da = (DA) dm;
-    Vec X, F;
-
-    ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
-    ierr = DAGetGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = DAGetGlobalVector(da, &F);CHKERRQ(ierr);
-    ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-    if (options->dim == 2) {
-      options->func      = linear_2d;
-      options->exactFunc = linear_2d;
-      ierr = DAFormFunctionLocalGhost(da, (DALocalFunction1) Rhs_Structured_2d_FD, X, F, (void *) options);CHKERRQ(ierr);
-      if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-      ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-      options->func      = cos_x;
-      options->exactFunc = cos_x;
-      ierr = DAFormFunctionLocalGhost(da, (DALocalFunction1) Rhs_Structured_2d_FD, X, F, (void *) options);CHKERRQ(ierr);
-      if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-    } else if (options->dim == 3) {
-      options->func      = linear_3d;
-      options->exactFunc = linear_3d;
-      ierr = DAFormFunctionLocalGhost(da, (DALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
-      if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-      ierr = VecSet(F, 0.0);CHKERRQ(ierr);
-      options->func      = cos_x;
-      options->exactFunc = cos_x;
-      ierr = DAFormFunctionLocalGhost(da, (DALocalFunction1) Rhs_Structured_3d_FD, X, F, (void *) options);CHKERRQ(ierr);
-      if (flag) {ierr = VecView(F, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-    } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
-    }
-    ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = DARestoreGlobalVector(da, &F);CHKERRQ(ierr);
-  } else {
-    Mesh        mesh = (Mesh) dm;
-    SectionReal X, F;
-
-    ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
-    ierr = MeshGetSectionReal(mesh, "default", &X);CHKERRQ(ierr);
-    ierr = SectionRealZero(X);CHKERRQ(ierr);
-    ierr = SectionRealDuplicate(X, &F);CHKERRQ(ierr);
-    options->func = linear_2d;
-    ierr = Rhs_Unstructured(mesh, X, F, (void *) options);CHKERRQ(ierr);
-    if (flag) {ierr = ViewSection(mesh, F, "rhs_linear.vtk");CHKERRQ(ierr);}
-    options->func = cos_x;
-    ierr = Rhs_Unstructured(mesh, X, F, (void *) options);CHKERRQ(ierr);
-    if (flag) {ierr = ViewSection(mesh, F, "rhs_cos.vtk");CHKERRQ(ierr);}
-    ierr = SectionRealDestroy(F);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -973,61 +844,6 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormOperator"
-PetscErrorCode FormOperator(DM dm, Options *options)
-{
-  PetscTruth     flag;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (options->structured) {
-    DA  da = (DA) dm;
-    Mat J;
-    Vec X;
-
-    ierr = DAGetGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = DAGetMatrix(da, MATAIJ, &J);CHKERRQ(ierr);
-    if (options->dim == 2) {
-      ierr = DAFormJacobianLocal(da, (DALocalFunction1) Jac_Structured_2d_FD, X, J, options);CHKERRQ(ierr);
-    } else if (options->dim == 3) {
-      ierr = DAFormJacobianLocal(da, (DALocalFunction1) Jac_Structured_3d_FD, X, J, options);CHKERRQ(ierr);
-    } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
-    }
-    ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = MatDestroy(J);CHKERRQ(ierr);
-  } else {
-    Mesh        mesh = (Mesh) dm;
-    SectionReal X;
-    Mat         J;
-
-    ierr = PetscOptionsHasName(PETSC_NULL, "-mat_view_draw", &flag);CHKERRQ(ierr);
-    ierr = MeshGetSectionReal(mesh, "default", &X);CHKERRQ(ierr);
-    ierr = SectionRealZero(X);CHKERRQ(ierr);
-    ierr = MeshGetMatrix(mesh, MATAIJ, &J);CHKERRQ(ierr);
-    ierr = Jac_Unstructured(mesh, X, J, options);CHKERRQ(ierr);
-    if (flag) {ierr = MatView(J, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-    ierr = MatDestroy(J);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "RunTests"
-PetscErrorCode RunTests(DM dm, Options *options)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (options->run == ALE::Problem::Bratu::RUN_TEST) {
-    ierr = FormFunctions(dm, options);CHKERRQ(ierr);
-    ierr = FormWeakForms(dm, options);CHKERRQ(ierr);
-    ierr = FormOperator(dm, options);CHKERRQ(ierr);
-   }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "CreateProblem"
 PetscErrorCode CreateProblem(DM dm, Options *options)
 {
@@ -1392,7 +1208,6 @@ int main(int argc, char *argv[])
     bratu->createMesh();
     dm   = bratu->getDM();
     ierr = CreateProblem(dm, options);CHKERRQ(ierr);
-    ierr = RunTests(dm, options);CHKERRQ(ierr);
     if (options->run == ALE::Problem::Bratu::RUN_FULL) {
       DMMG *dmmg;
 
