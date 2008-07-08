@@ -36,6 +36,8 @@ extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
+extern PetscErrorCode PostStep(TS);
+extern PetscErrorCode PostUpdate(TS,PetscReal, PetscReal*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -111,7 +113,16 @@ int main(int argc,char **argv)
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time_steps,1);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
-
+  
+  /* Test TSSetPostStep() and TSSetPostUpdate() */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-test_PostStep",&flg);CHKERRQ(ierr);
+  if (flg){
+    ierr = TSSetPostStep(ts,PostStep);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-test_PostUpdate",&flg);CHKERRQ(ierr);
+  if (flg){
+    ierr = TSSetPostUpdate(ts,PostUpdate);CHKERRQ(ierr);
+  }
 
   /* Pick up a Petsc preconditioner */
   /* one can always set method or preconditioner during the run time */
@@ -508,3 +519,25 @@ PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PostStep"
+PetscErrorCode PostStep(TS ts) 
+{
+  PetscErrorCode  ierr;
+  PetscReal       t;
+  
+  PetscFunctionBegin;
+  ierr = TSGetTime(ts,&t); CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"  PostStep, t: %g\n",t);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PostUpdate"
+PetscErrorCode PostUpdate(TS ts,PetscReal t, PetscReal *dt) 
+{
+  PetscErrorCode  ierr;
+  PetscFunctionBegin;
+  ierr = PetscPrintf(PETSC_COMM_SELF,"  PostUpdate, t: %g\n",t);
+  PetscFunctionReturn(0);
+}

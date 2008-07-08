@@ -189,7 +189,10 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   ierr = VecRestoreArray(ts->vec_sol,PETSC_NULL);CHKERRQ(ierr);
   for (i = 0; i < max_steps; i++) {
     if (ts->ptime >= ts->max_time) break;
-    ierr = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);CHKERRQ(ierr); 
+    ierr = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);CHKERRQ(ierr);
+    if (ts->ops->postupdate){
+      ierr = (*ts->ops->postupdate)(ts,ts->ptime,PETSC_NULL);CHKERRQ(ierr);
+    }
     ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
     cvode->nonlinear_solves += its; 
 
