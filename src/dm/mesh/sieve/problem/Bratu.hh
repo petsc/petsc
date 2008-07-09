@@ -106,6 +106,7 @@ namespace ALE {
       Options *getOptions() {return &this->_options;};
       int  dim() const {return this->_options.dim;};
       bool structured() const {return this->_options.structured;};
+      void structured(const bool s) {this->_options.structured = (PetscTruth) s;};
       bool interpolated() const {return this->_options.interpolate;};
       DM getDM() {return this->_dm;};
     public: // Mesh
