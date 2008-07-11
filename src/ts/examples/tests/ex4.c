@@ -94,12 +94,15 @@ int main(int argc,char **argv)
   ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
   ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,mn,mn);CHKERRQ(ierr);
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
-  ierr = RHSJacobian(ts,0.0,global,&J,&J,&J_structure,&data);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(J,5,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(J,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-ts_fd",&flg);CHKERRQ(ierr);
   if (flg){
     /* Use finite differences (slow) to compute Jacobian */
+    /* ierr = TSDefaultComputeJacobian(ts,0.0,global,&J,&J,&J_structure,&data);CHKERRQ(ierr); */
     ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobian,&data);CHKERRQ(ierr);
   } else {
+    /* ierr = RHSJacobian(ts,0.0,global,&J,&J,&J_structure,&data);CHKERRQ(ierr); */
     ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&data);CHKERRQ(ierr);
   }
 
