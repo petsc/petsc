@@ -15,78 +15,6 @@ static char help[] = "This example solves the Bratu problem.\n\n";
 using ALE::Obj;
 typedef ALE::Problem::Bratu::Options Options;
 
-#include "bratu_quadrature.h"
-
-PetscScalar lambda = 0.0;
-
-PetscScalar zero(const double x[]) {
-  return 0.0;
-}
-
-PetscScalar constant(const double x[]) {
-  return -4.0;
-}
-
-PetscScalar nonlinear_2d(const double x[]) {
-  return -4.0 - lambda*PetscExpScalar(x[0]*x[0] + x[1]*x[1]);
-}
-
-PetscScalar singularity_2d(const double x[]) {
-  return 0.;
-}
-
-PetscScalar singularity_exact_2d(const double x[]) {
-  double r = sqrt(x[0]*x[0] + x[1]*x[1]);
-  double theta;
-  if (r == 0.) {
-    return 0.;
-  } else theta = asin(x[1]/r);
-  if (x[0] < 0) {
-    theta = 2*M_PI - theta;
-  }
-  return pow(r, 2./3.)*sin((2./3.)*theta);
-}
-
-PetscScalar singularity_exact_3d(const double x[]) {
-  return sin(x[0] + x[1] + x[2]);  
-}
-
-PetscScalar singularity_3d(const double x[]) {
-  return (3)*sin(x[0] + x[1] + x[2]);
-}
-
-PetscScalar linear_2d(const double x[]) {
-  return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5);
-}
-
-PetscScalar quadratic_2d(const double x[]) {
-  return x[0]*x[0] + x[1]*x[1];
-}
-
-PetscScalar cubic_2d(const double x[]) {
-  return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + 0.5;
-}
-
-PetscScalar nonlinear_3d(const double x[]) {
-  return -4.0 - lambda*PetscExpScalar((2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]));
-}
-
-PetscScalar linear_3d(const double x[]) {
-  return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5) - 6.0*(x[2] - 0.5);
-}
-
-PetscScalar quadratic_3d(const double x[]) {
-  return (2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
-}
-
-PetscScalar cubic_3d(const double x[]) {
-  return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + x[2]*x[2]*x[2] - 1.5*x[2]*x[2] + 0.75;
-}
-
-PetscScalar cos_x(const double x[]) {
-  return cos(2.0*PETSC_PI*x[0]);
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "ViewSection"
 PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[], bool vertexwise = true)
@@ -844,78 +772,6 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CreateProblem"
-PetscErrorCode CreateProblem(DM dm, Options *options)
-{
-  PetscFunctionBegin;
-  if (options->dim == 2) {
-    if (options->bcType == ALE::Problem::Bratu::DIRICHLET) {
-      if (options->lambda > 0.0) {
-        options->func    = nonlinear_2d;
-        options->exactFunc = quadratic_2d;
-      } else if (options->reentrantMesh) { 
-        options->func = singularity_2d;
-        options->exactFunc = singularity_exact_2d;
-      } else {
-        options->func    = constant;
-        options->exactFunc = quadratic_2d;
-      }
-    } else {
-      options->func      = linear_2d;
-      options->exactFunc = cubic_2d;
-    }
-  } else if (options->dim == 3) {
-    if (options->bcType == ALE::Problem::Bratu::DIRICHLET) {
-      if (options->reentrantMesh) {
-        options->func = singularity_3d;
-        options->exactFunc = singularity_exact_3d;
-      } else {
-        if (options->lambda > 0.0) {
-          options->func    = nonlinear_3d;
-        } else {
-          options->func    = constant;
-        }
-        options->exactFunc = quadratic_3d;
-      }
-    } else {
-      options->func      = linear_3d;
-      options->exactFunc = cubic_3d;
-    }
-  } else {
-    SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
-  }
-  if (options->structured) {
-    // The DA defines most of the problem during creation
-  } else {
-    Mesh           mesh = (Mesh) dm;
-    Obj<PETSC_MESH_TYPE> m;
-    int            numBC = (options->bcType == ALE::Problem::Bratu::DIRICHLET) ? 1 : 0;
-    int            markers[1]  = {1};
-    double       (*funcs[1])(const double *coords) = {options->exactFunc};
-    PetscErrorCode ierr;
-
-    ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-    if (options->dim == 1) {
-      ierr = CreateProblem_gen_0(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
-      options->integrate = IntegrateDualBasis_gen_0;
-    } else if (options->dim == 2) {
-      ierr = CreateProblem_gen_1(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
-      options->integrate = IntegrateDualBasis_gen_1;
-    } else if (options->dim == 3) {
-      ierr = CreateProblem_gen_2(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
-      options->integrate = IntegrateDualBasis_gen_2;
-    } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
-    }
-    const ALE::Obj<PETSC_MESH_TYPE::real_section_type> s = m->getRealSection("default");
-    s->setDebug(options->debug);
-    m->setupField(s);
-    if (options->debug) {s->view("Default field");}
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "CreateExactSolution"
 PetscErrorCode CreateExactSolution(DM dm, Options *options)
 {
@@ -1189,7 +1045,6 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   PetscFunctionReturn(0);
 }
 
-
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
@@ -1202,15 +1057,14 @@ int main(int argc, char *argv[])
     MPI_Comm                      comm    = PETSC_COMM_WORLD;
     ALE::Obj<ALE::Problem::Bratu> bratu   = new ALE::Problem::Bratu(comm);
     Options                      *options = bratu->getOptions();
-    DM                            dm;
 
-    lambda = options->lambda;
-    bratu->createMesh();
-    dm   = bratu->getDM();
-    ierr = CreateProblem(dm, options);CHKERRQ(ierr);
+    ierr = bratu->createMesh();CHKERRQ(ierr);
+    ierr = bratu->createProblem();CHKERRQ(ierr);
     if (options->run == ALE::Problem::Bratu::RUN_FULL) {
       DMMG *dmmg;
+      DM    dm;
 
+      dm   = bratu->getDM();
       ierr = CreateExactSolution(dm, options);CHKERRQ(ierr);
       ierr = CheckError(dm, options->exactSol, options);CHKERRQ(ierr);
       ierr = CheckResidual(dm, options->exactSol, options);CHKERRQ(ierr);

@@ -3,8 +3,82 @@
 
 #include <DMBuilder.hh>
 
+// How do we do this correctly?
+#include "../examples/tutorials/bratu_quadrature.h"
+
 namespace ALE {
   namespace Problem {
+    namespace Functions {
+      static PetscScalar lambda;
+
+      PetscScalar zero(const double x[]) {
+        return 0.0;
+      };
+
+      PetscScalar constant(const double x[]) {
+        return -4.0;
+      };
+
+      PetscScalar nonlinear_2d(const double x[]) {
+        return -4.0 - lambda*PetscExpScalar(x[0]*x[0] + x[1]*x[1]);
+      };
+
+      PetscScalar singularity_2d(const double x[]) {
+        return 0.;
+      };
+
+      PetscScalar singularity_exact_2d(const double x[]) {
+        double r = sqrt(x[0]*x[0] + x[1]*x[1]);
+        double theta;
+        if (r == 0.) {
+          return 0.;
+        } else theta = asin(x[1]/r);
+        if (x[0] < 0) {
+          theta = 2*M_PI - theta;
+        }
+        return pow(r, 2./3.)*sin((2./3.)*theta);
+      };
+
+      PetscScalar singularity_exact_3d(const double x[]) {
+        return sin(x[0] + x[1] + x[2]);  
+      };
+
+      PetscScalar singularity_3d(const double x[]) {
+        return (3)*sin(x[0] + x[1] + x[2]);
+      };
+
+      PetscScalar linear_2d(const double x[]) {
+        return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5);
+      };
+
+      PetscScalar quadratic_2d(const double x[]) {
+        return x[0]*x[0] + x[1]*x[1];
+      };
+
+      PetscScalar cubic_2d(const double x[]) {
+        return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + 0.5;
+      };
+
+      PetscScalar nonlinear_3d(const double x[]) {
+        return -4.0 - lambda*PetscExpScalar((2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]));
+      };
+
+      PetscScalar linear_3d(const double x[]) {
+        return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5) - 6.0*(x[2] - 0.5);
+      };
+
+      PetscScalar quadratic_3d(const double x[]) {
+        return (2.0/3.0)*(x[0]*x[0] + x[1]*x[1] + x[2]*x[2]);
+      };
+
+      PetscScalar cubic_3d(const double x[]) {
+        return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + x[2]*x[2]*x[2] - 1.5*x[2]*x[2] + 0.75;
+      };
+
+      PetscScalar cos_x(const double x[]) {
+        return cos(2.0*PETSC_PI*x[0]);
+      };
+    };
     class Bratu : ALE::ParallelObject {
     public:
       typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
@@ -99,6 +173,7 @@ namespace ALE {
           ierr = PetscOptionsReal("-lambda", "The parameter controlling nonlinearity", "bratu.cxx", options->lambda, &options->lambda, PETSC_NULL);CHKERRQ(ierr);
         ierr = PetscOptionsEnd();
 
+        ALE::Problem::Functions::lambda = options->lambda;
         this->setDebug(options->debug);
         PetscFunctionReturn(0);
       };
@@ -203,7 +278,73 @@ namespace ALE {
           ierr = MeshDestroy((::Mesh) this->_dm);CHKERRQ(ierr);
         }
         PetscFunctionReturn(0);
-      }
+      };
+    public:
+      #undef __FUNCT__
+      #define __FUNCT__ "CreateProblem"
+      PetscErrorCode createProblem() {
+        PetscFunctionBegin;
+        if (dim() == 2) {
+          if (this->_options.bcType == DIRICHLET) {
+            if (this->_options.lambda > 0.0) {
+              this->_options.func      = ALE::Problem::Functions::nonlinear_2d;
+              this->_options.exactFunc = ALE::Problem::Functions::quadratic_2d;
+            } else if (this->_options.reentrantMesh) { 
+              this->_options.func      = ALE::Problem::Functions::singularity_2d;
+              this->_options.exactFunc = ALE::Problem::Functions::singularity_exact_2d;
+            } else {
+              this->_options.func      = ALE::Problem::Functions::constant;
+              this->_options.exactFunc = ALE::Problem::Functions::quadratic_2d;
+            }
+          } else {
+            this->_options.func      = ALE::Problem::Functions::linear_2d;
+            this->_options.exactFunc = ALE::Problem::Functions::cubic_2d;
+          }
+        } else if (dim() == 3) {
+          if (this->_options.bcType == DIRICHLET) {
+            if (this->_options.reentrantMesh) {
+              this->_options.func      = ALE::Problem::Functions::singularity_3d;
+              this->_options.exactFunc = ALE::Problem::Functions::singularity_exact_3d;
+            } else {
+              if (this->_options.lambda > 0.0) {
+                this->_options.func    = ALE::Problem::Functions::nonlinear_3d;
+              } else {
+                this->_options.func    = ALE::Problem::Functions::constant;
+              }
+              this->_options.exactFunc = ALE::Problem::Functions::quadratic_3d;
+            }
+          } else {
+            this->_options.func      = ALE::Problem::Functions::linear_3d;
+            this->_options.exactFunc = ALE::Problem::Functions::cubic_3d;
+          }
+        } else {
+          SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim());
+        }
+        if (!structured()) {
+          int            numBC      = (this->_options.bcType == DIRICHLET) ? 1 : 0;
+          int            markers[1] = {1};
+          double       (*funcs[1])(const double *coords) = {this->_options.exactFunc};
+          PetscErrorCode ierr;
+
+          if (dim() == 1) {
+            ierr = CreateProblem_gen_0(this->_dm, "u", numBC, markers, funcs, this->_options.exactFunc);CHKERRQ(ierr);
+            this->_options.integrate = IntegrateDualBasis_gen_0;
+          } else if (dim() == 2) {
+            ierr = CreateProblem_gen_1(this->_dm, "u", numBC, markers, funcs, this->_options.exactFunc);CHKERRQ(ierr);
+            this->_options.integrate = IntegrateDualBasis_gen_1;
+          } else if (dim() == 3) {
+            ierr = CreateProblem_gen_2(this->_dm, "u", numBC, markers, funcs, this->_options.exactFunc);CHKERRQ(ierr);
+            this->_options.integrate = IntegrateDualBasis_gen_2;
+          } else {
+            SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim());
+          }
+          const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = this->_mesh->getRealSection("default");
+          s->setDebug(debug());
+          this->_mesh->setupField(s);
+          if (debug()) {s->view("Default field");}
+        }
+        PetscFunctionReturn(0);
+      };
     };
   }
 }
