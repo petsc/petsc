@@ -1640,7 +1640,7 @@ namespace ALE {
       if (this->depth() == 1) {
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
       } else {
-        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), rV, true);
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, rV, true);
 
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
       }
@@ -1655,7 +1655,7 @@ namespace ALE {
       if (this->depth() == 1) {
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
       } else {
-        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), rV, true);
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, rV, true);
 
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
       }
@@ -1669,7 +1669,7 @@ namespace ALE {
       if (this->depth() == 1) {
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
       } else {
-        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), uV, true);
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, uV, true);
 
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
       }
@@ -1682,7 +1682,7 @@ namespace ALE {
       if (this->depth() == 1) {
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
       } else {
-        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAllVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), uV, true);
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAllVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, uV, true);
 
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
       }
@@ -1695,7 +1695,7 @@ namespace ALE {
       if (this->depth() == 1) {
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
       } else {
-        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAddVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), uV, true);
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAddVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, uV, true);
 
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
       }
