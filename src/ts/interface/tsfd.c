@@ -78,7 +78,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t
 
    Output Parameters:
 +  J - Jacobian
-.  B - preconditioner, same as Jacobian
+.  B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 -  flag - matrix flag
 
    Notes:
@@ -108,9 +108,9 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
   ierr = VecDuplicate(xx1,&xx2);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)xx1,&comm);CHKERRQ(ierr);
-  ierr = MatAssembled(*J,&assembled);CHKERRQ(ierr);
+  ierr = MatAssembled(*B,&assembled);CHKERRQ(ierr);
   if (assembled) {
-    ierr = MatZeroEntries(*J);CHKERRQ(ierr);
+    ierr = MatZeroEntries(*B);CHKERRQ(ierr);
   }
 
   ierr = VecGetSize(xx1,&N);CHKERRQ(ierr);
@@ -149,19 +149,22 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
     ierr = VecGetArray(jj2,&y);CHKERRQ(ierr);
     for (j=start; j<end; j++) {
       if (PetscAbsScalar(y[j-start]) > amax) {
-        ierr = MatSetValues(*J,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = VecRestoreArray(jj2,&y);CHKERRQ(ierr);
   }
-  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  if (*B != *J) {
+    ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
   *flag =  DIFFERENT_NONZERO_PATTERN;
 
   ierr = VecDestroy(jj1);CHKERRQ(ierr);
   ierr = VecDestroy(jj2);CHKERRQ(ierr);
   ierr = VecDestroy(xx2);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 

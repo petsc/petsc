@@ -64,7 +64,7 @@ int main(int argc,char **argv)
   ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,(DM)da1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,(DM)da2);CHKERRQ(ierr);
-  ierr = DMCompositeSetCoupling(pack,FormCoupleLocations);CHKERRQ(ierr);
+  /*  ierr = DMCompositeSetCoupling(pack,FormCoupleLocations);CHKERRQ(ierr);*/
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,1,&user,&dmmg_comp);CHKERRQ(ierr);
