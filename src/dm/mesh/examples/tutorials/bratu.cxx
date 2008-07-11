@@ -52,58 +52,6 @@ PetscErrorCode DestroyExactSolution(ALE::Problem::Bratu::ExactSolType sol, Optio
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "Function_Structured_2d"
-PetscErrorCode Function_Structured_2d(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx)
-{
-  Options       *options = (Options *) ctx;
-  PetscScalar  (*func)(const double *) = options->func;
-  DA             coordDA;
-  Vec            coordinates;
-  DACoor2d     **coords;
-  PetscInt       i, j;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  for(j = info->ys; j < info->ys+info->ym; j++) {
-    for(i = info->xs; i < info->xs+info->xm; i++) {
-      f[j][i] = func((PetscReal *) &coords[j][i]);
-    }
-  }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "Function_Structured_3d"
-PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx)
-{
-  Options       *options = (Options *) ctx;
-  PetscScalar  (*func)(const double *) = options->func;
-  DA             coordDA;
-  Vec            coordinates;
-  DACoor3d    ***coords;
-  PetscInt       i, j, k;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  for(k = info->zs; k < info->zs+info->zm; k++) {
-    for(j = info->ys; j < info->ys+info->ym; j++) {
-      for(i = info->xs; i < info->xs+info->xm; i++) {
-        f[k][j][i] = func((PetscReal *) &coords[k][j][i]);
-      }
-    }
-  }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "Rhs_Structured_2d_FD"
 PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx)
 {
@@ -772,92 +720,6 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CreateExactSolution"
-PetscErrorCode CreateExactSolution(DM dm, Options *options)
-{
-  const int      dim = options->dim;
-  PetscTruth     flag;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (options->structured) {
-    DA  da = (DA) dm;
-    PetscScalar  (*func)(const double *) = options->func;
-    Vec X, U;
-
-    ierr = DAGetGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = DACreateGlobalVector(da, &options->exactSol.vec);CHKERRQ(ierr);
-    options->func = options->exactFunc;
-    U             = options->exactSol.vec;
-    if (dim == 2) {
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_2d, X, U, (void *) options);CHKERRQ(ierr);
-    } else if (dim == 3) {
-      ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_3d, X, U, (void *) options);CHKERRQ(ierr);
-    } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
-    }
-    ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
-    if (flag) {ierr = VecView(U, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
-    ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
-    if (flag) {ierr = VecView(U, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-    options->func = func;
-    ierr = DACreateGlobalVector(da, &options->error.vec);CHKERRQ(ierr);
-  } else {
-    Mesh mesh = (Mesh) dm;
-
-    Obj<PETSC_MESH_TYPE> m;
-    Obj<PETSC_MESH_TYPE::real_section_type> s;
-
-    ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-    ierr = MeshGetSectionReal(mesh, "exactSolution", &options->exactSol.section);CHKERRQ(ierr);
-    ierr = SectionRealGetSection(options->exactSol.section, s);CHKERRQ(ierr);
-    m->setupField(s);
-    const Obj<PETSC_MESH_TYPE::label_sequence>&     cells       = m->heightStratum(0);
-    const Obj<PETSC_MESH_TYPE::real_section_type>&  coordinates = m->getRealSection("coordinates");
-    const int                                 localDof    = m->sizeWithBC(s, *cells->begin());
-    PETSC_MESH_TYPE::real_section_type::value_type *values      = new PETSC_MESH_TYPE::real_section_type::value_type[localDof];
-    double                                   *v0          = new double[dim];
-    double                                   *J           = new double[dim*dim];
-    double                                    detJ;
-    ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(m->getSieve()->getMaxConeSize(), m->depth())+1, true);
-
-    for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-      ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*m->getSieve(), *c_iter, pV);
-      const PETSC_MESH_TYPE::point_type *oPoints = pV.getPoints();
-      const int                          oSize   = pV.getSize();
-      int                                v       = 0;
-
-      m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
-      for(int cl = 0; cl < oSize; ++cl) {
-        const int pointDim = s->getFiberDimension(oPoints[cl]);
-
-        if (pointDim) {
-          for(int d = 0; d < pointDim; ++d, ++v) {
-            values[v] = (*options->integrate)(v0, J, v, options->exactFunc);
-          }
-        }
-      }
-      m->updateAll(s, *c_iter, values);
-      pV.clear();
-    }
-    delete [] values;
-    delete [] v0;
-    delete [] J;
-    ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
-    if (flag) {s->view("Exact Solution");}
-    ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
-    if (flag) {ierr = ViewSection(mesh, options->exactSol.section, "exact_sol.vtk");CHKERRQ(ierr);}
-    ierr = MeshGetSectionReal(mesh, "error", &options->error.section);CHKERRQ(ierr);
-    ierr = SectionRealGetSection(options->error.section, s);CHKERRQ(ierr);
-    s->setChart(PETSC_MESH_TYPE::real_section_type::chart_type(*m->heightStratum(0)));
-    s->setFiberDimension(m->heightStratum(0), 1);
-    m->allocate(s);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "CheckError"
 PetscErrorCode CheckError(DM dm, ALE::Problem::Bratu::ExactSolType sol, Options *options)
 {
@@ -1065,7 +927,7 @@ int main(int argc, char *argv[])
       DM    dm;
 
       dm   = bratu->getDM();
-      ierr = CreateExactSolution(dm, options);CHKERRQ(ierr);
+      ierr = bratu->createExactSolution();CHKERRQ(ierr);
       ierr = CheckError(dm, options->exactSol, options);CHKERRQ(ierr);
       ierr = CheckResidual(dm, options->exactSol, options);CHKERRQ(ierr);
       ierr = CreateSolver(dm, &dmmg, options);CHKERRQ(ierr);

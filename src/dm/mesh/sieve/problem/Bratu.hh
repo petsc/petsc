@@ -8,7 +8,7 @@
 
 namespace ALE {
   namespace Problem {
-    namespace Functions {
+    namespace BratuFunctions {
       static PetscScalar lambda;
 
       PetscScalar zero(const double x[]) {
@@ -78,6 +78,56 @@ namespace ALE {
       PetscScalar cos_x(const double x[]) {
         return cos(2.0*PETSC_PI*x[0]);
       };
+      #undef __FUNCT__
+      #define __FUNCT__ "Function_Structured_2d"
+      PetscErrorCode Function_Structured_2d(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
+        Options       *options = (Options *) ctx;
+        PetscScalar  (*func)(const double *) = options->func;
+        DA             coordDA;
+        Vec            coordinates;
+        DACoor2d     **coords;
+        PetscInt       i, j;
+        PetscErrorCode ierr;
+
+        PetscFunctionBegin;
+        ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+        ierr = DAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+        ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        for(j = info->ys; j < info->ys+info->ym; j++) {
+          for(i = info->xs; i < info->xs+info->xm; i++) {
+            f[j][i] = func((PetscReal *) &coords[j][i]);
+          }
+        }
+        ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        PetscFunctionReturn(0); 
+      };
+
+#undef __FUNCT__
+#define __FUNCT__ "Function_Structured_3d"
+PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx)
+{
+  Options       *options = (Options *) ctx;
+  PetscScalar  (*func)(const double *) = options->func;
+  DA             coordDA;
+  Vec            coordinates;
+  DACoor3d    ***coords;
+  PetscInt       i, j, k;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+  ierr = DAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  for(k = info->zs; k < info->zs+info->zm; k++) {
+    for(j = info->ys; j < info->ys+info->ym; j++) {
+      for(i = info->xs; i < info->xs+info->xm; i++) {
+        f[k][j][i] = func((PetscReal *) &coords[k][j][i]);
+      }
+    }
+  }
+  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+}
     };
     class Bratu : ALE::ParallelObject {
     public:
@@ -173,7 +223,7 @@ namespace ALE {
           ierr = PetscOptionsReal("-lambda", "The parameter controlling nonlinearity", "bratu.cxx", options->lambda, &options->lambda, PETSC_NULL);CHKERRQ(ierr);
         ierr = PetscOptionsEnd();
 
-        ALE::Problem::Functions::lambda = options->lambda;
+        ALE::Problem::BratuFunctions::lambda = options->lambda;
         this->setDebug(options->debug);
         PetscFunctionReturn(0);
       };
@@ -287,35 +337,35 @@ namespace ALE {
         if (dim() == 2) {
           if (this->_options.bcType == DIRICHLET) {
             if (this->_options.lambda > 0.0) {
-              this->_options.func      = ALE::Problem::Functions::nonlinear_2d;
-              this->_options.exactFunc = ALE::Problem::Functions::quadratic_2d;
+              this->_options.func      = ALE::Problem::BratuFunctions::nonlinear_2d;
+              this->_options.exactFunc = ALE::Problem::BratuFunctions::quadratic_2d;
             } else if (this->_options.reentrantMesh) { 
-              this->_options.func      = ALE::Problem::Functions::singularity_2d;
-              this->_options.exactFunc = ALE::Problem::Functions::singularity_exact_2d;
+              this->_options.func      = ALE::Problem::BratuFunctions::singularity_2d;
+              this->_options.exactFunc = ALE::Problem::BratuFunctions::singularity_exact_2d;
             } else {
-              this->_options.func      = ALE::Problem::Functions::constant;
-              this->_options.exactFunc = ALE::Problem::Functions::quadratic_2d;
+              this->_options.func      = ALE::Problem::BratuFunctions::constant;
+              this->_options.exactFunc = ALE::Problem::BratuFunctions::quadratic_2d;
             }
           } else {
-            this->_options.func      = ALE::Problem::Functions::linear_2d;
-            this->_options.exactFunc = ALE::Problem::Functions::cubic_2d;
+            this->_options.func      = ALE::Problem::BratuFunctions::linear_2d;
+            this->_options.exactFunc = ALE::Problem::BratuFunctions::cubic_2d;
           }
         } else if (dim() == 3) {
           if (this->_options.bcType == DIRICHLET) {
             if (this->_options.reentrantMesh) {
-              this->_options.func      = ALE::Problem::Functions::singularity_3d;
-              this->_options.exactFunc = ALE::Problem::Functions::singularity_exact_3d;
+              this->_options.func      = ALE::Problem::BratuFunctions::singularity_3d;
+              this->_options.exactFunc = ALE::Problem::BratuFunctions::singularity_exact_3d;
             } else {
               if (this->_options.lambda > 0.0) {
-                this->_options.func    = ALE::Problem::Functions::nonlinear_3d;
+                this->_options.func    = ALE::Problem::BratuFunctions::nonlinear_3d;
               } else {
-                this->_options.func    = ALE::Problem::Functions::constant;
+                this->_options.func    = ALE::Problem::BratuFunctions::constant;
               }
-              this->_options.exactFunc = ALE::Problem::Functions::quadratic_3d;
+              this->_options.exactFunc = ALE::Problem::BratuFunctions::quadratic_3d;
             }
           } else {
-            this->_options.func      = ALE::Problem::Functions::linear_3d;
-            this->_options.exactFunc = ALE::Problem::Functions::cubic_3d;
+            this->_options.func      = ALE::Problem::BratuFunctions::linear_3d;
+            this->_options.exactFunc = ALE::Problem::BratuFunctions::cubic_3d;
           }
         } else {
           SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim());
@@ -342,6 +392,96 @@ namespace ALE {
           s->setDebug(debug());
           this->_mesh->setupField(s);
           if (debug()) {s->view("Default field");}
+        }
+        PetscFunctionReturn(0);
+      };
+    public:
+      #undef __FUNCT__
+      #define __FUNCT__ "CreateExactSolution"
+      PetscErrorCode createExactSolution() {
+        PetscTruth     flag;
+        PetscErrorCode ierr;
+
+        PetscFunctionBegin;
+        if (structured()) {
+          DA            da = (DA) this->_dm;
+          PetscScalar (*func)(const double *) = this->_options.func;
+          Vec           X, U;
+
+          ierr = DAGetGlobalVector(da, &X);CHKERRQ(ierr);
+          ierr = DACreateGlobalVector(da, &this->_options.exactSol.vec);CHKERRQ(ierr);
+          options->func = this->_options.exactFunc;
+          U             = this->_options.exactSol.vec;
+          if (dim() == 2) {
+            ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_2d, X, U, (void *) &this->_options);CHKERRQ(ierr);
+          } else if (dim() == 3) {
+            ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_3d, X, U, (void *) &this->_options);CHKERRQ(ierr);
+          } else {
+            SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim());
+          }
+          ierr = DARestoreGlobalVector(da, &X);CHKERRQ(ierr);
+          ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
+          if (flag) {ierr = VecView(U, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+          ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
+          if (flag) {ierr = VecView(U, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
+          this->_options.func = func;
+          ierr = DACreateGlobalVector(da, &this->_options.error.vec);CHKERRQ(ierr);
+        } else {
+          ::Mesh mesh = (::Mesh) this->_dm;
+
+          ierr = MeshGetSectionReal(mesh, "exactSolution", &options->exactSol.section);CHKERRQ(ierr);
+          const Obj<PETSC_MESH_TYPE::real_section_type>& s = this->_mesh->getRealSection("exactSolution");
+          this->_mesh->setupField(s);
+          const Obj<PETSC_MESH_TYPE::label_sequence>&     cells       = this->_mesh->heightStratum(0);
+          const Obj<PETSC_MESH_TYPE::real_section_type>&  coordinates = this->_mesh->getRealSection("coordinates");
+          const int                                       localDof    = this->_mesh->sizeWithBC(s, *cells->begin());
+          PETSC_MESH_TYPE::real_section_type::value_type *values      = new PETSC_MESH_TYPE::real_section_type::value_type[localDof];
+          double                                         *v0          = new double[dim()];
+          double                                         *J           = new double[dim()*dim()];
+          double                                          detJ;
+          ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(this->_mesh->getSieve()->getMaxConeSize(), this->_mesh->depth())+1, true);
+
+          for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+            ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*this->_mesh->getSieve(), *c_iter, pV);
+            const PETSC_MESH_TYPE::point_type *oPoints = pV.getPoints();
+            const int                          oSize   = pV.getSize();
+            int                                v       = 0;
+
+            m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+            for(int cl = 0; cl < oSize; ++cl) {
+              const int pointDim = s->getFiberDimension(oPoints[cl]);
+
+              if (pointDim) {
+                for(int d = 0; d < pointDim; ++d, ++v) {
+                  values[v] = (*this->_options.integrate)(v0, J, v, this->_options.exactFunc);
+                }
+              }
+            }
+            m->updateAll(s, *c_iter, values);
+            pV.clear();
+          }
+          delete [] values;
+          delete [] v0;
+          delete [] J;
+          ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
+          if (flag) {s->view("Exact Solution");}
+          ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
+          if (flag) {
+            PetscViewer viewer;
+
+            ierr = PetscViewerCreate(this->comm(), &viewer);CHKERRQ(ierr);
+            ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+            ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+            ierr = PetscViewerFileSetName(viewer, "exact_sol.vtk");CHKERRQ(ierr);
+            ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
+            ierr = SectionRealView(this->_options.exactSol.section, viewer);CHKERRQ(ierr);
+            ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+          }
+          ierr = MeshGetSectionReal(mesh, "error", &options->error.section);CHKERRQ(ierr);
+          const Obj<PETSC_MESH_TYPE::real_section_type>& e = this->_mesh->getRealSection("error");
+          e->setChart(PETSC_MESH_TYPE::real_section_type::chart_type(*this->_mesh->heightStratum(0)));
+          e->setFiberDimension(this->_mesh->heightStratum(0), 1);
+          this->_mesh->allocate(s);
         }
         PetscFunctionReturn(0);
       };

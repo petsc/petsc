@@ -47,6 +47,8 @@ public:
   void testBratuUnitSquare(void) {
     this->_problem->structured(false);
     this->_problem->createMesh();
+    this->_problem->createProblem();
+    this->_problem->createExactSolution();
     ///this->checkAnswer(answerStruct, "BratuUnitSquare");
   };
 };
