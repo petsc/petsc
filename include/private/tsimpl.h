@@ -23,6 +23,7 @@ struct _TSOps {
   PetscErrorCode (*rhsjacobian)(TS, PetscReal, Vec, Mat *, Mat *, MatStructure *, void *);
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*update)(TS, PetscReal, PetscReal *);
+  PetscErrorCode (*postupdate)(TS, PetscReal, PetscReal *);
   PetscErrorCode (*poststep)(TS);
   PetscErrorCode (*reform)(TS);
   PetscErrorCode (*reallocate)(TS);

@@ -1158,6 +1158,36 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetUpdate(TS ts, PetscErrorCode (*func)(TS, P
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "TSSetPostUpdate"
+/*@C
+  TSSetPostUpdate - Sets the general-purpose update function called
+  after every time step. 
+
+  Collective on TS
+
+  Input Parameters:
++ ts   - The TS context obtained from TSCreate()
+- func - The function
+
+  Calling sequence of func:
+. func (TS ts, double t, double *dt);
+
++ t   - The current time
+- dt  - The current time step
+
+  Level: intermediate
+
+.keywords: TS, update, timestep
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetPostUpdate(TS ts, PetscErrorCode (*func)(TS, PetscReal, PetscReal *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
+  ts->ops->postupdate = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSDefaultUpdate"
 /*@
   TSDefaultUpdate - The default update function which does nothing.

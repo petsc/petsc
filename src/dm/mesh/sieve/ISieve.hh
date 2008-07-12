@@ -553,13 +553,15 @@ namespace ALE {
       // This can't be const because UniformSection can't have a const restrict(), because of stupid map semantics
       Order&         order;
       int            size;
-      int            i;
+      int            i, p;
       // If false, constrained indices are returned as negative values. Otherwise, they are omitted
       bool           freeOnly;
       // If true, it allows space for constrained variables (even if the indices are not returned) Wierd
       bool           skipConstraints;
       value_type    *values;
       bool           allocated;
+      point_type    *points;
+      bool           allocatedPoints;
     protected:
       void getUnconstrainedIndices(const point_type& p, const int orientation) {
         if (i+section.getFiberDimension(p) > size) {throw ALE::Exception("Too many values for IndicesVisitor.");}
@@ -637,16 +639,44 @@ namespace ALE {
         }
       };
     public:
-      IndicesVisitor(const Section& s, Order& o, const int size) : section(s), order(o), size(size), i(0), freeOnly(false), skipConstraints(false) {
+      IndicesVisitor(const Section& s, Order& o, const int size, const bool unique = false) : section(s), order(o), size(size), i(0), p(0), freeOnly(false), skipConstraints(false) {
         this->values    = new value_type[this->size];
         this->allocated = true;
+        if (unique) {
+          this->points          = new point_type[this->size];
+          this->allocatedPoints = false;
+        } else {
+          this->points          = NULL;
+          this->allocatedPoints = false;
+        }
       };
-      IndicesVisitor(const Section& s, Order& o, const int size, value_type *values) : section(s), order(o), size(size), i(0), freeOnly(false), skipConstraints(false) {
+      IndicesVisitor(const Section& s, Order& o, const int size, value_type *values, const bool unique = false) : section(s), order(o), size(size), i(0), p(0), freeOnly(false), skipConstraints(false) {
         this->values    = values;
         this->allocated = false;
+        if (unique) {
+          this->points          = new point_type[this->size];
+          this->allocatedPoints = false;
+        } else {
+          this->points          = NULL;
+          this->allocatedPoints = false;
+        }
       };
-      ~IndicesVisitor() {if (this->allocated) {delete [] this->values;}};
+      ~IndicesVisitor() {
+        if (this->allocated) {delete [] this->values;}
+        if (this->allocatedPoints) {delete [] this->points;}
+      };
       void visitPoint(const point_type& point, const int orientation) {
+        if (p >= size) {
+          ostringstream msg;
+          msg << "Too many points (>" << size << ")for IndicesVisitor visitor";
+          throw ALE::Exception(msg.str().c_str());
+        }
+        if (points) {
+          int pp;
+          for(pp = 0; pp < p; ++pp) {if (points[pp] == point) break;}
+          if (pp != p) return;
+          points[p++] = point;
+        }
         const int cDim = this->section.getConstraintDimension(point);
 
         if (!cDim) {
@@ -668,6 +698,9 @@ namespace ALE {
           if (this->allocated) {delete [] this->values;}
           this->values = new value_type[this->size];
           this->allocated = true;
+          if (this->allocatedPoints) {delete [] this->points;}
+          this->points = new point_type[this->size];
+          this->allocatedPoints = true;
         }
       };
       void clear() {this->i = 0;};

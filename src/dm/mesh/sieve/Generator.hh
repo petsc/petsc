@@ -279,7 +279,6 @@ namespace ALE {
         mesh->stratify();
         ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
         ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coords);
-        mesh->view("Generated Mesh");
         const Obj<typename Mesh::label_type>& newMarkers = mesh->createLabel("marker");
 
         if (mesh->commRank() == 0) {

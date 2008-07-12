@@ -321,7 +321,7 @@ PetscErrorCode TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
   PetscFunctionReturn(0);
 }
 
-/* Set A = B = 1/dt*A - 0.5*A */
+/* Set B = 1/dt*Alh - 0.5*B */
 #undef __FUNCT__  
 #define __FUNCT__ "TSScaleShiftMatrices_CN"
 PetscErrorCode TSScaleShiftMatrices_CN(TS ts,Mat A,Mat B,MatStructure str)
@@ -331,20 +331,16 @@ PetscErrorCode TSScaleShiftMatrices_CN(TS ts,Mat A,Mat B,MatStructure str)
   PetscScalar    mdt = 1.0/ts->time_step;
 
   PetscFunctionBegin;
-  /* this function requires additional work! */
-  ierr = PetscTypeCompare((PetscObject)A,MATMFFD,&flg);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)B,MATMFFD,&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = MatScale(A,-0.5);CHKERRQ(ierr);
+    ierr = MatScale(B,-0.5);CHKERRQ(ierr);
     if (ts->Alhs){
-      ierr = MatAXPY(A,mdt,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* DIFFERENT_NONZERO_PATTERN? */
+      ierr = MatAXPY(B,mdt,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* DIFFERENT_NONZERO_PATTERN? */
     } else {
-      ierr = MatShift(A,mdt);CHKERRQ(ierr);
+      ierr = MatShift(B,mdt);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(PETSC_ERR_SUP,"Matrix type MATMFFD is not supported yet"); /* ref TSScaleShiftMatrices() */
-  }
-  if (B != A && str != SAME_PRECONDITIONER) {
-    SETERRQ(PETSC_ERR_SUP,"not supported yet");
   }
   PetscFunctionReturn(0);
 }
@@ -365,10 +361,10 @@ PetscErrorCode TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,vo
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
-  ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr); /* AA = J_{F} */
+  ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr); /* BB = J_{F} */
 
   /* shift and scale Jacobian */
-  ierr = TSScaleShiftMatrices_CN(ts,*AA,*BB,*str);CHKERRQ(ierr); /* Set AA = 1/dt*Alhs - 0.5*AA */
+  ierr = TSScaleShiftMatrices_CN(ts,*AA,*BB,*str);CHKERRQ(ierr); /* Set BB = 1/dt*Alhs - 0.5*BB */
   PetscFunctionReturn(0);
 }
 
