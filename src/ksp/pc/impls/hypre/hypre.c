@@ -561,13 +561,19 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   }
 
 
-
   ierr = PetscOptionsName("-pc_hypre_boomeramg_print_statistics","Print statistics","None",&flg);CHKERRQ(ierr);
   if (flg) {
     int level=3;
     jac->printstatistics = PETSC_TRUE;
     ierr = PetscOptionsInt("-pc_hypre_boomeramg_print_statistics","Print statistics","None",level,&level,PETSC_NULL);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetPrintLevel(jac->hsolver,level);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsName("-pc_hypre_boomeramg_print_debug","Print debug information","None",&flg);CHKERRQ(ierr);
+  if (flg) {
+    int level=3;
+    jac->printstatistics = PETSC_TRUE;
+    ierr = PetscOptionsInt("-pc_hypre_boomeramg_print_debug","Print debug information","None",level,&level,PETSC_NULL);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetDebugFlag(jac->hsolver,level);CHKERRQ(ierr);
   }
 
