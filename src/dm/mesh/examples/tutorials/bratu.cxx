@@ -13,7 +13,7 @@ static char help[] = "This example solves the Bratu problem.\n\n";
 #include "GMVFileBinary.hh" // USES GMVFileBinary
 
 using ALE::Obj;
-typedef ALE::Problem::Bratu::Options Options;
+typedef ALE::Problem::BratuOptions Options;
 
 #undef __FUNCT__
 #define __FUNCT__ "ViewSection"
@@ -38,7 +38,7 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
 
 #undef __FUNCT__
 #define __FUNCT__ "DestroyExactSolution"
-PetscErrorCode DestroyExactSolution(ALE::Problem::Bratu::ExactSolType sol, Options *options)
+PetscErrorCode DestroyExactSolution(ALE::Problem::ExactSolType sol, Options *options)
 {
   PetscErrorCode ierr;
 
@@ -721,7 +721,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
 
 #undef __FUNCT__
 #define __FUNCT__ "CheckError"
-PetscErrorCode CheckError(DM dm, ALE::Problem::Bratu::ExactSolType sol, Options *options)
+PetscErrorCode CheckError(DM dm, ALE::Problem::ExactSolType sol, Options *options)
 {
   MPI_Comm       comm;
   const char    *name;
@@ -752,7 +752,7 @@ PetscErrorCode CheckError(DM dm, ALE::Problem::Bratu::ExactSolType sol, Options 
 
 #undef __FUNCT__
 #define __FUNCT__ "CheckResidual"
-PetscErrorCode CheckResidual(DM dm, ALE::Problem::Bratu::ExactSolType sol, Options *options)
+PetscErrorCode CheckResidual(DM dm, ALE::Problem::ExactSolType sol, Options *options)
 {
   MPI_Comm       comm;
   const char    *name;
@@ -822,12 +822,12 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
       ierr = DASetUniformCoordinates((DA) (*dmmg)[l]->dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
     }
   } else {
-    if (options->operatorAssembly == ALE::Problem::Bratu::ASSEMBLY_FULL) {
+    if (options->operatorAssembly == ALE::Problem::ASSEMBLY_FULL) {
       ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured, 0, 0);CHKERRQ(ierr);
-    } else if (options->operatorAssembly == ALE::Problem::Bratu::ASSEMBLY_CALCULATED) {
+    } else if (options->operatorAssembly == ALE::Problem::ASSEMBLY_CALCULATED) {
       ierr = DMMGSetMatType(*dmmg, MATSHELL);CHKERRQ(ierr);
       ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured_Calculated, 0, 0);CHKERRQ(ierr);
-    } else if (options->operatorAssembly == ALE::Problem::Bratu::ASSEMBLY_STORED) {
+    } else if (options->operatorAssembly == ALE::Problem::ASSEMBLY_STORED) {
       ierr = DMMGSetMatType(*dmmg, MATSHELL);CHKERRQ(ierr);
       ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured_Stored, 0, 0);CHKERRQ(ierr);
     } else {
@@ -835,7 +835,7 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
     }
     ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
   }
-  if (options->bcType == ALE::Problem::Bratu::NEUMANN) {
+  if (options->bcType == ALE::Problem::NEUMANN) {
     // With Neumann conditions, we tell DMMG that constants are in the null space of the operator
     ierr = DMMGSetNullSpace(*dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
   }
@@ -866,7 +866,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
   if (flag && options->dim == 2) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
   if (options->structured) {
-    ALE::Problem::Bratu::ExactSolType sol;
+    ALE::Problem::ExactSolType sol;
 
     sol.vec = DMMGGetx(dmmg);
     if (DMMGGetLevels(dmmg) == 1) {ierr = CheckError(DMMGGetDM(dmmg), sol, options);CHKERRQ(ierr);}
@@ -922,7 +922,7 @@ int main(int argc, char *argv[])
 
     ierr = bratu->createMesh();CHKERRQ(ierr);
     ierr = bratu->createProblem();CHKERRQ(ierr);
-    if (options->run == ALE::Problem::Bratu::RUN_FULL) {
+    if (options->run == ALE::Problem::RUN_FULL) {
       DMMG *dmmg;
       DM    dm;
 

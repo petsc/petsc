@@ -8,6 +8,33 @@
 
 namespace ALE {
   namespace Problem {
+    typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
+    typedef enum {NEUMANN, DIRICHLET} BCType;
+    typedef enum {ASSEMBLY_FULL, ASSEMBLY_STORED, ASSEMBLY_CALCULATED} AssemblyType;
+    typedef union {SectionReal section; Vec vec;} ExactSolType;
+    typedef struct {
+      PetscInt      debug;                       // The debugging level
+      RunType       run;                         // The run type
+      PetscInt      dim;                         // The topological mesh dimension
+      PetscTruth    reentrantMesh;               // Generate a reentrant mesh?
+      PetscTruth    circularMesh;                // Generate a circular mesh?
+      PetscTruth    refineSingularity;           // Generate an a priori graded mesh for the poisson problem
+      PetscTruth    structured;                  // Use a structured mesh
+      PetscTruth    generateMesh;                // Generate the unstructure mesh
+      PetscTruth    interpolate;                 // Generate intermediate mesh elements
+      PetscReal     refinementLimit;             // The largest allowable cell volume
+      char          baseFilename[2048];          // The base filename for mesh files
+      char          partitioner[2048];           // The graph partitioner
+      PetscScalar (*func)(const double []);      // The function to project
+      BCType        bcType;                      // The type of boundary conditions
+      PetscScalar (*exactFunc)(const double []); // The exact solution function
+      ExactSolType  exactSol;                    // The discrete exact solution
+      ExactSolType  error;                       // The discrete cell-wise error
+      AssemblyType  operatorAssembly;            // The type of operator assembly 
+      double (*integrate)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
+      double        lambda;                      // The parameter controlling nonlinearity
+      double        reentrant_angle;              // The angle for the reentrant corner.
+    } BratuOptions;
     namespace BratuFunctions {
       static PetscScalar lambda;
 
@@ -81,7 +108,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "Function_Structured_2d"
       PetscErrorCode Function_Structured_2d(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx) {
-        Options       *options = (Options *) ctx;
+        BratuOptions  *options = (BratuOptions *) ctx;
         PetscScalar  (*func)(const double *) = options->func;
         DA             coordDA;
         Vec            coordinates;
@@ -101,65 +128,36 @@ namespace ALE {
         ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
         PetscFunctionReturn(0); 
       };
+      #undef __FUNCT__
+      #define __FUNCT__ "Function_Structured_3d"
+      PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx) {
+        BratuOptions  *options = (BratuOptions *) ctx;
+        PetscScalar  (*func)(const double *) = options->func;
+        DA             coordDA;
+        Vec            coordinates;
+        DACoor3d    ***coords;
+        PetscInt       i, j, k;
+        PetscErrorCode ierr;
 
-#undef __FUNCT__
-#define __FUNCT__ "Function_Structured_3d"
-PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx)
-{
-  Options       *options = (Options *) ctx;
-  PetscScalar  (*func)(const double *) = options->func;
-  DA             coordDA;
-  Vec            coordinates;
-  DACoor3d    ***coords;
-  PetscInt       i, j, k;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  for(k = info->zs; k < info->zs+info->zm; k++) {
-    for(j = info->ys; j < info->ys+info->ym; j++) {
-      for(i = info->xs; i < info->xs+info->xm; i++) {
-        f[k][j][i] = func((PetscReal *) &coords[k][j][i]);
-      }
-    }
-  }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-}
+        PetscFunctionBegin;
+        ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
+        ierr = DAGetCoordinates(info->da, &coordinates);CHKERRQ(ierr);
+        ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        for(k = info->zs; k < info->zs+info->zm; k++) {
+          for(j = info->ys; j < info->ys+info->ym; j++) {
+            for(i = info->xs; i < info->xs+info->xm; i++) {
+              f[k][j][i] = func((PetscReal *) &coords[k][j][i]);
+            }
+          }
+        }
+        ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
+        PetscFunctionReturn(0); 
+      };
     };
     class Bratu : ALE::ParallelObject {
     public:
-      typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
-      typedef enum {NEUMANN, DIRICHLET} BCType;
-      typedef enum {ASSEMBLY_FULL, ASSEMBLY_STORED, ASSEMBLY_CALCULATED} AssemblyType;
-      typedef union {SectionReal section; Vec vec;} ExactSolType;
-      typedef struct {
-        PetscInt      debug;                       // The debugging level
-        RunType       run;                         // The run type
-        PetscInt      dim;                         // The topological mesh dimension
-        PetscTruth    reentrantMesh;               // Generate a reentrant mesh?
-        PetscTruth    circularMesh;                // Generate a circular mesh?
-        PetscTruth    refineSingularity;           // Generate an a priori graded mesh for the poisson problem
-        PetscTruth    structured;                  // Use a structured mesh
-        PetscTruth    generateMesh;                // Generate the unstructure mesh
-        PetscTruth    interpolate;                 // Generate intermediate mesh elements
-        PetscReal     refinementLimit;             // The largest allowable cell volume
-        char          baseFilename[2048];          // The base filename for mesh files
-        char          partitioner[2048];           // The graph partitioner
-        PetscScalar (*func)(const double []);      // The function to project
-        BCType        bcType;                      // The type of boundary conditions
-        PetscScalar (*exactFunc)(const double []); // The exact solution function
-        ExactSolType  exactSol;                    // The discrete exact solution
-        ExactSolType  error;                       // The discrete cell-wise error
-        AssemblyType  operatorAssembly;            // The type of operator assembly 
-        double (*integrate)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
-        double        lambda;                      // The parameter controlling nonlinearity
-        double        reentrant_angle;              // The angle for the reentrant corner.
-      } Options;
     protected:
-      Options              _options;
+      BratuOptions         _options;
       DM                   _dm;
       Obj<PETSC_MESH_TYPE> _mesh;
     public:
@@ -173,7 +171,7 @@ PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], Pets
     public:
       #undef __FUNCT__
       #define __FUNCT__ "BratuProcessOptions"
-      PetscErrorCode processOptions(MPI_Comm comm, Options *options) {
+      PetscErrorCode processOptions(MPI_Comm comm, BratuOptions *options) {
         const char    *runTypes[3] = {"full", "test", "mesh"};
         const char    *bcTypes[2]  = {"neumann", "dirichlet"};
         const char    *asTypes[4]  = {"full", "stored", "calculated"};
@@ -228,7 +226,7 @@ PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], Pets
         PetscFunctionReturn(0);
       };
     public: // Accessors
-      Options *getOptions() {return &this->_options;};
+      BratuOptions *getOptions() {return &this->_options;};
       int  dim() const {return this->_options.dim;};
       bool structured() const {return this->_options.structured;};
       void structured(const bool s) {this->_options.structured = (PetscTruth) s;};
@@ -410,12 +408,12 @@ PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], Pets
 
           ierr = DAGetGlobalVector(da, &X);CHKERRQ(ierr);
           ierr = DACreateGlobalVector(da, &this->_options.exactSol.vec);CHKERRQ(ierr);
-          options->func = this->_options.exactFunc;
-          U             = this->_options.exactSol.vec;
+          this->_options.func = this->_options.exactFunc;
+          U                   = this->_options.exactSol.vec;
           if (dim() == 2) {
-            ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_2d, X, U, (void *) &this->_options);CHKERRQ(ierr);
+            ierr = DAFormFunctionLocal(da, (DALocalFunction1) ALE::Problem::BratuFunctions::Function_Structured_2d, X, U, (void *) &this->_options);CHKERRQ(ierr);
           } else if (dim() == 3) {
-            ierr = DAFormFunctionLocal(da, (DALocalFunction1) Function_Structured_3d, X, U, (void *) &this->_options);CHKERRQ(ierr);
+            ierr = DAFormFunctionLocal(da, (DALocalFunction1) ALE::Problem::BratuFunctions::Function_Structured_3d, X, U, (void *) &this->_options);CHKERRQ(ierr);
           } else {
             SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim());
           }
@@ -429,7 +427,7 @@ PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], Pets
         } else {
           ::Mesh mesh = (::Mesh) this->_dm;
 
-          ierr = MeshGetSectionReal(mesh, "exactSolution", &options->exactSol.section);CHKERRQ(ierr);
+          ierr = MeshGetSectionReal(mesh, "exactSolution", &this->_options.exactSol.section);CHKERRQ(ierr);
           const Obj<PETSC_MESH_TYPE::real_section_type>& s = this->_mesh->getRealSection("exactSolution");
           this->_mesh->setupField(s);
           const Obj<PETSC_MESH_TYPE::label_sequence>&     cells       = this->_mesh->heightStratum(0);
@@ -447,7 +445,7 @@ PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], Pets
             const int                          oSize   = pV.getSize();
             int                                v       = 0;
 
-            m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+            this->_mesh->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
             for(int cl = 0; cl < oSize; ++cl) {
               const int pointDim = s->getFiberDimension(oPoints[cl]);
 
@@ -457,7 +455,7 @@ PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], Pets
                 }
               }
             }
-            m->updateAll(s, *c_iter, values);
+            this->_mesh->updateAll(s, *c_iter, values);
             pV.clear();
           }
           delete [] values;
@@ -477,11 +475,11 @@ PetscErrorCode Function_Structured_3d(DALocalInfo *info, PetscScalar **x[], Pets
             ierr = SectionRealView(this->_options.exactSol.section, viewer);CHKERRQ(ierr);
             ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
           }
-          ierr = MeshGetSectionReal(mesh, "error", &options->error.section);CHKERRQ(ierr);
+          ierr = MeshGetSectionReal(mesh, "error", &this->_options.error.section);CHKERRQ(ierr);
           const Obj<PETSC_MESH_TYPE::real_section_type>& e = this->_mesh->getRealSection("error");
           e->setChart(PETSC_MESH_TYPE::real_section_type::chart_type(*this->_mesh->heightStratum(0)));
           e->setFiberDimension(this->_mesh->heightStratum(0), 1);
-          this->_mesh->allocate(s);
+          this->_mesh->allocate(e);
         }
         PetscFunctionReturn(0);
       };
