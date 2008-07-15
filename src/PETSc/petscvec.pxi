@@ -306,20 +306,30 @@ cdef object vec_getitem(Vec self, object i):
 
 
 cdef object vec_setitem(Vec self, object i, object v):
-    cdef PetscInt n=0
+    cdef PetscInt n=0, ns=0, ne=0
+    cdef ndarray ai=None, av=None
+    cdef PetscScalar *vv=NULL
     if i is Ellipsis:
         if typecheck(v, Vec):
             CHKERR( VecCopy((<Vec>v).vec, self.vec) )
-        elif hasattr(v, '__iter__'):
-            CHKERR( VecGetSize(self.vec, &n) )
-            self.setValues(arange(0, n, 1), v)
+            return
         else:
-            CHKERR( VecSet(self.vec, v) )
-        return
-    if typecheck(i, slice):
+            av = iarray_s(v, NULL, &vv)
+            if av.cndim == 0:
+                CHKERR( VecSet(self.vec, vv[0]) )
+                return
+            else:
+                CHKERR( VecGetOwnershipRange(self.vec, &ns, &ne) )
+                ai = arange(ns, ne, 1)
+    elif typecheck(i, slice):
         CHKERR( VecGetSize(self.vec, &n) )
         start, stop, stride = i.indices(n)
-        i = arange(start, stop, stride)
-    self.setValues(i, v)
+        ai = arange(start, stop, stride)
+        av = iarray_s(v, NULL, NULL)
+    else:
+        ai = iarray_i(i, NULL, NULL)
+        av = iarray_s(v, NULL, NULL)
+    vecsetvalues(self.vec, ai, av, None, 0, 0)
+    return
 
 # --------------------------------------------------------------------
