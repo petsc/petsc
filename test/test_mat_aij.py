@@ -165,6 +165,7 @@ class TestMatAnyAIJBase(object):
         else:
             setvalues = self.A.setValuesBlockedCSR
         setvalues(row, ai, aj, av)
+        setvalues(None, ai, aj, av)
         return ai, aj, av
 
     def _chk_bs(self, A, bs):

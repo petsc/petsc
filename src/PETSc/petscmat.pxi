@@ -450,9 +450,9 @@ cdef inline int matsetvalues(PetscMat A,
                              object oi, object oj, object ov,
                              object oaddv, int blocked, int local) except -1:
     # block size
-    cdef PetscInt b=1
-    if blocked: CHKERR( MatGetBlockSize(A, &b) )
-    if b < 1: b = 1
+    cdef PetscInt bs=1
+    if blocked: CHKERR( MatGetBlockSize(A, &bs) )
+    if bs < 1: bs = 1
     # rows, cols, and values
     cdef PetscInt ni=0, *i=NULL
     cdef PetscInt nj=0, *j=NULL
@@ -461,7 +461,7 @@ cdef inline int matsetvalues(PetscMat A,
     cdef object ai = iarray_i(oi, &ni, &i)
     cdef object aj = iarray_i(oj, &nj, &j)
     cdef object av = iarray_s(ov, &nv, &v)
-    if ni*nj*b*b != nv: raise ValueError(
+    if ni*nj*bs*bs != nv: raise ValueError(
         "incompatible array sizes: " \
         "ni=%d, nj=%d, nv=%d" % (ni, nj, nv) )
     # insert mode
@@ -480,27 +480,38 @@ cdef inline int matsetvaluescsr(PetscMat A, object om,
                                 object oi, object oj, object ov,
                                 object oaddv, int blocked, int local) except -1:
     # block size
-    cdef PetscInt b=1
-    if blocked: CHKERR( MatGetBlockSize(A, &b) )
-    if b < 1: b = 1
-    # rows, cols, and values
-    cdef PetscInt nm=0, *m=NULL
+    cdef PetscInt bs=1, bs2=1
+    if blocked: CHKERR( MatGetBlockSize(A, &bs) )
+    if bs < 1: bs = 1
+    bs2 = bs*bs
+    # column pointers, column indices, and values
     cdef PetscInt ni=0, *i=NULL
     cdef PetscInt nj=0, *j=NULL
     cdef PetscInt nv=0
     cdef PetscScalar *v=NULL
-    cdef object am = iarray_i(om, &nm, &m)
     cdef object ai = iarray_i(oi, &ni, &i)
     cdef object aj = iarray_i(oj, &nj, &j)
     cdef object av = iarray_s(ov, &nv, &v)
+    # row indices
+    cdef object am = None
+    cdef PetscInt nm=0, *m=NULL
+    cdef PetscInt rs=0, re=ni-1
+    if om is not None:
+        am = iarray_i(om, &nm, &m)
+    else:
+        if not local:
+            CHKERR( MatGetOwnershipRange(A, &rs, &re) )
+            rs /= bs; re /= bs
+        nm = re - rs
+    # check various sizes
     if (ni-1 != nm):
         raise ValueError("size(I) is %d, expected %d" % (ni, nm+1))
     if (i[0] != 0):
         raise ValueError("I[0] is %d, expected %d"    % (i[0], 0))
     if (i[ni-1] != nj):
         raise ValueError("size(J) is %d, expected %d" % ( nj, i[ni-1]))
-    if (nj*b*b  != nv):
-        raise ValueError("size(V) is %d, expected %d" % ( nv, nj*b*b))
+    if (nj*bs2  != nv):
+        raise ValueError("size(V) is %d, expected %d" % ( nv, nj*bs2))
     # insert mode
     cdef PetscInsertMode addv = insertmode(oaddv)
     # MatSetValuesXXX function
@@ -510,24 +521,20 @@ cdef inline int matsetvaluescsr(PetscMat A, object om,
     elif local:           setvalues = MatSetValuesLocal
     else:                 setvalues = MatSetValues
     # actual call
-    ### cdef PetscInt k=0, irow=0, ncols=0
-    ### for 0 <= k < nm:
-    ###     irow = m[k]; ncols = i[k+1] - i[k];
-    ###     CHKERR( setvalues(A, 1, &m[k], ncols, j + i[k], v + i[k]*(b*b), addv) )
-    cdef PetscInt k=0, l=0, nn=0, bs2=b*b
-    cdef PetscInt    *icols=NULL
-    cdef PetscScalar *svals=NULL
-    if blocked:
-        for 0 <= k < nm:
-            nn = i[k+1] - i[k]
-            icols = j + i[k]
-            svals = v + i[k]*bs2
-            for 0 <= l < nn:
-                CHKERR( setvalues(A, 1, &m[k], 1, &icols[l], &svals[l*bs2], addv) )
-    else:
-        for 0 <= k < nm:
-            CHKERR( setvalues(A, 1, &m[k], i[k+1]-i[k], j + i[k], v + i[k], addv) )
-
+    cdef PetscInt k=0, l=0
+    cdef PetscInt irow=0, ncol=0, *icol=NULL
+    cdef PetscScalar *sval=NULL
+    for 0 <= k < nm:
+        irow = m[k] if m!=NULL else rs+k
+        ncol = i[k+1] - i[k]
+        icol = j + i[k]
+        if blocked:
+            sval = v + i[k]*bs2
+            for 0 <= l < ncol:
+                CHKERR( setvalues(A, 1, &irow, 1, &icol[l], &sval[l*bs2], addv) )
+        else:
+            sval = v + i[k]
+            CHKERR( setvalues(A, 1, &irow, ncol, icol, sval, addv) )
     return 0
 
 # --------------------------------------------------------------------
