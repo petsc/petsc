@@ -15,11 +15,7 @@
 
 static char help[] = "Solve the convection-diffusion equation. \n\n";
 
-#include "petscsys.h"
 #include "petscts.h"
-
-extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void *);
-extern PetscErrorCode Initial(Vec,void *);
 
 typedef struct 
 {
@@ -31,9 +27,8 @@ typedef struct
   PetscReal     epsilon; /* the diffusion coefficient    */
 } Data;
 
-/* two temporal functions */
-extern PetscErrorCode FormJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void *);
+extern PetscErrorCode Initial(Vec,void *);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 extern PetscErrorCode PostStep(TS);
@@ -56,6 +51,9 @@ int main(int argc,char **argv)
   Data		 data;
   PetscInt 	 mn;
   PetscTruth     flg;
+  ISColoring     iscoloring;
+  MatFDColoring  matfdcoloring = 0;
+  PetscTruth     fd_jacobian_coloring = PETSC_FALSE;
 #if defined(PETSC_HAVE_SUNDIALS)
   PC		 pc;
   PetscViewer    viewer;
@@ -96,15 +94,41 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(J);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(J,5,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(J,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = PetscOptionsHasName(PETSC_NULL,"-ts_fd",&flg);CHKERRQ(ierr);
-  if (flg){
-    /* Use finite differences (slow) to compute Jacobian */
-    /* ierr = TSDefaultComputeJacobian(ts,0.0,global,&J,&J,&J_structure,&data);CHKERRQ(ierr); */
-    ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobian,&data);CHKERRQ(ierr);
-  } else {
+  if (!flg){
     /* ierr = RHSJacobian(ts,0.0,global,&J,&J,&J_structure,&data);CHKERRQ(ierr); */
     ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&data);CHKERRQ(ierr);
-  }
+  } else {
+    ierr = PetscOptionsHasName(PETSC_NULL,"-fd_color",&fd_jacobian_coloring);CHKERRQ(ierr);
+    if (fd_jacobian_coloring){ /* Use finite differences with coloring */
+      /* Get data structure of J */
+      PetscTruth pc_diagonal;
+      ierr = PetscOptionsHasName(PETSC_NULL,"-pc_diagoanl",&pc_diagonal);CHKERRQ(ierr);
+      if (pc_diagonal){ /* the preconditioner of J is a diagonal matrix */
+        PetscInt rstart,rend,i;
+        PetscScalar  zero=0.0;
+        ierr = MatGetOwnershipRange(J,&rstart,&rend);CHKERRQ(ierr);
+        for (i=rstart; i<rend; i++){
+          ierr = MatSetValues(J,1,&i,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
+        }
+        ierr = MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+        ierr = MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      } else { /* the preconditioner of J has same data structure as J */
+        ierr = TSDefaultComputeJacobian(ts,0.0,global,&J,&J,&J_structure,&data);CHKERRQ(ierr); 
+      }
+      
+      /* create coloring context */
+      ierr = MatGetColoring(J,MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))RHSFunction,&data);CHKERRQ(ierr);
+      ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+      ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
+      ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+    } else { /* Use finite differences (slow) */ 
+      ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobian,&data);CHKERRQ(ierr);
+    }
+  } 
 
   /* Use SUNDIALS */
 #if defined(PETSC_HAVE_SUNDIALS)
@@ -168,7 +192,8 @@ int main(int argc,char **argv)
   ierr = TSDestroy(ts);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
-  if (J) {ierr= MatDestroy(J);CHKERRQ(ierr);}
+  ierr= MatDestroy(J);CHKERRQ(ierr);
+  if (fd_jacobian_coloring){ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);}
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
@@ -262,12 +287,101 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "RHSJacobian"
+PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
+{
+  Data           *data = (Data*)ptr;
+  Mat            A = *AA;
+  PetscScalar    v[5];
+  PetscInt       idx[5],i,j,row;
+  PetscErrorCode ierr;
+  PetscInt       m,n,mn;
+  PetscReal      dx,dy,a,epsilon,xc,xl,xr,yl,yr;
+
+  PetscFunctionBegin;
+  m = data->m;
+  n = data->n;
+  mn = m*n;
+  dx = data->dx;
+  dy = data->dy;
+  a = data->a;
+  epsilon = data->epsilon;
+
+  xc = -2.0*epsilon*(1.0/(dx*dx)+1.0/(dy*dy));
+  xl = 0.5*a/dx+epsilon/(dx*dx);
+  xr = -0.5*a/dx+epsilon/(dx*dx);
+  yl = 0.5*a/dy+epsilon/(dy*dy);
+  yr = -0.5*a/dy+epsilon/(dy*dy);
+
+  row=0;
+  v[0] = xc; v[1]=xr; v[2]=yr;
+  idx[0]=0; idx[1]=2; idx[2]=m;
+  ierr = MatSetValues(A,1,&row,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+
+  row=m-1;
+  v[0]=2.0*xl; v[1]=xc; v[2]=yr;
+  idx[0]=m-2; idx[1]=m-1; idx[2]=m-1+m;
+  ierr = MatSetValues(A,1,&row,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+
+  for (i=1; i<m-1; i++) {
+    row=i;
+    v[0]=xl; v[1]=xc; v[2]=xr; v[3]=yr;
+    idx[0]=i-1; idx[1]=i; idx[2]=i+1; idx[3]=i+m;
+    ierr = MatSetValues(A,1,&row,4,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+  }
+
+  for (j=1; j<n-1; j++) {
+    row=j*m;
+    v[0]=xc; v[1]=xr; v[2]=yl; v[3]=yr;
+    idx[0]=j*m; idx[1]=j*m; idx[2]=j*m-m; idx[3]=j*m+m; 
+    ierr = MatSetValues(A,1,&row,4,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+  
+    row=j*m+m-1;
+    v[0]=xc; v[1]=2.0*xl; v[2]=yl; v[3]=yr;
+    idx[0]=j*m+m-1; idx[1]=j*m+m-1-1; idx[2]=j*m+m-1-m; idx[3]=j*m+m-1+m;
+    ierr = MatSetValues(A,1,&row,4,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+
+    for(i=1; i<m-1; i++) {
+      row=j*m+i;
+      v[0]=xc; v[1]=xl; v[2]=xr; v[3]=yl; v[4]=yr; 
+      idx[0]=j*m+i; idx[1]=j*m+i-1; idx[2]=j*m+i+1; idx[3]=j*m+i-m;
+      idx[4]=j*m+i+m;
+      ierr = MatSetValues(A,1,&row,5,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+
+  row=mn-m;
+  v[0] = xc; v[1]=xr; v[2]=2.0*yl;
+  idx[0]=mn-m; idx[1]=mn-m+1; idx[2]=mn-m-m;
+  ierr = MatSetValues(A,1,&row,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+ 
+  row=mn-1;
+  v[0] = xc; v[1]=2.0*xl; v[2]=2.0*yl;
+  idx[0]=mn-1; idx[1]=mn-2; idx[2]=mn-1-m;
+  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+
+  for (i=1; i<m-1; i++) {
+    row=mn-m+i;
+    v[0]=xl; v[1]=xc; v[2]=xr; v[3]=2.0*yl;
+    idx[0]=mn-m+i-1; idx[1]=mn-m+i; idx[2]=mn-m+i+1; idx[3]=mn-m+i-m;
+    ierr = MatSetValues(A,1,&row,4,idx,v,INSERT_VALUES);CHKERRQ(ierr);
+  }
+
+  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  /* *flag = SAME_NONZERO_PATTERN; */
+  *flag = DIFFERENT_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
+
 /* globalout = -a*(u_x+u_y) + epsilon*(u_xx+u_yy) */
 #undef __FUNCT__
-#define __FUNCT__ "FormFunction"
-PetscErrorCode FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
-{ 
-  Data           *data = (Data*)ptr;
+#define __FUNCT__ "RHSFunction"
+PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
+{
+  Data           *data = (Data*)ctx;
   PetscInt       m,n,mn;
   PetscReal      dx,dy;
   PetscReal      xc,xl,xr,yl,yr;
@@ -360,165 +474,6 @@ PetscErrorCode FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
 
   ierr = PetscFree(idx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}  
-
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobian"
-PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
-{  
-  Data           *data = (Data*)ptr;
-  Mat            A = *AA;
-  PetscScalar    v[1],one = 1.0;
-  PetscInt       idx[1],i,j,row;
-  PetscErrorCode ierr;
-  PetscInt       m,n,mn;
-
-  PetscFunctionBegin;
-  m = data->m;
-  n = data->n;
-  mn = (data->m)*(data->n);
-  
-  for(i=0; i<mn; i++) {
-    idx[0] = i;
-    v[0] = one;
-    ierr = MatSetValues(A,1,&i,1,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-  }
-
-  for(i=0; i<mn-m; i++) {
-    idx[0] = i+m;
-    v[0]= one;
-    ierr = MatSetValues(A,1,&i,1,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-  }
-
-  for(i=m; i<mn; i++) {
-    idx[0] = i-m;
-    v[0] = one;
-    ierr = MatSetValues(A,1,&i,1,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-  }
-
-  for(j=0; j<n; j++) {
-    for(i=0; i<m-1; i++) {
-      row = j*m+i;
-      idx[0] = j*m+i+1;
-      v[0] = one;
-      ierr = MatSetValues(A,1,&row,1,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-    }
-  }
-
-  for(j=0; j<n; j++) {
-    for(i=1; i<m; i++) {
-      row = j*m+i;
-      idx[0] = j*m+i-1;
-      v[0] = one;
-      ierr = MatSetValues(A,1,&row,1,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-    }
-  }          
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  *flag = SAME_NONZERO_PATTERN;
-  PetscFunctionReturn(0);
-} 
-
-#undef __FUNCT__
-#define __FUNCT__ "RHSJacobian"
-PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure *flag,void *ptr)
-{
-  Data           *data = (Data*)ptr;
-  Mat            A = *AA;
-  PetscScalar    v[5];
-  PetscInt       idx[5],i,j,row;
-  PetscErrorCode ierr;
-  PetscInt       m,n,mn;
-  PetscReal      dx,dy,a,epsilon,xc,xl,xr,yl,yr;
-
-  PetscFunctionBegin;
-  m = data->m;
-  n = data->n;
-  mn = m*n;
-  dx = data->dx;
-  dy = data->dy;
-  a = data->a;
-  epsilon = data->epsilon;
-
-  xc = -2.0*epsilon*(1.0/(dx*dx)+1.0/(dy*dy));
-  xl = 0.5*a/dx+epsilon/(dx*dx);
-  xr = -0.5*a/dx+epsilon/(dx*dx);
-  yl = 0.5*a/dy+epsilon/(dy*dy);
-  yr = -0.5*a/dy+epsilon/(dy*dy);
-
-  row=0;
-  v[0] = xc; v[1]=xr; v[2]=yr;
-  idx[0]=0; idx[1]=2; idx[2]=m;
-  ierr = MatSetValues(A,1,&row,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-
-  row=m-1;
-  v[0]=2.0*xl; v[1]=xc; v[2]=yr;
-  idx[0]=m-2; idx[1]=m-1; idx[2]=m-1+m;
-  ierr = MatSetValues(A,1,&row,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-
-  for (i=1; i<m-1; i++) {
-    row=i;
-    v[0]=xl; v[1]=xc; v[2]=xr; v[3]=yr;
-    idx[0]=i-1; idx[1]=i; idx[2]=i+1; idx[3]=i+m;
-    ierr = MatSetValues(A,1,&row,4,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-  }
-
-  for (j=1; j<n-1; j++) {
-    row=j*m;
-    v[0]=xc; v[1]=xr; v[2]=yl; v[3]=yr;
-    idx[0]=j*m; idx[1]=j*m; idx[2]=j*m-m; idx[3]=j*m+m; 
-    ierr = MatSetValues(A,1,&row,4,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-  
-    row=j*m+m-1;
-    v[0]=xc; v[1]=2.0*xl; v[2]=yl; v[3]=yr;
-    idx[0]=j*m+m-1; idx[1]=j*m+m-1-1; idx[2]=j*m+m-1-m; idx[3]=j*m+m-1+m;
-    ierr = MatSetValues(A,1,&row,4,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-
-    for(i=1; i<m-1; i++) {
-      row=j*m+i;
-      v[0]=xc; v[1]=xl; v[2]=xr; v[3]=yl; v[4]=yr; 
-      idx[0]=j*m+i; idx[1]=j*m+i-1; idx[2]=j*m+i+1; idx[3]=j*m+i-m;
-      idx[4]=j*m+i+m;
-      ierr = MatSetValues(A,1,&row,5,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-    }
-  }
-
-  row=mn-m;
-  v[0] = xc; v[1]=xr; v[2]=2.0*yl;
-  idx[0]=mn-m; idx[1]=mn-m+1; idx[2]=mn-m-m;
-  ierr = MatSetValues(A,1,&row,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
- 
-  row=mn-1;
-  v[0] = xc; v[1]=2.0*xl; v[2]=2.0*yl;
-  idx[0]=mn-1; idx[1]=mn-2; idx[2]=mn-1-m;
-  ierr = MatSetValues(A,1,&i,3,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-
-  for (i=1; i<m-1; i++) {
-    row=mn-m+i;
-    v[0]=xl; v[1]=xc; v[2]=xr; v[3]=2.0*yl;
-    idx[0]=mn-m+i-1; idx[1]=mn-m+i; idx[2]=mn-m+i+1; idx[3]=mn-m+i-m;
-    ierr = MatSetValues(A,1,&row,4,idx,v,INSERT_VALUES);CHKERRQ(ierr);
-  }
-
-
-  ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-  /* *flag = SAME_NONZERO_PATTERN; */
-  *flag = DIFFERENT_NONZERO_PATTERN;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "RHSFunction"
-PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
-{
-  PetscErrorCode ierr;
-  SNES           snes = PETSC_NULL;
-
-  PetscFunctionBegin;
-  ierr = FormFunction(snes,globalin,globalout,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
