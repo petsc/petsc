@@ -40,7 +40,7 @@ struct _p_DMComposite {
   struct DMCompositeLink *next;
 
   PetscErrorCode (*FormCoupleLocations)(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
-
+  void                   *ctx;                 /* place for user to set information they may need in FormCoupleLocation */
 };
 
 #undef __FUNCT__  
@@ -58,9 +58,13 @@ struct _p_DMComposite {
 
     Level: advanced
 
+    Notes: See DMCompositeSetContext() and DMCompositeGetContext() for how to get user information into
+        this routine
+
 .seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeScatter(),
          DMCompositeGather(), DMCompositeCreateGlobalVector(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess()
-         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries()
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(), DMCompositeSetContext(),
+         DMCompositeGetContext()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetCoupling(DMComposite dmcomposite,PetscErrorCode (*FormCoupleLocations)(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt))
@@ -70,6 +74,66 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetCoupling(DMComposite dmcomposite,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeSetContext"
+/*@
+    DMCompositeSetContext - Allows user to stash data they may need within the form coupling routine they 
+      set with DMCompositeSetCoupling()
+
+
+    Not Collective
+
+    Input Parameter:
++   dmcomposite - the composite object
+-   ctx - the user supplied context
+
+    Level: advanced
+
+    Notes: Use DMCompositeGetContext() to retrieve the context when needed.
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeScatter(),
+         DMCompositeGather(), DMCompositeCreateGlobalVector(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess()
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(), DMCompositeSetCoupling(),
+         DMCompositeGetContext()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetContext(DMComposite dmcomposite,void *ctx)
+{
+  PetscFunctionBegin;
+  dmcomposite->ctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeGetContext"
+/*@
+    DMCompositeGetContext - Access the context set with DMCompositeSetContext()
+
+
+    Not Collective
+
+    Input Parameter:
+.   dmcomposite - the composite object
+
+    Output Parameter:
+.    ctx - the user supplied context
+
+    Level: advanced
+
+    Notes: Use DMCompositeGetContext() to retrieve the context when needed.
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeScatter(),
+         DMCompositeGather(), DMCompositeCreateGlobalVector(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess()
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(), DMCompositeSetCoupling(),
+         DMCompositeGetContext()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetContext(DMComposite dmcomposite,void **ctx)
+{
+  PetscFunctionBegin;
+  *ctx = dmcomposite->ctx;
+  PetscFunctionReturn(0);
+}
 
 
 #undef __FUNCT__  

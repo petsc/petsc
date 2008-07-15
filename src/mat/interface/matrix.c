@@ -2572,7 +2572,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve_Basic(Mat A,Mat B,Mat X)
 -  B - the right-hand-side matrix  (dense matrix)
 
    Output Parameter:
-.  B - the result matrix (dense matrix)
+.  X - the result matrix (dense matrix)
 
    Notes:
    The matrices b and x cannot be the same.  I.e., one cannot
