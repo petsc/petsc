@@ -79,7 +79,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate(MPI_Comm comm, TaoLin
     *newls = PETSC_NULL;
 
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-    //    info = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(info);
+    info = TaoLineSearchInitializePackage(PETSC_NULL); CHKERRQ(info);
 #endif 
 
     info = PetscHeaderCreate(ls,_p_TaoLineSearch,struct _TaoLineSearchOps,

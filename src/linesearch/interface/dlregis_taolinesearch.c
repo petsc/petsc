@@ -1,7 +1,7 @@
 #define TAOLINESEARCH_DLL
 #include "private/taolinesearch_impl.h"
 
-PetscCookie TAOLINESEARCH_COOKIE=0;
+//PetscCookie TAOLINESEARCH_COOKIE=0;
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 #define TaoLineSearchRegisterDynamic(a,b,c,d) TaoLineSearchRegister(a,b,c,0)

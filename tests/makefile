@@ -3,6 +3,7 @@ EXAMPLESC = test_link1.c linesearch1.c
 TESTEXAMPLES_C = test_link1.tao runtest_link1 test_link1.rm clean \
          test_linesearch1.tao runtest_linesearch1 test_linesearch1.rm \
          test_lmvmmat1.tao runtest_lmvmmat1 test_lmvmmat1.rm \
+         test_rosenbrock1.tao runtest_rosenbrock1.tao test_rosenbrock1.rm \
 	 clean 
 
 
@@ -20,6 +21,10 @@ test_linesearch1: test_linesearch1.o tao_chkopts
 test_lmvmmat1: test_lmvmmat1.o tao_chkopts
 	-${CLINKER} -o test_lmvmmat1 test_lmvmmat1.o ${TAO_LIB} ${PETSC_LIB}
 	${RM} test_lmvmmat1.o
+
+test_rosenbrock1: test_rosenbrock1.o tao_chkopts
+	-${CLINKER} -o test_rosenbrock1 test_rosenbrock1.o ${TAO_LIB} ${PETSC_LIB}
+	${RM} test_rosenbrock1.o
 
 
 
@@ -40,5 +45,12 @@ runtest_lmvmmat1:
 	if (${DIFF} output/test_lmvmmat1_1.out test_lmvmmat1_1.tmp) then true;\
         else echo "Possible problem with test_lmvmmat1_1, diffs above"; fi; \
 	${RM} -f test_lmvmmat1_1.tmp
+
+
+runtest_rosenbrock1: 
+	-@${MPIEXEC} -np 1 ./test_rosenbrock1 > test_rosenbrock1_1.tmp 2>&1; \
+	if (${DIFF} output/test_rosenbrock1_1.out test_rosenbrock1_1.tmp) then true;\
+        else echo "Possible problem with test_rosenbrock1_1, diffs above"; fi; \
+	${RM} -f test_rosenbrock1_1.tmp
 
 
