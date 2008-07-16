@@ -36,113 +36,7 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "DestroyExactSolution"
-PetscErrorCode DestroyExactSolution(ALE::Problem::ExactSolType sol, Options *options)
-{
-  PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  if (options->structured) {
-    ierr = VecDestroy(sol.vec);CHKERRQ(ierr);
-  } else {
-    ierr = SectionRealDestroy(sol.section);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "Rhs_Structured_2d_FD"
-PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx)
-{
-  Options       *options = (Options *) ctx;
-  PetscScalar  (*func)(const double *)   = options->func;
-  PetscScalar  (*bcFunc)(const double *) = options->exactFunc;
-  const double   lambda                  = options->lambda;
-  DA             coordDA;
-  Vec            coordinates;
-  DACoor2d     **coords;
-  PetscReal      hxa, hxb, hx, hya, hyb, hy;
-  PetscInt       ie = info->xs+info->xm;
-  PetscInt       je = info->ys+info->ym;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  // Loop over stencils
-  for(int j = info->ys; j < je; j++) {
-    for(int i = info->xs; i < ie; i++) {
-      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        f[j][i] = x[j][i] - bcFunc((PetscReal *) &coords[j][i]);
-      } else {
-        hya = coords[j+1][i].y - coords[j][i].y;
-        hyb = coords[j][i].y   - coords[j-1][i].y;
-        hxa = coords[j][i+1].x - coords[j][i].x;
-        hxb = coords[j][i].x   - coords[j][i-1].x;
-        hy  = 0.5*(hya+hyb);
-        hx  = 0.5*(hxa+hxb);
-        f[j][i] = -func((const double *) &coords[j][i])*hx*hy -
-          ((x[j][i+1] - x[j][i])/hxa - (x[j][i] - x[j][i-1])/hxb)*hy -
-          ((x[j+1][i] - x[j][i])/hya - (x[j][i] - x[j-1][i])/hyb)*hx -
-          lambda*hx*hy*PetscExpScalar(x[j][i]);
-      }
-    }
-  }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "Rhs_Structured_3d_FD"
-PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscScalar **f[], void *ctx)
-{
-  Options       *options = (Options *) ctx;
-  PetscScalar  (*func)(const double *)   = options->func;
-  PetscScalar  (*bcFunc)(const double *) = options->exactFunc;
-  const double   lambda                  = options->lambda;
-  DA             coordDA;
-  Vec            coordinates;
-  DACoor3d    ***coords;
-  PetscReal      hxa, hxb, hx, hya, hyb, hy, hza, hzb, hz;
-  PetscInt       ie = info->xs+info->xm;
-  PetscInt       je = info->ys+info->ym;
-  PetscInt       ke = info->zs+info->zm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  // Loop over stencils
-  for(int k = info->zs; k < ke; k++) {
-    for(int j = info->ys; j < je; j++) {
-      for(int i = info->xs; i < ie; i++) {
-        if (i == 0 || j == 0 || k == 0 || i == info->mx-1 || j == info->my-1 || k == info->mz-1) {
-          f[k][j][i] = x[k][j][i] - bcFunc((PetscReal *) &coords[k][j][i]);
-        } else {
-          hza = coords[k+1][j][i].z - coords[k][j][i].z;
-          hzb = coords[k][j][i].z   - coords[k-1][j][i].z;
-          hya = coords[k][j+1][i].y - coords[k][j][i].y;
-          hyb = coords[k][j][i].y   - coords[k][j-1][i].y;
-          hxa = coords[k][j][i+1].x - coords[k][j][i].x;
-          hxb = coords[k][j][i].x   - coords[k][j][i-1].x;
-          hz  = 0.5*(hza+hzb);
-          hy  = 0.5*(hya+hyb);
-          hx  = 0.5*(hxa+hxb);
-        f[k][j][i] = -func((const double *) &coords[k][j][i])*hx*hy*hz -
-          ((x[k][j][i+1] - x[k][j][i])/hxa - (x[k][j][i] - x[k][j][i-1])/hxb)*hy*hz -
-          ((x[k][j+1][i] - x[k][j][i])/hya - (x[k][j][i] - x[k][j-1][i])/hyb)*hx*hz - 
-          ((x[k+1][j][i] - x[k][j][i])/hza - (x[k][j][i] - x[k-1][j][i])/hzb)*hx*hy -
-          lambda*hx*hy*hz*PetscExpScalar(x[k][j][i]);
-        }
-      }
-    }
-  }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "Rhs_Unstructured"
@@ -310,113 +204,7 @@ PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "Jac_Structured_2d_FD"
-PetscErrorCode Jac_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], Mat J, void *ctx)
-{
-  Options       *options = (Options *) ctx;
-  const double   lambda  = options->lambda;
-  DA             coordDA;
-  Vec            coordinates;
-  DACoor2d     **coords;
-  MatStencil     row, col[5];
-  PetscScalar    v[5];
-  PetscReal      hxa, hxb, hx, hya, hyb, hy;
-  PetscInt       ie = info->xs+info->xm;
-  PetscInt       je = info->ys+info->ym;
-  PetscErrorCode ierr;
 
-  PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  // Loop over stencils
-  for(int j = info->ys; j < je; j++) {
-    for(int i = info->xs; i < ie; i++) {
-      row.j = j; row.i = i;
-      if (i == 0 || j == 0 || i == info->mx-1 || j == info->my-1) {
-        v[0] = 1.0;
-        ierr = MatSetValuesStencil(J, 1, &row, 1, &row, v, INSERT_VALUES);CHKERRQ(ierr);
-      } else {
-        hya = coords[j+1][i].y - coords[j][i].y;
-        hyb = coords[j][i].y   - coords[j-1][i].y;
-        hxa = coords[j][i+1].x - coords[j][i].x;
-        hxb = coords[j][i].x   - coords[j][i-1].x;
-        hy  = 0.5*(hya+hyb);
-        hx  = 0.5*(hxa+hxb);
-        v[0] = -hx/hyb;                                          col[0].j = j - 1; col[0].i = i;
-        v[1] = -hy/hxb;                                          col[1].j = j;     col[1].i = i-1;
-        v[2] = (hy/hxa + hy/hxb + hx/hya + hx/hyb);              col[2].j = row.j; col[2].i = row.i;
-        v[3] = -hy/hxa;                                          col[3].j = j;     col[3].i = i+1;
-        v[4] = -hx/hya;                                          col[4].j = j + 1; col[4].i = i;
-        v[2] -= lambda*hx*hy*PetscExpScalar(x[j][i]);
-        ierr = MatSetValuesStencil(J, 1, &row, 5, col, v, INSERT_VALUES);CHKERRQ(ierr);
-      }
-    }
-  }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "Jac_Structured_3d_FD"
-PetscErrorCode Jac_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], Mat J, void *ctx)
-{
-  Options       *options = (Options *) ctx;
-  const double   lambda  = options->lambda;
-  DA             coordDA;
-  Vec            coordinates;
-  DACoor3d    ***coords;
-  MatStencil     row, col[7];
-  PetscScalar    v[7];
-  PetscReal      hxa, hxb, hx, hya, hyb, hy, hza, hzb, hz;
-  PetscInt       ie = info->xs+info->xm;
-  PetscInt       je = info->ys+info->ym;
-  PetscInt       ke = info->zs+info->zm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = DAGetCoordinateDA(info->da, &coordDA);CHKERRQ(ierr);
-  ierr = DAGetGhostedCoordinates(info->da, &coordinates);CHKERRQ(ierr);
-  ierr = DAVecGetArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  // Loop over stencils
-  for(int k = info->zs; k < ke; k++) {
-    for(int j = info->ys; j < je; j++) {
-      for(int i = info->xs; i < ie; i++) {
-        row.k = k; row.j = j; row.i = i;
-        if (i == 0 || j == 0 || k == 0 || i == info->mx-1 || j == info->my-1 || k == info->mz-1) {
-          v[0] = 1.0;
-          ierr = MatSetValuesStencil(J, 1, &row, 1, &row, v, INSERT_VALUES);CHKERRQ(ierr);
-        } else {
-          hza = coords[k+1][j][i].z - coords[k][j][i].z;
-          hzb = coords[k][j][i].z   - coords[k-1][j][i].z;
-          hya = coords[k][j+1][i].y - coords[k][j][i].y;
-          hyb = coords[k][j][i].y   - coords[k][j-1][i].y;
-          hxa = coords[k][j][i+1].x - coords[k][j][i].x;
-          hxb = coords[k][j][i].x   - coords[k][j][i-1].x;
-          hz  = 0.5*(hza+hzb);
-          hy  = 0.5*(hya+hyb);
-          hx  = 0.5*(hxa+hxb);
-          v[0] = -hx*hy/hzb;                                       col[0].k = k - 1; col[0].j = j;     col[0].i = i;
-          v[1] = -hx*hz/hyb;                                       col[1].k = k;     col[1].j = j - 1; col[1].i = i;
-          v[2] = -hy*hz/hxb;                                       col[2].k = k;     col[2].j = j;     col[2].i = i - 1;
-          v[3] = (hy*hz/hxa + hy*hz/hxb + hx*hz/hya + hx*hz/hyb + hx*hy/hza + hx*hy/hzb); col[3].k = row.k; col[3].j = row.j; col[3].i = row.i;
-          v[4] = -hx*hy/hza;                                       col[4].k = k + 1; col[4].j = j;     col[4].i = i;
-          v[5] = -hx*hz/hya;                                       col[5].k = k;     col[5].j = j + 1; col[5].i = i;
-          v[6] = -hy*hz/hxa;                                       col[6].k = k;     col[6].j = j;     col[6].i = i + 1;
-          v[3] -= lambda*hx*hy*hz*PetscExpScalar(x[k][j][i]);
-          ierr = MatSetValuesStencil(J, 1, &row, 7, col, v, INSERT_VALUES);CHKERRQ(ierr);
-        }
-      }
-    }
-  }
-  ierr = DAVecRestoreArray(coordDA, coordinates, &coords);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(J, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0); 
-}
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
@@ -797,52 +585,6 @@ PetscErrorCode CheckResidual(DM dm, ALE::Problem::ExactSolType sol, Options *opt
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CreateSolver"
-PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
-{
-  MPI_Comm       comm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMMGCreate(comm, 1, options, dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetDM(*dmmg, dm);CHKERRQ(ierr);
-  if (options->structured) {
-    // Needed if using finite elements
-    // ierr = PetscOptionsSetValue("-dmmg_form_function_ghost", PETSC_NULL);CHKERRQ(ierr);
-    if (options->dim == 2) {
-      ierr = DMMGSetSNESLocal(*dmmg, Rhs_Structured_2d_FD, Jac_Structured_2d_FD, 0, 0);CHKERRQ(ierr);
-    } else if (options->dim == 3) {
-      ierr = DMMGSetSNESLocal(*dmmg, Rhs_Structured_3d_FD, Jac_Structured_3d_FD, 0, 0);CHKERRQ(ierr);
-    } else {
-      SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
-    }
-    ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
-    for(int l = 0; l < DMMGGetLevels(*dmmg); l++) {
-      ierr = DASetUniformCoordinates((DA) (*dmmg)[l]->dm, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
-    }
-  } else {
-    if (options->operatorAssembly == ALE::Problem::ASSEMBLY_FULL) {
-      ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured, 0, 0);CHKERRQ(ierr);
-    } else if (options->operatorAssembly == ALE::Problem::ASSEMBLY_CALCULATED) {
-      ierr = DMMGSetMatType(*dmmg, MATSHELL);CHKERRQ(ierr);
-      ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured_Calculated, 0, 0);CHKERRQ(ierr);
-    } else if (options->operatorAssembly == ALE::Problem::ASSEMBLY_STORED) {
-      ierr = DMMGSetMatType(*dmmg, MATSHELL);CHKERRQ(ierr);
-      ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured_Stored, 0, 0);CHKERRQ(ierr);
-    } else {
-      SETERRQ1(PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", options->operatorAssembly);
-    }
-    ierr = DMMGSetFromOptions(*dmmg);CHKERRQ(ierr);
-  }
-  if (options->bcType == ALE::Problem::NEUMANN) {
-    // With Neumann conditions, we tell DMMG that constants are in the null space of the operator
-    ierr = DMMGSetNullSpace(*dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "Solve"
 PetscErrorCode Solve(DMMG *dmmg, Options *options)
 {
@@ -923,18 +665,11 @@ int main(int argc, char *argv[])
     ierr = bratu->createMesh();CHKERRQ(ierr);
     ierr = bratu->createProblem();CHKERRQ(ierr);
     if (options->run == ALE::Problem::RUN_FULL) {
-      DMMG *dmmg;
-      DM    dm;
-
-      dm   = bratu->getDM();
       ierr = bratu->createExactSolution();CHKERRQ(ierr);
-      ierr = CheckError(dm, options->exactSol, options);CHKERRQ(ierr);
-      ierr = CheckResidual(dm, options->exactSol, options);CHKERRQ(ierr);
-      ierr = CreateSolver(dm, &dmmg, options);CHKERRQ(ierr);
-      ierr = Solve(dmmg, options);CHKERRQ(ierr);
-      ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-      ierr = DestroyExactSolution(options->exactSol, options);CHKERRQ(ierr);
-      ierr = DestroyExactSolution(options->error,    options);CHKERRQ(ierr);
+      ierr = CheckError(bratu->getDM(), options->exactSol, options);CHKERRQ(ierr);
+      ierr = CheckResidual(bratu->getDM(), options->exactSol, options);CHKERRQ(ierr);
+      ierr = bratu->createSolver();CHKERRQ(ierr);
+      ierr = Solve(bratu->getDMMG(), options);CHKERRQ(ierr);
     }
   } catch(ALE::Exception e) {
     std::cerr << e << std::endl;

@@ -49,6 +49,7 @@ public:
     this->_problem->createMesh();
     this->_problem->createProblem();
     this->_problem->createExactSolution();
+    this->_problem->createSolver();
     ///this->checkAnswer(answerStruct, "BratuUnitSquare");
   };
 };
