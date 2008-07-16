@@ -144,6 +144,7 @@ namespace ALE {
     protected:
       const bool           unique;
       size_t               i, o;
+      size_t               skip, limit;
       Visitor             *visitor;
       size_t               size;
       point_type          *points;
@@ -151,19 +152,19 @@ namespace ALE {
     protected:
       inline virtual bool accept(const point_type& point) {return true;};
     public:
-      PointRetriever() : unique(false), i(0), o(0) {
+      PointRetriever() : unique(false), i(0), o(0), skip(0), limit(0) {
         this->size    = -1;
         this->points  = NULL;
         this->oPoints = NULL;
       };
-      PointRetriever(const size_t size, const bool unique = false) : unique(unique), i(0), o(0) {
+      PointRetriever(const size_t size, const bool unique = false) : unique(unique), i(0), o(0), skip(0), limit(0) {
         static Visitor nV;
         this->visitor = &nV;
         this->points  = NULL;
         this->oPoints = NULL;
         this->setSize(size);
       };
-      PointRetriever(const size_t size, Visitor& v, const bool unique = false) : unique(unique), i(0), o(0), visitor(&v) {
+      PointRetriever(const size_t size, Visitor& v, const bool unique = false) : unique(unique), i(0), o(0), skip(0), limit(0), visitor(&v) {
         this->points  = NULL;
         this->oPoints = NULL;
         this->setSize(size);
@@ -192,6 +193,7 @@ namespace ALE {
             for(p = 0; p < i; ++p) {if (points[p] == point) break;}
             if (p != i) return;
           }
+          if ((i < this->skip) || ((this->limit) && (i >= this->limit))) return;
           points[i++] = point;
           this->visitor->visitPoint(point);
         }
@@ -208,6 +210,7 @@ namespace ALE {
             for(p = 0; p < i; ++p) {if (points[p] == point) break;}
             if (p != i) return;
           }
+          if ((i < this->skip) || ((this->limit) && (i >= this->limit))) return;
           points[i++]  = point;
           oPoints[o++] = oriented_point_type(point, orientation);
           this->visitor->visitPoint(point, orientation);
@@ -228,6 +231,8 @@ namespace ALE {
         this->points  = new point_type[this->size];
         this->oPoints = new oriented_point_type[this->size];
       };
+      void setSkip(size_t s) {this->skip = s;};
+      void setLimit(size_t l) {this->limit = l;};
     };
     template<typename Sieve, typename Visitor = NullVisitor<Sieve> >
     class NConeRetriever : public PointRetriever<Sieve,Visitor> {
@@ -758,84 +763,28 @@ namespace ALE {
               ///std::cout << "Getting reverse cone from " << point << std::endl;
               sieve.orientedReverseCone(point, cV[c]);
             } else {
-              throw ALE::Exception("Not yet implemented");
+              const int numSkip = sieve.getConeSize(point) + o;
+
+              cV[c].setSkip(numSkip);
+              sieve.orientedReverseCone(point, cV[c]);
+              cV[c].setSkip(0);
+              cV[c].setLimit(numSkip);
+              sieve.orientedReverseCone(point, cV[c]);
+              cV[c].setLimit(0);
             }
-#if 0
-            const int size = pCone->size();
-
-            if (o == -size) {
-              for(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone->rbegin(); c_iter != pCone->rend(); ++c_iter) {
-                if (seen.find(*c_iter) == seen.end()) {
-                  const arrow_type newArrow(*c_iter, point);
-                  int              pointO = orientation->restrictPoint(newArrow)[0];
-
-                  seen.insert(*c_iter);
-                  cone->push_back(oriented_arrow_type(newArrow, o));
-                  closure->push_back(oriented_point_type(*c_iter, pointO ? -(pointO+1): pointO));
-                }
-              }
-            } else {
-              const int numSkip = size + o;
-              int       count   = 0;
-
-              for(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone->rbegin(); c_iter != pCone->rend(); ++c_iter, ++count) {
-                if (count < numSkip) continue;
-                if (seen.find(*c_iter) == seen.end()) {
-                  const arrow_type newArrow(*c_iter, point);
-                  int              pointO = orientation->restrictPoint(newArrow)[0];
-
-                  seen.insert(*c_iter);
-                  cone->push_back(oriented_arrow_type(newArrow, o));
-                  closure->push_back(oriented_point_type(*c_iter, pointO ? -(pointO+1): pointO));
-                }
-              }
-              count = 0;
-              for(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone->rbegin(); c_iter != pCone->rend(); ++c_iter, ++count) {
-                if (count >= numSkip) break;
-                if (seen.find(*c_iter) == seen.end()) {
-                  const arrow_type newArrow(*c_iter, point);
-                  int              pointO = orientation->restrictPoint(newArrow)[0];
-
-                  seen.insert(*c_iter);
-                  cone->push_back(oriented_arrow_type(newArrow, o));
-                  closure->push_back(oriented_point_type(*c_iter, pointO ? -(pointO+1): pointO));
-                }
-              }
-            }
-#endif
           } else {
             if (o == 1) {
               ///std::cout << "Getting cone from " << point << std::endl;
               sieve.orientedCone(point, cV[c]);
-#if 0
             } else {
               const int numSkip = o-1;
-              int       count   = 0;
 
-              for(typename sieve_type::traits::coneSequence::iterator c_iter = pCone->begin(); c_iter != pCone->end(); ++c_iter, ++count) {
-                if (count < numSkip) continue;
-                if (seen.find(*c_iter) == seen.end()) {
-                  const arrow_type newArrow(*c_iter, point);
-
-                  seen.insert(*c_iter);
-                  cone->push_back(oriented_arrow_type(newArrow, o));
-                  closure->push_back(oriented_point_type(*c_iter, orientation->restrictPoint(newArrow)[0]));
-                }
-              }
-              count = 0;
-              for(typename sieve_type::traits::coneSequence::iterator c_iter = pCone->begin(); c_iter != pCone->end(); ++c_iter, ++count) {
-                if (count >= numSkip) break;
-                if (seen.find(*c_iter) == seen.end()) {
-                  const arrow_type newArrow(*c_iter, point);
-
-                  seen.insert(*c_iter);
-                  cone->push_back(oriented_arrow_type(newArrow, o));
-                  closure->push_back(oriented_point_type(*c_iter, orientation->restrictPoint(newArrow)[0]));
-                }
-              }
-#endif
-            } else {
-              throw ALE::Exception("Not yet implemented");
+              cV[c].setSkip(numSkip);
+              sieve.orientedCone(point, cV[c]);
+              cV[c].setSkip(0);
+              cV[c].setLimit(numSkip);
+              sieve.orientedReverseCone(point, cV[c]);
+              cV[c].setLimit(0);
             }
           }
         }

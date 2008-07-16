@@ -57,6 +57,20 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Petsc
     ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
     ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
     ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
+    const ALE::Obj<PETSC_MESH_TYPE::int_section_type>& p     = mesh->getIntSection("Partition");
+    const ALE::Obj<PETSC_MESH_TYPE::label_sequence>&   cells = mesh->heightStratum(0);
+    const PETSC_MESH_TYPE::label_sequence::iterator    end   = cells->end();
+    const int                                          rank  = mesh->commRank();
+
+    p->setChart(PETSC_MESH_TYPE::int_section_type::chart_type(*cells));
+    p->setFiberDimension(cells, 1);
+    p->allocatePoint();
+    for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+      p->updatePoint(*c_iter, &rank);
+    }
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+    ierr = SectionView_Sieve_Ascii(mesh, p, "Partition", viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
     char *filename;
     char  connectFilename[2048];
@@ -1502,7 +1516,12 @@ PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *p
   ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
+  const Obj<PETSC_MESH_TYPE>             newMesh  = new PETSC_MESH_TYPE(oldMesh->comm(), oldMesh->getDimension(), oldMesh->debug());
+  const Obj<PETSC_MESH_TYPE::sieve_type> newSieve = new PETSC_MESH_TYPE::sieve_type(oldMesh->comm(), oldMesh->debug());
+
+  newMesh->setSieve(newSieve);
+  ALE::DistributionNew<PETSC_MESH_TYPE>::distributeMeshAndSectionsV(oldMesh, newMesh);
+  ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
 #else
   if (partitioner == NULL) {
     ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh);

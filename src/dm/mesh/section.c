@@ -29,7 +29,7 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
     ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
     ierr = SectionRealGetBundle(section, b);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
-    ierr = SectionView_Sieve_Ascii(b, s, name, viewer, 3);CHKERRQ(ierr);
+    ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Section");
   } else if (isdraw){ 
@@ -744,6 +744,7 @@ PetscErrorCode MeshGetVertexSectionReal(Mesh mesh, PetscInt fiberDim, SectionRea
   ierr = SectionRealCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(*section, s);CHKERRQ(ierr);
+  s->setChart(m->getSieve()->getChart());
   s->setFiberDimension(m->depthStratum(0), fiberDim);
   m->allocate(s);
   PetscFunctionReturn(0);

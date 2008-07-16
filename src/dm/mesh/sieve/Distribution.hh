@@ -283,6 +283,75 @@ namespace ALE {
       newMesh->stratify();
       return partition;
     };
+    template<typename NewMesh>
+    static void distributeMeshAndSectionsV(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh) {
+      typedef typename Mesh::point_type point_type;
+
+      const Obj<typename Mesh::send_overlap_type> sendMeshOverlap = new typename Mesh::send_overlap_type(mesh->comm(), mesh->debug());
+      const Obj<typename Mesh::recv_overlap_type> recvMeshOverlap = new typename Mesh::recv_overlap_type(mesh->comm(), mesh->debug());
+      std::map<point_type,point_type>    renumbering;
+      // Distribute the mesh
+      Obj<partition_type> partition = distributeMeshV(mesh, newMesh, renumbering, sendMeshOverlap, recvMeshOverlap);
+      if (mesh->debug()) {
+        std::cout << "["<<mesh->commRank()<<"]: Mesh Renumbering:" << std::endl;
+        for(typename Mesh::renumbering_type::const_iterator r_iter = renumbering.begin(); r_iter != renumbering.end(); ++r_iter) {
+          std::cout << "["<<mesh->commRank()<<"]:   global point " << r_iter->first << " --> " << " local point " << r_iter->second << std::endl;
+        }
+      }
+      // Distribute the coordinates
+      const Obj<typename Mesh::real_section_type>& coordinates         = mesh->getRealSection("coordinates");
+      const Obj<typename Mesh::real_section_type>& parallelCoordinates = newMesh->getRealSection("coordinates");
+
+      newMesh->setupCoordinates(parallelCoordinates);
+      distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+      // Distribute other sections
+      if (mesh->getRealSections()->size() > 1) {
+        Obj<std::set<std::string> > names = mesh->getRealSections();
+        int                         n     = 0;
+
+        for(std::set<std::string>::const_iterator n_iter = names->begin(); n_iter != names->end(); ++n_iter) {
+          if (*n_iter == "coordinates")   continue;
+          std::cout << "ERROR: Did not distribute real section " << *n_iter << std::endl;
+          ++n;
+        }
+        if (n) {throw ALE::Exception("Need to distribute more real sections");}
+      }
+      if (mesh->getIntSections()->size() > 0) {
+        Obj<std::set<std::string> > names = mesh->getIntSections();
+
+        for(std::set<std::string>::const_iterator n_iter = names->begin(); n_iter != names->end(); ++n_iter) {
+          const Obj<typename Mesh::int_section_type>& section    = mesh->getIntSection(*n_iter);
+          const Obj<typename Mesh::int_section_type>& newSection = newMesh->getIntSection(*n_iter);
+          
+          // We assume all integer sections are complete sections
+          newSection->setChart(newMesh->getSieve()->getChart());
+          distributeSection(section, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newSection);
+        }
+      }
+      if (mesh->getArrowSections()->size() > 1) {
+        throw ALE::Exception("Need to distribute more arrow sections");
+      }
+      // Distribute labels
+      const typename Mesh::labels_type& labels = mesh->getLabels();
+
+      for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        if (newMesh->hasLabel(l_iter->first)) continue;
+        const Obj<typename Mesh::label_type>& origLabel = l_iter->second;
+        const Obj<typename Mesh::label_type>& newLabel  = newMesh->createLabel(l_iter->first);
+        // Get remote labels
+        ALE::New::Completion<Mesh,point_type>::scatterCones(origLabel, newLabel, sendMeshOverlap, recvMeshOverlap, renumbering);
+        // Create local label
+        newLabel->add(origLabel, newMesh->getSieve(), renumbering);
+      }
+      // Create the parallel overlap
+      Obj<typename Mesh::send_overlap_type> sendParallelMeshOverlap = newMesh->getSendOverlap();
+      Obj<typename Mesh::recv_overlap_type> recvParallelMeshOverlap = newMesh->getRecvOverlap();
+      //   Can I figure this out in a nicer way?
+      ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(renumbering);
+
+      ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
+      newMesh->setCalculatedOverlap(true);
+    };
     template<typename Label, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewLabel>
     static void distributeLabel(const Obj<typename Mesh::sieve_type>& sieve, const Obj<Label>& l, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<NewLabel>& newL) {
       Partitioner::createLocalSifter(l, partition, renumbering, newL);
