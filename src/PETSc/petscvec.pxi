@@ -260,6 +260,22 @@ cdef inline int Vec_SplitSizes(MPI_Comm comm,
 
 # --------------------------------------------------------------------
 
+cdef inline int vecset(PetscVec v, object o) except -1:
+    cdef PetscInt na=0, nv=0
+    cdef PetscScalar *va=NULL, *vv=NULL
+    cdef ndarray a = iarray_s(o, &na, &va)
+    if a.cndim == 0:
+        CHKERR( VecSet(v, va[0]) )
+        return 0
+    CHKERR( VecGetLocalSize(v, &nv) )
+    if na != nv: raise ValueError(
+        "array size %d incompatible " \
+        "with vector local size %d" % (na, nv) )
+    CHKERR( VecGetArray(v, &vv) )
+    CHKERR( PetscMemcpy(vv, va, nv*sizeof(PetscScalar)) )
+    CHKERR( VecRestoreArray(v, &vv) )
+    return 0
+
 ctypedef int (VecSetValuesFcn)(PetscVec,PetscInt,const_PetscInt[],
                                const_PetscScalar[],PetscInsertMode)
 
@@ -270,7 +286,7 @@ cdef inline int vecsetvalues(PetscVec V,
     cdef PetscInt bs=1
     if blocked: CHKERR( VecGetBlockSize(V, &bs) )
     if bs < 1: bs = 1
-    # rows, cols, and values
+    # indices and values
     cdef PetscInt ni=0
     cdef PetscInt *i=NULL
     cdef PetscInt nv=0
@@ -304,32 +320,19 @@ cdef object vec_getitem(Vec self, object i):
         i = arange(start, stop, stride)
     return self.getValues(i)
 
-
 cdef object vec_setitem(Vec self, object i, object v):
-    cdef PetscInt n=0, ns=0, ne=0
-    cdef ndarray ai=None, av=None
-    cdef PetscScalar *vv=NULL
+    cdef PetscInt N=0
     if i is Ellipsis:
         if typecheck(v, Vec):
             CHKERR( VecCopy((<Vec>v).vec, self.vec) )
-            return
         else:
-            av = iarray_s(v, NULL, &vv)
-            if av.cndim == 0:
-                CHKERR( VecSet(self.vec, vv[0]) )
-                return
-            else:
-                CHKERR( VecGetOwnershipRange(self.vec, &ns, &ne) )
-                ai = arange(ns, ne, 1)
-    elif typecheck(i, slice):
-        CHKERR( VecGetSize(self.vec, &n) )
-        start, stop, stride = i.indices(n)
-        ai = arange(start, stop, stride)
-        av = iarray_s(v, NULL, NULL)
-    else:
-        ai = iarray_i(i, NULL, NULL)
-        av = iarray_s(v, NULL, NULL)
-    vecsetvalues(self.vec, ai, av, None, 0, 0)
+            vecset(self.vec, v)
+        return
+    if typecheck(i, slice):
+        CHKERR( VecGetSize(self.vec, &N) )
+        start, stop, stride = i.indices(N)
+        i = arange(start, stop, stride)
+    vecsetvalues(self.vec, i, v, None, 0, 0)
     return
 
 # --------------------------------------------------------------------

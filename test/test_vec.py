@@ -164,12 +164,38 @@ class TestVecBase(object):
             for flag in [True,False]*2:
                 self.vec.setOption(opt,flag)
 
+    def testGetSetItem(self):
+        v = self.vec
+        w = v.duplicate()
+        #
+        v[...] = 7
+        self.assertEqual(v.max()[1], 7)
+        self.assertEqual(v.min()[1], 7)
+        #
+        v.setRandom()
+        w[...] = v
+        self.assertTrue(w.equal(v))
+        #
+        v.setRandom()
+        w[...] = v.getArray()
+        self.assertTrue(w.equal(v))
+        #
+        s, e = v.getOwnershipRange()
+        v.setRandom()
+        w[s:e] = v.getArray()
+        self.assertTrue(w.equal(v))
+        w1, v1 = w[s],   v[s]
+        w2, v2 = w[e-1], v[e-1]
+        self.assertEqual(w1, v1)
+        self.assertEqual(w2, v2)
+
+
 # --------------------------------------------------------------------
 
 class TestVecSeq(TestVecBase, unittest.TestCase):
     COMM = PETSc.COMM_SELF
     TYPE = PETSc.Vec.Type.SEQ
-    
+
 class TestVecMPI(TestVecBase, unittest.TestCase):
     COMM  = PETSc.COMM_WORLD
     TYPE = PETSc.Vec.Type.MPI
