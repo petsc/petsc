@@ -213,7 +213,7 @@ cdef class SNES(Object):
         cdef PetscInt nfuncs = 0
         CHKERR( SNESGetNumberFunctionEvals(self.snes, &nfuncs) )
         return nfuncs
-        
+
     def setMaxNonlinearStepFailures(self, max_fails):
         CHKERR( SNESSetMaxNonlinearStepFailures(self.snes, max_fails) )
 

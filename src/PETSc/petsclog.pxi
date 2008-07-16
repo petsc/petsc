@@ -4,6 +4,6 @@ cdef extern from "petsc.h":
 
     int PetscLogFlops(PetscLogDouble)
     int PetscGetFlops(PetscLogDouble*)
-    
+
     int PetscGetTime(PetscLogDouble*)
     int PetscGetCPUTime(PetscLogDouble*)

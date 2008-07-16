@@ -9,11 +9,11 @@ cdef extern from "mpi.h":
     enum: MPI_IDENT
     enum: MPI_CONGRUENT
     int MPI_Comm_compare(MPI_Comm,MPI_Comm,int*)
-    
+
     int MPI_Comm_size(MPI_Comm,int*)
     int MPI_Comm_rank(MPI_Comm,int*)
     int MPI_Barrier(MPI_Comm)
-    
+
     int MPI_Initialized(int*)
     int MPI_Finalized(int*)
 
@@ -26,7 +26,7 @@ cdef extern from "petsc.h":
 
     int PetscCommDuplicate(MPI_Comm,MPI_Comm*,int*)
     int PetscCommDestroy(MPI_Comm*)
-    
+
 # --------------------------------------------------------------------
 
 cdef inline Comm new_Comm(MPI_Comm comm):

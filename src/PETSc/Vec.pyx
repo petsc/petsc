@@ -275,7 +275,7 @@ cdef class Vec(Object):
 
     def mDotBegin(self, vecs, out=None):
         raise NotImplementedError
-    
+
     def mDotEnd(self, vecs, out=None):
         raise NotImplementedError
 
@@ -284,7 +284,7 @@ cdef class Vec(Object):
 
     def mtDotBegin(self, vecs, out=None):
         raise NotImplementedError
-    
+
     def mtDotEnd(self, vecs, out=None):
         raise NotImplementedError
 

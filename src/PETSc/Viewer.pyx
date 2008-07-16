@@ -65,7 +65,7 @@ cdef class Viewer(Object):
     Format = ViewerFormat
     Mode   = FileMode
     Size   = DrawSize
-    
+
     #
 
     def __cinit__(self):

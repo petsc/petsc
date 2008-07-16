@@ -12,11 +12,11 @@ cdef extern  from "petsc.h":
     PetscViewerType PETSC_VIEWER_NETCDF
     PetscViewerType PETSC_VIEWER_HDF4
     PetscViewerType PETSC_VIEWER_MATLAB
-    
+
 
     ctypedef enum PetscViewerFormat:
         PETSC_VIEWER_ASCII_DEFAULT
-        PETSC_VIEWER_ASCII_MATLAB 
+        PETSC_VIEWER_ASCII_MATLAB
         PETSC_VIEWER_ASCII_MATHEMATICA
         PETSC_VIEWER_ASCII_IMPL
         PETSC_VIEWER_ASCII_INFO
@@ -35,7 +35,7 @@ cdef extern  from "petsc.h":
         PETSC_VIEWER_BINARY_NATIVE
         PETSC_VIEWER_DRAW_BASIC
         PETSC_VIEWER_DRAW_LG
-        PETSC_VIEWER_DRAW_CONTOUR 
+        PETSC_VIEWER_DRAW_CONTOUR
         PETSC_VIEWER_DRAW_PORTS
         PETSC_VIEWER_NATIVE
         PETSC_VIEWER_NOFORMAT

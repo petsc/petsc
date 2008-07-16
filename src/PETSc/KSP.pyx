@@ -202,7 +202,7 @@ cdef class KSP(Object):
 
     def getConvergenceTest(self):
         return KSP_getCnv(self.ksp)
-    
+
     def setConvergenceHistory(self, length=None, reset=False):
         cdef PetscReal *data = NULL
         cdef PetscInt   size = 10000

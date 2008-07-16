@@ -104,7 +104,7 @@ cdef class Sys:
         CHKERR( PetscSynchronizedFlush(ccomm) )
     syncFlush = classmethod(syncFlush)
 
-    # --- xxx --- 
+    # --- xxx ---
 
     ## @classmethod
     def splitOwnership(cls, size, bsize=None, comm=None):

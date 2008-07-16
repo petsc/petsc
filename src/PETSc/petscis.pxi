@@ -11,7 +11,7 @@ cdef extern from "petscis.h":
     int ISCreateBlock(MPI_Comm,PetscInt,PetscInt,PetscInt[],PetscIS*)
     int ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscIS*)
     int ISGetType(PetscIS,PetscISType*)
-    
+
     int ISDuplicate(PetscIS,PetscIS*)
     int ISAllGather(PetscIS,PetscIS*)
     int ISInvertPermutation(PetscIS,PetscInt,PetscIS*)
@@ -24,7 +24,7 @@ cdef extern from "petscis.h":
     int ISEqual(PetscIS,PetscIS,PetscTruth*)
 
     int ISSetPermutation(PetscIS)
-    int ISPermutation(PetscIS,PetscTruth*) 
+    int ISPermutation(PetscIS,PetscTruth*)
     int ISSetIdentity(PetscIS)
     int ISIdentity(PetscIS,PetscTruth*)
 
@@ -50,7 +50,7 @@ cdef extern from "petscis.h":
     ctypedef enum PetscGLMapType "ISGlobalToLocalMappingType":
         IS_GTOLM_MASK
         IS_GTOLM_DROP
-    
+
     int ISLocalToGlobalMappingCreate(MPI_Comm,PetscInt,PetscInt[],PetscLGMap*)
     int ISLocalToGlobalMappingCreateNC(MPI_Comm,PetscInt,PetscInt[],PetscLGMap*)
     int ISLocalToGlobalMappingCreateIS(PetscIS,PetscLGMap*)

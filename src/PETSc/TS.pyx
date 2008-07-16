@@ -232,8 +232,8 @@ cdef class TS(Object):
 
     def solve(self, Vec u not None):
         CHKERR( TSSolve(self.ts, u.vec) )
-    
-    
+
+
     #
 
     def setUseFD(self, flag):
@@ -292,7 +292,7 @@ cdef class TS(Object):
             return self.getSolution()
 
     # --- xxx ---
-    
+
     property time:
         def __get__(self):
             return self.getTime()
@@ -304,13 +304,13 @@ cdef class TS(Object):
             return self.getTimeStep()
         def __set__(self, value):
             self.setTimeStep(value)
-            
+
     property step_number:
         def __get__(self):
             return self.getStepNumber()
         def __set__(self, value):
             self.setStepNumber(value)
-            
+
     property max_time:
         def __get__(self):
             return self.getMaxTime()

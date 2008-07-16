@@ -155,7 +155,7 @@ cdef extern from "petscmat.h":
     int MatIsTranspose(PetscMat A,PetscMat B,PetscReal tol,PetscTruth *flg)
 
     int MatGetVecs(PetscMat,PetscVec*,PetscVec*)
-    
+
     int MatSetValue(PetscMat,PetscInt,PetscInt,PetscScalar,PetscInsertMode)
     int MatSetValues(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)
     int MatSetValuesBlocked(PetscMat,PetscInt,PetscInt[],PetscInt,PetscInt[],PetscScalar[],PetscInsertMode)

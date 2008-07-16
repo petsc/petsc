@@ -448,7 +448,7 @@ cdef class Mat(Object):
         if done != PETSC_FALSE: aj = array_i(ia[n], ja)
         CHKERR( MatRestoreRowIJ(self.mat, shift, symm, bcmp, &n, &ia, &ja, &done) )
         return (ai, aj)
-    
+
     def getColumnIJ(self, symmetric=False, compressed=False):
         cdef PetscInt shift=0
         cdef PetscTruth symm=symmetric, bcmp=compressed

@@ -1,34 +1,34 @@
 cdef extern from "petscpc.h":
 
     ctypedef char* PetscPCType "const char*"
-    PetscPCType PCNONE      
-    PetscPCType PCJACOBI    
-    PetscPCType PCSOR       
-    PetscPCType PCLU        
-    PetscPCType PCSHELL     
-    PetscPCType PCBJACOBI   
-    PetscPCType PCMG        
-    PetscPCType PCEISENSTAT 
-    PetscPCType PCILU       
-    PetscPCType PCICC       
-    PetscPCType PCASM       
-    PetscPCType PCKSP       
-    PetscPCType PCCOMPOSITE 
-    PetscPCType PCREDUNDANT 
-    PetscPCType PCSPAI      
-    PetscPCType PCNN        
-    PetscPCType PCCHOLESKY  
-    PetscPCType PCSAMG      
-    PetscPCType PCPBJACOBI  
-    PetscPCType PCMAT       
-    PetscPCType PCHYPRE     
+    PetscPCType PCNONE
+    PetscPCType PCJACOBI
+    PetscPCType PCSOR
+    PetscPCType PCLU
+    PetscPCType PCSHELL
+    PetscPCType PCBJACOBI
+    PetscPCType PCMG
+    PetscPCType PCEISENSTAT
+    PetscPCType PCILU
+    PetscPCType PCICC
+    PetscPCType PCASM
+    PetscPCType PCKSP
+    PetscPCType PCCOMPOSITE
+    PetscPCType PCREDUNDANT
+    PetscPCType PCSPAI
+    PetscPCType PCNN
+    PetscPCType PCCHOLESKY
+    PetscPCType PCSAMG
+    PetscPCType PCPBJACOBI
+    PetscPCType PCMAT
+    PetscPCType PCHYPRE
     PetscPCType PCFIELDSPLIT
-    PetscPCType PCTFS       
-    PetscPCType PCML        
+    PetscPCType PCTFS
+    PetscPCType PCML
     PetscPCType PCPROMETHEUS
-    PetscPCType PCGALERKIN  
+    PetscPCType PCGALERKIN
 
-    ctypedef enum PetscPCSide "PCSide": 
+    ctypedef enum PetscPCSide "PCSide":
         PC_LEFT
         PC_RIGHT
         PC_SYMMETRIC

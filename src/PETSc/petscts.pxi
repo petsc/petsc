@@ -2,11 +2,11 @@ cdef extern from "petscts.h":
 
     ctypedef char* PetscTSType "const char*"
     PetscTSType TS_EULER
-    PetscTSType TS_RUNGE_KUTTA    
+    PetscTSType TS_RUNGE_KUTTA
     PetscTSType TS_BEULER
     PetscTSType TS_CRANK_NICHOLSON
     PetscTSType TS_PSEUDO
-    PetscTSType TS_SUNDIALS       
+    PetscTSType TS_SUNDIALS
 
     ctypedef enum PetscTSProblemType "TSProblemType":
         TS_LINEAR

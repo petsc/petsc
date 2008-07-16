@@ -67,7 +67,7 @@ cdef extern from "petscvec.h":
 
     int VecDot(PetscVec,PetscVec,PetscScalar*)
     int VecDotBegin(PetscVec,PetscVec,PetscScalar*)
-    int VecDotEnd(PetscVec,PetscVec,PetscScalar*) 
+    int VecDotEnd(PetscVec,PetscVec,PetscScalar*)
     int VecTDot(PetscVec,PetscVec,PetscScalar*)
     int VecTDotBegin(PetscVec,PetscVec,PetscScalar*)
     int VecTDotEnd(PetscVec,PetscVec,PetscScalar*)
@@ -92,7 +92,7 @@ cdef extern from "petscvec.h":
     int VecMax(PetscVec,PetscInt*,PetscReal*)
     int VecMin(PetscVec,PetscInt*,PetscReal*)
     int VecScale(PetscVec,PetscScalar)
-    int VecCopy(PetscVec,PetscVec)        
+    int VecCopy(PetscVec,PetscVec)
     int VecSetRandom(PetscVec,PetscRandom)
     int VecSet(PetscVec,PetscScalar)
     int VecSwap(PetscVec,PetscVec)
