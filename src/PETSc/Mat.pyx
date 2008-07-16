@@ -623,7 +623,7 @@ cdef class Mat(Object):
 
     def increaseOverlap(self, IS iset not None, overlap=1):
         CHKERR( MatIncreaseOverlap(self.mat, 1, &iset.iset, overlap) )
-    
+
     #
 
     def norm(self, norm_type=None):
