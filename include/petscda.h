@@ -473,6 +473,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeDestroy(DMComposite);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddArray(DMComposite,PetscMPIInt,PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddDM(DMComposite,DM);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeSetCoupling(DMComposite,PetscErrorCode (*)(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeSetContext(DMComposite,void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetContext(DMComposite,void**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddVecScatter(DMComposite,VecScatter);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeScatter(DMComposite,Vec,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGather(DMComposite,Vec,...);
