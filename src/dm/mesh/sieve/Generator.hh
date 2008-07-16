@@ -506,11 +506,200 @@ namespace ALE {
         delete [] serialMaxVolumes;
         return refMesh;
       };
+      static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false, const bool forceSerial = false) {
+        typedef typename Mesh::point_type point_type;
+        const int                             dim     = mesh->getDimension();
+        const Obj<Mesh>                       refMesh = new Mesh(mesh->comm(), dim, mesh->debug());
+        const Obj<typename Mesh::sieve_type>& sieve   = mesh->getSieve();
+        struct triangulateio in;
+        struct triangulateio out;
+        PetscErrorCode       ierr;
+
+        Generator<Mesh>::initInput(&in);
+        Generator<Mesh>::initOutput(&out);
+        const Obj<typename Mesh::label_sequence>&    vertices    = mesh->depthStratum(0);
+        const Obj<typename Mesh::label_type>&        markers     = mesh->getLabel("marker");
+        const Obj<typename Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+        const Obj<typename Mesh::numbering_type>&    vNumbering  = mesh->getFactory()->getLocalNumbering(mesh, 0);
+
+        in.numberofpoints = vertices->size();
+        if (in.numberofpoints > 0) {
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          for(typename Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+            const typename Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
+            const int                                           idx   = vNumbering->getIndex(*v_iter);
+
+            for(int d = 0; d < dim; d++) {
+              in.pointlist[idx*dim + d] = array[d];
+            }
+            in.pointmarkerlist[idx] = mesh->getValue(markers, *v_iter);
+          }
+        }
+        const Obj<typename Mesh::label_sequence>& faces      = mesh->heightStratum(0);
+        const Obj<typename Mesh::numbering_type>& fNumbering = mesh->getFactory()->getLocalNumbering(mesh, mesh->depth());
+
+        in.numberofcorners   = 3;
+        in.numberoftriangles = faces->size();
+        in.trianglearealist  = (double *) maxVolumes;
+        if (in.numberoftriangles > 0) {
+          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
+          if (mesh->depth() == 1) {
+            ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(3);
+
+            for(typename Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+              sieve->cone(*f_iter, pV);
+              const int         idx  = fNumbering->getIndex(*f_iter);
+              const size_t      n    = pV.getSize();
+              const point_type *cone = pV.getPoints();
+
+              assert(n == 3);
+              for(int v = 0; v < 3; ++v) {
+                in.trianglelist[idx*in.numberofcorners + v] = vNumbering->getIndex(cone[v]);
+              }
+              pV.clear();
+            }
+          } else if (mesh->depth() == 2) {
+            // Need extra space due to early error checking
+            ALE::ISieveVisitor::NConeRetriever<typename Mesh::sieve_type> ncV(*sieve, 4);
+
+            for(typename Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+              ALE::ISieveTraversal<typename Mesh::sieve_type>::orientedClosure(*sieve, *f_iter, ncV);
+              const int         idx  = fNumbering->getIndex(*f_iter);
+              const size_t      n    = ncV.getSize();
+              const point_type *cone = ncV.getPoints();
+
+              assert(n == 3);
+              for(int v = 0; v < 3; ++v) {
+                in.trianglelist[idx*in.numberofcorners + v] = vNumbering->getIndex(cone[v]);
+              }
+              ncV.clear();
+            }
+          } else {
+            throw ALE::Exception("Invalid sieve: Cannot gives sieves of arbitrary depth to Triangle");
+          }
+        }
+        if (mesh->depth() == 2) {
+          const Obj<typename Mesh::label_sequence>& edges = mesh->depthStratum(1);
+          for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
+            if (mesh->getValue(markers, *e_iter)) {
+              in.numberofsegments++;
+            }
+          }
+          std::cout << "Number of segments: " << in.numberofsegments << std::endl;
+          if (in.numberofsegments > 0) {
+            ALE::ISieveVisitor::PointRetriever<typename Mesh::sieve_type> pV(2);
+            int s = 0;
+
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            for(typename Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
+              const int edgeMarker = mesh->getValue(markers, *e_iter);
+
+              if (edgeMarker) {
+                sieve->cone(*e_iter, pV);
+                const size_t      n    = pV.getSize();
+                const point_type *cone = pV.getPoints();
+
+                assert(n == 2);
+                for(int v = 0; v < 2; ++v) {
+                  in.segmentlist[s*2 + v] = vNumbering->getIndex(cone[v]);
+                }
+                in.segmentmarkerlist[s++] = edgeMarker;
+                pV.clear();
+              }
+            } 
+          }
+        }
+        const typename Mesh::holes_type& holes = mesh->getHoles();
+
+        in.numberofholes = holes.size();
+        if (in.numberofholes > 0) {
+          ierr = PetscMalloc(in.numberofholes*dim * sizeof(double), &in.holelist);
+          for(int h = 0; h < in.numberofholes; ++h) {
+            for(int d = 0; d < dim; ++d) {
+              in.holelist[h*dim+d] = holes[h][d];
+            }
+          }
+        }
+        if (mesh->commRank() == 0) {
+          std::string args("pqezQra");
+
+          triangulate((char *) args.c_str(), &in, &out, NULL);
+        }
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
+        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);}
+        const Obj<typename Mesh::sieve_type> newSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
+        const Obj<ALE::Mesh>                 m        = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
+        const Obj<ALE::Mesh::sieve_type>     newS     = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+        int     numCorners  = 3;
+        int     numCells    = out.numberoftriangles;
+        int    *cells       = out.trianglelist;
+        int     numVertices = out.numberofpoints;
+        double *coords      = out.pointlist;
+
+        ALE::SieveBuilder<ALE::Mesh>::buildTopology(newS, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+        m->setSieve(newS);
+        m->stratify();
+        refMesh->setSieve(newSieve);
+        std::map<typename Mesh::point_type,typename Mesh::point_type> renumbering;
+        ALE::ISieveConverter::convertSieve(*newS, *newSieve, renumbering, false);
+        refMesh->stratify();
+        ALE::ISieveConverter::convertOrientation(*newS, *newSieve, renumbering, m->getArrowSection("orientation").ptr());
+        ALE::SieveBuilder<Mesh>::buildCoordinates(refMesh, dim, coords);
+        const Obj<typename Mesh::label_type>& newMarkers = refMesh->createLabel("marker");
+
+        if (refMesh->commRank() == 0) {
+          for(int v = 0; v < out.numberofpoints; v++) {
+            if (out.pointmarkerlist[v]) {
+              refMesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+            }
+          }
+          if (interpolate) {
+            for(int e = 0; e < out.numberofedges; e++) {
+              if (out.edgemarkerlist[e]) {
+                const typename Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
+                const typename Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
+                const Obj<typename Mesh::sieve_type::supportSet> edge = newS->nJoin(vertexA, vertexB, 1);
+
+                refMesh->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
+              }
+            }
+          }
+        }
+        refMesh->copyHoles(mesh);
+        Generator<Mesh>::finiOutput(&out);
+#if 0
+        if ((refMesh->commSize() > 1) && (!forceSerial)) {
+          return ALE::Distribution<Mesh>::distributeMesh(refMesh);
+        }
+#endif
+        return refMesh;
+      };
       static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const Obj<typename Mesh::real_section_type>& maxVolumes, const bool interpolate = false) {
         throw ALE::Exception("Not yet implemented");
       };
       static Obj<Mesh> refineMeshV(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false, const bool forceSerial = false) {
-        throw ALE::Exception("Not yet implemented");
+#if 0
+        Obj<Mesh> serialMesh;
+        if (mesh->commSize() > 1) {
+          serialMesh = ALE::Distribution<Mesh>::unifyMesh(mesh);
+        } else {
+          serialMesh = mesh;
+        }
+#endif
+        const int numCells         = mesh->heightStratum(0)->size();
+        double   *serialMaxVolumes = new double[numCells];
+
+        for(int c = 0; c < numCells; c++) {
+          serialMaxVolumes[c] = maxVolume;
+        }
+        const Obj<Mesh> refMesh = refineMeshV(mesh, serialMaxVolumes, interpolate);
+        delete [] serialMaxVolumes;
+        return refMesh;
       };
       static Obj<Mesh> refineMeshLocal(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false) {
         const int                    dim     = mesh->getDimension();

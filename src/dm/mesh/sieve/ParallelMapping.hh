@@ -494,7 +494,7 @@ namespace ALE {
           char                                              *v      = sendAllocator.allocate(points->size());
           int                                                k      = 0;
 
-          for(size_t i = 0; i < pSize; ++i) {sendAllocator.construct(v+i, 0);}
+          for(int i = 0; i < pSize; ++i) {sendAllocator.construct(v+i, 0);}
           for(typename SendOverlap::coneSequence::iterator p_iter = points->begin(); p_iter != pEnd; ++p_iter, ++k) {
             v[k] = (char) sendSection->hasPoint(*p_iter);
           }
@@ -511,7 +511,7 @@ namespace ALE {
           const int                                                 pSize  = points->size();
           char                                                     *v      = recvAllocator.allocate(pSize);
 
-          for(size_t i = 0; i < pSize; ++i) {recvAllocator.construct(v+i, 0);}
+          for(int i = 0; i < pSize; ++i) {recvAllocator.construct(v+i, 0);}
           recvPoints[*r_iter] = v;
           pMover.recv(*r_iter, pSize, recvPoints[*r_iter]);
           vMover.recv(*r_iter, 2, rValues);
@@ -651,7 +651,7 @@ namespace ALE {
           const typename RecvSection::point_type *v = recvPoints[*r_iter];
           typename SendSection::point_type        newMin = v[0];
           typename SendSection::point_type        newMax = v[1]-1;
-          int                                     pSize  = 0;
+          //int                                     pSize  = 0;
 
           ///std::cout << "["<<recvOverlap->commRank()<<"]Received chart (" << v[0] << ", " << v[1] << ") from process " << *r_iter << std::endl;
 #if 0

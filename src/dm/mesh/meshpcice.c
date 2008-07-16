@@ -204,44 +204,6 @@ PetscErrorCode BCFUNCGetArray(Mesh mesh, PetscInt *numElements, PetscInt *fiberD
 
 namespace ALE {
   namespace PCICE {
-#ifdef PETSC_OPT_SIEVE
-    void Builder::readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[]) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    void Builder::outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], const bool columnMajor) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    PetscErrorCode Viewer::writeElements(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-    void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh) {
-      throw ALE::Exception("Not implemented for optimized sieves");
-    };
-#else
     //
     // Builder methods
     //
@@ -340,6 +302,57 @@ namespace ALE {
     Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
       return readMesh(comm, dim, basename+".nodes", basename+".lcon", useZeroBase, interpolate, debug);
     };
+#ifdef PETSC_OPT_SIEVE
+    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+      Obj<Mesh>          mesh  = new Mesh(comm, dim, debug);
+      Obj<sieve_type>    sieve = new sieve_type(comm, debug);
+      const Obj<ALE::Mesh>             m = new ALE::Mesh(comm, dim, debug);
+      const Obj<ALE::Mesh::sieve_type> s = new ALE::Mesh::sieve_type(comm, debug);
+      int    *cells            = NULL;
+      double *coordinates      = NULL;
+      int     numCells = 0, numVertices = 0, numCorners = dim+1;
+      PetscErrorCode ierr;
+
+      ALE::PCICE::Builder::readConnectivity(comm, adjFilename, numCorners, useZeroBase, numCells, &cells);
+      ALE::PCICE::Builder::readCoordinates(comm, coordFilename, dim, numVertices, &coordinates);
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+      m->setSieve(s);
+      m->stratify();
+      mesh->setSieve(sieve);
+      std::map<Mesh::point_type,Mesh::point_type> renumbering;
+      ALE::ISieveConverter::convertSieve(*s, *sieve, renumbering, false);
+      mesh->stratify();
+      ALE::ISieveConverter::convertOrientation(*s, *sieve, renumbering, m->getArrowSection("orientation").ptr());
+      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh, dim, coordinates);
+      if (cells) {ierr = PetscFree(cells);}
+      if (coordinates) {ierr = PetscFree(coordinates);}
+      return mesh;
+    };
+    void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void Builder::outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], const bool columnMajor) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeElements(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+#else
     Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
       Obj<Mesh>          mesh     = new Mesh(comm, dim, debug);
       Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
