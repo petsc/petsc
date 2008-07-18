@@ -125,7 +125,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetContext(DMComposite dmcomposite,v
 .seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeScatter(),
          DMCompositeGather(), DMCompositeCreateGlobalVector(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess()
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(), DMCompositeSetCoupling(),
-         DMCompositeGetContext()
+         DMCompositeSetContext()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetContext(DMComposite dmcomposite,void **ctx)
