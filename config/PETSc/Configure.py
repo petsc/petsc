@@ -197,7 +197,6 @@ class Configure(config.base.Configure):
     self.addMakeMacro('PACKAGES_INCLUDES',' '.join(['${'+p.PACKAGE+'_INCLUDE}' for p in self.framework.packages if hasattr(p,'include')]))
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
-    self.addMakeMacro('top_builddir',self.installdir)                
 
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib'))
