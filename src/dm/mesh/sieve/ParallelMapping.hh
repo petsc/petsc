@@ -1180,11 +1180,14 @@ namespace ALE {
           const typename OverlapSection::value_type     *values      = overlapSection->restrictPoint(remotePoint);
 
           sieve->setConeSize(localPoint, size);
-          for(int i = 0; i < size; ++i) {sieve->addSupportSize(renumbering[values[i]], 1);}
+          ///for(int i = 0; i < size; ++i) {sieve->addSupportSize(renumbering[values[i]], 1);}
+          for(int i = 0; i < size; ++i) {sieve->addSupportSize(renumbering[values[i].first], 1);}
           maxSize = std::max(maxSize, size);
         }
         sieve->allocate();
-        typename OverlapSection::value_type *localValues = new typename OverlapSection::value_type[maxSize];
+        ///typename OverlapSection::value_type *localValues = new typename OverlapSection::value_type[maxSize];
+        typename OverlapSection::value_type::first_type  *localValues      = new typename OverlapSection::value_type::first_type[maxSize];
+        typename OverlapSection::value_type::second_type *localOrientation = new typename OverlapSection::value_type::second_type[maxSize];
 
         for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
           const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
@@ -1193,10 +1196,16 @@ namespace ALE {
           const int                                      size        = overlapSection->getFiberDimension(remotePoint);
           const typename OverlapSection::value_type     *values      = overlapSection->restrictPoint(remotePoint);
 
-          for(int i = 0; i < size; ++i) {localValues[i] = renumbering[values[i]];}
+          ///for(int i = 0; i < size; ++i) {localValues[i] = renumbering[values[i]];}
+          for(int i = 0; i < size; ++i) {
+            localValues[i]      = renumbering[values[i].first];
+            localOrientation[i] = values[i].second;
+          }
           sieve->setCone(localValues, localPoint);
+          sieve->setConeOrientation(localOrientation, localPoint);
         }
         delete [] localValues;
+        delete [] localOrientation;
       };
       template<typename OverlapSection, typename RecvOverlap, typename Section, typename Bundle>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& section, const Obj<Bundle>& bundle) {

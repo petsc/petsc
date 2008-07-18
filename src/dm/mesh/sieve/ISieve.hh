@@ -6,6 +6,17 @@
 #endif
 
 namespace ALE {
+  template<typename Point>
+  class OrientedPoint : public std::pair<Point, int> {
+  public:
+    OrientedPoint(const int o) : std::pair<Point, int>(o, o) {};
+    ~OrientedPoint() {};
+    friend std::ostream& operator<<(std::ostream& stream, const OrientedPoint& point) {
+      stream << "(" << point.first << ", " << point.second << ")";
+      return stream;
+    };
+  };
+
   template<typename Point_, typename Alloc_ = malloc_allocator<Point_> >
   class Interval {
   public:
@@ -264,23 +275,37 @@ namespace ALE {
       const Set&   pointSet;
       Renumbering& renumbering;
       const size_t size;
-      size_t       i;
+      size_t       i, o;
       point_type  *points;
+      oriented_point_type *oPoints;
     public:
-      FilteredPointRetriever(const Set& s, Renumbering& r, const size_t size) : pointSet(s), renumbering(r), size(size), i(0) {
-        this->points = new point_type[this->size];
+      FilteredPointRetriever(const Set& s, Renumbering& r, const size_t size) : pointSet(s), renumbering(r), size(size), i(0), o(0) {
+        this->points  = new point_type[this->size];
+        this->oPoints = new oriented_point_type[this->size];
       };
-      ~FilteredPointRetriever() {delete [] this->points;};
+      ~FilteredPointRetriever() {
+        delete [] this->points;
+        delete [] this->oPoints;
+      };
       void visitArrow(const arrow_type& arrow) {};
       void visitPoint(const point_type& point) {
         if (i >= size) throw ALE::Exception("Too many points for FilteredPointRetriever visitor");
         if (this->pointSet.find(point) == this->pointSet.end()) return;
         points[i++] = this->renumbering[point];
       };
+      void visitArrow(const arrow_type& arrow, const int orientation) {};
+      void visitPoint(const point_type& point, const int orientation) {
+        if (o >= size) throw ALE::Exception("Too many points for FilteredPointRetriever visitor");
+        if (this->pointSet.find(point) == this->pointSet.end()) return;
+        points[i++]  = this->renumbering[point];
+        oPoints[o++] = oriented_point_type(this->renumbering[point], orientation);
+      };
     public:
       const size_t      getSize() const {return this->i;};
       const point_type *getPoints() const {return this->points;};
-      void clear() {this->i = 0;};
+      const size_t      getOrientedSize() const {return this->o;};
+      const oriented_point_type *getOrientedPoints() const {return this->oPoints;};
+      void clear() {this->i = 0; this->o = 0;};
     };
     template<typename Sieve, int size, typename Visitor = NullVisitor<Sieve> >
     class ArrowRetriever {

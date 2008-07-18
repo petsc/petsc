@@ -266,6 +266,53 @@ namespace ALE {
     };
   };
 
+  template<typename Sieve_, typename Alloc_ = malloc_allocator<OrientedPoint<typename Sieve_::source_type> > >
+  class OrientedConeSectionV : public ALE::ParallelObject {
+  public:
+    typedef Sieve_                                   sieve_type;
+    typedef Alloc_                                   alloc_type;
+    typedef typename sieve_type::target_type         point_type;
+    typedef OrientedPoint<typename sieve_type::source_type> value_type;
+    typedef typename alloc_type::template rebind<int>::other int_alloc_type;
+    typedef ConeSizeSectionV<sieve_type, int_alloc_type> atlas_type;
+    typedef typename atlas_type::chart_type          chart_type;
+    typedef typename ISieveVisitor::PointRetriever<sieve_type> visitor_type;
+    typedef typename alloc_type::template rebind<atlas_type>::other atlas_alloc_type;
+    typedef typename atlas_alloc_type::pointer                      atlas_ptr;
+  protected:
+    Obj<sieve_type> _sieve;
+    Obj<atlas_type> _atlas;
+    visitor_type   *_cV;
+    alloc_type      _allocator;
+  public:
+    OrientedConeSectionV(const Obj<sieve_type>& sieve) : ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve) {
+      atlas_ptr pAtlas = atlas_alloc_type(this->_allocator).allocate(1);
+      atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(sieve));
+      this->_atlas     = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
+      this->_cV        = new visitor_type(std::max(0, sieve->getMaxConeSize()));
+    };
+    ~OrientedConeSectionV() {
+      delete this->_cV;
+    };
+  public: // Verifiers
+    bool hasPoint(const point_type& point) {
+      return this->_atlas->hasPoint(point);
+    };
+  public: // Accessors
+    const Obj<atlas_type>& getAtlas() {return this->_atlas;};
+    void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
+  public: // Sizes and storage
+    int getFiberDimension(const point_type& p) {
+      return this->_atlas->restrictPoint(p)[0];
+    };
+  public: // Restriction and update
+    const value_type *restrictPoint(const point_type& p) {
+      this->_cV->clear();
+      this->_sieve->orientedCone(p, *this->_cV);
+      return (const value_type *) this->_cV->getOrientedPoints();
+    };
+  };
+
   template<typename Sieve_, typename Label_, typename Alloc_ = malloc_allocator<typename Sieve_::target_type> >
   class LabelBaseSection : public ALE::ParallelObject {
   public:
