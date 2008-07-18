@@ -29,6 +29,11 @@ typedef enum {/* converged */
               /* keep going */
               TAO_CONTINUE_ITERATING      =  0} TaoSolverTerminateReason;
 
+#if defined PETSC_USE_DYNAMIC_LIBRARIES)
+#define TaoSolverRegisterDynamic(a,b,c,d) TaoSolverRegister(a,b,c,0)
+#else
+#define TaoSolverRegisterDynamic(a,b,c,d) TaoSolverRegister(a,b,c,d)
+#endif
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverCreate(MPI_Comm,TaoSolver*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetFromOptions(TaoSolver);
@@ -53,4 +58,5 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverComputeGradient(TaoSolver, Vec, V
 EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverComputeObjectiveGradient(TaoSolver, Vec, PetscReal*, Vec);
 
 PETSC_EXTERN_CXX_END
-#endif
+#endif /* ifndef __TAOSOLVER_H */
+
