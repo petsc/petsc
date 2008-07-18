@@ -62,7 +62,9 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Petsc
     const PETSC_MESH_TYPE::label_sequence::iterator    end   = cells->end();
     const int                                          rank  = mesh->commRank();
 
+#ifdef PETSC_OPT_SIEVE
     p->setChart(PETSC_MESH_TYPE::int_section_type::chart_type(*cells));
+#endif
     p->setFiberDimension(cells, 1);
     p->allocatePoint();
     for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {

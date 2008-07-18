@@ -999,6 +999,8 @@ namespace ALE {
       return this->_atlas->hasPoint(point);
     };
   public: // Accessors
+    const chart_type& getChart() {return this->_atlas->getChart();};
+    void setChart(chart_type& chart) {};
     const Obj<atlas_type>& getAtlas() {return this->_atlas;};
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
     const Obj<atlas_type>& getNewAtlas() {return this->_atlasNew;};
