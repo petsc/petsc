@@ -204,7 +204,7 @@ namespace ALE {
             for(p = 0; p < i; ++p) {if (points[p] == point) break;}
             if (p != i) return;
           }
-          if ((i < this->skip) || ((this->limit) && (i >= this->limit))) return;
+          if ((i < this->skip) || ((this->limit) && (i >= this->limit))) {--this->skip; return;}
           points[i++] = point;
           this->visitor->visitPoint(point);
         }
@@ -221,7 +221,7 @@ namespace ALE {
             for(p = 0; p < i; ++p) {if (points[p] == point) break;}
             if (p != i) return;
           }
-          if ((i < this->skip) || ((this->limit) && (i >= this->limit))) return;
+          if ((i < this->skip) || ((this->limit) && (i >= this->limit))) {--this->skip; return;}
           points[i++]  = point;
           oPoints[o++] = oriented_point_type(point, orientation);
           this->visitor->visitPoint(point, orientation);
@@ -762,7 +762,6 @@ namespace ALE {
 
       v.visitPoint(p, 0);
       // Cone is guarateed to be ordered correctly
-      ///std::cout << "Getting cone from " << p << std::endl;
       sieve.orientedCone(p, cV[c]);
 
       while(cV[c].getOrientedSize()) {
@@ -771,44 +770,34 @@ namespace ALE {
         c = 1 - c;
 
         for(int p = 0; p < coneSize; ++p) {
-          const typename Retriever::point_type& point = cone[p].first;
-          const int&                            pO    = cone[p].second;
-
-#if 0
-          const Obj<typename sieve_type::traits::coneSequence>& pCone = sieve->cone(point);
-          typename arrow_section_type::value_type               o     = orientation->restrictPoint(arrow)[0];
-#endif
-          int o = 1;
+          const typename Retriever::point_type& point     = cone[p].first;
+          int                                   pO        = cone[p].second;
+          const int                             pConeSize = sieve.getConeSize(point);
 
           if (pO < 0) {
-            o = -(o+1);
-          }
-          if (o < 0) {
-            if (o == -sieve.getConeSize(point)) {
-              ///std::cout << "Getting reverse cone from " << point << std::endl;
+            if (pO == -pConeSize) {
               sieve.orientedReverseCone(point, cV[c]);
             } else {
-              const int numSkip = sieve.getConeSize(point) + o;
+              const int numSkip = sieve.getConeSize(point) + pO;
 
-              cV[c].setSkip(numSkip);
+              cV[c].setSkip(cV[c].getSize()+numSkip);
+              cV[c].setLimit(cV[c].getSize()+pConeSize);
+              sieve.orientedReverseCone(point, cV[c]);
               sieve.orientedReverseCone(point, cV[c]);
               cV[c].setSkip(0);
-              cV[c].setLimit(numSkip);
-              sieve.orientedReverseCone(point, cV[c]);
               cV[c].setLimit(0);
             }
           } else {
-            if (o == 1) {
-              ///std::cout << "Getting cone from " << point << std::endl;
+            if (pO == 1) {
               sieve.orientedCone(point, cV[c]);
             } else {
-              const int numSkip = o-1;
+              const int numSkip = pO-1;
 
-              cV[c].setSkip(numSkip);
+              cV[c].setSkip(cV[c].getSize()+numSkip);
+              cV[c].setLimit(cV[c].getSize()+pConeSize);
+              sieve.orientedCone(point, cV[c]);
               sieve.orientedCone(point, cV[c]);
               cV[c].setSkip(0);
-              cV[c].setLimit(numSkip);
-              sieve.orientedReverseCone(point, cV[c]);
               cV[c].setLimit(0);
             }
           }
@@ -816,6 +805,7 @@ namespace ALE {
         cV[1-c].clear();
       }
 #if 0
+      // These contain arrows paired with orientations from the \emph{previous} arrow
       Obj<orientedArrowArray> cone    = new orientedArrowArray();
       Obj<orientedArrowArray> base    = new orientedArrowArray();
       coneSet                 seen;
@@ -823,19 +813,19 @@ namespace ALE {
       for(typename sieve_type::traits::coneSequence::iterator c_iter = initCone->begin(); c_iter != initCone->end(); ++c_iter) {
         const arrow_type arrow(*c_iter, p);
 
-        cone->push_back(oriented_arrow_type(arrow, 1));
-        closure->push_back(oriented_point_type(*c_iter, orientation->restrictPoint(arrow)[0]));
+        cone->push_back(oriented_arrow_type(arrow, 1)); // Notice the orientation of leaf cells is always 1
+        closure->push_back(oriented_point_type(*c_iter, orientation->restrictPoint(arrow)[0])); // However, we return the actual arrow orientation
       }
       for(int i = 1; i < depth; ++i) {
         Obj<orientedArrowArray> tmp = cone; cone = base; base = tmp;
 
         cone->clear();
         for(typename orientedArrowArray::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-          const arrow_type&                                     arrow = b_iter->first;
-          const Obj<typename sieve_type::traits::coneSequence>& pCone = sieve->cone(arrow.source);
-          typename arrow_section_type::value_type               o     = orientation->restrictPoint(arrow)[0];
+          const arrow_type&                                     arrow = b_iter->first; // This is an arrow considered in the previous round
+          const Obj<typename sieve_type::traits::coneSequence>& pCone = sieve->cone(arrow.source); // We are going to get the cone of this guy
+          typename arrow_section_type::value_type               o     = orientation->restrictPoint(arrow)[0]; // The orientation of arrow, which is our pO
 
-          if (b_iter->second < 0) {
+          if (b_iter->second < 0) { // This is the problem. The second orientation is carried up, being from the previous round
             o = -(o+1);
           }
           if (o < 0) {
@@ -1490,7 +1480,7 @@ namespace ALE {
 
       for(index_type c = end-1; c >= start; --c) {
         v.visitArrow(arrow_type(this->cones[c], p), this->coneOrientations[c]);
-        v.visitPoint(this->cones[c], this->coneOrientations[c]);
+        v.visitPoint(this->cones[c], this->coneOrientations[c] ? -(this->coneOrientations[c]+1): 0);
       }
     };
     // Currently does only 1 level

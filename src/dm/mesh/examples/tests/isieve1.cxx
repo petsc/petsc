@@ -13,7 +13,10 @@ class FunctionTestISieve : public CppUnit::TestFixture
 
   CPPUNIT_TEST(testBase);
   CPPUNIT_TEST(testConversion);
-  CPPUNIT_TEST(testOrientedClosure);
+  CPPUNIT_TEST(testTriangularInterpolatedOrientedClosure);
+  CPPUNIT_TEST(testTriangularUninterpolatedOrientedClosure);
+  CPPUNIT_TEST(testTetrahedralInterpolatedOrientedClosure);
+  CPPUNIT_TEST(testTetrahedralUninterpolatedOrientedClosure);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -101,29 +104,21 @@ public:
     }
   };
 
-  void testOrientedClosure() {
-    typedef ALE::Mesh::sieve_type                      Sieve;
-    typedef ALE::SieveAlg<ALE::Mesh>                   sieve_alg_type;
-    typedef sieve_alg_type::orientedConeArray          oConeArray;
+  template<typename Mesh, typename Renumbering>
+  void testOrientedClosure(const ALE::Obj<Mesh>& flexibleMesh, Renumbering& renumbering) {
+    typedef typename Mesh::sieve_type                  Sieve;
+    typedef ALE::SieveAlg<Mesh>                        sieve_alg_type;
+    typedef typename sieve_alg_type::orientedConeArray oConeArray;
     typedef sieve_type                                 ISieve;
     typedef ALE::ISieveVisitor::PointRetriever<ISieve> Visitor;
-    double lower[2] = {0.0, 0.0};
-    double upper[2] = {1.0, 1.0};
-    int    edges[2] = {2, 2};
-    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-    const ALE::Obj<ALE::Mesh> m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, true);
-    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
-    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
-    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
-    //m->view("Square Mesh");
-    //this->_sieve->view("Square Sieve");
-    const ALE::Obj<Sieve::baseSequence>& base = m->getSieve()->base();
+    const ALE::Obj<typename Sieve::baseSequence>& base        = flexibleMesh->getSieve()->base();
+    const int                                     depth       = flexibleMesh->depth();
+    const int                                     closureSize = std::max(0, (int) pow(this->_sieve->getConeSize(*base->begin()), depth)+1);
+    Visitor                                       retriever(closureSize, true);
 
-    const int closureSize = std::max(0, (int) pow(this->_sieve->getConeSize(*base->begin()), m->depth()));
-    Visitor retriever(closureSize, true);
-    for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-      const ALE::Obj<oConeArray>& closure = sieve_alg_type::orientedClosure(m, *b_iter);
+    for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+      const ALE::Obj<oConeArray>& closure = sieve_alg_type::orientedClosure(flexibleMesh, *b_iter);
 
       retriever.clear();
       ALE::ISieveTraversal<ISieve>::orientedClosure(*this->_sieve, renumbering[*b_iter], retriever);
@@ -131,14 +126,64 @@ public:
       int                                 ic    = 0;
 
       CPPUNIT_ASSERT_EQUAL(closure->size(), retriever.getOrientedSize());
-      std::cout << "Closure of " << *b_iter <<":"<< renumbering[*b_iter] << std::endl;
-      for(oConeArray::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter, ++ic) {
-        std::cout << "  point " << icone[ic].first << "  " << c_iter->first<<":"<<renumbering[c_iter->first] << std::endl;
+      if (this->_debug) {std::cout << "Closure of " << *b_iter <<":"<< renumbering[*b_iter] << std::endl;}
+      for(typename oConeArray::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter, ++ic) {
+        if (this->_debug) {std::cout << "  point " << icone[ic].first << "  " << c_iter->first<<":"<<renumbering[c_iter->first] << std::endl;}
         CPPUNIT_ASSERT_EQUAL(renumbering[c_iter->first], icone[ic].first);
-        std::cout << "  order " << icone[ic].second << "  " << icone[ic].second << std::endl;
+        if (this->_debug) {std::cout << "  order " << icone[ic].second << "  " << c_iter->second << std::endl;}
         CPPUNIT_ASSERT_EQUAL(c_iter->second, icone[ic].second);
       }
     }
+  };
+
+  void testTriangularOrientedClosure(bool interpolate) {
+    double lower[2] = {0.0, 0.0};
+    double upper[2] = {1.0, 1.0};
+    int    edges[2] = {2, 2};
+
+    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+    const ALE::Obj<ALE::Mesh> m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+
+    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
+    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
+    //m->view("Square Mesh");
+    //this->_sieve->view("Square Sieve");
+    testOrientedClosure(m, renumbering);
+  };
+
+  void testTriangularInterpolatedOrientedClosure() {
+    testTriangularOrientedClosure(true);
+  };
+
+  void testTriangularUninterpolatedOrientedClosure() {
+    testTriangularOrientedClosure(false);
+  };
+
+  void testTetrahedralOrientedClosure(bool interpolate) {
+    double lower[3] = {0.0, 0.0, 0.0};
+    double upper[3] = {1.0, 1.0, 1.0};
+    int    faces[3] = {1, 1, 1};
+
+    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
+    const ALE::Obj<ALE::Mesh> m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+
+    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
+    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
+    if (this->_debug > 1) {
+      m->view("Cube Mesh");
+      this->_sieve->view("Cube Sieve");
+    }
+    testOrientedClosure(m, renumbering);
+  };
+
+  void testTetrahedralInterpolatedOrientedClosure() {
+    testTetrahedralOrientedClosure(true);
+  };
+
+  void testTetrahedralUninterpolatedOrientedClosure() {
+    testTetrahedralOrientedClosure(false);
   };
 };
 
