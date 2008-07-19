@@ -247,8 +247,8 @@ int main(int argc, char *argv[])
     ierr = bratu->createMesh();CHKERRQ(ierr);
     ierr = bratu->createProblem();CHKERRQ(ierr);
     ierr = bratu->createExactSolution();CHKERRQ(ierr);
-    ierr = bratu->checkError(bratu->getExactSolution());CHKERRQ(ierr);
-    ierr = bratu->checkResidual(bratu->getExactSolution());CHKERRQ(ierr);
+    ierr = bratu->checkError(bratu->exactSolution());CHKERRQ(ierr);
+    ierr = bratu->checkResidual(bratu->exactSolution());CHKERRQ(ierr);
     ierr = bratu->createSolver();CHKERRQ(ierr);
     ierr = bratu->solve();CHKERRQ(ierr);
   } catch(ALE::Exception e) {

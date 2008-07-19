@@ -604,11 +604,14 @@ namespace ALE {
       bool structured() const {return this->_options.structured;};
       void structured(const bool s) {this->_options.structured = (PetscTruth) s;};
       bool interpolated() const {return this->_options.interpolate;};
+      void interpolated(const bool i) {this->_options.interpolate = (PetscTruth) i;};
       BCType bcType() const {return this->_options.bcType;};
+      void bcType(const BCType bc) {this->_options.bcType = bc;};
       AssemblyType opAssembly() const {return this->_options.operatorAssembly;};
+      void opAssembly(const AssemblyType at) {this->_options.operatorAssembly = at;};
       DM getDM() const {return this->_dm;};
       DMMG *getDMMG() const {return this->_dmmg;};
-      ALE::Problem::ExactSolType getExactSolution() const {return this->_options.exactSol;};
+      ALE::Problem::ExactSolType exactSolution() const {return this->_options.exactSol;};
     public: // Mesh
       #undef __FUNCT__
       #define __FUNCT__ "CreateMesh"
@@ -802,7 +805,7 @@ namespace ALE {
           ierr = DAGetGlobalVector(da, &X);CHKERRQ(ierr);
           ierr = DACreateGlobalVector(da, &this->_options.exactSol.vec);CHKERRQ(ierr);
           this->_options.func = this->_options.exactFunc;
-          U                   = getExactSolution().vec;
+          U                   = exactSolution().vec;
           if (dim() == 2) {
             ierr = DAFormFunctionLocal(da, (DALocalFunction1) ALE::Problem::BratuFunctions::Function_Structured_2d, X, U, (void *) &this->_options);CHKERRQ(ierr);
           } else if (dim() == 3) {
@@ -820,7 +823,7 @@ namespace ALE {
         } else {
           ::Mesh mesh = (::Mesh) this->_dm;
 
-          ierr = MeshGetSectionReal(mesh, "exactSolution", &getExactSolution().section);CHKERRQ(ierr);
+          ierr = MeshGetSectionReal(mesh, "exactSolution", &this->_options.exactSol.section);CHKERRQ(ierr);
           const Obj<PETSC_MESH_TYPE::real_section_type>& s = this->_mesh->getRealSection("exactSolution");
           this->_mesh->setupField(s);
           const Obj<PETSC_MESH_TYPE::label_sequence>&     cells       = this->_mesh->heightStratum(0);
@@ -865,7 +868,7 @@ namespace ALE {
             ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
             ierr = PetscViewerFileSetName(viewer, "exact_sol.vtk");CHKERRQ(ierr);
             ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
-            ierr = SectionRealView(getExactSolution().section, viewer);CHKERRQ(ierr);
+            ierr = SectionRealView(exactSolution().section, viewer);CHKERRQ(ierr);
             ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
           }
           ierr = MeshGetSectionReal(mesh, "error", &this->_options.error.section);CHKERRQ(ierr);
@@ -1087,7 +1090,7 @@ namespace ALE {
 
           ierr = DAGetGlobalVector(da, &error);CHKERRQ(ierr);
           ierr = VecCopy(sol.vec, error);CHKERRQ(ierr);
-          ierr = VecAXPY(error, -1.0, getExactSolution().vec);CHKERRQ(ierr);
+          ierr = VecAXPY(error, -1.0, exactSolution().vec);CHKERRQ(ierr);
           ierr = VecNorm(error, NORM_2, &norm);CHKERRQ(ierr);
           ierr = DARestoreGlobalVector(da, &error);CHKERRQ(ierr);
           ierr = PetscObjectGetName((PetscObject) sol.vec, &name);CHKERRQ(ierr);

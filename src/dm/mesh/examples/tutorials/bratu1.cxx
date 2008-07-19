@@ -11,7 +11,8 @@ class FunctionTestBratu : public CppUnit::TestFixture
 {
   CPPUNIT_TEST_SUITE(FunctionTestBratu);
 
-  CPPUNIT_TEST(testBratuUnitSquare);
+  CPPUNIT_TEST(testBratuUnitSquareInterpolated);
+  CPPUNIT_TEST(testBratuUnitSquareUninterpolated);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -44,13 +45,27 @@ public:
   /// Tear down data.
   void tearDown(void) {};
 
-  void testBratuUnitSquare(void) {
+  void testBratuUnitSquare(double exactError) {
     this->_problem->structured(false);
     this->_problem->createMesh();
     this->_problem->createProblem();
     this->_problem->createExactSolution();
-    this->_problem->createSolver();
+    PetscScalar errorNorm;
+    this->_problem->calculateError(this->_problem->exactSolution().section, &errorNorm);
+    CPPUNIT_ASSERT_DOUBLES_EQUAL(exactError, errorNorm, 1.0e-6);
+    ///this->_problem->createSolver();
+    ///this->_problem->solve();
     ///this->checkAnswer(answerStruct, "BratuUnitSquare");
+  };
+
+  void testBratuUnitSquareInterpolated(void) {
+    this->_problem->interpolated(true);
+    this->testBratuUnitSquare(0.337731);
+  };
+
+  void testBratuUnitSquareUninterpolated(void) {
+    this->_problem->interpolated(false);
+    this->testBratuUnitSquare(0.336959);
   };
 };
 
