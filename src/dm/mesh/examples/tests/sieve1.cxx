@@ -271,7 +271,7 @@ public:
     int    edges[2] = {2, 2};
 
     this->processOptions();
-    ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+    ALE::Obj<mesh_type> mB = ALE::MeshBuilder<mesh_type>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
     this->_bundle = ALE::Generator<mesh_type>::generateMesh(mB, true);
     this->_sieve  = this->_bundle->getSieve();
   };
@@ -308,7 +308,7 @@ public:
     int    faces[3] = {1, 1, 1};
 
     this->processOptions();
-    ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
+    ALE::Obj<mesh_type> mB = ALE::MeshBuilder<mesh_type>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
     this->_bundle = ALE::Generator<mesh_type>::generateMesh(mB, true);
     this->_sieve  = this->_bundle->getSieve();
   };

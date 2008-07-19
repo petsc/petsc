@@ -67,7 +67,7 @@ public:
       double upper[2] = {1.0, 1.0};
       int    faces[2] = {2, 2};
 
-      mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
+      mB = ALE::MeshBuilder<mesh_type>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, faces, this->_debug);
     }
     this->_mesh = ALE::Generator<mesh_type>::generateMesh(mB, interpolate);
   };
