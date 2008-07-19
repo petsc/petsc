@@ -788,10 +788,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(DMMG,Vec))
 {
-  PetscInt i,nlevels = dmmg[0]->nlevels;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<nlevels; i++) {
+    if (dmmg[i]->ksp) {
+      ierr = KSPSetInitialGuessNonzero(dmmg[i]->ksp,PETSC_TRUE);CHKERRQ(ierr);
+    }
     dmmg[i]->initialguess = guess;
   }
   PetscFunctionReturn(0);
