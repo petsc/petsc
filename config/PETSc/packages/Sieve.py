@@ -47,7 +47,7 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Sieve requires C++. Suggest using --with-clanguage=cxx')
       if not self.boost.found:
         raise RuntimeError('Sieve requires boost, and configure could not locate it. Suggest using --download-boost=1')
-      if 'with-opt-sieve' in self.argDB:
+      if 'with-opt-sieve' in self.argDB and self.argDB['with-opt-sieve']:
         self.addDefine('OPT_SIEVE', 1)
         self.addDefine('MESH_TYPE', 'ALE::IMesh')
       else:
