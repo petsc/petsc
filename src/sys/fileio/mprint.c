@@ -341,7 +341,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,c
   } else { /* other processors add to local queue */
     va_list     Argp;
     PrintfQueue next;
-    int         fullLength;
+    int         fullLength = 8191;
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
     if (queue) {queue->next = next; queue = next; queue->next = 0;}
     else       {queuebase   = queue = next;}
