@@ -43,9 +43,6 @@ T*/
 #include "petscda.h"
 #include "petscdmmg.h"
 #include "petscsnes.h"
-#if 1
-#include <PetscSimOutput.h>
-#endif
 
 /* 
    User-defined application context - contains data needed by the 
