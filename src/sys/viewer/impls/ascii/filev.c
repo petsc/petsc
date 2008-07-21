@@ -855,8 +855,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer vi
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;
+    next->size = QUEUESTRINGSIZE;
+    ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+    ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
     string = next->string;
-    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     tab *= 2;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
