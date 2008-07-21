@@ -265,6 +265,28 @@ namespace ALE {
       NConeRetriever(const Sieve& s, const size_t size, Visitor& v) : PointRetriever<Sieve,Visitor>(size, v, true), sieve(s) {};
       virtual ~NConeRetriever() {};
     };
+    template<typename Mesh, typename Visitor = NullVisitor<Sieve> >
+    class MeshNConeRetriever : public PointRetriever<typename Mesh::sieve_type,Visitor> {
+    public:
+      typedef typename Mesh::Sieve                    Sieve;
+      typedef PointRetriever<Sieve,Visitor>           base_type;
+      typedef typename Sieve::point_type              point_type;
+      typedef typename Sieve::arrow_type              arrow_type;
+      typedef typename base_type::oriented_point_type oriented_point_type;
+    protected:
+      const Mesh& mesh;
+      const int   depth;
+    protected:
+      inline virtual bool accept(const point_type& point) {
+        if (this->mesh.depth(point) == this->depth)
+          return true;
+        return false;
+      };
+    public:
+      MeshNConeRetriever(const Mesh& m, const int depth, const size_t size) : PointRetriever<typename Mesh::Sieve,Visitor>(size, true), mesh(m), depth(depth) {};
+      MeshNConeRetriever(const Mesh& m, const int depth, const size_t size, Visitor& v) : PointRetriever<typename Mesh::Sieve,Visitor>(size, v, true), mesh(m), depth(depth) {};
+      virtual ~MeshNConeRetriever() {};
+    };
     template<typename Sieve, typename Set, typename Renumbering>
     class FilteredPointRetriever {
     public:
