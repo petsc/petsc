@@ -260,7 +260,7 @@ class Package(config.base.Configure):
     '''Find the directory containing the package'''
     packages = self.externalPackagesDir
     if not os.path.isdir(packages):
-      os.mkdir(packages)
+      os.makedirs(packages)
       self.framework.actions.addArgument('Framework', 'Directory creation', 'Created the external packages directory: '+packages)
     Dir = None
     for d in os.listdir(packages):
