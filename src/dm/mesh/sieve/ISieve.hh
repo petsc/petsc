@@ -265,7 +265,7 @@ namespace ALE {
       NConeRetriever(const Sieve& s, const size_t size, Visitor& v) : PointRetriever<Sieve,Visitor>(size, v, true), sieve(s) {};
       virtual ~NConeRetriever() {};
     };
-    template<typename Mesh, typename Visitor = NullVisitor<Sieve> >
+    template<typename Mesh, typename Visitor = NullVisitor<typename Mesh::sieve_type> >
     class MeshNConeRetriever : public PointRetriever<typename Mesh::sieve_type,Visitor> {
     public:
       typedef typename Mesh::Sieve                    Sieve;
