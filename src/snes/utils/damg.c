@@ -793,7 +793,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode
 
   PetscFunctionBegin;
   for (i=0; i<nlevels; i++) {
-    if (dmmg[i]->ksp) {
+    if (dmmg[i]->ksp && !dmmg[i]->snes) {
       ierr = KSPSetInitialGuessNonzero(dmmg[i]->ksp,PETSC_TRUE);CHKERRQ(ierr);
     }
     dmmg[i]->initialguess = guess;
