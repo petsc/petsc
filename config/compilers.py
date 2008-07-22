@@ -243,7 +243,7 @@ class Configure(config.base.Configure):
         # Check for '-R/sharedlibpath/'
         m = re.match(r'^-R.*$', arg)
         if m:
-          lib = arg+os.path.abspath(argIter.next())
+          lib = os.path.abspath(arg[2:])
           if not lib in rpathflags:          
             rpathflags.append(lib)
             self.logPrint('Found -R library: '+lib, 4, 'compilers')
@@ -422,7 +422,7 @@ class Configure(config.base.Configure):
         # Check for '-R/sharedlibpath/'
         m = re.match(r'^-R.*$', arg)
         if m:
-          lib = arg+os.path.abspath(argIter.next())
+          lib = os.path.abspath(arg[2:])
           if not lib in rpathflags:
             rpathflags.append(lib)
             self.logPrint('Found -R library: '+lib, 4, 'compilers')
@@ -776,7 +776,7 @@ class Configure(config.base.Configure):
         # Check for '-R/sharedlibpath/'
         m = re.match(r'^-R.*$', arg)
         if m:
-          lib = arg+os.path.abspath(argIter.next())
+          lib = os.path.abspath(arg[2:])
           if not lib in rpathflags:
             rpathflags.append(lib)
             self.logPrint('Found -R library: '+lib, 4, 'compilers')
