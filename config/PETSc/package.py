@@ -282,7 +282,7 @@ class Package(config.base.Configure):
     '''Find the directory containing the package'''
     packages = self.petscdir.externalPackagesDir
     if not os.path.isdir(packages):
-      os.mkdir(packages)
+      os.makedirs(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
     Dir = None
     for dir in os.listdir(packages):

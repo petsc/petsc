@@ -30,8 +30,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
 {
   PetscInt   i,j;
   PetscEnum   tmp = ENUM_DUMMY;
-  PetscEnum  *tptr = &tmp;             /* Need to access tmp indirectly to get */
-  char       *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+  char       *ptr1,*ptr2 = (char*)&tmp;
                                    
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
@@ -39,7 +38,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
     for (i=0; i<(PetscInt)sizeof(PetscEnum); i++) {
       ptr2[i] = ptr1[sizeof(PetscEnum)-1-i];
     }
-    buff[j] = *tptr;
+    for (i=0; i<(PetscInt)sizeof(PetscEnum); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -54,8 +55,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapTruth(PetscTruth *buff,PetscInt n)
 {
   PetscInt    i,j;
   PetscTruth  tmp = PETSC_FALSE;
-  PetscTruth  *tptr = &tmp;             /* Need to access tmp indirectly to get */
-  char        *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+  char        *ptr1,*ptr2 = (char*)&tmp;
                                    
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
@@ -63,7 +63,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapTruth(PetscTruth *buff,PetscInt n)
     for (i=0; i<(PetscInt)sizeof(PetscTruth); i++) {
       ptr2[i] = ptr1[sizeof(PetscTruth)-1-i];
     }
-    buff[j] = *tptr;
+    for (i=0; i<(PetscInt)sizeof(PetscTruth); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -77,8 +79,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapTruth(PetscTruth *buff,PetscInt n)
 PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(PetscInt *buff,PetscInt n)
 {
   PetscInt  i,j,tmp = 0;
-  PetscInt  *tptr = &tmp;             /* Need to access tmp indirectly to get */
-  char       *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+  char       *ptr1,*ptr2 = (char*)&tmp;
                                    
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
@@ -86,7 +87,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(PetscInt *buff,PetscInt n)
     for (i=0; i<(PetscInt)sizeof(PetscInt); i++) {
       ptr2[i] = ptr1[sizeof(PetscInt)-1-i];
     }
-    buff[j] = *tptr;
+    for (i=0; i<(PetscInt)sizeof(PetscInt); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -100,7 +103,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapShort(short *buff,PetscInt n)
 {
   PetscInt   i,j;
   short      tmp;
-  short      *tptr = &tmp;           /* take care pf bug in DEC-ALPHA g++ */
   char       *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
@@ -109,7 +111,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapShort(short *buff,PetscInt n)
     for (i=0; i<(PetscInt) sizeof(short); i++) {
       ptr2[i] = ptr1[sizeof(int)-1-i];
     }
-    buff[j] = *tptr;
+    for (i=0; i<(PetscInt) sizeof(short); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -124,7 +128,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapScalar(PetscScalar *buff,PetscInt n)
 {
   PetscInt  i,j;
   PetscReal tmp,*buff1 = (PetscReal*)buff;
-  PetscReal *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
   char      *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
@@ -136,7 +139,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapScalar(PetscScalar *buff,PetscInt n)
     for (i=0; i<(PetscInt) sizeof(PetscReal); i++) {
       ptr2[i] = ptr1[sizeof(PetscReal)-1-i];
     }
-    buff1[j] = *tptr;
+    for (i=0; i<(PetscInt) sizeof(PetscReal); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -150,7 +155,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
 {
   PetscInt i,j;
   double   tmp,*buff1 = (double*)buff;
-  double   *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
   char     *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
@@ -159,7 +163,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
     for (i=0; i<(PetscInt) sizeof(double); i++) {
       ptr2[i] = ptr1[sizeof(double)-1-i];
     }
-    buff1[j] = *tptr;
+    for (i=0; i<(PetscInt) sizeof(double); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
