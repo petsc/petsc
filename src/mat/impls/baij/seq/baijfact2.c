@@ -2106,9 +2106,10 @@ PetscErrorCode MatSolve_SeqBAIJ_4_SSE_Demotion(Mat A,Vec bb,Vec xx)
 PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
   Mat_SeqBAIJ       *a = (Mat_SeqBAIJ *)A->data;
-  PetscInt          n=a->mbs,*ai=a->i,*aj=a->j;
+  PetscInt          n=a->mbs;
+  const PetscInt    *ai=a->i,*aj=a->j;
   PetscErrorCode    ierr;
-  PetscInt          *diag = a->diag;
+  const PetscInt    *diag = a->diag;
   const MatScalar   *aa=a->a;
   PetscScalar       *x;
   const PetscScalar *b;
@@ -2133,7 +2134,8 @@ PetscErrorCode MatSolve_SeqBAIJ_4_NaturalOrdering(Mat A,Vec bb,Vec xx)
   {
     PetscScalar     s1,s2,s3,s4,x1,x2,x3,x4;
     const MatScalar *v;
-    PetscInt        jdx,idt,idx,nz,*vi,i,ai16;
+    PetscInt        jdx,idt,idx,nz,i,ai16;
+    const PetscInt  *vi;
 
   /* forward solve the lower triangular */
   idx    = 0;

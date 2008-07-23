@@ -37,17 +37,8 @@ const char *PetscDataTypes[] = {"INT", "DOUBLE", "COMPLEX",
                                 "LONG","SHORT",  "FLOAT",
                                 "CHAR","LOGICAL","ENUM","TRUTH","LONGDOUBLE","PetscDataType","PETSC_",0};
 
-PetscCookie PETSC_LARGEST_COOKIE = PETSC_SMALLEST_COOKIE;
-PetscCookie PETSC_OBJECT_COOKIE = 0;
-
 PetscTruth PetscPreLoadingUsed = PETSC_FALSE;
 PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
-
-PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(PetscCookie *cookie)
-{
-  *cookie = ++PETSC_LARGEST_COOKIE;
-  return 0;
-}
 
 /*
        Checks the options database for initializations related to the 
@@ -143,7 +134,7 @@ MPI_Op PetscMaxSum_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum_Local"
-void PETSC_DLLEXPORT PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
+void PETSC_DLLEXPORT MPIAPI PetscMaxSum_Local(void *in,void *out,int *cnt,MPI_Datatype *datatype)
 {
   PetscInt *xin = (PetscInt*)in,*xout = (PetscInt*)out,i,count = *cnt;
 
@@ -191,7 +182,7 @@ MPI_Op PETSC_DLLEXPORT PetscADMax_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMax_Local"
-void PETSC_DLLEXPORT PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSC_DLLEXPORT MPIAPI PetscADMax_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
@@ -219,7 +210,7 @@ MPI_Op PETSC_DLLEXPORT PetscADMin_Op = 0;
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "PetscADMin_Local"
-void PETSC_DLLEXPORT PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
+void PETSC_DLLEXPORT MPIAPI PetscADMin_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
   PetscInt    i,count = *cnt;
@@ -268,6 +259,16 @@ void PETSC_DLLEXPORT PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Data
   return;
 }
 EXTERN_C_END
+#endif
+
+#if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
+#if !defined(PETSC_WORDS_BIGENDIAN)
+EXTERN_C_BEGIN
+extern PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype,MPI_Aint*,void*); 
+extern PetscMPIInt PetscDataRep_read_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*);
+extern PetscMPIInt PetscDataRep_write_conv_fn(void*, MPI_Datatype,PetscMPIInt,void*,MPI_Offset,void*); 
+EXTERN_C_END
+#endif
 #endif
 
 static int  PetscGlobalArgc   = 0;
@@ -545,7 +546,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 
-  
   /*
      Build the options database
   */
@@ -580,6 +580,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions(); CHKERRQ(ierr);
+
+#if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
+  /* 
+      Tell MPI about our own data representation converter, this would/should be used if extern32 is not supported by the MPI
+
+      Currently not used because it is not supported by MPICH.
+  */
+#if !defined(PETSC_WORDS_BIGENDIAN)
+  ierr = MPI_Register_datarep((char *)"petsc",PetscDataRep_read_conv_fn,PetscDataRep_write_conv_fn,PetscDataRep_extent_fn,PETSC_NULL);CHKERRQ(ierr);
+#endif  
+#endif
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
   if (flg) {

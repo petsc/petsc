@@ -59,7 +59,7 @@ $
 
    Concepts: OpenMP
    
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPMerge()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPMerge(), PCOpenMPRun()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
@@ -140,7 +140,7 @@ $
 
    Concepts: OpenMP
    
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPSpawn()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPSpawn(), PCOpenMPRun()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize)
@@ -198,7 +198,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize)
 
    Level: developer
            
-.seealso: PetscFinalize(), PetscGetArgs(), PetscOpenMPMerge()
+.seealso: PetscFinalize(), PetscGetArgs(), PetscOpenMPMerge(), PCOpenMPRun()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void)
@@ -225,8 +225,10 @@ static void     *objects[100];
    Collective on MPI_Comm
 
    Level: developer
+
+   Notes: this is usually handled automatically, likely you do not need to use this directly
            
-.seealso: PetscOpenMPMerge()
+.seealso: PetscOpenMPMerge(), PCOpenMPRun(), PCOpenMPNew()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
@@ -286,7 +288,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
            
    Note: n is a PetscInt when it "really" should be a size_t
 
-.seealso: PetscOpenMPMerge()
+.seealso: PetscOpenMPMerge(), PCOpenMPRun(), PCOpenMPFree()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,PetscInt n,void **ptr)

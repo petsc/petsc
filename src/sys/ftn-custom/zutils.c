@@ -202,16 +202,23 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
 
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define petscisinfornan_            PETSCISINFORNAN
+#define petscisinfornanscalar_            PETSCISINFORNANSCALAR
+#define petscisinfornanreal_            PETSCISINFORNANREAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define petscisinfornan_           petscisinfornan
+#define petscisinfornanscalar_           petscisinfornanscalar
+#define petscisinfornanreal_           petscisinfornanreal
 #endif
 
 EXTERN_C_BEGIN
 
-int PETSC_STDCALL petscisinfornan_(PetscScalar *v)
+PetscTruth PETSC_STDCALL petscisinfornanscalar_(PetscScalar *v)
 {
-  return (int) PetscIsInfOrNan(*v);
+  return (PetscTruth) PetscIsInfOrNanScalar(*v);
+}
+
+PetscTruth PETSC_STDCALL petscisinfornanreal_(PetscReal *v)
+{
+  return (PetscTruth) PetscIsInfOrNanReal(*v);
 }
 
 EXTERN_C_END

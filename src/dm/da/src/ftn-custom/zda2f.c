@@ -7,20 +7,20 @@
 #define dasetlocaljacobian_          DASETLOCALJACOBIAN
 #define dasetlocalfunction_          DASETLOCALFUNCTION
 #define dacreate2d_                  DACREATE2D
-#define dagetownershiprange_         DAGETOWNERSHIPRANGE
+#define dagetownershipranges_        DAGETOWNERSHIPRANGES
 #define dagetneighbors_              DAGETNEIGHBORS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dasetlocaljacobian_          dasetlocaljacobian
 #define dasetlocalfunction_          dasetlocalfunction
 #define dacreate2d_                  dacreate2d
-#define dagetownershiprange_         dagetownershiprange
+#define dagetownershipranges_        dagetownershipranges
 #define dagetneighbors_              dagetneighbors
 #endif
 
 EXTERN_C_BEGIN
 void PETSC_STDCALL dagetneighbors_(DA *da,PetscMPIInt *ranks,PetscErrorCode *ierr)
 {
-  const PetscInt *r;
+  const PetscMPIInt *r;
   PetscInt       n;
 
   *ierr = DAGetNeighbors(*da,&r);if (*ierr) return;
@@ -121,15 +121,16 @@ void PETSC_STDCALL dacreate2d_(MPI_Comm *comm,DAPeriodicType *wrap,DAStencilType
   *ierr = DACreate2d(MPI_Comm_f2c(*(MPI_Fint *)&*comm),*wrap,*stencil_type,*M,*N,*m,*n,*w,*s,lx,ly,inra);
 }
 
-void PETSC_STDCALL dagetownershiprange_(DA *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)
+void PETSC_STDCALL dagetownershipranges_(DA *da,PetscInt lx[],PetscInt ly[],PetscInt lz[],PetscErrorCode *ierr)
 {
-  PetscInt *gx,*gy,*gz,M,N,P,i;
+  const PetscInt *gx,*gy,*gz;
+  PetscInt       M,N,P,i;
   
   CHKFORTRANNULLINTEGER(lx);
   CHKFORTRANNULLINTEGER(ly);
   CHKFORTRANNULLINTEGER(lz);
   *ierr = DAGetInfo(*da,0,0,0,0,&M,&N,&P,0,0,0,0);if (*ierr) return;
-  *ierr = DAGetOwnershipRange(*da,&gx,&gy,&gz);if (*ierr) return;
+  *ierr = DAGetOwnershipRanges(*da,&gx,&gy,&gz);if (*ierr) return;
   if (lx) {for (i=0; i<M; i++) {lx[i] = gx[i];}}
   if (ly) {for (i=0; i<N; i++) {ly[i] = gy[i];}}
   if (lz) {for (i=0; i<P; i++) {lz[i] = gz[i];}}

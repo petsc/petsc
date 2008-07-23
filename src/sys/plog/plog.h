@@ -44,7 +44,7 @@
 #define ACTIONEND   3
 typedef struct _Action {
   int            action;        /* The type of execution */
-  PetscEvent     event;         /* The event number */
+  PetscLogEvent  event;         /* The event number */
   PetscCookie    cookie;        /* The event class id */
   PetscLogDouble time;          /* The time of occurence */
   PetscLogDouble flops;         /* The cumlative flops */
@@ -106,23 +106,23 @@ EXTERN PetscErrorCode EventPerfLogEnsureSize(EventPerfLog, int);
 EXTERN PetscErrorCode EventPerfInfoClear(EventPerfInfo *);
 EXTERN PetscErrorCode EventPerfInfoCopy(EventPerfInfo *, EventPerfInfo *);
 /* Registration functions */
-EXTERN PetscErrorCode EventRegLogRegister(EventRegLog, const char [], PetscCookie, PetscEvent *);
+EXTERN PetscErrorCode EventRegLogRegister(EventRegLog, const char [], PetscCookie, PetscLogEvent *);
 /* Query functions */
-EXTERN PetscErrorCode EventPerfLogSetVisible(EventPerfLog, PetscEvent, PetscTruth);
-EXTERN PetscErrorCode EventPerfLogGetVisible(EventPerfLog, PetscEvent, PetscTruth *);
+EXTERN PetscErrorCode EventPerfLogSetVisible(EventPerfLog, PetscLogEvent, PetscTruth);
+EXTERN PetscErrorCode EventPerfLogGetVisible(EventPerfLog, PetscLogEvent, PetscTruth *);
 /* Activaton functions */
-EXTERN PetscErrorCode EventPerfLogActivate(EventPerfLog, PetscEvent);
-EXTERN PetscErrorCode EventPerfLogDeactivate(EventPerfLog, PetscEvent);
+EXTERN PetscErrorCode EventPerfLogActivate(EventPerfLog, PetscLogEvent);
+EXTERN PetscErrorCode EventPerfLogDeactivate(EventPerfLog, PetscLogEvent);
 EXTERN PetscErrorCode EventPerfLogActivateClass(EventPerfLog, EventRegLog, PetscCookie);
 EXTERN PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog, EventRegLog, PetscCookie);
 
 /* Logging functions */
-EXTERN PetscErrorCode PetscLogEventBeginDefault(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-EXTERN PetscErrorCode PetscLogEventEndDefault(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-EXTERN PetscErrorCode PetscLogEventBeginComplete(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-EXTERN PetscErrorCode PetscLogEventEndComplete(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-EXTERN PetscErrorCode PetscLogEventBeginTrace(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
-EXTERN PetscErrorCode PetscLogEventEndTrace(PetscEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventEndDefault(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventEndComplete(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
+EXTERN PetscErrorCode PetscLogEventEndTrace(PetscLogEvent, int, PetscObject, PetscObject, PetscObject, PetscObject);
 
 /* Creation and destruction functions */
 EXTERN PetscErrorCode ClassRegLogCreate(ClassRegLog *);
@@ -134,7 +134,7 @@ EXTERN PetscErrorCode ClassRegInfoDestroy(ClassRegInfo *);
 EXTERN PetscErrorCode ClassPerfLogEnsureSize(ClassPerfLog, int);
 EXTERN PetscErrorCode ClassPerfInfoClear(ClassPerfInfo *);
 /* Registration functions */
-EXTERN PetscErrorCode ClassRegLogRegister(ClassRegLog, const char [], PetscCookie *);
+EXTERN PetscErrorCode ClassRegLogRegister(ClassRegLog, const char [], PetscCookie);
 /* Query functions */
 EXTERN PetscErrorCode ClassRegLogGetClass(ClassRegLog, PetscCookie, int *);
 /* Logging functions */

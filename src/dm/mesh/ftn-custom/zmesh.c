@@ -29,6 +29,7 @@ extern void PetscRmPointer(void*);
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define meshcreatepflotran_     MESHCREATEPFLOTRAN
 #define meshcreatepcice_        MESHCREATEPCICE
+#define meshcreateexodus_       MESHCREATEEXODUS
 #define meshdistribute_         MESHDISTRIBUTE
 #define meshview_               MESHVIEW
 #define meshgetvertexsectionreal_   MESHGETVERTEXSECTIONREAL
@@ -41,9 +42,11 @@ extern void PetscRmPointer(void*);
 #define assemblevector_         ASSEMBLEVECTOR
 #define assemblematrix_         ASSEMBLEMATRIX
 #define writepcicerestart_      WRITEPCICERESTART
+#define meshgetstratumsize_     MESHGETSTRATUMSIZE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define meshcreatepflotran_     meshcreatepflotran_
 #define meshcreatepcice_        meshcreatepcice
+#define meshcreateexodus_       meshcreateexodus
 #define meshdistribute_         meshdistribute
 #define meshview_               meshview
 #define meshgetvertexsectionreal_   meshgetvertexsectionreal
@@ -56,6 +59,7 @@ extern void PetscRmPointer(void*);
 #define assemblevector_         assemblevector
 #define assemblematrix_         assemblematrix
 #define writepcicerestart_      writepcicerestart
+#define meshgetstratumsize_     meshgetstratumsize
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -78,6 +82,13 @@ void PETSC_STDCALL  meshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFilena
   FREECHAR(coordFilename,cF);
   FREECHAR(adjFilename,aF);
   FREECHAR(bcFilename,bF);
+}
+void PETSC_STDCALL  meshcreateexodus_(MPI_Fint * comm, CHAR filename PETSC_MIXED_LEN(len), Mesh *mesh, PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *cF;
+  FIXCHAR(filename,len,cF);
+  *ierr = MeshCreateExodus(MPI_Comm_f2c( *(comm) ),cF,mesh);
+  FREECHAR(filename,cF);
 }
 void PETSC_STDCALL  meshdistribute_(Mesh serialMesh, CHAR partitioner PETSC_MIXED_LEN(lenP), Mesh *parallelMesh, PetscErrorCode *ierr PETSC_END_LEN(lenP))
 {
@@ -149,6 +160,12 @@ void PETSC_STDCALL  assemblematrix_(Mat A,PetscInt *e,PetscScalar v[],InsertMode
 }
 void PETSC_STDCALL  writepcicerestart_(Mesh mesh, PetscViewer viewer, int *ierr){
   *ierr = WritePCICERestart((Mesh) PetscToPointer(mesh), (PetscViewer) PetscToPointer(viewer));
+}
+void PETSC_STDCALL  meshgetstratumsize_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetStratumSize((Mesh) PetscToPointer(mesh),pN, *value, size);
+  FREECHAR(name,pN);
 }
 
 EXTERN_C_END

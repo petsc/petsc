@@ -43,7 +43,7 @@ PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
 .keywords: TS, set, type
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,TSType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,const TSType type)
 {
   PetscErrorCode (*r)(TS);
   PetscTruth     match;
@@ -90,7 +90,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,TSType type)
 .keywords: TS, timestepper, get, type, name
 .seealso TSSetType()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetType(TS ts, TSType *type)
+PetscErrorCode PETSCTS_DLLEXPORT TSGetType(TS ts, const TSType *type)
 {
   PetscErrorCode ierr;
 

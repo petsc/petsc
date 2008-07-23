@@ -294,6 +294,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerVUPrintDeferred(PetscViewer viewer, co
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
   va_list        Argp;
+  int            fullLength;
   PrintfQueue    next;
   PetscErrorCode ierr;
 
@@ -310,7 +311,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerVUPrintDeferred(PetscViewer viewer, co
 
   va_start(Argp, format);
   ierr = PetscMemzero(next->string,QUEUESTRINGSIZE);CHKERRQ(ierr);
-  ierr = PetscVSNPrintf(next->string, QUEUESTRINGSIZE,format, Argp);CHKERRQ(ierr);
+  ierr = PetscVSNPrintf(next->string, QUEUESTRINGSIZE,format,&fullLength, Argp);CHKERRQ(ierr);
   va_end(Argp);
   PetscFunctionReturn(0);
 }

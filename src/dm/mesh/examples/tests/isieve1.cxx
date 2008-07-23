@@ -13,7 +13,10 @@ class FunctionTestISieve : public CppUnit::TestFixture
 
   CPPUNIT_TEST(testBase);
   CPPUNIT_TEST(testConversion);
-  CPPUNIT_TEST(testOrientedClosure);
+  CPPUNIT_TEST(testTriangularInterpolatedOrientedClosure);
+  CPPUNIT_TEST(testTriangularUninterpolatedOrientedClosure);
+  CPPUNIT_TEST(testTetrahedralInterpolatedOrientedClosure);
+  CPPUNIT_TEST(testTetrahedralUninterpolatedOrientedClosure);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -63,7 +66,7 @@ public:
     double lower[2] = {0.0, 0.0};
     double upper[2] = {1.0, 1.0};
     int    edges[2] = {2, 2};
-    const ALE::Obj<ALE::Mesh> m = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+    const ALE::Obj<ALE::Mesh> m = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
@@ -73,7 +76,7 @@ public:
 
     for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
       const ALE::Obj<Sieve::coneSequence>& cone = m->getSieve()->cone(*b_iter);
-      ALE::ISieveVisitor::PointRetriever<ISieve, 2> retriever;
+      ALE::ISieveVisitor::PointRetriever<ISieve> retriever(2);
 
       this->_sieve->cone(renumbering[*b_iter], retriever);
       const ISieve::point_type *icone = retriever.getPoints();
@@ -88,7 +91,7 @@ public:
 
     for(Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
       const ALE::Obj<Sieve::supportSequence>& support = m->getSieve()->support(*c_iter);
-      ALE::ISieveVisitor::PointRetriever<ISieve, 4> retriever;
+      ALE::ISieveVisitor::PointRetriever<ISieve> retriever(4);
 
       this->_sieve->support(renumbering[*c_iter], retriever);
       const ISieve::point_type *isupport = retriever.getPoints();
@@ -101,42 +104,86 @@ public:
     }
   };
 
-  void testOrientedClosure() {
-    typedef ALE::Mesh::sieve_type                         Sieve;
-    typedef ALE::SieveAlg<ALE::Mesh>                      sieve_alg_type;
-    typedef sieve_alg_type::orientedConeArray             oConeArray;
-    typedef sieve_type                                    ISieve;
-    typedef ALE::ISieveVisitor::PointSetRetriever<ISieve> Visitor;
+  template<typename Mesh, typename Renumbering>
+  void testOrientedClosure(const ALE::Obj<Mesh>& flexibleMesh, Renumbering& renumbering) {
+    typedef typename Mesh::sieve_type                  Sieve;
+    typedef ALE::SieveAlg<Mesh>                        sieve_alg_type;
+    typedef typename sieve_alg_type::orientedConeArray oConeArray;
+    typedef sieve_type                                 ISieve;
+    typedef ALE::ISieveVisitor::PointRetriever<ISieve> Visitor;
+
+    const ALE::Obj<typename Sieve::baseSequence>& base        = flexibleMesh->getSieve()->base();
+    const int                                     depth       = flexibleMesh->depth();
+    const int                                     closureSize = std::max(0, (int) pow(this->_sieve->getConeSize(*base->begin()), depth)+1);
+    Visitor                                       retriever(closureSize, true);
+
+    for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+      const ALE::Obj<oConeArray>& closure = sieve_alg_type::orientedClosure(flexibleMesh, *b_iter);
+
+      retriever.clear();
+      ALE::ISieveTraversal<ISieve>::orientedClosure(*this->_sieve, renumbering[*b_iter], retriever);
+      const Visitor::oriented_point_type *icone = retriever.getOrientedPoints();
+      int                                 ic    = 0;
+
+      CPPUNIT_ASSERT_EQUAL(closure->size(), retriever.getOrientedSize());
+      if (this->_debug) {std::cout << "Closure of " << *b_iter <<":"<< renumbering[*b_iter] << std::endl;}
+      for(typename oConeArray::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter, ++ic) {
+        if (this->_debug) {std::cout << "  point " << icone[ic].first << "  " << c_iter->first<<":"<<renumbering[c_iter->first] << std::endl;}
+        CPPUNIT_ASSERT_EQUAL(renumbering[c_iter->first], icone[ic].first);
+        if (this->_debug) {std::cout << "  order " << icone[ic].second << "  " << c_iter->second << std::endl;}
+        CPPUNIT_ASSERT_EQUAL(c_iter->second, icone[ic].second);
+      }
+    }
+  };
+
+  void testTriangularOrientedClosure(bool interpolate) {
     double lower[2] = {0.0, 0.0};
     double upper[2] = {1.0, 1.0};
     int    edges[2] = {2, 2};
-    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-    const ALE::Obj<ALE::Mesh> m  = ALE::Generator::generateMesh(mB, true);
+
+    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+    const ALE::Obj<ALE::Mesh> m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
     ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
-    m->view("Square Mesh");
-    this->_sieve->view("Square Sieve");
-    const ALE::Obj<Sieve::baseSequence>& base = m->getSieve()->base();
+    //m->view("Square Mesh");
+    //this->_sieve->view("Square Sieve");
+    testOrientedClosure(m, renumbering);
+  };
 
-    for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-      const ALE::Obj<oConeArray>& closure = sieve_alg_type::orientedClosure(m, *b_iter);
-      Visitor retriever;
+  void testTriangularInterpolatedOrientedClosure() {
+    testTriangularOrientedClosure(true);
+  };
 
-      ALE::ISieveTraversal<ISieve>::orientedClosure(*this->_sieve, renumbering[*b_iter], retriever);
-      const Visitor::oriented_points_type&          icone   = retriever.getOrientedPoints();
-      Visitor::oriented_points_type::const_iterator ic_iter = icone.begin();
+  void testTriangularUninterpolatedOrientedClosure() {
+    testTriangularOrientedClosure(false);
+  };
 
-      CPPUNIT_ASSERT_EQUAL(closure->size(), retriever.getOrientedSize());
-      std::cout << "Closure of " << *b_iter <<":"<< renumbering[*b_iter] << std::endl;
-      for(oConeArray::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter, ++ic_iter) {
-        std::cout << "  point " << ic_iter->first << "  " << c_iter->first<<":"<<renumbering[c_iter->first] << std::endl;
-        CPPUNIT_ASSERT_EQUAL(renumbering[c_iter->first], ic_iter->first);
-        std::cout << "  order " << ic_iter->second << "  " << c_iter->second << std::endl;
-        CPPUNIT_ASSERT_EQUAL(c_iter->second, ic_iter->second);
-      }
+  void testTetrahedralOrientedClosure(bool interpolate) {
+    double lower[3] = {0.0, 0.0, 0.0};
+    double upper[3] = {1.0, 1.0, 1.0};
+    int    faces[3] = {1, 1, 1};
+
+    const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
+    const ALE::Obj<ALE::Mesh> m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
+    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+
+    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
+    ALE::ISieveConverter::convertOrientation(*m->getSieve(), *this->_sieve, renumbering, m->getArrowSection("orientation").ptr());
+    if (this->_debug > 1) {
+      m->view("Cube Mesh");
+      this->_sieve->view("Cube Sieve");
     }
+    testOrientedClosure(m, renumbering);
+  };
+
+  void testTetrahedralInterpolatedOrientedClosure() {
+    testTetrahedralOrientedClosure(true);
+  };
+
+  void testTetrahedralUninterpolatedOrientedClosure() {
+    testTetrahedralOrientedClosure(false);
   };
 };
 

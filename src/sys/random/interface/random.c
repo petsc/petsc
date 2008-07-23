@@ -18,7 +18,7 @@
 #endif
 
 /* Logging support */
-PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE = 0;
+PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomDestroy" 

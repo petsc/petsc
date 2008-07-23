@@ -151,7 +151,7 @@ namespace ALE {
           int k = 0;
 
           for(int v = 0; v < nvtxs; ++v) {
-            if (assignment[v] == p) values[k++] = v;
+            if (assignment[v] == p) values[k++] = manager.getCell(v);
           }
           if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
           partition->updatePoint(p, values);
@@ -258,7 +258,7 @@ namespace ALE {
           int k = 0;
 
           for(int v = 0; v < nvtxs; ++v) {
-            if (assignment[v] == p) values[k++] = v;
+            if (assignment[v] == p) values[k++] = manager.getCell(v);
           }
           if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
           partition->updatePoint(p, values);
@@ -304,7 +304,7 @@ namespace ALE {
           int       k     = 0;
 
           for(int v = start; v < end; ++v, ++k) {
-            values[k] = v;
+            values[k] = manager.getCell(v);
           }
           if (k != partition->getFiberDimension(p)) throw ALE::Exception("Invalid partition");
           partition->updatePoint(p, values);
@@ -323,14 +323,46 @@ namespace ALE {
   class Partitioner {
   public:
     typedef Alloc_                               alloc_type;
+    typedef GraphPartitioner                     graph_partitioner_type;
     typedef typename GraphPartitioner::part_type part_type;
     template<typename Mesh>
     class MeshManager {
+    public:
+      typedef typename Mesh::point_type point_type;
     protected:
       const Obj<Mesh>& mesh;
+      bool             simpleCellNumbering;
+      point_type      *cells;
+    protected:
+      void createCells(const int height) {
+        const Obj<typename Mesh::label_sequence>&     mcells   = mesh->heightStratum(height);
+        const typename Mesh::label_sequence::iterator cEnd     = mcells->end();
+        const int                                     numCells = mcells->size();
+        int                                           c        = 0;
+
+        this->cells               = NULL;
+        this->simpleCellNumbering = true;
+        for(typename Mesh::label_sequence::iterator c_iter = mcells->begin(); c_iter != cEnd; ++c_iter, ++c) {
+          if (*c_iter != c) {
+            this->simpleCellNumbering = false;
+            break;
+          }
+        }
+        if (!this->simpleCellNumbering) {
+          this->cells = new point_type[numCells];
+          c           = 0;
+          for(typename Mesh::label_sequence::iterator c_iter = mcells->begin(); c_iter != cEnd; ++c_iter, ++c) {
+            this->cells[c] = *c_iter;
+          }
+        }
+      };
     public:
-      MeshManager(const Obj<Mesh>& mesh): mesh(mesh) {};
-      ~MeshManager() {};
+      MeshManager(const Obj<Mesh>& mesh, const int height = 0): mesh(mesh) {
+        this->createCells(height);
+      };
+      ~MeshManager() {
+        if (this->cells) {delete [] this->cells;}
+      };
     public:
       template<typename Float>
       void createCellCoordinates(const int numVertices, Float *X[], Float *Y[], Float *Z[]) const {
@@ -349,7 +381,7 @@ namespace ALE {
         int       c       = 0;
 
         for(typename Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
-          const double *coords = mesh->restrict(coordinates, *c_iter);
+          const double *coords = mesh->restrictClosure(coordinates, *c_iter);
 
           for(int d = 0; d < dim; ++d) {
             vCoords[d][c] = 0.0;
@@ -374,6 +406,12 @@ namespace ALE {
 
         for(int i = 0; i < numVertices*3; ++i) {float_alloc_type().destroy(x+i);}
         float_alloc_type().deallocate(x, numVertices*3);
+      };
+      point_type getCell(const int cellNumber) const {
+        if (this->simpleCellNumbering) {
+          return cellNumber;
+        }
+        return this->cells[cellNumber];
       };
     };
     template<typename Sieve>
@@ -445,7 +483,7 @@ namespace ALE {
         if (this->cell == neighbor) return;
         this->pR->clear();
         this->sieve.meet(this->cell, neighbor, *this->pR);
-        if (this->pR->getSize() == this->faceVertices) {
+        if (this->pR->getSize() == (size_t) this->faceVertices) {
           if ((this->cell < numCells) && (neighbor < numCells)) {
             this->neighborCells[this->cell].insert(neighbor);
           } else {
@@ -715,7 +753,6 @@ namespace ALE {
       const Obj<typename Mesh::label_sequence>&     cells        = mesh->heightStratum(0);
       const typename Mesh::label_sequence::iterator cEnd         = cells->end();
       const int                                     numCells     = cells->size();
-      int                                           newCell      = numCells;
       Obj<typename Mesh::sieve_type>                overlapSieve = new typename Mesh::sieve_type(mesh->comm(), mesh->debug());
       int                                           offset       = 0;
       const int                                     cellOffset   = zeroBase ? 0 : 1;
@@ -989,20 +1026,34 @@ namespace ALE {
     template<typename Sieve, typename Section, typename Renumbering>
     static void createLocalSieveV(const Obj<Sieve>& sieve, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sieve>& localSieve, const int height = 0) {
       typedef std::set<typename Sieve::point_type> pointSet;
+      typedef ISieveVisitor::FilteredPointRetriever<Sieve,pointSet,Renumbering> visitor_type;
       const typename Section::value_type *points    = partition->restrictPoint(sieve->commRank());
       const int                           numPoints = partition->getFiberDimension(sieve->commRank());
       int                                 maxSize   = std::max(0, std::max(sieve->getMaxConeSize(), sieve->getMaxSupportSize()));
+      typename Sieve::point_type         *oPoints   = new typename Sieve::point_type[std::max(1, sieve->getMaxConeSize())];
+      int                                *oOrients  = new int[std::max(1, sieve->getMaxConeSize())];
       const pointSet                      pSet(points, &points[numPoints]);
-      ISieveVisitor::FilteredPointRetriever<Sieve,pointSet,Renumbering> fV(pSet, renumbering, maxSize);
+      visitor_type fV(pSet, renumbering, maxSize);
 
       for(int p = 0; p < numPoints; ++p) {
-        sieve->cone(points[p], fV);
-        localSieve->setCone(fV.getPoints(), renumbering[points[p]]);
+        ///sieve->cone(points[p], fV);
+        ///localSiaeve->setCone(fV.getPoints(), renumbering[points[p]]);
+        sieve->orientedCone(points[p], fV);
+        const typename visitor_type::oriented_point_type *q = fV.getOrientedPoints();
+        const int                                         n = fV.getOrientedSize();
+        for(int i = 0; i < n; ++i) {
+          oPoints[i]  = q[i].first;
+          oOrients[i] = q[i].second;
+        }
+        localSieve->setCone(oPoints, renumbering[points[p]]);
+        localSieve->setConeOrientation(oOrients, renumbering[points[p]]);
         fV.clear();
         sieve->support(points[p], fV);
         localSieve->setSupport(renumbering[points[p]], fV.getPoints());
         fV.clear();
       }
+      delete [] oPoints;
+      delete [] oOrients;
     };
     template<typename Mesh, typename Section, typename Renumbering>
     static void createLocalMeshV(const Obj<Mesh>& mesh, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Mesh>& localMesh, const int height = 0) {
@@ -1017,7 +1068,7 @@ namespace ALE {
     // TODO: Could rebind assignment section to the type of the output
     template<typename Mesh, typename Section>
     static void createPartition(const Obj<Mesh>& mesh, const Obj<Section>& partition, const int height = 0) {
-      MeshManager<Mesh> manager(mesh);
+      MeshManager<Mesh> manager(mesh, height);
       int              *start     = NULL;
       int              *adjacency = NULL;
 
@@ -1039,7 +1090,7 @@ namespace ALE {
     };
     template<typename Mesh, typename Section>
     static void createPartitionV(const Obj<Mesh>& mesh, const Obj<Section>& partition, const int height = 0) {
-      MeshManager<Mesh> manager(mesh);
+      MeshManager<Mesh> manager(mesh, height);
       int              *start     = NULL;
       int              *adjacency = NULL;
 
@@ -1512,7 +1563,7 @@ namespace ALE {
 	      int       c       = 0;
 
 	      for(typename bundle_type::label_sequence::iterator c_iter = cells->begin(); c_iter !=cells->end(); ++c_iter, ++c) {
-		const double *coords = bundle->restrict(coordinates, *c_iter);
+		const double *coords = bundle->restrictClosure(coordinates, *c_iter);
 
 		for(int d = 0; d < dim; ++d) {
 		  vCoords[d][c] = 0.0;

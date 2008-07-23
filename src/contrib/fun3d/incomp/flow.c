@@ -85,6 +85,7 @@ int main(int argc,char **args)
   int 		ierr;
   PetscTruth    flg;
   MPI_Comm      comm;
+  PetscInt      maxfails = 10000;
   ierr = PetscInitialize(&argc,&args,"petsc.opt",help);CHKERRQ(ierr);
   ierr = PetscInitializeFortran();CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
@@ -173,6 +174,7 @@ int main(int argc,char **args)
       ierr = SNESSetJacobian(snes,user.grid->A,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
     }
  
+    ierr = SNESSetMaxLinearSolveFailures(snes,maxfails);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
  
     /* Initialize the flowfield */

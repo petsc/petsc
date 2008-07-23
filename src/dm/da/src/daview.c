@@ -92,12 +92,12 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 
   /* save the coordinates if they exist to disk (in the natural ordering) */
   if (da->coordinates) {
-    DA       dac;
-    PetscInt *lx,*ly,*lz;
-    Vec      natural;
+    DA             dac;
+    const PetscInt *lx,*ly,*lz;
+    Vec            natural;
 
     /* create the appropriate DA to map to natural ordering */
-    ierr = DAGetOwnershipRange(da,&lx,&ly,&lz);CHKERRQ(ierr);
+    ierr = DAGetOwnershipRanges(da,&lx,&ly,&lz);CHKERRQ(ierr);
     if (dim == 1) {
       ierr = DACreate1d(comm,DA_NONPERIODIC,m,dim,0,lx,&dac);CHKERRQ(ierr); 
     } else if (dim == 2) {
@@ -177,7 +177,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 .keywords: distributed array, view, visualize
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
-          DAGetGhostCorners(), DAGetOwnershipRange(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d()
+          DAGetGhostCorners(), DAGetOwnershipRanges(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 {

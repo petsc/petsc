@@ -51,7 +51,7 @@
       double precision norm,tol
       PetscErrorCode ierr
       PetscInt   i,j,II,JJ,Istart
-      PetscInt   Iend,m,n,i1,its
+      PetscInt   Iend,m,n,i1,its,five
       PetscMPIInt rank
       PetscTruth user_defined_pc,flg
 
@@ -74,6 +74,7 @@
       i1 = 1
       m       = 8
       n       = 7
+      five    = 5
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -92,9 +93,9 @@
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
       call MatSetType(A, MATAIJ,ierr)
       call MatSetFromOptions(A,ierr)
-      call MatMPIAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,5,
+      call MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,
      &                     PETSC_NULL_CHARACTER,ierr)
-      call MatSeqAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,ierr)
+      call MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which

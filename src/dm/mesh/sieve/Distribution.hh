@@ -64,9 +64,11 @@ namespace ALE {
   class DistributionNew {
   public:
     typedef typename Mesh::point_type            point_type;
+    typedef OrientedPoint<point_type>            oriented_point_type;
     typedef typename Partitioner::part_type      rank_type;
     typedef ALE::ISection<rank_type, point_type> partition_type;
     typedef ALE::Section<point_type, point_type> cones_type;
+    typedef ALE::Section<point_type, oriented_point_type> oriented_cones_type;
   public:
     template<typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<cones_type> completeCones(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
@@ -81,10 +83,10 @@ namespace ALE {
       return overlapCones;
     };
     template<typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap>
-    static Obj<cones_type> completeConesV(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
-      typedef ALE::ConeSectionV<Sieve> cones_wrapper_type;
-      Obj<cones_wrapper_type> cones        = new cones_wrapper_type(sieve);
-      Obj<cones_type>         overlapCones = new cones_type(sieve->comm(), sieve->debug());
+    static Obj<oriented_cones_type> completeConesV(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
+      typedef ALE::OrientedConeSectionV<Sieve> oriented_cones_wrapper_type;
+      Obj<oriented_cones_wrapper_type> cones        = new oriented_cones_wrapper_type(sieve);
+      Obj<oriented_cones_type>         overlapCones = new oriented_cones_type(sieve->comm(), sieve->debug());
 
       ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
       if (sieve->debug()) {overlapCones->view("Overlap Cones");}
@@ -157,6 +159,7 @@ namespace ALE {
       const int         numLocalPoints = partition->getFiberDimension(rank);
 
       for(point_type p = 0; p < numLocalPoints; ++p) {
+        ///std::cout <<"["<<partition->commRank()<<"]: local renumbering " << localPoints[p] << " --> " << p << std::endl;
         renumbering[localPoints[p]] = p;
       }
       const Obj<typename part_recv_overlap_type::traits::baseSequence> rPoints    = recvOverlap->base();
@@ -169,6 +172,7 @@ namespace ALE {
         const int                                                 numPoints       = overlapPartition->getFiberDimension(remotePartPoint);
 
         for(int i = 0; i < numPoints; ++i) {
+          ///std::cout <<"["<<partition->commRank()<<"]: remote renumbering " << points[i] << " --> " << localPoint << std::endl;
           renumbering[points[i]] = localPoint++;
         }
       }
@@ -206,6 +210,49 @@ namespace ALE {
       return partition;
     };
     template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
+    static Obj<partition_type> distributeMeshAndSections(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
+      Obj<partition_type> partition = distributeMesh(mesh, newMesh, renumbering, sendMeshOverlap, recvMeshOverlap, height);
+
+      // Distribute the coordinates
+      const Obj<typename Mesh::real_section_type>& coordinates         = mesh->getRealSection("coordinates");
+      const Obj<typename Mesh::real_section_type>& parallelCoordinates = newMesh->getRealSection("coordinates");
+
+      newMesh->setupCoordinates(parallelCoordinates);
+      distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+      // Distribute other sections
+      if (mesh->getRealSections()->size() > 1) {
+        Obj<std::set<std::string> > names = mesh->getRealSections();
+
+        for(std::set<std::string>::const_iterator n_iter = names->begin(); n_iter != names->end(); ++n_iter) {
+          if (*n_iter == "coordinates")   continue;
+          distributeSection(mesh->getRealSection(*n_iter), partition, renumbering, sendMeshOverlap, recvMeshOverlap, newMesh->getRealSection(*n_iter));
+        }
+      }
+      if (mesh->getIntSections()->size() > 0) {
+        Obj<std::set<std::string> > names = mesh->getIntSections();
+
+        for(std::set<std::string>::const_iterator n_iter = names->begin(); n_iter != names->end(); ++n_iter) {
+          distributeSection(mesh->getIntSection(*n_iter), partition, renumbering, sendMeshOverlap, recvMeshOverlap, newMesh->getIntSection(*n_iter));
+        }
+      }
+      if (mesh->getArrowSections()->size() > 1) {
+        throw ALE::Exception("Need to distribute more arrow sections");
+      }
+      // Distribute labels
+      const typename Mesh::labels_type& labels = mesh->getLabels();
+
+      for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        if (newMesh->hasLabel(l_iter->first)) continue;
+        const Obj<typename Mesh::label_type>& origLabel = l_iter->second;
+        const Obj<typename Mesh::label_type>& newLabel  = newMesh->createLabel(l_iter->first);
+        // Get remote labels
+        ALE::New::Completion<Mesh,typename Mesh::point_type>::scatterCones(origLabel, newLabel, sendMeshOverlap, recvMeshOverlap, renumbering);
+        // Create local label
+        newLabel->add(origLabel, newMesh->getSieve(), renumbering);
+      }
+      return partition;
+    };
+    template<typename NewMesh, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<partition_type> distributeMeshV(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap, const int height = 0) {
       const Obj<partition_type> cellPartition = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
       const Obj<partition_type> partition     = new partition_type(mesh->comm(), 0, mesh->commSize(), mesh->debug());
@@ -237,6 +284,75 @@ namespace ALE {
       newMesh->getSieve()->symmetrize();
       newMesh->stratify();
       return partition;
+    };
+    template<typename NewMesh>
+    static void distributeMeshAndSectionsV(const Obj<Mesh>& mesh, const Obj<NewMesh>& newMesh) {
+      typedef typename Mesh::point_type point_type;
+
+      const Obj<typename Mesh::send_overlap_type> sendMeshOverlap = new typename Mesh::send_overlap_type(mesh->comm(), mesh->debug());
+      const Obj<typename Mesh::recv_overlap_type> recvMeshOverlap = new typename Mesh::recv_overlap_type(mesh->comm(), mesh->debug());
+      std::map<point_type,point_type>    renumbering;
+      // Distribute the mesh
+      Obj<partition_type> partition = distributeMeshV(mesh, newMesh, renumbering, sendMeshOverlap, recvMeshOverlap);
+      if (mesh->debug()) {
+        std::cout << "["<<mesh->commRank()<<"]: Mesh Renumbering:" << std::endl;
+        for(typename Mesh::renumbering_type::const_iterator r_iter = renumbering.begin(); r_iter != renumbering.end(); ++r_iter) {
+          std::cout << "["<<mesh->commRank()<<"]:   global point " << r_iter->first << " --> " << " local point " << r_iter->second << std::endl;
+        }
+      }
+      // Distribute the coordinates
+      const Obj<typename Mesh::real_section_type>& coordinates         = mesh->getRealSection("coordinates");
+      const Obj<typename Mesh::real_section_type>& parallelCoordinates = newMesh->getRealSection("coordinates");
+
+      newMesh->setupCoordinates(parallelCoordinates);
+      distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+      // Distribute other sections
+      if (mesh->getRealSections()->size() > 1) {
+        Obj<std::set<std::string> > names = mesh->getRealSections();
+        int                         n     = 0;
+
+        for(std::set<std::string>::const_iterator n_iter = names->begin(); n_iter != names->end(); ++n_iter) {
+          if (*n_iter == "coordinates")   continue;
+          std::cout << "ERROR: Did not distribute real section " << *n_iter << std::endl;
+          ++n;
+        }
+        if (n) {throw ALE::Exception("Need to distribute more real sections");}
+      }
+      if (mesh->getIntSections()->size() > 0) {
+        Obj<std::set<std::string> > names = mesh->getIntSections();
+
+        for(std::set<std::string>::const_iterator n_iter = names->begin(); n_iter != names->end(); ++n_iter) {
+          const Obj<typename Mesh::int_section_type>& section    = mesh->getIntSection(*n_iter);
+          const Obj<typename Mesh::int_section_type>& newSection = newMesh->getIntSection(*n_iter);
+          
+          // We assume all integer sections are complete sections
+          newSection->setChart(newMesh->getSieve()->getChart());
+          distributeSection(section, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newSection);
+        }
+      }
+      if (mesh->getArrowSections()->size() > 1) {
+        throw ALE::Exception("Need to distribute more arrow sections");
+      }
+      // Distribute labels
+      const typename Mesh::labels_type& labels = mesh->getLabels();
+
+      for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        if (newMesh->hasLabel(l_iter->first)) continue;
+        const Obj<typename Mesh::label_type>& origLabel = l_iter->second;
+        const Obj<typename Mesh::label_type>& newLabel  = newMesh->createLabel(l_iter->first);
+        // Get remote labels
+        ALE::New::Completion<Mesh,point_type>::scatterCones(origLabel, newLabel, sendMeshOverlap, recvMeshOverlap, renumbering);
+        // Create local label
+        newLabel->add(origLabel, newMesh->getSieve(), renumbering);
+      }
+      // Create the parallel overlap
+      Obj<typename Mesh::send_overlap_type> sendParallelMeshOverlap = newMesh->getSendOverlap();
+      Obj<typename Mesh::recv_overlap_type> recvParallelMeshOverlap = newMesh->getRecvOverlap();
+      //   Can I figure this out in a nicer way?
+      ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(renumbering);
+
+      ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
+      newMesh->setCalculatedOverlap(true);
     };
     template<typename Label, typename Partition, typename Renumbering, typename SendOverlap, typename RecvOverlap, typename NewLabel>
     static void distributeLabel(const Obj<typename Mesh::sieve_type>& sieve, const Obj<Label>& l, const Obj<Partition>& partition, Renumbering& renumbering, const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<NewLabel>& newL) {
@@ -364,10 +480,10 @@ namespace ALE {
     typedef typename bundle_type::sieve_type                                            sieve_type;
     typedef typename bundle_type::point_type                                            point_type;
     typedef typename bundle_type::alloc_type                                            alloc_type;
+    typedef typename bundle_type::send_overlap_type                                     send_overlap_type;
+    typedef typename bundle_type::recv_overlap_type                                     recv_overlap_type;
     typedef typename ALE::New::Completion<bundle_type, typename sieve_type::point_type>                            sieveCompletion;
     typedef typename ALE::New::SectionCompletion<bundle_type, typename bundle_type::real_section_type::value_type> sectionCompletion;
-    typedef typename sectionCompletion::send_overlap_type                               send_overlap_type;
-    typedef typename sectionCompletion::recv_overlap_type                               recv_overlap_type;
   public:
     #undef __FUNCT__
     #define __FUNCT__ "createPartitionOverlap"
@@ -814,8 +930,8 @@ namespace ALE {
     #define __FUNCT__ "updateOverlap"
     // This is just crappy. We could introduce another phase to find out exactly what
     //   indices people do not have in the global order after communication
-    template<typename SendSection, typename RecvSection>
-    static void updateOverlap(const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+    template<typename OrigSendOverlap, typename OrigRecvOverlap, typename SendSection, typename RecvSection>
+    static void updateOverlap(const Obj<OrigSendOverlap>& origSendOverlap, const Obj<OrigRecvOverlap>& origRecvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
       const typename SendSection::sheaf_type& sendRanks = sendSection->getPatches();
       const typename RecvSection::sheaf_type& recvRanks = recvSection->getPatches();
 
@@ -829,7 +945,9 @@ namespace ALE {
           const int                               size   = section->getFiberDimension(*b_iter);
 
           for(int p = 0; p < size; p++) {
-            sendOverlap->addArrow(points[p], rank, points[p]);
+            if (origSendOverlap->support(points[p])->size() == 0) {
+              sendOverlap->addArrow(points[p], rank, points[p]);
+            }
           }
         }
       }
@@ -843,15 +961,46 @@ namespace ALE {
           const int                               size   = section->getFiberDimension(*b_iter);
 
           for(int p = 0; p < size; p++) {
-            recvOverlap->addArrow(rank, points[p], points[p]);
+            if (origRecvOverlap->support(rank, points[p])->size() == 0) {
+              recvOverlap->addArrow(rank, points[p], points[p]);
+            }
           }
         }
       }
     };
     #undef __FUNCT__
     #define __FUNCT__ "updateSieve"
-    template<typename RecvSection>
-    static void updateSieve(const Obj<RecvSection>& recvSection, const Obj<sieve_type>& sieve) {
+    template<typename RecvOverlap, typename RecvSection>
+    static void updateSieve(const Obj<RecvOverlap>& recvOverlap, const Obj<RecvSection>& recvSection, const Obj<sieve_type>& sieve) {
+#if 1
+      Obj<typename RecvOverlap::traits::baseSequence> recvPoints = recvOverlap->base();
+
+      for(typename RecvOverlap::traits::baseSequence::iterator p_iter = recvPoints->begin(); p_iter != recvPoints->end(); ++p_iter) {
+        const Obj<typename RecvOverlap::traits::coneSequence>& ranks      = recvOverlap->cone(*p_iter);
+        const typename RecvOverlap::target_type&               localPoint = *p_iter;
+
+        for(typename RecvOverlap::traits::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+          const typename RecvOverlap::target_type&       remotePoint = r_iter.color();
+          const int                                      rank        = *r_iter;
+          const Obj<typename RecvSection::section_type>& section     = recvSection->getSection(rank);
+          const typename RecvSection::value_type        *points      = section->restrictPoint(remotePoint);
+          const int                                      size        = section->getFiberDimension(remotePoint);
+          int                                            c           = 0;
+
+          ///std::cout << "["<<recvSection->commRank()<<"]: Receiving " << size << " points from rank " << rank << std::endl;
+          for(int p = 0; p < size; p++) {
+            // rank -- remote point --> local point
+            if (recvOverlap->support(rank, points[p])->size()) {
+              sieve->addArrow(*recvOverlap->support(rank, points[p])->begin(), localPoint, c);
+              ///std::cout << "["<<recvSection->commRank()<<"]:   1Adding arrow " << *recvOverlap->support(rank, points[p])->begin() << "("<<points[p]<<") --> " << localPoint << std::endl;
+            } else {
+              sieve->addArrow(points[p], localPoint, c);
+              ///std::cout << "["<<recvSection->commRank()<<"]:   2Adding arrow " << points[p] << " --> " << localPoint << std::endl;
+            }
+          }
+        }
+      }
+#else
       const typename RecvSection::sheaf_type& ranks = recvSection->getPatches();
 
       for(typename RecvSection::sheaf_type::const_iterator p_iter = ranks.begin(); p_iter != ranks.end(); ++p_iter) {
@@ -863,17 +1012,20 @@ namespace ALE {
           int                                     size   = section->getFiberDimension(*b_iter);
           int                                     c      = 0;
 
+          std::cout << "["<<recvSection->commRank()<<"]: Receiving " << size << " points from rank " << p_iter->first << std::endl;
           for(int p = 0; p < size; p++) {
             //sieve->addArrow(points[p], *b_iter, c++);
             sieve->addArrow(points[p], *b_iter, c);
+            std::cout << "["<<recvSection->commRank()<<"]:   Adding arrow " << points[p] << " --> " << *b_iter << std::endl;
           }
         }
       }
+#endif
     };
     #undef __FUNCT__
     #define __FUNCT__ "coneCompletion"
-    template<typename SendSection, typename RecvSection>
-    static void coneCompletion(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<bundle_type>& bundle, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
+    template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection>
+    static void coneCompletion(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<bundle_type>& bundle, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
       if (sendOverlap->commSize() == 1) return;
       // Distribute cones
       const Obj<sieve_type>&                                 sieve           = bundle->getSieve();
@@ -882,7 +1034,7 @@ namespace ALE {
       const Obj<typename sieveCompletion::cone_section>      coneSection     = new typename sieveCompletion::cone_section(sieve);
       sieveCompletion::completion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
       // Update cones
-      updateSieve(recvSection, sieve);
+      updateSieve(recvOverlap, recvSection, sieve);
     };
     #undef __FUNCT__
     #define __FUNCT__ "completeSection"

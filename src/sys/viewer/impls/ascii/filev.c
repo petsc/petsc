@@ -4,6 +4,8 @@
 #include "petscfix.h"
 #include <stdarg.h>
 
+#define QUEUESTRINGSIZE 8192
+
 /* ----------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy_ASCII" 
@@ -436,6 +438,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
     va_end(Argp);
   } else if (ascii->bviewer) { /* this is a singleton PetscViewer that is not on process 0 */
     va_list     Argp;
+    int         fullLength;
     char        *string;
 
     PrintfQueue next;
@@ -443,12 +446,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;
+    next->size = QUEUESTRINGSIZE;
+    ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+    ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
     string = next->string;
-    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     tab = 2*ascii->tab;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-2*ascii->tab,format,Argp);CHKERRQ(ierr);
+    ierr = PetscVSNPrintf(string,next->size-2*ascii->tab,format,&fullLength,Argp);CHKERRQ(ierr);
     va_end(Argp);
   }
   PetscFunctionReturn(0);
@@ -845,18 +850,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer vi
   } else { /* other processors add to local queue */
     char        *string;
     va_list     Argp;
+    int         fullLength;
     PrintfQueue next;
 
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;
+    next->size = QUEUESTRINGSIZE;
+    ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+    ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
     string = next->string;
-    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     tab *= 2;
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-2*vascii->tab,format,Argp);
+    ierr = PetscVSNPrintf(string,next->size-2*vascii->tab,format,&fullLength,Argp);
     va_end(Argp);
   }
   PetscFunctionReturn(0);
@@ -990,6 +998,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMon
     va_end(Argp);
   } else if (ascii->bviewer) { /* this is a singleton PetscViewer that is not on process 0 */
     va_list     Argp;
+    int         fullLength;
     char        *string;
 
     PrintfQueue next;
@@ -997,12 +1006,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMon
     if (queue) {queue->next = next; queue = next;}
     else       {queuebase   = queue = next;}
     queuelength++;
+    next->size = QUEUESTRINGSIZE;
+    ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+    ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
     string = next->string;
-    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
     tab = 2*(ascii->tab + ctx->tabs);
     while (tab--) {*string++ = ' ';}
     va_start(Argp,format);
-    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-2*ascii->tab,format,Argp);CHKERRQ(ierr);
+    ierr = PetscVSNPrintf(string,next->size-2*ascii->tab,format,&fullLength,Argp);CHKERRQ(ierr);
     va_end(Argp);
   }
   PetscFunctionReturn(0);

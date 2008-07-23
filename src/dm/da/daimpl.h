@@ -116,6 +116,6 @@ EXTERN_C_END
 EXTERN PetscErrorCode DAView_Private(DA);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA,DA,Mat*);
 
-extern PetscEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
+extern PetscLogEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 
 #endif

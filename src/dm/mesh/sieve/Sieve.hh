@@ -516,11 +516,35 @@ namespace ALE {
       int diameter();
       int diameter(const point_type& p);
 
-      Obj<typename traits::depthSequence> depthStratum(int d);
-      Obj<typename traits::depthSequence> depthStratum(int d, marker_type m);
+      Obj<typename traits::depthSequence> depthStratum(int d) {
+        if (d == 0) {
+          return typename traits::depthSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::depthMarkerTag>(this->_cap.set), d);
+        } else {
+          return typename traits::depthSequence(::boost::multi_index::get<typename traits::base_container_type::traits::depthMarkerTag>(this->_base.set), d);
+        }
+      };
+      Obj<typename traits::depthSequence> depthStratum(int d, marker_type m) {
+        if (d == 0) {
+          return typename traits::depthSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::depthMarkerTag>(this->_cap.set), d, m);
+        } else {
+          return typename traits::depthSequence(::boost::multi_index::get<typename traits::base_container_type::traits::depthMarkerTag>(this->_base.set), d, m);
+        }
+      };
 
-      Obj<typename traits::heightSequence> heightStratum(int h);
-      Obj<typename traits::heightSequence> heightStratum(int h, marker_type m);
+      Obj<typename traits::heightSequence> heightStratum(int h) {
+        if (h == 0) {
+          return typename traits::heightSequence(::boost::multi_index::get<typename traits::base_container_type::traits::heightMarkerTag>(this->_base.set), h);
+        } else {
+          return typename traits::heightSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::heightMarkerTag>(this->_cap.set), h);
+        }
+      };
+      Obj<typename traits::heightSequence> heightStratum(int h, marker_type m) {
+        if (h == 0) {
+          return typename traits::heightSequence(::boost::multi_index::get<typename traits::base_container_type::traits::heightMarkerTag>(this->_base.set), h, m);
+        } else {
+          return typename traits::heightSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::heightMarkerTag>(this->_cap.set), h, m);
+        }
+      };
 
       Obj<typename traits::markerSequence> markerStratum(marker_type m);
  
@@ -1087,6 +1111,7 @@ namespace ALE {
             os << *basei <<  "<--(" << conei.color() << ")--" << *conei << std::endl;
           }
         }
+#if 0
         os << "cap --> (outdegree, marker, depth, height):" << std::endl;
         for(typename traits::capSequence::iterator capi = cap->begin(); capi != cap->end(); ++capi) {
           os << *capi <<  "-->" << capi.degree() << ", " << capi.marker() << ", " << capi.depth() << ", " << capi.height() << std::endl;
@@ -1095,6 +1120,7 @@ namespace ALE {
         for(typename traits::baseSequence::iterator basei = base->begin(); basei != base->end(); ++basei) {
           os << *basei <<  "-->" << basei.degree() << ", " << basei.marker() << ", " << basei.depth() << ", " << basei.height() << std::endl;
         }
+#endif
       }
       else {
         os << "'raw' arrow set:" << std::endl;
@@ -1171,6 +1197,7 @@ namespace ALE {
         //
         PetscSynchronizedPrintf(this->comm(), txt1.str().c_str());
         PetscSynchronizedFlush(this->comm());
+#if 0
         //
         ostringstream txt2;
         if(this->commRank() == 0) {
@@ -1197,6 +1224,7 @@ namespace ALE {
         //
         PetscSynchronizedPrintf(this->comm(), txt3.str().c_str());
         PetscSynchronizedFlush(this->comm());
+#endif
     };
     //
     // Structural queries
@@ -1286,38 +1314,6 @@ namespace ALE {
       return this->depth(p) + this->height(p);
     };
 
-    template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::traits::depthSequence> Sieve<Point_,Marker_,Color_>::depthStratum(int d) {
-      if (d == 0) {
-        return typename traits::depthSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::depthMarkerTag>(this->_cap.set), d);
-      } else {
-        return typename traits::depthSequence(::boost::multi_index::get<typename traits::base_container_type::traits::depthMarkerTag>(this->_base.set), d);
-      }
-    };
-    template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::traits::depthSequence> Sieve<Point_,Marker_,Color_>::depthStratum(int d, marker_type m) {
-      if (d == 0) {
-        return typename traits::depthSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::depthMarkerTag>(this->_cap.set), d, m);
-      } else {
-        return typename traits::depthSequence(::boost::multi_index::get<typename traits::base_container_type::traits::depthMarkerTag>(this->_base.set), d, m);
-      }
-    };
-    template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::traits::heightSequence> Sieve<Point_,Marker_,Color_>::heightStratum(int h) {
-      if (h == 0) {
-        return typename traits::heightSequence(::boost::multi_index::get<typename traits::base_container_type::traits::heightMarkerTag>(this->_base.set), h);
-      } else {
-        return typename traits::heightSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::heightMarkerTag>(this->_cap.set), h);
-      }
-    };
-    template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::traits::heightSequence> Sieve<Point_,Marker_,Color_>::heightStratum(int h, marker_type m) {
-      if (h == 0) {
-        return typename traits::heightSequence(::boost::multi_index::get<typename traits::base_container_type::traits::heightMarkerTag>(this->_base.set), h, m);
-      } else {
-        return typename traits::heightSequence(::boost::multi_index::get<typename traits::cap_container_type::traits::heightMarkerTag>(this->_cap.set), h, m);
-      }
-    };
     template <typename Point_, typename Marker_, typename Color_> 
     template<class InputSequence> 
     void Sieve<Point_,Marker_,Color_>::__computeClosureHeights(const Obj<InputSequence>& points) {

@@ -7,8 +7,8 @@
 #include "petscsys.h"
 
 /* Logging support */
-PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE = 0;
-PetscEvent  KSP_GMRESOrthogonalization = 0, KSP_SetUp = 0, KSP_Solve = 0;
+PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;
+PetscLogEvent  KSP_GMRESOrthogonalization, KSP_SetUp, KSP_Solve;
 
 
 PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
@@ -46,7 +46,7 @@ PetscTruth KSPRegisterAllCalled = PETSC_FALSE;
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
 {
-  const char     *type;
+  const KSPType  type;
   PetscErrorCode ierr;
   PetscTruth     iascii;
 
@@ -501,7 +501,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
 .seealso: PCSetType(), KSPType
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, KSPType type)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, const KSPType type)
 {
   PetscErrorCode ierr,(*r)(KSP);
   PetscTruth     match;
@@ -571,7 +571,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterDestroy(void)
 
 .seealso: KSPSetType()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP ksp,KSPType *type)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP ksp,const KSPType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);

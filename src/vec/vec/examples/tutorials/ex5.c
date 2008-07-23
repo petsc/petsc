@@ -18,7 +18,7 @@ int main(int argc,char **args)
   Vec            u;
   PetscViewer    viewer;
 #if defined(PETSC_USE_LOG)
-  PetscEvent     VECTOR_GENERATE,VECTOR_READ;
+  PetscLogEvent  VECTOR_GENERATE,VECTOR_READ;
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -28,7 +28,7 @@ int main(int argc,char **args)
 
   /* PART 1:  Generate vector, then write it in binary format */
 
-  ierr = PetscLogEventRegister(&VECTOR_GENERATE,"Generate Vector",VEC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Generate Vector",VEC_COOKIE,&VECTOR_GENERATE);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
   /* Generate vector */
   ierr = VecCreate(PETSC_COMM_WORLD,&u);CHKERRQ(ierr);
@@ -46,21 +46,19 @@ int main(int argc,char **args)
   ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_WORLD,"writing vector in binary to vector.dat ...\n");CHKERRQ(ierr);
-
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
   ierr = VecView(u,viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = VecDestroy(u);CHKERRQ(ierr);
+  /*  ierr = PetscOptionsClear();CHKERRQ(ierr);*/
+  ierr = PetscOptionsSetValue("-viewer_binary_mpiio","");CHKERRQ(ierr); 
+
   ierr = PetscLogEventEnd(VECTOR_GENERATE,0,0,0,0);CHKERRQ(ierr);
 
   /* PART 2:  Read in vector in binary format */
 
-  /* All processors wait until test vector has been dumped */
-  ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
-  ierr = PetscSleep(10);CHKERRQ(ierr);
-
   /* Read new vector in binary format */
-  ierr = PetscLogEventRegister(&VECTOR_READ,"Read Vector",VEC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Read Vector",VEC_COOKIE,&VECTOR_READ);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(VECTOR_READ,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"reading vector in binary from vector.dat ...\n");CHKERRQ(ierr);
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"vector.dat",FILE_MODE_READ,&viewer);CHKERRQ(ierr);

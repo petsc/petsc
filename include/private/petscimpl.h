@@ -71,9 +71,10 @@ typedef struct {
   PetscReal      *realcomposeddata, **realstarcomposeddata;     \
   PetscInt       scalar_idmax,        scalarstar_idmax;         \
   PetscInt       *scalarcomposedstate,*scalarstarcomposedstate; \
-  PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata;	\
-  void           (**fortran_func_pointers)(void)
-
+  PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata; \
+  void           (**fortran_func_pointers)(void);               \
+  void           *python_context;                               \
+  PetscErrorCode (*python_destroy)(void*)
   /*  ... */                               
 
 /*
@@ -113,7 +114,7 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 
     Level: developer
 
-.seealso: PetscHeaderDestroy(), PetscLogClassRegister()
+.seealso: PetscHeaderDestroy(), PetscCookieRegister()
 
 @*/ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie)	\
@@ -138,8 +139,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject,Pets
 @*/ 
 #define PetscHeaderDestroy(h)			   \
   (PetscLogObjectDestroy((PetscObject)(h)) ||	   \
-   PetscFree((h)->ops) ||			   \
    PetscHeaderDestroy_Private((PetscObject)(h)) || \
+   PetscFree((h)->ops) ||			   \
    PetscFree(h))
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject);

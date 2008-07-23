@@ -24,7 +24,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
 {
   PetscErrorCode ierr;
   PetscInt       info[8],nmax = 8,i;
-  int            fd;
   MPI_Comm       comm;
   char           fieldnametag[32],fieldname[64];
   PetscTruth     isbinary,flag;
@@ -35,7 +34,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   if (!isbinary) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
 
-  ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-daload_info",info,&nmax,&flag);CHKERRQ(ierr);
@@ -69,8 +67,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
   */
   ierr = PetscOptionsHasName(PETSC_NULL,"-daload_coordinates",&flag);CHKERRQ(ierr);
   if (flag) {
-    DA  dac;
-    Vec natural,global;
+    DA      dac;
+    Vec     tmpglobal,global;
     PetscInt mlocal;
 
     if (info[0] == 1) {
@@ -82,14 +80,16 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
       ierr = DACreate3d(comm,DA_NONPERIODIC,DA_STENCIL_BOX,info[1],info[2],info[3],M,N,P,
                         3,0,0,0,0,&dac);CHKERRQ(ierr);
     }
-    ierr = DACreateNaturalVector(dac,&natural);CHKERRQ(ierr);
-    ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,"coor_");CHKERRQ(ierr);
-    ierr = VecLoadIntoVector(viewer,natural);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(natural,&mlocal);CHKERRQ(ierr);
+
+    /* this nonsense is so that the vector set to DASetCoordinates() does NOT have a DA */
+    /* We should change the handling of coordinates so there is always a coordinate DA when there is a coordinate vector */
+    ierr = DACreateGlobalVector(dac,&tmpglobal);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject)tmpglobal,"coor_");CHKERRQ(ierr);
+    ierr = VecLoadIntoVector(viewer,tmpglobal);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(tmpglobal,&mlocal);CHKERRQ(ierr);
     ierr = VecCreateMPI(comm,mlocal,PETSC_DETERMINE,&global);CHKERRQ(ierr);
-    ierr = DANaturalToGlobalBegin(dac,natural,INSERT_VALUES,global);CHKERRQ(ierr);
-    ierr = DANaturalToGlobalEnd(dac,natural,INSERT_VALUES,global);CHKERRQ(ierr);
-    ierr = VecDestroy(natural);CHKERRQ(ierr); 
+    ierr = VecCopy(tmpglobal,global);CHKERRQ(ierr);
+    ierr = VecDestroy(tmpglobal);CHKERRQ(ierr); 
     ierr = DADestroy(dac);CHKERRQ(ierr);
     ierr = DASetCoordinates(*da,global);CHKERRQ(ierr);
   }

@@ -54,8 +54,8 @@
 
 /* Event logging */
 
-PetscEvent PC_InitializationStage_ASA, PC_GeneralSetupStage_ASA;
-PetscEvent PC_CreateTransferOp_ASA, PC_CreateVcycle_ASA;
+PetscLogEvent PC_InitializationStage_ASA, PC_GeneralSetupStage_ASA;
+PetscLogEvent PC_CreateTransferOp_ASA, PC_CreateVcycle_ASA;
 PetscTruth asa_events_registered = PETSC_FALSE;
 
 
@@ -1048,7 +1048,7 @@ PetscErrorCode PCAddCandidateToB_ASA(Mat B, PetscInt col_idx, Vec x, Mat A)
   ierr = MatGetVecs(A, PETSC_NULL, &Ax);CHKERRQ(ierr);
   ierr = MatMult(A, x, Ax);CHKERRQ(ierr);
   ierr = VecDot(Ax, x, &dotprod);CHKERRQ(ierr);
-  norm = PetscAbsScalar(PetscSqrtScalar(PetscAbsScalar(dotprod))); /* there has to be a better way */
+  norm = sqrt(PetscAbsScalar(dotprod));
   ierr = VecGetOwnershipRange(x, &loc_start, &loc_end);CHKERRQ(ierr);
   ierr = VecGetArray(x, &vecarray);CHKERRQ(ierr);
   for (i=loc_start; i<loc_end; i++) {
@@ -1152,7 +1152,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   ierr = PetscPrintf(asa_lev->comm, "Residual norm of relaxation after %g %D relaxations: %g %g\n", asa->epsilon,asa->mu_initial, norm,prevnorm);CHKERRQ(ierr);
 
   /* Check if it already converges by itself */
-  if (norm/prevnorm <= PetscAbsScalar(PetscPowScalar(asa->epsilon, asa->mu_initial))) {
+  if (norm/prevnorm <= pow(asa->epsilon, asa->mu_initial)) {
     /* converges by relaxation alone */ 
     SETERRQ(PETSC_ERR_SUP, "Relaxation should be sufficient to treat this problem. "
 	    "Use relaxation or decrease epsilon with -pc_asa_epsilon");
@@ -1246,7 +1246,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 	ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
 	ierr = PetscPrintf(asa_next_lev->comm, "Residual norm after Richardson iteration  on level %D: %f\n", asa_next_lev->level, norm);CHKERRQ(ierr);
 	/* (i) Check if it already converges by itself */
-	if (norm/prevnorm <= PetscAbsScalar(PetscPowScalar(asa->epsilon, asa->mu))) {
+	if (norm/prevnorm <= pow(asa->epsilon, asa->mu)) {
 	  /* relaxation reduces error sufficiently */
 	  skip_steps_f_i = PETSC_TRUE;
 	}
@@ -1571,7 +1571,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
       norm = PetscAbsScalar(tmp);
       ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
 
-      if (norm/prevnorm <= PetscAbsScalar(PetscPowScalar(asa->epsilon, asa->mu))) skip_steps_d_j = PETSC_TRUE;
+      if (norm/prevnorm <= pow(asa->epsilon, asa->mu)) skip_steps_d_j = PETSC_TRUE;
    
       /* (j) update candidate B_{l+1} */
       ierr = PCAddCandidateToB_ASA(asa_next_lev->B, asa_next_lev->cand_vecs, asa_next_lev->x, asa_next_lev->A);CHKERRQ(ierr);
@@ -2080,10 +2080,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
 
   /* register events */
   if (! asa_events_registered) {
-    ierr = PetscLogEventRegister(&PC_InitializationStage_ASA, "PCInitializationStage_ASA", PC_COOKIE);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister(&PC_GeneralSetupStage_ASA,   "PCGeneralSetupStage_ASA",   PC_COOKIE);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister(&PC_CreateTransferOp_ASA,    "PCCreateTransferOp_ASA",    PC_COOKIE);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister(&PC_CreateVcycle_ASA,        "PCCreateVcycle_ASA",   PC_COOKIE);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCInitializationStage_ASA", PC_COOKIE,&PC_InitializationStage_ASA);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCGeneralSetupStage_ASA",   PC_COOKIE,&PC_GeneralSetupStage_ASA);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCCreateTransferOp_ASA",    PC_COOKIE,&PC_CreateTransferOp_ASA);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("PCCreateVcycle_ASA",        PC_COOKIE,&PC_CreateVcycle_ASA);CHKERRQ(ierr);
     asa_events_registered = PETSC_TRUE;
   }
 

@@ -29,6 +29,7 @@ PetscErrorCode MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npo
   *nneg  = rbuf[0]; *nzero = rbuf[1]; *npos  = rbuf[2];
   PetscFunctionReturn(0);
 }
+#endif /* !defined(PETSC_USE_COMPLEX) */
 
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  

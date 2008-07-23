@@ -37,6 +37,7 @@ int main(int argc,char **args)
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
   PetscTruth     flg;
+  PetscInt       stage;
   PetscScalar    v,one = 1.0,neg_one = -1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -58,7 +59,6 @@ int main(int argc,char **args)
   */
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n);CHKERRQ(ierr);
-  ierr = MatSetType(A, MATAIJ);CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,5,PETSC_NULL,5,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A,5,PETSC_NULL);CHKERRQ(ierr);
@@ -83,6 +83,8 @@ int main(int argc,char **args)
      would first do all variables for y = h, then y = 2h etc.
 
    */
+  ierr = PetscLogStageRegister("Assembly", &stage);CHKERRQ(ierr);
+  ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   for (Ii=Istart; Ii<Iend; Ii++) { 
     v = -1.0; i = Ii/n; j = Ii - i*n;  
     if (i>0)   {J = Ii - n; ierr = MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);CHKERRQ(ierr);}
@@ -100,6 +102,7 @@ int main(int argc,char **args)
   */
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* 
      Create parallel vectors.

@@ -29,7 +29,7 @@ struct _p_AO {
   PetscInt      N,n;                    /* global, local vector size */
 };
 
-extern PetscEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
+extern PetscLogEvent  AO_PetscToApplication, AO_ApplicationToPetsc;
 
 
 #endif

@@ -861,7 +861,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
     //generate the mesh
     //this is screwy... we must do this differently
     coarse_bound->setDimension(1);
-    output_mesh = ALE::Generator::generateMesh(coarse_bound, (original_mesh->depth() != 1), true);
+    output_mesh = ALE::Generator<PETSC_MESH_TYPE>::generateMesh(coarse_bound, (original_mesh->depth() != 1), true);
     output_mesh->stratify();
     PetscPrintf(original_mesh->comm(), "%d v, %d cells in the output mesh\n", output_mesh->depthStratum(0)->size(), output_mesh->heightStratum(0)->size());
   }
@@ -946,7 +946,7 @@ ALE::Obj<ALE::Mesh> Hierarchy_coarsenMesh(ALE::Obj<ALE::Mesh> original_mesh, dou
     //generate the mesh
     //this is screwy... we must do this differently
     coarse_bound_mesh->setDimension(2);
-    output_mesh = ALE::Generator::generateMesh(coarse_bound_mesh, (original_mesh->depth() != 1), true);
+    output_mesh = ALE::Generator<PETSC_MESH_TYPE>::generateMesh(coarse_bound_mesh, (original_mesh->depth() != 1), true);
     output_mesh->stratify();
     //PetscPrintf(original_mesh->comm(), "%d v, %d cells in the output mesh\n", output_mesh->depthStratum(0)->size(), output_mesh->heightStratum(0)->size());
   }
@@ -1254,7 +1254,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
     while (c_iter != c_iter_end) {
       //restrict the coordinates of the closure
       //Compute the longest edge and perimeter:
-      PetscMemcpy(coords, m->restrict(coordinates, *c_iter), sizeof(double)*dim*(dim+1));
+      PetscMemcpy(coords, m->restrictClosure(coordinates, *c_iter), sizeof(double)*dim*(dim+1));
       double max_cell_edge = 0.;
       for (int edge = 0; edge < dim+1; edge++) {
 	//compute the max edge length
@@ -1288,12 +1288,12 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
         current_inscribed_radius = 2.*area/perimeter;
         //PetscPrintf(m->comm(), "%f inscribed radius %f area %f perimeter\n", current_inscribed_radius, area, perimeter);
       } else if (dim == 3) {
-	double volume = 0.5*fabs((coords[1*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) +
+	double volume = fabs((coords[1*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) +
 				 (coords[2*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]) +
 				 (coords[3*3+0] - coords[0*3+0])*(coords[1*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) -
 				 (coords[1*3+0] - coords[0*3+0])*(coords[3*3+1] - coords[0*3+1])*(coords[2*3+2] - coords[0*3+2]) -
 				 (coords[2*3+0] - coords[0*3+0])*(coords[1*3+1] - coords[0*3+1])*(coords[3*3+2] - coords[0*3+2]) -
-				 (coords[3*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]));
+				 (coords[3*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1])*(coords[1*3+2] - coords[0*3+2]))/6.;
         double area = 0.;
         //0,1,2
         double area_term_1 = (coords[1*3+0] - coords[0*3+0])*(coords[2*3+1] - coords[0*3+1]) - (coords[1*3+1] - coords[0*3+1])*(coords[2*3+0] - coords[0*3+0]);
@@ -1340,7 +1340,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 	ALE::Mesh::label_sequence::iterator fc_iter = f_cells->begin();
 	ALE::Mesh::label_sequence::iterator fc_iter_end = f_cells->end();
 	while (fc_iter != fc_iter_end) {
-	  PetscMemcpy(fcoords, f_m->restrict(f_coordinates, *fc_iter), sizeof(double)*dim*(dim+1));
+	  PetscMemcpy(fcoords, f_m->restrictClosure(f_coordinates, *fc_iter), sizeof(double)*dim*(dim+1));
 	  if (Hierarchy_CellsCollide(dim, coords, fcoords) == PETSC_TRUE) cell_collisions++;
 	  fc_iter++;
 	}
@@ -1368,14 +1368,14 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
       c_traversal->clear();
       f_traversal->clear();
       while(c_iter != c_iter_end) {
-	PetscMemcpy(coords, m->restrict(coordinates, *c_iter), sizeof(double)*dim*(dim+1));
+	PetscMemcpy(coords, m->restrictClosure(coordinates, *c_iter), sizeof(double)*dim*(dim+1));
 	if (c_traversal->find(*c_iter) == c_traversal->end()) {
 	  //locate an initial colliding cell
 	  ALE::Mesh::label_sequence::iterator f_iter = fcells->begin();
 	  ALE::Mesh::label_sequence::iterator f_iter_end = fcells->end();
 	  bool outer_located = false;
 	  while (f_iter != f_iter_end && !outer_located) {
-	    PetscMemcpy(fcoords, f_m->restrict(f_coordinates, *f_iter), sizeof(double)*dim*(dim+1));
+	    PetscMemcpy(fcoords, f_m->restrictClosure(f_coordinates, *f_iter), sizeof(double)*dim*(dim+1));
 	    if (Hierarchy_BBoxesCollide(dim, coords, fcoords) == PETSC_TRUE) {
 	      outer_located = true;
 	      c_cell_list.push_front(*c_iter);
@@ -1391,7 +1391,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 	    int nBBoxCollisions = 0;
 	    ALE::Mesh::point_type c_current_cell = c_cell_list.front();
 	    c_cell_list.pop_front();
-	    PetscMemcpy(coords, m->restrict(coordinates, c_current_cell), sizeof(double)*dim*(dim+1));
+	    PetscMemcpy(coords, m->restrictClosure(coordinates, c_current_cell), sizeof(double)*dim*(dim+1));
 	    ALE::Mesh::point_type f_current_guess = f_cell_guesses.front();
 	    f_cell_guesses.pop_front();
 	    bool found_the_boundbox = false;
@@ -1402,7 +1402,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 	      nComparisons++;
 	      ALE::Mesh::point_type f_current_cell = f_cell_list.front();
 	      f_cell_list.pop_front();
-	      PetscMemcpy(fcoords, f_m->restrict(f_coordinates, f_current_cell), sizeof(double)*dim*(dim+1));
+	      PetscMemcpy(fcoords, f_m->restrictClosure(f_coordinates, f_current_cell), sizeof(double)*dim*(dim+1));
 	      bool bbox_collide = (Hierarchy_BBoxesCollide(dim, coords, fcoords) == PETSC_TRUE);
 	      //if we have yet to find the box, then we have an unrestricted search; if we have found the box, then we only search within the box
 	      if (bbox_collide || !found_the_boundbox) {

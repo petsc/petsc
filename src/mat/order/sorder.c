@@ -236,6 +236,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
     is smaller then matrix size
   */
   ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
+  if (mmat != nmat) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
   ierr = ISGetLocalSize(*rperm,&mis);CHKERRQ(ierr);
   if (mmat > mis) {  
     ierr = MatInodeAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);

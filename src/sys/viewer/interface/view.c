@@ -2,7 +2,7 @@
 
 #include "src/sys/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
-PetscCookie PETSC_VIEWER_COOKIE = 0;
+PetscCookie PETSC_VIEWER_COOKIE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerInitializePackage" 
@@ -29,7 +29,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&PETSC_VIEWER_COOKIE, "Viewer");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Viewer",&PETSC_VIEWER_COOKIE);CHKERRQ(ierr);
 
   /* Register Constructors */
   ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);
@@ -50,6 +50,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
     }
   }
+#if defined(PETSC_HAVE_MATHEMATICA)
+  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -116,7 +119,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer viewer)
 .seealso: PetscViewerCreate(), PetscViewerSetType()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer viewer,PetscViewerType *type)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer viewer,const PetscViewerType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -275,10 +278,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetUp(PetscViewer viewer)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerView(PetscViewer v,PetscViewer viewer)
 {
-  PetscErrorCode    ierr;
-  PetscTruth        iascii;
-  const char        *cstr;
-  PetscViewerFormat format;
+  PetscErrorCode        ierr;
+  PetscTruth            iascii;
+  const PetscViewerType cstr;
+  PetscViewerFormat     format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);

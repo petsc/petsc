@@ -345,11 +345,17 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar*,PetscScalar*,M
 
 M*/
 #if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
-#define PetscIsInfOrNan(a) (isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a)))
+#define PetscIsInfOrNanScalar(a) (isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a)))
+#define PetscIsInfOrNanReal(a) (isinf(a) || isnan(a))
 #elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
-#define PetscIsInfOrNan(a) (!_finite(PetscAbsScalar(a)) || _isnan(PetscAbsScalar(a)))
+#if defined(PETSC_HAVE_FLOAT_H)
+#include "float.h"  /* windows defines _finite() in float.h */
+#endif
+#define PetscIsInfOrNanScalar(a) (!_finite(PetscAbsScalar(a)) || _isnan(PetscAbsScalar(a)))
+#define PetscIsInfOrNanReal(a) (!_finite(a) || _isnan(a))
 #else
-#define PetscIsInfOrNan(a) ((a - a) != 0.0)
+#define PetscIsInfOrNanScalar(a) ((a - a) != 0.0)
+#define PetscIsInfOrNanReal(a) ((a - a) != 0.0)
 #endif
 
 

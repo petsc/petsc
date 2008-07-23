@@ -20,7 +20,7 @@ int main(int argc,char **args)
   PetscTruth         doIcc=PETSC_TRUE,equal;
   MatInfo            minfo1,minfo2;
   MatFactorInfo      factinfo;
-  MatType            type;
+  const MatType      type;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

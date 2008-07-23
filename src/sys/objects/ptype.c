@@ -19,7 +19,7 @@
 
     Level: advanced
    
-.seealso: PetscDataType
+.seealso: PetscDataType, PetscMPIDataTypeToPetscDataType()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType ptype,MPI_Datatype* mtype)
 {
@@ -50,6 +50,52 @@ PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType ptype,MP
     *mtype = MPI_LONG_DOUBLE;
   } else {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown PETSc datatype");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMPIDataTypeToPetscDataType"
+/*@C
+     PetscMPIDataTypeToPetscDataType Finds the PETSc name of a datatype from its MPI name
+
+   Not collective
+
+    Input Parameter:
+.     mtype - the MPI datatype (for example MPI_DOUBLE, ...)
+
+    Output Parameter:
+.     ptype - the PETSc datatype name (for example PETSC_DOUBLE)
+
+    Level: advanced
+   
+.seealso: PetscDataType, PetscMPIDataTypeToPetscDataType()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscMPIDataTypeToPetscDataType(MPI_Datatype mtype,PetscDataType *ptype)
+{
+  PetscFunctionBegin;
+  if (mtype == MPIU_INT) {
+    *ptype = PETSC_INT;
+  } else if (mtype == MPI_INT) {
+    *ptype = PETSC_INT;
+  } else if (mtype == MPI_DOUBLE) {
+    *ptype = PETSC_DOUBLE;
+#if defined(PETSC_USE_COMPLEX)
+  } else if (mtype == MPIU_COMPLEX) {
+    *ptype = PETSC_COMPLEX;
+#endif
+  } else if (mtype == MPI_LONG) {
+    *ptype = PETSC_LONG;
+  } else if (mtype == MPI_SHORT) {
+    *ptype = PETSC_SHORT;
+  } else if (mtype == MPI_FLOAT) {
+    *ptype = PETSC_FLOAT;
+  } else if (mtype == MPI_CHAR) {
+    *ptype = PETSC_CHAR;
+  } else if (mtype == MPI_LONG_DOUBLE) {
+    *ptype = PETSC_LONG_DOUBLE;
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"Unhandled MPI datatype");
   }
   PetscFunctionReturn(0);
 }

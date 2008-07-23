@@ -66,8 +66,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
   do {
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);       /*   rho <- (r,rp)      */
     beta = (rho/rhoold) * (alpha/omegaold);
-    ierr = VecAXPY(P,-omegaold,V);CHKERRQ(ierr);         /*   p <- p - w v       */
-    ierr = VecAYPX(P,beta,R);CHKERRQ(ierr);      /*   p <- r + p beta    */
+    ierr = VecAXPBYPCZ(P,1.0,-omegaold*beta,beta,R,V);CHKERRQ(ierr);  /* p <- r - omega * beta* v + beta * p */
     ierr = KSP_PCApplyBAorAB(ksp,P,V,T);CHKERRQ(ierr);  /*   v <- K p           */
     ierr = VecDot(V,RP,&d1);CHKERRQ(ierr);
     if (d1 == 0.0) SETERRQ(PETSC_ERR_PLIB,"Divide by zero");
@@ -94,8 +93,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
       break;
     }
     omega = d1 / d2;                               /*   w <- (t's) / (t't) */
-    ierr  = VecAXPY(X,alpha,P);CHKERRQ(ierr);     /*   x <- x + a p       */
-    ierr  = VecAXPY(X,omega,S);CHKERRQ(ierr);     /*   x <- x + w s       */
+    ierr = VecAXPBYPCZ(X,alpha,omega,1.0,P,S);CHKERRQ(ierr); /* x <- alpha * p + omega * s + x */
     ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
     if (ksp->normtype != KSP_NORM_NO && ksp->chknorm < i+2) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
@@ -137,6 +135,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
 
    Notes: Reference: van der Vorst, SIAM J. Sci. Stat. Comput., 1992.
           See KSPBCGSL for additional stabilization
+
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL
 M*/

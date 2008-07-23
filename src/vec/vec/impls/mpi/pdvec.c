@@ -390,12 +390,15 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,n;
-  PetscInt       len,work = xin->map.n,j;
+  PetscMPIInt    rank,size,mesgsize,tag = ((PetscObject)viewer)->tag, mesglen;
+  PetscInt       len,n = xin->map.n,j,tr[2];
   int            fdes;
   MPI_Status     status;
   PetscScalar    *values,*xarray;
   FILE           *file;
+#if defined(PETSC_HAVE_MPIIO)
+  PetscTruth     isMPIIO;
+#endif
 
   PetscFunctionBegin;
   ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
@@ -403,23 +406,85 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 
   /* determine maximum message to arrive */
   ierr = MPI_Comm_rank(((PetscObject)xin)->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Reduce(&work,&len,1,MPIU_INT,MPI_MAX,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)xin)->comm,&size);CHKERRQ(ierr);
 
-  if (!rank) {
-    PetscInt cookie = VEC_FILE_COOKIE;
-    ierr = PetscBinaryWrite(fdes,&cookie,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,&xin->map.N,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-    ierr = PetscBinaryWrite(fdes,xarray,xin->map.n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+  tr[0] = VEC_FILE_COOKIE;
+  tr[1] = xin->map.N;
+  ierr = PetscViewerBinaryWrite(viewer,tr,2,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
-    ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
-    /* receive and print messages */
-    for (j=1; j<size; j++) {
-      ierr = MPI_Recv(values,(PetscMPIInt)len,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
-      ierr = MPI_Get_count(&status,MPIU_SCALAR,&n);CHKERRQ(ierr);         
-      ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
+  ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
+  if (!isMPIIO) {
+#endif
+#if defined(PETSC_HANDSHAKE_IO)
+    PetscInt message_count = 256; 
+#endif
+    if (!rank) {
+      ierr = PetscBinaryWrite(fdes,xarray,xin->map.n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+      
+      len = 0;
+      for (j=1; j<size; j++) len = PetscMax(len,xin->map.range[j+1]-xin->map.range[j]);
+      ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+      mesgsize = PetscMPIIntCast(len);
+      /* receive and save messages */
+      for (j=1; j<size; j++) {
+#if defined(PETSC_HANDSHAKE_IO)
+        if (j >= message_count) {
+          message_count += 256;
+          ierr = MPI_Bcast(&message_count,1,MPIU_INT,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+        }
+#endif
+	ierr = MPI_Recv(values,mesgsize,MPIU_SCALAR,j,tag,((PetscObject)xin)->comm,&status);CHKERRQ(ierr);
+	ierr = MPI_Get_count(&status,MPIU_SCALAR,&mesglen);CHKERRQ(ierr);         
+        n = (PetscInt)mesglen;
+	ierr = PetscBinaryWrite(fdes,values,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+      }
+#if defined(PETSC_HANDSHAKE_IO)
+      message_count = 0;
+      ierr = MPI_Bcast(&message_count,1,MPIU_INT,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+#endif
+
+      ierr = PetscFree(values);CHKERRQ(ierr);
+    } else {
+#if defined(PETSC_HANDSHAKE_IO)
+      while (1) {
+        if (rank < message_count) break;
+        ierr = MPI_Bcast(&message_count,1,MPIU_INT,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      }
+#endif
+      /* send values */
+      mesgsize = PetscMPIIntCast(xin->map.n);
+      ierr = MPI_Send(xarray,mesgsize,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
+#if defined(PETSC_HANDSHAKE_IO)
+      while (1) {
+        if (message_count == 0) break;
+        ierr = MPI_Bcast(&message_count,1,MPIU_INT,0,((PetscObject)xin)->comm);CHKERRQ(ierr);
+      }
+#endif
     }
-    ierr = PetscFree(values);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
+  } else {
+    MPI_Offset   off;
+    MPI_File     mfdes;
+    PetscMPIInt  gsizes[1],lsizes[1],lstarts[1];
+    MPI_Datatype view;
+
+    gsizes[0]  = PetscMPIIntCast(xin->map.N);
+    lsizes[0]  = PetscMPIIntCast(n);
+    lstarts[0] = PetscMPIIntCast(xin->map.rstart);
+    ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
+    ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
+
+    ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
+    ierr = MPIU_File_write_all(mfdes,xarray,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryAddMPIIOOffset(viewer,xin->map.N*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = MPI_Type_free(&view);CHKERRQ(ierr);    
+  }
+#endif
+
+  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
+  if (!rank) {
     ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
     if (file && xin->map.bs > 1) {
       if (((PetscObject)xin)->prefix) {
@@ -428,12 +493,7 @@ PetscErrorCode VecView_MPI_Binary(Vec xin,PetscViewer viewer)
 	ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",xin->map.bs);CHKERRQ(ierr);
       }
     }
-  } else {
-    /* send values */
-    PetscMPIIntCheck(xin->map.n);
-    ierr = MPI_Send(xarray,xin->map.n,MPIU_SCALAR,0,tag,((PetscObject)xin)->comm);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

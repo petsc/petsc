@@ -41,7 +41,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineCreate(MPI_Comm comm,const char 
 
   PetscFunctionBegin;
   if (MATLABENGINE_COOKIE == -1) {
-    ierr = PetscLogClassRegister(&MATLABENGINE_COOKIE,"Matlab Engine");CHKERRQ(ierr);
+    ierr = PetscCookieRegister("Matlab Engine",&MATLABENGINE_COOKIE);CHKERRQ(ierr);
   }
   ierr = PetscHeaderCreate(e,_p_PetscMatlabEngine,int,MATLABENGINE_COOKIE,0,"MatlabEngine",comm,PetscMatlabEngineDestroy,0);CHKERRQ(ierr);
 
@@ -109,13 +109,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine mengi
   va_list           Argp;
   char              buffer[1024];
   PetscErrorCode ierr;
-  int               flops;
+  int               flops, fullLength;
   size_t            len;
 
   PetscFunctionBegin;  
   ierr = PetscStrcpy(buffer,"flops(0);");
   va_start(Argp,string);
-  ierr = PetscVSNPrintf(buffer+9,1024-9-5,string,Argp);CHKERRQ(ierr);
+  ierr = PetscVSNPrintf(buffer+9,1024-9-5,string,&fullLength,Argp);CHKERRQ(ierr);
   va_end(Argp);
   ierr = PetscStrcat(buffer,",flops");
 

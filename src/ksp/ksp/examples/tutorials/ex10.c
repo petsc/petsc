@@ -44,8 +44,9 @@ int main(int argc,char **args)
   Mat            A,B;            /* matrix */
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
-  char           file[3][PETSC_MAX_PATH_LEN];     /* input file name */
+  char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE,initialguess = PETSC_FALSE;
+  PetscTruth     outputSoln=PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       its,num_numfac,m,n,M;
   PetscReal      norm;
@@ -60,6 +61,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-trans",&trans);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-partition",&partition);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-initialguess",&initialguess);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-output_solution",&outputSoln);CHKERRQ(ierr);
 
   /* 
      Determine files from which we read the two linear systems
@@ -249,7 +251,7 @@ int main(int argc,char **args)
       ierr = MatPartitioningApply(mpart, &mis);CHKERRQ(ierr);
       ierr = MatPartitioningDestroy(mpart);CHKERRQ(ierr);
       ierr = ISPartitioningToNumbering(mis,&nis);CHKERRQ(ierr);
-      ierr = ISPartitioningCount(mis,count);CHKERRQ(ierr);
+      ierr = ISPartitioningCount(mis,size,count);CHKERRQ(ierr);
       ierr = ISDestroy(mis);CHKERRQ(ierr);
       ierr = ISInvertPermutation(nis, count[rank], &is);CHKERRQ(ierr);
       ierr = PetscFree(count);CHKERRQ(ierr);
@@ -362,6 +364,8 @@ int main(int argc,char **args)
         ierr = PetscOptionsHasName(PETSC_NULL,"-cknorm",&cknorm);CHKERRQ(ierr);
         while ( num_rhs-- ) {
           ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+          ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
+          ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
         }
         ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
         if (cknorm){   /* Check error for each rhs */
@@ -425,6 +429,27 @@ int main(int argc,char **args)
       } else {
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
+      }
+      ierr = PetscOptionsGetString(PETSC_NULL,"-solution",file[3],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+      if (flg) {
+        PetscViewer viewer;
+        Vec         xstar;
+        PetscReal   norm;
+
+        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[3],FILE_MODE_READ,&viewer);CHKERRQ(ierr);
+        ierr = VecLoad(viewer, VECMPI, &xstar);CHKERRQ(ierr);
+        ierr = VecAXPY(xstar, -1.0, x);CHKERRQ(ierr);
+        ierr = VecNorm(xstar, NORM_2, &norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "Error norm %A\n", norm);CHKERRQ(ierr);
+        ierr = VecDestroy(xstar);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      }
+      if (outputSoln) {
+        PetscViewer viewer;
+
+        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,"solution.petsc",FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+        ierr = VecView(x, viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
       }
 
       ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_reason", &flg);CHKERRQ(ierr);

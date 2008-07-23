@@ -67,7 +67,7 @@ class Configure(config.base.Configure):
                                             'unistd', 'machine/endian', 'sys/param', 'sys/procfs', 'sys/resource',
                                             'sys/systeminfo', 'sys/times', 'sys/utsname','string', 'stdlib','memory',
                                             'sys/socket','sys/wait','netinet/in','netdb','Direct','time','Ws2tcpip','sys/types',
-                                            'WindowsX', 'cxxabi'])
+                                            'WindowsX', 'cxxabi','float.h'])
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
@@ -197,7 +197,6 @@ class Configure(config.base.Configure):
     self.addMakeMacro('PACKAGES_INCLUDES',' '.join(['${'+p.PACKAGE+'_INCLUDE}' for p in self.framework.packages if hasattr(p,'include')]))
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
-    self.addMakeMacro('top_builddir',self.installdir)                
 
     if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):
       os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib'))
@@ -325,9 +324,11 @@ class Configure(config.base.Configure):
     scriptName = os.path.join(self.arch.arch,'conf', 'configure.py')
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     if 'configModules' in args:
-      del args['configModules']
+      if nargs.Arg.parseArgument(args['configModules'])[1] == ['PETSc.Configure']:
+        del args['configModules']
     if 'optionsModule' in args:
-      del args['optionsModule']
+      if nargs.Arg.parseArgument(args['optionsModule'])[1] == 'PETSc.compilerOptions':
+        del args['optionsModule']
     if not 'PETSC_ARCH' in args:
       args['PETSC_ARCH'] = '-PETSC_ARCH='+str(self.arch.arch)
     f = file(scriptName, 'w')

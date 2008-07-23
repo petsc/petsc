@@ -4,7 +4,7 @@
 #include "petscdraw.h"
 #include "petscsys.h"
 
-extern PetscEvent PETSC_DLLEXPORT PETSC_Barrier;
+extern PetscLogEvent PETSC_DLLEXPORT PETSC_Barrier;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitializePackage" 
@@ -33,10 +33,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&PETSC_OBJECT_COOKIE, "Object");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Object",&PETSC_OBJECT_COOKIE);CHKERRQ(ierr);
 
   /* Register Events */
-  ierr = PetscLogEventRegister(&PETSC_Barrier, "PetscBarrier", PETSC_SMALLEST_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PetscBarrier", PETSC_SMALLEST_COOKIE,&PETSC_Barrier);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
@@ -79,9 +79,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(const char path[])
   ierr = PetscInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATHEMATICA)
-  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
   ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

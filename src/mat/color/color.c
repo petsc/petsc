@@ -306,10 +306,10 @@ $    -mat_coloring_view
 .seealso:  MatGetColoringTypeFromOptions(), MatColoringRegisterDynamic(), MatFDColoringCreate(),
            SNESDefaultComputeJacobianColor()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,MatColoringType type,ISColoring *iscoloring)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,const MatColoringType type,ISColoring *iscoloring)
 {
   PetscTruth     flag;
-  PetscErrorCode ierr,(*r)(Mat,MatColoringType,ISColoring *);
+  PetscErrorCode ierr,(*r)(Mat,const MatColoringType,ISColoring *);
   char           tname[PETSC_MAX_PATH_LEN];
   MPI_Comm       comm;
   PetscMPIInt    size;

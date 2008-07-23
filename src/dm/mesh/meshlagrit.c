@@ -1,5 +1,53 @@
 #include <petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
+#if 0
+
+void FlipCellOrientation(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim) {
+  if (3 == meshDim && 4 == numCorners) {
+    for(int iCell = 0; iCell < numCells; ++iCell) {
+      const int i1 = iCell*numCorners+1;
+      const int i2 = iCell*numCorners+2;
+      const int tmp = (*cells)[i1];
+      (*cells)[i1] = (*cells)[i2];
+      (*cells)[i2] = tmp;
+    }
+  }
+}
+      //Obj<PETSC_MESH_TYPE> m = ALE::LaGriT::Builder::readMesh(PETSC_COMM_WORLD, 3, options->baseFilename, options->interpolate, options->debug);'
+      Obj<PETSC_MESH_TYPE>             m     = new PETSC_MESH_TYPE(comm, options->dim, options->debug);
+      Obj<PETSC_MESH_TYPE::sieve_type> sieve = new PETSC_MESH_TYPE::sieve_type(comm, options->debug);
+      bool                 flipEndian = false;
+      int                  dim;
+      pylith::int_array    cells;
+      pylith::double_array coordinates;
+      pylith::int_array    materialIds;
+      int                  numCells = 0, numVertices = 0, numCorners = 0;
+
+      if (!m->commRank()) {
+        if (pylith::meshio::GMVFile::isAscii(options->baseFilename)) {
+          pylith::meshio::GMVFileAscii filein(options->baseFilename);
+          filein.read(&coordinates, &cells, &materialIds, &dim, &dim, &numVertices, &numCells, &numCorners);
+          if (options->interpolate) {
+            FlipCellOrientation(&cells, numCells, numCorners, dim);
+          }
+        } else {
+          pylith::meshio::GMVFileBinary filein(options->baseFilename, flipEndian);
+          filein.read(&coordinates, &cells, &materialIds, &dim, &dim, &numVertices, &numCells, &numCorners);
+          if (!options->interpolate) {
+            FlipCellOrientation(&cells, numCells, numCorners, dim);
+          }
+        } // if/else
+      }
+      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildTopology(sieve, dim, numCells, const_cast<int*>(&cells[0]), numVertices, options->interpolate, numCorners, -1, m->getArrowSection("orientation"));
+      m->setSieve(sieve);
+      m->stratify();
+      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(m, dim, const_cast<double*>(&coordinates[0]));
+
+      ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
+      ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
+      ierr = MeshIDBoundary(mesh);CHKERRQ(ierr);
+#endif
+
 namespace ALE {
   namespace LaGriT {
     void Builder::readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, double *coordinates[]) {
@@ -62,6 +110,14 @@ namespace ALE {
       *vertices = verts;
       ierr = PetscViewerDestroy(viewer);
     };
+#ifdef PETSC_OPT_SIEVE
+    Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void Builder::readFault(Obj<Builder::Mesh> mesh, const std::string& filename) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+#else
     Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate = false, const int debug = 0) {
       Obj<Mesh>       mesh  = new Mesh(comm, dim, debug);
       Obj<sieve_type> sieve = new sieve_type(comm, debug);
@@ -128,5 +184,6 @@ namespace ALE {
       }
       ierr = PetscViewerDestroy(viewer);
     };
+#endif
   }
 }

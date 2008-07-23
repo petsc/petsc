@@ -145,6 +145,11 @@ M*/
 */
 #include <stdio.h>
 
+/* MSMPI on 32bit windows requires this yukky hack - that breaks MPI standard compliance */
+#if !defined(MPIAPI)
+#define MPIAPI
+#endif
+
 /*MC
     PetscErrorCode - datatype used for return error code from all PETSc functions
 
@@ -163,18 +168,27 @@ typedef int PetscErrorCode;
 
     Level: advanced
 
-.seealso: PetscLogClassRegister(), PetscLogEventRegister(), PetscHeaderCreate()
+.seealso: PetscCookieRegister(), PetscLogEventRegister(), PetscHeaderCreate()
 M*/
 typedef int PetscCookie;
 
 /*MC
-    PetscEvent - id used to identify PETSc or user events - primarily for logging
+    PetscLogEvent - id used to identify PETSc or user events - primarily for logging
 
     Level: intermediate
 
-.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd()
+.seealso: PetscLogEventRegister(), PetscLogEventBegin(), PetscLogEventEnd(), PetscLogStage
 M*/
-typedef int PetscEvent;
+typedef int PetscLogEvent;
+
+/*MC
+    PetscLogStage - id used to identify user stages of runs - for logging
+
+    Level: intermediate
+
+.seealso: PetscLogStageRegister(), PetscLogStageBegin(), PetscLogStageEnd(), PetscLogEvent
+M*/
+typedef int PetscLogStage;
 
 /*MC
     PetscBLASInt - datatype used to represent 'int' parameters to BLAS/LAPACK functions.
@@ -236,19 +250,9 @@ M*/
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef long long PetscInt;
 #define MPIU_INT MPI_LONG_LONG_INT
-#define PETSC_MPI_INT_MAX 2147483647
-#define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
-#define PetscMPIIntCast(a) (a);PetscMPIIntCheck(a)
-#define PETSC_BLAS_INT_MAX 2147483647
-#define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
-#define PetscBLASIntCast(a) (a);PetscBLASIntCheck(a)
 #else
 typedef int PetscInt;
 #define MPIU_INT MPI_INT
-#define PetscMPIIntCheck(a) 
-#define PetscMPIIntCast(a) a
-#define PetscBLASIntCheck(a) 
-#define PetscBLASIntCast(a) a
 #endif  
 
 /*
@@ -444,6 +448,8 @@ M*/
 
    Level: beginner
 
+   Fortran Notes: You need to use PETSC_DEFAULT_INTEGER or PETSC_DEFAULT_DOUBLE_PRECISION.
+
 .seealso: PETSC_DECIDE, PETSC_NULL, PETSC_IGNORE, PETSC_DETERMINE
 
 M*/
@@ -455,10 +461,10 @@ M*/
 
    Level: beginner
 
-   Notes: accepted by many PETSc functions to not set a parameter and instead use
+   Note: accepted by many PETSc functions to not set a parameter and instead use
           some default
 
-          This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER, 
+   Fortran Notes: This macro does not exist in Fortran; you must use PETSC_NULL_INTEGER, 
           PETSC_NULL_DOUBLE_PRECISION etc
 
 .seealso: PETSC_DECIDE, PETSC_DEFAULT, PETSC_NULL, PETSC_DETERMINE
@@ -1044,6 +1050,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMallocSetDumpLog(void);
 
    Level: beginner
 
+   Developer comment: It would be nice if we could always just use MPI Datatypes, why can we not?
+
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscDataTypeToMPIDataType(),
           PetscDataTypeGetSize()
 
@@ -1077,6 +1085,7 @@ extern const char *PetscDataTypes[];
 #define PETSC_FORTRANADDR PETSC_LONG
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIDataTypeToPetscDataType(MPI_Datatype,PetscDataType*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType,size_t*);
 
 /*
@@ -1177,7 +1186,7 @@ typedef enum {FILE_MODE_READ, FILE_MODE_WRITE, FILE_MODE_APPEND, FILE_MODE_UPDAT
 #define PETSC_SMALLEST_COOKIE 1211211
 extern PETSC_DLLEXPORT PetscCookie PETSC_LARGEST_COOKIE;
 extern PETSC_DLLEXPORT PetscCookie PETSC_OBJECT_COOKIE;
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(PetscCookie *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(const char[],PetscCookie *);
 
 /*
    Routines that get memory usage information from the OS
@@ -1429,7 +1438,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSNPrintf(char*,size_t,const char [],
 
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVSNPrintf(char*,size_t,const char[],va_list);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVSNPrintf(char*,size_t,const char[],int*,va_list);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  (*PetscVFPrintf)(FILE*,const char[],va_list);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVFPrintfDefault(FILE*,const char[],va_list);
 
@@ -1714,6 +1723,33 @@ M*/
 
 .seealso: PetscReal, PassiveReal, PassiveScalar, PetscScalar, MPIU_INT
 M*/
+
+#if defined(PETSC_HAVE_MPIIO)
+#if !defined(PETSC_WORDS_BIGENDIAN)
+extern PetscErrorCode MPIU_File_write_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
+extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype,MPI_Status*);
+#else
+#define MPIU_File_write_all(a,b,c,d,e) MPI_File_write_all(a,b,c,d,e) 
+#define MPIU_File_read_all(a,b,c,d,e) MPI_File_read_all(a,b,c,d,e) 
+#endif
+#endif
+
+/* the following petsc_static_inline require petscerror.h */
+
+#if defined(PETSC_USE_64BIT_INDICES)
+#define PETSC_MPI_INT_MAX 2147483647
+#define PETSC_BLAS_INT_MAX 2147483647
+#define PetscMPIIntCheck(a)  if ((a) > PETSC_MPI_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Message too long for MPI")
+#define PetscBLASIntCheck(a)  if ((a) > PETSC_BLAS_INT_MAX) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Array too long for BLAS/LAPACK")
+#define PetscMPIIntCast(a) (a);PetscMPIIntCheck(a)
+#define PetscBLASIntCast(a) (a);PetscBLASIntCheck(a)
+#else
+#define PetscMPIIntCheck(a) 
+#define PetscBLASIntCheck(a) 
+#define PetscMPIIntCast(a) a
+#define PetscBLASIntCast(a) a
+#endif  
+
 
 /*
      The IBM include files define hz, here we hide it so that it may be used

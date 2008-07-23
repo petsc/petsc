@@ -287,6 +287,7 @@ PetscErrorCode computeMinEigVal(Mat A, PetscInt its, PetscScalar *eig) {
   ierr = VecDestroy(x); CHKERRQ(ierr);
   ierr = VecDestroy(x_1); CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);
+  ierr = MatDestroy(G);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

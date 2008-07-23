@@ -793,6 +793,39 @@ journal = {Ocean Modelling},
 volume = {10},
 pages = {185--191}
 }
+@article{0266-5611-24-3-034015,
+ author={I Epanomeritakis and V Ak\c{c}elik and O Ghattas and J Bielak},
+ title={A Newton-CG method for large-scale three-dimensional elastic
+full-waveform seismic inversion},
+ journal={Inverse Problems},
+ volume={24},
+ number={3},
+ pages={034015 (26pp)},
+ url={http://stacks.iop.org/0266-5611/24/034015},
+ year={2008},
+ abstract={We present a nonlinear optimization method for large-scale
+3D elastic full-waveform seismic inversion. The method combines outer
+Gauss-Newton nonlinear iterations with inner conjugate gradient linear
+iterations, globalized by an Armijo backtracking line search, solved
+on a sequence of finer grids and higher frequencies to remain in the
+vicinity of the global optimum, inexactly terminated to prevent
+oversolving, preconditioned by L-BFGS/Frankel, regularized by a total
+variation operator to capture sharp interfaces, finely discretized by
+finite elements in the Lam\'{e} parameter space to provide flexibility
+and avoid bias, implemented in matrix-free fashion with adjoint-based
+computation of reduced gradient and reduced Hessian-vector products,
+checkpointed to avoid full spacetime waveform storage, and partitioned
+spatially across processors to parallelize the solutions of the
+forward and adjoint wave equations and the evaluation of gradient-like
+information. Several numerical examples demonstrate the grid
+independence of linear and nonlinear iterations, the effectiveness of
+the preconditioner, the ability to solve inverse problems with up to
+17 million inversion parameters on up to 2048 processors, the
+effectiveness of multiscale continuation in keeping iterates in the
+basin of attraction of the global minimum, and the ability to fit the
+observational data while reconstructing the model with reasonable
+resolution and capturing sharp interfaces.}
+}
 %
 %  <a name="environmental"><H3><center>Environmental/Subsurface Flow</center></H3>
 %
@@ -1174,6 +1207,12 @@ March, 10-14, 2003, Munich University of Technology, German",
  journal ="Computers and Fluids",
  note = {accepted for publication},
  year = 2005
+}
+@InProceedings{chnkss2008,
+ Author      =  {P. M. Carrica and J. Huang and R. Noack and D. Kaushik and B. Smith and F. Stern}, 
+ TITLE       =   "Toward Large-Scale Computations of Ship Motions with Dynamic Overset Curvilinear Grids",
+ booktitle   = "Proceedings of the 27th Symposium on Naval Hydrodynamics, Seoul, Korea",
+ year = 2008
 }
 @MastersThesis{mtj,
  Author      =  {M. T. Jozkowski}, 
@@ -1707,7 +1746,25 @@ title =     {Finite-difference lattice Boltzmann model with flux limiters for li
 %
 %  <a name="otherapps"><H3><center>Other Application Areas</center></H3>
 %
-@INPROCEEDINGS{dc-oop-03,
+@INPROCEEDINGS{srksyp2008,
+        AUTHOR = "M. A. Smith and C. Rabiti and D. Kaushik and B. Smith and W. S. Yang and G. Palmiotti",
+        TITLE     = "Fast reactor core simulations using the UNIC code",
+        BOOKTITLE = {Proceedings of the International Conference on the Physics of Reactors úÙÚ¸Nuclear Power: A Sustainable ResourceúÙÚ˝},
+        YEAR      = "2008"
+} 
+@INPROCEEDINGS{psrlkssl2007,
+        AUTHOR = {G. Palmiotti and M. A. Smith and C. Rabiti and M. Leclere and D. Kaushik and A. Siegel and B. Smith and E. E. Lewis},
+        TITLE     = "UNÅÃC: Ultimate Neutronic Investigation Code", 
+        BOOKTITLE = "Joint International Topical Meeting on Mathematics & Computation and Supercomputing in Nuclear Applications",
+        YEAR      = "2007"
+} 
+@INPROCEEDINGS{sprkssl2007,
+        AUTHOR = {M. A. Smith and G. Palmiotti and C. Rabiti and D. Kaushik and A. Siegel and B. Smith and E. E. Lewis},
+        TITLE     = úÙÚ¸PNFE Component of the UNÅÃC Code",
+        BOOKTITLE = "Joint International Topical Meeting on Mathematics & Computation and Supercomputing in Nuclear Applications",
+        YEAR      = "2007"
+} 
+@inproceedings{dc-oop-03,
         AUTHOR = "H. Digonnet and T. Coupez",
         TITLE     = "Object-oriented programming for fast-and-easy development of parallel
                        applications in forming processes simulation",
@@ -2343,6 +2400,12 @@ pages   = "157--166"
 %
 %  <a name="packages"></a><H3><center>Software Packages that use or interface to PETSc</center></H3>
 %
+@Unpublished{sundar-2008w,
+  title = "DENDRO: a parallel geometric multigrid library for trilinear finite elements on octree meshes",
+  author = "H. Sundar and R.S. Sampath and S.S. Adavani and C. Davatzikos and G. Biros",
+  institution = "University of Pennsylvania",
+  url = "http://www.seas.upenn.edu/~csela/dendro/html/index.html"
+}
 @Unpublished{khatiwala07-software,
   title = "A computational framework for simulation of biogeochemical tracers in the ocean",
   author = "Khatiwala, S.",
@@ -2867,11 +2930,30 @@ url    = "http://lyre.mit.edu/\~{ }powell/rheoplast.html"
 %
 %  <a name="algorithm"><H3><center>Algorithm design and analysis</center></H3>
 %
+@unpublished{Sundar-2008a,
+  author =   {R.S. Sampath and G. Biros}, 
+  title =   {A parallel geometric multigrid method for finite elements on octree meshes}, 
+  URL = {http://www.seas.upenn.edu/\~{ }rahulss}
+} 
+@Article{Sundar-2008, 
+  author =   {H. Sundar and R.S. Sampath and G. Biros}, 
+  title =   {Bottom-up construction and 2:1 balance refinement of linear octrees in parallel}, 
+  journal =   {SIAM Journal on Scientific Computing}, 
+  year =   {2008}, 
+  URL = {http://www.seas.upenn.edu/\~{ }rahulss}
+}
+@InProceedings{Sundar-2007, 
+  author =   {H. Sundar and R.S. Sampath and S.S. Adavani and C. Davatzikos and G. Biros}, 
+  title =   {Low-constant parallel algorithms for finite element simulations using linear octrees}, 
+  booktitle =   {SC'07: ACM/IEEE Conference on Supercomputing}, 
+  year =   {2007},
+  URL = {http://www.seas.upenn.edu/\~{ }rahulss}
+}
 @InProceedings{Adams-98a, 
   author =   {Adams, Mark ~F.}, 
   title =   {A Parallel Maximal Independent Set Algorithm}, 
   booktitle =   {Proceedings 5th copper mountain conference on iterative methods}, 
-  year =   {1998}, 
+  year =   {1998} 
 }
 @InBook{04,
   author = {V. Akcelik and G. Biros and Omar Ghattas and J. Hill and David Keyes and B. van Bloemen Waanders},

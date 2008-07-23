@@ -8,7 +8,7 @@
 PETSC_EXTERN_CXX_BEGIN
 
 #define PETSC_EVENT  1311311
-extern PetscEvent PETSC_LARGEST_EVENT;
+extern PetscLogEvent PETSC_LARGEST_EVENT;
 
 /* Global flop counter */
 extern PetscLogDouble PETSC_DLLEXPORT _TotalFlops;
@@ -183,8 +183,8 @@ extern PetscTruth UseMPE;
 #define PETSC_LOG_EVENT_MPE_END(e)   0
 #endif
 
-EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPLB)(PetscEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
-EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPLE)(PetscEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPLB)(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
+EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPLE)(PetscLogEvent,int,PetscObject,PetscObject,PetscObject,PetscObject);
 EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPHC)(PetscObject);
 EXTERN PETSC_DLLEXPORT PetscErrorCode (*_PetscLogPHD)(PetscObject);
 
@@ -214,23 +214,22 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char[]);
 /* Counter functions */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetFlops(PetscLogDouble *);
 /* Stage functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(int*, const char[]);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(int);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageRegister(const char[],PetscLogStage*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePush(PetscLogStage);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStagePop(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(int, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(int, PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(int, PetscTruth);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(int, PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char [], int *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(PetscLogStage, PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(PetscLogStage, PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetVisible(PetscLogStage, PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetVisible(PetscLogStage, PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char [], PetscLogStage *);
 /* Event functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(PetscEvent*, const char[], PetscCookie);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivate(PetscEvent);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscEvent);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscEvent, PetscTruth);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(const char[], PetscCookie,PetscLogEvent*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivate(PetscLogEvent);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivate(PetscLogEvent);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventSetActiveAll(PetscLogEvent, PetscTruth);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventActivateClass(PetscCookie);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie);
-/* Class functions */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogClassRegister(PetscCookie*, const char []);
+
 
 /* Global counters */
 extern PETSC_DLLEXPORT PetscLogDouble irecv_ct;
@@ -242,6 +241,8 @@ extern PETSC_DLLEXPORT PetscLogDouble isend_len;
 extern PETSC_DLLEXPORT PetscLogDouble recv_len;
 extern PETSC_DLLEXPORT PetscLogDouble send_len;
 extern PETSC_DLLEXPORT PetscLogDouble allreduce_ct;
+extern PETSC_DLLEXPORT PetscLogDouble gather_ct;
+extern PETSC_DLLEXPORT PetscLogDouble scatter_ct;
 extern PETSC_DLLEXPORT PetscLogDouble wait_ct;
 extern PETSC_DLLEXPORT PetscLogDouble wait_any_ct;
 extern PETSC_DLLEXPORT PetscLogDouble wait_all_ct;
@@ -335,9 +336,27 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 
 #define MPI_Waitall(count,array_of_requests,array_of_statuses) \
  ((PETSC_DUMMY_COUNT = count,wait_all_ct++,sum_of_waits_ct += (PetscLogDouble) (PETSC_DUMMY_COUNT),0) || MPI_Waitall(PETSC_DUMMY_COUNT,array_of_requests,array_of_statuses))
-  
+
 #define MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm) \
  ((allreduce_ct++,0) || MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm))
+
+#define MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm) \
+ ((gather_ct++,0) || MPI_Allgather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,comm))
+
+#define MPI_Allgatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,comm) \
+ ((gather_ct++,0) || MPI_Allgatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,comm))
+
+#define MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm) \
+ ((PETSC_DUMMY_COUNT = sendcount,gather_ct++,0) || TypeSize(send_len,PETSC_DUMMY_COUNT,sendtype) || MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
+
+#define MPI_Gatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,root,comm) \
+ ((PETSC_DUMMY_COUNT = sendcount,gather_ct++,0) || TypeSize(send_len,PETSC_DUMMY_COUNT,sendtype) || MPI_Gatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,root,comm))
+
+#define MPI_Scatter(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm) \
+  ((PETSC_DUMMY_COUNT = recvcount,scatter_ct++,0) || TypeSize(recv_len,PETSC_DUMMY_COUNT,recvtype) || MPI_Scatter(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
+
+#define MPI_Scatterv(sendbuf,sendcount,displs,sendtype,recvbuf,recvcount,recvtype,root,comm) \
+  ((PETSC_DUMMY_COUNT = recvcount,scatter_ct++,0) || TypeSize(recv_len,PETSC_DUMMY_COUNT,recvtype) || MPI_Scatterv(sendbuf,sendcount,displs,sendtype,recvbuf,recvcount,recvtype,root,comm))
 
 #else
 
@@ -367,7 +386,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 
 #define PetscLogEventActivateClass(a)   0
 #define PetscLogEventDeactivateClass(a) 0
-#define PetscLogClassRegister(a,b)      PetscCookieRegister(a)
 #define PetscLogEventSetActiveAll(a,b)  0
 
 #define _PetscLogPLB                        0
@@ -431,8 +449,10 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
 
 #define PreLoadBegin(flag,name) \
 {\
-  PetscTruth PreLoading = flag;\
-  int        PreLoadMax,PreLoadIt,_stageNum,_3_ierr;\
+  PetscTruth     PreLoading = flag;\
+  int            PreLoadMax,PreLoadIt;\
+  PetscLogStage  _stageNum;\
+  PetscErrorCode _3_ierr;	\
   _3_ierr = PetscOptionsGetTruth(PETSC_NULL,"-preload",&PreLoading,PETSC_NULL);CHKERRQ(_3_ierr);\
   PreLoadMax = (int)(PreLoading);\
   PetscPreLoadingUsed = PreLoading ? PETSC_TRUE : PetscPreLoadingUsed;\
@@ -442,7 +462,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
     if (PreLoadIt>0) {\
       _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
     } else {\
-      _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
+      _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr); \
     }\
     _3_ierr = PetscLogStageSetActive(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
     _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);
@@ -458,7 +478,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject,const char
   if (PreLoadIt>0) {\
     _3_ierr = PetscLogStageGetId(name,&_stageNum);CHKERRQ(_3_ierr);\
   } else {\
-    _3_ierr = PetscLogStageRegister(&_stageNum,name);CHKERRQ(_3_ierr);\
+    _3_ierr = PetscLogStageRegister(name,&_stageNum);CHKERRQ(_3_ierr);	\
   }\
   _3_ierr = PetscLogStageSetActive(_stageNum,(PetscTruth)(!PreLoadMax || PreLoadIt));\
   _3_ierr = PetscLogStagePush(_stageNum);CHKERRQ(_3_ierr);

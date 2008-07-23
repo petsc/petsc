@@ -10,7 +10,7 @@
 
   Does not do preallocation so in general will be slow
  */
-PetscErrorCode MatConvert_Basic(Mat mat, MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_Basic(Mat mat, const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat                M;
   const PetscScalar  *vwork;

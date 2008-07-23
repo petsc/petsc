@@ -40,9 +40,6 @@ T*/
 #include "petscda.h"
 #include "petscdmmg.h"
 #include "petscsnes.h"
-#if 1
-#include <PetscSimOutput.h>
-#endif
 
 /* 
    User-defined application context - contains data needed by the 
@@ -148,24 +145,6 @@ int main(int argc,char **argv)
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D, %s\n",its,SNESConvergedReasons[reason]);CHKERRQ(ierr);
-
-#if 1
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Visualize the solution
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  {
-    PetscViewer viewer;
-
-    ierr = PetscWriteOutputInitialize(PETSC_COMM_WORLD, "ex4.data", &viewer);CHKERRQ(ierr);
-    ierr = PetscWriteOutputBag(viewer, "params", bag);CHKERRQ(ierr);
-    ierr = PetscWriteOutputVecDA(viewer, "u", DMMGGetx(dmmg), DMMGGetDA(dmmg));CHKERRQ(ierr);
-    ierr = PetscWriteOutputFinalize(viewer);CHKERRQ(ierr);
-  }
-  ierr = PetscOptionsHasName(PETSC_NULL, "-contours", &drawContours);CHKERRQ(ierr);
-  if (drawContours) {
-    ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr); 
-  }
-#endif
   ierr = PrintVector(dmmg[0], DMMGGetx(dmmg));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

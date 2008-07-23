@@ -658,7 +658,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       PetscErrorCode     ierr;
 
       if (sifterType < 0) {
-        ierr = PetscLogClassRegister(&sifterType, id_name);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+        ierr = PetscCookieRegister(id_name,&sifterType);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
       }
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
@@ -957,6 +957,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         //
         ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+#if 0
         //
         ostringstream txt1;
         if(this->commRank() == 0) {
@@ -987,6 +988,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         //
         ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+#endif
       }
       else { // if(raw)
         ostringstream txt;
@@ -1090,11 +1092,14 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       if (this->_base.set.find(a.target) == this->_base.set.end()) return false;
       return true;
     };
-    virtual void addArrow(const typename traits::arrow_type& a, bool restrict = false) {
-      if (restrict && !this->checkArrow(a)) return;
+    virtual void addArrow(const typename traits::arrow_type& a, bool noNewPoints = false) {
+      if (noNewPoints && !this->checkArrow(a)) return;
       this->_arrows.set.insert(a);
       this->addBasePoint(a.target);
       this->addCapPoint(a.source);
+    };
+    virtual void removeArrow(const typename traits::source_type& p, const typename traits::target_type& q) {
+      this->removeArrow(typename traits::arrow_type(p, q, typename traits::color_type()));
     };
     virtual void removeArrow(const typename traits::arrow_type& a) {
       // First, produce an arrow sequence for the given source, target combination.
@@ -1280,13 +1285,13 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     template<class targetInputSequence> 
     void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color);
     template<typename Sifter_>
-    void add(const Obj<Sifter_>& cbg, bool restrict = false) {
+    void add(const Obj<Sifter_>& cbg, bool noNewPoints = false) {
       typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename Sifter_::traits::arrowInd>(cbg->_arrows.set);
       
       for(typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
-        this->addArrow(*a_iter, restrict);
+        this->addArrow(*a_iter, noNewPoints);
       }
-      if (!restrict) {
+      if (!noNewPoints) {
         typename ::boost::multi_index::index<typename Sifter_::traits::base_container_type::set_type, typename Sifter_::traits::baseInd>::type& bInd = ::boost::multi_index::get<typename Sifter_::traits::baseInd>(this->_base.set);
         
         for(typename ::boost::multi_index::index<typename Sifter_::traits::base_container_type::set_type, typename Sifter_::traits::baseInd>::type::iterator b_iter = bInd.begin(); b_iter != bInd.end(); ++b_iter) {

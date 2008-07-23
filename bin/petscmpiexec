@@ -20,6 +20,8 @@ set nrun = `echo ${trun} | sed -e sz\$MPI_HOMEz${MPI_HOME}z`
 set qrun = `echo ${nrun} | sed -e sz\$PETSC_DIRz${PETSC_DIR}z`
 #echo $qrun
 
+echo $qrun $*
+
 $qrun $*
 
 

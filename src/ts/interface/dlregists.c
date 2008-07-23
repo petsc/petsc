@@ -28,14 +28,14 @@ PetscErrorCode PETSCTS_DLLEXPORT TSInitializePackage(const char path[]) {
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&TS_COOKIE, "TS");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("TS",&TS_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = TSRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&TS_Step,                  "TSStep",           TS_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&TS_PseudoComputeTimeStep, "TSPseudoCmptTStp", TS_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&TS_FunctionEval,          "TSFunctionEval",   TS_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&TS_JacobianEval,          "TSJacobianEval",   TS_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSStep",           TS_COOKIE,&TS_Step);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSPseudoCmptTStp", TS_COOKIE,&TS_PseudoComputeTimeStep);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSFunctionEval",   TS_COOKIE,&TS_FunctionEval);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("TSJacobianEval",   TS_COOKIE,&TS_JacobianEval);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
@@ -72,7 +72,6 @@ PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister_petscts(const char path[
   PetscErrorCode ierr;
 
   ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-
   PetscFunctionBegin;
   /*
       If we got here then PETSc was properly loaded

@@ -14,7 +14,7 @@ EXTERN_C_BEGIN
 #include "pnetcdf.h"
 EXTERN_C_END
 #endif
-EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, VecType, Vec*);
+EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, const VecType, Vec*);
 EXTERN PetscErrorCode VecLoad_Netcdf(PetscViewer, Vec*);
 EXTERN PetscErrorCode VecLoadIntoVector_Binary(PetscViewer, Vec);
 EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
@@ -71,7 +71,7 @@ and PetscBinaryWrite() to see how this may be done.
 
 .seealso: PetscViewerBinaryOpen(), VecView(), MatLoad(), VecLoadIntoVector() 
 @*/  
-PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, VecType outtype,Vec *newvec)
+PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outtype,Vec *newvec)
 {
   PetscErrorCode ierr;
   PetscTruth     isbinary,flg;
@@ -103,7 +103,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, VecType outtype,Ve
   {
     Vec            factory;
     MPI_Comm       comm;
-    PetscErrorCode (*r)(PetscViewer, VecType,Vec*);
+    PetscErrorCode (*r)(PetscViewer, const VecType,Vec*);
     PetscMPIInt    size;
 
     ierr = PetscObjectGetOptionsPrefix((PetscObject)viewer,(const char**)&prefix);CHKERRQ(ierr);
@@ -177,18 +177,21 @@ PetscErrorCode VecLoad_Netcdf(PetscViewer viewer,Vec *newvec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoad_Binary"
-PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
+PetscErrorCode VecLoad_Binary(PetscViewer viewer, const VecType itype,Vec *newvec)
 {
   PetscMPIInt    size,rank,tag;
   int            fd;
-  PetscInt       i,rows,type,n,*range,bs;
-  PetscErrorCode ierr,nierr;
+  PetscInt       i,rows,type,n,*range,bs,tr[2];
+  PetscErrorCode ierr;
   Vec            vec;
-  PetscScalar    *avec;
+  PetscScalar    *avec,*avecwork;
   MPI_Comm       comm;
   MPI_Request    request;
   MPI_Status     status;
   PetscTruth     flag;
+#if defined(PETSC_HAVE_MPIIO)
+  PetscTruth     useMPIIO;
+#endif
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
@@ -197,70 +200,79 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, VecType itype,Vec *newvec)
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
-  if (!rank) {
-    /* Read vector header. */
-    ierr = PetscBinaryRead(fd,&type,1,PETSC_INT);if (ierr) goto handleerror;
-    if (type != VEC_FILE_COOKIE) {ierr = PETSC_ERR_ARG_WRONG; goto handleerror;}
-    ierr = PetscBinaryRead(fd,&rows,1,PETSC_INT);if (ierr) goto handleerror;
-    ierr = MPI_Bcast(&rows,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-    ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
-    ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
-    if (flag) {
-      ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
-    }
-    ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
-    ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-    ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
-    ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
-
-    if (size > 1) {
-      /* read in other chuncks and send to other processors */
-      /* determine maximum chunck owned by other */
-      range = vec->map.range;
-      n = 1;
-      for (i=1; i<size; i++) {
-        n = PetscMax(n,range[i+1] - range[i]);
-      }
-      ierr = PetscMalloc(n*sizeof(PetscScalar),&avec);CHKERRQ(ierr);
-      ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
-      for (i=1; i<size; i++) {
-        n    = range[i+1] - range[i];
-        ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
-        ierr = MPI_Isend(avec,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);
-        ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
-      }
-      ierr = PetscFree(avec);CHKERRQ(ierr);
-    }
-  } else {
-    ierr = MPI_Bcast(&rows,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-    /* this is a marker sent to indicate that the file does not have a vector at this location */
-    if (rows == -1)  {
-      nierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(nierr);
-      SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"Error loading vector");
-    }
-    ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
-    ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
-    ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
-    ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
-    ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
-    ierr = MPI_Recv(avec,n,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
-    ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
+  /* Read vector header. */
+  ierr = PetscViewerBinaryRead(viewer,tr,2,PETSC_INT);CHKERRQ(ierr);
+  type = tr[0];
+  rows = tr[1];
+  if (type != VEC_FILE_COOKIE) {
+      ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+      SETERRQ(PETSC_ERR_ARG_WRONG,"Not vector next in file");
   }
+  ierr = VecCreate(comm,&vec);CHKERRQ(ierr);
+  ierr = VecSetSizes(vec,PETSC_DECIDE,rows);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = VecSetBlockSize(vec,bs);CHKERRQ(ierr);
+  }
+  ierr = VecSetFromOptions(vec);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr); 
+  ierr = PetscObjectGetNewTag((PetscObject)viewer,&tag);CHKERRQ(ierr);
+  ierr = VecGetArray(vec,&avec);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
+  ierr = PetscViewerBinaryGetMPIIO(viewer,&useMPIIO);CHKERRQ(ierr);
+  if (!useMPIIO) {
+#endif
+    if (!rank) {
+      ierr = PetscBinaryRead(fd,avec,n,PETSC_SCALAR);CHKERRQ(ierr);
+
+      if (size > 1) {
+	/* read in other chuncks and send to other processors */
+	/* determine maximum chunck owned by other */
+	range = vec->map.range;
+	n = 1;
+	for (i=1; i<size; i++) {
+	  n = PetscMax(n,range[i+1] - range[i]);
+	}
+	ierr = PetscMalloc(n*sizeof(PetscScalar),&avecwork);CHKERRQ(ierr);
+	for (i=1; i<size; i++) {
+	  n    = range[i+1] - range[i];
+	  ierr = PetscBinaryRead(fd,avecwork,n,PETSC_SCALAR);CHKERRQ(ierr);
+	  ierr = MPI_Isend(avecwork,n,MPIU_SCALAR,i,tag,comm,&request);CHKERRQ(ierr);
+	  ierr = MPI_Wait(&request,&status);CHKERRQ(ierr);
+	}
+	ierr = PetscFree(avecwork);CHKERRQ(ierr);
+      }
+    } else {
+      ierr = MPI_Recv(avec,n,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
+    }
+#if defined(PETSC_HAVE_MPIIO)
+  } else {
+    PetscMPIInt  gsizes[1],lsizes[1],lstarts[1];
+    MPI_Datatype view;
+    MPI_File     mfdes;
+    MPI_Aint     ub,ul;
+    MPI_Offset   off;
+
+    gsizes[0]  = PetscMPIIntCast(rows);
+    lsizes[0]  = PetscMPIIntCast(n);
+    lstarts[0] = PetscMPIIntCast(vec->map.rstart);CHKERRQ(ierr);
+    ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
+    ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
+
+    ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
+    ierr = MPI_File_set_view(mfdes,off,MPIU_SCALAR,view,(char *)"native",MPI_INFO_NULL);CHKERRQ(ierr);
+    ierr = MPIU_File_read_all(mfdes,avec,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = MPI_Type_get_extent(view,&ul,&ub);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryAddMPIIOOffset(viewer,ub);CHKERRQ(ierr);
+    ierr = MPI_Type_free(&view);CHKERRQ(ierr);
+  }
+#endif
+  ierr = VecRestoreArray(vec,&avec);CHKERRQ(ierr);
   *newvec = vec;
   ierr = VecAssemblyBegin(vec);CHKERRQ(ierr);
   ierr = VecAssemblyEnd(vec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-  /* tell the other processors we've had an error; only used on process 0 */
-  handleerror:
-    if (PetscExceptionValue(ierr)) {
-      nierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(nierr);
-      nierr = -1; MPI_Bcast(&nierr,1,MPIU_INT,0,comm);
-    }
-    CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

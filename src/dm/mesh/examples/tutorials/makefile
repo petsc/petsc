@@ -102,6 +102,20 @@ bratu: bratu_quadrature.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o br
 	-${CLINKER} -o bratu  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu.o ${PETSC_SNES_LIB}
 	${RM} -f bratu.o
 
+bratu_1d.h: 
+	ffc bratu_1d.form
+
+bratu_2d.h: 
+	ffc bratu_2d.form
+
+bratu_3d.h:
+	ffc bratu_3d.form
+
+bratu_ufc: bratu_1d.h bratu_2d.h bratu_3d.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu_ufc.o chkopts
+	-${CLINKER} -o bratu_ufc  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu_ufc.o ${PETSC_SNES_LIB}
+	${RM} -f bratu_ufc.o
+
+
 bratu2: bratu2_quadrature.h bratu2.o chkopts
 	-${CLINKER} -o bratu2 bratu2.o ${PETSC_SNES_LIB}
 	${RM} -f bratu2.o
@@ -141,6 +155,10 @@ refinement: GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o refinement.o chk
 fvTest: fvTest.o chkopts
 	-${CLINKER} -o fvTest fvTest.o ${PETSC_SNES_LIB}
 	${RM} -f fvTest.o
+
+problemTests: bratu1.o problemTests.o chkopts
+	-${CLINKER} -o problemTests bratu1.o problemTests.o ${PETSC_SNES_LIB} -lcppunit
+	${RM} -f bratu1.o problemTests.o
 
 #-----------------------------------------------------------------
 runmixedpoisson:

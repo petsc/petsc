@@ -640,7 +640,7 @@ namespace ALE {
       typedef typename int_section_type::chart_type chart_type;
       const int                           dim        = (dimension > 0) ? dimension : mesh->getDimension()-1;
       const Obj<sieve_type>&              sieve      = mesh->getSieve();
-      Obj<typename ALE::Mesh>             submesh    = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
+      Obj<ALE::Mesh>                      submesh    = new ALE::Mesh(mesh->comm(), dim, mesh->debug());
       Obj<typename ALE::Mesh::sieve_type> subSieve   = new typename ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
       const bool                          censor     = mesh->hasLabel("censored depth");
       const Obj<label_type>&              depthLabel = censor ? mesh->getLabel("censored depth") : mesh->getLabel("depth");
@@ -1111,19 +1111,19 @@ namespace ALE {
       }
     };
     static void create(const Obj<Mesh>& mesh, Obj<Mesh> fault, const Obj<Mesh::int_section_type>& groupField) {
-      static PetscEvent CreateFaultMesh_Event = 0, OrientFaultMesh_Event = 0, AddCohesivePoints_Event = 0, SplitMesh_Event = 0;
+      static PetscLogEvent CreateFaultMesh_Event = 0, OrientFaultMesh_Event = 0, AddCohesivePoints_Event = 0, SplitMesh_Event = 0;
 
       if (!CreateFaultMesh_Event) {
-        PetscLogEventRegister(&CreateFaultMesh_Event, "CreateFaultMesh", 0);
+        PetscLogEventRegister("CreateFaultMesh", 0,&CreateFaultMesh_Event);
       }
       if (!OrientFaultMesh_Event) {
-        PetscLogEventRegister(&OrientFaultMesh_Event, "OrientFaultMesh", 0);
+        PetscLogEventRegister("OrientFaultMesh", 0,&OrientFaultMesh_Event);
       }
       if (!AddCohesivePoints_Event) {
-        PetscLogEventRegister(&AddCohesivePoints_Event, "AddCohesivePoints", 0);
+        PetscLogEventRegister("AddCohesivePoints", 0,&AddCohesivePoints_Event);
       }
       if (!SplitMesh_Event) {
-        PetscLogEventRegister(&SplitMesh_Event, "SplitMesh", 0);
+        PetscLogEventRegister("SplitMesh", 0,&SplitMesh_Event);
       }
 
       const Obj<sieve_type>& sieve = mesh->getSieve();

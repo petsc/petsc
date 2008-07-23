@@ -51,15 +51,16 @@ public :
     std::string eventName = testName+" Restrict";
 
     ALE::LogStage  stage = ALE::LogStageRegister(stageName.c_str());
-    PetscEvent     restrictEvent;
+    PetscLogEvent  restrictEvent;
     PetscErrorCode ierr;
 
-    ierr = PetscLogEventRegister(&restrictEvent, eventName.c_str(), PETSC_OBJECT_COOKIE);
+    ierr = PetscLogEventRegister(eventName.c_str(), PETSC_OBJECT_COOKIE,&restrictEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(restrictEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {
       for(mesh_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-        const double *restrict = this->_mesh->restrict(this->_section, *c_iter);
+        const double *restrict = this->_mesh->restrictClosure(this->_section, *c_iter);
+        CPPUNIT_ASSERT(restrict != NULL);
       }
     }
     ierr = PetscLogEventEnd(restrictEvent,0,0,0,0);
@@ -89,15 +90,16 @@ public :
     const int tag = this->_mesh->calculateCustomAtlas(this->_section, cells);
 
     ALE::LogStage  stage = ALE::LogStageRegister(stageName.c_str());
-    PetscEvent     restrictEvent;
+    PetscLogEvent  restrictEvent;
     PetscErrorCode ierr;
 
-    ierr = PetscLogEventRegister(&restrictEvent, eventName.c_str(), PETSC_OBJECT_COOKIE);
+    ierr = PetscLogEventRegister(eventName.c_str(), PETSC_OBJECT_COOKIE,&restrictEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(restrictEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {
       for(int c = 0; c < numCells; ++c) {
-        const double *restrict = this->_mesh->restrict(this->_section, tag, c);
+        const double *restrict = this->_mesh->restrictClosure(this->_section, tag, c);
+        CPPUNIT_ASSERT(restrict != NULL);
       }
     }
     ierr = PetscLogEventEnd(restrictEvent,0,0,0,0);
@@ -141,8 +143,8 @@ public:
     this->_sieve   = PETSC_NULL;
     this->_section = PETSC_NULL;
     this->processOptions();
-    const ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-    this->_mesh  = ALE::Generator::generateMesh(mB, true);
+    const ALE::Obj<mesh_type> mB = ALE::MeshBuilder<mesh_type>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+    this->_mesh  = ALE::Generator<mesh_type>::generateMesh(mB, true);
     this->_sieve = this->_mesh->getSieve();
   };
 
@@ -196,8 +198,8 @@ public:
     this->_sieve   = PETSC_NULL;
     this->_section = PETSC_NULL;
     this->processOptions();
-    const ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
-    this->_mesh  = ALE::Generator::generateMesh(mB, true);
+    const ALE::Obj<mesh_type> mB = ALE::MeshBuilder<mesh_type>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+    this->_mesh  = ALE::Generator<mesh_type>::generateMesh(mB, true);
     this->_sieve = this->_mesh->getSieve();
   };
 
@@ -238,8 +240,8 @@ public:
     int    faces[3] = {1, 1, 1};
 
     this->processOptions();
-    ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
-    this->_mesh  = ALE::Generator::generateMesh(mB, true);
+    ALE::Obj<mesh_type> mB = ALE::MeshBuilder<mesh_type>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
+    this->_mesh  = ALE::Generator<mesh_type>::generateMesh(mB, true);
     this->_sieve = this->_mesh->getSieve();
   };
 
@@ -290,8 +292,8 @@ public:
     int    faces[3] = {1, 1, 1};
 
     this->processOptions();
-    ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
-    this->_mesh  = ALE::Generator::generateMesh(mB, false);
+    ALE::Obj<mesh_type> mB = ALE::MeshBuilder<mesh_type>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
+    this->_mesh  = ALE::Generator<mesh_type>::generateMesh(mB, false);
     this->_sieve = this->_mesh->getSieve();
   };
 
@@ -324,8 +326,8 @@ public:
     int    faces[3] = {1, 1, 1};
 
     this->processOptions();
-    ALE::Obj<mesh_type> mB = ALE::MeshBuilder::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
-    this->_mesh  = ALE::Generator::refineMesh(ALE::Generator::generateMesh(mB, true), 1.0/6000, true);
+    ALE::Obj<mesh_type> mB = ALE::MeshBuilder<mesh_type>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
+    this->_mesh  = ALE::Generator<mesh_type>::refineMesh(ALE::Generator<mesh_type>::generateMesh(mB, true), 1.0/6000, true);
     this->_sieve = this->_mesh->getSieve();
   };
 

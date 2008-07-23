@@ -158,7 +158,7 @@ tree: ${ACTION}
             fi; \
             (cd $$dir ; \
             echo ${ACTION} in: `pwd`; \
-            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH});\
+            ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH} BASE_DIR=${BASE_DIR});\
 	  done
 
 # Performs the specified action throughout the directory tree
@@ -815,6 +815,12 @@ push:
 	-@cd ${PETSC_DIR}; hg push
 	-@cd ${PETSC_DIR}/config/BuildSystem; hg push
 
+#
+sourcelist:
+	-@for i in ${SOURCEC}; do \
+	    /bin/echo -n ${LOCDIR}$${i} " " >> ${BASE_DIR}/files; \
+        done
+
 # Actions to rebuild an out-of-date shared library
 #   The library basename is given by LIBNAME
 
@@ -889,18 +895,18 @@ shared_darwin9: shared_darwin7
 
 shared_darwin7: 
 	-cd ${SHARED_LIBRARY_TMPDIR}; \
-        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PACKAGES_LIBS} ${EXTERNAL_LIB}  ${SYS_LIB} -lm -lc "; fi;\
+        if [ "${LIBNAME}" = "libpetsc" ]; then OTHERLIBS="${PACKAGES_LIBS} ${EXTERNAL_LIB}  ${SYS_LIB}  ${OTHERSHAREDLIBS}  ${SL_LINKER_LIBS} -lm -lc "; fi;\
         if [ "${LIBNAME}" = "libpetscvec" ]; then OTHERLIBS="${PETSC_SYS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscmat" ]; then OTHERLIBS="${PLAPACK_LIB} ${PARMETIS_LIB} ${SCOTCH_LIB} ${PARTY_LIB} ${CHACO_LIB} ${JOSTLE_LIB} ${SUPERLU_LIB} ${SUPERLU_DIST_LIB} ${SPOOLES_LIB} ${MUMPS_LIB} ${UMFPACK_LIB} ${LUSOL_LIB} ${DSCPACK_LIB} ${PETSC_VEC_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${TRIANGLE_LIB} ${TETGEN_LIB} ${PETSC_MAT_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${SUNDIALS_LIB} ${PETSC_SNES_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
         if [ "${MACOSX_DEPLOYMENT_TARGET}" = "" ]; then MACOSX_DEPLOYMENT_TARGET=10.5; export MACOSX_DEPLOYMENT_TARGET; fi;\
-        ${PCC}  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  ${OTHERSHAREDLIBS} ${SL_LINKER_LIBS} $$OTHERLIBS
+        ${PCC} -g  -dynamiclib -single_module -multiply_defined suppress -undefined dynamic_lookup -o ${INSTALL_LIB_DIR}/$$LIBNAME.dylib *.o -L${PETSC_LIB_DIR}  $$OTHERLIBS
 
 shared_cygwin:
 	-@cd ${SHARED_LIBRARY_TMPDIR}; \

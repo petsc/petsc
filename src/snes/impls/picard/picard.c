@@ -148,7 +148,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
     PetscFunctionReturn(0);
   }
   ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr); /* fnorm <- ||F||  */
-  if PetscIsInfOrNan(fnorm) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
+  if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated in norm");
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->norm = fnorm;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
@@ -165,6 +165,10 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
     PetscTruth lsSuccess = PETSC_TRUE;
     PetscReal  dummyNorm;
 
+    /* Call general purpose update function */
+    if (snes->ops->update) {
+      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
+    }
     if (0) {
       /* Update guess Y = X^n - F(X^n) */
       ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
@@ -173,7 +177,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
       /* Compute F(X^{new}) */
       ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
-      if PetscIsInfOrNan(fnorm) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated norm");
+      if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated norm");
     } else {
       ierr = (*neP->LineSearch)(snes, PETSC_NULL/*neP->lsP*/,  X,  F,  F,  F,  X,  fnorm,  0.0,&dummyNorm,  &fnorm,  &lsSuccess);CHKERRQ(ierr);
     }

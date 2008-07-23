@@ -21,7 +21,7 @@ typedef struct {
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShellGetContext"
-/*@
+/*@C
     MatShellGetContext - Returns the user-provided context associated with a shell matrix.
 
     Not Collective
@@ -41,7 +41,7 @@ typedef struct {
 .keywords: matrix, shell, get, context
 
 .seealso: MatCreateShell(), MatShellSetOperation(), MatShellSetContext()
-@*/
+C@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetContext(Mat mat,void **ctx)
 {
   PetscErrorCode ierr;
@@ -197,7 +197,7 @@ PetscErrorCode MatAssemblyEnd_Shell(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode MatConvert_Shell(Mat, MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode MatConvert_Shell(Mat, const MatType,MatReuse,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetBlockSize_Shell"
@@ -434,7 +434,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateShell(MPI_Comm comm,PetscInt m,PetscI
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShellSetContext"
-/*@
+/*@C
     MatShellSetContext - sets the context for a shell matrix
 
    Collective on Mat
@@ -449,7 +449,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateShell(MPI_Comm comm,PetscInt m,PetscI
       unfortunately it cannot be a Fortran array or derived type.
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
-@*/
+C@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat mat,void *ctx)
 {
   Mat_Shell      *shell = (Mat_Shell*)mat->data;

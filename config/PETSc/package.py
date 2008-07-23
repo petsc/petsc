@@ -257,9 +257,9 @@ class Package(config.base.Configure):
 
   def downLoad(self):
     '''Downloads a package; using bk or ftp; opens it in the with-external-packages-dir directory'''
-    import install.retrieval
+    import retrieval
 
-    retriever = install.retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
+    retriever = retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
     retriever.setup()
     self.framework.log.write('Downloading '+self.name+'\n')
     for url in self.download:
@@ -282,7 +282,7 @@ class Package(config.base.Configure):
     '''Find the directory containing the package'''
     packages = self.petscdir.externalPackagesDir
     if not os.path.isdir(packages):
-      os.mkdir(packages)
+      os.makedirs(packages)
       self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
     Dir = None
     for dir in os.listdir(packages):

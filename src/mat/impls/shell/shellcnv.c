@@ -5,7 +5,7 @@
   
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_Shell"
-PetscErrorCode MatConvert_Shell(Mat oldmat, MatType newtype,MatReuse reuse,Mat *newmat)
+PetscErrorCode MatConvert_Shell(Mat oldmat, const MatType newtype,MatReuse reuse,Mat *newmat)
 {
   Mat            mat;
   Vec            in,out;

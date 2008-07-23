@@ -76,8 +76,8 @@ namespace ALE {
       const chart_type& chart = section->getChart();
 
       this->_chart = chart;
-      this->_value[0] = section->restrict(*chart.begin())[0];
-      this->_value[1] = section->restrict(*chart.begin())[1];
+      this->_value[0] = section->restrictPoint(*chart.begin())[0];
+      this->_value[1] = section->restrictPoint(*chart.begin())[1];
     };
   public: // Sizes
     ///void clear() {};
@@ -107,24 +107,21 @@ namespace ALE {
     int size(const point_type& p) {return this->getFiberDimension(p);};
   public: // Restriction
     void clear() {};
-    const value_type *restrict() const {
+    const value_type *restrictSpace() const {
       return this->_value;
     };
-    const value_type *restrict(const point_type& p) const {
+    const value_type *restrictPoint(const point_type& p) const {
       if (this->hasPoint(p)) {
         return this->_value;
       }
       return &this->_value[1];
     };
-    const value_type *restrictPoint(const point_type& p) const {return this->restrict(p);};
-    void update(const point_type& p, const value_type v[]) {
+    void updatePoint(const point_type& p, const value_type v[]) {
       this->_value[0] = v[0];
     };
-    void updatePoint(const point_type& p, const value_type v[]) {return this->update(p, v);};
-    void updateAdd(const point_type& p, const value_type v[]) {
+    void updateAddPoint(const point_type& p, const value_type v[]) {
       this->_value[0] += v[0];
     };
-    void updateAddPoint(const point_type& p, const value_type v[]) {return this->updateAdd(p, v);};
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
       ostringstream txt;
@@ -145,6 +142,7 @@ namespace ALE {
           txt << "viewing IConstantSection '" << name << "'" << std::endl;
         }
       }
+      txt <<"["<<this->commRank()<<"]: chart " << this->_chart << std::endl;
       txt <<"["<<this->commRank()<<"]: Value " << this->_value[0] << " Default Value " << this->_value[1] << std::endl;
       PetscSynchronizedPrintf(comm, txt.str().c_str());
       PetscSynchronizedFlush(comm);
@@ -239,7 +237,7 @@ namespace ALE {
     void setChart(const chart_type& chart) {
       this->_atlas->setChart(chart);
       int dim = fiberDim;
-      this->_atlas->update(*this->getChart().begin(), &dim);
+      this->_atlas->updatePoint(*this->getChart().begin(), &dim);
     };
     bool resizeChart(const chart_type& chart) {
       if ((chart.min() >= this->getChart().min()) && (chart.max() <= this->getChart().max())) return false;
@@ -323,16 +321,16 @@ namespace ALE {
         for(index_type i = oldChart.min()*fiberDim; i < oldChart.max()*fiberDim; ++i) {this->_allocator.destroy(oldArray+i);}
         this->_array += this->getChart().min()*fiberDim;
         this->_allocator.deallocate(oldArray, oldSize);
-        std::cout << "Freed IUniformSection data" << std::endl;
+        ///std::cout << "Freed IUniformSection data" << std::endl;
       } else {
-        std::cout << "Did not free IUniformSection data" << std::endl;
+        ///std::cout << "Did not free IUniformSection data" << std::endl;
         *oldData = oldArray;
       }
       return true;
     };
   public: // Restriction
     // Return a pointer to the entire contiguous storage array
-    const values_type& restrict() const {
+    const values_type& restrictSpace() const {
       return this->_array;
     };
     // Return only the values associated to this point, not its closure
@@ -455,7 +453,7 @@ namespace ALE {
       for(int i = oldChart.min(); i < oldChart.max(); ++i) {atlas_alloc_type(this->_allocator).destroy(oldAtlasArray+i);}
       oldAtlasArray += oldChart.min();
       atlas_alloc_type(this->_allocator).deallocate(oldAtlasArray, oldAtlasSize);
-      std::cout << "In ISection, Freed IUniformSection data" << std::endl;
+      ///std::cout << "In ISection, Freed IUniformSection data" << std::endl;
     };
   public:
     // Return the free values on a point
@@ -563,6 +561,15 @@ namespace ALE {
       return true;
     };
   public:
+    void addSpace() {
+      Obj<atlas_type> space = new atlas_type(this->comm(), this->debug());
+      Obj<bc_type>    bc    = new bc_type(this->comm(), this->debug());
+      space->setChart(this->_atlas->getChart());
+      space->allocatePoint();
+      bc->setChart(this->_bc->getChart());
+      this->_spaces.push_back(space);
+      this->_bcs.push_back(bc);
+    };
     Obj<IGeneralSection> getFibration(const int space) const {
       Obj<IGeneralSection> field = new IGeneralSection(this->comm(), this->debug());
 //     Obj<atlas_type> _atlas;
@@ -600,6 +607,8 @@ namespace ALE {
         }
       }
       // Copy offsets
+      newAtlas->setChart(newChart);
+      newAtlas->allocatePoint();
       for(typename chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
         index_type idx;
 

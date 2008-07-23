@@ -22,6 +22,7 @@ int main(int argc,char **args)
   KSP            ksp;
   char           file[PETSC_MAX_PATH_LEN]; 
   PetscViewer    fd;
+  PetscLogStage  stage1;
   
   PetscInitialize(&argc,&args,(char *)0,help);
 
@@ -58,7 +59,8 @@ int main(int argc,char **args)
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
   /* Solve system */
-  PetscLogStagePush(1);
+  ierr = PetscLogStageRegister("Stage 1",&stage1);
+  ierr = PetscLogStagePush(stage1);CHKERRQ(ierr);
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
@@ -66,7 +68,7 @@ int main(int argc,char **args)
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
   ierr = PetscGetTime(&time2);CHKERRQ(ierr);
   time = time2 - time1;
-  PetscLogStagePop();
+  ierr = PetscLogStagePop();CHKERRQ(ierr);
 
   /* Show result */
   ierr = MatMult(A,x,u);

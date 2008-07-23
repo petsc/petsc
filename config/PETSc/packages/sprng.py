@@ -23,29 +23,33 @@ class Configure(PETSc.package.Package):
   def Install(self):    
 
     g = open(os.path.join(self.packageDir,'SRC','make.PETSC'),'w')
-    g.write('AR         = ar\n')
-    g.write('ARFLAGS 	= cr\n')
-    g.write('RANLIB 	= '+self.setCompilers.RANLIB+'\n')
-    self.setCompilers.pushLanguage('C')	
-    g.write('CC 	= '+self.setCompilers.getCompiler()+'\n')
+
+    g.write('AR             = '+self.setCompilers.AR+'\n')
+    g.write('ARFLAGS        = '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('AR_LIB_SUFFIX  = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('RANLIB         = '+self.setCompilers.RANLIB+'\n')
+
+    self.setCompilers.pushLanguage('C')
+    cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
+    cflags += ' ' + self.headers.toString(self.mpi.include)+' '+self.headers.toString('.')
+    cflags += ' ' + '-DSPRNG_MPI' # either using MPI or MPIUNI
+
+    g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CFLAGS         = '+cflags+'\n')
+    g.write('CLD            = $(CC)\n')
+    g.write('MPICC          = $(CC)\n')
+    g.write('CPP            ='+self.framework.getPreprocessor()+'\n')
     self.setCompilers.popLanguage()
-    g.write('CLD 	 = $(CC)\n')
-    g.write('MPICC  	 = $(CC)\n')
-    g.write('MPIDEF      = -DSPRNG_MPI\n') #Only if you plan to use MPI
-    g.write('MPILIB     = '+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('MPI_INCLUDE = '+self.headers.toString(self.mpi.include)+'\n')
-    
-    g.write('CFLAGS 	= -O3 -DLittleEndian $(PMLCGDEF) $(MPIDEF) -D$(PLAT) $(MPI_INCLUDE)\n')
-    g.write('CLDFLAGS 	= -03\n')
-    g.write('CPP 	= cpp -P\n')
-    
-    g.write('F77 	= echo\n')
-    g.write('F77LD 	= $(F77)\n')
-    g.write('FFXN 	= -DAdd_\n')
-    g.write('FSUFFIX 	= F\n')
-    g.write('MPIF77 	= echo\n')
-    g.write('FFLAGS 	= -O3 $(PMLCGDEF) $(MPIDEF) -D$(PLAT) $(MPI_INCLUDE)\n')
-    g.write('F77LDFLAGS = -O3\n')
+
+    # extra unused options
+    g.write('CLDFLAGS       = \n')
+    g.write('F77            = echo\n')
+    g.write('F77LD          = $(F77)\n')
+    g.write('FFXN 	    = -DAdd_\n')
+    g.write('FSUFFIX 	    = F\n')
+    g.write('MPIF77 	    = echo\n')
+    g.write('FFLAGS 	    = \n')
+    g.write('F77LDFLAGS     = \n')
     g.close()
 
     if self.installNeeded(os.path.join('SRC','make.PETSC')):

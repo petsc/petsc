@@ -362,15 +362,43 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   int            fdes;
   PetscInt       n = xin->map.n,cookie=VEC_FILE_COOKIE;
   FILE           *file;
+#if defined(PETSC_HAVE_MPIIO)
+  PetscTruth     isMPIIO;
+#endif
 
   PetscFunctionBegin;
-  ierr  = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
+
   /* Write vector header */
-  ierr = PetscBinaryWrite(fdes,&cookie,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
-  ierr = PetscBinaryWrite(fdes,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&cookie,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryWrite(viewer,&n,1,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
 
   /* Write vector contents */
-  ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
+  ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
+  if (!isMPIIO) {
+#endif
+    ierr = PetscViewerBinaryGetDescriptor(viewer,&fdes);CHKERRQ(ierr);
+    ierr = PetscBinaryWrite(fdes,x->array,n,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPIIO)
+  } else {
+    MPI_Offset   off;
+    MPI_File     mfdes;
+    PetscMPIInt  gsizes[1],lsizes[1],lstarts[1];
+    MPI_Datatype view;
+
+    gsizes[0]  = PetscMPIIntCast(n);
+    lsizes[0]  = PetscMPIIntCast(n);
+    lstarts[0] = 0;
+    ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
+    ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
+
+    ierr = PetscViewerBinaryGetMPIIODescriptor(viewer,&mfdes);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryGetMPIIOOffset(viewer,&off);CHKERRQ(ierr);
+    ierr = MPIU_File_write_all(mfdes,x->array,lsizes[0],MPIU_SCALAR,MPI_STATUS_IGNORE);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryAddMPIIOOffset(viewer,n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = MPI_Type_free(&view);CHKERRQ(ierr);    
+  }
+#endif
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
   if (file && xin->map.bs > 1) {
@@ -613,7 +641,7 @@ static PetscErrorCode VecPublish_Seq(PetscObject obj)
 }
 #endif
 
-EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, VecType, Vec*);
+EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, const VecType, Vec*);
 
 static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecDuplicateVecs_Default,
@@ -632,6 +660,7 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecMAXPY_Seq,
             VecAYPX_Seq,
             VecWAXPY_Seq,
+            VecAXPBYPCZ_Seq,
             VecPointwiseMult_Seq,
             VecPointwiseDivide_Seq, 
             VecSetValues_Seq, /* 20 */

@@ -77,23 +77,35 @@ PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newfo
 /* 
    No error handling because may be called by error handler
 */
-PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *format,va_list Argp)
+PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *format,int *fullLength,va_list Argp)
 {
   /* no malloc since may be called by error handler */
-  char           newformat[8*1024];
-  size_t         length;
+  char          *newformat;
+  char           formatbuf[8*1024];
+  size_t         oldLength,length;
   PetscErrorCode ierr;
  
-  PetscFormatConvert(format,newformat,8*1024);
+  ierr = PetscStrlen(format, &oldLength);CHKERRQ(ierr);
+  if (oldLength < 8*1024) {
+    newformat = formatbuf;
+  } else {
+    ierr = PetscMalloc((oldLength+1) * sizeof(char), &newformat);CHKERRQ(ierr);
+  }
+  PetscFormatConvert(format,newformat,oldLength+1);
   ierr = PetscStrlen(newformat, &length);CHKERRQ(ierr);
+#if 0
   if (length > len) {
     newformat[len] = '\0';
   }
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vsprintf(str,newformat,(char *)Argp);
-#else
-  vsprintf(str,newformat,Argp);
 #endif
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
+  *fullLength = vsnprintf(str,len,newformat,(char *)Argp);
+#else
+  *fullLength = vsnprintf(str,len,newformat,Argp);
+#endif
+  if (oldLength >= 8*1024) {
+    ierr = PetscFree(newformat);CHKERRQ(ierr);
+  }
   return 0;
 }
 
@@ -138,11 +150,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp){
 */
 PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 {
-  /* no malloc since may be called by error handler */
-  char        newformat[8*1024];
+  /* no malloc since may be called by error handler (assume no long messages in errors) */
+  char        *newformat;
+  char         formatbuf[8*1024];
+  size_t       oldLength;
   extern FILE *PETSC_ZOPEFD;
 
-  PetscFormatConvert(format,newformat,8*1024); 
+  PetscStrlen(format, &oldLength);
+  if (oldLength < 8*1024) {
+    newformat = formatbuf;
+  } else {
+    PetscMalloc((oldLength+1) * sizeof(char), &newformat);
+  }
+  PetscFormatConvert(format,newformat,oldLength+1);
   if(PETSC_ZOPEFD != NULL && PETSC_ZOPEFD != PETSC_STDOUT){
     va_list s;
 #if defined(PETSC_HAVE_VA_COPY)
@@ -167,6 +187,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
   vfprintf(fd,newformat,Argp);
   fflush(fd);
 #endif
+  if (oldLength >= 8*1024) {
+    PetscFree(newformat);
+  }
   return 0;
 }
 
@@ -191,11 +214,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
 PetscErrorCode PETSC_DLLEXPORT PetscSNPrintf(char *str,size_t len,const char format[],...)
 {
   PetscErrorCode ierr;
+  int            fullLength;
   va_list        Argp;
 
   PetscFunctionBegin;
   va_start(Argp,format);
-  ierr = PetscVSNPrintf(str,len,format,Argp);CHKERRQ(ierr);
+  ierr = PetscVSNPrintf(str,len,format,&fullLength,Argp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -227,8 +251,6 @@ FILE        *queuefile  = PETSC_NULL;
     The call sequence is PetscSynchronizedPrintf(PetscViewer, character(*), PetscErrorCode ierr) from Fortran. 
     That is, you can only pass a single character string from Fortran.
 
-    The length of the formatted message cannot exceed QUEUESTRINGSIZE characters.
-
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
           PetscPrintf(), PetscViewerASCIIPrintf(), PetscViewerASCIISynchronizedPrintf()
 @*/
@@ -252,15 +274,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char 
   } else { /* other processors add to local queue */
     va_list     Argp;
     PrintfQueue next;
+    int         fullLength = 8191;
 
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
     if (queue) {queue->next = next; queue = next; queue->next = 0;}
     else       {queuebase   = queue = next;}
     queuelength++;
-    va_start(Argp,format);
-    ierr = PetscMemzero(next->string,QUEUESTRINGSIZE);CHKERRQ(ierr);
-    ierr = PetscVSNPrintf(next->string,QUEUESTRINGSIZE,format,Argp);CHKERRQ(ierr);
-    va_end(Argp);
+    next->size = -1;
+    while(fullLength >= next->size) {
+      next->size = fullLength+1;
+      ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+      va_start(Argp,format);
+      ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+      ierr = PetscVSNPrintf(next->string,next->size,format, &fullLength,Argp);CHKERRQ(ierr);
+      va_end(Argp);
+    }
   }
     
   PetscFunctionReturn(0);
@@ -285,8 +313,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char 
     Notes:
     REQUIRES a intervening call to PetscSynchronizedFlush() for the information 
     from all the processors to be printed.
-
-    The length of the formatted message cannot exceed QUEUESTRINGSIZE characters.
 
     Contributed by: Matthew Knepley
 
@@ -315,14 +341,20 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,c
   } else { /* other processors add to local queue */
     va_list     Argp;
     PrintfQueue next;
+    int         fullLength = 8191;
     ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
     if (queue) {queue->next = next; queue = next; queue->next = 0;}
     else       {queuebase   = queue = next;}
     queuelength++;
-    va_start(Argp,format);
-    ierr = PetscMemzero(next->string,QUEUESTRINGSIZE);CHKERRQ(ierr);
-    ierr = PetscVSNPrintf(next->string,QUEUESTRINGSIZE,format,Argp);CHKERRQ(ierr);
-    va_end(Argp);
+    next->size = -1;
+    while(fullLength >= next->size) {
+      next->size = fullLength+1;
+      ierr = PetscMalloc(next->size * sizeof(char), &next->string);CHKERRQ(ierr);
+      va_start(Argp,format);
+      ierr = PetscMemzero(next->string,next->size);CHKERRQ(ierr);
+      ierr = PetscVSNPrintf(next->string,next->size,format,&fullLength,Argp);CHKERRQ(ierr);
+      va_end(Argp);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -351,7 +383,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag,i,j,n;
-  char           message[QUEUESTRINGSIZE];
+  char          *message;
   MPI_Status     status;
   FILE           *fd;
 
@@ -370,8 +402,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
     for (i=1; i<size; i++) {
       ierr = MPI_Recv(&n,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
       for (j=0; j<n; j++) {
-        ierr = MPI_Recv(message,QUEUESTRINGSIZE,MPI_CHAR,i,tag,comm,&status);CHKERRQ(ierr);
+        int size;
+
+        ierr = MPI_Recv(&size,1,MPI_INT,i,tag,comm,&status);CHKERRQ(ierr);
+        ierr = PetscMalloc(size * sizeof(char), &message);CHKERRQ(ierr);
+        ierr = MPI_Recv(message,size,MPI_CHAR,i,tag,comm,&status);CHKERRQ(ierr);
         ierr = PetscFPrintf(comm,fd,"%s",message);
+        ierr = PetscFree(message);CHKERRQ(ierr);
       }
     }
     queuefile = PETSC_NULL;
@@ -380,9 +417,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFlush(MPI_Comm comm)
 
     ierr = MPI_Send(&queuelength,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
     for (i=0; i<queuelength; i++) {
-      ierr     = MPI_Send(next->string,QUEUESTRINGSIZE,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
+      ierr     = MPI_Send(&next->size,1,MPI_INT,0,tag,comm);CHKERRQ(ierr);
+      ierr     = MPI_Send(next->string,next->size,MPI_CHAR,0,tag,comm);CHKERRQ(ierr);
       previous = next; 
       next     = next->next;
+      ierr     = PetscFree(previous->string);CHKERRQ(ierr);
       ierr     = PetscFree(previous);CHKERRQ(ierr);
     }
     queue       = 0;

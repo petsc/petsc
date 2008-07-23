@@ -4,7 +4,7 @@ import sys
 import commands
 # to load ~/.pythonrc.py before inserting correct BuildSystem to path
 import user
-
+extraLogs = []
 
 if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.version_info[0] >= 2:
   print '**** You must have Python version 2.2 or higher to run config/configure.py ******'
@@ -90,7 +90,6 @@ def petsc_configure(configure_options):
   sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
   # check PETSC_ARCH
   check_petsc_arch(sys.argv)
-  extraLogs = []
 
   # support a few standard configure option types
   for l in range(0,len(sys.argv)):

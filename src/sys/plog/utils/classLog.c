@@ -222,9 +222,9 @@ PetscErrorCode ClassPerfLogEnsureSize(ClassPerfLog classLog, int size)
   Level: developer
 
 .keywords: log, class, register
-.seealso: PetscLogClassRegister()
+.seealso: PetscCookieRegister()
 @*/
-PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], PetscCookie *cookie)
+PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], PetscCookie cookie)
 {
   ClassRegInfo *classInfo;
   char         *str;
@@ -233,7 +233,6 @@ PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], Pet
 
   PetscFunctionBegin;
   PetscValidCharPointer(cname,2);
-  PetscValidIntPointer(cookie,3);
   c = classLog->numClasses++;
   if (classLog->numClasses > classLog->maxClasses) {
     ierr = PetscMalloc(classLog->maxClasses*2 * sizeof(ClassRegInfo), &classInfo);CHKERRQ(ierr);
@@ -244,8 +243,7 @@ PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], Pet
   }
   ierr = PetscStrallocpy(cname, &str);CHKERRQ(ierr);
   classLog->classInfo[c].name     = str;
-  ierr = PetscCookieRegister(cookie);CHKERRQ(ierr);
-  classLog->classInfo[c].cookie = *cookie;
+  classLog->classInfo[c].cookie = cookie;
   PetscFunctionReturn(0);
 }
 
@@ -267,7 +265,7 @@ PetscErrorCode ClassRegLogRegister(ClassRegLog classLog, const char cname[], Pet
   Level: developer
 
 .keywords: log, class, register
-.seealso: PetscLogClassRegister(), PetscLogObjCreateDefault(), PetscLogObjDestroyDefault()
+.seealso: PetscCookieRegister(), PetscLogObjCreateDefault(), PetscLogObjDestroyDefault()
 @*/
 PetscErrorCode ClassRegLogGetClass(ClassRegLog classLog, PetscCookie cookie, int *oclass)
 {

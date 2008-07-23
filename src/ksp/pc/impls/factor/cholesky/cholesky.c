@@ -365,7 +365,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetMatOrderingType_Cholesky"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Cholesky(PC pc,MatOrderingType ordering)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Cholesky(PC pc,const MatOrderingType ordering)
 {
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;

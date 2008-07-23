@@ -9,7 +9,7 @@ namespace ALE {
 
   typedef PetscCookie LogCookie;
   typedef int         LogStage;
-  typedef PetscEvent  LogEvent;
+  typedef PetscLogEvent  LogEvent;
 
   LogCookie LogCookieRegister(const char *name);
 

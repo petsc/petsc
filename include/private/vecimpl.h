@@ -31,8 +31,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap*,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap*,PetscInt *);
 PetscPolymorphicFunction(PetscMapGetSize,(PetscMap *m),(m,&s),PetscInt,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap*,PetscInt);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap*,PetscInt *,PetscInt *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap*,const PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRange(PetscMap*,PetscInt *,PetscInt *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRanges(PetscMap*,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSizeBlockSize(PetscMap*,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSizeBlockSize(PetscMap*,PetscInt *);
 
@@ -53,10 +53,11 @@ struct _VecOps {
   PetscErrorCode (*set)(Vec,PetscScalar);                        /* y = alpha  */
   PetscErrorCode (*swap)(Vec,Vec);                               /* exchange x and y */
   PetscErrorCode (*axpy)(Vec,PetscScalar,Vec);                   /* y = y + alpha * x */
-  PetscErrorCode (*axpby)(Vec,PetscScalar,PetscScalar,Vec);      /* y = y + alpha * x + beta * y*/
+  PetscErrorCode (*axpby)(Vec,PetscScalar,PetscScalar,Vec);      /* y = alpha * x + beta * y*/
   PetscErrorCode (*maxpy)(Vec,PetscInt,const PetscScalar*,Vec*); /* y = y + alpha[j] x[j] */
   PetscErrorCode (*aypx)(Vec,PetscScalar,Vec);                   /* y = x + alpha * y */
   PetscErrorCode (*waxpy)(Vec,PetscScalar,Vec,Vec);         /* w = y + alpha * x */
+  PetscErrorCode (*axpbypcz)(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);   /* z = alpha * x + beta *y + gamma *z*/
   PetscErrorCode (*pointwisemult)(Vec,Vec,Vec);        /* w = x .* y */
   PetscErrorCode (*pointwisedivide)(Vec,Vec,Vec);      /* w = x ./ y */
   PetscErrorCode (*setvalues)(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
@@ -89,7 +90,7 @@ struct _VecOps {
   PetscErrorCode (*resetarray)(Vec);      /* vector points to its original array, i.e. undoes any VecPlaceArray() */
   PetscErrorCode (*setfromoptions)(Vec);
   PetscErrorCode (*maxpointwisedivide)(Vec,Vec,PetscReal*);      /* m = max abs(x ./ y) */
-  PetscErrorCode (*load)(PetscViewer,VecType,Vec*);
+  PetscErrorCode (*load)(PetscViewer,const VecType,Vec*);
   PetscErrorCode (*pointwisemax)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemin)(Vec,Vec,Vec);
@@ -310,11 +311,11 @@ PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash
 
 EXTERN PetscErrorCode VecReciprocal_Default(Vec);
 
-extern PetscEvent    VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
-extern PetscEvent    VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
-extern PetscEvent    VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
-extern PetscEvent    VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
-extern PetscEvent    VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm;
+extern PetscLogEvent VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot, VEC_MTDot;
+extern PetscLogEvent VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY, VEC_MAXPY;
+extern PetscLogEvent VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier, VEC_ScatterBegin, VEC_ScatterEnd;
+extern PetscLogEvent VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
+extern PetscLogEvent VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier, VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ;
 
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
 EXTERN_C_BEGIN

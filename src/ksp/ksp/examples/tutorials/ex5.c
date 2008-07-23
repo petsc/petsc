@@ -37,7 +37,7 @@ int main(int argc,char **args)
   PetscMPIInt    size,rank;
   PetscTruth     mat_nonsymmetric;
 #if defined (PETSC_USE_LOG)
-  int            stages[2];
+  PetscLogStage  stages[2];
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -56,8 +56,8 @@ int main(int argc,char **args)
      Use the runtime option -log_summary for a printout of performance
      statistics at the program's conlusion.
   */
-  ierr = PetscLogStageRegister(&stages[0],"Original Solve");CHKERRQ(ierr);
-  ierr = PetscLogStageRegister(&stages[1],"Second Solve");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Original Solve",&stages[0]);CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Second Solve",&stages[1]);CHKERRQ(ierr);
 
   /* -------------- Stage 0: Solve Original System ---------------------- */
   /* 

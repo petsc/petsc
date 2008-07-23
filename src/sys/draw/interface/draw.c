@@ -4,7 +4,7 @@
 */
 #include "src/sys/draw/drawimpl.h"  /*I "petscdraw.h" I*/
 
-PetscCookie PETSC_DRAW_COOKIE = 0;
+PetscCookie PETSC_DRAW_COOKIE;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDrawInitializePackage" 
@@ -33,11 +33,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&PETSC_DRAW_COOKIE,   "Draw");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWAXIS_COOKIE,     "Axis");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWLG_COOKIE,       "Line Graph");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWHG_COOKIE,       "Histogram");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&DRAWSP_COOKIE,       "Scatter Plot");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Draw",&PETSC_DRAW_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Axis",&DRAWAXIS_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Line Graph",&DRAWLG_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Histogram",&DRAWHG_COOKIE);CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Scatter Plot",&DRAWSP_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
   /* Process info exclusions */

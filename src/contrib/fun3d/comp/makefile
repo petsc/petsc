@@ -33,6 +33,7 @@ flow: flow.o $(FLOW_OBJSF) chkopts
 puns3d: puns3d.a.o
 	$(FLINKER) -o puns3d puns3d.a.o $(PETSC_DM_LIB)
 
+# unfortunately we do not have permission from NASA to release the data files used in the tests below
 runflow1:
 	-@${MPIEXEC} -n 1 ./flow -options_file ${DATAFILESPATH}/fun3dgrid/petsc.opt -mesh ${DATAFILESPATH}/fun3dgrid/uns3d.msh -partition ${DATAFILESPATH}/fun3dgrid/part_vec.part.1 | grep clift | tail -1 > runflow1.tmp 2>&1;   \
 	   if (${DIFF} ${DATAFILESPATH}/fun3dgrid/coef.dat runflow1.tmp) then true; \

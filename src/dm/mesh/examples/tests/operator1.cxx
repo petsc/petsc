@@ -5,7 +5,7 @@ static char help[] = "Operator Tests.\n\n";
 #include "../tutorials/bratu_quadrature.h"
 
 using ALE::Obj;
-extern PetscEvent MAT_Mult;
+extern PetscLogEvent MAT_Mult;
 typedef ALE::MinimalArrow<ALE::Mesh::point_type, ALE::Mesh::point_type> arrow_type;
 typedef ALE::UniformSection<arrow_type, double>                         matrix_section_type;
 
@@ -14,7 +14,7 @@ typedef struct {
   int        dim;             // The topological mesh dimension
   PetscTruth interpolate;     // Construct missing elements of the mesh
   PetscReal  refinementLimit; // The largest allowable cell volume
-  PetscEvent assemblyEvent;
+  PetscLogEvent assemblyEvent;
 } Options;
 
 #undef __FUNCT__
@@ -36,7 +36,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "operator1.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  ierr = PetscLogEventRegister(&options->assemblyEvent, "Assembly", MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Assembly", MAT_COOKIE,&options->assemblyEvent);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -235,11 +235,11 @@ PetscErrorCode FullAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   Mesh           mesh;
   Mat            A;
   Vec            x, y;
-  PetscInt       stage;
+  PetscLogStage  stage;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogStageRegister(&stage, "Full Assembly");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Full Assembly",&stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   ierr = MeshCreate(m->comm(), &mesh);CHKERRQ(ierr);
   ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
@@ -310,7 +310,7 @@ PetscErrorCode AssembleMatrix_None(const Obj<ALE::Mesh>& m, const Obj<ALE::Mesh:
         }
       }
     }
-    const ALE::Mesh::real_section_type::value_type *ev = m->restrict(s, *c_iter);
+    const ALE::Mesh::real_section_type::value_type *ev = m->restrictClosure(s, *c_iter);
 
     // Do local matvec
     for(int f = 0; f < numBasisFuncs; ++f) {
@@ -335,12 +335,12 @@ PetscErrorCode NoAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
 {
   const Obj<ALE::Mesh::real_section_type>& s = m->getRealSection("default");
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
-  PetscInt       stage;
+  PetscLogStage  stage;
   PetscTruth     view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogStageRegister(&stage, "No Assembly");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("No Assembly",&stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   t->setAtlas(s->getAtlas());
   t->allocateStorage();
@@ -433,7 +433,7 @@ PetscErrorCode ApplyMatrix_Stored(const Obj<ALE::Mesh>& m, const Obj<ALE::Mesh::
 
   for(ALE::Mesh::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
     const ALE::Mesh::real_section_type::value_type *elemMat = o->restrictPoint(*c_iter);
-    const ALE::Mesh::real_section_type::value_type *ev      = m->restrict(s, *c_iter);
+    const ALE::Mesh::real_section_type::value_type *ev      = m->restrictClosure(s, *c_iter);
 
     // Do local matvec
     for(int f = 0; f < numBasisFuncs; ++f) {
@@ -458,12 +458,12 @@ PetscErrorCode StoredAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   const Obj<ALE::Mesh::real_section_type>& s = m->getRealSection("default");
   const Obj<ALE::Mesh::real_section_type>& o = m->getRealSection("operator");
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
-  PetscInt       stage;
+  PetscLogStage  stage;
   PetscTruth     view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogStageRegister(&stage, "Stored Assembly");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Stored Assembly",&stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   t->setAtlas(s->getAtlas());
   t->allocateStorage();
@@ -601,12 +601,12 @@ PetscErrorCode PartialAssemblyTest(const Obj<ALE::Mesh>& m, Options *options)
   const Obj<ALE::Mesh::real_section_type>& s = m->getRealSection("default");
   const Obj<matrix_section_type>&          o = new matrix_section_type(s->comm(), s->debug());
   Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->comm(), s->debug());
-  PetscInt       stage;
+  PetscLogStage  stage;
   PetscTruth     view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscLogStageRegister(&stage, "Partial Assembly");CHKERRQ(ierr);
+  ierr = PetscLogStageRegister("Partial Assembly",&stage);CHKERRQ(ierr);
   ierr = PetscLogStagePush(stage);CHKERRQ(ierr);
   t->setAtlas(s->getAtlas());
   t->allocateStorage();

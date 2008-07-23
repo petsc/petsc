@@ -36,10 +36,10 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 
 .seealso: PetscRandomSetType(), PetscRandom
 E*/
-#define PetscRandomType const char*
-#define PETSCRAND               "rand"
-#define PETSCRAND48             "rand48"
-#define PETSCSPRNG              "sprng"          
+#define PetscRandomType char*
+#define PETSCRAND       "rand"
+#define PETSCRAND48     "rand48"
+#define PETSCSPRNG      "sprng"          
 
 /* Logging support */
 extern PETSC_DLLEXPORT PetscCookie PETSC_RANDOM_COOKIE;
@@ -64,9 +64,9 @@ extern PetscTruth PetscRandomRegisterAllCalled;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterAll(const char []);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegister(const char[],const char[],const char[],PetscErrorCode (*)(PetscRandom));
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterDestroy(void);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom, PetscRandomType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom, const PetscRandomType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom, PetscRandomType*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom, const PetscRandomType*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom,char*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom,PetscViewer);
 

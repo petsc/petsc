@@ -3,7 +3,7 @@
 #include "include/private/matimpl.h"               /*I "petscmat.h" I*/
 
 /* Logging support */
-PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE = 0;
+PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE;
 
 /*
    Simplest partitioning, keeps the current partitioning.
@@ -154,7 +154,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void)
 
 .keywords: Partitioning, get, method, name, type
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partitioning,MatPartitioningType *type)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partitioning,const MatPartitioningType *type)
 {
   PetscFunctionBegin;
   *type = ((PetscObject)partitioning)->type_name;
@@ -401,6 +401,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartiti
   PetscFunctionBegin;
   *newp          = 0;
 
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = MatInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscHeaderCreate(part,_p_MatPartitioning,struct _MatPartitioningOps,MAT_PARTITIONING_COOKIE,-1,"MatPartitioning",comm,MatPartitioningDestroy,
                     MatPartitioningView);CHKERRQ(ierr);
   part->vertex_weights = PETSC_NULL;
@@ -442,9 +445,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartiti
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 {
-  PetscErrorCode      ierr;
-  PetscTruth          iascii;
-  MatPartitioningType name;
+  PetscErrorCode            ierr;
+  PetscTruth                iascii;
+  const MatPartitioningType name;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
@@ -497,7 +500,7 @@ $      (for instance, parmetis)
 .seealso: MatPartitioningCreate(), MatPartitioningApply(), MatPartitioningType
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,MatPartitioningType type)
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,const MatPartitioningType type)
 {
   PetscErrorCode ierr,(*r)(MatPartitioning);
   PetscTruth match;
@@ -556,7 +559,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetFromOptions(MatPartitioning 
   const char *def;
 
   PetscFunctionBegin;
-  if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(((PetscObject)part)->comm,((PetscObject)part)->prefix,"Partitioning options","MatOrderings");CHKERRQ(ierr);
     if (!((PetscObject)part)->type_name) {
 #if defined(PETSC_HAVE_PARMETIS)

@@ -24,7 +24,7 @@ typedef struct {
   PetscTruth    roworiented;            /* if true, row oriented input (default) */
 } Mat_MPIDense;
 
-EXTERN PetscErrorCode MatLoad_MPIDense(PetscViewer, MatType,Mat*);
+EXTERN PetscErrorCode MatLoad_MPIDense(PetscViewer, const MatType,Mat*);
 EXTERN PetscErrorCode MatSetUpMultiply_MPIDense(Mat);
 EXTERN PetscErrorCode MatGetSubMatrices_MPIDense(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN PetscErrorCode MatEqual_MPIDense(Mat,Mat,PetscTruth*);

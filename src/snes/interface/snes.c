@@ -6,12 +6,12 @@ PetscTruth SNESRegisterAllCalled = PETSC_FALSE;
 PetscFList SNESList              = PETSC_NULL;
 
 /* Logging support */
-PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE = 0;
-PetscEvent  SNES_Solve = 0, SNES_LineSearch = 0, SNES_FunctionEval = 0, SNES_JacobianEval = 0;
+PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE;
+PetscLogEvent  SNES_Solve, SNES_LineSearch, SNES_FunctionEval, SNES_JacobianEval;
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetFunctionDomainError"
-/*@C
+/*@
    SNESSetFunctionDomainError - tells SNES that the input vector to your FormFunction is not
      in the functions domain. For example, negative pressure.
 
@@ -70,7 +70,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
   SNESKSPEW           *kctx;
   PetscErrorCode      ierr;
   KSP                 ksp;
-  SNESType            type;
+  const SNESType      type;
   PetscTruth          iascii,isstring;
 
   PetscFunctionBegin;
@@ -613,7 +613,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES snes,PetscInt
 
    Level: intermediate
 
-   Notes: By default this is 1; that is SNES returns on the first failed linear solve
+   Notes: By default this is 0; that is SNES returns on the first failed linear solve
 
 .keywords: SNES, nonlinear, set, maximum, unsuccessful, steps
 
@@ -1703,6 +1703,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES snes,PetscReal
   snes->conv_hist       = a;
   snes->conv_hist_its   = its;
   snes->conv_hist_max   = na;
+  snes->conv_hist_len   = 0;
   snes->conv_hist_reset = reset;
   PetscFunctionReturn(0);
 }
@@ -1982,7 +1983,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
 .seealso: SNESType, SNESCreate()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,SNESType type)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,const SNESType type)
 {
   PetscErrorCode ierr,(*r)(SNES);
   PetscTruth     match;
@@ -2054,7 +2055,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterDestroy(void)
 
 .keywords: SNES, nonlinear, get, type, name
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES snes,SNESType *type)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES snes,const SNESType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -2232,7 +2233,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAppendOptionsPrefix(SNES snes,const char 
    Output Parameter:
 .  prefix - pointer to the prefix string used
 
-   Notes: On the fortran side, the user should pass in a string 'prifix' of
+   Notes: On the fortran side, the user should pass in a string 'prefix' of
    sufficient length to hold the prefix.
 
    Level: advanced

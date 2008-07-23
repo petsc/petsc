@@ -8,21 +8,21 @@
 #include "private/vecimpl.h"  
 
 /* Logging support */
-PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE = 0;
-PetscEvent  MAT_Mult = 0, MAT_Mults = 0, MAT_MultConstrained = 0, MAT_MultAdd = 0, MAT_MultTranspose = 0;
-PetscEvent  MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solve = 0, MAT_Solves = 0, MAT_SolveAdd = 0, MAT_SolveTranspose = 0, MAT_MatSolve = 0;
-PetscEvent  MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
-PetscEvent  MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
-PetscEvent  MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
-PetscEvent  MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetRowIJ = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0, MAT_GetRedundantMatrix = 0, MAT_GetSeqNonzeroStructure = 0;
-PetscEvent  MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
-PetscEvent  MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
-PetscEvent  MAT_MatMult = 0, MAT_MatMultSymbolic = 0, MAT_MatMultNumeric = 0;
-PetscEvent  MAT_PtAP = 0, MAT_PtAPSymbolic = 0, MAT_PtAPNumeric = 0;
-PetscEvent  MAT_MatMultTranspose = 0, MAT_MatMultTransposeSymbolic = 0, MAT_MatMultTransposeNumeric = 0;
-PetscEvent  MAT_Getsymtranspose = 0, MAT_Getsymtransreduced = 0, MAT_Transpose_SeqAIJ = 0, MAT_GetBrowsOfAcols = 0;
-PetscEvent  MAT_GetBrowsOfAocols = 0, MAT_Getlocalmat = 0, MAT_Getlocalmatcondensed = 0, MAT_Seqstompi = 0, MAT_Seqstompinum = 0, MAT_Seqstompisym = 0;
-PetscEvent  MAT_Applypapt = 0, MAT_Applypapt_numeric = 0, MAT_Applypapt_symbolic = 0, MAT_GetSequentialNonzeroStructure = 0;
+PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE;
+PetscLogEvent  MAT_Mult, MAT_Mults, MAT_MultConstrained, MAT_MultAdd, MAT_MultTranspose;
+PetscLogEvent  MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve, MAT_Solves, MAT_SolveAdd, MAT_SolveTranspose, MAT_MatSolve;
+PetscLogEvent  MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
+PetscLogEvent  MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
+PetscLogEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
+PetscLogEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix, MAT_GetSeqNonzeroStructure;
+PetscLogEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
+PetscLogEvent  MAT_FDColoringApply,MAT_Transpose,MAT_FDColoringFunction;
+PetscLogEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
+PetscLogEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
+PetscLogEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
+PetscLogEvent  MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ, MAT_GetBrowsOfAcols;
+PetscLogEvent  MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
+PetscLogEvent  MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
 
 /* nasty global values for MatSetValue() */
 PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Row = 0;
@@ -557,7 +557,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscInt          rows,cols;
   PetscTruth        iascii;
-  const char        *cstr;
+  const MatType     cstr;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
@@ -853,7 +853,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat mat,PetscInt m,const PetscInt
   PetscValidType(mat,1);
   PetscValidIntPointer(idxm,3);
   PetscValidIntPointer(idxn,5);
-  PetscValidScalarPointer(v,6);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
@@ -1298,9 +1297,6 @@ $
 $   v[] should be passed in like
 $   v[] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
 
-   Restrictions:
-   MatSetValuesBlocked() is currently supported only for the BAIJ and SBAIJ formats
-
    Level: intermediate
 
    Concepts: matrices^putting entries in blocked
@@ -1334,8 +1330,24 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
     mat->assembled     = PETSC_FALSE;
   }
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
-  if (!mat->ops->setvaluesblocked) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
+  if (mat->ops->setvaluesblocked) {
+    ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
+  } else {
+    PetscInt i,j,*iidxm,*iidxn,bs = mat->rmap.bs;
+    ierr = PetscMalloc2(m*bs,PetscInt,&iidxm,n*bs,PetscInt,&iidxn);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      for (j=0; j<bs; j++) {
+	iidxm[i*bs+j] = bs*idxm[i] + j;
+      }
+    }
+    for (i=0; i<n; i++) {
+      for (j=0; j<bs; j++) {
+	iidxn[i*bs+j] = bs*idxn[i] + j;
+      }
+    }
+    ierr = MatSetValues(mat,bs*m,iidxm,bs*n,iidxn,v,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(iidxm,iidxn);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1624,7 +1636,25 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(mat->bmapping,nrow,irow,irowm);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(mat->bmapping,ncol,icol,icolm);CHKERRQ(ierr);
+  if (mat->ops->setvaluesblocked) {
   ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
+  } else {
+    PetscInt i,j,*iirowm,*iicolm,bs = mat->rmap.bs;
+    ierr = PetscMalloc2(nrow*bs,PetscInt,&iirowm,ncol*bs,PetscInt,&iicolm);CHKERRQ(ierr);
+    for (i=0; i<nrow; i++) {
+      for (j=0; j<bs; j++) {
+	iirowm[i*bs+j] = bs*irowm[i] + j;
+      }
+    }
+    for (i=0; i<ncol; i++) {
+      for (j=0; j<bs; j++) {
+	iicolm[i*bs+j] = bs*icolm[i] + j;
+      }
+    }
+    ierr = MatSetValues(mat,bs*nrow,iirowm,bs*ncol,iicolm,y,addv);CHKERRQ(ierr);
+    ierr = PetscFree2(iirowm,iicolm);CHKERRQ(ierr);
+
+  }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2544,7 +2574,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve_Basic(Mat A,Mat B,Mat X)
 -  B - the right-hand-side matrix  (dense matrix)
 
    Output Parameter:
-.  B - the result matrix (dense matrix)
+.  X - the result matrix (dense matrix)
 
    Notes:
    The matrices b and x cannot be the same.  I.e., one cannot
@@ -3183,7 +3213,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
 
 .seealso: MatCopy(), MatDuplicate()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse reuse,Mat *M)
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, const MatType newtype,MatReuse reuse,Mat *M)
 {
   PetscErrorCode         ierr;
   PetscTruth             sametype,issame,flg;
@@ -3213,7 +3243,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
   if ((sametype || issame) && (reuse==MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
-    PetscErrorCode (*conv)(Mat, MatType,MatReuse,Mat*)=PETSC_NULL;
+    PetscErrorCode (*conv)(Mat, const MatType,MatReuse,Mat*)=PETSC_NULL;
     const char     *prefix[3] = {"seq","mpi",""};
     PetscInt       i;
     /* 
@@ -3402,9 +3432,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
 
    Output Parameter:
 .  v - the diagonal of the matrix
-
-   Notes: The result of this call are the same as if one converted the matrix to dense format
-      and found the minimum value in each row (i.e. the implicit zeros are counted as zeros).
 
    Level: intermediate
 
@@ -4933,7 +4960,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
-  ierr = PetscMapGetGlobalRange(&mat->rmap,ranges);CHKERRQ(ierr);
+  ierr = PetscMapGetRanges(&mat->rmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -6527,7 +6554,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetric(Mat A,PetscReal tol,PetscTruth 
   PetscValidPointer(flg,2);
   if (!A->symmetric_set) {
     if (!A->ops->issymmetric) {
-      MatType mattype;
+      const MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for symmetric",mattype);
     }
@@ -6571,7 +6598,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat A,PetscReal tol,PetscTruth 
   PetscValidPointer(flg,2);
   if (!A->hermitian_set) {
     if (!A->ops->ishermitian) {
-      MatType mattype;
+      const MatType mattype;
       ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
       SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for Hermitian",mattype);
     }

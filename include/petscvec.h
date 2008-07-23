@@ -42,7 +42,7 @@ typedef struct _p_VecScatter*  VecScatter;
 
 .seealso: VecSetType(), Vec
 E*/
-#define VecType const char*
+#define VecType char*
 #define VECSEQ         "seq"
 #define VECMPI         "mpi"
 #define VECFETI        "feti"
@@ -173,6 +173,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec,PetscScalar,PetscScalar,Ve
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec,PetscInt,const PetscScalar[],Vec*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec,PetscScalar,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec,PetscScalar,Vec,Vec);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBYPCZ(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMax(Vec,Vec,Vec);    
 PetscPolymorphicSubroutine(VecPointwiseMax,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMaxAbs(Vec,Vec,Vec);    
@@ -180,9 +181,9 @@ PetscPolymorphicSubroutine(VecPointwiseMaxAbs,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMin(Vec,Vec,Vec);    
 PetscPolymorphicSubroutine(VecPointwiseMin,(Vec x,Vec y),(x,y,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseMult(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseMult,(Vec x,Vec y),(x,y,y))
+PetscPolymorphicSubroutine(VecPointwiseMult,(Vec x,Vec y),(x,x,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec,Vec,Vec);    
-PetscPolymorphicSubroutine(VecPointwiseDivide,(Vec x,Vec y),(x,y,y))
+PetscPolymorphicSubroutine(VecPointwiseDivide,(Vec x,Vec y),(x,x,y))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec,Vec,PetscReal*);    
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec,PetscScalar);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecReciprocal(Vec);
@@ -258,8 +259,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValuesBlocked(Vec,PetscInt,const 
 /* Dynamic creation and loading functions */
 extern PetscFList VecList;
 extern PetscTruth VecRegisterAllCalled;
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec, VecType);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec, VecType *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec, const VecType);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetType(Vec, const VecType *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegister(const char[],const char[],const char[],PetscErrorCode (*)(Vec));
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterAll(const char []);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterDestroy(void);
@@ -351,7 +352,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec,PetscViewer);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec, const char *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec,Vec,PetscTruth*);
 PetscPolymorphicFunction(VecEqual,(Vec x,Vec y),(x,y,&s),PetscTruth,s)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,VecType,Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,const VecType,Vec*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer,Vec);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetSize(Vec,PetscInt*);
@@ -433,7 +434,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec,PetscReal,PetscReal
     These numbers need to match the entries in 
   the function table in vecimpl.h
 */
-typedef enum { VECOP_VIEW = 32, VECOP_LOADINTOVECTOR = 40} VecOperation;
+typedef enum { VECOP_VIEW = 33, VECOP_LOADINTOVECTOR = 41} VecOperation;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec,VecOperation,void(*)(void));
 
 /*

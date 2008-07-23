@@ -17,7 +17,8 @@ namespace ALE {
   public:
     template<typename SendOverlap, typename RecvOverlap, typename SendSection, typename RecvSection>
     static void completeSection(const Obj<SendOverlap>& sendOverlap, const Obj<RecvOverlap>& recvOverlap, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
-      Obj<SendSection> overlapSection = new SendSection(sendSection->comm(), sendSection->debug());
+      typedef ALE::Section<typename SendSection::point_type, typename SendSection::value_type> OverlapSection;
+      Obj<OverlapSection> overlapSection = new OverlapSection(sendSection->comm(), sendSection->debug());
 
       if (sendSection->debug()) {sendSection->view("Send Section");}
       ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, sendSection, overlapSection);

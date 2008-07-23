@@ -226,7 +226,7 @@ namespace ALE {
       SETERRABORT(comm,PETSC_ERR_SUP,"PETSc has not been compiled with hdf5 enabled.");
 #endif
     };
-    Obj<ALE::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, 
+    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, 
                                      const std::string& basename, 
                                      const bool useZeroBase = true, 
                                      const bool interpolate = true, 
@@ -234,7 +234,36 @@ namespace ALE {
       return readMesh(comm, dim, basename+".h5", basename+".h5", 
                       useZeroBase, interpolate, debug);
     };
-    Obj<ALE::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, 
+#ifdef PETSC_OPT_SIEVE
+    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void Builder::outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], const bool columnMajor) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeElements(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+    void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh) {
+      throw ALE::Exception("Not implemented for optimized sieves");
+    };
+#else
+    Obj<PETSC_MESH_TYPE> Builder::readMesh(MPI_Comm comm, const int dim, 
                                      const std::string& coordFilename, 
                                      const std::string& adjFilename, 
                                      const bool useZeroBase = true, 
@@ -251,13 +280,13 @@ namespace ALE {
                                                useZeroBase, numCells, &cells);
       ALE::PFLOTRAN::Builder::readCoordinates(comm, coordFilename, dim, 
                                               numVertices, &coordinates);
-      ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, numCells, cells, 
+      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildTopology(sieve, dim, numCells, cells, 
                                                   numVertices, interpolate, 
                                                   numCorners, -1, 
                                           mesh->getArrowSection("orientation"));
       mesh->setSieve(sieve);
       mesh->stratify();
-      ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(mesh, dim, coordinates);
+      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh, dim, coordinates);
       if (cells) {ierr = PetscFree(cells);}
       if (coordinates) {ierr = PetscFree(coordinates);}
       return mesh;
@@ -772,11 +801,11 @@ namespace ALE {
     //
     // Note: Any vertex or element number from PFLOTRAN is 1-based, but in Sieve we are 0-based. Thus
     //       we add and subtract 1 during conversion. Also, Sieve vertices are numbered after cells.
-    void fuseBoundary(const ALE::Obj<ALE::Mesh>& mesh) {
+    void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh) {
       // Extract PFLOTRAN boundary sections
-      ALE::Obj<ALE::Mesh::int_section_type> IBCsec    = mesh->getIntSection("IBC");
-      ALE::Obj<ALE::Mesh::int_section_type> IBNDFSsec = mesh->getIntSection("IBNDFS");
-      ALE::Obj<ALE::Mesh::int_section_type> IBCNUMsec = mesh->getIntSection("IBCNUM");
+      ALE::Obj<PETSC_MESH_TYPE::int_section_type> IBCsec    = mesh->getIntSection("IBC");
+      ALE::Obj<PETSC_MESH_TYPE::int_section_type> IBNDFSsec = mesh->getIntSection("IBNDFS");
+      ALE::Obj<PETSC_MESH_TYPE::int_section_type> IBCNUMsec = mesh->getIntSection("IBCNUM");
 
       // Look at the sections, if debugging
       if (mesh->debug()) {
@@ -785,21 +814,21 @@ namespace ALE {
       }
 
       // Extract the local numberings
-      ALE::Obj<ALE::Mesh::numbering_type> vertexNum  = mesh->getFactory()->getLocalNumbering(mesh, 0);
-      ALE::Obj<ALE::Mesh::numbering_type> elementNum = mesh->getFactory()->getLocalNumbering(mesh, mesh->depth());
+      ALE::Obj<PETSC_MESH_TYPE::numbering_type> vertexNum  = mesh->getFactory()->getLocalNumbering(mesh, 0);
+      ALE::Obj<PETSC_MESH_TYPE::numbering_type> elementNum = mesh->getFactory()->getLocalNumbering(mesh, mesh->depth());
       const int numElements = mesh->getFactory()->getNumbering(mesh, mesh->depth())->getGlobalSize();
       std::map<int,int> bfMap;
       // Declare points to the extracted numbering data
-      const ALE::Mesh::numbering_type::value_type *vNum, *eNum;
+      const PETSC_MESH_TYPE::numbering_type::value_type *vNum, *eNum;
 
       // Create map from serial bdFace numbers to local bdFace numbers
       {
-        const ALE::Mesh::int_section_type::chart_type           chart = IBCNUMsec->getChart();
-        ALE::Mesh::int_section_type::chart_type::const_iterator begin = chart.begin();
-        ALE::Mesh::int_section_type::chart_type::const_iterator end   = chart.end();
+        const PETSC_MESH_TYPE::int_section_type::chart_type           chart = IBCNUMsec->getChart();
+        PETSC_MESH_TYPE::int_section_type::chart_type::const_iterator begin = chart.begin();
+        PETSC_MESH_TYPE::int_section_type::chart_type::const_iterator end   = chart.end();
         int num = 0;
 
-        for(ALE::Mesh::int_section_type::chart_type::const_iterator p_iter = begin; p_iter != end; ++p_iter) {
+        for(PETSC_MESH_TYPE::int_section_type::chart_type::const_iterator p_iter = begin; p_iter != end; ++p_iter) {
           const int  fiberDim  = IBCNUMsec->getFiberDimension(*p_iter);
           const int *globalNum = IBCNUMsec->restrictPoint(*p_iter);
 
@@ -810,14 +839,14 @@ namespace ALE {
       }
       // Renumber vertex section IBC
       {
-        const ALE::Mesh::int_section_type::chart_type           IBCchart = IBCsec->getChart();
-        ALE::Mesh::int_section_type::chart_type::const_iterator begin    = IBCchart.begin();
-        ALE::Mesh::int_section_type::chart_type::const_iterator end      = IBCchart.end();
-        for(ALE::Mesh::int_section_type::chart_type::const_iterator p_iter = begin; p_iter != end; ++p_iter) {
-          ALE::Mesh::point_type p = *p_iter;
-          const ALE::Mesh::int_section_type::value_type *ibc_in = IBCsec->restrictPoint(p);
+        const PETSC_MESH_TYPE::int_section_type::chart_type           IBCchart = IBCsec->getChart();
+        PETSC_MESH_TYPE::int_section_type::chart_type::const_iterator begin    = IBCchart.begin();
+        PETSC_MESH_TYPE::int_section_type::chart_type::const_iterator end      = IBCchart.end();
+        for(PETSC_MESH_TYPE::int_section_type::chart_type::const_iterator p_iter = begin; p_iter != end; ++p_iter) {
+          PETSC_MESH_TYPE::point_type p = *p_iter;
+          const PETSC_MESH_TYPE::int_section_type::value_type *ibc_in = IBCsec->restrictPoint(p);
           int fiberDimension = IBCsec->getFiberDimension(p);
-          ALE::Mesh::int_section_type::value_type ibc_out[8];
+          PETSC_MESH_TYPE::int_section_type::value_type ibc_out[8];
           // k controls the update of edge connectivity for each containing element;
           // if fiberDimension is 4, only one boundary face is connected to the element, and that edge's data
           // are contained in entries 0 - 3 of the section over the element p;
@@ -829,7 +858,7 @@ namespace ALE {
             // see IBC's description.
             // Here we assume that elementNum's domain contains all boundary elements found in IBC, 
             // so we can restrict to the extracted entry.
-            eNum = elementNum->restrictPoint((ALE::Mesh::numbering_type::point_type) ibc_in[k*4]-1);
+            eNum = elementNum->restrictPoint((PETSC_MESH_TYPE::numbering_type::point_type) ibc_in[k*4]-1);
             ibc_out[k*4+0] = eNum[0]+1;
             // Copy the other entries right over
             ibc_out[k*4+1] = ibc_in[k*4+1];
@@ -842,17 +871,17 @@ namespace ALE {
       }
       {
         // Renumber vertex section IBNDFS
-        const ALE::Mesh::int_section_type::chart_type           IBNDFSchart = IBNDFSsec->getChart();
-        ALE::Mesh::int_section_type::chart_type::const_iterator begin       = IBNDFSchart.begin();
-        ALE::Mesh::int_section_type::chart_type::const_iterator end         = IBNDFSchart.end();
-        for(ALE::Mesh::int_section_type::chart_type::const_iterator p_iter = begin; p_iter != end; ++p_iter) {
-          ALE::Mesh::point_type p = *p_iter;
-          const ALE::Mesh::int_section_type::value_type *ibndfs_in = IBNDFSsec->restrictPoint(p);
+        const PETSC_MESH_TYPE::int_section_type::chart_type           IBNDFSchart = IBNDFSsec->getChart();
+        PETSC_MESH_TYPE::int_section_type::chart_type::const_iterator begin       = IBNDFSchart.begin();
+        PETSC_MESH_TYPE::int_section_type::chart_type::const_iterator end         = IBNDFSchart.end();
+        for(PETSC_MESH_TYPE::int_section_type::chart_type::const_iterator p_iter = begin; p_iter != end; ++p_iter) {
+          PETSC_MESH_TYPE::point_type p = *p_iter;
+          const PETSC_MESH_TYPE::int_section_type::value_type *ibndfs_in = IBNDFSsec->restrictPoint(p);
           // Here we assume the fiber dimension is 5
-          ALE::Mesh::int_section_type::value_type ibndfs_out[5];
+          PETSC_MESH_TYPE::int_section_type::value_type ibndfs_out[5];
           // Renumber entries 1,2 & 3 (4 & 5 are invariant under distribution), see IBNDFS's description
           // Here we assume that vertexNum's domain contains all boundary verticies found in IBNDFS, so we can restrict to the first extracted entry
-          vNum= vertexNum->restrictPoint((ALE::Mesh::numbering_type::point_type)ibndfs_in[0]-1+numElements);
+          vNum= vertexNum->restrictPoint((PETSC_MESH_TYPE::numbering_type::point_type)ibndfs_in[0]-1+numElements);
           ibndfs_out[0] = vNum[0]+1;
           // Map serial bdFace numbers to local bdFace numbers
           ibndfs_out[1] = bfMap[ibndfs_in[1]];
@@ -870,5 +899,6 @@ namespace ALE {
       }
       // It's not clear whether IBFCON needs to be renumbered (what does it mean that its entries are not "GLOBAL NODE NUMBER(s)" -- see IBFCON's descriptions
     };
+#endif
   };
 };

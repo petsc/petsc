@@ -45,15 +45,16 @@ public :
     std::string eventName = testName+" RestrictPoint";
 
     ALE::LogStage  stage = ALE::LogStageRegister(stageName.c_str());
-    PetscEvent     restrictEvent;
+    PetscLogEvent  restrictEvent;
     PetscErrorCode ierr;
 
-    ierr = PetscLogEventRegister(&restrictEvent, eventName.c_str(), PETSC_OBJECT_COOKIE);
+    ierr = PetscLogEventRegister(eventName.c_str(), PETSC_OBJECT_COOKIE,&restrictEvent);
     ALE::LogStagePush(stage);
     ierr = PetscLogEventBegin(restrictEvent,0,0,0,0);
     for(int r = 0; r < this->_iters; r++) {
       for(typename section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         const typename section_type::value_type *restrict = this->_section->restrictPoint(*c_iter);
+        CPPUNIT_ASSERT(restrict != NULL);
       }
     }
     ierr = PetscLogEventEnd(restrictEvent,0,0,0,0);
@@ -91,7 +92,7 @@ public:
   };
 
   void testConstantRestrictPoint(void) {
-    this->testRestrictPoint("Constant", 1.0e-7);
+    this->testRestrictPoint("Constant", 1.5e-6);
   }
 };
 
@@ -109,10 +110,11 @@ public:
   void setUp(void) {
     this->processOptions();
     this->_section = new section_type(PETSC_COMM_WORLD, 0, this->_size, this->_debug);
+    this->_section->allocatePoint();
   };
 
   void testUniformRestrictPoint(void) {
-    this->testRestrictPoint("Uniform", 1.0e-7);
+    this->testRestrictPoint("Uniform", 1.5e-6);
   }
 };
 

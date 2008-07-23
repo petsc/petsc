@@ -240,7 +240,7 @@ PetscErrorCode EventPerfLogEnsureSize(EventPerfLog eventLog, int size)
 .vb
       int USER_EVENT;
       int user_event_flops;
-      PetscLogEventRegister(&USER_EVENT,"User event name");
+      PetscLogEventRegister("User event name",0,&USER_EVENT);
       PetscLogEventBegin(USER_EVENT,0,0,0,0);
          [code segment to monitor]
          PetscLogFlops(user_event_flops);
@@ -267,7 +267,7 @@ PetscErrorCode EventPerfLogEnsureSize(EventPerfLog eventLog, int size)
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(), PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
           EventLogActivate(), EventLogDeactivate()
 @*/
-PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], PetscCookie cookie, PetscEvent *event) 
+PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], PetscCookie cookie, PetscLogEvent *event) 
 {
   EventRegInfo *eventInfo;
   char         *str;
@@ -339,7 +339,7 @@ PetscErrorCode EventRegLogRegister(EventRegLog eventLog, const char ename[], Pet
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(), PetscLogEventMPEActivate(), EventPerfLogDeactivate()
 @*/
-PetscErrorCode EventPerfLogActivate(EventPerfLog eventLog, PetscEvent event) 
+PetscErrorCode EventPerfLogActivate(EventPerfLog eventLog, PetscLogEvent event) 
 {
   PetscFunctionBegin;
   eventLog->eventInfo[event].active = PETSC_TRUE;
@@ -374,7 +374,7 @@ PetscErrorCode EventPerfLogActivate(EventPerfLog eventLog, PetscEvent event)
 .keywords: log, event, activate
 .seealso: PetscLogEventMPEDeactivate(), PetscLogEventMPEActivate(), EventPerfLogActivate()
 @*/
-PetscErrorCode EventPerfLogDeactivate(EventPerfLog eventLog, PetscEvent event) 
+PetscErrorCode EventPerfLogDeactivate(EventPerfLog eventLog, PetscLogEvent event) 
 {
   PetscFunctionBegin;
   eventLog->eventInfo[event].active = PETSC_FALSE;
@@ -460,7 +460,7 @@ PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog ev
 .keywords: log, visible, event
 .seealso: EventPerfLogGetVisible(), EventRegLogRegister(), StageLogGetEventLog()
 @*/
-PetscErrorCode EventPerfLogSetVisible(EventPerfLog eventLog, PetscEvent event, PetscTruth isVisible) 
+PetscErrorCode EventPerfLogSetVisible(EventPerfLog eventLog, PetscLogEvent event, PetscTruth isVisible) 
 {
   PetscFunctionBegin;
   eventLog->eventInfo[event].visible = isVisible;
@@ -489,7 +489,7 @@ PetscErrorCode EventPerfLogSetVisible(EventPerfLog eventLog, PetscEvent event, P
 .keywords: log, visible, event
 .seealso: EventPerfLogSetVisible(), EventRegLogRegister(), StageLogGetEventLog()
 @*/
-PetscErrorCode EventPerfLogGetVisible(EventPerfLog eventLog, PetscEvent event, PetscTruth *isVisible) 
+PetscErrorCode EventPerfLogGetVisible(EventPerfLog eventLog, PetscLogEvent event, PetscTruth *isVisible) 
 {
   PetscFunctionBegin;
   PetscValidIntPointer(isVisible,3);
@@ -500,7 +500,7 @@ PetscErrorCode EventPerfLogGetVisible(EventPerfLog eventLog, PetscEvent event, P
 /*------------------------------------------------ Action Functions -------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogEventBeginDefault"
-PetscErrorCode PetscLogEventBeginDefault(PetscEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) 
+PetscErrorCode PetscLogEventBeginDefault(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) 
 {
   StageLog       stageLog;
   EventPerfLog   eventLog;
@@ -526,7 +526,7 @@ PetscErrorCode PetscLogEventBeginDefault(PetscEvent event, int t, PetscObject o1
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogEventEndDefault"
-PetscErrorCode PetscLogEventEndDefault(PetscEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
+PetscErrorCode PetscLogEventEndDefault(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4)
 {
   StageLog     stageLog;
   EventPerfLog eventLog;
@@ -555,7 +555,7 @@ PetscErrorCode PetscLogEventEndDefault(PetscEvent event, int t, PetscObject o1, 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogEventBeginComplete"
-PetscErrorCode PetscLogEventBeginComplete(PetscEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) 
+PetscErrorCode PetscLogEventBeginComplete(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) 
 {
   StageLog       stageLog;
   EventRegLog    eventRegLog;
@@ -612,7 +612,7 @@ PetscErrorCode PetscLogEventBeginComplete(PetscEvent event, int t, PetscObject o
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogEventEndComplete"
-PetscErrorCode PetscLogEventEndComplete(PetscEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) 
+PetscErrorCode PetscLogEventEndComplete(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) 
 {
   StageLog       stageLog;
   EventRegLog    eventRegLog;
@@ -673,7 +673,7 @@ PetscErrorCode PetscLogEventEndComplete(PetscEvent event, int t, PetscObject o1,
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogEventBeginTrace"
-PetscErrorCode PetscLogEventBeginTrace(PetscEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) 
+PetscErrorCode PetscLogEventBeginTrace(PetscLogEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) 
 {
   StageLog       stageLog;
   EventRegLog    eventRegLog;
@@ -708,7 +708,7 @@ PetscErrorCode PetscLogEventBeginTrace(PetscEvent event, int t, PetscObject o1, 
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogEventEndTrace"
-PetscErrorCode PetscLogEventEndTrace(PetscEvent event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4) 
+PetscErrorCode PetscLogEventEndTrace(PetscLogEvent event,int t,PetscObject o1,PetscObject o2,PetscObject o3,PetscObject o4) 
 {
   StageLog       stageLog;
   EventRegLog    eventRegLog;

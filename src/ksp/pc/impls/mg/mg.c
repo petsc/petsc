@@ -296,14 +296,14 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       levels = mg[0]->levels;
       for (i=0; i<levels; i++) {  
         sprintf(eventname,"MGSetup Level %d",(int)i);
-        ierr = PetscLogEventRegister(&mg[i]->eventsmoothsetup,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
+        ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->cookie,&mg[i]->eventsmoothsetup);CHKERRQ(ierr);
         sprintf(eventname,"MGSmooth Level %d",(int)i);
-        ierr = PetscLogEventRegister(&mg[i]->eventsmoothsolve,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
+        ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->cookie,&mg[i]->eventsmoothsolve);CHKERRQ(ierr);
         if (i) {
           sprintf(eventname,"MGResid Level %d",(int)i);
-          ierr = PetscLogEventRegister(&mg[i]->eventresidual,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
+          ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->cookie,&mg[i]->eventresidual);CHKERRQ(ierr);
           sprintf(eventname,"MGInterp Level %d",(int)i);
-          ierr = PetscLogEventRegister(&mg[i]->eventinterprestrict,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
+          ierr = PetscLogEventRegister(eventname,((PetscObject)pc)->cookie,&mg[i]->eventinterprestrict);CHKERRQ(ierr);
         }
       }
     }
@@ -326,17 +326,18 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s, pre-smooths=%D, post-smooths=%D\n",
-				  PCMGTypes[mg[0]->am],levels,(mg[0]->cycles == PC_MG_CYCLE_V) ? "v" : "w",
-                                  mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  MG: type is %s, levels=%D cycles=%s\n", PCMGTypes[mg[0]->am],levels,(mg[0]->cycles == PC_MG_CYCLE_V) ? "v" : "w");CHKERRQ(ierr);
+    if (mg[0]->am == PC_MG_MULTIPLICATIVE) {
+      ierr = PetscViewerASCIIPrintf(viewer,"    Cycles per PCApply=%d\n",mg[0]->cyclesperpcapply);CHKERRQ(ierr);
+    }
     if (mg[0]->galerkin) {
       ierr = PetscViewerASCIIPrintf(viewer,"    Using Galerkin computed coarse grid matrices\n");CHKERRQ(ierr);
     }
     for (i=0; i<levels; i++) {
       if (!i) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Coarse gride solver -- level %D -------------------------------\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Coarse gride solver -- level %D presmooths=%D postsmooths=%D -----\n",i,mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D smooths=%D --------------------\n",i,mg[i]->default_smoothd);CHKERRQ(ierr);
       }
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(mg[i]->smoothd,viewer);CHKERRQ(ierr);
@@ -344,7 +345,7 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
       if (i && mg[i]->smoothd == mg[i]->smoothu) {
         ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
       } else if (i){
-        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D -------------------------------\n",i);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level %D smooths=%D --------------------\n",i,mg[i]->default_smoothu);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
         ierr = KSPView(mg[i]->smoothu,viewer);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -455,6 +456,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
         Vec *vec;
         ierr = KSPGetVecs(mg[i]->smoothd,1,&vec,0,PETSC_NULL);CHKERRQ(ierr);
         ierr = PCMGSetRhs(pc,i,*vec);CHKERRQ(ierr);
+        ierr = VecDestroy(*vec);CHKERRQ(ierr);
         ierr = PetscFree(vec);CHKERRQ(ierr);
       }
       if (!mg[i]->r && i) {
@@ -467,6 +469,14 @@ static PetscErrorCode PCSetUp_MG(PC pc)
         ierr = PCMGSetX(pc,i,tvec);CHKERRQ(ierr);
         ierr = VecDestroy(tvec);CHKERRQ(ierr);
       }
+    }
+    if (n != 1 && !mg[n-1]->r) {
+      /* PCMGSetR() on the finest level if user did not supply it */
+      Vec *vec;
+      ierr = KSPGetVecs(mg[n-1]->smoothd,1,&vec,0,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCMGSetR(pc,n-1,*vec);CHKERRQ(ierr);
+      ierr = VecDestroy(*vec);CHKERRQ(ierr);
+      ierr = PetscFree(vec);CHKERRQ(ierr);
     }
   }
 

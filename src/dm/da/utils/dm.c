@@ -176,7 +176,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring"
 /*@
-    DMGetColoring - Gets coloring and empty Jacobian for a DA or DMComposite
+    DMGetColoring - Gets coloring for a DA or DMComposite
 
     Collective on DM
 
@@ -222,7 +222,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,ISColo
 .seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGetMatrix()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm, MatType mtype,Mat *mat)
+PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm, const MatType mtype,Mat *mat)
 {
   PetscErrorCode ierr;
 

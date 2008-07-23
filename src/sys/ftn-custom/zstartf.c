@@ -51,9 +51,8 @@ PetscErrorCode PetscInitializeFortran(void)
   if (PETSC_COMM_WORLD) {
     c1 =  MPI_Comm_c2f(PETSC_COMM_WORLD);
   }
-  if (PETSC_COMM_SELF) {
-    c2 =  MPI_Comm_c2f(PETSC_COMM_SELF);
-  }
+  /* PETSC_COMM_SELF is defined as MPI_COMM_SELF */
+  c2 =  MPI_Comm_c2f(PETSC_COMM_SELF);
   petscsetcommonblock_(&c1,&c2);
   return 0;
 }

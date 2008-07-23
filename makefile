@@ -203,6 +203,9 @@ chk_petsc_dir:
 #
 #
 install:
+	-@./config/install.py --rootDir=${PETSC_DIR} --installDir=${INSTALL_DIR} --arch=${PETSC_ARCH} --ranlib=${RANLIB} --make=${OMAKE} --libSuffix=${AR_LIB_SUFFIX}
+
+install_old:
 	-@if [ "${INSTALL_DIR}" = "${PETSC_DIR}" ]; then \
 	  echo "Install directory is current directory; nothing needs to be done";\
         else \
@@ -222,16 +225,16 @@ install:
           ${CP} -fr ${PETSC_ARCH}/conf ${INSTALL_DIR};\
           ${CP} -fr bin ${INSTALL_DIR} ; \
           ${CP} -fr ${PETSC_ARCH}/bin ${INSTALL_DIR};\
-	  grep -w PETSC_HAVE_SIEVE asterix-sieve/include/petscconf.h > /dev/null; \
+	  grep -w PETSC_HAVE_SIEVE ${PETSC_ARCH}/include/petscconf.h > /dev/null; \
 	  if [ "$$?" = 0 ]; then \
             ${CP} -f  src/dm/mesh/sieve/*.hh ${INSTALL_DIR}/include;\
-	    ${SEDINPLACE} 's?SIEVE_INCLUDE?REMOVE_SIEVE_INCLUDE?g' ${INSTALL_DIR}/conf/petscvariables ;\
+	    ${SEDINPLACE} "s?SIEVE_INCLUDE?REMOVE_SIEVE_INCLUDE?g" ${INSTALL_DIR}/conf/petscvariables ;\
           fi;\
-          ${SEDINPLACE} 's?$${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
-          ${SEDINPLACE} 's?${PETSC_DIR}/${PETSC_ARCH}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
-          ${SEDINPLACE} 's?${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
-          ${SEDINPLACE} 's?TMP_INSTALL_DIR?${INSTALL_DIR}?g' ${INSTALL_DIR}/conf/* ;\
-          ${SEDINPLACE} 's?/$${PETSC_ARCH}??g' ${INSTALL_DIR}/conf/* ;\
+          ${SEDINPLACE} "s?$${PETSC_DIR}?TMP_INSTALL_DIR?g" ${INSTALL_DIR}/conf/* ;\
+          ${SEDINPLACE} "s?${PETSC_DIR}/${PETSC_ARCH}?TMP_INSTALL_DIR?g" ${INSTALL_DIR}/conf/* ;\
+          ${SEDINPLACE} "s?${PETSC_DIR}?TMP_INSTALL_DIR?g" ${INSTALL_DIR}/conf/* ;\
+          ${SEDINPLACE} "s?TMP_INSTALL_DIR?${INSTALL_DIR}?g" ${INSTALL_DIR}/conf/* ;\
+          ${SEDINPLACE} "s?/$${PETSC_ARCH}??g" ${INSTALL_DIR}/conf/* ;\
           ${CP} -fr ${PETSC_ARCH}/lib ${INSTALL_DIR} ;\
           ${RANLIB} ${INSTALL_DIR}/lib/*.${AR_LIB_SUFFIX} ;\
           ${OMAKE} PETSC_ARCH="" PETSC_DIR=${INSTALL_DIR} shared; \
@@ -240,7 +243,7 @@ install:
           echo "  unset PETSC_ARCH" ;\
           echo "If using csh/tcsh, do the following:";\
           echo "  setenv PETSC_DIR ${INSTALL_DIR}" ;\
-          echo "  csh/tcsh: unsetenv PETSC_ARCH";\
+          echo "  unsetenv PETSC_ARCH";\
           echo "Now run the testsuite to verify the install with the following:" ;\
           echo "  make test";\
         fi;
@@ -388,6 +391,12 @@ update-web:
 	  ${PETSC_DIR}/src/docs/website/ petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as
 	@cd ${PETSC_DIR}/src/docs/tex/manual; make developers.pdf PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} LOC=${PETSC_DIR}; \
 	/usr/bin/rsync -az developers.pdf petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as/developers/
+
+#
+#  builds a single list of files for each PETSc library so they may all be built in parallel
+#  without a recursive set of make calls
+createfastbuild:
+	cd src/vec; ${RM} -f files; /bin/echo -n "SOURCEC = " > files; make tree ACTION=sourcelist BASE_DIR=${PETSC_DIR}/src/vec;  /bin/echo -n "OBJSC    = $${SOURCEC:.c=.o} " >> files
 
 ###########################################################
 

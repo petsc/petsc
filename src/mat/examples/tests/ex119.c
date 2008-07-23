@@ -5,7 +5,7 @@ static char help[] = "Tests binary MatView() for MPIDENSE matrices \n\n";
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
-PetscInt main(PetscInt argc,char **args)
+int main(int argc,char **args)
 {
   PetscErrorCode ierr;
   Mat            A;

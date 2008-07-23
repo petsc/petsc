@@ -64,8 +64,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
     p[i]->comm     = comm;
     p[i]->user     = user;
     p[i]->galerkin = galerkin;
-    p[i]->mtype    = MATAIJ;
     p[i]->isctype  = IS_COLORING_GHOSTED;   /* default to faster version, requires DMMGSetSNESLocal() */
+    ierr           = PetscStrallocpy(MATAIJ,&p[i]->mtype);CHKERRQ(ierr);
   }
   p[nlevels-1]->galerkin = PETSC_FALSE;
   *dmmg = p;
@@ -93,13 +93,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
 .seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser(), DMMGCreate(), DMMGSetNullSpace()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,MatType mtype)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,const MatType mtype)
 {
-  PetscInt i;
-  
+  PetscInt       i;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   for (i=0; i<dmmg[0]->nlevels; i++) {
-    dmmg[i]->mtype  = mtype;
+    ierr = PetscStrallocpy(mtype,&dmmg[i]->mtype);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -200,6 +201,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
   }
   for (i=0; i<nlevels; i++) {
     ierr = PetscStrfree(dmmg[i]->prefix);CHKERRQ(ierr);
+    ierr = PetscStrfree(dmmg[i]->mtype);CHKERRQ(ierr);
     if (dmmg[i]->dm)      {ierr = DMDestroy(dmmg[i]->dm);CHKERRQ(ierr);}
     if (dmmg[i]->x)       {ierr = VecDestroy(dmmg[i]->x);CHKERRQ(ierr);}
     if (dmmg[i]->b)       {ierr = VecDestroy(dmmg[i]->b);CHKERRQ(ierr);}
@@ -786,10 +788,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuessCurrent(DMMG dmmg,Vec vec)
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetInitialGuess(DMMG *dmmg,PetscErrorCode (*guess)(DMMG,Vec))
 {
-  PetscInt i,nlevels = dmmg[0]->nlevels;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   for (i=0; i<nlevels; i++) {
+    if (dmmg[i]->ksp && !dmmg[i]->snes) {
+      ierr = KSPSetInitialGuessNonzero(dmmg[i]->ksp,PETSC_TRUE);CHKERRQ(ierr);
+    }
     dmmg[i]->initialguess = guess;
   }
   PetscFunctionReturn(0);

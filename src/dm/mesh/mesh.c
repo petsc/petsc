@@ -3,9 +3,9 @@
 #include <petscmesh_formats.hh>
 
 /* Logging support */
-PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE = 0;
-PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, Mesh_assembleVector = 0,
-            Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0, Mesh_updateOperator = 0;
+PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
+PetscLogEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
+            Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
 PetscTruth MeshRegisterAllCalled = PETSC_FALSE;
 PetscFList MeshList;
@@ -40,13 +40,13 @@ EXTERN_C_END
 PetscErrorCode MeshFinalize()
 {
   PetscFunctionBegin;
-  ALE::Mesh::MeshNumberingFactory::singleton(0, 0, true);
+  PETSC_MESH_TYPE::MeshNumberingFactory::singleton(0, 0, true);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve_Ascii"
-PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer)
+PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
 {
   PetscViewerFormat format;
   PetscErrorCode    ierr;
@@ -57,6 +57,22 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer
     ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
     ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
     ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
+    const ALE::Obj<PETSC_MESH_TYPE::int_section_type>& p     = mesh->getIntSection("Partition");
+    const ALE::Obj<PETSC_MESH_TYPE::label_sequence>&   cells = mesh->heightStratum(0);
+    const PETSC_MESH_TYPE::label_sequence::iterator    end   = cells->end();
+    const int                                          rank  = mesh->commRank();
+
+#ifdef PETSC_OPT_SIEVE
+    p->setChart(PETSC_MESH_TYPE::int_section_type::chart_type(*cells));
+#endif
+    p->setFiberDimension(cells, 1);
+    p->allocatePoint();
+    for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+      p->updatePoint(*c_iter, &rank);
+    }
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+    ierr = SectionView_Sieve_Ascii(mesh, p, "Partition", viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
     char *filename;
     char  connectFilename[2048];
@@ -136,7 +152,7 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve"
-PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer)
+PetscErrorCode MeshView_Sieve(const ALE::Obj<PETSC_MESH_TYPE>& mesh, PetscViewer viewer)
 {
   PetscTruth     iascii, isbinary, isdraw;
   PetscErrorCode ierr;
@@ -271,7 +287,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh *mesh)
 .seealso MeshCreate(), MeshSetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Mesh>& m)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<PETSC_MESH_TYPE>& m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
@@ -295,7 +311,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Mesh>& m)
 .seealso MeshCreate(), MeshGetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh>& m)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<PETSC_MESH_TYPE>& m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
@@ -313,8 +329,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh
 #define __FUNCT__ "MeshCreateMatrix" 
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, SectionReal section, MatType mtype, Mat *J)
 {
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::real_section_type> s;
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -364,9 +380,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype, Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, const MatType mtype, Mat *J)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscTruth          flag;
   PetscErrorCode      ierr;
 
@@ -426,7 +442,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
   ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
 
-  new(&p->m) ALE::Obj<ALE::Mesh>(PETSC_NULL);
+  new(&p->m) ALE::Obj<PETSC_MESH_TYPE>(PETSC_NULL);
   p->globalScatter = PETSC_NULL;
   p->lf            = PETSC_NULL;
   p->lj            = PETSC_NULL;
@@ -485,7 +501,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 .keywords: Mesh, set, typr
 .seealso: MeshGetType(), MeshType
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, MeshType type)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, const MeshType type)
 {
   PetscErrorCode ierr,(*r)(Mesh);
   PetscTruth     match;
@@ -527,7 +543,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, MeshType type)
 .keywords: Mesh, get, type
 .seealso: MeshSetType()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,MeshType *type)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,const MeshType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,MESH_COOKIE,1);
@@ -627,7 +643,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterDestroy(void)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscTruth     flag;
   PetscErrorCode ierr;
 
@@ -635,7 +651,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
+  const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
 
   ierr = VecCreate(m->comm(), gvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
@@ -665,7 +681,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, Vec *lvec)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscTruth     flag;
   PetscErrorCode ierr;
 
@@ -711,8 +727,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 #define __FUNCT__ "MeshCreateGlobalScatter"
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal section, VecScatter *scatter)
 {
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::real_section_type> s;
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -823,15 +839,15 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshFormJacobian(Mesh mesh, SectionReal X, Mat 
 //  - All values have the same dimension
 PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoints, double *points, double **values)
 {
-  Obj<ALE::Mesh> m;
-  Obj<ALE::Mesh::real_section_type> s;
+  Obj<PETSC_MESH_TYPE> m;
+  Obj<PETSC_MESH_TYPE::real_section_type> s;
   double        *v0, *J, *invJ, detJ;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
   int embedDim = coordinates->getFiberDimension(*m->depthStratum(0)->begin());
   int dim      = s->getFiberDimension(*m->depthStratum(0)->begin());
 
@@ -840,8 +856,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal se
   for(int p = 0; p < numPoints; p++) {
     double *point = &points[p*embedDim];
     
-    ALE::Mesh::point_type e = m->locatePoint(point);
-    const ALE::Mesh::real_section_type::value_type *coeff = s->restrictPoint(e);
+    PETSC_MESH_TYPE::point_type e = m->locatePoint(point);
+    const PETSC_MESH_TYPE::real_section_type::value_type *coeff = s->restrictPoint(e);
 
     m->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
     double xi   = (invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]) + invJ[0*embedDim+2]*(point[2] - v0[2]))*0.5;
@@ -875,17 +891,17 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal se
 @*/
 PetscErrorCode MeshGetMaximumDegree(Mesh mesh, PetscInt *maxDegree)
 {
-  Obj<ALE::Mesh> m;
+  Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::label_sequence>& vertices = m->depthStratum(0);
-  const ALE::Obj<ALE::Mesh::sieve_type>&     sieve    = m->getSieve();
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& vertices = m->depthStratum(0);
+  const ALE::Obj<PETSC_MESH_TYPE::sieve_type>&     sieve    = m->getSieve();
   PetscInt                                          maxDeg   = -1;
 
-  for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-    maxDeg = PetscMax(maxDeg, (PetscInt) sieve->support(*v_iter)->size());
+  for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    maxDeg = PetscMax(maxDeg, (PetscInt) sieve->getSupportSize(*v_iter));
   }
   *maxDegree = maxDeg;
   PetscFunctionReturn(0);
@@ -995,7 +1011,7 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   Mesh                       mesh;
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscInt                   firstElement;
   PetscErrorCode             ierr;
 
@@ -1007,9 +1023,9 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   firstElement = 0;
   // Must relate b to field
   if (mode == INSERT_VALUES) {
-    m->update(m->getRealSection(std::string("x")), ALE::Mesh::point_type(e + firstElement), v);
+    m->update(m->getRealSection(std::string("x")), PETSC_MESH_TYPE::point_type(e + firstElement), v);
   } else {
-    m->updateAdd(m->getRealSection(std::string("x")), ALE::Mesh::point_type(e + firstElement), v);
+    m->updateAdd(m->getRealSection(std::string("x")), PETSC_MESH_TYPE::point_type(e + firstElement), v);
   }
   ierr = PetscLogEventEnd(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1017,14 +1033,19 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
 
 #undef __FUNCT__
 #define __FUNCT__ "updateOperator"
-PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Obj<ALE::Mesh::real_section_type>& section, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
+PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, const PETSC_MESH_TYPE::point_type& e, PetscScalar array[], InsertMode mode)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  const ALE::Mesh::indices_type indicesBlock = m->getIndices(section, e, globalOrder);
+#ifdef PETSC_OPT_SIEVE
+  typedef ALE::ISieveVisitor::IndicesVisitor<PETSC_MESH_TYPE::real_section_type,PETSC_MESH_TYPE::order_type,PetscInt> visitor_type;
+  visitor_type iV(*section, *globalOrder, (int) pow(m->getSieve()->getMaxConeSize(), m->depth())*m->getMaxDof(), m->depth() > 1);
+
+  PetscErrorCode ierr = updateOperator(A, *m->getSieve(), iV, e, array, ADD_VALUES);CHKERRQ(ierr);
+#else
+  const PETSC_MESH_TYPE::indices_type indicesBlock = m->getIndices(section, e, globalOrder);
   const PetscInt *indices    = indicesBlock.first;
   const int&      numIndices = indicesBlock.second;
+  PetscErrorCode  ierr;
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   if (section->debug()) {
@@ -1049,13 +1070,17 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Ob
     CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "updateOperator"
-PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Obj<ALE::Mesh::real_section_type>& section, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, int tag, int p, PetscScalar array[], InsertMode mode)
+PetscErrorCode updateOperator(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& m, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, int tag, int p, PetscScalar array[], InsertMode mode)
 {
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
+#else
   const int *offsets, *indices;
   PetscErrorCode ierr;
 
@@ -1073,24 +1098,28 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Ob
     CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "updateOperatorGeneral"
-PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& rowM, const ALE::Obj<ALE::Mesh::real_section_type>& rowSection, const ALE::Obj<ALE::Mesh::order_type>& rowGlobalOrder, const ALE::Mesh::point_type& rowE, const ALE::Obj<ALE::Mesh>& colM, const ALE::Obj<ALE::Mesh::real_section_type>& colSection, const ALE::Obj<ALE::Mesh::order_type>& colGlobalOrder, const ALE::Mesh::point_type& colE, PetscScalar array[], InsertMode mode)
+PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& rowM, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& rowSection, const ALE::Obj<PETSC_MESH_TYPE::order_type>& rowGlobalOrder, const PETSC_MESH_TYPE::point_type& rowE, const ALE::Obj<PETSC_MESH_TYPE>& colM, const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& colSection, const ALE::Obj<PETSC_MESH_TYPE::order_type>& colGlobalOrder, const PETSC_MESH_TYPE::point_type& colE, PetscScalar array[], InsertMode mode)
 {
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
+#else
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  const ALE::Mesh::indices_type rowIndicesBlock = rowM->getIndices(rowSection, rowE, rowGlobalOrder);
+  const PETSC_MESH_TYPE::indices_type rowIndicesBlock = rowM->getIndices(rowSection, rowE, rowGlobalOrder);
 
   const PetscInt *tmpIndices    = rowIndicesBlock.first;
   const int       numRowIndices = rowIndicesBlock.second;
   PetscInt       *rowIndices    = new PetscInt[numRowIndices];
   PetscMemcpy(rowIndices, tmpIndices, numRowIndices*sizeof(PetscInt));
 
-  const ALE::Mesh::indices_type colIndicesBlock = colM->getIndices(colSection, colE, colGlobalOrder);
+  const PETSC_MESH_TYPE::indices_type colIndicesBlock = colM->getIndices(colSection, colE, colGlobalOrder);
 
   const PetscInt *colIndices    = colIndicesBlock.first;
   const int      numColIndices = colIndicesBlock.second;
@@ -1127,6 +1156,7 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& rowM, con
   }
   ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   delete [] rowIndices;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1151,6 +1181,9 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& rowM, con
 @*/
 PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
 {
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
+#else
   Mesh           mesh;
   PetscErrorCode ierr;
 
@@ -1158,12 +1191,12 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   ierr = PetscLogEventBegin(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
   try {
-    Obj<ALE::Mesh> m;
+    Obj<PETSC_MESH_TYPE> m;
 
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-    const ALE::Obj<ALE::Mesh::numbering_type>&    cNumbering  = m->getFactory()->getLocalNumbering(m, m->depth());
-    const ALE::Obj<ALE::Mesh::real_section_type>& s           = m->getRealSection("default");
-    const ALE::Obj<ALE::Mesh::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
+    const ALE::Obj<PETSC_MESH_TYPE::numbering_type>&    cNumbering  = m->getFactory()->getLocalNumbering(m, m->depth());
+    const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s           = m->getRealSection("default");
+    const ALE::Obj<PETSC_MESH_TYPE::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
 
     if (m->debug()) {
       std::cout << "Assembling matrix for element number " << e << " --> point " << cNumbering->getPoint(e) << std::endl;
@@ -1173,14 +1206,27 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
     std::cout << e.msg() << std::endl;
   }
   ierr = PetscLogEventEnd(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "preallocateMatrix"
-PetscErrorCode preallocateMatrix(const ALE::Obj<ALE::Mesh>& mesh, const int bs, const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
+PetscErrorCode preallocateMatrix(const ALE::Obj<PETSC_MESH_TYPE>& mesh, const int bs, const ALE::Obj<PETSC_MESH_TYPE::real_section_type::atlas_type>& atlas, const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder, Mat A)
 {
-  return preallocateOperator(mesh, bs, atlas, globalOrder, A);
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "This is not applicable for optimized sieves");
+#else
+  PetscInt       localSize = globalOrder->getLocalSize();
+  PetscInt      *dnz, *onz;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc2(localSize, PetscInt, &dnz, localSize, PetscInt, &onz);CHKERRQ(ierr);
+  ierr = preallocateOperator(mesh, bs, atlas, globalOrder, dnz, onz, A);CHKERRQ(ierr);
+  ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#endif
 }
 
 /******************************** C Wrappers **********************************/
@@ -1196,7 +1242,7 @@ PetscErrorCode WriteVTKHeader(PetscViewer viewer)
 #define __FUNCT__ "WriteVTKVertices"
 PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -1207,7 +1253,7 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WriteVTKElements"
 PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -1218,7 +1264,7 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePCICEVertices"
 PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -1229,7 +1275,7 @@ PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePCICEElements"
 PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -1240,7 +1286,7 @@ PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePCICERestart"
 PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -1269,7 +1315,7 @@ PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 @*/
 PetscErrorCode MeshCreatePFLOTRAN(MPI_Comm comm, const int dim, const char hdf5Filename[], PetscTruth interpolate, Mesh *mesh)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscInt            debug = 0;
   PetscTruth          flag;
   PetscErrorCode      ierr;
@@ -1318,7 +1364,7 @@ PetscErrorCode MeshCreatePFLOTRAN(MPI_Comm comm, const int dim, const char hdf5F
 @*/
 PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscTruth interpolate, const char bcFilename[], Mesh *mesh)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscInt            debug = 0;
   PetscTruth          flag;
   PetscErrorCode      ierr;
@@ -1362,7 +1408,7 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
 @*/
 PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFilename[], PetscTruth zeroBase, PetscTruth interpolate, Mesh *mesh)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscInt            debug = 0;
   PetscTruth          flag;
   PetscErrorCode      ierr;
@@ -1402,7 +1448,7 @@ PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFil
 @*/
 PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscTruth columnMajor, PetscInt *numVertices, PetscInt *dim, PetscReal *coords[])
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1434,7 +1480,7 @@ PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscTruth columnMajor, PetscInt *n
 @*/
 PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numElements, PetscInt *numCorners, PetscInt *vertices[])
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1465,19 +1511,28 @@ PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numE
 @*/
 PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *parallelMesh)
 {
-  ALE::Obj<ALE::Mesh> oldMesh;
+  ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
+#ifdef PETSC_OPT_SIEVE
+  const Obj<PETSC_MESH_TYPE>             newMesh  = new PETSC_MESH_TYPE(oldMesh->comm(), oldMesh->getDimension(), oldMesh->debug());
+  const Obj<PETSC_MESH_TYPE::sieve_type> newSieve = new PETSC_MESH_TYPE::sieve_type(oldMesh->comm(), oldMesh->debug());
+
+  newMesh->setSieve(newSieve);
+  ALE::DistributionNew<PETSC_MESH_TYPE>::distributeMeshAndSectionsV(oldMesh, newMesh);
+  ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
+#else
   if (partitioner == NULL) {
-    ALE::Obj<ALE::Mesh> newMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(oldMesh);
+    ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh);
     ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   } else {
-    ALE::Obj<ALE::Mesh> newMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(oldMesh, 0, partitioner);
+    ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh, 0, partitioner);
     ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1503,19 +1558,23 @@ PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *p
 @*/
 PetscErrorCode MeshDistributeByFace(Mesh serialMesh, const char partitioner[], Mesh *parallelMesh)
 {
-  ALE::Obj<ALE::Mesh> oldMesh;
+  ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
+#else
   if (partitioner == NULL) {
-    ALE::Obj<ALE::Mesh> newMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(oldMesh, 1);
+    ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh, 1);
     ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   } else {
-    ALE::Obj<ALE::Mesh> newMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(oldMesh, 1, partitioner);
+    ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Distribution<PETSC_MESH_TYPE>::distributeMesh(oldMesh, 1, partitioner);
     ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1540,13 +1599,17 @@ PetscErrorCode MeshDistributeByFace(Mesh serialMesh, const char partitioner[], M
 @*/
 PetscErrorCode MeshGenerate(Mesh boundary, PetscTruth interpolate, Mesh *mesh)
 {
-  ALE::Obj<ALE::Mesh> mB;
+  ALE::Obj<PETSC_MESH_TYPE> mB;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(boundary, mB);CHKERRQ(ierr);
   ierr = MeshCreate(mB->comm(), mesh);CHKERRQ(ierr);
-  ALE::Obj<ALE::Mesh> m = ALE::Generator::generateMesh(mB, interpolate);
+#ifdef PETSC_OPT_SIEVE
+  ALE::Obj<PETSC_MESH_TYPE> m = ALE::Generator<PETSC_MESH_TYPE>::generateMeshV(mB, interpolate);
+#else
+  ALE::Obj<PETSC_MESH_TYPE> m = ALE::Generator<PETSC_MESH_TYPE>::generateMesh(mB, interpolate);
+#endif
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1573,13 +1636,17 @@ PetscErrorCode MeshGenerate(Mesh boundary, PetscTruth interpolate, Mesh *mesh)
 @*/
 PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpolate, Mesh *refinedMesh)
 {
-  ALE::Obj<ALE::Mesh> oldMesh;
+  ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
-  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, interpolate);
+#ifdef PETSC_OPT_SIEVE
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, refinementLimit, interpolate);
+#else
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, refinementLimit, interpolate);
+#endif
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1588,7 +1655,7 @@ PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpol
 #define __FUNCT__ "MeshRefine_Mesh"
 PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
 {
-  ALE::Obj<ALE::Mesh> oldMesh;
+  ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   double              refinementLimit;
   PetscErrorCode      ierr;
 
@@ -1596,18 +1663,25 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
   ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
   refinementLimit = oldMesh->getMaxVolume()/2.0;
-  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, true);
+#ifdef PETSC_OPT_SIEVE
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMeshV(oldMesh, refinementLimit, true);
+#else
+  ALE::Obj<PETSC_MESH_TYPE> newMesh = ALE::Generator<PETSC_MESH_TYPE>::refineMesh(oldMesh, refinementLimit, true);
+#endif
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+#ifndef PETSC_OPT_SIEVE
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
   const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
 
   for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
     newMesh->setDiscretization(*f_iter, oldMesh->getDiscretization(*f_iter));
   }
   newMesh->setupField(s);
+#endif
   PetscFunctionReturn(0);
 }
 
+#ifndef PETSC_OPT_SIEVE
 
 #include "Hierarchy_New.hh"
 
@@ -1640,7 +1714,7 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
 @*/
 PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningFactor, PetscTruth interpolate, Mesh **coarseHierarchy)
 {
-  ALE::Obj<ALE::Mesh> oldMesh;
+  ALE::Obj<PETSC_MESH_TYPE> oldMesh;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1664,8 +1738,8 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
   ierr = ALE::Coarsener::CreateCoarsenedHierarchyNew(oldMesh, 2, numLevels, coarseningFactor);CHKERRQ(ierr);
   ierr = PetscMalloc(numLevels * sizeof(Mesh),coarseHierarchy);CHKERRQ(ierr);
   for(int l = 0; l < numLevels; l++) {
-    ALE::Obj<ALE::Mesh> newMesh = new ALE::Mesh(oldMesh->comm(), oldMesh->debug());
-    const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+    ALE::Obj<PETSC_MESH_TYPE> newMesh = new PETSC_MESH_TYPE(oldMesh->comm(), oldMesh->debug());
+    const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s = newMesh->getRealSection("default");
 
     ierr = MeshCreate(oldMesh->comm(), &(*coarseHierarchy)[l]);CHKERRQ(ierr);
     newMesh->getTopology()->setPatch(0, oldMesh->getTopology()->getPatch(l+1));
@@ -1678,13 +1752,19 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
   PetscFunctionReturn(0);
 }
 
+#endif
+
 PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh **coarseHierarchy)
 {
   PetscErrorCode ierr;
   double cfactor = 1.5;
   PetscFunctionBegin;
   ierr = PetscOptionsReal("-dmmg_coarsen_factor", "The coarsening factor", PETSC_NULL, cfactor, &cfactor, PETSC_NULL);CHKERRQ(ierr);
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "This needs to be rewritten for optimized meshes.");
+#else
   ierr = MeshCoarsenHierarchy(mesh, numLevels, cfactor, PETSC_FALSE, coarseHierarchy);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -1696,7 +1776,7 @@ PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh **coarse
 //Interpolate between two meshes whenever the unknowns can be evaluated at points.
 
 PetscErrorCode MeshGetInterpolation_Mesh_General(Mesh coarse_mesh, Mesh fine_mesh, Mat *interpolation, Vec *scaling) {
-  ALE::Obj<ALE::Mesh> fm, cm;
+  ALE::Obj<PETSC_MESH_TYPE> fm, cm;
   Mat                 P;
   PetscErrorCode      ierr;
   
@@ -1708,38 +1788,38 @@ PetscErrorCode MeshGetInterpolation_Mesh_General(Mesh coarse_mesh, Mesh fine_mes
   //  4. Assemble the matrix by writing evaluating each unknown as the point 
   ierr = MeshGetMesh(dmFine, fm);CHKERRQ(ierr);
   ierr = MeshGetMesh(dmCoarse, cm);CHKERRQ(ierr);
-  //  ALE::Obj<ALE::Mesh::label_type> coarsetraversal = cm->createLabel("traversal");
-  //  ALE::Obj<ALE::Mesh::label_type> finetraversal   = fm->createLabel ("traversal");
+  //  ALE::Obj<PETSC_MESH_TYPE::label_type> coarsetraversal = cm->createLabel("traversal");
+  //  ALE::Obj<PETSC_MESH_TYPE::label_type> finetraversal   = fm->createLabel ("traversal");
   const int                       debug           = fm->debug();
   if (debug) {ierr = PetscPrintf(fm->comm(), "Fine: %d vertices, Coarse: %d vertices\n", fm->depthStratum(0)->size(), cm->depthStratum(0)->size());CHKERRQ(ierr);}
-  const ALE::Obj<ALE::Mesh::real_section_type>& finecoordinates   = fm->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::real_section_type>& coarsecoordinates = cm->getRealSection("coordinates");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& finecoordinates   = fm->getRealSection("coordinates");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coarsecoordinates = cm->getRealSection("coordinates");
 
-  const ALE::Obj<ALE::Mesh::real_section_type>& sCoarse           = cm->getRealSection("default");
-  const ALE::Obj<ALE::Mesh::real_section_type>& sFine             = fm->getRealSection("default");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sCoarse           = cm->getRealSection("default");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sFine             = fm->getRealSection("default");
 
-  const ALE::Obj<ALE::Mesh::order_type>&        coarseOrder       = cm->getFactory()->getGlobalOrder(cm, "default", sCoarse);
-  const ALE::Obj<ALE::Mesh::order_type>&        fineOrder         = fm->getFactory()->getGlobalOrder(fm, "default", sFine);
+  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        coarseOrder       = cm->getFactory()->getGlobalOrder(cm, "default", sCoarse);
+  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        fineOrder         = fm->getFactory()->getGlobalOrder(fm, "default", sFine);
 
-  std::list<ALE::Mesh::point_type> travlist;        // store point
-  std::list<ALE::Mesh::point_type> travguesslist;   // store guess
-  std::list<ALE::Mesh::point_type> eguesslist;      // store the next guesses for the location of the current point.
+  std::list<PETSC_MESH_TYPE::point_type> travlist;        // store point
+  std::list<PETSC_MESH_TYPE::point_type> travguesslist;   // store guess
+  std::list<PETSC_MESH_TYPE::point_type> eguesslist;      // store the next guesses for the location of the current point.
 
-  const ALE::Obj<ALE::Mesh::sieve_type::supportSet> coarse_traversal = ALE::Mesh::sieve_type::supportSet();
-  const ALE::Obj<ALE::Mesh::sieve_type::supportSet> fine_traversal = ALE::Mesh::sieve_type::supportSet();
-  const ALE::Obj<ALE::Mesh::sieve_type::supportSet> covering_points = ALE::Mesh::sieve_type::supportSet();
+  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> coarse_traversal = PETSC_MESH_TYPE::sieve_type::supportSet();
+  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> fine_traversal = PETSC_MESH_TYPE::sieve_type::supportSet();
+  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> covering_points = PETSC_MESH_TYPE::sieve_type::supportSet();
 
-  const ALE::Obj<ALE::Mesh::sieve_type::supportSet> uncorrected_points = ALE::Mesh::sieve_type::supportSet();
+  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> uncorrected_points = PETSC_MESH_TYPE::sieve_type::supportSet();
   static double loc[4], v0[3], J[9], invJ[9], detJ; // first point, jacobian, inverse jacobian, and jacobian determinant of a cell
   if (debug) {ierr = PetscPrintf(fm->comm(), "Starting Interpolation Matrix Build\n");CHKERRQ(ierr);}
 
   //set up the new section holding the names of the contained points.  
 
-  const ALE::Obj<ALE::Mesh::int_section_type> & node_locations = fm->getIntSection("node_locations");
-  const ALE::Obj<ALE::Mesh::real_section_type> & fine_default = fm->getRealSection("default");
+  const ALE::Obj<PETSC_MESH_TYPE::int_section_type> & node_locations = fm->getIntSection("node_locations");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type> & fine_default = fm->getRealSection("default");
   int total_dimension
   for (int i = 0; i < dim; i++) {
-    const ALE::Obj<ALE::Mesh::label_sequence> & present_level = fm->depthStratum(i);
+    const ALE::Obj<PETSC_MESH_TYPE::label_sequence> & present_level = fm->depthStratum(i);
     int current_dimension = fine_default->getFiberDimension(*present_level->begin());
     node_locations->setFiberDimension(present_level, current_dimension);
   }
@@ -1748,15 +1828,15 @@ PetscErrorCode MeshGetInterpolation_Mesh_General(Mesh coarse_mesh, Mesh fine_mes
 
   
 
-  ALE::Obj<ALE::Mesh::label_sequence> fine_cells = fm->heightStratum(0);
-  ALE::Obj<ALE::Mesh::label_sequence> coarse_cells = cm->heightStratum(0);
+  ALE::Obj<PETSC_MESH_TYPE::label_sequence> fine_cells = fm->heightStratum(0);
+  ALE::Obj<PETSC_MESH_TYPE::label_sequence> coarse_cells = cm->heightStratum(0);
 
-  ALE::Mesh::label_sequence::iterator fc_iter = fine_cells->begin();
-  ALE::Mesh::label_sequence::iterator fc_iter_end = fine_cells->end();
+  PETSC_MESH_TYPE::label_sequence::iterator fc_iter = fine_cells->begin();
+  PETSC_MESH_TYPE::label_sequence::iterator fc_iter_end = fine_cells->end();
   while (fc_iter != fc_iter_end) {
     //locate an initial coarse cell that overlaps with this fine cell in terms of their bounding boxes;
-    ALE::Mesh::label_sequence::iterator cc_iter = coarse_cells->begin();
-    ALE::Mesh::label_sequence::iterator cc_iter_end = coarse_cells->end();
+    PETSC_MESH_TYPE::label_sequence::iterator cc_iter = coarse_cells->begin();
+    PETSC_MESH_TYPE::label_sequence::iterator cc_iter_end = coarse_cells->end();
     while (cc_iter != cc_iter_end) {
       
       cc_iter++;
@@ -1772,29 +1852,32 @@ PetscErrorCode MeshGetInterpolation_Mesh_General(Mesh coarse_mesh, Mesh fine_mes
 
 PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *interpolation, Vec *scaling) {
 
-  ALE::Obj<ALE::Mesh> fm, cm;
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "This needs to be rewritten for optimized meshes.");
+#else
+  ALE::Obj<PETSC_MESH_TYPE> fm, cm;
   Mat                 P;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(dmFine, fm);CHKERRQ(ierr);
   ierr = MeshGetMesh(dmCoarse, cm);CHKERRQ(ierr);
-  //  ALE::Obj<ALE::Mesh::label_type> coarsetraversal = cm->createLabel("traversal");
-  //  ALE::Obj<ALE::Mesh::label_type> finetraversal   = fm->createLabel ("traversal");
+  //  ALE::Obj<PETSC_MESH_TYPE::label_type> coarsetraversal = cm->createLabel("traversal");
+  //  ALE::Obj<PETSC_MESH_TYPE::label_type> finetraversal   = fm->createLabel ("traversal");
   const int                       debug           = fm->debug();
   if (debug) {ierr = PetscPrintf(fm->comm(), "Fine: %d vertices, Coarse: %d vertices\n", fm->depthStratum(0)->size(), cm->depthStratum(0)->size());CHKERRQ(ierr);}
-  const ALE::Obj<ALE::Mesh::real_section_type>& finecoordinates   = fm->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::real_section_type>& coarsecoordinates = cm->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::real_section_type>& sCoarse           = cm->getRealSection("default");
-  const ALE::Obj<ALE::Mesh::real_section_type>& sFine             = fm->getRealSection("default");
-  const ALE::Obj<ALE::Mesh::order_type>&        coarseOrder       = cm->getFactory()->getGlobalOrder(cm, "default", sCoarse);
-  const ALE::Obj<ALE::Mesh::order_type>&        fineOrder         = fm->getFactory()->getGlobalOrder(fm, "default", sFine);
-  std::list<ALE::Mesh::point_type> travlist;        // store point
-  std::list<ALE::Mesh::point_type> travguesslist;   // store guess
-  std::list<ALE::Mesh::point_type> eguesslist;      // store the next guesses for the location of the current point.
-  const ALE::Obj<ALE::Mesh::sieve_type::supportSet> coarse_traversal = ALE::Mesh::sieve_type::supportSet();
-  const ALE::Obj<ALE::Mesh::sieve_type::supportSet> fine_traversal = ALE::Mesh::sieve_type::supportSet();
-  const ALE::Obj<ALE::Mesh::sieve_type::supportSet> uncorrected_points = ALE::Mesh::sieve_type::supportSet();
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& finecoordinates   = fm->getRealSection("coordinates");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coarsecoordinates = cm->getRealSection("coordinates");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sCoarse           = cm->getRealSection("default");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sFine             = fm->getRealSection("default");
+  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        coarseOrder       = cm->getFactory()->getGlobalOrder(cm, "default", sCoarse);
+  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        fineOrder         = fm->getFactory()->getGlobalOrder(fm, "default", sFine);
+  std::list<PETSC_MESH_TYPE::point_type> travlist;        // store point
+  std::list<PETSC_MESH_TYPE::point_type> travguesslist;   // store guess
+  std::list<PETSC_MESH_TYPE::point_type> eguesslist;      // store the next guesses for the location of the current point.
+  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> coarse_traversal = PETSC_MESH_TYPE::sieve_type::supportSet();
+  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> fine_traversal = PETSC_MESH_TYPE::sieve_type::supportSet();
+  const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> uncorrected_points = PETSC_MESH_TYPE::sieve_type::supportSet();
   static double loc[4], v0[3], J[9], invJ[9], detJ; // first point, jacobian, inverse jacobian, and jacobian determinant of a cell
   if (debug) {ierr = PetscPrintf(fm->comm(), "Starting Interpolation Matrix Build\n");CHKERRQ(ierr);}
 
@@ -1809,18 +1892,18 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
   if (dim != cm->getDimension()) throw ALE::Exception("Dimensions of the fine and coarse meshes do not match"); 
 
   //traversal labels on both layers
-  const ALE::Obj<ALE::Mesh::label_sequence>& finevertices = fm->depthStratum(0);
-  const ALE::Mesh::label_sequence::iterator  fv_iter_end  = finevertices->end();
-  ALE::Mesh::label_sequence::iterator        fv_iter      = finevertices->begin();
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& finevertices = fm->depthStratum(0);
+  const PETSC_MESH_TYPE::label_sequence::iterator  fv_iter_end  = finevertices->end();
+  PETSC_MESH_TYPE::label_sequence::iterator        fv_iter      = finevertices->begin();
 
   //  while (fv_iter != fv_iter_end) {
   //    fm->setValue(finetraversal, *fv_iter, 0);
   //    fv_iter++;
   //  }
 
-  const ALE::Obj<ALE::Mesh::label_sequence>& coarseelements = cm->heightStratum(0);
-  const ALE::Mesh::label_sequence::iterator  ce_iter_end    = coarseelements->end();
-  ALE::Mesh::label_sequence::iterator        ce_iter        = coarseelements->begin();
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& coarseelements = cm->heightStratum(0);
+  const PETSC_MESH_TYPE::label_sequence::iterator  ce_iter_end    = coarseelements->end();
+  PETSC_MESH_TYPE::label_sequence::iterator        ce_iter        = coarseelements->begin();
   
   //  while (ce_iter != ce_iter_end) {
   //    cm->setValue(coarsetraversal, *ce_iter, 0);
@@ -1863,9 +1946,9 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
           ierr = updateOperatorGeneral(P, fm, sFine, fineOrder, *fv_iter, cm, sCoarse, coarseOrder, *ce_iter, loc, INSERT_VALUES);CHKERRQ(ierr);
           //fm->setValue(finetraversal, *fv_iter, 1);
           fine_traversal->insert(*fv_iter);
-          const ALE::Obj<ALE::Mesh::sieve_type::coneSet> & neighbors  = fm->getSieve()->cone(fm->getSieve()->support(*fv_iter));
-          const ALE::Mesh::sieve_type::coneSet::iterator n_iter_end = neighbors->end();
-          ALE::Mesh::sieve_type::coneSet::iterator       n_iter     = neighbors->begin();
+          const ALE::Obj<PETSC_MESH_TYPE::sieve_type::coneSet> & neighbors  = fm->getSieve()->cone(fm->getSieve()->support(*fv_iter));
+          const PETSC_MESH_TYPE::sieve_type::coneSet::iterator n_iter_end = neighbors->end();
+          PETSC_MESH_TYPE::sieve_type::coneSet::iterator       n_iter     = neighbors->begin();
           while (n_iter != n_iter_end) {
 	    //            if (fm->getValue(finetraversal, *n_iter) == 0) {
 	    if (fine_traversal->find(*n_iter) != fine_traversal->end()) {
@@ -1878,9 +1961,9 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
           }
           //do a DFS across the finemesh with BFSes on the coarse mesh for each point using assumed regularity of edgelength as a justification for guessing neighboring point's locations.
           while (!travlist.empty()) {
-            ALE::Mesh::point_type curVert = *travlist.begin();
+            PETSC_MESH_TYPE::point_type curVert = *travlist.begin();
             PetscMemcpy(nvCoords, finecoordinates->restrictPoint(curVert), dim*sizeof(double));
-            ALE::Mesh::point_type curEle =  *travguesslist.begin();
+            PETSC_MESH_TYPE::point_type curEle =  *travguesslist.begin();
             travlist.pop_front();
             travguesslist.pop_front();
             eguesslist.push_front(curEle);
@@ -1890,7 +1973,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
             //int traversalcomparisons = 0;
             while ((!eguesslist.empty()) && (!locationDiscovered) && (int)coarse_traversal->size() < maxComparisons) {
               //traversalcomparisons = 0;
-              ALE::Mesh::point_type curguess = *eguesslist.begin();
+              PETSC_MESH_TYPE::point_type curguess = *eguesslist.begin();
               eguesslist.pop_front();
               pointIsInElement = true;
               cm->computeElementGeometry(coarsecoordinates, curguess, v0, J, invJ, detJ);
@@ -1914,9 +1997,9 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
                 ierr = updateOperatorGeneral(P, fm, sFine, fineOrder, curVert, cm, sCoarse, coarseOrder, curguess, loc, INSERT_VALUES);CHKERRQ(ierr);
                 //PetscPrintf(fm->comm(), "Point %d located in %d.\n",  curVert, curguess);
                 //stick its neighbors in the queue along with its location as a good guess of the location of its neighbors
-                const ALE::Obj<ALE::Mesh::sieve_type::coneSet> newNeighbors = fm->getSieve()->cone(fm->getSieve()->support(curVert));
-                const ALE::Mesh::sieve_type::coneSet::iterator nn_iter_end  = newNeighbors->end();
-                ALE::Mesh::sieve_type::coneSet::iterator       nn_iter      = newNeighbors->begin();
+                const ALE::Obj<PETSC_MESH_TYPE::sieve_type::coneSet> newNeighbors = fm->getSieve()->cone(fm->getSieve()->support(curVert));
+                const PETSC_MESH_TYPE::sieve_type::coneSet::iterator nn_iter_end  = newNeighbors->end();
+                PETSC_MESH_TYPE::sieve_type::coneSet::iterator       nn_iter      = newNeighbors->begin();
                 while (nn_iter != nn_iter_end) {
 		  //if (fm->getValue(finetraversal, *nn_iter) == 0) { //unlocated neighbor
                   if (fine_traversal->find(*nn_iter) == fine_traversal->end()) {
@@ -1929,9 +2012,9 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
                 }
               } else {
               //add the current guesses neighbors to the comparison queue and start over.
-                const ALE::Obj<ALE::Mesh::sieve_type::supportSet> & curguessneighbors = cm->getSieve()->support(cm->getSieve()->cone(curguess));
-                const ALE::Mesh::sieve_type::supportSet::iterator cgn_iter_end      = curguessneighbors->end();
-                ALE::Mesh::sieve_type::supportSet::iterator       cgn_iter          = curguessneighbors->begin();
+                const ALE::Obj<PETSC_MESH_TYPE::sieve_type::supportSet> & curguessneighbors = cm->getSieve()->support(cm->getSieve()->cone(curguess));
+                const PETSC_MESH_TYPE::sieve_type::supportSet::iterator cgn_iter_end      = curguessneighbors->end();
+                PETSC_MESH_TYPE::sieve_type::supportSet::iterator       cgn_iter          = curguessneighbors->begin();
                 while (cgn_iter != cgn_iter_end) {
                   //if (cm->getValue(coarsetraversal, *cgn_iter) == 0) {
                   if (coarse_traversal->find(*cgn_iter) == coarse_traversal->end()) {
@@ -1951,9 +2034,9 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
             }
             eguesslist.clear(); //we've discovered the location of the point or exhausted our possibilities on this contiguous block of elements.
             //unset the traversed element list
-            //const ALE::Obj<ALE::Mesh::label_sequence>& traved_elements = cm->getLabelStratum("traversal", 1);
-            //const ALE::Mesh::label_sequence::iterator  tp_iter_end     = traved_elements->end();
-            //ALE::Mesh::label_sequence::iterator        tp_iter         = traved_elements->begin();
+            //const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& traved_elements = cm->getLabelStratum("traversal", 1);
+            //const PETSC_MESH_TYPE::label_sequence::iterator  tp_iter_end     = traved_elements->end();
+            //PETSC_MESH_TYPE::label_sequence::iterator        tp_iter         = traved_elements->begin();
             //PetscPrintf(cm->comm(), "%d\n", traved_elements->size());
             //while (tp_iter != tp_iter_end) {
             //  eguesslist.push_back(*tp_iter);
@@ -1984,6 +2067,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
   *interpolation = P;
   if (debug) {ierr = PetscPrintf(fm->comm(), "Ending Interpolation Matrix Build\n");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
+#endif
 }
 
 
@@ -1994,21 +2078,24 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
 */
 PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interpolation, Vec *scaling)
 {
-  ALE::Obj<ALE::Mesh> coarse;
-  ALE::Obj<ALE::Mesh> fine;
+#ifdef PETSC_OPT_SIEVE
+  SETERRQ(PETSC_ERR_SUP, "This has been superceded.");
+#else
+  ALE::Obj<PETSC_MESH_TYPE> coarse;
+  ALE::Obj<PETSC_MESH_TYPE> fine;
   Mat                 P;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(dmFine,   fine);CHKERRQ(ierr);
   ierr = MeshGetMesh(dmCoarse, coarse);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::real_section_type>& coarseCoordinates = coarse->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::real_section_type>& fineCoordinates   = fine->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::label_sequence>&    vertices          = fine->depthStratum(0);
-  const ALE::Obj<ALE::Mesh::real_section_type>& sCoarse           = coarse->getRealSection("default");
-  const ALE::Obj<ALE::Mesh::real_section_type>& sFine             = fine->getRealSection("default");
-  const ALE::Obj<ALE::Mesh::order_type>&        coarseOrder = coarse->getFactory()->getGlobalOrder(coarse, "default", sCoarse);
-  const ALE::Obj<ALE::Mesh::order_type>&        fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", sFine);
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& coarseCoordinates = coarse->getRealSection("coordinates");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& fineCoordinates   = fine->getRealSection("coordinates");
+  const ALE::Obj<PETSC_MESH_TYPE::label_sequence>&    vertices          = fine->depthStratum(0);
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sCoarse           = coarse->getRealSection("default");
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& sFine             = fine->getRealSection("default");
+  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        coarseOrder = coarse->getFactory()->getGlobalOrder(coarse, "default", sCoarse);
+  const ALE::Obj<PETSC_MESH_TYPE::order_type>&        fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", sFine);
 
   const int dim    = coarse->getDimension();
   const int numDof = fine->getDiscretization()->getNumDof(fine->getDimension());
@@ -2027,14 +2114,14 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
     hasprolong = false;
     PetscPrintf(fine->comm(), "WARNING: Point Location Label Does Not Exist");
   }
-  ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();
-  ALE::Mesh::real_section_type::value_type *coords = new ALE::Mesh::real_section_type::value_type[dim];
+  PETSC_MESH_TYPE::label_sequence::iterator v_iter_end = vertices->end();
+  PETSC_MESH_TYPE::real_section_type::value_type *coords = new PETSC_MESH_TYPE::real_section_type::value_type[dim];
 
-  for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != v_iter_end; ++v_iter) {
-    //const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
+  for(PETSC_MESH_TYPE::label_sequence::iterator v_iter = vertices->begin(); v_iter != v_iter_end; ++v_iter) {
+    //const PETSC_MESH_TYPE::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
     ierr = PetscMemcpy(coords, fineCoordinates->restrictPoint(*v_iter), dim*sizeof(double));CHKERRQ(ierr);
-    ALE::Mesh::point_type coarseCell;
-    ALE::Mesh::point_type cellguess = -1;
+    PETSC_MESH_TYPE::point_type coarseCell;
+    PETSC_MESH_TYPE::point_type cellguess = -1;
     if (hasprolong) {
       cellguess = fine->getValue(fine->getLabel("prolongation"), *v_iter);
       coarseCell = coarse->locatePoint(coords, cellguess);
@@ -2066,6 +2153,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   delete [] coords;
   *interpolation = P;
   PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNCT__  
@@ -2089,7 +2177,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
 @*/
 PetscErrorCode MeshHasSectionReal(Mesh mesh, const char name[], PetscTruth *flag)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -2121,7 +2209,7 @@ PetscErrorCode MeshHasSectionReal(Mesh mesh, const char name[], PetscTruth *flag
 @*/
 PetscErrorCode MeshGetSectionReal(Mesh mesh, const char name[], SectionReal *section)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -2153,8 +2241,8 @@ PetscErrorCode MeshGetSectionReal(Mesh mesh, const char name[], SectionReal *sec
 @*/
 PetscErrorCode MeshSetSectionReal(Mesh mesh, SectionReal section)
 {
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::real_section_type> s;
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   const char         *name;
   PetscErrorCode      ierr;
 
@@ -2187,7 +2275,7 @@ PetscErrorCode MeshSetSectionReal(Mesh mesh, SectionReal section)
 @*/
 PetscErrorCode MeshHasSectionInt(Mesh mesh, const char name[], PetscTruth *flag)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -2219,7 +2307,7 @@ PetscErrorCode MeshHasSectionInt(Mesh mesh, const char name[], PetscTruth *flag)
 @*/
 PetscErrorCode MeshGetSectionInt(Mesh mesh, const char name[], SectionInt *section)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -2251,8 +2339,8 @@ PetscErrorCode MeshGetSectionInt(Mesh mesh, const char name[], SectionInt *secti
 @*/
 PetscErrorCode MeshSetSectionInt(Mesh mesh, SectionInt section)
 {
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::int_section_type> s;
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
   const char         *name;
   PetscErrorCode      ierr;
 
@@ -2287,19 +2375,19 @@ PetscErrorCode MeshSetSectionInt(Mesh mesh, SectionInt section)
 @*/
 PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& section = m->getRealSection(std::string(name));
+  const Obj<PETSC_MESH_TYPE::real_section_type>& section = m->getRealSection(std::string(name));
   if (section->size() == 0) {
     *numElements = 0;
     *fiberDim    = 0;
     *array       = NULL;
     PetscFunctionReturn(0);
   }
-  const ALE::Mesh::real_section_type::chart_type& chart = section->getChart();
+  const PETSC_MESH_TYPE::real_section_type::chart_type& chart = section->getChart();
 /*   const int                                  depth   = m->depth(*chart.begin()); */
 /*   *numElements = m->depthStratum(depth)->size(); */
 /*   *fiberDim    = section->getFiberDimension(*chart.begin()); */
@@ -2307,19 +2395,53 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   int fiberDimMin = section->getFiberDimension(*chart.begin());
   int numElem     = 0;
 
-  for(ALE::Mesh::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(PETSC_MESH_TYPE::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
   }
-  for(ALE::Mesh::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(PETSC_MESH_TYPE::real_section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     numElem += fiberDim/fiberDimMin;
   }
   *numElements = numElem;
   *fiberDim    = fiberDimMin;
-  *array       = (PetscScalar *) section->restrict();
+  *array       = (PetscScalar *) section->restrictSpace();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshRestrictClosure"
+/*@C
+  MeshRestrictClosure - Returns an array with the values in a given closure
+
+  Not Collective
+
+  Input Parameters:
++ mesh  - The Mesh object
+. name  - The section name
+- point - The sieve point
+
+  Output Parameters:
++ n     - The number of values
+- array - The array
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshRestrictClosure(Mesh mesh, const char name[], PetscInt point, PetscInt *n, const PetscScalar *values[])
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode            ierr;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section = m->getRealSection(name);
+
+  PetscFunctionBegin;
+  *n      = m->sizeWithBC(section, point);
+  *values = m->restrictClosure(section, point, section->getRawArray(*n), *n);
   PetscFunctionReturn(0);
 }
 
@@ -2327,7 +2449,7 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
 #define __FUNCT__ "WritePyLithVertices"
 PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -2338,8 +2460,8 @@ PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePyLithElements"
 PetscErrorCode WritePyLithElements(Mesh mesh, SectionInt material, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::int_section_type> s;
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -2351,7 +2473,7 @@ PetscErrorCode WritePyLithElements(Mesh mesh, SectionInt material, PetscViewer v
 #define __FUNCT__ "WritePyLithVerticesLocal"
 PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -2362,8 +2484,8 @@ PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePyLithElementsLocal"
 PetscErrorCode WritePyLithElementsLocal(Mesh mesh, SectionInt material, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::int_section_type> s;
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -2376,7 +2498,7 @@ PetscErrorCode WritePyLithElementsLocal(Mesh mesh, SectionInt material, PetscVie
 #define __FUNCT__ "WritePyLithTractionsLocal"
 PetscErrorCode WritePyLithTractionsLocal(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<PETSC_MESH_TYPE> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);

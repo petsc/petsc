@@ -49,6 +49,10 @@ class QuadratureGenerator(script.Script):
       raise RuntimeError("ERROR: not yet implemented")
     return
 
+  def getMeshType(self):
+    '''Was ALE::Mesh, is now PETSC_MESH_TYPE'''
+    return 'PETSC_MESH_TYPE'
+
   def getArray(self, name, values, comment = None, typeName = 'double'):
     from Cxx import Array
     from Cxx import Initializer
@@ -379,7 +383,7 @@ class QuadratureGenerator(script.Script):
     exactVar  = self.Cxx.getVar('exactFunc')
     decls = []
     decls.append(self.Cxx.getDeclaration(meshVar, self.Cxx.getType('Mesh'), self.Cxx.castToType('dm', self.Cxx.getType('Mesh'))))
-    decls.append(self.Cxx.getDeclaration('m', self.Cxx.getType('ALE::Obj<ALE::Mesh>'), isForward=1))
+    decls.append(self.Cxx.getDeclaration('m', self.Cxx.getType('ALE::Obj<'+self.getMeshType()+'>'), isForward=1))
     decls.append(self.Cxx.getDeclaration('ierr', self.Cxx.getType('PetscErrorCode')))
     for i in range(rank):
       funcName  = 'CreateProblem_gen_'+str(n+i)
@@ -487,7 +491,7 @@ class QuadratureGenerator(script.Script):
     funcDecl.parameters = [paramDecl]
     funcDecl.initializer = self.Cxx.getStructRef(optionsVar, 'rhsFunc')
     decls.append(self.Cxx.getDecl(funcDecl))
-    decls.append(self.Cxx.getDeclaration(mVar, self.Cxx.getType('ALE::Obj<ALE::Mesh>'), self.Cxx.getNullVar()))
+    decls.append(self.Cxx.getDeclaration(mVar, self.Cxx.getType('ALE::Obj<'+self.getMeshType()+'>'), self.Cxx.getNullVar()))
     decls.extend([self.Cxx.getDeclaration(self.Cxx.getVar('numQuadPoints'), self.Cxx.getTypeMap()['int']),
                   self.Cxx.getDeclaration(self.Cxx.getVar('numBasisFuncs'), self.Cxx.getTypeMap()['int'])])
     decls.extend([self.Cxx.getDeclaration(self.Cxx.getVar('quadPoints'),  self.Cxx.getType('double pointer')),
@@ -525,10 +529,10 @@ class QuadratureGenerator(script.Script):
                   self.Cxx.getDeclaration(elemVecVar, self.Cxx.getType('PetscScalar', 1)),
                   self.Cxx.getDeclaration(elemMatVar, self.Cxx.getType('PetscScalar', 1))])
     cxxCmpd = CompoundStatement()
-    cxxCmpd.declarations = [self.Cxx.getDeclaration(patchVar, self.Cxx.getType('ALE::Mesh::real_section_type::patch_type', 0, 1), self.Cxx.getInteger(0)),
-                            self.Cxx.getDeclaration(coordinatesVar, self.Cxx.getType('ALE::Obj<ALE::Mesh::real_section_type>&', isConst = 1), self.Cxx.getFunctionCall(self.Cxx.getStructRef(mVar, 'getRealSection'), [self.Cxx.getString('coordinates')])),
-                            self.Cxx.getDeclaration(topologyVar, self.Cxx.getType('ALE::Obj<ALE::Mesh::topology_type>&', isConst = 1), self.Cxx.getFunctionCall(self.Cxx.getStructRef(mVar, 'getTopology'))),
-                            self.Cxx.getDeclaration(cellsVar, self.Cxx.getType('ALE::Obj<ALE::Mesh::topology_type::label_sequence>&', 0, 1), self.Cxx.getFunctionCall(self.Cxx.getStructRef(topologyVar, 'heightStratum'), [patchVar, 0])),
+    cxxCmpd.declarations = [self.Cxx.getDeclaration(patchVar, self.Cxx.getType(self.getMeshType()+'::real_section_type::patch_type', 0, 1), self.Cxx.getInteger(0)),
+                            self.Cxx.getDeclaration(coordinatesVar, self.Cxx.getType('ALE::Obj<'+self.getMeshType()+'::real_section_type>&', isConst = 1), self.Cxx.getFunctionCall(self.Cxx.getStructRef(mVar, 'getRealSection'), [self.Cxx.getString('coordinates')])),
+                            self.Cxx.getDeclaration(topologyVar, self.Cxx.getType('ALE::Obj<'+self.getMeshType()+'::topology_type>&', isConst = 1), self.Cxx.getFunctionCall(self.Cxx.getStructRef(mVar, 'getTopology'))),
+                            self.Cxx.getDeclaration(cellsVar, self.Cxx.getType('ALE::Obj<'+self.getMeshType()+'::topology_type::label_sequence>&', 0, 1), self.Cxx.getFunctionCall(self.Cxx.getStructRef(topologyVar, 'heightStratum'), [patchVar, 0])),
                             self.Cxx.getDeclaration(cornersVar, self.Cxx.getTypeMap()['const int'], self.Cxx.getFunctionCall(self.Cxx.getStructRef(self.Cxx.getFunctionCall(self.Cxx.getStructRef(self.Cxx.getFunctionCall(self.Cxx.getStructRef(topologyVar, 'getPatch'), [patchVar]), 'nCone'), [self.Cxx.getIndirection(self.Cxx.getFunctionCall(self.Cxx.getStructRef(cellsVar, 'begin'))), self.Cxx.getFunctionCall(self.Cxx.getStructRef(topologyVar, 'depth'))]), 'size'))),
                             self.Cxx.getDeclaration(dimVar, self.Cxx.getTypeMap()['const int'], self.Cxx.getFunctionCall(self.Cxx.getStructRef(mVar, 'getDimension')))]
     cxxCmpd.children.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealZero', ['section'])))
@@ -541,7 +545,7 @@ class QuadratureGenerator(script.Script):
     upperBound = FunctionCall()
     upperBound.setChildren([self.Cxx.getStructRef(cellsVar, 'end')])
     lType = Type()
-    lType.identifier = 'ALE::Mesh::topology_type::label_sequence::iterator'
+    lType.identifier = self.getMeshType()+'::topology_type::label_sequence::iterator'
     decl = Declarator()
     decl.identifier = 'c_iter'
     decl.type = lType

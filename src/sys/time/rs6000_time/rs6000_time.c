@@ -1,7 +1,6 @@
 #define PETSC_DLL
 
 #include "petsc.h"
-#if defined (PETSC_USE_READ_REAL_TIME)
 #include <sys/time.h>
 #include <sys/systemcfg.h>
 
@@ -27,4 +26,3 @@ PetscLogDouble PETSC_DLLEXPORT rs6000_time(void)
    time = t.tb_high + t.tb_low*1.0e-9;
    PetscFunctionReturn(time);
 }
-#endif

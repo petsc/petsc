@@ -447,6 +447,7 @@ $     SETERRQ(n,mess)
 PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,...)
 {
   va_list        Argp;
+  int            fullLength;
   PetscErrorCode ierr;
   char           buf[2048],*lbuf = 0;
   PetscTruth     ismain,isunknown;
@@ -462,7 +463,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* 
   /* Compose the message evaluating the print format */
   if (mess) {
     va_start(Argp,mess);
-    PetscVSNPrintf(buf,2048,mess,Argp);
+    PetscVSNPrintf(buf,2048,mess,&fullLength,Argp);
     va_end(Argp);
     lbuf = buf;
     if (p == 1) {

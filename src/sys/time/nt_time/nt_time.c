@@ -1,7 +1,6 @@
 #define PETSC_DLL
 
 #include <petsc.h>
-#if defined (PETSC_USE_NT_TIME)
 #include <Windows.h>
 #define FACTOR   4294967296.0 /* pow(2,32) */
 
@@ -61,4 +60,3 @@ PetscLogDouble PETSC_DLLEXPORT nt_time(void)
 
 EXTERN_C_END
 
-#endif

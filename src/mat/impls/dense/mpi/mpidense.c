@@ -649,15 +649,15 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
 #define __FUNCT__ "MatView_MPIDense_ASCIIorDraworSocket"
 static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
 {
-  Mat_MPIDense      *mdn = (Mat_MPIDense*)mat->data;
-  PetscErrorCode    ierr;
-  PetscMPIInt       size = mdn->size,rank = mdn->rank; 
-  PetscViewerType   vtype;
-  PetscTruth        iascii,isdraw;
-  PetscViewer       sviewer;
-  PetscViewerFormat format;
+  Mat_MPIDense          *mdn = (Mat_MPIDense*)mat->data;
+  PetscErrorCode        ierr;
+  PetscMPIInt           size = mdn->size,rank = mdn->rank; 
+  const PetscViewerType vtype;
+  PetscTruth            iascii,isdraw;
+  PetscViewer           sviewer;
+  PetscViewerFormat     format;
 #if defined(PETSC_HAVE_PLAPACK)
-  Mat_Plapack       *lu=(Mat_Plapack*)(mat->spptr); 
+  Mat_Plapack           *lu=(Mat_Plapack*)(mat->spptr); 
 #endif
 
   PetscFunctionBegin;
@@ -1088,7 +1088,7 @@ PetscErrorCode MatMatMultNumeric_MPIDense_MPIDense(Mat A,Mat B,Mat C)
   ierr = PLA_Create_constants_conf_to(luC->A,NULL,&beta,NULL);CHKERRQ(ierr);
   CHKMEMQ;
 
-  ierr = PLA_Gemm(PLA_NO_TRANSPOSE,PLA_NO_TRANSPOSE,alpha,luA->A,luB->A,beta,luC->A);//CHKERRQ(ierr);
+  ierr = PLA_Gemm(PLA_NO_TRANSPOSE,PLA_NO_TRANSPOSE,alpha,luA->A,luB->A,beta,luC->A); /* CHKERRQ(ierr); */
   CHKMEMQ;
   ierr = PLA_Obj_free(&alpha);CHKERRQ(ierr);
   ierr = PLA_Obj_free(&beta);CHKERRQ(ierr);
@@ -1621,7 +1621,7 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIDense_DenseInFile"
-PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N, MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M,PetscInt N, const MatType type,Mat *newmat)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
@@ -1692,7 +1692,7 @@ PetscErrorCode MatLoad_MPIDense_DenseInFile(MPI_Comm comm,PetscInt fd,PetscInt M
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIDense"
-PetscErrorCode MatLoad_MPIDense(PetscViewer viewer, MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIDense(PetscViewer viewer,const MatType type,Mat *newmat)
 {
   Mat            A;
   PetscScalar    *vals,*svals;

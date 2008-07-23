@@ -1,0 +1,1949 @@
+3D Hex Mesh:
+
+236 (-3000  3000     0) 238 (-2000  3000     0) 274 (-1000  3000     0) 144 (   0  3000     0) 145 (1000  3000     0) 152 (2000  3000     0) 156 (3000  3000     0)
+237 (-3000  2000     0) 239 (-2000  2000     0) 275 (-1000  2000     0) 147 (   0  2000     0) 146 (1000  2000     0) 153 (2000  2000     0) 157 (3000  2000     0)
+244 (-3000  1000     0) 245 (-2000  1000     0) 278 (-1000  1000     0) 161 (   0  1000     0) 160 (1000  1000     0) 164 (2000  1000     0) 166 (3000  1000     0)
+250 (-3000     0     0) 251 (-2000     0     0) 281 (-1000     0     0) 169 (   0     0     0) 168 (1000     0     0) 172 (2000     0     0) 174 (3000     0     0)
+256 (-3000 -1000     0) 257 (-2000 -1000     0) 284 (-1000 -1000     0) 177 (   0 -1000     0) 176 (1000 -1000     0) 180 (2000 -1000     0) 182 (3000 -1000     0)
+262 (-3000 -2000     0) 263 (-2000 -2000     0) 287 (-1000 -2000     0) 185 (   0 -2000     0) 184 (1000 -2000     0) 188 (2000 -2000     0) 190 (3000 -2000     0)
+268 (-3000 -3000     0) 269 (-2000 -3000     0) 290 (-1000 -3000     0) 193 (   0 -3000     0) 192 (1000 -3000     0) 196 (2000 -3000     0) 198 (3000 -3000     0)
+
+
+229 (-3000  3000 -1000) 233 (-2000  3000 -1000) 271 (-1000  3000 -1000) 148 (   0  3000 -1000) 149 (1000  3000 -1000) 154 (2000  3000 -1000) 158 (3000  3000 -1000)
+230 (-3000  2000 -1000) 234 (-2000  2000 -1000) 272 (-1000  2000 -1000) 151 (   0  2000 -1000) 150 (1000  2000 -1000) 155 (2000  2000 -1000) 159 (3000  2000 -1000)
+240 (-3000  1000 -1000) 242 (-2000  1000 -1000) 276 (-1000  1000 -1000) 163 (   0  1000 -1000) 162 (1000  1000 -1000) 165 (2000  1000 -1000) 167 (3000  1000 -1000)
+246 (-3000     0 -1000) 248 (-2000     0 -1000) 279 (-1000     0 -1000) 171 (   0     0 -1000) 170 (1000     0 -1000) 173 (2000     0 -1000) 175 (3000     0 -1000)
+252 (-3000 -1000 -1000) 254 (-2000 -1000 -1000) 282 (-1000 -1000 -1000) 179 (   0 -1000 -1000) 178 (1000 -1000 -1000) 181 (2000 -1000 -1000) 183 (3000 -1000 -1000)
+258 (-3000 -2000 -1000) 260 (-2000 -2000 -1000) 285 (-1000 -2000 -1000) 187 (   0 -2000 -1000) 186 (1000 -2000 -1000) 189 (2000 -2000 -1000) 191 (3000 -2000 -1000)
+264 (-3000 -3000 -1000) 266 (-2000 -3000 -1000) 288 (-1000 -3000 -1000) 195 (   0 -3000 -1000) 194 (1000 -3000 -1000) 197 (2000 -3000 -1000) 199 (3000 -3000 -1000)
+
+
+228 (-3000  3000 -2000) 232 (-2000  3000 -2000) 270 (-1000  3000 -2000) 200 (   0  3000 -2000) 201 (1000  3000 -2000) 204 (2000  3000 -2000) 206 (3000  3000 -2000)
+231 (-3000  2000 -2000) 235 (-2000  2000 -2000) 273 (-1000  2000 -2000) 203 (   0  2000 -2000) 202 (1000  2000 -2000) 205 (2000  2000 -2000) 207 (3000  2000 -2000)
+241 (-3000  1000 -2000) 243 (-2000  1000 -2000) 277 (-1000  1000 -2000) 209 (   0  1000 -2000) 208 (1000  1000 -2000) 210 (2000  1000 -2000) 211 (3000  1000 -2000)
+247 (-3000     0 -2000) 249 (-2000     0 -2000) 280 (-1000     0 -2000) 213 (   0     0 -2000) 212 (1000     0 -2000) 214 (2000     0 -2000) 215 (3000     0 -2000)
+253 (-3000 -1000 -2000) 255 (-2000 -1000 -2000) 283 (-1000 -1000 -2000) 217 (   0 -1000 -2000) 216 (1000 -1000 -2000) 218 (2000 -1000 -2000) 219 (3000 -1000 -2000)
+259 (-3000 -2000 -2000) 261 (-2000 -2000 -2000) 286 (-1000 -2000 -2000) 221 (   0 -2000 -2000) 220 (1000 -2000 -2000) 222 (2000 -2000 -2000) 223 (3000 -2000 -2000)
+265 (-3000 -3000 -2000) 267 (-2000 -3000 -2000) 289 (-1000 -3000 -2000) 225 (   0 -3000 -2000) 224 (1000 -3000 -2000) 226 (2000 -3000 -2000) 227 (3000 -3000 -2000)
+
+
+357 (-3000  3000 -3000) 353 (-2000  3000 -3000) 349 (-1000  3000 -3000) 333 (   0  3000 -3000) 319 (1000  3000 -3000) 293 (2000  3000 -3000) 291 (3000  3000 -3000)
+358 (-3000  2000 -3000) 354 (-2000  3000 -3000) 350 (-1000  2000 -3000) 334 (   0  2000 -3000) 320 (1000  2000 -3000) 294 (2000  2000 -3000) 292 (3000  2000 -3000)
+364 (-3000  1000 -3000) 362 (-2000  1000 -3000) 360 (-1000  1000 -3000) 337 (   0  1000 -3000) 323 (1000  1000 -3000) 300 (2000  1000 -3000) 299 (3000  1000 -3000)
+370 (-3000     0 -3000) 368 (-2000     0 -3000) 366 (-1000     0 -3000) 339 (   0     0 -3000) 325 (1000     0 -3000) 304 (2000     0 -3000) 303 (3000     0 -3000)
+376 (-3000 -1000 -3000) 374 (-2000 -1000 -3000) 372 (-1000 -1000 -3000) 341 (   0 -1000 -3000) 327 (1000 -1000 -3000) 308 (2000 -1000 -3000) 307 (3000 -1000 -3000)
+382 (-3000 -2000 -3000) 380 (-2000 -2000 -3000) 378 (-1000 -2000 -4000) 343 (   0 -2000 -3000) 329 (1000 -2000 -3000) 312 (2000 -2000 -3000) 311 (3000 -2000 -3000)
+388 (-3000 -3000 -3000) 386 (-2000 -3000 -3000) 384 (-1000 -3000 -3000) 345 (   0 -3000 -3000) 331 (1000 -3000 -3000) 316 (2000 -3000 -3000) 315 (3000 -3000 -3000)
+
+
+355 (-3000  3000 -4000) 351 (-2000  3000 -4000) 347 (-1000  3000 -4000) 335 (   0  3000 -4000) 321 (1000  3000 -4000) 297 (2000  3000 -4000) 295 (3000  3000 -4000)
+356 (-3000  3000 -4000) 352 (-2000  2000 -4000) 348 (-1000  2000 -4000) 336 (   0  2000 -4000) 322 (1000  2000 -4000) 298 (2000  2000 -4000) 296 (3000  2000 -4000)
+363 (-3000  1000 -4000) 361 (-2000  1000 -4000) 359 (-1000  1000 -4000) 338 (   0  1000 -4000) 324 (1000  1000 -4000) 302 (2000  1000 -4000) 301 (3000  1000 -4000)
+369 (-3000     0 -4000) 367 (-2000     0 -4000) 365 (-1000     0 -4000) 340 (   0     0 -4000) 326 (1000     0 -4000) 306 (2000     0 -4000) 305 (3000     0 -4000)
+375 (-3000 -1000 -4000) 373 (-2000 -1000 -4000) 371 (-1000 -1000 -4000) 342 (   0 -1000 -4000) 328 (1000 -1000 -4000) 310 (2000 -1000 -4000) 309 (3000 -1000 -4000)
+381 (-3000 -2000 -4000) 379 (-2000 -2000 -4000) 377 (-1000 -2000 -4000) 344 (   0 -2000 -4000) 330 (1000 -2000 -4000) 314 (2000 -2000 -4000) 313 (3000 -2000 -4000)
+387 (-3000 -3000 -4000) 385 (-2000 -3000 -4000) 383 (-1000 -3000 -4000) 346 (   0 -3000 -4000) 332 (1000 -3000 -4000) 318 (2000 -3000 -4000) 317 (3000 -3000 -4000)
+
+Mesh with order:
+
+236 (1) 238 (3) 274 (3) 144 (3) 145 (3) 152 (3) 156 (1)
+237 (1) 239 (3) 275 (3) 147 (3) 146 (3) 153 (3) 157 (1)
+244 (1) 245 (3) 278 (3) 161 (3) 160 (3) 164 (3) 166 (1)
+250 (1) 251 (3) 281 (3) 169 (3) 168 (3) 172 (3) 174 (1)
+256 (1) 257 (3) 284 (3) 177 (3) 176 (3) 180 (3) 182 (1)
+262 (1) 263 (3) 287 (3) 185 (3) 184 (3) 188 (3) 190 (1)
+268 (1) 269 (3) 290 (3) 193 (3) 192 (3) 196 (3) 198 (1)
+
+
+229 (1) 233 (3) 271 (3) 148 (3) 149 (3) 154 (3) 158 (1)
+230 (1) 234 (3) 272 (3) 151 (3) 150 (3) 155 (3) 159 (1)
+240 (1) 242 (3) 276 (3) 163 (3) 162 (3) 165 (3) 167 (1)
+246 (1) 248 (3) 279 (3) 171 (3) 170 (3) 173 (3) 175 (1)
+252 (1) 254 (3) 282 (3) 179 (3) 178 (3) 181 (3) 183 (1)
+258 (1) 260 (3) 285 (3) 187 (3) 186 (3) 189 (3) 191 (1)
+264 (1) 266 (3) 288 (3) 195 (3) 194 (3) 197 (3) 199 (1)
+
+
+228 (1) 232 (3) 270 (3) 200 (3) 201 (3) 204 (3) 206 (1)
+231 (1) 235 (3) 273 (3) 203 (3) 202 (3) 205 (3) 207 (1)
+241 (1) 243 (3) 277 (3) 209 (3) 208 (3) 210 (3) 211 (1)
+247 (1) 249 (3) 280 (3) 213 (3) 212 (3) 214 (3) 215 (1)
+253 (1) 255 (3) 283 (3) 217 (3) 216 (3) 218 (3) 219 (1)
+259 (1) 261 (3) 286 (3) 221 (3) 220 (3) 222 (3) 223 (1)
+265 (1) 267 (3) 289 (3) 225 (3) 224 (3) 226 (3) 227 (1)
+
+
+357 (1) 353 (3) 349 (3) 333 (3) 319 (3) 293 (3) 291 (1)
+358 (1) 354 (3) 350 (3) 334 (3) 320 (3) 294 (3) 292 (1)
+364 (1) 362 (3) 360 (3) 337 (3) 323 (3) 300 (3) 299 (1)
+370 (1) 368 (3) 366 (3) 339 (3) 325 (3) 304 (3) 303 (1)
+376 (1) 374 (3) 372 (3) 341 (3) 327 (3) 308 (3) 307 (1)
+382 (1) 380 (3) 378 (3) 343 (3) 329 (3) 312 (3) 311 (1)
+388 (1) 386 (3) 384 (3) 345 (3) 331 (3) 316 (3) 315 (1)
+
+
+355 (0) 351 (2) 347 (2) 335 (3) 321 (2) 297 (2) 295 (0)
+356 (0) 352 (2) 348 (2) 336 (3) 322 (2) 298 (2) 296 (0)
+363 (0) 361 (2) 359 (2) 338 (3) 324 (2) 302 (2) 301 (0)
+369 (0) 367 (2) 365 (2) 340 (3) 326 (2) 306 (2) 305 (0)
+375 (0) 373 (2) 371 (2) 342 (3) 328 (2) 310 (2) 309 (0)
+381 (0) 379 (2) 377 (2) 344 (3) 330 (2) 314 (2) 313 (0)
+387 (0) 385 (2) 383 (2) 346 (3) 332 (2) 318 (2) 317 (0)
+
+2 Process Vertex Renumbering with fault:
+[0]:   global point 147 -->  local point 72
+[0]:   global point 148 -->  local point 73
+[0]:   global point 151 -->  local point 74
+[0]:   global point 161 -->  local point 75
+[0]:   global point 163 -->  local point 76
+[0]:   global point 185 -->  local point 77
+[0]:   global point 187 -->  local point 78
+[0]:   global point 193 -->  local point 79
+[0]:   global point 195 -->  local point 80
+[0]:   global point 200 -->  local point 81
+[0]:   global point 203 -->  local point 82
+[0]:   global point 209 -->  local point 83
+[0]:   global point 213 -->  local point 84
+[0]:   global point 221 -->  local point 85
+[0]:   global point 225 -->  local point 86
+[0]:   global point 228 -->  local point 87
+[0]:   global point 229 -->  local point 88
+[0]:   global point 230 -->  local point 89
+[0]:   global point 231 -->  local point 90
+[0]:   global point 232 -->  local point 91
+[0]:   global point 233 -->  local point 92
+[0]:   global point 234 -->  local point 93
+[0]:   global point 235 -->  local point 94
+[0]:   global point 236 -->  local point 95
+[0]:   global point 237 -->  local point 96
+[0]:   global point 238 -->  local point 97
+[0]:   global point 239 -->  local point 98
+[0]:   global point 240 -->  local point 99
+[0]:   global point 241 -->  local point 100
+[0]:   global point 242 -->  local point 101
+[0]:   global point 243 -->  local point 102
+[0]:   global point 244 -->  local point 103
+[0]:   global point 245 -->  local point 104
+[0]:   global point 246 -->  local point 105
+[0]:   global point 247 -->  local point 106
+[0]:   global point 248 -->  local point 107
+[0]:   global point 249 -->  local point 108
+[0]:   global point 250 -->  local point 109
+[0]:   global point 251 -->  local point 110
+[0]:   global point 252 -->  local point 111
+[0]:   global point 253 -->  local point 112
+[0]:   global point 254 -->  local point 113
+[0]:   global point 255 -->  local point 114
+[0]:   global point 256 -->  local point 115
+[0]:   global point 257 -->  local point 116
+[0]:   global point 258 -->  local point 117
+[0]:   global point 259 -->  local point 118
+[0]:   global point 260 -->  local point 119
+[0]:   global point 261 -->  local point 120
+[0]:   global point 262 -->  local point 121
+[0]:   global point 263 -->  local point 122
+[0]:   global point 264 -->  local point 123
+[0]:   global point 265 -->  local point 124
+[0]:   global point 266 -->  local point 125
+[0]:   global point 267 -->  local point 126
+[0]:   global point 268 -->  local point 127
+[0]:   global point 269 -->  local point 128
+[0]:   global point 270 -->  local point 129
+[0]:   global point 271 -->  local point 130
+[0]:   global point 272 -->  local point 131
+[0]:   global point 273 -->  local point 132
+[0]:   global point 274 -->  local point 133
+[0]:   global point 275 -->  local point 134
+[0]:   global point 276 -->  local point 135
+[0]:   global point 277 -->  local point 136
+[0]:   global point 278 -->  local point 137
+[0]:   global point 279 -->  local point 138
+[0]:   global point 280 -->  local point 139
+[0]:   global point 281 -->  local point 140
+[0]:   global point 282 -->  local point 141
+[0]:   global point 283 -->  local point 142
+[0]:   global point 284 -->  local point 143
+[0]:   global point 285 -->  local point 144
+[0]:   global point 286 -->  local point 145
+[0]:   global point 287 -->  local point 146
+[0]:   global point 288 -->  local point 147
+[0]:   global point 289 -->  local point 148
+[0]:   global point 290 -->  local point 149
+[0]:   global point 333 -->  local point 150
+[0]:   global point 334 -->  local point 151
+[0]:   global point 335 -->  local point 152
+[0]:   global point 336 -->  local point 153
+[0]:   global point 337 -->  local point 154
+[0]:   global point 338 -->  local point 155
+[0]:   global point 339 -->  local point 156
+[0]:   global point 341 -->  local point 157
+[0]:   global point 342 -->  local point 158
+[0]:   global point 343 -->  local point 159
+[0]:   global point 344 -->  local point 160
+[0]:   global point 345 -->  local point 161
+[0]:   global point 346 -->  local point 162
+[0]:   global point 347 -->  local point 163
+[0]:   global point 348 -->  local point 164
+[0]:   global point 349 -->  local point 165
+[0]:   global point 350 -->  local point 166
+[0]:   global point 351 -->  local point 167
+[0]:   global point 352 -->  local point 168
+[0]:   global point 353 -->  local point 169
+[0]:   global point 354 -->  local point 170
+[0]:   global point 355 -->  local point 171
+[0]:   global point 356 -->  local point 172
+[0]:   global point 357 -->  local point 173
+[0]:   global point 358 -->  local point 174
+[0]:   global point 359 -->  local point 175
+[0]:   global point 360 -->  local point 176
+[0]:   global point 361 -->  local point 177
+[0]:   global point 362 -->  local point 178
+[0]:   global point 363 -->  local point 179
+[0]:   global point 364 -->  local point 180
+[0]:   global point 365 -->  local point 181
+[0]:   global point 366 -->  local point 182
+[0]:   global point 367 -->  local point 183
+[0]:   global point 368 -->  local point 184
+[0]:   global point 369 -->  local point 185
+[0]:   global point 370 -->  local point 186
+[0]:   global point 371 -->  local point 187
+[0]:   global point 372 -->  local point 188
+[0]:   global point 373 -->  local point 189
+[0]:   global point 374 -->  local point 190
+[0]:   global point 375 -->  local point 191
+[0]:   global point 376 -->  local point 192
+[0]:   global point 377 -->  local point 193
+[0]:   global point 378 -->  local point 194
+[0]:   global point 379 -->  local point 195
+[0]:   global point 380 -->  local point 196
+[0]:   global point 381 -->  local point 197
+[0]:   global point 382 -->  local point 198
+[0]:   global point 383 -->  local point 199
+[0]:   global point 384 -->  local point 200
+[0]:   global point 385 -->  local point 201
+[0]:   global point 386 -->  local point 202
+[0]:   global point 387 -->  local point 203
+[0]:   global point 388 -->  local point 204
+[0]:   global point 389 -->  local point 205
+[0]:   global point 390 -->  local point 206
+[0]:   global point 391 -->  local point 207
+[0]:   global point 392 -->  local point 208
+[0]:   global point 393 -->  local point 209
+[0]:   global point 394 -->  local point 210
+[0]:   global point 395 -->  local point 211
+[0]:   global point 396 -->  local point 212
+[0]:   global point 397 -->  local point 213
+[0]:   global point 398 -->  local point 214
+[0]:   global point 399 -->  local point 215
+[0]:   global point 400 -->  local point 216
+[0]:   global point 401 -->  local point 217
+[0]:   global point 402 -->  local point 218
+[0]:   global point 403 -->  local point 219
+[0]:   global point 404 -->  local point 220
+[0]:   global point 405 -->  local point 221
+[0]:   global point 406 -->  local point 222
+[0]:   global point 407 -->  local point 223
+[0]:   global point 408 -->  local point 224
+[0]:   global point 409 -->  local point 225
+[0]:   global point 410 -->  local point 226
+[0]:   global point 411 -->  local point 227
+[0]:   global point 412 -->  local point 228
+[0]:   global point 413 -->  local point 229
+[0]:   global point 414 -->  local point 230
+[0]:   global point 415 -->  local point 231
+[0]:   global point 416 -->  local point 232
+[0]:   global point 417 -->  local point 233
+[0]:   global point 418 -->  local point 234
+[0]:   global point 419 -->  local point 235
+[0]:   global point 420 -->  local point 236
+[0]:   global point 421 -->  local point 237
+[0]:   global point 422 -->  local point 238
+[0]:   global point 423 -->  local point 239
+[0]:   global point 425 -->  local point 240
+[0]:   global point 426 -->  local point 241
+[0]:   global point 427 -->  local point 242
+[0]:   global point 428 -->  local point 243
+[0]:   global point 429 -->  local point 244
+[0]:   global point 434 -->  local point 245
+[0]:   global point 435 -->  local point 246
+[0]:   global point 436 -->  local point 247
+[0]:   global point 437 -->  local point 248
+[0]:   global point 438 -->  local point 249
+[0]:   global point 439 -->  local point 250
+[0]:   global point 440 -->  local point 251
+[0]:   global point 441 -->  local point 252
+[0]:   global point 443 -->  local point 253
+[0]:   global point 444 -->  local point 254
+[0]:   global point 445 -->  local point 255
+[0]:   global point 446 -->  local point 256
+[0]:   global point 447 -->  local point 257
+[0]:   global point 448 -->  local point 258
+[0]:   global point 449 -->  local point 259
+[0]:   global point 450 -->  local point 260
+[0]:   global point 451 -->  local point 261
+[0]:   global point 453 -->  local point 262
+[0]:   global point 454 -->  local point 263
+[0]:   global point 455 -->  local point 264
+[0]:   global point 456 -->  local point 265
+[0]:   global point 457 -->  local point 266
+[0]:   global point 458 -->  local point 267
+[0]:   global point 460 -->  local point 268
+[0]:   global point 461 -->  local point 269
+[0]:   global point 462 -->  local point 270
+[0]:   global point 469 -->  local point 271
+[0]:   global point 470 -->  local point 272
+[0]:   global point 471 -->  local point 273
+[0]:   global point 473 -->  local point 274
+[0]:   global point 476 -->  local point 275
+[0]:   global point 477 -->  local point 276
+[0]:   global point 478 -->  local point 277
+[0]:   global point 481 -->  local point 278
+[0]:   global point 482 -->  local point 279
+
+[1]:   global point 144 -->  local point 72
+[1]:   global point 145 -->  local point 73
+[1]:   global point 146 -->  local point 74
+[1]:   global point 147 -->  local point 75
+[1]:   global point 148 -->  local point 76
+[1]:   global point 149 -->  local point 77
+[1]:   global point 150 -->  local point 78
+[1]:   global point 151 -->  local point 79
+[1]:   global point 152 -->  local point 80
+[1]:   global point 153 -->  local point 81
+[1]:   global point 154 -->  local point 82
+[1]:   global point 155 -->  local point 83
+[1]:   global point 156 -->  local point 84
+[1]:   global point 157 -->  local point 85
+[1]:   global point 158 -->  local point 86
+[1]:   global point 159 -->  local point 87
+[1]:   global point 160 -->  local point 88
+[1]:   global point 161 -->  local point 89
+[1]:   global point 162 -->  local point 90
+[1]:   global point 163 -->  local point 91
+[1]:   global point 164 -->  local point 92
+[1]:   global point 165 -->  local point 93
+[1]:   global point 166 -->  local point 94
+[1]:   global point 167 -->  local point 95
+[1]:   global point 168 -->  local point 96
+[1]:   global point 169 -->  local point 97
+[1]:   global point 170 -->  local point 98
+[1]:   global point 171 -->  local point 99
+[1]:   global point 172 -->  local point 100
+[1]:   global point 173 -->  local point 101
+[1]:   global point 174 -->  local point 102
+[1]:   global point 175 -->  local point 103
+[1]:   global point 176 -->  local point 104
+[1]:   global point 177 -->  local point 105
+[1]:   global point 178 -->  local point 106
+[1]:   global point 179 -->  local point 107
+[1]:   global point 180 -->  local point 108
+[1]:   global point 181 -->  local point 109
+[1]:   global point 182 -->  local point 110
+[1]:   global point 183 -->  local point 111
+[1]:   global point 184 -->  local point 112
+[1]:   global point 185 -->  local point 113
+[1]:   global point 186 -->  local point 114
+[1]:   global point 187 -->  local point 115
+[1]:   global point 188 -->  local point 116
+[1]:   global point 189 -->  local point 117
+[1]:   global point 190 -->  local point 118
+[1]:   global point 191 -->  local point 119
+[1]:   global point 192 -->  local point 120
+[1]:   global point 193 -->  local point 121
+[1]:   global point 194 -->  local point 122
+[1]:   global point 195 -->  local point 123
+[1]:   global point 196 -->  local point 124
+[1]:   global point 197 -->  local point 125
+[1]:   global point 198 -->  local point 126
+[1]:   global point 199 -->  local point 127
+[1]:   global point 200 -->  local point 128
+[1]:   global point 201 -->  local point 129
+[1]:   global point 202 -->  local point 130
+[1]:   global point 203 -->  local point 131
+[1]:   global point 204 -->  local point 132
+[1]:   global point 205 -->  local point 133
+[1]:   global point 206 -->  local point 134
+[1]:   global point 207 -->  local point 135
+[1]:   global point 208 -->  local point 136
+[1]:   global point 209 -->  local point 137
+[1]:   global point 210 -->  local point 138
+[1]:   global point 211 -->  local point 139
+[1]:   global point 212 -->  local point 140
+[1]:   global point 213 -->  local point 141
+[1]:   global point 214 -->  local point 142
+[1]:   global point 215 -->  local point 143
+[1]:   global point 216 -->  local point 144
+[1]:   global point 217 -->  local point 145
+[1]:   global point 218 -->  local point 146
+[1]:   global point 219 -->  local point 147
+[1]:   global point 220 -->  local point 148
+[1]:   global point 221 -->  local point 149
+[1]:   global point 222 -->  local point 150
+[1]:   global point 223 -->  local point 151
+[1]:   global point 224 -->  local point 152
+[1]:   global point 225 -->  local point 153
+[1]:   global point 226 -->  local point 154
+[1]:   global point 227 -->  local point 155
+[1]:   global point 291 -->  local point 156
+[1]:   global point 292 -->  local point 157
+[1]:   global point 293 -->  local point 158
+[1]:   global point 294 -->  local point 159
+[1]:   global point 295 -->  local point 160
+[1]:   global point 296 -->  local point 161
+[1]:   global point 297 -->  local point 162
+[1]:   global point 298 -->  local point 163
+[1]:   global point 299 -->  local point 164
+[1]:   global point 300 -->  local point 165
+[1]:   global point 301 -->  local point 166
+[1]:   global point 302 -->  local point 167
+[1]:   global point 303 -->  local point 168
+[1]:   global point 304 -->  local point 169
+[1]:   global point 305 -->  local point 170
+[1]:   global point 306 -->  local point 171
+[1]:   global point 307 -->  local point 172
+[1]:   global point 308 -->  local point 173
+[1]:   global point 309 -->  local point 174
+[1]:   global point 310 -->  local point 175
+[1]:   global point 311 -->  local point 176
+[1]:   global point 312 -->  local point 177
+[1]:   global point 313 -->  local point 178
+[1]:   global point 314 -->  local point 179
+[1]:   global point 315 -->  local point 180
+[1]:   global point 316 -->  local point 181
+[1]:   global point 317 -->  local point 182
+[1]:   global point 318 -->  local point 183
+[1]:   global point 319 -->  local point 184
+[1]:   global point 320 -->  local point 185
+[1]:   global point 321 -->  local point 186
+[1]:   global point 322 -->  local point 187
+[1]:   global point 323 -->  local point 188
+[1]:   global point 324 -->  local point 189
+[1]:   global point 325 -->  local point 190
+[1]:   global point 326 -->  local point 191
+[1]:   global point 327 -->  local point 192
+[1]:   global point 328 -->  local point 193
+[1]:   global point 329 -->  local point 194
+[1]:   global point 330 -->  local point 195
+[1]:   global point 331 -->  local point 196
+[1]:   global point 332 -->  local point 197
+[1]:   global point 333 -->  local point 198
+[1]:   global point 334 -->  local point 199
+[1]:   global point 335 -->  local point 200
+[1]:   global point 336 -->  local point 201
+[1]:   global point 337 -->  local point 202
+[1]:   global point 338 -->  local point 203
+[1]:   global point 339 -->  local point 204
+[1]:   global point 340 -->  local point 205
+[1]:   global point 341 -->  local point 206
+[1]:   global point 342 -->  local point 207
+[1]:   global point 343 -->  local point 208
+[1]:   global point 344 -->  local point 209
+[1]:   global point 345 -->  local point 210
+[1]:   global point 346 -->  local point 211
+[1]:   global point 389 -->  local point 212
+[1]:   global point 390 -->  local point 213
+[1]:   global point 391 -->  local point 214
+[1]:   global point 392 -->  local point 215
+[1]:   global point 393 -->  local point 216
+[1]:   global point 394 -->  local point 217
+[1]:   global point 395 -->  local point 218
+[1]:   global point 396 -->  local point 219
+[1]:   global point 397 -->  local point 220
+[1]:   global point 398 -->  local point 221
+[1]:   global point 399 -->  local point 222
+[1]:   global point 400 -->  local point 223
+[1]:   global point 404 -->  local point 224
+[1]:   global point 405 -->  local point 225
+[1]:   global point 406 -->  local point 226
+[1]:   global point 407 -->  local point 227
+[1]:   global point 408 -->  local point 228
+[1]:   global point 411 -->  local point 229
+[1]:   global point 414 -->  local point 230
+[1]:   global point 415 -->  local point 231
+[1]:   global point 416 -->  local point 232
+[1]:   global point 417 -->  local point 233
+[1]:   global point 418 -->  local point 234
+[1]:   global point 419 -->  local point 235
+[1]:   global point 420 -->  local point 236
+[1]:   global point 424 -->  local point 237
+[1]:   global point 425 -->  local point 238
+[1]:   global point 426 -->  local point 239
+[1]:   global point 427 -->  local point 240
+[1]:   global point 428 -->  local point 241
+[1]:   global point 429 -->  local point 242
+[1]:   global point 430 -->  local point 243
+[1]:   global point 431 -->  local point 244
+[1]:   global point 432 -->  local point 245
+[1]:   global point 433 -->  local point 246
+[1]:   global point 434 -->  local point 247
+[1]:   global point 435 -->  local point 248
+[1]:   global point 439 -->  local point 249
+[1]:   global point 440 -->  local point 250
+[1]:   global point 441 -->  local point 251
+[1]:   global point 442 -->  local point 252
+[1]:   global point 443 -->  local point 253
+[1]:   global point 446 -->  local point 254
+[1]:   global point 449 -->  local point 255
+[1]:   global point 450 -->  local point 256
+[1]:   global point 451 -->  local point 257
+[1]:   global point 452 -->  local point 258
+[1]:   global point 453 -->  local point 259
+[1]:   global point 454 -->  local point 260
+[1]:   global point 455 -->  local point 261
+[1]:   global point 459 -->  local point 262
+[1]:   global point 463 -->  local point 263
+[1]:   global point 464 -->  local point 264
+[1]:   global point 465 -->  local point 265
+[1]:   global point 466 -->  local point 266
+[1]:   global point 467 -->  local point 267
+[1]:   global point 468 -->  local point 268
+[1]:   global point 472 -->  local point 269
+[1]:   global point 474 -->  local point 270
+[1]:   global point 475 -->  local point 271
+[1]:   global point 479 -->  local point 272
+[1]:   global point 480 -->  local point 273
+
+3 Process Vertex Renumbering with fault:
+[0]:   global point 0 -->  local point 0
+[0]:   global point 3 -->  local point 1
+[0]:   global point 18 -->  local point 2
+[0]:   global point 21 -->  local point 3
+[0]:   global point 36 -->  local point 4
+[0]:   global point 37 -->  local point 5
+[0]:   global point 38 -->  local point 6
+[0]:   global point 39 -->  local point 7
+[0]:   global point 40 -->  local point 8
+[0]:   global point 41 -->  local point 9
+[0]:   global point 48 -->  local point 10
+[0]:   global point 49 -->  local point 11
+[0]:   global point 50 -->  local point 12
+[0]:   global point 51 -->  local point 13
+[0]:   global point 52 -->  local point 14
+[0]:   global point 53 -->  local point 15
+[0]:   global point 60 -->  local point 16
+[0]:   global point 61 -->  local point 17
+[0]:   global point 62 -->  local point 18
+[0]:   global point 63 -->  local point 19
+[0]:   global point 64 -->  local point 20
+[0]:   global point 65 -->  local point 21
+[0]:   global point 96 -->  local point 22
+[0]:   global point 97 -->  local point 23
+[0]:   global point 98 -->  local point 24
+[0]:   global point 99 -->  local point 25
+[0]:   global point 100 -->  local point 26
+[0]:   global point 101 -->  local point 27
+[0]:   global point 108 -->  local point 28
+[0]:   global point 109 -->  local point 29
+[0]:   global point 110 -->  local point 30
+[0]:   global point 111 -->  local point 31
+[0]:   global point 112 -->  local point 32
+[0]:   global point 113 -->  local point 33
+[0]:   global point 114 -->  local point 34
+[0]:   global point 115 -->  local point 35
+[0]:   global point 116 -->  local point 36
+[0]:   global point 126 -->  local point 37
+[0]:   global point 127 -->  local point 38
+[0]:   global point 128 -->  local point 39
+[0]:   global point 129 -->  local point 40
+[0]:   global point 130 -->  local point 41
+[0]:   global point 131 -->  local point 42
+[0]:   global point 132 -->  local point 43
+[0]:   global point 133 -->  local point 44
+[0]:   global point 134 -->  local point 45
+[0]:   global point 144 -->  local point 46
+[0]:   global point 145 -->  local point 47
+[0]:   global point 146 -->  local point 48
+[0]:   global point 147 -->  local point 49
+[0]:   global point 148 -->  local point 50
+[0]:   global point 149 -->  local point 51
+[0]:   global point 150 -->  local point 52
+[0]:   global point 151 -->  local point 53
+[0]:   global point 160 -->  local point 54
+[0]:   global point 161 -->  local point 55
+[0]:   global point 162 -->  local point 56
+[0]:   global point 163 -->  local point 57
+[0]:   global point 169 -->  local point 58
+[0]:   global point 171 -->  local point 59
+[0]:   global point 177 -->  local point 60
+[0]:   global point 179 -->  local point 61
+[0]:   global point 185 -->  local point 62
+[0]:   global point 187 -->  local point 63
+[0]:   global point 193 -->  local point 64
+[0]:   global point 195 -->  local point 65
+[0]:   global point 200 -->  local point 66
+[0]:   global point 201 -->  local point 67
+[0]:   global point 202 -->  local point 68
+[0]:   global point 203 -->  local point 69
+[0]:   global point 208 -->  local point 70
+[0]:   global point 209 -->  local point 71
+[0]:   global point 212 -->  local point 72
+[0]:   global point 213 -->  local point 73
+[0]:   global point 217 -->  local point 74
+[0]:   global point 221 -->  local point 75
+[0]:   global point 225 -->  local point 76
+[0]:   global point 228 -->  local point 77
+[0]:   global point 229 -->  local point 78
+[0]:   global point 230 -->  local point 79
+[0]:   global point 231 -->  local point 80
+[0]:   global point 232 -->  local point 81
+[0]:   global point 233 -->  local point 82
+[0]:   global point 234 -->  local point 83
+[0]:   global point 235 -->  local point 84
+[0]:   global point 236 -->  local point 85
+[0]:   global point 237 -->  local point 86
+[0]:   global point 238 -->  local point 87
+[0]:   global point 239 -->  local point 88
+[0]:   global point 240 -->  local point 89
+[0]:   global point 241 -->  local point 90
+[0]:   global point 242 -->  local point 91
+[0]:   global point 243 -->  local point 92
+[0]:   global point 244 -->  local point 93
+[0]:   global point 245 -->  local point 94
+[0]:   global point 246 -->  local point 95
+[0]:   global point 247 -->  local point 96
+[0]:   global point 248 -->  local point 97
+[0]:   global point 249 -->  local point 98
+[0]:   global point 250 -->  local point 99
+[0]:   global point 251 -->  local point 100
+[0]:   global point 270 -->  local point 101
+[0]:   global point 271 -->  local point 102
+[0]:   global point 272 -->  local point 103
+[0]:   global point 273 -->  local point 104
+[0]:   global point 274 -->  local point 105
+[0]:   global point 275 -->  local point 106
+[0]:   global point 276 -->  local point 107
+[0]:   global point 277 -->  local point 108
+[0]:   global point 278 -->  local point 109
+[0]:   global point 279 -->  local point 110
+[0]:   global point 280 -->  local point 111
+[0]:   global point 281 -->  local point 112
+[0]:   global point 319 -->  local point 113
+[0]:   global point 320 -->  local point 114
+[0]:   global point 321 -->  local point 115
+[0]:   global point 322 -->  local point 116
+[0]:   global point 323 -->  local point 117
+[0]:   global point 324 -->  local point 118
+[0]:   global point 325 -->  local point 119
+[0]:   global point 326 -->  local point 120
+[0]:   global point 333 -->  local point 121
+[0]:   global point 334 -->  local point 122
+[0]:   global point 335 -->  local point 123
+[0]:   global point 336 -->  local point 124
+[0]:   global point 337 -->  local point 125
+[0]:   global point 338 -->  local point 126
+[0]:   global point 339 -->  local point 127
+[0]:   global point 340 -->  local point 128
+[0]:   global point 341 -->  local point 129
+[0]:   global point 342 -->  local point 130
+[0]:   global point 343 -->  local point 131
+[0]:   global point 344 -->  local point 132
+[0]:   global point 345 -->  local point 133
+[0]:   global point 346 -->  local point 134
+[0]:   global point 347 -->  local point 135
+[0]:   global point 348 -->  local point 136
+[0]:   global point 349 -->  local point 137
+[0]:   global point 350 -->  local point 138
+[0]:   global point 351 -->  local point 139
+[0]:   global point 352 -->  local point 140
+[0]:   global point 353 -->  local point 141
+[0]:   global point 354 -->  local point 142
+[0]:   global point 355 -->  local point 143
+[0]:   global point 356 -->  local point 144
+[0]:   global point 357 -->  local point 145
+[0]:   global point 358 -->  local point 146
+[0]:   global point 359 -->  local point 147
+[0]:   global point 360 -->  local point 148
+[0]:   global point 361 -->  local point 149
+[0]:   global point 362 -->  local point 150
+[0]:   global point 363 -->  local point 151
+[0]:   global point 364 -->  local point 152
+[0]:   global point 365 -->  local point 153
+[0]:   global point 366 -->  local point 154
+[0]:   global point 367 -->  local point 155
+[0]:   global point 368 -->  local point 156
+[0]:   global point 369 -->  local point 157
+[0]:   global point 370 -->  local point 158
+[0]:   global point 389 -->  local point 159
+[0]:   global point 390 -->  local point 160
+[0]:   global point 391 -->  local point 161
+[0]:   global point 392 -->  local point 162
+[0]:   global point 393 -->  local point 163
+[0]:   global point 394 -->  local point 164
+[0]:   global point 395 -->  local point 165
+[0]:   global point 396 -->  local point 166
+[0]:   global point 397 -->  local point 167
+[0]:   global point 398 -->  local point 168
+[0]:   global point 399 -->  local point 169
+[0]:   global point 400 -->  local point 170
+[0]:   global point 401 -->  local point 171
+[0]:   global point 402 -->  local point 172
+[0]:   global point 403 -->  local point 173
+[0]:   global point 404 -->  local point 174
+[0]:   global point 405 -->  local point 175
+[0]:   global point 406 -->  local point 176
+[0]:   global point 407 -->  local point 177
+[0]:   global point 408 -->  local point 178
+[0]:   global point 409 -->  local point 179
+[0]:   global point 410 -->  local point 180
+[0]:   global point 411 -->  local point 181
+[0]:   global point 412 -->  local point 182
+[0]:   global point 413 -->  local point 183
+[0]:   global point 414 -->  local point 184
+[0]:   global point 415 -->  local point 185
+[0]:   global point 416 -->  local point 186
+[0]:   global point 417 -->  local point 187
+[0]:   global point 418 -->  local point 188
+[0]:   global point 419 -->  local point 189
+[0]:   global point 420 -->  local point 190
+[0]:   global point 421 -->  local point 191
+[0]:   global point 422 -->  local point 192
+[0]:   global point 423 -->  local point 193
+[0]:   global point 430 -->  local point 194
+[0]:   global point 431 -->  local point 195
+[0]:   global point 432 -->  local point 196
+[0]:   global point 433 -->  local point 197
+[0]:   global point 434 -->  local point 198
+[0]:   global point 435 -->  local point 199
+[0]:   global point 436 -->  local point 200
+[0]:   global point 437 -->  local point 201
+[0]:   global point 441 -->  local point 202
+[0]:   global point 442 -->  local point 203
+[0]:   global point 443 -->  local point 204
+[0]:   global point 444 -->  local point 205
+[0]:   global point 453 -->  local point 206
+[0]:   global point 454 -->  local point 207
+[0]:   global point 455 -->  local point 208
+[0]:   global point 456 -->  local point 209
+[0]:   global point 457 -->  local point 210
+[0]:   global point 458 -->  local point 211
+[0]:   global point 465 -->  local point 212
+[0]:   global point 466 -->  local point 213
+[0]:   global point 467 -->  local point 214
+[0]:   global point 468 -->  local point 215
+[0]:   global point 469 -->  local point 216
+[0]:   global point 470 -->  local point 217
+[0]:   global point 475 -->  local point 218
+[0]:   global point 476 -->  local point 219
+[0]:   global point 481 -->  local point 220
+[0]:   global point 482 -->  local point 221
+
+[1]:   global point 12 -->  local point 0
+[1]:   global point 15 -->  local point 1
+[1]:   global point 30 -->  local point 2
+[1]:   global point 33 -->  local point 3
+[1]:   global point 42 -->  local point 4
+[1]:   global point 43 -->  local point 5
+[1]:   global point 44 -->  local point 6
+[1]:   global point 45 -->  local point 7
+[1]:   global point 46 -->  local point 8
+[1]:   global point 47 -->  local point 9
+[1]:   global point 54 -->  local point 10
+[1]:   global point 55 -->  local point 11
+[1]:   global point 56 -->  local point 12
+[1]:   global point 57 -->  local point 13
+[1]:   global point 58 -->  local point 14
+[1]:   global point 59 -->  local point 15
+[1]:   global point 66 -->  local point 16
+[1]:   global point 67 -->  local point 17
+[1]:   global point 68 -->  local point 18
+[1]:   global point 69 -->  local point 19
+[1]:   global point 70 -->  local point 20
+[1]:   global point 71 -->  local point 21
+[1]:   global point 102 -->  local point 22
+[1]:   global point 103 -->  local point 23
+[1]:   global point 104 -->  local point 24
+[1]:   global point 105 -->  local point 25
+[1]:   global point 106 -->  local point 26
+[1]:   global point 107 -->  local point 27
+[1]:   global point 117 -->  local point 28
+[1]:   global point 118 -->  local point 29
+[1]:   global point 119 -->  local point 30
+[1]:   global point 120 -->  local point 31
+[1]:   global point 121 -->  local point 32
+[1]:   global point 122 -->  local point 33
+[1]:   global point 123 -->  local point 34
+[1]:   global point 124 -->  local point 35
+[1]:   global point 125 -->  local point 36
+[1]:   global point 135 -->  local point 37
+[1]:   global point 136 -->  local point 38
+[1]:   global point 137 -->  local point 39
+[1]:   global point 138 -->  local point 40
+[1]:   global point 139 -->  local point 41
+[1]:   global point 140 -->  local point 42
+[1]:   global point 141 -->  local point 43
+[1]:   global point 142 -->  local point 44
+[1]:   global point 143 -->  local point 45
+[1]:   global point 144 -->  local point 46
+[1]:   global point 147 -->  local point 47
+[1]:   global point 148 -->  local point 48
+[1]:   global point 151 -->  local point 49
+[1]:   global point 161 -->  local point 50
+[1]:   global point 163 -->  local point 51
+[1]:   global point 169 -->  local point 52
+[1]:   global point 171 -->  local point 53
+[1]:   global point 176 -->  local point 54
+[1]:   global point 177 -->  local point 55
+[1]:   global point 178 -->  local point 56
+[1]:   global point 179 -->  local point 57
+[1]:   global point 184 -->  local point 58
+[1]:   global point 185 -->  local point 59
+[1]:   global point 186 -->  local point 60
+[1]:   global point 187 -->  local point 61
+[1]:   global point 192 -->  local point 62
+[1]:   global point 193 -->  local point 63
+[1]:   global point 194 -->  local point 64
+[1]:   global point 195 -->  local point 65
+[1]:   global point 200 -->  local point 66
+[1]:   global point 203 -->  local point 67
+[1]:   global point 209 -->  local point 68
+[1]:   global point 212 -->  local point 69
+[1]:   global point 213 -->  local point 70
+[1]:   global point 216 -->  local point 71
+[1]:   global point 217 -->  local point 72
+[1]:   global point 220 -->  local point 73
+[1]:   global point 221 -->  local point 74
+[1]:   global point 224 -->  local point 75
+[1]:   global point 225 -->  local point 76
+[1]:   global point 246 -->  local point 77
+[1]:   global point 247 -->  local point 78
+[1]:   global point 248 -->  local point 79
+[1]:   global point 249 -->  local point 80
+[1]:   global point 250 -->  local point 81
+[1]:   global point 251 -->  local point 82
+[1]:   global point 252 -->  local point 83
+[1]:   global point 253 -->  local point 84
+[1]:   global point 254 -->  local point 85
+[1]:   global point 255 -->  local point 86
+[1]:   global point 256 -->  local point 87
+[1]:   global point 257 -->  local point 88
+[1]:   global point 258 -->  local point 89
+[1]:   global point 259 -->  local point 90
+[1]:   global point 260 -->  local point 91
+[1]:   global point 261 -->  local point 92
+[1]:   global point 262 -->  local point 93
+[1]:   global point 263 -->  local point 94
+[1]:   global point 264 -->  local point 95
+[1]:   global point 265 -->  local point 96
+[1]:   global point 266 -->  local point 97
+[1]:   global point 267 -->  local point 98
+[1]:   global point 268 -->  local point 99
+[1]:   global point 269 -->  local point 100
+[1]:   global point 279 -->  local point 101
+[1]:   global point 280 -->  local point 102
+[1]:   global point 281 -->  local point 103
+[1]:   global point 282 -->  local point 104
+[1]:   global point 283 -->  local point 105
+[1]:   global point 284 -->  local point 106
+[1]:   global point 285 -->  local point 107
+[1]:   global point 286 -->  local point 108
+[1]:   global point 287 -->  local point 109
+[1]:   global point 288 -->  local point 110
+[1]:   global point 289 -->  local point 111
+[1]:   global point 290 -->  local point 112
+[1]:   global point 325 -->  local point 113
+[1]:   global point 326 -->  local point 114
+[1]:   global point 327 -->  local point 115
+[1]:   global point 328 -->  local point 116
+[1]:   global point 329 -->  local point 117
+[1]:   global point 330 -->  local point 118
+[1]:   global point 331 -->  local point 119
+[1]:   global point 332 -->  local point 120
+[1]:   global point 333 -->  local point 121
+[1]:   global point 334 -->  local point 122
+[1]:   global point 335 -->  local point 123
+[1]:   global point 336 -->  local point 124
+[1]:   global point 337 -->  local point 125
+[1]:   global point 338 -->  local point 126
+[1]:   global point 339 -->  local point 127
+[1]:   global point 340 -->  local point 128
+[1]:   global point 341 -->  local point 129
+[1]:   global point 342 -->  local point 130
+[1]:   global point 343 -->  local point 131
+[1]:   global point 344 -->  local point 132
+[1]:   global point 345 -->  local point 133
+[1]:   global point 346 -->  local point 134
+[1]:   global point 365 -->  local point 135
+[1]:   global point 366 -->  local point 136
+[1]:   global point 367 -->  local point 137
+[1]:   global point 368 -->  local point 138
+[1]:   global point 369 -->  local point 139
+[1]:   global point 370 -->  local point 140
+[1]:   global point 371 -->  local point 141
+[1]:   global point 372 -->  local point 142
+[1]:   global point 373 -->  local point 143
+[1]:   global point 374 -->  local point 144
+[1]:   global point 375 -->  local point 145
+[1]:   global point 376 -->  local point 146
+[1]:   global point 377 -->  local point 147
+[1]:   global point 378 -->  local point 148
+[1]:   global point 379 -->  local point 149
+[1]:   global point 380 -->  local point 150
+[1]:   global point 381 -->  local point 151
+[1]:   global point 382 -->  local point 152
+[1]:   global point 383 -->  local point 153
+[1]:   global point 384 -->  local point 154
+[1]:   global point 385 -->  local point 155
+[1]:   global point 386 -->  local point 156
+[1]:   global point 387 -->  local point 157
+[1]:   global point 388 -->  local point 158
+[1]:   global point 389 -->  local point 159
+[1]:   global point 390 -->  local point 160
+[1]:   global point 391 -->  local point 161
+[1]:   global point 392 -->  local point 162
+[1]:   global point 393 -->  local point 163
+[1]:   global point 394 -->  local point 164
+[1]:   global point 395 -->  local point 165
+[1]:   global point 396 -->  local point 166
+[1]:   global point 397 -->  local point 167
+[1]:   global point 398 -->  local point 168
+[1]:   global point 399 -->  local point 169
+[1]:   global point 400 -->  local point 170
+[1]:   global point 401 -->  local point 171
+[1]:   global point 402 -->  local point 172
+[1]:   global point 403 -->  local point 173
+[1]:   global point 404 -->  local point 174
+[1]:   global point 405 -->  local point 175
+[1]:   global point 406 -->  local point 176
+[1]:   global point 407 -->  local point 177
+[1]:   global point 408 -->  local point 178
+[1]:   global point 409 -->  local point 179
+[1]:   global point 410 -->  local point 180
+[1]:   global point 411 -->  local point 181
+[1]:   global point 412 -->  local point 182
+[1]:   global point 413 -->  local point 183
+[1]:   global point 414 -->  local point 184
+[1]:   global point 415 -->  local point 185
+[1]:   global point 416 -->  local point 186
+[1]:   global point 417 -->  local point 187
+[1]:   global point 418 -->  local point 188
+[1]:   global point 419 -->  local point 189
+[1]:   global point 420 -->  local point 190
+[1]:   global point 421 -->  local point 191
+[1]:   global point 422 -->  local point 192
+[1]:   global point 423 -->  local point 193
+[1]:   global point 424 -->  local point 194
+[1]:   global point 425 -->  local point 195
+[1]:   global point 426 -->  local point 196
+[1]:   global point 427 -->  local point 197
+[1]:   global point 428 -->  local point 198
+[1]:   global point 429 -->  local point 199
+[1]:   global point 430 -->  local point 200
+[1]:   global point 431 -->  local point 201
+[1]:   global point 438 -->  local point 202
+[1]:   global point 439 -->  local point 203
+[1]:   global point 440 -->  local point 204
+[1]:   global point 441 -->  local point 205
+[1]:   global point 445 -->  local point 206
+[1]:   global point 446 -->  local point 207
+[1]:   global point 447 -->  local point 208
+[1]:   global point 448 -->  local point 209
+[1]:   global point 449 -->  local point 210
+[1]:   global point 450 -->  local point 211
+[1]:   global point 459 -->  local point 212
+[1]:   global point 460 -->  local point 213
+[1]:   global point 461 -->  local point 214
+[1]:   global point 462 -->  local point 215
+[1]:   global point 463 -->  local point 216
+[1]:   global point 464 -->  local point 217
+[1]:   global point 471 -->  local point 218
+[1]:   global point 472 -->  local point 219
+[1]:   global point 477 -->  local point 220
+[1]:   global point 478 -->  local point 221
+
+[2]:   global point 1 -->  local point 0
+[2]:   global point 2 -->  local point 1
+[2]:   global point 4 -->  local point 2
+[2]:   global point 5 -->  local point 3
+[2]:   global point 6 -->  local point 4
+[2]:   global point 7 -->  local point 5
+[2]:   global point 8 -->  local point 6
+[2]:   global point 9 -->  local point 7
+[2]:   global point 10 -->  local point 8
+[2]:   global point 11 -->  local point 9
+[2]:   global point 13 -->  local point 10
+[2]:   global point 14 -->  local point 11
+[2]:   global point 16 -->  local point 12
+[2]:   global point 17 -->  local point 13
+[2]:   global point 19 -->  local point 14
+[2]:   global point 20 -->  local point 15
+[2]:   global point 22 -->  local point 16
+[2]:   global point 23 -->  local point 17
+[2]:   global point 24 -->  local point 18
+[2]:   global point 25 -->  local point 19
+[2]:   global point 26 -->  local point 20
+[2]:   global point 27 -->  local point 21
+[2]:   global point 28 -->  local point 22
+[2]:   global point 29 -->  local point 23
+[2]:   global point 31 -->  local point 24
+[2]:   global point 32 -->  local point 25
+[2]:   global point 34 -->  local point 26
+[2]:   global point 35 -->  local point 27
+[2]:   global point 72 -->  local point 28
+[2]:   global point 73 -->  local point 29
+[2]:   global point 74 -->  local point 30
+[2]:   global point 75 -->  local point 31
+[2]:   global point 76 -->  local point 32
+[2]:   global point 77 -->  local point 33
+[2]:   global point 78 -->  local point 34
+[2]:   global point 79 -->  local point 35
+[2]:   global point 80 -->  local point 36
+[2]:   global point 81 -->  local point 37
+[2]:   global point 82 -->  local point 38
+[2]:   global point 83 -->  local point 39
+[2]:   global point 84 -->  local point 40
+[2]:   global point 85 -->  local point 41
+[2]:   global point 86 -->  local point 42
+[2]:   global point 87 -->  local point 43
+[2]:   global point 88 -->  local point 44
+[2]:   global point 89 -->  local point 45
+[2]:   global point 90 -->  local point 46
+[2]:   global point 91 -->  local point 47
+[2]:   global point 92 -->  local point 48
+[2]:   global point 93 -->  local point 49
+[2]:   global point 94 -->  local point 50
+[2]:   global point 95 -->  local point 51
+[2]:   global point 145 -->  local point 52
+[2]:   global point 146 -->  local point 53
+[2]:   global point 149 -->  local point 54
+[2]:   global point 150 -->  local point 55
+[2]:   global point 152 -->  local point 56
+[2]:   global point 153 -->  local point 57
+[2]:   global point 154 -->  local point 58
+[2]:   global point 155 -->  local point 59
+[2]:   global point 156 -->  local point 60
+[2]:   global point 157 -->  local point 61
+[2]:   global point 158 -->  local point 62
+[2]:   global point 159 -->  local point 63
+[2]:   global point 160 -->  local point 64
+[2]:   global point 161 -->  local point 65
+[2]:   global point 162 -->  local point 66
+[2]:   global point 163 -->  local point 67
+[2]:   global point 164 -->  local point 68
+[2]:   global point 165 -->  local point 69
+[2]:   global point 166 -->  local point 70
+[2]:   global point 167 -->  local point 71
+[2]:   global point 168 -->  local point 72
+[2]:   global point 169 -->  local point 73
+[2]:   global point 170 -->  local point 74
+[2]:   global point 171 -->  local point 75
+[2]:   global point 172 -->  local point 76
+[2]:   global point 173 -->  local point 77
+[2]:   global point 174 -->  local point 78
+[2]:   global point 175 -->  local point 79
+[2]:   global point 176 -->  local point 80
+[2]:   global point 177 -->  local point 81
+[2]:   global point 178 -->  local point 82
+[2]:   global point 179 -->  local point 83
+[2]:   global point 180 -->  local point 84
+[2]:   global point 181 -->  local point 85
+[2]:   global point 182 -->  local point 86
+[2]:   global point 183 -->  local point 87
+[2]:   global point 184 -->  local point 88
+[2]:   global point 186 -->  local point 89
+[2]:   global point 188 -->  local point 90
+[2]:   global point 189 -->  local point 91
+[2]:   global point 190 -->  local point 92
+[2]:   global point 191 -->  local point 93
+[2]:   global point 192 -->  local point 94
+[2]:   global point 194 -->  local point 95
+[2]:   global point 196 -->  local point 96
+[2]:   global point 197 -->  local point 97
+[2]:   global point 198 -->  local point 98
+[2]:   global point 199 -->  local point 99
+[2]:   global point 201 -->  local point 100
+[2]:   global point 202 -->  local point 101
+[2]:   global point 204 -->  local point 102
+[2]:   global point 205 -->  local point 103
+[2]:   global point 206 -->  local point 104
+[2]:   global point 207 -->  local point 105
+[2]:   global point 208 -->  local point 106
+[2]:   global point 209 -->  local point 107
+[2]:   global point 210 -->  local point 108
+[2]:   global point 211 -->  local point 109
+[2]:   global point 212 -->  local point 110
+[2]:   global point 213 -->  local point 111
+[2]:   global point 214 -->  local point 112
+[2]:   global point 215 -->  local point 113
+[2]:   global point 216 -->  local point 114
+[2]:   global point 217 -->  local point 115
+[2]:   global point 218 -->  local point 116
+[2]:   global point 219 -->  local point 117
+[2]:   global point 220 -->  local point 118
+[2]:   global point 222 -->  local point 119
+[2]:   global point 223 -->  local point 120
+[2]:   global point 224 -->  local point 121
+[2]:   global point 226 -->  local point 122
+[2]:   global point 227 -->  local point 123
+[2]:   global point 291 -->  local point 124
+[2]:   global point 292 -->  local point 125
+[2]:   global point 293 -->  local point 126
+[2]:   global point 294 -->  local point 127
+[2]:   global point 295 -->  local point 128
+[2]:   global point 296 -->  local point 129
+[2]:   global point 297 -->  local point 130
+[2]:   global point 298 -->  local point 131
+[2]:   global point 299 -->  local point 132
+[2]:   global point 300 -->  local point 133
+[2]:   global point 301 -->  local point 134
+[2]:   global point 302 -->  local point 135
+[2]:   global point 303 -->  local point 136
+[2]:   global point 304 -->  local point 137
+[2]:   global point 305 -->  local point 138
+[2]:   global point 306 -->  local point 139
+[2]:   global point 307 -->  local point 140
+[2]:   global point 308 -->  local point 141
+[2]:   global point 309 -->  local point 142
+[2]:   global point 310 -->  local point 143
+[2]:   global point 311 -->  local point 144
+[2]:   global point 312 -->  local point 145
+[2]:   global point 313 -->  local point 146
+[2]:   global point 314 -->  local point 147
+[2]:   global point 315 -->  local point 148
+[2]:   global point 316 -->  local point 149
+[2]:   global point 317 -->  local point 150
+[2]:   global point 318 -->  local point 151
+[2]:   global point 319 -->  local point 152
+[2]:   global point 320 -->  local point 153
+[2]:   global point 321 -->  local point 154
+[2]:   global point 322 -->  local point 155
+[2]:   global point 323 -->  local point 156
+[2]:   global point 324 -->  local point 157
+[2]:   global point 325 -->  local point 158
+[2]:   global point 326 -->  local point 159
+[2]:   global point 327 -->  local point 160
+[2]:   global point 328 -->  local point 161
+[2]:   global point 329 -->  local point 162
+[2]:   global point 330 -->  local point 163
+[2]:   global point 331 -->  local point 164
+[2]:   global point 332 -->  local point 165
+[2]:   global point 337 -->  local point 166
+[2]:   global point 338 -->  local point 167
+[2]:   global point 339 -->  local point 168
+[2]:   global point 340 -->  local point 169
+[2]:   global point 341 -->  local point 170
+[2]:   global point 342 -->  local point 171
+[2]:   global point 405 -->  local point 172
+[2]:   global point 406 -->  local point 173
+[2]:   global point 407 -->  local point 174
+[2]:   global point 414 -->  local point 175
+[2]:   global point 415 -->  local point 176
+[2]:   global point 416 -->  local point 177
+[2]:   global point 417 -->  local point 178
+[2]:   global point 418 -->  local point 179
+[2]:   global point 419 -->  local point 180
+[2]:   global point 440 -->  local point 181
+[2]:   global point 441 -->  local point 182
+[2]:   global point 442 -->  local point 183
+[2]:   global point 449 -->  local point 184
+[2]:   global point 450 -->  local point 185
+[2]:   global point 451 -->  local point 186
+[2]:   global point 452 -->  local point 187
+[2]:   global point 453 -->  local point 188
+[2]:   global point 454 -->  local point 189
+[2]:   global point 473 -->  local point 190
+[2]:   global point 474 -->  local point 191
+[2]:   global point 479 -->  local point 192
+[2]:   global point 480 -->  local point 193
+
+3 process Mesh with order:
+
+236 (0,85)(1) 238  (0,87)(3) 274 (0,105)(3) 144 (0,46)(3) 145 (0,47)(3) 152 (3) 156 (1)
+237 (0,86)(1) 239  (0,88)(3) 275 (0,106)(3) 147 (0,49)(3) 146 (0,48)(3) 153 (3) 157 (1)
+244 (0,93)(1) 245  (0,94)(3) 278 (0,109)(3) 161 (0,55)(3) 160 (0,54)(3) 164 (3) 166 (1)
+250 (0,99)(1) 251 (0,100)(3) 281 (0,112)(3) 169 (0,58)(3) 168 (2,72)(3) 172 (3) 174 (1)
+256       (1) 257        (3) 284 (1,106)(3) 177 (0,60)(3) 176 (1,54)(3) 180 (3) 182 (1)
+262       (1) 263        (3) 287 (1,109)(3) 185 (0,62)(3) 184       (3) 188 (3) 190 (1)
+268       (1) 269        (3) 290        (3) 193 (0,64)(3) 192       (3) 196 (3) 198 (1)
+
+
+229 (0,78)(1) 233 (0,82)(3) 271 (0,102)(3) 148 (0,50)(3) 149 (0,51)(3) 154 (3) 158 (1)
+230 (0,79)(1) 234 (0,83)(3) 272 (0,103)(3) 151 (0,53)(3) 150 (0,52)(3) 155 (3) 159 (1)
+240 (0,89)(1) 242 (0,91)(3) 276 (0,107)(3) 163 (0,57)(3) 162 (0,56)(3) 165 (3) 167 (1)
+246 (0,95)(1) 248 (0,97)(3) 279 (0,110)(3) 171 (0,59)(3) 170 (2,74)(3) 173 (3) 175 (1)
+252       (1) 254       (3) 282 (1,104)(3) 179 (0,61)(3) 178 (1,56)(3) 181 (3) 183 (1)
+258       (1) 260       (3) 285        (3) 187 (0,63)(3) 186       (3) 189 (3) 191 (1)
+264       (1) 266       (3) 288        (3) 195 (0,65)(3) 194       (3) 197 (3) 199 (1)
+
+
+228 (0,77)(1) 232 (0,81)(3) 270 (0,101)(3) 200 (0,66)(3) 201 (0,67)(3) 204 (3) 206 (1)
+231 (0,80)(1) 235 (0,84)(3) 273 (0,104)(3) 203 (0,69)(3) 202 (0,68)(3) 205 (3) 207 (1)
+241 (0,90)(1) 243 (0,92)(3) 277 (0,108)(3) 209 (0,71)(3) 208 (0,70)(3) 210 (3) 211 (1)
+247 (0,96)(1) 249 (0,98)(3) 280 (0,111)(3) 213 (0,73)(3) 212 (0,72)(3) 214 (3) 215 (1)
+253 (1) 255 (3) 283 (3) 217 (0,74)(3) 216 (3) 218 (3) 219 (1)
+259 (1) 261 (3) 286 (3) 221 (0,75)(3) 220 (3) 222 (3) 223 (1)
+265 (1) 267 (3) 289 (3) 225 (0,76)(3) 224 (3) 226 (3) 227 (1)
+
+
+357 (0,145)(1) 353 (0,141)(3) 349 (0,137)(3) 333 (0,121)(3) 319 (0,113)(3) 293 (3) 291 (1)
+358 (0,146)(1) 354 (0,142)(3) 350 (0,138)(3) 334 (0,122)(3) 320 (0,114)(3) 294 (3) 292 (1)
+364 (0,152)(1) 362 (0,150)(3) 360 (0,148)(3) 337 (0,125)(3) 323 (0,117)(3) 300 (3) 299 (1)
+370 (0,158)(1) 368 (0,156)(3) 366 (0,154)(3) 339 (0,127)(3) 325 (0,119)(3) 304 (3) 303 (1)
+376 (1) 374 (3) 372 (3) 341 (0,129)(3) 327 (3) 308 (3) 307 (1)
+382 (1) 380 (3) 378 (3) 343 (0,131)(3) 329 (3) 312 (3) 311 (1)
+388 (1) 386 (3) 384 (3) 345 (0,133)(3) 331 (3) 316 (3) 315 (1)
+
+
+355 (0,143)(0) 351 (0,139)(2) 347 (0,135)(2) 335 (0,123)(3) 321 (0,115)(2) 297 (2) 295 (0)
+356 (0,144)(0) 352 (0,140)(2) 348 (0,136)(2) 336 (0,124)(3) 322 (0,116)(2) 298 (2) 296 (0)
+363 (0,151)(0) 361 (0,149)(2) 359 (0,147)(2) 338 (0,126)(3) 324 (0,118)(2) 302 (2) 301 (0)
+369 (0,157)(0) 367 (0,155)(2) 365 (0,153)(2) 340 (0,128)(3) 326 (0,120)(2) 306 (2) 305 (0)
+375 (0) 373 (2) 371 (2) 342 (0,130)(3) 328 (2) 310 (2) 309 (0)
+381 (0) 379 (2) 377 (2) 344 (0,132)(3) 330 (2) 314 (2) 313 (0)
+387 (0) 385 (2) 383 (2) 346 (0,134)(3) 332 (2) 318 (2) 317 (0)
+
+New nonzero investigation:
+With fault
+[0]PETSC ERROR: New nonzero at (36,33) caused a malloc!
+
+Global Order:
+[0]:   58 dim 1   (36, 3)
+
+Renumbering:
+[0]:   global point 169 -->  local point 58
+
+Allocation:
+169 --> N = {278, 161, 169, 281, 177, 284, 160, 168, 176, 276, 163, 171, 279, 179, 282, 162, 170, 178}
+|N| = 18
+18*3 = 54   72/3 = 24
+
+1 Proc Global Order:
+[0]:   169 dim 1   (63, 3)
+[0]: dnz[63]: 72 onz[63]: 0
+[0]: dnz[64]: 72 onz[64]: 0
+[0]: dnz[65]: 72 onz[65]: 0
+
+3 Process Vertex Renumbering with no fault:
+[0]:   global point 36 -->  local point 0
+[0]:   global point 37 -->  local point 1
+[0]:   global point 38 -->  local point 2
+[0]:   global point 39 -->  local point 3
+[0]:   global point 40 -->  local point 4
+[0]:   global point 41 -->  local point 5
+[0]:   global point 42 -->  local point 6
+[0]:   global point 43 -->  local point 7
+[0]:   global point 44 -->  local point 8
+[0]:   global point 45 -->  local point 9
+[0]:   global point 48 -->  local point 10
+[0]:   global point 49 -->  local point 11
+[0]:   global point 50 -->  local point 12
+[0]:   global point 51 -->  local point 13
+[0]:   global point 52 -->  local point 14
+[0]:   global point 53 -->  local point 15
+[0]:   global point 54 -->  local point 16
+[0]:   global point 55 -->  local point 17
+[0]:   global point 56 -->  local point 18
+[0]:   global point 57 -->  local point 19
+[0]:   global point 64 -->  local point 20
+[0]:   global point 65 -->  local point 21
+[0]:   global point 66 -->  local point 22
+[0]:   global point 67 -->  local point 23
+[0]:   global point 109 -->  local point 24
+[0]:   global point 110 -->  local point 25
+[0]:   global point 112 -->  local point 26
+[0]:   global point 113 -->  local point 27
+[0]:   global point 114 -->  local point 28
+[0]:   global point 115 -->  local point 29
+[0]:   global point 116 -->  local point 30
+[0]:   global point 117 -->  local point 31
+[0]:   global point 118 -->  local point 32
+[0]:   global point 119 -->  local point 33
+[0]:   global point 121 -->  local point 34
+[0]:   global point 122 -->  local point 35
+[0]:   global point 127 -->  local point 36
+[0]:   global point 128 -->  local point 37
+[0]:   global point 130 -->  local point 38
+[0]:   global point 131 -->  local point 39
+[0]:   global point 132 -->  local point 40
+[0]:   global point 133 -->  local point 41
+[0]:   global point 134 -->  local point 42
+[0]:   global point 135 -->  local point 43
+[0]:   global point 136 -->  local point 44
+[0]:   global point 137 -->  local point 45
+[0]:   global point 139 -->  local point 46
+[0]:   global point 140 -->  local point 47
+[0]:   global point 161 -->  local point 48
+[0]:   global point 163 -->  local point 49
+[0]:   global point 169 -->  local point 50
+[0]:   global point 171 -->  local point 51
+[0]:   global point 177 -->  local point 52
+[0]:   global point 179 -->  local point 53
+[0]:   global point 209 -->  local point 54
+[0]:   global point 213 -->  local point 55
+[0]:   global point 217 -->  local point 56
+[0]:   global point 228 -->  local point 57
+[0]:   global point 229 -->  local point 58
+[0]:   global point 230 -->  local point 59
+[0]:   global point 231 -->  local point 60
+[0]:   global point 232 -->  local point 61
+[0]:   global point 233 -->  local point 62
+[0]:   global point 234 -->  local point 63
+[0]:   global point 235 -->  local point 64
+[0]:   global point 236 -->  local point 65
+[0]:   global point 237 -->  local point 66
+[0]:   global point 238 -->  local point 67
+[0]:   global point 239 -->  local point 68
+[0]:   global point 240 -->  local point 69
+[0]:   global point 241 -->  local point 70
+[0]:   global point 242 -->  local point 71
+[0]:   global point 243 -->  local point 72
+[0]:   global point 244 -->  local point 73
+[0]:   global point 245 -->  local point 74
+[0]:   global point 246 -->  local point 75
+[0]:   global point 247 -->  local point 76
+[0]:   global point 248 -->  local point 77
+[0]:   global point 249 -->  local point 78
+[0]:   global point 250 -->  local point 79
+[0]:   global point 251 -->  local point 80
+[0]:   global point 252 -->  local point 81
+[0]:   global point 253 -->  local point 82
+[0]:   global point 254 -->  local point 83
+[0]:   global point 255 -->  local point 84
+[0]:   global point 256 -->  local point 85
+[0]:   global point 257 -->  local point 86
+[0]:   global point 258 -->  local point 87
+[0]:   global point 259 -->  local point 88
+[0]:   global point 260 -->  local point 89
+[0]:   global point 261 -->  local point 90
+[0]:   global point 262 -->  local point 91
+[0]:   global point 263 -->  local point 92
+[0]:   global point 270 -->  local point 93
+[0]:   global point 271 -->  local point 94
+[0]:   global point 272 -->  local point 95
+[0]:   global point 273 -->  local point 96
+[0]:   global point 274 -->  local point 97
+[0]:   global point 275 -->  local point 98
+[0]:   global point 276 -->  local point 99
+[0]:   global point 277 -->  local point 100
+[0]:   global point 278 -->  local point 101
+[0]:   global point 279 -->  local point 102
+[0]:   global point 280 -->  local point 103
+[0]:   global point 281 -->  local point 104
+[0]:   global point 282 -->  local point 105
+[0]:   global point 283 -->  local point 106
+[0]:   global point 284 -->  local point 107
+[0]:   global point 285 -->  local point 108
+[0]:   global point 286 -->  local point 109
+[0]:   global point 287 -->  local point 110
+[0]:   global point 337 -->  local point 111
+[0]:   global point 338 -->  local point 112
+[0]:   global point 339 -->  local point 113
+[0]:   global point 340 -->  local point 114
+[0]:   global point 341 -->  local point 115
+[0]:   global point 342 -->  local point 116
+[0]:   global point 347 -->  local point 117
+[0]:   global point 348 -->  local point 118
+[0]:   global point 349 -->  local point 119
+[0]:   global point 350 -->  local point 120
+[0]:   global point 351 -->  local point 121
+[0]:   global point 352 -->  local point 122
+[0]:   global point 353 -->  local point 123
+[0]:   global point 354 -->  local point 124
+[0]:   global point 355 -->  local point 125
+[0]:   global point 356 -->  local point 126
+[0]:   global point 357 -->  local point 127
+[0]:   global point 358 -->  local point 128
+[0]:   global point 359 -->  local point 129
+[0]:   global point 360 -->  local point 130
+[0]:   global point 361 -->  local point 131
+[0]:   global point 362 -->  local point 132
+[0]:   global point 363 -->  local point 133
+[0]:   global point 364 -->  local point 134
+[0]:   global point 365 -->  local point 135
+[0]:   global point 366 -->  local point 136
+[0]:   global point 367 -->  local point 137
+[0]:   global point 368 -->  local point 138
+[0]:   global point 369 -->  local point 139
+[0]:   global point 370 -->  local point 140
+[0]:   global point 371 -->  local point 141
+[0]:   global point 372 -->  local point 142
+[0]:   global point 373 -->  local point 143
+[0]:   global point 374 -->  local point 144
+[0]:   global point 375 -->  local point 145
+[0]:   global point 376 -->  local point 146
+[0]:   global point 377 -->  local point 147
+[0]:   global point 378 -->  local point 148
+[0]:   global point 379 -->  local point 149
+[0]:   global point 380 -->  local point 150
+[0]:   global point 381 -->  local point 151
+[0]:   global point 382 -->  local point 152
+
+[1]:   global point 0 -->  local point 0
+[1]:   global point 1 -->  local point 1
+[1]:   global point 2 -->  local point 2
+[1]:   global point 3 -->  local point 3
+[1]:   global point 4 -->  local point 4
+[1]:   global point 5 -->  local point 5
+[1]:   global point 6 -->  local point 6
+[1]:   global point 7 -->  local point 7
+[1]:   global point 8 -->  local point 8
+[1]:   global point 9 -->  local point 9
+[1]:   global point 18 -->  local point 10
+[1]:   global point 19 -->  local point 11
+[1]:   global point 20 -->  local point 12
+[1]:   global point 21 -->  local point 13
+[1]:   global point 22 -->  local point 14
+[1]:   global point 23 -->  local point 15
+[1]:   global point 24 -->  local point 16
+[1]:   global point 25 -->  local point 17
+[1]:   global point 26 -->  local point 18
+[1]:   global point 27 -->  local point 19
+[1]:   global point 60 -->  local point 20
+[1]:   global point 61 -->  local point 21
+[1]:   global point 62 -->  local point 22
+[1]:   global point 63 -->  local point 23
+[1]:   global point 72 -->  local point 24
+[1]:   global point 73 -->  local point 25
+[1]:   global point 74 -->  local point 26
+[1]:   global point 75 -->  local point 27
+[1]:   global point 76 -->  local point 28
+[1]:   global point 77 -->  local point 29
+[1]:   global point 84 -->  local point 30
+[1]:   global point 85 -->  local point 31
+[1]:   global point 86 -->  local point 32
+[1]:   global point 87 -->  local point 33
+[1]:   global point 88 -->  local point 34
+[1]:   global point 89 -->  local point 35
+[1]:   global point 96 -->  local point 36
+[1]:   global point 97 -->  local point 37
+[1]:   global point 98 -->  local point 38
+[1]:   global point 99 -->  local point 39
+[1]:   global point 100 -->  local point 40
+[1]:   global point 101 -->  local point 41
+[1]:   global point 102 -->  local point 42
+[1]:   global point 103 -->  local point 43
+[1]:   global point 108 -->  local point 44
+[1]:   global point 111 -->  local point 45
+[1]:   global point 126 -->  local point 46
+[1]:   global point 129 -->  local point 47
+[1]:   global point 144 -->  local point 48
+[1]:   global point 145 -->  local point 49
+[1]:   global point 146 -->  local point 50
+[1]:   global point 147 -->  local point 51
+[1]:   global point 148 -->  local point 52
+[1]:   global point 149 -->  local point 53
+[1]:   global point 150 -->  local point 54
+[1]:   global point 151 -->  local point 55
+[1]:   global point 152 -->  local point 56
+[1]:   global point 153 -->  local point 57
+[1]:   global point 154 -->  local point 58
+[1]:   global point 155 -->  local point 59
+[1]:   global point 156 -->  local point 60
+[1]:   global point 157 -->  local point 61
+[1]:   global point 158 -->  local point 62
+[1]:   global point 159 -->  local point 63
+[1]:   global point 160 -->  local point 64
+[1]:   global point 161 -->  local point 65
+[1]:   global point 162 -->  local point 66
+[1]:   global point 163 -->  local point 67
+[1]:   global point 164 -->  local point 68
+[1]:   global point 165 -->  local point 69
+[1]:   global point 166 -->  local point 70
+[1]:   global point 167 -->  local point 71
+[1]:   global point 168 -->  local point 72
+[1]:   global point 169 -->  local point 73
+[1]:   global point 170 -->  local point 74
+[1]:   global point 171 -->  local point 75
+[1]:   global point 172 -->  local point 76
+[1]:   global point 173 -->  local point 77
+[1]:   global point 174 -->  local point 78
+[1]:   global point 175 -->  local point 79
+[1]:   global point 176 -->  local point 80
+[1]:   global point 177 -->  local point 81
+[1]:   global point 178 -->  local point 82
+[1]:   global point 179 -->  local point 83
+[1]:   global point 200 -->  local point 84
+[1]:   global point 201 -->  local point 85
+[1]:   global point 202 -->  local point 86
+[1]:   global point 203 -->  local point 87
+[1]:   global point 204 -->  local point 88
+[1]:   global point 205 -->  local point 89
+[1]:   global point 206 -->  local point 90
+[1]:   global point 207 -->  local point 91
+[1]:   global point 208 -->  local point 92
+[1]:   global point 209 -->  local point 93
+[1]:   global point 210 -->  local point 94
+[1]:   global point 211 -->  local point 95
+[1]:   global point 212 -->  local point 96
+[1]:   global point 213 -->  local point 97
+[1]:   global point 214 -->  local point 98
+[1]:   global point 215 -->  local point 99
+[1]:   global point 216 -->  local point 100
+[1]:   global point 217 -->  local point 101
+[1]:   global point 270 -->  local point 102
+[1]:   global point 271 -->  local point 103
+[1]:   global point 272 -->  local point 104
+[1]:   global point 273 -->  local point 105
+[1]:   global point 274 -->  local point 106
+[1]:   global point 275 -->  local point 107
+[1]:   global point 276 -->  local point 108
+[1]:   global point 277 -->  local point 109
+[1]:   global point 278 -->  local point 110
+[1]:   global point 291 -->  local point 111
+[1]:   global point 292 -->  local point 112
+[1]:   global point 293 -->  local point 113
+[1]:   global point 294 -->  local point 114
+[1]:   global point 295 -->  local point 115
+[1]:   global point 296 -->  local point 116
+[1]:   global point 297 -->  local point 117
+[1]:   global point 298 -->  local point 118
+[1]:   global point 299 -->  local point 119
+[1]:   global point 300 -->  local point 120
+[1]:   global point 301 -->  local point 121
+[1]:   global point 302 -->  local point 122
+[1]:   global point 303 -->  local point 123
+[1]:   global point 304 -->  local point 124
+[1]:   global point 305 -->  local point 125
+[1]:   global point 306 -->  local point 126
+[1]:   global point 319 -->  local point 127
+[1]:   global point 320 -->  local point 128
+[1]:   global point 321 -->  local point 129
+[1]:   global point 322 -->  local point 130
+[1]:   global point 323 -->  local point 131
+[1]:   global point 324 -->  local point 132
+[1]:   global point 325 -->  local point 133
+[1]:   global point 326 -->  local point 134
+[1]:   global point 327 -->  local point 135
+[1]:   global point 328 -->  local point 136
+[1]:   global point 333 -->  local point 137
+[1]:   global point 334 -->  local point 138
+[1]:   global point 335 -->  local point 139
+[1]:   global point 336 -->  local point 140
+[1]:   global point 337 -->  local point 141
+[1]:   global point 338 -->  local point 142
+[1]:   global point 339 -->  local point 143
+[1]:   global point 340 -->  local point 144
+[1]:   global point 341 -->  local point 145
+[1]:   global point 342 -->  local point 146
+[1]:   global point 347 -->  local point 147
+[1]:   global point 348 -->  local point 148
+[1]:   global point 349 -->  local point 149
+[1]:   global point 350 -->  local point 150
+[1]:   global point 359 -->  local point 151
+[1]:   global point 360 -->  local point 152
+
+[2]:   global point 10 -->  local point 0
+[2]:   global point 11 -->  local point 1
+[2]:   global point 12 -->  local point 2
+[2]:   global point 13 -->  local point 3
+[2]:   global point 14 -->  local point 4
+[2]:   global point 15 -->  local point 5
+[2]:   global point 16 -->  local point 6
+[2]:   global point 17 -->  local point 7
+[2]:   global point 28 -->  local point 8
+[2]:   global point 29 -->  local point 9
+[2]:   global point 30 -->  local point 10
+[2]:   global point 31 -->  local point 11
+[2]:   global point 32 -->  local point 12
+[2]:   global point 33 -->  local point 13
+[2]:   global point 34 -->  local point 14
+[2]:   global point 35 -->  local point 15
+[2]:   global point 46 -->  local point 16
+[2]:   global point 47 -->  local point 17
+[2]:   global point 58 -->  local point 18
+[2]:   global point 59 -->  local point 19
+[2]:   global point 68 -->  local point 20
+[2]:   global point 69 -->  local point 21
+[2]:   global point 70 -->  local point 22
+[2]:   global point 71 -->  local point 23
+[2]:   global point 78 -->  local point 24
+[2]:   global point 79 -->  local point 25
+[2]:   global point 80 -->  local point 26
+[2]:   global point 81 -->  local point 27
+[2]:   global point 82 -->  local point 28
+[2]:   global point 83 -->  local point 29
+[2]:   global point 90 -->  local point 30
+[2]:   global point 91 -->  local point 31
+[2]:   global point 92 -->  local point 32
+[2]:   global point 93 -->  local point 33
+[2]:   global point 94 -->  local point 34
+[2]:   global point 95 -->  local point 35
+[2]:   global point 104 -->  local point 36
+[2]:   global point 105 -->  local point 37
+[2]:   global point 106 -->  local point 38
+[2]:   global point 107 -->  local point 39
+[2]:   global point 120 -->  local point 40
+[2]:   global point 123 -->  local point 41
+[2]:   global point 124 -->  local point 42
+[2]:   global point 125 -->  local point 43
+[2]:   global point 138 -->  local point 44
+[2]:   global point 141 -->  local point 45
+[2]:   global point 142 -->  local point 46
+[2]:   global point 143 -->  local point 47
+[2]:   global point 168 -->  local point 48
+[2]:   global point 170 -->  local point 49
+[2]:   global point 172 -->  local point 50
+[2]:   global point 173 -->  local point 51
+[2]:   global point 174 -->  local point 52
+[2]:   global point 175 -->  local point 53
+[2]:   global point 176 -->  local point 54
+[2]:   global point 177 -->  local point 55
+[2]:   global point 178 -->  local point 56
+[2]:   global point 179 -->  local point 57
+[2]:   global point 180 -->  local point 58
+[2]:   global point 181 -->  local point 59
+[2]:   global point 182 -->  local point 60
+[2]:   global point 183 -->  local point 61
+[2]:   global point 184 -->  local point 62
+[2]:   global point 185 -->  local point 63
+[2]:   global point 186 -->  local point 64
+[2]:   global point 187 -->  local point 65
+[2]:   global point 188 -->  local point 66
+[2]:   global point 189 -->  local point 67
+[2]:   global point 190 -->  local point 68
+[2]:   global point 191 -->  local point 69
+[2]:   global point 192 -->  local point 70
+[2]:   global point 193 -->  local point 71
+[2]:   global point 194 -->  local point 72
+[2]:   global point 195 -->  local point 73
+[2]:   global point 196 -->  local point 74
+[2]:   global point 197 -->  local point 75
+[2]:   global point 198 -->  local point 76
+[2]:   global point 199 -->  local point 77
+[2]:   global point 212 -->  local point 78
+[2]:   global point 214 -->  local point 79
+[2]:   global point 215 -->  local point 80
+[2]:   global point 216 -->  local point 81
+[2]:   global point 217 -->  local point 82
+[2]:   global point 218 -->  local point 83
+[2]:   global point 219 -->  local point 84
+[2]:   global point 220 -->  local point 85
+[2]:   global point 221 -->  local point 86
+[2]:   global point 222 -->  local point 87
+[2]:   global point 223 -->  local point 88
+[2]:   global point 224 -->  local point 89
+[2]:   global point 225 -->  local point 90
+[2]:   global point 226 -->  local point 91
+[2]:   global point 227 -->  local point 92
+[2]:   global point 258 -->  local point 93
+[2]:   global point 259 -->  local point 94
+[2]:   global point 260 -->  local point 95
+[2]:   global point 261 -->  local point 96
+[2]:   global point 262 -->  local point 97
+[2]:   global point 263 -->  local point 98
+[2]:   global point 264 -->  local point 99
+[2]:   global point 265 -->  local point 100
+[2]:   global point 266 -->  local point 101
+[2]:   global point 267 -->  local point 102
+[2]:   global point 268 -->  local point 103
+[2]:   global point 269 -->  local point 104
+[2]:   global point 282 -->  local point 105
+[2]:   global point 283 -->  local point 106
+[2]:   global point 284 -->  local point 107
+[2]:   global point 285 -->  local point 108
+[2]:   global point 286 -->  local point 109
+[2]:   global point 287 -->  local point 110
+[2]:   global point 288 -->  local point 111
+[2]:   global point 289 -->  local point 112
+[2]:   global point 290 -->  local point 113
+[2]:   global point 303 -->  local point 114
+[2]:   global point 304 -->  local point 115
+[2]:   global point 305 -->  local point 116
+[2]:   global point 306 -->  local point 117
+[2]:   global point 307 -->  local point 118
+[2]:   global point 308 -->  local point 119
+[2]:   global point 309 -->  local point 120
+[2]:   global point 310 -->  local point 121
+[2]:   global point 311 -->  local point 122
+[2]:   global point 312 -->  local point 123
+[2]:   global point 313 -->  local point 124
+[2]:   global point 314 -->  local point 125
+[2]:   global point 315 -->  local point 126
+[2]:   global point 316 -->  local point 127
+[2]:   global point 317 -->  local point 128
+[2]:   global point 318 -->  local point 129
+[2]:   global point 325 -->  local point 130
+[2]:   global point 326 -->  local point 131
+[2]:   global point 327 -->  local point 132
+[2]:   global point 328 -->  local point 133
+[2]:   global point 329 -->  local point 134
+[2]:   global point 330 -->  local point 135
+[2]:   global point 331 -->  local point 136
+[2]:   global point 332 -->  local point 137
+[2]:   global point 341 -->  local point 138
+[2]:   global point 342 -->  local point 139
+[2]:   global point 343 -->  local point 140
+[2]:   global point 344 -->  local point 141
+[2]:   global point 345 -->  local point 142
+[2]:   global point 346 -->  local point 143
+[2]:   global point 371 -->  local point 144
+[2]:   global point 372 -->  local point 145
+[2]:   global point 377 -->  local point 146
+[2]:   global point 378 -->  local point 147
+[2]:   global point 379 -->  local point 148
+[2]:   global point 380 -->  local point 149
+[2]:   global point 381 -->  local point 150
+[2]:   global point 382 -->  local point 151
+[2]:   global point 383 -->  local point 152
+[2]:   global point 384 -->  local point 153
+[2]:   global point 385 -->  local point 154
+[2]:   global point 386 -->  local point 155
+[2]:   global point 387 -->  local point 156
+[2]:   global point 388 -->  local point 157
+
+3 Process Mesh with no fault with order:
+
+236 (0, 65)(1) 238 (0, 67)(3) 274 (0, 97)(3) 144 (1, 48)(3) 145 (1, 49)(3) 152 (1, 56)(3) 156 (1, 60)(1)
+237 (0, 66)(1) 239 (0, 68)(3) 275 (0, 98)(3) 147 (1, 51)(3) 146 (1, 50)(3) 153 (1, 57)(3) 157 (1, 61)(1)
+244 (0, 73)(1) 245 (0, 74)(3) 278 (0,101)(3) 161 (0, 48)(3) 160 (1, 64)(3) 164 (1, 68)(3) 166 (1, 70)(1)
+250 (0, 79)(1) 251 (0, 80)(3) 281 (0,104)(3) 169 (0, 50)(3) 168 (1, 72)(3) 172 (1, 76)(3) 174 (1, 78)(1)
+256 (0, 85)(1) 257 (0, 86)(3) 284 (0,107)(3) 177 (0, 52)(3) 176 (1, 80)(3) 180 (2, 58)(3) 182 (2, 60)(1)
+262 (0, 91)(1) 263 (0, 92)(3) 287 (0,110)(3) 185 (2, 63)(3) 184 (2, 62)(3) 188 (2, 66)(3) 190 (2, 68)(1)
+268 (2,103)(1) 269 (2,104)(3) 290 (2,113)(3) 193 (2, 71)(3) 192 (2, 70)(3) 196 (2, 74)(3) 198 (2, 76)(1)
+
+
+229 (0, 58)(1) 233 (0, 62)(3) 271 (0, 94)(3) 148 (1, 52)(3) 149 (1, 53)(3) 154 (1, 58)(3) 158 (1, 62)(1)
+230 (0, 59)(1) 234 (0, 63)(3) 272 (0, 95)(3) 151 (1, 55)(3) 150 (1, 54)(3) 155 (1, 59)(3) 159 (1, 63)(1)
+240 (0, 69)(1) 242 (0, 71)(3) 276 (0, 99)(3) 163 (0, 49)(3) 162 (1, 66)(3) 165 (1, 69)(3) 167 (1, 71)(1)
+246 (0, 75)(1) 248 (0, 77)(3) 279 (0,102)(3) 171 (0, 51)(3) 170 (1, 74)(3) 173 (1, 77)(3) 175 (1, 79)(1)
+252 (0, 81)(1) 254 (0, 83)(3) 282 (0,105)(3) 179 (0, 53)(3) 178 (1, 82)(3) 181 (2, 59)(3) 183 (2, 61)(1)
+258 (0, 87)(1) 260 (0, 89)(3) 285 (0,108)(3) 187 (2, 65)(3) 186 (2, 64)(3) 189 (2, 67)(3) 191 (2, 69)(1)
+264 (2, 99)(1) 266 (2,101)(3) 288 (2,111)(3) 195 (2, 73)(3) 194 (2, 72)(3) 197 (2, 75)(3) 199 (2, 77)(1)
+
+
+228 (0, 57)(1) 232 (0, 61)(3) 270 (0, 93)(3) 200 (1, 84)(3) 201 (1, 85)(3) 204 (1, 88)(3) 206 (1, 90)(1)
+231 (0, 60)(1) 235 (0, 64)(3) 273 (0, 96)(3) 203 (1, 87)(3) 202 (1, 86)(3) 205 (1, 89)(3) 207 (1, 91)(1)
+241 (0, 70)(1) 243 (0, 72)(3) 277 (0,100)(3) 209 (0, 54)(3) 208 (1, 92)(3) 210 (1, 94)(3) 211 (1, 95)(1)
+247 (0, 76)(1) 249 (0, 78)(3) 280 (0,103)(3) 213 (0, 55)(3) 212 (1, 96)(3) 214 (1, 98)(3) 215 (1, 99)(1)
+253 (0, 82)(1) 255 (0, 84)(3) 283 (0,106)(3) 217 (0, 56)(3) 216 (1,100)(3) 218 (2, 83)(3) 219 (2, 84)(1)
+259 (0, 88)(1) 261 (0, 90)(3) 286 (0,109)(3) 221 (2, 86)(3) 220 (2, 85)(3) 222 (2, 87)(3) 223 (2, 88)(1)
+265 (2,100)(1) 267 (2,102)(3) 289 (2,112)(3) 225 (2, 90)(3) 224 (2, 89)(3) 226 (2, 91)(3) 227 (2, 92)(1)
+
+
+357 (0,127)(1) 353 (0,123)(3) 349 (0,119)(3) 333 (1,137)(3) 319 (1,127)(3) 293 (1,113)(3) 291 (1,111)(1)
+358 (0,128)(1) 354 (0,124)(3) 350 (0,120)(3) 334 (1,138)(3) 320 (1,128)(3) 294 (1,114)(3) 292 (1,112)(1)
+364 (0,134)(1) 362 (0,132)(3) 360 (0,130)(3) 337 (0,111)(3) 323 (1,131)(3) 300 (1,120)(3) 299 (1,119)(1)
+370 (0,140)(1) 368 (0,138)(3) 366 (0,136)(3) 339 (0,113)(3) 325 (1,133)(3) 304 (1,124)(3) 303 (1,123)(1)
+376 (0,146)(1) 374 (0,144)(3) 372 (0,142)(3) 341 (0,115)(3) 327 (1,135)(3) 308 (2,119)(3) 307 (2,118)(1)
+382 (0,152)(1) 380 (0,150)(3) 378 (0,148)(3) 343 (2,140)(3) 329 (2,134)(3) 312 (2,123)(3) 311 (2,122)(1)
+388 (2,157)(1) 386 (2,155)(3) 384 (2,153)(3) 345 (2,142)(3) 331 (2,136)(3) 316 (2,127)(3) 315 (2,126)(1)
+
+
+355 (0,125)(0) 351 (0,121)(2) 347 (0,117)(2) 335 (1,139)(2) 321 (1,129)(2) 297 (1,117)(2) 295 (1,115)(0)
+356 (0,126)(0) 352 (0,122)(2) 348 (0,118)(2) 336 (1,140)(2) 322 (1,130)(2) 298 (1,118)(2) 296 (1,116)(0)
+363 (0,133)(0) 361 (0,131)(2) 359 (0,129)(2) 338 (0,112)(2) 324 (1,132)(2) 302 (1,122)(2) 301 (1,121)(0)
+369 (0,139)(0) 367 (0,137)(2) 365 (0,135)(2) 340 (0,114)(2) 326 (1,134)(2) 306 (1,126)(2) 305 (1,125)(0)
+375 (0,145)(0) 373 (0,143)(2) 371 (0,141)(2) 342 (0,116)(2) 328 (1,136)(2) 310 (2,121)(2) 309 (2,120)(0)
+381 (0,151)(0) 379 (0,149)(2) 377 (0,147)(2) 344 (2,141)(2) 330 (2,135)(2) 314 (2,125)(2) 313 (2,124)(0)
+387 (2,156)(0) 385 (2,154)(2) 383 (2,152)(2) 346 (2,143)(2) 332 (2,137)(2) 318 (2,129)(2) 317 (2,128)(0)
+
+
+Without fault
+[0]PETSC ERROR: New nonzero at (166,223) caused a malloc!
+
+Global Order:
+[0]:   116 dim 1   (166, 2)
+[0]: dnz[166]: 20 onz[166]: 40
+[0]: dnz[167]: 20 onz[167]: 40
+
+Renumbering:
+[0]:   global point 342 -->  local point 116
+
+Adjacency new points:
+[0]: New point 135 --> 204
+[0]: New point 136 --> 205
+[0]: New point 113 --> 371
+[0]: New point 114 --> 375
+[0]: New point 141 --> 379
+[0]: New point 142 --> 385
+
+[1]: New point 133 --> 466
+[1]: New point 134 --> 472
+[1]: New point 135 --> 478
+[1]: New point 136 --> 482
+[1]: New point 143 --> 496
+[1]: New point 144 --> 502
+
+[2]: New point 134 --> 320
+[2]: New point 135 --> 321
+[2]: New point 140 --> 324
+[2]: New point 141 --> 325
+[2]: New point 132 --> 529
+[2]: New point 133 --> 531
+[2]: New point 144 --> 533
+[2]: New point 145 --> 536
+[2]: New point 146 --> 538
+[2]: New point 147 --> 541
+
+Notice that proc 0 only owns one cell containing 116, so it only gets the first
+8 adjacent vertices, missing 147 and 148.
+
+Original Adjacency:
+cap --> base:
+[0]: 116--(0)-->113
+[0]: 116--(0)-->114
+[0]: 116--(0)-->115
+[0]: 116--(0)-->116
+[0]: 116--(0)-->135
+[0]: 116--(0)-->136
+[0]: 116--(0)-->141
+[0]: 116--(0)-->142
+base --> cap:
+[0]: 116<--(0)--113
+[0]: 116<--(0)--114
+[0]: 116<--(0)--115
+[0]: 116<--(0)--116
+[0]: 116<--(0)--135
+[0]: 116<--(0)--136
+[0]: 116<--(0)--141
+[0]: 116<--(0)--142
+
+Globalized Adjacency:
+cap --> base:
+[0]: 116--(0)-->113
+[0]: 116--(0)-->114
+[0]: 116--(0)-->115
+[0]: 116--(0)-->116
+[0]: 116--(0)-->141
+[0]: 116--(0)-->142
+[0]: 116--(0)-->204
+[0]: 116--(0)-->205
+base --> cap:
+[0]: 116<--(0)--115
+[0]: 116<--(0)--116
+[0]: 116<--(0)--204
+[0]: 116<--(0)--205
+[0]: 116<--(0)--371
+[0]: 116<--(0)--375
+[0]: 116<--(0)--379
+[0]: 116<--(0)--385
+
+Completed Adjacency:
+cap --> base:
+[0]: 116--(0)-->113
+[0]: 116--(0)-->114
+[0]: 116--(0)-->115
+[0]: 116--(0)-->116
+[0]: 116--(0)-->141
+[0]: 116--(0)-->142
+[0]: 116--(0)-->147
+[0]: 116--(0)-->148
+[0]: 116--(0)-->204
+[0]: 116--(0)-->205
+base --> cap:
+[0]: 116<--(0)--115
+[0]: 116<--(0)--116
+[0]: 116<--(0)--204
+[0]: 116<--(0)--205
+[0]: 116<--(0)--320
+[0]: 116<--(0)--321
+[0]: 116<--(0)--324
+[0]: 116<--(0)--325
+[0]: 116<--(0)--371
+[0]: 116<--(0)--375
+[0]: 116<--(0)--379
+[0]: 116<--(0)--385
+[0]: 116<--(0)--466
+[0]: 116<--(0)--472
+[0]: 116<--(0)--478
+[0]: 116<--(0)--482
+[0]: 116<--(0)--496
+[0]: 116<--(0)--502
+[0]: 116<--(0)--529
+[0]: 116<--(0)--531
+[0]: 116<--(0)--533
+[0]: 116<--(0)--536
+[0]: 116<--(0)--538
+[0]: 116<--(0)--541
+
+Localized Adjacency:
+cap --> base:
+[0]: 116--(0)-->113
+[0]: 116--(0)-->114
+[0]: 116--(0)-->115
+[0]: 116--(0)-->116
+[0]: 116--(0)-->135
+[0]: 116--(0)-->136
+[0]: 116--(0)-->141
+[0]: 116--(0)-->142
+[0]: 116--(0)-->147
+[0]: 116--(0)-->148
+base --> cap:
+[0]: 116<--(0)--115
+[0]: 116<--(0)--116
+[0]: 116<--(0)--204
+[0]: 116<--(0)--205
+[0]: 116<--(0)--320
+[0]: 116<--(0)--321
+[0]: 116<--(0)--324
+[0]: 116<--(0)--325
+[0]: 116<--(0)--371
+[0]: 116<--(0)--375
+[0]: 116<--(0)--379
+[0]: 116<--(0)--385
+[0]: 116<--(0)--466
+[0]: 116<--(0)--472
+[0]: 116<--(0)--478
+[0]: 116<--(0)--482
+[0]: 116<--(0)--496
+[0]: 116<--(0)--502
+[0]: 116<--(0)--529
+[0]: 116<--(0)--531
+[0]: 116<--(0)--533
+[0]: 116<--(0)--536
+[0]: 116<--(0)--538
+[0]: 116<--(0)--541
+
+Final Adjacency:
+cap --> base:
+[0]: 116--(0)-->113
+[0]: 116--(0)-->114
+[0]: 116--(0)-->115
+[0]: 116--(0)-->116
+[0]: 116--(0)-->135
+[0]: 116--(0)-->136
+[0]: 116--(0)-->141
+[0]: 116--(0)-->142
+[0]: 116--(0)-->147
+[0]: 116--(0)-->148
+base --> cap:
+[0]: 116<--(0)--113
+[0]: 116<--(0)--114
+[0]: 116<--(0)--115
+[0]: 116<--(0)--116
+[0]: 116<--(0)--135
+[0]: 116<--(0)--136
+[0]: 116<--(0)--141
+[0]: 116<--(0)--142
+[0]: 116<--(0)--147
+[0]: 116<--(0)--148
+[0]: 116<--(0)--320
+[0]: 116<--(0)--321
+[0]: 116<--(0)--324
+[0]: 116<--(0)--325
+[0]: 116<--(0)--466
+[0]: 116<--(0)--472
+[0]: 116<--(0)--478
+[0]: 116<--(0)--482
+[0]: 116<--(0)--529
+[0]: 116<--(0)--531
+
+Allocation:
+342 -0-> {339(113/158.3), 340(114/161.2), 341(115/163.3), 342(116/166.2), 365(135/201.2), 366(136/203.3), 371(141/212.2), 372(142/214.3), 377(147/223.2), 378(148/225.3)} = 25 dof
+    -1-> {325(133/.3), 326(134/.2), 327(135/.3), 328(136/.2),   339(143/.3) 340(144/.2)} = 10 -- 15 dof
+    -2-> {329(134/.3), 330(135/.2), 343(140/.3), 344(141/.2),   327(132/.3) 328(133/.2) 371(144/.2) 372(145/.3) 377(146/.2) 378(147/.3)} = 10 -- 25 dof
+
+[0]: row 166: size 2 bs 1
+ [0]:   col 163: size 3 bs 1
+ [0]:   col 166: size 2 bs 1
+ [0]:   col 201: size 2 bs 1
+ [0]:   col 203: size 3 bs 1
+ [0]:   col -516: size 3 bs 1
+ [0]:   col -519: size 2 bs 1
+ [0]:   col -526: size 3 bs 1
+ [0]:   col -529: size 2 bs 1
+ [0]:   col 158: size 3 bs 1
+ [0]:   col 161: size 2 bs 1
+ [0]:   col 212: size 2 bs 1
+ [0]:   col 214: size 3 bs 1
+ [0]:   col -385: size 3 bs 1
+ [0]:   col -388: size 2 bs 1
+ [0]:   col -390: size 3 bs 1
+ [0]:   col -393: size 2 bs 1
+  [0]:   col -159: size 3 bs 1
+  [0]:   col -162: size 2 bs 1
+  [0]:   col -390: size 3 bs 1
+  [0]:   col -393: size 2 bs 1
+  [0]:   col -213: size 2 bs 1
+  [0]:   col -215: size 3 bs 1
+    [0]:   col -224: size 2 bs 1
+    [0]:   col -226: size 3 bs 1

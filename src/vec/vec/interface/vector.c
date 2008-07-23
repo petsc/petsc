@@ -7,13 +7,13 @@
 #include "private/vecimpl.h"    /*I "petscvec.h" I*/
 
 /* Logging support */
-PetscCookie PETSCVEC_DLLEXPORT VEC_COOKIE = 0;
-PetscEvent  VEC_View = 0, VEC_Max = 0, VEC_Min = 0, VEC_DotBarrier = 0, VEC_Dot = 0, VEC_MDotBarrier = 0, VEC_MDot = 0, VEC_TDot = 0;
-PetscEvent  VEC_Norm = 0, VEC_Normalize = 0, VEC_Scale = 0, VEC_Copy = 0, VEC_Set = 0, VEC_AXPY = 0, VEC_AYPX = 0, VEC_WAXPY = 0; 
-PetscEvent  VEC_MTDot = 0, VEC_NormBarrier = 0, VEC_MAXPY = 0, VEC_Swap = 0, VEC_AssemblyBegin = 0, VEC_ScatterBegin = 0, VEC_ScatterEnd = 0;
-PetscEvent  VEC_AssemblyEnd = 0, VEC_PointwiseMult = 0, VEC_SetValues = 0, VEC_Load = 0, VEC_ScatterBarrier = 0;
-PetscEvent  VEC_SetRandom = 0, VEC_ReduceArithmetic = 0, VEC_ReduceBarrier = 0, VEC_ReduceCommunication = 0;
-PetscEvent  VEC_DotNormBarrier = 0, VEC_DotNorm = 0;
+PetscCookie PETSCVEC_DLLEXPORT VEC_COOKIE;
+PetscLogEvent  VEC_View, VEC_Max, VEC_Min, VEC_DotBarrier, VEC_Dot, VEC_MDotBarrier, VEC_MDot, VEC_TDot;
+PetscLogEvent  VEC_Norm, VEC_Normalize, VEC_Scale, VEC_Copy, VEC_Set, VEC_AXPY, VEC_AYPX, VEC_WAXPY; 
+PetscLogEvent  VEC_MTDot, VEC_NormBarrier, VEC_MAXPY, VEC_Swap, VEC_AssemblyBegin, VEC_ScatterBegin, VEC_ScatterEnd;
+PetscLogEvent  VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load, VEC_ScatterBarrier;
+PetscLogEvent  VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
+PetscLogEvent  VEC_DotNormBarrier, VEC_DotNorm, VEC_AXPBYPCZ;
 
 EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 #undef __FUNCT__  
@@ -839,7 +839,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRanges(Vec x,const PetscInt *ra
   PetscFunctionBegin;
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidType(x,1);
-  ierr = PetscMapGetGlobalRange(&x->map,ranges);CHKERRQ(ierr);
+  ierr = PetscMapGetRanges(&x->map,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1281,7 +1281,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries (Vec vec)
 static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 {
   PetscTruth     opt;
-  const char     *defaultType;
+  const VecType  defaultType;
   char           typeName[256];
   PetscMPIInt    size;
   PetscErrorCode ierr;

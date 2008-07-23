@@ -38,7 +38,102 @@ struct _p_DMComposite {
   PetscInt               nDM,nredundant,nmine; /* how many DM's and seperate redundant arrays used to build DMComposite (nmine is ones on this process) */
   PetscTruth             setup;                /* after this is set, cannot add new links to the DMComposite */
   struct DMCompositeLink *next;
+
+  PetscErrorCode (*FormCoupleLocations)(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt);
+  void                   *ctx;                 /* place for user to set information they may need in FormCoupleLocation */
 };
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeSetCoupling"
+/*@C
+    DMCompositeSetCoupling - Sets user provided routines that compute the coupling between the 
+      seperate components (DA's and arrays) in a DMComposite to build the correct matrix nonzero structure.
+
+
+    Collective on MPI_Comm
+
+    Input Parameter:
++   dmcomposite - the composite object
+-   formcouplelocations - routine to set the nonzero locations in the matrix
+
+    Level: advanced
+
+    Notes: See DMCompositeSetContext() and DMCompositeGetContext() for how to get user information into
+        this routine
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeScatter(),
+         DMCompositeGather(), DMCompositeCreateGlobalVector(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess()
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(), DMCompositeSetContext(),
+         DMCompositeGetContext()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetCoupling(DMComposite dmcomposite,PetscErrorCode (*FormCoupleLocations)(DMComposite,Mat,PetscInt*,PetscInt*,PetscInt,PetscInt,PetscInt,PetscInt))
+{
+  PetscFunctionBegin;
+  dmcomposite->FormCoupleLocations = FormCoupleLocations;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeSetContext"
+/*@
+    DMCompositeSetContext - Allows user to stash data they may need within the form coupling routine they 
+      set with DMCompositeSetCoupling()
+
+
+    Not Collective
+
+    Input Parameter:
++   dmcomposite - the composite object
+-   ctx - the user supplied context
+
+    Level: advanced
+
+    Notes: Use DMCompositeGetContext() to retrieve the context when needed.
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeScatter(),
+         DMCompositeGather(), DMCompositeCreateGlobalVector(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess()
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(), DMCompositeSetCoupling(),
+         DMCompositeGetContext()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetContext(DMComposite dmcomposite,void *ctx)
+{
+  PetscFunctionBegin;
+  dmcomposite->ctx = ctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeGetContext"
+/*@
+    DMCompositeGetContext - Access the context set with DMCompositeSetContext()
+
+
+    Not Collective
+
+    Input Parameter:
+.   dmcomposite - the composite object
+
+    Output Parameter:
+.    ctx - the user supplied context
+
+    Level: advanced
+
+    Notes: Use DMCompositeGetContext() to retrieve the context when needed.
+
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDM(), DMCompositeScatter(),
+         DMCompositeGather(), DMCompositeCreateGlobalVector(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess()
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors(), DMCompositeGetEntries(), DMCompositeSetCoupling(),
+         DMCompositeSetContext()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetContext(DMComposite dmcomposite,void **ctx)
+{
+  PetscFunctionBegin;
+  *ctx = dmcomposite->ctx;
+  PetscFunctionReturn(0);
+}
 
 
 #undef __FUNCT__  
@@ -159,7 +254,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetUp(DMComposite packer)
   ierr = PetscMapSetBlockSize(&map,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&map);CHKERRQ(ierr);
   ierr = PetscMapGetSize(&map,&packer->N);CHKERRQ(ierr);
-  ierr = PetscMapGetLocalRange(&map,&packer->rstart,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMapGetRange(&map,&packer->rstart,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(map.range);CHKERRQ(ierr);
     
   /* now set the rstart for each linked array/vector */
@@ -348,8 +443,6 @@ PetscErrorCode DMCompositeGather_DM(DMComposite packer,struct DMCompositeLink *m
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetNumberDM(DMComposite packer,PetscInt *nDM)
 {
-  PetscErrorCode         ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(packer,DM_COOKIE,1);
   *nDM = packer->nDM;
@@ -1540,7 +1633,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetInterpolation(DMComposite coarse,
 .seealso DAGetMatrix(), DMCompositeCreate()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatType mtype,Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, const MatType mtype,Mat *J)
 {
   PetscErrorCode         ierr;
   struct DMCompositeLink *next = packer->next;
@@ -1632,6 +1725,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
     }
     next = next->next;
   }
+  if (packer->FormCoupleLocations) {
+    ierr = (*packer->FormCoupleLocations)(packer,PETSC_NULL,dnz,onz,__rstart,__nrows,__start,__end);CHKERRQ(ierr);
+  }
   ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -1681,6 +1777,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
     }
     next = next->next;
   }
+  if (packer->FormCoupleLocations) {
+    PetscInt __rstart;
+    ierr = MatGetOwnershipRange(*J,&__rstart,PETSC_NULL);CHKERRQ(ierr);
+    ierr = (*packer->FormCoupleLocations)(packer,*J,PETSC_NULL,PETSC_NULL,__rstart,0,0,0);CHKERRQ(ierr);
+  }
   ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
@@ -1703,7 +1804,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
 
     Level: advanced
 
-    Notes: This currentlu uses one color per column so is very slow.
+    Notes: This colors each diagonal block (associated with a single DM) with a different set of colors;
+      this it will compute the diagonal blocks of the Jacobian correctly. The off diagonal blocks are
+      not computed, hence the Jacobian computed is not the entire Jacobian. If -dmcomposite_dense_jacobian
+      is used then each column of the Jacobian is given a different color so the full Jacobian is computed
+      correctly.
 
     Notes: These compute the graph coloring of the graph of A^{T}A. The coloring used 
    for efficient (parallel or thread based) triangular solves etc is NOT yet 
@@ -1715,9 +1820,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,ISColoringType ctype,ISColoring *coloring)
 {
-  PetscErrorCode  ierr;
-  PetscInt        n,i;
-  ISColoringValue *colors;
+  PetscErrorCode         ierr;
+  PetscInt               n,i,cnt;
+  ISColoringValue        *colors;
+  PetscTruth             dense = PETSC_FALSE;
+  ISColoringValue        maxcol = 0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(dmcomposite,DM_COOKIE,1);
@@ -1726,12 +1833,44 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
   } else if (ctype == IS_COLORING_GLOBAL) {
     n = dmcomposite->n;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");
-
   ierr = PetscMalloc(n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr); /* freed in ISColoringDestroy() */
-  for (i=0; i<n; i++) {
-    colors[i] = (ISColoringValue)(dmcomposite->rstart + i);
+
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmcomposite_dense_jacobian",&dense,PETSC_NULL);CHKERRQ(ierr);
+  if (dense) {
+    for (i=0; i<n; i++) {
+      colors[i] = (ISColoringValue)(dmcomposite->rstart + i);
+    }
+    maxcol = dmcomposite->N;
+  } else {
+    struct DMCompositeLink *next = dmcomposite->next;
+    PetscMPIInt            rank;
+  
+    ierr = MPI_Comm_rank(dmcomposite->hdr.comm,&rank);CHKERRQ(ierr);
+    cnt  = 0;
+    while (next) {
+      if (next->type == DMCOMPOSITE_ARRAY) {
+        if (rank == next->rank) {  /* each column gets is own color */
+          for (i=dmcomposite->rstart+next->rstart; i<dmcomposite->rstart+next->rstart+next->n; i++) {
+            colors[cnt++] = maxcol++;
+          }
+        }
+        ierr = MPI_Bcast(&maxcol,1,MPIU_COLORING_VALUE,next->rank,dmcomposite->hdr.comm);CHKERRQ(ierr);
+      } else if (next->type == DMCOMPOSITE_DM) {
+        ISColoring     lcoloring;
+
+        ierr = DMGetColoring(next->dm,IS_COLORING_GLOBAL,&lcoloring);CHKERRQ(ierr);
+        for (i=0; i<lcoloring->N; i++) {
+          colors[cnt++] = maxcol + lcoloring->colors[i];
+        }
+        maxcol += lcoloring->n;
+        ierr = ISColoringDestroy(lcoloring);CHKERRQ(ierr);
+      } else {
+        SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      }
+      next = next->next;
+    }
   }
-  ierr = ISColoringCreate(((PetscObject)dmcomposite)->comm,dmcomposite->N,n,colors,coloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(((PetscObject)dmcomposite)->comm,maxcol,n,colors,coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

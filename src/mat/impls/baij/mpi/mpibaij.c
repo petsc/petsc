@@ -1953,65 +1953,72 @@ EXTERN_C_BEGIN
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPISBAIJ(Mat, MatType,MatReuse,Mat*);
 EXTERN_C_END
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR_MPIBAIJ"
-PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const PetscInt Ii[],const PetscInt J[],const PetscScalar v[])
+PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const PetscInt I[],const PetscInt J[],const PetscScalar V[])
 {
-  Mat_MPIBAIJ    *baij = (Mat_MPIBAIJ*)B->data;
-  PetscInt       m = B->rmap.n/bs,cstart = baij->cstartbs, cend = baij->cendbs,j,nnz,i,d; 
-  PetscInt       *d_nnz,*o_nnz,nnz_max = 0,rstart = baij->rstartbs,ii;
-  const PetscInt *JJ;
-  PetscScalar    *values;
+  PetscInt       m,rstart,cstart,cend;
+  PetscInt       i,j,d,nz,nz_max=0,*d_nnz=0,*o_nnz=0;
+  const PetscInt *JJ=0;
+  PetscScalar    *values=0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-#if defined(PETSC_OPT_g)
-  if (Ii[0]) SETERRQ1(PETSC_ERR_ARG_RANGE,"Ii[0] must be 0 it is %D",Ii[0]);
-#endif
+
+  if (bs < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
+  B->rmap.bs = bs;
+  B->cmap.bs = bs;
+  ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
+  m      = B->rmap.n/bs;
+  rstart = B->rmap.rstart/bs;
+  cstart = B->cmap.rstart/bs;
+  cend   = B->cmap.rend/bs;
+
+  if (I[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"I[0] must be 0 but it is %D",I[0]);
   ierr  = PetscMalloc((2*m+1)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
   o_nnz = d_nnz + m;
-
   for (i=0; i<m; i++) {
-    nnz     = Ii[i+1]- Ii[i];
-    JJ      = J + Ii[i];
-    nnz_max = PetscMax(nnz_max,nnz);
-#if defined(PETSC_OPT_g)
-    if (nnz < 0) SETERRQ1(PETSC_ERR_ARG_RANGE,"Local row %D has a negative %D number of columns",i,nnz);
-#endif
-    for (j=0; j<nnz; j++) {
+    nz = I[i+1] - I[i];
+    if (nz < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative number of columns %D",i,nz);
+    nz_max = PetscMax(nz_max,nz);
+    JJ  = J + I[i];
+    for (j=0; j<nz; j++) {
       if (*JJ >= cstart) break;
       JJ++;
     }
     d = 0;
-    for (; j<nnz; j++) {
+    for (; j<nz; j++) {
       if (*JJ++ >= cend) break;
       d++;
     }
     d_nnz[i] = d; 
-    o_nnz[i] = nnz - d;
+    o_nnz[i] = nz - d;
   }
   ierr = MatMPIBAIJSetPreallocation(B,bs,0,d_nnz,0,o_nnz);CHKERRQ(ierr);
   ierr = PetscFree(d_nnz);CHKERRQ(ierr);
 
-  if (v) values = (PetscScalar*)v;
-  else {
-    ierr = PetscMalloc(bs*bs*(nnz_max+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
-    ierr = PetscMemzero(values,bs*bs*nnz_max*sizeof(PetscScalar));CHKERRQ(ierr);
+  values = (PetscScalar*)V;
+  if (!values) {
+    ierr = PetscMalloc(bs*bs*(nz_max+1)*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+    ierr = PetscMemzero(values,bs*bs*nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
+  }
+  for (i=0; i<m; i++) {
+    PetscInt          row    = i + rstart;
+    PetscInt          ncols  = I[i+1] - I[i];
+    const PetscInt    *icols = J + I[i];
+    const PetscScalar *svals = values + (V ? (bs*bs*I[i]) : 0);
+    ierr = MatSetValuesBlocked_MPIBAIJ(B,1,&row,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
   }
 
-  for (i=0; i<m; i++) {
-    ii   = i + rstart;
-    nnz  = Ii[i+1]- Ii[i];
-    ierr = MatSetValuesBlocked_MPIBAIJ(B,1,&ii,nnz,J+Ii[i],values+(v ? Ii[i] : 0),INSERT_VALUES);CHKERRQ(ierr);
-  }
+  if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-  if (!v) {
-    ierr = PetscFree(values);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR"
@@ -2559,7 +2566,7 @@ static PetscErrorCode MatDuplicate_MPIBAIJ(Mat matin,MatDuplicateOption cpvalues
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLoad_MPIBAIJ"
-PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
+PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, const MatType type,Mat *newmat)
 {
   Mat            A;
   PetscErrorCode ierr;

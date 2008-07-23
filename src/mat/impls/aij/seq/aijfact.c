@@ -917,21 +917,23 @@ PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
 #define __FUNCT__ "MatSolve_SeqAIJ_NaturalOrdering"
 PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
-  PetscErrorCode  ierr;
-  PetscInt        n = A->rmap.n,*ai = a->i,*aj = a->j,*adiag = a->diag;
-  PetscScalar     *x,*b;
-  const MatScalar *aa = a->a;
+  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode    ierr;
+  PetscInt          n = A->rmap.n;
+  const PetscInt    *ai = a->i,*aj = a->j,*adiag = a->diag,*vi;
+  PetscScalar       *x;
+  const PetscScalar *b;
+  const MatScalar   *aa = a->a;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
-  PetscInt        adiag_i,i,*vi,nz,ai_i;
-  const MatScalar *v;
-  PetscScalar     sum;
+  PetscInt          adiag_i,i,nz,ai_i;
+  const MatScalar   *v;
+  PetscScalar       sum;
 #endif
 
   PetscFunctionBegin;
   if (!n) PetscFunctionReturn(0);
 
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_SOLVEAIJ)
@@ -961,7 +963,7 @@ PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat A,Vec bb,Vec xx)
   }
 #endif
   ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1160,6 +1162,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   PetscTruth         missing;
 
   PetscFunctionBegin;
+  if (A->rmap.n != A->cmap.n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap.n,A->cmap.n);
   f             = info->fill;
   levels        = (PetscInt)info->levels;
   diagonal_fill = (PetscInt)info->diagonal_fill;
@@ -1484,6 +1487,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   IS                 iperm;  
   
   PetscFunctionBegin;   
+  if (A->rmap.n != A->cmap.n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap.n,A->cmap.n);
   ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
   if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
@@ -1685,6 +1689,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
   IS                 iperm;  
 
   PetscFunctionBegin;
+  if (A->rmap.n != A->cmap.n) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",A->rmap.n,A->cmap.n);
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);  
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);

@@ -23,6 +23,7 @@ struct _TSOps {
   PetscErrorCode (*rhsjacobian)(TS, PetscReal, Vec, Mat *, Mat *, MatStructure *, void *);
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*update)(TS, PetscReal, PetscReal *);
+  PetscErrorCode (*postupdate)(TS, PetscReal, PetscReal *);
   PetscErrorCode (*poststep)(TS);
   PetscErrorCode (*reform)(TS);
   PetscErrorCode (*reallocate)(TS);
@@ -85,6 +86,6 @@ struct _p_TS {
 EXTERN PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
 EXTERN PetscErrorCode TSScaleShiftMatrices(TS,Mat,Mat,MatStructure);
 
-extern PetscEvent    TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
+extern PetscLogEvent TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 #endif

@@ -6,8 +6,8 @@
 PetscFList MatMFFDPetscFList        = 0;
 PetscTruth MatMFFDRegisterAllCalled = PETSC_FALSE;
 
-PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE = 0;
-PetscEvent  MATMFFD_Mult = 0;
+PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE;
+PetscLogEvent  MATMFFD_Mult;
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDInitializePackage"
@@ -36,11 +36,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&MATMFFD_COOKIE,     "MatMFFD");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("MatMFFD",&MATMFFD_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = MatMFFDRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&MATMFFD_Mult, "MatMult MF",          MATMFFD_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMult MF",          MATMFFD_COOKIE,&MATMFFD_Mult);CHKERRQ(ierr);
 
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
@@ -84,7 +84,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[])
 
 .seealso: MatCreateSNESMF(), MatMFFDRegisterDynamic)
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,MatMFFDType ftype)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,const MatMFFDType ftype)
 {
   PetscErrorCode ierr,(*r)(MatMFFD);
   MatMFFD        ctx = (MatMFFD)mat->data;

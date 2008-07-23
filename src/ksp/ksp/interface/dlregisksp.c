@@ -34,19 +34,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&PC_COOKIE,   "Preconditioner");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Preconditioner",&PC_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = PCRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&PC_SetUp,                   "PCSetUp",          PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_SetUpOnBlocks,           "PCSetUpOnBlocks",  PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ApplyOnBlocks,           "PCApplyOnBlocks",  PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_Apply,                   "PCApply",          PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ApplyCoarse,             "PCApplyCoarse",    PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ApplyMultiple,           "PCApplyMultiple",  PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ApplySymmetricLeft,      "PCApplySymmLeft",  PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ApplySymmetricRight,     "PCApplySymmRight", PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ModifySubMatrices,       "PCModifySubMatri", PC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCSetUp",          PC_COOKIE,&PC_SetUp);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCSetUpOnBlocks",  PC_COOKIE,&PC_SetUpOnBlocks);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCApplyOnBlocks",  PC_COOKIE,&PC_ApplyOnBlocks);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCApply",          PC_COOKIE,&PC_Apply);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCApplyCoarse",    PC_COOKIE,&PC_ApplyCoarse);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCApplyMultiple",  PC_COOKIE,&PC_ApplyMultiple);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCApplySymmLeft",  PC_COOKIE,&PC_ApplySymmetricLeft);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCApplySymmRight", PC_COOKIE,&PC_ApplySymmetricRight);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("PCModifySubMatri", PC_COOKIE,&PC_ModifySubMatrices);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
@@ -103,13 +103,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitializePackage(const char path[]) {
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&KSP_COOKIE,  "Krylov Solver");CHKERRQ(ierr);
+  ierr = PetscCookieRegister("Krylov Solver",&KSP_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = KSPRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&KSP_GMRESOrthogonalization, "KSPGMRESOrthog",   KSP_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&KSP_SetUp,                  "KSPSetup",         KSP_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&KSP_Solve,                  "KSPSolve",         KSP_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPGMRESOrthog",   KSP_COOKIE,&KSP_GMRESOrthogonalization);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPSetup",         KSP_COOKIE,&KSP_SetUp);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("KSPSolve",         KSP_COOKIE,&KSP_Solve);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {

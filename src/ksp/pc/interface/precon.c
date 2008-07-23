@@ -6,9 +6,9 @@
 #include "private/pcimpl.h"            /*I "petscksp.h" I*/
 
 /* Logging support */
-PetscCookie PC_COOKIE = 0;
-PetscEvent  PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
-PetscEvent  PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks;
+PetscCookie    PC_COOKIE;
+PetscLogEvent  PC_SetUp, PC_SetUpOnBlocks, PC_Apply, PC_ApplyCoarse, PC_ApplyMultiple, PC_ApplySymmetricLeft;
+PetscLogEvent  PC_ApplySymmetricRight, PC_ModifySubMatrices, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGetDefaultType_Private"
@@ -1424,7 +1424,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC pc,KSP ksp)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
 {
-  PCType            cstr;
+  const PCType      cstr;
   PetscErrorCode    ierr;
   PetscTruth        mat_exists,iascii,isstring;
   PetscViewerFormat format;
@@ -1566,6 +1566,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegister(const char sname[],const char path[
     Level: advanced
    
 .keywords: PC, compute, explicit, operator
+
+.seealso: KSPComputeExplicitOperator()
 
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC pc,Mat *mat)

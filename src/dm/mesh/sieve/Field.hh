@@ -215,7 +215,7 @@ namespace ALE {
       const chart_type& chart = section->getChart();
 
       this->addPoint(chart);
-      this->_value[0] = section->restrict()[0];
+      this->_value[0] = section->restrictSpace()[0];
       this->setDefaultValue(section->getDefaultValue());
     };
   public: // Sizes
@@ -248,24 +248,21 @@ namespace ALE {
     int size(const point_type& p) {return this->getFiberDimension(p);};
     void allocatePoint() {};
   public: // Restriction
-    const value_type *restrict() const {
+    const value_type *restrictSpace() const {
       return this->_value;
     };
-    const value_type *restrict(const point_type& p) const {
+    const value_type *restrictPoint(const point_type& p) const {
       if (this->hasPoint(p)) {
         return this->_value;
       }
       return &this->_value[1];
     };
-    const value_type *restrictPoint(const point_type& p) const {return this->restrict(p);};
-    void update(const point_type& p, const value_type v[]) {
+    void updatePoint(const point_type& p, const value_type v[]) {
       this->_value[0] = v[0];
     };
-    void updatePoint(const point_type& p, const value_type v[]) {return this->update(p, v);};
-    void updateAdd(const point_type& p, const value_type v[]) {
+    void updateAddPoint(const point_type& p, const value_type v[]) {
       this->_value[0] += v[0];
     };
-    void updateAddPoint(const point_type& p, const value_type v[]) {return this->updateAdd(p, v);};
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
       ostringstream txt;
@@ -323,7 +320,7 @@ namespace ALE {
       atlas_alloc_type(this->_allocator).construct(pAtlas, atlas_type(comm, debug));
       this->_atlas = Obj<atlas_type>(pAtlas, sizeof(atlas_type));
       int dim = fiberDim;
-      this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
+      this->_atlas->updatePoint(*this->_atlas->getChart().begin(), &dim);
       for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
     UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _contiguous_array_size(0), _contiguous_array(NULL), _atlas(atlas) {
@@ -438,7 +435,7 @@ namespace ALE {
     };
     void allocatePoint() {};
   public: // Restriction
-    const value_type *restrict() {
+    const value_type *restrictSpace() {
       const chart_type& chart = this->getChart();
       const value_type  dummy = 0;
       int               k     = 0;
@@ -528,7 +525,7 @@ namespace ALE {
 
       for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const point_type&                     point = *p_iter;
-        const typename atlas_type::value_type dim   = this->_atlas->restrict(point)[0];
+        const typename atlas_type::value_type dim   = this->_atlas->restrictPoint(point)[0];
 
         if (dim != 0) {
           txt << "[" << this->commRank() << "]:   " << point << " dim " << dim << "  ";
@@ -579,7 +576,7 @@ namespace ALE {
     void addPoint(const Points& points) {
     };
     void copy(const Obj<FauxConstantSection>& section) {
-      this->_value = section->restrict(point_type())[0];
+      this->_value = section->restrictPoint(point_type())[0];
     };
   public: // Sizes
     void clear() {
@@ -602,18 +599,15 @@ namespace ALE {
     };
     int size(const point_type& p) {return this->getFiberDimension(p);};
   public: // Restriction
-    const value_type *restrict(const point_type& p) const {
+    const value_type *restrictPoint(const point_type& p) const {
       return &this->_value;
     };
-    const value_type *restrictPoint(const point_type& p) const {return this->restrict(p);};
-    void update(const point_type& p, const value_type v[]) {
+    void updatePoint(const point_type& p, const value_type v[]) {
       this->_value = v[0];
     };
-    void updatePoint(const point_type& p, const value_type v[]) {return this->update(p, v);};
-    void updateAdd(const point_type& p, const value_type v[]) {
+    void updateAddPoint(const point_type& p, const value_type v[]) {
       this->_value += v[0];
     };
-    void updateAddPoint(const point_type& p, const value_type v[]) {return this->updateAdd(p, v);};
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
       ostringstream txt;
@@ -831,7 +825,7 @@ namespace ALE {
     void allocatePoint() {};
   public: // Restriction
     // Return a pointer to the entire contiguous storage array
-    const value_type *restrict() {
+    const value_type *restrictSpace() {
       const chart_type& chart = this->getChart();
       const value_type  dummy = 0;
       int               k     = 0;
@@ -1005,6 +999,8 @@ namespace ALE {
       return this->_atlas->hasPoint(point);
     };
   public: // Accessors
+    const chart_type& getChart() {return this->_atlas->getChart();};
+    void setChart(chart_type& chart) {};
     const Obj<atlas_type>& getAtlas() {return this->_atlas;};
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
     const Obj<atlas_type>& getNewAtlas() {return this->_atlasNew;};
@@ -1202,7 +1198,7 @@ namespace ALE {
       memset(this->_array, 0, this->size()* sizeof(value_type));
     };
     // Return a pointer to the entire contiguous storage array
-    const value_type *restrict() {
+    const value_type *restrictSpace() {
       return this->_array;
     };
     // Update the entire contiguous storage array
@@ -1349,7 +1345,7 @@ namespace ALE {
   //   Storage will be contiguous by node, just as in Section
   //     This allows fast restrict(p)
   //     Then update() is accomplished by skipping constrained unknowns
-  //     We must eliminate restrict() since it does not correspond to the constrained system
+  //     We must eliminate restrictSpace() since it does not correspond to the constrained system
   //   Numbering will have to be rewritten to calculate correct mappings
   //     I think we can just generate multiple tuples per point
   template<typename Point_, typename Value_, typename Alloc_ = malloc_allocator<Value_>,
@@ -1812,7 +1808,7 @@ namespace ALE {
       }
     };
     // Return the free values on a point
-    const value_type *restrict() const {
+    const value_type *restrictSpace() const {
       return this->_array;
     };
     // Return the free values on a point
@@ -2650,7 +2646,7 @@ namespace ALE {
       }
     };
     // Return the free values on a point
-    const value_type *restrict() const {
+    const value_type *restrictSpace() const {
       return this->_array;
     };
     // Return the free values on a point
@@ -3337,10 +3333,10 @@ namespace ALE {
 
         if (requestType == RECEIVE) {
           if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Receiving data(" << section->size() << ") from " << patch << " tag " << this->_tag << std::endl;}
-          MPI_Recv_init((void *) section->restrict(), section->size(), this->_datatype, patch, this->_tag, this->comm(), &request);
+          MPI_Recv_init((void *) section->restrictSpace(), section->size(), this->_datatype, patch, this->_tag, this->comm(), &request);
         } else {
           if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Sending data (" << section->size() << ") to " << patch << " tag " << this->_tag << std::endl;}
-          MPI_Send_init((void *) section->restrict(), section->size(), this->_datatype, patch, this->_tag, this->comm(), &request);
+          MPI_Send_init((void *) section->restrictSpace(), section->size(), this->_datatype, patch, this->_tag, this->comm(), &request);
         }
         this->_requests[patch] = request;
       }

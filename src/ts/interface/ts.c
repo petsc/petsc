@@ -3,8 +3,8 @@
 #include "include/private/tsimpl.h"        /*I "petscts.h"  I*/
 
 /* Logging support */
-PetscCookie PETSCTS_DLLEXPORT TS_COOKIE = 0;
-PetscEvent  TS_Step = 0, TS_PseudoComputeTimeStep = 0, TS_FunctionEval = 0, TS_JacobianEval = 0;
+PetscCookie PETSCTS_DLLEXPORT TS_COOKIE;
+PetscLogEvent  TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetTypeFromOptions"
@@ -69,7 +69,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 
 .keywords: TS, timestep, set, options, database
 
-.seealso: TSGetType
+.seealso: TSGetType()
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
 {
@@ -475,7 +475,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 
    The routine func() takes Mat * as the matrix arguments rather than Mat.  
    This allows the matrix evaluation routine to replace A and/or B with a 
-   completely new new matrix structure (not just different matrix elements)
+   completely new matrix structure (not just different matrix elements)
    when appropriate, for instance, if the nonzero structure is changing
    throughout the global iterations.
 
@@ -540,7 +540,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCo
 PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  char           *type;
+  const TSType   type;
   PetscTruth     iascii,isstring;
 
   PetscFunctionBegin;
@@ -555,7 +555,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"TS Object:\n");CHKERRQ(ierr);
-    ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
+    ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     if (type) {
       ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",type);CHKERRQ(ierr);
     } else {
@@ -573,7 +573,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",ts->linear_its);CHKERRQ(ierr);
   } else if (isstring) {
-    ierr = TSGetType(ts,(TSType *)&type);CHKERRQ(ierr);
+    ierr = TSGetType(ts,&type);CHKERRQ(ierr);
     ierr = PetscViewerStringSPrintf(viewer," %-7.7s",type);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -1154,6 +1154,36 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetUpdate(TS ts, PetscErrorCode (*func)(TS, P
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
   ts->ops->update = func;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetPostUpdate"
+/*@C
+  TSSetPostUpdate - Sets the general-purpose update function called
+  after every time step. 
+
+  Collective on TS
+
+  Input Parameters:
++ ts   - The TS context obtained from TSCreate()
+- func - The function
+
+  Calling sequence of func:
+. func (TS ts, double t, double *dt);
+
++ t   - The current time
+- dt  - The current time step
+
+  Level: intermediate
+
+.keywords: TS, update, timestep
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetPostUpdate(TS ts, PetscErrorCode (*func)(TS, PetscReal, PetscReal *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
+  ts->ops->postupdate = func;
   PetscFunctionReturn(0);
 }
 

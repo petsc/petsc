@@ -26,11 +26,11 @@
 !                   Variable declarations
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
-      PetscEvent USER_EVENT1,USER_EVENT2
-      PetscEvent USER_EVENT3,USER_EVENT4
-      PetscEvent USER_EVENT5,USER_EVENT6
-      PetscEvent USER_EVENT7,USER_EVENT8
-      PetscEvent USER_EVENT9
+      PetscLogEvent USER_EVENT1,USER_EVENT2
+      PetscLogEvent USER_EVENT3,USER_EVENT4
+      PetscLogEvent USER_EVENT5,USER_EVENT6
+      PetscLogEvent USER_EVENT7,USER_EVENT8
+      PetscLogEvent USER_EVENT9
       integer imax
       PetscErrorCode ierr
       parameter (imax = 10000)
@@ -49,15 +49,15 @@
 !      - The user can also optionally log floating point operations
 !        with the routine PetscLogFlops().
 !
-      call PetscLogEventRegister(USER_EVENT1,'Event 1',0,ierr)
-      call PetscLogEventRegister(USER_EVENT2,'Event 2',0,ierr)
-      call PetscLogEventRegister(USER_EVENT3,'Event 3',0,ierr)
-      call PetscLogEventRegister(USER_EVENT4,'Event 4',0,ierr)
-      call PetscLogEventRegister(USER_EVENT5,'Event 5',0,ierr)
-      call PetscLogEventRegister(USER_EVENT6,'Event 6',0,ierr)
-      call PetscLogEventRegister(USER_EVENT7,'Event 7',0,ierr)
-      call PetscLogEventRegister(USER_EVENT8,'Event 8',0,ierr)
-      call PetscLogEventRegister(USER_EVENT9,'Event 9',0,ierr)
+      call PetscLogEventRegister('Event 1',0,USER_EVENT1,ierr)
+      call PetscLogEventRegister('Event 2',0,USER_EVENT2,ierr)
+      call PetscLogEventRegister('Event 3',0,USER_EVENT3,ierr)
+      call PetscLogEventRegister('Event 4',0,USER_EVENT4,ierr)
+      call PetscLogEventRegister('Event 5',0,USER_EVENT5,ierr)
+      call PetscLogEventRegister('Event 6',0,USER_EVENT6,ierr)
+      call PetscLogEventRegister('Event 7',0,USER_EVENT7,ierr)
+      call PetscLogEventRegister('Event 8',0,USER_EVENT8,ierr)
+      call PetscLogEventRegister('Event 9',0,USER_EVENT9,ierr)
       call PetscLogEventBegin(USER_EVENT1,ierr)
       call PetscLogFlops(imax,ierr)
       call PetscSleep(1,ierr)

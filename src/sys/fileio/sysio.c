@@ -30,8 +30,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
 {
   PetscInt   i,j;
   PetscEnum   tmp = ENUM_DUMMY;
-  PetscEnum  *tptr = &tmp;             /* Need to access tmp indirectly to get */
-  char       *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+  char       *ptr1,*ptr2 = (char*)&tmp;
                                    
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
@@ -39,7 +38,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapEnum(PetscEnum *buff,PetscInt n)
     for (i=0; i<(PetscInt)sizeof(PetscEnum); i++) {
       ptr2[i] = ptr1[sizeof(PetscEnum)-1-i];
     }
-    buff[j] = *tptr;
+    for (i=0; i<(PetscInt)sizeof(PetscEnum); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -54,8 +55,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapTruth(PetscTruth *buff,PetscInt n)
 {
   PetscInt    i,j;
   PetscTruth  tmp = PETSC_FALSE;
-  PetscTruth  *tptr = &tmp;             /* Need to access tmp indirectly to get */
-  char        *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+  char        *ptr1,*ptr2 = (char*)&tmp;
                                    
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
@@ -63,7 +63,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapTruth(PetscTruth *buff,PetscInt n)
     for (i=0; i<(PetscInt)sizeof(PetscTruth); i++) {
       ptr2[i] = ptr1[sizeof(PetscTruth)-1-i];
     }
-    buff[j] = *tptr;
+    for (i=0; i<(PetscInt)sizeof(PetscTruth); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -77,8 +79,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapTruth(PetscTruth *buff,PetscInt n)
 PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(PetscInt *buff,PetscInt n)
 {
   PetscInt  i,j,tmp = 0;
-  PetscInt  *tptr = &tmp;             /* Need to access tmp indirectly to get */
-  char       *ptr1,*ptr2 = (char*)&tmp; /* arround the bug in DEC-ALPHA g++ */
+  char       *ptr1,*ptr2 = (char*)&tmp;
                                    
   PetscFunctionBegin;
   for (j=0; j<n; j++) {
@@ -86,7 +87,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapInt(PetscInt *buff,PetscInt n)
     for (i=0; i<(PetscInt)sizeof(PetscInt); i++) {
       ptr2[i] = ptr1[sizeof(PetscInt)-1-i];
     }
-    buff[j] = *tptr;
+    for (i=0; i<(PetscInt)sizeof(PetscInt); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -100,7 +103,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapShort(short *buff,PetscInt n)
 {
   PetscInt   i,j;
   short      tmp;
-  short      *tptr = &tmp;           /* take care pf bug in DEC-ALPHA g++ */
   char       *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
@@ -109,7 +111,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapShort(short *buff,PetscInt n)
     for (i=0; i<(PetscInt) sizeof(short); i++) {
       ptr2[i] = ptr1[sizeof(int)-1-i];
     }
-    buff[j] = *tptr;
+    for (i=0; i<(PetscInt) sizeof(short); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -124,7 +128,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapScalar(PetscScalar *buff,PetscInt n)
 {
   PetscInt  i,j;
   PetscReal tmp,*buff1 = (PetscReal*)buff;
-  PetscReal *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
   char      *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
@@ -136,7 +139,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapScalar(PetscScalar *buff,PetscInt n)
     for (i=0; i<(PetscInt) sizeof(PetscReal); i++) {
       ptr2[i] = ptr1[sizeof(PetscReal)-1-i];
     }
-    buff1[j] = *tptr;
+    for (i=0; i<(PetscInt) sizeof(PetscReal); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -150,7 +155,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
 {
   PetscInt i,j;
   double   tmp,*buff1 = (double*)buff;
-  double   *tptr = &tmp;          /* take care pf bug in DEC-ALPHA g++ */
   char     *ptr1,*ptr2 = (char*)&tmp;
 
   PetscFunctionBegin;
@@ -159,10 +163,29 @@ PetscErrorCode PETSC_DLLEXPORT PetscByteSwapDouble(double *buff,PetscInt n)
     for (i=0; i<(PetscInt) sizeof(double); i++) {
       ptr2[i] = ptr1[sizeof(double)-1-i];
     }
-    buff1[j] = *tptr;
+    for (i=0; i<(PetscInt) sizeof(double); i++) {
+      ptr1[i] = ptr2[i];
+    }
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscByteSwap"
+PetscErrorCode PetscByteSwap(void *data,PetscDataType pdtype,PetscInt count)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if      (pdtype == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt*)data,count);CHKERRQ(ierr);}
+  else if (pdtype == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)data,count);CHKERRQ(ierr);}        
+  else if (pdtype == PETSC_TRUTH)  {ierr = PetscByteSwapTruth((PetscTruth*)data,count);CHKERRQ(ierr);}        
+  else if (pdtype == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)data,count);CHKERRQ(ierr);}
+  else if (pdtype == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)data,count);CHKERRQ(ierr);}
+  else if (pdtype == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)data,count);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 #endif
 /* --------------------------------------------------------- */
 #undef __FUNCT__  
@@ -231,12 +254,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
     pp += err;
   }
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)ptmp,n);CHKERRQ(ierr);}        
-  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapTruth((PetscTruth*)ptmp,n);CHKERRQ(ierr);}        
-  else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
+  ierr = PetscByteSwap(ptmp,type,n);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);
@@ -307,12 +325,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
   else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown type");
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
-  if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)ptmp,n);CHKERRQ(ierr);}          
-  else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapTruth((PetscTruth*)ptmp,n);CHKERRQ(ierr);}          
-  else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
-  else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
+  ierr = PetscByteSwap(ptmp,type,n);CHKERRQ(ierr);
 #endif
 
   while (m) {
@@ -326,12 +339,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
 
 #if !defined(PETSC_WORDS_BIGENDIAN)
   if (!istemp) {
-    if      (type == PETSC_INT)    {ierr = PetscByteSwapInt((PetscInt*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_DOUBLE) {ierr = PetscByteSwapDouble((double*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_ENUM)   {ierr = PetscByteSwapEnum((PetscEnum*)ptmp,n);CHKERRQ(ierr);}
-    else if (type == PETSC_TRUTH)  {ierr = PetscByteSwapTruth((PetscTruth*)ptmp,n);CHKERRQ(ierr);}
+    ierr = PetscByteSwap(ptmp,type,n);CHKERRQ(ierr);
   }
 #endif
   PetscFunctionReturn(0);
@@ -622,3 +630,88 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedSeek(MPI_Comm comm,int fd,
   PetscFunctionReturn(0);
 }
 
+#if defined(PETSC_HAVE_MPIIO)
+#if !defined(PETSC_WORDS_BIGENDIAN)
+
+#if defined(PETSC_USE_PETSC_MPI_EXTERNAL32)
+EXTERN_C_BEGIN
+/*
+      MPICH does not provide the external32 representation for MPI_File_set_view() so we need to provide the functions.
+    These are set into MPI in PetscInitialize() via MPI_Register_datarep()
+
+    Note I use PetscMPIInt for the MPI error codes since that is what MPI uses (instead of the standard PetscErrorCode)
+
+    The next three routines are not used because MPICH does not support their use
+
+*/
+PetscMPIInt PetscDataRep_extent_fn(MPI_Datatype datatype,MPI_Aint *file_extent,void *extra_state) 
+{
+  MPI_Aint    ub;
+  PetscMPIInt ierr;
+  
+  ierr = MPI_Type_get_extent(datatype,&ub,file_extent);
+  return ierr;
+}
+
+PetscMPIInt PetscDataRep_read_conv_fn(void *userbuf, MPI_Datatype datatype,PetscMPIInt count,void *filebuf, MPI_Offset position,void *extra_state) 
+{
+  PetscDataType pdtype;
+  PetscMPIInt   ierr;
+  size_t        dsize;
+  
+  ierr = PetscMPIDataTypeToPetscDataType(datatype,&pdtype);CHKERRQ(ierr);
+  ierr = PetscDataTypeGetSize(pdtype,&dsize);CHKERRQ(ierr);
+
+  /* offset is given in units of MPI_Datatype */
+  userbuf = ((char *)userbuf) + dsize*position;
+
+  ierr = PetscMemcpy(userbuf,filebuf,count*dsize);CHKERRQ(ierr);
+  ierr = PetscByteSwap(userbuf,pdtype,count);CHKERRQ(ierr);
+  return ierr;
+}
+
+PetscMPIInt PetscDataRep_write_conv_fn(void *userbuf, MPI_Datatype datatype,PetscMPIInt count,void *filebuf, MPI_Offset position,void *extra_state) 
+{
+  PetscDataType pdtype;
+  PetscMPIInt   ierr;
+  size_t        dsize;
+  
+  ierr = PetscMPIDataTypeToPetscDataType(datatype,&pdtype);CHKERRQ(ierr);
+  ierr = PetscDataTypeGetSize(pdtype,&dsize);CHKERRQ(ierr);
+
+  /* offset is given in units of MPI_Datatype */
+  userbuf = ((char *)userbuf) + dsize*position;
+
+  ierr = PetscMemcpy(filebuf,userbuf,count*dsize);CHKERRQ(ierr);
+  ierr = PetscByteSwap(filebuf,pdtype,count);CHKERRQ(ierr);  
+  return ierr;
+}
+EXTERN_C_END
+#endif
+
+PetscErrorCode MPIU_File_write_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
+{
+  PetscErrorCode ierr;
+  PetscDataType  pdtype;
+
+  PetscFunctionBegin;
+  ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
+  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
+  ierr = MPI_File_write_all(fd,data,cnt,dtype,status);CHKERRQ(ierr);
+  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MPIU_File_read_all(MPI_File fd,void *data,PetscMPIInt cnt,MPI_Datatype dtype,MPI_Status *status)
+{
+  PetscErrorCode ierr;
+  PetscDataType  pdtype;
+
+  PetscFunctionBegin;
+  ierr = PetscMPIDataTypeToPetscDataType(dtype,&pdtype);CHKERRQ(ierr);
+  ierr = MPI_File_read_all(fd,data,cnt,dtype,status);CHKERRQ(ierr);
+  ierr = PetscByteSwap(data,pdtype,cnt);CHKERRQ(ierr);  
+  PetscFunctionReturn(0);
+}
+#endif
+#endif

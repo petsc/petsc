@@ -123,10 +123,10 @@ EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
 
 .seealso: DADestroy(), DAView(), DACreate2d(), DACreate3d(), DAGlobalToLocalBegin(), DASetRefinementFactor(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DAGetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRange()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRanges()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt dof,PetscInt s,PetscInt *lc,DA *inra)
+PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,PetscInt M,PetscInt dof,PetscInt s,const PetscInt lc[],DA *inra)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;

@@ -2,6 +2,8 @@ static char help[] = "Test sequential MatMatMult() and MatPtAP() for AIJ matrice
 
 #include "petscmat.h"
 
+extern PetscErrorCode testPTAPRectangular();
+
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv) {
@@ -57,6 +59,9 @@ int main(int argc,char **argv) {
   ierr = MatAXPY(D,none,C,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = MatView(D,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
+  /* A test contributed by Tobias Neckel <neckel@in.tum.de> */
+  ierr = testPTAPRectangular();CHKERRQ(ierr);
+
   ierr = MatDestroy(A);
   ierr = MatDestroy(B);
   ierr = MatDestroy(C);
@@ -64,3 +69,113 @@ int main(int argc,char **argv) {
   PetscFinalize();
   return(0);
 }
+
+/* a test contributed by Tobias Neckel <neckel@in.tum.de>, 02 Jul 2008 */
+#define PETSc_CHKERRQ CHKERRQ
+#undef __FUNCT__
+#define __FUNCT__ "testPTAPRectangular"
+PetscErrorCode testPTAPRectangular() 
+{
+
+  const int rows = 3;
+  const int cols = 5;
+  PetscErrorCode _ierr;
+
+  PetscFunctionBegin;
+  // set up A
+  Mat A;
+  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows,
+                            1, PETSC_NULL, &A);
+  PETSc_CHKERRQ(_ierr);
+  for (int i=0; i<rows; i++) {
+    _ierr = MatSetValue(A, i, i, 1.0, INSERT_VALUES);
+    PETSc_CHKERRQ(_ierr);
+  }
+  _ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
+  PETSc_CHKERRQ(_ierr);
+  _ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
+  PETSc_CHKERRQ(_ierr);
+
+  // set up P
+  Mat P;
+  _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, cols,
+                            5, PETSC_NULL, &P);
+  PETSc_CHKERRQ(_ierr);
+  _ierr = MatSetValue(P, 0, 0,  1.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  _ierr = MatSetValue(P, 0, 1,  2.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  _ierr = MatSetValue(P, 0, 2,  0.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+
+  _ierr = MatSetValue(P, 0, 3, -1.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+
+  _ierr = MatSetValue(P, 1, 0,  0.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  _ierr = MatSetValue(P, 1, 1, -1.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  _ierr = MatSetValue(P, 1, 2,  1.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+
+  _ierr = MatSetValue(P, 2, 0,  3.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  _ierr = MatSetValue(P, 2, 1,  0.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  _ierr = MatSetValue(P, 2, 2, -3.0, INSERT_VALUES); PETSc_CHKERRQ(_ierr);
+  
+  _ierr = MatAssemblyBegin(P,MAT_FINAL_ASSEMBLY);
+  PETSc_CHKERRQ(_ierr);
+  _ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);
+  PETSc_CHKERRQ(_ierr);
+  //printf("P:\n");
+  // _ierr = MatView(P,PETSC_VIEWER_STDOUT_WORLD);PETSc_CHKERRQ(_ierr);
+
+  // compute C
+  Mat C;
+  _ierr = MatPtAP( A, P, MAT_INITIAL_MATRIX, 1.0, &C);
+  PETSc_CHKERRQ(_ierr);
+
+  _ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);
+  PETSc_CHKERRQ(_ierr);
+  _ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);
+  PETSc_CHKERRQ(_ierr);
+
+  // compare results
+  /*
+  printf("C:\n");
+  _ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);PETSc_CHKERRQ(_ierr);
+
+  blitz::Array<double,2> actualC(cols, cols);
+  actualC = 0.0;
+  for (int i=0; i<cols; i++) { 
+    for (int j=0; j<cols; j++) { 
+      _ierr = MatGetValues(C, 1, &i, 1, &j, &actualC(i,j) );
+      PETSc_CHKERRQ(_ierr); ;
+    }
+  }
+  blitz::Array<double,2> expectedC(cols, cols);
+  expectedC = 0.0;
+         
+  expectedC(0,0) = 10.0;
+  expectedC(0,1) =  2.0;
+  expectedC(0,2) = -9.0;
+  expectedC(0,3) = -1.0;
+  expectedC(1,0) =  2.0;
+  expectedC(1,1) =  5.0;
+  expectedC(1,2) = -1.0;
+  expectedC(1,3) = -2.0;
+  expectedC(2,0) = -9.0;
+  expectedC(2,1) = -1.0;
+  expectedC(2,2) = 10.0;
+  expectedC(2,3) =  0.0;
+  expectedC(3,0) = -1.0;
+  expectedC(3,1) = -2.0;
+  expectedC(3,2) =  0.0;
+  expectedC(3,3) =  1.0;
+  
+  int check = areBlitzArrays2NumericallyEqual(actualC,expectedC);
+  validateEqualsWithParams3(check, -1 , "testPTAPRectangular()", check, actualC(check), expectedC(check));
+  */
+  
+  _ierr = MatDestroy(A);
+  PETSc_CHKERRQ(_ierr);
+  _ierr = MatDestroy(P);
+  PETSc_CHKERRQ(_ierr);
+  _ierr = MatDestroy(C);
+  PETSc_CHKERRQ(_ierr);
+  PetscFunctionReturn(0);
+}
+
+

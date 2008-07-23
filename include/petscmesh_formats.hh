@@ -8,7 +8,7 @@ namespace ALE {
 
     class Builder {
     public:
-      typedef ALE::Mesh               Mesh;
+      typedef PETSC_MESH_TYPE               Mesh;
       typedef Mesh::sieve_type        sieve_type;
       typedef Mesh::real_section_type real_section_type;
       typedef Mesh::int_section_type  int_section_type;
@@ -37,7 +37,7 @@ namespace ALE {
 
     class Viewer {
     public:
-      typedef ALE::Mesh Mesh;
+      typedef PETSC_MESH_TYPE Mesh;
     public:
       Viewer() {};
       virtual ~Viewer() {};
@@ -58,8 +58,8 @@ namespace ALE {
   namespace LaGriT {
     class Builder {
     public:
-      typedef ALE::Mesh             Mesh;
-      typedef ALE::Mesh::sieve_type sieve_type;
+      typedef PETSC_MESH_TYPE             Mesh;
+      typedef PETSC_MESH_TYPE::sieve_type sieve_type;
     public:
       static void readInpFile(MPI_Comm comm, const std::string& filename, const int dim, const int numCorners, int& numElements, int *vertices[], int& numVertices, double *coordinates[]);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& filename, const bool interpolate, const int debug);
@@ -70,11 +70,11 @@ namespace ALE {
 
 namespace ALE {
   namespace PCICE {
-    void fuseBoundary(const ALE::Obj<ALE::Mesh>& mesh);
+    void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh);
 
     class Builder {
     public:
-      typedef ALE::Mesh               Mesh;
+      typedef PETSC_MESH_TYPE               Mesh;
       typedef Mesh::sieve_type        sieve_type;
       typedef Mesh::real_section_type section_type;
     public:
@@ -100,7 +100,7 @@ namespace ALE {
 
     class Viewer {
     public:
-      typedef ALE::Mesh Mesh;
+      typedef PETSC_MESH_TYPE Mesh;
     public:
       Viewer() {};
       virtual ~Viewer() {};
@@ -144,13 +144,13 @@ namespace ALE {
     private:
       enum ParserState {OUTSIDE, INSIDE_MESH, INSIDE_VERTICES, INSIDE_CELLS, DONE};
     private:
-      const Obj<ALE::Mesh>& mesh;
+      const Obj<PETSC_MESH_TYPE>& mesh;
       ParserState  state;
       double      *coords;   // The vertex coordinates
       unsigned int embedDim; // The embedding dimension
       unsigned int numCells; // The number of cells (co-dim 0)
     public:
-      XMLMesh(const Obj<ALE::Mesh>& mesh) : XMLObject(), mesh(mesh), state(OUTSIDE), coords(NULL), embedDim(0), numCells(0) {};
+      XMLMesh(const Obj<PETSC_MESH_TYPE>& mesh) : XMLObject(), mesh(mesh), state(OUTSIDE), coords(NULL), embedDim(0), numCells(0) {};
       virtual ~XMLMesh() {};
     public:    
       void startElement (const xmlChar* name, const xmlChar** attrs);
@@ -223,7 +223,7 @@ namespace ALE {
         // Parse file
         xmlSAXUserParseFile(&sax, (void *) xmlObject, filename.c_str());
       };
-      static void readMesh(const Obj<ALE::Mesh>& mesh, const std::string& filename) {
+      static void readMesh(const Obj<PETSC_MESH_TYPE>& mesh, const std::string& filename) {
         ALE::Dolfin::XMLObject *xmlObject;
 
         xmlObject = new ALE::Dolfin::XMLMesh(mesh);
@@ -241,11 +241,11 @@ namespace ALE {
 
 namespace ALE {
   namespace PFLOTRAN {
-    void fuseBoundary(const ALE::Obj<ALE::Mesh>& mesh);
+    void fuseBoundary(const ALE::Obj<PETSC_MESH_TYPE>& mesh);
 
     class Builder {
     public:
-      typedef ALE::Mesh               Mesh;
+      typedef PETSC_MESH_TYPE               Mesh;
       typedef Mesh::sieve_type        sieve_type;
       typedef Mesh::real_section_type section_type;
     public:
@@ -271,7 +271,7 @@ namespace ALE {
 
     class Viewer {
     public:
-      typedef ALE::Mesh Mesh;
+      typedef PETSC_MESH_TYPE Mesh;
     public:
       Viewer() {};
       virtual ~Viewer() {};
