@@ -1142,7 +1142,7 @@ E*/
 #define MATCOLORING_LF      "lf"
 #define MATCOLORING_ID      "id"
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat,MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat,const MatColoringType,ISColoring*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
 
 /*MC
