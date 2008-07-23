@@ -1603,6 +1603,7 @@ namespace ALE {
       return names;
     };
     int getMaxDof() const {return this->_maxDof;};
+    void setMaxDof(const int maxDof) {this->_maxDof = maxDof;};
   public: // Sizes
     template<typename Section>
     int size(const Obj<Section>& section, const point_type& p) {
