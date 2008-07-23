@@ -901,7 +901,7 @@ shared_darwin7:
         if [ "${LIBNAME}" = "libpetscdm" ]; then OTHERLIBS="${TRIANGLE_LIB} ${TETGEN_LIB} ${PETSC_MAT_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscksp" ]; then OTHERLIBS="${PETSC_DM_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscsnes" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
-        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${PETSC_SNES_LIB_BASIC}"  ; fi;\
+        if [ "${LIBNAME}" = "libpetscts" ]; then OTHERLIBS="${SUNDIALS_LIB} ${PETSC_SNES_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetscfortran" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libpetsccontrib" ]; then OTHERLIBS="${PETSC_TS_LIB_BASIC}"  ; fi;\
         if [ "${LIBNAME}" = "libslepc" ]; then OTHERLIBS="${PETSC_KSP_LIB_BASIC}"  ; fi;\
