@@ -5,22 +5,21 @@
 
 #ifndef __TAO_LMVM_H
 #define __TAO_LMVM_H
-#include "private/taosolver_impl.h"
-
+#include "include/private/taosolver_impl.h"
 
 typedef struct {
-    //TaoLMVMMat *M;
+  Mat M;
 
-  Vec *G;
-  Vec *D;
-  Vec *W;
+  Vec G;
+  Vec D;
+  Vec W;
 
-  Vec *Xold;
-  Vec *Gold;
+  Vec Xold;
+  Vec Gold;
 
   PetscInt bfgs;
   PetscInt sgrad;
   PetscInt grad;
 } TAO_LMVM;
 
-#endif
+#endif /* ifndef __TAO_LMVM_H */

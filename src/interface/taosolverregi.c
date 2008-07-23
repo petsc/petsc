@@ -4,7 +4,7 @@
 
 
 EXTERN_C_BEGIN
-extern int TaoCreate_LMVM(TAO_SOLVER);
+extern PetscErrorCode TaoSolverCreate_LMVM(TaoSolver);
 /*
 extern int TaoCreate_NLS(TAO_SOLVER);
 extern int TaoCreate_NTR(TAO_SOLVER);
@@ -81,7 +81,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterAll(const char path[])
   PetscFunctionBegin;
   TaoSolverRegisterAllCalled = PETSC_TRUE;
   
-  ierr = TaoSolverRegisterDynamic("tao_lmvm",path,"TaoCreate_LMVM",TaoCreate_LMVM); CHKERRQ(ierr);
+  ierr = TaoSolverRegisterDynamic("tao_lmvm",path,"TaoSolverCreate_LMVM",TaoSolverCreate_LMVM); CHKERRQ(ierr);
 
 /*
   ierr = TaoSolverRegisterDynamic("tao_nls",path,"TaoCreate_NLS",TaoCreate_NLS); CHKERRQ(ierr);
@@ -108,6 +108,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterAll(const char path[])
   ierr = TaoSolverRegisterDynamic("tao_fd_test",path,"TaoCreate_FD",TaoCreate_FD); CHKERRQ(ierr);
 */
   
-  TaoFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
     
+

@@ -8,6 +8,88 @@ PetscFList TaoSolverList = PETSC_NULL;
 PetscCookie TAOSOLVER_DLL TAOSOLVER_COOKIE;
 PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, TaoSolver_ObjGradientEval, TaoSolver_HessianEval, TaoSolver_JacobianEval;
 
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverCreate"
+/*@
+  TaoSolverCreate - Creates a TAO solver
+
+  Collective on MPI_Comm
+
+  Input Parameter:
+. comm - MPI communicator
+
+  Output Parameter:
+. newtao - the new TaoSolver context
+
+.seealso: TaoSolverSolve(), TaoSolverDestroy()
+@*/
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate(MPI_Comm comm, TaoSolver *newtao)
+{
+    PetscErrorCode ierr;
+    TaoSolver tao;
+    
+    PetscFunctionBegin;
+    PetscValidPointer(newtao,2);
+    *newtao = PETSC_NULL;
+
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+    ierr = TaoSolverInitializePackage(PETSC_NULL); CHKERRQ(ierr);
+#endif
+
+    ierr = PetscHeaderCreate(tao,_p_TaoSolver, struct _TaoSolverOps, TAOSOLVER_COOKIE,0,"TaoSolver",comm,TaoSolverDestroy,TaoSolverView); CHKERRQ(ierr);
+    
+    tao->ops->computeobjective=0;
+    tao->ops->computeobjectiveandgradient=0;
+    tao->ops->computegradient=0;
+    tao->ops->convergencetest=TaoSolverDefaultConvergenceTest;
+    tao->ops->convergencedestroy=0;
+    tao->ops->setup=0;
+    tao->ops->solve=0;
+    tao->ops->view=0;
+    tao->ops->setfromoptions=0;
+    tao->ops->destroy=0;
+
+    tao->solution=PETSC_NULL;
+    tao->gradient=PETSC_NULL;
+    tao->stepdirection=PETSC_NULL;
+
+    tao->max_its     = 10000;
+    tao->max_funcs   = 10000;
+    tao->fatol       = 1e-8;
+    tao->frtol       = 1e-8;
+    tao->gatol       = 1e-8;
+    tao->grtol       = 1e-8;
+    tao->gttol       = 0.0;
+    tao->catol       = 0.0;
+    tao->crtol       = 0.0;
+    tao->xtol        = 0.0;
+    tao->trtol       = 0.0;
+    tao->fmin        = -1e100;
+    tao->conv_hist_reset = PETSC_TRUE;
+    tao->conv_hist_max = 0;
+    tao->conv_hist_len = 0;
+    tao->conv_hist = PETSC_NULL;
+    tao->conv_hist_feval = PETSC_NULL;
+    tao->conv_hist_fgeval = PETSC_NULL;
+    tao->conv_hist_geval = PETSC_NULL;
+    tao->conv_hist_heval = PETSC_NULL;
+
+    tao->numbermonitors=0;
+    tao->viewhessian=PETSC_FALSE;
+    tao->viewgradient=PETSC_FALSE;
+    tao->viewjacobian=PETSC_FALSE;
+    tao->viewconstraint = PETSC_FALSE;
+    tao->viewtao = PETSC_FALSE;
+    
+    ierr = TaoSolverResetStatistics(tao); CHKERRQ(ierr);
+
+
+    *newtao = tao; 
+    PetscFunctionReturn(0);
+}
+
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSolve"
 /*@ 
@@ -28,19 +110,22 @@ PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, 
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSolve(TaoSolver tao)
 {
   PetscErrorCode ierr;
-  TaoFunctionBegin;
-  TaoValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+  PetscViewer viewer;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
 
-  ierr = TaoGetSolution(tao,&xx);CHKERRQ(ierr);
-  ierr = TaoSetUp(tao);CHKERRQ(ierr);
-  ierr = TaoResetStatistics(tao); CHKERRQ(ierr);
+  ierr = TaoSolverSetUp(tao);CHKERRQ(ierr);
+  ierr = TaoSolverResetStatistics(tao); CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(TaoSolver_Solve,tao,0,0,0); CHKERRQ(ierr);
   if (tao->ops->solve){ ierr = (*tao->ops->solve)(tao);CHKERRQ(ierr); }
   ierr = PetscLogEventEnd(TaoSolver_Solve,tao,0,0,0); CHKERRQ(ierr);
 
-  if (tao->viewtao) { ierr = TaoView(tao);CHKERRQ(ierr); }
-  if (tao->viewksptao) { ierr = TaoViewLinearSolver(tao);CHKERRQ(ierr); }
+/*  if (tao->viewtao) { 
+      ierr = PetscViewerASCIIOpen(((PetscObject)tao)->comm, 
+      ierr = TaoSolverView(tao,viewer);CHKERRQ(ierr); 
+      }*/
+/*  if (tao->viewksptao) { ierr = TaoLinearSolver(tao);CHKERRQ(ierr); } */
 
   if (tao->printreason) { 
       if (tao->reason > 0) {
@@ -51,7 +136,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSolve(TaoSolver tao)
   }
   
 
-  TaoFunctionReturn(0);
+  PetscFunctionReturn(0);
 
     
 }
@@ -82,9 +167,16 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetUp(TaoSolver tao)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao, TAOSOLVER_COOKIE,1); 
   if (tao->setupcalled) PetscFunctionReturn(0);
+
+  if (!tao->solution) {
+      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetInitialVector");
+  }
+  if (!tao->ops->computeobjective && !tao->ops->computeobjectiveandgradient) {
+      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call TaoSolverSetObjective or TaoSolverSetObjectiveAndGradient");
+  }
   
-  if (solver->ops->setup) {
-    ierr = (*solver->ops->setup)(tao); CHKERRQ(ierr);
+  if (tao->ops->setup) {
+    ierr = (*tao->ops->setup)(tao); CHKERRQ(ierr);
   }
 
   tao->setupcalled = PETSC_TRUE;
@@ -117,9 +209,9 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDestroy(TaoSolver tao)
   if (tao->ops->destroy) {
       ierr = (*tao->ops->destroy)(tao); CHKERRQ(ierr);
   }
-  ierr = TaoSolverMonitorCancel(tao); CHKERRQ(ierr);
-  if (tao->ops->convergeddestroy) {
-      ierr = (*tao->ops->convergeddestroy)(tao->cnvP); CHKERRQ(ierr);
+//  ierr = TaoSolverMonitorCancel(tao); CHKERRQ(ierr);
+  if (tao->ops->convergencedestroy) {
+      ierr = (*tao->ops->convergencedestroy)(tao->cnvP); CHKERRQ(ierr);
   }
   ierr = PetscHeaderDestroy(tao); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -137,7 +229,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDestroy(TaoSolver tao)
 . tao - the TaoSolver solver context
 
   Options Database Keys:
-+ -tao_method <method> - The algorithm that TAO uses (tao_lmvm, tao_nls, etc.)
++ -tao_type <type> - The algorithm that TAO uses (tao_lmvm, tao_nls, etc.)
 . -tao_fatol <fatol>
 . -tao_frtol <frtol>
 . -tao_gatol <gatol>
@@ -163,8 +255,8 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDestroy(TaoSolver tao)
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver tao)
 {
     PetscTruth ierr;
-    const char *default_method = TAO_LMVM;
-    char method[256];
+    const char *default_type = "tao_lmvm";
+    char type[256];
     PetscTruth flg;
     
     PetscFunctionBegin;
@@ -178,12 +270,12 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver tao)
 	if (((PetscObject)tao)->type_name) {
 	    default_type = ((PetscObject)tao)->type_name;
 	}
-	/* Check for method from options */
-	ierr = PetscOptionsList("-tao_method","Tao Solver method","TaoSolverSetType",TaoSolverList,default_method,method,256,&flg); CHKERRQ(ierr);
+	/* Check for type from options */
+	ierr = PetscOptionsList("-tao_type","Tao Solver type","TaoSolverSetType",TaoSolverList,default_type,type,256,&flg); CHKERRQ(ierr);
 	if (flg) {
-	    ierr = TaoSolverSetMethod(tao,method); CHKERRQ(ierr);
+	    ierr = TaoSolverSetType(tao,type); CHKERRQ(ierr);
 	} else if (!((PetscObject)tao)->type_name) {
-	    ierr = TaoSolverSetMethod(tao,default_method);
+	    ierr = TaoSolverSetType(tao,default_type);
 	}
 	if (tao->ops->setfromoptions) {
 	    ierr = (*tao->ops->setfromoptions)(tao); CHKERRQ(ierr);
@@ -221,11 +313,11 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver tao)
 
 .seealso: PetscViewerASCIIOpen()
 @*/
-PetscErrorCode TASOLVER_DLLEXPORT TaoSolverView(TaoSolver tao, PetscViewer viewer)
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverView(TaoSolver tao, PetscViewer viewer)
 {
     PetscErrorCode ierr;
     PetscTruth isascii,isstring;
-    const TaoSolverType method;
+    const TaoSolverType type;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
     PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
@@ -234,16 +326,16 @@ PetscErrorCode TASOLVER_DLLEXPORT TaoSolverView(TaoSolver tao, PetscViewer viewe
     PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii); CHKERRQ(ierr);
     PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring); CHKERRQ(ierr);
     if (isascii) {
-	if (((PetscObject)snes)->prefix) {
+	if (((PetscObject)tao)->prefix) {
 	    ierr = PetscViewerASCIIPrintf(viewer,"TaoSolver Object:(%s)\n",((PetscObject)tao)->prefix); CHKERRQ(ierr);
         } else {
 	    ierr = PetscViewerASCIIPrintf(viewer,"TaoSolver Object:\n"); CHKERRQ(ierr); CHKERRQ(ierr);
 	}
-	ierr = TaoSolverGetMethod(tao,&method);
-	if (method) {
-	    ierr = PetscViewerASCIIPrintf(viewer,"  method: %s\n",method); CHKERRQ(ierr);
+	ierr = TaoSolverGetType(tao,&type);
+	if (type) {
+	    ierr = PetscViewerASCIIPrintf(viewer,"  type: %s\n",type); CHKERRQ(ierr);
 	} else {
-	    ierr = PetscViewerASCIIPrintf(viewer,"  method: not set yet\n"); CHKERRQ(ierr);
+	    ierr = PetscViewerASCIIPrintf(viewer,"  type: not set yet\n"); CHKERRQ(ierr);
 	}
 	if (tao->ops->view) {
 	    ierr = PetscViewerASCIIPushTab(viewer); CHKERRQ(ierr);
@@ -254,10 +346,10 @@ PetscErrorCode TASOLVER_DLLEXPORT TaoSolverView(TaoSolver tao, PetscViewer viewe
 	ierr=PetscViewerASCIIPrintf(viewer," frtol=%g\n",tao->frtol);CHKERRQ(ierr);
 
 	ierr=PetscViewerASCIIPrintf(viewer,"  convergence tolerances: gatol=%g,",tao->gatol);CHKERRQ(ierr);
-	ierr=PetscViewerASCIIPrintf(viewer," trtol=%g,",tao->trtol);CHKERRQ(ierr);
+//	ierr=PetscViewerASCIIPrintf(viewer," trtol=%g,",tao->trtol);CHKERRQ(ierr);
 	ierr=PetscViewerASCIIPrintf(viewer," gttol=%g\n",tao->gttol);CHKERRQ(ierr);
 
-	ierr = PetscViewerASCIIPrintf(viewer,"  Residual in Function/Gradient:=%e\n",tao->norm);CHKERRQ(ierr);
+	ierr = PetscViewerASCIIPrintf(viewer,"  Residual in Function/Gradient:=%e\n",tao->residual);CHKERRQ(ierr);
 
 	if (tao->cnorm>0 || tao->catol>0 || tao->crtol>0){
 	    ierr=PetscViewerASCIIPrintf(viewer,"  convergence tolerances:");CHKERRQ(ierr);
@@ -279,7 +371,7 @@ PetscErrorCode TASOLVER_DLLEXPORT TaoSolverView(TaoSolver tao, PetscViewer viewe
 				      tao->fc);CHKERRQ(ierr);
 
 	ierr = PetscViewerASCIIPrintf(viewer,"  total number of iterations=%d,          ",
-				      tao->iter);CHKERRQ(ierr);
+				      tao->niter);CHKERRQ(ierr);
 	ierr = PetscViewerASCIIPrintf(viewer,"              (max: %d)\n",tao->max_its);CHKERRQ(ierr);
 
 	if (tao->nfuncs>0){
@@ -294,23 +386,23 @@ PetscErrorCode TASOLVER_DLLEXPORT TaoSolverView(TaoSolver tao, PetscViewer viewe
 	    ierr = PetscViewerASCIIPrintf(viewer,"                max: %d\n",
 					  tao->max_funcs);CHKERRQ(ierr);
 	}
-	if (tao->nfgrads>0){
+	if (tao->nfuncgrads>0){
 	    ierr = PetscViewerASCIIPrintf(viewer,"  total number of function/gradient evaluations=%d,",
-					  tao->nfgrads);CHKERRQ(ierr);
+					  tao->nfuncgrads);CHKERRQ(ierr);
 	    ierr = PetscViewerASCIIPrintf(viewer,"    (max: %d)\n",
 					  tao->max_funcs);CHKERRQ(ierr);
 	}
-	if (tao->nhesss>0){
+	if (tao->nhess>0){
 	    ierr = PetscViewerASCIIPrintf(viewer,"  total number of Hessian evaluations=%d\n",
-					  tao->nhesss);CHKERRQ(ierr);
+					  tao->nhess);CHKERRQ(ierr);
 	}
-	if (tao->linear_its>0){
+/*	if (tao->linear_its>0){
 	    ierr = PetscViewerASCIIPrintf(viewer,"  total Krylov method iterations=%d\n",
 					  tao->linear_its);CHKERRQ(ierr);
-	}
-	if (tao->nvfunc>0){
+					  }*/
+	if (tao->nconstraints>0){
 	    ierr = PetscViewerASCIIPrintf(viewer,"  total number of constraint function evaluations=%d\n",
-					  tao->nvfunc);CHKERRQ(ierr);
+					  tao->nconstraints);CHKERRQ(ierr);
 	}
 	if (tao->njac>0){
 	    ierr = PetscViewerASCIIPrintf(viewer,"  total number of Jacobian evaluations=%d\n",
@@ -324,8 +416,8 @@ PetscErrorCode TASOLVER_DLLEXPORT TaoSolverView(TaoSolver tao, PetscViewer viewe
 	}
 	
     } else if (isstring) {
-	ierr = TaoSolverGetType(tao,&method); CHKERRQ(ierr);
-	ierr = PetscViewerStringSPrintf(viewer," %-3.3s",method); CHKERRQ(ierr);
+	ierr = TaoSolverGetType(tao,&type); CHKERRQ(ierr);
+	ierr = PetscViewerStringSPrintf(viewer," %-3.3s",type); CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
     
@@ -368,11 +460,11 @@ $ f_{k+1} <= f_k + frtol*|f_k|
           TaoSetConstraintTolerances()
 
 @*/
-PetscErrorCode TaoSolverSetTolerances(TaoSolver tao, PetscReal fatol, PetscReal frtol, PetscReal gatol, PetscReal grtol, PetscReal gttol)
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetTolerances(TaoSolver tao, PetscReal fatol, PetscReal frtol, PetscReal gatol, PetscReal grtol, PetscReal gttol)
 {
     PetscErrorCode ierr;
-    TaoFunctionBegin;
-    TaoValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
     
     if (fatol != PETSC_DEFAULT) {
       if (fatol<0) {
@@ -454,3 +546,184 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver tao, PetscRe
 
 
 
+
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverResetStatistics(TaoSolver tao)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    tao->niter        = 0;
+    tao->nfuncs       = 0;
+    tao->nfuncgrads   = 0;
+    tao->ngrads       = 0;
+    tao->nhess        = 0;
+    tao->njac         = 0;
+    tao->nconstraints = 0;
+    tao->reason       = 0;
+    tao->residual     = 0.0;
+    tao->cnorm        = 0.0;
+    tao->step         = 0.0;
+    tao->lsflag       = 0.0;
+    if (tao->conv_hist_reset) tao->conv_hist_len=0;
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetDefaultMonitors"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetDefaultMonitors(TaoSolver tao)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverDefaultConvergenceTest"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
+{
+  PetscInt niter=tao->niter, nfuncs=tao->nfuncs, max_funcs=tao->max_funcs;
+  PetscReal gnorm=tao->residual, gnorm0=tao->gnorm0;
+  PetscReal f=tao->fc, trtol=tao->trtol,trradius=tao->step;
+  PetscReal gatol=tao->gatol,grtol=tao->grtol,gttol=tao->gttol;
+  PetscReal fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
+  PetscReal fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
+  PetscReal gnorm2;
+  TaoSolverConvergedReason reason=TAO_CONTINUE_ITERATING;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao, TAOSOLVER_COOKIE,1);
+
+  gnorm2=gnorm*gnorm;
+
+  if (PetscIsInfOrNanReal(f)) {
+    ierr = PetscInfo(tao,"Failed to converged, function value is Inf or NaN\n"); CHKERRQ(ierr);
+    reason = TAO_DIVERGED_NAN;
+  } else if (f <= fmin && cnorm <=catol) {
+    ierr = PetscInfo2(tao,"Converged due to function value %g < minimum function value %g\n", f,fmin); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_MINF;
+  } else if (gnorm2 <= fatol && cnorm <=catol) {
+    ierr = PetscInfo2(tao,"Converged due to residual norm %g < %g\n",gnorm2,fatol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_ATOL;
+  } else if (gnorm2 / PetscAbsReal(f+1.0e-10)<= frtol && cnorm/PetscMax(cnorm0,1.0) <= crtol) {
+    ierr = PetscInfo2(tao,"Converged due to relative residual norm %g < %g\n",gnorm2/PetscAbsReal(f+1.0e-10),frtol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_RTOL;
+  } else if (gnorm<= gatol && cnorm <=catol) {
+    ierr = PetscInfo2(tao,"Converged due to residual norm %g < %g\n",gnorm,gatol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_ATOL;
+  } else if ( f!=0 && PetscAbsReal(gnorm/f) <= grtol && cnorm <= crtol) {
+    ierr = PetscInfo3(tao,"Converged due to residual norm %g < |%g| %g\n",gnorm,f,grtol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_ATOL;
+  } else if (gnorm/gnorm0 <= gttol && cnorm <= crtol) {
+    ierr = PetscInfo2(tao,"Converged due to relative residual norm %g < %g\n",gnorm/gnorm0,gttol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_RTOL;
+  } else if (nfuncs > max_funcs){
+    ierr = PetscInfo2(tao,"Exceeded maximum number of function evaluations: %d > %d\n", nfuncs,max_funcs); CHKERRQ(ierr);
+    reason = TAO_DIVERGED_MAXFCN;
+  } else if ( tao->lsflag != 0 ){
+    ierr = PetscInfo(tao,"Tao Line Search failure.\n"); CHKERRQ(ierr);
+    reason = TAO_DIVERGED_LS_FAILURE;
+  } else if (trradius < trtol && niter > 0){
+    ierr = PetscInfo2(tao,"Trust region/step size too small: %g < %g\n", trradius,trtol); CHKERRQ(ierr);
+    reason = TAO_CONVERGED_TRTOL;
+  } else if (niter > tao->max_its) {
+      ierr = PetscInfo2(tao,"Exceeded maximum number of iterations: %d > %d\n",niter,tao->max_its);
+      reason = TAO_DIVERGED_MAXITS;
+  } else {
+    reason = TAO_CONTINUE_ITERATING;
+  }
+  tao->reason = reason;
+
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetType"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetType(TaoSolver tao, const TaoSolverType type)
+{
+    PetscErrorCode ierr;
+    PetscErrorCode (*create_xxx)(TaoSolver);
+    PetscTruth  issame;
+
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    
+    ierr = PetscTypeCompare((PetscObject)tao,type,&issame); CHKERRQ(ierr);
+    if (issame) PetscFunctionReturn(0);
+
+    ierr = PetscFListFind(TaoSolverList,((PetscObject)tao)->comm, type, (void(**)(void))&create_xxx); CHKERRQ(ierr);
+    if (!create_xxx) {
+	SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested TaoSolver type %s",type);
+    }
+    
+
+    /* Destroy the existing solver information */
+    if (tao->ops->destroy) {
+	ierr = (*tao->ops->destroy)(tao); CHKERRQ(ierr);
+    }
+    
+    tao->ops->setup = 0;
+    tao->ops->solve = 0;
+    tao->ops->view  = 0;
+    tao->ops->setfromoptions = 0;
+    tao->ops->destroy = 0;
+
+    tao->setupcalled = PETSC_FALSE;
+
+    ierr = (*create_xxx)(tao); CHKERRQ(ierr);
+    ierr = PetscObjectChangeTypeName((PetscObject)tao,type); CHKERRQ(ierr);
+    
+    PetscFunctionReturn(0);
+    
+}
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverRegister"
+/*@C
+  TaoSolverRegister -- See TaoSolverRegisterDynamic()
+
+  Level: advanced
+@*/
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*func)(TaoSolver))
+{
+    char fullname[PETSC_MAX_PATH_LEN];
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    ierr = PetscFListConcat(path,name,fullname); CHKERRQ(ierr);
+    ierr = PetscFListAdd(&TaoSolverList,sname,fullname,(void (*)(void))func); CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverRegisterDestroy"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterDestroy(void)
+{
+    PetscErrorCode ierr;
+    PetscFunctionBegin;
+    ierr = PetscFListDestroy(&TaoSolverList); CHKERRQ(ierr);
+    TaoSolverRegisterAllCalled = PETSC_FALSE;
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverGetConvergedReason"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver tao, TaoSolverConvergedReason *reason) 
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidPointer(reason,2);
+    *reason = tao->reason;
+    PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__ 
+#define __FUNCT__ "TaoSolverGetType"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetType(TaoSolver tao, const TaoSolverType *type)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    PetscValidPointer(type,2); 
+    *type=((PetscObject)tao)->type_name;
+    PetscFunctionReturn(0);
+}

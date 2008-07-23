@@ -117,6 +117,9 @@ tao_deletelibs:
 tao_shared:
 	-@echo "tao_shared not implemented yet..."
 
+tao_alletags:
+	-@maint/generateetags.py
+
 
 tao_testexamples_c: 
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=testexamples_C tree

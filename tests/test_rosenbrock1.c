@@ -4,6 +4,7 @@
 #include "petscvec.h"
 #include "petscmat.h"
 #include "tao.h"
+#include "taosolver.h"
 
 static  char help[] = "This example demonstrates use of the TAO package to \n\
 solve an unconstrained minimization problem on a single processor.  We \n\
@@ -12,15 +13,12 @@ minimize the extended Rosenbrock function: \n\
 
 /*T 
    Concepts: TAO - Solving an unconstrained minimization problem
-   Routines: TaoInitialize(); TaoFinalize();
-   Routines: TaoApplicationCreate(); TaoAppDestroy();
-   Routines: TaoCreate(); TaoDestroy(); 
-   Routines: TaoAppSetObjectiveAndGradientRoutine();
-   Routines: TaoAppSetHessianMat(); TaoAppSetHessianRoutine();
-   Routines: TaoSetOptions();
-   Routines: TaoAppSetInitialSolutionVec();
-   Routines: TaoSolveApplication();
-   Routines: TaoGetTerminationReason();
+   Routines: TaoSolverCreate(); TaoSolverDestroy(); 
+   Routines: TaoSolverSetType();TaoSolverSetObjectiveAndGradient();
+   Routines: TaoSolverSetFromOptions();
+   Routines: TaoSolverSetInitialVector();
+   Routines: TaoSolverSolve();
+   Routines: TaoSolverGetConvergedReason;
    Processors: 1
 T*/ 
 
@@ -36,7 +34,7 @@ typedef struct {
 } AppCtx;
 
 /* -------------- User-defined routines ---------- */
-int FormFunctionGradient(TAO_APPLICATION,Vec,double*,Vec,void*);
+int FormFunctionGradient(TaoSolver,Vec,double*,Vec,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -46,23 +44,22 @@ int main(int argc,char **argv)
   PetscScalar zero=0.0;
   Vec        x;                     /* solution vector */
   TaoSolver  tao;                   /* TAO_SOLVER solver context */
-//  TAO_APPLICATION taoapp;           /* TAO application context */
   PetscTruth  flg;
   int        size,rank;                  /* number of processes running */
-  TaoSolverTerminateReason reason;
+  TaoSolverConvergedReason reason;
   AppCtx     user;                  /* user-defined application context */
 
   /* Initialize TAO and PETSc */
   PetscInitialize(&argc,&argv,(char *)0,help);
-//  TaoInitialize(&argc,&argv,(char *)0,help);
 
   info = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRQ(info);
   info = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRQ(info);
 
   if (size >1) {
-    if (rank == 0)
-      PetscPrintf(PETSC_COMM_SELF,"This example is intended for single processor use!\n");
-    SETERRQ(1,"Incorrect number of processors");
+      if (rank == 0) {
+	  PetscPrintf(PETSC_COMM_SELF,"This example is intended for single processor use!\n"); 
+	  SETERRQ(1,"Incorrect number of processors");
+      }
   }
 
 
@@ -88,7 +85,7 @@ int main(int argc,char **argv)
   info = TaoSolverSetInitialVector(tao,x); CHKERRQ(info); 
 
   /* Set routines for function, gradient, hessian evaluation */
-  info = TaoSolverSetObjectiveAndGradient(taoapp,FormFunctionGradient,(void *)&user); 
+  info = TaoSolverSetObjectiveAndGradient(tao,FormFunctionGradient,(void *)&user); 
   CHKERRQ(info);
 
   info = PetscOptionsSetValue("-tao_lmm_vectors","15"); CHKERRQ(info);
@@ -101,7 +98,7 @@ int main(int argc,char **argv)
   /* Get termination information */
   info = TaoSolverGetConvergedReason(tao,&reason); CHKERRQ(info);
   if (reason <= 0)
-    PetscPrintf(MPI_COMM_WORLD,"Try a different TAO method, adjust some parameters, or check the function evaluation routines\n");
+    PetscPrintf(MPI_COMM_WORLD,"Try a different TAO type, adjust some parameters, or check the function evaluation routines\n");
 
 
   /* Free TAO data structures */
@@ -110,8 +107,7 @@ int main(int argc,char **argv)
   /* Free PETSc data structures */
   info = VecDestroy(x); CHKERRQ(info);
 
-  /* Finalize TAO */
-//  TaoFinalize();
+
   PetscFinalize();
 
   return 0;
@@ -137,7 +133,7 @@ int main(int argc,char **argv)
     at the same time.  Evaluating both at once may be more efficient that
     evaluating each separately. 
 */
-int FormFunctionGradient(TAO_APPLICATION taoapp,Vec X,double *f, Vec G,void *ptr)
+int FormFunctionGradient(TaoSolver tao,Vec X,double *f, Vec G,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;  
   int    i,info,nn=user->n/2;
@@ -182,7 +178,7 @@ int FormFunctionGradient(TAO_APPLICATION taoapp,Vec X,double *f, Vec G,void *ptr
    Note:  Providing the Hessian may not be necessary.  Only some solvers
    require this matrix.
 */
-int FormHessian(TAO_APPLICATION taoapp,Vec X,Mat *HH, Mat *Hpre, MatStructure *flag,void *ptr)
+int FormHessian(TaoSolver tao,Vec X,Mat *HH, Mat *Hpre, MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx*)ptr;
   int     i, nn=user->n/2, info, ind[2];

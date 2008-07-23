@@ -1,6 +1,11 @@
 #if !defined(__TAO_SYS_H)
 #define __TAO_SYS_H
 
+#define TaoMid(a,b,c)    (((a) < (b)) ?                    \
+                           (((b) < (c)) ? (b) :            \
+                             (((a) < (c)) ? (c) : (a))) :  \
+                           (((a) < (c)) ? (a) :            \
+                             (((b) < (c)) ? (c) : (b))))
 
 #if defined(_MSC_VER)
 
@@ -9,7 +14,7 @@
 #define TaoInf(a)        (!_finite(a))
 #define TaoInfOrNaN(a)   TaoInf(a)
 
-#else
+#elif defined(PETSC_HAVE_ISNAN)
 
 // These tests are from ISO C99
 #define TaoNaN(a)        isnan(a)
@@ -19,10 +24,10 @@
 #endif
 
 #define TAO_DEFAULT        -13456834
-#define TAO_INFINITY        1.0e20
-#define TAO_NINFINITY       -1.0e20
+#define TAO_INFINITY        1.0e100
+#define TAO_NINFINITY       -1.0e100
 #define TAO_NULL           0
-#define TAO_EPSILON     DBL_EPSILON
+#define TAO_EPSILON        PETSC_MACHINE_EPSILON
 
 /*
 PetscErrorCode PETSC_DLLEXPORT TaoInitialize(int*,char ***,char[],const char[]);

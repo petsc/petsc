@@ -1,5 +1,4 @@
-/*$Id$*/
-
+#include "taolinesearch.h"
 #include "lmvm.h"
 
 #define LMM_BFGS                0
@@ -7,8 +6,8 @@
 #define LMM_GRADIENT            2
 
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSolve_LMVM"
-static int TaoSolve_LMVM(TaoSolver tao, void *solver)
+#define __FUNCT__ "TaoSolverSolve_LMVM"
+static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
 {
 
   /*
@@ -201,66 +200,56 @@ static int TaoSolve_LMVM(TaoSolver tao, void *solver)
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoSetUp_LMVM"
-static int TaoSetUp_LMVM(TaoSolver tao, void *solver)
+static PetscErrorCode TaoSolverSetUp_LMVM(TaoSolver tao)
 {
-    /*
-  TAO_LMVM *lm = (TAO_LMVM *)solver;
-  TaoVec *X;
-  int info;
+  TAO_LMVM *lmP = (TAO_LMVM *)tao->data;
+  PetscErrorCode ierr;
 
-  TaoFunctionBegin;
-
-  info = TaoGetSolution(tao, &X); CHKERRQ(info);
-  info = X->Clone(&lm->G); CHKERRQ(info);
-  info = X->Clone(&lm->D); CHKERRQ(info);
-  info = X->Clone(&lm->W); CHKERRQ(info);
-
-  // Create vectors we will need for linesearch
-  info = X->Clone(&lm->Xold); CHKERRQ(info);
-  info = X->Clone(&lm->Gold); CHKERRQ(info);
-
-  info = TaoSetLagrangianGradientVector(tao, lm->G); CHKERRQ(info);
-  info = TaoSetStepDirectionVector(tao, lm->D); CHKERRQ(info);
-
+  PetscFunctionBegin;
+  /* Existence of tao->solution checked in TaoSolverSetUp() */
+  if (!tao->gradient) {ierr = VecDuplicate(tao->solution,&tao->gradient); CHKERRQ(ierr);  }
+  if (!tao->stepdirection) {ierr = VecDuplicate(tao->solution,&tao->stepdirection); CHKERRQ(ierr);  }
+  if (!lmP->W) {ierr = VecDuplicate(tao->solution,&lmP->W); CHKERRQ(ierr);  }
+  if (!lmP->Xold) {ierr = VecDuplicate(tao->solution,&lmP->Xold); CHKERRQ(ierr);  }
+  if (!lmP->Gold) {ierr = VecDuplicate(tao->solution,&lmP->Gold); CHKERRQ(ierr);  }
+  
   // Create matrix for the limited memory approximation
-  lm->M = new TaoLMVMMat(X);
-
-  info = TaoCheckFG(tao); CHKERRQ(info);
-  TaoFunctionReturn(0);
-    */
-    return -1;
+  
+  PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSetDown_LMVM"
-static int TaoSetDown_LMVM(TaoSolver tao, void *solver)
+#define __FUNCT__ "TaoSolverDestroy_LMVM"
+static PetscErrorCode TaoSolverDestroy_LMVM(TaoSolver tao)
 {
-    /*
-  TAO_LMVM *lm = (TAO_LMVM *)solver;
-  int info;
 
-  TaoFunctionBegin;
-  info = TaoVecDestroy(lm->G); CHKERRQ(info);
-  info = TaoVecDestroy(lm->D); CHKERRQ(info);
-  info = TaoVecDestroy(lm->W); CHKERRQ(info);
+  TAO_LMVM *lmP = (TAO_LMVM *)tao->data;
+  PetscErrorCode ierr;
 
-  info = TaoVecDestroy(lm->Xold); CHKERRQ(info);
-  info = TaoVecDestroy(lm->Gold); CHKERRQ(info);
+  PetscFunctionBegin;
+  ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
+  tao->gradient=PETSC_NULL;
+  ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
+  tao->stepdirection=PETSC_NULL;
 
-  info = TaoMatDestroy(lm->M); CHKERRQ(info);
+  ierr = VecDestroy(lmP->W); CHKERRQ(ierr);
+  ierr = VecDestroy(lmP->Xold); CHKERRQ(ierr);
+  ierr = VecDestroy(lmP->Gold); CHKERRQ(ierr);
+  ierr = MatDestroy(lmP->M); CHKERRQ(ierr);
+  ierr = PetscFree(tao->data); CHKERRQ(ierr);
 
-  info = TaoSetLagrangianGradientVector(tao, 0); CHKERRQ(info);
-  info = TaoSetStepDirectionVector(tao, 0); CHKERRQ(info);
-  TaoFunctionReturn(0); 
-    */
-  return -1;
+  ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
+  tao->linesearch = PETSC_NULL;
+
+  PetscFunctionReturn(0); 
+
 }
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoSetOptions_LMVM"
-static int TaoSetOptions_LMVM(TaoSolver tao, void *solver)
+#define __FUNCT__ "TaoSolverSetFromOptions_LMVM"
+static PetscErrorCode TaoSolverSetFromOptions_LMVM(TaoSolver tao)
 {
     /*
   int info;
@@ -271,13 +260,13 @@ static int TaoSetOptions_LMVM(TaoSolver tao, void *solver)
   info = TaoOptionsTail(); CHKERRQ(info);
   TaoFunctionReturn(0);
     */
-    return -1;
+    return 0;
 }
 
 /*------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "TaoView_LMVM"
-static int TaoView_LMVM(TaoSolver tao, void *solver)
+#define __FUNCT__ "TaoSolverView_LMVM"
+static PetscErrorCode TaoSolverView_LMVM(TaoSolver tao, PetscViewer viewer)
 {
     /*
   TAO_LMVM *lm = (TAO_LMVM *)solver;
@@ -291,38 +280,39 @@ static int TaoView_LMVM(TaoSolver tao, void *solver)
   info = TaoLineSearchView(tao); CHKERRQ(info);
   TaoFunctionReturn(0);
     */
-    return -1;
+    return 0;
 }
 
 /* ---------------------------------------------------------- */
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TaoCreate_LMVM"
-int TaoCreate_LMVM(TaoSolver tao)
+#define __FUNCT__ "TaoSolverCreate_LMVM"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_LMVM(TaoSolver tao)
 {
-    /*
-  TAO_LMVM *lm;
-  int info;
+    
+  TAO_LMVM *lmP;
+  PetscErrorCode ierr;
 
-  TaoFunctionBegin;
+  PetscFunctionBegin;
+  tao->ops->setup = TaoSolverSetUp_LMVM;
+  tao->ops->solve = TaoSolverSolve_LMVM;
+  tao->ops->view = TaoSolverView_LMVM;
+  tao->ops->setfromoptions = TaoSolverSetFromOptions_LMVM;
+  tao->ops->destroy = TaoSolverDestroy_LMVM;
 
-  info = TaoNew(TAO_LMVM, &lm); CHKERRQ(info);
-  info = PetscLogObjectMemory(tao, sizeof(TAO_LMVM)); CHKERRQ(info);
+  ierr = PetscNewLog(tao,TAO_LMVM, &lmP); CHKERRQ(ierr);
+  tao->data = (void*)lmP;
+  tao->max_its = 2000;
+  tao->max_funcs = 4000;
+  tao->fatol = 1e-4;
+  tao->frtol = 1e-4;
+  ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch); CHKERRQ(ierr);
 
-  info = TaoSetTaoSolveRoutine(tao, TaoSolve_LMVM, (void *)lm); CHKERRQ(info);
-  info = TaoSetTaoSetUpDownRoutines(tao, TaoSetUp_LMVM, TaoSetDown_LMVM); CHKERRQ(info);
-  info = TaoSetTaoOptionsRoutine(tao, TaoSetOptions_LMVM); CHKERRQ(info);
-  info = TaoSetTaoViewRoutine(tao, TaoView_LMVM); CHKERRQ(info);
+  /* Need to set to "more-thuente" */
+  ierr = TaoLineSearchSetType(tao->linesearch,"unit"); CHKERRQ(ierr);
 
-  info = TaoSetMaximumIterates(tao, 2000); CHKERRQ(info);
-  info = TaoSetMaximumFunctionEvaluations(tao, 4000); CHKERRQ(info);
-  info = TaoSetTolerances(tao, 1e-4, 1e-4, 0, 0); CHKERRQ(info);
-  
-  info = TaoCreateMoreThuenteLineSearch(tao, 0, 0); CHKERRQ(info);
-  TaoFunctionReturn(0);
-    */
-    return -1;
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 

@@ -7,7 +7,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 typedef struct _p_TaoSolver*   TaoSolver;
 #define TaoSolverType const char*
-extern PetscCookie PETSC_DLLEXPORT TAOSOLVER_COOKIE;
+extern PetscCookie TAOSOLVER_DLLEXPORT TAOSOLVER_COOKIE;
 
 /*  Convergence flags.
     Be sure to check that these match the flags in
@@ -27,38 +27,48 @@ typedef enum {/* converged */
               TAO_DIVERGED_TR_REDUCTION   = -7,
               TAO_DIVERGED_USER           = -8, /* User defined */
               /* keep going */
-              TAO_CONTINUE_ITERATING      =  0} TaoSolverTerminateReason;
+              TAO_CONTINUE_ITERATING      =  0} TaoSolverConvergedReason;
 
-#if defined PETSC_USE_DYNAMIC_LIBRARIES)
+extern const char **TaoSolverConvergedReasons;
+
+#if defined PETSC_USE_DYNAMIC_LIBRARIES
 #define TaoSolverRegisterDynamic(a,b,c,d) TaoSolverRegister(a,b,c,0)
 #else
 #define TaoSolverRegisterDynamic(a,b,c,d) TaoSolverRegister(a,b,c,d)
 #endif
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverCreate(MPI_Comm,TaoSolver*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetFromOptions(TaoSolver);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetUp(TaoSolver);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetType(TaoSolver, TaoSolverType);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverDestroy(TaoSolver);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetOptionsPrefix(TaoSolver,const char []);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverView(TaoSolver, PetscViewer);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate(MPI_Comm,TaoSolver*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetFromOptions(TaoSolver);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetUp(TaoSolver);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetType(TaoSolver, TaoSolverType);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDestroy(TaoSolver);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetOptionsPrefix(TaoSolver,const char []);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverView(TaoSolver, PetscViewer);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSolve(TaoSolver);
-/* EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverRegister(const char [], const char[], const char[], 
-   PetscErrorCode (*)(TaoSolver)); */
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver,TaoSolverTerminateReason*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSolve(TaoSolver);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetInitialVector(TaoSolver, Vec);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetObjective(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*,void*), void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetObjectiveGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*), void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegister(const char [], const char[], const char[],  PetscErrorCode (*)(TaoSolver));
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterAll(const char[]);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterDestroy(void);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverComputeGradient(TaoSolver, Vec, Vec);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverComputeObjectiveGradient(TaoSolver, Vec, PetscReal*, Vec);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver,TaoSolverConvergedReason*);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverGetTolerances(TaoSolver, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetTolerances(TaoSolver, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver, Vec);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjective(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*,void*), void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*), void*);
+
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver, Vec, Vec);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveGradient(TaoSolver, Vec, PetscReal*, Vec);
+
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetTolerances(TaoSolver, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
+
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverResetStatistics(TaoSolver);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetDefaultMonitors(TaoSolver);
+
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSolver,void*);
 
 
 

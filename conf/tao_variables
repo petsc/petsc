@@ -46,7 +46,7 @@ F_SH_LIB_PATH	= ${FC_LINKER_SLFLAG}${TAO_LIB_DIR} ${TAO_F_SH_LIB_PATH}
 # is important!
 #
 # ??TAO_BLIB	= -L${TAO_LIB_DIR} -ltao ${PETSC_SYS_LIB}
-TAO_LIB		= -L${TAO_LIB_DIR}  -ltaolinesearch -ltao
+TAO_LIB		= -L${TAO_LIB_DIR}  -ltaosolver -ltaolinesearch -ltao
 
 #
 # Link if you are using the TAO Fortran interface.

@@ -3,6 +3,7 @@
 
 #include "taosolver.h"
 #include "taolinesearch.h"
+#include "petscksp.h"
 
 typedef struct _TaoSolverOps *TaoSolverOps;
 
@@ -10,8 +11,9 @@ struct _TaoSolverOps {
     PetscErrorCode (*computeobjective)(TaoSolver, Vec, PetscScalar*, void*);
     PetscErrorCode (*computeobjectiveandgradient)(TaoSolver, Vec, PetscScalar*, Vec, void*);
     PetscErrorCode (*computegradient)(TaoSolver, Vec, Vec, void*);
-    PetscErrorCode (*converged)(TaoSolver,void*);
-    PetscErrorCode (*convergeddestroy)(void*);
+    PetscErrorCode (*convergencetest)(TaoSolver,void*);
+    PetscErrorCode (*convergencedestroy)(void*);
+
     PetscErrorCode (*setup)(TaoSolver);
     PetscErrorCode (*solve)(TaoSolver);
     PetscErrorCode (*view)(TaoSolver, PetscViewer);
@@ -23,8 +25,11 @@ struct _TaoSolverOps {
 
 struct _p_TaoSolver {
     PETSCHEADER(struct _TaoSolverOps);
-    void *user_obj;
-    void *user_grad;
+    void *user_objP;
+    void *user_objgradP;
+    void *user_gradP;
+    void *user_hessP;
+    void *user_jacP;
 
     PetscErrorCode (*monitor[MAXTAOMONITORS])(TaoSolver,void*);
     PetscErrorCode (*monitordestroy[MAXTAOMONITORS])(void*);
@@ -37,33 +42,63 @@ struct _p_TaoSolver {
     void *data;
 
     Vec solution;
+    Vec gradient;
+    Vec stepdirection;
+    PetscReal step;
+    PetscReal residual;
+    PetscReal gnorm0;
+    PetscReal cnorm;
+    PetscReal cnorm0;
+    PetscReal fc;
+    
+
     PetscInt  max_its;
     PetscInt  max_funcs;
+    PetscInt  max_constraints;
     PetscInt  nfuncs;
     PetscInt  ngrads;
     PetscInt  nfuncgrads;
     PetscInt  nhess;
-    PetscInt  iter;
-    
-    TaoLineSearch *ls;
+    PetscInt  niter;
+    PetscInt  nconstraints;
+    PetscInt  njac;
 
-    PetscScalar residual;
-    PetscScalar rtol;
+    
+    TaoLineSearch linesearch;
+    PetscTruth lsflag; /* goes up when line search fails */
+    KSP *ksp;
+
+    PetscReal fatol;
+    PetscReal frtol;
+    PetscReal gatol;
+    PetscReal grtol;
+    PetscReal gttol;
+    PetscReal catol;
+    PetscReal crtol;
+    PetscReal xtol;
+    PetscReal trtol;
+    PetscReal fmin;
 
     PetscTruth printreason;
+    PetscTruth viewtao;
+    PetscTruth viewgradient;
+    PetscTruth viewconstraint;
+    PetscTruth viewhessian;
+    PetscTruth viewjacobian;
 
-    PetscReal *conv_hist; /* Number of iteration histories to keep */
+    PetscInt conv_hist_max;/* Number of iteration histories to keep */
+    PetscReal *conv_hist; 
     PetscInt *conv_hist_feval; /* Number of func evals at each iteration */
+    PetscInt *conv_hist_fgeval; /* Number of func/grad evals at each iteration */
     PetscInt *conv_hist_geval; /* Number of grad evals at each iteration */
     PetscInt *conv_hist_heval; /* Number of hess evals at each iteration */
     PetscInt conv_hist_len;
-    PetscInt conv_hist_max;
     PetscTruth conv_hist_reset;
 
     
 };
 
-extern PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_GradientEval, TaoSolver_HessianEval, TaoSolver_JacobianEval;
+extern PetscLogEvent TaoSolver_Solve, TaoSolver_ObjectiveEval, TaoSolver_ObjGradientEval, TaoSolver_GradientEval, TaoSolver_HessianEval, TaoSolver_JacobianEval;
     
 
 

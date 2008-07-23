@@ -1,12 +1,29 @@
-#include "taosolver_impl.h"
+#include "include/private/taosolver_impl.h"
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetInitialVector"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver tao, Vec x0) {
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    if (x0) {
+	PetscValidHeaderSpecific(x0,VEC_COOKIE,2);
+	PetscObjectReference((PetscObject)x0);
+    }
+    if (tao->solution) {
+	ierr = VecDestroy(tao->solution); CHKERRQ(ierr);
+    }
+    tao->solution = x0;
+    PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverComputeGradient"
 /*@
   TaoComputeGradient - Computes the gradient of the objective function
 
-  Collective on TaoSOlver
+  Collective on TaoSolver
 
   Input Parameters:
 + tao - the TaoSolver context
@@ -36,7 +53,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X
 	ierr = PetscLogEventBegin(TaoSolver_GradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
 	PetscStackPush("TaoSolver user gradient evaluation routine");
 	CHKMEMQ;
-	ierr = (*tao->ops->computegradient)(tao,X,G,tao->user_grad); CHKERRQ(ierr);
+	ierr = (*tao->ops->computegradient)(tao,X,G,tao->user_gradP); CHKERRQ(ierr);
 	CHKMEMQ;
 	PetscStackPop;
 	ierr = PetscLogEventEnd(TaoSolver_GradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
@@ -45,7 +62,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X
 	ierr = PetscLogEventBegin(TaoSolver_ObjGradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
 	PetscStackPush("TaoSolver user objective/gradient evaluation routine");
 	CHKMEMQ;
-	ierr = (*tao->ops->computeobjectiveandgradient)(tao,X,&dummy,G,tao->user_grad); CHKERRQ(ierr);
+	ierr = (*tao->ops->computeobjectiveandgradient)(tao,X,&dummy,G,tao->user_objgradP); CHKERRQ(ierr);
 	CHKMEMQ;
 	PetscStackPop;
 	ierr = PetscLogEventEnd(TaoSolver_ObjGradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
@@ -78,39 +95,84 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X
 
 .seealso: TaoSolverComputeGradient(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetObjective()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, X, PetscReal *f) 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec X, PetscReal *f) 
 {
     PetscErrorCode ierr;
+    Vec temp;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
     PetscValidHeaderSpecific(X,VEC_COOKIE,2);
     PetscCheckSameComm(tao,1,X,2);
     if (tao->ops->computeobjective) {
-	ierr = PetscLogEventBegin(TaoSolver_GradientEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+	ierr = PetscLogEventBegin(TaoSolver_ObjectiveEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
 	PetscStackPush("TaoSolver user objective evaluation routine");
 	CHKMEMQ;
-	ierr = (*tao->ops->computeobjective)(tao,X,G,tao->user_obj); CHKERRQ(ierr);
+	ierr = (*tao->ops->computeobjective)(tao,X,f,tao->user_objP); CHKERRQ(ierr);
 	CHKMEMQ;
 	PetscStackPop;
-	ierr = PetscLogEventEnd(TaoSolver_GradientEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(TaoSolver_ObjectiveEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
 	tao->nfuncs++;
     } else if (tao->ops->computeobjectiveandgradient) {
-	/*
-	ierr = PetscLogEventBegin(TaoSolver_ObjGradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
+	ierr = PetscInfo(tao,"Duplicating variable vector in order to call func/grad routine"); CHKERRQ(ierr);
+	ierr = VecDuplicate(X,&temp); CHKERRQ(ierr);
+	ierr = PetscLogEventBegin(TaoSolver_ObjGradientEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
 	PetscStackPush("TaoSolver user objective/gradient evaluation routine");
 	CHKMEMQ;
-	ierr = (*tao->ops->computeobjectiveandgradient)(tao,X,&dummy,G,tao->user_grad); CHKERRQ(ierr);
+	ierr = (*tao->ops->computeobjectiveandgradient)(tao,X,f,temp,tao->user_objgradP); CHKERRQ(ierr);
 	CHKMEMQ;
 	PetscStackPop;
-	ierr = PetscLogEventEnd(TaoSolver_ObjGradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
+	ierr = PetscLogEventEnd(TaoSolver_ObjGradientEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+	ierr = VecDestroy(temp); CHKERRQ(ierr);
 	tao->nfuncgrads++;
-	*/
+
     }  else {
 	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjective() has not been called");
     }
     PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverComputeObjectiveAndGradient"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+  PetscValidHeaderSpecific(tao,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(tao,VEC_COOKIE,4);
+  PetscCheckSameComm(tao,1,X,2);
+  PetscCheckSameComm(tao,1,G,4);
+  if (tao->ops->computeobjectiveandgradient) {
+      ierr = PetscLogEventBegin(TaoSolver_ObjGradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
+      PetscStackPush("TaoSolver user objective/gradient evaluation routine");
+      CHKMEMQ;
+      ierr = (*tao->ops->computeobjectiveandgradient)(tao,X,f,G,tao->user_objgradP); CHKERRQ(ierr);
+      CHKMEMQ;
+      PetscStackPop;
+      ierr = PetscLogEventEnd(TaoSolver_ObjGradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
+      tao->nfuncgrads++;
+  } else if (tao->ops->computeobjective && tao->ops->computegradient) {
+      ierr = PetscLogEventBegin(TaoSolver_ObjectiveEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+      PetscStackPush("TaoSolver user objective evaluation routine");
+      CHKMEMQ;
+      ierr = (*tao->ops->computeobjective)(tao,X,f,tao->user_objP); CHKERRQ(ierr);
+      CHKMEMQ;
+      PetscStackPop;
+      ierr = PetscLogEventEnd(TaoSolver_ObjectiveEval,tao,X,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+      tao->nfuncs++;
+      
+      ierr = PetscLogEventBegin(TaoSolver_GradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
+      PetscStackPush("TaoSolver user gradient evaluation routine");
+      CHKMEMQ;
+      ierr = (*tao->ops->computegradient)(tao,X,G,tao->user_gradP); CHKERRQ(ierr);
+      CHKMEMQ;
+      PetscStackPop;
+      ierr = PetscLogEventEnd(TaoSolver_GradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
+      tao->ngrads++;
+  } else {
+      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjective() or TaoSolverSetGradient() not set");
+  }
+} 
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetObjective"
@@ -140,8 +202,8 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjective(TaoSolver tao, PetscErr
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-    tao->user_obj = ctx;
-    tao->computeobjective = func;
+    tao->user_objP = ctx;
+    tao->ops->computeobjective = func;
     PetscFunctionReturn(0);
 }
 
@@ -175,12 +237,20 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradient(TaoSolver tao,  PetscErr
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-    tao->user_grad = ctx;
-    tao->computegradient = func;
+    tao->user_gradP = ctx;
+    tao->ops->computegradient = func;
     PetscFunctionReturn(0);
 }
 
 
-
-
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetObjectiveAndGradient"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradient(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal *, Vec, void*), void *ctx)
+{
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+    tao->user_objgradP = ctx;
+    tao->ops->computeobjectiveandgradient = func;
+    PetscFunctionReturn(0);
+}
   

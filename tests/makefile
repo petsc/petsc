@@ -3,7 +3,7 @@ EXAMPLESC = test_link1.c linesearch1.c
 TESTEXAMPLES_C = test_link1.tao runtest_link1 test_link1.rm clean \
          test_linesearch1.tao runtest_linesearch1 test_linesearch1.rm \
          test_lmvmmat1.tao runtest_lmvmmat1 test_lmvmmat1.rm \
-         test_rosenbrock1.tao runtest_rosenbrock1.tao test_rosenbrock1.rm \
+         test_rosenbrock1.tao runtest_rosenbrock1 test_rosenbrock1.rm \
 	 clean 
 
 
