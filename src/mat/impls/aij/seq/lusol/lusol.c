@@ -339,6 +339,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat A,MatFactorInfo *info,Mat *F)
       factorizations++;
     } while (status == 7);
   (*F)->assembled = PETSC_TRUE;
+  (*F)->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -380,7 +381,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, 
 
   B->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
   B->ops->solve           = MatSolve_LUSOL;
-  B->factor               = FACTOR_LU;
+  B->factor               = MAT_FACTOR_LU;
   lusol                   = (Mat_LUSOL*)(B->spptr);
 
   /************************************************************************/
@@ -441,7 +442,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqaij_lusol"
-PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, Mat *F) 
+PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F) 
 {
   Mat            B;
   Mat_LUSOL      *lusol;
@@ -462,7 +463,7 @@ PetscErrorCode MatGetFactor_seqaij_lusol(Mat A, Mat *F)
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_LUSOL;
   B->ops->destroy          = MatDestroy_LUSOL;
   B->ops->solve            = MatSolve_LUSOL;
-  B->factor                = FACTOR_LU;
+  B->factor                = MAT_FACTOR_LU;
   PetscFunctionReturn(0);
 }
 

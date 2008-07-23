@@ -2128,7 +2128,7 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
   }
 
   outA          = inA; 
-  inA->factor   = FACTOR_LU;
+  inA->factor   = MAT_FACTOR_LU;
 
   ierr = MatMarkDiagonal_SeqBAIJ(inA);CHKERRQ(ierr);
 
@@ -2741,7 +2741,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
   ierr    = PetscNewLog(B,Mat_SeqBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->factor           = 0;
   B->mapping          = 0;
   b->row              = 0;
   b->col              = 0;
@@ -2827,6 +2826,11 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Ma
   }
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
+  ierr = PetscMapCopy(((PetscObject)A)->comm,&A->rmap,&C->rmap);CHKERRQ(ierr);  
+  ierr = PetscMapCopy(((PetscObject)A)->comm,&A->cmap,&C->cmap);CHKERRQ(ierr);  
+  c->bs2         = a->bs2;
+  c->mbs         = a->mbs;
+  c->nbs         = a->nbs;
 
   if (a->diag) {
     ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&c->diag);CHKERRQ(ierr);
@@ -2868,15 +2872,14 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Ma
 #define __FUNCT__ "MatDuplicate_SeqBAIJ"
 PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
-  Mat            C;
   Mat_SeqBAIJ    *c,*a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,mbs = a->mbs,nz = a->nz,bs2 = a->bs2;
 
   PetscFunctionBegin;
-  ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,A->rmap.N,A->cmap.n,A->rmap.N,A->cmap.n);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATSEQBAIJ);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
+  ierr = MatSetSizes(*B,A->rmap.N,A->cmap.n,A->rmap.N,A->cmap.n);CHKERRQ(ierr);
+  ierr = MatSetType(*B,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatDuplicateNoCreate_SeqBAIJ(A,cpvalues,B);
   PetscFunctionReturn(0);
 }

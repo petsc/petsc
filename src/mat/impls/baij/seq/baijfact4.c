@@ -81,7 +81,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat *B)
   ierr = PetscFree(v_work);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->factor = FACTOR_LU;
+  C->factor = MAT_FACTOR_LU;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);

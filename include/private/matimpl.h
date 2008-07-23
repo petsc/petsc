@@ -230,9 +230,6 @@ EXTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscI
 EXTERN PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
 EXTERN PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,PetscScalar**,PetscInt*);
 
-#define FACTOR_LU       1
-#define FACTOR_CHOLESKY 2
-
 typedef struct {
   PetscInt   dim;
   PetscInt   dims[4];
@@ -254,7 +251,7 @@ struct _p_Mat {
   PETSCHEADER(struct _MatOps);
   PetscMap               rmap,cmap;
   void                   *data;            /* implementation-specific data */
-  PetscInt               factor;           /* 0, FACTOR_LU, or FACTOR_CHOLESKY */
+  MatFactorType          factor;           /* MAT_FACTOR_LU, or MAT_FACTOR_CHOLESKY */
   PetscTruth             assembled;        /* is the matrix assembled? */
   PetscTruth             was_assembled;    /* new values inserted into assembled mat */
   PetscInt               num_ass;          /* number of times matrix has been assembled */

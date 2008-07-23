@@ -360,23 +360,13 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
 
 
 /*MC
-  MATSUPERLU - MATSUPERLU = "superlu" - A matrix type providing direct solvers (LU) for sequential matrices 
+  MAT_SOLVER_SUPERLU = "superlu" - A matrix type providing direct solvers (LU) for sequential matrices 
   via the external package SuperLU.
 
-  If SuperLU is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes SuperLU solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU), then 
-  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() DO NOT
-  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
-
-  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation() is 
-  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
-  the MATSEQAIJ type AFTER the matrix values are set without data copy.
+  Use config/configure.py --download-superlu to have PETSc installed with SuperLU
 
   Options Database Keys:
-+ -mat_type superlu - sets the matrix type to "superlu" during a call to MatSetFromOptions()
-. -mat_superlu_ordering <0,1,2,3> - 0: natural ordering, 
++ -mat_superlu_ordering <0,1,2,3> - 0: natural ordering, 
                                     1: MMD applied to A'*A, 
                                     2: MMD applied to A'+A, 
                                     3: COLAMD, approximate minimum degree column ordering
@@ -384,14 +374,17 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
                           choices: NOREFINE, SINGLE, DOUBLE, EXTRA; default is NOREFINE
 - -mat_superlu_printstat - print SuperLU statistics about the factorization
 
+   Notes: Do not confuse this with MAT_SOLVER_SUPERLU_DIST which is for parallel sparse solves
+
    Level: beginner
 
-.seealso: PCLU
+.seealso: PCLU, MAT_SOLVER_SUPERLU_DIST, MAT_SOLVER_MUMPS, MAT_SOLVER_SPOOLES
 M*/
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqaij_superlu"
-PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,Mat *F)
+PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 {
   Mat            B;
   Mat_SuperLU    *lu;
@@ -413,8 +406,9 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,Mat *F)
   B->ops->solve            = MatSolve_SuperLU;
   B->ops->solvetranspose   = MatSolveTranspose_SuperLU;
   B->ops->destroy          = MatDestroy_SuperLU;
-  B->factor               = FACTOR_LU;
+  B->factor               = MAT_FACTOR_LU;
   B->assembled            = PETSC_TRUE;  /* required by -ksp_view */
+  B->preallocated         = PETSC_TRUE;
   
   ierr = PetscNewLog(B,Mat_SuperLU,&lu);CHKERRQ(ierr);
   set_default_options(&lu->options);
@@ -424,36 +418,37 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,Mat *F)
   lu->lwork = 0;   /* allocate space internally by system malloc */
 
   ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
-  ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
-  if (flg) {lu->options.ColPerm = (colperm_t)indx;}
-  ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);
-  if (flg) { lu->options.IterRefine = (IterRefine_t)indx;}
-  ierr = PetscOptionsTruth("-mat_superlu_symmetricmode","SymmetricMode","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-  if (flg) lu->options.SymmetricMode = YES; 
-  ierr = PetscOptionsReal("-mat_superlu_diagpivotthresh","DiagPivotThresh","None",lu->options.DiagPivotThresh,&lu->options.DiagPivotThresh,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsTruth("-mat_superlu_pivotgrowth","PivotGrowth","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-  if (flg) lu->options.PivotGrowth = YES;
-  ierr = PetscOptionsTruth("-mat_superlu_conditionnumber","ConditionNumber","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-  if (flg) lu->options.ConditionNumber = YES;
-  ierr = PetscOptionsEList("-mat_superlu_rowperm","rowperm","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
-  if (flg) {lu->options.RowPerm = (rowperm_t)indx;}
-  ierr = PetscOptionsTruth("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-  if (flg) lu->options.ReplaceTinyPivot = YES; 
-  ierr = PetscOptionsTruth("-mat_superlu_printstat","PrintStat","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-  if (flg) lu->options.PrintStat = YES; 
-  ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,PETSC_NULL);CHKERRQ(ierr); 
-  if (lu->lwork > 0 ){
-    ierr = PetscMalloc(lu->lwork,&lu->work);CHKERRQ(ierr); 
-  } else if (lu->lwork != 0 && lu->lwork != -1){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %D is not supported by SUPERLU. The default lwork=0 is used.\n",lu->lwork);
-    lu->lwork = 0;
-  }
+    ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
+    if (flg) {lu->options.ColPerm = (colperm_t)indx;}
+    ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);
+    if (flg) { lu->options.IterRefine = (IterRefine_t)indx;}
+    ierr = PetscOptionsTruth("-mat_superlu_symmetricmode","SymmetricMode","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    if (flg) lu->options.SymmetricMode = YES; 
+    ierr = PetscOptionsReal("-mat_superlu_diagpivotthresh","DiagPivotThresh","None",lu->options.DiagPivotThresh,&lu->options.DiagPivotThresh,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_superlu_pivotgrowth","PivotGrowth","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    if (flg) lu->options.PivotGrowth = YES;
+    ierr = PetscOptionsTruth("-mat_superlu_conditionnumber","ConditionNumber","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    if (flg) lu->options.ConditionNumber = YES;
+    ierr = PetscOptionsEList("-mat_superlu_rowperm","rowperm","None",rowperm,2,rowperm[0],&indx,&flg);CHKERRQ(ierr);
+    if (flg) {lu->options.RowPerm = (rowperm_t)indx;}
+    ierr = PetscOptionsTruth("-mat_superlu_replacetinypivot","ReplaceTinyPivot","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    if (flg) lu->options.ReplaceTinyPivot = YES; 
+    ierr = PetscOptionsTruth("-mat_superlu_printstat","PrintStat","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
+    if (flg) lu->options.PrintStat = YES; 
+    ierr = PetscOptionsInt("-mat_superlu_lwork","size of work array in bytes used by factorization","None",lu->lwork,&lu->lwork,PETSC_NULL);CHKERRQ(ierr); 
+    if (lu->lwork > 0 ){
+      ierr = PetscMalloc(lu->lwork,&lu->work);CHKERRQ(ierr); 
+    } else if (lu->lwork != 0 && lu->lwork != -1){
+      ierr = PetscPrintf(PETSC_COMM_SELF,"   Warning: lwork %D is not supported by SUPERLU. The default lwork=0 is used.\n",lu->lwork);
+      lu->lwork = 0;
+    }
   PetscOptionsEnd();
 
 #ifdef SUPERLU2
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",
-                                    (void(*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",(void(*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
 #endif
+  B->spptr = lu;
   *F = B;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

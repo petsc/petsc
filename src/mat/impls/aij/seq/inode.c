@@ -789,7 +789,7 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;  
-  if (A->factor!=FACTOR_LU) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unfactored matrix");
+  if (A->factor != MAT_FACTOR_LU) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unfactored matrix");
   if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
@@ -1233,7 +1233,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   rtmp33 = rtmp22 + n;  
   
   node_max = a->inode.node_count; 
-  ns       = a->inode.size ;
+  ns       = a->inode.size;
   if (!ns){                   
     SETERRQ(PETSC_ERR_PLIB,"Matrix without inode information");
   }
@@ -1580,8 +1580,9 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&c);CHKERRQ(ierr);
-  C->factor      = FACTOR_LU;
+  C->factor      = MAT_FACTOR_LU;
   C->assembled   = PETSC_TRUE;
+  C->preallocated = PETSC_TRUE;
   if (sctx.nshift) {
     if (info->shiftnz) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);

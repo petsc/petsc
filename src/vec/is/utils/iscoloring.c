@@ -398,7 +398,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS part,IS *is)
 PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt count[])
 {
   MPI_Comm       comm;
-  PetscInt            i,*indices,np,npt,n,*lsizes;
+  PetscInt       i,*indices,np,npt,n,*lsizes;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

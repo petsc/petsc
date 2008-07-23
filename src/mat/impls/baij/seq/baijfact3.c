@@ -155,7 +155,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = PetscLogObjectMemory(*B,(ainew[n]-n)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ainew[n];
   
-  (*B)->factor                 = FACTOR_LU;
+  (*B)->factor                 = MAT_FACTOR_LU;
   (*B)->info.factor_mallocs    = reallocs;
   (*B)->info.fill_ratio_given  = f;
   if (ai[n] != 0) {

@@ -40,7 +40,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   PetscErrorCode ierr;
   
   PetscFunctionBegin;	
-  B->factor                     = FACTOR_CHOLESKY;  
+  B->factor                = MAT_FACTOR_CHOLESKY;  
 
   lu                       = (Mat_Spooles*)(B->spptr);
   lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
@@ -53,25 +53,86 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   PetscFunctionReturn(0); 
 }
 
+extern PetscErrorCode MatDestroy_MPISBAIJ(Mat);
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_MPISBAIJSpooles"
+PetscErrorCode MatDestroy_MPISBAIJSpooles(Mat A)
+{
+  Mat_Spooles   *lu = (Mat_Spooles*)A->spptr; 
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  if (lu->CleanUpSpooles) {
+    FrontMtx_free(lu->frontmtx);        
+    IV_free(lu->newToOldIV);            
+    IV_free(lu->oldToNewIV); 
+    IV_free(lu->vtxmapIV);
+    InpMtx_free(lu->mtxA);             
+    ETree_free(lu->frontETree);          
+    IVL_free(lu->symbfacIVL);         
+    SubMtxManager_free(lu->mtxmanager);    
+    DenseMtx_free(lu->mtxX);
+    DenseMtx_free(lu->mtxY);
+    ierr = MPI_Comm_free(&(lu->comm_spooles));CHKERRQ(ierr);
+    if ( lu->scat ){
+      ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
+      ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
+      ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatDestroy_MPISBAIJ(A);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_mpisbaij_spooles"
+PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
+{
+  Mat_Spooles    *lu;
+  Mat            B;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;	
+
+  /* Create the factorization matrix F */  
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
+  B->spptr          = lu;
+  lu->flg           = DIFFERENT_NONZERO_PATTERN;
+  lu->options.useQR = PETSC_FALSE;
+
+  if (ftype == MAT_FACTOR_CHOLESKY) {
+    B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;
+    B->ops->choleskyfactornumeric  = MatFactorNumeric_MPISpooles;
+    B->ops->solve            = MatSolve_MPISpooles;
+    B->ops->destroy         = MatDestroy_MPISBAIJSpooles;  
+    B->factor               = MAT_FACTOR_CHOLESKY;  
+
+    lu->options.symflag      = SPOOLES_NONSYMMETRIC;
+    lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
+    lu->options.symflag      = SPOOLES_SYMMETRIC;
+  } else SETERRQ(PETSC_ERR_SUP,"Only Cholesky for SBAIJ matrices");
+
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
+
+  *F = B;
+  PetscFunctionReturn(0); 
+}
 
 /*MC
-  MATMPISBAIJSPOOLES - MATMPISBAIJSPOOLES = "mpisbaijspooles" - a matrix type providing direct solvers (Cholesky) for distributed symmetric
-  matrices via the external package Spooles.
+  MAT_SOLVER_SPOOLES - "spooles" - a matrix type providing direct solvers (LU and Cholesky) for distributed symmetric
+  and non-symmetric  matrices via the external package Spooles.
 
-  If Spooles is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes Spooles solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATMPISBAIJSPOOLES), then 
-  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
-  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
-
-  This matrix inherits from MATMPISBAIJ.  As a result, MatMPISBAIJSetPreallocation() is 
-  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
-  the MATMPISBAIJ type without data copy AFTER the matrix values have been set.
+  If Spooles is installed (run config/configure.py with the option --download-spooles)
 
   Options Database Keys:
-+ -mat_type mpisbaijspooles - sets the matrix type to mpisbaijspooles during a call to MatSetFromOptions()
-. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
++ -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
 . -mat_spooles_seed <seed> - random number seed used for ordering
 . -mat_spooles_msglvl <msglvl> - message output level
 . -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
@@ -88,6 +149,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
 
    Level: beginner
 
-.seealso: MATSEQSBAIJSPOOLES, MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, PCCHOLESKY
+.seealso: MAT_SOLVER_SUPERLU, MAT_SOLVER_MUMPS, MAT_SOLVER_SUPERLU_DIST 
 M*/
 

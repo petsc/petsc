@@ -204,7 +204,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInf
   ierr = PetscLogObjectMemory(*B,(iu[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = iu[mbs];
   
-  (*B)->factor                 = FACTOR_CHOLESKY;
+  (*B)->factor                 = MAT_FACTOR_CHOLESKY;
   (*B)->info.factor_mallocs    = reallocs;
   (*B)->info.fill_ratio_given  = f;
   if (ai[mbs] != 0) {
@@ -455,7 +455,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
   ierr    = PetscLogObjectMemory(B,(ui[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[mbs];
   
-  B->factor                 = FACTOR_CHOLESKY;
+  B->factor                 = MAT_FACTOR_CHOLESKY;
   B->info.factor_mallocs    = reallocs;
   B->info.fill_ratio_given  = fill;
   if (ai[mbs] != 0) {
@@ -686,7 +686,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat A,MatFactorInfo *info,Mat
   }
 
   ierr = ISRestoreIndices(perm,&perm_ptr);CHKERRQ(ierr);
-  C->factor       = FACTOR_CHOLESKY;
+  C->factor       = MAT_FACTOR_CHOLESKY;
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
@@ -811,7 +811,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering(Mat A,MatFact
   ierr = PetscFree(dk);CHKERRQ(ierr);
   ierr = PetscFree(pivots);CHKERRQ(ierr);
 
-  C->factor    = FACTOR_CHOLESKY;
+  C->factor    = MAT_FACTOR_CHOLESKY;
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*bs*bs2*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
@@ -987,7 +987,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat A,MatFactorInfo *info,Mat
     ierr = PetscFree(aa);CHKERRQ(ierr);
   }
   ierr = ISRestoreIndices(perm,&perm_ptr);CHKERRQ(ierr);
-  C->factor    = FACTOR_CHOLESKY;
+  C->factor    = MAT_FACTOR_CHOLESKY;
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*8*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
@@ -1125,7 +1125,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering(Mat A,MatFact
   ierr = PetscFree(il);CHKERRQ(ierr);
   ierr = PetscFree(dk);CHKERRQ(ierr);
 
-  C->factor    = FACTOR_CHOLESKY;
+  C->factor    = MAT_FACTOR_CHOLESKY;
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*8*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
@@ -1269,7 +1269,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat A,MatFactorInfo *info,Mat
   if (a->permute){ierr = PetscFree(aa);CHKERRQ(ierr);}
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
-  C->factor       = FACTOR_CHOLESKY; 
+  C->factor       = MAT_FACTOR_CHOLESKY; 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap.N);CHKERRQ(ierr);
@@ -1408,7 +1408,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat A,MatFact
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = PetscFree(il);CHKERRQ(ierr);
   
-  C->factor       = FACTOR_CHOLESKY; 
+  C->factor       = MAT_FACTOR_CHOLESKY; 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap.N);CHKERRQ(ierr);

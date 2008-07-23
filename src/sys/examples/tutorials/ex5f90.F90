@@ -68,6 +68,7 @@
       ctx%nxc = 23
       ctx%x   = 155.4
       ctx%c   = 'a whole new string'
+      ctx%t   = PETSC_TRUE
       call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
       call PetscBagView(bag,PETSC_VIEWER_BINARY_WORLD,ierr)
       call PetscBagDestroy(bag,ierr)
@@ -76,6 +77,7 @@
       call PetscBagLoad(viewer,bag,ierr)
       call PetscViewerDestroy(viewer,ierr)
       call PetscBagView(bag,PETSC_VIEWER_STDOUT_WORLD,ierr)
+      call PetscBagGetData(bag,ctx,ierr)
       call PetscBagDestroy(bag,ierr)
 
       call PetscFinalize(ierr)

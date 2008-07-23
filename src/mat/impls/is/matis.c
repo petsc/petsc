@@ -515,7 +515,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat A)
   ierr                = PetscNewLog(A,Mat_IS,&b);CHKERRQ(ierr);
   A->data             = (void*)b;
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  A->factor           = 0;
   A->mapping          = 0;
 
   A->ops->mult                    = MatMult_IS;

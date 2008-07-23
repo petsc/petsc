@@ -1822,7 +1822,7 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
   ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
 
   outA          = inA; 
-  inA->factor   = FACTOR_LU;
+  inA->factor   = MAT_FACTOR_LU;
   ierr = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
   if (a->row) { ierr = ISDestroy(a->row); CHKERRQ(ierr);}
   a->row = row;
@@ -3113,6 +3113,9 @@ M*/
 EXTERN_C_BEGIN
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_mumps(Mat,MatFactorType,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_superlu(Mat,MatFactorType,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_spooles(Mat,MatFactorType,Mat*);
 EXTERN_C_END
 
 
@@ -3132,7 +3135,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscNewLog(B,Mat_SeqAIJ,&b);CHKERRQ(ierr);
   B->data             = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->factor           = 0;
   B->mapping          = 0;
   b->row              = 0;
   b->col              = 0;
@@ -3162,6 +3164,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_superlu_C",
+                                     "MatGetFactor_seqaij_superlu",
+                                     MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_spooles_C",
+                                     "MatGetFactor_seqaij_spooles",
+                                     MatGetFactor_seqaij_spooles);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_mumps_C",
+                                     "MatGetFactor_seqaij_mumps",
+                                     MatGetFactor_seqaij_mumps);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_petsc_C",
                                      "MatGetFactor_seqaij_petsc",
                                      MatGetFactor_seqaij_petsc);CHKERRQ(ierr);

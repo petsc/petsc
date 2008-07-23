@@ -2073,7 +2073,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
   ierr    = PetscLogObjectMemory(*B,(iu[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = iu[mbs];
   
-  (*B)->factor                 = FACTOR_CHOLESKY;
+  (*B)->factor                 = MAT_FACTOR_CHOLESKY;
   (*B)->info.factor_mallocs    = reallocs;
   (*B)->info.fill_ratio_given  = f;
   if (ai[mbs] != 0) {
@@ -2334,7 +2334,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   b->maxnz = b->nz = ui[am];
   
-  B->factor                 = FACTOR_CHOLESKY;
+  B->factor                 = MAT_FACTOR_CHOLESKY;
   B->info.factor_mallocs    = reallocs;
   B->info.fill_ratio_given  = fill;
   B->info.fill_ratio_needed = ratio_needed;

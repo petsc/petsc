@@ -90,6 +90,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F)
   dgsf(&one,&A->rmap.n,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
   (*F)->assembled = PETSC_TRUE;
+  (*F)->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -114,7 +115,7 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat 
 
   B->ops->solve           = MatSolve_Essl;
   B->ops->lufactornumeric = MatLUFactorNumeric_Essl;
-  B->factor               = FACTOR_LU;
+  B->factor               = MAT_FACTOR_LU;
   
   essl = (Mat_Essl *)(B->spptr);
 
@@ -161,7 +162,7 @@ M*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqaij_essl"
-PetscErrorCode MatGetFactor_seqaij_essl(Mat A,Mat *F) 
+PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F) 
 {
   Mat            B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
@@ -180,7 +181,7 @@ PetscErrorCode MatGetFactor_seqaij_essl(Mat A,Mat *F)
   B->ops->solve            = MatSolve_Essl;
   B->ops->lufactornumeric  = MatLUFactorNumeric_Essl;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_Essl;
-  B->factor                = FACTOR_LU;
+  B->factor                = MAT_FACTOR_LU;
   *F                       = B;
   PetscFunctionReturn(0);
 }

@@ -202,7 +202,7 @@
          if (rank .eq. 0) then
             write(6,*) 'Corrupted vector!'
          endif
-         return
+         stop
       endif
 
 !  Free work space.  All PETSc objects should be destroyed when they

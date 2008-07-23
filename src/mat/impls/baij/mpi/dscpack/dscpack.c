@@ -410,7 +410,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqbaij_dscpack"
-PetscErrorCode MatGetFactor_seqbaij_dscpack(Mat A,Mat *F) 
+PetscErrorCode MatGetFactor_seqbaij_dscpack(Mat A,MatFactorType ftype,Mat *F) 
 {
   Mat            B;
   Mat_DSCPACK    *lu;   
@@ -434,7 +434,7 @@ PetscErrorCode MatGetFactor_seqbaij_dscpack(Mat A,Mat *F)
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_DSCPACK;
   B->ops->solve                  = MatSolve_DSCPACK;
   B->ops->destroy                = MatDestroy_DSCPACK;
-  B->factor                      = FACTOR_CHOLESKY;  
+  B->factor                      = MAT_FACTOR_CHOLESKY;  
 
   /* Set the default input options */
   lu->order_code  = 2; 

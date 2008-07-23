@@ -129,13 +129,13 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat A,IS r,IS c,MatFactorInfo *info,Ma
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_Matlab;
   (*F)->ops->lufactornumeric = MatLUFactorNumeric_Matlab;
-  (*F)->factor               = FACTOR_LU;
+  (*F)->factor               = MAT_FACTOR_LU;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqaij_matlab"
-PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,Mat *F)
+PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
 {
   PetscErrorCode ierr;
 
@@ -148,7 +148,7 @@ PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,Mat *F)
   (*F)->ops->solve            = MatSolve_Matlab;
   (*F)->ops->lufactornumeric  = MatLUFactorNumeric_Matlab;
   (*F)->ops->lufactorsymbolic = MatLUFactorSymbolic_Matlab;
-  (*F)->factor                = FACTOR_LU;
+  (*F)->factor                = MAT_FACTOR_LU;
   PetscFunctionReturn(0);
 }
 
@@ -171,7 +171,7 @@ PetscErrorCode MatILUDTFactor_Matlab(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   ierr                       = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr                       = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->solve           = MatSolve_Matlab;
-  (*F)->factor               = FACTOR_LU;
+  (*F)->factor               = MAT_FACTOR_LU;
   ierr = PetscMatlabEnginePut(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),(PetscObject)A);CHKERRQ(ierr);
   _A   = A->name;
   ierr = PetscMatlabEngineEvaluate(PETSC_MATLAB_ENGINE_(((PetscObject)A)->comm),"info_%s = struct('droptol',%g,'thresh',%g);",_A,info->dt,info->dtcol);CHKERRQ(ierr);

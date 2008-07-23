@@ -83,10 +83,14 @@ void PETSC_STDCALL petscbagregisterreal_(PetscBag *bag,void *ptr,PetscReal *def,
 void PETSC_STDCALL petscbagregistertruth_(PetscBag *bag,void *ptr,PetscTruth *def,CHAR s1 PETSC_MIXED_LEN(l1),
 					CHAR s2 PETSC_MIXED_LEN(l2),PetscErrorCode *ierr PETSC_END_LEN(l1) PETSC_END_LEN(l2))
 {
-  char *t1,*t2;
+  char       *t1,*t2;
+  PetscTruth flg = PETSC_FALSE;
+
+  /* some Fortran compilers use -1 as boolean */
+  if (*def) flg = PETSC_TRUE;
   FIXCHAR(s1,l1,t1);
   FIXCHAR(s2,l2,t2);
-  *ierr = PetscBagRegisterTruth(*bag,ptr,*def,t1,t2);
+  *ierr = PetscBagRegisterTruth(*bag,ptr,flg,t1,t2);
   FREECHAR(s1,t1);
   FREECHAR(s2,t2);
 }

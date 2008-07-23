@@ -26,10 +26,10 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_mpiaij_spooles"
-PetscErrorCode MatGetFactor_mpiaij_spooles(Mat A,Mat *F)
+PetscErrorCode MatGetFactor_mpiaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 {
-  Mat_Spooles *lu;
-  Mat         B;
+  Mat_Spooles    *lu;
+  Mat            B;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;	
@@ -40,17 +40,21 @@ PetscErrorCode MatGetFactor_mpiaij_spooles(Mat A,Mat *F)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJSpooles;
-  B->ops->lufactornumeric  = MatFactorNumeric_MPISpooles;
-  B->ops->solve            = MatSolve_MPISpooles;
-  B->ops->destroy         = MatDestroy_MPIAIJSpooles;  
-  B->factor               = FACTOR_LU;  
+  ierr = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
+  B->spptr          = lu;
+  lu->flg           = DIFFERENT_NONZERO_PATTERN;
+  lu->options.useQR = PETSC_FALSE;
 
-  lu                       = (Mat_Spooles *)(B->spptr);
-  lu->options.symflag      = SPOOLES_NONSYMMETRIC;
-  lu->options.pivotingflag = SPOOLES_PIVOTING; 
-  lu->flg                  = DIFFERENT_NONZERO_PATTERN;
-  lu->options.useQR        = PETSC_FALSE;
+  if (ftype == MAT_FACTOR_LU) {
+    B->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJSpooles;
+    B->ops->lufactornumeric  = MatFactorNumeric_MPISpooles;
+    B->ops->solve            = MatSolve_MPISpooles;
+    B->ops->destroy         = MatDestroy_MPIAIJSpooles;  
+    B->factor               = MAT_FACTOR_LU;  
+
+    lu->options.symflag      = SPOOLES_NONSYMMETRIC;
+    lu->options.pivotingflag = SPOOLES_PIVOTING; 
+  } else SETERRQ(PETSC_ERR_SUP,"Only LU for AIJ matrices, use SBAIJ for Cholesky");
 
   ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
 

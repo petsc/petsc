@@ -273,7 +273,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering(Mat A,MatFact
   ierr = PetscFree(il);CHKERRQ(ierr); 
   ierr = PetscFree(dk);CHKERRQ(ierr);
 
-  C->factor    = FACTOR_CHOLESKY;
+  C->factor    = MAT_FACTOR_CHOLESKY;
   C->assembled = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;  
   ierr = PetscLogFlops(1.3333*216*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */

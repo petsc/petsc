@@ -1149,7 +1149,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *in
   ierr = MatIsSymmetricKnown(A,&set,&issymmetric); CHKERRQ(ierr);
   if (!set || !issymmetric) SETERRQ(PETSC_ERR_USER,"Matrix must be set as MAT_SYMMETRIC for CholeskyFactor()");
   ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
-  (*F)->factor = FACTOR_CHOLESKY;  
+  (*F)->factor = MAT_FACTOR_CHOLESKY;  
   PetscFunctionReturn(0);
 }
 
@@ -1166,7 +1166,7 @@ PetscErrorCode MatLUFactorSymbolic_Plapack(Mat A,IS r,IS c,MatFactorInfo *info,M
   ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
   lu = (Mat_Plapack*)(*F)->spptr;
   ierr = PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);CHKERRQ(ierr);
-  (*F)->factor = FACTOR_LU;  
+  (*F)->factor = MAT_FACTOR_LU;  
   PetscFunctionReturn(0);
 }
 
@@ -1402,7 +1402,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
   ierr              = PetscNewLog(mat,Mat_MPIDense,&a);CHKERRQ(ierr);
   mat->data         = (void*)a;
   ierr              = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  mat->factor       = 0;
   mat->mapping      = 0;
 
   mat->insertmode = NOT_SET_VALUES;

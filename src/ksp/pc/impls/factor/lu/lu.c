@@ -110,13 +110,12 @@ EXTERN_C_END
 #define __FUNCT__ "PCSetFromOptions_LU"
 static PetscErrorCode PCSetFromOptions_LU(PC pc)
 {
-  PC_LU          *lu = (PC_LU*)pc->data;
-  PetscErrorCode ierr;
-  PetscTruth     flg,set;
-  char           tname[256],solvertype[64];
-  MatSolverType  stype;
-  PetscFList     ordlist;
-  PetscReal      tol;
+  PC_LU           *lu = (PC_LU*)pc->data;
+  PetscErrorCode  ierr;
+  PetscTruth      flg,set;
+  char            tname[256], solvertype[64];
+  PetscFList      ordlist;
+  PetscReal       tol;
 
   PetscFunctionBegin;
   ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
@@ -151,6 +150,12 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in LU","PCFactorSetMatOrderingType",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
+    }
+
+    /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
+    ierr = PetscOptionsString("-pc_mat_solver_type","Specific LU solver to use","MatGetFactor",lu->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscStrallocpy(solvertype,&lu->solvertype);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
@@ -255,7 +260,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
         ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr); 
         ierr = PetscLogObjectParent(pc,dir->col);CHKERRQ(ierr);
       }
-      ierr = MatGetFactor(pc->pmat,"petsc",MAT_FACTOR_LU,&dir->fact);CHKERRQ(ierr);
+      ierr = MatGetFactor(pc->pmat,dir->solvertype,MAT_FACTOR_LU,&dir->fact);CHKERRQ(ierr);
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
@@ -274,7 +279,7 @@ static PetscErrorCode PCSetUp_LU(PC pc)
         }
       }
       ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
-      ierr = MatGetFactor(pc->pmat,"petsc",MAT_FACTOR_LU,&dir->fact);CHKERRQ(ierr);
+      ierr = MatGetFactor(pc->pmat,dir->solvertype,MAT_FACTOR_LU,&dir->fact);CHKERRQ(ierr);
       ierr = MatLUFactorSymbolic(pc->pmat,dir->row,dir->col,&dir->info,&dir->fact);CHKERRQ(ierr);
       ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
@@ -297,6 +302,7 @@ static PetscErrorCode PCDestroy_LU(PC pc)
   if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
   if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
   ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree(dir->solvertype);CHKERRQ(ierr);
   ierr = PetscFree(dir);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -681,6 +687,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   dir->info.shift_fraction = 0.0;
   dir->col                 = 0;
   dir->row                 = 0;
+
+  ierr = PetscStrallocpy("petsc",&dir->solvertype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);

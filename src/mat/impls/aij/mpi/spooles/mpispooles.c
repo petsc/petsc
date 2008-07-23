@@ -215,7 +215,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
 
     (*F)->assembled    = PETSC_TRUE;
-    if ((*F)->factor == FACTOR_LU){
+    if ((*F)->factor == MAT_FACTOR_LU){
       F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
     } else {
       F_diag = ((Mat_MPISBAIJ *)(*F)->data)->A;

@@ -24,7 +24,7 @@ typedef struct _p_Mat*           Mat;
 
    Level: beginner
 
-.seealso: MatSetType(), Mat
+.seealso: MatSetType(), Mat, MatSolverType
 E*/
 #define MatType const char*
 #define MATSAME            "same"
@@ -71,7 +71,7 @@ E*/
 
    Level: beginner
 
-.seealso: MatSetSolverType(), Mat, MatSetType(), MatType
+.seealso: MatGetFactor(), Mat, MatSetType(), MatType
 E*/
 #define MatSolverType char*
 #define MAT_SOLVER_SPOOLES      "spooles"
@@ -93,7 +93,7 @@ E*/
 
 .seealso: MatSolverType, MatGetFactor()
 E*/
-typedef enum {MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC} MatFactorType;
+typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC} MatFactorType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,MatSolverType,MatFactorType,Mat*);
 
 

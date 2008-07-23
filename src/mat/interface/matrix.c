@@ -2222,7 +2222,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorSymbolic(Mat mat,IS row,IS col,MatF
   PetscValidPointer(fact,5);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->lufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic LU",((PetscObject)mat)->type_name);
+  if (!(*fact)->ops->lufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic LU",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
@@ -2382,7 +2382,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic(Mat mat,IS perm,MatF
   if (mat->rmap.N != mat->cmap.N) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!mat->ops->choleskyfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!(*fact)->ops->choleskyfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
@@ -3326,7 +3326,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, MatSolverType type,MatFa
     if (flag) {
       SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc solver",mat->hdr.type_name);
     } else {
-      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %d. Perhaps you must config/configure.py with --download-%s",mat->hdr.type_name,type,type);
+      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %s. Perhaps you must config/configure.py with --download-%s",mat->hdr.type_name,type,type);
     }
   }
   ierr = (*conv)(mat,ftype,f);CHKERRQ(ierr);
@@ -4532,7 +4532,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
 +  mat - the matrix
 .  numRows - the number of rows to remove
 .  rows - the global row indices
--  diag - value put in all diagonals of eliminated rows
+-  diag - value put in all diagonals of eliminated rows (0.0 will even eliminate diagonal entry)
 
    Notes:
    For the AIJ and BAIJ matrix formats this removes the old nonzero structure,
@@ -4552,7 +4552,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
    routine, regardless of whether any rows being zeroed are owned by
    them.
 
-   Each processor should list the rows that IT wants zeroed
+   Each processor can indicate any rows in the entire matrix to be zeroed (i.e. each process does NOT have to
+   list only rows local to itself).
 
    Level: intermediate
 
@@ -4686,7 +4687,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
   if (mat->ops->zerorowslocal) {
     ierr = (*mat->ops->zerorowslocal)(mat,numRows,rows,diag);CHKERRQ(ierr);
   } else {
-    IS is, newis;
+    IS       is, newis;
     PetscInt *newRows;
 
     if (!mat->mapping) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
@@ -4844,6 +4845,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* 
    Level: developer
 
    Concepts: matrices^column ownership
+
+.seealso:  MatGetOwnershipRange()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt* n)
 {
@@ -4883,7 +4887,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangeColumn(Mat mat,PetscInt *m
 
    Concepts: matrices^row ownership
 
-.seealso:   MatGetOwnershipRanges()
+.seealso:   MatGetOwnershipRanges(), MatGetOwnershipRangeColumn()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt* n)
@@ -5768,7 +5772,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUnfactored(Mat mat)
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);  
   PetscValidType(mat,1);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  mat->factor = 0;
+  mat->factor = MAT_FACTOR_NONE;
   if (!mat->ops->setunfactored) PetscFunctionReturn(0);
   ierr = (*mat->ops->setunfactored)(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);

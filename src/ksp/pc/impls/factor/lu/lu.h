@@ -17,6 +17,7 @@ typedef struct {
   MatFactorInfo   info;
   PetscTruth      nonzerosalongdiagonal;
   PetscReal       nonzerosalongdiagonaltol;
+  MatSolverType   solvertype;
 } PC_LU;
 
 #endif

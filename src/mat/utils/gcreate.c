@@ -251,9 +251,13 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   Abops = ((PetscObject)A)->bops;
   Aops  = A->ops;
   refct = ((PetscObject)A)->refct;
-  mtype = ((PetscObject)A)->type_name; ((PetscObject)A)->type_name = 0;
-  mname = ((PetscObject)A)->name; ((PetscObject)A)->name = 0;
+  mtype = ((PetscObject)A)->type_name;
+  mname = ((PetscObject)A)->name;
   spptr = A->spptr;
+
+  /* zero these so the destroy below does not free them */
+  ((PetscObject)A)->type_name = 0;
+  ((PetscObject)A)->name      = 0;
 
   /* free all the interior data structures from mat */
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
@@ -262,6 +266,8 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
 
   ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
   ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(&((PetscObject)A)->qlist);CHKERRQ(ierr);
+  ierr = PetscOListDestroy(((PetscObject)A)->olist);CHKERRQ(ierr);
 
   /* copy C over to A */
   ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
@@ -269,12 +275,14 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   /* return the parts of A we saved */
   ((PetscObject)A)->bops      = Abops;
   A->ops                      = Aops;
-  ((PetscObject)A)->qlist     = 0;
   ((PetscObject)A)->refct     = refct;
   ((PetscObject)A)->type_name = mtype;
   ((PetscObject)A)->name      = mname;
-  A->spptr     = spptr;
+  A->spptr                    = spptr;
 
+  /* since these two are copied into A we do not want them destroyed in C */
+  ((PetscObject)C)->qlist = 0;
+  ((PetscObject)C)->olist = 0;
   ierr = PetscHeaderDestroy(C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

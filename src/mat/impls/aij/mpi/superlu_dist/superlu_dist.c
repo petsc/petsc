@@ -361,7 +361,8 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
     F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
     F_diag->assembled = PETSC_TRUE; 
   }
-  (*F)->assembled  = PETSC_TRUE;
+  (*F)->assembled    = PETSC_TRUE;
+  (*F)->preallocated = PETSC_TRUE;
   lu->options.Fact = FACTORED; /* The factored form of A is supplied. Local option used by this func. only */
   PetscFunctionReturn(0);
 }
@@ -386,6 +387,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   PetscFunctionReturn(0); 
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_mpiaij_superlu_dist"
 PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
@@ -412,9 +414,10 @@ PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat A,MatFactorType ftype,Mat *F
   B->ops->lufactornumeric  = MatLUFactorNumeric_SuperLU_DIST;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
   B->ops->solve            = MatSolve_SuperLU_DIST;
-  B->factor                = FACTOR_LU;  
+  B->factor                = MAT_FACTOR_LU;  
 
-  lu = (Mat_SuperLU_DIST*)(B->spptr);
+  ierr = PetscNewLog(B,Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);
+  B->spptr = lu;
 
   /* Set the default input options:
      options.Fact              = DOFACT;
@@ -537,6 +540,7 @@ PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat A,MatFactorType ftype,Mat *F
   *F = B;
   PetscFunctionReturn(0); 
 }
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorInfo_SuperLU_DIST"

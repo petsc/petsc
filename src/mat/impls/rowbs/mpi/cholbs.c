@@ -26,7 +26,7 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat
   }
 
   /* Do prep work if same nonzero structure as previously factored matrix */
-  if (mbs->factor == FACTOR_CHOLESKY) {
+  if (mbs->factor == MAT_FACTOR_CHOLESKY) {
     /* Copy the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA);CHKERRBS(0);
   }
@@ -45,7 +45,7 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat
   ierr = PetscLogFlops((int)(BSlocal_flops()-flop1));CHKERRQ(ierr);
 #endif
 
-  mbs->factor = FACTOR_CHOLESKY;
+  mbs->factor = MAT_FACTOR_CHOLESKY;
   (*factp)->assembled = PETSC_TRUE;
 
   PetscFunctionReturn(0);
@@ -68,7 +68,7 @@ PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *fact
   }
 
   /* Do prep work if same nonzero structure as previously factored matrix */
-  if (mbs->factor == FACTOR_LU) {
+  if (mbs->factor == MAT_FACTOR_LU) {
     /* Copy the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA);CHKERRBS(0);
   }
@@ -83,7 +83,7 @@ PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *fact
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo);CHKERRBS(0);
     ierr = PetscInfo3(mat,"BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",mbs->failures,mbs->ierr,mbs->alpha);CHKERRQ(ierr);
   }
-  mbs->factor = FACTOR_LU;
+  mbs->factor = MAT_FACTOR_LU;
   (*factp)->assembled = PETSC_TRUE;
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogFlops((int)(BSlocal_flops()-flop1));CHKERRQ(ierr);

@@ -130,12 +130,11 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
   PetscInt           *ivec1,*ivec2,j;
   double             *dvec;
 #endif
-  PetscTruth         isAIJ,isSeqAIJ;
+  PetscTruth         isSeqAIJ;
   
   PetscFunctionBegin;
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      
     (*F)->ops->solve   = MatSolve_SeqSpooles;
-    (*F)->ops->destroy = MatDestroy_SeqAIJSpooles;  
     (*F)->assembled    = PETSC_TRUE; 
     
     /* set Spooles options */
@@ -145,9 +144,8 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
   }
 
   /* copy A to Spooles' InpMtx object */
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJSPOOLES,&isSeqAIJ);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)A,MATAIJSPOOLES,&isAIJ);CHKERRQ(ierr);
-  if (isSeqAIJ || isAIJ){
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
+  if (isSeqAIJ){
     Mat_SeqAIJ   *mat = (Mat_SeqAIJ*)A->data;
     ai=mat->i; aj=mat->j; av=mat->a;
     if (lu->options.symflag == SPOOLES_NONSYMMETRIC) {
@@ -183,7 +181,7 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
     ivec1 = InpMtx_ivec1(lu->mtxA); 
     ivec2 = InpMtx_ivec2(lu->mtxA);
     dvec  = InpMtx_dvec(lu->mtxA);
-    if ( lu->options.symflag == SPOOLES_NONSYMMETRIC || !isAIJ){
+    if ( lu->options.symflag == SPOOLES_NONSYMMETRIC || !isSeqAIJ){
       for (irow = 0; irow < nrow; irow++){
         for (i = ai[irow]; i<ai[irow+1]; i++) ivec1[i] = irow;
       }
@@ -470,77 +468,3 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
 }
 EXTERN_C_END
 
-/*MC
-  MATSEQAIJSPOOLES - MATSEQAIJSPOOLES = "seqaijspooles" - A matrix type providing direct solvers (LU or Cholesky) for sequential matrices 
-  via the external package SPOOLES.
-
-  If SPOOLES is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes SPOOLES solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQAIJSPOOLES), then 
-  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() etc DO NOT
-  call MatCreateSeqAIJ() directly or the preallocation information will be LOST!
-
-  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation() is 
-  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
-  the MATSEQAIJ type without data copy AFTER the matrix values have been set.
-
-  Options Database Keys:
-+ -mat_type seqaijspooles - sets the matrix type to "seqaijspooles" during a call to MatSetFromOptions()
-. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
-. -mat_spooles_seed <seed> - random number seed used for ordering
-. -mat_spooles_msglvl <msglvl> - message output level
-. -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
-. -mat_spooles_maxdomainsize <n> - maximum subgraph size used by Spooles orderings
-. -mat_spooles_maxzeros <n> - maximum number of zeros inside a supernode
-. -mat_spooles_maxsize <n> - maximum size of a supernode
-. -mat_spooles_FrontMtxInfo <true,fase> - print Spooles information about the computed factorization
-. -mat_spooles_symmetryflag <0,1,2> - 0: SPOOLES_SYMMETRIC, 1: SPOOLES_HERMITIAN, 2: SPOOLES_NONSYMMETRIC
-. -mat_spooles_patchAndGoFlag <0,1,2> - 0: no patch, 1: use PatchAndGo strategy 1, 2: use PatchAndGo strategy 2
-. -mat_spooles_toosmall <dt> - drop tolerance for PatchAndGo strategy 1
-. -mat_spooles_storeids <bool integer> - if nonzero, stores row and col numbers where patches were applied in an IV object
-. -mat_spooles_fudge <delta> - fudge factor for rescaling diagonals with PatchAndGo strategy 2
-- -mat_spooles_storevalues <bool integer> - if nonzero and PatchAndGo strategy 2 is used, store change in diagonal value in a DV object
-
-   Level: beginner
-
-.seealso: PCLU
-M*/
-
-/*MC
-  MATAIJSPOOLES - MATAIJSPOOLES = "aijspooles" - A matrix type providing direct solvers (LU or Cholesky) for sequential and parellel matrices 
-  via the external package SPOOLES.
-
-  If SPOOLES is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes SPOOLES solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJSPOOLES), then 
-  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() etc DO NOT
-  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
-  This matrix type is supported for double precision real and complex.
-
-  This matrix inherits from MATAIJ.  As a result, MatSeqAIJSetPreallocation() and MatMPIAIJSetPreallocation() are
-  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
-  the MATAIJ type without data copy AFTER the matrix values have been set.
-
-  Options Database Keys:
-+ -mat_type aijspooles - sets the matrix type to "aijspooles" during a call to MatSetFromOptions()
-. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
-. -mat_spooles_seed <seed> - random number seed used for ordering
-. -mat_spooles_msglvl <msglvl> - message output level
-. -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
-. -mat_spooles_maxdomainsize <n> - maximum subgraph size used by Spooles orderings
-. -mat_spooles_maxzeros <n> - maximum number of zeros inside a supernode
-. -mat_spooles_maxsize <n> - maximum size of a supernode
-. -mat_spooles_FrontMtxInfo <true,fase> - print Spooles information about the computed factorization
-. -mat_spooles_symmetryflag <0,1,2> - 0: SPOOLES_SYMMETRIC, 1: SPOOLES_HERMITIAN, 2: SPOOLES_NONSYMMETRIC
-. -mat_spooles_patchAndGoFlag <0,1,2> - 0: no patch, 1: use PatchAndGo strategy 1, 2: use PatchAndGo strategy 2
-. -mat_spooles_toosmall <dt> - drop tolerance for PatchAndGo strategy 1
-. -mat_spooles_storeids <bool integer> - if nonzero, stores row and col numbers where patches were applied in an IV object
-. -mat_spooles_fudge <delta> - fudge factor for rescaling diagonals with PatchAndGo strategy 2
-- -mat_spooles_storevalues <bool integer> - if nonzero and PatchAndGo strategy 2 is used, store change in diagonal value in a DV object
-
-   Level: beginner
-
-.seealso: PCLU
-M*/
