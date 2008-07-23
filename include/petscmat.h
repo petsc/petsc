@@ -94,7 +94,7 @@ E*/
 .seealso: MatSolverType, MatGetFactor()
 E*/
 typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC} MatFactorType;
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,MatSolverType,MatFactorType,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,const MatSolverType,MatFactorType,Mat*);
 
 
 /* Logging support */
@@ -133,7 +133,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm,Mat*);
 PetscPolymorphicFunction(MatCreate,(MPI_Comm comm),(comm,&A),Mat,A)
 PetscPolymorphicFunction(MatCreate,(),(PETSC_COMM_WORLD,&A),Mat,A)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,MatType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,const MatType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char[]);

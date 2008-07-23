@@ -3331,7 +3331,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, const MatType newtype,MatR
 
 .seealso: MatCopy(), MatDuplicate(), MatGetSolverType()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, MatSolverType type,MatFactorType ftype,Mat *f)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverType type,MatFactorType ftype,Mat *f)
 {
   PetscErrorCode         ierr;
   char                   convname[256];
