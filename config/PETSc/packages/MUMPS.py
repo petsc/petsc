@@ -32,12 +32,7 @@ class Configure(PETSc.package.Package):
     g.write('LPORDDIR   = ../PORD/lib/\n')
     g.write('IPORD      = -I../PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
-
-#    libDir = os.path.join(self.installDir, self.libdir)
-#    g.write('LMETISDIR = '+libDir+'\n')
-
     g.write('IMETIS =\n')
-#    g.write('LMETIS = -L$(LMETISDIR) -lmetis\n')
     g.write('LMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n') 
 
     # Disable threads on BGL
@@ -45,7 +40,6 @@ class Configure(PETSc.package.Package):
       g.write('ORDERINGSC = -DWITHOUT_PTHREAD -Dmetis -Dpord\n')
     else:
       g.write('ORDERINGSC = -Dmetis -Dpord\n')
-
     if self.compilers.FortranDefineCompilerOption:
       g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'metis'+' -Dpord\n')
     else:
