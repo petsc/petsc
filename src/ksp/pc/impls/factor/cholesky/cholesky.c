@@ -147,7 +147,7 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
     }
 
     /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
-    ierr = PetscOptionsString("-pc_mat_solver_type","Specific Cholesky solver to use","MatGetFactor",lu->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-pc_factor_mat_solver_type","Specific Cholesky solver to use","MatGetFactor",lu->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetMatSolverType(pc,solvertype);CHKERRQ(ierr);
     }
@@ -467,6 +467,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill(PC pc,PetscTruth flag)
 
    Options Database Keys:
 +  -pc_factor_reuse_ordering - Activate PCFactorSetReuseOrdering()
+.  -pc_factor_mat_solver_type - Actives PCFactorSetMatSolverType() to choose the direct solver, like spooles
 .  -pc_factor_reuse_fill - Activates PCFactorSetReuseFill()
 .  -pc_factor_fill <fill> - Sets fill amount
 .  -pc_factor_in_place - Activates in-place factorization
