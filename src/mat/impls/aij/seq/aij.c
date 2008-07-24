@@ -448,6 +448,30 @@ PetscErrorCode MatView_SeqAIJ_ASCII(Mat A,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_ASCII_MATRIXMARKET) {
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+    ierr = PetscViewerASCIIPrintf(viewer,"%%matrix complex general\n");CHKERRQ(ierr);
+#else
+    ierr = PetscViewerASCIIPrintf(viewer,"%%matrix real general\n");CHKERRQ(ierr);
+#endif
+    ierr = PetscViewerASCIIPrintf(viewer,"%D %D %D\n", m, A->cmap.n, a->nz);CHKERRQ(ierr);
+    for (i=0; i<m; i++) {
+      for (j=a->i[i]+shift; j<a->i[i+1]+shift; j++) {
+#if defined(PETSC_USE_COMPLEX)
+        if (PetscImaginaryPart(a->a[j]) > 0.0) {
+          ierr = PetscViewerASCIIPrintf(viewer,"%D %D, %G %G\n", i+shift,a->j[j]+shift,PetscRealPart(a->a[j]),PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
+        } else if (PetscImaginaryPart(a->a[j]) < 0.0) {
+          ierr = PetscViewerASCIIPrintf(viewer,"%D %D, %G -%G\n", i+shift,a->j[j]+shift,PetscRealPart(a->a[j]),-PetscImaginaryPart(a->a[j]));CHKERRQ(ierr);
+        } else {
+          ierr = PetscViewerASCIIPrintf(viewer,"%D %D, %G\n", i+shift,a->j[j]+shift,PetscRealPart(a->a[j]));CHKERRQ(ierr);
+        }
+#else
+        ierr = PetscViewerASCIIPrintf(viewer,"%D %D %G\n", i+shift, a->j[j]+shift, a->a[j]);CHKERRQ(ierr);
+#endif
+      }
+    }
+    ierr = PetscViewerASCIIUseTabs(viewer,PETSC_YES);CHKERRQ(ierr);
   } else {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<m; i++) {
