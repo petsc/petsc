@@ -50,8 +50,7 @@ PetscErrorCode TSPrecond_Sundials(realtype tn,N_Vector y,N_Vector fy,
     if (!cvode->pmat) {
       ierr = MatDuplicate(Jac,MAT_COPY_VALUES,&cvode->pmat);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(ts,cvode->pmat);CHKERRQ(ierr);
-    }
-    else {
+    } else {
       ierr = MatCopy(Jac,cvode->pmat,str);CHKERRQ(ierr);
     }
     *jcurPtr = TRUE;
@@ -92,7 +91,6 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N
   ierr = PCApply(pc,rr,zz); CHKERRQ(ierr);
   ierr = VecResetArray(rr); CHKERRQ(ierr);
   ierr = VecResetArray(zz); CHKERRQ(ierr);
-  cvode->linear_solves++;
   PetscFunctionReturn(0);
 }
 
@@ -192,10 +190,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ierr = CVode(mem,tout,cvode->y,&t,CV_ONE_STEP);CHKERRQ(ierr);
     if (ts->ops->postupdate){
       ierr = (*ts->ops->postupdate)(ts,ts->ptime,PETSC_NULL);CHKERRQ(ierr);
-    }
-    ierr = CVodeGetNumNonlinSolvIters(mem,&its);CHKERRQ(ierr);
-    cvode->nonlinear_solves += its; 
-
+    }    
     if (t > ts->max_time && cvode->exact_final_time) { 
       /* interpolate to final requested time */
       ierr = CVodeGetDky(mem,tout,0,cvode->y);CHKERRQ(ierr);
@@ -216,9 +211,9 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
   }
-  CVodeFree(&mem);
-  *steps += ts->steps;
-  *time   = t;
+  cvode->mem = mem;
+  *steps    += ts->steps;
+  *time      = t;
   PetscFunctionReturn(0);
 }
 
@@ -238,6 +233,7 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
   if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
   if (cvode->w2)     {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
   ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRQ(ierr);
+  if (cvode->mem) {CVodeFree(&cvode->mem);}
   ierr = PetscFree(cvode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -325,9 +321,12 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
   char           *type;
-  char            atype[] = "Adams";
-  char            btype[] = "BDF: backward differentiation formula";
+  char           atype[] = "Adams";
+  char           btype[] = "BDF: backward differentiation formula";
   PetscTruth     iascii,isstring;
+  long int       nsteps,its,nfevals,nlinsetups,nfails,itmp;
+  PetscInt       qlast,qcur;
+  PetscReal      hinused,hlast,hcur,tcur;
 
   PetscFunctionBegin;
   if (cvode->cvode_type == SUNDIALS_ADAMS) {type = atype;}
@@ -346,6 +345,31 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"Sundials using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
     }
+    
+    ierr = CVodeGetIntegratorStats(cvode->mem,&nsteps,&nfevals,
+                                   &nlinsetups,&nfails,&qlast,&qcur,
+                                   &hinused,&hlast,&hcur,&tcur);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials cumulative number of internal steps %D\n",nsteps);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of calls to rhs function %D\n",nfevals);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of calls to linear solver setup function %D\n",nlinsetups);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of error test failures %D\n",nfails);CHKERRQ(ierr);
+
+    ierr = CVodeGetNonlinSolvStats(cvode->mem,&its,&nfails);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of nonlinear solver iterations %D\n",its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of nonlinear convergence failure %D\n",nfails);CHKERRQ(ierr);
+
+    ierr = CVSpilsGetNumLinIters(cvode->mem, &its);CHKERRQ(ierr); /* its = no. of calls to TSPrecond_Sundials() */
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of linear iterations %D\n",its);CHKERRQ(ierr);
+    ierr = CVSpilsGetNumConvFails(cvode->mem,&itmp);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of linear convergence failures %D\n",itmp);CHKERRQ(ierr);
+    ierr = CVSpilsGetNumPrecEvals(cvode->mem,&itmp);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner evaluations %D\n",itmp);CHKERRQ(ierr);
+    ierr = CVSpilsGetNumPrecSolves(cvode->mem,&itmp);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of preconditioner solves %D\n",itmp);CHKERRQ(ierr);
+    ierr = CVSpilsGetNumJtimesEvals(cvode->mem,&itmp);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of Jacobian-vector product evaluations %D\n",itmp);CHKERRQ(ierr);
+    ierr = CVSpilsGetNumRhsEvals(cvode->mem,&itmp);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials no. of rhs calls for finite diff. Jacobian-vector evals %D\n",itmp);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer,"Sundials type %s",type);CHKERRQ(ierr);
   } else {
@@ -442,12 +466,10 @@ EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSSundialsGetIterations_Sundials"
 PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations_Sundials(TS ts,int *nonlin,int *lin)
-{
-  TS_Sundials *cvode = (TS_Sundials*)ts->data;
-  
+{ 
   PetscFunctionBegin;
-  if (nonlin) *nonlin = cvode->nonlinear_solves;
-  if (lin)    *lin    = cvode->linear_solves;
+  if (nonlin) *nonlin = ts->nonlinear_its;
+  if (lin)    *lin    = ts->linear_its;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -802,8 +824,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
 
   ierr = MPI_Comm_dup(((PetscObject)ts)->comm,&(cvode->comm_sundials));CHKERRQ(ierr);
   /* set tolerance for Sundials */
-  cvode->abstol = 1e-6;
   cvode->reltol = 1e-6;
+  cvode->abstol = 1e-6;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ts,"TSSundialsSetType_C","TSSundialsSetType_Sundials",
                     TSSundialsSetType_Sundials);CHKERRQ(ierr);
