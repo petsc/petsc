@@ -22,7 +22,8 @@ class Configure(PETSc.package.Package):
     self.blasLapack = framework.require('config.packages.BlasLapack',self)
     self.blacs      = framework.require('PETSc.packages.blacs',self)
     self.scalapack  = framework.require('PETSc.packages.SCALAPACK',self)
-    self.deps       = [self.scalapack,self.blacs,self.mpi,self.blasLapack]
+    self.parmetis   = framework.require('PETSc.packages.ParMetis',self)
+    self.deps       = [self.parmetis,self.scalapack,self.blacs,self.mpi,self.blasLapack]
     return
         
   def Install(self):
@@ -31,19 +32,27 @@ class Configure(PETSc.package.Package):
     g.write('LPORDDIR   = ../PORD/lib/\n')
     g.write('IPORD      = -I../PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
+
+#    libDir = os.path.join(self.installDir, self.libdir)
+#    g.write('LMETISDIR = '+libDir+'\n')
+
+    g.write('IMETIS =\n')
+#    g.write('LMETIS = -L$(LMETISDIR) -lmetis\n')
+    g.write('LMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n') 
+
     # Disable threads on BGL
     if self.libraryOptions.isBGL():
-      g.write('ORDERINGSC = -DWITHOUT_PTHREAD -Dpord\n')
+      g.write('ORDERINGSC = -DWITHOUT_PTHREAD -Dmetis -Dpord\n')
     else:
-      g.write('ORDERINGSC = -Dpord\n')
+      g.write('ORDERINGSC = -Dmetis -Dpord\n')
 
     if self.compilers.FortranDefineCompilerOption:
-      g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'pord\n')
+      g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'metis'+' -Dpord\n')
     else:
-      raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')
-      
+      raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')     
     g.write('LORDERINGS = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
     g.write('IORDERINGS = $(IMETIS) $(IPORD) $(ISCOTCH)\n')
+
     g.write('RM = /bin/rm -f\n')
     self.setCompilers.pushLanguage('C')
     g.write('CC = '+self.setCompilers.getCompiler()+'\n')
