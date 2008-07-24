@@ -11,13 +11,26 @@
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetMatSolverType_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverType_LU(PC pc,const MatSolverType stype)
+{
+  PetscErrorCode ierr;
+  PC_LU          *lu = (PC_LU*)pc->data;
+
+  PetscFunctionBegin;
+  ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetZeroPivot_LU"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_LU(PC pc,PetscReal z)
 {
-  PC_LU *lu;
+  PC_LU *lu = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  lu                 = (PC_LU*)pc->data;
   lu->info.zeropivot = z;
   PetscFunctionReturn(0);
 }
@@ -28,10 +41,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCFactorSetShiftNonzero_LU"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero_LU(PC pc,PetscReal shift)
 {
-  PC_LU *dir;
+  PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  dir = (PC_LU*)pc->data;
   if (shift == (PetscReal) PETSC_DECIDE) {
     dir->info.shiftnz = 1.e-12;
   } else {
@@ -46,10 +58,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCFactorSetShiftPd_LU"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_LU(PC pc,PetscTruth shift)
 {
-  PC_LU *dir;
+  PC_LU *dir = (PC_LU*)pc->data;
  
   PetscFunctionBegin;
-  dir = (PC_LU*)pc->data;
   if (shift) {
     dir->info.shift_fraction = 0.0;
     dir->info.shiftpd = 1.0;
@@ -83,10 +94,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCFactorSetReuseOrdering_LU"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering_LU(PC pc,PetscTruth flag)
 {
-  PC_LU *lu;
+  PC_LU *lu = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  lu                = (PC_LU*)pc->data;
   lu->reuseordering = flag;
   PetscFunctionReturn(0);
 }
@@ -97,10 +107,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCFactorSetReuseFill_LU"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill_LU(PC pc,PetscTruth flag)
 {
-  PC_LU *lu;
+  PC_LU *lu = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  lu = (PC_LU*)pc->data;
   lu->reusefill = flag;
   PetscFunctionReturn(0);
 }
@@ -155,7 +164,7 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
     ierr = PetscOptionsString("-pc_mat_solver_type","Specific LU solver to use","MatGetFactor",lu->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscStrallocpy(solvertype,&lu->solvertype);CHKERRQ(ierr);
+      ierr = PCFactorSetMatSolverType(pc,solvertype);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-pc_factor_nonzeros_along_diagonal","Reorder to remove zeros from diagonal","PCFactorReorderForNonzeroDiagonal",&flg);CHKERRQ(ierr);
@@ -340,10 +349,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCFactorSetFill_LU"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill_LU(PC pc,PetscReal fill)
 {
-  PC_LU *dir;
+  PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  dir = (PC_LU*)pc->data;
   dir->info.fill = fill;
   PetscFunctionReturn(0);
 }
@@ -354,10 +362,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCFactorSetUseInPlace_LU"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace_LU(PC pc)
 {
-  PC_LU *dir;
+  PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  dir = (PC_LU*)pc->data;
   dir->inplace = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -436,6 +443,43 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC pc,PetscR
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorReorderForNonzeroDiagonal_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,rtol);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetMatSolverType"
+/*@
+   PCFactorSetMatSolverType - sets the software that is used to perform the factorization
+
+   Collective on PC
+   
+   Input Parameters:
++  pc - the preconditioner context
+-  stype - for example, spooles, superlu, superlu_d
+
+   Options Database Key:
+.  -pc_factor_mat_solver_type <stype> - spooles, petsc, superlu, superlu_dist, mumps
+
+   Level: intermediate
+
+   Note:
+     By default this will use the PETSc factorization if it exists
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: MatGetFactor(), MatSolverType
+
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverType(PC pc,const MatSolverType stype)
+{
+  PetscErrorCode ierr,(*f)(PC,const MatSolverType);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetMatSolverType_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,stype);CHKERRQ(ierr);
   } 
   PetscFunctionReturn(0);
 }
@@ -708,6 +752,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   pc->ops->applyrichardson   = 0;
   pc->ops->getfactoredmatrix = PCFactorGetMatrix_LU;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverType_C","PCFactorSetMatSolverType_LU",
+                    PCFactorSetMatSolverType_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_LU",
                     PCFactorSetZeroPivot_LU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_LU",

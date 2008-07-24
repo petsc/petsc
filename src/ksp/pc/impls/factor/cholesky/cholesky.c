@@ -21,6 +21,20 @@ typedef struct {
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCFactorSetMatSolverType_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverType_Cholesky(PC pc,const MatSolverType stype)
+{
+  PetscErrorCode ierr;
+  PC_Cholesky    *choleksy = (PC_Cholesky*)pc->data;
+
+  PetscFunctionBegin;
+  ierr = PetscStrallocpy(stype,&choleksy->solvertype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetZeroPivot_Cholesky"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_Cholesky(PC pc,PetscReal z)
 {
@@ -135,7 +149,7 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
     /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
     ierr = PetscOptionsString("-pc_mat_solver_type","Specific Cholesky solver to use","MatGetFactor",lu->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscStrallocpy(solvertype,&lu->solvertype);CHKERRQ(ierr);
+      ierr = PCFactorSetMatSolverType(pc,solvertype);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
@@ -514,6 +528,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   pc->ops->applyrichardson   = 0;
   pc->ops->getfactoredmatrix = PCFactorGetMatrix_Cholesky;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverType_C","PCFactorSetMatSolverType_Cholesky",
+                    PCFactorSetMatSolverType_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Cholesky",
                     PCFactorSetZeroPivot_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_Cholesky",
