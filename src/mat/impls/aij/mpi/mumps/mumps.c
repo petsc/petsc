@@ -149,7 +149,6 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
   Mat_MUMPS      *lu=(Mat_MUMPS*)A->spptr; 
   PetscErrorCode ierr;
   PetscMPIInt    size=lu->size;
-  PetscErrorCode (*specialdestroy)(Mat);
 
   PetscFunctionBegin;
   if (lu->CleanUpMUMPS) {
@@ -535,13 +534,9 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMUMPS"
 PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  Mat_MUMPS      *lu;   
-  PetscErrorCode ierr;
+  Mat_MUMPS      *lu = (Mat_MUMPS*)(*F)->spptr;   
 
   PetscFunctionBegin;
-
-  /* Create the factorization matrix */
-  lu                      = (Mat_MUMPS*)(*F)->spptr;
   lu->sym                 = 0;
   lu->matstruc            = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0); 
@@ -630,11 +625,9 @@ EXTERN_C_END
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SBAIJMUMPS"
 PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *info,Mat *F) 
 {
-  Mat_MUMPS      *lu;   
-  PetscErrorCode ierr;
+  Mat_MUMPS      *lu = (Mat_MUMPS*)(*F)->spptr;   
 
   PetscFunctionBegin;
-  lu                            = (Mat_MUMPS*)(*F)->spptr;
   lu->sym                       = 2;
   lu->matstruc                  = DIFFERENT_NONZERO_PATTERN;
   PetscFunctionReturn(0);
@@ -829,7 +822,6 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
-  Mat_MUMPS         *mumps=(Mat_MUMPS*)(A->spptr);
 
   PetscFunctionBegin;
     ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);

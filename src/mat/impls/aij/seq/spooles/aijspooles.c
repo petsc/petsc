@@ -11,10 +11,9 @@
 #define __FUNCT__ "MatView_Spooles"
 PetscErrorCode MatView_Spooles(Mat A,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
-  Mat_Spooles       *lu=(Mat_Spooles*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = MatView_SeqAIJ(A,viewer);CHKERRQ(ierr);
@@ -35,7 +34,6 @@ PetscErrorCode MatView_Spooles(Mat A,PetscViewer viewer)
 PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat_Spooles    *lu = (Mat_Spooles*)((*F)->spptr);;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;	
   if (!info->dtcol) {
@@ -53,6 +51,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat A,IS r,MatFactorInfo 
   PetscFunctionReturn(0); 
 }
 
+  
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqaij_spooles"
 PetscErrorCode MatGetFactor_seqaij_spooles(Mat A,MatFactorType ftype,Mat *F)
@@ -94,3 +94,5 @@ PetscErrorCode MatGetFactor_seqaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   *F = B;
   PetscFunctionReturn(0); 
 }
+  
+EXTERN_C_END

@@ -213,7 +213,6 @@ PetscErrorCode MatView_SuperLU(Mat A,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
-  Mat_SuperLU       *lu=(Mat_SuperLU*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = MatView_SeqAIJ(A,viewer);CHKERRQ(ierr);
@@ -333,7 +332,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)((*F)->spptr);
   PetscErrorCode ierr;
-  PetscInt       m=A->rmap.n,n=A->cmap.n,indx;  
+  PetscInt       m=A->rmap.n,n=A->cmap.n;
 
   PetscFunctionBegin;
 
@@ -389,7 +388,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   Mat            B;
   Mat_SuperLU    *lu;
   PetscErrorCode ierr;
-  PetscInt       m=A->rmap.n,n=A->cmap.n,indx;  
+  PetscInt       indx;  
   PetscTruth     flg;
   const char     *colperm[]={"NATURAL","MMD_ATA","MMD_AT_PLUS_A","COLAMD"}; /* MY_PERMC - not supported by the petsc interface yet */
   const char     *iterrefine[]={"NOREFINE", "SINGLE", "DOUBLE", "EXTRA"};

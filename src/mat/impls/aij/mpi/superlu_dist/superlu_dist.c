@@ -372,10 +372,8 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_SuperLU_DIST"
 PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
-  Mat               B;
   Mat_SuperLU_DIST  *lu = (Mat_SuperLU_DIST*) (*F)->spptr;   
-  PetscErrorCode    ierr;
-  PetscInt          M=A->rmap.N,N=A->cmap.N,indx;
+  PetscInt          M=A->rmap.N,N=A->cmap.N;
 
   PetscFunctionBegin;
   /* Initialize the SuperLU process grid. */
@@ -592,10 +590,8 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
-  Mat_SuperLU_DIST  *lu=(Mat_SuperLU_DIST*)(A->spptr);
 
   PetscFunctionBegin;
-  
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);

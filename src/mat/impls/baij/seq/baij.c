@@ -2925,9 +2925,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Ma
 #define __FUNCT__ "MatDuplicate_SeqBAIJ"
 PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 {
-  Mat_SeqBAIJ    *c,*a = (Mat_SeqBAIJ*)A->data;
-  PetscErrorCode ierr;
-  PetscInt       i,mbs = a->mbs,nz = a->nz,bs2 = a->bs2;
+    PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);

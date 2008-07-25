@@ -251,6 +251,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat A,MatFactorInfo *info,Mat *B)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN  
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqbaij_petsc"
 PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
@@ -271,7 +272,7 @@ PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
   } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
   PetscFunctionReturn(0);
 }
-
+EXTERN_C_END
 
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  

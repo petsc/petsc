@@ -88,6 +88,7 @@ PetscErrorCode MatDestroy_MPISBAIJSpooles(Mat A)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_mpisbaij_spooles"
 PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
@@ -126,6 +127,7 @@ PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   *F = B;
   PetscFunctionReturn(0); 
 }
+EXTERN_C_END
 
 /*MC
   MAT_SOLVER_SPOOLES - "spooles" - a matrix type providing direct solvers (LU and Cholesky) for distributed symmetric

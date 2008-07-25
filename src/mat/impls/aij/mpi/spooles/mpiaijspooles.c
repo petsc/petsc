@@ -14,7 +14,6 @@
 PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {
   Mat_Spooles    *lu;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;	
   if (!info->dtcol) {
@@ -24,6 +23,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
   PetscFunctionReturn(0); 
 }
 
+EXTERN_C_BEGIN  
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_mpiaij_spooles"
 PetscErrorCode MatGetFactor_mpiaij_spooles(Mat A,MatFactorType ftype,Mat *F)
@@ -61,3 +61,4 @@ PetscErrorCode MatGetFactor_mpiaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   *F = B;
   PetscFunctionReturn(0); 
 }
+EXTERN_C_END

@@ -7,9 +7,6 @@
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
-/* make sun CC happy */
-static void (*f)(void);
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqAIJSpooles"
 PetscErrorCode MatDestroy_SeqAIJSpooles(Mat A)
@@ -466,5 +463,4 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
   lu->CleanUpSpooles = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 

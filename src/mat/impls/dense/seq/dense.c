@@ -165,9 +165,7 @@ PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat A,MatDuplicateOption cpvalues,M
 #define __FUNCT__ "MatDuplicate_SeqDense"
 PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 {
-  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data,*l;
   PetscErrorCode ierr;
-  PetscInt       lda = (PetscInt)mat->lda,j,m;
 
   PetscFunctionBegin;
   ierr = MatCreate(((PetscObject)A)->comm,newmat);CHKERRQ(ierr);
