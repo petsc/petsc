@@ -124,7 +124,8 @@ cdef class Mat(Object):
         self.mat = NULL
 
     def __call__(self, x, y=None):
-        if y is None: self.getVecLeft(self)
+        if y is None:
+            y = self.getVecLeft(self)
         self.mult(x, y)
         return y
 
