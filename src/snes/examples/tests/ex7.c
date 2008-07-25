@@ -23,7 +23,7 @@ typedef struct {
 int main(int argc,char **argv)
 {
   SNES           snes;                 /* SNES context */
-  SNESType       type = SNESLS;        /* default nonlinear solution method */
+  const SNESType type = SNESLS;        /* default nonlinear solution method */
   Vec            x,r,F,U;              /* vectors */
   Mat            J,B;                  /* Jacobian matrix-free, explicit preconditioner */
   MonitorCtx     monP;                 /* monitoring context */

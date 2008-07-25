@@ -207,6 +207,7 @@ PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
   ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
   ierr = MatSetSizes(*fact,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
   ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  (*fact)->factor = ftype;
   PetscFunctionReturn(0);
 }
 
@@ -228,7 +229,7 @@ PetscErrorCode MatLUFactorNumeric_SeqDense(Mat A,MatFactorInfo *info_dummy,Mat *
   } else {
     ierr = PetscMemcpy(l->v,mat->v,A->rmap.n*A->cmap.n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
-  (*fact)->factor = MAT_FACTOR_LU;
+  (*fact)->factor = MAT_FACTOR_NONE;
   ierr = MatLUFactor(*fact,0,0,&info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
