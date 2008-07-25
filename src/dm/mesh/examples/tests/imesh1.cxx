@@ -1,3 +1,5 @@
+#define ALE_MEM_LOGGING
+
 #include <petsc.h>
 #include <Mesh.hh>
 #include <Generator.hh>

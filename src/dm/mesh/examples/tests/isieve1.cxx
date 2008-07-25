@@ -1,3 +1,5 @@
+#define ALE_MEM_LOGGING
+
 #include <petsc.h>
 #include <ISieve.hh>
 #include <Mesh.hh>
@@ -191,6 +193,117 @@ public:
 #define __FUNCT__ "RegisterISieveFunctionSuite"
 PetscErrorCode RegisterISieveFunctionSuite() {
   CPPUNIT_TEST_SUITE_REGISTRATION(FunctionTestISieve);
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+class MemoryTestISieve : public CppUnit::TestFixture
+{
+  CPPUNIT_TEST_SUITE(MemoryTestISieve);
+
+  CPPUNIT_TEST(testTriangularInterpolatedSieve);
+  CPPUNIT_TEST(testTriangularUninterpolatedSieve);
+
+  CPPUNIT_TEST_SUITE_END();
+public:
+  typedef ALE::IFSieve<int> sieve_type;
+protected:
+  ALE::Obj<sieve_type> _sieve;
+  int                  _debug; // The debugging level
+  PetscInt             _iters; // The number of test repetitions
+public:
+  PetscErrorCode processOptions() {
+    PetscErrorCode ierr;
+
+    this->_debug = 0;
+    this->_iters = 1;
+
+    PetscFunctionBegin;
+    ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  };
+
+  /// Setup data.
+  void setUp(void) {
+    this->processOptions();
+  };
+
+  /// Tear down data.
+  void tearDown(void) {};
+
+  void testTriangularInterpolatedSieve(void) {
+    this->_sieve = new sieve_type(PETSC_COMM_WORLD, 0, 35, this->_debug);
+  };
+
+  void testTriangularUninterpolatedSieve(void) {
+    ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
+    int cells[24] = {0, 3, 1,  3, 4, 1,  4, 2, 1,  4, 5, 2,  6, 4, 3,  6, 7, 4,  7, 5, 4,  7, 8, 5};
+
+    logger.stagePush("ISieve");
+    {
+      ALE::Obj<sieve_type> sieve = new sieve_type(PETSC_COMM_WORLD, 0, 17, this->_debug);
+    }
+    logger.stagePop();
+    std::cout << std::endl << logger.getNumAllocations("ISieve") << " allocations " << logger.getAllocationTotal("ISieve") << " bytes" << std::endl;
+    const int bytes = 4+18*4+18*4;
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of allocations", 3, logger.getNumAllocations("ISieve"));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of deallocations", 3, logger.getNumDeallocations("ISieve"));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes allocated", bytes, logger.getAllocationTotal("ISieve"));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes deallocated", bytes, logger.getDeallocationTotal("ISieve"));
+  };
+
+  void testConversion(void) {
+    typedef ALE::Mesh::sieve_type Sieve;
+    typedef sieve_type            ISieve;
+    double lower[2] = {0.0, 0.0};
+    double upper[2] = {1.0, 1.0};
+    int    edges[2] = {2, 2};
+    const ALE::Obj<ALE::Mesh> m = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+    std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+
+    ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
+    //m->getSieve()->view("Square Mesh");
+    //this->_sieve->view("Square Sieve");
+    const ALE::Obj<Sieve::baseSequence>& base = m->getSieve()->base();
+
+    for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+      const ALE::Obj<Sieve::coneSequence>& cone = m->getSieve()->cone(*b_iter);
+      ALE::ISieveVisitor::PointRetriever<ISieve> retriever(2);
+
+      this->_sieve->cone(renumbering[*b_iter], retriever);
+      const ISieve::point_type *icone = retriever.getPoints();
+      int i = 0;
+
+      CPPUNIT_ASSERT_EQUAL(cone->size(), retriever.getSize());
+      for(Sieve::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++i) {
+        CPPUNIT_ASSERT_EQUAL(renumbering[*c_iter], icone[i]);
+      }
+    }
+    const ALE::Obj<Sieve::capSequence>& cap = m->getSieve()->cap();
+
+    for(Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+      const ALE::Obj<Sieve::supportSequence>& support = m->getSieve()->support(*c_iter);
+      ALE::ISieveVisitor::PointRetriever<ISieve> retriever(4);
+
+      this->_sieve->support(renumbering[*c_iter], retriever);
+      const ISieve::point_type *isupport = retriever.getPoints();
+      int i = 0;
+
+      CPPUNIT_ASSERT_EQUAL(support->size(), retriever.getSize());
+      for(Sieve::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter, ++i) {
+        CPPUNIT_ASSERT_EQUAL(renumbering[*s_iter], isupport[i]);
+      }
+    }
+  };
+};
+
+#undef __FUNCT__
+#define __FUNCT__ "RegisterISieveMemorySuite"
+PetscErrorCode RegisterISieveMemorySuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION(MemoryTestISieve);
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
