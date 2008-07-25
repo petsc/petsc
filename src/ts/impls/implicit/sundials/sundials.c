@@ -135,14 +135,16 @@ int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 */
 PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
 {
-  TS_Sundials  *cvode = (TS_Sundials*)ts->data;
-  Vec          sol = ts->vec_sol;
+  TS_Sundials    *cvode = (TS_Sundials*)ts->data;
+  Vec            sol = ts->vec_sol;
   PetscErrorCode ierr;
-  int          i,max_steps = ts->max_steps,flag;
-  long int     its;
-  realtype     t,tout;
-  PetscScalar  *y_data;
-  void         *mem;
+  PetscInt       i,max_steps = ts->max_steps,flag;
+  long int       its;
+  realtype       t,tout;
+  PetscScalar    *y_data;
+  void           *mem;
+  const PCType   pctype;
+  PetscTruth     pcnone;
 
   PetscFunctionBegin;
   /* Call CVodeCreate to create the solver memory */
@@ -170,16 +172,22 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
 
   /* call CVSpgmr to use GMRES as the linear solver.        */
   /* setup the ode integrator with the given preconditioner */
-  flag  = CVSpgmr(mem,PREC_LEFT,0);
+  ierr = PCGetType(cvode->pc,&pctype);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)cvode->pc,PCNONE,&pcnone);CHKERRQ(ierr);
+  if (pcnone){
+    flag  = CVSpgmr(mem,PREC_NONE,0);
+  } else {
+    flag  = CVSpgmr(mem,PREC_LEFT,0);
+  }
   if (flag) SETERRQ(1,"CVSpgmr() fails");
-  
-  flag = CVSpilsSetGSType(mem, MODIFIED_GS);
-  if (flag) SETERRQ(1,"CVSpgmrSetGSType() fails");
-
+ 
   /* Set preconditioner setup and solve routines Precond and PSolve, 
      and the pointer to the user-defined block data */
   flag = CVSpilsSetPreconditioner(mem,TSPrecond_Sundials,TSPSolve_Sundials,ts);
   if (flag) SETERRQ(1,"CVSpgmrSetPreconditioner() fails");
+
+  flag = CVSpilsSetGSType(mem, MODIFIED_GS);
+  if (flag) SETERRQ(1,"CVSpgmrSetGSType() fails");
 
   tout = ts->max_time;
   ierr = VecGetArray(ts->vec_sol,&y_data);CHKERRQ(ierr);
@@ -326,7 +334,7 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
   PetscTruth     iascii,isstring;
   long int       nsteps,its,nfevals,nlinsetups,nfails,itmp;
   PetscInt       qlast,qcur;
-  PetscReal      hinused,hlast,hcur,tcur;
+  PetscReal      hinused,hlast,hcur,tcur,tolsfac;
 
   PetscFunctionBegin;
   if (cvode->cvode_type == SUNDIALS_ADAMS) {type = atype;}
@@ -346,6 +354,9 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"Sundials using unmodified (classical) Gram-Schmidt for orthogonalization in GMRES\n");CHKERRQ(ierr);
     }
     
+    /* Outputs from CVODE, CVSPILS */
+    ierr = CVodeGetTolScaleFactor(cvode->mem,&tolsfac);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"Sundials suggested factor for tolerance scaling %g\n",tolsfac);CHKERRQ(ierr);
     ierr = CVodeGetIntegratorStats(cvode->mem,&nsteps,&nfevals,
                                    &nlinsetups,&nfails,&qlast,&qcur,
                                    &hinused,&hlast,&hcur,&tcur);CHKERRQ(ierr);
