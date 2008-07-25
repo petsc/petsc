@@ -16,13 +16,13 @@ typedef struct {
   PetscTruth      reuseordering;    /* reuses previous reordering computed */
   PetscTruth      reusefill;        /* reuse fill from previous Cholesky */
   MatFactorInfo   info;
-  MatSolverType   solvertype;
+  MatSolverPackage   solvertype;
 } PC_Cholesky;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetMatSolverType_LU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverType_Cholesky(PC pc,const MatSolverType stype)
+#define __FUNCT__ "PCFactorSetMatSolverPackage_LU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Cholesky(PC pc,const MatSolverPackage stype)
 {
   PetscErrorCode ierr;
   PC_Cholesky    *choleksy = (PC_Cholesky*)pc->data;
@@ -147,9 +147,9 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
     }
 
     /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
-    ierr = PetscOptionsString("-pc_factor_mat_solver_type","Specific Cholesky solver to use","MatGetFactor",lu->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-pc_factor_mat_solver_package","Specific Cholesky solver to use","MatGetFactor",lu->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetMatSolverType(pc,solvertype);CHKERRQ(ierr);
+      ierr = PCFactorSetMatSolverPackage(pc,solvertype);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
@@ -467,7 +467,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill(PC pc,PetscTruth flag)
 
    Options Database Keys:
 +  -pc_factor_reuse_ordering - Activate PCFactorSetReuseOrdering()
-.  -pc_factor_mat_solver_type - Actives PCFactorSetMatSolverType() to choose the direct solver, like spooles
+.  -pc_factor_mat_solver_package - Actives PCFactorSetMatSolverPackage() to choose the direct solver, like spooles
 .  -pc_factor_reuse_fill - Activates PCFactorSetReuseFill()
 .  -pc_factor_fill <fill> - Sets fill amount
 .  -pc_factor_in_place - Activates in-place factorization
@@ -529,8 +529,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   pc->ops->applyrichardson   = 0;
   pc->ops->getfactoredmatrix = PCFactorGetMatrix_Cholesky;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverType_C","PCFactorSetMatSolverType_Cholesky",
-                    PCFactorSetMatSolverType_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatSolverPackage_C","PCFactorSetMatSolverPackage_Cholesky",
+                    PCFactorSetMatSolverPackage_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Cholesky",
                     PCFactorSetZeroPivot_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_Cholesky",

@@ -24,7 +24,7 @@ typedef struct _p_Mat*           Mat;
 
    Level: beginner
 
-.seealso: MatSetType(), Mat, MatSolverType
+.seealso: MatSetType(), Mat, MatSolverPackage
 E*/
 #define MatType char*
 #define MATSAME            "same"
@@ -63,7 +63,7 @@ E*/
 #define MATSEQFFTW         "seqfftw"
 
 /*E
-    MatSolverType - String with the name of a PETSc matrix solver type. 
+    MatSolverPackage - String with the name of a PETSc matrix solver type. 
 
     For example: "petsc" indicates what PETSc provides, "superlu" indicates either 
        SuperLU or SuperLU_Dist etc.
@@ -73,7 +73,7 @@ E*/
 
 .seealso: MatGetFactor(), Mat, MatSetType(), MatType
 E*/
-#define MatSolverType char*
+#define MatSolverPackage char*
 #define MAT_SOLVER_SPOOLES      "spooles"
 #define MAT_SOLVER_SUPERLU      "superlu"
 #define MAT_SOLVER_SUPERLU_DIST "superlu_dist"
@@ -91,10 +91,10 @@ E*/
 
    Any additions/changes here MUST also be made in include/finclude/petscmat.h
 
-.seealso: MatSolverType, MatGetFactor()
+.seealso: MatSolverPackage, MatGetFactor()
 E*/
 typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC} MatFactorType;
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,const MatSolverType,MatFactorType,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,const MatSolverPackage,MatFactorType,Mat*);
 
 
 /* Logging support */
