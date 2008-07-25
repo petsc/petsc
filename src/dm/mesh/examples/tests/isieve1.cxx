@@ -235,24 +235,44 @@ public:
   void tearDown(void) {};
 
   void testTriangularInterpolatedSieve(void) {
-    this->_sieve = new sieve_type(PETSC_COMM_WORLD, 0, 35, this->_debug);
+    ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
+    const char        *name   = "ISieve I";
+
+    logger.setDebug(this->_debug);
+    logger.stagePush(name);
+    {
+      ALE::Obj<sieve_type> sieve = new sieve_type(PETSC_COMM_WORLD, 0, 33, this->_debug);
+    }
+    logger.stagePop();
+    std::cout << std::endl << logger.getNumAllocations(name) << " allocations " << logger.getAllocationTotal(name) << " bytes" << std::endl;
   };
 
   void testTriangularUninterpolatedSieve(void) {
     ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
-    int cells[24] = {0, 3, 1,  3, 4, 1,  4, 2, 1,  4, 5, 2,  6, 4, 3,  6, 7, 4,  7, 5, 4,  7, 8, 5};
+    const char        *name   = "ISieve II";
+    int cones[24] = {0, 3, 1,  3, 4, 1,  4, 2, 1,  4, 5, 2,  6, 4, 3,  6, 7, 4,  7, 5, 4,  7, 8, 5};
 
-    logger.stagePush("ISieve");
+    logger.setDebug(this->_debug);
+    logger.stagePush(name);
     {
       ALE::Obj<sieve_type> sieve = new sieve_type(PETSC_COMM_WORLD, 0, 17, this->_debug);
+
+      for(int c = 0; c < 8; ++c) {
+        sieve->setConeSize(c, 3);
+      }
+      sieve->symmetrizeSizes(8, 3, cones);
+      sieve->allocate();
+      for(int c = 0; c < 8; ++c) {
+        sieve->setCone(&cones[c*3], c);
+      }
+      sieve->symmetrize();
     }
     logger.stagePop();
-    std::cout << std::endl << logger.getNumAllocations("ISieve") << " allocations " << logger.getAllocationTotal("ISieve") << " bytes" << std::endl;
-    const int bytes = 4+18*4+18*4;
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of allocations", 3, logger.getNumAllocations("ISieve"));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of deallocations", 3, logger.getNumDeallocations("ISieve"));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes allocated", bytes, logger.getAllocationTotal("ISieve"));
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes deallocated", bytes, logger.getDeallocationTotal("ISieve"));
+    const int bytes = 4 /*Obj*/ + 18*4 /*coneOffsets*/ + 18*4 /*supportOffsets*/ + 24*4 /*cones*/ + 24*4 /*coneOrientations*/ + 24*4 /*supports*/ + 18*4 /*offsets*/;
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of allocations", 7, logger.getNumAllocations(name));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of deallocations", 7, logger.getNumDeallocations(name));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes allocated", bytes, logger.getAllocationTotal(name));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes deallocated", bytes, logger.getDeallocationTotal(name));
   };
 
   void testConversion(void) {
