@@ -3117,9 +3117,15 @@ M*/
 EXTERN_C_BEGIN
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
+#if defined(PETSC_HAVE_MUMPS)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_mumps(Mat,MatFactorType,Mat*);
+#endif
+#if defined(PETSC_HAVE_SUPERLU)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_superlu(Mat,MatFactorType,Mat*);
+#endif
+#if defined(PETSC_HAVE_SPOOLES)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_spooles(Mat,MatFactorType,Mat*);
+#endif
 EXTERN_C_END
 
 
@@ -3168,15 +3174,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_SUPERLU)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_superlu_C",
                                      "MatGetFactor_seqaij_superlu",
                                      MatGetFactor_seqaij_superlu);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SPOOLES)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_spooles_C",
                                      "MatGetFactor_seqaij_spooles",
                                      MatGetFactor_seqaij_spooles);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_mumps_C",
                                      "MatGetFactor_seqaij_mumps",
                                      MatGetFactor_seqaij_mumps);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_petsc_C",
                                      "MatGetFactor_seqaij_petsc",
                                      MatGetFactor_seqaij_petsc);CHKERRQ(ierr);

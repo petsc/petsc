@@ -127,7 +127,7 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
   PetscInt           *ivec1,*ivec2,j;
   double             *dvec;
 #endif
-  PetscTruth         isSeqAIJ;
+  PetscTruth         isSeqAIJ,isMPIAIJ;
   
   PetscFunctionBegin;
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      
@@ -142,6 +142,7 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
 
   /* copy A to Spooles' InpMtx object */
   ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isMPIAIJ);CHKERRQ(ierr);
   if (isSeqAIJ){
     Mat_SeqAIJ   *mat = (Mat_SeqAIJ*)A->data;
     ai=mat->i; aj=mat->j; av=mat->a;
@@ -160,7 +161,7 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
  
 #if defined(PETSC_USE_COMPLEX)
     for (irow=0; irow<nrow; irow++) {
-      if ( lu->options.symflag == SPOOLES_NONSYMMETRIC || !isAIJ){
+      if ( lu->options.symflag == SPOOLES_NONSYMMETRIC || !(isSeqAIJ || isMPIAIJ)){
         nz_row = ai[irow+1] - ai[irow];
         aj_tmp = aj + ai[irow];
         av_tmp = av + ai[irow];

@@ -64,7 +64,7 @@
           DM_HIDE dm1
           VEC_HIDE v,d1,d3
           PetscScalar,pointer :: d2(:)
-          PetscScalar,pointer :: d4(:)          
+          PetscScalar,pointer :: d4(:)
           PetscErrorCode ierr
         End Subroutine
       End Interface
@@ -75,7 +75,7 @@
           DM_HIDE dm1
           VEC_HIDE v,d1,d3
           PetscScalar,pointer :: d2(:)
-          PetscScalar,pointer :: d4(:)          
+          PetscScalar,pointer :: d4(:)
           PetscErrorCode ierr
         End Subroutine
       End Interface

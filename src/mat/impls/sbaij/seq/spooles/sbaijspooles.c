@@ -91,7 +91,9 @@ PetscErrorCode MatGetFactor_seqsbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJSpooles;
   B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;
+#if !defined(PETSC_USE_COMPLEX)
   B->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
+#endif
   B->ops->destroy                = MatDestroy_SeqSBAIJSpooles;  
   *F = B;
   PetscFunctionReturn(0);

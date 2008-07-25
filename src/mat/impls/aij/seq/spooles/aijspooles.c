@@ -78,7 +78,6 @@ PetscErrorCode MatGetFactor_seqaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactornumeric  = MatFactorNumeric_SeqSpooles;
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJSpooles;
-    B->ops->getinertia       = MatGetInertia_SeqSBAIJSpooles;
     B->factor                = MAT_FACTOR_LU;
 
     lu->options.symflag      = SPOOLES_NONSYMMETRIC;
@@ -86,7 +85,9 @@ PetscErrorCode MatGetFactor_seqaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   } else if (ftype == MAT_FACTOR_CHOLESKY) {
     B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;
     B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJSpooles;
+#if !defined(PETSC_USE_COMPLEX)
     B->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
+#endif
     B->factor                      = MAT_FACTOR_CHOLESKY;  
     lu->options.symflag            = SPOOLES_SYMMETRIC;   /* default */
   } else SETERRQ(PETSC_ERR_SUP,"Spooles only supports LU and Cholesky factorizations");

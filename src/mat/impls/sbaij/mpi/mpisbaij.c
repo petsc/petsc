@@ -1584,8 +1584,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,Pet
 EXTERN_C_END
 
 EXTERN_C_BEGIN
-extern PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat,MatFactorType,Mat*);
+#if defined(PETSC_HAVE_MUMPS)
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_mpisbaij_mumps(Mat,MatFactorType,Mat*);
+#endif
+#if defined(PETSC_HAVE_SPOOLES)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_mpisbaij_spooles(Mat,MatFactorType,Mat*);
+#endif
 EXTERN_C_END 
 
 /*MC
@@ -1676,12 +1680,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat B)
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+#if defined(PETSC_HAVE_MUMPS)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpisbaij_mumps_C",
                                      "MatGetFactor_mpisbaij_mumps",
                                      MatGetFactor_mpisbaij_mumps);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SPOOLES)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpisbaij_spooles_C",
                                      "MatGetFactor_mpisbaij_spooles",
                                      MatGetFactor_mpisbaij_spooles);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPISBAIJ",
                                      MatStoreValues_MPISBAIJ);CHKERRQ(ierr);

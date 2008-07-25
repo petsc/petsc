@@ -655,7 +655,9 @@ PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
   B->ops->choleskyfactornumeric  = MatFactorNumeric_MUMPS;
+#if !defined(PETSC_USE_COMPLEX)
   B->ops->getinertia             = MatGetInertia_SBAIJMUMPS;
+#endif
   B->factor                      = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
@@ -692,7 +694,9 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
   B->ops->choleskyfactornumeric  = MatFactorNumeric_MUMPS;
+#if !defined(PETSC_USE_COMPLEX)
   B->ops->getinertia             = MatGetInertia_SBAIJMUMPS;
+#endif
   B->factor                      = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
