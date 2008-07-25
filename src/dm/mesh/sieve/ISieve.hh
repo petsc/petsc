@@ -1327,7 +1327,8 @@ namespace ALE {
         const index_type end   = (p+1)*numCorners;
 
         for(index_type c = start; c < end; ++c) {
-          const point_type q = cones[c]+numCells;
+          ///const point_type q = cones[c]+numCells;
+          const point_type q = cones[c];
 
           this->supportOffsets[q+1]++;
         }
@@ -1654,7 +1655,7 @@ namespace ALE {
         isieve.setConeSize(renumbering[*b_iter], cone->size());
         maxSize = std::max(maxSize, cone->size());
       }
-      for(typename Sieve::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+      for(typename Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
         const Obj<typename Sieve::supportSequence>& support = sieve.support(*c_iter);
 
         isieve.setSupportSize(renumbering[*c_iter], support->size());
@@ -1673,7 +1674,7 @@ namespace ALE {
         }
         isieve.setCone(points, renumbering[*b_iter]);
       }
-      for(typename Sieve::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+      for(typename Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
         const Obj<typename Sieve::supportSequence>& support = sieve.support(*c_iter);
         int i = 0;
 
