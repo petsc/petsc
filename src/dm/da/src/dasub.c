@@ -44,7 +44,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DA da,DADirection dir,Pets
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   flag = 0; 
-  ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm);CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,&ys,&zs,&xm,&ym,&zm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
   if (dir == DA_Z) {
     if (da->dim < 3) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"DA_Z invalid for DA dim < 3");
