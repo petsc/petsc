@@ -72,12 +72,13 @@ cdef class IS(Object):
         return self
 
     def getType(self):
+        cdef object otype = None
         cdef PetscISType istype
         CHKERR( ISGetType(self.iset, &istype) )
-        if   istype == IS_GENERAL: return "general"
-        elif istype == IS_BLOCK:   return "block"
-        elif istype == IS_STRIDE:  return "stride"
-        else:                      return None
+        if   istype == IS_GENERAL: otype = cp2str("general")
+        elif istype == IS_BLOCK:   otype = cp2str("block")
+        elif istype == IS_STRIDE:  otype = cp2str("stride")
+        return otype
 
     def duplicate(self):
         cdef IS iset = IS()
