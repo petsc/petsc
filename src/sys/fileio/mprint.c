@@ -188,7 +188,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
   fflush(fd);
 #endif
   if (oldLength >= 8*1024) {
-    PetscFree(newformat);
+    ierr = PetscFree(newformat);CHKERRQ(ierr);
   }
   return 0;
 }
