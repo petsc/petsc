@@ -326,12 +326,12 @@
       PetscEnum MATOP_INCREASE_OVERLAP
       PetscEnum MATOP_GET_VALUES
       PetscEnum MATOP_COPY
-      PetscEnum MATOP_PRINT_HELP
+      PetscEnum MATOP_GET_ROW_MAX
       PetscEnum MATOP_SCALE
       PetscEnum MATOP_SHIFT
       PetscEnum MATOP_DIAGONAL_SHIFT
       PetscEnum MATOP_ILUDT_FACTOR
-      PetscEnum MATOP_GET_BLOCK_SIZE
+      PetscEnum MATOP_SET_BLOCK_SIZE
 
       PetscEnum MATOP_GET_ROW_IJ
       PetscEnum MATOP_RESTORE_ROW_IJ
@@ -345,14 +345,14 @@
       PetscEnum MATOP_GET_SUBMATRIX
       PetscEnum MATOP_DESTROY
       PetscEnum MATOP_VIEW
-      PetscEnum MATOP_GET_MAPS
+      PetscEnum MATOP_CONVERT_FROM
       PetscEnum MATOP_USE_SCALED_FORM
       PetscEnum MATOP_SCALE_SYSTEM
       PetscEnum MATOP_UNSCALE_SYSTEM
       PetscEnum MATOP_SET_LOCAL_TO_GLOBAL_MAP
       PetscEnum MATOP_SET_VALUES_LOCAL
       PetscEnum MATOP_ZERO_ROWS_LOCAL
-      PetscEnum MATOP_GET_ROW_MAX
+      PetscEnum MATOP_GET_ROW_MAX_ABS
       PetscEnum MATOP_CONVERT
       PetscEnum MATOP_SET_COLORING
       PetscEnum MATOP_SET_VALUES_ADIC
@@ -385,11 +385,20 @@
       PetscEnum MATOP_PTAP_NUMERIC_SEQAIJ
       PetscEnum MATOP_PTAP_SYMBOLIC_MPIAIJ
       PetscEnum MATOP_PTAP_NUMERIC_MPIAIJ
+      PetscEnum MATOP_CONJUGATE
+      PetscEnum MATOP_SET_SIZES
       PetscEnum MATOP_SET_VALUES_ROW
+      PetscEnum MATOP_REAL_PART
+      PetscEnum MATOP_IMAG_PART
       PetscEnum MATOP_GET_ROW_UTRIANGULAR
       PetscEnum MATOP_RESTORE_ROW_UTRIANGULAR
       PetscEnum MATOP_MATSOLVE
+      PetscEnum MATOP_GET_REDUNDANTMATRIX
+      PetscEnum MATOP_GET_ROW_MIN
+      PetscEnum MATOP_GET_COLUMN_VEC
+      PetscEnum MATOP_MISSING_DIAGONAL
       PetscEnum MATOP_MATGETSEQNONZEROSTRUCTURE
+      PetscEnum MATOP_DESTROY_SOLVER
   
       parameter(MATOP_SET_VALUES=0)
       parameter(MATOP_GET_ROW=1)
@@ -436,12 +445,12 @@
       parameter(MATOP_INCREASE_OVERLAP=42)
       parameter(MATOP_GET_VALUES=43)
       parameter(MATOP_COPY=44)
-      parameter(MATOP_PRINT_HELP=45)
+      parameter(MATOP_GET_ROW_MAX=45)
       parameter(MATOP_SCALE=46)
       parameter(MATOP_SHIFT=47)
       parameter(MATOP_DIAGONAL_SHIFT=48)
       parameter(MATOP_ILUDT_FACTOR=49)
-      parameter(MATOP_GET_BLOCK_SIZE=50)
+      parameter(MATOP_SET_BLOCK_SIZE=50)
       parameter(MATOP_GET_ROW_IJ=51)
       parameter(MATOP_RESTORE_ROW_IJ=52)
       parameter(MATOP_GET_COLUMN_IJ=53)
@@ -454,14 +463,14 @@
       parameter(MATOP_GET_SUBMATRIX=60)
       parameter(MATOP_DESTROY=61)
       parameter(MATOP_VIEW=62)
-      parameter(MATOP_GET_MAPS=63)
+      parameter(MATOP_CONVERT_FROM=63)
       parameter(MATOP_USE_SCALED_FORM=64)
       parameter(MATOP_SCALE_SYSTEM=65)
       parameter(MATOP_UNSCALE_SYSTEM=66)
       parameter(MATOP_SET_LOCAL_TO_GLOBAL_MAP=67)
       parameter(MATOP_SET_VALUES_LOCAL=68)
       parameter(MATOP_ZERO_ROWS_LOCAL=69)
-      parameter(MATOP_GET_ROW_MAX=70)
+      parameter(MATOP_GET_ROW_MAX_ABS=70)
       parameter(MATOP_CONVERT=71)
       parameter(MATOP_SET_COLORING=72)
       parameter(MATOP_SET_VALUES_ADIC=73)
@@ -494,11 +503,20 @@
       parameter(MATOP_PTAP_NUMERIC_SEQAIJ=100)
       parameter(MATOP_PTAP_SYMBOLIC_MPIAIJ=101)
       parameter(MATOP_PTAP_NUMERIC_MPIAIJ=102)
+      parameter(MATOP_CONJUGATE=103)
+      parameter(MATOP_SET_SIZES=104)
       parameter(MATOP_SET_VALUES_ROW=105)
+      parameter(MATOP_REAL_PART=106)
+      parameter(MATOP_IMAG_PART=107)
       parameter(MATOP_GET_ROW_UTRIANGULAR=108)  
       parameter(MATOP_RESTORE_ROW_UTRIANGULAR=109) 
       parameter(MATOP_MATSOLVE=110)
+      parameter(MATOP_GET_REDUNDANTMATRIX=111)
+      parameter(MATOP_GET_ROW_MIN=112)
+      parameter(MATOP_GET_COLUMN_VEC=113)
+      parameter(MATOP_MISSING_DIAGONAL=114)
       parameter(MATOP_MATGETSEQNONZEROSTRUCTURE=115)
+      parameter(MATOP_DESTROY_SOLVER=116)
 !
 !  
 !
