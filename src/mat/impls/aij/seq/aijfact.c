@@ -744,7 +744,7 @@ PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
   Mat            C;
 
   PetscFunctionBegin;
-  ierr = MatGetFactor(A,"petsc",MAT_FACTOR_LU,&C);CHKERRQ(ierr);
+  ierr = MatGetFactor(A,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&C);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,info,&C);CHKERRQ(ierr);
   ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);

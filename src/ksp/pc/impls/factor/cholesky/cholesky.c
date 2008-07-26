@@ -515,7 +515,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   dir->col                    = 0;
   dir->row                    = 0;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&dir->ordering);CHKERRQ(ierr);
-  ierr = PetscStrallocpy("petsc",&dir->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&dir->solvertype);CHKERRQ(ierr);
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;
   pc->data              = (void*)dir;

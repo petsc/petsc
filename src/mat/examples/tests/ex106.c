@@ -131,7 +131,7 @@ int main(int argc,char **args)
   its_max = 2000;
   for (i=0; i<its_max; i++){
     /* printf(" it %d\n",i); */
-    ierr = MatGetFactor(C,"petsc",MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(C,perm,iperm,&factinfo,&F);CHKERRQ(ierr);
     for (j=0; j<1; j++){
     ierr = MatLUFactorNumeric(C,&factinfo,&F);CHKERRQ(ierr);

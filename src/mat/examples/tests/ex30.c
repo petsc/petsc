@@ -105,11 +105,11 @@ int main(int argc,char **args)
   info.zeropivot     = 0.0;
   ierr = PetscOptionsHasName(PETSC_NULL,"-lu",&LU);CHKERRQ(ierr);
   if (LU){ 
-    ierr = MatGetFactor(C,"petsc",MAT_FACTOR_LU,&A);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&A);CHKERRQ(ierr);
     ierr = MatLUFactorSymbolic(C,row,col,&info,&A);CHKERRQ(ierr);
   } else {
     info.levels = lf;
-    ierr = MatGetFactor(C,"petsc",MAT_FACTOR_ILU,&A);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_ILU,&A);CHKERRQ(ierr);
     ierr = MatILUFactorSymbolic(C,row,col,&info,&A);CHKERRQ(ierr);
   }
   ierr = MatLUFactorNumeric(C,&info,&A);CHKERRQ(ierr);
@@ -145,7 +145,7 @@ int main(int argc,char **args)
   /* Test Cholesky and ICC on seqaij matrix with matrix reordering */
   if (LU){ 
     lf = -1;
-    ierr = MatGetFactor(C,"petsc",MAT_FACTOR_CHOLESKY,&A);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&A);CHKERRQ(ierr);
     ierr = MatCholeskyFactorSymbolic(C,row,&info,&A);CHKERRQ(ierr);
   } else {
     info.levels        = lf;
@@ -153,7 +153,7 @@ int main(int argc,char **args)
     info.diagonal_fill = 0;
     info.shiftnz       = 0;
     info.zeropivot     = 0.0;
-    ierr = MatGetFactor(C,"petsc",MAT_FACTOR_ICC,&A);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&A);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(C,row,&info,&A);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(C,&info,&A);CHKERRQ(ierr);  
@@ -183,7 +183,7 @@ int main(int argc,char **args)
   ierr = MatGetOrdering(C,MATORDERING_NATURAL,&row,&col);CHKERRQ(ierr);
   if (LU){ 
     lf = -1;
-    ierr = MatGetFactor(C,"petsc",MAT_FACTOR_CHOLESKY,&A);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&A);CHKERRQ(ierr);
     ierr = MatCholeskyFactorSymbolic(C,row,&info,&A);CHKERRQ(ierr);
   } else {
     info.levels        = lf;
@@ -191,7 +191,7 @@ int main(int argc,char **args)
     info.diagonal_fill = 0;
     info.shiftnz       = 0;
     info.zeropivot     = 0.0;
-    ierr = MatGetFactor(C,"petsc",MAT_FACTOR_ICC,&A);CHKERRQ(ierr);
+    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&A);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(C,row,&info,&A);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(C,&info,&A);CHKERRQ(ierr);
@@ -217,10 +217,10 @@ int main(int argc,char **args)
 
   /* Test Cholesky and ICC on seqsbaij matrix without matrix reordering */
   if (LU){ 
-    ierr = MatGetFactor(sC,"petsc",MAT_FACTOR_CHOLESKY,&sA);CHKERRQ(ierr);
+    ierr = MatGetFactor(sC,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&sA);CHKERRQ(ierr);
     ierr = MatCholeskyFactorSymbolic(sC,row,&info,&sA);CHKERRQ(ierr);
   } else {
-    ierr = MatGetFactor(sC,"petsc",MAT_FACTOR_ICC,&sA);CHKERRQ(ierr);
+    ierr = MatGetFactor(sC,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&sA);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(sC,row,&info,&sA);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(sC,&info,&sA);CHKERRQ(ierr);

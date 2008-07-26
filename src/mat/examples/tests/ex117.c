@@ -45,7 +45,7 @@ int main(int argc,char **args)
    MatGetOrdering(mat,MATORDERING_NATURAL,&perm,&colp);
    ierr = ISDestroy(colp);CHKERRQ(ierr);    
    info.fill=1.0; 
-   ierr = MatGetFactor(mat,"petsc",MAT_FACTOR_CHOLESKY,&fact);CHKERRQ(ierr);
+   ierr = MatGetFactor(mat,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&fact);CHKERRQ(ierr);
    ierr = MatCholeskyFactorSymbolic(mat,perm,&info,&fact); CHKERRQ(ierr);
    ierr = MatCholeskyFactorNumeric(mat,&info,&fact);CHKERRQ(ierr);
    printf("Chol factor: \n");

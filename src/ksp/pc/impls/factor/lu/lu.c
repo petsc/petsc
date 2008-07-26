@@ -733,7 +733,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   dir->col                 = 0;
   dir->row                 = 0;
 
-  ierr = PetscStrallocpy("petsc",&dir->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&dir->solvertype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);

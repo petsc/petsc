@@ -276,14 +276,14 @@ int main(int argc,char **args)
   for (lf=-1; lf<10; lf += inc){   
     if (lf==-1) {  /* Cholesky factor of sB (duplicate sA) */
       factinfo.fill = 5.0;   
-      ierr = MatGetFactor(sB,"petsc",MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
+      ierr = MatGetFactor(sB,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
       ierr = MatCholeskyFactorSymbolic(sB,perm,&factinfo,&sC);CHKERRQ(ierr); 
     } else if (!doIcc){
       break;
     } else {       /* incomplete Cholesky factor */
       factinfo.fill   = 5.0;
       factinfo.levels = lf;
-      ierr = MatGetFactor(sB,"petsc",MAT_FACTOR_ICC,&sC);CHKERRQ(ierr);
+      ierr = MatGetFactor(sB,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&sC);CHKERRQ(ierr);
       ierr = MatICCFactorSymbolic(sB,perm,&factinfo,&sC);CHKERRQ(ierr);
     }
     ierr = MatCholeskyFactorNumeric(sB,&factinfo,&sC);CHKERRQ(ierr);

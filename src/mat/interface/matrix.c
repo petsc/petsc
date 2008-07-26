@@ -3352,7 +3352,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
   ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
   if (!conv) {
     PetscTruth flag;
-    ierr = PetscStrcasecmp("petsc",type,&flag);CHKERRQ(ierr);
+    ierr = PetscStrcasecmp(MAT_SOLVER_PETSC,type,&flag);CHKERRQ(ierr);
     if (flag) {
       SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc solver",mat->hdr.type_name);
     } else {

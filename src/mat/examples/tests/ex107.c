@@ -107,7 +107,7 @@ int main(int argc,char **args)
   }
 
   /* Test LU Factorization */
-  ierr = MatGetFactor(C,"petsc",MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+  ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(C,perm,iperm,&info,&F);CHKERRQ(ierr); 
   for (nfact = 0; nfact < 2; nfact++){
     if (!rank) printf(" LU nfact %d\n",nfact);   
@@ -209,7 +209,7 @@ int main(int argc,char **args)
 
   /* Test Cholesky Factorization */
   ierr = MatShift(Csymm,M);CHKERRQ(ierr);  /* make Csymm positive definite */
-  ierr = MatGetFactor(Csymm,"petsc",MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+  ierr = MatGetFactor(Csymm,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
   ierr = MatCholeskyFactorSymbolic(Csymm,perm,&info,&F);CHKERRQ(ierr);
   for (nfact = 0; nfact < 2; nfact++){
     if (!rank) printf(" Cholesky nfact %d\n",nfact);
