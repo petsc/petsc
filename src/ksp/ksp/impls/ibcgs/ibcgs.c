@@ -24,42 +24,65 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
      f0 = A'*r0
      q0 = v0 = z0 = 0
 
-     sigma_1 = pi0 = phi0 = tau0
+     sigma_1 = pi0 = phi0 = tau0 = 0
 
      sigma0 = r0'u0 
 
      rho0 = alpha0 = omega0 = 1
 
-     do:
-        rho1   = ohi0 - w0*sigma_1 + w0*alpha0*pi0
-        delta1 = rho1/rho0
-        beta1  = delta1/omega0
-        tau1   = rho0 + beta1*tau0  - delta1*pi0
-        alpha1 = rho1/tau1
+     do n = 1...:
+        rhon   = phin_1 - omegan_1*sigman_2 + omegan_1*alphan_1*pin_1
+        deltan = rhon*alphan_1/rhon_1
+        betan  = deltan/omegan_1
+        taun   = sigman_1 + betan*taun_1  - deltan*pin_1
+        alphan = rhon/taun
 
-        v1 = u0 + beta1*v0 - delta1*q0
-        q1 = Av1
-        s1 = r0 - alpha1*v1
-        t1 = u0 - alpha1*q
-        z1 = alpha1*r0 + beta1*z0 - alpha1*delta1*v0
+        vn = un_1 + betan*vn_1 - deltan*qn_1
+        qn = A*vn
+        sn = rn_1 - alphan*vn
+        tn = un_1 - alphan*qn
+        zn = alphan*rn_1 + betan*zn_1 - alphan*deltan*vn_1
 
-        phi1 = r0's1
-        pi1  = r0'q1
-        gamma1 = f0's1
-        eta1   = f0't1
-        theta1 = s1't1
-        kappa1 = t1't1
-  
-        alpha1 = gamma1 - omega1*eta1
+        phin = r0'sn
+        pin  = r0'qn
+        gamman = f0'sn
+        etan   = f0'tn
+        thetan = sn'tn
+        kappan = tn'tn
 
-        r1 = s1 - omega1*t1
-        x1 = x0 + z1 + omega1*s1
+        omegan = thetan/kappan
+        sigman = gamman - omegan*etan
+
+        rn = sn - omegan*tn
+        xn = xn_1 + zn + omegan*sn
 
         Test for convergence
 
-        u1 = Ar1
+        un = A*rn
+
+        Update n-1 locations with n locations
+        un_1 = un
+        xn_1 = xn
+        rn_1 = rn
+        sigman_2 = sigman_1
+        sigman_1 = sigman
+        pin_1    = pin
+        phin_1   = phin
+        zn_1     = zn
+        qn_1     = qn
+        vn_1     = vn
+        alphan_1 = alphan
+        taun_1   = taun
+        rhon_1   = rhon
+
+
      enddo:
+
+         These previous values are never used so need not be updated
+
+         kappan_1 = kappan, thetan_1 = thetan, etan_1 = etan, gamman_1 = gamman, tn_1 = tn, sn_1 = sn, betan_1  = betan, deltan_1 = deltan
    
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_IBCGS"
 static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
