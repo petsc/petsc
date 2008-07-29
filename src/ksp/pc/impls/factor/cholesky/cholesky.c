@@ -28,6 +28,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Cholesky(PC pc,con
   PC_Cholesky    *choleksy = (PC_Cholesky*)pc->data;
 
   PetscFunctionBegin;
+  ierr = PetscStrfree(choleksy->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(stype,&choleksy->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

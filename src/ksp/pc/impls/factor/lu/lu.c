@@ -18,6 +18,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_LU(PC pc,const Mat
   PC_LU          *lu = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
+  ierr = PetscStrfree(lu->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

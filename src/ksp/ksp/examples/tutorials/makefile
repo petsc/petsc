@@ -538,60 +538,60 @@ runex10_25:
 	   ${RM} -f ex10_25.tmp
 
 runex10_superlu_lu_1:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_type superlu -num_numfac 2 -num_rhs 2 > ex10_superlu_lu_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package superlu -num_numfac 2 -num_rhs 2 > ex10_superlu_lu_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_superlu_lu_1.tmp) then true; \
 	   else echo "Possible problem with ex10_superlu_lu_1, diffs above"; fi; \
 	   ${RM} -f ex10_superlu_lu_1.tmp
 runex10_superlu_dist_lu_2:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type mpiaij -pc_factor_mat_solver_type superlu_dist -num_numfac 2 -num_rhs 2 > ex10_superlu_lu_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type mpiaij -pc_factor_mat_solver_package superlu_dist -num_numfac 2 -num_rhs 2 > ex10_superlu_lu_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_superlu_lu_2.tmp) then true; \
 	   else echo "Possible problem with ex10_superlu_lu_2, diffs above"; fi; \
 	   ${RM} -f ex10_superlu_lu_2.tmp
 
 runex10_spooles_lu_1:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_type spooles -num_numfac 2 -num_rhs 2 > ex10_spooles_lu_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package spooles -num_numfac 2 -num_rhs 2 > ex10_spooles_lu_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_spooles_lu_1.tmp) then true; \
 	   else echo "Possible problem with ex10_spooles_lu_1, diffs above"; fi; \
 	   ${RM} -f ex10_spooles_lu_1.tmp
 runex10_spooles_lu_2:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type mpiaij -pc_factor_mat_solver_type spooles -num_numfac 2 -num_rhs 2 > ex10_spooles_lu_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type mpiaij -pc_factor_mat_solver_package spooles -num_numfac 2 -num_rhs 2 > ex10_spooles_lu_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_spooles_lu_2.tmp) then true; \
 	   else echo "Possible problem with ex10_spooles_lu_2, diffs above"; fi; \
 	   ${RM} -f ex10_spooles_lu_2.tmp
 
 runex10_spooles_cholesky_1:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type seqaij -pc_factor_mat_solver_type spooles -num_numfac 2 -num_rhs 2 > ex10_spooles_cholesky_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type seqaij -pc_factor_mat_solver_package spooles -num_numfac 2 -num_rhs 2 > ex10_spooles_cholesky_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_spooles_cholesky_1.tmp) then true; \
 	   else echo "Possible problem with ex10_spooles_cholesky_1, diffs above"; fi; \
 	   ${RM} -f ex10_spooles_cholesky_1.tmp
 runex10_spooles_cholesky_1sbaij:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type seqsbaij -pc_factor_mat_solver_type spooles -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_spooles_cholesky_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type seqsbaij -pc_factor_mat_solver_package spooles -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_spooles_cholesky_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_spooles_cholesky_1.tmp) then true; \
 	   else echo "Possible problem with ex10_spooles_cholesky_1, diffs above"; fi; \
 	   ${RM} -f ex10_spooles_cholesky_1.tmp
 runex10_spooles_cholesky_2:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type mpisbaij -pc_factor_mat_solver_type spooles -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_spooles_cholesky_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type mpisbaij -pc_factor_mat_solver_package spooles -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_spooles_cholesky_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_spooles_cholesky_2.tmp) then true; \
 	   else echo "Possible problem with ex10_spooles_cholesky_2, diffs above"; fi; \
 	   ${RM} -f ex10_spooles_cholesky_2.tmp
 
 runex10_mumps_lu_1:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2 > ex10_mumps_lu_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 > ex10_mumps_lu_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_mumps_lu_1.tmp) then true; \
 	   else echo "Possible problem with ex10_mumps_lu_1, diffs above"; fi; \
 	   ${RM} -f ex10_mumps_lu_1.tmp
 runex10_mumps_lu_2:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type mpiaij -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2 > ex10_mumps_lu_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type mpiaij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 > ex10_mumps_lu_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_mumps_lu_2.tmp) then true; \
 	   else echo "Possible problem with ex10_mumps_lu_2, diffs above"; fi; \
 	   ${RM} -f ex10_mumps_lu_2.tmp
 runex10_mumps_cholesky_1:
-	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_mumps_cholesky_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_mumps_cholesky_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_mumps_cholesky_1.tmp) then true; \
 	   else echo "Possible problem with ex10_mumps_cholesky_1, diffs above"; fi; \
 	   ${RM} -f ex10_mumps_cholesky_1.tmp
 runex10_mumps_cholesky_2:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_type mumps -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_mumps_cholesky_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type sbaij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 -mat_ignore_lower_triangular > ex10_mumps_cholesky_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_mumps_cholesky_2.tmp) then true; \
 	   else echo "Possible problem with ex10_mumps_cholesky_2, diffs above"; fi; \
 	   ${RM} -f ex10_mumps_cholesky_2.tmp
