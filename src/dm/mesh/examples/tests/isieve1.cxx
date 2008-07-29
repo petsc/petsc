@@ -1,3 +1,5 @@
+#define ALE_MEM_LOGGING
+
 #include <petsc.h>
 #include <ISieve.hh>
 #include <Mesh.hh>
@@ -191,6 +193,168 @@ public:
 #define __FUNCT__ "RegisterISieveFunctionSuite"
 PetscErrorCode RegisterISieveFunctionSuite() {
   CPPUNIT_TEST_SUITE_REGISTRATION(FunctionTestISieve);
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+class MemoryTestISieve : public CppUnit::TestFixture
+{
+  CPPUNIT_TEST_SUITE(MemoryTestISieve);
+
+  CPPUNIT_TEST(testTriangularInterpolatedSieve);
+  CPPUNIT_TEST(testTriangularUninterpolatedSieve);
+  CPPUNIT_TEST(testConversion);
+
+  CPPUNIT_TEST_SUITE_END();
+public:
+  typedef ALE::IFSieve<int> sieve_type;
+protected:
+  ALE::Obj<sieve_type> _sieve;
+  int                  _debug; // The debugging level
+  PetscInt             _iters; // The number of test repetitions
+public:
+  PetscErrorCode processOptions() {
+    PetscErrorCode ierr;
+
+    this->_debug = 0;
+    this->_iters = 1;
+
+    PetscFunctionBegin;
+    ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  };
+
+  /// Setup data.
+  void setUp(void) {
+    this->processOptions();
+  };
+
+  /// Tear down data.
+  void tearDown(void) {};
+
+  void testTriangularInterpolatedSieve(void) {
+    ALE::MemoryLogger& logger      = ALE::MemoryLogger::singleton();
+    const char        *name        = "ISieve I";
+    const int          numCells    = 8;
+    const int          numCorners  = 3;
+    const int          numVertices = 9;
+    const int          numEdges    = 16;
+    const int          numPoints   = numCells+numVertices+numEdges;
+    const int          cones[56]   = {19, 20, 17,  24, 21, 20,  22, 18, 21,  25, 23, 22,  27, 24, 26,  31, 28, 27,  29, 25, 28,  32, 30, 29,
+                                      8, 9,  9, 10,  8, 11,  9, 11,  9, 12,  10, 12,  10, 13,  11, 12,  12, 13,  11, 14,  12, 14,  12, 15,  13, 15,  13, 16,  14, 15,  15, 16};
+
+    logger.setDebug(this->_debug);
+    logger.stagePush(name);
+    {
+      ALE::Obj<sieve_type> sieve = new sieve_type(PETSC_COMM_WORLD, 0, numPoints, this->_debug);
+
+      for(int c = 0; c < numCells; ++c) {
+        sieve->setConeSize(c, numCorners);
+      }
+      for(int e = numCells+numVertices; e < numCells+numVertices+numEdges; ++e) {
+        sieve->setConeSize(e, 2);
+      }
+      sieve->symmetrizeSizes(numCells, numCorners, cones);
+      sieve->symmetrizeSizes(numEdges, 2, &cones[numCells*numCorners]);
+      sieve->allocate();
+      for(int c = 0; c < numCells; ++c) {
+        sieve->setCone(&cones[c*numCorners], c);
+      }
+      for(int e = 0; e < numEdges; ++e) {
+        sieve->setCone(&cones[e*2+numCells*numCorners], e);
+      }
+      sieve->symmetrize();
+    }
+    logger.stagePop();
+    const int numArrows = numCells*numCorners+numEdges*2;
+    const int bytes     = 4 /*Obj*/ + (numPoints+1)*4 /*coneOffsets*/ + (numPoints+1)*4 /*supportOffsets*/ +
+      (numArrows)*4 /*cones*/ + numArrows*4 /*coneOrientations*/ + numArrows*4 /*supports*/ + (numPoints+1)*4 /*offsets*/;
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of allocations", 7, logger.getNumAllocations(name));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of deallocations", 7, logger.getNumDeallocations(name));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes allocated", bytes, logger.getAllocationTotal(name));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes deallocated", bytes, logger.getDeallocationTotal(name));
+  };
+
+  void testTriangularUninterpolatedSieve(void) {
+    ALE::MemoryLogger& logger      = ALE::MemoryLogger::singleton();
+    const char        *name        = "ISieve II";
+    const int          numCells    = 8;
+    const int          numCorners  = 3;
+    const int          numVertices = 9;
+    const int          numPoints   = numCells+numVertices;
+    const int          cones[24]   = {8, 11, 9,  11, 12, 9,  12, 10, 9,  12, 13, 10,  14, 12, 11,  14, 15, 12,  15, 13, 12,  15, 16, 13};
+
+    logger.setDebug(this->_debug);
+    logger.stagePush(name);
+    {
+      ALE::Obj<sieve_type> sieve = new sieve_type(PETSC_COMM_WORLD, 0, numPoints, this->_debug);
+
+      for(int c = 0; c < numCells; ++c) {
+        sieve->setConeSize(c, numCorners);
+      }
+      sieve->symmetrizeSizes(numCells, numCorners, cones);
+      sieve->allocate();
+      for(int c = 0; c < numCells; ++c) {
+        sieve->setCone(&cones[c*numCorners], c);
+      }
+      sieve->symmetrize();
+    }
+    logger.stagePop();
+    const int numArrows = numCells*numCorners;
+    const int bytes     = 4 /*Obj*/ + (numPoints+1)*4 /*coneOffsets*/ + (numPoints+1)*4 /*supportOffsets*/ +
+      numArrows*4 /*cones*/ + numArrows*4 /*coneOrientations*/ + numArrows*4 /*supports*/ + (numPoints+1)*4 /*offsets*/;
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of allocations", 7, logger.getNumAllocations(name));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of deallocations", 7, logger.getNumDeallocations(name));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes allocated", bytes, logger.getAllocationTotal(name));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes deallocated", bytes, logger.getDeallocationTotal(name));
+  };
+
+  void testConversion(void) {
+    ALE::MemoryLogger& logger      = ALE::MemoryLogger::singleton();
+    const char        *name        = "ISieve III";
+    const char        *nameOld     = "Sieve III";
+    const int          numCells    = 8;
+    const int          numCorners  = 3;
+    const int          numVertices = 9;
+    const int          numPoints   = numCells+numVertices;
+    const int          cones[24]   = {0, 3, 1,  3, 4, 1,  4, 2, 1,  4, 5, 2,  6, 4, 3,  6, 7, 4,  7, 5, 4,  7, 8, 5};
+
+    logger.setDebug(this->_debug);
+    logger.stagePush(name);
+    {
+      logger.stagePush(nameOld);
+      ALE::Obj<ALE::Mesh::sieve_type> s = new ALE::Mesh::sieve_type(PETSC_COMM_WORLD, this->_debug);
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, 2, numCells, const_cast<int *>(cones), numVertices, false, numCorners);
+      logger.stagePop();
+
+      ALE::Obj<sieve_type> sieve = new sieve_type(PETSC_COMM_WORLD, this->_debug);
+      std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+
+      ALE::ISieveConverter::convertSieve(*s, *sieve, renumbering);
+    }
+    logger.stagePop();
+    std::cout << std::endl << nameOld << " " << logger.getNumAllocations(nameOld) << " allocations " << logger.getAllocationTotal(nameOld) << " bytes" << std::endl;
+    std::cout << std::endl << name << " " << logger.getNumAllocations(name) << " allocations " << logger.getAllocationTotal(name) << " bytes" << std::endl;
+    const int numArrows = numCells*numCorners;
+    const int bytes     = 4 /*Obj*/ + (numPoints+1)*4 /*coneOffsets*/ + (numPoints+1)*4 /*supportOffsets*/ +
+      numArrows*4 /*cones*/ + numArrows*4 /*coneOrientations*/ + numArrows*4 /*supports*/ +
+      4 /*Obj*/ + 8 /*baseSeq*/ + 4 /*Obj*/ + 8 /*capSeq*/;
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of allocations", 10, logger.getNumAllocations(name));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes allocated", bytes, logger.getAllocationTotal(name));
+
+    std::cout << std::endl << name << " " << logger.getNumDeallocations(name) << " deallocations " << logger.getDeallocationTotal(name) << " bytes" << std::endl;
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of deallocations", 80+10, logger.getNumDeallocations(name)+logger.getNumDeallocations(nameOld));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes deallocated", bytes+5720, logger.getDeallocationTotal(name)+logger.getDeallocationTotal(nameOld));
+  };
+};
+
+#undef __FUNCT__
+#define __FUNCT__ "RegisterISieveMemorySuite"
+PetscErrorCode RegisterISieveMemorySuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION(MemoryTestISieve);
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

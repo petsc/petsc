@@ -1,3 +1,5 @@
+#define ALE_MEM_LOGGING
+
 #include <petscmat.h>
 #include <petscmesh.hh>
 #include <Mesh.hh>

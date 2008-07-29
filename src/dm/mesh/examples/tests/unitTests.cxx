@@ -1,4 +1,4 @@
-
+#define ALE_MEM_LOGGING
 static char help[] = "Sieve Package Correctness and Performance Unit Tests.\n\n";
 
 #include <petsc.h>
@@ -11,10 +11,12 @@ static char help[] = "Sieve Package Correctness and Performance Unit Tests.\n\n"
 #include <cppunit/TestRunner.h>
 #include <cppunit/TextOutputter.h>
 
+extern PetscErrorCode RegisterSTLMemorySuite();
 extern PetscErrorCode RegisterSifterStressSuite();
 extern PetscErrorCode RegisterSieveFunctionSuite();
 extern PetscErrorCode RegisterSieveStressSuite();
 extern PetscErrorCode RegisterISieveFunctionSuite();
+extern PetscErrorCode RegisterISieveMemorySuite();
 extern PetscErrorCode RegisterSectionStressSuite();
 extern PetscErrorCode RegisterISectionStressSuite();
 extern PetscErrorCode RegisterIMeshFunctionSuite();
@@ -24,6 +26,8 @@ extern PetscErrorCode RegisterIDistributionFunctionSuite();
 typedef struct {
   PetscTruth function;      // Run the functionality tests
   PetscTruth stress;        // Run the stress tests
+  PetscTruth memory;        // Run the memory tests
+  PetscTruth stl;           // Run the STL tests
   PetscTruth sifter;        // Run the Sifter tests
   PetscTruth sieve;         // Run the Sieve tests
   PetscTruth isieve;        // Run the ISieve tests
@@ -43,6 +47,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionBegin;
   options->function      = PETSC_FALSE;
   options->stress        = PETSC_FALSE;
+  options->memory        = PETSC_FALSE;
+  options->stl           = PETSC_FALSE;
   options->sifter        = PETSC_FALSE;
   options->sieve         = PETSC_FALSE;
   options->isieve        = PETSC_FALSE;
@@ -55,6 +61,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-function", "Run functionality tests", "unitTests", options->function, &options->function, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-stress", "Run stress tests", "unitTests", options->stress, &options->stress, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-memory", "Run memory tests", "unitTests", options->memory, &options->memory, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-stl", "Run STL tests", "unitTests", options->stl, &options->stl, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-sifter", "Run Sifter tests", "unitTests", options->sifter, &options->sifter, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-sieve", "Run Sieve tests", "unitTests", options->sieve, &options->sieve, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-isieve", "Run ISieve tests", "unitTests", options->isieve, &options->isieve, PETSC_NULL);CHKERRQ(ierr);
@@ -73,6 +81,9 @@ PetscErrorCode RegisterSuites(Options *options) {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (options->stl) {
+    if (options->memory)   {ierr = RegisterSTLMemorySuite();CHKERRQ(ierr);}
+  }
   if (options->sifter) {
     if (options->stress)   {ierr = RegisterSifterStressSuite();CHKERRQ(ierr);}
   }
@@ -82,6 +93,7 @@ PetscErrorCode RegisterSuites(Options *options) {
   }
   if (options->isieve) {
     if (options->function) {ierr = RegisterISieveFunctionSuite();CHKERRQ(ierr);}
+    if (options->memory)   {ierr = RegisterISieveMemorySuite();CHKERRQ(ierr);}
   }
   if (options->section) {
     if (options->stress)   {ierr = RegisterSectionStressSuite();CHKERRQ(ierr);}

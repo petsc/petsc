@@ -14,7 +14,6 @@ typedef struct {
   PetscInt   rank;
   PetscInt   size;
   // Classes
-  PetscTruth set;         // Run the set tests
   PetscTruth sifter;      // Run the Sifter tests
   PetscTruth label;       // Run the label tests
   PetscTruth sieve;       // Run the Sieve tests
@@ -41,7 +40,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   PetscFunctionBegin;
   options->debug       = 0;
-  options->set         = PETSC_FALSE;
   options->sifter      = PETSC_FALSE;
   options->label       = PETSC_FALSE;
   options->sieve       = PETSC_FALSE;
@@ -57,7 +55,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "Debugging flag", "memTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-set", "Run set tests", "memTests", options->set, &options->set, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-sifter", "Run Sifter tests", "memTests", options->sifter, &options->sifter, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-label", "Run Label tests", "memTests", options->label, &options->label, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-sieve", "Run Sieve tests", "memTests", options->sieve, &options->sieve, PETSC_NULL);CHKERRQ(ierr);
@@ -91,38 +88,6 @@ PetscErrorCode CreateSquareMesh(Obj<ALE::Mesh>& mesh, const Options *options)
   mesh = ALE::Generator::generateMesh(mB, options->interpolate);
   if (options->refine > 0.0) {
     mesh = ALE::Generator::refineMesh(mesh, options->refine, options->interpolate);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SetTest"
-PetscErrorCode SetTest(const Options *options)
-{
-  ALE::MemoryLogger& logger = ALE::MemoryLogger::singleton();
-  const PetscInt     num    = options->number;
-
-  PetscFunctionBegin;
-  logger.stagePush("Set");
-  for(PetscInt i = 0; i < num; ++i) {
-    std::set<int, std::less<int>, ALE::malloc_allocator<int> > s;
-
-    for(PetscInt c = 0; c < options->numCells; ++c) {
-      s.insert(c);
-    }
-  }
-  logger.stagePop();
-  if (logger.getNumAllocations("Set") != options->numCells*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of allocations %d should be %d", logger.getNumAllocations("Set"), options->numCells*num);
-  }
-  if (logger.getNumDeallocations("Set") != options->numCells*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of deallocations %d should be %d", logger.getNumDeallocations("Set"), options->numCells*num);
-  }
-  if (logger.getAllocationTotal("Set") != 20*options->numCells*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes allocated %d should be %d", logger.getAllocationTotal("Set"), 20*options->numCells*num);
-  }
-  if (logger.getDeallocationTotal("Set") != 20*options->numCells*num) {
-    SETERRQ2(PETSC_ERR_PLIB, "Invalid number of bytes deallocated %d should be %d", logger.getDeallocationTotal("Set"), 20*options->numCells*num);
   }
   PetscFunctionReturn(0);
 }
@@ -884,7 +849,6 @@ PetscErrorCode RunUnitTests(const Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (options->set)         {ierr = SetTest(options);CHKERRQ(ierr);}
   if (options->label)       {ierr = LabelTest(options);CHKERRQ(ierr);}
   if (options->section)     {ierr = SectionTest(options);CHKERRQ(ierr);}
   if (options->isection)    {ierr = ISectionTest(options);CHKERRQ(ierr);}

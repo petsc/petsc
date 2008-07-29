@@ -92,9 +92,9 @@ subset: subset.o chkopts
 	-${CLINKER} -o subset subset.o ${PETSC_DM_LIB}
 	${RM} -f subset.o
 
-unitTests: sifter1.o sieve1.o isieve1.o section1.o isection1.o imesh1.o distribution1.o idistribution1.o unitTests.o chkopts
-	-${CLINKER} -o unitTests sifter1.o sieve1.o isieve1.o section1.o isection1.o imesh1.o distribution1.o idistribution1.o unitTests.o ${PETSC_DM_LIB} -lcppunit
-	#${RM} -f sifter1.o sieve1.o isieve1.o section1.o isection1.o imesh1.o distribution1.o idistribution1.o unitTests.o
+unitTests: stl1.o sifter1.o sieve1.o isieve1.o section1.o isection1.o imesh1.o distribution1.o idistribution1.o unitTests.o chkopts
+	-${CLINKER} -o unitTests stl1.o sifter1.o sieve1.o isieve1.o section1.o isection1.o imesh1.o distribution1.o idistribution1.o unitTests.o ${PETSC_DM_LIB} -lcppunit
+	#${RM} -f stl1.o sifter1.o sieve1.o isieve1.o section1.o isection1.o imesh1.o distribution1.o idistribution1.o unitTests.o
 
 memoryTests: memoryTests.o chkopts
 	-${CLINKER} -o memoryTests memoryTests.o ${PETSC_DM_LIB}
