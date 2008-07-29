@@ -1624,7 +1624,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
 #undef __FUNCT__  
 #define __FUNCT__ "VecCopy"
 /*@
-   VecCopy - Copies a vector. 
+   VecCopy - Copies a vector. y <- x
 
    Collective on Vec
 
