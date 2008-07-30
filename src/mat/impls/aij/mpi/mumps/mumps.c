@@ -39,6 +39,7 @@ typedef struct {
   VecScatter     scat_rhs, scat_sol;
   PetscTruth     isAIJ,CleanUpMUMPS;
   Vec            b_seq,x_seq;
+  PetscErrorCode (*MatDestroy)(Mat);
 } Mat_MUMPS;
 
 EXTERN PetscErrorCode MatDuplicate_MUMPS(Mat,MatDuplicateOption,Mat*);
@@ -171,7 +172,7 @@ PetscErrorCode MatDestroy_MUMPS(Mat A)
     ierr = PetscFree(lu->jcn);CHKERRQ(ierr);    
     ierr = MPI_Comm_free(&(lu->comm_mumps));CHKERRQ(ierr);
   }
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  ierr = (lu->MatDestroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -314,7 +315,8 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
   ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 
-    (*F)->ops->solve    = MatSolve_MUMPS;
+    (*F)->ops->solve   = MatSolve_MUMPS;
+    (*F)->ops->destroy = MatDestroy_MUMPS;
 
     /* Initialize a MUMPS instance */
     ierr = MPI_Comm_rank(((PetscObject)A)->comm, &lu->myid);
@@ -574,6 +576,7 @@ PetscErrorCode MatGetFactor_seqaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   mumps->scat_rhs                  = PETSC_NULL;
   mumps->scat_sol                  = PETSC_NULL;
   mumps->nSolve                    = 0;
+  mumps->MatDestroy                = A->ops->destroy;
 
   B->spptr                         = (void*)mumps;
 
@@ -612,6 +615,7 @@ PetscErrorCode MatGetFactor_mpiaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   mumps->scat_rhs                  = PETSC_NULL;
   mumps->scat_sol                  = PETSC_NULL;
   mumps->nSolve                    = 0;
+  mumps->MatDestroy                = A->ops->destroy;
 
   B->spptr                         = (void*)mumps;
 
@@ -666,6 +670,7 @@ PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   mumps->scat_rhs                  = PETSC_NULL;
   mumps->scat_sol                  = PETSC_NULL;
   mumps->nSolve                    = 0;
+  mumps->MatDestroy                = A->ops->destroy;
   B->spptr                         = (void*)mumps;
   *F = B;
   PetscFunctionReturn(0);
@@ -705,6 +710,7 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   mumps->scat_rhs                  = PETSC_NULL;
   mumps->scat_sol                  = PETSC_NULL;
   mumps->nSolve                    = 0;
+  mumps->MatDestroy                = A->ops->destroy;
   B->spptr                         = (void*)mumps;
   *F = B;
   PetscFunctionReturn(0);
