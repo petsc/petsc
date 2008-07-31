@@ -69,7 +69,13 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   ierr = KSP_PCApplyBAorAB(ksp,Rn_1,Un_1,Tn);CHKERRQ(ierr);
   
   /* f0   = A'*rn_1; */
-  ierr = KSP_PCApplyBAorABTranspose(ksp,Rn_1,F0,Tn);CHKERRQ(ierr);
+  if (ksp->pc_side == PC_RIGHT) { /* B' A' */
+    ierr = MatMultTranspose(A,R0,Tn);CHKERRQ(ierr);
+    ierr = PCApplyTranspose(ksp->pc,Tn,F0);CHKERRQ(ierr);
+  } else if (ksp->pc_side == PC_LEFT) { /* A' B' */
+    ierr = PCApplyTranspose(ksp->pc,R0,Tn);CHKERRQ(ierr);
+    ierr = MatMultTranspose(A,Tn,F0);CHKERRQ(ierr);
+  }
 
   /*qn_1 = vn_1 = zn_1 = 0.0; */
   ierr = VecSet(Qn_1,0.0);CHKERRQ(ierr);

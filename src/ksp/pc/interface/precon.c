@@ -600,7 +600,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Ve
 /*@ 
    PCApplyBAorABTranspose - Applies the transpose of the preconditioner
    and operator to a vector. That is, applies tr(B) * tr(A) with left preconditioning,
-   not tr(B*A) = tr(A)*tr(B).
+   NOT tr(B*A) = tr(A)*tr(B).
 
    Collective on PC and Vec
 
@@ -613,7 +613,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyBAorAB(PC pc,PCSide side,Vec x,Vec y,Ve
    Output Parameter:
 .  y - output vector
 
-   Level: developer
+
+   Notes: this routine is used internally so that the same Krylov code can be used to solve A x = b and A' x = b, with a preconditioner
+      defined by B'. This is why this has the funny form that it computes tr(B) * tr(A) 
+          
+    Level: developer
 
 .keywords: PC, apply, operator, transpose
 
