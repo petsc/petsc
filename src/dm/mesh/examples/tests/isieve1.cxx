@@ -346,7 +346,7 @@ public:
     CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes allocated", bytes, logger.getAllocationTotal(name));
 
     std::cout << std::endl << name << " " << logger.getNumDeallocations(name) << " deallocations " << logger.getDeallocationTotal(name) << " bytes" << std::endl;
-    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of deallocations", 80+10, logger.getNumDeallocations(name)+logger.getNumDeallocations(nameOld));
+    CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of deallocations", 10+80, logger.getNumDeallocations(name)+logger.getNumDeallocations(nameOld));
     CPPUNIT_ASSERT_EQUAL_MESSAGE("Invalid number of bytes deallocated", bytes+5720, logger.getDeallocationTotal(name)+logger.getDeallocationTotal(nameOld));
   };
 };
