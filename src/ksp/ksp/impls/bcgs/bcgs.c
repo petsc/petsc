@@ -93,12 +93,15 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
       break;
     }
     omega = d1 / d2;                               /*   w <- (t's) / (t't) */
+VecView(X,0);
+ printf("omega %g\n",omega);
     ierr = VecAXPBYPCZ(X,alpha,omega,1.0,P,S);CHKERRQ(ierr); /* x <- alpha * p + omega * s + x */
     ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
     if (ksp->normtype != KSP_NORM_NO && ksp->chknorm < i+2) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }
 
+VecView(X,0);
     rhoold   = rho;
     omegaold = omega;
 

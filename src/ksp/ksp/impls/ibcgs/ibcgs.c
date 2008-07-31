@@ -54,8 +54,9 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   Sn        = ksp->work[8];ierr = VecGetArray(Sn,&sn);CHKERRQ(ierr);ierr = VecRestoreArray(Sn,&sn);CHKERRQ(ierr);
 
   /* r0 = rn_1 = b - A*xn_1; */
-  ierr = KSP_PCApplyBAorAB(ksp,Xn_1,Rn_1,Tn);CHKERRQ(ierr);
-  ierr = VecAYPX(Rn_1,-1.0,B);CHKERRQ(ierr);
+  /* ierr = KSP_PCApplyBAorAB(ksp,Xn_1,Rn_1,Tn);CHKERRQ(ierr);
+     ierr = VecAYPX(Rn_1,-1.0,B);CHKERRQ(ierr); */
+  ierr = KSPInitialResidual(ksp,Xn_1,Tn,Sn,Rn_1,B);CHKERRQ(ierr);
 
   ierr = VecNorm(Rn_1,NORM_2,&rnorm);CHKERRQ(ierr);
   KSPMonitor(ksp,0,rnorm);
@@ -71,22 +72,29 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   ierr = KSP_PCApplyBAorABTranspose(ksp,Rn_1,F0,Tn);CHKERRQ(ierr);
 
   /*qn_1 = vn_1 = zn_1 = 0.0; */
+  ierr = VecSet(Qn_1,0.0);CHKERRQ(ierr);
+  ierr = VecSet(Vn_1,0.0);CHKERRQ(ierr);
+  ierr = VecSet(Zn_1,0.0);CHKERRQ(ierr);
 
   sigman_2 = pin_1 = phin_1 = taun_1 = 0.0;
 
+  ierr = VecDot(R0,R0,&phin_1);CHKERRQ(ierr); 
+
   /* sigman_1 = rn_1'un_1  */
+  ierr = VecDot(R0,Un_1,&sigman_1);CHKERRQ(ierr); 
 
   rhon_1 = alphan_1 = omegan_1 = 1.0;
 
-  for (ksp->its = 1; ksp->its<ksp->max_it; ksp->its++) {
+  for (ksp->its = 1; ksp->its<ksp->max_it+1; ksp->its++) {
     rhon   = phin_1 - omegan_1*sigman_2 + omegan_1*alphan_1*pin_1;
     //    if (rhon == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"rhon is zero, iteration %D",n);
     if (ksp->its == 1) deltan = rhon;
-    else deltan = rhon*taun_1;
+    else deltan = rhon/taun_1;
     betan  = deltan/omegan_1;
     taun   = sigman_1 + betan*taun_1  - deltan*pin_1;
     if (taun == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"taun is zero, iteration %D",ksp->its);
     alphan = rhon/taun;
+    printf("phin_1 rhon deltan betan taun alphan %g %g %g %g %g %g\n",phin_1,rhon,deltan,betan,taun,alphan);
 
     /*  
         zn = alphan*rn_1 + betan*zn_1 - alphan*deltan*vn_1
@@ -94,7 +102,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
         sn = rn_1 - alphan*vn
     */
     for (i=0; i<N; i++) {
-      zn[i] = alphan*rn_1[i] + betan*zn_1[i] - alphan*deltan*vn_1[i];
+      zn[i] = alphan*rn_1[i] + (alphan/alphan_1)*betan*zn_1[i] - alphan*deltan*vn_1[i];
       vn[i] = un_1[i] + betan*vn_1[i] - deltan*qn_1[i];
       sn[i] = rn_1[i] - alphan*vn[i];
     }
@@ -118,7 +126,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
         thetan = sn'tn
         kappan = tn'tn
     */
-    phin = pin = gamman = etan = thetan = kappan;
+    phin = pin = gamman = etan = thetan = kappan = 0.0;
     for (i=0; i<N; i++) {
       phin += r0[i]*sn[i];
       pin  += r0[i]*qn[i];
@@ -146,6 +154,8 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     omegan = thetan/kappan;
     sigman = gamman - omegan*etan;
 
+VecView(Xn,0);
+ printf("omega %g\n",omegan);
     /*
         rn = sn - omegan*tn
         xn = xn_1 + zn + omegan*sn
@@ -154,9 +164,11 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     for (i=0; i<N; i++) {
       rn[i] = sn[i] - omegan*tn[i];
       rnorm += PetscRealPart(PetscConj(rn[i])*rn[i]);
-      xn[i] = xn_1[i] + zn[i] + omegan*sn[i];
+      xn[i] += zn[i] + omegan*sn[i];
     }
     rnorm = sqrt(rnorm);
+
+VecView(Xn,0);
 
     /* Test for convergence */
     KSPMonitor(ksp,ksp->its,rnorm);
@@ -174,11 +186,12 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     alphan_1 = alphan;
     taun_1   = taun;
     rhon_1   = rhon;
+    omegan_1 = omegan;
   }
   if (ksp->its >= ksp->max_it) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-
+  ierr = KSPUnwindPreconditioner(ksp,Xn,Tn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
