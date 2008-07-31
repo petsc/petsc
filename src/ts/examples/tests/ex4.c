@@ -104,7 +104,7 @@ int main(int argc,char **argv)
     if (fd_jacobian_coloring){ /* Use finite differences with coloring */
       /* Get data structure of J */
       PetscTruth pc_diagonal;
-      ierr = PetscOptionsHasName(PETSC_NULL,"-pc_diagoanl",&pc_diagonal);CHKERRQ(ierr);
+      ierr = PetscOptionsHasName(PETSC_NULL,"-pc_diagonal",&pc_diagonal);CHKERRQ(ierr);
       if (pc_diagonal){ /* the preconditioner of J is a diagonal matrix */
         PetscInt rstart,rend,i;
         PetscScalar  zero=0.0;
@@ -125,6 +125,14 @@ int main(int argc,char **argv)
       ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
       ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+
+      PetscTruth view_J;
+      ierr = PetscOptionsHasName(PETSC_NULL,"-view_J",&view_J);CHKERRQ(ierr);
+      if (view_J){ 
+        ierr = PetscPrintf(PETSC_COMM_SELF,"J computed from TSDefaultComputeJacobianColor():\n");CHKERRQ(ierr);
+        ierr = TSDefaultComputeJacobianColor(ts,0.0,global,&J,&J,&J_structure,matfdcoloring);CHKERRQ(ierr);
+        ierr = MatView(J,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      }
     } else { /* Use finite differences (slow) */ 
       ierr = TSSetRHSJacobian(ts,J,J,TSDefaultComputeJacobian,&data);CHKERRQ(ierr);
     }

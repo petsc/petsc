@@ -13,6 +13,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TCQMR(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GMRES(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGS(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_IBCGS(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGS(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TFQMR(KSP);
@@ -65,6 +66,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterAll(const char path[])
   ierr = KSPRegisterDynamic(KSPGMRES,      path,"KSPCreate_GMRES",     KSPCreate_GMRES);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPTCQMR,      path,"KSPCreate_TCQMR",     KSPCreate_TCQMR);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPBCGS,       path,"KSPCreate_BCGS",      KSPCreate_BCGS);CHKERRQ(ierr);
+  ierr = KSPRegisterDynamic(KSPIBCGS,      path,"KSPCreate_IBCGS",     KSPCreate_IBCGS);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPBCGSL,      path,"KSPCreate_BCGSL",     KSPCreate_BCGSL);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPCGS,        path,"KSPCreate_CGS",       KSPCreate_CGS);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPTFQMR,      path,"KSPCreate_TFQMR",     KSPCreate_TFQMR);CHKERRQ(ierr);
@@ -80,3 +82,4 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterAll(const char path[])
   ierr = KSPRegisterDynamic(KSPLCD,        path,"KSPCreate_LCD",       KSPCreate_LCD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+

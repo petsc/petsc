@@ -45,7 +45,7 @@ typedef struct {
   double   reltol;
   double   abstol;          /* only for using SS flag in SUNDIALS */
   N_Vector y;               /* current solution */
-  int      nonlinear_solves,linear_solves; /* since creation of object */
+  void     *mem;
 } TS_Sundials;
 #endif
 

@@ -105,7 +105,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   ierr = PetscLogEventRegister("VecMin",           VEC_COOKIE,&VEC_Min);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecDotBarrier",    VEC_COOKIE,&VEC_DotBarrier);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecDot",           VEC_COOKIE,&VEC_Dot);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister("VecDotNormBarrier",VEC_COOKIE,&VEC_DotNormBarrier);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecDotNormBarr",   VEC_COOKIE,&VEC_DotNormBarrier);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecDotNorm2",      VEC_COOKIE,&VEC_DotNorm);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecMDotBarrier",   VEC_COOKIE,&VEC_MDotBarrier);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecMDot",          VEC_COOKIE,&VEC_MDot);CHKERRQ(ierr);

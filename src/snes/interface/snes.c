@@ -176,6 +176,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
 .  -snes_max_funcs <max_funcs> - maximum number of function evaluations
 .  -snes_max_fail <max_fail> - maximum number of failures
 .  -snes_max_linear_solve_fail - number of linear solver failures before SNESSolve() stops
+.  -snes_lag_preconditioner <lag> - how often preconditioner is rebuilt (use -1 to never rebuild)
 .  -snes_trtol <trtol> - trust region tolerance
 .  -snes_no_convergence_test - skip convergence test in nonlinear 
                                solver; hence iterations will continue until max_it
@@ -214,7 +215,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
 {
   PetscTruth              flg;
-  PetscInt                i,indx;
+  PetscInt                i,indx,lag;
   const char              *deft = SNESLS;
   const char              *convtests[] = {"default","skip"};
   SNESKSPEW               *kctx = NULL;
@@ -244,6 +245,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsInt("-snes_max_funcs","Maximum function evaluations","SNESSetTolerances",snes->max_funcs,&snes->max_funcs,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_fail","Maximum failures","SNESSetTolerances",snes->maxFailures,&snes->maxFailures,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-snes_max_linear_solve_fail","Maximum failures in linear solves allowed","SNESSetMaxLinearSolveFailures",snes->maxLinearSolveFailures,&snes->maxLinearSolveFailures,PETSC_NULL);CHKERRQ(ierr);
+
+    ierr = PetscOptionsInt("-snes_lag_preconditioner","How often to rebuild preconditioner","SNESSetLagPreconditioner",snes->lagpreconditioner,&lag,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESSetLagPreconditioner(snes,lag);CHKERRQ(ierr);
+    }
 
     ierr = PetscOptionsEList("-snes_convergence_test","Convergence test","SNESSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -468,7 +474,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES snes,PetscReal *fnor
 
 .keywords: SNES, nonlinear, get, number, unsuccessful, steps
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
           SNESSetMaxNonlinearStepFailures(), SNESGetMaxNonlinearStepFailures()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNonlinearStepFailures(SNES snes,PetscInt* nfails)
@@ -496,7 +502,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNonlinearStepFailures(SNES snes,PetscI
 
 .keywords: SNES, nonlinear, set, maximum, unsuccessful, steps
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
           SNESGetMaxNonlinearStepFailures(), SNESGetNonlinearStepFailures()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxNonlinearStepFailures(SNES snes, PetscInt maxFails)
@@ -525,7 +531,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxNonlinearStepFailures(SNES snes, Pe
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
           SNESSetMaxNonlinearStepFailures(), SNESGetNonlinearStepFailures()
  
 @*/
@@ -556,7 +562,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxNonlinearStepFailures(SNES snes, Pe
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures()
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
 {
@@ -588,7 +594,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberFunctionEvals(SNES snes, PetscIn
 
 .keywords: SNES, nonlinear, get, number, unsuccessful, steps
 
-.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures()
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES snes,PetscInt* nfails)
 {
@@ -647,7 +653,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxLinearSolveFailures(SNES snes, Pets
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 
-.seealso: SNESGetLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures(),
+.seealso: SNESGetLinearSolveFailures(), SNESGetLinearSolveIterations(), SNESSetMaxLinearSolveFailures(),
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
 {
@@ -797,7 +803,8 @@ static PetscErrorCode SNESPublish_Petsc(PetscObject obj)
 
 .keywords: SNES, nonlinear, create, context
 
-.seealso: SNESSolve(), SNESDestroy(), SNES
+.seealso: SNESSolve(), SNESDestroy(), SNES, SNESSetLagPreconditioner()
+
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
 {
@@ -827,6 +834,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->numFailures       = 0;
   snes->maxFailures       = 1;
   snes->linear_its        = 0;
+  snes->lagpreconditioner = 1;
   snes->numbermonitors    = 0;
   snes->data              = 0;
   snes->setupcalled       = PETSC_FALSE;
@@ -1053,6 +1061,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Ma
   CHKMEMQ;
   PetscStackPop;
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
+
+  if (snes->lagpreconditioner == -1) {
+    *flg = SAME_PRECONDITIONER;
+    ierr = PetscInfo(snes,"Reusing preconditioner because lag is -1\n");CHKERRQ(ierr);
+  } else if (snes->lagpreconditioner > 1 && snes->iter % snes->lagpreconditioner) {
+    *flg = SAME_PRECONDITIONER;
+    ierr = PetscInfo2(snes,"Reusing preconditioner because lag is %D and SNES iteration is %D\n",snes->lagpreconditioner,snes->iter);CHKERRQ(ierr);
+  }
+
   /* make sure user returned a correct Jacobian and preconditioner */
   /* PetscValidHeaderSpecific(*A,MAT_COOKIE,3);
     PetscValidHeaderSpecific(*B,MAT_COOKIE,4);   */
@@ -1315,6 +1332,79 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
 }
 
 /* ----------- Routines to set solver parameters ---------- */
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetLagPreconditioner"
+/*@
+   SNESSetLagPreconditioner - Determines when the preconditioner is rebuilt in the nonlinear solve.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  lag - -1 indicates NEVER rebuild, 1 means rebuild every time the Jacobian is computed within a single nonlinear solve, 2 means every second time
+         the Jacobian is built etc.
+
+   Options Database Keys: 
+.    -snes_lag_preconditioner <lag>
+
+   Notes:
+   The default is 1
+   The preconditioner is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1
+   If  -1 is used before the very first nonlinear solve the preconditioner is still built because there is no previous preconditioner to use
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, convergence, tolerances
+
+.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner()
+
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagPreconditioner(SNES snes,PetscInt lag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (lag < -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -1, 1 or greater");
+  if (!lag) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
+  snes->lagpreconditioner = lag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetLagPreconditioner"
+/*@
+   SNESGetLagPreconditioner - Indicates how often the preconditioner is rebuilt
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - the SNES context
+ 
+   Output Parameter:
+.   lag - -1 indicates NEVER rebuild, 1 means rebuild every time the Jacobian is computed within a single nonlinear solve, 2 means every second time
+         the Jacobian is built etc.
+
+   Options Database Keys: 
+.    -snes_lag_preconditioner <lag>
+
+   Notes:
+   The default is 1
+   The preconditioner is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, convergence, tolerances
+
+.seealso: SNESSetTrustRegionTolerance(), SNESSetLagPreconditioner()
+
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagPreconditioner(SNES snes,PetscInt *lag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  *lag = snes->lagpreconditioner;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetTolerances"
