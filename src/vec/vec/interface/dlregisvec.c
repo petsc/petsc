@@ -122,6 +122,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   ierr = PetscLogEventRegister("VecWAXPY",         VEC_COOKIE,&VEC_WAXPY);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecMAXPY",         VEC_COOKIE,&VEC_MAXPY);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecSwap",          VEC_COOKIE,&VEC_Swap);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("VecOps",           VEC_COOKIE,&VEC_Ops);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecAssemblyBegin", VEC_COOKIE,&VEC_AssemblyBegin);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecAssemblyEnd",   VEC_COOKIE,&VEC_AssemblyEnd);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("VecPointwiseMult", VEC_COOKIE,&VEC_PointwiseMult);CHKERRQ(ierr);

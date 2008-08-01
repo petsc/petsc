@@ -27,8 +27,8 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,N;
-  PetscReal      rnorm;
-  PetscScalar    insums[6],outsums[6];
+  PetscReal      rnorm,rnormin;
+  PetscScalar    insums[6],outsums[6],tmp1,tmp2;
   PetscScalar    sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin;
   PetscScalar    taun_1, taun, rhon_1, rhon, alphan_1, alphan, omegan_1, omegan;
   PetscScalar    *r0, *rn_1,*rn,*xn_1, *xn, *f0, *vn_1, *vn,*zn_1, *zn, *qn_1, *qn, *b, *un_1, *un;
@@ -82,8 +82,9 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   ierr = VecSet(Vn_1,0.0);CHKERRQ(ierr);
   ierr = VecSet(Zn_1,0.0);CHKERRQ(ierr);
 
-  sigman_2 = pin_1 = phin_1 = taun_1 = 0.0;
+  sigman_2 = pin_1 = taun_1 = 0.0;
 
+  /* the paper says phin_1 should be initialized to zero, it is actually R0'R0 */
   ierr = VecDot(R0,R0,&phin_1);CHKERRQ(ierr); 
 
   /* sigman_1 = rn_1'un_1  */
@@ -100,18 +101,25 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     taun   = sigman_1 + betan*taun_1  - deltan*pin_1;
     if (taun == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"taun is zero, iteration %D",ksp->its);
     alphan = rhon/taun;
-    printf("phin_1 rhon deltan betan taun alphan %g %g %g %g %g %g\n",phin_1,rhon,deltan,betan,taun,alphan);
+    ierr = PetscLogFlops(15);
 
     /*  
-        zn = alphan*rn_1 + betan*zn_1 - alphan*deltan*vn_1
+        zn = alphan*rn_1 + (alphan/alphan_1)betan*zn_1 - alphan*deltan*vn_1
         vn = un_1 + betan*vn_1 - deltan*qn_1
         sn = rn_1 - alphan*vn
+
+       The algorithm in the paper is missing the alphan/alphan_1 term in the xn update
     */
+    ierr = PetscLogEventBegin(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
+    tmp1 = (alphan/alphan_1)*betan;
+    tmp2 = alphan*deltan;
     for (i=0; i<N; i++) {
-      zn[i] = alphan*rn_1[i] + (alphan/alphan_1)*betan*zn_1[i] - alphan*deltan*vn_1[i];
+      zn[i] = alphan*rn_1[i] + tmp1*zn_1[i] - tmp2*vn_1[i];
       vn[i] = un_1[i] + betan*vn_1[i] - deltan*qn_1[i];
       sn[i] = rn_1[i] - alphan*vn[i];
     }
+    ierr = PetscLogFlops(3+11*N);
+    ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
 
     /*
         qn = A*vn
@@ -132,6 +140,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
         thetan = sn'tn
         kappan = tn'tn
     */
+    ierr = PetscLogEventBegin(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
     phin = pin = gamman = etan = thetan = kappan = 0.0;
     for (i=0; i<N; i++) {
       phin += r0[i]*sn[i];
@@ -141,13 +150,17 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       thetan += sn[i]*tn[i];
       kappan += tn[i]*tn[i];
     }
+    ierr = PetscLogFlops(12*N);
+    ierr = PetscLogEventEnd(VEC_ReduceArithmetic,0,0,0,0);CHKERRQ(ierr);
     insums[0] = phin;
     insums[1] = pin;
     insums[2] = gamman;
     insums[3] = etan;
     insums[4] = thetan;
     insums[5] = kappan;
+    ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
     ierr = MPI_Allreduce(insums,outsums,6,MPIU_SCALAR,MPI_SUM,ksp->hdr.comm);CHKERRQ(ierr);
+    ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
     phin     = outsums[0];
     pin      = outsums[1];
     gamman   = outsums[2];
@@ -160,21 +173,26 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     omegan = thetan/kappan;
     sigman = gamman - omegan*etan;
 
-VecView(Xn,0);
- printf("omega %g\n",omegan);
     /*
         rn = sn - omegan*tn
         xn = xn_1 + zn + omegan*sn
     */
-    rnorm = 0.0;
+    ierr = PetscLogEventBarrierBegin(VEC_Ops,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
+    rnormin = 0.0;
     for (i=0; i<N; i++) {
-      rn[i] = sn[i] - omegan*tn[i];
-      rnorm += PetscRealPart(PetscConj(rn[i])*rn[i]);
-      xn[i] += zn[i] + omegan*sn[i];
+      rn[i]    = sn[i] - omegan*tn[i];
+      rnormin += PetscRealPart(PetscConj(rn[i])*rn[i]);
+      xn[i]   += zn[i] + omegan*sn[i];
     }
-    rnorm = sqrt(rnorm);
+    ierr = PetscLogFlops(7*N);
+    ierr = PetscLogEventBarrierEnd(VEC_Ops,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
 
-VecView(Xn,0);
+    if (ksp->chknorm < ksp->its) {
+      ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPI_SUM,ksp->hdr.comm);CHKERRQ(ierr);
+      ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
+      rnorm = sqrt(rnorm);
+    } 
 
     /* Test for convergence */
     KSPMonitor(ksp,ksp->its,rnorm);
@@ -218,6 +236,8 @@ VecView(Xn,0);
 
           Unlike the Bi-CG-stab algorithm, this requires one multiplication be the transpose of the operator
            before the iteration starts.
+
+          The paper has two errors in the algorithm presented, they are fixed in the code in KSPSolve_IBCGS()
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS
 M*/

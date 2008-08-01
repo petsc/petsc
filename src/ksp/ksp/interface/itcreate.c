@@ -158,10 +158,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
 -  it  - use -1 to check at all iterations
 
    Notes: 
-   Currently only works with Bi-CG-stab
+   Currently only works with KSPCG, KSPBCGS and KSPIBCGS
 
    Use KSPSetNormType(ksp,KSP_NORM_NO) to never check the norm
 
+   On steps where the norm is not computed, the previous norm is still in the variable, so if you run with, for example,
+    -ksp_monitor the residual norm will appear to be unchanged for several iterations (though it is not really unchanged).
    Level: advanced
 
 .keywords: KSP, create, context, norms

@@ -280,7 +280,7 @@ $                    preconditioned - default for left preconditioning
 $                    unpreconditioned - see KSPSetNormType()
 $                    natural - see KSPSetNormType()
 .   -ksp_check_norm_iteration it - do not compute residual norm until iteration number it (does compute at 0th iteration)
-$       works only for PCBCGS and and PCCG
+$       works only for PCBCGS, PCIBCGS and and PCCG
 .   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
 .   -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
 .   -ksp_test_null_space - tests the null space set with KSPSetNullSpace() to see if it truly is a null space
