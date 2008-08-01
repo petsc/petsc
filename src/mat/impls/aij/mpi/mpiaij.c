@@ -1903,7 +1903,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorI
   ierr = MatSetType(*fact, ((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  (*fact)->factor = FACTOR_LU;
+  (*fact)->factor = MAT_FACTOR_LU;
 
   ierr = PetscContainerCreate(((PetscObject)A)->comm, &c);
   ierr = PetscContainerSetPointer(c, lgraph_p);
@@ -4818,6 +4818,18 @@ PetscErrorCode MatMatMult_MPIDense_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal f
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_MUMPS)
+extern PetscErrorCode MatGetFactor_mpiaij_mumps(Mat,MatFactorType,Mat*);
+#endif
+#if defined(PETSC_HAVE_SUPERLU_DIST)
+extern PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat,MatFactorType,Mat*);
+#endif
+#if defined(PETSC_HAVE_SPOOLES)
+extern PetscErrorCode MatGetFactor_mpiaij_spooles(Mat,MatFactorType,Mat*);
+#endif
+EXTERN_C_END
+
 /*MC
    MATMPIAIJ - MATMPIAIJ = "mpiaij" - A matrix type to be used for parallel sparse matrices.
 
@@ -4844,7 +4856,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   ierr            = PetscNewLog(B,Mat_MPIAIJ,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->factor       = 0;
   B->rmap.bs      = 1;
   B->assembled    = PETSC_FALSE;
   B->mapping      = 0;
@@ -4869,7 +4880,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   b->rowvalues    = 0;
   b->getrowactive = PETSC_FALSE;
 
-
+#if defined(PETSC_HAVE_SPOOLES)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpiaij_spooles_C",
+                                     "MatGetFactor_mpiaij_spooles",
+                                     MatGetFactor_mpiaij_spooles);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MUMPS)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpiaij_mumps_C",
+                                     "MatGetFactor_mpiaij_mumps",
+                                     MatGetFactor_mpiaij_mumps);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SUPERLU_DIST)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpiaij_superlu_dist_C",
+                                     "MatGetFactor_mpiaij_superlu_dist",
+                                     MatGetFactor_mpiaij_superlu_dist);CHKERRQ(ierr);
+#endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIAIJ",
                                      MatStoreValues_MPIAIJ);CHKERRQ(ierr);

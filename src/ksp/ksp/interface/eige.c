@@ -27,7 +27,7 @@
    
 .keywords: KSP, compute, explicit, operator
 
-.seealso: KSPComputeEigenvaluesExplicitly()
+.seealso: KSPComputeEigenvaluesExplicitly(), PCComputeExplicitOperator()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 {

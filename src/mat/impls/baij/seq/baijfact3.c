@@ -131,9 +131,6 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = PetscFree(fill);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
-  ierr = MatSetSizes(*B,bs*n,bs*n,bs*n,bs*n);CHKERRQ(ierr);
-  ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(*B,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*B,isicol);CHKERRQ(ierr);
   b = (Mat_SeqBAIJ*)(*B)->data;
@@ -158,7 +155,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = PetscLogObjectMemory(*B,(ainew[n]-n)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ainew[n];
   
-  (*B)->factor                 = FACTOR_LU;
+  (*B)->factor                 = MAT_FACTOR_LU;
   (*B)->info.factor_mallocs    = reallocs;
   (*B)->info.fill_ratio_given  = f;
   if (ai[n] != 0) {

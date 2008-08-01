@@ -278,8 +278,8 @@ static PetscErrorCode PCPublish_Petsc(PetscObject obj)
 .  pc - location to put the preconditioner context
 
    Notes:
-   The default preconditioner on one processor is PCILU with 0 fill on more 
-   then one it is PCBJACOBI with ILU() on each processor.
+   The default preconditioner for sparse matrices is PCILU or PCICC with 0 fill on one process and block Jacobi with PCILU or ICC 
+   in parallel. For dense matrices it is always PCNONE.
 
    Level: developer
 

@@ -3076,6 +3076,7 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
    except that the data structure of Mat_SeqAIJ is slightly different.
    Not a good example of code reuse.
 */
+EXTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqBAIJ"
@@ -3100,8 +3101,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
 
   if (!levels && row_identity && col_identity) {  /* special case copy the nonzero structure */
-    ierr = MatDuplicate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
-    (*fact)->factor = FACTOR_LU;
+    ierr = MatDuplicateNoCreate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+    (*fact)->factor = MAT_FACTOR_LU;
     b               = (Mat_SeqBAIJ*)(*fact)->data;
     ierr = MatMissingDiagonal_SeqBAIJ(*fact,&flg,&dd);CHKERRQ(ierr);
     if (flg) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",dd);
@@ -3253,9 +3254,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
 #endif
 
     /* put together the new matrix */
-    ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
-    ierr = MatSetSizes(*fact,bs*n,bs*n,bs*n,bs*n);CHKERRQ(ierr);
-    ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(*fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(*fact,isicol);CHKERRQ(ierr);
     b    = (Mat_SeqBAIJ*)(*fact)->data;
@@ -3280,7 +3278,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
        Allocate dloc, solve_work, new a, new j */
     ierr = PetscLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(PetscInt))+bs2*ainew[n]*sizeof(PetscScalar));CHKERRQ(ierr);
     b->maxnz          = b->nz = ainew[n];
-    (*fact)->factor   = FACTOR_LU;
+    (*fact)->factor   = MAT_FACTOR_LU;
 
     (*fact)->info.factor_mallocs    = reallocate;
     (*fact)->info.fill_ratio_given  = f;

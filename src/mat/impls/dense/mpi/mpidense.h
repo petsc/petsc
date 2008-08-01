@@ -46,6 +46,12 @@ typedef struct {
   VecScatter     ctx;
   IS             is_pla,is_petsc;
   PetscTruth     pla_solved;
+  /* following parameters might not be useful in new-solvers */
+  MPI_Comm       comm_2d;
+  MatStructure   mstruct;
+  PetscMPIInt    nprows,npcols;
+  PetscInt       nb_alg,ierror;
+  PetscTruth     CleanUpPlapack;
 } Mat_Plapack;
 
 #endif

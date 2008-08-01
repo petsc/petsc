@@ -124,7 +124,7 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
     ierr = PetscMalloc((A->rmap.n+1)*sizeof(PetscBLASInt),&mat->pivots);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(A,A->rmap.n*sizeof(PetscBLASInt));CHKERRQ(ierr);
   }
-  A->factor = FACTOR_LU;
+  A->factor = MAT_FACTOR_LU;
   if (!A->rmap.n || !A->cmap.n) PetscFunctionReturn(0);
   LAPACKgetrf_(&m,&n,mat->v,&mat->lda,mat->pivots,&info);
   if (info<0) SETERRQ(PETSC_ERR_LIB,"Bad argument to LU factorization");
@@ -134,20 +134,18 @@ PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
-#define __FUNCT__ "MatDuplicate_SeqDense"
-PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
+#define __FUNCT__ "MatDuplicateNoCreate_SeqDense"
+PetscErrorCode MatDuplicateNoCreate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data,*l;
   PetscErrorCode ierr;
   PetscInt       lda = (PetscInt)mat->lda,j,m;
-  Mat            newi;
+  Mat            newi = *newmat;
 
   PetscFunctionBegin;
-  ierr = MatCreate(((PetscObject)A)->comm,&newi);CHKERRQ(ierr);
-  ierr = MatSetSizes(newi,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
-  ierr = MatSetType(newi,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(newi,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(*newmat,PETSC_NULL);CHKERRQ(ierr);
   if (cpvalues == MAT_COPY_VALUES) {
     l = (Mat_SeqDense*)newi->data;
     if (lda>A->rmap.n) {
@@ -160,7 +158,31 @@ PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newm
     }
   }
   newi->assembled = PETSC_TRUE;
-  *newmat = newi;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatDuplicate_SeqDense"
+PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newmat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(((PetscObject)A)->comm,newmat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*newmat,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
+  ierr = MatSetType(*newmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatDuplicateNoCreate_SeqDense(A,cpvalues,newmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
+PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,MatFactorInfo *info,Mat *fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDuplicateNoCreate_SeqDense(A,MAT_COPY_VALUES,fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -171,7 +193,21 @@ PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatFactorInfo *i
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatDuplicate_SeqDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+  ierr = MatDuplicateNoCreate_SeqDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_seqdense_petsc"
+PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
+  ierr = MatSetSizes(*fact,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  (*fact)->factor = ftype;
   PetscFunctionReturn(0);
 }
 
@@ -193,19 +229,8 @@ PetscErrorCode MatLUFactorNumeric_SeqDense(Mat A,MatFactorInfo *info_dummy,Mat *
   } else {
     ierr = PetscMemcpy(l->v,mat->v,A->rmap.n*A->cmap.n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
-  (*fact)->factor = 0;
+  (*fact)->factor = MAT_FACTOR_NONE;
   ierr = MatLUFactor(*fact,0,0,&info);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,MatFactorInfo *info,Mat *fact)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -228,7 +253,7 @@ PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
   if (!A->rmap.n || !A->cmap.n) PetscFunctionReturn(0);
   LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info);
   if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %D",(PetscInt)info-1);
-  A->factor = FACTOR_CHOLESKY;
+  A->factor = MAT_FACTOR_CHOLESKY;
   ierr = PetscLogFlops((A->cmap.n*A->cmap.n*A->cmap.n)/3);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
@@ -260,14 +285,14 @@ PetscErrorCode MatSolve_SeqDense(Mat A,Vec xx,Vec yy)
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
   ierr = VecGetArray(yy,&y);CHKERRQ(ierr);
   ierr = PetscMemcpy(y,x,A->rmap.n*sizeof(PetscScalar));CHKERRQ(ierr);
-  if (A->factor == FACTOR_LU) {
+  if (A->factor == MAT_FACTOR_LU) {
 #if defined(PETSC_MISSING_LAPACK_GETRS) 
     SETERRQ(PETSC_ERR_SUP,"GETRS - Lapack routine is unavailable.");
 #else
     LAPACKgetrs_("N",&m,&one,mat->v,&mat->lda,mat->pivots,y,&m,&info);
     if (info) SETERRQ(PETSC_ERR_LIB,"GETRS - Bad solve");
 #endif
-  } else if (A->factor == FACTOR_CHOLESKY){
+  } else if (A->factor == MAT_FACTOR_CHOLESKY){
 #if defined(PETSC_MISSING_LAPACK_POTRS) 
     SETERRQ(PETSC_ERR_SUP,"POTRS - Lapack routine is unavailable.");
 #else
@@ -1992,7 +2017,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
 
   ierr            = PetscNewLog(B,Mat_SeqDense,&b);CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  B->factor       = 0;
   B->mapping      = 0;
   B->data         = (void*)b;
 
@@ -2005,6 +2029,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   b->Mmax         = B->rmap.n;
   b->Nmax         = B->cmap.n;
 
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqdense_petsc_C",
+                                     "MatGetFactor_seqdense_petsc",
+                                      MatGetFactor_seqdense_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqDenseSetPreallocation_C",
                                     "MatSeqDenseSetPreallocation_SeqDense",
                                      MatSeqDenseSetPreallocation_SeqDense);CHKERRQ(ierr);

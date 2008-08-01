@@ -7,6 +7,7 @@
 #include "src/mat/impls/dense/seq/dense.h"
 #include "src/mat/impls/dense/mpi/mpidense.h"
 
+#if defined(PETSC_HAVE_PLAPACK) 
 EXTERN_C_BEGIN 
 #include "PLA.h"
 #include "PLA_prototypes.h"
@@ -24,59 +25,9 @@ typedef struct {
   MatStructure   mstruct;
   PetscMPIInt    nprows,npcols;
 
-  /* A few function pointers for inheritance */
-  PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
-  PetscErrorCode (*MatView)(Mat,PetscViewer);
-  PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
-  PetscErrorCode (*MatLUFactorSymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  PetscErrorCode (*MatCholeskyFactorSymbolic)(Mat,IS,MatFactorInfo*,Mat*);
-  PetscErrorCode (*MatDestroy)(Mat);
-
   /* Flag to clean up (non-global) Plapack objects during Destroy */
   PetscTruth CleanUpPlapack;
 } Mat_Plapack;
-
-EXTERN PetscErrorCode MatDuplicate_Plapack(Mat,MatDuplicateOption,Mat*);
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_Plapack_Dense"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Plapack_Dense(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
-{
-
-  PetscErrorCode   ierr;
-  Mat              B=*newmat;
-  Mat_Plapack      *lu=(Mat_Plapack *)A->spptr;
-  PetscMPIInt      size;
-
-  PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  }
-  /* Reset the original function pointers */
-  B->ops->duplicate        = lu->MatDuplicate;
-  B->ops->view             = lu->MatView;
-  B->ops->assemblyend      = lu->MatAssemblyEnd;
-  B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
-  B->ops->destroy          = lu->MatDestroy;
-  ierr     = PetscFree(lu);CHKERRQ(ierr);
-  A->spptr = PETSC_NULL;
-
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_plapack_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_plapack_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_mpidense_plapack_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_plapack_mpidense_C","",PETSC_NULL);CHKERRQ(ierr);
-
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQDENSE);CHKERRQ(ierr);
-  } else {
-    ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIDENSE);CHKERRQ(ierr);
-  }
-  *newmat = B;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_Plapack"
@@ -97,8 +48,7 @@ PetscErrorCode MatDestroy_Plapack(Mat A)
     ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(lu->ctx);CHKERRQ(ierr);
   }
-  ierr = MatConvert_Plapack_Dense(A,MATDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
+  ierr = MatDestroy_MPIDense(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -134,7 +84,7 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
   PLA_Obj_API_close(v_pla);
   PLA_API_end(); 
 
-  if (A->factor == FACTOR_LU){
+  if (A->factor == MAT_FACTOR_LU){
     /* Apply the permutations to the right hand sides */
     PLA_Apply_pivots_to_rows (v_pla,lu->pivots);
 
@@ -143,7 +93,7 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
 
     /* Solve U x = y (=b), overwriting b with x */
     PLA_Trsv( PLA_UPPER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla );
-  } else { /* FACTOR_CHOLESKY */
+  } else { /*MAT_FACTOR_CHOLESKY */
     PLA_Trsv( PLA_LOWER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla);
     PLA_Trsv( PLA_LOWER_TRIANGULAR,(lu->datatype == MPI_DOUBLE ? PLA_TRANSPOSE : PLA_CONJUGATE_TRANSPOSE),
                                     PLA_NONUNIT_DIAG,lu->A,v_pla);
@@ -286,7 +236,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F
 #define __FUNCT__ "MatFactorSymbolic_Plapack_Private"
 PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *F)
 {
-  Mat            B;
+  Mat            B = *F;
   Mat_Plapack    *lu;   
   PetscErrorCode ierr;
   PetscInt       M=A->rmap.N,N=A->cmap.N;
@@ -295,12 +245,6 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
   PetscInt       ierror;
 
   PetscFunctionBegin;
-  /* Create the factorization matrix */
-  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-
-  B->ops->solve = MatSolve_Plapack;
   lu = (Mat_Plapack*)(B->spptr);
 
   /* Set default Plapack parameters */
@@ -363,50 +307,6 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
   PetscFunctionReturn(0);
 }
 
-/* Note the Petsc r and c permutations are ignored */
-#undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_Plapack"
-PetscErrorCode MatLUFactorSymbolic_Plapack(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
-{  
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* Note the Petsc perm permutation is ignored */
-#undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorSymbolic_Plapack"
-PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *info,Mat *F)
-{ 
-  PetscErrorCode ierr;
-  PetscTruth     issymmetric,set;
-
-  PetscFunctionBegin;
-  ierr = MatIsSymmetricKnown(A,&set,&issymmetric); CHKERRQ(ierr);
-  if (!set || !issymmetric) SETERRQ(PETSC_ERR_USER,"Matrix must be set as MAT_SYMMETRIC for CholeskyFactor()");
-  ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
-  (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_Plapack;
-  (*F)->factor                      = FACTOR_CHOLESKY;  
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_Plapack"
-PetscErrorCode MatAssemblyEnd_Plapack(Mat A,MatAssemblyType mode) 
-{
-  PetscErrorCode   ierr;
-  Mat_Plapack      *lu=(Mat_Plapack*)(A->spptr);
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
-  A->ops->lufactorsymbolic = MatLUFactorSymbolic_Plapack;
-  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
-  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Plapack;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatFactorInfo_Plapack"
@@ -447,68 +347,6 @@ PetscErrorCode MatView_Plapack(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_Dense_Plapack"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Dense_Plapack(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
-{
-  /* This routine is only called to convert to MATPLAPACK from MATDENSE, so we ignore 'MatType type'. */
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-  Mat            B=*newmat;
-  Mat_Plapack    *lu;
-
-  PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  }
-
-  ierr = PetscNewLog(B,Mat_Plapack,&lu);CHKERRQ(ierr);
-  lu->MatDuplicate         = A->ops->duplicate;
-  lu->MatView              = A->ops->view;
-  lu->MatAssemblyEnd       = A->ops->assemblyend;
-  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
-  lu->MatDestroy           = A->ops->destroy;
-  lu->CleanUpPlapack       = PETSC_FALSE;
-
-  B->spptr                       = (void*)lu;
-  B->ops->duplicate              = MatDuplicate_Plapack;
-  B->ops->view                   = MatView_Plapack;
-  B->ops->assemblyend            = MatAssemblyEnd_Plapack;
-  B->ops->lufactorsymbolic       = MatLUFactorSymbolic_Plapack;
-  B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_Plapack;
-  B->ops->destroy                = MatDestroy_Plapack;
-  
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
-  if (size == 1) { 
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqdense_plapack_C",
-                                             "MatConvert_Dense_Plapack",MatConvert_Dense_Plapack);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_plapack_seqdense_C",
-                                             "MatConvert_Plapack_Dense",MatConvert_Plapack_Dense);CHKERRQ(ierr);
-  } else {
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpidense_plapack_C",
-                                             "MatConvert_Dense_Plapack",MatConvert_Dense_Plapack);CHKERRQ(ierr);
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_plapack_mpidense_C",
-                                             "MatConvert_Plapack_Dense",MatConvert_Plapack_Dense);CHKERRQ(ierr);
-  }   
-  ierr = PetscInfo(A,"Using Plapack for dense LU factorization and solves.\n");CHKERRQ(ierr); 
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATPLAPACK);CHKERRQ(ierr);
-  *newmat = B;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-#undef __FUNCT__
-#define __FUNCT__ "MatDuplicate_Plapack"
-PetscErrorCode MatDuplicate_Plapack(Mat A, MatDuplicateOption op, Mat *M) 
-{
-  PetscErrorCode ierr;
-  Mat_Plapack    *lu=(Mat_Plapack *)A->spptr;
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 /*MC
   MATPLAPACK - MATPLAPACK = "plapack" - A matrix type providing direct solvers (LU, Cholesky, and QR) 
@@ -536,17 +374,4 @@ PetscErrorCode MatDuplicate_Plapack(Mat A, MatDuplicateOption op, Mat *M)
 .seealso: MATDENSE, PCLU, PCCHOLESKY
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_Plapack"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Plapack(Mat A) 
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatSetType(A,MATDENSE);CHKERRQ(ierr);
-  ierr = MatConvert_Dense_Plapack(A,MATPLAPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr); 
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
+#endif

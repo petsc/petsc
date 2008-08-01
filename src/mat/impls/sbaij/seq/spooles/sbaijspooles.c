@@ -6,37 +6,27 @@
 
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 
+extern PetscErrorCode MatDestroy_SeqSBAIJ(Mat);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SeqSBAIJSpooles"
-PetscErrorCode MatDestroy_SeqSBAIJSpooles(Mat A) 
+PetscErrorCode MatDestroy_SeqSBAIJSpooles(Mat A)
 {
+  Mat_Spooles    *lu = (Mat_Spooles*)A->spptr; 
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
-  /* SeqSBAIJ_Spooles isn't really the matrix that USES spooles, */
-  /* rather it is a factory class for creating a symmetric matrix that can */
-  /* invoke Spooles' sequential cholesky solver. */
-  /* As a result, we don't have to clean up the stuff set by spooles */
-  /* as in MatDestroy_SeqAIJ_Spooles. */
-  ierr = MatConvert_Spooles_Base(A,MATSEQSBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_SeqSBAIJSpooles"
-PetscErrorCode MatAssemblyEnd_SeqSBAIJSpooles(Mat A,MatAssemblyType mode) \
-{
-  PetscErrorCode ierr;
-  PetscInt       bs;
-  Mat_Spooles    *lu=(Mat_Spooles *)(A->spptr);
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
-  if (bs > 1) SETERRQ1(PETSC_ERR_SUP,"Block size %D not supported by Spooles",bs);
-  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
-  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJSpooles;  
+  if (lu->CleanUpSpooles) {
+    FrontMtx_free(lu->frontmtx);        
+    IV_free(lu->newToOldIV);            
+    IV_free(lu->oldToNewIV);            
+    InpMtx_free(lu->mtxA);             
+    ETree_free(lu->frontETree);          
+    IVL_free(lu->symbfacIVL);         
+    SubMtxManager_free(lu->mtxmanager); 
+    Graph_free(lu->graph);
+  }
+  ierr = MatDestroy_SeqSBAIJ(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -69,176 +59,43 @@ PetscErrorCode MatGetInertia_SeqSBAIJSpooles(Mat F,int *nneg,int *nzero,int *npo
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJSpooles"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
 { 
-  Mat         B;
-  Mat_Spooles *lu;   
-  PetscErrorCode ierr;
-  int m=A->rmap.n,n=A->cmap.n;
+  Mat            B = *F;
 
   PetscFunctionBegin;	
-  /* Create the factorization matrix */  
+  B->factor = MAT_FACTOR_CHOLESKY;  
+  PetscFunctionReturn(0); 
+}
+
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_seqsbaij_spooles"
+PetscErrorCode MatGetFactor_seqsbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
+{
+  Mat            B;
+  PetscErrorCode ierr;
+  Mat_Spooles    *lu;   
+
+  PetscFunctionBegin;
+  if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ(PETSC_ERR_SUP,"Only Cholesky factorization is support for Spooles from SBAIJ matrix");
   ierr = MatCreate(((PetscObject)A)->comm,&B);
-  ierr = MatSetSizes(B,m,n,m,n);
+  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-
-  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;
-  B->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
-  B->factor                      = FACTOR_CHOLESKY;  
-
-  lu                        = (Mat_Spooles *)(B->spptr);
+  ierr = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
+  B->spptr = lu;
   lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
   lu->options.symflag       = SPOOLES_SYMMETRIC;   /* default */
   lu->flg                   = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR         = PETSC_FALSE;
 
-  *F = B;
-  PetscFunctionReturn(0); 
-}
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqSBAIJ_SeqSBAIJSpooles"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
-{
-  PetscErrorCode ierr;
-  Mat            B=*newmat;
-  Mat_Spooles    *lu;
-
-  PetscFunctionBegin;
-  ierr = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
-  if (reuse == MAT_INITIAL_MATRIX) {
-    /* This routine is inherited, so we know the type is correct. */
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  }
-  lu->MatDuplicate               = A->ops->duplicate;
-  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
-  lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
-  lu->MatView                    = A->ops->view;
-  lu->MatAssemblyEnd             = A->ops->assemblyend;
-  lu->MatDestroy                 = A->ops->destroy;
-
-  B->spptr                       = (void*)lu;
-  lu->basetype                   = MATSEQSBAIJ;
-  lu->CleanUpSpooles             = PETSC_FALSE;
-
-  B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJSpooles;
-  B->ops->view                   = MatView_Spooles;
-  B->ops->assemblyend            = MatAssemblyEnd_SeqSBAIJSpooles;
-  B->ops->destroy                = MatDestroy_SeqSBAIJSpooles;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaijspooles_seqsbaij_C",
-                                           "MatConvert_Spooles_Base",MatConvert_Spooles_Base);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaij_seqsbaijspooles_C",
-                                           "MatConvert_SeqSBAIJ_SeqSBAIJSpooles",MatConvert_SeqSBAIJ_SeqSBAIJSpooles);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
-  *newmat = B;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-/*MC
-  MATSEQSBAIJSPOOLES - MATSEQSBAIJSPOOLES = "seqsbaijspooles" - A matrix type providing direct solvers (Cholesky) for sequential symmetric
-  matrices via the external package Spooles.
-
-  If Spooles is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes Spooles solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQSBAIJSPOOLES), then 
-  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
-  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
-
-  This matrix inherits from MATSEQSBAIJ.  As a result, MatSeqSBAIJSetPreallocation() is 
-  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
-  the MATSEQSBAIJ type without data copy, after the matrix values have been set.
-
-  Options Database Keys:
-+ -mat_type seqsbaijspooles - sets the matrix type to seqsbaijspooles during calls to MatSetFromOptions()
-. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
-. -mat_spooles_seed <seed> - random number seed used for ordering
-. -mat_spooles_msglvl <msglvl> - message output level
-. -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
-. -mat_spooles_maxdomainsize <n> - maximum subgraph size used by Spooles orderings
-. -mat_spooles_maxzeros <n> - maximum number of zeros inside a supernode
-. -mat_spooles_maxsize <n> - maximum size of a supernode
-. -mat_spooles_FrontMtxInfo <true,fase> - print Spooles information about the computed factorization
-. -mat_spooles_symmetryflag <0,1,2> - 0: SPOOLES_SYMMETRIC, 1: SPOOLES_HERMITIAN, 2: SPOOLES_NONSYMMETRIC
-. -mat_spooles_patchAndGoFlag <0,1,2> - 0: no patch, 1: use PatchAndGo strategy 1, 2: use PatchAndGo strategy 2
-. -mat_spooles_toosmall <dt> - drop tolerance for PatchAndGo strategy 1
-. -mat_spooles_storeids <bool integer> - if nonzero, stores row and col numbers where patches were applied in an IV object
-. -mat_spooles_fudge <delta> - fudge factor for rescaling diagonals with PatchAndGo strategy 2
-- -mat_spooles_storevalues <bool integer> - if nonzero and PatchAndGo strategy 2 is used, store change in diagonal value in a DV object
-
-   Level: beginner
-
-.seealso: MATMPISBAIJSPOOLES, MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, PCCHOLESKY
-M*/
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SeqSBAIJSpooles"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJSpooles(Mat A) 
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
-  ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-/*MC
-  MATSBAIJSPOOLES - MATSBAIJSPOOLES = "sbaijspooles" - A matrix type providing direct solvers (Cholesky) for sequential and parallel symmetric matrices via the external package Spooles.
-
-  If Spooles is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes Spooles solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJSPOOLES), then 
-  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
-  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
-
-  This matrix inherits from MATSBAIJ.  As a result, MatSeqSBAIJSetPreallocation() and MatMPISBAIJSetPreallocation() are 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSBAIJ type without data copy after the matrix values have been set.
-
-  Options Database Keys:
-+ -mat_type sbaijspooles - sets the matrix type to sbaijspooles during calls to MatSetFromOptions()
-. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
-. -mat_spooles_seed <seed> - random number seed used for ordering
-. -mat_spooles_msglvl <msglvl> - message output level
-. -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
-. -mat_spooles_maxdomainsize <n> - maximum subgraph size used by Spooles orderings
-. -mat_spooles_maxzeros <n> - maximum number of zeros inside a supernode
-. -mat_spooles_maxsize <n> - maximum size of a supernode
-. -mat_spooles_FrontMtxInfo <true,fase> - print Spooles information about the computed factorization
-. -mat_spooles_symmetryflag <0,1,2> - 0: SPOOLES_SYMMETRIC, 1: SPOOLES_HERMITIAN, 2: SPOOLES_NONSYMMETRIC
-. -mat_spooles_patchAndGoFlag <0,1,2> - 0: no patch, 1: use PatchAndGo strategy 1, 2: use PatchAndGo strategy 2
-. -mat_spooles_toosmall <dt> - drop tolerance for PatchAndGo strategy 1
-. -mat_spooles_storeids <bool integer> - if nonzero, stores row and col numbers where patches were applied in an IV object
-. -mat_spooles_fudge <delta> - fudge factor for rescaling diagonals with PatchAndGo strategy 2
-- -mat_spooles_storevalues <bool integer> - if nonzero and PatchAndGo strategy 2 is used, store change in diagonal value in a DV object
-
-   Level: beginner
-
-.seealso: MATMPISBAIJSPOOLES, MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, PCCHOLESKY
-M*/
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_SBAIJSpooles"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJSpooles(Mat A) 
-{
-  PetscErrorCode ierr;
-  int size;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATSBAIJ);CHKERRQ(ierr);
-  if (size == 1) {
-    ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  } else {
-    ierr = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  }
+  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;
+#if !defined(PETSC_USE_COMPLEX)
+  B->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
+#endif
+  B->ops->destroy                = MatDestroy_SeqSBAIJSpooles;  
+  *F = B;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

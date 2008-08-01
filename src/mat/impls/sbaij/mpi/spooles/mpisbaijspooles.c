@@ -7,39 +7,6 @@
 #include "src/mat/impls/aij/seq/spooles/spooles.h"
 #include "src/mat/impls/sbaij/mpi/mpisbaij.h"
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatDestroy_MPISBAIJSpooles"
-PetscErrorCode MatDestroy_MPISBAIJSpooles(Mat A) 
-{
-  PetscErrorCode ierr;
-  
-  PetscFunctionBegin;
-  /* MPISBAIJ_Spooles isn't really the matrix that USES spooles, */
-  /* rather it is a factory class for creating a symmetric matrix that can */
-  /* invoke Spooles' parallel cholesky solver. */
-  /* As a result, we don't have to clean up the stuff set for use in spooles */
-  /* as in MatDestroy_MPIAIJ_Spooles. */
-  ierr = MatConvert_Spooles_Base(A,MATMPISBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatAssemblyEnd_MPISBAIJSpooles"
-PetscErrorCode MatAssemblyEnd_MPISBAIJSpooles(Mat A,MatAssemblyType mode) {
-  PetscErrorCode ierr;
-  int bs;
-  Mat_Spooles *lu=(Mat_Spooles *)(A->spptr);
-
-  PetscFunctionBegin;
-  ierr = (*lu->MatAssemblyEnd)(A,mode);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(A,&bs);CHKERRQ(ierr);
-  if (bs > 1) SETERRQ1(PETSC_ERR_SUP,"Block size %D not supported by Spooles",bs);
-  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
-  A->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;  
-  PetscFunctionReturn(0);
-}
-
 #if !defined(PETSC_USE_COMPLEX)
 /* 
   input:
@@ -70,21 +37,12 @@ PetscErrorCode MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npo
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPISBAIJSpooles"
 PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
 {
-  Mat           B;
+  Mat           B = *F;
   Mat_Spooles   *lu;   
   PetscErrorCode ierr;
   
   PetscFunctionBegin;	
-
-  /* Create the factorization matrix */  
-  ierr = MatCreate(((PetscObject)A)->comm,&B);
-  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-  
-  B->ops->choleskyfactornumeric = MatFactorNumeric_MPISpooles;
-  B->ops->getinertia            = MatGetInertia_MPISBAIJSpooles;
-  B->factor                     = FACTOR_CHOLESKY;  
+  B->factor                = MAT_FACTOR_CHOLESKY;  
 
   lu                       = (Mat_Spooles*)(B->spptr);
   lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
@@ -97,105 +55,88 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   PetscFunctionReturn(0); 
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatMPISBAIJSetPreallocation_MPISBAIJSpooles"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJSpooles(Mat  B,int bs,int d_nz,int *d_nnz,int o_nz,int *o_nnz)
+extern PetscErrorCode MatDestroy_MPISBAIJ(Mat);
+#undef __FUNCT__  
+#define __FUNCT__ "MatDestroy_MPISBAIJSpooles"
+PetscErrorCode MatDestroy_MPISBAIJSpooles(Mat A)
 {
-  Mat         A;
-  Mat_Spooles *lu = (Mat_Spooles*)B->spptr; 
+  Mat_Spooles   *lu = (Mat_Spooles*)A->spptr; 
   PetscErrorCode ierr;
-
+  
   PetscFunctionBegin;
-  /*
-    After performing the MPISBAIJ Preallocation, we need to convert the local diagonal block matrix
-    into Spooles type so that the block jacobi preconditioner (for example) can use Spooles.  I would
-    like this to be done in the MatCreate routine, but the creation of this inner matrix requires
-    block size info so that PETSc can determine the local size properly.  The block size info is set
-    in the preallocation routine.
-  */
-  ierr = (*lu->MatPreallocate)(B,bs,d_nz,d_nnz,o_nz,o_nnz);
-  A    = ((Mat_MPISBAIJ *)B->data)->A;
-  ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  if (lu->CleanUpSpooles) {
+    FrontMtx_free(lu->frontmtx);        
+    IV_free(lu->newToOldIV);            
+    IV_free(lu->oldToNewIV); 
+    IV_free(lu->vtxmapIV);
+    InpMtx_free(lu->mtxA);             
+    ETree_free(lu->frontETree);          
+    IVL_free(lu->symbfacIVL);         
+    SubMtxManager_free(lu->mtxmanager);    
+    DenseMtx_free(lu->mtxX);
+    DenseMtx_free(lu->mtxY);
+    ierr = MPI_Comm_free(&(lu->comm_spooles));CHKERRQ(ierr);
+    if ( lu->scat ){
+      ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
+      ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
+      ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
+      ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatDestroy_MPISBAIJ(A);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
-
-/* make sun CC happy */
-static void  (*f)(void);
 
 EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_MPISBAIJ_MPISBAIJSpooles"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_mpisbaij_spooles"
+PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 {
-  PetscErrorCode ierr;
-  Mat            B=*newmat;
   Mat_Spooles    *lu;
+  Mat            B;
+  PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  PetscFunctionBegin;	
+
+  /* Create the factorization matrix F */  
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+
   ierr = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
-  if (reuse == MAT_INITIAL_MATRIX) {
-    /* This routine is inherited, so we know the type is correct. */
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  }
+  B->spptr          = lu;
+  lu->flg           = DIFFERENT_NONZERO_PATTERN;
+  lu->options.useQR = PETSC_FALSE;
 
-  lu->MatDuplicate               = A->ops->duplicate;
-  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
-  lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
-  lu->MatView                    = A->ops->view;
-  lu->MatAssemblyEnd             = A->ops->assemblyend;
-  lu->MatDestroy                 = A->ops->destroy;
+  if (ftype == MAT_FACTOR_CHOLESKY) {
+    B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;
+    B->ops->choleskyfactornumeric  = MatFactorNumeric_MPISpooles;
+    B->ops->solve            = MatSolve_MPISpooles;
+    B->ops->destroy         = MatDestroy_MPISBAIJSpooles;  
+    B->factor               = MAT_FACTOR_CHOLESKY;  
 
-  lu->basetype                   = MATMPISBAIJ;
-  lu->CleanUpSpooles             = PETSC_FALSE;
- 
-  B->spptr                       = (void*)lu;
-  B->ops->duplicate              = MatDuplicate_Spooles;
-  B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;
-  B->ops->view                   = MatView_Spooles;
-  B->ops->assemblyend            = MatAssemblyEnd_MPISBAIJSpooles;
-  B->ops->destroy                = MatDestroy_MPISBAIJSpooles;
+    lu->options.symflag      = SPOOLES_NONSYMMETRIC;
+    lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
+    lu->options.symflag      = SPOOLES_SYMMETRIC;
+  } else SETERRQ(PETSC_ERR_SUP,"Only Cholesky for SBAIJ matrices");
 
-  /* I really don't like needing to know the tag: MatMPISBAIJSetPreallocation_C */
-  ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
-  if (f) {
-    lu->MatPreallocate = (PetscErrorCode (*)(Mat,int,int,int*,int,int*))f;
-    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPISBAIJSetPreallocation_C",
-                                             "MatMPISBAIJSetPreallocation_MPISBAIJSpooles",
-                                             MatMPISBAIJSetPreallocation_MPISBAIJSpooles);CHKERRQ(ierr);
-  }
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpisbaijspooles_mpisbaij_C",
-                                           "MatConvert_Spooles_Base",MatConvert_Spooles_Base);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpisbaij_mpisbaijspooles_C",
-                                           "MatConvert_MPISBAIJ_MPISBAIJSpooles",
-                                           MatConvert_MPISBAIJ_MPISBAIJSpooles);CHKERRQ(ierr);
-
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPISBAIJSPOOLES);CHKERRQ(ierr);
-  *newmat = B;
-  PetscFunctionReturn(0);
+  *F = B;
+  PetscFunctionReturn(0); 
 }
 EXTERN_C_END
 
 /*MC
-  MATMPISBAIJSPOOLES - MATMPISBAIJSPOOLES = "mpisbaijspooles" - a matrix type providing direct solvers (Cholesky) for distributed symmetric
-  matrices via the external package Spooles.
+  MAT_SOLVER_SPOOLES - "spooles" - a matrix type providing direct solvers (LU and Cholesky) for distributed symmetric
+  and non-symmetric  matrices via the external package Spooles.
 
-  If Spooles is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes Spooles solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATMPISBAIJSPOOLES), then 
-  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
-  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
-
-  This matrix inherits from MATMPISBAIJ.  As a result, MatMPISBAIJSetPreallocation() is 
-  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
-  the MATMPISBAIJ type without data copy AFTER the matrix values have been set.
+  If Spooles is installed (run config/configure.py with the option --download-spooles)
 
   Options Database Keys:
-+ -mat_type mpisbaijspooles - sets the matrix type to mpisbaijspooles during a call to MatSetFromOptions()
-. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
++ -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
 . -mat_spooles_seed <seed> - random number seed used for ordering
 . -mat_spooles_msglvl <msglvl> - message output level
 . -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
@@ -212,19 +153,6 @@ EXTERN_C_END
 
    Level: beginner
 
-.seealso: MATSEQSBAIJSPOOLES, MATSEQAIJSPOOLES, MATMPIAIJSPOOLES, PCCHOLESKY
+.seealso: MAT_SOLVER_SUPERLU, MAT_SOLVER_MUMPS, MAT_SOLVER_SUPERLU_DIST 
 M*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatCreate_MPISBAIJSpooles"
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJSpooles(Mat A) 
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
-  ierr   = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END

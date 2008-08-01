@@ -109,9 +109,11 @@ static PetscErrorCode PCSetup_ICC(PC pc)
   ierr = MatGetOrdering(pc->pmat,icc->ordering,&perm,&cperm);CHKERRQ(ierr);
 
   if (!pc->setupcalled) {
+    ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&icc->fact);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(pc->pmat,perm,&icc->info,&icc->fact);CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
     ierr = MatDestroy(icc->fact);CHKERRQ(ierr);
+    ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&icc->fact);CHKERRQ(ierr);
     ierr = MatICCFactorSymbolic(pc->pmat,perm,&icc->info,&icc->fact);CHKERRQ(ierr);
   }
   ierr = MatGetInfo(icc->fact,MAT_LOCAL,&info);CHKERRQ(ierr);

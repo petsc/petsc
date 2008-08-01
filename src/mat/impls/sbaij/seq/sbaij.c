@@ -908,7 +908,7 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
   if (inA->rmap.bs != 1) SETERRQ1(PETSC_ERR_SUP,"Matrix block size %D is not supported",inA->rmap.bs); /* Need to replace MatCholeskyFactorSymbolic_SeqSBAIJ_MSR()! */
 
   outA        = inA; 
-  inA->factor = FACTOR_CHOLESKY;
+  inA->factor = MAT_FACTOR_CHOLESKY;
   
   ierr = MatMarkDiagonal_SeqSBAIJ(inA);CHKERRQ(ierr);
   /*
@@ -1549,6 +1549,35 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat, MatType
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat, MatType,MatReuse,Mat*); 
 EXTERN_C_END
 
+  
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_seqsbaij_petsc"
+PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
+{
+  PetscInt           n = A->rmap.n;
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
+  ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
+  if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
+    ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_MUMPS)
+extern PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat,MatFactorType,Mat*);
+#endif
+#if defined(PETSC_HAVE_SPOOLES)
+extern PetscErrorCode MatGetFactor_seqsbaij_spooles(Mat,MatFactorType,Mat*);
+#endif
+EXTERN_C_END 
+
 /*MC
   MATSEQSBAIJ - MATSEQSBAIJ = "seqsbaij" - A matrix type to be used for sequential symmetric block sparse matrices, 
   based on block compressed sparse row format.  Only the upper triangular portion of the matrix is stored.
@@ -1580,7 +1609,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->ops->destroy     = MatDestroy_SeqSBAIJ;
   B->ops->view        = MatView_SeqSBAIJ;
-  B->factor           = 0;
   B->mapping          = 0;
   b->row              = 0;
   b->icol             = 0;
@@ -1612,6 +1640,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_getrow_uppertriangular",&flg);CHKERRQ(ierr);
   if (flg) b->getrow_utriangular = PETSC_TRUE;
 
+#if defined(PETSC_HAVE_SPOOLES)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqsbaij_spooles_C",
+                                     "MatGetFactor_seqsbaij_spooles",
+                                     MatGetFactor_seqsbaij_spooles);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MUMPS)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqsbaij_mumps_C",
+                                     "MatGetFactor_seqsbaij_mumps",
+                                     MatGetFactor_seqsbaij_mumps);CHKERRQ(ierr);
+#endif
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqsbaij_petsc_C",
+                                     "MatGetFactor_seqsbaij_petsc",
+                                     MatGetFactor_seqsbaij_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_SeqSBAIJ",
                                      MatStoreValues_SeqSBAIJ);CHKERRQ(ierr);

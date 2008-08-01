@@ -179,7 +179,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   PetscErrorCode ierr;
   PetscInt       mmat,nmat,mis,m;
   PetscErrorCode (*r)(Mat,const MatOrderingType,IS*,IS*);
-  PetscTruth     flg,isseqdense,ismpidense;
+  PetscTruth     flg,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -188,9 +188,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
+  /* this chunk of code is REALLY bad, should maybe get the ordering from the factor matrix,
+     then those that don't support orderings will handle their cases themselfs. */
   ierr = PetscTypeCompare((PetscObject)mat,MATSEQDENSE,&isseqdense);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIDENSE,&ismpidense);CHKERRQ(ierr);
-  if (isseqdense || ismpidense) {
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIAIJ,&ismpiaij);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPIBAIJ,&ismpibaij);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)mat,MATMPISBAIJ,&ismpisbaij);CHKERRQ(ierr);
+  if (isseqdense || ismpidense || ismpiaij || ismpibaij || ismpisbaij) {
     ierr = MatGetLocalSize(mat,&m,PETSC_NULL);CHKERRQ(ierr);
     /*
        Dense matrices only give natural ordering

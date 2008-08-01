@@ -158,7 +158,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat A)
   ierr     = PetscNewLog(A,Mat_MPIMAIJ,&b);CHKERRQ(ierr);
   A->data  = (void*)b;
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
-  A->factor           = 0;
   A->mapping          = 0;
 
   b->AIJ  = 0;

@@ -24,7 +24,7 @@ typedef struct _p_Mat*           Mat;
 
    Level: beginner
 
-.seealso: MatSetType(), Mat
+.seealso: MatSetType(), Mat, MatSolverPackage
 E*/
 #define MatType char*
 #define MATSAME            "same"
@@ -51,21 +51,6 @@ E*/
 #define MATMFFD            "mffd"
 #define MATNORMAL          "normal"
 #define MATLRC             "lrc"
-#define MATSEQAIJSPOOLES   "seqaijspooles"
-#define MATMPIAIJSPOOLES   "mpiaijspooles"
-#define MATSEQSBAIJSPOOLES "seqsbaijspooles"
-#define MATMPISBAIJSPOOLES "mpisbaijspooles"
-#define MATAIJSPOOLES      "aijspooles"
-#define MATSBAIJSPOOLES    "sbaijspooles"
-#define MATSUPERLU         "superlu"
-#define MATSUPERLU_DIST    "superlu_dist"
-#define MATUMFPACK         "umfpack"
-#define MATESSL            "essl"
-#define MATLUSOL           "lusol"
-#define MATAIJMUMPS        "aijmumps"
-#define MATSBAIJMUMPS      "sbaijmumps"
-#define MATDSCPACK         "dscpack"
-#define MATMATLAB          "matlab"
 #define MATSEQCSRPERM      "seqcsrperm"
 #define MATMPICSRPERM      "mpicsrperm"
 #define MATCSRPERM         "csrperm"
@@ -78,7 +63,7 @@ E*/
 #define MATSEQFFTW         "seqfftw"
 
 /*E
-    MatSolverType - String with the name of a PETSc matrix solver type. 
+    MatSolverPackage - String with the name of a PETSc matrix solver type. 
 
     For example: "petsc" indicates what PETSc provides, "superlu" indicates either 
        SuperLU or SuperLU_Dist etc.
@@ -86,9 +71,32 @@ E*/
 
    Level: beginner
 
-.seealso: MatSetSolverType(), Mat, MatSetType(), MatType
+.seealso: MatGetFactor(), Mat, MatSetType(), MatType
 E*/
-#define MatSolverType char*
+#define MatSolverPackage char*
+#define MAT_SOLVER_SPOOLES      "spooles"
+#define MAT_SOLVER_SUPERLU      "superlu"
+#define MAT_SOLVER_SUPERLU_DIST "superlu_dist"
+#define MAT_SOLVER_UMFPACK      "umfpack"
+#define MAT_SOLVER_ESSL         "essl"
+#define MAT_SOLVER_LUSOL        "lusol"
+#define MAT_SOLVER_MUMPS        "mumps"
+#define MAT_SOLVER_DSCPACK      "dscpack"
+#define MAT_SOLVER_MATLAB       "matlab"
+#define MAT_SOLVER_PETSC        "petsc"
+
+/*E
+    MatFactorType - indicates what type of factorization is requested
+
+    Level: beginner
+
+   Any additions/changes here MUST also be made in include/finclude/petscmat.h
+
+.seealso: MatSolverPackage, MatGetFactor()
+E*/
+typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC} MatFactorType;
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,const MatSolverPackage,MatFactorType,Mat*);
+
 
 /* Logging support */
 #define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
@@ -127,8 +135,6 @@ PetscPolymorphicFunction(MatCreate,(MPI_Comm comm),(comm,&A),Mat,A)
 PetscPolymorphicFunction(MatCreate,(),(PETSC_COMM_WORLD,&A),Mat,A)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat,PetscInt,PetscInt,PetscInt,PetscInt);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat,const MatType);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetSolverType(Mat,MatSolverType);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSolverType(Mat,MatSolverType*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char[]);

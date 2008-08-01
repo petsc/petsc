@@ -98,7 +98,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *inf
   B->ops->solve           = MatSolve_MPIAIJ_XXT;
   B->ops->destroy         = MatDestroy_MPIAIJ_XXT;
   B->ops->lufactornumeric = MatLUFactorNumeric_MPIAIJ_XXT;
-  B->factor               = FACTOR_LU;
+  B->factor               = MAT_FACTOR_LU;
   B->assembled            = PETSC_TRUE;
   ierr                    = PetscNew(Mat_MPIAIJ_XXT,&xxt);CHKERRQ(ierr);
   B->spptr = A->spptr     = (void*)xxt;
@@ -226,7 +226,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *inf
   B->ops->solve           = MatSolve_MPIAIJ_XYT;
   B->ops->destroy         = MatDestroy_MPIAIJ_XYT;
   B->ops->lufactornumeric = MatLUFactorNumeric_MPIAIJ_XYT;
-  B->factor               = FACTOR_LU;
+  B->factor               = MAT_FACTOR_LU;
   B->assembled            = PETSC_TRUE;
   ierr                    = PetscNew(Mat_MPIAIJ_XYT,&xyt);CHKERRQ(ierr);
   B->spptr = A->spptr     = (void*)xyt;

@@ -214,7 +214,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName(PC,char*[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero(PC,PetscReal); 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd(PC,PetscTruth); 
-
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage(PC,const MatSolverPackage);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill(PC,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivoting(PC,PetscReal);

@@ -29,6 +29,8 @@ testexamples_FFTW: ${TESTEXAMPLES_FFTW} clean
 testexamples_MATLAB: ${TESTEXAMPLES_MATLAB} clean
 testexamples_MUMPS: ${TESTEXAMPLES_MUMPS} clean
 testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU} clean
+testexamples_SPOOLES: ${TESTEXAMPLES_SPOOLES} clean
+testexamples_UMFPACK: ${TESTEXAMPLES_UMFPACK} clean
 testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST} clean
 testexamples_BLOCKSOLVE95: ${TESTEXAMPLES_BLOCKSOLVE95} clean
 testexamples_HYPRE: ${TESTEXAMPLES_HYPRE} clean
@@ -37,6 +39,10 @@ testexamples_MPE:
 testexamples_ESSL:
 testexamples_MPI:
 testexamples_BLASLAPACK:
+testexamples_SOWING:
+testexamples_C2HTML:
+testexamples_BLACS:
+testexamples_SCALAPACK:
 
 buildexamples_MPI: 
 	-@${OMAKE} testexamples_MPI TESTEXAMPLES_MPI=`echo ${TESTEXAMPLES_MPI} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`

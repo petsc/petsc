@@ -2155,7 +2155,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
 
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->mapping    = 0;
-  B->factor     = 0;
   B->assembled  = PETSC_FALSE;
 
   B->insertmode = NOT_SET_VALUES;
