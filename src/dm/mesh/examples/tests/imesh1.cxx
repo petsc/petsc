@@ -1,6 +1,7 @@
 #define ALE_MEM_LOGGING
 
 #include <petsc.h>
+#include <petscmesh_formats.hh>
 #include <Mesh.hh>
 #include <Generator.hh>
 #include "unitTests.hh"
@@ -103,6 +104,83 @@ public:
 #define __FUNCT__ "RegisterIMeshFunctionSuite"
 PetscErrorCode RegisterIMeshFunctionSuite() {
   CPPUNIT_TEST_SUITE_REGISTRATION(FunctionTestIMesh);
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+class MemoryTestIMesh : public CppUnit::TestFixture
+{
+  CPPUNIT_TEST_SUITE(MemoryTestIMesh);
+
+  CPPUNIT_TEST(testPCICE);
+
+  CPPUNIT_TEST_SUITE_END();
+public:
+  typedef ALE::IMesh            mesh_type;
+  typedef mesh_type::sieve_type sieve_type;
+  typedef mesh_type::point_type point_type;
+protected:
+  ALE::Obj<mesh_type> _mesh;
+  int                 _debug; // The debugging level
+  PetscInt            _iters; // The number of test repetitions
+public:
+  PetscErrorCode processOptions() {
+    PetscErrorCode ierr;
+
+    this->_debug = 0;
+    this->_iters = 1;
+
+    PetscFunctionBegin;
+    ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for interval section stress test", "ISection");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-debug", "The debugging level", "isection.c", this->_debug, &this->_debug, PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "isection.c", this->_iters, &this->_iters, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  };
+
+  /// Setup data.
+  void setUp(void) {
+    this->processOptions();
+  };
+
+  /// Tear down data.
+  void tearDown(void) {};
+
+  void testPCICE(void) {
+    ALE::MemoryLogger& logger      = ALE::MemoryLogger::singleton();
+    const char        *name        = "PCICE";
+
+    logger.setDebug(this->_debug);
+    logger.stagePush(name);
+    {
+      const int                             dim   = 2;
+      ALE::Obj<mesh_type>                   mesh  = new mesh_type(PETSC_COMM_WORLD, dim, this->_debug);
+      ALE::Obj<sieve_type>                  sieve = new sieve_type(mesh->comm(), this->_debug);
+      const ALE::Obj<ALE::Mesh>             m     = new ALE::Mesh(mesh->comm(), dim, this->_debug);
+      const ALE::Obj<ALE::Mesh::sieve_type> s     = new ALE::Mesh::sieve_type(mesh->comm(), this->_debug);
+      int                                  *cells         = NULL;
+      double                               *coordinates   = NULL;
+      const std::string&                    coordFilename = "../tutorials/data/ex1_2d.nodes";
+      const std::string&                    adjFilename   = "../tutorials/data/ex1_2d.lcon";
+      const bool                            useZeroBase   = true;
+      int numCells = 0, numVertices = 0, numCorners = dim+1;
+      PetscErrorCode                   ierr;
+
+      ALE::PCICE::Builder::readConnectivity(mesh->comm(), adjFilename, numCorners, useZeroBase, numCells, &cells);
+      ALE::PCICE::Builder::readCoordinates(mesh->comm(), coordFilename, dim, numVertices, &coordinates);
+      if (cells) {ierr = PetscFree(cells);}
+      if (coordinates) {ierr = PetscFree(coordinates);}
+    }
+    logger.stagePop();
+    std::cout << std::endl << name << " " << logger.getNumAllocations(name) << " allocations " << logger.getAllocationTotal(name) << " bytes" << std::endl;
+    std::cout << std::endl << name << " " << logger.getNumDeallocations(name) << " deallocations " << logger.getDeallocationTotal(name) << " bytes" << std::endl;
+  };
+};
+
+#undef __FUNCT__
+#define __FUNCT__ "RegisterIMeshMemorySuite"
+PetscErrorCode RegisterIMeshMemorySuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION(MemoryTestIMesh);
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }

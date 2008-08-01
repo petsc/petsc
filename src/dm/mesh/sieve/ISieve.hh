@@ -696,7 +696,7 @@ namespace ALE {
         this->allocated = true;
         if (unique) {
           this->points          = new point_type[this->size];
-          this->allocatedPoints = false;
+          this->allocatedPoints = true;
         } else {
           this->points          = NULL;
           this->allocatedPoints = false;
@@ -707,7 +707,7 @@ namespace ALE {
         this->allocated = false;
         if (unique) {
           this->points          = new point_type[this->size];
-          this->allocatedPoints = false;
+          this->allocatedPoints = true;
         } else {
           this->points          = NULL;
           this->allocatedPoints = false;
