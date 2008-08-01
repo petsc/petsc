@@ -286,7 +286,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
 {
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
-  Mat                B;
   PetscErrorCode     ierr;
   PetscTruth         perm_identity,missing;
   PetscReal          fill = info->fill;
