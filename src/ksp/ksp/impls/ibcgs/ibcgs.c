@@ -39,6 +39,8 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   Mat            A;
 
   PetscFunctionBegin;
+  if (!ksp->vec_rhs->petscnative) SETERRQ(PETSC_ERR_SUP,"Only coded for PETSc vectors");
+
   ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
   Xn_1 = Xn = ksp->vec_sol;ierr = VecGetArray(Xn_1,&xn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Xn_1,&xn_1);CHKERRQ(ierr);xn = xn_1;
