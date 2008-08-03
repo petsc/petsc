@@ -445,6 +445,9 @@ namespace ALE {
           ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
           s->axpy(-1.0, constant);
         }
+	Obj<PETSC_MESH_TYPE::real_section_type>        s;
+	ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+	s->view("RHS");
         PetscFunctionReturn(0);
       };
       #undef __FUNCT__
@@ -517,6 +520,7 @@ namespace ALE {
         ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
         ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
         ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+	ierr = MatView(A, PETSC_VIEWER_STDOUT_SELF);
         PetscFunctionReturn(0);
       };
     };
@@ -651,6 +655,8 @@ namespace ALE {
             ierr = ALE::DMBuilder::createBoxMesh(comm(), dim(), structured(), interpolated(), debug(), &this->_dm);CHKERRQ(ierr);
           }
         }
+	ierr = refineMesh();CHKERRQ(ierr);
+
         if (this->commSize() > 1) {
           ::Mesh parallelMesh;
 
@@ -683,7 +689,7 @@ namespace ALE {
       #define __FUNCT__ "RefineMesh"
       PetscErrorCode refineMesh() {
         PetscErrorCode ierr;
-
+	PetscFunctionBegin;
         if (_options.refinementLimit > 0.0) {
           ::Mesh refinedMesh;
 
@@ -707,8 +713,9 @@ namespace ALE {
 #ifndef PETSC_OPT_SIEVE
             ierr = MeshIDBoundary((::Mesh) this->_dm);CHKERRQ(ierr);
 #endif
-          }
+          }  
         }
+	PetscFunctionReturn(0);
       };
       #undef __FUNCT__
       #define __FUNCT__ "DestroyMesh"

@@ -18,6 +18,10 @@ ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
 	${RM} -f ex1.o
 
+closuretest: closuretest.o   chkopts
+	-${CLINKER} -o closuretest closuretest.o  ${PETSC_DM_LIB}
+	${RM} -f closuretest.o
+
 ex2: ex2.o   chkopts
 	-${CLINKER} -o ex2 ex2.o  ${PETSC_DM_LIB}
 	${RM} -f ex2.o
@@ -115,6 +119,9 @@ bratu_ufc: bratu_1d.h bratu_2d.h bratu_3d.h GMVFile.o GMVFileAscii.o BinaryIO.o 
 	-${CLINKER} -o bratu_ufc  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu_ufc.o ${PETSC_SNES_LIB}
 	${RM} -f bratu_ufc.o
 
+ex_ufc: bratu_1d.h bratu_2d.h bratu_3d.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o ex_ufc.o chkopts
+	-${CLINKER} -o ex_ufc  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o ex_ufc.o ${PETSC_SNES_LIB}
+	${RM} -f ex_ufc.o
 
 bratu2: bratu2_quadrature.h bratu2.o chkopts
 	-${CLINKER} -o bratu2 bratu2.o ${PETSC_SNES_LIB}
