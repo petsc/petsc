@@ -3329,7 +3329,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, const MatType newtype,MatR
 
    Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate(), MatGetSolverType()
+.seealso: MatCopy(), MatDuplicate()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType ftype,Mat *f)
 {

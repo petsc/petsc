@@ -23,8 +23,10 @@
 #define MatPartitioning PetscFortranAddr
 #define MatAIJIndices PetscFortranAddr
 #define MatType character*(80)
+#define MatSolverPackage character*(80)
 #define MatOption PetscEnum
 #define MatAssemblyType PetscEnum
+#define MatFactorType PetscEnum
 #define MatOrderingType character*(80)
 #define MatSORType PetscEnum
 #define MatInfoType PetscEnum
@@ -91,19 +93,19 @@
 #define MATESI             'esi'
 #define MATPETSCESI        'petscesi'
 #define MATNORMAL          'normal'
-#define MATSEQAIJSPOOLES   'seqaijspooles'
-#define MATMPIAIJSPOOLES   'mpiaijspooles'
-#define MATSEQSBAIJSPOOLES 'seqsbaijspooles'
-#define MATMPISBAIJSPOOLES 'mpisbaijspooles'
-#define MATSUPERLU         'superlu'
-#define MATSUPERLU_DIST    'superlu_dist'
-#define MATUMFPACK         'umfpack'
-#define MATESSL            'essl'
-#define MATLUSOL           'lusol'
-#define MATAIJMUMPS        'aijmumps'
-#define MATSBAIJMUMPS      'sbaijmumps'
-#define MATDSCPACK         'dscpack'
-#define MATMATLAB          'matlab'
+!
+! MatSolverPackages
+!
+#define MAT_SOLVER_SPOOLES      'spooles'
+#define MAT_SOLVER_SUPERLU      'superlu'
+#define MAT_SOLVER_SUPERLU_DIST 'superlu_dist'
+#define MAT_SOLVER_UMFPACK      'umfpack'
+#define MAT_SOLVER_ESSL         'essl'
+#define MAT_SOLVER_LUSOL        'lusol'
+#define MAT_SOLVER_MUMPS        'mumps'
+#define MAT_SOLVER_DSCPACK      'dscpack'
+#define MAT_SOLVER_MATLAB       'matlab'
+#define MAT_SOLVER_PETSC        'petsc'
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
@@ -119,6 +121,19 @@
       PetscEnum MAT_FINAL_ASSEMBLY
 
       parameter(MAT_FLUSH_ASSEMBLY=1,MAT_FINAL_ASSEMBLY=0)
+!
+!
+!
+      PetscEnum MAT_FACTOR_NONE 
+      PetscEnum MAT_FACTOR_LU
+      PetscEnum MAT_FACTOR_CHOLESKY
+      PetscEnum MAT_FACTOR_ILU
+      PetscEnum MAT_FACTOR_ICC
+
+      parameter(MAT_FACTOR_NONE=0,MAT_FACTOR_LU=1)
+      parameter(MAT_FACTOR_CHOLESKY=2,MAT_FACTOR_ILU=3)
+      parameter(MAT_FACTOR_ICC=4)
+ 
 !
 !  Matrix options; must match those in include/petscmat.h
 !
@@ -159,6 +174,7 @@
       parameter (MAT_ERROR_LOWER_TRIANGULAR=16)
       parameter (MAT_GETROW_UPPERTRIANGULAR=17)
 
+ 
 !
 !  MatDuplicateOption
 !
