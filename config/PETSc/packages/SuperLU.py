@@ -56,7 +56,7 @@ class Configure(PETSc.package.Package):
       g.write('FORTRAN    = \n')
       g.write('FFLAGS     = \n')
     g.write('MATLAB       =\n')
-    g.write('NOOPTS       =  -O0\n')
+    g.write('NOOPTS       = '+self.blasLapack.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()
     if self.installNeeded('make.inc'):
       try:

@@ -56,7 +56,7 @@ class Configure(PETSc.package.Package):
       # set fortran name mangling
       # this mangling information is for both BLAS and the Fortran compiler so cannot use the BlasLapack mangling flag      
       self.setCompilers.popLanguage()
-    g.write('NOOPTS       =  -O0\n')
+    g.write('NOOPTS       = '+self.blasLapack.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.blasLapack.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n')
     g.close()
 
     if self.installNeeded('make.inc'):
