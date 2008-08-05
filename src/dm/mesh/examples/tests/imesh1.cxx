@@ -148,10 +148,12 @@ public:
 
   void testPCICE(void) {
     ALE::MemoryLogger& logger      = ALE::MemoryLogger::singleton();
+    const char        *nameOld     = "PCICE Old";
     const char        *name        = "PCICE";
+    const bool         interpolate = false;
 
     logger.setDebug(this->_debug);
-    logger.stagePush(name);
+    logger.stagePush(nameOld);
     {
       const int                             dim   = 2;
       ALE::Obj<mesh_type>                   mesh  = new mesh_type(PETSC_COMM_WORLD, dim, this->_debug);
@@ -163,17 +165,36 @@ public:
       const std::string&                    coordFilename = "../tutorials/data/ex1_2d.nodes";
       const std::string&                    adjFilename   = "../tutorials/data/ex1_2d.lcon";
       const bool                            useZeroBase   = true;
-      int numCells = 0, numVertices = 0, numCorners = dim+1;
-      PetscErrorCode                   ierr;
+      int                                   numCells = 0, numVertices = 0, numCorners = dim+1;
+      PetscErrorCode                        ierr;
 
       ALE::PCICE::Builder::readConnectivity(mesh->comm(), adjFilename, numCorners, useZeroBase, numCells, &cells);
       ALE::PCICE::Builder::readCoordinates(mesh->comm(), coordFilename, dim, numVertices, &coordinates);
-      if (cells) {ierr = PetscFree(cells);}
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, dim, numCells, cells, numVertices, interpolate, numCorners, -1, m->getArrowSection("orientation"));
+      m->setSieve(s);
+      m->stratify();
+      logger.stagePush(name);
+      mesh->setSieve(sieve);
+      mesh_type::renumbering_type renumbering;
+      ALE::ISieveConverter::convertSieve(*s, *sieve, renumbering, false);
+      mesh->stratify();
+#if 0
+      ALE::ISieveConverter::convertOrientation(*s, *sieve, renumbering, m->getArrowSection("orientation").ptr());
+#endif
+      ALE::SieveBuilder<PETSC_MESH_TYPE>::buildCoordinates(mesh, dim, coordinates);
+      if (cells)       {ierr = PetscFree(cells);}
       if (coordinates) {ierr = PetscFree(coordinates);}
+      logger.stagePop();
     }
+    mesh_type::MeshNumberingFactory::singleton(PETSC_COMM_WORLD, this->_debug, true);
+    ALE::Mesh::MeshNumberingFactory::singleton(PETSC_COMM_WORLD, this->_debug, true);
     logger.stagePop();
+    std::cout << std::endl << nameOld << " " << logger.getNumAllocations(nameOld) << " allocations " << logger.getAllocationTotal(nameOld) << " bytes" << std::endl;
+    std::cout << std::endl << nameOld << " " << logger.getNumDeallocations(nameOld) << " deallocations " << logger.getDeallocationTotal(nameOld) << " bytes" << std::endl;
     std::cout << std::endl << name << " " << logger.getNumAllocations(name) << " allocations " << logger.getAllocationTotal(name) << " bytes" << std::endl;
     std::cout << std::endl << name << " " << logger.getNumDeallocations(name) << " deallocations " << logger.getDeallocationTotal(name) << " bytes" << std::endl;
+    CPPUNIT_ASSERT_EQUAL(logger.getNumAllocations(nameOld)+logger.getNumAllocations(name), logger.getNumDeallocations(nameOld)+logger.getNumDeallocations(name));
+    CPPUNIT_ASSERT_EQUAL(logger.getAllocationTotal(nameOld)+logger.getAllocationTotal(name), logger.getDeallocationTotal(nameOld)+logger.getDeallocationTotal(name));
   };
 };
 
