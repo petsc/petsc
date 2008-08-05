@@ -147,7 +147,7 @@ void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatF
 {
   char *t;
   FIXCHAR(outtype,len,t);
-  *ierr = MatGetFactorType(*mat,t,ftype,M);
+  *ierr = MatGetFactor(*mat,t,ftype,M);
   FREECHAR(outtype,t);
 }
 
