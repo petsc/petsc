@@ -1956,7 +1956,7 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR_MPIBAIJ"
-PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const PetscInt I[],const PetscInt J[],const PetscScalar V[])
+PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const PetscInt ii[],const PetscInt jj[],const PetscScalar V[])
 {
   PetscInt       m,rstart,cstart,cend;
   PetscInt       i,j,d,nz,nz_max=0,*d_nnz=0,*o_nnz=0;
@@ -1976,14 +1976,14 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   cstart = B->cmap.rstart/bs;
   cend   = B->cmap.rend/bs;
 
-  if (I[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"I[0] must be 0 but it is %D",I[0]);
+  if (ii[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"ii[0] must be 0 but it is %D",ii[0]);
   ierr  = PetscMalloc((2*m+1)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
   o_nnz = d_nnz + m;
   for (i=0; i<m; i++) {
-    nz = I[i+1] - I[i];
+    nz = ii[i+1] - ii[i];
     if (nz < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative number of columns %D",i,nz);
     nz_max = PetscMax(nz_max,nz);
-    JJ  = J + I[i];
+    JJ  = jj + ii[i];
     for (j=0; j<nz; j++) {
       if (*JJ >= cstart) break;
       JJ++;
@@ -2006,9 +2006,9 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   }
   for (i=0; i<m; i++) {
     PetscInt          row    = i + rstart;
-    PetscInt          ncols  = I[i+1] - I[i];
-    const PetscInt    *icols = J + I[i];
-    const PetscScalar *svals = values + (V ? (bs*bs*I[i]) : 0);
+    PetscInt          ncols  = ii[i+1] - ii[i];
+    const PetscInt    *icols = jj + ii[i];
+    const PetscScalar *svals = values + (V ? (bs*bs*ii[i]) : 0);
     ierr = MatSetValuesBlocked_MPIBAIJ(B,1,&row,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
   }
 
