@@ -285,7 +285,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRow(Mat mat,PetscInt row,PetscInt *n
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowUpperTriangular"
-/*@C
+/*@
    MatGetRowUpperTriangular - Sets a flag to enable calls to MatGetRow() for matrix in MATSBAIJ format.  
    You should call MatRestoreRowUpperTriangular() after calling MatGetRow/MatRestoreRow() to disable the flag. 
 
@@ -321,7 +321,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowUpperTriangular(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowUpperTriangular"
-/*@C  
+/*@
    MatRestoreRowUpperTriangular - Disable calls to MatGetRow() for matrix in MATSBAIJ format.  
 
    Not Collective

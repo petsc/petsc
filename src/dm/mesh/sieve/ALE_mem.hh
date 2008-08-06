@@ -121,22 +121,23 @@ namespace ALE {
     template <class U>
     struct rebind {typedef malloc_allocator<U> other;};
   protected:
+    int         numAllocs;
     const char *className;
   public:
     int sz;
   public:
 #ifdef ALE_MEM_LOGGING
-    malloc_allocator() {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
-    malloc_allocator(const malloc_allocator&) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
+    malloc_allocator() : numAllocs(0) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
+    malloc_allocator(const malloc_allocator&) : numAllocs(0) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
     template <class U> 
-    malloc_allocator(const malloc_allocator<U>&) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
-    ~malloc_allocator() {ALE::MemoryLogger::restoreClassName(className);}
+    malloc_allocator(const malloc_allocator<U>&) : numAllocs(0) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
+    ~malloc_allocator() {if (numAllocs > 50) {std::cout << "Allocated " << className << " " << numAllocs << " times" << std::endl;}; ALE::MemoryLogger::restoreClassName(className);}
 #else
-    malloc_allocator() {sz = sizeof(value_type);}
-    malloc_allocator(const malloc_allocator&) {sz = sizeof(value_type);}
+    malloc_allocator() : numAllocs(0) {sz = sizeof(value_type);}
+    malloc_allocator(const malloc_allocator&) : numAllocs(0) {sz = sizeof(value_type);}
     template <class U> 
-    malloc_allocator(const malloc_allocator<U>&) {sz = sizeof(value_type);}
-    ~malloc_allocator() {}
+    malloc_allocator(const malloc_allocator<U>&) : numAllocs(0) {sz = sizeof(value_type);}
+    ~malloc_allocator() {if (numAllocs > 50) {std::cout << "Allocated " << numAllocs << " times" << std::endl;}}
 #endif
   public:
     pointer address(reference x) const {return &x;}
@@ -146,6 +147,7 @@ namespace ALE {
 #ifdef ALE_MEM_LOGGING
       ALE::MemoryLogger::singleton().logAllocation(className, n * sizeof(T));
 #endif
+      numAllocs++;
       void *p = std::malloc(n * sizeof(T));
       if (!p) throw std::bad_alloc();
       return static_cast<pointer>(p);

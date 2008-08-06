@@ -499,12 +499,12 @@ namespace ALE {
       this->_atlas->setChart(chart);
       this->_atlas->allocatePoint();
       this->_bc->setChart(chart);
-      this->_bc->getAtlas()->allocatePoint();
+      ///this->_bc->getAtlas()->allocatePoint();
       for(int s = 0; s < (int) this->_spaces.size(); ++s) {
         this->_spaces[s]->setChart(chart);
         this->_spaces[s]->allocatePoint();
         this->_bcs[s]->setChart(chart);
-        this->_bcs[s]->getAtlas()->allocatePoint();
+        ///this->_bcs[s]->getAtlas()->allocatePoint();
       }
     };
   public:
