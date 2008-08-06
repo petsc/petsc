@@ -5408,7 +5408,7 @@ process 0.
 src/mat/examples/tutorials, specifically ex72.c and ex32.c. You will
 likely need to modify the code slightly to match your required ASCII
 format. Note: Never read or write in parallel an ASCII matrix file,
-instead for reading: read insequentially then save the matrix with the
+instead for reading: read in sequentially then save the matrix with the
 binary viewer PetscBinaryViewerOpen() and load the matrix in parallel
 with MatLoad(); for writing save with the binary viewer and then load
 with the sequential code to store it as ASCII.<br>

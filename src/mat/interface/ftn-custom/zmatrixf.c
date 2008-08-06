@@ -2,6 +2,7 @@
 #include "petscmat.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matgetfactor_                    MATGETFACTOR
 #define matgetrowij_                     MATGETROWIJ
 #define matrestorerowij_                 MATRESTOREROWIJ
 #define matgetrow_                       MATGETROW
@@ -19,6 +20,7 @@
 #define matgetvecs_                      MATGETVECS
 #define matnullspaceremove_              MATNULLSPACEREMOVE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matgetfactor_                    matgetfactor
 #define matgetvecs_                      matgetvecs
 #define matgetrowij_                     matgetrowij
 #define matrestorerowij_                 matrestorerowij
@@ -139,6 +141,14 @@ void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErr
   *ierr = MatGetSize(*mat,&m,&n); if (*ierr) return;
   *ierr = PetscScalarAddressFromFortran((PetscObject)*mat,fa,*ia,m*n,&lx);if (*ierr) return;
   *ierr = MatRestoreArray(*mat,&lx);if (*ierr) return;
+}
+
+void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatFactorType ftype,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *t;
+  FIXCHAR(outtype,len,t);
+  *ierr = MatGetFactor(*mat,t,ftype,M);
+  FREECHAR(outtype,t);
 }
 
 void PETSC_STDCALL matconvert_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatReuse *reuse,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))

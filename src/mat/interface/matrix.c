@@ -3329,7 +3329,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, const MatType newtype,MatR
 
    Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate(), MatGetSolverType()
+.seealso: MatCopy(), MatDuplicate()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType ftype,Mat *f)
 {
@@ -3654,7 +3654,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat mat, Vec v)
 .  B - the transpose 
 
    Notes:
-     If you  pass in &mat for B the matrix will be done in place
+     If you  pass in &mat for B the transpose will be done in place
 
    Level: intermediate
 
