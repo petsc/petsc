@@ -18,6 +18,8 @@ testexamples_Fortran_MPIUni: ${TESTEXAMPLES_FORTRAN_MPIUNI} clean
 testexamples_Fortran_Complex: ${TESTEXAMPLES_FORTRAN_COMPLEX} clean
 testexamples_C_Complex_MPIUni: ${TESTEXAMPLES_C_CCOMPLEX_MPIUNI} clean
 testexamples_F90: ${TESTEXAMPLES_F90} clean
+testexamples_F90_Complex: ${TESTEXAMPLES_F90_COMPLEX} clean
+testexamples_F90_NoComplex: ${TESTEXAMPLES_F90_NOCOMPLEX} clean
 testexamples_13: ${TESTEXAMPLES_13} clean
 testexamples_17: ${TESTEXAMPLES_17} clean
 testexamples_18: ${TESTEXAMPLES_18} clean
