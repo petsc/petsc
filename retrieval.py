@@ -67,11 +67,16 @@ Unable to download package %s from: %s
 ''' % (name, url, filename, name, filename)
       raise RuntimeError(failureMessage)
     self.logPrint('Uncompressing '+localFile)
+    localFile  = os.path.join(root, archive)
+    # just in case old local file is still hanging around get rid of it
+    try:
+      os.unlink(localFile)
+    except RuntimeError, e:
+      pass
     try:
       config.base.Configure.executeShellCommand('cd '+root+'; gunzip '+archiveZip, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error unzipping '+archiveZip+': '+str(e))
-    localFile  = os.path.join(root, archive)
     self.logPrint('Expanding '+localFile)
     try:
       config.base.Configure.executeShellCommand('cd '+root+'; tar -xf '+archive, log = self.log)
