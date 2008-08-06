@@ -2037,9 +2037,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
   ierr = PetscFree(lev);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
-  ierr = MatSetSizes(*B,bs*mbs,bs*mbs,bs*mbs,bs*mbs);CHKERRQ(ierr);
-  ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(*B,bs,0,PETSC_NULL);CHKERRQ(ierr);
 
   /* ierr = PetscLogObjectParent(*B,iperm);CHKERRQ(ierr); */

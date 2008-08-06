@@ -1260,6 +1260,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
   if (a->compressedrow.use){ierr = PetscFree(a->compressedrow.i);} 
 
+  if (a->sbaijMat) {ierr = MatDestroy(a->sbaijMat);CHKERRQ(ierr);}
   ierr = PetscFree(a);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
