@@ -40,6 +40,7 @@
       end type PetscViewer
 #else
       PetscViewer PETSC_VIEWER_STDOUT_
+      external PETSC_VIEWER_STDOUT_
 #endif
 !
 !  Flags for binary I/O

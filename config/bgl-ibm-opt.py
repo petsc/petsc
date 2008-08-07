@@ -47,6 +47,7 @@ configure_options = [
   '--download-hypre=1',
   '--download-spooles=1',
   '--download-superlu=1',
+  '--download-parmetis=1',
   '--download-superlu_dist=1',
   '--download-blacs=1',
   '--download-scalapack=1',
