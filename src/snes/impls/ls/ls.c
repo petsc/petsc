@@ -616,7 +616,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
 
   /* Fit points with cubic */
   count = 1;
-  while (count < 20) {
+  while (PETSC_TRUE) {
     if (lambda <= minlambda) { 
       ierr = PetscInfo1(snes,"Unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
       ierr = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);CHKERRQ(ierr);
@@ -661,11 +661,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
       ierr = PetscInfo2(snes,"Cubic step no good, shrinking lambda, current gnorem %G lambda=%18.16e\n",*gnorm,lambda);CHKERRQ(ierr);
     }
     count++;
-  }
-  if (count >= 20) {
-    ierr = PetscInfo1(snes,"Unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
-    ierr = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);CHKERRQ(ierr);
-    *flag = PETSC_FALSE; 
   }
   theend1:
   /* Optional user-defined check for line search step validity */

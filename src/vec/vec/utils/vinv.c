@@ -428,7 +428,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScaleAll(Vec v,PetscScalar *scales)
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec v,NormType ntype,PetscReal nrm[])
 {
   PetscErrorCode ierr;
   PetscInt       i,j,n,bs;
@@ -524,7 +524,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec v,NormType ntype,PetscRea
 
 .seealso: VecMax(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec v,PetscInt *idex,PetscReal *nrm)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec v,PetscInt idex[],PetscReal nrm[])
 {
   PetscErrorCode ierr;
   PetscInt       i,j,n,bs;
@@ -604,7 +604,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec v,PetscInt *idex,PetscReal
 
 .seealso: VecMin(), VecStrideNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMax()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec v,PetscInt *idex,PetscReal *nrm)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec v,PetscInt idex[],PetscReal nrm[])
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs,j;
@@ -689,7 +689,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec v,PetscInt *idex,PetscReal
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec *s,InsertMode addv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs,j,k,*bss = PETSC_NULL,nv,jj,nvc;
@@ -792,7 +792,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec *s,InsertMode add
 .seealso: VecStrideNorm(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideGather(),
           VecStrideScatterAll()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec *s,Vec v,InsertMode addv)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec s[],Vec v,InsertMode addv)
 {
   PetscErrorCode ierr;
   PetscInt        i,n,bs,j,jj,k,*bss = PETSC_NULL,nv,nvc;

@@ -82,8 +82,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDot(Vec,Vec,PetscScalar*);
 PetscPolymorphicFunction(VecDot,(Vec x,Vec y),(x,y,&s),PetscScalar,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecTDot(Vec,Vec,PetscScalar*);  
 PetscPolymorphicFunction(VecTDot,(Vec x,Vec y),(x,y,&s),PetscScalar,s)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec,PetscInt,const Vec[],PetscScalar*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(Vec,PetscInt,const Vec[],PetscScalar*); 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec,PetscInt,const Vec[],PetscScalar[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(Vec,PetscInt,const Vec[],PetscScalar[]); 
 
 /*E
     NormType - determines what type of norm to compute
@@ -170,7 +170,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec,PetscScalar);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPY(Vec,PetscScalar,Vec);  
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBY(Vec,PetscScalar,PetscScalar,Vec);  
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec,PetscInt,const PetscScalar[],Vec*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec,PetscInt,const PetscScalar[],Vec[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAYPX(Vec,PetscScalar,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec,PetscScalar,Vec,Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAXPBYPCZ(Vec,PetscScalar,PetscScalar,PetscScalar,Vec,Vec);
@@ -193,10 +193,10 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecAbs(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec,Vec*);          
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicateVecs(Vec,PetscInt,Vec*[]);         
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDestroyVecs(Vec[],PetscInt); 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec,NormType,PetscReal*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec,PetscInt *,PetscReal *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec,PetscInt *,PetscReal *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScaleAll(Vec,PetscScalar*);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec,NormType,PetscReal[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec,PetscInt [],PetscReal []);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec,PetscInt [],PetscReal []);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScaleAll(Vec,PetscScalar[]);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNorm(Vec,PetscInt,NormType,PetscReal*);
 PetscPolymorphicFunction(VecStrideNorm,(Vec x,PetscInt i),(x,i,NORM_2,&r),PetscReal,r)
@@ -210,8 +210,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec,PetscInt,PetscScalar
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec,PetscInt,Vec,InsertMode);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec,PetscInt,Vec,InsertMode);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec,Vec*,InsertMode);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec*,Vec,InsertMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec,Vec[],InsertMode);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatterAll(Vec[],Vec,InsertMode);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetValues(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetValues(Vec,PetscInt,const PetscInt[],PetscScalar[]);
@@ -412,10 +412,10 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecNormEnd(Vec,NormType,PetscReal *);
 PetscPolymorphicFunction(VecNormEnd,(Vec x,NormType t),(x,t,&s),PetscReal,s)
 PetscPolymorphicFunction(VecNormEnd,(Vec x),(x,NORM_2,&s),PetscReal,s)
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(Vec,PetscInt,const Vec[],PetscScalar *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDotEnd(Vec,PetscInt,const Vec[],PetscScalar *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(Vec,PetscInt,const Vec[],PetscScalar *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(Vec,PetscInt,const Vec[],PetscScalar[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(Vec,PetscInt,const Vec[],PetscScalar[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar[]);
 
 
 typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_IGNORE_NEGATIVE_INDICES} VecOption;

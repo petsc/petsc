@@ -1021,7 +1021,7 @@ $      val = (x,y) = y^H x,
 
 .seealso: VecMDot(), VecTDot()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(Vec x,PetscInt nv,const Vec y[],PetscScalar *val)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 {
   PetscErrorCode ierr;
 
@@ -1054,7 +1054,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMTDot(Vec x,PetscInt nv,const Vec y[],Petsc
 -  y - array of vectors. 
 
    Output Parameter:
-.  val - array of the dot products
+.  val - array of the dot products (does not allocate the array)
 
    Notes for Users of Complex Numbers:
    For complex vectors, VecMDot() computes 
@@ -1072,7 +1072,7 @@ $     val = (x,y) = y^T x,
 
 .seealso: VecMTDot(), VecDot()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar *val)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscScalar val[])
 {
   PetscErrorCode ierr;
 
@@ -1113,7 +1113,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscS
 
 .seealso: VecAXPY(), VecWAXPY(), VecAYPX()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec *x)
+PetscErrorCode PETSCVEC_DLLEXPORT VecMAXPY(Vec y,PetscInt nv,const PetscScalar alpha[],Vec x[])
 {
   PetscErrorCode ierr;
 

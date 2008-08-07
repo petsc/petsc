@@ -608,7 +608,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNormEnd(Vec x,NormType ntype,PetscReal *res
 seealso: VecMDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
          VecTDotBegin(), VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecMDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[]) 
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -658,7 +658,7 @@ seealso: VecMDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecM
          VecTDotBegin(),VecTDotEnd(), VecMTDotBegin(), VecMTDotEnd()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecMDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[]) 
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -718,7 +718,7 @@ seealso: VecMTDotEnd(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMD
          VecDotBegin(), VecDotEnd(), VecMDotBegin(), VecMDotEnd()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],PetscScalar result[]) 
 {
   PetscErrorCode      ierr;
   PetscSplitReduction *sr;
@@ -767,7 +767,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(Vec x,PetscInt nv,const Vec y[],
 seealso: VecMTDotBegin(), VecNormBegin(), VecNormEnd(), VecNorm(), VecDot(), VecMDot(), 
          VecDotBegin(), VecDotEnd(), VecMDotBegin(), VecMdotEnd()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar *result) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotEnd(Vec x,PetscInt nv,const Vec y[],PetscScalar result[]) 
 {
   PetscErrorCode ierr;
 
