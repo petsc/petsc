@@ -61,7 +61,7 @@ PetscErrorCode updateOperator(Mat, ALE::Obj<ALE::Two::Mesh::field_type>, const A
 
 extern PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Two::Mesh>);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
-extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
+extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeError(DMMG,Vec,double*);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
@@ -193,7 +193,7 @@ int main(int argc,char **argv)
       ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
     }
 
-    ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
+    ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
     if (user.bcType == NEUMANN) {
       ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
     }
@@ -1254,7 +1254,7 @@ PetscErrorCode ElementGeometry(ALE::Obj<ALE::Two::Mesh> mesh, const ALE::Two::Me
     }
     invDet = 1.0/det;
     if (detJ) {
-      if (det < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");}
+      if (det < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Matrix determinant");}
       *detJ = det;
     }
     if (invJ) {
@@ -1428,8 +1428,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ComputeJacobian"
-PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
+#define __FUNCT__ "ComputeMatrix"
+PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J, Mat jac)
 {
   ALE::Obj<ALE::Two::Mesh> m;
   Mesh              mesh = (Mesh) dmmg->dm;

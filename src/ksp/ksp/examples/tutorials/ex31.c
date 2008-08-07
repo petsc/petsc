@@ -43,7 +43,7 @@ extern PetscErrorCode CreateStructures(DMMG);
 extern PetscErrorCode DestroyStructures(DMMG);
 extern PetscErrorCode ComputeInitialGuess(DMMG);
 extern PetscErrorCode ComputePredictor(DMMG);
-extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
+extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 extern PetscErrorCode ComputeCorrector(DMMG,Vec,Vec);
 
@@ -99,7 +99,7 @@ int main(int argc,char **argv)
   ierr = ComputeInitialGuess(DMMGGetDMMG(dmmg));
   ierr = ComputePredictor(DMMGGetDMMG(dmmg));
 
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
+  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
   ierr = DMMGSetInitialGuess(dmmg, DMMGInitialGuessCurrent);CHKERRQ(ierr);
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
@@ -697,7 +697,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ComputeJacobian"
+#define __FUNCT__ "ComputeMatrix"
 /*
   We integrate over each cell
 
@@ -725,7 +725,7 @@ no matter what the shape of the triangle. The Laplacian stiffness matrix is
 
 where A is the area of the triangle, and (x_i, y_i) is its i'th vertex.
 */
-PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J,Mat jac)
+PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 {
   DA             da   = (DA) dmmg->dm;
   UserContext   *user = (UserContext *) dmmg->user;

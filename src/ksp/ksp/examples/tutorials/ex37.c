@@ -70,7 +70,7 @@ PetscErrorCode updateOperator(Mat, ALE::Obj<ALE::Mesh::field_type>, const ALE::M
 
 extern PetscErrorCode CheckElementGeometry(ALE::Obj<ALE::Mesh>);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
-extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
+extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
 extern PetscErrorCode CreateDielectricField(ALE::Obj<ALE::Mesh>, ALE::Obj<ALE::Mesh::field_type>);
 extern PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Mesh>, ALE::Obj<ALE::Mesh::field_type>, ALE::Obj<ALE::Mesh::field_type>, Vec *);
 double refineLimit(const double [], void *);
@@ -235,7 +235,7 @@ int main(int argc,char **argv)
       ierr = DMMGSetUser(dmmg,l,&user);CHKERRQ(ierr);
     }
 
-    ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
+    ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
     ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection); CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
@@ -659,7 +659,7 @@ PetscErrorCode ElementGeometry(ALE::Obj<ALE::Mesh> mesh, const ALE::Mesh::point_
     }
     invDet = 1.0/det;
     if (detJ) {
-      if (det < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");}
+      if (det < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Matrix determinant");}
       *detJ = det;
     }
     if (invJ) {
@@ -909,8 +909,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "ComputeJacobian"
-PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J, Mat jac)
+#define __FUNCT__ "ComputeMatrix"
+PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J, Mat jac)
 {
   ALE::Obj<ALE::Mesh> m;
   Mesh              mesh = (Mesh) dmmg->dm;

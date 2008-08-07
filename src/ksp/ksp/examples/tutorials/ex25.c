@@ -19,7 +19,7 @@ static char help[] = "Solves 1D variable coefficient Laplacian using multigrid.\
 #include "petscksp.h"
 #include "petscdmmg.h"
 
-extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
+extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 
 typedef struct {
@@ -49,7 +49,7 @@ int main(int argc,char **argv)
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
+  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
 
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
@@ -85,8 +85,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg,Vec b)
 }
     
 #undef __FUNCT__
-#define __FUNCT__ "ComputeJacobian"
-PetscErrorCode ComputeJacobian(DMMG dmmg,Mat J,Mat jac)
+#define __FUNCT__ "ComputeMatrix"
+PetscErrorCode ComputeMatrix(DMMG dmmg,Mat J,Mat jac)
 {
   DA             da = (DA)dmmg->dm;
   PetscErrorCode ierr;

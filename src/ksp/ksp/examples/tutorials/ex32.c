@@ -37,7 +37,7 @@ static char help[] = "Solves 2D inhomogeneous Laplacian using multigrid.\n\n";
 #include "petscmg.h"
 #include "petscdmmg.h"
 
-extern PetscErrorCode ComputeJacobian(DMMG,Mat,Mat);
+extern PetscErrorCode ComputeMatrix(DMMG,Mat,Mat);
 extern PetscErrorCode ComputeRHS(DMMG,Vec);
 
 typedef enum {DIRICHLET, NEUMANN} BCType;
@@ -79,7 +79,7 @@ int main(int argc,char **argv)
   user.bcType = (BCType)bc;
   ierr = PetscOptionsEnd();
   
-  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeJacobian);CHKERRQ(ierr);
+  ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
   if (user.bcType == NEUMANN) {
     ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
   }
@@ -136,8 +136,8 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
 
     
 #undef __FUNCT__
-#define __FUNCT__ "ComputeJacobian"
-PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J,Mat jac)
+#define __FUNCT__ "ComputeMatrix"
+PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 {
   DA             da = (DA) dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
