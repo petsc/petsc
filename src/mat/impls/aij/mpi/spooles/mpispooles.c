@@ -372,8 +372,8 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
 
     opcounts = DVinit(size, 0.0);
     opcounts[rank] = ETree_nFactorOps(lu->frontETree, lu->options.typeflag, lu->options.symflag);
-    MPI_Allgather((void*) &opcounts[rank], 1, MPI_DOUBLE,
-              (void*) opcounts, 1, MPI_DOUBLE, ((PetscObject)A)->comm);
+    ierr = MPI_Allgather((void*) &opcounts[rank], 1, MPI_DOUBLE,
+              (void*) opcounts, 1, MPI_DOUBLE, ((PetscObject)A)->comm);CHKERRQ(ierr);
     minops = DVmin(size, opcounts, &root);
     DVfree(opcounts);
     

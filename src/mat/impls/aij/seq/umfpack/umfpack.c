@@ -177,11 +177,10 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,MatFactorInfo *info,Mat *F)
 #define __FUNCT__ "MatLUFactorSymbolic_UMFPACK"
 PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) 
 {
-  Mat            B;
   Mat_SeqAIJ     *mat=(Mat_SeqAIJ*)A->data;
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)((*F)->spptr);
   PetscErrorCode ierr;
-  int            i,m=A->rmap.n,n=A->cmap.n,*ra,idx;
+  int            i,m=A->rmap.n,n=A->cmap.n,*ra;
   UF_long        status;
   PetscScalar    *av=mat->a;
   
@@ -258,13 +257,10 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,M
 PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F) 
 {
   Mat            B;
-  Mat_SeqAIJ     *mat=(Mat_SeqAIJ*)A->data;
   Mat_UMFPACK    *lu;
   PetscErrorCode ierr;
-  int            i,m=A->rmap.n,n=A->cmap.n,*ra,idx;
-  UF_long        status;
+  int            m=A->rmap.n,n=A->cmap.n,idx;
 
-  PetscScalar    *av=mat->a;
   const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC","2BY2"},
                  *scale[]={"NONE","SUM","MAX"}; 
   PetscTruth     flg;
@@ -391,7 +387,6 @@ PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
   PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
-  Mat_UMFPACK       *lu=(Mat_UMFPACK*)(A->spptr);
 
   PetscFunctionBegin;
   ierr = MatView_SeqAIJ(A,viewer);CHKERRQ(ierr);
