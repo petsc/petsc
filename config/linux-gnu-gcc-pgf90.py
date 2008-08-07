@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 configure_options = [
-  '--with-mpi-dir=/home/petsc/soft/linux-debian_sarge-gcc-pgf90/mpich-1.2.6',
+  '--with-mpi-dir=/home/petsc/soft/linux-Ubuntu_8.04-ia32/mpich2-1.0.7-gcc-pgf90',
   '--download-f-blas-lapack=1'
   ]
 
