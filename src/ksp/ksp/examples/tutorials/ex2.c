@@ -37,8 +37,10 @@ int main(int argc,char **args)
   PetscInt       i,j,Ii,J,Istart,Iend,m = 8,n = 7,its;
   PetscErrorCode ierr;
   PetscTruth     flg;
-  PetscInt       stage;
   PetscScalar    v,one = 1.0,neg_one = -1.0;
+#if defined(PETSC_USE_LOG)
+  PetscInt       stage;
+#endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
