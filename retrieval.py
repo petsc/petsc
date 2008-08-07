@@ -69,10 +69,8 @@ Unable to download package %s from: %s
     self.logPrint('Uncompressing '+localFile)
     localFile  = os.path.join(root, archive)
     # just in case old local file is still hanging around get rid of it
-    try:
-      os.unlink(localFile)
-    except RuntimeError, e:
-      pass
+    if os.path.exists(localFile):
+      os.remove(localFile)
     try:
       config.base.Configure.executeShellCommand('cd '+root+'; gunzip '+archiveZip, log = self.log)
     except RuntimeError, e:
