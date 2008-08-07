@@ -195,9 +195,12 @@ public:
     logger.stagePop();
     PetscMemoryGetCurrentUsage(&osMemSemiEnd);
     // Reallocate difference
-    const int diffSize = (int)((osMemOld-osMemStart)-(osMem-osMemOld));
+    const int diffSize = (int)((osMemOld-osMemStart)-(osMem-osMemOld))*0.8;
     char     *tmp      = new char[diffSize];
     std::cout << "Allocated " << diffSize << " bytes to check for empty space" << std::endl;
+    for(int i = 0; i < diffSize; ++i) {
+      tmp[i] = i;
+    }
     PetscMemoryGetCurrentUsage(&osMemEnd);
     std::cout << std::endl << nameOld << " " << logger.getNumAllocations(nameOld) << " allocations " << logger.getAllocationTotal(nameOld) << " bytes" << std::endl;
     std::cout << std::endl << nameOld << " " << logger.getNumDeallocations(nameOld) << " deallocations " << logger.getDeallocationTotal(nameOld) << " bytes" << std::endl;
