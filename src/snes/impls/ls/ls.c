@@ -663,7 +663,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
     count++;
   }
   if (count >= 20) {
-    SETERRQ(PETSC_ERR_LIB, "Lambda was decreased more than 20 times, so something is probably wrong with the function evaluation");
+    ierr = PetscInfo1(snes,"Unable to find good step length! After %D tries \n",count);CHKERRQ(ierr);
+    ierr = PetscInfo5(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lambda=%18.16e, initial slope=%18.16e\n",fnorm,*gnorm,*ynorm,lambda,initslope);CHKERRQ(ierr);
+    *flag = PETSC_FALSE; 
   }
   theend1:
   /* Optional user-defined check for line search step validity */
