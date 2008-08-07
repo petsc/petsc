@@ -937,7 +937,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
       ierr = PetscFileRetrieve(((PetscObject)viewer)->comm,iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-      ierr = PetscOptionsInsertFile(viewer->hdr.comm,infoname,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscOptionsInsertFile(((PetscObject)viewer)->comm,infoname,PETSC_FALSE);CHKERRQ(ierr);
     } else {
       vbinary->fdes_info = fopen(infoname,"w");
       if (!vbinary->fdes_info) {
@@ -981,9 +981,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_MPIIO(PetscViewer viewer,c
 
   /* only first processor opens file if writeable */
   if (type == FILE_MODE_READ) {
-    MPI_File_open(viewer->hdr.comm,vbinary->filename,MPI_MODE_RDONLY,MPI_INFO_NULL,&vbinary->mfdes);CHKERRQ(ierr);
+    MPI_File_open(((PetscObject)viewer)->comm,vbinary->filename,MPI_MODE_RDONLY,MPI_INFO_NULL,&vbinary->mfdes);CHKERRQ(ierr);
   } else if (type == FILE_MODE_WRITE) {
-    MPI_File_open(viewer->hdr.comm,vbinary->filename,MPI_MODE_WRONLY | MPI_MODE_CREATE,MPI_INFO_NULL,&vbinary->mfdes);CHKERRQ(ierr);
+    MPI_File_open(((PetscObject)viewer)->comm,vbinary->filename,MPI_MODE_WRONLY | MPI_MODE_CREATE,MPI_INFO_NULL,&vbinary->mfdes);CHKERRQ(ierr);
   }
   viewer->format = PETSC_VIEWER_NOFORMAT;
 
@@ -1009,7 +1009,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_MPIIO(PetscViewer viewer,c
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
       ierr = PetscFileRetrieve(((PetscObject)viewer)->comm,iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
-      ierr = PetscOptionsInsertFile(viewer->hdr.comm,infoname,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscOptionsInsertFile(((PetscObject)viewer)->comm,infoname,PETSC_FALSE);CHKERRQ(ierr);
     } else {
       vbinary->fdes_info = fopen(infoname,"w");
       if (!vbinary->fdes_info) {

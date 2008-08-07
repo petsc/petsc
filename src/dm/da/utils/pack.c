@@ -1845,7 +1845,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
     struct DMCompositeLink *next = dmcomposite->next;
     PetscMPIInt            rank;
   
-    ierr = MPI_Comm_rank(dmcomposite->hdr.comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)dmcomposite)->comm,&rank);CHKERRQ(ierr);
     cnt  = 0;
     while (next) {
       if (next->type == DMCOMPOSITE_ARRAY) {
@@ -1854,7 +1854,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,
             colors[cnt++] = maxcol++;
           }
         }
-        ierr = MPI_Bcast(&maxcol,1,MPIU_COLORING_VALUE,next->rank,dmcomposite->hdr.comm);CHKERRQ(ierr);
+        ierr = MPI_Bcast(&maxcol,1,MPIU_COLORING_VALUE,next->rank,((PetscObject)dmcomposite)->comm);CHKERRQ(ierr);
       } else if (next->type == DMCOMPOSITE_DM) {
         ISColoring     lcoloring;
 

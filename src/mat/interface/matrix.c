@@ -2546,8 +2546,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve_Basic(Mat A,Mat B,Mat X)
   ierr = MatGetArray(X,&xx);CHKERRQ(ierr);
   ierr = MatGetLocalSize(B,&m,PETSC_NULL);CHKERRQ(ierr);  /* number local rows */
   ierr = MatGetSize(B,PETSC_NULL,&N);CHKERRQ(ierr);       /* total columns in dense matrix */
-  ierr = VecCreateMPIWithArray(A->hdr.comm,m,PETSC_DETERMINE,PETSC_NULL,&b);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(A->hdr.comm,m,PETSC_DETERMINE,PETSC_NULL,&x);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,m,PETSC_DETERMINE,PETSC_NULL,&b);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,m,PETSC_DETERMINE,PETSC_NULL,&x);CHKERRQ(ierr);
   for (i=0; i<N; i++) {
     ierr = VecPlaceArray(b,bb + i*m);CHKERRQ(ierr);
     ierr = VecPlaceArray(x,xx + i*m);CHKERRQ(ierr);
@@ -3354,9 +3354,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
     PetscTruth flag;
     ierr = PetscStrcasecmp(MAT_SOLVER_PETSC,type,&flag);CHKERRQ(ierr);
     if (flag) {
-      SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc solver",mat->hdr.type_name);
+      SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc solver",((PetscObject)mat)->type_name);
     } else {
-      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %s. Perhaps you must config/configure.py with --download-%s",mat->hdr.type_name,type,type);
+      SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %s. Perhaps you must config/configure.py with --download-%s",((PetscObject)mat)->type_name,type,type);
     }
   }
   ierr = (*conv)(mat,ftype,f);CHKERRQ(ierr);

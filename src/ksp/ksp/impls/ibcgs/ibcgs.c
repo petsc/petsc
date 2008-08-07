@@ -160,9 +160,9 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     insums[3] = etan;
     insums[4] = thetan;
     insums[5] = kappan;
-    ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
-    ierr = MPI_Allreduce(insums,outsums,6,MPIU_SCALAR,MPI_SUM,ksp->hdr.comm);CHKERRQ(ierr);
-    ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
+    ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(insums,outsums,6,MPIU_SCALAR,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
     phin     = outsums[0];
     pin      = outsums[1];
     gamman   = outsums[2];
@@ -179,7 +179,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
         rn = sn - omegan*tn
         xn = xn_1 + zn + omegan*sn
     */
-    ierr = PetscLogEventBarrierBegin(VEC_Ops,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
+    ierr = PetscLogEventBarrierBegin(VEC_Ops,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
     rnormin = 0.0;
     for (i=0; i<N; i++) {
       rn[i]    = sn[i] - omegan*tn[i];
@@ -187,12 +187,12 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       xn[i]   += zn[i] + omegan*sn[i];
     }
     ierr = PetscLogFlops(7*N);
-    ierr = PetscLogEventBarrierEnd(VEC_Ops,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
+    ierr = PetscLogEventBarrierEnd(VEC_Ops,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
 
     if (ksp->chknorm < ksp->its) {
-      ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
-      ierr = MPI_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPI_SUM,ksp->hdr.comm);CHKERRQ(ierr);
-      ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,ksp->hdr.comm);CHKERRQ(ierr);
+      ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+      ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
       rnorm = sqrt(rnorm);
     } 
 

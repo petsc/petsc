@@ -128,7 +128,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetPermutation(IS is)
     PetscMPIInt    size;
     PetscErrorCode ierr;
 
-    ierr = MPI_Comm_size(is->hdr.comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
       PetscInt i,n,*idx,*iidx;
     

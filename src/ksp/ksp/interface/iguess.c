@@ -74,11 +74,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess_Method1(KSPFischerGue
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = VecMDot(b,itg->curl,itg->btilde,itg->alpha);CHKERRQ(ierr);
   if (itg->monitor) {
-    ierr = PetscPrintf(itg->ksp->hdr.comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++ ){
-      ierr = PetscPrintf(itg->ksp->hdr.comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
-    ierr = PetscPrintf(itg->ksp->hdr.comm,"\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
   }
   ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);   
   ierr = VecCopy(x,itg->guess);CHKERRQ(ierr);
@@ -193,11 +193,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessFormGuess_Method2(KSPFischerGue
   ierr = VecSet(x,0.0);CHKERRQ(ierr);
   ierr = VecMDot(b,itg->curl,itg->xtilde,itg->alpha);CHKERRQ(ierr);
   if (itg->monitor) {
-    ierr = PetscPrintf(itg->ksp->hdr.comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"KSPFischerGuess alphas = ");CHKERRQ(ierr);
     for (i=0; i<itg->curl; i++ ){
-      ierr = PetscPrintf(itg->ksp->hdr.comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"%G ",PetscAbsScalar(itg->alpha[i]));CHKERRQ(ierr);
     }
-    ierr = PetscPrintf(itg->ksp->hdr.comm,"\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)itg->ksp)->comm,"\n");CHKERRQ(ierr);
   }
   ierr = VecMAXPY(x,itg->curl,itg->alpha,itg->xtilde);CHKERRQ(ierr);   
   ierr = VecCopy(x,itg->guess);CHKERRQ(ierr);
@@ -294,7 +294,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPFischerGuessSetFromOptions(KSPFischerGuess 
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(ITG->ksp->hdr.prefix,"-ksp_fischer_guess_monitor",&ITG->monitor,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)ITG->ksp)->prefix,"-ksp_fischer_guess_monitor",&ITG->monitor,PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
