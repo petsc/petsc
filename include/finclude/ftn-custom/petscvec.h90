@@ -1,0 +1,45 @@
+!
+
+      Interface 
+        Subroutine VecGetArrayF90(v,array,ierr)
+          USE_VEC_HIDE
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          VEC_HIDE     v
+        End Subroutine
+      End Interface
+
+      Interface 
+        Subroutine VecRestoreArrayF90(v,array,ierr)
+          USE_VEC_HIDE
+          PetscScalar, pointer :: array(:)
+          PetscErrorCode ierr
+          VEC_HIDE     v
+        End Subroutine
+      End Interface
+
+! -------------------------------------------------------------
+
+      Interface 
+        Subroutine VecDuplicateVecsF90(v,m,vs,ierr)
+          USE_VEC_HIDE
+          VEC_HIDE, pointer :: vs(:)
+          PetscInt m
+          PetscErrorCode ierr
+          VEC_HIDE     v
+        End Subroutine
+      End Interface
+!
+!  Question: should VecDestroyVecsF90() take the m argument since
+! the array of vectors already knows how long it is? Yes, to 
+! match calling sequence for C/C++.
+!
+      Interface 
+        Subroutine VecDestroyVecsF90(vs,m,ierr)
+          USE_VEC_HIDE
+          VEC_HIDE, pointer :: vs(:)
+          PetscInt m
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+

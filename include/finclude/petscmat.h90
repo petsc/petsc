@@ -4,27 +4,5 @@
 !
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
-
-      Interface 
-        Subroutine MatGetArrayF90(v,array,ierr)
-          USE_MAT_HIDE
-          PetscScalar, pointer :: array(:,:)
-          PetscErrorCode ierr
-          MAT_HIDE     v
-        End Subroutine
-      End Interface
-
-
-      Interface 
-        Subroutine MatRestoreArrayF90(v,array,ierr)
-          USE_MAT_HIDE
-          PetscScalar, pointer :: array(:,:)
-          PetscErrorCode ierr
-          MAT_HIDE     v
-        End Subroutine
-      End Interface
-
+#include "finclude/ftn-custom/petscmat.h90
 #endif
-!
-!     End of Mat Fortran 90 include file for the PETSc package
-!

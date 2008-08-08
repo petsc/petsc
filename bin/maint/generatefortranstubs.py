@@ -31,7 +31,8 @@ def FixFile(filename):
   ff.close()
   return
 
-def FixDir(dir):
+def FixDir(petscdir,indir,dir):
+  mansec = 'unknown'
   names = []
   for f in os.listdir(dir):
     if os.path.splitext(f)[1] == '.c':
@@ -53,6 +54,9 @@ def FixDir(dir):
         libbase = line
       elif line.find('LOCDIR') >=0:
         locdir = line.rstrip() + 'ftn-auto/'
+      elif line.find('MANSEC') >=0:
+        st = line.find('=')
+        mansec = line[st+1:]
 
     # now assemble the makefile
     outbuf  =  '\n'
@@ -77,6 +81,23 @@ def FixDir(dir):
   # if dir is empty - remove it
   if os.path.exists(dir) and os.path.isdir(dir) and os.listdir(dir) == []:
     os.rmdir(dir)
+  modfile = os.path.join(indir,'f90module.f90')
+  if os.path.exists(modfile):
+    fd = open(modfile)
+    txt = fd.read()
+    fd.close()
+    mansec = mansec.lower().replace(' ','')
+    if txt and mansec == 'unknown':
+      print 'makefile has missing MANSEC',indir
+    elif txt:
+      if not os.path.exists(os.path.join(petscdir,'include','finclude','ftn-auto')):
+        os.mkdir(os.path.join(petscdir,'include','finclude','ftn-auto'))
+      ftype = 'w'
+      if os.path.exists(os.path.join(petscdir,'include','finclude','ftn-auto','petsc'+mansec+'.h90')): ftype = 'a'
+      fd = open(os.path.join(petscdir,'include','finclude','ftn-auto','petsc'+mansec+'.h90'),ftype)
+      fd.write(txt)
+      fd.close()
+    os.remove(modfile)
   return
 
 def PrepFtnDir(dir):
@@ -107,8 +128,8 @@ def processDir(arg,dirname,names):
     (status,output) = commands.getstatusoutput('cd '+dirname+';'+bfort+' '+' '.join(options+newls))
     if status:
       raise RuntimeError('Error running bfort '+output)
-    FixDir(outdir)
-  for name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint']:
+    FixDir(petscdir,dirname,outdir)
+  for name in ['.hg','SCCS', 'output', 'BitKeeper', 'examples', 'externalpackages', 'bilinear', 'ftn-auto','fortran','bin','maint','ftn-custom','config','f90-custom']:
     if name in names:
       names.remove(name)
   # check for configure generated PETSC_ARCHes
@@ -123,6 +144,12 @@ def processDir(arg,dirname,names):
 def main(bfort):
   petscdir = os.getcwd()
   tmpdir = os.path
+  # why the heck can't python have a built in like rm -r?
+  if os.path.exists(os.path.join(petscdir,'include','finclude','ftn-auto')):
+    ls = os.listdir(os.path.join(petscdir,'include','finclude','ftn-auto'))
+    for l in ls:
+      os.remove(os.path.join(petscdir,'include','finclude','ftn-auto',l))
+    os.rmdir(os.path.join(petscdir,'include','finclude','ftn-auto'))
   os.path.walk(petscdir, processDir, [petscdir, bfort])
   return
 #
