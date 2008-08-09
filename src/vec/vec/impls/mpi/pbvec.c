@@ -77,6 +77,22 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecResetArray_MPI"
+PetscErrorCode VecResetArray_MPI(Vec vin)
+{
+  Vec_MPI        *v = (Vec_MPI *)vin->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  v->array         = v->unplacedarray;
+  v->unplacedarray = 0;
+  if (v->localrep) {
+    ierr = VecResetArray(v->localrep);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, const VecType, Vec*);
 EXTERN PetscErrorCode VecGetValues_MPI(Vec,PetscInt,const PetscInt [],PetscScalar []);
 
@@ -127,7 +143,7 @@ static struct _VecOps DvOps = { VecDuplicate_MPI, /* 1 */
             VecConjugate_Seq,
             0,
             0,
-            VecResetArray_Seq,
+            VecResetArray_MPI,
             0,
             VecMaxPointwiseDivide_Seq,
             VecLoad_Binary,
