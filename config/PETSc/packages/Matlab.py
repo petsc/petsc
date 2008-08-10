@@ -45,21 +45,21 @@ class Configure(PETSc.package.Package):
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Matlab engine interface requires shared library support. Please rerun with --with-shared=1\n')
           
-    reason = ''
     versionPattern = re.compile('Version ([0-9]*.[0-9]*)')
     for matlab in self.generateGuesses():
+      self.framework.log.write('Testing Matlab at '+matlab+'\n')
       interpreter = os.path.join(matlab,'bin','matlab')
       output      = ''
       try:
         output = config.base.Configure.executeShellCommand(interpreter+' -nojvm -nodisplay -r "[\'Version \' version]; exit"', log = self.framework.log)[0]
       except:
-        reason = 'WARNING: Found Matlab at '+matlab+' but unable to run\n'
+        self.framework.log.write('WARNING: Found Matlab at '+matlab+' but unable to run\n')
         continue
 
       match  = versionPattern.search(output)
       r = float(match.group(1))
       if r < 6.0:
-        reason = 'WARNING:Matlab version must be at least 6; yours is '+str(r)
+        self.framework.log.write('WARNING: Matlab version must be at least 6; yours is '+str(r))
         continue
       # make sure this is true root of Matlab
       if not os.path.isdir(os.path.join(matlab,'extern','lib')):
@@ -72,7 +72,7 @@ class Configure(PETSc.package.Package):
           if 'with-matlab-arch' in self.framework.argDB:
             matlab_arch = self.framework.argDB['with-matlab-arch']
             if not matlab_arch in ls:
-              reason = 'You indicated --with-matlab-arch='+matlab_arch+' but that arch does not exist;\n possibilities are '+str(ls)
+              self.framework.log.write('WARNING: You indicated --with-matlab-arch='+matlab_arch+' but that arch does not exist;\n possibilities are '+str(ls))
               continue
           else:
             matlab_arch = ls[0]
@@ -101,8 +101,8 @@ class Configure(PETSc.package.Package):
           self.found = 1
           return
         else:
-          self.framework.log.write('WARNING:Unable to use Matlab because cannot locate Matlab engine at '+os.path.join(matlab,'extern','lib')+'\n')
-    raise RuntimeError('Could not find a functional Matlab\nRun with --with-matlab-dir=Matlabrootdir if you know where it is\n'+reason)
+          self.framework.log.write('WARNING:Unable to use Matlab because cannot locate Matlab external libraries at '+os.path.join(matlab,'extern','lib')+'\n')
+    raise RuntimeError('Could not find a functional Matlab\nRun with --with-matlab-dir=Matlabrootdir if you know where it is\n')
     return
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ function [varargout] = PetscBinaryRead(inarg,comp,cnt)
 %         if cnt is given then cnt PETSc objects are read otherwise 
 %         all objects are read in
 %   
-if nargin == 1
+if nargin < 2
   comp = 0;
 end
 

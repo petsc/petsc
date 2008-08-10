@@ -11,7 +11,8 @@ if nargin == 1
   np = 1;
 end
 
-command = ['mpirun -np ' int2str(np) ' ' program ' &'];
+%command = ['mpirun -np ' int2str(np) ' ' program ' &'];
+command = [ program ' &'];
 fprintf(1,['Executing: ' command])
 
 system(command)

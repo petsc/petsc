@@ -4,12 +4,12 @@
 #
 # change python to whatever is needed on your system to invoke python
 #
-#  Reads classes.data and prints the C++ classes
+#  Reads classes.data and prints the Matlab classes using Matlab 7.6 class definitions
 #
 #  Crude as all hack!
 #
 #  Calling sequence: 
-#      c++.py
+#      matlab.py
 ##
 import os
 import re
@@ -78,16 +78,8 @@ def main(args):
   skeys = classes.keys()
   skeys.sort()
   for i in skeys:
-    if not os.path.isdir('matlab/@'+i): os.mkdir('matlab/@'+i)
-    fd = open('matlab/@'+i+'/'+i+'.m','w')
-    fd.write('function OUT = '+i+'()\n')
-    fd.write("S = struct('id',PetscMex('mexFunction"+i+"'));\n")
-    fd.write("OUT = class(S,'"+i+"');\n")
-    fd.close()
-    fd = open('matlab/@'+i+'/GetId.m','w')
-    fd.write('function OUT = GetId(i0)\n')
-    fd.write("OUT = i0.id;\n")
-    fd.close()
+    # writes the C version of each method and function
+    # these are all included in the .mex file and selected via dlsym()
     fd = open('matlab/'+i+'Createmex.c','w')
     fd.write('#include "petscts.h"\n')
     fd.write('#include "petscdmmg.h"\n')                
@@ -100,6 +92,7 @@ def main(args):
         
     sskeys = classes[i].keys()
     sskeys.sort()
+    # write the .m definitions of the class constructors????????
     for j in sskeys:
       if len(classes[i][j]) < 1 or not classes[i][j][0] == i and not j == 'Create':
         fd = open('matlab/'+i+j+'.m','w')
@@ -115,7 +108,7 @@ def main(args):
         cnt = 0
         for k in classes[i][j]:
           if k in classes:
-            fd.write('GetId(i'+str(cnt)+')')            
+            fd.write('i'+str(cnt)+'.Id')            
           else:
             fd.write('i'+str(cnt))
           if cnt < len(classes[i][j])-1: fd.write(",")
@@ -123,10 +116,21 @@ def main(args):
         fd.write(');\n')
         fd.close()
         buildmex(i,j,classes)
+    # write the .m definitions of the class methods   
+    fd = open('matlab/'+i+'.m','w')
+    fd.write('classdef '+i+'\n')
+    fd.write('  properties\n')
+    fd.write('    Id\n')
+    fd.write('  end\n')
+    fd.write('  methods\n')
+    # constructor 
+    fd.write('    function obj = '+j+'()\n')        
+    fd.write("      obj.Id = PetscMex('mexFunction"+i+"');\n")
+    fd.write("    end\n")
+    
     for j in sskeys:
       if len(classes[i][j]) > 0 and classes[i][j][0] == i and not j == 'Destroy' and not j == 'Create':
-        fd = open('matlab/@'+i+'/'+j+'.m','w')
-        fd.write('function '+j+'(')        
+        fd.write('    function '+j+'(')        
         cnt = 0
         for k in classes[i][j]:
           fd.write('i'+str(cnt))
@@ -138,14 +142,17 @@ def main(args):
         cnt = 0
         for k in classes[i][j]:
           if k in classes:
-            fd.write('GetId(i'+str(cnt)+')')            
+            fd.write('i'+str(cnt)+'.Id')            
           else:
             fd.write('i'+str(cnt))
           if cnt < len(classes[i][j])-1: fd.write(",")
           cnt = cnt + 1
         fd.write(');\n')
-        fd.close()
+        fd.write('    end\n')        
         buildmex(i,j,classes)
+    fd.write('  end\n')
+    fd.write('end\n')                    
+    fd.close()
 
     fd = open('matlab/makefile','w')
     fd.write('LOCDIR   = 0\n')
