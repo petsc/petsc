@@ -2,7 +2,7 @@
 
 cdef class Sys:
 
-    ## @classmethod
+    @classmethod
     def getVersion(cls, patch=False, date=False, author=False):
         cdef int cmajor = PETSC_VERSION_MAJOR
         cdef int cminor = PETSC_VERSION_MINOR
@@ -27,9 +27,8 @@ cdef class Sys:
                 author = [s.strip() for s in author if s]
                 out.append(author)
         return tuple(out)
-    getVersion = classmethod(getVersion)
 
-    ## @classmethod
+    @classmethod
     def getVersionInfo(cls):
         cdef int cmajor = PETSC_VERSION_MAJOR
         cdef int cminor = PETSC_VERSION_MINOR
@@ -49,23 +48,20 @@ cdef class Sys:
                     date       = cp2str(cdate),
                     patchdate  = cp2str(cpatchdate),
                     authorinfo = author)
-    getVersionInfo = classmethod(getVersionInfo)
 
     # --- xxx ---
 
-    ## @classmethod
+    @classmethod
     def isInitialized(cls):
         return <bint>PetscInitializeCalled
-    isInitialized = classmethod(isInitialized)
 
-    ## @classmethod
+    @classmethod
     def isFinalized(cls):
         return <bint>PetscFinalizeCalled
-    isFinalized = classmethod(isFinalized)
 
     # --- xxx ---
 
-    ## @classmethod
+    @classmethod
     def Print(cls, *args, **kwargs):
         cdef object comm = kwargs.get('comm', None)
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
@@ -80,9 +76,8 @@ cdef class Sys:
             message = ''
         cdef char *m = str2cp(message)
         CHKERR( PetscPrintf(ccomm, m) )
-    Print = classmethod(Print)
 
-    ## @classmethod
+    @classmethod
     def syncPrint(cls, *args, **kwargs):
         cdef object comm = kwargs.get('comm', None)
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
@@ -96,28 +91,24 @@ cdef class Sys:
         cdef char *m = str2cp(message)
         CHKERR( PetscSynchronizedPrintf(ccomm, m) )
         if flush: CHKERR( PetscSynchronizedFlush(ccomm) )
-    syncPrint = classmethod(syncPrint)
 
-    ## @classmethod
+    @classmethod
     def syncFlush(cls, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
         CHKERR( PetscSynchronizedFlush(ccomm) )
-    syncFlush = classmethod(syncFlush)
 
     # --- xxx ---
 
-    ## @classmethod
+    @classmethod
     def splitOwnership(cls, size, bsize=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
         cdef PetscInt bs=0, n=0, N=0
         CHKERR( Sys_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
         return (n, N)
-    splitOwnership = classmethod(splitOwnership)
 
-    ## @classmethod
+    @classmethod
     def sleep(cls, seconds=1):
         cdef int s = seconds
         CHKERR( PetscSleep(s) )
-    sleep = classmethod(sleep)
 
 # --------------------------------------------------------------------

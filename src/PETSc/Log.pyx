@@ -2,28 +2,31 @@
 
 cdef class Log:
 
-    #@classmethod
+    @classmethod
     def logFlops(cls, flops):
         cdef PetscLogDouble cflops=flops
         CHKERR( PetscLogFlops(cflops) )
-    logFlops = classmethod(logFlops)
-    addFlops = classmethod(logFlops)
 
-    #@classmethod
+    @classmethod
+    def addFlops(cls, flops):
+        cdef PetscLogDouble cflops=flops
+        CHKERR( PetscLogFlops(cflops) )
+
+    @classmethod
     def getFlops(cls):
         cdef PetscLogDouble cflops=0
         CHKERR( PetscGetFlops(&cflops) )
         return cflops
     getFlops = classmethod(getFlops)
 
-    #@classmethod
+    @classmethod
     def getTime(cls):
         cdef PetscLogDouble wctime=0
         CHKERR( PetscGetTime(&wctime) )
         return wctime
     getTime = classmethod(getTime)
 
-    #@classmethod
+    @classmethod
     def getCPUTime(cls):
         cdef PetscLogDouble cputime=0
         CHKERR( PetscGetCPUTime(&cputime) )

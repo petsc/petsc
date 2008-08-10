@@ -618,25 +618,23 @@ cdef class Scatter(Object):
         CHKERR( VecScatterCopy(self.sct, &scatter.sct) )
         return scatter
 
-    ## @classmethod
+    @classmethod
     def toAll(cls, Vec vec not None):
         cdef Scatter scatter = Scatter()
         cdef Vec ovec = Vec()
         CHKERR( VecScatterCreateToAll(
             vec.vec, &scatter.sct, &ovec.vec) )
         return (scatter, ovec)
-    toAll = classmethod(toAll)
 
-    ## @classmethod
+    @classmethod
     def toZero(cls, Vec vec not None):
         cdef Scatter scatter = Scatter()
         cdef Vec ovec = Vec()
         CHKERR( VecScatterCreateToZero(
             vec.vec, &scatter.sct, &ovec.vec) )
         return (scatter, ovec)
-    toZero = classmethod(toZero)
-
-
+    #
+    
     def begin(self, Vec vec_from not None, Vec vec_to not None,
               insert_mode, scatter_mode):
         cdef PetscInsertMode  caddv = insertmode(insert_mode)

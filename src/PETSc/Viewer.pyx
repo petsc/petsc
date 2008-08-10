@@ -169,41 +169,37 @@ cdef class Viewer(Object):
     def popFormat(self):
         CHKERR( PetscViewerPopFormat(self.vwr) )
 
-    ## @classmethod
+    @classmethod
     def STDOUT(cls, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_STDOUT_(ccomm)
         PetscIncref(<PetscObject>(viewer.vwr))
         return viewer
-    STDOUT = classmethod(STDOUT)
 
-    ## @classmethod
+    @classmethod
     def STDERR(cls, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_STDERR_(ccomm)
         PetscIncref(<PetscObject>(viewer.vwr))
         return viewer
-    STDERR = classmethod(STDERR)
 
-    ## @classmethod
+    @classmethod
     def BINARY(cls, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_BINARY_(ccomm)
         PetscIncref(<PetscObject>(viewer.vwr))
         return viewer
-    BINARY = classmethod(BINARY)
 
-    ## @classmethod
+    @classmethod
     def DRAW(cls, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_DRAW_(ccomm)
         PetscIncref(<PetscObject>(viewer.vwr))
         return viewer
-    DRAW = classmethod(DRAW)
 
     # --- methods specific to file viewers ---
 
