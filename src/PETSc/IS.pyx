@@ -298,7 +298,7 @@ cdef class LGMap(Object):
         cdef object neighs = { }
         CHKERR( ISLocalToGlobalMappingGetInfo(self.lgm, &nproc, &procs, &numprocs, &indices) )
         try:
-            for i from 0 <= i < nproc:
+            for i in range(nproc):
                 neighs[ procs[i] ] = array_i(numprocs[i], indices[i])
         finally:
             ISLocalToGlobalMappingRestoreInfo(self.lgm, &nproc, &procs, &numprocs, &indices)

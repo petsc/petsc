@@ -187,7 +187,7 @@ cdef void delinitargs(int *argc, char **argv[]):
     cdef char** v = argv[0]
     argc[0] = 0; argv[0] = NULL;
     if c >= 0 and v != NULL:
-        for i from 0 <= i < c:
+        for i in range(c):
             if  v[i] != NULL: free(v[i])
         free(v)
 
@@ -202,7 +202,7 @@ cdef int getinitargs(object args, int *argc, char **argv[]) except -1:
     if v == NULL: raise MemoryError
     else: memset(v, 0, (c+1)*sizeof(char*))
     try:
-        for i from 0 <= i < c:
+        for i in range(c):
             v[i] = strdup(str2cp(args[i]))
             if v[i] == NULL: raise MemoryError
     except:

@@ -796,7 +796,7 @@ cdef class NullSpace(Object):
         if constant: has_const = PETSC_TRUE
         nv = len(vectors)
         cdef object tmp = allocate(nv*sizeof(PetscVec),<void**>&v)
-        for 0 <= i < nv: v[i] = (<Vec?>(vectors[i])).vec
+        for i in range(nv): v[i] = (<Vec?>(vectors[i])).vec
         CHKERR( MatNullSpaceCreate(ccomm, has_const, nv, v, &newnsp) )
         PetscCLEAR(self.obj); self.nsp = newnsp
         return self

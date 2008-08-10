@@ -524,13 +524,13 @@ cdef inline int matsetvaluescsr(PetscMat A, object om,
     cdef PetscInt k=0, l=0
     cdef PetscInt irow=0, ncol=0, *icol=NULL
     cdef PetscScalar *sval=NULL
-    for 0 <= k < nm:
+    for k in range(nm):
         irow = m[k] if m!=NULL else rs+k
         ncol = i[k+1] - i[k]
         icol = j + i[k]
         if blocked:
             sval = v + i[k]*bs2
-            for 0 <= l < ncol:
+            for l in range(ncol):
                 CHKERR( setvalues(A, 1, &irow, 1, &icol[l], &sval[l*bs2], addv) )
         else:
             sval = v + i[k]
