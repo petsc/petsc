@@ -51,5 +51,5 @@ CY_SRC_PXD = $(wildcard src/include/petsc4py/*.pxd)
 CY_SRC_PXI = $(wildcard src/PETSc/*.pxi)
 CY_SRC_PYX = $(wildcard src/PETSc/*.pyx)
 src/petsc4py_PETSc.c: ${CY_SRC_PXD} ${CY_SRC_PXI} ${CY_SRC_PYX}
-	cd src && ${CYTHON} ${CYTHON_FLAGS} ${CYTHON_INCLUDE} petsc4py.PETSc.pyx -o petsc4py_PETSc.c
-	cd src && mv petsc4py_PETSc_api.h petsc4py_PETSc.h include/petsc4py
+	${CYTHON} ${CYTHON_FLAGS} -w src ${CYTHON_INCLUDE} petsc4py.PETSc.pyx -o petsc4py_PETSc.c
+	mv src/petsc4py_PETSc_api.h src/petsc4py_PETSc.h src/include/petsc4py
