@@ -29,8 +29,8 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
+  ierr = VecLoad(fd,VECSEQ,&b);CHKERRQ(ierr);
   ierr = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
-  ierr = VecLoad(fd,PETSC_NULL,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
 
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);

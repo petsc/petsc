@@ -14,16 +14,14 @@ end
 if (nargin < 2) 
   opt = ' ';
 end
-%launch('./ex41  ',np,opt);
+launch('./ex41  ',np,opt);
 
 p = sreader;
 b = [1 2 3];
 A = sparse([3 2 1; 1 3 2; 1 2 3]);
-PetscBinaryWrite(p,A);
-'hi1'
 PetscBinaryWrite(p,b);
-'hi2'
+PetscBinaryWrite(p,A);
 x = PetscBinaryRead(p);
-'h3'
-b - A*x
+b' - A*x'
+x' - A\b'
 close(p);

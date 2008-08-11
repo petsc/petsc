@@ -1,4 +1,4 @@
-function launch(program,np,opt)
+function result = launch(program,np,opt)
 %
 %  launch(program,np)
 %  Starts up PETSc program
@@ -14,9 +14,12 @@ else if nargin < 3
 end
 end
 
-%command = ['mpirun -np ' int2str(np) ' ' program opt ' &'];
+%
+% to run parallel jobs make sure petscmpirun is in your path
+% with the particular PETSC_ARCH environmental varable set
+%command = ['petscmpirun -np ' int2str(np) ' ' program opt ' &'];
 command = [ program opt ' &'];
 fprintf(1,['Executing: ' command])
 
-system(command)
+result = system(command)
  

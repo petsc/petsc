@@ -19,7 +19,7 @@ PetscErrorCode PetscBinaryWrite(int,void *p,int,PetscDataType,PetscTruth);
 #define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
-  int            fd,cnt,dt;
+  int            i,fd,cnt,dt;
   PetscErrorCode ierr;
 
   /* check output parameters */
@@ -28,12 +28,14 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
   cnt = mxGetNumberOfElements(prhs[1]);
   dt  = (PetscDataType) mxGetScalar(prhs[2]);
 
-int *t = mxGetPr(prhs[1]);
- printf("cnt %d dt %d values %d %d %d %d\n",cnt,dt,t[0],t[1],t[2],t[3]);
-  if (dt == PETSC_DOUBLE) {
+   if (dt == PETSC_DOUBLE) {
     ierr = PetscBinaryWrite(fd,mxGetPr(prhs[1]),cnt,dt,PETSC_FALSE);if (ierr) PETSC_MEX_ERROR("Unable to send double items.");
   } else if (dt == PETSC_INT) {
-    ierr = PetscBinaryWrite(fd,mxGetPr(prhs[1]),cnt,dt,PETSC_FALSE);if (ierr) PETSC_MEX_ERROR("Unable to send int items.");
+    int *tmp = (int*) mxMalloc((cnt+5)*sizeof(int));
+    double *t = mxGetPr(prhs[1]);
+    for (i=0; i<cnt; i++) tmp[i] = (int)t[i];
+    ierr = PetscBinaryWrite(fd,tmp,cnt,dt,PETSC_FALSE);if (ierr) PETSC_MEX_ERROR("Unable to send int items.");
+    mxFree(tmp);
   } else if (dt == PETSC_CHAR) {
     char *tmp = (char*) mxMalloc((cnt+5)*sizeof(char));
     mxGetNChars(prhs[1],tmp,cnt+1);

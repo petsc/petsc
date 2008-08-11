@@ -18,7 +18,7 @@ else if isnumeric(inarg)
     fd = sreader(inarg);
   end
 else 
-  fd = inarg
+  fd = inarg;
 end
 end
 

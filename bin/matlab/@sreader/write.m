@@ -14,7 +14,6 @@ function write(sreader,data,datatype)
     disp(['Unknow datatype ' datatype])
     return
   end
-data
 swrite(sreader.fd,data,datatype);
 
 
