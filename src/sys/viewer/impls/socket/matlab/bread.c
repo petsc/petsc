@@ -130,6 +130,66 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
   return 0;
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscBinaryWrite"
+/*
+    PetscBinaryWrite - Writes to a socket, called from Matlab
+
+  Input Parameters:
+.   fd - the file
+.   n  - the number of items to read 
+.   p - the data
+.   type - the type of items to read (PETSC_INT or PETSC_SCALAR)
+
+
+  Notes: does byte swapping to work on all machines.
+*/
+PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscTruth dummy)
+{
+
+  int  maxblock,wsize,err;
+  char *pp = (char*)p;
+#if !defined(PETSC_WORDS_BIGENDIAN)
+  int  ntmp = n; 
+  void *ptmp = p; 
+#endif
+
+  maxblock = 65536;
+  if (type == PETSC_INT)         n *= sizeof(int);
+  else if (type == PETSC_SCALAR) n *= sizeof(PetscScalar);
+  else if (type == PETSC_SHORT)  n *= sizeof(short);
+  else if (type == PETSC_CHAR)   n *= sizeof(char);
+  else PETSC_MEX_ERROR("PetscBinaryRead: Unknown type");
+
+#if !defined(PETSC_WORDS_BIGENDIAN)
+  /* make sure data is in correct byte ordering before sending  */
+  if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
+  else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
+  else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
+#endif
+
+  while (n) {
+    wsize = (n < maxblock) ? n : maxblock;
+    err = write(fd,pp,wsize);
+#if !defined(PETSC_MISSING_ERRNO_EINTR)
+    if (err < 0 && errno == EINTR) continue;
+#endif
+    if (!err && wsize > 0) return 1;
+    if (err < 0) {
+      PETSC_MEX_ERR("Error reading from socket\n");
+    }
+    n  -= err;
+    pp += err;
+  }
+#if !defined(PETSC_WORDS_BIGENDIAN)
+  /* swap the data back if we swapped it before sending it */
+  if (type == PETSC_INT) SYByteSwapInt((int*)ptmp,ntmp);
+  else if (type == PETSC_SCALAR) SYByteSwapScalar((PetscScalar*)ptmp,ntmp);
+  else if (type == PETSC_SHORT) SYByteSwapShort((short*)ptmp,ntmp);
+#endif
+
+  return 0;
+}
 
 
 

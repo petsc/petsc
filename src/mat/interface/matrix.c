@@ -3354,7 +3354,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
     PetscTruth flag;
     ierr = PetscStrcasecmp(MAT_SOLVER_PETSC,type,&flag);CHKERRQ(ierr);
     if (flag) {
-      SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc solver",((PetscObject)mat)->type_name);
+      SETERRQ1(PETSC_ERR_SUP,"Matrix format %s does not have a built-in PETSc direct solver",((PetscObject)mat)->type_name);
     } else {
       SETERRQ3(PETSC_ERR_SUP,"Matrix format %s does not have a solver %s. Perhaps you must config/configure.py with --download-%s",((PetscObject)mat)->type_name,type,type);
     }

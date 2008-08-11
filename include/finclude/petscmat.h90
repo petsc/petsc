@@ -4,5 +4,5 @@
 !
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
-#include "finclude/ftn-custom/petscmat.h90
+#include "finclude/ftn-custom/petscmat.h90"
 #endif

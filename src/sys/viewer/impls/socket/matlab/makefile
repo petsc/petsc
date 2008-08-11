@@ -15,14 +15,14 @@ speciallib:
 	-@${OMAKE}  matlabcodes PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR}
 specialfastlib: speciallib
 
-matlabcodes: sread sopen sclose
+matlabcodes: sread sopen sclose swrite
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = 
 SOURCEC   = 
 SOURCEF   =
-SOURCEH   = sopen.c sclose.c  bread.c sread.c
+SOURCEH   = sopen.c sclose.c  bread.c sread.c swrite.c
 OBJSC     = 
 OBJSF     =
 MANSEC    = Viewer
@@ -39,6 +39,12 @@ sread:
 	-@${RM} -f sread.o bread.o
 	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f sread.mexsg64 sread.mexsg ; fi 
 	-@${MV} sread.mex* ${PETSC_DIR}/bin/matlab
+
+swrite:  
+	-@${MATLAB_MEX} -g CC=${CC} CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}' swrite.c bread.c -lc
+	-@${RM} -f swrite.o bread.o
+	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f swrite.mexsg64 swrite.mexsg ; fi 
+	-@${MV} swrite.mex* ${PETSC_DIR}/bin/matlab
 
 sopen:  
 	-@${MATLAB_MEX} -g CC=${CC} CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${PCC_FLAGS}' sopen.c -lc

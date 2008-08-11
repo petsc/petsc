@@ -3,5 +3,5 @@
 !  Additional DA include file for use of PETSc with Fortran 90/HPF
 !
 #if !defined (PETSC_AVOID_DECLARATIONS)
-#include "finclude/ftn-custom/petscda.h90
+#include "finclude/ftn-custom/petscda.h90"
 #endif

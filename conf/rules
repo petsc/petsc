@@ -937,11 +937,11 @@ shared:
 	    echo "Shared libraries disabled"; \
 	  else \
 	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
-	    ${RM} -rf ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
 	    mkdir ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
             cwd=`pwd`; \
 	    for LIBNAME in ${SHLIBS}; \
 	    do \
+	    mkdir ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
 	      if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \
 	        if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; then \
 	          flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \
@@ -953,11 +953,11 @@ shared:
 	        fi; \
 	        if [ "$$flag" != "" ]; then \
                 echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \
-                  ${RM} -f ${INSTALL_LIB_DIR}/tmp-petsc-shlib/*; \
-	          cd  ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
+                  ${RM} -f ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib/*; \
+	          cd  ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
 	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \
                   cd $$cwd;\
-	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-petsc-shlib shared_arch; \
+	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib shared_arch; \
 	        fi; \
 	      fi; \
 	    done; \
