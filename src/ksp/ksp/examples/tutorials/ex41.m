@@ -16,7 +16,7 @@ if (nargin < 2)
 end
 launch('./ex41  ',np,opt);
 
-p = sreader;
+p = PetscOpenSocket;
 b = [1 2 3];
 A = sparse([3 2 1; 1 3 2; 1 2 3]);
 PetscBinaryWrite(p,b);

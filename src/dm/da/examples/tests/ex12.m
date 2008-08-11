@@ -17,7 +17,7 @@ end
 time = 20;
 launch(['./ex12 -time ' int2str(time)  opt],np);
 
-p = sreader;
+p = PetscOpenSocket;
 for i=1:time,
   v = PetscBinaryRead(p);
   plot(v); 

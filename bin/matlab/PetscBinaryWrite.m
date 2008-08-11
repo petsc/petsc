@@ -7,15 +7,15 @@ function PetscBinaryWrite(inarg,varargin)
 %   inarg may be:
 %      filename 
 %      socket number (0 for PETSc default)
-%      the object returned from sreader() or freader()
+%      the object returned from PetscOpenSocket or PetscOpenFile
 %
 if ischar(inarg) 
-  fd = freader(inarg,'w');
+  fd = PetscOpenFile(inarg,'w');
 else if isnumeric(inarg)
   if inarg == 0
-    fd = sreader;
+    fd = PetscOpenSocket;
   else 
-    fd = sreader(inarg);
+    fd = PetscOpenSocket(inarg);
   end
 else 
   fd = inarg;

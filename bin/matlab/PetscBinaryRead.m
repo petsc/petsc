@@ -7,7 +7,7 @@ function [varargout] = PetscBinaryRead(inarg,comp,cnt)
 %
 %  Argument may be file name (string), socket number (integer)
 %  or any Matlab class that provides the read() and close() methods
-%  [We provide freader() and sreader() for binary files and sockets]
+%  [We provide PetscOpenFile() and PetscOpenSocket() for binary files and sockets]
 %
 %  comp = 'complex' means the input file is complex
 %  comp = 'cell' means return a Matlab cell array 
@@ -19,12 +19,12 @@ if nargin < 2
 end
 
 if nargin == 0
-  fd = sreader();
+  fd = PetscOpenSocket();
 else if ischar(inarg) 
-  fd = freader(inarg);
+  fd = PetscOpenFile(inarg);
 else if isnumeric(inarg)
-  fd = sreader(inarg);
-else % assume it is a freader or sreader and handles read()
+  fd = PetscOpenSocket(inarg);
+else % assume it is a PetscOpenFile or PetscOpenSocket object and handles read()
   fd = inarg;
 end
 end
