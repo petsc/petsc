@@ -420,6 +420,12 @@ runex19_5: #test different scatters
            done;\
          done;\
 	 ${RM} -f ex19_5.tmp
+# fieldsplit preconditioner tests
+runex19_6: 
+	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_block_size 4  > ex19_4.tmp 2>&1; \
+	   if (${DIFF} output/ex19_3.out ex19_4.tmp) then true; \
+	   else echo "Possible problem with ex19_4, diffs above"; fi; \
+	   ${RM} -f ex19_4.tmp
 testex19: ex19.PETSc
 	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \

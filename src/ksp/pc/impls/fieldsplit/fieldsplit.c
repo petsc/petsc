@@ -81,13 +81,13 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PC_FieldSplit     *jac  = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
-  PetscInt          i;
-  PetscTruth        flg = PETSC_FALSE,*fields;
+  PetscInt          i = 0,*ifields,nfields;
+  PetscTruth        flg = PETSC_FALSE,*fields,flg2;
+  char              optionname[128];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
-  if (!ilink || flg) { 
-    ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
+  if (!ilink) { 
+
     if (jac->bs <= 0) {
       if (pc->pmat) {
         ierr   = MatGetBlockSize(pc->pmat,&jac->bs);CHKERRQ(ierr);
@@ -95,20 +95,42 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
         jac->bs = 1;
       }
     }
-    ierr = PetscMalloc(jac->bs*sizeof(PetscTruth),&fields);CHKERRQ(ierr);
-    ierr = PetscMemzero(fields,jac->bs*sizeof(PetscTruth));CHKERRQ(ierr);
-    while (ilink) {
-      for (i=0; i<ilink->nfields; i++) {
-        fields[ilink->fields[i]] = PETSC_TRUE;
+
+    ierr = PetscOptionsGetTruth(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (!flg) {
+      /* Allow user to set fields from command line,  if bs was known at the time of PCSetFromOptions_FieldSplit()
+         then it is set there. This is not ideal because we should only have options set in XXSetFromOptions(). */
+      flg = PETSC_TRUE; /* switched off automatically if user sets fields manually here */
+      ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&ifields);CHKERRQ(ierr);
+      while (PETSC_TRUE) {
+        sprintf(optionname,"-pc_fieldsplit_%d_fields",(int)i++);
+        nfields = jac->bs;
+        ierr    = PetscOptionsGetIntArray(((PetscObject)pc)->prefix,optionname,ifields,&nfields,&flg2);CHKERRQ(ierr);
+        if (!flg2) break;
+        if (!nfields) SETERRQ(PETSC_ERR_USER,"Cannot list zero fields");
+        flg = PETSC_FALSE;
+        ierr = PCFieldSplitSetFields(pc,nfields,ifields);CHKERRQ(ierr);
       }
-      ilink = ilink->next;
+      ierr = PetscFree(ifields);CHKERRQ(ierr);
     }
-    jac->defaultsplit = PETSC_TRUE;
-    for (i=0; i<jac->bs; i++) {
-      if (!fields[i]) {
-	ierr = PCFieldSplitSetFields(pc,1,&i);CHKERRQ(ierr);
-      } else {
-        jac->defaultsplit = PETSC_FALSE;
+    
+    if (flg) {
+      ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
+      ierr = PetscMalloc(jac->bs*sizeof(PetscTruth),&fields);CHKERRQ(ierr);
+      ierr = PetscMemzero(fields,jac->bs*sizeof(PetscTruth));CHKERRQ(ierr);
+      while (ilink) {
+	for (i=0; i<ilink->nfields; i++) {
+	  fields[ilink->fields[i]] = PETSC_TRUE;
+	}
+	ilink = ilink->next;
+      }
+      jac->defaultsplit = PETSC_TRUE;
+      for (i=0; i<jac->bs; i++) {
+	if (!fields[i]) {
+	  ierr = PCFieldSplitSetFields(pc,1,&i);CHKERRQ(ierr);
+	} else {
+	  jac->defaultsplit = PETSC_FALSE;
+	}
       }
     }
   }
@@ -407,21 +429,23 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
   if (flg) {
     ierr = PCFieldSplitSetBlockSize(pc,bs);CHKERRQ(ierr);
   }
-  if (jac->bs <= 0) {
-    
-    ierr = PCFieldSplitSetBlockSize(pc,1);CHKERRQ(ierr);
-  }
+
   ierr = PetscOptionsEnum("-pc_fieldsplit_type","Type of composition","PCFieldSplitSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg);CHKERRQ(ierr);
-  ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&fields);CHKERRQ(ierr);
-  while (PETSC_TRUE) {
-    sprintf(optionname,"-pc_fieldsplit_%d_fields",(int)i++);
-    nfields = jac->bs;
-    ierr    = PetscOptionsIntArray(optionname,"Fields in this split","PCFieldSplitSetFields",fields,&nfields,&flg);CHKERRQ(ierr);
-    if (!flg) break;
-    if (!nfields) SETERRQ(PETSC_ERR_USER,"Cannot list zero fields");
-    ierr = PCFieldSplitSetFields(pc,nfields,fields);CHKERRQ(ierr);
+
+  if (jac->bs > 0) {
+    /* only allow user to set fields from command line if bs is already known.
+       otherwise user can set them in PCFieldSplitSetDefaults() */
+    ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&fields);CHKERRQ(ierr);
+    while (PETSC_TRUE) {
+      sprintf(optionname,"-pc_fieldsplit_%d_fields",(int)i++);
+      nfields = jac->bs;
+      ierr    = PetscOptionsIntArray(optionname,"Fields in this split","PCFieldSplitSetFields",fields,&nfields,&flg);CHKERRQ(ierr);
+      if (!flg) break;
+      if (!nfields) SETERRQ(PETSC_ERR_USER,"Cannot list zero fields");
+      ierr = PCFieldSplitSetFields(pc,nfields,fields);CHKERRQ(ierr);
+    }
+    ierr = PetscFree(fields);CHKERRQ(ierr);
   }
-  ierr = PetscFree(fields);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
@@ -553,7 +577,14 @@ EXTERN_C_END
 
     Level: intermediate
 
-.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize()
+    Notes: Use PCFieldSplitSetIS() to set a completely general set of indices as a field. 
+
+     The PCFieldSplitSetFields() is for defining fields as a strided blocks. For example, if the block
+     size is three then one can define a field as 0, or 1 or 2 or 0,1 or 0,2 or 1,2 which mean
+     0xx3xx6xx9xx12 ... x1xx4xx7xx ... xx2xx5xx8xx.. 01x34x67x... 0x1x3x5x7.. x12x45x78x....
+     where the numbered entries indicate what is in the field. 
+
+.seealso: PCFieldSplitGetSubKSP(), PCFIELDSPLIT, PCFieldSplitSetBlockSize(), PCFieldSplitSetIS()
 
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,PetscInt n, PetscInt *fields)
@@ -579,6 +610,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC pc,PetscInt n, PetscI
     Input Parameters:
 +   pc  - the preconditioner context
 .   is - the index set that defines the vector elements in this field
+
+
+    Notes: Use PCFieldSplitSetFields(), for fields defined by strided types.
 
     Level: intermediate
 
@@ -644,7 +678,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetBlockSize(PC pc,PetscInt bs)
 -  pc - the array of KSP contexts
 
    Note:  
-   After PCFieldSplitGetSubKSP() the array of KSPs IS to be freed
+   After PCFieldSplitGetSubKSP() the array of KSPs IS to be freed by the user
+   (not the KSP just the array that contains them).
 
    You must call KSPSetUp() before calling PCFieldSplitGetSubKSP().
 
@@ -751,10 +786,24 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type
 .   -pc_splitfield_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
 -   -pc_splitfield_type <additive,multiplicative>
 
+   Notes: use PCFieldSplitSetFields() to set fields defined by "strided" entries and PCFieldSplitSetIS()
+     to define a field by an arbitrary collection of entries.
+
+      If no fields are set the default is used. The fields are defined by entries strided by bs,
+      beginning at 0 then 1, etc to bs-1. The block size can be set with PCFieldSplitSetBlockSize(),
+      if this is not called the block size defaults to the blocksize of the second matrix passed
+      to KSPSetOperators()/PCSetOperators().
+
+      Currently for the multiplicative version, the updated residual needed for the next field
+     solve is computed via a matrix vector product over the entire array. An optimization would be
+     to update the residual only for the part of the right hand side associated with the next field
+     solve. (This would involve more MatGetSubMatrix() calls or some other mechanism to compute the 
+     part of the matrix needed to just update part of the residual).
+
    Concepts: physics based preconditioners
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(),PCFieldSplitSetType()
+           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS()
 M*/
 
 EXTERN_C_BEGIN
