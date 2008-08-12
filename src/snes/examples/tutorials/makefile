@@ -422,10 +422,20 @@ runex19_5: #test different scatters
 	 ${RM} -f ex19_5.tmp
 # fieldsplit preconditioner tests
 runex19_6: 
-	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_block_size 4  > ex19_4.tmp 2>&1; \
-	   if (${DIFF} output/ex19_3.out ex19_4.tmp) then true; \
-	   else echo "Possible problem with ex19_4, diffs above"; fi; \
-	   ${RM} -f ex19_4.tmp
+	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view  -preload off > ex19_6.tmp 2>&1; \
+	   if (${DIFF} output/ex19_6.out ex19_6.tmp) then true; \
+	   else echo "Possible problem with ex19_6, diffs above"; fi; \
+	   ${RM} -f ex19_6.tmp
+runex19_7: 
+	-@${MPIEXEC} -n 3 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -snes_view  -preload off > ex19_7.tmp 2>&1; \
+	   if (${DIFF} output/ex19_7.out ex19_7.tmp) then true; \
+	   else echo "Possible problem with ex19_7, diffs above"; fi; \
+	   ${RM} -f ex19_7.tmp
+runex19_8: 
+	-@${MPIEXEC} -n 1 ./ex19 -snes_monitor_short -ksp_monitor_short -pc_type fieldsplit -pc_fieldsplit_block_size 2 -pc_fieldsplit_0_fields 0,1 -pc_fieldsplit_1_fields 0,1 -pc_fieldsplit_type multiplicative -snes_view  -preload off -fieldsplit_pc_type lu > ex19_8.tmp 2>&1; \
+	   if (${DIFF} output/ex19_8.out ex19_8.tmp) then true; \
+	   else echo "Possible problem with ex19_8, diffs above"; fi; \
+	   ${RM} -f ex19_8.tmp
 testex19: ex19.PETSc
 	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \

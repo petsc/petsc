@@ -1,0 +1,229 @@
+lid velocity = 0.0204082, prandtl # = 1, grashof # = 1
+  0 SNES Function norm 0.146194 
+  0 KSP Residual norm 0.146194 
+  1 KSP Residual norm 0.137297 
+  2 KSP Residual norm 0.0617089 
+  3 KSP Residual norm 0.0275671 
+  4 KSP Residual norm 0.0133244 
+  5 KSP Residual norm 0.00786412 
+  6 KSP Residual norm 0.00500854 
+  7 KSP Residual norm 0.00262111 
+  8 KSP Residual norm 0.00131295 
+  9 KSP Residual norm 0.000577962 
+ 10 KSP Residual norm 0.000351478 
+ 11 KSP Residual norm 0.000181993 
+ 12 KSP Residual norm 0.000106058 
+ 13 KSP Residual norm 4.62409e-05 
+ 14 KSP Residual norm 2.68283e-05 
+ 15 KSP Residual norm 1.43312e-05 
+ 16 KSP Residual norm 7.57685e-06 
+ 17 KSP Residual norm 4.49713e-06 
+ 18 KSP Residual norm 2.24349e-06 
+ 19 KSP Residual norm 1.40314e-06 
+  1 SNES Function norm 2.50559e-05 
+  0 KSP Residual norm 2.50559e-05 
+  1 KSP Residual norm 1.03202e-05 
+  2 KSP Residual norm 4.67739e-06 
+  3 KSP Residual norm 2.17871e-06 
+  4 KSP Residual norm 1.56084e-06 
+  5 KSP Residual norm 1.00305e-06 
+  6 KSP Residual norm 6.31264e-07 
+  7 KSP Residual norm 3.01359e-07 
+  8 KSP Residual norm 2.2634e-07 
+  9 KSP Residual norm 1.33778e-07 
+ 10 KSP Residual norm 7.89842e-08 
+ 11 KSP Residual norm 3.23675e-08 
+ 12 KSP Residual norm 1.62667e-08 
+ 13 KSP Residual norm 9.4867e-09 
+ 14 KSP Residual norm 5.46406e-09 
+ 15 KSP Residual norm 2.73996e-09 
+ 16 KSP Residual norm 1.33704e-09 
+ 17 KSP Residual norm 9.159e-10 
+ 18 KSP Residual norm 5.959e-10 
+ 19 KSP Residual norm 2.336e-10 
+  2 SNES Function norm 2.336e-10 
+SNES Object:
+  type: ls
+    line search variant: SNESLineSearchCubic
+    alpha=0.0001, maxstep=1e+08
+  maximum iterations=50, maximum function evaluations=10000
+  tolerances: relative=1e-08, absolute=1e-50, solution=1e-08
+  total number of linear solver iterations=38
+  total number of function evaluations=3
+  KSP Object:
+    type: fgmres
+      GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
+      GMRES: happy breakdown tolerance 1e-30
+    maximum iterations=10000, initial guess is zero
+    tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+    right preconditioning
+  PC Object:
+    type: fieldsplit
+      FieldSplit with ADDITIVE composition: total splits = 4, blocksize = 4
+      Solver info for each split is in the following KSP objects:
+      Split number 0 Fields  0
+      KSP Object:(fieldsplit_0_)
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+      PC Object:(fieldsplit_0_)
+        type: bjacobi
+          block Jacobi: number of blocks = 3
+          Local solve is same for all blocks, in the following KSP and PC objects:
+        KSP Object:(fieldsplit_0_sub_)
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          left preconditioning
+        PC Object:(fieldsplit_0_sub_)
+          type: ilu
+            ILU: 0 levels of fill
+            ILU: factor fill ratio allocated 1
+            ILU: tolerance for zero pivot 1e-12
+            ILU: using diagonal shift to prevent zero pivot
+            ILU: using diagonal shift on blocks to prevent zero pivot
+                 out-of-place factorization
+                 matrix ordering: natural
+            ILU: factor fill ratio needed 1
+                 Factored matrix follows
+                Matrix Object:
+                  type=seqaij, rows=21, cols=21
+                  total: nonzeros=85, allocated nonzeros=85
+                    not using I-node routines
+          linear system matrix = precond matrix:
+          Matrix Object:
+            type=seqaij, rows=21, cols=21
+            total: nonzeros=85, allocated nonzeros=85
+              not using I-node routines
+        linear system matrix = precond matrix:
+        Matrix Object:
+          type=mpiaij, rows=49, cols=49
+          total: nonzeros=217, allocated nonzeros=217
+            not using I-node (on process 0) routines
+      Split number 1 Fields  1
+      KSP Object:(fieldsplit_1_)
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+      PC Object:(fieldsplit_1_)
+        type: bjacobi
+          block Jacobi: number of blocks = 3
+          Local solve is same for all blocks, in the following KSP and PC objects:
+        KSP Object:(fieldsplit_1_sub_)
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          left preconditioning
+        PC Object:(fieldsplit_1_sub_)
+          type: ilu
+            ILU: 0 levels of fill
+            ILU: factor fill ratio allocated 1
+            ILU: tolerance for zero pivot 1e-12
+            ILU: using diagonal shift to prevent zero pivot
+            ILU: using diagonal shift on blocks to prevent zero pivot
+                 out-of-place factorization
+                 matrix ordering: natural
+            ILU: factor fill ratio needed 1
+                 Factored matrix follows
+                Matrix Object:
+                  type=seqaij, rows=21, cols=21
+                  total: nonzeros=85, allocated nonzeros=85
+                    not using I-node routines
+          linear system matrix = precond matrix:
+          Matrix Object:
+            type=seqaij, rows=21, cols=21
+            total: nonzeros=85, allocated nonzeros=85
+              not using I-node routines
+        linear system matrix = precond matrix:
+        Matrix Object:
+          type=mpiaij, rows=49, cols=49
+          total: nonzeros=217, allocated nonzeros=217
+            not using I-node (on process 0) routines
+      Split number 2 Fields  2
+      KSP Object:(fieldsplit_2_)
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+      PC Object:(fieldsplit_2_)
+        type: bjacobi
+          block Jacobi: number of blocks = 3
+          Local solve is same for all blocks, in the following KSP and PC objects:
+        KSP Object:(fieldsplit_2_sub_)
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          left preconditioning
+        PC Object:(fieldsplit_2_sub_)
+          type: ilu
+            ILU: 0 levels of fill
+            ILU: factor fill ratio allocated 1
+            ILU: tolerance for zero pivot 1e-12
+            ILU: using diagonal shift to prevent zero pivot
+            ILU: using diagonal shift on blocks to prevent zero pivot
+                 out-of-place factorization
+                 matrix ordering: natural
+            ILU: factor fill ratio needed 1
+                 Factored matrix follows
+                Matrix Object:
+                  type=seqaij, rows=21, cols=21
+                  total: nonzeros=85, allocated nonzeros=85
+                    not using I-node routines
+          linear system matrix = precond matrix:
+          Matrix Object:
+            type=seqaij, rows=21, cols=21
+            total: nonzeros=85, allocated nonzeros=85
+              not using I-node routines
+        linear system matrix = precond matrix:
+        Matrix Object:
+          type=mpiaij, rows=49, cols=49
+          total: nonzeros=217, allocated nonzeros=217
+            not using I-node (on process 0) routines
+      Split number 3 Fields  3
+      KSP Object:(fieldsplit_3_)
+        type: preonly
+        maximum iterations=10000, initial guess is zero
+        tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+        left preconditioning
+      PC Object:(fieldsplit_3_)
+        type: bjacobi
+          block Jacobi: number of blocks = 3
+          Local solve is same for all blocks, in the following KSP and PC objects:
+        KSP Object:(fieldsplit_3_sub_)
+          type: preonly
+          maximum iterations=10000, initial guess is zero
+          tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+          left preconditioning
+        PC Object:(fieldsplit_3_sub_)
+          type: ilu
+            ILU: 0 levels of fill
+            ILU: factor fill ratio allocated 1
+            ILU: tolerance for zero pivot 1e-12
+            ILU: using diagonal shift to prevent zero pivot
+            ILU: using diagonal shift on blocks to prevent zero pivot
+                 out-of-place factorization
+                 matrix ordering: natural
+            ILU: factor fill ratio needed 1
+                 Factored matrix follows
+                Matrix Object:
+                  type=seqaij, rows=21, cols=21
+                  total: nonzeros=85, allocated nonzeros=85
+                    not using I-node routines
+          linear system matrix = precond matrix:
+          Matrix Object:
+            type=seqaij, rows=21, cols=21
+            total: nonzeros=85, allocated nonzeros=85
+              not using I-node routines
+        linear system matrix = precond matrix:
+        Matrix Object:
+          type=mpiaij, rows=49, cols=49
+          total: nonzeros=217, allocated nonzeros=217
+            not using I-node (on process 0) routines
+    linear system matrix = precond matrix:
+    Matrix Object:
+      type=mpiaij, rows=196, cols=196
+      total: nonzeros=3472, allocated nonzeros=3472
+        using I-node (on process 0) routines: found 21 nodes, limit used is 5
+Number of Newton iterations = 2
