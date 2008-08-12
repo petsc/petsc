@@ -5919,11 +5919,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,Pets
   PetscErrorCode ierr;
   PetscMPIInt    size;
   Mat            *local;
+  IS             iscoltmp;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidHeaderSpecific(isrow,IS_COOKIE,2);
-  PetscValidHeaderSpecific(iscol,IS_COOKIE,3);
+  if (iscol) PetscValidHeaderSpecific(iscol,IS_COOKIE,3);
   PetscValidPointer(newmat,6);
   if (cll == MAT_REUSE_MATRIX) PetscValidHeaderSpecific(*newmat,MAT_COOKIE,6);
   PetscValidType(mat,1);
@@ -5931,19 +5932,26 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,Pets
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
 
+  if (!iscol) {
+    if (csize == PETSC_DECIDE) csize = mat->cmap.n;
+  } else {
+    iscoltmp = iscol;
+  }
+
   /* if original matrix is on just one processor then use submatrix generated */
   if (!mat->ops->getsubmatrix && size == 1 && cll == MAT_REUSE_MATRIX) {
-    ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_REUSE_MATRIX,&newmat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   } else if (!mat->ops->getsubmatrix && size == 1) {
-    ierr    = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
+    ierr    = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
     ierr    = PetscFree(local);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
   if (!mat->ops->getsubmatrix) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscol,csize,cll,newmat);CHKERRQ(ierr);
+  ierr = (*mat->ops->getsubmatrix)(mat,isrow,iscoltmp,csize,cll,newmat);CHKERRQ(ierr);
+  if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
   ierr = PetscObjectStateIncrease((PetscObject)*newmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
