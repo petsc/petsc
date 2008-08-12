@@ -345,6 +345,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGlobalSum(PetscScalar*,PetscScalar*,M
 
 M*/
 #if defined(PETSC_HAVE_ISINF) && defined(PETSC_HAVE_ISNAN)
+#if defined(PETSC_HAVE_IEEEFP_H)
+#include "ieeefp.h"  /* Solaris prototypes these here */
+#endif
 #define PetscIsInfOrNanScalar(a) (isinf(PetscAbsScalar(a)) || isnan(PetscAbsScalar(a)))
 #define PetscIsInfOrNanReal(a) (isinf(a) || isnan(a))
 #elif defined(PETSC_HAVE__FINITE) && defined(PETSC_HAVE__ISNAN)
