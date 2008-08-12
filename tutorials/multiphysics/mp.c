@@ -27,6 +27,7 @@ int main(int argc,char **argv)
   SNES           snes;
   DA             da1,da2;
   DMComposite    pack;
+  PetscTruth     couple = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = PetscLogEventRegister("FormFunc1", 0,&EVENT_FORMFUNCTIONLOCAL1);CHKERRQ(ierr);
@@ -64,7 +65,11 @@ int main(int argc,char **argv)
   ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,(DM)da1);CHKERRQ(ierr);
   ierr = DMCompositeAddDM(pack,(DM)da2);CHKERRQ(ierr);
-  /*  ierr = DMCompositeSetCoupling(pack,FormCoupleLocations);CHKERRQ(ierr);*/
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-couple",&couple);CHKERRQ(ierr);
+  if (couple) {
+    ierr = DMCompositeSetCoupling(pack,FormCoupleLocations);CHKERRQ(ierr);
+  }
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,1,&user,&dmmg_comp);CHKERRQ(ierr);

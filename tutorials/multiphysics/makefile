@@ -45,7 +45,7 @@ runmp:
 	   ${RM} -f mp_1.tmp
 
 runmp_2:
-	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -dmmg_jacobian_mf_fd_operator > mp_2.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -dmmg_jacobian_mf_fd_operator -snes_monitor_short > mp_2.tmp 2>&1;   \
 	   if (${DIFF} output/mp_2.out mp_2.tmp) then true; \
 	   else echo "Possible problem with mp_2, diffs above"; fi; \
 	   ${RM} -f mp_2.tmp
@@ -56,7 +56,14 @@ runmp_3:
 	   else echo "Possible problem with mp_3, diffs above"; fi; \
 	   ${RM} -f mp_3.tmp
 
-TESTEXAMPLES_C		       = p1.PETSc runp1 p1.rm p2.PETSc runp2 p2.rm mp.PETSc runmp runmp_2 runmp_3 mp.rm mp.rm 
+# this should have the same SNES convergence as _2 since they both are using the correct Jacobian
+runmp_4:
+	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -couple -snes_monitor_short  > mp_4.tmp 2>&1;   \
+	   if (${DIFF} output/mp_4.out mp_4.tmp) then true; \
+	   else echo "Possible problem with mp_4, diffs above"; fi; \
+	   ${RM} -f mp_4.tmp
+
+TESTEXAMPLES_C		       = p1.PETSc runp1 p1.rm p2.PETSc runp2 p2.rm mp.PETSc runmp runmp_2 runmp_3 runmp_4 mp.rm mp.rm 
 TESTEXAMPLES_C_X11	       = 
 TESTEXAMPLES_FORTRAN	       = 
 TESTEXAMPLES_C_NOCOMPLEX       = 
