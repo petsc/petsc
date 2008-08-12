@@ -63,7 +63,13 @@ runmp_4:
 	   else echo "Possible problem with mp_4, diffs above"; fi; \
 	   ${RM} -f mp_4.tmp
 
-TESTEXAMPLES_C		       = p1.PETSc runp1 p1.rm p2.PETSc runp2 p2.rm mp.PETSc runmp runmp_2 runmp_3 runmp_4 mp.rm mp.rm 
+runmp_5:
+	-@${MPIEXEC} -n 1 ./mp -grashof 1.0 -couple -snes_monitor_short  -ksp_view -pc_type fieldsplit > mp_5.tmp 2>&1;   \
+	   if (${DIFF} output/mp_5.out mp_5.tmp) then true; \
+	   else echo "Possible problem with mp_5, diffs above"; fi; \
+	   ${RM} -f mp_5.tmp
+
+TESTEXAMPLES_C		       = p1.PETSc runp1 p1.rm p2.PETSc runp2 p2.rm mp.PETSc runmp runmp_2 runmp_3 runmp_4 runmp_5 mp.rm
 TESTEXAMPLES_C_X11	       = 
 TESTEXAMPLES_FORTRAN	       = 
 TESTEXAMPLES_C_NOCOMPLEX       = 
