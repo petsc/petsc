@@ -5910,6 +5910,9 @@ M*/
     The communicator of the newly obtained matrix is ALWAYS the same as the communicator of
     the input matrix.
 
+    If iscol is PETSC_NULL then all columns are obtained (not supported in Fortran), you should
+    use csize = PETSC_DECIDE also in this case.
+
     Concepts: matrices^submatrices
 
 .seealso: MatGetSubMatrices(), ISAllGather()
@@ -5934,6 +5937,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,Pets
 
   if (!iscol) {
     if (csize == PETSC_DECIDE) csize = mat->cmap.n;
+    ierr = ISCreateStride(mat->comm,mat->cmap.N,0,1,&iscoltmp);CHKERRQ(ierr);
   } else {
     iscoltmp = iscol;
   }
@@ -5946,6 +5950,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,Pets
     ierr    = MatGetSubMatrices(mat,1,&isrow,&iscoltmp,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
     *newmat = *local;
     ierr    = PetscFree(local);CHKERRQ(ierr);
+    if (!iscol) {ierr = ISDestroy(iscoltmp);CHKERRQ(ierr);}
     PetscFunctionReturn(0);
   }
 

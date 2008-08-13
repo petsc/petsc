@@ -18,12 +18,13 @@ struct _PC_FieldSplitLink {
 };
 
 typedef struct {
-  PCCompositeType   type;              /* additive or multiplicative */
+  PCCompositeType   type;              
   PetscTruth        defaultsplit;
   PetscInt          bs;
   PetscInt          nsplits;
   Vec               *x,*y,w1,w2;
   Mat               *pmat;
+  Mat               *Afield; /* the rows of the matrix associated with each field */
   PetscTruth        issetup;
   PC_FieldSplitLink head;
 } PC_FieldSplit;
@@ -132,6 +133,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
 	  jac->defaultsplit = PETSC_FALSE;
 	}
       }
+      ierr = PetscFree(fields);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -147,7 +149,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   PC_FieldSplitLink ilink;
   PetscInt          i,nsplit,ccsize;
   MatStructure      flag = pc->flag;
-  PetscTruth        sorted;
+  PetscTruth        sorted,getsub;
 
   PetscFunctionBegin;
   ierr   = PCFieldSplitSetDefaults(pc);CHKERRQ(ierr);
@@ -205,6 +207,25 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ilink = ilink->next;
     }
   }
+
+  /* extract the rows of the matrix associated with each field: used for efficient computation of residual inside algorithm */
+  ierr = MatHasOperation(pc->mat,MATOP_GET_SUBMATRIX,&getsub);CHKERRQ(ierr);
+  if (getsub && jac->type != PC_COMPOSITE_ADDITIVE) {
+    ilink  = jac->head;
+    if (!jac->Afield) {
+      ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->Afield);CHKERRQ(ierr);
+      for (i=0; i<nsplit; i++) {
+	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,ilink->csize,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+	ilink = ilink->next;
+      }
+    } else {
+      for (i=0; i<nsplit; i++) {
+	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,ilink->csize,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+	ilink = ilink->next;
+      }
+    }
+  }
+
 
   /* set up the individual PCs */
   i    = 0;
@@ -407,6 +428,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   }
   ierr = PetscFree2(jac->x,jac->y);CHKERRQ(ierr);
   if (jac->pmat) {ierr = MatDestroyMatrices(jac->nsplits,&jac->pmat);CHKERRQ(ierr);}
+  if (jac->Afield) {ierr = MatDestroyMatrices(jac->nsplits,&jac->Afield);CHKERRQ(ierr);}
   if (jac->w1) {ierr = VecDestroy(jac->w1);CHKERRQ(ierr);}
   if (jac->w2) {ierr = VecDestroy(jac->w2);CHKERRQ(ierr);}
   ierr = PetscFree(jac);CHKERRQ(ierr);
