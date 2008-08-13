@@ -106,16 +106,22 @@ bratu: bratu_quadrature.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o br
 	-${CLINKER} -o bratu  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu.o ${PETSC_SNES_LIB}
 	${RM} -f bratu.o
 
-bratu_1d.h: 
+bratu_1d.h: bratu_1d.form
 	ffc bratu_1d.form
 
-bratu_2d.h: 
+bratu_2d.h: bratu_2d.form
 	ffc bratu_2d.form
 
-bratu_3d.h:
+bratu_3d.h: bratu_3d.form
 	ffc bratu_3d.form
 
-bratu_ufc: bratu_1d.h bratu_2d.h bratu_3d.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu_ufc.o chkopts
+vector_poisson_2d.h: vector_poisson_2d.h
+	ffc vector_poisson_2d.form
+
+vector_poisson_3d.h: vector_poisson_3d.h
+	ffc vector_poisson_3d.form
+
+bratu_ufc: bratu_1d.h bratu_2d.h bratu_3d.h vector_poisson_2d.h vector_poisson_3d.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu_ufc.o chkopts
 	-${CLINKER} -o bratu_ufc  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu_ufc.o ${PETSC_SNES_LIB}
 	${RM} -f bratu_ufc.o
 

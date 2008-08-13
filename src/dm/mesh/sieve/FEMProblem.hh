@@ -1,3 +1,6 @@
+#ifndef __FEMProblem
+#define __FEMProblem
+
 /*
   
   Framework for solving a FEM problem using sieve.
@@ -14,12 +17,15 @@ namespace ALE {
   namespace Problem {
 
     /*
-      This class defines a basic interface to a subproblem; all data the type needs will be set at initialization and be members of the derived types
+      This class defines a basic interface to a subproblem; all data the type needs will be set at initialization and be
+      members of the derived types
 
-      The recommended use for a given problem is to define a subproblem class for doing the data initialization for the form, as well as the postprocessing
-      one for doing the boundary handling and setting, and one for dealing with the process of the solve.  Work can be broken up as needed; however for the 
-      sake of simplicity one should probably have various forms in various subproblems to assemble.  This could of course include facet integrals or problems
-      over part of the domain.  Look at the examples provided in UFCProblem, which use the UFC form compiler to assemble subproblems of a form.
+      The recommended use for a given problem is to define a subproblem class for doing the data initialization for the
+      form, as well as the postprocessing one for doing the boundary handling and setting, and one for dealing with the
+      process of the solve.  Work can be broken up as needed; however for the sake of simplicity one should probably
+      have various forms in various subproblems to assemble.  This could of course include facet integrals or problems
+      over part of the domain.  Look at the examples provided in UFCProblem, which use the UFC form compiler to assemble
+      subproblems of a form.
 
      */
 
@@ -34,15 +40,59 @@ namespace ALE {
     };
 
     /*
-      Below is a helper derived class of subproblem; the persistently limiting and annoying discretization object in Sieve must be excised;
-      Here are subproblem objects containing the helper functions that are presently in the monster called PETSC_MESH_TYPE, but with references to the 
-      discretization object stolen.  virtual functions to be filled in in further derived classes are marked.  This is meant to be a stepping stone
-      towards generalized use of problem creation objects with multiple fields and interesting boundary conditions.  This type can be branched into
+      Below is a helper derived class of subproblem; the persistently limiting and annoying discretization object in
+      Sieve must be excised; Here are subproblem objects containing the helper functions that are presently in the
+      monster called PETSC_MESH_TYPE, but with references to the discretization object stolen.  virtual functions to be
+      filled in in further derived classes are marked.  This is meant to be a stepping stone towards generalized use of
+      problem creation objects with multiple fields and interesting boundary conditions.  This type can be branched into
 
     */
 
-    //creates a discretization-like thing for this particular case; from this we can use the helper functions in the generalformsubproblem to set up the discretization
-    //across the mesh as one might expect in the case of a 
+    //creates a discretization-like thing for this particular case; from this we can use the helper functions in the
+    //generalformsubproblem to set up the discretization across the mesh as one might expect in the case of a
+
+
+#if 0
+
+    //we really can't use this for finite elements with UFC
+
+    class GeneralCell : public ParallelObject {
+    private:
+      int _embedded_dimension;           //the fiberdimension of the coordinate section
+      int closureSize;                   //the size of the closure
+      std::map<int, int> _closure_order; //all that really matters; assume interpolated as the order should be the same
+      int _num_vertices;                 //necessary to allocate the coordinate array.
+      double * _coordinates;             //the coordinate array in order based upon the local topology
+
+      GeneralCell() {
+	_num_vertices = 0;
+	_coordinates = PETSC_NULL;
+      }
+
+      GeneralCell(int embedded_dimension, int num_vertices) {
+	_embedded_dimension = embedded_dimension;
+	_num_vertices = _num_vertices;
+	_coordinates = new double[_embedded_dimension*_num_vertices];
+      }
+
+      virtual ~GeneralCell() {
+	if (_coordinates)
+	  delete _coordinates;
+      }
+
+      virtual void setMeshCell(Obj<PETSC_MESH_TYPE> mesh, PETSC_MESH_TYPE::point_type cell) {
+	throw Exception("GeneralCell->setCell(): Unimplemented base class");
+        return;
+      }
+      virtual void setClosureOrder(int subcell, int map) {
+	_closure_order[subcell] = map;
+      }
+      virtual int getClosureOrder(int subcell) {
+	return _closure_order[subcell];
+      }
+    };
+
+#endif
 
     class GeneralBoundaryCondition : ParallelObject {
     protected:
@@ -67,8 +117,40 @@ namespace ALE {
 	throw Exception("GeneralBoundaryCondition->integrateDual: Nonimplemented base-class version called.");
 	return 3.;
       };
+      
+      virtual void setReorder(int * reorder) {
+	throw Exception("GeneralBoundaryCondition->setReorder(): Unimplemented base class version called.");
+      }
+
+      virtual const int * getReorder() {
+	throw Exception("GeneralBoundaryCondition->getReorder(): Unimplemented base class version called.");
+	return PETSC_NULL;
+      }
+
     };
     
+    /*
+      Include at least counts of all the part of the triple, as well as all the information for the cell.
+     */
+
+#if 0
+
+    class GeneralFiniteElement : public ParallelObject {
+    private:
+    public:
+      virtual double integrateDual(unsigned int dof) {
+	//evaluate a degree of freedom 
+	return 0.;
+      }
+      virtual int closureIndex(unsigned int dof) {
+	return 0;
+      }
+      virtual int dataIndex(unsigned int dof) {
+	return 0;
+      }
+    };
+
+#endif
 
     //we almost, ALMOST need an overall view of a local reference topology for this kind of stuff (and the boundary conditions).
 
@@ -91,6 +173,8 @@ namespace ALE {
       int _tensor_rank;           //the tensor rank; it BETTER be one or two.
       int _topological_dimension; //the topological dimension of the given mesh item -- tells us if it's a cell or facet integral
 
+      int * _closure2data;  //if there is some API-level data storage, this maps the unknowns for the WHOLE CLOSURE onto the unknowns for the API
+
     public:
       
       GeneralIntegral (MPI_Comm comm, int debug = 0) : ParallelObject(comm, debug) {
@@ -108,7 +192,7 @@ namespace ALE {
 
       virtual ~GeneralIntegral () {};
 
-            
+
       int getNumCoefficients() {
 	return _num_coefficients;
       }
@@ -151,6 +235,16 @@ namespace ALE {
 	return _tensor_rank; 
       }
 
+      
+      
+      virtual const int * getReorder() {
+	return _closure2data;
+      }
+
+      virtual void setReorder(int * reorder) {
+	_closure2data = reorder;
+      }
+
       //use the UFC lingo here
       //have some notion of the cell initialized and in-state in the eventual implementation.
       virtual void tabulateTensor(double * tensor, const double * coefficients = PETSC_NULL) {
@@ -164,18 +258,26 @@ namespace ALE {
     protected:
       boundaryConditions_type _boundaryConditions;
       Obj<GeneralBoundaryCondition> _exactSolution;
-      std::map<int,int> _dim2dof;
+      std::map<int,int> _dim2dof; //not good enough for tensor product assembly.... however we can generalize this into some sort of "getClosureItemDofs" or something per cell
       std::map<int,int> _dim2class;
       int           _quadSize;
       int           _basisSize;
       const int *         _indices;
       std::map<int, const int *> _exclusionIndices;
+      const int * _closure2data; //local index reordering
+
     public:
+
+      typedef std::set<std::string> names_type;
+
       GeneralDiscretization(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _quadSize(0), _basisSize(0), _indices(NULL) {};
       virtual ~GeneralDiscretization() {
 	if (this->_indices) {delete [] this->_indices;}
 	for(std::map<int, const int *>::iterator i_iter = _exclusionIndices.begin(); i_iter != _exclusionIndices.end(); ++i_iter) {
 	  delete [] i_iter->second;
+	}
+	if (_closure2data) {
+	  delete _closure2data;
 	}
       };
     public:
@@ -184,8 +286,8 @@ namespace ALE {
       virtual void setBoundaryCondition(const Obj<GeneralBoundaryCondition>& boundaryCondition) {this->setBoundaryCondition("default", boundaryCondition);};
       virtual Obj<GeneralBoundaryCondition> getBoundaryCondition(const std::string& name) {return this->_boundaryConditions[name];};
       virtual void setBoundaryCondition(const std::string& name, const Obj<GeneralBoundaryCondition>& boundaryCondition) {this->_boundaryConditions[name] = boundaryCondition;};
-      virtual Obj<std::set<std::string> > getBoundaryConditions() const {
-	Obj<std::set<std::string> > names = std::set<std::string>();
+      virtual names_type getBoundaryConditions() const {
+	Obj<names_type> names = names_type();
 	for(boundaryConditions_type::const_iterator d_iter = this->_boundaryConditions.begin(); d_iter != this->_boundaryConditions.end(); ++d_iter) {
 	  names->insert(d_iter->first);
 	}
@@ -207,6 +309,25 @@ namespace ALE {
       virtual int           getDofClass(const int dim) {return this->_dim2class[dim];};
       virtual void          setDofClass(const int dim, const int dofClass) {this->_dim2class[dim] = dofClass;};
     public:
+
+      /*
+	
+      Functions for interacting with external libraries for handling finite element assembly that might have different cell layout.
+      
+       */
+
+      virtual void createReorder() {
+	throw Exception("GeneralDiscretization->createReorderings: Unimplemented base function");
+	return;
+      }
+
+      virtual const int * getReorder() {
+	return _closure2data;
+      }
+
+      virtual void setReorder(int * reorder) {
+	_closure2data = reorder;
+      }
 
       //Yeah... not messing with this part.
 
@@ -230,7 +351,6 @@ namespace ALE {
       virtual double evaluateRHS(int dof) {
 	throw Exception("GeneralDiscretization->evaluateRHS: Nonimplemented base class function called.");
       }
-      
     };
 
     //The GenericFormSubProblem shown here should basically contain the whole problem as it does the discretization-like setup, which might break
@@ -253,6 +373,8 @@ namespace ALE {
       discretizations_type _discretizations;
       integral_type _integrals;
       Obj<GeneralBoundaryCondition> _exactSolution; //evaluates a function over all unknowns on the form containing an exact solution.  Per discretization later.
+      int * _closure2data;                          //a mapping from closure indices to data indices for the overall element 
+
 
       //helper functions, stolen directly from Mesh.hh with slight modifications to remove FIAT dependence and instead use stuff from GeneralDiscretization
 
@@ -306,8 +428,26 @@ namespace ALE {
 	return 0;
       }
       
+      /*
+	Functions handling the creation and application of reordering from element libraries and sieve.
+       */
 
-      //TODO: Set up different discretization for the 
+      virtual void createReorder() {
+	throw Exception("GeneralFormSubProblem->buildOrderings(): nonimplemented base function");
+	return;
+      }
+
+      virtual const int * getReorder() {
+	return _closure2data;
+      }
+
+      virtual void setReorder(int * order) {
+	_closure2data = order;
+      }
+
+      /*
+	Functions handling the mesh data layout from the overall subproblem
+       */
 
       int setFiberDimensions(const Obj<PETSC_MESH_TYPE> mesh, const Obj<PETSC_MESH_TYPE::real_section_type> s, const Obj<names_type>& discs, names_type& bcLabels) {
 	const int debug  = this->debug();
@@ -563,11 +703,12 @@ namespace ALE {
 	int maxDof = this->setFiberDimensions(mesh, s, discs, bcLabels);
 	this->calculateIndices(mesh);
 	this->calculateIndicesExcluded(mesh, s, discs);
+	this->createReorder();
 	mesh->allocate(s);
 	s->defaultConstraintDof();
 	const Obj<PETSC_MESH_TYPE::label_type>& cellExclusion = mesh->getLabel("cellExclusion");
 	
-	if (debug > 1) {std::cout << "Setting boundary values" << std::endl;}
+	if (debug > 1) {std::cout << "Setting boundary values to " << std::endl;}
 	for(names_type::const_iterator n_iter = bcLabels.begin(); n_iter != bcLabels.end(); ++n_iter) {
 	  Obj<PETSC_MESH_TYPE::label_sequence> boundaryCells = mesh->getLabelStratum(*n_iter, cellMarker);
 	  if (setAll) boundaryCells = mesh->heightStratum(0);
@@ -836,9 +977,11 @@ namespace ALE {
       }
       ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatView(A, PETSC_VIEWER_STDOUT_SELF);
+      //ierr = MatView(A, PETSC_VIEWER_STDOUT_SELF);
       PetscFunctionReturn(0);	
     }
     
   }  //namespace Problem
 } //namespace ALE
+
+#endif

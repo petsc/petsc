@@ -12,7 +12,7 @@ namespace ALE {
   namespace Problem {
     typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
     typedef enum {NEUMANN, DIRICHLET} BCType;
-    typedef enum {LAPLACIAN, MIXEDLAPLACIAN, STOKES} UFCFormType;
+    typedef enum {POISSON, VECTORPOISSON, MIXEDPOISSON} UFCFormType;
     typedef enum {ASSEMBLY_FULL, ASSEMBLY_STORED, ASSEMBLY_CALCULATED} AssemblyType;
     typedef union {SectionReal section; Vec vec;} ExactSolType;
     typedef struct {
@@ -42,14 +42,44 @@ namespace ALE {
 
       class zero_scalar : public ufc::function {
 	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
-	  values[0] = 0;
+	  values[0] = 0.;
 	}
       };
+
+      class zero_vector : public ufc::function {
+      private:
+	int _order;
+      public:
+	zero_vector(int ord) : ufc::function() {
+	  _order = ord;
+	};
+	
+	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
+	  for (int i = 0; i < _order; i++) values[i] = 0.;
+	}
+      };
+
+
 
       class constant_scalar : public ufc::function {
 	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
 	    values[0] = -4.0;
 	  }
+      };
+
+      class constant_vector : public ufc::function {
+      private:
+	int _order;
+	double _constant;
+      public:
+	constant_vector(int ord, double constant) : ufc::function() {
+	  _order = ord;
+	  _constant = constant;
+	}
+
+	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
+	  for (int i = 0; i < _order; i++) values[i] = _constant;
+	}  
       };
 
       class nonlinear_2d_scalar : public ufc::function {
@@ -109,6 +139,19 @@ namespace ALE {
 	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
 	  //PetscScalar quadratic_2d(const double x[]) {
         values[0] = coordinates[0]*coordinates[0] + coordinates[1]*coordinates[1];
+	}
+      };
+
+      class quadratic_2d_vector : public ufc::function {
+      private:
+	int _dim;
+      public:
+	quadratic_2d_vector (int dim) : ufc::function() {
+	  _dim = dim;
+	}
+	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
+	  //PetscScalar quadratic_2d(const double x[]) {
+	  for (int i = 0; i < _dim; i++) values[i] = coordinates[0]*coordinates[0] + coordinates[1]*coordinates[1];
 	}
       };
 
@@ -176,7 +219,7 @@ namespace ALE {
         this->_dmmg = PETSC_NULL;
 	this->_subproblem = PETSC_NULL;
 	this->_ufchook = PETSC_NULL;
-	this->_options.form_type = LAPLACIAN;
+	//	this->_options.form_type = POISSON;
       };
       ~Ex_UFC() {
         PetscErrorCode ierr;
@@ -193,7 +236,7 @@ namespace ALE {
         const char    *runTypes[3] = {"full", "test", "mesh"};
         const char    *bcTypes[2]  = {"neumann", "dirichlet"};
         const char    *asTypes[4]  = {"full", "stored", "calculated"};
-	const char    *fTypes[3]   = {"laplacian", "mixedlaplacian", "stokes"};
+	const char    *fTypes[3]   = {"poisson", "vectorpoisson", "mixedpoisson"};
         ostringstream  filename;
         PetscInt       run, bc, as, f;
         PetscErrorCode ierr;
@@ -201,7 +244,7 @@ namespace ALE {
         PetscFunctionBegin;
         options->debug            = 0;
         options->run              = RUN_FULL;
-	options->form_type        = LAPLACIAN;
+	options->form_type        = POISSON;
         options->dim              = 2;
         options->generateMesh     = PETSC_TRUE;
         options->interpolate      = PETSC_TRUE;
@@ -354,6 +397,8 @@ namespace ALE {
 
       #include "../examples/tutorials/bratu_2d.h"
       #include "../examples/tutorials/bratu_3d.h"
+      #include "../examples/tutorials/vector_poisson_2d.h"
+      #include "../examples/tutorials/vector_poisson_3d.h"
 
     public:
       #undef __FUNCT__
@@ -366,27 +411,27 @@ namespace ALE {
 	//first step; set up a UFCDiscretization object for each element or subelement in the form, depending on what kind of form we're using.
 
 	if (dim() == 2) {
-	  if (FormType() == LAPLACIAN) {
-	    PetscPrintf(_mesh->comm(), "setting up the laplacian dirichlet problem.\n");
+	  if (FormType() == POISSON) {
+	    //PetscPrintf(_mesh->comm(), "setting up the laplacian dirichlet problem.\n");
 	    _ufchook = new UFCHook(new bratu_2dBilinearForm(), new bratu_2dLinearForm());
-	    PetscPrintf(_mesh->comm(), "created the UFC hook.");
+	    //PetscPrintf(_mesh->comm(), "created the UFC hook.");
 	    _subproblem = new UFCFormSubProblem(_mesh->comm(), _ufchook->_cell, _ufchook->_b_finite_element);
-	    PetscPrintf(_mesh->comm(), "created the subproblem\n");
+	    //PetscPrintf(_mesh->comm(), "created the subproblem\n");
 	    //set up the unknown discretization.
 	    Obj<UFCDiscretization> disc = new UFCDiscretization(_mesh->comm(), _ufchook->_b_finite_element, _ufchook->_cell);
 	    disc->setNumDof(0, 1);
 	    disc->setNumDof(1, 0);
 	    disc->setNumDof(2, 0);
-	    PetscPrintf(_mesh->comm(), "set up the discretization numdofs\n");
+	    //PetscPrintf(_mesh->comm(), "set up the discretization numdofs\n");
 	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 3);
 	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 3, 1);
 	    if (bcType() == DIRICHLET) {
 	      Obj<UFCBoundaryCondition> bc;
 	      if (_options.reentrantMesh) {
-		disc->setRHSFunction(new UFCFunctions::zero_scalar());
+		disc->setRHSFunction(new UFCFunctions::constant_vector(1, 0.));
 		bc = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::singularity_exact_2d_scalar(), new UFCFunctions::singularity_exact_2d_scalar(), _ufchook->_b_finite_element, _ufchook->_cell, "marker", 1);
 	      } else {
-		disc->setRHSFunction(new UFCFunctions::constant_scalar());
+		disc->setRHSFunction(new UFCFunctions::constant_vector(1, -4.));
 		bc = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_scalar(), new UFCFunctions::quadratic_2d_scalar(), _ufchook->_b_finite_element, _ufchook->_cell, "marker", 1);
 	      }
 	      PetscPrintf(_mesh->comm(), "set up the discretization BCs\n");
@@ -395,26 +440,97 @@ namespace ALE {
 	    _subproblem->setDiscretization(disc);
 	    _subproblem->setIntegral("jac_integral", jac_integral);
 	    _subproblem->setIntegral("rhs_integral", rhs_integral);
+	  } else if (FormType() == VECTORPOISSON) {
+
+	    _ufchook = new UFCHook(new vector_poisson_2dBilinearForm(), new vector_poisson_2dLinearForm());
+	    _subproblem = new UFCFormSubProblem(_mesh->comm(), _ufchook->_cell, _ufchook->_b_finite_element);
+	    //do it as one discretization for now.
+	    //TODO rewrite evaluate_rhs to take into account vectors; it should just zero everything now.
+	    Obj<UFCDiscretization> disc_x = new UFCDiscretization(_mesh->comm(), _ufchook->_b_sub_finite_elements[0], _ufchook->_cell);
+	    disc_x->setNumDof(0, 1);
+	    disc_x->setNumDof(1, 0);
+	    disc_x->setNumDof(2, 0);
+	    disc_x->setRHSFunction(new UFCFunctions::constant_vector(1, -4.));
+	    Obj<UFCDiscretization> disc_y = new UFCDiscretization(_mesh->comm(), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell);
+	    disc_y->setNumDof(0, 1);
+	    disc_y->setNumDof(1, 0);
+	    disc_y->setNumDof(2, 0);
+	    disc_y->setRHSFunction(new UFCFunctions::constant_vector(1, -4.));
+	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 6);
+	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 6, 1);
+	    _subproblem->setIntegral("jac_integral", jac_integral);
+	    _subproblem->setIntegral("rhs_integral", rhs_integral);
+	    if (bcType() == DIRICHLET) {
+	      Obj<UFCBoundaryCondition> bc_x = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_vector(1), new UFCFunctions::quadratic_2d_vector(1), _ufchook->_b_sub_finite_elements[0], _ufchook->_cell, "marker", 1);
+
+	      Obj<UFCBoundaryCondition> bc_y = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_vector(1), new UFCFunctions::quadratic_2d_vector(1), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell, "marker", 1);
+	      disc_x->setBoundaryCondition(bc_x);
+	      disc_y->setBoundaryCondition(bc_y);
+	    }
+	    _subproblem->setDiscretization("1", disc_x);
+	    _subproblem->setDiscretization("2", disc_y);
+
 	  }
 	} else if (dim() == 3) {
-	  if (FormType() == LAPLACIAN) {
+	  if (FormType() == POISSON) {
 	    _ufchook = new UFCHook(new bratu_3dBilinearForm(), new bratu_3dLinearForm());
 	    _subproblem = new UFCFormSubProblem(_mesh->comm(), _ufchook->_cell, _ufchook->_b_finite_element);
-	    Obj<UFCDiscretization> disc = UFCDiscretization(_mesh->comm(), _ufchook->_b_finite_element, _ufchook->_cell);
-	    Obj<UFCCellIntegral> jac_integral = UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 4);
-	    Obj<UFCCellIntegral> rhs_integral = UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 4, 1);
+	    Obj<UFCDiscretization> disc = new UFCDiscretization(_mesh->comm(), _ufchook->_b_finite_element, _ufchook->_cell);
+	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 4);
+	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 4, 1);
 	    disc->setRHSFunction(new UFCFunctions::constant_scalar);
 	    disc->setNumDof(0, 1);
 	    disc->setNumDof(1, 0);
 	    disc->setNumDof(2, 0);
 	    disc->setNumDof(3, 0);
 	    if (bcType() == DIRICHLET) {
-	      Obj<UFCBoundaryCondition> bc = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::zero_scalar(), new UFCFunctions::zero_scalar(), _ufchook->_b_finite_element, _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> bc = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_scalar(), new UFCFunctions::quadratic_2d_scalar(), _ufchook->_b_finite_element, _ufchook->_cell, "marker", 1);
 	      disc->setBoundaryCondition(bc);
 	    }
 	    _subproblem->setDiscretization(disc);
 	    _subproblem->setIntegral("jac_integral", jac_integral);
 	    _subproblem->setIntegral("rhs_integral", rhs_integral);
+	  } else if (FormType() == VECTORPOISSON) {
+
+	    _ufchook = new UFCHook(new vector_poisson_3dBilinearForm(), new vector_poisson_3dLinearForm());
+	    _subproblem = new UFCFormSubProblem(_mesh->comm(), _ufchook->_cell, _ufchook->_b_finite_element);
+	    //do it as one discretization for now.
+	    //TODO rewrite evaluate_rhs to take into account vectors; it should just zero everything now.
+	    Obj<UFCDiscretization> disc_x = new UFCDiscretization(_mesh->comm(), _ufchook->_b_sub_finite_elements[0], _ufchook->_cell);
+	    disc_x->setNumDof(0, 1);
+	    disc_x->setNumDof(1, 0);
+	    disc_x->setNumDof(2, 0);
+	    disc_x->setNumDof(3, 0);
+	    disc_x->setRHSFunction(new UFCFunctions::constant_vector(1, -4.));
+	    Obj<UFCDiscretization> disc_y = new UFCDiscretization(_mesh->comm(), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell);
+	    disc_y->setNumDof(0, 1);
+	    disc_y->setNumDof(1, 0);
+	    disc_y->setNumDof(2, 0);
+	    disc_y->setNumDof(3, 0);
+	    disc_y->setRHSFunction(new UFCFunctions::constant_vector(1, -4.));
+	    Obj<UFCDiscretization> disc_z = new UFCDiscretization(_mesh->comm(), _ufchook->_b_sub_finite_elements[2], _ufchook->_cell);
+	    disc_z->setNumDof(0, 1);
+	    disc_z->setNumDof(1, 0);
+	    disc_z->setNumDof(2, 0);
+	    disc_z->setNumDof(3, 0);
+	    disc_z->setRHSFunction(new UFCFunctions::constant_vector(1, -4.));
+	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 12);
+	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 12, 1);
+	    _subproblem->setIntegral("jac_integral", jac_integral);
+	    _subproblem->setIntegral("rhs_integral", rhs_integral);
+	    if (bcType() == DIRICHLET) {
+	      Obj<UFCBoundaryCondition> bc_x = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_vector(1), new UFCFunctions::quadratic_2d_vector(1), _ufchook->_b_sub_finite_elements[0], _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> bc_y = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_vector(1), new UFCFunctions::quadratic_2d_vector(1), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> bc_z = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_vector(1), new UFCFunctions::quadratic_2d_vector(1), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell, "marker", 1);
+
+	      disc_x->setBoundaryCondition(bc_x);
+	      disc_y->setBoundaryCondition(bc_y);
+	      disc_z->setBoundaryCondition(bc_z);
+	    }
+	    _subproblem->setDiscretization("ux", disc_x);
+	    _subproblem->setDiscretization("uy", disc_y);
+	    _subproblem->setDiscretization("uz", disc_z);
+
 	  }
 	}
 	PetscPrintf(_mesh->comm(), "done setting up the problem\n");
@@ -485,7 +601,7 @@ namespace ALE {
         ierr = DMMGCreate(this->comm(), 1, this->_subproblem, &this->_dmmg);CHKERRQ(ierr);
         ierr = DMMGSetDM(this->_dmmg, this->_dm);CHKERRQ(ierr);
 	if (opAssembly() == ALE::Problem::ASSEMBLY_FULL) {
-	  PetscPrintf(MPI_COMM_WORLD, "setting local.\n");
+	  //PetscPrintf(MPI_COMM_WORLD, "setting local.\n");
 	  ierr = DMMGSetSNESLocal(this->_dmmg, ALE::Problem::RHS_FEMProblem, ALE::Problem::Jac_FEMProblem, 0, 0);CHKERRQ(ierr);
 #if 0
 	} else if (opAssembly() == ALE::Problem::ASSEMBLY_CALCULATED) {
