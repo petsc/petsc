@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = unit
+DIRS     = unit morethuente
 #armijo boundproj morethuente projectedarmijo unit
 LOCDIR   = src/linesearch/impls/
 LIBRARY = taolinesearch

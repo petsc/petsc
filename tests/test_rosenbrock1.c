@@ -30,7 +30,7 @@ T*/
 */
 typedef struct {
   int n;          /* dimension */
-  PetscReal alpha;   /* condition parameter */
+  PetscScalar alpha;   /* condition parameter */
 } AppCtx;
 
 /* -------------- User-defined routines ---------- */

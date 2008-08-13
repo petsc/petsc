@@ -1,5 +1,6 @@
 #include "petsc.h"
 #include "tao_sys.h"
+#include "tao_util.h"
 
 #if !defined TAOSOLVER_DLLEXPORT
 #define TAOSOLVER_DLLEXPORT

@@ -42,7 +42,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver tao, Vec 
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X, Vec G) 
 {
     PetscErrorCode ierr;
-    PetscReal dummy;
+    PetscScalar dummy;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
     PetscValidHeaderSpecific(X,VEC_COOKIE,2);
@@ -95,7 +95,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X
 
 .seealso: TaoSolverComputeGradient(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetObjective()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec X, PetscReal *f) 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec X, PetscScalar *f) 
 {
     PetscErrorCode ierr;
     Vec temp;
@@ -133,13 +133,13 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec 
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverComputeObjectiveAndGradient"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolver tao, Vec X, PetscReal *f, Vec G)
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolver tao, Vec X, PetscScalar *f, Vec G)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
-  PetscValidHeaderSpecific(tao,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(tao,VEC_COOKIE,4);
+  PetscValidHeaderSpecific(X,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(G,VEC_COOKIE,4);
   PetscCheckSameComm(tao,1,X,2);
   PetscCheckSameComm(tao,1,G,4);
   if (tao->ops->computeobjectiveandgradient) {
@@ -172,6 +172,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolve
   } else {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjective() or TaoSolverSetGradient() not set");
   }
+  PetscFunctionReturn(0);
 } 
 
 #undef __FUNCT__
@@ -188,7 +189,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolve
         routine (may be PETSC_NULL)
 
   Calling sequence of func:
-$      func (TaoSolver tao, Vec x, PetscReal *f, void *ctx);
+$      func (TaoSolver tao, Vec x, PetscScalar *f, void *ctx);
 
 + x - input vector
 . f - function value
@@ -198,7 +199,7 @@ $      func (TaoSolver tao, Vec x, PetscReal *f, void *ctx);
 
 .seealso: TaoSolverSetGradient(), TaoSolverSetHessian() TaoSolverSetObjectiveAndGradient()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjective(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal*,void*),void *ctx) 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjective(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscScalar*,void*),void *ctx) 
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
@@ -245,7 +246,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradient(TaoSolver tao,  PetscErr
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetObjectiveAndGradient"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradient(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal *, Vec, void*), void *ctx)
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradient(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscScalar *, Vec, void*), void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);

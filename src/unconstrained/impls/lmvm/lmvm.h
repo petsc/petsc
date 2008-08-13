@@ -10,6 +10,7 @@
 typedef struct {
   Mat M;
 
+  Vec X;
   Vec G;
   Vec D;
   Vec W;

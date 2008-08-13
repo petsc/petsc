@@ -44,12 +44,12 @@ struct _p_TaoSolver {
     Vec solution;
     Vec gradient;
     Vec stepdirection;
-    PetscReal step;
-    PetscReal residual;
-    PetscReal gnorm0;
-    PetscReal cnorm;
-    PetscReal cnorm0;
-    PetscReal fc;
+    PetscScalar step;
+    PetscScalar residual;
+    PetscScalar gnorm0;
+    PetscScalar cnorm;
+    PetscScalar cnorm0;
+    PetscScalar fc;
     
 
     PetscInt  max_its;
@@ -68,16 +68,16 @@ struct _p_TaoSolver {
     PetscTruth lsflag; /* goes up when line search fails */
     KSP *ksp;
 
-    PetscReal fatol;
-    PetscReal frtol;
-    PetscReal gatol;
-    PetscReal grtol;
-    PetscReal gttol;
-    PetscReal catol;
-    PetscReal crtol;
-    PetscReal xtol;
-    PetscReal trtol;
-    PetscReal fmin;
+    PetscScalar fatol;
+    PetscScalar frtol;
+    PetscScalar gatol;
+    PetscScalar grtol;
+    PetscScalar gttol;
+    PetscScalar catol;
+    PetscScalar crtol;
+    PetscScalar xtol;
+    PetscScalar trtol;
+    PetscScalar fmin;
 
     PetscTruth printreason;
     PetscTruth viewtao;
@@ -87,7 +87,7 @@ struct _p_TaoSolver {
     PetscTruth viewjacobian;
 
     PetscInt conv_hist_max;/* Number of iteration histories to keep */
-    PetscReal *conv_hist; 
+    PetscScalar *conv_hist; 
     PetscInt *conv_hist_feval; /* Number of func evals at each iteration */
     PetscInt *conv_hist_fgeval; /* Number of func/grad evals at each iteration */
     PetscInt *conv_hist_geval; /* Number of grad evals at each iteration */

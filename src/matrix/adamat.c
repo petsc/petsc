@@ -540,7 +540,7 @@ int MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_ADA"
-int MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
+int MatNorm_ADA(Mat mat,NormType type,PetscScalar *norm)
 {
   int info;
   TaoMatADACtx  ctx;

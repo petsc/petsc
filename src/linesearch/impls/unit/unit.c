@@ -1,7 +1,6 @@
 #include "petscvec.h"
 #include "taosolver.h"
 #include "private/taolinesearch_impl.h"
-#include "unit.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "TaoLineSearchDestroy_Unit"
@@ -50,26 +49,18 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer pv)
    Input Parameters:
 +  tao - TaoSolver context
 .  X - current iterate (on output X contains new iterate, X + step*S)
-.  S - search direction
 .  f - objective function evaluated at X
 .  G - gradient evaluated at X
-.  W - work vector
-.  gdx - inner product of gradient and the direction of the first linear manifold being searched
--  step - initial estimate of step length
+-  D - search direction
 
-   Output parameters:
-+  f - objective function evaluated at new iterate, X + step*S
-.  G - gradient evaluated at new iterate, X + step*S
-.  X - new iterate
--  step - final step length
 
    Info is set to 0.
-p
+
 @ */
-static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec start_x,PetscReal start_f,Vec start_g,Vec step_direction)
+static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec start_x,PetscScalar start_f,Vec start_g,Vec step_direction)
 {
   PetscErrorCode   info;
-  PetscReal ftry;
+  PetscScalar ftry;
   //  Vec XL,XU; 
 
   PetscFunctionBegin;
@@ -96,6 +87,7 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec start_x,Petsc
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TaoLineSearchCreate_Unit"
 /*@C
@@ -109,10 +101,9 @@ static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec start_x,Petsc
 
 .keywords: TaoSolver, linesearch
 @*/
-PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_Unit(TaoLineSearch ls)
 {
   PetscErrorCode info;
-  TAOLINESEARCH_UNITCTX *unitP;
 
   PetscFunctionBegin;
   ls->ops->setup = 0;
@@ -121,8 +112,7 @@ PetscErrorCode TaoLineSearchCreate_Unit(TaoLineSearch ls)
   ls->ops->destroy = TaoLineSearchDestroy_Unit;
   ls->ops->setfromoptions = TaoLineSearchSetFromOptions_Unit;
 
-  info = PetscNewLog(ls,TAOLINESEARCH_UNITCTX,&unitP); CHKERRQ(info);
-  ls->data = (void*)unitP;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 

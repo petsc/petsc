@@ -1,3 +1,7 @@
+#ifndef __LMVMMAT_H
+#define __LMVMMAT_H
+
+
 #include "private/matimpl.h"
 #include "tao_sys.h"
 
@@ -22,30 +26,30 @@
 
 typedef struct{
     PetscInt lm;
-    PetscReal eps;
+    PetscScalar eps;
     PetscInt limitType;
     PetscInt scaleType;
     PetscInt rScaleType;
     
-    PetscReal s_alpha;	// Factor for scalar scaling
-    PetscReal r_alpha;	// Factor on scalar for rescaling diagonal matrix
-    PetscReal r_beta;	// Factor on diagonal for rescaling diagonal matrix
-    PetscReal mu;		// Factor for using historical information
-    PetscReal nu;		// Factor for using historical information
-    PetscReal phi;		// Factor for Broyden scaling
+    PetscScalar s_alpha;	// Factor for scalar scaling
+    PetscScalar r_alpha;	// Factor on scalar for rescaling diagonal matrix
+    PetscScalar r_beta;	// Factor on diagonal for rescaling diagonal matrix
+    PetscScalar mu;		// Factor for using historical information
+    PetscScalar nu;		// Factor for using historical information
+    PetscScalar phi;		// Factor for Broyden scaling
 
   PetscInt scalar_history;	// Amount of history to keep for scalar scaling
-  PetscReal *yy_history;	// Past information for scalar scaling
-  PetscReal *ys_history;	// Past information for scalar scaling
-  PetscReal *ss_history;	// Past information for scalar scaling
+  PetscScalar *yy_history;	// Past information for scalar scaling
+  PetscScalar *ys_history;	// Past information for scalar scaling
+  PetscScalar *ss_history;	// Past information for scalar scaling
 
   PetscInt rescale_history;  // Amount of history to keep for rescaling diagonal
-  PetscReal *yy_rhistory;	// Past information for scalar rescaling
-  PetscReal *ys_rhistory;	// Past information for scalar rescaling
-  PetscReal *ss_rhistory;	// Past information for scalar rescaling
+  PetscScalar *yy_rhistory;	// Past information for scalar rescaling
+  PetscScalar *ys_rhistory;	// Past information for scalar rescaling
+  PetscScalar *ss_rhistory;	// Past information for scalar rescaling
 
-  PetscReal delta_max;	// Maximum value for delta
-  PetscReal delta_min;	// Minimum value for delta
+  PetscScalar delta_max;	// Maximum value for delta
+  PetscScalar delta_min;	// Minimum value for delta
 
   PetscInt lmnow;
   PetscInt iter;
@@ -64,10 +68,10 @@ typedef struct{
   Vec P;
   Vec Q;
 
-  PetscReal delta;
-  PetscReal sigma;
-  PetscReal *rho;
-  PetscReal *beta;
+  PetscScalar delta;
+  PetscScalar sigma;
+  PetscScalar *rho;
+  PetscScalar *beta;
 
   PetscTruth useDefaultH0;
   Mat H0;
@@ -78,12 +82,9 @@ typedef struct{
 
 } MatLMVMCtx;
 
-//typedef  _p_MatLMVMCtx* MatLMVMCtx;
+//typedef  struct _p_MatLMVMCtx* MatLMVMCtx;
 
-/* Move to header in include directory? */
-PETSC_EXTERN_CXX_BEGIN
-EXTERN MatCreateLMVM(MPI_Comm,PetscInt,PetscInt,Mat*);
-PETSC_EXTERN_CXX_END
+EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm,PetscInt,PetscInt,Mat*);
 
 
 /* PETSc Mat overrides */
@@ -104,17 +105,19 @@ int MatGetSubMatrices_LMVM(Mat,int,IS*,IS*,MatReuse,Mat**);
 int MatTranspose_LMVM(Mat,Mat*);
 int MatGetDiagonal_LMVM(Mat,Vec);
 int MatGetColumnVector_LMVM(Mat,Vec, int);
-int MatNorm_LMVM(Mat,NormType,PetscReal *);
+int MatNorm_LMVM(Mat,NormType,PetscScalar *);
 */
 
 /* Functions used by TAO */
-PetscErrorCode MatLMVMReset();
-PetscErrorCode MatLMVMUpdate(Vec, Vec);
-PetscErrorCode MatLMVMSetDelta(PetscReal);
-PetscErrorCode MatLMVMSetScale(Vec);
-PetscErrorCode MatLMVMGetRejects();
-PetscErrorCode MatLMVMSetH0(Mat);
-PetscErrorCode MatLMVMGetX0(Vec);
+PetscErrorCode MatLMVMReset(Mat);
+PetscErrorCode MatLMVMUpdate(Mat,Vec, Vec);
+PetscErrorCode MatLMVMSetDelta(Mat,PetscScalar);
+PetscErrorCode MatLMVMSetScale(Mat,Vec);
+PetscErrorCode MatLMVMGetRejects(Mat);
+PetscErrorCode MatLMVMSetH0(Mat,Mat);
+PetscErrorCode MatLMVMGetX0(Mat,Vec);
 PetscErrorCode MatLMVMRefine(Mat, Mat, Vec, Vec);
+PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v);
 
 
+#endif

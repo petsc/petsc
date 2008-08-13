@@ -1,5 +1,6 @@
 #include "tao.h"
 #include "petscmat.h"
+#include "src/matrix/lmvmmat.h"
 int main(int argc, char *argv[])
 {
     PetscErrorCode info;

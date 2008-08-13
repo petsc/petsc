@@ -56,7 +56,7 @@ TAO_FORTRAN_LIB = -L${TAO_LIB_DIR} -ltaofortran
 #
 # Some variables used to build shared libraries
 #
-SHLIBS       = libtao libtaolinesearch
+SHLIBS       = libtao libtaosolver libtaolinesearch
 
 #??libtaoga libappspacktao libooqptao libesitao taoadic ${SIDL_SHLIBS} ${CCA_SHLIBS}
 

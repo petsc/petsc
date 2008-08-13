@@ -1,6 +1,13 @@
 #define TAOLINESEARCH_DLL
 #include "private/taolinesearch_impl.h"
 
+EXTERN_C_BEGIN
+EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_Unit(TaoLineSearch);
+EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch);
+EXTERN_C_END
+
+
+
 //PetscCookie TAOLINESEARCH_COOKIE=0;
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES

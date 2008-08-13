@@ -42,10 +42,10 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchView(TaoLineSearch ls, Petsc
 	    info = (*ls->ops->view)(ls,viewer);CHKERRQ(info);
 	    info = PetscViewerASCIIPopTab(viewer);CHKERRQ(info);
 	}
-	info = PetscViewerASCIIPrintf(viewer,"  maximum function evaluations=%D\n",ls->max_funcs);CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(viewer,"  maximum function evaluations=%D\n",ls->maxfev);CHKERRQ(info);
 /*	info = PetscViewerASCIIPrintf(viewer,"  tolerances: relative=%G, absolute=%G, solution=%G\n",
 	ls->rtol,ls->abstol,ls->xtol);CHKERRQ(info); */
-	info = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%D\n",ls->nfuncs);CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%D\n",ls->nfev);CHKERRQ(info);
     } else if (isstring) {
 	info = TaoLineSearchGetType(ls,&type);CHKERRQ(info);
 	info = PetscViewerStringSPrintf(viewer," %-3.3s",type);CHKERRQ(info);
@@ -56,12 +56,12 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchView(TaoLineSearch ls, Petsc
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchGetNumberFunctionEvals"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetNumberFunctionEvals(TaoLineSearch ls, PetscInt *nfuncs) 
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetNumberFunctionEvals(TaoLineSearch ls, PetscInt *nfev) 
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
-    PetscValidIntPointer(nfuncs,2);
-    *nfuncs = ls->nfuncs;
+    PetscValidIntPointer(nfev,2);
+    *nfev = ls->nfev;
     PetscFunctionReturn(0);
 }
     
@@ -87,12 +87,12 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate(MPI_Comm comm, TaoLin
 			     comm,TaoLineSearchDestroy, TaoLineSearchView);
     CHKERRQ(info);
     
-    ls->max_fev=30;
+    ls->maxfev=30;
     ls->ftol = 0.0001;
     ls->gtol = 0.9;
     ls->rtol = 1.0e-10;
 
-    ls->nfuncs=0;
+    ls->nfev=0;
     
     ls->ops->computeobjective=0;
     ls->ops->computegradient=0;
@@ -158,7 +158,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchDestroy(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchApply"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal f, Vec g, Vec s)
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscScalar f, Vec g, Vec s)
 {
     PetscErrorCode info;
     PetscTruth flg;
@@ -200,7 +200,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch ls, Vec 
 
 
     info = TaoLineSearchSetUp(ls); CHKERRQ(info);
-    ls->nfuncs=0;
+    ls->nfev=0;
     info = PetscLogEventBegin(TaoLineSearch_ApplyEvent,ls,0,0,0); CHKERRQ(info);
     info = (*ls->ops->apply)(ls,x,f,g,s); CHKERRQ(info);
     info = PetscLogEventEnd(TaoLineSearch_ApplyEvent, ls, 0,0,0); CHKERRQ(info);
@@ -269,7 +269,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetType(TaoLineSearch ls, Ta
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetObjective"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjective(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, PetscReal*, void*), void *ctx)
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjective(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, PetscScalar*, void*), void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
@@ -296,7 +296,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetGradient(TaoLineSearch ls
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetObjectiveGradient"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjectiveGradient(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, PetscReal *, Vec g, void*), void *ctx)
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjectiveGradient(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, PetscScalar *, Vec g, void*), void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
@@ -308,7 +308,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjectiveGradient(TaoLine
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchObjective_Default"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchObjectiveGradient_Default(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, void *ctx) 
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchObjectiveGradient_Default(TaoLineSearch ls, Vec x, PetscScalar *f, Vec g, void *ctx) 
 { 
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
@@ -340,7 +340,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchUseTaoSolverRoutines(TaoLine
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchComputeObjective"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal *f) 
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscScalar *f) 
 {
     PetscErrorCode info;
     Vec gdummy;
@@ -372,7 +372,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjective(TaoLineSear
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchComputeObjectiveGradient"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjectiveGradient(TaoLineSearch ls, Vec x, PetscReal *f, Vec g) 
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjectiveGradient(TaoLineSearch ls, Vec x, PetscScalar *f, Vec g) 
 {
     PetscErrorCode info;
     PetscFunctionBegin;
@@ -409,7 +409,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjectiveGradient(Tao
 PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g) 
 {
     PetscErrorCode info;
-    PetscReal fdummy;
+    PetscScalar fdummy;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
     PetscValidHeaderSpecific(x,VEC_COOKIE,2);
@@ -435,7 +435,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeGradient(TaoLineSearc
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchGetSolution"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, TaoLineSearchTerminationReason *reason) 
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscScalar *f, Vec g, TaoLineSearchTerminationReason *reason) 
 {
     PetscErrorCode info;
     PetscFunctionBegin;

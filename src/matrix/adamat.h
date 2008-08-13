@@ -30,6 +30,6 @@ int MatGetSubMatrices_ADA(Mat,int,IS*,IS*,MatReuse,Mat**);
 int MatTranspose_ADA(Mat,Mat*);
 int MatGetDiagonal_ADA(Mat,Vec);
 int MatGetColumnVector_ADA(Mat,Vec, int);
-int MatNorm_ADA(Mat,NormType,PetscReal *);
+int MatNorm_ADA(Mat,NormType,PetscScalar *);
 int MatADAComputeDiagonal(Mat);
 
