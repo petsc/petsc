@@ -3293,6 +3293,10 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat
 
   C->assembled      = PETSC_TRUE;
  
+  C->rmap.bs = C->cmap.bs = 1;
+  ierr = PetscMapSetUp(&C->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&C->cmap);CHKERRQ(ierr);
+
   ierr = PetscMalloc2(m,PetscInt,&c->imax,m,PetscInt,&c->ilen);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(C, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<m; i++) {
