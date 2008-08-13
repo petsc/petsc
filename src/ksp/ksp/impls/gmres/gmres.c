@@ -180,14 +180,12 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
       hapend = PETSC_TRUE;
     }
     ierr = GMRESUpdateHessenberg(ksp,it,hapend,&res);CHKERRQ(ierr);
-    if (ksp->reason) break;
 
     it++;
     gmres->it  = (it-1);  /* For converged */
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its++;
     ksp->rnorm = res;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+    if (ksp->reason) break;
 
     ierr = (*ksp->converged)(ksp,ksp->its,res,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
 
@@ -201,7 +199,7 @@ PetscErrorCode GMREScycle(PetscInt *itcount,KSP ksp)
   }
 
   /* Monitor if we know that we will not return for a restart */
-  if (ksp->reason || ksp->its >= ksp->max_it) {
+  if (it && (ksp->reason || ksp->its >= ksp->max_it)) {
     KSPLogResidualHistory(ksp,res);
     KSPMonitor(ksp,ksp->its,res);
   }
