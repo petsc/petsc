@@ -1,0 +1,9 @@
+syntax: glob
+*~
+#*#
+BROWSE
+TAGS*
+lib/*
+
+syntax: regexp
+test_(.*)[0-9]$
