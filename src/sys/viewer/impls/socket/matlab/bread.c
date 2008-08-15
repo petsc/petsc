@@ -116,7 +116,7 @@ PetscErrorCode PetscBinaryRead(int fd,void *p,int n,PetscDataType type)
 #endif
     if (!err && wsize > 0) return 1;
     if (err < 0) {
-      PETSC_MEX_ERR("Error reading from socket\n");
+      PETSC_MEX_ERROR("Error reading from socket\n");
     }
     n  -= err;
     pp += err;
@@ -176,7 +176,7 @@ PetscErrorCode PetscBinaryWrite(int fd,void *p,int n,PetscDataType type,PetscTru
 #endif
     if (!err && wsize > 0) return 1;
     if (err < 0) {
-      PETSC_MEX_ERR("Error reading from socket\n");
+      PETSC_MEX_ERROR("Error reading from socket\n");
     }
     n  -= err;
     pp += err;
