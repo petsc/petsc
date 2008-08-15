@@ -31,13 +31,13 @@ static PetscErrorCode ourshellapply(void *ctx,Vec x,Vec y)
   return 0;
 }
 
-static PetscErrorCode ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m)
+static PetscErrorCode ourapplyrichardson(void *ctx,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PetscErrorCode ierr = 0;
 
   PC             pc = (PC)ctx;
   void           *mctx = (void*) ((PetscObject)pc)->fortran_func_pointers[0];
-  (*(void (PETSC_STDCALL *)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[2]))(mctx,&x,&y,&w,&rtol,&abstol,&dtol,&m,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(void*,Vec*,Vec*,Vec*,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*,PCRichardsonConvergedReason*,PetscErrorCode*))(((PetscObject)pc)->fortran_func_pointers[2]))(mctx,&x,&y,&w,&rtol,&abstol,&dtol,&m,outits,reason,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
@@ -94,7 +94,7 @@ void PETSC_STDCALL pcshellsetapply_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec
   *ierr = PCShellSetContext(*pc,*pc);
 }
 
-void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL pcshellsetapplyrichardson_(PC *pc,void (PETSC_STDCALL *apply)(void*,Vec *,Vec *,Vec *,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*,PCRichardsonConvergedReason*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscObjectAllocateFortranPointers(*pc,6);
   ((PetscObject)*pc)->fortran_func_pointers[2] = (PetscVoidFunction)apply;

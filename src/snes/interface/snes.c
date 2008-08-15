@@ -1734,7 +1734,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES snes,PetscErrorCo
 .  snes - the SNES context
 
    Output Parameter:
-.  reason - negative value indicates diverged, positive value converged, see petscsnes.h or the 
+.  reason - negative value indicates diverged, positive value converged, see SNESConvergedReason or the 
             manual pages for the individual convergence tests for complete lists
 
    Level: intermediate

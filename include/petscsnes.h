@@ -169,8 +169,6 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionDomainError(SNES);
 
    Level: beginner
 
-   Notes: this must match finclude/petscsnes.h 
-
    The two most common reasons for divergence are 
 $   1) an incorrectly coded or computed Jacobian or 
 $   2) failure or lack of convergence in the linear system (in this case we recommend
@@ -201,17 +199,21 @@ $      testing with -pc_type lu to eliminate the linear solver as the cause of t
        Note that this RARELY happens in practice. Far more likely the linear system is not being solved
        (well enough?) or the Jacobian is wrong.
      
+   SNES_DIVERGED_MAX_IT means that the solver reached the maximum number of iterations without satisfying any
+   convergence criteria. SNES_CONVERGED_ITS means that SNESSkipConverged() was chosen as the convergence test;
+   thus the usual convergence criteria have not been checked and may or may not be satisfied.
 
-   Developer note: The string versions of these are in 
-     src/snes/interface/snes.c called convergedreasons.
-     If these enums are changed you much change those.
+   Developer Notes: this must match finclude/petscsnes.h 
+
+       The string versions of these are in SNESConvergedReason, if you change any value here you must
+     also adjust that array.
 
 .seealso: SNESSolve(), SNESGetConvergedReason(), KSPConvergedReason, SNESSetConvergenceTest()
 E*/
 typedef enum {/* converged */
               SNES_CONVERGED_FNORM_ABS         =  2, /* ||F|| < atol */
               SNES_CONVERGED_FNORM_RELATIVE    =  3, /* ||F|| < rtol*||F_initial|| */
-              SNES_CONVERGED_PNORM_RELATIVE    =  4, /* Newton computed step size small || delta x || < tol */
+              SNES_CONVERGED_PNORM_RELATIVE    =  4, /* Newton computed step size small; || delta x || < tol */
               SNES_CONVERGED_ITS               =  5, /* maximum iterations reached */
               SNES_CONVERGED_TR_DELTA          =  7,
               /* diverged */

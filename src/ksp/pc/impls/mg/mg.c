@@ -8,14 +8,13 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCMGMCycle_Private"
-PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG **mglevels,PetscTruth *converged)
+PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG **mglevels,PCRichardsonConvergedReason *reason)
 {
   PC_MG          *mg = *mglevels,*mgc;
   PetscErrorCode ierr;
   PetscInt       cycles = (PetscInt) mg->cycles;
 
   PetscFunctionBegin;
-  if (converged) *converged = PETSC_FALSE;
 
   if (mg->eventsmoothsolve) {ierr = PetscLogEventBegin(mg->eventsmoothsolve,0,0,0,0);CHKERRQ(ierr);}
   ierr = KSPSolve(mg->smoothd,mg->b,mg->x);CHKERRQ(ierr);  /* pre-smooth */
@@ -26,14 +25,15 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG **mglevels,PetscTruth *converged)
     if (mg->eventresidual) {ierr = PetscLogEventEnd(mg->eventresidual,0,0,0,0);CHKERRQ(ierr);}
 
     /* if on finest level and have convergence criteria set */
-    if (mg->level == mg->levels-1 && mg->ttol) {
+    if (mg->level == mg->levels-1 && mg->ttol && reason) {
       PetscReal rnorm;
       ierr = VecNorm(mg->r,NORM_2,&rnorm);CHKERRQ(ierr);
       if (rnorm <= mg->ttol) {
-        *converged = PETSC_TRUE;
         if (rnorm < mg->abstol) {
+          *reason = PCRICHARDSON_CONVERGED_ATOL;
           ierr = PetscInfo2(pc,"Linear solver has converged. Residual norm %G is less than absolute tolerance %G\n",rnorm,mg->abstol);CHKERRQ(ierr);
         } else {
+          *reason = PCRICHARDSON_CONVERGED_RTOL;
           ierr = PetscInfo2(pc,"Linear solver has converged. Residual norm %G is less than relative tolerance times initial residual norm %G\n",rnorm,mg->ttol);CHKERRQ(ierr);
         }
         PetscFunctionReturn(0);
@@ -46,7 +46,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG **mglevels,PetscTruth *converged)
     if (mg->eventinterprestrict) {ierr = PetscLogEventEnd(mg->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = VecSet(mgc->x,0.0);CHKERRQ(ierr);
     while (cycles--) {
-      ierr = PCMGMCycle_Private(pc,mglevels-1,converged);CHKERRQ(ierr); 
+      ierr = PCMGMCycle_Private(pc,mglevels-1,reason);CHKERRQ(ierr); 
     }
     if (mg->eventinterprestrict) {ierr = PetscLogEventBegin(mg->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
@@ -211,12 +211,11 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_MG"
-static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its)
+static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_MG          **mg = (PC_MG**)pc->data;
   PetscErrorCode ierr;
-  PetscInt       levels = mg[0]->levels;
-  PetscTruth     converged = PETSC_FALSE;
+  PetscInt       levels = mg[0]->levels,i;
 
   PetscFunctionBegin;
   mg[levels-1]->b    = b; 
@@ -237,9 +236,22 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
     mg[levels-1]->ttol = 0.0;
   }
 
-  while (its-- && !converged) {
-    ierr = PCMGMCycle_Private(pc,mg+levels-1,&converged);CHKERRQ(ierr);
+  /* since smoother is applied to full system, not just residual we need to make sure that smoothers don't 
+     stop prematurely do to small residual */
+  for (i=1; i<levels; i++) {  
+    ierr = KSPSetTolerances(mg[i]->smoothu,0,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+    if (mg[i]->smoothu != mg[i]->smoothd) {
+      ierr = KSPSetTolerances(mg[i]->smoothd,0,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+    }
   }
+
+  *reason = (PCRichardsonConvergedReason)0;
+  for (i=0; i<its; i++) {
+    ierr = PCMGMCycle_Private(pc,mg+levels-1,reason);CHKERRQ(ierr);
+    if (*reason) break;
+  }
+  if (!*reason) *reason = PCRICHARDSON_CONVERGED_ITS;
+  *outits = i;
   PetscFunctionReturn(0);
 }
 

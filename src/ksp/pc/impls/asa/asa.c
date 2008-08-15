@@ -1810,7 +1810,7 @@ PetscErrorCode PCApply_ASA(PC pc,Vec x,Vec y)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_ASA"
-PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its)
+PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_ASA         *asa = (PC_ASA*)pc->data;
   PC_ASA_level   *asa_lev;
@@ -1850,6 +1850,7 @@ PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,Pets
   asa_lev->x = asa->x;
   asa_lev->b = asa->b;
 
+  *reason = PCRICHARDSON_CONVERGED_ITS;
   /* **************** Full algorithm loop *********************************** */
   for (i=0; i<its; i++) {
     /* apply V-cycle */
@@ -1859,15 +1860,18 @@ PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,Pets
     ierr = VecAYPX(asa->r, -1.0, asa->b);CHKERRQ(ierr);
     ierr = VecNorm(asa->r, NORM_2, &rnorm);CHKERRQ(ierr);
     ierr = PetscPrintf(asa->comm, "After %D iterations residual norm is %f\n", i+1, rnorm);CHKERRQ(ierr);
-    if (rnorm < rnorm_start*(rtol) || rnorm < asa->abstol) {
-      /* convergence */
+    if (rnorm < rnorm_start*(rtol)) {
+      *reason = PCRICHARDSON_CONVERGED_RTOL;
       break;
-    }
-    if (rnorm > rnorm_start*(dtol)) {
-      /* divergence */
+    } else if (rnorm < asa->abstol) {
+      *reason = PCRICHARDSON_CONVERGED_RTOL;
+      break;
+    } else if (rnorm > rnorm_start*(dtol)) {
+      *reason = PCRICHARDSON_DIVERGED_DTOL;
       break;
     }
   }
+  *outits = i;
   
   /* Return solution */
   if (asa->scale_diag) {

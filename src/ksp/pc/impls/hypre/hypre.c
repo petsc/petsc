@@ -600,17 +600,22 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_HYPRE_BoomerAMG"
-static PetscErrorCode PCApplyRichardson_HYPRE_BoomerAMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its)
+static PetscErrorCode PCApplyRichardson_HYPRE_BoomerAMG(PC pc,Vec b,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
+  int            oits;
 
   PetscFunctionBegin;
   ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,its*jac->maxiter);CHKERRQ(ierr);
-  ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,PetscMin(rtol,jac->tol));CHKERRQ(ierr);
+  ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,rtol);CHKERRQ(ierr);
   jac->applyrichardson = PETSC_TRUE;
   ierr = PCApply_HYPRE(pc,b,y);CHKERRQ(ierr);
   jac->applyrichardson = PETSC_FALSE;
+  ierr = HYPRE_BoomerAMGGetNumIterations(jac->hsolver,&oits);CHKERRQ(ierr);
+  *outits = oits;
+  if (oits == its) *reason = PCRICHARDSON_CONVERGED_ITS;
+  else             *reason = PCRICHARDSON_CONVERGED_RTOL;
   ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
   ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -15,6 +15,7 @@
 #define PCSide PetscEnum
 #define PCASMType PetscEnum
 #define PCCompositeType PetscEnum
+#define PCRichardsonConvergedReason PetscEnum 
 #define PCType character*(80)
 !
 !  Various preconditioners
@@ -83,6 +84,17 @@
       PetscEnum PC_COMPOSITE_SPECIAL
       parameter (PC_COMPOSITE_ADDITIVE=0,PC_COMPOSITE_MULTIPLICATIVE=1)
       parameter (PC_COMPOSITE_SPECIAL=2)
+!
+! PCRichardsonConvergedReason
+!
+      PetscEnum PCRICHARDSON_CONVERGED_RTOL
+      PetscEnum PCRICHARDSON_CONVERGED_ATOL
+      PetscEnum PCRICHARDSON_CONVERGED_ITS
+      PetscEnum PCRICHARDSON_DIVERGED_DTOL
+      parameter (PCRICHARDSON_CONVERGED_RTOL = 2)
+      parameter (PCRICHARDSON_CONVERGED_ATOL = 3)
+      parameter (PCRICHARDSON_CONVERGED_ITS  = 4)
+      parameter (PCRICHARDSON_DIVERGED_DTOL = -4)
 !
 !  End of Fortran include file for the PC package in PETSc
 

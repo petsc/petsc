@@ -56,30 +56,9 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   /* if user has provided fast Richardson code use that */
   ierr = PCApplyRichardsonExists(ksp->pc,&exists);CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
-    ksp->normtype = KSP_NORM_NO;
-    ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit);CHKERRQ(ierr);
-    ksp->its = maxit;
-    if (ksp->normtype != KSP_NORM_NO) {
-      ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);
-      ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
-      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->pc_side == PC_RIGHT) {
-        ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
-      } else {
-        ierr = PetscExceptionTry1((KSP_PCApply(ksp,r,z)),PETSC_ERR_SUP);
-        if (PetscExceptionCaught(ierr,PETSC_ERR_SUP)) {
-          ksp->reason = KSP_CONVERGED_ITS;
-          PetscFunctionReturn(0);
-        }
-        if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
-          ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'B'*Br     */
-        } else {
-          ierr = VecDot(r,z,&dt);CHKERRQ(ierr); 
-          rnorm = PetscAbsScalar(dt);                    /*   rnorm <- z'*r  = r'Br = e'*A'*B*A*e  */
-        }
-      }
-      ierr = (*ksp->converged)(ksp,0,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-    }
-    if (!ksp->reason) ksp->reason = KSP_CONVERGED_ITS;
+    PCRichardsonConvergedReason reason;
+    ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit,&ksp->its,&reason);CHKERRQ(ierr);
+    ksp->reason = (KSPConvergedReason)reason;
     PetscFunctionReturn(0);
   }
 
@@ -92,14 +71,16 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
     ierr = VecCopy(b,r);CHKERRQ(ierr);
   }
 
+  ksp->its = 0;
   for (i=0; i<maxit; i++) {
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-    ksp->its++;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
     if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
       ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
       KSPMonitor(ksp,i,rnorm);
+      ksp->rnorm = rnorm;
+      KSPLogResidualHistory(ksp,rnorm);
+      ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+      if (ksp->reason) break;
     }
 
     ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);    /*   z <- B r          */
@@ -107,19 +88,15 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
       ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
       KSPMonitor(ksp,i,rnorm);
-    }
-
-    ierr = VecAXPY(x,scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
-
-    if (ksp->normtype != KSP_NORM_NO) {
-      ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm = rnorm;
-      ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,rnorm);
       ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
     }
    
+    ierr = VecAXPY(x,scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
+    ksp->its++;
+
     ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);      /*   r  <- b - Ax      */
     ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
   }
@@ -230,9 +207,14 @@ is described in
   L. F. Richardson, Philosophical Transactions of the Royal Society of London. Series A,
   Containing Papers of a Mathematical or Physical Character, Vol. 210, 1911 (1911), pp. 307-357.
 
-   Notes: For some preconditioners, like SOR, the convergence test is skipped to improve speed,
-    thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor is
-    turned on, the norm is computed at each iteration and so the convergence test is run.
+   Notes: For some preconditioners, currently SOR, the convergence test is skipped to improve speed,
+    thus it always iterates the maximum number of iterations you've selected. When -ksp_monitor 
+    (or any other monitor) is turned on, the norm is computed at each iteration and so the convergence test is run unless
+    you specifically call KSPSetNormType(ksp,KSP_NORM_NO);
+
+         For some preconditioners, currently PCMG and PCHYPRE with BoomerAMG if -ksp_monitor (and also
+    any other monitor) is not turned on then the convergence test is done by the preconditioner itself and
+    so the solver may run more or fewer iterations then if -ksp_monitor is selected.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPRichardsonSetScale()

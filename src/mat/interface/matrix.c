@@ -5937,7 +5937,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat mat,IS isrow,IS iscol,Pets
 
   if (!iscol) {
     if (csize == PETSC_DECIDE) csize = mat->cmap.n;
-    ierr = ISCreateStride(mat->comm,mat->cmap.N,0,1,&iscoltmp);CHKERRQ(ierr);
+    ierr = ISCreateStride(((PetscObject)mat)->comm,mat->cmap.N,0,1,&iscoltmp);CHKERRQ(ierr);
   } else {
     iscoltmp = iscol;
   }

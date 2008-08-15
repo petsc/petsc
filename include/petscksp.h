@@ -338,11 +338,12 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP,PetscInt);
 
    Level: beginner
 
-   Notes: this must match finclude/petscksp.h 
+   Notes: See KSPGetConvergedReason() for explanation of each value
 
-   Developer note: The string versions of these are in 
-     src/ksp/ksp/interface/itfunc.c called convergedreasons.
-     If these enums are changed you must change those.
+   Developer notes: this must match finclude/petscksp.h 
+
+      The string versions of these are KSPConvergedReasons; if you change
+      any of the values here also change them that array of names.
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetTolerances()
 E*/
@@ -424,7 +425,7 @@ M*/
 /*MC
      KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of 
            the preconditioner is applied. Also used when the KSPSkipConverged() convergence 
-           test rutine is set in KSP.
+           test routine is set in KSP.
 
 
    Level: beginner

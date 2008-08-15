@@ -17,7 +17,7 @@ KSP Object:
   left preconditioning
 PC Object:
   type: sor
-    SOR: type = symmetric, iterations = 1, omega = 1
+    SOR: type = symmetric, iterations = 1, local iterations = 1, omega = 1
   linear system matrix = precond matrix:
   Matrix Object:
     type=seqaij, rows=10, cols=10

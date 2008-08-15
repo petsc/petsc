@@ -707,7 +707,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardsonExists(PC pc,PetscTruth *exis
 -  its - the number of iterations to apply.
 
    Output Parameter:
-.  y - the solution
++  outits - number of iterations actually used (for SOR this always equals its)
+.  reason - the reason the apply terminated
+-  y - the solution
 
    Notes: 
    Most preconditioners do not support this function. Use the command
@@ -722,7 +724,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardsonExists(PC pc,PetscTruth *exis
 
 .seealso: PCApplyRichardsonExists()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its)
+PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,PetscReal rtol,PetscReal abstol, PetscReal dtol,PetscInt its,PetscInt *outits,PCRichardsonConvergedReason *reason)
 {
   PetscErrorCode ierr;
 
@@ -736,7 +738,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,Pets
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
   if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP,"PC does not have apply richardson");
-  ierr = (*pc->ops->applyrichardson)(pc,x,y,w,rtol,abstol,dtol,its);CHKERRQ(ierr);
+  ierr = (*pc->ops->applyrichardson)(pc,x,y,w,rtol,abstol,dtol,its,outits,reason);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -15,8 +15,8 @@ This example also demonstrates matrix-free methods\n\n";
 #include "petscmg.h"
 
 PetscErrorCode  residual(Mat,Vec,Vec,Vec);
-PetscErrorCode  gauss_seidel(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt);
-PetscErrorCode  jacobi(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt);
+PetscErrorCode  gauss_seidel(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt*,PCRichardsonConvergedReason*);
+PetscErrorCode  jacobi(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt*,PCRichardsonConvergedReason*);
 PetscErrorCode  interpolate(Mat,Vec,Vec,Vec);
 PetscErrorCode  restrct(Mat,Vec,Vec);
 PetscErrorCode  Create1dLaplacian(PetscInt,Mat*);
@@ -218,16 +218,18 @@ PetscErrorCode amult(Mat mat,Vec xx,Vec yy)
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "gauss_seidel"
-PetscErrorCode gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m)
+PetscErrorCode gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
   PetscInt       i,n1;
   PetscErrorCode ierr;
   PetscScalar    *x,*b;
 
   PetscFunctionBegin;
-  ierr = VecGetSize(bb,&n1);CHKERRQ(ierr); n1--;
-  ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
-  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  *its    = m;
+  *reason = PCRICHARDSON_CONVERGED_ITS;
+  ierr    = VecGetSize(bb,&n1);CHKERRQ(ierr); n1--;
+  ierr    = VecGetArray(bb,&b);CHKERRQ(ierr);
+  ierr    = VecGetArray(xx,&x);CHKERRQ(ierr);
   while (m--) {
     x[0] =  .5*(x[1] + b[0]);
     for (i=1; i<n1; i++) {
@@ -246,13 +248,15 @@ PetscErrorCode gauss_seidel(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscRe
 /* --------------------------------------------------------------------- */
 #undef __FUNCT__
 #define __FUNCT__ "jacobi"
-PetscErrorCode jacobi(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m)
+PetscErrorCode jacobi(void *ptr,Vec bb,Vec xx,Vec w,PetscReal rtol,PetscReal abstol,PetscReal dtol,PetscInt m,PetscInt *its,PCRichardsonConvergedReason *reason)
 {
   PetscInt       i,n,n1;
   PetscErrorCode ierr;
   PetscScalar    *r,*b,*x;
 
   PetscFunctionBegin;
+  *its = m;
+  *reason = PCRICHARDSON_CONVERGED_ITS;
   ierr = VecGetSize(bb,&n);CHKERRQ(ierr); n1 = n - 1;
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
