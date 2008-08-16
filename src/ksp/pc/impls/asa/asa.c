@@ -1864,7 +1864,7 @@ PetscErrorCode PCApplyRichardson_ASA(PC pc,Vec b,Vec x,Vec w,PetscReal rtol,Pets
       *reason = PCRICHARDSON_CONVERGED_RTOL;
       break;
     } else if (rnorm < asa->abstol) {
-      *reason = PCRICHARDSON_CONVERGED_RTOL;
+      *reason = PCRICHARDSON_CONVERGED_ATOL;
       break;
     } else if (rnorm > rnorm_start*(dtol)) {
       *reason = PCRICHARDSON_DIVERGED_DTOL;
