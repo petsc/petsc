@@ -20,7 +20,24 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
     The code below "cheats" from PETSc style
        1) VecRestoreArray() is called immediately after VecGetArray() and the array values are still accessed
        2) The vector operations on done directly on the arrays instead of with VecXXXX() calls
+
+       For clarity in the code we name single VECTORS with two names, for example, Rn_1 and R, but they actually always
+     the exact same memory. We do this with macro defines so that compiler won't think they are 
+     two different variables.
+
 */
+#define Xn_1 Xn
+#define xn_1 xn
+#define Rn_1 Rn
+#define rn_1 rn
+#define Un_1 Un
+#define un_1 un
+#define Vn_1 Vn
+#define vn_1 vn
+#define Qn_1 Qn
+#define qn_1 qn
+#define Zn_1 Zn
+#define zn_1 zn
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_IBCGS"
 static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
@@ -31,11 +48,11 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   PetscScalar    insums[6],outsums[6],tmp1,tmp2;
   PetscScalar    sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin;
   PetscScalar    taun_1, taun, rhon_1, rhon, alphan_1, alphan, omegan_1, omegan;
-  PetscScalar    *r0, *rn_1,*rn,*xn_1, *xn, *f0, *vn_1, *vn,*zn_1, *zn, *qn_1, *qn, *b, *un_1, *un;
+  PetscScalar    *r0, *rn, *xn, *f0, *vn, *zn, *qn, *b, *un;
   /* the rest do not have to keep n_1 values */
   PetscScalar    kappan, thetan, etan, gamman, betan, deltan;
   PetscScalar    *tn, *sn;
-  Vec            R0,Rn_1,Rn,Xn_1,Xn,F0,Vn_1,Vn,Zn_1,Zn,Qn_1,Qn,Tn,Sn,B,Un_1,Un;
+  Vec            R0,Rn,Xn,F0,Vn,Zn,Qn,Tn,Sn,B,Un;
   Mat            A;
 
   PetscFunctionBegin;
@@ -43,17 +60,17 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
-  Xn_1 = Xn = ksp->vec_sol;ierr = VecGetArray(Xn_1,&xn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Xn_1,&xn_1);CHKERRQ(ierr);xn = xn_1;
-  B         = ksp->vec_rhs;ierr = VecGetArray(B,&b);ierr = VecRestoreArray(B,&b);CHKERRQ(ierr);
-  R0        = ksp->work[0];ierr = VecGetArray(R0,&r0);CHKERRQ(ierr);ierr = VecRestoreArray(R0,&r0);
-  Rn_1 = Rn = ksp->work[1];ierr = VecGetArray(Rn_1,&rn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Rn_1,&rn_1);CHKERRQ(ierr);rn = rn_1;
-  Un_1 = Un = ksp->work[2];ierr = VecGetArray(Un_1,&un_1);CHKERRQ(ierr);ierr = VecRestoreArray(Un_1,&un_1);CHKERRQ(ierr);un = un_1;
-  F0        = ksp->work[3];ierr = VecGetArray(F0,&f0);CHKERRQ(ierr);ierr = VecRestoreArray(F0,&f0);CHKERRQ(ierr);
-  Vn_1 = Vn = ksp->work[4];ierr = VecGetArray(Vn_1,&vn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Vn_1,&vn_1);CHKERRQ(ierr);vn = vn_1;
-  Zn_1 = Zn = ksp->work[5];ierr = VecGetArray(Zn_1,&zn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Zn_1,&zn_1);CHKERRQ(ierr);zn = zn_1;
-  Qn_1 = Qn = ksp->work[6];ierr = VecGetArray(Qn_1,&qn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Qn_1,&qn_1);CHKERRQ(ierr);qn = qn_1;
-  Tn        = ksp->work[7];ierr = VecGetArray(Tn,&tn);CHKERRQ(ierr);ierr = VecRestoreArray(Tn,&tn);CHKERRQ(ierr);
-  Sn        = ksp->work[8];ierr = VecGetArray(Sn,&sn);CHKERRQ(ierr);ierr = VecRestoreArray(Sn,&sn);CHKERRQ(ierr);
+  Xn = ksp->vec_sol;ierr = VecGetArray(Xn_1,&xn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Xn_1,&xn_1);CHKERRQ(ierr);
+  B  = ksp->vec_rhs;ierr = VecGetArray(B,&b);ierr = VecRestoreArray(B,&b);CHKERRQ(ierr);
+  R0 = ksp->work[0];ierr = VecGetArray(R0,&r0);CHKERRQ(ierr);ierr = VecRestoreArray(R0,&r0);
+  Rn = ksp->work[1];ierr = VecGetArray(Rn_1,&rn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Rn_1,&rn_1);CHKERRQ(ierr);
+  Un = ksp->work[2];ierr = VecGetArray(Un_1,&un_1);CHKERRQ(ierr);ierr = VecRestoreArray(Un_1,&un_1);CHKERRQ(ierr);
+  F0 = ksp->work[3];ierr = VecGetArray(F0,&f0);CHKERRQ(ierr);ierr = VecRestoreArray(F0,&f0);CHKERRQ(ierr);
+  Vn = ksp->work[4];ierr = VecGetArray(Vn_1,&vn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Vn_1,&vn_1);CHKERRQ(ierr);
+  Zn = ksp->work[5];ierr = VecGetArray(Zn_1,&zn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Zn_1,&zn_1);CHKERRQ(ierr);
+  Qn = ksp->work[6];ierr = VecGetArray(Qn_1,&qn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Qn_1,&qn_1);CHKERRQ(ierr);
+  Tn = ksp->work[7];ierr = VecGetArray(Tn,&tn);CHKERRQ(ierr);ierr = VecRestoreArray(Tn,&tn);CHKERRQ(ierr);
+  Sn = ksp->work[8];ierr = VecGetArray(Sn,&sn);CHKERRQ(ierr);ierr = VecRestoreArray(Sn,&sn);CHKERRQ(ierr);
 
   /* r0 = rn_1 = b - A*xn_1; */
   /* ierr = KSP_PCApplyBAorAB(ksp,Xn_1,Rn_1,Tn);CHKERRQ(ierr);
