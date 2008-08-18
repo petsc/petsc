@@ -25,6 +25,7 @@
 #define TAO_INF_SAFEGUARD	1e+8
 
 typedef struct{
+    PetscTruth allocated;
     PetscInt lm;
     PetscScalar eps;
     PetscInt limitType;
@@ -89,7 +90,6 @@ EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm,PetscInt,PetscInt,Mat*);
 
 /* PETSc Mat overrides */
 EXTERN PetscErrorCode MatView_LMVM(Mat,PetscViewer);
-EXTERN PetscErrorCode MatSolve_LMVM(Mat, Vec, Vec);
 EXTERN PetscErrorCode MatDestroy_LMVM(Mat);
 
 /*
@@ -118,6 +118,7 @@ PetscErrorCode MatLMVMSetH0(Mat,Mat);
 PetscErrorCode MatLMVMGetX0(Mat,Vec);
 PetscErrorCode MatLMVMRefine(Mat, Mat, Vec, Vec);
 PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v);
+PetscErrorCode MatLMVMSolve(Mat, Vec, Vec);
 
 
 #endif

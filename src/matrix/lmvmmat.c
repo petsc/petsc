@@ -3,7 +3,7 @@
 
 
 /* These lists are used for setting options */
-static const char *(Scale_Table[64]) = {
+static const char *Scale_Table[64] = {
     "none","scalar","broyden"
 };
 
@@ -25,7 +25,8 @@ static const char *Limit_Table[64] = {
 
   Input Parameters:
   . comm -- MPI Communicator
-  . N -- size of Hessian matrix being approximated
+  . n -- local size of vectors
+  . N -- global size of vectors
   Output Parameters:
   . A - New LMVM matrix
 
@@ -45,6 +46,7 @@ EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
     ctx->lm=5;
     ctx->eps=0.0;
     ctx->limitType=MatLMVM_Limit_None;
+    ctx->scaleType=MatLMVM_Scale_Broyden;
     ctx->rScaleType = MatLMVM_Rescale_Scalar;
     ctx->s_alpha = 1.0;
     ctx->r_alpha = 1.0;
@@ -119,8 +121,6 @@ EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
     ctx->useDefaultH0=PETSC_TRUE;
     
     info = MatCreateShell(comm, n, n, N, N, ctx, A); CHKERRQ(info);
-    info = MatShellSetOperation(*A,MATOP_SOLVE,(void(*)(void))MatSolve_LMVM);
-    CHKERRQ(info);
     info = MatShellSetOperation(*A,MATOP_DESTROY,(void(*)(void))MatDestroy_LMVM);
     CHKERRQ(info);
     info = MatShellSetOperation(*A,MATOP_VIEW,(void(*)(void))MatView_LMVM);
@@ -133,8 +133,8 @@ EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
   
   
 #undef __FUNCT__
-#define __FUNCT__ "MatSolve_LMVM"
-EXTERN PetscErrorCode MatSolve_LMVM(Mat A, Vec b, Vec x) 
+#define __FUNCT__ "MatLMVMSolve"
+EXTERN PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x) 
 {
     PetscScalar      sq, yq, dd;
     PetscInt       ll;
@@ -159,7 +159,7 @@ EXTERN PetscErrorCode MatSolve_LMVM(Mat A, Vec b, Vec x)
     }
 
     scaled = PETSC_FALSE;
-    if (!scaled && shell->useDefaultH0) {
+    if (!scaled && !shell->useDefaultH0 && shell->H0) {
 	info = MatSolve(shell->H0,x,shell->U); CHKERRQ(info);
 	info = VecDot(x,shell->U,&dd); CHKERRQ(info);
 	if ((dd > 0.0) && !TaoInfOrNaN(dd)) {
@@ -209,15 +209,24 @@ EXTERN PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
 {
     PetscTruth isascii;
     PetscErrorCode info;
+    MatLMVMCtx *lmP;
     PetscFunctionBegin;
+
+    info = MatShellGetContext(A,(void**)&lmP); CHKERRQ(info);
 
     info = PetscTypeCompare((PetscObject)pv,PETSC_VIEWER_ASCII,&isascii); CHKERRQ(info);
     if (isascii) {
-	info = PetscViewerASCIIPrintf(pv,"View matrix not implemented.\n");
-	CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv,"LMVM Matrix\n"); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," Number of vectors: %d\n",lmP->lm); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," scale type: %s\n",Scale_Table[lmP->scaleType]); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," rescale type: %s\n",Rescale_Table[lmP->rScaleType]); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," limit type: %s\n",Limit_Table[lmP->limitType]); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," updates: %d\n",lmP->updates); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," rejects: %d\n",lmP->rejects); CHKERRQ(info);
+	
     }
     else {
-	SETERRQ(1,"non-ascii viewers not implemented yet for MatLMVM\n");
+	SETERRQ(1,"non-ascii viewers not implemented for MatLMVM\n");
     }
 
     PetscFunctionReturn(0);
@@ -265,10 +274,15 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
   PetscScalar yy_sum, ys_sum, ss_sum;
 
   PetscFunctionBegin;
-  
+
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(g,VEC_COOKIE,3);
   ierr = PetscTypeCompare((PetscObject)M,MATSHELL,&same); CHKERRQ(ierr);
   if (!same) {SETERRQ(1,"Matrix M is not type MatLMVM");}
   ierr = MatShellGetContext(M,(void**)&ctx); CHKERRQ(ierr);
+  if (!ctx->allocated) {
+      ierr = MatLMVMAllocateVectors(M, x);  CHKERRQ(ierr);
+  }
 
   if (0 == ctx->iter) {
     ierr = MatLMVMReset(M); CHKERRQ(ierr);
@@ -650,7 +664,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
           }
           break;
 
-        case MatLMVM_Limit_Absolute:
+	case MatLMVM_Limit_Absolute:
 	  if (ctx->nu) {
 	    ierr = VecCopy(ctx->P, ctx->D); CHKERRQ(ierr);
 	    ierr = VecShift(ctx->P, -ctx->nu); CHKERRQ(ierr);
@@ -806,7 +820,9 @@ EXTERN PetscErrorCode MatLMVMAllocateVectors(Mat m, Vec v)
     ierr = VecDuplicate(v,&ctx->W); CHKERRQ(ierr);
     ierr = VecDuplicate(v,&ctx->P); CHKERRQ(ierr);
     ierr = VecDuplicate(v,&ctx->Q); CHKERRQ(ierr);
-
+    ierr = VecDuplicate(v,&ctx->Xprev); CHKERRQ(ierr);
+    ierr = VecDuplicate(v,&ctx->Gprev); CHKERRQ(ierr);
+    ctx->allocated = PETSC_TRUE;
     PetscFunctionReturn(0);
 }
 
