@@ -212,7 +212,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
         rn = sn - omegan*tn
         xn = xn_1 + zn + omegan*sn
     */
-    ierr = PetscLogEventBarrierBegin(VEC_Ops,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(VEC_Ops,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
     rnormin = 0.0;
     for (i=0; i<N; i++) {
       rn[i]    = sn[i] - omegan*tn[i];
@@ -220,7 +220,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       xn[i]   += zn[i] + omegan*sn[i];
     }
     ierr = PetscLogFlops(7*N);
-    ierr = PetscLogEventBarrierEnd(VEC_Ops,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
 
     if (ksp->chknorm < ksp->its) {
       ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
