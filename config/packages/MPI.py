@@ -195,6 +195,8 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MPI_COMM_C2F', 1)
     if self.checkLink('#include <mpi.h>\n', 'MPI_Fint a;\n'):
       self.addDefine('HAVE_MPI_FINT', 1)
+      if self.checkLink('#include <mpi.h>\n', 'MPI_Fint dtype = MPI_Type_c2f(MPI_LONG_DOUBLE);\n'):
+        self.addDefine('HAVE_MPI_LONG_DOUBLE', 1)
 
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
