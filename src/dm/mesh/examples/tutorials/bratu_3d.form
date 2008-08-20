@@ -2,7 +2,7 @@
 # TODO: Add the nonlinear part.
 #
 
-element = FiniteElement("Lagrange", "tetrahedron", 1)
+element = FiniteElement("Lagrange", "tetrahedron", 2)
 
 v = TestFunction(element)
 u = TrialFunction(element)

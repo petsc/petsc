@@ -111,7 +111,7 @@ namespace ALE {
       
     public:
 
-      virtual double integrateDual(unsigned int dof) const {
+      virtual double integrateDual(unsigned int dof) {
 	//when implementing this one should have some notion of what the dof number is built into the BC; this would constitute having some cell or something known
 	//by the object such that that cell can be set and integrated within.
 	throw Exception("GeneralBoundaryCondition->integrateDual: Nonimplemented base-class version called.");
@@ -731,6 +731,7 @@ namespace ALE {
 	    this->setCell(mesh, *c_iter);
 	    for(int f = 0; f < numFields; ++f) v[f] = 0;
 	    for(int cl = 0; cl < oSize; ++cl) {
+	      //if (*c_iter == 0) std::cout << oPoints[cl] << std::endl;
 	      const int cDim = s->getConstraintDimension(oPoints[cl]);
 	      int       off  = 0;
 	      int       f    = 0;
@@ -929,6 +930,12 @@ namespace ALE {
 	ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
 	s->axpy(-1.0, constant);
       }
+      PetscTruth flag;
+      PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);
+      if (flag) {
+	ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+	s->view("RHS");
+      }
       PetscFunctionReturn(0);
     }
 
@@ -980,7 +987,119 @@ namespace ALE {
       //ierr = MatView(A, PETSC_VIEWER_STDOUT_SELF);
       PetscFunctionReturn(0);	
     }
-    
+
+#undef __FUNCT__
+#define __FUNCT__ "SubProblemView"
+
+    PetscErrorCode SubProblemView(SectionReal section, std::string name, PetscViewer viewer, int firstField = 0, int lastField = 0) {
+      //"vectorize" takes the first n discretizations and writes them out as a vector
+      PetscErrorCode ierr;
+      
+      PetscFunctionBegin;
+      Obj<PETSC_MESH_TYPE> m;
+      Obj<PETSC_MESH_TYPE::real_section_type> field;
+      ierr = SectionRealGetBundle(section, m);
+      ierr = SectionRealGetSection(section, field);
+      const ALE::Obj<PETSC_MESH_TYPE::numbering_type>& numbering = m->getFactory()->getNumbering(m, 0);
+      ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
+      
+      if (lastField - firstField > 0) {
+	ierr = PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name.c_str());CHKERRQ(ierr);
+	
+      } else {
+	if (name == "") {
+	  ierr = PetscViewerASCIIPrintf(viewer, "SCALARS Unknown double %d\n", 1);CHKERRQ(ierr);
+	} else {
+	  ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name.c_str(), 1);CHKERRQ(ierr);
+	}
+	ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
+      }
+      typedef PETSC_MESH_TYPE::real_section_type::value_type value_type;
+      const Obj<PETSC_MESH_TYPE::real_section_type::chart_type>& chart   = field->getChart();
+      const MPI_Datatype                  mpiType = ALE::New::ParallelFactory<value_type>::singleton(field->debug())->getMPIType();
+      int enforceDim;
+      int fiberDim = lastField - firstField + 1;
+      if (lastField - firstField > 0) {
+	enforceDim = 3;  //we need at least three vector components to be written out
+      } else {
+	enforceDim = 0;
+      }
+      if (field->commRank() == 0) {
+	for(PETSC_MESH_TYPE::real_section_type::chart_type::const_iterator p_iter = chart->begin(); p_iter != chart->end(); ++p_iter) {
+	  if (!numbering->hasPoint(*p_iter)) continue;
+	  const value_type *array = field->restrictPoint(*p_iter);
+	  const int&        dim   = field->getFiberDimension(*p_iter);
+	  ostringstream     line;
+	  
+	  // Perhaps there should be a flag for excluding boundary values
+	  if (dim != 0) {
+	    for(int d = firstField; d <= lastField; d++) {
+	      if (d > 0) {
+		line << " ";
+	      }
+	      line << array[d];
+	    }
+	    for(int d = fiberDim; d < enforceDim; d++) {
+	      line << " 0.0";
+	    }
+	    line << std::endl;
+	    ierr = PetscViewerASCIIPrintf(viewer, "%s", line.str().c_str());CHKERRQ(ierr);
+	  }
+	}
+	for(int p = 1; p < field->commSize(); p++) {
+	  value_type *remoteValues;
+	  int         numLocalElementsAndFiberDim[2];
+	  int         size;
+	  MPI_Status  status;
+	  
+	  ierr = MPI_Recv(numLocalElementsAndFiberDim, 2, MPI_INT, p, 1, field->comm(), &status);CHKERRQ(ierr);
+	  size = numLocalElementsAndFiberDim[0]*numLocalElementsAndFiberDim[1];
+	  ierr = PetscMalloc(size * sizeof(value_type), &remoteValues);CHKERRQ(ierr);
+	  ierr = MPI_Recv(remoteValues, size, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
+	  
+	  for(int e = 0; e < numLocalElementsAndFiberDim[0]; e++) {
+	    for(int d = 0; d < fiberDim; d++) {
+	      if (mpiType == MPI_INT) {
+		ierr = PetscViewerASCIIPrintf(viewer, "%d", remoteValues[e*numLocalElementsAndFiberDim[1]+d]);CHKERRQ(ierr);
+	      } else {
+		ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteValues[e*numLocalElementsAndFiberDim[1]+d]);CHKERRQ(ierr);
+	      }
+	    }
+	    for(int d = fiberDim; d < enforceDim; d++) {
+	      ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
+	    }
+	    ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+	  }
+	  ierr = PetscFree(remoteValues);CHKERRQ(ierr);
+	}
+      } else {
+	value_type *localValues;
+	int         numLocalElements = numbering->getLocalSize();
+	const int   size = numLocalElements*fiberDim;
+	int         k = 0;
+	
+	ierr = PetscMalloc(size * sizeof(value_type), &localValues);CHKERRQ(ierr);
+	for(PETSC_MESH_TYPE::real_section_type::chart_type::const_iterator p_iter = chart->begin(); p_iter != chart->end(); ++p_iter) {
+	  if (!numbering->hasPoint(*p_iter)) continue;
+	  if (numbering->isLocal(*p_iter)) {
+	    const value_type *array = field->restrictPoint(*p_iter);
+	    const int&        dim   = field->getFiberDimension(*p_iter);
+	    
+	    for(int i = firstField; i <= lastField; ++i) {
+	      localValues[k++] = array[i];
+	    }
+	  }
+	}
+	if (k != size) {
+	  SETERRQ2(PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, size);
+	}
+	int numLocalElementsAndFiberDim[2] = {numLocalElements, fiberDim};
+	ierr = MPI_Send(numLocalElementsAndFiberDim, 2, MPI_INT, 0, 1, field->comm());CHKERRQ(ierr);
+	ierr = MPI_Send(localValues, size, mpiType, 0, 1, field->comm());CHKERRQ(ierr);
+	ierr = PetscFree(localValues);CHKERRQ(ierr);
+      }
+      PetscFunctionReturn(0);
+    }
   }  //namespace Problem
 } //namespace ALE
 

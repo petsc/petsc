@@ -12,7 +12,7 @@ namespace ALE {
   namespace Problem {
     typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
     typedef enum {NEUMANN, DIRICHLET} BCType;
-    typedef enum {POISSON, VECTORPOISSON, MIXEDPOISSON} UFCFormType;
+    typedef enum {POISSON, VECTORPOISSON, STOKES, MIXEDPOISSON} UFCFormType;
     typedef enum {ASSEMBLY_FULL, ASSEMBLY_STORED, ASSEMBLY_CALCULATED} AssemblyType;
     typedef union {SectionReal section; Vec vec;} ExactSolType;
     typedef struct {
@@ -40,6 +40,23 @@ namespace ALE {
     } Ex_UFCOptions;
     namespace UFCFunctions {
 
+      class coordinates : public ufc::function {
+	int _dim;
+	int nevaluations;
+      public:
+	coordinates(int dim) {
+	  _dim = dim;
+	  nevaluations = 0;
+	}
+	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
+	  if (nevaluations < 6) {
+	    values[0] = coordinates[_dim];
+	  } else {
+	    values[0] = -10.;
+	  }
+	}
+      };
+
       class zero_scalar : public ufc::function {
 	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
 	  values[0] = 0.;
@@ -58,8 +75,6 @@ namespace ALE {
 	  for (int i = 0; i < _order; i++) values[i] = 0.;
 	}
       };
-
-
 
       class constant_scalar : public ufc::function {
 	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
@@ -142,16 +157,25 @@ namespace ALE {
 	}
       };
 
-      class quadratic_2d_vector : public ufc::function {
+      class quadratic_vector : public ufc::function {
       private:
-	int _dim;
+	int _embed_dim;
+	int _vector_dim;
+	double _factor;
       public:
-	quadratic_2d_vector (int dim) : ufc::function() {
-	  _dim = dim;
+	quadratic_vector (int embed_dim, int vector_dim, double factor = 1.) : ufc::function() {
+	  _embed_dim = embed_dim;
+	  _vector_dim = vector_dim;
+	  _factor = factor;
 	}
 	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
 	  //PetscScalar quadratic_2d(const double x[]) {
-	  for (int i = 0; i < _dim; i++) values[i] = coordinates[0]*coordinates[0] + coordinates[1]*coordinates[1];
+	  for (int i = 0; i < _vector_dim; i++) {
+	    values[i] = 0.;
+	    for (int j = 0; j < _embed_dim; j++) {
+	      values[i] += _factor*coordinates[j]*coordinates[j];
+	    }
+	  }
 	}
       };
 
@@ -201,6 +225,112 @@ namespace ALE {
 	  values[0] = cos(2.0*PETSC_PI*coordinates[0]);
 	}
       };
+
+      class lid_driven : public ufc::function {
+      private:
+	int _topdim;
+	double _topcoord;
+	int _flowdirectiondim;
+	int _curdim;
+	double _velocity; 
+      public:
+	lid_driven(int topdim, double topcoord, double velocity, int flowdirectiondim, int curdim) : ufc::function() {
+	  _topdim = topdim;
+	  _topcoord = topcoord;
+	  _flowdirectiondim = flowdirectiondim;
+	  _curdim = curdim;
+	  _velocity = velocity;
+	}
+	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
+	  if (_curdim == _flowdirectiondim && coordinates[_topdim] >= _topcoord) {
+	    values[0] = (coordinates[_flowdirectiondim] - 1.)*coordinates[_flowdirectiondim]*_velocity;
+	  } else {
+	    values[0] = 0.;
+	  }
+	}
+      };
+      void pinion_pressure(Obj<PETSC_MESH_TYPE> m, int pinned_dimension, double coord_thresh, std::string marker_name, int marker_num) {
+	//mark a single vertex on the marker label with "marker_num"; we probably don't want to use "marker" due to the possibility of relabeling a boundary vertex
+	const Obj<PETSC_MESH_TYPE::label_type> & marker = m->createLabel(marker_name);
+	//first vertex -- nei! don't pin the lid!
+	int dim = m->getDimension();
+	int depth = m->depth();
+	//ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(m->getSieve()->getMaxConeSize(), m->depth())+1, true);
+	
+	const Obj<PETSC_MESH_TYPE::label_sequence>& cells = m->heightStratum(0);
+	const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
+	PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin();
+	PETSC_MESH_TYPE::label_sequence::iterator c_iter_end = cells->end();
+
+	ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(m->getSieve()->getMaxConeSize(), m->depth())+1, true);
+
+	while (c_iter != c_iter_end) {
+	  ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*m->getSieve(), *c_iter, pV);
+	  const PETSC_MESH_TYPE::point_type *oPoints = pV.getPoints();
+	  const int                          oSize   = pV.getSize();
+	  for (int i = 0; i < oSize; i++) {
+	    if (m->depth(oPoints[i]) == 0) {
+	      const double * coords = coordinates->restrictPoint(oPoints[i]);
+	      if (fabs(coords[0] - 0.5) < 0.01 && fabs(coords[1] - 0.5) < 0.01 && dim == 2) {
+		m->setValue(marker, oPoints[i], marker_num);
+		m->setValue(marker, *c_iter, marker_num + 1);
+		PetscPrintf(m->comm(), "pinned %d\n", oPoints[i]);
+	      } else if (fabs(coords[0] - 0.5) < 0.1 && fabs(coords[1] - 0.5) < 0.1 && fabs(coords[2] - 0.5) < 0.1 && dim == 3) {
+		m->setValue(marker, oPoints[i], marker_num);
+		m->setValue(marker, *c_iter, marker_num + 1);
+	      }
+	    }
+	  }
+	  pV.clear();
+	  c_iter++;
+	}
+	marker->view(marker_name.c_str());
+      }      
+      void mark_frictionless(Obj<PETSC_MESH_TYPE> m, int constrained_dim, double lowcoord, double highcoord, std::string marker_name, int marker_num) {
+	//mark a single vertex on the marker label with "marker_num"; we probably don't want to use "marker" due to the possibility of relabeling a boundary vertex
+	
+	const Obj<PETSC_MESH_TYPE::label_type> & marker = m->createLabel(marker_name);
+	int dim = m->getDimension();
+	int depth = m->depth();
+	//ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(m->getSieve()->getMaxConeSize(), m->depth())+1, true);
+	
+	const Obj<PETSC_MESH_TYPE::label_sequence>& cells = m->heightStratum(0);  //cells with unknowns on the topological boundary
+	const Obj<PETSC_MESH_TYPE::real_section_type>& coordinates = m->getRealSection("coordinates");
+	PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin();
+	PETSC_MESH_TYPE::label_sequence::iterator c_iter_end = cells->end();
+
+	ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(m->getSieve()->getMaxConeSize(), m->depth())+1, true);
+
+	while (c_iter != c_iter_end) {
+	  ALE::ISieveTraversal<PETSC_MESH_TYPE::sieve_type>::orientedClosure(*m->getSieve(), *c_iter, pV);
+	  const PETSC_MESH_TYPE::point_type *oPoints = pV.getPoints();
+	  const int                          oSize   = pV.getSize();
+	  for (int i = 0; i < oSize; i++) {
+	    PETSC_MESH_TYPE::point_type p = oPoints[i];
+	    if (m->getValue(m->getLabel("marker"), p) == 1) {
+	      const double * coords = m->restrictClosure(coordinates, p);
+	      //if any aren't at the threshhold don't constrain
+	      bool flag = true;
+	      for (int d = 0; d < m->depth(p)+1; d++) {
+		if (coords[d*dim+constrained_dim] <= lowcoord || coords[d*dim+constrained_dim] >= highcoord) {
+		  //m->setValue(marker, p, marker_num);
+		  //m->setValue(marker, *c_iter, marker_num+1);
+		} else {
+		  flag = false;
+		}
+		if (flag) {
+		  m->setValue(marker, p, marker_num);
+		  m->setValue(marker, *c_iter, marker_num+1);
+		}
+	      }
+	    }
+	  }
+	  pV.clear();
+	  c_iter++;
+	}
+	marker->view(marker_name.c_str());
+      }      
+
     };
     class Ex_UFC : ALE::ParallelObject {
     public:
@@ -225,8 +355,8 @@ namespace ALE {
         PetscErrorCode ierr;
 
         if (this->_dmmg) {ierr = DMMGDestroy(this->_dmmg);CHKERRXX(ierr);}
-        ierr = this->destroyExactSolution(this->_options.exactSol);CHKERRXX(ierr);
-        ierr = this->destroyExactSolution(this->_options.error);CHKERRXX(ierr);
+        //ierr = this->destroyExactSolution(this->_options.exactSol);CHKERRXX(ierr);
+        //ierr = this->destroyExactSolution(this->_options.error);CHKERRXX(ierr);
         ierr = this->destroyMesh();CHKERRXX(ierr);
       };
     public:
@@ -236,7 +366,7 @@ namespace ALE {
         const char    *runTypes[3] = {"full", "test", "mesh"};
         const char    *bcTypes[2]  = {"neumann", "dirichlet"};
         const char    *asTypes[4]  = {"full", "stored", "calculated"};
-	const char    *fTypes[3]   = {"poisson", "vectorpoisson", "mixedpoisson"};
+	const char    *fTypes[4]   = {"poisson", "vectorpoisson", "stokes", "mixedpoisson"};
         ostringstream  filename;
         PetscInt       run, bc, as, f;
         PetscErrorCode ierr;
@@ -399,6 +529,8 @@ namespace ALE {
       #include "../examples/tutorials/bratu_3d.h"
       #include "../examples/tutorials/vector_poisson_2d.h"
       #include "../examples/tutorials/vector_poisson_3d.h"
+      #include "../examples/tutorials/stokes_2d.h"
+      #include "../examples/tutorials/stokes_3d.h"
 
     public:
       #undef __FUNCT__
@@ -406,7 +538,6 @@ namespace ALE {
       PetscErrorCode createProblem() {
 	PetscErrorCode ierr;
         PetscFunctionBegin;
-	
 	
 	//first step; set up a UFCDiscretization object for each element or subelement in the form, depending on what kind of form we're using.
 
@@ -420,11 +551,11 @@ namespace ALE {
 	    //set up the unknown discretization.
 	    Obj<UFCDiscretization> disc = new UFCDiscretization(_mesh->comm(), _ufchook->_b_finite_element, _ufchook->_cell);
 	    disc->setNumDof(0, 1);
-	    disc->setNumDof(1, 0);
+	    disc->setNumDof(1, 1);
 	    disc->setNumDof(2, 0);
 	    //PetscPrintf(_mesh->comm(), "set up the discretization numdofs\n");
-	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 3);
-	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 3, 1);
+	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 6);
+	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 6, 1);
 	    if (bcType() == DIRICHLET) {
 	      Obj<UFCBoundaryCondition> bc;
 	      if (_options.reentrantMesh) {
@@ -461,30 +592,69 @@ namespace ALE {
 	    _subproblem->setIntegral("jac_integral", jac_integral);
 	    _subproblem->setIntegral("rhs_integral", rhs_integral);
 	    if (bcType() == DIRICHLET) {
-	      Obj<UFCBoundaryCondition> bc_x = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_vector(1), new UFCFunctions::quadratic_2d_vector(1), _ufchook->_b_sub_finite_elements[0], _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> bc_x = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_vector(2, 1), new UFCFunctions::quadratic_vector(2, 1), _ufchook->_b_sub_finite_elements[0], _ufchook->_cell, "marker", 1);
 
-	      Obj<UFCBoundaryCondition> bc_y = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_vector(1), new UFCFunctions::quadratic_2d_vector(1), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> bc_y = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_vector(2, 1), new UFCFunctions::quadratic_vector(2, 1), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell, "marker", 1);
 	      disc_x->setBoundaryCondition(bc_x);
 	      disc_y->setBoundaryCondition(bc_y);
 	    }
 	    _subproblem->setDiscretization("1", disc_x);
 	    _subproblem->setDiscretization("2", disc_y);
 
+	  } else if (FormType() == STOKES) {
+	    _ufchook = new UFCHook(new stokes_2dBilinearForm(), new stokes_2dLinearForm());
+	    _subproblem = new UFCFormSubProblem(_mesh->comm(), _ufchook->_cell, _ufchook->_b_finite_element);
+	    Obj<UFCDiscretization> vx = new UFCDiscretization(_mesh->comm(), new stokes_2dBilinearForm_finite_element_0_0_0(), _ufchook->_cell);
+	    vx->setNumDof(0, 1);
+	    vx->setNumDof(1, 1);
+	    vx->setNumDof(2, 0);
+	    //vx->setRHSFunction(new UFCFunctions::lid_driven(1, 0.93, 0, 0, 0.0));
+	    vx->setRHSFunction(new UFCFunctions::constant_vector(1, 0.0));  //0 bulk force
+	    Obj<UFCDiscretization> vy = new UFCDiscretization(_mesh->comm(), new stokes_2dBilinearForm_finite_element_0_0_1(), _ufchook->_cell);
+	    vy->setNumDof(0, 1);
+	    vy->setNumDof(1, 1);
+	    vy->setNumDof(2, 0);
+	    //vy->setRHSFunction(new UFCFunctions::lid_driven(1, 0.93, 0, 1, 0.0));
+	    vy->setRHSFunction(new UFCFunctions::constant_vector(1, 0.0));  //0 bulk force
+	    Obj<UFCDiscretization> w = new UFCDiscretization(_mesh->comm(), new stokes_2dBilinearForm_finite_element_0_1(), _ufchook->_cell);
+	    w->setNumDof(0, 1);
+	    w->setNumDof(1, 0);
+	    w->setNumDof(2, 0);
+	    w->setRHSFunction(new UFCFunctions::constant_vector(1, 0.0));  //0 divergence??
+	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 15);
+	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 15, 1);
+	    _subproblem->setIntegral("jac_integral", jac_integral);
+	    _subproblem->setIntegral("rhs_integral", rhs_integral);
+	    if (bcType() == DIRICHLET) {
+	      UFCFunctions::mark_frictionless(_mesh, 1, 0., 1., "ly", 1);
+	      UFCFunctions::pinion_pressure(_mesh, 1, 0.01, std::string("w"), 1);
+	      Obj<UFCBoundaryCondition> lx = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::lid_driven(1, 0.99, 0.1, 0, 0), new UFCFunctions::constant_vector(1, 0.), vx->getFiniteElement(), _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> ly = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), vy->getFiniteElement(), _ufchook->_cell, "ly", 1);
+	      Obj<UFCBoundaryCondition> wp = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), w->getFiniteElement(), _ufchook->_cell, "w", 1);
+
+	      vx->setBoundaryCondition("lx", lx);
+	      vy->setBoundaryCondition("ly", ly);
+	      w->setBoundaryCondition("w", wp);
+	    }
+	    _subproblem->setDiscretization("vx", vx);
+	    _subproblem->setDiscretization("vy", vy);
+	    _subproblem->setDiscretization("w", w);
 	  }
 	} else if (dim() == 3) {
 	  if (FormType() == POISSON) {
 	    _ufchook = new UFCHook(new bratu_3dBilinearForm(), new bratu_3dLinearForm());
 	    _subproblem = new UFCFormSubProblem(_mesh->comm(), _ufchook->_cell, _ufchook->_b_finite_element);
 	    Obj<UFCDiscretization> disc = new UFCDiscretization(_mesh->comm(), _ufchook->_b_finite_element, _ufchook->_cell);
-	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 4);
-	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 4, 1);
+	    //second order
+	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 10);
+	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 10, 1);
 	    disc->setRHSFunction(new UFCFunctions::constant_scalar);
 	    disc->setNumDof(0, 1);
-	    disc->setNumDof(1, 0);
+	    disc->setNumDof(1, 1);
 	    disc->setNumDof(2, 0);
 	    disc->setNumDof(3, 0);
 	    if (bcType() == DIRICHLET) {
-	      Obj<UFCBoundaryCondition> bc = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_scalar(), new UFCFunctions::quadratic_2d_scalar(), _ufchook->_b_finite_element, _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> bc = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_vector(3, 1), new UFCFunctions::quadratic_vector(3, 1), _ufchook->_b_finite_element, _ufchook->_cell, "marker", 1);
 	      disc->setBoundaryCondition(bc);
 	    }
 	    _subproblem->setDiscretization(disc);
@@ -498,30 +668,30 @@ namespace ALE {
 	    //TODO rewrite evaluate_rhs to take into account vectors; it should just zero everything now.
 	    Obj<UFCDiscretization> disc_x = new UFCDiscretization(_mesh->comm(), _ufchook->_b_sub_finite_elements[0], _ufchook->_cell);
 	    disc_x->setNumDof(0, 1);
-	    disc_x->setNumDof(1, 0);
+	    disc_x->setNumDof(1, 1);
 	    disc_x->setNumDof(2, 0);
 	    disc_x->setNumDof(3, 0);
 	    disc_x->setRHSFunction(new UFCFunctions::constant_vector(1, -4.));
 	    Obj<UFCDiscretization> disc_y = new UFCDiscretization(_mesh->comm(), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell);
 	    disc_y->setNumDof(0, 1);
-	    disc_y->setNumDof(1, 0);
+	    disc_y->setNumDof(1, 1);
 	    disc_y->setNumDof(2, 0);
 	    disc_y->setNumDof(3, 0);
 	    disc_y->setRHSFunction(new UFCFunctions::constant_vector(1, -4.));
 	    Obj<UFCDiscretization> disc_z = new UFCDiscretization(_mesh->comm(), _ufchook->_b_sub_finite_elements[2], _ufchook->_cell);
 	    disc_z->setNumDof(0, 1);
-	    disc_z->setNumDof(1, 0);
+	    disc_z->setNumDof(1, 1);
 	    disc_z->setNumDof(2, 0);
 	    disc_z->setNumDof(3, 0);
 	    disc_z->setRHSFunction(new UFCFunctions::constant_vector(1, -4.));
-	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 12);
-	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 12, 1);
+	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 30);
+	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 30, 1);
 	    _subproblem->setIntegral("jac_integral", jac_integral);
 	    _subproblem->setIntegral("rhs_integral", rhs_integral);
 	    if (bcType() == DIRICHLET) {
-	      Obj<UFCBoundaryCondition> bc_x = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_vector(1), new UFCFunctions::quadratic_2d_vector(1), _ufchook->_b_sub_finite_elements[0], _ufchook->_cell, "marker", 1);
-	      Obj<UFCBoundaryCondition> bc_y = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_vector(1), new UFCFunctions::quadratic_2d_vector(1), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell, "marker", 1);
-	      Obj<UFCBoundaryCondition> bc_z = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_2d_vector(1), new UFCFunctions::quadratic_2d_vector(1), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> bc_x = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_vector(3, 1, 1.), new UFCFunctions::coordinates(0), _ufchook->_b_sub_finite_elements[0], _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> bc_y = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_vector(3, 1, 1.), new UFCFunctions::coordinates(1), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> bc_z = UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::quadratic_vector(3, 1, 1.), new UFCFunctions::coordinates(2), _ufchook->_b_sub_finite_elements[1], _ufchook->_cell, "marker", 1);
 
 	      disc_x->setBoundaryCondition(bc_x);
 	      disc_y->setBoundaryCondition(bc_y);
@@ -531,6 +701,54 @@ namespace ALE {
 	    _subproblem->setDiscretization("uy", disc_y);
 	    _subproblem->setDiscretization("uz", disc_z);
 
+	  } else if (FormType() == STOKES) {
+	    _ufchook = new UFCHook(new stokes_3dBilinearForm(), new stokes_3dLinearForm());
+	    _subproblem = new UFCFormSubProblem(_mesh->comm(), _ufchook->_cell, _ufchook->_b_finite_element);
+	    Obj<UFCDiscretization> vx = new UFCDiscretization(_mesh->comm(), new stokes_3dBilinearForm_finite_element_0_0_0(), _ufchook->_cell);
+	    vx->setNumDof(0, 1);
+	    vx->setNumDof(1, 1);
+	    vx->setNumDof(2, 0);
+	    vx->setNumDof(3, 0);
+	    vx->setRHSFunction(new UFCFunctions::constant_vector(1, 0.0));  //0 bulk force
+	    Obj<UFCDiscretization> vy = new UFCDiscretization(_mesh->comm(), new stokes_3dBilinearForm_finite_element_0_0_1(), _ufchook->_cell);
+	    vy->setNumDof(0, 1);
+	    vy->setNumDof(1, 1);
+	    vy->setNumDof(2, 0);
+	    vy->setNumDof(3, 0);
+	    vy->setRHSFunction(new UFCFunctions::constant_vector(1, 0.0));  //0 bulk force
+	    Obj<UFCDiscretization> vz = new UFCDiscretization(_mesh->comm(), new stokes_3dBilinearForm_finite_element_0_0_2(), _ufchook->_cell);
+	    vz->setNumDof(0, 1);
+	    vz->setNumDof(1, 1);
+	    vz->setNumDof(2, 0);
+	    vz->setNumDof(3, 0);
+	    vz->setRHSFunction(new UFCFunctions::constant_vector(1, 0.0));  //0 bulk force
+	    Obj<UFCDiscretization> w = new UFCDiscretization(_mesh->comm(), new stokes_3dBilinearForm_finite_element_0_1(), _ufchook->_cell);
+	    w->setNumDof(0, 1);
+	    w->setNumDof(1, 0);
+	    w->setNumDof(2, 0);
+	    w->setNumDof(3, 0);
+	    w->setRHSFunction(new UFCFunctions::constant_vector(1, 0.0));  //0 divergence??
+	    Obj<UFCCellIntegral> jac_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_b_cell_integrals[0], _ufchook->_cell, "height", 0, 2, 34);
+	    Obj<UFCCellIntegral> rhs_integral = new UFCCellIntegral(_mesh->comm(), _ufchook->_l_cell_integrals[0], _ufchook->_cell, "height", 0, 1, 34, 1);
+	    _subproblem->setIntegral("jac_integral", jac_integral);
+	    _subproblem->setIntegral("rhs_integral", rhs_integral);
+	    if (bcType() == DIRICHLET) {
+	      UFCFunctions::pinion_pressure(_mesh, 1, 0.01, "w", 1);
+	      Obj<UFCBoundaryCondition> lx = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::lid_driven(1, 0.99, 0.1, 0, 0), new UFCFunctions::constant_vector(1, 0.), vx->getFiniteElement(), _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> ly = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), vy->getFiniteElement(), _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> lz = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), vz->getFiniteElement(), _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> wp = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), w->getFiniteElement(), _ufchook->_cell, "w", 1);
+
+	      vx->setBoundaryCondition("lx", lx);
+	      vy->setBoundaryCondition("ly", ly);
+	      vz->setBoundaryCondition("lz", lz);
+	      w->setBoundaryCondition("w", wp);
+	    }
+	    _subproblem->setDiscretization("vx", vx);
+	    _subproblem->setDiscretization("vy", vy);
+	    _subproblem->setDiscretization("vz", vz);
+	    _subproblem->setDiscretization("w", w);
+	    
 	  }
 	}
 	PetscPrintf(_mesh->comm(), "done setting up the problem\n");
@@ -540,6 +758,8 @@ namespace ALE {
 	PetscTruth flag;
 	ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
 	if (flag) {s->view("Exact Solution");}
+	ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &flag);CHKERRQ(ierr);
+	if (flag) {_mesh->view("setup mesh");}
         PetscFunctionReturn(0);
       };
     public:
@@ -659,7 +879,14 @@ namespace ALE {
 	  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
 	  ierr = PetscViewerFileSetName(viewer, "sol.vtk");CHKERRQ(ierr);
 	  ierr = MeshView((::Mesh) this->_dm, viewer);CHKERRQ(ierr);
-	  ierr = SectionRealView(solution, viewer);CHKERRQ(ierr);
+	  if (FormType() == POISSON) {
+	    ierr = SectionRealView(solution, viewer);CHKERRQ(ierr);
+	  } else {
+	    ierr = ALE::Problem::SubProblemView(solution, "velocity", viewer, 0, dim()-1);
+	    if (FormType() == STOKES) {
+	      //ierr = ALE::Problem::SubProblemView(solution, "pressure", viewer, dim(), dim());
+	    }
+	  }
 	  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 	  
 	  ierr = PetscViewerCreate(comm(), &viewer);CHKERRQ(ierr);
