@@ -793,7 +793,7 @@ namespace ALE {
 
         for(int p = 0; p < coneSize; ++p) {
           const typename Retriever::point_type& point     = cone[p].first;
-          int                                   pO        = cone[p].second;
+          int                                   pO        = cone[p].second == 0 ? 1 : cone[p].second;
           const int                             pConeSize = sieve.getConeSize(point);
 
           if (pO < 0) {
