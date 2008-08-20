@@ -76,34 +76,22 @@ namespace ALE {
   public:
     template<typename T>
     static const char *getClassName() {
-      const std::type_info& id = typeid(T);
+      const std::type_info& id      = typeid(T);
+      char                 *id_name = const_cast<char *>(id.name());
 
 #ifdef ALE_HAVE_CXX_ABI
       // If the C++ ABI API is available, we can use it to demangle the class name provided by type_info.
       // Here we assume the industry standard C++ ABI as described in http://www.codesourcery.com/cxx-abi/abi.html.
-      char *id_name;
       int   status;
       char *id_name_demangled = abi::__cxa_demangle(id.name(), NULL, NULL, &status);
 
-      if (status != 0) {
-        id_name = new char[strlen(id.name())+1];
-        strcpy(id_name, id.name());
-      } else {
+      if (!status) {
         id_name = id_name_demangled;
       }
-#else
-      const char *id_name;
-
-      id_name = id.name();
 #endif
       return id_name;
     };
-    static void restoreClassName(const char *className) {
-#ifdef ALE_HAVE_CXX_ABI
-      // Free the name malloc'ed by __cxa_demangle
-      free(const_cast<char *>(className));
-#endif
-    };
+    static void restoreClassName(const char *className) {};
   };
 
   template<class T>
