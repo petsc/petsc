@@ -61,6 +61,7 @@ E*/
 #define MATBLOCKMAT        "blockmat"
 #define MATCOMPOSITE       "composite"
 #define MATSEQFFTW         "seqfftw"
+#define MATTRANSPOSE       "transpose"
 
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
