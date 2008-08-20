@@ -186,12 +186,9 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         }
       } 
       ierr = ISGetLocalSize(ilink->is,&ilink->csize);CHKERRQ(ierr);
-      printf("csize %d\n",ilink->csize);CHKERRQ(ierr);
       ierr = ISSorted(ilink->is,&sorted);CHKERRQ(ierr);
       if (!sorted) SETERRQ(PETSC_ERR_USER,"Fields must be sorted when creating split");
       ierr = ISAllGather(ilink->is,&ilink->cis);CHKERRQ(ierr);
-      ierr = ISView(ilink->is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-      ierr = ISView(ilink->cis,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   }
@@ -217,12 +214,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (!jac->Afield) {
       ierr = PetscMalloc(nsplit*sizeof(Mat),&jac->Afield);CHKERRQ(ierr);
       for (i=0; i<nsplit; i++) {
-	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,ilink->csize,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,PETSC_DECIDE,MAT_INITIAL_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
 	ilink = ilink->next;
       }
     } else {
       for (i=0; i<nsplit; i++) {
-	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,ilink->csize,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
+	ierr = MatGetSubMatrix(pc->mat,ilink->is,PETSC_NULL,PETSC_DECIDE,MAT_REUSE_MATRIX,&jac->Afield[i]);CHKERRQ(ierr);
 	ilink = ilink->next;
       }
     }
@@ -334,11 +331,23 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
       }
     }
     if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
+      cnt -= 2;
       while (ilink->previous) {
         ilink = ilink->previous;
-        ierr  = MatMult(pc->mat,y,jac->w1);CHKERRQ(ierr);
-        ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
-        ierr  = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
+        if (jac->Afield) {
+	  /* compute the residual only over the part of the vector needed */
+	  ierr = MatMult(jac->Afield[cnt--],y,ilink->x);CHKERRQ(ierr);
+	  ierr = VecScale(ilink->x,-1.0);CHKERRQ(ierr);
+	  ierr = VecScatterBegin(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+	  ierr = VecScatterEnd(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+	  ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+	  ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+	  ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        } else {
+	  ierr  = MatMult(pc->mat,y,jac->w1);CHKERRQ(ierr);
+	  ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
+	  ierr  = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
+        }
       }
     }
   } else SETERRQ1(PETSC_ERR_SUP,"Unsupported or unknown composition",(int) jac->type);
