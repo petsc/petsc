@@ -20,7 +20,24 @@ static PetscErrorCode KSPSetUp_IBCGS(KSP ksp)
     The code below "cheats" from PETSc style
        1) VecRestoreArray() is called immediately after VecGetArray() and the array values are still accessed
        2) The vector operations on done directly on the arrays instead of with VecXXXX() calls
+
+       For clarity in the code we name single VECTORS with two names, for example, Rn_1 and R, but they actually always
+     the exact same memory. We do this with macro defines so that compiler won't think they are 
+     two different variables.
+
 */
+#define Xn_1 Xn
+#define xn_1 xn
+#define Rn_1 Rn
+#define rn_1 rn
+#define Un_1 Un
+#define un_1 un
+#define Vn_1 Vn
+#define vn_1 vn
+#define Qn_1 Qn
+#define qn_1 qn
+#define Zn_1 Zn
+#define zn_1 zn
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSolve_IBCGS"
 static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
@@ -28,14 +45,26 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       i,N;
   PetscReal      rnorm,rnormin;
-  PetscScalar    insums[6],outsums[6],tmp1,tmp2;
-  PetscScalar    sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin;
+#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+  /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem 
+     on the same number of processes  with different runs) we support computing the inner products using Intel's 80 bit arithematic
+     rather than just 64 bit. Thus we copy our double precision values into long doubles (hoping this keeps the 16 extra bits)
+     and tell MPI to do its ALlreduces with MPI_LONG_DOUBLE.
+
+     Note for developers that does not effect the code. Intel's long double is implemented by storing the 80 bits of extended double
+     precision into a 16 byte space (the rest of the space is ignored)  */
+  long double    insums[6],outsums[6];
+#else
+  PetscScalar    insums[6],outsums[6];
+#endif
+  PetscScalar    sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin,tmp1,tmp2;
   PetscScalar    taun_1, taun, rhon_1, rhon, alphan_1, alphan, omegan_1, omegan;
-  PetscScalar    *r0, *rn_1,*rn,*xn_1, *xn, *f0, *vn_1, *vn,*zn_1, *zn, *qn_1, *qn, *b, *un_1, *un;
+  PetscScalar    *PETSC_RESTRICT r0, *PETSC_RESTRICT rn, *PETSC_RESTRICT xn, *PETSC_RESTRICT f0, *PETSC_RESTRICT vn, *PETSC_RESTRICT zn, *PETSC_RESTRICT qn;
+  PetscScalar    *PETSC_RESTRICT b, *PETSC_RESTRICT un;
   /* the rest do not have to keep n_1 values */
   PetscScalar    kappan, thetan, etan, gamman, betan, deltan;
-  PetscScalar    *tn, *sn;
-  Vec            R0,Rn_1,Rn,Xn_1,Xn,F0,Vn_1,Vn,Zn_1,Zn,Qn_1,Qn,Tn,Sn,B,Un_1,Un;
+  PetscScalar    *PETSC_RESTRICT tn, *PETSC_RESTRICT sn;
+  Vec            R0,Rn,Xn,F0,Vn,Zn,Qn,Tn,Sn,B,Un;
   Mat            A;
 
   PetscFunctionBegin;
@@ -43,17 +72,17 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecGetLocalSize(ksp->vec_sol,&N);CHKERRQ(ierr);
-  Xn_1 = Xn = ksp->vec_sol;ierr = VecGetArray(Xn_1,&xn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Xn_1,&xn_1);CHKERRQ(ierr);xn = xn_1;
-  B         = ksp->vec_rhs;ierr = VecGetArray(B,&b);ierr = VecRestoreArray(B,&b);CHKERRQ(ierr);
-  R0        = ksp->work[0];ierr = VecGetArray(R0,&r0);CHKERRQ(ierr);ierr = VecRestoreArray(R0,&r0);
-  Rn_1 = Rn = ksp->work[1];ierr = VecGetArray(Rn_1,&rn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Rn_1,&rn_1);CHKERRQ(ierr);rn = rn_1;
-  Un_1 = Un = ksp->work[2];ierr = VecGetArray(Un_1,&un_1);CHKERRQ(ierr);ierr = VecRestoreArray(Un_1,&un_1);CHKERRQ(ierr);un = un_1;
-  F0        = ksp->work[3];ierr = VecGetArray(F0,&f0);CHKERRQ(ierr);ierr = VecRestoreArray(F0,&f0);CHKERRQ(ierr);
-  Vn_1 = Vn = ksp->work[4];ierr = VecGetArray(Vn_1,&vn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Vn_1,&vn_1);CHKERRQ(ierr);vn = vn_1;
-  Zn_1 = Zn = ksp->work[5];ierr = VecGetArray(Zn_1,&zn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Zn_1,&zn_1);CHKERRQ(ierr);zn = zn_1;
-  Qn_1 = Qn = ksp->work[6];ierr = VecGetArray(Qn_1,&qn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Qn_1,&qn_1);CHKERRQ(ierr);qn = qn_1;
-  Tn        = ksp->work[7];ierr = VecGetArray(Tn,&tn);CHKERRQ(ierr);ierr = VecRestoreArray(Tn,&tn);CHKERRQ(ierr);
-  Sn        = ksp->work[8];ierr = VecGetArray(Sn,&sn);CHKERRQ(ierr);ierr = VecRestoreArray(Sn,&sn);CHKERRQ(ierr);
+  Xn = ksp->vec_sol;ierr = VecGetArray(Xn_1,(PetscScalar**)&xn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Xn_1,(PetscScalar**)&xn_1);CHKERRQ(ierr);
+  B  = ksp->vec_rhs;ierr = VecGetArray(B,(PetscScalar**)&b);ierr = VecRestoreArray(B,(PetscScalar**)&b);CHKERRQ(ierr);
+  R0 = ksp->work[0];ierr = VecGetArray(R0,(PetscScalar**)&r0);CHKERRQ(ierr);ierr = VecRestoreArray(R0,(PetscScalar**)&r0);
+  Rn = ksp->work[1];ierr = VecGetArray(Rn_1,(PetscScalar**)&rn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Rn_1,(PetscScalar**)&rn_1);CHKERRQ(ierr);
+  Un = ksp->work[2];ierr = VecGetArray(Un_1,(PetscScalar**)&un_1);CHKERRQ(ierr);ierr = VecRestoreArray(Un_1,(PetscScalar**)&un_1);CHKERRQ(ierr);
+  F0 = ksp->work[3];ierr = VecGetArray(F0,(PetscScalar**)&f0);CHKERRQ(ierr);ierr = VecRestoreArray(F0,(PetscScalar**)&f0);CHKERRQ(ierr);
+  Vn = ksp->work[4];ierr = VecGetArray(Vn_1,(PetscScalar**)&vn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Vn_1,(PetscScalar**)&vn_1);CHKERRQ(ierr);
+  Zn = ksp->work[5];ierr = VecGetArray(Zn_1,(PetscScalar**)&zn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Zn_1,(PetscScalar**)&zn_1);CHKERRQ(ierr);
+  Qn = ksp->work[6];ierr = VecGetArray(Qn_1,(PetscScalar**)&qn_1);CHKERRQ(ierr);ierr = VecRestoreArray(Qn_1,(PetscScalar**)&qn_1);CHKERRQ(ierr);
+  Tn = ksp->work[7];ierr = VecGetArray(Tn,(PetscScalar**)&tn);CHKERRQ(ierr);ierr = VecRestoreArray(Tn,(PetscScalar**)&tn);CHKERRQ(ierr);
+  Sn = ksp->work[8];ierr = VecGetArray(Sn,(PetscScalar**)&sn);CHKERRQ(ierr);ierr = VecRestoreArray(Sn,(PetscScalar**)&sn);CHKERRQ(ierr);
 
   /* r0 = rn_1 = b - A*xn_1; */
   /* ierr = KSP_PCApplyBAorAB(ksp,Xn_1,Rn_1,Tn);CHKERRQ(ierr);
@@ -161,7 +190,11 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     insums[4] = thetan;
     insums[5] = kappan;
     ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX)
+    ierr = MPI_Allreduce(insums,outsums,6,MPI_LONG_DOUBLE,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+#else
     ierr = MPI_Allreduce(insums,outsums,6,MPIU_SCALAR,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+#endif
     ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
     phin     = outsums[0];
     pin      = outsums[1];
@@ -179,7 +212,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
         rn = sn - omegan*tn
         xn = xn_1 + zn + omegan*sn
     */
-    ierr = PetscLogEventBarrierBegin(VEC_Ops,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    ierr = PetscLogEventBegin(VEC_Ops,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
     rnormin = 0.0;
     for (i=0; i<N; i++) {
       rn[i]    = sn[i] - omegan*tn[i];
@@ -187,7 +220,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
       xn[i]   += zn[i] + omegan*sn[i];
     }
     ierr = PetscLogFlops(7*N);
-    ierr = PetscLogEventBarrierEnd(VEC_Ops,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
 
     if (ksp->chknorm < ksp->its) {
       ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
