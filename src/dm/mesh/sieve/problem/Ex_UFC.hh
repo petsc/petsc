@@ -228,22 +228,25 @@ namespace ALE {
 
       class lid_driven : public ufc::function {
       private:
+	int _dim;
 	int _topdim;
 	double _topcoord;
 	int _flowdirectiondim;
 	int _curdim;
 	double _velocity; 
       public:
-	lid_driven(int topdim, double topcoord, double velocity, int flowdirectiondim, int curdim) : ufc::function() {
-	  _topdim = topdim;
-	  _topcoord = topcoord;
-	  _flowdirectiondim = flowdirectiondim;
-	  _curdim = curdim;
+	lid_driven(int dim, double velocity, double topcoord) : ufc::function() {
+	  _dim = dim;
 	  _velocity = velocity;
+	  _topcoord = topcoord;
 	}
 	virtual void evaluate(double * values, const double * coordinates, const ufc::cell &c) const {
-	  if (_curdim == _flowdirectiondim && coordinates[_topdim] >= _topcoord) {
-	    values[0] = (coordinates[_flowdirectiondim] - 1.)*coordinates[_flowdirectiondim]*_velocity;
+	  if (coordinates[1] >= _topcoord) {
+	    if (_dim == 2) {
+	      values[0] = 4*(coordinates[0] - 1.)*coordinates[0]*_velocity;
+	    } else if (_dim == 3) {
+	      values[0] = 16*(coordinates[0] - 1.)*coordinates[0]*(coordinates[2] - 1.)*coordinates[2]*_velocity;
+	    }
 	  } else {
 	    values[0] = 0.;
 	  }
@@ -254,7 +257,7 @@ namespace ALE {
 	const Obj<PETSC_MESH_TYPE::label_type> & marker = m->createLabel(marker_name);
 	//first vertex -- nei! don't pin the lid!
 	int dim = m->getDimension();
-	int depth = m->depth();
+	//int depth = m->depth();
 	//ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(m->getSieve()->getMaxConeSize(), m->depth())+1, true);
 	
 	const Obj<PETSC_MESH_TYPE::label_sequence>& cells = m->heightStratum(0);
@@ -291,7 +294,7 @@ namespace ALE {
 	
 	const Obj<PETSC_MESH_TYPE::label_type> & marker = m->createLabel(marker_name);
 	int dim = m->getDimension();
-	int depth = m->depth();
+	//int depth = m->depth();
 	//ALE::ISieveVisitor::PointRetriever<PETSC_MESH_TYPE::sieve_type> pV((int) pow(m->getSieve()->getMaxConeSize(), m->depth())+1, true);
 	
 	const Obj<PETSC_MESH_TYPE::label_sequence>& cells = m->heightStratum(0);  //cells with unknowns on the topological boundary
@@ -626,10 +629,10 @@ namespace ALE {
 	    _subproblem->setIntegral("jac_integral", jac_integral);
 	    _subproblem->setIntegral("rhs_integral", rhs_integral);
 	    if (bcType() == DIRICHLET) {
-	      UFCFunctions::mark_frictionless(_mesh, 1, 0., 1., "ly", 1);
+	      //UFCFunctions::mark_frictionless(_mesh, 1, 0., 1., "ly", 1);
 	      UFCFunctions::pinion_pressure(_mesh, 1, 0.01, std::string("w"), 1);
-	      Obj<UFCBoundaryCondition> lx = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::lid_driven(1, 0.99, 0.1, 0, 0), new UFCFunctions::constant_vector(1, 0.), vx->getFiniteElement(), _ufchook->_cell, "marker", 1);
-	      Obj<UFCBoundaryCondition> ly = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), vy->getFiniteElement(), _ufchook->_cell, "ly", 1);
+	      Obj<UFCBoundaryCondition> lx = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::lid_driven(2, 1., 0.99), new UFCFunctions::constant_vector(1, 0.), vx->getFiniteElement(), _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> ly = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), vy->getFiniteElement(), _ufchook->_cell, "marker", 1);
 	      Obj<UFCBoundaryCondition> wp = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), w->getFiniteElement(), _ufchook->_cell, "w", 1);
 
 	      vx->setBoundaryCondition("lx", lx);
@@ -734,7 +737,7 @@ namespace ALE {
 	    _subproblem->setIntegral("rhs_integral", rhs_integral);
 	    if (bcType() == DIRICHLET) {
 	      UFCFunctions::pinion_pressure(_mesh, 1, 0.01, "w", 1);
-	      Obj<UFCBoundaryCondition> lx = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::lid_driven(1, 0.99, 0.1, 0, 0), new UFCFunctions::constant_vector(1, 0.), vx->getFiniteElement(), _ufchook->_cell, "marker", 1);
+	      Obj<UFCBoundaryCondition> lx = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::lid_driven(3, 10., 0.99), new UFCFunctions::constant_vector(1, 0.), vx->getFiniteElement(), _ufchook->_cell, "marker", 1);
 	      Obj<UFCBoundaryCondition> ly = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), vy->getFiniteElement(), _ufchook->_cell, "marker", 1);
 	      Obj<UFCBoundaryCondition> lz = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), vz->getFiniteElement(), _ufchook->_cell, "marker", 1);
 	      Obj<UFCBoundaryCondition> wp = new UFCBoundaryCondition(_mesh->comm(), new UFCFunctions::constant_vector(1, 0.), new UFCFunctions::constant_vector(1, 0.), w->getFiniteElement(), _ufchook->_cell, "w", 1);
@@ -925,13 +928,13 @@ namespace ALE {
         //PetscScalar  (*func)(const double *) = this->_options.exactFunc;
         PetscErrorCode ierr;
         PetscFunctionBegin;
-        const int dim = this->_mesh->getDimension();
+        //const int dim = this->_mesh->getDimension();
         double  localError = 0.0;
         // Loop over cells
         const Obj<PETSC_MESH_TYPE::label_sequence>&    cells         = this->_mesh->heightStratum(0);
         for(PETSC_MESH_TYPE::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
           PetscScalar *x;
-          double       elemError = 0.0;
+          //double       elemError = 0.0;
 
           //this->_mesh->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
           if (debug()) {

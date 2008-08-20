@@ -1083,7 +1083,7 @@ namespace ALE {
 	  if (!numbering->hasPoint(*p_iter)) continue;
 	  if (numbering->isLocal(*p_iter)) {
 	    const value_type *array = field->restrictPoint(*p_iter);
-	    const int&        dim   = field->getFiberDimension(*p_iter);
+	    //const int&        dim   = field->getFiberDimension(*p_iter);
 	    
 	    for(int i = firstField; i <= lastField; ++i) {
 	      localValues[k++] = array[i];
