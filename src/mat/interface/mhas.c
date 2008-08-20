@@ -36,6 +36,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat mat,MatOperation op,PetscT
   PetscValidType(mat,1);
   PetscValidPointer(has,3);
   if (((void **)mat->ops)[op]) {*has =  PETSC_TRUE;}
-  else {*has = PETSC_FALSE;}
+  else {
+    if (op == MATOP_GET_SUBMATRIX) {
+      PetscErrorCode ierr;
+      PetscMPIInt size;
+
+      ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
+      if (size == 1) {
+        ierr = MatHasOperation(mat,MATOP_GET_SUBMATRICES,has);CHKERRQ(ierr);
+      } else {
+        *has = PETSC_FALSE;
+      }
+    } else {
+      *has = PETSC_FALSE;
+    }
+  }
   PetscFunctionReturn(0);
 }

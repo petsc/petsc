@@ -170,7 +170,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     for (i=0; i<nsplit; i++) {
       if (jac->defaultsplit) {
         ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+i,nsplit,&ilink->is);CHKERRQ(ierr);
-        ilink->csize = ccsize/nsplit;
       } else if (!ilink->is) {
         if (ilink->nfields > 1) {
           PetscInt   *ii,j,k,nfields = ilink->nfields,*fields = ilink->fields;
@@ -185,11 +184,14 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         } else { 
           ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields[0],bs,&ilink->is);CHKERRQ(ierr);
         }
-        ilink->csize = (ccsize/bs)*ilink->nfields;
-        ierr = ISSorted(ilink->is,&sorted);CHKERRQ(ierr);
-        if (!sorted) SETERRQ(PETSC_ERR_USER,"Fields must be sorted when creating split");
-      }
-      ierr  = ISAllGather(ilink->is,&ilink->cis);CHKERRQ(ierr);
+      } 
+      ierr = ISGetLocalSize(ilink->is,&ilink->csize);CHKERRQ(ierr);
+      printf("csize %d\n",ilink->csize);CHKERRQ(ierr);
+      ierr = ISSorted(ilink->is,&sorted);CHKERRQ(ierr);
+      if (!sorted) SETERRQ(PETSC_ERR_USER,"Fields must be sorted when creating split");
+      ierr = ISAllGather(ilink->is,&ilink->cis);CHKERRQ(ierr);
+      ierr = ISView(ilink->is,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+      ierr = ISView(ilink->cis,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
       ilink = ilink->next;
     }
   }
@@ -282,7 +284,7 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
   PC_FieldSplitLink ilink = jac->head;
-  PetscInt          bs;
+  PetscInt          bs,cnt;
 
   PetscFunctionBegin;
   CHKMEMQ;
@@ -312,11 +314,24 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
     }
     ierr = VecSet(y,0.0);CHKERRQ(ierr);
     ierr = FieldSplitSplitSolveAdd(ilink,x,y);CHKERRQ(ierr);
+    cnt = 1;
     while (ilink->next) {
       ilink = ilink->next;
-      ierr  = MatMult(pc->mat,y,jac->w1);CHKERRQ(ierr);
-      ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
-      ierr  = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
+      if (jac->Afield) {
+        /* compute the residual only over the part of the vector needed */
+        ierr = MatMult(jac->Afield[cnt++],y,ilink->x);CHKERRQ(ierr);
+        ierr = VecScale(ilink->x,-1.0);CHKERRQ(ierr);
+        ierr = VecScatterBegin(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = VecScatterEnd(ilink->sctx,x,ilink->x,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+        ierr = KSPSolve(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+        ierr = VecScatterBegin(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+        ierr = VecScatterEnd(ilink->sctx,ilink->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+      } else {
+        /* compute the residual over the entire vector */
+	ierr = MatMult(pc->mat,y,jac->w1);CHKERRQ(ierr);
+	ierr = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
+	ierr = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
+      }
     }
     if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
       while (ilink->previous) {
@@ -551,7 +566,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,IS is)
 {
   PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
   PetscErrorCode    ierr;
-    PC_FieldSplitLink ilink, next = jac->head;
+  PC_FieldSplitLink ilink, next = jac->head;
   char              prefix[128];
 
   PetscFunctionBegin;
@@ -840,7 +855,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC pc)
   ierr = PetscNewLog(pc,PC_FieldSplit,&jac);CHKERRQ(ierr);
   jac->bs        = -1;
   jac->nsplits   = 0;
-  jac->type      = PC_COMPOSITE_ADDITIVE;
+  jac->type      = PC_COMPOSITE_MULTIPLICATIVE;
 
   pc->data     = (void*)jac;
 

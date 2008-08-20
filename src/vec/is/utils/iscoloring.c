@@ -462,6 +462,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt len,Petsc
     each process will generate its own new IS that consists only of
     itself.
 
+    The communicator for this new IS is PETSC_COMM_SELF
+
     Level: intermediate
 
     Concepts: gather^index sets

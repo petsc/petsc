@@ -8,7 +8,7 @@ KSP Object:
   right preconditioning
 PC Object:
   type: fieldsplit
-    FieldSplit with ADDITIVE composition: total splits = 2, blocksize = -1
+    FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = -1
     Solver info for each split is in the following KSP objects:
     Split number 0 Defined by IS
     KSP Object:(fieldsplit_0_)
@@ -67,7 +67,7 @@ PC Object:
     type=seqaij, rows=64, cols=64
     total: nonzeros=696, allocated nonzeros=696
       using I-node routines: found 48 nodes, limit used is 5
-  1 SNES Function norm 6.81438e-05 
+  1 SNES Function norm 6.81478e-05 
 KSP Object:
   type: fgmres
     GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
@@ -77,7 +77,7 @@ KSP Object:
   right preconditioning
 PC Object:
   type: fieldsplit
-    FieldSplit with ADDITIVE composition: total splits = 2, blocksize = -1
+    FieldSplit with MULTIPLICATIVE composition: total splits = 2, blocksize = -1
     Solver info for each split is in the following KSP objects:
     Split number 0 Defined by IS
     KSP Object:(fieldsplit_0_)
@@ -136,6 +136,6 @@ PC Object:
     type=seqaij, rows=64, cols=64
     total: nonzeros=696, allocated nonzeros=696
       using I-node routines: found 48 nodes, limit used is 5
-  2 SNES Function norm 6.659e-10 
+  2 SNES Function norm 5.967e-11 
 Composite Physics: Number of Newton iterations = 2
 
