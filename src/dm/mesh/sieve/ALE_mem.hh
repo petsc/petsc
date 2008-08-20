@@ -119,13 +119,13 @@ namespace ALE {
     malloc_allocator(const malloc_allocator&) : numAllocs(0) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
     template <class U> 
     malloc_allocator(const malloc_allocator<U>&) : numAllocs(0) {className = ALE::MemoryLogger::getClassName<T>();sz = sizeof(value_type);}
-    ~malloc_allocator() {if (numAllocs > 50) {std::cout << "Allocated " << className << " " << numAllocs << " times" << std::endl;}; ALE::MemoryLogger::restoreClassName(className);}
+    ~malloc_allocator() {ALE::MemoryLogger::restoreClassName(className);}
 #else
     malloc_allocator() : numAllocs(0) {sz = sizeof(value_type);}
     malloc_allocator(const malloc_allocator&) : numAllocs(0) {sz = sizeof(value_type);}
     template <class U> 
     malloc_allocator(const malloc_allocator<U>&) : numAllocs(0) {sz = sizeof(value_type);}
-    ~malloc_allocator() {if (numAllocs > 50) {std::cout << "Allocated " << numAllocs << " times" << std::endl;}}
+    ~malloc_allocator() {}
 #endif
   public:
     pointer address(reference x) const {return &x;}
