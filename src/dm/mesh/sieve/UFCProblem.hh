@@ -303,9 +303,9 @@ namespace ALE {
 
 
       //yeargh!  do we ever use evaluate explicitly?
-      virtual double integrateDual(unsigned int dof) const {
+      virtual double integrateDual(unsigned int dof) {
 	int ufc_dof;
-	ufc_dof = _closure2data[dof];
+	ufc_dof = this->getReorder()[dof];
 	//just evaluate the function using the coordinates; assume the order doesn't get that screwed up
 	return this->_finite_element->evaluate_dof(ufc_dof, *_function, *_cell);
       }
@@ -373,11 +373,12 @@ namespace ALE {
 	  offset += this->getNumDof(0);
 	  //we know the reorder; do it!
 	  int offset = 0;
+	  //this order is checked -- and appears to be right
 	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[4] + i] = offset; 
 	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[5] + i] = offset; 
 	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[6] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[3] + i] = offset; 
 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[2] + i] = offset; 
+	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[3] + i] = offset; 
 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[1] + i] = offset;
  	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[0] + i] = offset;
 	  //TET!
@@ -420,9 +421,9 @@ namespace ALE {
 	  for (int i = 0; i < this->getNumDof(0); i++, offset++) reorder[closure_offsets[14] + i] = offset; 
 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[10] + i] = offset; 
 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[9] + i] = offset;
- 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[8] + i] = offset; 
+ 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[6] + i] = offset; 
+	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[8] + i] = offset; 
 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[7] + i] = offset; 
-	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[6] + i] = offset; 
 	  for (int i = 0; i < this->getNumDof(1); i++, offset++) reorder[closure_offsets[5] + i] = offset; 
 	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[4] + i] = offset; 
 	  for (int i = 0; i < this->getNumDof(2); i++, offset++) reorder[closure_offsets[3] + i] = offset; 
@@ -448,7 +449,7 @@ namespace ALE {
 	_closure2data = _reordering;
       }
 
-      virtual const int * getReorder(const int * _reordering) {
+      virtual const int * getReorder() {
 	return _closure2data;
       }
  
@@ -468,7 +469,7 @@ namespace ALE {
 	int ufc_dof;
 	if (_cell == PETSC_NULL) throw Exception("UFCBoundaryCondition->integrateDual: cell is not initialized");
 	//TODO reordering 
-	ufc_dof = _closure2data[dof];
+	ufc_dof = this->getReorder()[dof];
 	//switch the order
 
 	//TODO: reorder based upon the cell attributes -- switch the dof_index to be the screwy indices as used by the
@@ -487,177 +488,6 @@ namespace ALE {
       void setFiniteElement(ufc::finite_element * element) {_finite_element = element;};
       ufc::cell * getCell() {return _cell;};
       void setCell(ufc::cell * cell) {_cell = cell;};
-
-#if 0
-
-      virtual void orderTensor(int rank, int dim, double * reordered_tensor, double * original_tensor) {
-	//reorder the tensor of rank n such that it can be effectively fed to UFC
-	//precalculate the perturbation for a single tensor dimension here
-	
-	int entries = 1;
-	int * coords = new int[rank];
-	
-	for (int r = 0; r < rank; r++) {
-	  
-	}
-	delete coords;
-      }
-
-      virtual void setupReOrder() {
-	
-	//we need to loop over the closure, going over the fiberdimensions per topological depth to come up with forward and backwards index maps to and from UFC
-
-	/*
-
-        v0      v3
-	o-------o
-	|\     :|
-	| e2  : |
-	|  \ :  |
-      e0|f0 \   |
-	|  : \  |
-        | :   \ |
-        |:     \|
- 	o-------o
-        v1 e1   v2
-
-	strategy: reorder maps!  create a map between the first index in the closure (multiplied once over for a space rank)
-
-	 */
-
-
-	unsigned int dim = _cell->topological_dimension();
-	int space_size;
-	int tensor_dimension = 1;
-	for (int i = 0; i < _finite_element->space_rank(); i++) {
-	  tensor_dimension = tensor_dimension * _finite_element->space_dimension(i);
-	}
-	if (dim == 1) {
-	  int fdim_vertices = this->getNumDof(0);
-	  int fdim_cells = this->getNumDof(1);
-	  space_size = fdim_vertices*2+fdim_cells;
-	  int index = 0;
-	  std::map<int, int> closure_map; //use this to build the DoF maps based on fiberdimensions
-	  std::map<int, int> sieve_map;
-	  std::map<int, int> ufc_map;
-
-	  //go through each topological object in each order and reassign it.
-
-	  /*
-	    the closure ordering will be:
-	    sieve: e0 v1 v2
-	    ufc  : v1 v2 e0
-
-	    BUT, each field will have to be broken out by the space_dimension, as sieve puts all the points on the same 
-
-	   */
-
-	  //map from sieve ordering to UFC ordering
-
-	  //edge
-	  closure_map[0] = 2;
-	  //first vertex
-	  closure_map[1] = 0;
-	  //second vertex
-	  closure_map[2] = 1;
-
-	  //map from closure sieve restrict indices to sieve closure indices -- takes into account fiberdimension.
-	  //and the same map for ufc data entries to topological item indices; this will allow for us to construct forward and back maps
-	  index = 0;
-	  sieve_map[0] = index;
-	  sieve_map[1] = index+fdim_cells;
-	  sieve_map[2] = index+fdim_vertices;
-	  
-	  for (int i = 0; i < tensor_dimension; i++) { //loop over tensor dimension
-	    //just enumerate the topological objects in order
-	    
-	  }
-
-	  
-	} else if (dim == 2) {
-	  int fdim_vertices = this->getNumDof(0);
-	  int fdim_edges = this->getNumDof(1);
-	  int fdim_cells = this->getNumDof(2);
-	  space_size = fdim_vertices*3 + fdim_edges*3 + fdim_cells;
-	  /*
-	    the closure ordering will be:
-	    sieve: f0 e0 e1 e2 v0 v1 v2 
-	    ufc  : v0 v1 v2 e2 e1 e0 f0
-	   */
-
-	  //face
-	  closure_map[0] = 6;
-	  //edge 1
-	  closure_map[1] = 5;
-	  //edge 2
-	  closure_map[2] = 4;
-	  //edge 3
-	  closure_map[3] = 3;
-	  //vertex 1
-	  closure_map[4] = 0;
-	  //vertex 2
-	  closure_map[5] = 1;
-	  //vertex 3
-	  closure_map[6] = 2;
-
-
-	    
-	  int index = 0;
-	  
-	} else if (dim == 3) {
-	  int fdim_vertices = this->getNumDof(0);
-	  int fdim_edges = this->getNumDof(1);
-	  int fdim_faces = this->getNumDof(2);
-	  int fdim_cells = this->getNumDof(3);
-	  _order = new int[fdim_vertices*4+ fdim_edges*6 + fdim_faces*4 + fdim_cells];
-	  _reorder = new int[fdim_vertices*4+ fdim_edges*6 + fdim_faces*4 + fdim_cells];
-	  /*
-	    closure ordering will be:
-	    sieve: c0 f0 f1 f2 f3 e0 e1 e2 e3 e4 e5 e6 v0 v1 v2 v3
-	    ufc  : v0 v1 v2 v3 e6 e5 e4 e3 e2 e1 e0 f3 f2 f1 f0 c0
-	   */
-
-	  //tet
-
-	  //this could be wrong; reorder if necessary later
-
-	  closure_map[0] = 15;
-	  //face 1
-	  closure_map[1] = 14;
-	  //face 2
-	  closure_map[2] = 13;
-	  //face 3
-	  closure_map[3] = 12;
-	  //face 4
-	  closure_map[4] = 11;
-	  //edge 1
-	  closure_map[5] = 10;
-	  //edge 2
-	  closure_map[6] = 9;
-	  //edge 3
-	  closure_map[7] = 8;
-	  //edge 4
-	  closure_map[8] = 7;
-	  //edge 5
-	  closure_map[9] = 6;
-	  //edge 6
-	  closure_map[10] = 5;
-	  //vertex 1
-	  closure_map[11] = 0;
-	  //vertex 2
-	  closure_map[12] = 1;
-	  //vertex 3
-	  closure_map[13] = 2;
-	  //vertex 4
-	  closure_map[14] = 3;
-
-	  int index = 0;
-	} else {
-	  throw Exception("UFCDiscretization->setupOrder(): Unsupported topological dimension");
-	}
-      }
-
-#endif
 
     };
 
@@ -692,7 +522,7 @@ namespace ALE {
 	}
 	if (ncoefficients) {
 	  this->_tmp_coefficients = new double[dimension*ncoefficients];
-	  this->_coefficients = new const double*[dimension];
+	  this->_coefficients = new const double*[ncoefficients];
 	} else this->_coefficients = PETSC_NULL;
       }
 
@@ -723,8 +553,16 @@ namespace ALE {
       virtual void tabulateTensor(double * tensor, const double * coefficients = PETSC_NULL) {
 	//just run the frickin' tabulate_tensor routine from the form on what gets spit out by restrictClosure right now; rebuild or reorder later.
 	//the coefficients have come in in
-	  if (this->_coefficients)
-	    for (int i = 0; i < this->getSpaceDimension(); i++) this->_coefficients[this->getReorder()[i]] = &coefficients[i*this->getNumCoefficients()];
+	if (this->getNumCoefficients()) {
+	  for (int c = 0; c < this->getNumCoefficients(); c++) {
+	    this->_coefficients[c] = &_tmp_coefficients[c*this->getNumCoefficients()];
+	    for (int i = 0; i < this->getSpaceDimension(); i++) {
+	      //reorder the coefficients into the _tmp_coefficients array
+	      _tmp_coefficients[c*this->getNumCoefficients() + this->getReorder()[i]] = coefficients[i*this->getNumCoefficients() + c]; //may be wrong.
+	    }
+	  }
+	}
+
 	//the coefficients should already be reordered from the closure order to the normal order based upon the set
 	_integral->tabulate_tensor(_tmp_tensor, _coefficients, *_cell);
 	//reorder the tabulated tensor

@@ -9,7 +9,7 @@ EXAMPLESF       = ex12f90.F90 mex12f90.F90
 MANSEC          = DA
 NP              = 1
 DISPLAY         = :0.0
-ORDER           = 1
+ORDER           = 2
 EXTRA_ARGS      = -mesh_view_vtk -vec_view_vtk -mat_type umfpack -pc_type lu
 
 include ${PETSC_DIR}/conf/base
@@ -115,17 +115,23 @@ bratu_2d.h: bratu_2d.form
 bratu_3d.h: bratu_3d.form
 	ffc bratu_3d.form
 
-vector_poisson_2d.h: vector_poisson_2d.h
+vector_poisson_2d.h: vector_poisson_2d.form
 	ffc vector_poisson_2d.form
 
-vector_poisson_3d.h: vector_poisson_3d.h
+vector_poisson_3d.h: vector_poisson_3d.form
 	ffc vector_poisson_3d.form
+
+stokes_2d.h: stokes_2d.form
+	ffc stokes_2d.form
+
+stokes_3d.h: stokes_3d.form
+	ffc stokes_3d.form
 
 bratu_ufc: bratu_1d.h bratu_2d.h bratu_3d.h vector_poisson_2d.h vector_poisson_3d.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu_ufc.o chkopts
 	-${CLINKER} -o bratu_ufc  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu_ufc.o ${PETSC_SNES_LIB}
 	${RM} -f bratu_ufc.o
 
-ex_ufc: bratu_1d.h bratu_2d.h bratu_3d.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o ex_ufc.o chkopts
+ex_ufc: stokes_2d.h stokes_3d.h vector_poisson_2d.h vector_poisson_3d.h bratu_1d.h bratu_2d.h bratu_3d.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o ex_ufc.o chkopts
 	-${CLINKER} -o ex_ufc  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o ex_ufc.o ${PETSC_SNES_LIB}
 	${RM} -f ex_ufc.o
 
