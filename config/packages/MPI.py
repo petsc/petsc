@@ -213,6 +213,19 @@ class Configure(config.package.Package):
     self.compilers.CPPFLAGS = oldFlags
     return
 
+  def configureMPITypes(self):
+    '''Checking for MPI Datatype handles'''
+    oldFlags = self.compilers.CPPFLAGS
+    oldLibs  = self.compilers.LIBS
+    self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
+    self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
+    for datatype in ['MPI_LONG_DOUBLE']:
+      if self.checkRun('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n'):
+        self.addDefine('HAVE_'+datatype, 1)
+    self.compilers.CPPFLAGS = oldFlags
+    self.compilers.LIBS = oldLibs
+    return
+
   def alternateConfigureLibrary(self):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
@@ -627,6 +640,7 @@ class Configure(config.package.Package):
     self.executeTest(self.configureConversion)
     self.executeTest(self.configureMPI2)
     self.executeTest(self.configureTypes)
+    self.executeTest(self.configureMPITypes)
     self.executeTest(self.configureMissingPrototypes)
     self.executeTest(self.SGIMPICheck)
     self.executeTest(self.CxxMPICheck)
