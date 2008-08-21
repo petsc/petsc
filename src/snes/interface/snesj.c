@@ -44,20 +44,23 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
 {
   Vec            j1a,j2a,x2;
   PetscErrorCode ierr;
-  PetscInt       i,N,start,end,j,value;
-  PetscScalar    dx,*y,scale,*xx,wscale;
+  PetscInt       i,N,start,end,j,value,root;
+  PetscScalar    dx,*y,*xx,wscale;
   PetscReal      amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
   PetscReal      dx_min = 1.e-16,dx_par = 1.e-1,unorm;
   MPI_Comm       comm;
   PetscErrorCode (*eval_fct)(SNES,Vec,Vec)=0;
   PetscTruth     assembled,use_wp = PETSC_TRUE,flg;
   const char     *list[2] = {"ds","wp"};
+  PetscMPIInt    size;
+  const PetscInt *ranges;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
   eval_fct = SNESComputeFunction;
 
   ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MatAssembled(*B,&assembled);CHKERRQ(ierr);
   if (assembled) {
     ierr = MatZeroEntries(*B);CHKERRQ(ierr);
@@ -109,9 +112,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
     }
     ierr = (*eval_fct)(snes,x2,j2a);CHKERRQ(ierr);
     ierr = VecAXPY(j2a,-1.0,j1a);CHKERRQ(ierr);
-    /* Communicate scale to all processors */
-    ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
-    ierr = VecScale(j2a,scale);CHKERRQ(ierr);
+    /* Communicate scale=1/dx_i to all processors */
+    ierr = VecGetOwnershipRanges(x1,&ranges);CHKERRQ(ierr);
+    root = size;
+    for (j=size-1; j>-1; j--){
+      root--;
+      if (i>=ranges[j]) break;
+    }
+    ierr = MPI_Bcast(&wscale,1,MPIU_SCALAR,root,comm);CHKERRQ(ierr);
+
+    ierr = VecScale(j2a,wscale);CHKERRQ(ierr);
     ierr = VecNorm(j2a,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
     ierr = VecGetArray(j2a,&y);CHKERRQ(ierr);
     for (j=start; j<end; j++) {

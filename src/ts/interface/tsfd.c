@@ -93,21 +93,25 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t
 @*/
 PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
-  Vec            jj1,jj2,xx2;
+  Vec            f1,f2,xx2;
   PetscErrorCode ierr;
   PetscInt       i,N,start,end,j;
-  PetscScalar    dx,*y,scale,*xx,wscale;
+  PetscScalar    dx,*y,*xx,wscale;
   PetscReal      amax,epsilon = PETSC_SQRT_MACHINE_EPSILON;
   PetscReal      dx_min = 1.e-16,dx_par = 1.e-1;
   MPI_Comm       comm;
   PetscTruth     assembled;
+  PetscMPIInt    size;
+  const PetscInt *ranges;
+  PetscMPIInt    root;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(xx1,&jj1);CHKERRQ(ierr);
-  ierr = VecDuplicate(xx1,&jj2);CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&f1);CHKERRQ(ierr);
+  ierr = VecDuplicate(xx1,&f2);CHKERRQ(ierr);
   ierr = VecDuplicate(xx1,&xx2);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)xx1,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MatAssembled(*B,&assembled);CHKERRQ(ierr);
   if (assembled) {
     ierr = MatZeroEntries(*B);CHKERRQ(ierr);
@@ -115,11 +119,11 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
 
   ierr = VecGetSize(xx1,&N);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(xx1,&start,&end);CHKERRQ(ierr);
-  ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,jj1);CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,ts->ptime,xx1,f1);CHKERRQ(ierr);
 
   /* Compute Jacobian approximation, 1 column at a time.
-      xx1 = current iterate, jj1 = F(xx1)
-      xx2 = perturbed iterate, jj2 = F(xx2)
+      xx1 = current iterate, f1 = F(xx1)
+      xx2 = perturbed iterate, f2 = F(xx2)
    */
   for (i=0; i<N; i++) {
     ierr = VecCopy(xx1,xx2);CHKERRQ(ierr);
@@ -140,19 +144,26 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
     } else {
       wscale = 0.0;
     }
-    ierr = TSComputeRHSFunction(ts,t,xx2,jj2);CHKERRQ(ierr);
-    ierr = VecAXPY(jj2,-1.0,jj1);CHKERRQ(ierr);
-    /* Communicate scale to all processors */
-    ierr = MPI_Allreduce(&wscale,&scale,1,MPIU_SCALAR,PetscSum_Op,comm);CHKERRQ(ierr);
-    ierr = VecScale(jj2,scale);CHKERRQ(ierr);
-    ierr = VecNorm(jj2,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
-    ierr = VecGetArray(jj2,&y);CHKERRQ(ierr);
+    ierr = TSComputeRHSFunction(ts,t,xx2,f2);CHKERRQ(ierr);
+    ierr = VecAXPY(f2,-1.0,f1);CHKERRQ(ierr);
+    /* Communicate scale=1/dx_i to all processors */
+    ierr = VecGetOwnershipRanges(xx1,&ranges);CHKERRQ(ierr);
+    root = size;
+    for (j=size-1; j>-1; j--){
+      root--;
+      if (i>=ranges[j]) break;
+    }
+    ierr = MPI_Bcast(&wscale,1,MPIU_SCALAR,root,comm);CHKERRQ(ierr);
+
+    ierr = VecScale(f2,wscale);CHKERRQ(ierr);
+    ierr = VecNorm(f2,NORM_INFINITY,&amax);CHKERRQ(ierr); amax *= 1.e-14;
+    ierr = VecGetArray(f2,&y);CHKERRQ(ierr);
     for (j=start; j<end; j++) {
       if (PetscAbsScalar(y[j-start]) > amax) {
         ierr = MatSetValues(*B,1,&j,1,&i,y+j-start,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
-    ierr = VecRestoreArray(jj2,&y);CHKERRQ(ierr);
+    ierr = VecRestoreArray(f2,&y);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -162,8 +173,8 @@ PetscErrorCode TSDefaultComputeJacobian(TS ts,PetscReal t,Vec xx1,Mat *J,Mat *B,
   }
   *flag =  DIFFERENT_NONZERO_PATTERN;
 
-  ierr = VecDestroy(jj1);CHKERRQ(ierr);
-  ierr = VecDestroy(jj2);CHKERRQ(ierr);
+  ierr = VecDestroy(f1);CHKERRQ(ierr);
+  ierr = VecDestroy(f2);CHKERRQ(ierr);
   ierr = VecDestroy(xx2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
