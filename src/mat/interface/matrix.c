@@ -4873,7 +4873,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* 
 
    Concepts: matrices^column ownership
 
-.seealso:  MatGetOwnershipRange()
+.seealso:  MatGetOwnershipRange(), MatGetOwnershipRanges(), MatGetOwnershipRangesColumn()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt* n)
@@ -4914,7 +4914,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangeColumn(Mat mat,PetscInt *m
 
    Concepts: matrices^row ownership
 
-.seealso:   MatGetOwnershipRanges(), MatGetOwnershipRangeColumn()
+.seealso:   MatGetOwnershipRanges(), MatGetOwnershipRangeColumn(), MatGetOwnershipRangesColumn()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt* n)
@@ -4950,7 +4950,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,Petsc
 
    Concepts: matrices^row ownership
 
-.seealso:   MatGetOwnershipRange()
+.seealso:   MatGetOwnershipRange(), MatGetOwnershipRangeColumn(), MatGetOwnershipRangesColumn()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt **ranges)
@@ -4961,6 +4961,37 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt *
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   ierr = PetscMapGetRanges(&mat->rmap,ranges);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOwnershipRangesColumn"
+/*@C
+   MatGetOwnershipRangesColumn - Returns the range of local columns for each process
+
+   Not Collective
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
+.  ranges - start of each processors portion plus one more then the total length at the end
+
+   Level: beginner
+
+   Concepts: matrices^column ownership
+
+.seealso:   MatGetOwnershipRange(), MatGetOwnershipRangeColumn(), MatGetOwnershipRanges()
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangesColumns(Mat mat,const PetscInt **ranges)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  ierr = PetscMapGetRanges(&mat->cmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

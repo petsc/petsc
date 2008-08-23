@@ -13,7 +13,7 @@
 +    comm - the MPI communicator
 -    map - pointer to the map
 
-   Level: intermediate
+   Level: developer
 
     Notes: Typical calling sequence
        PetscMapInitialize(MPI_Comm,PetscMap *);
@@ -24,6 +24,9 @@
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
+
+      The PetscMap object and methods are intended to be used in the PETSc Vec and Mat implementions; it is 
+      recommended they not be used in user codes unless you really gain something in their use.
 
     Fortran Notes: 
       Not available from Fortran
@@ -56,7 +59,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscMap *map
    Input Parameters:
 .    map - pointer to the map
 
-   Level: intermediate
+   Level: developer
 
     Notes: Typical calling sequence
        PetscMapInitialize(MPI_Comm,PetscMap *);
@@ -136,7 +139,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCopy(MPI_Comm comm,PetscMap *in,PetscM
 +    map - pointer to the map
 -    n - the local size
 
-   Level: intermediate
+   Level: developer
 
     Notes:
        Call this after the call to PetscMapInitialize()
@@ -171,7 +174,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap *map,PetscInt n)
    Output Parameters:
 .    n - the local size
 
-   Level: intermediate
+   Level: developer
 
     Notes:
        Call this after the call to PetscMapSetUp()
@@ -204,7 +207,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap *map,PetscInt *n
 +    map - pointer to the map
 -    n - the global size
 
-   Level: intermediate
+   Level: developer
 
     Notes:
        Call this after the call to PetscMapInitialize()
@@ -239,7 +242,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap *map,PetscInt n)
    Output Parameters:
 .    n - the global size
 
-   Level: intermediate
+   Level: developer
 
     Notes:
        Call this after the call to PetscMapSetUp()
@@ -272,7 +275,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap *map,PetscInt *n)
 +    map - pointer to the map
 -    bs - the size
 
-   Level: intermediate
+   Level: developer
 
     Notes:
        Call this after the call to PetscMapInitialize()
@@ -307,7 +310,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap *map,PetscInt bs
    Output Parameters:
 .    bs - the size
 
-   Level: intermediate
+   Level: developer
 
     Notes:
        Call this after the call to PetscMapSetUp()
@@ -344,7 +347,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetBlockSize(PetscMap *map,PetscInt *b
 +    rstart - first index owned by this process
 -    rend - one more than the last index owned by this process
 
-   Level: intermediate
+   Level: developer
 
     Notes:
        Call this after the call to PetscMapSetUp()
@@ -381,7 +384,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetRange(PetscMap *map,PetscInt *rstar
 .    range - start of each processors range of indices (the final entry is one more then the
              last index on the last process)
 
-   Level: intermediate
+   Level: developer
 
     Notes:
        Call this after the call to PetscMapSetUp()
