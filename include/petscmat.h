@@ -61,6 +61,8 @@ E*/
 #define MATBLOCKMAT        "blockmat"
 #define MATCOMPOSITE       "composite"
 #define MATSEQFFTW         "seqfftw"
+#define MATTRANSPOSE       "transpose"
+#define MATSCHURCOMPLEMENT "schurcomplement"
 
 /*E
     MatSolverPackage - String with the name of a PETSc matrix solver type. 
@@ -518,6 +520,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat,PetscInt*,PetscInt*
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat,const PetscInt**);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangeColumn(Mat,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangesColumn(Mat,const PetscInt**);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroyMatrices(PetscInt,Mat *[]);

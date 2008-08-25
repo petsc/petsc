@@ -539,12 +539,20 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrint(FILE *fd)
   PetscFunctionBegin;
   if (!fd) fd = PETSC_STDOUT;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
+  if (options->N) {
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"#PETSc Option Table entries:\n");CHKERRQ(ierr);
+  } else {
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"#No PETSc Option Table entries\n");CHKERRQ(ierr);
+  }
   for (i=0; i<options->N; i++) {
     if (options->values[i]) {
-      ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s %s\n",options->names[i],options->values[i]);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"-%s %s\n",options->names[i],options->values[i]);CHKERRQ(ierr);
     } else {
-      ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"OptionTable: -%s\n",options->names[i]);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"-%s\n",options->names[i]);CHKERRQ(ierr);
     }
+  }
+  if (options->N) {
+    ierr = PetscFPrintf(PETSC_COMM_WORLD,fd,"#End o PETSc Option Table entries\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
