@@ -1,18 +1,16 @@
 
 ALL: lib
 
-CFLAGS   = 
+CFLAGS   =
 FFLAGS   =
 SOURCEC  = schurm.c
-SOURCEF  =
+SOURCEF  = 
 SOURCEH  = 
 OBJSC    = schurm.o
-OBJSF    =
-LIBBASE  = libpetscmat
-DIRS     = 
-LOCDIR   = src/mat/impls/schur/
-MANSEC   = Mat
+LIBBASE  = libpetscksp
+DIRS     =
+MANSEC   = KSP
+LOCDIR   = src/ksp/ksp/utils/
 
 include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test
-
