@@ -72,9 +72,9 @@ cdef class IS(Object):
         return self
 
     def getType(self):
-        cdef object otype = None
         cdef PetscISType istype
         CHKERR( ISGetType(self.iset, &istype) )
+        cdef object otype = None
         if   istype == IS_GENERAL: otype = cp2str("general")
         elif istype == IS_BLOCK:   otype = cp2str("block")
         elif istype == IS_STRIDE:  otype = cp2str("stride")
