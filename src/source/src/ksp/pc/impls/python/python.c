@@ -256,6 +256,7 @@ static PetscErrorCode PCApplyTranspose_Python(PC pc,Vec x, Vec y)
   PC_PYTHON_SETERRSUP(pc, "applyTranspose");
 }
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyRichardson_Python"
 static PetscErrorCode PCApplyRichardson_Python(PC pc,Vec x, Vec y, Vec w,
@@ -274,6 +275,7 @@ static PetscErrorCode PCApplyRichardson_Python(PC pc,Vec x, Vec y, Vec w,
  notimplemented:
   PC_PYTHON_SETERRSUP(pc, "applyRichardson");
 }
+#endif
 
 static int PCPythonHasOperation(PC pc, const char operation[])
 {
@@ -304,9 +306,11 @@ static PetscErrorCode PCPythonFillOperations(PC pc)
     PCPythonHasOperation(pc, "applyTranspose") ?
     PCApplyTranspose_Python : PETSC_NULL;
 
+#if 0
   pc->ops->applyrichardson =
     PCPythonHasOperation(pc, "applyRichardson") ?
     PCApplyRichardson_Python : PETSC_NULL;
+#endif
 
   PetscFunctionReturn(0);
 }
