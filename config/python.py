@@ -39,7 +39,7 @@ class Configure(config.base.Configure):
       try:
         distutils.sysconfig.get_python_inc()
         distutils.sysconfig.get_python_inc(1)
-      except DistutilsPlatformError, e:
+      except distutils.sysconfig.DistutilsPlatformError, e:
         self.framework.logPrint('Error finding Python include directories: '+str(e))
         raise RuntimeError('Python is not fully installed. Please consult your packing system.')
 
@@ -47,7 +47,7 @@ class Configure(config.base.Configure):
         distutils.sysconfig.get_config_var('LDFLAGS')
         distutils.sysconfig.get_config_var('LIBS')
         distutils.sysconfig.get_config_var('SYSLIBS')
-      except DistutilsPlatformError, e:
+      except distutils.sysconfig.DistutilsPlatformError, e:
         self.framework.logPrint('Error finding Python libraries: '+str(e))
         raise RuntimeError('Python is not fully installed. Please consult your packing system.')
 
@@ -56,14 +56,14 @@ class Configure(config.base.Configure):
         distutils.sysconfig.get_config_var('LIBPL')
         distutils.sysconfig.get_config_var('LDLIBRARY')
         distutils.sysconfig.get_config_var('SO')
-      except DistutilsPlatformError, e:
+      except distutils.sysconfig.DistutilsPlatformError, e:
         self.framework.logPrint('Error finding Python shared library: '+str(e))
         raise RuntimeError('Python is not fully installed. Please consult your packing system.')
 
       try:
         distutils.sysconfig.get_config_var('BINDIR')
         distutils.sysconfig.get_config_var('PYTHON')
-      except DistutilsPlatformError, e:
+      except distutils.sysconfig.DistutilsPlatformError, e:
         self.framework.logPrint('Error finding Python executable: '+str(e))
         raise RuntimeError('Python is not fully installed. Please consult your packing system.')
     except Exception, e:
