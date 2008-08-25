@@ -37,4 +37,19 @@ PetscErrorCode VecSetOption_233(Vec x,VecOption op,PetscTruth flag) {
 }
 #define VecSetOption VecSetOption_233
 
+#undef __FUNCT__
+#define __FUNCT__ "VecGetOwnershipRanges_233"
+static PETSC_UNUSED
+PetscErrorCode VecGetOwnershipRanges_233(Vec vec,const PetscInt *ranges[]) 
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
+  PetscValidType(vec,1);
+  PetscValidPointer(ranges,2);
+  ierr = PetscMapGetGlobalRange(&vec->map,ranges);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define VecGetOwnershipRanges VecGetOwnershipRanges_233
+
 #endif /* _PETSC_COMPAT_VEC_H */

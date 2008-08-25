@@ -124,6 +124,11 @@ cdef extern from "petscmat.h":
     int MatGetLocalSize(PetscMat,PetscInt*,PetscInt*)
     int MatGetBlockSize(PetscMat,PetscInt*)
     int MatGetOwnershipRange(PetscMat,PetscInt*,PetscInt*)
+    int MatGetOwnershipRanges(PetscMat,const_PetscInt*[])
+    int MatGetOwnershipRangeRow"MatGetOwnershipRange"(PetscMat,PetscInt*,PetscInt*)
+    int MatGetOwnershipRangesRow"MatGetOwnershipRanges"(PetscMat,const_PetscInt*[])
+    int MatGetOwnershipRangeColumn(PetscMat,PetscInt*,PetscInt*)
+    int MatGetOwnershipRangesColumn(PetscMat,const_PetscInt*[])
 
     int MatLoad(PetscViewer,PetscMatType,PetscMat*)
     int MatDuplicate(PetscMat,PetscMatDuplicateOption,PetscMat*)

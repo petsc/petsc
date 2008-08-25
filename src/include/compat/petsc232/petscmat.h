@@ -291,4 +291,35 @@ PetscErrorCode MatTranspose_232(Mat mat,MatReuse reuse,Mat *B)
 }
 #define MatTranspose MatTranspose_232
 
+#undef __FUNCT__
+#define __FUNCT__ "MatGetOwnershipRangeColumn_232"
+static PETSC_UNUSED
+PetscErrorCode MatGetOwnershipRangeColumn_232(Mat mat,PetscInt *m,PetscInt *n)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  if (m) PetscValidIntPointer(m,2);
+  if (n) PetscValidIntPointer(n,3);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  if (m) *m = mat->cmap.rstart;
+  if (n) *n = mat->cmap.rend;
+  PetscFunctionReturn(0);
+}
+#define MatGetOwnershipRangeColumn MatGetOwnershipRangeColumn_232
+
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangesColumn_232(Mat mat,const PetscInt *ranges[])
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidPointer(ranges,2);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  ierr = PetscMapGetGlobalRange(&mat->cmap,ranges);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatGetOwnershipRangesColumn MatGetOwnershipRangesColumn_232
+
 #endif /* _PETSC_COMPAT_MAT_H */

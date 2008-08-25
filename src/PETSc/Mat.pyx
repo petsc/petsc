@@ -300,10 +300,53 @@ cdef class Mat(Object):
         CHKERR( MatGetBlockSize(self.mat, &bs) )
         return bs
 
+    def getOwnershipRangeRow(self):
+        cdef PetscInt rlow=0, rhigh=0
+        CHKERR( MatGetOwnershipRangeRow(self.mat, &rlow, &rhigh) )
+        return (rlow, rhigh)
+
+    def getOwnershipRangesRow(self):
+        cdef const_PetscInt *rowranges = NULL
+        CHKERR( MatGetOwnershipRangesRow(self.mat, &rowranges) )
+        cdef MPI_Comm comm = MPI_COMM_NULL
+        CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
+        cdef int size = -1
+        CHKERR( MPI_Comm_size(comm, &size) )
+        return array_i(size+1, rowranges)
+
+    def getOwnershipRangeColumn(self):
+        cdef PetscInt clow=0, chigh=0
+        CHKERR( MatGetOwnershipRangeColumn(self.mat, &clow, &chigh) )
+        return (clow, chigh)
+
+    def getOwnershipRangesColumn(self):
+        cdef const_PetscInt *colranges = NULL
+        CHKERR( MatGetOwnershipRangesColumn(self.mat, &colranges) )
+        cdef MPI_Comm comm = MPI_COMM_NULL
+        CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
+        cdef int size = -1
+        CHKERR( MPI_Comm_size(comm, &size) )
+        return array_i(size+1, colranges)
+
     def getOwnershipRange(self):
-        cdef PetscInt low=0, high=0
-        CHKERR( MatGetOwnershipRange(self.mat, &low, &high) )
-        return (low, high)
+        cdef PetscInt rlow=0, rhigh=0
+        CHKERR( MatGetOwnershipRangeRow(self.mat, &rlow, &rhigh) )
+        cdef PetscInt clow=0, chigh=0
+        CHKERR( MatGetOwnershipRangeColumn(self.mat, &clow, &chigh) )
+        return ((rlow, rhigh),
+                (clow, chigh))
+
+    def getOwnershipRanges(self):
+        cdef const_PetscInt *rowranges = NULL
+        CHKERR( MatGetOwnershipRangesRow(self.mat, &rowranges) )
+        cdef const_PetscInt *colranges = NULL
+        CHKERR( MatGetOwnershipRangesColumn(self.mat, &colranges) )
+        cdef MPI_Comm comm = MPI_COMM_NULL
+        CHKERR( PetscObjectGetComm(<PetscObject>self.mat, &comm) )
+        cdef int size = -1
+        CHKERR( MPI_Comm_size(comm, &size) )
+        return (array_i(size+1, rowranges),
+                array_i(size+1, colranges))
 
     def duplicate(self, copy=False):
         cdef PetscMatDuplicateOption flag = MAT_DO_NOT_COPY_VALUES
@@ -730,6 +773,10 @@ cdef class Mat(Object):
     property owner_range:
         def __get__(self):
             return self.getOwnershipRange()
+
+    property owner_ranges:
+        def __get__(self):
+            return self.getOwnershipRanges()
 
     #
 

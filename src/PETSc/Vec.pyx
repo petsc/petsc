@@ -206,6 +206,15 @@ cdef class Vec(Object):
         CHKERR( VecGetOwnershipRange(self.vec, &low, &high) )
         return (low, high)
 
+    def getOwnershipRanges(self):
+        cdef const_PetscInt *ranges = NULL
+        CHKERR( VecGetOwnershipRanges(self.vec, &ranges) )
+        cdef MPI_Comm comm = MPI_COMM_NULL
+        CHKERR( PetscObjectGetComm(<PetscObject>self.vec, &comm) )
+        cdef int size = -1
+        CHKERR( MPI_Comm_size(comm, &size) )
+        return array_i(size+1, ranges)
+
     def getArray(self, out=None):
         array = asarray(self)
         if out is None:
@@ -563,6 +572,10 @@ cdef class Vec(Object):
     property owner_range:
         def __get__(self):
             return self.getOwnershipRange()
+
+    property owner_ranges:
+        def __get__(self):
+            return self.getOwnershipRanges()
 
     # -- array interface V3 ---
 

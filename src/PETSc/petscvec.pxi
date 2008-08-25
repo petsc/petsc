@@ -37,9 +37,11 @@ cdef extern from "petscvec.h":
     int VecSetSizes(PetscVec,PetscInt,PetscInt)
     int VecGetSize(PetscVec,PetscInt*)
     int VecGetLocalSize(PetscVec,PetscInt*)
-    int VecGetOwnershipRange(PetscVec,PetscInt*,PetscInt*)
     int VecSetBlockSize(PetscVec,PetscInt)
     int VecGetBlockSize(PetscVec,PetscInt*)
+    int VecGetOwnershipRange(PetscVec,PetscInt*,PetscInt*)
+    int VecGetOwnershipRanges(PetscVec,const_PetscInt*[])
+
     int VecGetArray(PetscVec,PetscScalar*[])
     int VecRestoreArray(PetscVec,PetscScalar*[])
     int VecGetArrayC(PetscVec,PetscScalar*[])
