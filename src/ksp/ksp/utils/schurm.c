@@ -30,7 +30,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
   if (Na->B) {ierr = MatDestroy(Na->B);CHKERRQ(ierr);}
   if (Na->C) {ierr = MatDestroy(Na->C);CHKERRQ(ierr);}
   if (Na->D) {ierr = MatDestroy(Na->D);CHKERRQ(ierr);}
-  ierr = KSPDestroy(Na->ksp);CHKERRQ(ierr);
+  /*ierr = KSPDestroy(Na->ksp);CHKERRQ(ierr);*/
   ierr = PetscFree(Na);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

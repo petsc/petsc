@@ -15,6 +15,7 @@ class FunctionTestISieve : public CppUnit::TestFixture
 
   CPPUNIT_TEST(testBase);
   CPPUNIT_TEST(testConversion);
+  CPPUNIT_TEST(testConstruction);
   CPPUNIT_TEST(testTriangularInterpolatedOrientedClosure);
   CPPUNIT_TEST(testTriangularUninterpolatedOrientedClosure);
   CPPUNIT_TEST(testTetrahedralInterpolatedOrientedClosure);
@@ -59,6 +60,50 @@ public:
   /// Tear down data.
   void tearDown(void) {};
 
+  template<typename Sieve, typename ISieve, typename Renumbering>
+  void checkSieve(Sieve& sieve, const ISieve& isieve, Renumbering& renumbering, bool orderedSupports) {
+    const ALE::Obj<typename Sieve::baseSequence>& base = sieve.base();
+
+    for(typename Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+      const ALE::Obj<typename Sieve::coneSequence>& cone = sieve.cone(*b_iter);
+      ALE::ISieveVisitor::PointRetriever<ISieve>    retriever((int) pow((double) isieve.getMaxConeSize(), 3));
+
+      isieve.cone(renumbering[*b_iter], retriever);
+      const typename ISieve::point_type *icone = retriever.getPoints();
+      int i = 0;
+
+      CPPUNIT_ASSERT_EQUAL(cone->size(), retriever.getSize());
+      for(typename Sieve::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++i) {
+        CPPUNIT_ASSERT_EQUAL(renumbering[*c_iter], icone[i]);
+      }
+    }
+    const ALE::Obj<typename Sieve::capSequence>& cap = sieve.cap();
+
+    for(typename Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+      const ALE::Obj<typename Sieve::supportSequence>& support = sieve.support(*c_iter);
+      ALE::ISieveVisitor::PointRetriever<ISieve> retriever((int) pow((double) isieve.getMaxConeSize(), 3));
+
+      isieve.support(renumbering[*c_iter], retriever);
+      const typename ISieve::point_type *isupport = retriever.getPoints();
+      int i = 0;
+
+      CPPUNIT_ASSERT_EQUAL(support->size(), retriever.getSize());
+      if (orderedSupports) {
+        for(typename Sieve::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter, ++i) {
+          CPPUNIT_ASSERT_EQUAL(renumbering[*s_iter], isupport[i]);
+        }
+      } else {
+        std::set<typename ISieve::point_type> isupportSet(&isupport[0], &isupport[retriever.getSize()]);
+        std::set<typename Sieve::point_type>  supportSet;
+
+        for(typename Sieve::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter, ++i) {
+          supportSet.insert(renumbering[*s_iter]);
+        }
+        CPPUNIT_ASSERT(supportSet == isupportSet);
+      }
+    }
+  };
+
   void testBase(void) {
   };
 
@@ -74,35 +119,35 @@ public:
     ALE::ISieveConverter::convertSieve(*m->getSieve(), *this->_sieve, renumbering);
     //m->getSieve()->view("Square Mesh");
     //this->_sieve->view("Square Sieve");
-    const ALE::Obj<Sieve::baseSequence>& base = m->getSieve()->base();
+    this->checkSieve(*m->getSieve(), *this->_sieve, renumbering, true);
+  };
 
-    for(Sieve::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-      const ALE::Obj<Sieve::coneSequence>& cone = m->getSieve()->cone(*b_iter);
-      ALE::ISieveVisitor::PointRetriever<ISieve> retriever(2);
+  void testConstruction(void) {
+    const int          numCells    = 8;
+    const int          numCorners  = 3;
+    const int          numVertices = 9;
+    const int          numPoints   = numCells+numVertices;
+    const int          cones[24]   = {0,  3, 1,   3,  4, 1,   4,  2, 1,   4,  5,  2,   6,  4,  3,   6,  7,  4,   7,  5,  4,   7,  8,  5};
+    const int          icones[24]  = {8, 11, 9,  11, 12, 9,  12, 10, 9,  12, 13, 10,  14, 12, 11,  14, 15, 12,  15, 13, 12,  15, 16, 13};
 
-      this->_sieve->cone(renumbering[*b_iter], retriever);
-      const ISieve::point_type *icone = retriever.getPoints();
-      int i = 0;
+    {
+      ALE::Obj<ALE::Mesh::sieve_type> s = new ALE::Mesh::sieve_type(PETSC_COMM_WORLD, this->_debug);
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(s, 2, numCells, const_cast<int *>(cones), numVertices, false, numCorners);
 
-      CPPUNIT_ASSERT_EQUAL(cone->size(), retriever.getSize());
-      for(Sieve::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++i) {
-        CPPUNIT_ASSERT_EQUAL(renumbering[*c_iter], icone[i]);
+      ALE::Obj<sieve_type> sieve = new sieve_type(PETSC_COMM_WORLD, 0, numPoints, this->_debug);
+      for(int c = 0; c < numCells; ++c) {
+        sieve->setConeSize(c, numCorners);
       }
-    }
-    const ALE::Obj<Sieve::capSequence>& cap = m->getSieve()->cap();
-
-    for(Sieve::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
-      const ALE::Obj<Sieve::supportSequence>& support = m->getSieve()->support(*c_iter);
-      ALE::ISieveVisitor::PointRetriever<ISieve> retriever(4);
-
-      this->_sieve->support(renumbering[*c_iter], retriever);
-      const ISieve::point_type *isupport = retriever.getPoints();
-      int i = 0;
-
-      CPPUNIT_ASSERT_EQUAL(support->size(), retriever.getSize());
-      for(Sieve::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter, ++i) {
-        CPPUNIT_ASSERT_EQUAL(renumbering[*s_iter], isupport[i]);
+      sieve->symmetrizeSizes(numCells, numCorners, icones);
+      sieve->allocate();
+      for(int c = 0; c < numCells; ++c) {
+        sieve->setCone(&icones[c*numCorners], c);
       }
+      sieve->symmetrize();
+
+      std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
+      for(int i = 0; i < numPoints; ++i) renumbering[i] = i;
+      this->checkSieve(*s, *sieve, renumbering, false);
     }
   };
 
@@ -168,6 +213,7 @@ public:
     int    faces[3] = {1, 1, 1};
 
     const ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createCubeBoundary(PETSC_COMM_WORLD, lower, upper, faces, 0);
+    mB->getFactory()->clear(); // Necessary since we get pointer aliasing
     const ALE::Obj<ALE::Mesh> m  = ALE::Generator<ALE::Mesh>::generateMesh(mB, interpolate);
     std::map<ALE::Mesh::point_type,sieve_type::point_type> renumbering;
 
