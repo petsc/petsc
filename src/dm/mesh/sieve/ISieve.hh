@@ -1321,14 +1321,13 @@ namespace ALE {
         this->coneOrientations[c] = coneOrientation[i];
       }
     };
-    void symmetrizeSizes(const int numCells, const int numCorners, const int cones[]) {
+    void symmetrizeSizes(const int numCells, const int numCorners, const int cones[], const int offset = 0) {
       for(point_type p = 0; p < numCells; ++p) {
         const index_type start = p*numCorners;
         const index_type end   = (p+1)*numCorners;
 
         for(index_type c = start; c < end; ++c) {
-          ///const point_type q = cones[c]+numCells;
-          const point_type q = cones[c];
+          const point_type q = cones[c]+offset;
 
           this->supportOffsets[q+1]++;
         }
