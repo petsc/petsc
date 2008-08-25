@@ -105,12 +105,13 @@ cdef class Viewer(Object):
         cdef char *cname = str2cp(name)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: cmode = mode
+        cdef PetscViewerFormat cvfmt = PETSC_VIEWER_ASCII_DEFAULT
+        if format is not None: cvfmt = format
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerASCIIOpen(ccomm, cname, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
         CHKERR( PetscViewerFileSetMode(self.vwr, cmode) )
-        if format is not None:
-            CHKERR( PetscViewerSetFormat(self.vwr, format) )
+        CHKERR( PetscViewerSetFormat(self.vwr, cvfmt) )
         return self
 
     def createBinary(self, name, mode=None,
@@ -119,11 +120,12 @@ cdef class Viewer(Object):
         cdef char *cname = str2cp(name)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: cmode = mode
+        cdef PetscViewerFormat cvfmt = PETSC_VIEWER_BINARY_DEFAULT
+        if format is not None: cvfmt = format
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerBinaryOpen(ccomm, cname, cmode, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
-        if format is not None:
-            CHKERR( PetscViewerSetFormat(self.vwr, format) )
+        CHKERR( PetscViewerSetFormat(self.vwr, format) )
         return self
 
     def createDraw(self, display=None, title=None,
