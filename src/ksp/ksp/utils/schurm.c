@@ -4,8 +4,12 @@
 
 typedef struct {
   Mat A,B,C,D;
+  KSP ksp;
 } Mat_SchurComplement;
 
+/*
+           D - B inv(A) C 
+*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SchurComplement"
 PetscErrorCode MatMult_SchurComplement(Mat N,Vec x,Vec y)
@@ -30,7 +34,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
   if (Na->B) {ierr = MatDestroy(Na->B);CHKERRQ(ierr);}
   if (Na->C) {ierr = MatDestroy(Na->C);CHKERRQ(ierr);}
   if (Na->D) {ierr = MatDestroy(Na->D);CHKERRQ(ierr);}
-  /*ierr = KSPDestroy(Na->ksp);CHKERRQ(ierr);*/
+  ierr = KSPDestroy(Na->ksp);CHKERRQ(ierr);
   ierr = PetscFree(Na);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
