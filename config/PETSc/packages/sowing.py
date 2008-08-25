@@ -53,6 +53,10 @@ class Configure(PETSc.package.Package):
       if not (os.path.isfile(prog) and os.access(prog, os.X_OK)):
         raise RuntimeError('Error in Sowing installation: Could not find '+prog)
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir,'sowing')+' '+self.confDir+'/sowing', timeout=5, log = self.framework.log)[0]
+    self.addMakeMacro('BFORT ', self.bfort)
+    self.addMakeMacro('DOCTEXT ', self.doctext)
+    self.addMakeMacro('MAPNAMES ', self.mapnames)
+    self.addMakeMacro('BIB2HTML ', self.bib2html)    
     self.getExecutable('pdflatex', getFullPath = 1)
     return self.installDir
 
@@ -69,7 +73,7 @@ class Configure(PETSc.package.Package):
           import generatefortranstubs
           del sys.path[0]
           generatefortranstubs.main(self.bfort)
-          self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs and made makefile.src')
+          self.framework.actions.addArgument('PETSc', 'File creation', 'Generated Fortran stubs')
         except RuntimeError, e:
           raise RuntimeError('*******Error generating Fortran stubs: '+str(e)+'*******\n')
     return
