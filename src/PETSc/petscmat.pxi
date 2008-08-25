@@ -27,21 +27,6 @@ cdef extern from "petscmat.h":
     PetscMatType MATMFFD
     PetscMatType MATNORMAL
     PetscMatType MATLRC
-    PetscMatType MATSEQAIJSPOOLES
-    PetscMatType MATMPIAIJSPOOLES
-    PetscMatType MATSEQSBAIJSPOOLES
-    PetscMatType MATMPISBAIJSPOOLES
-    PetscMatType MATAIJSPOOLES
-    PetscMatType MATSBAIJSPOOLES
-    PetscMatType MATSUPERLU
-    PetscMatType MATSUPERLU_DIST
-    PetscMatType MATUMFPACK
-    PetscMatType MATESSL
-    PetscMatType MATLUSOL
-    PetscMatType MATAIJMUMPS
-    PetscMatType MATSBAIJMUMPS
-    PetscMatType MATDSCPACK
-    PetscMatType MATMATLAB
     PetscMatType MATSEQCSRPERM
     PetscMatType MATMPICSRPERM
     PetscMatType MATCSRPERM
