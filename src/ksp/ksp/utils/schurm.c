@@ -1,10 +1,12 @@
 #define PETSCMAT_DLL
 
 #include "include/private/matimpl.h"          /*I "petscmat.h" I*/
+#include "petscksp.h"                              /*I "petscksp.h" I*/
 
 typedef struct {
   Mat A,B,C,D;
   KSP ksp;
+  Vec work1,work2;
 } Mat_SchurComplement;
 
 /*
@@ -18,7 +20,15 @@ PetscErrorCode MatMult_SchurComplement(Mat N,Vec x,Vec y)
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-
+  if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,PETSC_NULL);CHKERRQ(ierr);}
+  if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,PETSC_NULL);CHKERRQ(ierr);}
+  ierr = MatMult(Na->C,x,Na->work1);CHKERRQ(ierr);
+  ierr = KSPSolve(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
+  ierr = MatMult(Na->B,Na->work2,y);CHKERRQ(ierr);
+  ierr = VecScale(y,-1.0);CHKERRQ(ierr);
+  if (Na->D) {
+    ierr = MatMultAdd(Na->D,x,y,y);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
  
@@ -34,6 +44,8 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
   if (Na->B) {ierr = MatDestroy(Na->B);CHKERRQ(ierr);}
   if (Na->C) {ierr = MatDestroy(Na->C);CHKERRQ(ierr);}
   if (Na->D) {ierr = MatDestroy(Na->D);CHKERRQ(ierr);}
+  if (Na->work1) {ierr = VecDestroy(Na->work1);CHKERRQ(ierr);}
+  if (Na->work2) {ierr = VecDestroy(Na->work2);CHKERRQ(ierr);}
   ierr = KSPDestroy(Na->ksp);CHKERRQ(ierr);
   ierr = PetscFree(Na);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -60,6 +72,8 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
           All four matrices must have the same MPI communicator
 
+          A and  D must be square matrices
+
 .seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP()
 
 @*/
@@ -71,6 +85,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,0);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(C,MAT_COOKIE,2);
   PetscCheckSameComm(A,0,B,1);
   PetscCheckSameComm(A,0,C,2);
   if (D)   PetscCheckSameComm(A,0,D,3);
@@ -98,6 +114,38 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
   (*N)->rmap.bs = (*N)->cmap.bs = 1;
   ierr = PetscMapSetUp(&(*N)->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&(*N)->cmap);CHKERRQ(ierr);
+
+  ierr = KSPCreate(((PetscObject)A)->comm,&Na->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOperators(Na->ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSchurComplementGetKSP"
+/*@
+      MatSchurComplementGetKSP - Creates gets the KSP object that is used in the Schur complement matrix
+
+   Not Collective
+
+   Input Parameter:
+.   A - matrix created with MatCreateSchurComplement()
+
+   Output Parameter:
+.   ksp - the linear solver object
+
+   Level: intermediate
+
+   Notes: 
+.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement()
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetKSP(Mat A,KSP *ksp)
+{
+  Mat_SchurComplement  *Na = (Mat_SchurComplement*)A->data;  
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,0);
+  *ksp = Na->ksp;
   PetscFunctionReturn(0);
 }
 

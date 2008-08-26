@@ -234,6 +234,7 @@ void snesskipconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscR
 void PETSC_STDCALL snessetconvergencetest_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,PetscInt*,PetscReal*,PetscReal*,PetscReal*,SNESConvergedReason*,void*,PetscErrorCode*), void *cctx,void (PETSC_STDCALL *destroy)(void*),PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(cctx);
+  CHKFORTRANNULLFUNCTION(destroy);
   PetscObjectAllocateFortranPointers(*snes,12);
 
   if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultconverged_){
@@ -243,7 +244,7 @@ void PETSC_STDCALL snessetconvergencetest_(SNES *snes,void (PETSC_STDCALL *func)
   } else {
     ((PetscObject)*snes)->fortran_func_pointers[1] = (PetscVoidFunction)func;
     ((PetscObject)*snes)->fortran_func_pointers[11] = (PetscVoidFunction)cctx;
-    if (FORTRANNULLFUNCTION(destroy)) {
+    if (!destroy) {
       *ierr = SNESSetConvergenceTest(*snes,oursnestest,*snes,PETSC_NULL);
     } else {
       ((PetscObject)*snes)->fortran_func_pointers[10] = (PetscVoidFunction)destroy;

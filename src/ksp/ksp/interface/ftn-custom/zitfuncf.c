@@ -134,6 +134,8 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,PetscInt*,PetscReal*,void*,PetscErrorCode*),
                     void *mctx,void (PETSC_STDCALL *monitordestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
+  CHKFORTRANNULLFUNCTION(monitordestroy);
+
   PetscObjectAllocateFortranPointers(*ksp,6);
   if ((PetscVoidFunction)monitor == (PetscVoidFunction)kspmonitordefault_) {
     *ierr = KSPMonitorSet(*ksp,KSPMonitorDefault,0,0);
@@ -152,7 +154,7 @@ void PETSC_STDCALL kspmonitorset_(KSP *ksp,void (PETSC_STDCALL *monitor)(KSP*,Pe
   } else {
     ((PetscObject)*ksp)->fortran_func_pointers[0] = (PetscVoidFunction)monitor;
     ((PetscObject)*ksp)->fortran_func_pointers[1] = (PetscVoidFunction)mctx;
-    if (FORTRANNULLFUNCTION(monitordestroy)) {
+    if (!monitordestroy) {
       *ierr = KSPMonitorSet(*ksp,ourmonitor,*ksp,0);
     } else {
       ((PetscObject)*ksp)->fortran_func_pointers[2] = (PetscVoidFunction)monitordestroy;
@@ -166,6 +168,8 @@ void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
       void (PETSC_STDCALL *destroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(cctx);
+  CHKFORTRANNULLFUNCTION(destroy);
+
   PetscObjectAllocateFortranPointers(*ksp,6);
   if ((PetscVoidFunction)converge == (PetscVoidFunction)kspdefaultconverged_) {
     *ierr = KSPSetConvergenceTest(*ksp,KSPDefaultConverged,cctx,KSPDefaultConvergedDestroy);
@@ -174,7 +178,7 @@ void PETSC_STDCALL kspsetconvergencetest_(KSP *ksp,
   } else {
     ((PetscObject)*ksp)->fortran_func_pointers[3] = (PetscVoidFunction)converge;
     ((PetscObject)*ksp)->fortran_func_pointers[4] = (PetscVoidFunction)cctx;
-    if (FORTRANNULLFUNCTION(destroy)) {
+    if (!destroy) {
       *ierr = KSPSetConvergenceTest(*ksp,ourtest,*ksp,0);
     } else {
       ((PetscObject)*ksp)->fortran_func_pointers[5] = (PetscVoidFunction)destroy;
