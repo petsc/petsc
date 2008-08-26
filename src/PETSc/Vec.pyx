@@ -67,7 +67,7 @@ cdef class Vec(Object):
         return self
 
     def create(self, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscVec newvec = NULL
         CHKERR( VecCreate(ccomm, &newvec) )
         PetscCLEAR(self.obj); self.vec = newvec
@@ -97,7 +97,7 @@ cdef class Vec(Object):
         return self
 
     def createMPI(self, size, bsize=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, n=0, N=0
         CHKERR( Vec_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
         cdef PetscVec newvec = NULL
@@ -108,7 +108,7 @@ cdef class Vec(Object):
         return self
 
     def createGhost(self, ghosts, size, bsize=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, n=0, N=0
         CHKERR( Vec_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
         cdef PetscInt ng=0, *ig=NULL
@@ -122,7 +122,7 @@ cdef class Vec(Object):
         return self
 
     ## def createWithArray(self, array, size, bsize=None, comm=None):
-    ##     cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+    ##     cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
     ##     cdef PetscInt bs=0, n=0, N=0
     ##     CHKERR( Vec_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
     ##     cdef PetscInt na=0
@@ -143,7 +143,7 @@ cdef class Vec(Object):
     ##     return self
 
     def createShared(self, size, bsize=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, n=0, N=0
         CHKERR( Vec_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
         cdef PetscVec newvec = NULL

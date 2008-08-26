@@ -133,7 +133,7 @@ cdef class Mat(Object):
         return self
 
     def create(self, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscMat newmat = NULL
         CHKERR( MatCreate(ccomm, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
@@ -152,7 +152,7 @@ cdef class Mat(Object):
     #
 
     def createAIJ(self, size, bsize=None, nnz=None, csr=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, m=0, n=0, M=0, N=0
         CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
         # create matrix
@@ -188,7 +188,7 @@ cdef class Mat(Object):
 
     def createIS(self, size, LGMap lgmap, comm=None):
         if comm is None: comm = lgmap.getComm()
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, m=0, n=0, M=0, N=0
         CHKERR( Mat_SplitSizes(ccomm, size, None, &bs, &m, &n, &M, &N) )
         cdef PetscMat newmat = NULL
@@ -198,7 +198,7 @@ cdef class Mat(Object):
 
     def createScatter(self, Scatter scatter, comm=None):
         if comm is None: comm = scatter.getComm()
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscMat newmat = NULL
         CHKERR( MatCreateScatter(ccomm, scatter.sct, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
@@ -218,7 +218,7 @@ cdef class Mat(Object):
 
     ## def createShell(self, size, context, comm=None):
     ##     raise NotImplementedError
-    ##     cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+    ##     cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
     ##     cdef PetscInt bs=0, m=0, n=0, M=0, N=0
     ##     CHKERR( Mat_SplitSizes(ccomm, size, None, &bs, &m, &n, &M, &N) )
     ##     cdef PetscMat newmat = NULL
@@ -229,7 +229,7 @@ cdef class Mat(Object):
     #
 
     def createPython(self, size, context, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, m=0, n=0, M=0, N=0
         CHKERR( Mat_SplitSizes(ccomm, size, None, &bs, &m, &n, &M, &N) )
         cdef PetscMat newmat = NULL
@@ -819,7 +819,7 @@ cdef class NullSpace(Object):
         return self
 
     def create(self, constant=False, vectors=(),  comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt i = 0
         cdef PetscInt nv = 0
         cdef PetscVec *v = NULL

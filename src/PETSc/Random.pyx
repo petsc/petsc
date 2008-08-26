@@ -30,7 +30,7 @@ cdef class Random(Object):
         return self
 
     def create(self, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, MPI_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         CHKERR( PetscRandomCreate(ccomm, &self.rnd) )
         return self
 

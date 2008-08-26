@@ -93,7 +93,7 @@ cdef class Viewer(Object):
         return self
 
     def create(self, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerCreate(ccomm, &newvwr) )
         PetscCLEAR(self.obj); self.vwr = newvwr
@@ -101,7 +101,7 @@ cdef class Viewer(Object):
 
     def createASCII(self, name, mode=None,
                     format=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef char *cname = str2cp(name)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: cmode = mode
@@ -116,7 +116,7 @@ cdef class Viewer(Object):
 
     def createBinary(self, name, mode=None,
                      format=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef char *cname = str2cp(name)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: cmode = mode
@@ -130,7 +130,7 @@ cdef class Viewer(Object):
 
     def createDraw(self, display=None, title=None,
                    position=None, size=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef const_char_p cdisplay = ""
         if display is not None: cdisplay = str2cp(display)
         cdef const_char_p ctitle = ""
@@ -173,7 +173,7 @@ cdef class Viewer(Object):
 
     @classmethod
     def STDOUT(cls, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_STDOUT_(ccomm)
         PetscIncref(<PetscObject>(viewer.vwr))
@@ -181,7 +181,7 @@ cdef class Viewer(Object):
 
     @classmethod
     def STDERR(cls, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_STDERR_(ccomm)
         PetscIncref(<PetscObject>(viewer.vwr))
@@ -189,7 +189,7 @@ cdef class Viewer(Object):
 
     @classmethod
     def BINARY(cls, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_BINARY_(ccomm)
         PetscIncref(<PetscObject>(viewer.vwr))
@@ -197,7 +197,7 @@ cdef class Viewer(Object):
 
     @classmethod
     def DRAW(cls, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef Viewer viewer = Viewer()
         viewer.vwr = PETSC_VIEWER_DRAW_(ccomm)
         PetscIncref(<PetscObject>(viewer.vwr))

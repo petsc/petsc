@@ -30,7 +30,7 @@ cdef class IS(Object):
         return self
 
     def create(self, indices, bsize=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=PETSC_DECIDE, nidx=0, *idx=NULL
         cdef PetscIS newiset = NULL
         indices = iarray_i(indices, &nidx, &idx)
@@ -43,7 +43,7 @@ cdef class IS(Object):
         return self
 
     def createGeneral(self, indices, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt nidx=0, *idx=NULL
         cdef PetscIS newiset = NULL
         indices = iarray_i(indices, &nidx, &idx)
@@ -52,7 +52,7 @@ cdef class IS(Object):
         return self
 
     def createBlock(self, bsize, indices, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs = bsize
         cdef PetscInt nidx=0, *idx=NULL
         cdef PetscIS newiset = NULL
@@ -62,7 +62,7 @@ cdef class IS(Object):
         return self
 
     def createStride(self, size, first=None, step=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt csize = size, cfirst = 0, cstep = 1
         cdef PetscIS newiset = NULL
         if first is not None: cfist = first
@@ -281,7 +281,7 @@ cdef class LGMap(Object):
             iset = indices
             CHKERR( ISLocalToGlobalMappingCreateIS(iset.iset, &newlgm) )
         else:
-            ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+            ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
             indices = iarray_i(indices, &nidx, &idx)
             CHKERR( ISLocalToGlobalMappingCreate(ccomm, nidx, idx, &newlgm) )
         PetscCLEAR(self.obj); self.lgm = newlgm

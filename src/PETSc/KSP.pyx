@@ -93,7 +93,7 @@ cdef class KSP(Object):
         return self
 
     def create(self, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscKSP newksp = NULL
         CHKERR( KSPCreate(ccomm, &newksp) )
         PetscCLEAR(self.obj); self.ksp = newksp
@@ -276,7 +276,7 @@ cdef class KSP(Object):
     # --- xxx ---
 
     def createPython(self, context=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscKSP newksp = NULL
         CHKERR( KSPCreate(ccomm, &newksp) )
         PetscCLEAR(self.obj); self.ksp = newksp

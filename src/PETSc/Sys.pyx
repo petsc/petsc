@@ -62,9 +62,24 @@ cdef class Sys:
     # --- xxx ---
 
     @classmethod
+    def getDefaultComm(cls):
+        cdef Comm comm = Comm()
+        comm.comm = PETSC_COMM_DEFAULT
+        return comm
+
+    @classmethod
+    def setDefaultComm(cls, Comm comm not None):
+        if comm.comm == MPI_COMM_NULL:
+            raise ValueError("null communicator")
+        global PETSC_COMM_DEFAULT
+        PETSC_COMM_DEFAULT = comm.comm
+
+    # --- xxx ---
+
+    @classmethod
     def Print(cls, *args, **kwargs):
         cdef object comm = kwargs.get('comm', None)
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef object sep = kwargs.get('sep', ' ')
         cdef object end = kwargs.get('end', '\n')
         if comm_rank(ccomm) == 0:
@@ -80,7 +95,7 @@ cdef class Sys:
     @classmethod
     def syncPrint(cls, *args, **kwargs):
         cdef object comm = kwargs.get('comm', None)
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef object sep = kwargs.get('sep', ' ')
         cdef object end = kwargs.get('end', '\n')
         cdef object flush = kwargs.get('flush', False)
@@ -94,14 +109,14 @@ cdef class Sys:
 
     @classmethod
     def syncFlush(cls, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         CHKERR( PetscSynchronizedFlush(ccomm) )
 
     # --- xxx ---
 
     @classmethod
     def splitOwnership(cls, size, bsize=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, n=0, N=0
         CHKERR( Sys_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
         return (n, N)
@@ -110,5 +125,9 @@ cdef class Sys:
     def sleep(cls, seconds=1):
         cdef int s = seconds
         CHKERR( PetscSleep(s) )
+
+# --------------------------------------------------------------------
+
+cdef MPI_Comm PETSC_COMM_DEFAULT = MPI_COMM_NULL
 
 # --------------------------------------------------------------------

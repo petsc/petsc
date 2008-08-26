@@ -20,7 +20,6 @@ cdef extern from "mpi.h":
 
 cdef extern from "petsc.h":
 
-    MPI_Comm PETSC_COMM_NULL "MPI_COMM_NULL"
     MPI_Comm PETSC_COMM_SELF
     MPI_Comm PETSC_COMM_WORLD
 

@@ -50,7 +50,7 @@ cdef class SNES(Object):
         return self
 
     def create(self, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscSNES newsnes = NULL
         CHKERR( SNESCreate(ccomm, &newsnes) )
         PetscCLEAR(self.obj); self.snes = newsnes
@@ -357,7 +357,7 @@ cdef class SNES(Object):
     # --- xxx ---
 
     def createPython(self, context=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscSNES newsnes = NULL
         CHKERR( SNESCreate(ccomm, &newsnes) )
         PetscCLEAR(self.obj); self.snes = newsnes

@@ -46,7 +46,7 @@ cdef class TS(Object):
         return self
 
     def create(self, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscTS newts = NULL
         CHKERR( TSCreate(ccomm, &newts) )
         PetscCLEAR(self.obj); self.ts = newts
@@ -246,7 +246,7 @@ cdef class TS(Object):
     #
 
     def createPython(self, context=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscTS newts = NULL
         CHKERR( TSCreate(ccomm, &newts) )
         PetscCLEAR(self.obj); self.ts = newts

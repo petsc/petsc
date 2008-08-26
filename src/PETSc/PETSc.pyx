@@ -250,24 +250,28 @@ cdef int initialize(object args) except -1:
 
 # --------------------------------------------------------------------
 
-COMM_NULL  = Comm()
-COMM_SELF  = Comm()
-COMM_WORLD = Comm()
-
 def _initialize(args=None):
     if args is None: args = ()
     Error._traceback_ = tracebacklist
     initialize(args)
+    #
     global COMM_NULL, COMM_SELF, COMM_WORLD
     (<Comm?>COMM_NULL).comm  = MPI_COMM_NULL
     (<Comm?>COMM_SELF).comm  = PETSC_COMM_SELF
     (<Comm?>COMM_WORLD).comm = PETSC_COMM_WORLD
-
+    #
+    global PETSC_COMM_DEFAULT
+    PETSC_COMM_DEFAULT = PETSC_COMM_WORLD
+    
 def _finalize():
     finalize()
+    #
     global COMM_NULL, COMM_SELF, COMM_WORLD
     (<Comm?>COMM_NULL).comm  = MPI_COMM_NULL
     (<Comm?>COMM_SELF).comm  = MPI_COMM_NULL
     (<Comm?>COMM_WORLD).comm = MPI_COMM_NULL
+    #
+    global PETSC_COMM_DEFAULT
+    PETSC_COMM_DEFAULT = MPI_COMM_NULL
 
 # --------------------------------------------------------------------

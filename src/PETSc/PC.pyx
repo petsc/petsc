@@ -73,7 +73,7 @@ cdef class PC(Object):
         return self
 
     def create(self, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscPC newpc = NULL
         CHKERR( PCCreate(ccomm, &newpc) )
         PetscCLEAR(self.obj); self.pc = newpc
@@ -136,7 +136,7 @@ cdef class PC(Object):
     #
 
     def createPython(self, context=None, comm=None):
-        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscPC newpc = NULL
         CHKERR( PCCreate(ccomm, &newpc) )
         PetscCLEAR(self.obj); self.pc = newpc
