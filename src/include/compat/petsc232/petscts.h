@@ -4,7 +4,19 @@
 #include "include/private/tsimpl.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSSetMatrices"
+#define __FUNCT__ "TSGetType_232"
+static PETSC_UNUSED 
+PetscErrorCode TSGetType_232(TS ts, const TSType *type)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = TSGetType(ts,(TSType *)type);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define TSGetType TSGetType_232
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetMatrices_232"
 static PETSC_UNUSED 
 PetscErrorCode TSSetMatrices_232(TS ts,
 				 Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),
@@ -26,6 +38,7 @@ PetscErrorCode TSSetMatrices_232(TS ts,
   }
   PetscFunctionReturn(0);
 }
+#define TSSetMatrices TSSetMatrices_232
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSolve_232"
@@ -45,6 +58,7 @@ PetscErrorCode TSSolve_232(TS ts, Vec u)
   ierr = TSStep(ts, &steps, &ptime);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#define TSSolve TSSolve_232
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetTime_232"
@@ -56,10 +70,8 @@ PetscErrorCode TSSetTime_232(TS ts, PetscReal t)
   ts->ptime = t;
   PetscFunctionReturn(0);
 }
-
-#define TSSetMatrices TSSetMatrices_232
-#define TSSolve TSSolve_232
 #define TSSetTime TSSetTime_232
+
 #define TSMonitorSet TSSetMonitor
 #define TSMonitorCancel TSClearMonitor
 #define TSMonitorDefault TSDefaultMonitor

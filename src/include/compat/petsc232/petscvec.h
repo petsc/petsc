@@ -68,10 +68,10 @@ PetscErrorCode VecGetOwnershipRanges_232(Vec vec,const PetscInt *ranges[])
   PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
   PetscValidType(vec,1);
   PetscValidPointer(ranges,2);
-  ierr = PetscMapGetGlobalRange(&vec->map,ranges);CHKERRQ(ierr);
+  ierr = PetscMapGetGlobalRange(&vec->map,(PetscInt **)ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#define VecGetOwnershipRanges VecGetOwnershipRanges_233
+#define VecGetOwnershipRanges VecGetOwnershipRanges_232
 
 
 #define VecStrideScale(v,start,scale) VecStrideScale((v),(start),(&scale))
