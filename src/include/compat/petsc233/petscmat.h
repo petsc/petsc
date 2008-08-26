@@ -9,10 +9,10 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqBAIJSetPreallocationCSR_SeqBAIJ_233"
-static PETSC_UNUSED 
+static PETSC_UNUSED
 PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ_233(Mat B,PetscInt bs,
-							 const PetscInt I[],
-							 const PetscInt J[],
+							 const PetscInt Ii[],
+							 const PetscInt Jj[],
 							 const PetscScalar V[])
 {
   PetscInt       i,m,nz,nz_max=0,*nnz;
@@ -28,10 +28,10 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ_233(Mat B,PetscInt bs,
   ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
   m = B->rmap.n/bs;
 
-  if (I[0] != 0) { SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "I[0] must be 0 but it is %D",I[0]); }
+  if (Ii[0] != 0) { SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "I[0] must be 0 but it is %D",Ii[0]); }
   ierr = PetscMalloc((m+1) * sizeof(PetscInt), &nnz);CHKERRQ(ierr);
   for(i=0; i<m; i++) {
-    nz = I[i+1]- I[i];
+    nz = Ii[i+1]- Ii[i];
     if (nz < 0) { SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Local row %D has a negative number of columns %D",i,nz); }
     nz_max = PetscMax(nz_max, nz);
     nnz[i] = nz; 
@@ -45,9 +45,9 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ_233(Mat B,PetscInt bs,
     ierr = PetscMemzero(values,bs*bs*nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   for (i=0; i<m; i++) {
-    PetscInt          ncols  = I[i+1] - I[i];
-    const PetscInt    *icols = J + I[i];
-    const PetscScalar *svals = values + (V ? (bs*bs*I[i]) : 0);
+    PetscInt          ncols  = Ii[i+1] - Ii[i];
+    const PetscInt    *icols = Jj + Ii[i];
+    const PetscScalar *svals = values + (V ? (bs*bs*Ii[i]) : 0);
     ierr = MatSetValuesBlocked(B,1,&i,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
   }
   if (!V) { ierr = PetscFree(values);CHKERRQ(ierr); }
@@ -60,7 +60,7 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ_233(Mat B,PetscInt bs,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqBAIJSetPreallocationCSR_233"
-static PETSC_UNUSED 
+static PETSC_UNUSED
 PetscErrorCode MatSeqBAIJSetPreallocationCSR_233(Mat B,PetscInt bs,
 						 const PetscInt i[],
 						 const PetscInt j[], 
@@ -80,15 +80,15 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_233(Mat B,PetscInt bs,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR_MPIBAIJ_233"
-static PETSC_UNUSED 
+static PETSC_UNUSED
 PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ_233(Mat B, PetscInt bs,
-							 const PetscInt I[],
-							 const PetscInt J[],
+							 const PetscInt Ii[],
+							 const PetscInt Jj[],
 							 const PetscScalar V[])
 {
   PetscInt       m,rstart,cstart,cend;
   PetscInt       i,j,d,nz,nz_max=0,*d_nnz=0,*o_nnz=0;
-  const PetscInt *JJ;
+  const PetscInt *jj;
   PetscScalar    *values=0;
   PetscErrorCode ierr;
 
@@ -104,21 +104,21 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ_233(Mat B, PetscInt bs,
   cstart = B->cmap.rstart/bs;
   cend   = B->cmap.rend/bs;
   /* XXX explain */
-  if (I[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"I[0] must be 0 but it is %D",I[0]);
+  if (Ii[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"I[0] must be 0 but it is %D",Ii[0]);
   ierr  = PetscMalloc((2*m+1)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
   o_nnz = d_nnz + m;
   for (i=0; i<m; i++) {
-    nz = I[i+1] - I[i];
+    nz = Ii[i+1] - Ii[i];
     if (nz < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative number of columns %D",i,nz);
     nz_max = PetscMax(nz_max,nz);
-    JJ  = J + I[i];
+    jj  = Jj + Ii[i];
     for (j=0; j<nz; j++) {
-      if (*JJ >= cstart) break;
-      JJ++;
+      if (*jj >= cstart) break;
+      jj++;
     }
     d = 0;
     for (; j<nz; j++) {
-      if (*JJ++ >= cend) break;
+      if (*jj++ >= cend) break;
       d++;
     }
     d_nnz[i] = d; 
@@ -134,9 +134,9 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ_233(Mat B, PetscInt bs,
   }
   for (i=0; i<m; i++) {
     PetscInt          row    = i + rstart;
-    PetscInt          ncols  = I[i+1] - I[i];
-    const PetscInt    *icols = J + I[i];
-    const PetscScalar *svals = values + (V ? (bs*bs*I[i]) : 0);
+    PetscInt          ncols  = Ii[i+1] - Ii[i];
+    const PetscInt    *icols = Jj + Ii[i];
+    const PetscScalar *svals = values + (V ? (bs*bs*Ii[i]) : 0);
     ierr = MatSetValuesBlocked(B,1,&row,ncols,icols,svals,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -148,7 +148,7 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ_233(Mat B, PetscInt bs,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMPIBAIJSetPreallocationCSR_233"
-static PETSC_UNUSED 
+static PETSC_UNUSED
 PetscErrorCode MatMPIBAIJSetPreallocationCSR_233(Mat B,PetscInt bs,
 						 const PetscInt i[],
 						 const PetscInt j[], 

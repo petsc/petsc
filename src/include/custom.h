@@ -132,27 +132,27 @@ MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
 #undef __FUNCT__
 #define __FUNCT__ "MatAnyAIJSetPreallocationCSR"
 PETSC_STATIC_INLINE PetscErrorCode
-MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt I[],
-			     const PetscInt J[], const PetscScalar V[])
+MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
+			     const PetscInt Jj[], const PetscScalar V[])
 {
   PetscTruth     flag;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
   PetscValidType(A,1);
-  PetscValidIntPointer(I,3);
-  PetscValidIntPointer(J,4);
+  PetscValidIntPointer(Ii,3);
+  PetscValidIntPointer(Jj,4);
   if (V) PetscValidScalarPointer(V,5);
 
   ierr = MatIsPreallocated(A, &flag);CHKERRQ(ierr);
   if (flag) { SETERRQ(PETSC_ERR_ORDER, "matrix is already preallocated"); }
 
   if (bs == PETSC_DECIDE || bs == PETSC_DEFAULT) {
-    ierr = MatSeqAIJSetPreallocationCSR(A,I,J,V);CHKERRQ(ierr);
-    ierr = MatMPIAIJSetPreallocationCSR(A,I,J,V);CHKERRQ(ierr);
+    ierr = MatSeqAIJSetPreallocationCSR(A,Ii,Jj,V);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocationCSR(A,Ii,Jj,V);CHKERRQ(ierr);
   } else {
-    ierr = MatSeqBAIJSetPreallocationCSR(A,bs,I,J,V);CHKERRQ(ierr);
-    ierr = MatMPIBAIJSetPreallocationCSR(A,bs,I,J,V);CHKERRQ(ierr);
+    ierr = MatSeqBAIJSetPreallocationCSR(A,bs,Ii,Jj,V);CHKERRQ(ierr);
+    ierr = MatMPIBAIJSetPreallocationCSR(A,bs,Ii,Jj,V);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);
