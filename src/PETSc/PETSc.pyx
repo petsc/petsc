@@ -262,7 +262,7 @@ def _initialize(args=None):
     #
     global PETSC_COMM_DEFAULT
     PETSC_COMM_DEFAULT = PETSC_COMM_WORLD
-    
+
 def _finalize():
     finalize()
     #

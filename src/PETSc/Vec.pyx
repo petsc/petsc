@@ -648,7 +648,7 @@ cdef class Scatter(Object):
             vec.vec, &scatter.sct, &ovec.vec) )
         return (scatter, ovec)
     #
-    
+
     def begin(self, Vec vec_from not None, Vec vec_to not None,
               insert_mode, scatter_mode):
         cdef PetscInsertMode  caddv = insertmode(insert_mode)
