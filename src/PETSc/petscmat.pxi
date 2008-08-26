@@ -307,13 +307,13 @@ cdef inline Mat ref_Mat(PetscMat mat):
 
 # --------------------------------------------------------------------
 
-cdef inline PetscMatStructure matstructure(object structure) except *:
+cdef inline PetscMatStructure matstructure(object structure) except <PetscMatStructure>(-1):
     if   structure is None:  return MAT_DIFFERENT_NONZERO_PATTERN
     elif structure is False: return MAT_DIFFERENT_NONZERO_PATTERN
     elif structure is True:  return MAT_SAME_NONZERO_PATTERN
     else:                    return structure
 
-cdef inline PetscMatAssemblyType assemblytype(object assembly) except *:
+cdef inline PetscMatAssemblyType assemblytype(object assembly) except <PetscMatAssemblyType>(-1):
     if   assembly is None:  return MAT_FINAL_ASSEMBLY
     elif assembly is False: return MAT_FINAL_ASSEMBLY
     elif assembly is True:  return MAT_FLUSH_ASSEMBLY

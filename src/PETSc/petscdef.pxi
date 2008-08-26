@@ -36,13 +36,13 @@ cdef extern from "petsc.h":
     enum: PETSC_ERR_SYS
 
 
-cdef inline PetscInsertMode insertmode(object mode) except *:
+cdef inline PetscInsertMode insertmode(object mode) except <PetscInsertMode>(-1):
     if   mode is None:  return PETSC_INSERT_VALUES
     elif mode is True:  return PETSC_ADD_VALUES
     elif mode is False: return PETSC_INSERT_VALUES
     else:               return mode
 
-cdef inline PetscScatterMode scattermode(object mode) except *:
+cdef inline PetscScatterMode scattermode(object mode) except <PetscScatterMode>(-1):
     if   mode is None:  return PETSC_SCATTER_FORWARD
     elif mode is False: return PETSC_SCATTER_FORWARD
     elif mode is True:  return PETSC_SCATTER_REVERSE
