@@ -2,6 +2,40 @@
 #define _PETSC_COMPAT_VEC_H
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetSize_233"
+PETSC_STATIC_INLINE PetscErrorCode 
+ISBlockGetSize_233(IS is, PetscInt *size)
+{
+  PetscInt N, bs=1;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(size,2);
+  ierr = ISBlockGetBlockSize(is,&bs);CHKERRQ(ierr);
+  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  *size = N/bs;
+  PetscFunctionReturn(0);
+}
+#define ISBlockGetSize ISBlockGetSize_233
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetLocalSize_233"
+PETSC_STATIC_INLINE PetscErrorCode 
+ISBlockGetLocalSize_233(IS is, PetscInt *size)
+{
+  PetscInt n, bs=1;
+  PetscErrorCode ierr;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(size,2);
+  PetscFunctionBegin;
+  ierr = ISBlockGetBlockSize(is,&bs);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+  *size = n/bs;
+  PetscFunctionReturn(0);
+}
+#define ISBlockGetLocalSize ISBlockGetLocalSize_233
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingApply_233"
 PETSC_STATIC_INLINE PetscErrorCode 
 ISLocalToGlobalMappingApply_233(ISLocalToGlobalMapping mapping,

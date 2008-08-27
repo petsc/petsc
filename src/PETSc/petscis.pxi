@@ -39,6 +39,7 @@ cdef extern from "petscis.h":
     int ISBlockGetIndices(PetscIS,PetscInt*[])
     int ISBlockRestoreIndices(PetscIS,PetscInt*[])
     int ISBlockGetSize(PetscIS,PetscInt*)
+    int ISBlockGetLocalSize(PetscIS,PetscInt*)
     int ISBlockGetBlockSize(PetscIS,PetscInt*)
     int ISStride(PetscIS,PetscTruth*)
     int ISStrideGetInfo(PetscIS,PetscInt*,PetscInt*)

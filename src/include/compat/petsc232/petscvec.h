@@ -2,6 +2,40 @@
 #define _PETSC_COMPAT_VEC_H
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetSize_232"
+PETSC_STATIC_INLINE PetscErrorCode 
+ISBlockGetSize_232(IS is, PetscInt *size)
+{
+  PetscInt N, bs=1;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(size,2);
+  ierr = ISBlockGetBlockSize(is,&bs);CHKERRQ(ierr);
+  ierr = ISGetSize(is,&N);CHKERRQ(ierr);
+  *size = N/bs;
+  PetscFunctionReturn(0);
+}
+#define ISBlockGetSize ISBlockGetSize_232
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetLocalSize_232"
+PETSC_STATIC_INLINE PetscErrorCode 
+ISBlockGetLocalSize_232(IS is, PetscInt *size)
+{
+  PetscInt n, bs=1;
+  PetscErrorCode ierr;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(size,2);
+  PetscFunctionBegin;
+  ierr = ISBlockGetBlockSize(is,&bs);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+  *size = n/bs;
+  PetscFunctionReturn(0);
+}
+#define ISBlockGetLocalSize ISBlockGetLocalSize_232
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISSum_232"
 static PETSC_UNUSED
 PetscErrorCode ISSum_232(IS is1,IS is2,IS *is3) {
