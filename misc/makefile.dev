@@ -11,17 +11,17 @@ PETSC_ARCH=linux-gnu
 all: petsc-232 petsc-233 petsc-dev
 
 petsc-232:
-	${MAKE} PETSC_DIR=${PETSC_232} -f makefile.dev torture
-petsc-233:
-	${MAKE} PETSC_DIR=${PETSC_233} -f makefile.dev torture
-petsc-dev:
-	${MAKE} PETSC_DIR=${PETSC_DEV} -f makefile.dev torture
+	${MAKE} -f misc/makefile.dev PETSC_DIR=${PETSC_232} torture
+petsc-233:						       
+	${MAKE} -f misc/makefile.dev PETSC_DIR=${PETSC_233} torture
+petsc-dev:						       
+	${MAKE} -f misc/makefile.dev PETSC_DIR=${PETSC_DEV} torture
 
 PETSC_OPTIONS='-malloc_dump -log_summary'
 torture:
 	${RM} -r build /tmp/lib/python/petsc4py*
 	${PYTHON} setup.py clean --all
 	${PYTHON} setup.py install --home=/tmp
-	PYTHONPATH=/tmp/lib/python PETSC_OPTIONS=${PETSC_OPTIONS} ${PYTHON} tests/runtests.py
+	PYTHONPATH=/tmp/lib/python PETSC_OPTIONS=${PETSC_OPTIONS} ${PYTHON} test/runtests.py
 	${RM} tests/*.py[co]
-	${RM} -r build /tmp/lib/python
+	${RM} -r build /tmp/lib/python/petsc4py*
