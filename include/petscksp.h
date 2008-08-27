@@ -558,5 +558,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUseFischerGuess(KSP,PetscInt,Pets
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFischerGuess(KSP,KSPFischerGuess);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetFischerGuess(KSP,KSPFischerGuess*);
 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MatSchurComplementGetKSP(Mat,KSP*);
+
 PETSC_EXTERN_CXX_END
 #endif

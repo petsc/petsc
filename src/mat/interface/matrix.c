@@ -4858,7 +4858,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* 
    MatGetOwnershipRangeColumn - Returns the range of matrix columns owned by
    this processor.
 
-   Not Collective
+   Not Collective, unless matrix has not been allocated, then collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -4899,7 +4899,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangeColumn(Mat mat,PetscInt *m
    n1 rows on the first processor, the next n2 rows on the second, etc.
    For certain parallel layouts this range may not be well defined.
 
-   Not Collective
+   Not Collective, unless matrix has not been allocated, then collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -4938,7 +4938,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,Petsc
    MatGetOwnershipRanges - Returns the range of matrix rows owned by
    each process
 
-   Not Collective
+   Not Collective, unless matrix has not been allocated, then collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -4960,6 +4960,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscMapGetRanges(&mat->rmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -4969,7 +4970,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt *
 /*@C
    MatGetOwnershipRangesColumn - Returns the range of local columns for each process
 
-   Not Collective
+   Not Collective, unless matrix has not been allocated, then collective on Mat
 
    Input Parameters:
 .  mat - the matrix
@@ -4984,13 +4985,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt *
 .seealso:   MatGetOwnershipRange(), MatGetOwnershipRangeColumn(), MatGetOwnershipRanges()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangesColumns(Mat mat,const PetscInt **ranges)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangesColumn(Mat mat,const PetscInt **ranges)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscMapGetRanges(&mat->cmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
