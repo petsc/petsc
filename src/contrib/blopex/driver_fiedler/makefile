@@ -4,7 +4,7 @@ FFLAGS           =
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/contrib/blopex/driver_fiedler/
-EXAMPLESC        = driver.c
+EXAMPLESC        = driver_fiedler.c
 EXAMPLESF        = 
 MANSEC           = KSP
 
