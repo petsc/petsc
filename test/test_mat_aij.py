@@ -22,7 +22,7 @@ def mkgraph(comm, m, n):
     xadj[0] = 0
     xadj[1:] = N.cumsum([len(r) for r in rows], dtype=idt)
     if not rows: adjy = N.array([],dtype=idt)
-    else:        adjy = N.concatenate(rows)
+    else:        adjy = N.concatenate(rows).astype(idt)
     return nods, xadj, adjy
 
 
