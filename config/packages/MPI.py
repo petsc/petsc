@@ -195,9 +195,6 @@ class Configure(config.package.Package):
       self.addDefine('HAVE_MPI_COMM_C2F', 1)
     if self.checkLink('#include <mpi.h>\n', 'MPI_Fint a;\n'):
       self.addDefine('HAVE_MPI_FINT', 1)
-      if self.checkLink('#include <mpi.h>\n', 'MPI_Fint dtype = MPI_Type_c2f(MPI_LONG_DOUBLE);\n'):
-        self.addDefine('HAVE_MPI_LONG_DOUBLE', 1)
-
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     return
@@ -219,9 +216,28 @@ class Configure(config.package.Package):
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-    for datatype in ['MPI_LONG_DOUBLE']:
-      if self.checkRun('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n'):
-        self.addDefine('HAVE_'+datatype, 1)
+    for datatype, name in [('MPI_LONG_DOUBLE', 'long-double'), ('MPI_ENORMOUS_DOUBLE', 'enormous-double'), ('MPI_UNBELIEVABLE_DOUBLE', 'unbelievable-double')]:
+      if self.checkCompile('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n'):
+        if 'have-mpi-'+name in self.argDB:
+          if int(self.argDB['have-mpi-'+name]):
+            self.addDefine('HAVE_'+datatype, 1)
+        elif not self.argDB['with-batch']:
+          self.pushLanguage('C')
+          if self.checkRun('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n', defaultArg = 'have-mpi-'+name):
+            self.addDefine('HAVE_'+datatype, 1)
+          self.popLanguage()
+        else:
+          self.framework.addBatchInclude(['#include <stdlib.h>', '#include <mpi.h>'])
+          self.framework.addBatchBody('''
+{
+  MPI_Aint size;
+  int ierr = MPI_Type_extent(%s, &size);
+  if(!ierr && (size != 0)) {
+    fprintf(output, "  \'--have-mpi-%s=1\',\\n");
+  } else {
+    fprintf(output, "  \'--have-mpi-%s=0\',\\n");
+  }
+}''' % (datatype, name, name))
     self.compilers.CPPFLAGS = oldFlags
     self.compilers.LIBS = oldLibs
     return
