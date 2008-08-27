@@ -21,7 +21,7 @@ static void Petsc_array_struct_del(void* cptr, void* descr)
 }
 
 
-static PyObject* Petsc_array_struct_new(PyObject* self, 
+static PyObject* Petsc_array_struct_new(PyObject* self,
 					void* array, PetscInt size,
 					int NPY_PETSC_TYPE, int flags)
 {
@@ -51,15 +51,15 @@ static PyObject* Petsc_array_struct_new(PyObject* self,
   inter->flags |= NPY_ARR_HAS_DESCR;
   inter->flags |= flags;
   /* create C Object holding array interface struct and data owner */
-  cobj = PyCObject_FromVoidPtrAndDesc(inter, self, 
+  cobj = PyCObject_FromVoidPtrAndDesc(inter, self,
 				      Petsc_array_struct_del);
-  if (cobj == NULL) { 
-    Petsc_array_struct_del((void* )inter, (void* )self); 
+  if (cobj == NULL) {
+    Petsc_array_struct_del((void *)inter, (void *)self);
   }
   return cobj;
 
  fail:
-  PyMem_Del(inter); 
+  PyMem_Del(inter);
   PyMem_Del(shape);
   Py_DECREF(self);
   return NULL;
@@ -67,6 +67,7 @@ static PyObject* Petsc_array_struct_new(PyObject* self,
 
 static PyObject* PetscIS_array_struct(PyObject* self, IS is)
 {
+  PetscErrorCode ierr;
   PetscTruth valid  = PETSC_FALSE;
   PetscTruth stride = PETSC_FALSE;
   PetscTruth block  = PETSC_FALSE;
@@ -74,63 +75,51 @@ static PyObject* PetscIS_array_struct(PyObject* self, IS is)
   PetscInt   *array = PETSC_NULL;
   PyObject   *iface = NULL;
   /* check index set handle */
-  ISValid(is,&valid);
+  ierr = ISValid(is,&valid);
   if (!valid) {
     PyErr_SetString(PyExc_ValueError, "index set is not valid");
     return NULL;
   }
-  ISStride(is, &stride); 
-  ISBlock(is, &block);
-  /* get index set indices and size*/
-  ISGetIndices(is, &array); 
-  ISGetLocalSize(is, &size);
-  if (stride || block) { /* perhaps I should find a better way */
-    npy_intp s = (npy_intp) size;
-    PyObject* ary = PyArray_EMPTY(1, &s, NPY_PETSC_INT, 0);
-    if (ary != NULL) {
-      PetscMemcpy(PyArray_DATA(ary), array, size*sizeof(PetscInt));
-      iface = Petsc_array_struct_new(ary, PyArray_DATA(ary), size,
-				     NPY_PETSC_INT, NPY_WRITEABLE);
-      Py_DECREF(ary);
-    }
-
-  } else {  
-    iface = Petsc_array_struct_new(self, (void *)array, size,
-				   NPY_PETSC_INT, 0);
+  /* check index set type */
+  ierr = ISStride(is, &stride);
+  ierr = ISBlock(is, &block);
+  if (stride || block) {
+    PyErr_SetString(PyExc_ValueError, "index set is not general");
+    return NULL;
   }
-  ISRestoreIndices(is, &array);
+  /* get index set size and array */
+  ierr = ISGetLocalSize(is, &size);    /* XXX */
+  ierr = ISGetIndices(is, &array);     /* XXX */
+  iface = Petsc_array_struct_new(self, (void *)array, size,
+				 NPY_PETSC_INT, 0);
+  ierr = ISRestoreIndices(is, &array); /* XXX */
   return iface;
 }
 
-static PyObject* PetscVec_array_struct(PyObject* self, Vec vec) 
+static PyObject* PetscVec_array_struct(PyObject* self, Vec vec)
 {
+  PetscErrorCode ierr;
   PetscTruth  valid  = PETSC_FALSE;
   PetscInt    size   = 0;
   PetscScalar *array = PETSC_NULL;
   PyObject    *iface = NULL;
   /* check vector handle */
-  VecValid(vec,&valid);
+  ierr = VecValid(vec, &valid);
   if (!valid) {
     PyErr_SetString(PyExc_ValueError, "vector is not valid");
     return NULL;
   }
-  /* get vector array and size*/
-  VecGetArray(vec, &array);
-  VecGetLocalSize(vec, &size);
+  /* check vector is native */
   if (!vec->petscnative) {
-    npy_intp s = (npy_intp) size;
-    PyObject* ary = PyArray_EMPTY(1, &s, NPY_PETSC_SCALAR, 0);
-    if (ary != NULL) {
-      PetscMemcpy(PyArray_DATA(ary), array, size*sizeof(PetscScalar));
-      iface = Petsc_array_struct_new(ary, PyArray_DATA(ary), size,
-				     NPY_PETSC_SCALAR, NPY_WRITEABLE);
-      Py_DECREF(ary);
-    }
-  } else {
-    iface = Petsc_array_struct_new(self, (void *)array, size,
-				   NPY_PETSC_SCALAR, NPY_WRITEABLE);
+    PyErr_SetString(PyExc_ValueError, "vector is not native");
+    return NULL;
   }
-  VecRestoreArray(vec, &array);
+  /* get vector size and array */
+  ierr = VecGetLocalSize(vec, &size);  /* XXX */
+  ierr = VecGetArray(vec, &array);     /* XXX */
+  iface = Petsc_array_struct_new(self, (void *)array, size,
+				 NPY_PETSC_SCALAR, NPY_WRITEABLE);
+  ierr = VecRestoreArray(vec, &array); /* XXX */
   return iface;
 }
 
