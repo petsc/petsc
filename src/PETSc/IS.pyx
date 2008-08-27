@@ -121,23 +121,41 @@ cdef class IS(Object):
         return (n, N)
 
     def getBlockSize(self):
-        cdef PetscTruth flag = PETSC_FALSE
-        CHKERR( ISBlock(self.iset, &flag) )
-        if flag == PETSC_FALSE: return 1
+        cdef PetscTruth block = PETSC_FALSE
+        CHKERR( ISBlock(self.iset, &block) )
+        if block == PETSC_FALSE: return <PetscInt>1
         cdef PetscInt bs = 0
         CHKERR( ISBlockGetBlockSize(self.iset, &bs) )
         return bs
 
-    def getIndices(self, out=None):
-        array = asarray(self)
-        if out is None: out = array
-        else: out[:] = array
-        return out
+    def getIndices(self):
+        cdef PetscInt size = 0
+        cdef PetscInt *indices = NULL
+        CHKERR( ISGetLocalSize(self.iset, &size) )
+        CHKERR( ISGetIndices(self.iset, &indices) )
+        try:
+            return array_i(size, indices)
+        finally:
+            CHKERR( ISRestoreIndices(self.iset, &indices) )
+
+    def getIndicesBlock(self):
+        cdef PetscTruth block = PETSC_FALSE
+        CHKERR( ISBlock(self.iset, &block) )
+        if block == PETSC_FALSE: return self.getIndices()
+        cdef PetscInt size = 0, bs = 0
+        cdef PetscInt *indices=NULL
+        CHKERR( ISGetLocalSize(self.iset, &size) )
+        CHKERR( ISBlockGetBlockSize(self.iset, &bs) )
+        CHKERR( ISBlockGetIndices(self.iset, &indices) )
+        try:
+            return array_i(size/bs, indices)
+        finally:
+            CHKERR( ISBlockRestoreIndices(self.iset, &indices) )
 
     def getInfo(self):
-        cdef PetscTruth flag = PETSC_FALSE
-        CHKERR( ISStride(self.iset, &flag) )
-        if flag == PETSC_FALSE: return None
+        cdef PetscTruth stride = PETSC_FALSE
+        CHKERR( ISStride(self.iset, &stride) )
+        if stride == PETSC_FALSE: return None
         cdef PetscInt first = 0, step = 0
         CHKERR( ISStrideGetInfo(self.iset, &first, &step) )
         return (first, step)
