@@ -41,7 +41,7 @@ class Configure(config.base.Configure):
         distutils.sysconfig.get_python_inc(1)
       except distutils.sysconfig.DistutilsPlatformError, e:
         self.framework.logPrint('Error finding Python include directories: '+str(e))
-        raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+        raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
       try:
         distutils.sysconfig.get_config_var('LDFLAGS')
@@ -49,7 +49,7 @@ class Configure(config.base.Configure):
         distutils.sysconfig.get_config_var('SYSLIBS')
       except distutils.sysconfig.DistutilsPlatformError, e:
         self.framework.logPrint('Error finding Python libraries: '+str(e))
-        raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+        raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
       try:
         distutils.sysconfig.get_config_var('LIBDIR')
@@ -58,17 +58,17 @@ class Configure(config.base.Configure):
         distutils.sysconfig.get_config_var('SO')
       except distutils.sysconfig.DistutilsPlatformError, e:
         self.framework.logPrint('Error finding Python shared library: '+str(e))
-        raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+        raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
 
       try:
         distutils.sysconfig.get_config_var('BINDIR')
         distutils.sysconfig.get_config_var('PYTHON')
       except distutils.sysconfig.DistutilsPlatformError, e:
         self.framework.logPrint('Error finding Python executable: '+str(e))
-        raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+        raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
     except Exception, e:
       self.framework.logPrint('I do not know what went wrong: '+str(e))
-      raise RuntimeError('Python is not fully installed. Please consult your packing system.')
+      raise RuntimeError('Python is not fully installed. Perhaps python-devel package missing? Please consult your packing system.')
     return
 
   def checkInclude(self, includeDir):
