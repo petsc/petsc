@@ -51,7 +51,7 @@ cdef extern from "custom.h":
     pass
 
 cdef extern from "petsc.h":
-    ctypedef int    PetscInt
+    ctypedef long   PetscInt
     ctypedef double PetscReal
     ctypedef double PetscScalar
     ctypedef PetscInt    const_PetscInt    "const PetscInt"
