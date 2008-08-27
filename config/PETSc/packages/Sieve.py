@@ -32,6 +32,7 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.setupHelp(self, help)
     import nargs
     help.addArgument('Sieve', '-with-opt-sieve=<bool>', nargs.ArgBool(None, 0, 'Use IMesh which are optimized for interval point sets'))
+    help.addArgument('Sieve', '-with-sieve-memory-logging=<bool>', nargs.ArgBool(None, 0, 'Turn on memory logging for Sieve objects'))
     return
 
   def Install(self):
@@ -52,4 +53,6 @@ class Configure(PETSc.package.Package):
         self.addDefine('MESH_TYPE', 'ALE::IMesh')
       else:
         self.addDefine('MESH_TYPE', 'ALE::Mesh')
+      if '-with-sieve-memory-logging' in self.argDB and self.argDB['-with-sieve-memory-logging']:
+        self.framework.addDefine('ALE_MEM_LOGGING', 1)
     return PETSc.package.Package.configure(self)
