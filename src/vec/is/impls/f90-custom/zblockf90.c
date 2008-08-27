@@ -17,7 +17,7 @@ void PETSC_STDCALL isblockgetindicesf90_(IS *x,F90Array1d *ptr,int *__ierr PETSC
   PetscInt *fa;
   PetscInt  len;
   *__ierr = ISBlockGetIndices(*x,&fa);      if (*__ierr) return;
-  *__ierr = ISBlockGetSize(*x,&len);        if (*__ierr) return;
+  *__ierr = ISBlockGetLocalSize(*x,&len);        if (*__ierr) return;
   *__ierr = F90Array1dCreate(fa,PETSC_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 void PETSC_STDCALL isblockrestoreindicesf90_(IS *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
