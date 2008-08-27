@@ -87,6 +87,27 @@ MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
 
 #include "include/private/matimpl.h"
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSetBlockSize_Patch"
+PETSC_STATIC_INLINE PetscErrorCode
+MatSetBlockSize_Patch(Mat mat,PetscInt bs)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  if (bs < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
+  if (mat->ops->setblocksize) {
+    mat->rmap.bs = mat->cmap.bs = bs;
+    ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
+  } else if (mat->rmap.bs != bs || mat->cmap.bs != bs) {
+    SETERRQ1(PETSC_ERR_ARG_INCOMP,"Cannot set/change the block size for matrix type %s",((PetscObject)mat)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+#undef  MatSetBlockSize
+#define MatSetBlockSize MatSetBlockSize_Patch
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatAnyAIJSetPreallocation"
 PETSC_STATIC_INLINE PetscErrorCode
