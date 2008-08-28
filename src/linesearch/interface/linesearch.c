@@ -91,7 +91,9 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate(MPI_Comm comm, TaoLin
     ls->ftol = 0.0001;
     ls->gtol = 0.9;
     ls->rtol = 1.0e-10;
-
+    ls->stepmin=1.0e-20;
+    ls->stepmax=1.0e+20;
+    ls->step=1.0;
     ls->nfev=0;
 
     ls->ops->computeobjective=0;
@@ -158,11 +160,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch ls, Vec 
     PetscErrorCode ierr;
     PetscTruth flg;
     PetscViewer viewer;
-    PetscReal dginit;
     PetscInt low1,low2,low3,high1,high2,high3;
-#if defined(PETSC_USE_SCALAR)
-    PetscScalar cdginit;
-#endif
     char filename[PETSC_MAX_PATH_LEN];
 
     PetscFunctionBegin;
@@ -220,20 +218,6 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch ls, Vec 
     if (PetscIsInfOrNanReal(*f)) {
       ierr = PetscInfo1(ls,"Initial Line Search Function Value is Inf or Nan (%g)\n",*f); CHKERRQ(ierr);
       *reason=TAOLINESEARCH_FAILED_INFORNAN;
-    }
-#if defined(PETSC_USE_COMPLEX)
-    ierr = VecDot(g,s,&cdginit); CHKERRQ(ierr); dginit = PetscReal(cdginit);
-#else
-    ierr = VecDot(g,s,&dginit);
-#endif
-    
-    if (PetscIsInfOrNanReal(dginit)) {
-      ierr = PetscInfo1(ls,"Initial Line Search step * g is Inf or Nan (%g)\n",dginit); CHKERRQ(ierr);
-      *reason=TAOLINESEARCH_FAILED_INFORNAN;
-    }
-    if (dginit >= 0.0) {
-      ierr = PetscInfo1(ls,"Initial Line Search step * g is not descent direction (%g)\n",dginit); CHKERRQ(ierr);
-      *reason = TAOLINESEARCH_FAILED_ASCENT;
     }
     ls->reason = *reason;
     if (*reason != TAOLINESEARCH_CONTINUE_ITERATING) {
@@ -312,6 +296,14 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetType(TaoLineSearch ls, co
     if (ls->ops->destroy) {
 	ierr = (*(ls)->ops->destroy)(ls); CHKERRQ(ierr);
     }
+    ls->maxfev=30;
+    ls->ftol = 0.0001;
+    ls->gtol = 0.9;
+    ls->rtol = 1.0e-10;
+    ls->stepmin=1.0e-20;
+    ls->stepmax=1.0e+20;
+
+    ls->nfev=0;
     ls->ops->setup=0;
     ls->ops->apply=0;
     ls->ops->view=0;
@@ -522,7 +514,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjectiveAndGradient(
     CHKMEMQ;
     PetscStackPop;
     ierr = PetscLogEventEnd(TaoLineSearch_EvalEvent,ls,0,0,0); CHKERRQ(ierr);
-    ls->nfev++;
+    ierr = PetscInfo1(ls,"TaoLineSearch Function evaluation: %14.12e\n",*f);CHKERRQ(ierr);    ls->nfev++;
     PetscFunctionReturn(0);
 }
 

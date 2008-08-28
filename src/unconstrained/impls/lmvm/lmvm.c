@@ -294,7 +294,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_LMVM(TaoSolver tao)
 {
     
   TAO_LMVM *lmP;
-  char lstype[256] = TAOLINESEARCH_MT;
+  const char *lstype = TAOLINESEARCH_MT;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

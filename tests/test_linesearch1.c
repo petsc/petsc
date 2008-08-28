@@ -4,6 +4,7 @@ typedef struct {
     int n;
     PetscScalar alpha;
 } AppCtx;
+PetscErrorCode viewme(Vec v); 
 
 PetscErrorCode MyFuncGrad(TaoLineSearch ls, Vec X, PetscScalar *f, Vec G, void *ctx);
 
@@ -87,4 +88,15 @@ PetscErrorCode MyFuncGrad(TaoLineSearch ls, Vec X, PetscScalar *f, Vec G, void *
 
     ierr = PetscLogFlops(nn*15); CHKERRQ(ierr);
     return 0;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "viewme"
+PetscErrorCode viewme(Vec v) 
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  ierr = VecView(v,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }

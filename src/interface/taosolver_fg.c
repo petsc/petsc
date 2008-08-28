@@ -128,6 +128,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec 
     }  else {
 	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjective() has not been called");
     }
+    ierr = PetscInfo1(tao,"TAO Function evaluation: %14.12e\n",*f);CHKERRQ(ierr);    
     PetscFunctionReturn(0);
 }
 
@@ -172,6 +173,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolve
   } else {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjective() or TaoSolverSetGradient() not set");
   }
+  ierr = PetscInfo1(tao,"TAO Function evaluation: %14.12e\n",*f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 

@@ -70,6 +70,10 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
 {
     PetscErrorCode ierr;
     TAOLINESEARCH_MT_CTX *mt;
+#if defined(PETSC_USE_SCALAR)
+    PetscScalar cdginit;
+#endif
+    
     PetscScalar    xtrapf = 4.0;
     PetscScalar   finit, width, width1, dginit, fm, fxm, fym, dgm, dgxm, dgym;
     PetscScalar    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1=0.0;
@@ -99,6 +103,22 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
       mt->x = x;
       ierr = PetscObjectReference((PetscObject)x); CHKERRQ(ierr);
     }
+#if defined(PETSC_USE_COMPLEX)
+    ierr = VecDot(g,s,&cdginit); CHKERRQ(ierr); dginit = PetscReal(cdginit);
+#else
+    ierr = VecDot(g,s,&dginit);
+#endif
+    
+    if (PetscIsInfOrNanReal(dginit)) {
+      ierr = PetscInfo1(ls,"Initial Line Search step * g is Inf or Nan (%g)\n",dginit); CHKERRQ(ierr);
+      ls->reason=TAOLINESEARCH_FAILED_INFORNAN;
+      PetscFunctionReturn(0);
+    }
+    if (dginit >= 0.0) {
+      ierr = PetscInfo1(ls,"Initial Line Search step * g is not descent direction (%g)\n",dginit); CHKERRQ(ierr);
+      ls->reason = TAOLINESEARCH_FAILED_ASCENT;
+      PetscFunctionReturn(0);
+    }
 
 
     /* Initialization */
@@ -123,6 +143,7 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     dgy = dginit;
  
     ls->nfev = 0;
+    ls->step=1.0;
     for (i=0; i< ls->maxfev; i++) {
     /* Set min and max steps to correspond to the interval of uncertainty */
       if (mt->bracket) {
@@ -275,7 +296,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch ls)
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
     ierr = PetscNewLog(ls,TAOLINESEARCH_MT_CTX,&ctx); CHKERRQ(ierr);
     ctx->bracket=0;
-    ctx->infoc=0;
+    ctx->infoc=1;
     ls->data = (void*)ctx;
     ls->ops->setup=0; //TaoLineSearchSetup_MT;
     ls->ops->apply=TaoLineSearchApply_MT;
