@@ -11,7 +11,7 @@ struct _TaoLineSearchOps {
     PetscErrorCode (*computegradient)(TaoLineSearch, Vec, Vec, void*);
     PetscErrorCode (*computeobjectiveandgradient)(TaoLineSearch, Vec, PetscScalar *, Vec, void*);
     PetscErrorCode (*setup)(TaoLineSearch);
-    PetscErrorCode (*apply)(TaoLineSearch,Vec,PetscScalar,Vec,Vec);
+    PetscErrorCode (*apply)(TaoLineSearch,Vec,PetscScalar*,Vec,Vec);
     PetscErrorCode (*view)(TaoLineSearch,PetscViewer);
     PetscErrorCode (*setfromoptions)(TaoLineSearch);
     PetscErrorCode (*destroy)(TaoLineSearch);
@@ -28,17 +28,14 @@ struct _p_TaoLineSearch {
 
 
     Vec start_x;
-
+    PetscScalar f_fullstep;
     PetscScalar new_f;
     Vec new_x;
     Vec new_g;
-    Vec work;
-    PetscScalar step_length;
+    PetscScalar step;
 
     PetscInt maxfev;
     PetscInt nfev;
-    PetscTruth bracket;
-    PetscInt infoc;
     TaoLineSearchTerminationReason reason;
 
     double rtol;	 /* relative tol for acceptable step (rtol>0) */

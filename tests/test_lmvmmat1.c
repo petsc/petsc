@@ -2,6 +2,7 @@
 #include "petscmat.h"
 #include "src/matrix/lmvmmat.h"
 #include "numbers.h"
+PetscErrorCode viewme(Vec v); 
 PetscErrorCode initializevecs(Vec**,PetscInt,PetscInt);
 
 #undef __FUNCT__
@@ -10,7 +11,7 @@ int main(int argc, char *argv[])
 {
     PetscErrorCode ierr;
     Vec *v,y;
-    PetscInt localsize;
+    PetscInt localsize,i;
     Mat lmvm_mat;
 
     PetscInitialize(&argc, &argv, 0, 0);
@@ -18,8 +19,11 @@ int main(int argc, char *argv[])
     ierr = VecDuplicate(v[0], &y); CHKERRQ(ierr);
     ierr = VecGetLocalSize(v[0],&localsize); CHKERRQ(ierr);
     ierr = MatCreateLMVM(PETSC_COMM_WORLD,localsize,10,&lmvm_mat); CHKERRQ(ierr);
-    ierr = MatLMVMUpdate(lmvm_mat,v[0],v[1]); CHKERRQ(ierr);
-    ierr = MatLMVMSolve(lmvm_mat,v[2],y); CHKERRQ(ierr);
+    for (i=0;i<20;i++) {
+      ierr = MatLMVMUpdate(lmvm_mat,v[i],v[20+i]); CHKERRQ(ierr);
+    }
+    ierr = MatLMVMSolve(lmvm_mat,v[41],y); CHKERRQ(ierr);
+
     ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
 //    ierr = MatView(lmvm_mat,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
     ierr = MatDestroy(lmvm_mat); CHKERRQ(ierr);
@@ -30,6 +34,16 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "viewme"
+PetscErrorCode viewme(Vec v) 
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
+  ierr = VecView(v,PETSC_VIEWER_STDOUT_SELF); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "initalizevecs"

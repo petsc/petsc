@@ -4,7 +4,7 @@
 
 typedef struct {
     int dummy;
-} TAOLINESEARCH_UNITCTX;
+} TAOLINESEARCH_UNIT_CTX;
 
 
 #endif

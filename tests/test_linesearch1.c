@@ -12,36 +12,50 @@ int main(int argc, char *argv[])
     TaoLineSearch ls;
     TaoLineSearchTerminationReason reason;
     Vec x,g,s;
-    PetscScalar f;
+    PetscScalar f,step;
     AppCtx user;
-    int info;
+    int ierr;
     
 	
-    info = PetscInitialize(&argc, &argv,0,0); CHKERRQ(info);
+    ierr = PetscInitialize(&argc, &argv,0,0); CHKERRQ(ierr);
 
     user.n=2; user.alpha = 99.0;
-    info = VecCreateSeq(PETSC_COMM_SELF,user.n,&x); CHKERRQ(info);
-    info = VecDuplicate(x,&g); CHKERRQ(info);
-    info = VecDuplicate(x,&s); CHKERRQ(info);
+    ierr = VecCreate(PETSC_COMM_WORLD,&x); CHKERRQ(ierr);
+    ierr = VecSetSizes(x,PETSC_DECIDE,2); CHKERRQ(ierr);
+    ierr = VecSetFromOptions(x); CHKERRQ(ierr);
 
-    info = VecSet(x,0.0); CHKERRQ(info);
-    info = VecSet(s,0.0); CHKERRQ(info);
+    ierr = VecDuplicate(x,&g); CHKERRQ(ierr);
+    ierr = VecDuplicate(x,&s); CHKERRQ(ierr);
+
+    ierr = VecSet(x,0.0); CHKERRQ(ierr);
+    ierr = VecSet(s,0.0); CHKERRQ(ierr);
     f = 1.0;
-    info = VecSetValue(g,0,-1.0, INSERT_VALUES); CHKERRQ(info);
-    info = VecSetValue(g,1,0.0, INSERT_VALUES);CHKERRQ(info);
-    info = VecAssemblyBegin(g); CHKERRQ(info);
-    info = VecAssemblyEnd(g); CHKERRQ(info);
-    info = VecAXPY(s,-1.0,g); CHKERRQ(info);
+    ierr = VecSetValue(g,0,-1.0, INSERT_VALUES); CHKERRQ(ierr);
+    ierr = VecSetValue(g,1,0.0, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecAssemblyBegin(g); CHKERRQ(ierr);
+    ierr = VecAssemblyEnd(g); CHKERRQ(ierr);
+    ierr = VecAXPY(s,-1.0,g); CHKERRQ(ierr);
 
-    info = TaoLineSearchCreate(PETSC_COMM_SELF,&ls); CHKERRQ(info);
-    info = TaoLineSearchSetFromOptions(ls); CHKERRQ(info);
-    info = TaoLineSearchSetObjectiveGradient(ls,MyFuncGrad,(void*)&user); 
-    CHKERRQ(info);
-    info = TaoLineSearchApply(ls,x,f,g,s); CHKERRQ(info);
-    info = TaoLineSearchGetSolution(ls,x,&f,g,&reason); CHKERRQ(info);
+    ierr = TaoLineSearchCreate(PETSC_COMM_WORLD,&ls); CHKERRQ(ierr);
+//    ierr = TaoLineSearchSetType(ls,"unit"); CHKERRQ(ierr);
+    ierr = TaoLineSearchSetFromOptions(ls); CHKERRQ(ierr);
+    ierr = TaoLineSearchSetObjectiveAndGradient(ls,MyFuncGrad,(void*)&user); 
+    CHKERRQ(ierr);
+    ierr = TaoLineSearchApply(ls,x,&f,g,s,&step,&reason); CHKERRQ(ierr);
+    ierr = TaoLineSearchView(ls,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Status: %d\n",reason); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Step length: %g\n",step); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"New Obj value: %g\n",f); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"New gradient:\n"); CHKERRQ(ierr);
+    ierr = VecView(g,PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+
     
-    info = TaoLineSearchDestroy(ls); CHKERRQ(info);
-    info = PetscFinalize();
+    ierr = TaoLineSearchDestroy(ls); CHKERRQ(ierr);
+    ierr = VecDestroy(x); CHKERRQ(ierr);
+    ierr = VecDestroy(s); CHKERRQ(ierr);
+    ierr = VecDestroy(g); CHKERRQ(ierr);
+    ierr = PetscFinalize();
     return(0);
 }
 
@@ -49,14 +63,14 @@ int main(int argc, char *argv[])
 PetscErrorCode MyFuncGrad(TaoLineSearch ls, Vec X, PetscScalar *f, Vec G, void *ctx)
 {
     AppCtx *user = (AppCtx*)ctx;
-    PetscErrorCode    info;
+    PetscErrorCode    ierr;
     PetscInt i,nn=user->n/2;
     double ff=0,t1,t2,alpha=user->alpha;
     PetscScalar *x,*g;
 
     /* Get pointers to vector data */
-    info = VecGetArray(X,&x); CHKERRQ(info);
-    info = VecGetArray(G,&g); CHKERRQ(info);
+    ierr = VecGetArray(X,&x); CHKERRQ(ierr);
+    ierr = VecGetArray(G,&g); CHKERRQ(ierr);
 
     /* Compute G(X) */
     for (i=0; i<nn; i++){
@@ -67,10 +81,10 @@ PetscErrorCode MyFuncGrad(TaoLineSearch ls, Vec X, PetscScalar *f, Vec G, void *
     }
 
     /* Restore vectors */
-    info = VecRestoreArray(X,&x); CHKERRQ(info);
-    info = VecRestoreArray(G,&g); CHKERRQ(info);
+    ierr = VecRestoreArray(X,&x); CHKERRQ(ierr);
+    ierr = VecRestoreArray(G,&g); CHKERRQ(ierr);
     *f=ff;
 
-    info = PetscLogFlops(nn*15); CHKERRQ(info);
+    ierr = PetscLogFlops(nn*15); CHKERRQ(ierr);
     return 0;
 }

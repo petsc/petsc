@@ -30,7 +30,6 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer pv)
   
   PetscErrorCode info;
   PetscTruth isascii;
-
   PetscFunctionBegin;
   
   info = PetscTypeCompare((PetscObject)pv, PETSC_VIEWER_ASCII, &isascii); CHKERRQ(info);
@@ -57,33 +56,31 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer pv)
    Info is set to 0.
 
 @ */
-static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec start_x,PetscScalar start_f,Vec start_g,Vec step_direction)
+static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscScalar *f,Vec g,Vec step_direction)
 {
   PetscErrorCode   info;
   PetscScalar ftry;
+  PetscScalar startf = *f;
   //  Vec XL,XU; 
 
   PetscFunctionBegin;
   
   // Take unit step (newx = startx + 1.0*step_direction)
-  info = VecCopy(start_x, ls->new_x);
-  info = VecAXPY(ls->new_x,1.0,step_direction);CHKERRQ(info);
+  info = VecAXPY(x,1.0,step_direction);CHKERRQ(info);
 
-  //info = TaoGetVariableBounds(tao,&XL,&XU); CHKERRQ(info);
+  // info = TaoGetVariableBounds(tao,&XL,&XU); CHKERRQ(info);
   //  if (XL && XU){
   //    info = X->Median(XL,X,XU);CHKERRQ(info);
   //  }
-  info = TaoLineSearchComputeObjectiveGradient(ls,ls->new_x,&ftry,ls->new_g); CHKERRQ(info);
+  info = TaoLineSearchComputeObjectiveAndGradient(ls,x,&ftry,g); CHKERRQ(info);
   info = PetscInfo1(ls,"Tao Apply Unit Step: %4.4e\n",1.0);
          CHKERRQ(info);
-  if (start_f < ftry){
-    info = PetscInfo2(ls,"Tao Apply Unit Step, FINCREASE: F old:= %12.10e, F new: %12.10e\n",start_f,ftry); CHKERRQ(info);
+  if (startf < ftry){
+    info = PetscInfo2(ls,"Tao Apply Unit Step, FINCREASE: F old:= %12.10e, F new: %12.10e\n",startf,ftry); CHKERRQ(info);
   }
-  ls->new_f=ftry;
-  ls->step_length = 1.0;
-  
-  //  *f_full = fnew;
-  //  *info2 = 0;
+  *f = ftry;
+  ls->step = 1.0;
+  ls->reason=TAOLINESEARCH_SUCCESS;
   PetscFunctionReturn(0);
 }
 
@@ -103,7 +100,6 @@ EXTERN_C_BEGIN
 @*/
 PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_Unit(TaoLineSearch ls)
 {
-  PetscErrorCode info;
 
   PetscFunctionBegin;
   ls->ops->setup = 0;

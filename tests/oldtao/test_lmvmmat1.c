@@ -33,9 +33,12 @@ int main(int argc, char *argv[])
     ierr = VecGetLocalSize(v[0],&localsize); CHKERRQ(ierr);
 
     lmvm_mat = new TaoLMVMMat(tv[0]); CHKERRQ(ierr);
-    ierr = lmvm_mat->Update(tv[0],tv[1]); CHKERRQ(ierr);
-    ierr = lmvm_mat->Solve(tv[2],y,&success); CHKERRQ(ierr);
+    for (i=0;i<20;i++) {
+      ierr = lmvm_mat->Update(tv[i],tv[20+i]); CHKERRQ(ierr);
+    }
+    ierr = lmvm_mat->Solve(tv[41],y,&success); CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Y\n");  CHKERRQ(ierr);
+
     ierr = y->View(); CHKERRQ(ierr);
 
 
@@ -73,10 +76,6 @@ PetscErrorCode initializevecs(Vec **vv, PetscInt numvecs, PetscInt size)
     ierr = VecSetFromOptions(tmp); CHKERRQ(ierr);
     ierr = VecSet(tmp,0.0); CHKERRQ(ierr);
     ierr = VecDuplicateVecs(tmp,numvecs,&v); CHKERRQ(ierr);
-/*    for (i=0;i<numvecs;i++) {
-	ierr = VecDuplicate(tmp,&v[i]); CHKERRQ(ierr);
-	}*/
-//    ierr = VecDuplicateVecs(tmp,numvecs,&v); CHKERRQ(ierr);
     for (i=0;i<numvecs;i++) {
     
 	ierr = VecGetArray(v[i],&x);CHKERRQ(ierr);

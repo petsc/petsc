@@ -15,18 +15,18 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
   
   
   TaoSolverConvergedReason reason;
-  PetscTruth success;
+//  PetscTruth success;
 
-  PetscScalar f, f_full, fold, gdx, gnorm;
+  PetscScalar f, fold, gdx, gnorm;
   PetscScalar step = 1.0;
 
   PetscScalar delta;
 
   PetscErrorCode ierr;
   PetscInt stepType;
-  PetscInt iter = 0;
+//  PetscInt iter = 0;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
-  PetscInt bfgsUpdates = 0;
+//  PetscInt bfgsUpdates = 0;
 
   PetscFunctionBegin;
 
@@ -115,8 +115,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
     ierr = VecCopy(lmP->G, lmP->Gold); CHKERRQ(ierr);
 
     step = 1.0;
-    ierr = TaoLineSearchApply(tao->linesearch, lmP->X, f, lmP->G, lmP->D); CHKERRQ(ierr);
-    ierr = TaoLineSearchGetSolution(tao->linesearch, lmP->X, &f, lmP->G, &ls_status); CHKERRQ(ierr);
+    ierr = TaoLineSearchApply(tao->linesearch, lmP->X, &f, lmP->G, lmP->D, &step,&ls_status); CHKERRQ(ierr);
     
 //    info = TaoLineSearchApply(tao, X, G, D, W, &f, &f_full, &step, &status); CHKERRQ(info);
 
@@ -172,8 +171,8 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
       ierr = VecScale(lmP->D, -1.0); CHKERRQ(ierr);
         
       // Perform the linesearch
-      ierr = TaoLineSearchApply(tao->linesearch, lmP->X, f, lmP->G, lmP->D); CHKERRQ(ierr);
-      ierr = TaoLineSearchGetSolution(tao->linesearch, lmP->X, &f, lmP->G, &ls_status); CHKERRQ(ierr);
+      ierr = TaoLineSearchApply(tao->linesearch, lmP->X, &f, lmP->G, lmP->D, &step, &ls_status); CHKERRQ(ierr);
+
 
     }
 
@@ -295,6 +294,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_LMVM(TaoSolver tao)
 {
     
   TAO_LMVM *lmP;
+  char lstype[256] = TAOLINESEARCH_MT;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -313,7 +313,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate_LMVM(TaoSolver tao)
   ierr = TaoLineSearchCreate(((PetscObject)tao)->comm,&tao->linesearch); CHKERRQ(ierr);
 
   /* Need to set to "more-thuente" */
-  ierr = TaoLineSearchSetType(tao->linesearch,"unit"); CHKERRQ(ierr);
+  ierr = TaoLineSearchSetType(tao->linesearch,lstype); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -1,5 +1,5 @@
 #include "lmvmmat.h"   /*I "lmvmmat.h" */
-#include "taoutil.h" 
+#include "tao_util.h"  /*I "tao_util.h" */
 
 
 /* These lists are used for setting options */
@@ -252,9 +252,40 @@ EXTERN PetscErrorCode MatDestroy_LMVM(Mat M)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMReset"
-EXTERN PetscErrorCode MatLMVMReset(Mat m)
+EXTERN PetscErrorCode MatLMVMReset(Mat M)
 {
+    PetscErrorCode ierr;
+    MatLMVMCtx *ctx;
+    PetscInt i;
     PetscFunctionBegin;
+    ierr = MatShellGetContext(M,(void**)&ctx); CHKERRQ(ierr);
+    ctx->Gprev = ctx->Y[ctx->lm];
+    ctx->Xprev = ctx->S[ctx->lm];
+    ierr = PetscObjectReference((PetscObject)ctx->Gprev);
+    ierr = PetscObjectReference((PetscObject)ctx->Xprev);
+    for (i=0; i<ctx->lm; ++i) {
+      ctx->rho[i] = 0.0;
+    }
+    ctx->rho[0] = 1.0;
+    
+    // Set the scaling and diagonal scaling matrix
+    switch(ctx->scaleType) {
+      case MatLMVM_Scale_None:
+	ctx->sigma = 1.0;
+	break;
+      case MatLMVM_Scale_Scalar:
+	ctx->sigma = ctx->delta;
+	break;
+      case MatLMVM_Scale_Broyden:
+	ierr = VecSet(ctx->D,ctx->delta); CHKERRQ(ierr);
+	break;
+    }
+
+    ctx->iter=0;
+    ctx->updates=0;
+    ctx->lmnow=0;
+
+    
     PetscFunctionReturn(0);
 }
 
@@ -575,7 +606,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
           else {
 	    ierr = VecCopy(ctx->Q, ctx->P); CHKERRQ(ierr);
 
-	    ierr = TaoVecPow(ctx->P, ctx->r_beta); CHKERRQ(ierr);
+	    ierr = VecPow(ctx->P, ctx->r_beta); CHKERRQ(ierr);
 	    ierr = VecPointwiseDivide(ctx->Q, ctx->P, ctx->Q); CHKERRQ(ierr);
 
             // Compute summations for scalar scaling
@@ -660,7 +691,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 	    ierr = VecAXPBY(ctx->P, 1.0-ctx->mu, 0.0, ctx->D); CHKERRQ(ierr);
 	    // Q = (1+mu) * D
 	    ierr = VecAXPBY(ctx->Q, 1.0+ctx->mu, 0.0, ctx->D); CHKERRQ(ierr);
-	    ierr = TaoVecMedian(ctx->P, ctx->U, ctx->Q, ctx->D); CHKERRQ(ierr);
+	    ierr = VecMedian(ctx->P, ctx->U, ctx->Q, ctx->D); CHKERRQ(ierr);
           }
           break;
 
@@ -670,7 +701,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 	    ierr = VecShift(ctx->P, -ctx->nu); CHKERRQ(ierr);
 	    ierr = VecCopy(ctx->D, ctx->Q); CHKERRQ(ierr);
 	    ierr = VecShift(ctx->Q, ctx->nu); CHKERRQ(ierr);
-	    ierr = TaoVecMedian(ctx->P, ctx->U, ctx->Q, ctx->P); CHKERRQ(ierr);
+	    ierr = VecMedian(ctx->P, ctx->U, ctx->Q, ctx->P); CHKERRQ(ierr);
           }
 	  break;
 

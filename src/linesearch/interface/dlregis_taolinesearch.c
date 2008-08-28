@@ -30,6 +30,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_Unit(TaoLineSearch);
+EXTERN PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchCreate_MT(TaoLineSearch);
 EXTERN_C_END
 
 extern PetscTruth TaoLineSearchRegisterAllCalled;
@@ -42,6 +43,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchRegisterAll(const char path[
     PetscFunctionBegin;
     TaoLineSearchRegisterAllCalled=PETSC_TRUE;
     info = TaoLineSearchRegisterDynamic("unit",path,"TaoLineSearchCreate_Unit",TaoLineSearchCreate_Unit); CHKERRQ(info);
+    info = TaoLineSearchRegisterDynamic("more-thuente",path,"TaoLineSearchCreate_MT",TaoLineSearchCreate_MT); CHKERRQ(info);
     PetscFunctionReturn(0);
 }
 

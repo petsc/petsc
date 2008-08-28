@@ -14,7 +14,7 @@ include ${TAO_DIR}/conf/tao_base
 #
 # Basic targets to build TAO libraries.
 # all     : builds the C/C++ and Fortran libraries
-all       : tao_info tao_chk_tao_dir tao_deletelibs tao_build tao_shared 
+all       : tao_info tao_chk_tao_dir tao_chk_lib_dir tao_deletelibs tao_build tao_shared 
 #
 # Prints information about the system and version of TAO being compiled
 #
@@ -123,3 +123,5 @@ tao_alletags:
 
 tao_testexamples_c: 
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} TAO_DIR=${TAO_DIR} ACTION=testexamples_C tree
+
+tao_chk_lib_dir: chklib_dir

@@ -110,7 +110,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate(MPI_Comm comm, TaoSolver *new
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSolve(TaoSolver tao)
 {
   PetscErrorCode ierr;
-  PetscViewer viewer;
+//  PetscViewer viewer;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
 
