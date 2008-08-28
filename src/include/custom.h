@@ -516,3 +516,17 @@ TSSetTimeStepNumber(TS ts, PetscInt step)
 }
 
 /* ---------------------------------------------------------------- */
+
+#undef __FUNCT__  
+#define __FUNCT__ "AOGetType"
+PETSC_STATIC_INLINE PetscErrorCode
+AOGetType(AO ao, AOType *aotype) 
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ao,AO_COOKIE,1);
+  PetscValidPointer(aotype,3);
+  *aotype = (AOType) ((PetscObject)ao)->type;
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------- */

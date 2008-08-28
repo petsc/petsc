@@ -189,6 +189,16 @@ class TestObjectTS(TestObjectBase, unittest.TestCase):
         self.obj.setProblemType(PETSc.TS.ProblemType.NONLINEAR)
         self.obj.setType(PETSc.TS.Type.BEULER)
 
+class TestObjectAOBasic(TestObjectBase, unittest.TestCase):
+    CLASS  = PETSc.AO
+    FACTORY = 'createBasic'
+    TARGS = ([], [])
+
+class TestObjectAOMapping(TestObjectBase, unittest.TestCase):
+    CLASS  = PETSc.AO
+    FACTORY = 'createMapping'
+    TARGS = ([], [])
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':
