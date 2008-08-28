@@ -1032,7 +1032,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
 
       ierr = ISGetLocalSize(ix,&nx);CHKERRQ(ierr);
       ierr = ISGetLocalSize(iy,&ny);CHKERRQ(ierr);
-      if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
+      if (nx != ny) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match, in %D out %D",nx,ny);
 
       ierr = ISIdentity(ix,&idnx);CHKERRQ(ierr);
       ierr = ISIdentity(iy,&idny);CHKERRQ(ierr);

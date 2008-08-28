@@ -545,6 +545,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat A)
 -  -viewer_binary_filename <name>
    Level: beginner
 
+   Notes: see the manual page for MatLoad() for the exact format of the binary file when the binary
+      viewer is used.
+
+      See bin/matlab/PetscBinaryRead.m for a Matlab code that can read in the binary file when the binary
+      viewer is used.
+
    Concepts: matrices^viewing
    Concepts: matrices^plotting
    Concepts: matrices^printing

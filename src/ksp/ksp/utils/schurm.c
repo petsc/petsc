@@ -10,7 +10,7 @@ typedef struct {
 } Mat_SchurComplement;
 
 /*
-           D - B inv(A) C 
+           D - C inv(A) B 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SchurComplement"
@@ -22,13 +22,25 @@ PetscErrorCode MatMult_SchurComplement(Mat N,Vec x,Vec y)
   PetscFunctionBegin;
   if (!Na->work1) {ierr = MatGetVecs(Na->A,&Na->work1,PETSC_NULL);CHKERRQ(ierr);}
   if (!Na->work2) {ierr = MatGetVecs(Na->A,&Na->work2,PETSC_NULL);CHKERRQ(ierr);}
-  ierr = MatMult(Na->C,x,Na->work1);CHKERRQ(ierr);
+  ierr = MatMult(Na->B,x,Na->work1);CHKERRQ(ierr);
   ierr = KSPSolve(Na->ksp,Na->work1,Na->work2);CHKERRQ(ierr);
-  ierr = MatMult(Na->B,Na->work2,y);CHKERRQ(ierr);
+  ierr = MatMult(Na->C,Na->work2,y);CHKERRQ(ierr);
   ierr = VecScale(y,-1.0);CHKERRQ(ierr);
   if (Na->D) {
     ierr = MatMultAdd(Na->D,x,y,y);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetFromOptions_SchurComplement"
+PetscErrorCode MatSetFromOptions_SchurComplement(Mat N)
+{
+  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPSetFromOptions(Na->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
  
@@ -74,7 +86,7 @@ PetscErrorCode MatDestroy_SchurComplement(Mat N)
 
           A and  D must be square matrices
 
-.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP()
+.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatSchurComplementUpdate(), MatCreateTranspose()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat D,Mat *N)
@@ -89,7 +101,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
   PetscValidHeaderSpecific(C,MAT_COOKIE,2);
   PetscCheckSameComm(A,0,B,1);
   PetscCheckSameComm(A,0,C,2);
-  if (D)   PetscCheckSameComm(A,0,D,3);
+  if (A->rmap.n != A->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local columns %D",A->rmap.n,A->cmap.n);
+  if (A->rmap.n != B->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows B %D",A->rmap.n,B->rmap.n);
+  if (D) {
+    PetscValidHeaderSpecific(D,MAT_COOKIE,4);
+    PetscCheckSameComm(A,0,D,3);
+    if (D->rmap.n != D->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap.n,D->cmap.n);
+    if (C->rmap.n != D->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap.n,D->rmap.n);
+  }
 
   ierr = MatGetLocalSize(D,&m,&n);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)A)->comm,N);CHKERRQ(ierr);
@@ -105,10 +124,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
   Na->B     = B;
   Na->C     = C;
   Na->D     = D;
+  if (D) {
+    ierr = PetscObjectReference((PetscObject)D);CHKERRQ(ierr);
+  }
 
-  (*N)->ops->destroy     = MatDestroy_SchurComplement;
-  (*N)->ops->mult        = MatMult_SchurComplement;
-  (*N)->assembled        = PETSC_TRUE;
+  (*N)->ops->destroy        = MatDestroy_SchurComplement;
+  (*N)->ops->mult           = MatMult_SchurComplement;
+  (*N)->ops->setfromoptions = MatSetFromOptions_SchurComplement;
+  (*N)->assembled           = PETSC_TRUE;
 
   /* treats the new matrix as having block size of 1 which is most likely the case */
   (*N)->rmap.bs = (*N)->cmap.bs = 1;
@@ -116,6 +139,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
   ierr = PetscMapSetUp(&(*N)->cmap);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)A)->comm,&Na->ksp);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(Na->ksp,((PetscObject)A)->prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(Na->ksp,"schurAblock_");CHKERRQ(ierr);
   ierr = KSPSetOperators(Na->ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -133,6 +158,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
    Output Parameter:
 .   ksp - the linear solver object
 
+   Options Database:
+-     -schurAblock_XXX sets KSP and PC options for the A block solver inside the Schur complement
+
    Level: intermediate
 
    Notes: 
@@ -149,3 +177,68 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetKSP(Mat A,KSP *ksp)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSchurComplementUpdate"
+/*@
+      MatSchurComplementUpdate - Updates the Schur complement matrix object with new submatrices
+
+   Collective on Mat
+
+   Input Parameters:
++   N - the matrix obtained with MatCreateSchurComplement()
+.   A,B,C,D  - the four parts of the original matrix (D is optional)
+-   str - either SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER
+
+ 
+   Level: intermediate
+
+   Notes: All four matrices must have the same MPI communicator
+
+          A and  D must be square matrices
+
+          All of the matrices provided must have the same sizes as was used with MatCreateSchurComplement()
+          though they need not be the same matrices
+
+.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement()
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat B,Mat C,Mat D,MatStructure str)
+{
+  PetscErrorCode       ierr;
+  Mat_SchurComplement  *Na = (Mat_SchurComplement*)N->data;  
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,0);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(C,MAT_COOKIE,2);
+  PetscCheckSameComm(A,0,B,1);
+  PetscCheckSameComm(A,0,C,2);
+  if (A->rmap.n != A->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local columns %D",A->rmap.n,A->cmap.n);
+  if (A->rmap.n != B->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows B %D",A->rmap.n,B->rmap.n);
+  if (D) {
+    PetscValidHeaderSpecific(D,MAT_COOKIE,4);
+    PetscCheckSameComm(A,0,D,3);
+    if (D->rmap.n != D->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap.n,D->cmap.n);
+    if (C->rmap.n != D->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap.n,D->rmap.n);
+  }
+
+  ierr      = MatDestroy(Na->A);CHKERRQ(ierr);
+  ierr      = MatDestroy(Na->B);CHKERRQ(ierr);
+  ierr      = MatDestroy(Na->C);CHKERRQ(ierr);
+  if (Na->D) {
+    ierr    = MatDestroy(Na->D);CHKERRQ(ierr);
+  }
+  ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+  ierr      = PetscObjectReference((PetscObject)C);CHKERRQ(ierr);
+  Na->A     = A;
+  Na->B     = B;
+  Na->C     = C;
+  Na->D     = D;
+  if (D) {
+    ierr = PetscObjectReference((PetscObject)D);CHKERRQ(ierr);
+  }
+
+  ierr = KSPSetOperators(Na->ksp,A,A,str);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

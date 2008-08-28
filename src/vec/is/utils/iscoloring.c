@@ -622,3 +622,71 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm comm,PetscInt n,ISC
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISComplement"
+/*@
+    ISComplement - Given a sequential index set (IS) generates the complement index set. That is all 
+       all indices that are NOT in the given set.
+
+    Not Collective
+
+    Input Parameter:
+.   is - the index set
+
+    Output Parameter:
+.   isout - the complement
+
+    Notes:  The communicator for this new IS is PETSC_COMM_SELF
+
+      To generate the complement (on each process) of a parallel IS, first call ISAllGather() and then
+    call this routine.
+
+    Level: intermediate
+
+    Concepts: gather^index sets
+    Concepts: index sets^gathering to all processors
+    Concepts: IS^gathering to all processors
+
+.seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGatherIndices(), ISAllGather()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmax,IS *isout)
+{
+  PetscErrorCode ierr;
+  PetscInt       *indices, n,i,j,cnt,*nindices;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
+  PetscTruth     sorted;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(isout,3);
+
+  ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Only works for sequential index sets");
+  ierr = ISSorted(is,&sorted);CHKERRQ(ierr);
+  if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONG,"Index set must be sorted");
+
+  ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
+#if defined(PETSC_USE_DEBUG)
+  for (i=0; i<n; i++) {
+    if (indices[i] >= nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Index %D's value %D is larger than maximum given %D",i,indices[i],nmax);
+  }
+#endif
+  ierr = PetscMalloc((nmax - n)*sizeof(PetscInt),&nindices);CHKERRQ(ierr);
+  cnt = j = 0;
+  for (i=0; i<n; i++) {
+    for (; j<indices[i]; j++) {
+      nindices[cnt++] = j;
+    }
+    j++;
+  }
+  for (; j<nmax; j++) {
+    nindices[cnt++] = j;
+  }
+  if (cnt != nmax-n) SETERRQ2(PETSC_ERR_PLIB,"Number entries found in complement %D does not match expected %D",cnt,nmax-n);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,nmax-n,nindices,isout);CHKERRQ(ierr);
+  ierr = PetscFree(nindices);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
