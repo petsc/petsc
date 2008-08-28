@@ -1,7 +1,10 @@
+# --------------------------------------------------------------------
 
 class AOType:
     BASIC   = AO_BASIC
     MAPPING = AO_MAPPING
+
+# --------------------------------------------------------------------
 
 cdef class AO(Object):
 
@@ -87,3 +90,5 @@ cdef class AO(Object):
             indices = oarray_i(indices, &nidx, &idx)
             CHKERR( AOPetscToApplication(self.ao, nidx, idx) )
         return indices
+
+# --------------------------------------------------------------------
