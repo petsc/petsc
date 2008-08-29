@@ -219,10 +219,6 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch ls, Vec 
       ierr = PetscInfo1(ls,"Initial Line Search Function Value is Inf or Nan (%g)\n",*f); CHKERRQ(ierr);
       *reason=TAOLINESEARCH_FAILED_INFORNAN;
     }
-    ls->reason = *reason;
-    if (*reason != TAOLINESEARCH_CONTINUE_ITERATING) {
-      PetscFunctionReturn(0);
-    }
 
 /*    
     if (x != ls->start_x) {

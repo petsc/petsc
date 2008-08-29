@@ -17,8 +17,12 @@ static PetscErrorCode TaoLineSearchDestroy_MT(TaoLineSearch ls)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
   mt = (TAOLINESEARCH_MT_CTX*)(ls->data);
-  ierr = VecDestroy(mt->x); CHKERRQ(ierr);
-  ierr = VecDestroy(mt->work); CHKERRQ(ierr);
+  if (mt->x) {
+    ierr = VecDestroy(mt->x); CHKERRQ(ierr); 
+  }
+  if (mt->work) {
+    ierr = VecDestroy(mt->work); CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
