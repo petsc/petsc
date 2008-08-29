@@ -95,7 +95,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
     /* Monitor options */
     ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,monfilename,((PetscObject)ts)->tablevel,&monviewer);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",&opt);CHKERRQ(ierr);
