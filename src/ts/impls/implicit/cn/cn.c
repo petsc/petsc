@@ -491,6 +491,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
     ts->ops->step           = TSStep_CN_Nonlinear;
     ts->ops->setfromoptions = TSSetFromOptions_CN_Nonlinear;
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
   ierr = PetscNewLog(ts,TS_CN,&cn);CHKERRQ(ierr);

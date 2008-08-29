@@ -570,6 +570,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS ts)
 
   /* create the required nonlinear solver context */
   ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
 
   ierr = PetscNewLog(ts,TS_Pseudo,&pseudo);CHKERRQ(ierr);
   ts->data = (void*)pseudo;
