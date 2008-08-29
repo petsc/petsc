@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------- */
 
 %header %{#include "petsc4py/petsc4py.h"%}
-%init   %{if(import_petsc4py() < 0) return;%}
+%init   %{if (import_petsc4py() < 0) return;%}
 
 /* ---------------------------------------------------------------- */
 
@@ -404,7 +404,7 @@ SWIG_From_dec(Type)(Type v) {
 
 %define SWIG_TYPECHECK_MPI_COMM 600 %enddef
 
-%define %petsc4py_comm(Pkg, PyType, Type, COOKIE, OBJECT_NULL)
+%define %petsc4py_comm(Pkg, PyType, Type, CODE, OBJECT_NULL)
 
 /* pointer type */
 %types(Type*);  /* XXX find better way */
@@ -426,9 +426,9 @@ SWIG_From_dec(Type)(Type v) {
 /* PETSc Objects                                                    */
 /* ---------------------------------------------------------------- */
 
-%define SWIG_TYPECHECK_PETSC_PETSC_OBJECT  500 %enddef
-%define SWIG_TYPECHECK_PETSC_PETSC_VIEWER  501 %enddef
-%define SWIG_TYPECHECK_PETSC_PETSC_RANDOM  502 %enddef
+%define SWIG_TYPECHECK_PETSC_OBJECT  500 %enddef
+%define SWIG_TYPECHECK_PETSC_VIEWER  501 %enddef
+%define SWIG_TYPECHECK_PETSC_RANDOM  502 %enddef
 
 %define SWIG_TYPECHECK_PETSC_IS            510 %enddef
 %define SWIG_TYPECHECK_PETSC_IS_LTOGM      511 %enddef
@@ -447,12 +447,7 @@ SWIG_From_dec(Type)(Type v) {
 %define SWIG_TYPECHECK_PETSC_DM            541 %enddef
 
 
-%define %petsc4py_cookie2checkcode(COOKIE)
-%checkcode(PETSC_##COOKIE)
-%enddef
-
-
-%define %petsc4py_objt(Pkg, PyType, Type, COOKIE, OBJECT_NULL)
+%define %petsc4py_objt(Pkg, PyType, Type, CODE, OBJECT_NULL)
 
 /* pointer type */
 %types(Type*); /* XXX find better way */
@@ -463,7 +458,7 @@ SWIG_From_dec(Type)(Type v) {
 }
 %petsc4py_fragments(Pkg, PyType, Type, OBJECT_NULL)
 /* base typemaps */
-%typemaps_asptrfromn(%petsc4py_cookie2checkcode(COOKIE), Type);
+%typemaps_asptrfromn(%checkcode(CODE), Type);
 
 
 /* Custom Typemaps */
@@ -563,21 +558,21 @@ SWIG_From_dec(Type)(Type v) {
 %petsc4py_comm( Petsc, Comm , MPI_Comm , MPI_COMM , MPI_COMM_NULL )
 
 
-%petsc4py_objt( Petsc , Object    , PetscObject            , PETSC_OBJECT  , PETSC_NULL )
-%petsc4py_objt( Petsc , Viewer    , PetscViewer            , PETSC_VIEWER  , PETSC_NULL )
-%petsc4py_objt( Petsc , Random    , PetscRandom            , PETSC_RANDOM  , PETSC_NULL )
-%petsc4py_objt( Petsc , IS        , IS                     , IS            , PETSC_NULL )
-%petsc4py_objt( Petsc , LGMap     , ISLocalToGlobalMapping , IS_LTOGM      , PETSC_NULL )
-%petsc4py_objt( Petsc , Vec       , Vec                    , VEC           , PETSC_NULL )
-%petsc4py_objt( Petsc , Scatter   , VecScatter             , VEC_SCATTER   , PETSC_NULL )
-%petsc4py_objt( Petsc , Mat       , Mat                    , MAT           , PETSC_NULL )
-%petsc4py_objt( Petsc , NullSpace , MatNullSpace           , MAT_NULLSPACE , PETSC_NULL )
-%petsc4py_objt( Petsc , KSP       , KSP                    , KSP           , PETSC_NULL )
-%petsc4py_objt( Petsc , PC        , PC                     , PC            , PETSC_NULL )
-%petsc4py_objt( Petsc , SNES      , SNES                   , SNES          , PETSC_NULL )
-%petsc4py_objt( Petsc , TS        , TS                     , TS            , PETSC_NULL )
-%petsc4py_objt( Petsc , AO        , AO                     , AO            , PETSC_NULL )
-%petsc4py_objt( Petsc , DA        , DA                     , DM            , PETSC_NULL )
+%petsc4py_objt( Petsc , Object    , PetscObject            , PETSC_OBJECT        , PETSC_NULL )
+%petsc4py_objt( Petsc , Viewer    , PetscViewer            , PETSC_VIEWER        , PETSC_NULL )
+%petsc4py_objt( Petsc , Random    , PetscRandom            , PETSC_RANDOM        , PETSC_NULL )
+%petsc4py_objt( Petsc , IS        , IS                     , PETSC_IS            , PETSC_NULL )
+%petsc4py_objt( Petsc , LGMap     , ISLocalToGlobalMapping , PETSC_IS_LTOGM      , PETSC_NULL )
+%petsc4py_objt( Petsc , Vec       , Vec                    , PETSC_VEC           , PETSC_NULL )
+%petsc4py_objt( Petsc , Scatter   , VecScatter             , PETSC_VEC_SCATTER   , PETSC_NULL )
+%petsc4py_objt( Petsc , Mat       , Mat                    , PETSC_MAT           , PETSC_NULL )
+%petsc4py_objt( Petsc , NullSpace , MatNullSpace           , PETSC_MAT_NULLSPACE , PETSC_NULL )
+%petsc4py_objt( Petsc , KSP       , KSP                    , PETSC_KSP           , PETSC_NULL )
+%petsc4py_objt( Petsc , PC        , PC                     , PETSC_PC            , PETSC_NULL )
+%petsc4py_objt( Petsc , SNES      , SNES                   , PETSC_SNES          , PETSC_NULL )
+%petsc4py_objt( Petsc , TS        , TS                     , PETSC_TS            , PETSC_NULL )
+%petsc4py_objt( Petsc , AO        , AO                     , PETSC_AO            , PETSC_NULL )
+%petsc4py_objt( Petsc , DA        , DA                     , PETSC_DM            , PETSC_NULL )
 
 /* ---------------------------------------------------------------- */
 
