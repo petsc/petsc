@@ -32,18 +32,25 @@ cdef class Object:
 
     # --- reference management ---
 
-    cdef int incRef(self) except -1:
+    cdef long incRef(self) except -1:
         cdef PetscObject obj = self.obj[0]
-        if obj != NULL: CHKERR( PetscObjectReference(obj) )
-        return 0
-
-    cdef int decRef(self) except -1:
-        cdef PetscObject *obj = self.obj
         cdef PetscInt refct = 0
-        if obj[0] != NULL: CHKERR( PetscObjectGetReference(obj[0], &refct) )
-        if refct != 0: CHKERR( PetscObjectDereference(obj[0]) )
-        if refct == 1: obj[0] = NULL
-        return 0
+        if obj != NULL:
+            CHKERR( PetscObjectReference(obj) )
+            CHKERR( PetscObjectGetReference(obj, &refct) )
+        return refct
+
+
+    cdef long decRef(self) except -1:
+        cdef PetscObject obj = self.obj[0]
+        cdef PetscInt refct = 0
+        if obj != NULL:
+            CHKERR( PetscObjectGetReference(obj, &refct) )
+            if refct == 1: self.obj[0] = NULL
+            CHKERR( PetscObjectDereference(obj) )
+            refct -= 1
+        return refct
+
     #
 
     def view(self, Viewer viewer=None):

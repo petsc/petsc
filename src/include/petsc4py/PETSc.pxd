@@ -63,8 +63,8 @@ cdef public api class Comm [type PyPetscComm_Type, object PyPetscCommObject]:
 cdef public api class Object [type PyPetscObject_Type, object PyPetscObjectObject]:
     cdef PetscObject oval
     cdef PetscObject *obj
-    cdef int incRef(self) except -1
-    cdef int decRef(self) except -1
+    cdef long incRef(self) except -1
+    cdef long decRef(self) except -1
     cpdef object getAttr(self, char name[])
     cpdef object setAttr(self, char name[], object attr)
 
