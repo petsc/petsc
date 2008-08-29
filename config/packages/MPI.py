@@ -349,7 +349,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on OPENMPI/MPI: '+str(e))
       try:
         self.logPrintBox('Compiling OPENMPI/MPI; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+';OPENMPI_INSTALL_DIR='+installDir+';export OPENMPI_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+';OPENMPI_INSTALL_DIR='+installDir+';export OPENMPI_INSTALL_DIR; make install', timeout=6000, log = self.framework.log)[0]
         output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+';OPENMPI_INSTALL_DIR='+installDir+';export OPENMPI_INSTALL_DIR; make clean', timeout=200, log = self.framework.log)[0]        
       except RuntimeError, e:
         raise RuntimeError('Error running make on OPENMPI/MPI: '+str(e))
@@ -468,7 +468,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Error running configure on MPICH: '+str(e))
       try:
         self.logPrintBox('Running make on MPICH; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make; make install', timeout=6000, log = self.framework.log)[0]
         output  = config.base.Configure.executeShellCommand('cd '+mpichDir+';make clean', timeout=200, log = self.framework.log)[0]        
       except RuntimeError, e:
         import sys
