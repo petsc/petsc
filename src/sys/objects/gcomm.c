@@ -41,4 +41,69 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetComm(PetscObject obj,MPI_Comm *comm
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscObjectGetTabLevel"
+/*@C
+   PetscObjectGetTabLevel - Gets the number of tabs that ASCII output for that object use
 
+   Not Collective
+
+   Input Parameter:
+.  obj - any PETSc object, for example a Vec, Mat or KSP. Thus must be
+         cast with a (PetscObject), for example, 
+         PetscObjectGetComm((PetscObject)mat,&comm);
+
+   Output Parameter:
+.   tab - the number of tabs
+
+   Level: developer
+
+    Notes: this is used to manage the output from options that are imbedded in other objects. For example
+      the KSP object inside a SNES object. By indenting each lower level further the heirarchy of objects
+      is very clear.
+
+.seealso:  PetscObjectIncrementTabLevel()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetTabLevel(PetscObject obj,PetscInt *tab)
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  *tab = obj->tablevel;
+  PetscFunctionReturn(0);
+}
+
+/*@C
+   PetscObjectIncrementTabLevel - Sets the number of tabs that ASCII output for that object use based on
+         the tablevel of another object. This should be called immediately after the object is created.
+
+   Not Collective
+
+   Input Parameter:
++  obj - any PETSc object where we are changing the tab
+.  oldobj - the object providing the tab
+-  tab - the increment that is added to the old objects tab
+
+
+   Level: developer
+
+    Notes: this is used to manage the output from options that are imbedded in other objects. For example
+      the KSP object inside a SNES object. By indenting each lower level further the heirarchy of objects
+      is very clear.
+
+.seealso:   PetscObjectSetLabLevel(),  PetscObjectGetTabLevel()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,PetscInt tab)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  if (oldobj) {
+    obj->tablevel = oldobj->tablevel + tab;
+  } else {
+    obj->tablevel = tab;
+  }
+  PetscFunctionReturn(0);
+}

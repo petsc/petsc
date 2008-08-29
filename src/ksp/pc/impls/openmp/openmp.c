@@ -127,6 +127,7 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
   if (!red->setupcalled) {
     /* create the solver */
     ierr = KSPCreate(comm,&red->ksp);CHKERRQ(ierr);
+    /* would like to set proper tablevel for KSP, but do not have direct access to parent pc */
     ierr = KSPSetOptionsPrefix(red->ksp,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
     ierr = KSPSetOperators(red->ksp,red->mat,red->mat,red->flag);CHKERRQ(ierr);
     ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
@@ -154,6 +155,7 @@ static PetscErrorCode PCSetUp_OpenMP(PC pc)
     if (!red->setupcalled) {
       /* create the solver */
       ierr = KSPCreate(((PetscObject)pc)->comm,&red->ksp);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(red->ksp,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
       ierr = KSPSetOperators(red->ksp,red->gmat,red->gmat,red->flag);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);

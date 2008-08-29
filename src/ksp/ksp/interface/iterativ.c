@@ -679,6 +679,7 @@ PetscErrorCode KSPDefaultBuildResidual(KSP ksp,Vec t,Vec v,Vec *V)
   Mat            Amat,Pmat;
 
   PetscFunctionBegin;
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   ierr = KSPBuildSolution(ksp,t,PETSC_NULL);CHKERRQ(ierr);
   ierr = KSP_MatMult(ksp,Amat,t,v);CHKERRQ(ierr);
@@ -720,6 +721,7 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (ksp->vec_sol) vecr = ksp->vec_sol;
     else {
       Mat pmat;
+      if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
       ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetVecs(pmat,&vecr,PETSC_NULL);CHKERRQ(ierr);
     }
@@ -733,6 +735,7 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (ksp->vec_rhs) vecl = ksp->vec_rhs;
     else {
       Mat pmat;
+      if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
       ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetVecs(pmat,PETSC_NULL,&vecl);CHKERRQ(ierr);
     }

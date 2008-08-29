@@ -83,6 +83,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     /* create a new PC that processors in each subcomm have copy of */
     subcomm = red->psubcomm->comm;
     ierr = KSPCreate(subcomm,&subksp);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)subksp,(PetscObject)pc,1);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,subksp);CHKERRQ(ierr);
     ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
     ierr = KSPGetPC(subksp,&red->pc);CHKERRQ(ierr);

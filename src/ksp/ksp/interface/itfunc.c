@@ -155,6 +155,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUpOnBlocks(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetUpOnBlocks(ksp->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -201,6 +202,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
   /* scale the matrix if requested */
   if (ksp->dscale) {
     Mat mat,pmat;
+    if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
     ierr = PCGetOperators(ksp->pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
     if (mat == pmat) {
       PetscScalar  *xx;
@@ -231,6 +233,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
     }
   }
   ierr = PetscLogEventEnd(KSP_SetUp,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   if (ksp->nullsp) {
     PetscTruth test;
@@ -641,7 +644,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   }  
   ierr = PetscFree(ksp->res_hist_alloc);CHKERRQ(ierr);
   ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
-  ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);
+  if (ksp->pc) {ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);}
   if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
   if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
@@ -1188,9 +1191,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPC(KSP ksp,PC pc)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPC(KSP ksp,PC *pc)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidPointer(pc,2);
+  if (!ksp->pc) {
+    ierr = PCCreate(((PetscObject)ksp)->comm,&ksp->pc);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)ksp->pc,(PetscObject)ksp,0);CHKERRQ(ierr);
+  }
   *pc = ksp->pc; 
   PetscFunctionReturn(0);
 }

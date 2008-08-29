@@ -87,6 +87,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
       ierr = (*ksp->ops->view)(ksp,viewer);CHKERRQ(ierr);
     }
   }
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCView(ksp->pc,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -313,6 +314,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatS
   if (Pmat) PetscValidHeaderSpecific(Pmat,MAT_COOKIE,3);
   if (Amat) PetscCheckSameComm(ksp,1,Amat,2);
   if (Pmat) PetscCheckSameComm(ksp,1,Pmat,3);
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
   if (ksp->setupcalled > 1) ksp->setupcalled = 1;  /* so that next solve call will call setup */
   if (ksp->guess) {
@@ -353,6 +355,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,Ma
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCGetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -384,6 +387,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperatorsSet(KSP ksp,PetscTruth *mat,Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCGetOperatorsSet(ksp->pc,mat,pmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -460,7 +464,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->setupcalled     = 0;
 
   ierr = PetscPublishAll(ksp);CHKERRQ(ierr);
-  ierr = PCCreate(comm,&ksp->pc);CHKERRQ(ierr);
   *inksp = ksp;
   PetscFunctionReturn(0);
 }

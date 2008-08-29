@@ -297,6 +297,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,jac->schur,pc->flag);CHKERRQ(ierr);
 
      } else {
+      KSP ksp;
 
       /* extract the B and C matrices */
       ierr  = MatGetSize(pc->mat,PETSC_NULL,&N);CHKERRQ(ierr);
@@ -309,9 +310,12 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,PETSC_DECIDE,MAT_INITIAL_MATRIX,&jac->C);CHKERRQ(ierr);
       ierr  = ISDestroy(ccis);CHKERRQ(ierr);
       ierr  = MatCreateSchurComplement(jac->pmat[0],jac->B,jac->C,jac->pmat[1],&jac->schur);CHKERRQ(ierr);
+      ierr  = MatSchurComplementGetKSP(jac->schur,&ksp);CHKERRQ(ierr);
+      ierr  = PetscObjectIncrementTabLevel((PetscObject)ksp,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr  = MatSetFromOptions(jac->schur);CHKERRQ(ierr);
 
       ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->kspschur);CHKERRQ(ierr);
+      ierr  = PetscObjectIncrementTabLevel((PetscObject)jac->kspschur,(PetscObject)pc,1);CHKERRQ(ierr);
       ierr  = KSPSetOperators(jac->kspschur,jac->schur,jac->schur,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr  = KSPSetOptionsPrefix(jac->kspschur,((PetscObject)pc)->prefix);CHKERRQ(ierr);
       ierr  = KSPAppendOptionsPrefix(jac->kspschur,"schur_");CHKERRQ(ierr);
@@ -670,6 +674,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,PetscIn
   ilink->nfields = n;
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
+  ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
 
   if (((PetscObject)pc)->prefix) {
@@ -733,6 +738,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS_FieldSplit(PC pc,IS is)
   ierr           = PetscObjectReference((PetscObject)is);CHKERRQ(ierr);
   ilink->next    = PETSC_NULL;
   ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
+  ierr           = PetscObjectIncrementTabLevel((PetscObject)ilink->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
 
   if (((PetscObject)pc)->prefix) {

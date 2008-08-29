@@ -659,6 +659,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
 -    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a 
          format common among all vector types
 
+   See the manual page for VecLoad() on the exact format the binary viewer stores
+   the values in the file.
+
    Level: beginner
 
    Concepts: vector^printing

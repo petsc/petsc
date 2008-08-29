@@ -60,6 +60,7 @@ typedef struct {
   PetscInt       parentid;                                      \
   char*          name;                                          \
   char           *prefix;                                       \
+  PetscInt       tablevel;                                      \
   void           *cpp;                                          \
   PetscInt       amem;                                          \
   PetscInt       state;                                         \

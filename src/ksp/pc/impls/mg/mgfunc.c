@@ -251,6 +251,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmootherUp(PC pc,PetscInt l,KSP *ksp)
     ierr = PetscObjectGetComm((PetscObject)mg[l]->smoothd,&comm);CHKERRQ(ierr);
     ierr = KSPGetOptionsPrefix(mg[l]->smoothd,&prefix);CHKERRQ(ierr);
     ierr = KSPCreate(comm,&mg[l]->smoothu);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)mg[l]->smoothu,(PetscObject)pc,mg[0]->levels-l);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mg[l]->smoothu,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT,1);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mg[l]->smoothu,prefix);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,mg[l]->smoothu);CHKERRQ(ierr);

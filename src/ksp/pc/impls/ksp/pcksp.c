@@ -9,6 +9,24 @@ typedef struct {
   PetscInt   its;                   /* total number of iterations KSP uses */
 } PC_KSP;
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCKSPCreateKSP_KSP"
+static PetscErrorCode PETSCKSP_DLLEXPORT PCKSPCreateKSP_KSP(PC pc)
+{
+  PetscErrorCode ierr;
+  const char     *prefix;
+  PC_KSP         *jac = (PC_KSP *)pc->data;
+
+  PetscFunctionBegin;
+ ierr  = KSPCreate(((PetscObject)pc)->comm,&jac->ksp);CHKERRQ(ierr);
+  ierr = PetscObjectIncrementTabLevel((PetscObject)jac->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(jac->ksp,prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(jac->ksp,"ksp_");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_KSP"
 static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
@@ -50,6 +68,7 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
   PetscTruth     A;
 
   PetscFunctionBegin;
+  if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
   ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
   if (jac->use_true_matrix) mat = pc->mat;
   else                      mat = pc->pmat;
@@ -71,7 +90,7 @@ static PetscErrorCode PCDestroy_KSP(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDestroy(jac->ksp);CHKERRQ(ierr);
+  if (jac->ksp) {ierr = KSPDestroy(jac->ksp);CHKERRQ(ierr);}
   ierr = PetscFree(jac);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -85,6 +104,7 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
   PetscTruth     iascii;
 
   PetscFunctionBegin;
+  if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     if (jac->use_true_matrix) {
@@ -142,10 +162,11 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCKSPGetKSP_KSP"
 PetscErrorCode PETSCKSP_DLLEXPORT PCKSPGetKSP_KSP(PC pc,KSP *ksp)
 {
-  PC_KSP   *jac;
+  PC_KSP         *jac = (PC_KSP*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  jac          = (PC_KSP*)pc->data;
+  if (!jac->ksp) {ierr = PCKSPCreateKSP_KSP(pc);CHKERRQ(ierr);}
   *ksp        = jac->ksp;
   PetscFunctionReturn(0);
 }
@@ -267,11 +288,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC pc)
   pc->ops->applyrichardson    = 0;
 
   pc->data               = (void*)jac;
-  ierr                   = KSPCreate(((PetscObject)pc)->comm,&jac->ksp);CHKERRQ(ierr);
+ 
 
-  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(jac->ksp,prefix);CHKERRQ(ierr);
-  ierr = KSPAppendOptionsPrefix(jac->ksp,"ksp_");CHKERRQ(ierr);
   jac->use_true_matrix = PETSC_FALSE;
   jac->its             = 0;
 

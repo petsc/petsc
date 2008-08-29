@@ -93,6 +93,7 @@ static PetscErrorCode PCMGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI
 
     if (comms) comm = comms[i];
     ierr = KSPCreate(comm,&mg[i]->smoothd);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)mg[i]->smoothd,(PetscObject)pc,levels-i);CHKERRQ(ierr);
     ierr = KSPSetTolerances(mg[i]->smoothd,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT, mg[i]->default_smoothd);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(mg[i]->smoothd,prefix);CHKERRQ(ierr);
 

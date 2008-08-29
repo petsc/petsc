@@ -1262,6 +1262,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetType(PetscObject,const char 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject,const char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetName(PetscObject,const char*[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetTabLevel(PetscObject,PetscInt);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetTabLevel(PetscObject,PetscInt*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectIncrementTabLevel(PetscObject,PetscObject,PetscInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectReference(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetReference(PetscObject,PetscInt*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectDereference(PetscObject);

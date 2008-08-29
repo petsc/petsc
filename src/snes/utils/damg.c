@@ -559,6 +559,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
       }
 
       ierr = KSPCreate(dmmg[i]->comm,&dmmg[i]->ksp);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)dmmg[i]->ksp,PETSC_NULL,nlevels-i);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(dmmg[i]->ksp,dmmg[i]->prefix);CHKERRQ(ierr);
       ierr = DMMGSetUpLevel(dmmg,dmmg[i]->ksp,i+1);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(dmmg[i]->ksp);CHKERRQ(ierr);

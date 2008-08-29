@@ -321,6 +321,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+  
+  if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
   ierr = KSPSetFromOptions(snes->ksp);CHKERRQ(ierr);
 
   PetscFunctionReturn(0); 
@@ -722,9 +724,17 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveIterations(SNES snes,PetscI
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetKSP(SNES snes,KSP *ksp)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidPointer(ksp,2);
+
+  if (!snes->ksp) {
+    ierr = KSPCreate(((PetscObject)snes)->comm,&snes->ksp);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)snes->ksp,(PetscObject)snes,1);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(snes,snes->ksp);CHKERRQ(ierr);
+  }
   *ksp = snes->ksp;
   PetscFunctionReturn(0);
 }
@@ -865,9 +875,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   kctx->threshold   = .1;
   kctx->lresid_last = 0;
   kctx->norm_last   = 0;
-
-  ierr = KSPCreate(comm,&snes->ksp);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(snes,snes->ksp);CHKERRQ(ierr);
 
   *outsnes = snes;
   ierr = PetscPublishAll(snes);CHKERRQ(ierr);
@@ -1322,7 +1329,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
   if (snes->vec_func) {ierr = VecDestroy(snes->vec_func);CHKERRQ(ierr);}
   if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
   if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
-  ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);
+  if (snes->ksp) {ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);}
   ierr = PetscFree(snes->kspconvctx);CHKERRQ(ierr);
   if (snes->vwork) {ierr = VecDestroyVecs(snes->vwork,snes->nvwork);CHKERRQ(ierr);}
   ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
@@ -2272,6 +2279,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetOptionsPrefix(SNES snes,const char pre
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
+  if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
   ierr = KSPSetOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2305,6 +2313,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAppendOptionsPrefix(SNES snes,const char 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   ierr = PetscObjectAppendOptionsPrefix((PetscObject)snes,prefix);CHKERRQ(ierr);
+  if (!snes->ksp) {ierr = SNESGetKSP(snes,&snes->ksp);CHKERRQ(ierr);}
   ierr = KSPAppendOptionsPrefix(snes->ksp,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

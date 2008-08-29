@@ -47,6 +47,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,V
   PetscValidHeaderSpecific(vsoln,VEC_COOKIE,2);
   PetscValidHeaderSpecific(vres,VEC_COOKIE,5);
   PetscValidHeaderSpecific(vb,VEC_COOKIE,6);
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     /* skip right scaling since current guess already has it */
@@ -106,6 +107,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPUnwindPreconditioner(KSP ksp,Vec vsoln,Vec 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidHeaderSpecific(vsoln,VEC_COOKIE,2);
+  if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   if (ksp->pc_side == PC_RIGHT) {
     ierr = KSP_PCApply(ksp,vsoln,vt1);CHKERRQ(ierr);
     ierr = PCDiagonalScaleRight(ksp->pc,vt1,vsoln);CHKERRQ(ierr);

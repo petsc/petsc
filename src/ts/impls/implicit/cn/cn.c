@@ -484,6 +484,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
     }
     ts->ops->setfromoptions = TSSetFromOptions_CN_Linear;
     ierr = KSPCreate(((PetscObject)ts)->comm,&ts->ksp);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->ksp,(PetscObject)ts,1);CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ts->ksp,PETSC_TRUE);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_NONLINEAR) {
     ts->ops->setup          = TSSetUp_CN_Nonlinear;  
