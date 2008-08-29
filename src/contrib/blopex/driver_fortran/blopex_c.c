@@ -7,7 +7,7 @@ Author: William F. Mitchell
         Gaithersburg, MD
         william.mitchell@nist.gov
         April 8, 2008
-        Last modified August 20, 2008
+        Last modified August 29, 2008
 
 This software was produced as part of work done by the U.S. Government, and is
 not subject to copyright in the United States.
@@ -24,7 +24,7 @@ Contains C routines for the interface with BLOPEX compiled with PETSc.
 #include "petscksp.h"
 #include "petscda.h"
 #include "lobpcg.h"
-#include "petsc-interface.h"
+#include "src/contrib/blopex/petsc-interface/petsc-interface.h"
 #include "interpreter.h"
 #include "multivector.h"
 
