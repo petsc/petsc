@@ -1244,9 +1244,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         ierr = ISBlockGetBlockSize(iy,&bsy);CHKERRQ(ierr);
         ierr = ISBlockGetBlockSize(ix,&bsx);CHKERRQ(ierr);
         if (bsx == bsy && VecScatterOptimizedBS(bsx)) {
-          ierr = ISBlockGetSize(ix,&nx);CHKERRQ(ierr);
+          ierr = ISBlockGetLocalSize(ix,&nx);CHKERRQ(ierr);
           ierr = ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
-          ierr = ISBlockGetSize(iy,&ny);CHKERRQ(ierr);
+          ierr = ISBlockGetLocalSize(iy,&ny);CHKERRQ(ierr);
           ierr = ISBlockGetIndices(iy,&idy);CHKERRQ(ierr);
           if (nx != ny) SETERRQ(PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
           ierr = VecScatterCreate_PtoS(nx,idx,ny,idy,xin,yin,bsx,ctx);CHKERRQ(ierr);
@@ -1264,7 +1264,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
         /* see if stride index set is equivalent to block index set */
         if (VecScatterOptimizedBS(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
           PetscInt nx,*idx,*idy,il;
-          ierr = ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
+          ierr = ISBlockGetLocalSize(ix,&nx); ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
           if (ysize != bsx*nx) SETERRQ(PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
 	  ierr = PetscMalloc(nx*sizeof(PetscInt),&idy);CHKERRQ(ierr);
           if (nx) {
@@ -1344,7 +1344,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       /* see if stride index set is equivalent to block index set */
       if (VecScatterOptimizedBS(bsx) && ((ystart % bsx) == 0) && (ystride == 1) && ((ysize % bsx) == 0)) {
         PetscInt nx,*idx,*idy,il;
-        ierr = ISBlockGetSize(ix,&nx); ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
+        ierr = ISBlockGetLocalSize(ix,&nx); ISBlockGetIndices(ix,&idx);CHKERRQ(ierr);
         if (ysize != bsx*nx) SETERRQ(PETSC_ERR_ARG_SIZ,"Local scatter sizes don't match");
         ierr = PetscMalloc(nx*sizeof(PetscInt),&idy);CHKERRQ(ierr);
         if (nx) {

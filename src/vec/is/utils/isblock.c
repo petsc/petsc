@@ -129,7 +129,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
     /* special case where IS is already block IS of the correct size */
     ierr = ISBlock(is_in[i],&isblock);CHKERRQ(ierr);
     if (isblock) {
-      ierr = ISBlockGetSize(is_in[i],&bbs);CHKERRQ(ierr);
+      ierr = ISBlockGetLocalSize(is_in[i],&bbs);CHKERRQ(ierr);
       if (bs == bbs) {
         len = len/bs;
         ierr = ISBlockGetIndices(is_in[i],&idx);CHKERRQ(ierr);

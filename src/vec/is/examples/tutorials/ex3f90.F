@@ -82,7 +82,7 @@
 !
 !    Get the number of blocks
 !
-      call ISBlockGetSize(set,n,ierr) 
+      call ISBlockGetLocalSize(set,n,ierr) 
       if (n .ne. 4) then
         write(6,*) 'Number of blocks != 4'
       endif
