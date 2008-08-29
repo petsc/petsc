@@ -1,0 +1,25 @@
+Example of using BLOPEX with PETSc from Fortran.
+
+Author: William F. Mitchell
+        National Institute of Standards and Technology
+        Gaithersburg, MD
+        william.mitchell@nist.gov
+        April 8, 2008
+        Last modified August 29, 2008
+
+This software was produced as part of work done by the U.S. Government, and is
+not subject to copyright in the United States.
+
+PETSc must be configured with BLOPEX.  When you run PETSc's configure.py,
+include the flag --download-blopex=1
+
+Files:
+
+makefile - the Unix makefile to compile the program.
+
+ex2f_blopex.F - a modified version of the Fortran example ex2f.F from the PETSc
+   source distribution (Version 2.3.3-p4) that illustrates a way of using
+   BLOPEX with PETSc from Fortran.  Modifications are marked with WFM.
+
+blopex_c.F90 - the C routines that interface between the Fortran routines and
+   the BLOPEX code.

@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   /*
     Get the number of blocks
   */
-  ierr = ISBlockGetSize(set,&n);CHKERRQ(ierr);
+  ierr = ISBlockGetLocalSize(set,&n);CHKERRQ(ierr);
   if (n != 4) SETERRQ(1,"Number of blocks not 4!");
 
   ierr = ISDestroy(set);CHKERRQ(ierr);

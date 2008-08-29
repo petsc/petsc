@@ -421,9 +421,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlock(IS is,PetscTruth *flag)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "ISBlockGetSize" 
+#define __FUNCT__ "ISBlockGetLocalSize" 
 /*@
-   ISBlockGetSize - Returns the number of blocks in the index set.
+   ISBlockGetLocalSize - Returns the local number of blocks in the index set.
 
    Not Collective
 
@@ -431,14 +431,48 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlock(IS is,PetscTruth *flag)
 .  is - the index set
 
    Output Parameter:
-.  size - the number of blocks
+.  size - the local number of blocks
 
    Level: intermediate
 
    Concepts: IS^block sizes
    Concepts: index sets^block sizes
 
-.seealso: ISBlockGetBlockSize(), ISGetSize(), ISBlock(), ISCreateBlock()
+.seealso: ISBlockGetBlockSize(), ISBlockGetSize(), ISGetSize(), ISBlock(), ISCreateBlock()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetLocalSize(IS is,PetscInt *size)
+{
+  IS_Block *sub;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidIntPointer(size,2);
+  if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
+
+  sub = (IS_Block *)is->data;
+  *size = sub->n; 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetSize" 
+/*@
+   ISBlockGetSize - Returns the global number of blocks in the index set.
+
+   Not Collective
+
+   Input Parameter:
+.  is - the index set
+
+   Output Parameter:
+.  size - the global number of blocks
+
+   Level: intermediate
+
+   Concepts: IS^block sizes
+   Concepts: index sets^block sizes
+
+.seealso: ISBlockGetBlockSize(), ISBlockGetLocalSize(), ISGetSize(), ISBlock(), ISCreateBlock()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize(IS is,PetscInt *size)
 {
@@ -450,6 +484,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetSize(IS is,PetscInt *size)
   if (((PetscObject)is)->type != IS_BLOCK) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a block index set");
 
   sub = (IS_Block *)is->data;
-  *size = sub->n; 
+  *size = sub->N;
   PetscFunctionReturn(0);
 }
