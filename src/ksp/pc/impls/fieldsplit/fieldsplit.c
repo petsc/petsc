@@ -345,7 +345,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   
     /* create work vectors for each split */
     if (!jac->x) {
-      Vec xtmp;
       ierr = PetscMalloc2(nsplit,Vec,&jac->x,nsplit,Vec,&jac->y);CHKERRQ(ierr);
       ilink = jac->head;
       for (i=0; i<nsplit; i++) {

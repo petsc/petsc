@@ -558,7 +558,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 #if defined(PETSC_HAVE_ADIC)
   PetscTruth              mfadoperator,mfad,adjacobian;
 #endif
-  MPI_Comm                comm;
   PetscCookie             cookie;
 
   PetscFunctionBegin;
