@@ -487,7 +487,7 @@ runex22:
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 runex23:
-	-@${MPIEXEC} -n 2 ./ex23 -dmmg_snes_monitor -dmmg_jacobian_mf_fd -mat_mffd_type wp -mat_mffd_compute_normu no > ex23_1.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex23 -snes_monitor_short -dmmg_jacobian_mf_fd -mat_mffd_type wp -mat_mffd_compute_normu no > ex23_1.tmp 2>&1; \
 	   if (${DIFF} output/ex23_1.out ex23_1.tmp) then true; \
 	   else echo "Possible problem with ex23_1, diffs above"; fi; \
 	   ${RM} -f ex23_1.tmp

@@ -661,13 +661,13 @@ runex21f:
 	   else echo "Possible problem with ex21f_1, diffs above"; fi; \
 	   ${RM} -f ex21f_1.tmp
 runex22:
-	-@${MPIEXEC} -n 1 ./ex22 -pc_mg_type full -dmmg_ksp_monitor_short > ex22_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex22 -pc_mg_type full -ksp_monitor_short -mg_levels_ksp_monitor_short > ex22_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 
 runex22f:
-	-@${MPIEXEC} -n 1 ./ex22f -pc_mg_type full -dmmg_ksp_monitor_short > ex22_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -n 1 ./ex22f -pc_mg_type full -ksp_monitor_short -mg_levels_ksp_monitor_short > ex22_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22f_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp

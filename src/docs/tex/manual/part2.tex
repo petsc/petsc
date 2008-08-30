@@ -4443,7 +4443,7 @@ to guide your development. We give a short summary here.
   ierr = DADestroy(da);CHKERRQ(ierr);\\
 \end{tabbing}
 \findex{DMMGCreate()} \findex{DMMGSolve()} \findex{DMMGGetx()} \findex{DMMGDestroy()} \findex{DMMGSetDM()} \findex{DMMGSetDA()}
-The option \trl{-dmmg_ksp_monitor} \findex{-dmmg_ksp_monitor} 
+The option \trl{-ksp_monitor} \findex{-ksp_monitor} and \trl{-mg_levels_ksp_monitor} and optionally \trl{-mg_coarse_ksp_monitor} 
  causes the DMMG code to print the residual norms for each level of the solver to the screen so that
 the coarser the grid the more indented the print out. The option \trl{-dmmg_grid_sequence} \findex{-dmmg_grid_sequence} causes the 
 DMMG solve to use grid sequencing to generate the initial guess by solving the same problem on the previous coarser grid; this often
@@ -4501,7 +4501,7 @@ automatic differentiation. The option \trl{-dmmg_jacobian_mf_fd}
 causes the code to not compute the Jacobian explicitly but rather to
 use differences to apply the matrix vector product of the Jacobian.
 
-The option \trl{-dmmg_snes_monitor} \findex{-dmmg_snes_monitor} can
+The usual option \trl{-snes_monitor} \findex{-snes_monitor} can
 be used to monitor the progress of the nonlinear solver. The usual \trl{-snes_} options
 may be used to control the nonlinearr solves. Again we recommend using the 
 option \trl{-dmmg_grid_sequence} and \trl{-snes_view} for most runs.

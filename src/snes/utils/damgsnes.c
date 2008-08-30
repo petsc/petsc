@@ -528,7 +528,7 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 -   jacobian - optional function to compute Jacobian
 
     Options Database Keys:
-+    -dmmg_snes_monitor
++    -snes_monitor
 .    -dmmg_coloring_from_mat - use graph coloring on the actual matrix nonzero structure instead of getting the coloring from the DM
 .    -dmmg_jacobian_fd
 .    -dmmg_jacobian_ad
@@ -550,7 +550,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 {
   PetscErrorCode          ierr;
   PetscInt                i,nlevels = dmmg[0]->nlevels,period = 1;
-  PetscTruth              snesmonitor,mffdoperator,mffd,fdjacobian;
+  PetscTruth              mffdoperator,mffd,fdjacobian;
   PetscTruth              useFAS = PETSC_FALSE, fasBlock, fasGMRES;
   PetscTruth              monitor, monitorAll;
   PetscInt                fasPresmooth = 1, fasPostsmooth = 1, fasCoarsesmooth = 1, fasMaxIter = 2;
@@ -558,7 +558,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
 #if defined(PETSC_HAVE_ADIC)
   PetscTruth              mfadoperator,mfad,adjacobian;
 #endif
-  PetscViewerASCIIMonitor ascii;
   MPI_Comm                comm;
   PetscCookie             cookie;
 
@@ -579,8 +578,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = PetscOptionsReal("-dmmg_fas_rtol","Relative tolerance for FAS","DMMG",fasRtol,&fasRtol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-dmmg_fas_atol","Absolute tolerance for FAS","DMMG",fasAbstol,&fasAbstol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-dmmg_fas_max_its","Maximum number of iterates per smoother","DMMG",fasMaxIter,&fasMaxIter,PETSC_NULL);CHKERRQ(ierr);
-
-    ierr = PetscOptionsName("-dmmg_snes_monitor","Monitor nonlinear convergence","SNESMonitorSet",&snesmonitor);CHKERRQ(ierr);
 
     ierr = PetscOptionsTruth("-dmmg_coloring_from_mat","Compute the coloring directly from the matrix nonzero structure","DMMGSetSNES",dmmg[0]->getcoloringfrommat,&dmmg[0]->getcoloringfrommat,PETSC_NULL);CHKERRQ(ierr);
 
@@ -610,11 +607,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = SNESSetFunction(dmmg[i]->snes,dmmg[i]->b,function,dmmg[i]);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(dmmg[i]->snes,dmmg[i]->prefix);CHKERRQ(ierr);
     ierr = SNESGetKSP(dmmg[i]->snes,&dmmg[i]->ksp);CHKERRQ(ierr);
-    if (snesmonitor) {
-      ierr = PetscObjectGetComm((PetscObject)dmmg[i]->snes,&comm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",nlevels-i,&ascii);CHKERRQ(ierr);
-      ierr = SNESMonitorSet(dmmg[i]->snes,SNESMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
-    }
 
     if (mffdoperator) {
       ierr = MatCreateSNESMF(dmmg[i]->snes,&dmmg[i]->J);CHKERRQ(ierr);
@@ -909,8 +901,7 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
                   not installed
 
     Options Database Keys:
-+    -dmmg_snes_monitor
-.    -dmmg_jacobian_fd
++    -dmmg_jacobian_fd
 .    -dmmg_jacobian_ad
 .    -dmmg_jacobian_mf_fd_operator
 .    -dmmg_jacobian_mf_fd
