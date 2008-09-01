@@ -231,6 +231,27 @@ cdef class KSP(Object):
     def cancelMonitor(self):
         KSP_clsMon(self.ksp)
 
+    def setInitialGuessNonzero(self, bint flag):
+        cdef PetscTruth guess_nonzero = PETSC_FALSE
+        if flag: guess_nonzero = PETSC_TRUE
+        CHKERR( KSPSetInitialGuessNonzero(self.ksp, guess_nonzero) )
+
+    def getInitialGuessNonzero(self):
+        cdef PetscTruth guess_nonzero = PETSC_FALSE
+        CHKERR( KSPGetInitialGuessNonzero(self.ksp, &guess_nonzero) )
+        return <bint>guess_nonzero
+
+    def setInitialGuessKnoll(self, bint flag):
+        cdef PetscTruth guess_knoll = PETSC_FALSE
+        if flag: guess_knoll = PETSC_TRUE
+        CHKERR( KSPSetInitialGuessKnoll(self.ksp, guess_knoll) )
+
+    def getInitialGuessKnoll(self):
+        cdef PetscTruth guess_knoll = PETSC_FALSE
+        CHKERR( KSPGetInitialGuessKnoll(self.ksp, &guess_knoll) )
+        return <bint>guess_knoll
+
+
     # --- xxx ---
 
     def setUp(self):
@@ -293,7 +314,7 @@ cdef class KSP(Object):
         if context == NULL: return None
         else: return <object> context
 
-    # --- xxx ---
+    # --- application context ---
 
     property appctx:
         def __get__(self):
@@ -310,6 +331,20 @@ cdef class KSP(Object):
     property vec_rhs:
         def __get__(self):
             return self.getRhs()
+
+    # --- initial guess ---
+
+    property guess_nonzero:
+        def __get__(self):
+            return self.getInitialGuessNonzero()
+        def __set__(self, value):
+            self.setInitialGuessNonzero(value)
+
+    property guess_knoll:
+        def __get__(self):
+            return self.getInitialGuessKnoll()
+        def __set__(self, value):
+            self.setInitialGuessKnoll(value)
 
     # --- preconditioner ---
 
