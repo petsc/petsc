@@ -129,10 +129,12 @@ cdef class IS(Object):
         cdef PetscInt *indices = NULL
         CHKERR( ISGetLocalSize(self.iset, &size) )
         CHKERR( ISGetIndices(self.iset, &indices) )
+        cdef object oindices = None
         try:
-            return array_i(size, indices)
+            oindices = array_i(size, indices)
         finally:
             CHKERR( ISRestoreIndices(self.iset, &indices) )
+        return oindices
 
     def getIndicesBlock(self):
         cdef PetscTruth block = PETSC_FALSE
@@ -143,10 +145,12 @@ cdef class IS(Object):
         CHKERR( ISGetLocalSize(self.iset, &size) )
         CHKERR( ISBlockGetBlockSize(self.iset, &bs) )
         CHKERR( ISBlockGetIndices(self.iset, &indices) )
+        cdef object oindices = None
         try:
-            return array_i(size/bs, indices)
+            oindices = array_i(size/bs, indices)
         finally:
             CHKERR( ISBlockRestoreIndices(self.iset, &indices) )
+        return oindices
 
     def getInfo(self):
         cdef PetscTruth stride = PETSC_FALSE
