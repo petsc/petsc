@@ -207,6 +207,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal
 
   PetscFunctionBegin;
   if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  if (n == 0 && ((PetscObject)ksp)->prefix) {
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"  Residual norms for %s solve.\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
+  }
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

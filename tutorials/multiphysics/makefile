@@ -87,7 +87,19 @@ runmp_8:
 	   else echo "Possible problem with mp_8, diffs above"; fi; \
 	   ${RM} -f mp_8.tmp
 
-TESTEXAMPLES_C		       = p1.PETSc runp1 p1.rm p2.PETSc runp2 p2.rm mp.PETSc runmp runmp_2 runmp_3 runmp_4 runmp_5 runmp_6 runmp_7 runmp_8 mp.rm
+runmp_9:
+	-@${MPIEXEC} -n 1 ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -schur_ksp_monitor_short -schur_ksp_type fgmres -schurAblock_ksp_type gmres -schurAblock_ksp_monitor_short -pc_fieldsplit_schur_precondition true -snes_view > mp_9.tmp 2>&1;   \
+	   if (${DIFF} output/mp_9.out mp_9.tmp) then true; \
+	   else echo "Possible problem with mp_9, diffs above"; fi; \
+	   ${RM} -f mp_9.tmp
+
+runmp_10:
+	-@${MPIEXEC} -n 1 ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -schur_ksp_monitor_short -schur_ksp_type fgmres -schurAblock_ksp_type gmres -schurAblock_ksp_monitor_short -pc_fieldsplit_schur_precondition false -snes_view > mp_10.tmp 2>&1;   \
+	   if (${DIFF} output/mp_10.out mp_10.tmp) then true; \
+	   else echo "Possible problem with mp_10, diffs above"; fi; \
+	   ${RM} -f mp_10.tmp
+
+TESTEXAMPLES_C		       = p1.PETSc runp1 p1.rm p2.PETSc runp2 p2.rm mp.PETSc runmp runmp_2 runmp_3 runmp_4 runmp_5 runmp_6 runmp_7 runmp_8 runmp_9 runmp_10 mp.rm
 TESTEXAMPLES_C_X11	       = 
 TESTEXAMPLES_FORTRAN	       = 
 TESTEXAMPLES_C_NOCOMPLEX       = 

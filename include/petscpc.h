@@ -324,6 +324,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields(PC,PetscInt,Petsc
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC,PCCompositeType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetBlockSize(PC,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetIS(PC,IS);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSchurPrecondition(PC,PetscTruth);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction(PC,Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetInterpolation(PC,Mat);
