@@ -416,9 +416,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   PetscErrorCode          ierr;
   PetscInt                i;
   PC                      pc;
-  PetscTruth              ismg,monitor,monitor_short,ismf,isshell,ismffd;
+  PetscTruth              ismg,ismf,isshell,ismffd;
   KSP                     lksp; /* solver internal to the multigrid preconditioner */
-  MPI_Comm                *comms,comm;
+  MPI_Comm                *comms;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");

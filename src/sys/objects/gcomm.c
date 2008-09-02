@@ -96,7 +96,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetTabLevel(PetscObject obj,PetscInt *
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectIncrementTabLevel(PetscObject obj,PetscObject oldobj,PetscInt tab)
 {
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
