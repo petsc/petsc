@@ -162,9 +162,7 @@ class MyKSP(object):
             v.destroy()
 
     def setUp(self, ksp):
-        r = ksp.getRhs().duplicate()
-        z = r.duplicate()
-        self.work[:] = [r, z]
+        self.work[:] = ksp.getWorkVecs(right=2, left=None)
 
     def loop(self, ksp, r):
         its = ksp.getIterationNumber()
