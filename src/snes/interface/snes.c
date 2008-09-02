@@ -177,6 +177,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
 .  -snes_max_fail <max_fail> - maximum number of failures
 .  -snes_max_linear_solve_fail - number of linear solver failures before SNESSolve() stops
 .  -snes_lag_preconditioner <lag> - how often preconditioner is rebuilt (use -1 to never rebuild)
+.  -snes_lag_jacobian <lag> - how often Jacobian is rebuilt (use -1 to never rebuild)
 .  -snes_trtol <trtol> - trust region tolerance
 .  -snes_no_convergence_test - skip convergence test in nonlinear 
                                solver; hence iterations will continue until max_it
@@ -249,6 +250,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsInt("-snes_lag_preconditioner","How often to rebuild preconditioner","SNESSetLagPreconditioner",snes->lagpreconditioner,&lag,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = SNESSetLagPreconditioner(snes,lag);CHKERRQ(ierr);
+    }
+    ierr = PetscOptionsInt("-snes_lag_jacobian","How often to rebuild Jacobian","SNESSetLagJacobian",snes->lagjacobian,&lag,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESSetLagJacobian(snes,lag);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsEList("-snes_convergence_test","Convergence test","SNESSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);
@@ -844,6 +849,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->numFailures       = 0;
   snes->maxFailures       = 1;
   snes->linear_its        = 0;
+  snes->lagjacobian       = 1;
   snes->lagpreconditioner = 1;
   snes->numbermonitors    = 0;
   snes->data              = 0;
@@ -1037,6 +1043,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
 .  B - optional preconditioning matrix
 -  flag - flag indicating matrix structure (one of, SAME_NONZERO_PATTERN,DIFFERENT_NONZERO_PATTERN,SAME_PRECONDITIONER)
 
+  Options Database Keys: 
++    -snes_lag_preconditioner <lag>
+-    -snes_lag_jacobian <lag>
+
    Notes: 
    Most users should not need to explicitly call this routine, as it 
    is used internally within the nonlinear solvers. 
@@ -1048,7 +1058,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
 
 .keywords: SNES, compute, Jacobian, matrix
 
-.seealso:  SNESSetJacobian(), KSPSetOperators(), MatStructure
+.seealso:  SNESSetJacobian(), KSPSetOperators(), MatStructure, SNESSetLagPreconditioner(), SNESSetLagJacobian()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
@@ -1060,8 +1070,18 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Ma
   PetscValidPointer(flg,5);
   PetscCheckSameComm(snes,1,X,2);
   if (!snes->ops->computejacobian) PetscFunctionReturn(0);
-  ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
+  if (snes->lagjacobian == -1) {
+    *flg = SAME_PRECONDITIONER;
+    ierr = PetscInfo(snes,"Reusing Jacobian/preconditioner because lag is -1\n");CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  } else if (snes->lagjacobian > 1 && snes->iter % snes->lagjacobian) {
+    *flg = SAME_PRECONDITIONER;
+    ierr = PetscInfo2(snes,"Reusing Jacobian/preconditioner because lag is %D and SNES iteration is %D\n",snes->lagjacobian,snes->iter);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
   *flg = DIFFERENT_NONZERO_PATTERN;
+  ierr = PetscLogEventBegin(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
   PetscStackPush("SNES user Jacobian function");
   CHKMEMQ;
   ierr = (*snes->ops->computejacobian)(snes,X,A,B,flg,snes->jacP);CHKERRQ(ierr);
@@ -1364,7 +1384,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
 
 .keywords: SNES, nonlinear, set, convergence, tolerances
 
-.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner()
+.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagJacobian(), SNESGetLagJacobian()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagPreconditioner(SNES snes,PetscInt lag)
@@ -1410,6 +1430,80 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagPreconditioner(SNES snes,PetscInt *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   *lag = snes->lagpreconditioner;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetLagJacobian"
+/*@
+   SNESSetLagJacobian - Determines when the Jacobian is rebuilt in the nonlinear solve. See SNESSetLagPreconditioner() for determining how
+     often the preconditioner is rebuilt.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+-  lag - -1 indicates NEVER rebuild, 1 means rebuild every time the Jacobian is computed within a single nonlinear solve, 2 means every second time
+         the Jacobian is built etc.
+
+   Options Database Keys: 
+.    -snes_lag_jacobian <lag>
+
+   Notes:
+   The default is 1
+   The Jacobian is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1
+   If  -1 is used before the very first nonlinear solve the CODE WILL FAIL! because no Jacobian is used
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, convergence, tolerances
+
+.seealso: SNESSetTrustRegionTolerance(), SNESGetLagPreconditioner(), SNESSetLagPreconditioner(), SNESGetLagJacobian()
+
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagJacobian(SNES snes,PetscInt lag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (lag < -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -1, 1 or greater");
+  if (!lag) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
+  snes->lagjacobian = lag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESGetLagJacobian"
+/*@
+   SNESGetLagJacobian - Indicates how often the Jacobian is rebuilt. See SNESGetLagPreconditioner() to determine when the preconditioner is rebuilt
+
+   Collective on SNES
+
+   Input Parameter:
+.  snes - the SNES context
+ 
+   Output Parameter:
+.   lag - -1 indicates NEVER rebuild, 1 means rebuild every time the Jacobian is computed within a single nonlinear solve, 2 means every second time
+         the Jacobian is built etc.
+
+   Options Database Keys: 
+.    -snes_lag_jacobian <lag>
+
+   Notes:
+   The default is 1
+   The jacobian is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, set, convergence, tolerances
+
+.seealso: SNESSetTrustRegionTolerance(), SNESSetLagJacobian(), SNESSetLagPreconditioner(), SNESGetLagPreconditioner()
+
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagJacobian(SNES snes,PetscInt *lag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  *lag = snes->lagjacobian;
   PetscFunctionReturn(0);
 }
 

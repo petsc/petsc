@@ -144,6 +144,8 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberFunctionEvals(SNES,PetscI
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagPreconditioner(SNES,PetscInt);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagPreconditioner(SNES,PetscInt*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagJacobian(SNES,PetscInt);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagJacobian(SNES,PetscInt*);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveIterations(SNES,PetscInt*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES,PetscInt*);

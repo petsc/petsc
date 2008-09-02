@@ -77,6 +77,7 @@ struct _p_SNES {
   PetscReal   deltatol;        /* trust region convergence tolerance */
   PetscTruth  printreason;     /* print reason for convergence/divergence after each solve */
   PetscInt    lagpreconditioner; /* SNESSetLagPreconditioner() */
+  PetscInt    lagjacobian;       /* SNESSetLagJacobian() */
   /* ------------------------ Default work-area management ---------------------- */
 
   PetscInt    nwork;              

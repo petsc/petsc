@@ -539,7 +539,12 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 .    -dmmg_iscoloring_type
 -    -dmmg_jacobian_period <p> - Indicates how often in the SNES solve the Jacobian is recomputed (on all levels)
                                  as suggested by Florin Dobrian if p is -1 then Jacobian is computed only on first
-                                 SNES iteration (i.e. -1 is equivalent to infinity) 
+                                 SNES iteration (i.e. -1 is equivalent to infinity).  This is the same as -snes_lag_jacobian <p>, thus this
+                                 option is redundant and could be removed, however, the period can be set differently for different levels
+                                 of the Jacobian (for example lag all Jacobians except on the finest level), thus the option is not removed.
+                                 There is no user interface currently for setting a different period on the different levels, one must set the
+                                 fields dmmg[i]->updatejacobian and dmmg[i]->updatejacobianperiod directly in the DMMG data structure.
+                                 
 
     Level: advanced
 
@@ -908,7 +913,11 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
 .    -dmmg_jacobian_mf_ad
 -    -dmmg_jacobian_period <p> - Indicates how often in the SNES solve the Jacobian is recomputed (on all levels)
                                  as suggested by Florin Dobrian if p is -1 then Jacobian is computed only on first
-                                 SNES iteration (i.e. -1 is equivalent to infinity) 
+                                 SNES iteration (i.e. -1 is equivalent to infinity).  This is the same as -snes_lag_jacobian <p>, thus this
+                                 option is redundant and could be removed, however, the period can be set differently for different levels
+                                 of the Jacobian (for example lag all Jacobians except on the finest level), thus the option is not removed.
+                                 There is no user interface currently for setting a different period on the different levels, one must set the
+                                 fields dmmg[i]->updatejacobian and dmmg[i]->updatejacobianperiod directly in the DMMG data structure.
 
 
     Level: intermediate
