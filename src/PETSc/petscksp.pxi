@@ -134,6 +134,16 @@ cdef extern from "petscksp.h":
 
     int KSPComputeExplicitOperator(PetscKSP,PetscMat*)
 
+    int KSPGetVecs(PetscKSP,PetscInt,PetscVec**,PetscInt,PetscVec**)
+
+cdef extern from "custom.h":
+    int KSPSetIterationNumber(PetscKSP,PetscInt)
+    int KSPSetResidualNorm(PetscKSP,PetscReal)
+    int KSPLogResidualHistoryCall(PetscKSP,PetscInt,PetscReal)
+    int KSPMonitorCall(PetscKSP,PetscInt,PetscReal)
+    int KSPConvergenceTestCall(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*)
+    int KSPSetConvergedReason(PetscKSP,PetscKSPConvergedReason)
+
 # --------------------------------------------------------------------
 
 cdef inline KSP ref_KSP(PetscKSP ksp):
@@ -208,7 +218,7 @@ cdef inline int KSP_setMon(PetscKSP ksp, object mon) except -1:
     Object_setAttr(<PetscObject>ksp, "__monitor__", monitorlist)
     return 0
 
-cdef inline int KSP_clsMon(PetscKSP ksp) except -1:
+cdef inline int KSP_delMon(PetscKSP ksp) except -1:
     CHKERR( KSPMonitorCancel(ksp) )
     Object_setAttr(<PetscObject>ksp, "__monitor__", None)
     return 0

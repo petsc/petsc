@@ -54,6 +54,9 @@ cdef extern from "petscvec.h":
     int VecDuplicate(PetscVec,PetscVec*)
     int VecCopy(PetscVec,PetscVec)
 
+    int VecDuplicateVecs(PetscVec,PetscInt,PetscVec*[])
+    int VecDestroyVecs(PetscVec*[],PetscInt)
+
     int VecGetValues(PetscVec,PetscInt,PetscInt[],PetscScalar[])
 
     int VecSetValue(PetscVec,PetscInt,PetscScalar,PetscInsertMode)

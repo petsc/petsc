@@ -181,6 +181,87 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
 
 /* ---------------------------------------------------------------- */
 
+#include "include/private/kspimpl.h"
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetIterationNumber"
+PETSC_STATIC_INLINE PetscErrorCode
+KSPSetIterationNumber(KSP ksp, PetscInt its)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (its < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
+  ksp->its = its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetResidualNorm"
+PETSC_STATIC_INLINE PetscErrorCode
+KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
+  ksp->rnorm = rnorm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPLogResidualHistoryCall"
+PETSC_STATIC_INLINE PetscErrorCode
+KSPLogResidualHistoryCall(KSP ksp, PetscInt its, PetscReal rnorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
+  if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
+  KSPLogResidualHistory(ksp,rnorm);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPMonitorCall"
+PETSC_STATIC_INLINE PetscErrorCode
+KSPMonitorCall(KSP ksp, PetscInt its, PetscReal rnorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
+  if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
+  KSPMonitor(ksp,its,rnorm);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPConvergenceTestCall"
+PETSC_STATIC_INLINE PetscErrorCode
+KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReason *reason)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(reason,4);
+  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
+  if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
+  ierr = (*ksp->converged)(ksp,its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+  *reason = ksp->reason;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPSetConvergedReason"
+PETSC_STATIC_INLINE PetscErrorCode
+KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  ksp->reason = reason;
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------- */
+
 #include "include/private/matimpl.h"
 
 #undef __FUNCT__  
@@ -499,8 +580,6 @@ TSSolve_Patch(TS ts, Vec x)
 }
 #undef  TSSolve
 #define TSSolve TSSolve_Patch
-
-/* ---------------------------------------------------------------- */
 
 #include "include/private/tsimpl.h"
 

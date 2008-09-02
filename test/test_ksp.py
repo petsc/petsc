@@ -10,7 +10,7 @@ class TestKSPBase(object):
 
     KSP_TYPE = None
     PC_TYPE  = None
-    
+
     def setUp(self):
         ksp = PETSc.KSP()
         ksp.create(PETSc.COMM_SELF)
@@ -20,7 +20,7 @@ class TestKSPBase(object):
             pc = ksp.getPC()
             pc.setType(self.PC_TYPE)
         self.ksp = ksp
-        
+
     def tearDown(self):
         self.ksp = None
 
@@ -28,14 +28,14 @@ class TestKSPBase(object):
         self.assertEqual(self.ksp.getType(), self.KSP_TYPE)
         self.ksp.setType(self.KSP_TYPE)
         self.assertEqual(self.ksp.getType(), self.KSP_TYPE)
-        
+
     def testTols(self):
         tols = self.ksp.getTolerances()
         self.ksp.setTolerances(*tols)
         tnames = ('rtol', 'atol', 'divtol', 'max_it')
         tolvals = [getattr(self.ksp, t) for t in  tnames]
         self.assertEqual(tuple(tols), tuple(tolvals))
-        
+
     def testGetSetPC(self):
         oldpc = self.ksp.getPC()
         self.assertEqual(oldpc.getRefCount(), 2)
@@ -54,12 +54,15 @@ class TestKSPBase(object):
         newpc.destroy()
         self.assertFalse(bool(newpc))
         self.assertEqual(pc.getRefCount(), 2)
-        
+
     def testSolve(self):
         A = PETSc.Mat().create(PETSc.COMM_SELF)
-        A.setSizes([3,3]); A.setType(PETSc.Mat.Type.SEQAIJ)
+        A.setSizes([3,3])
+        A.setType(PETSc.Mat.Type.SEQAIJ)
+        for i in range(3):
+            A.setValue(i, i, 0.9/(i+1))
         A.assemble()
-        A.shift(10)
+        A.shift(1)
         x, b = A.getVecs()
         b.set(10)
         x.setRandom()
@@ -90,7 +93,7 @@ class TestKSPBase(object):
         ## self.ksp.setMonitor(Monitor.DEFAULT)
         ## self.ksp.setMonitor(Monitor.TRUE_RESIDUAL_NORM)
         ## self.ksp.setMonitor(Monitor.SOLUTION)
-            
+
     def testSetConvergenceTest(self):
         def converged(ksp, its, rnorm):
             if its > 10: return True
@@ -143,6 +146,105 @@ class TestKSPGMRES(TestKSPBase, unittest.TestCase):
 
 class TestKSPFGMRES(TestKSPBase, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.FGMRES
+
+# --------------------------------------------------------------------
+
+class MyKSP(object):
+
+    def __init__(self):
+        pass
+
+    def create(self, ksp):
+        self.work = []
+
+    def destroy(self):
+        for v in self.work:
+            v.destroy()
+
+    def setUp(self, ksp):
+        r = ksp.getRhs().duplicate()
+        z = r.duplicate()
+        self.work[:] = [r, z]
+
+    def loop(self, ksp, r):
+        its = ksp.getIterationNumber()
+        rnorm = r.norm()
+        ksp.setResidualNorm(rnorm)
+        ksp.logConvergenceHistory(its, rnorm)
+        ksp.callMonitor(its, rnorm)
+        reason =  ksp.callConvergenceTest(its, rnorm)
+        if reason:
+            ksp.setConvergedReason(reason)
+        else:
+            ksp.setIterationNumber(its+1)
+        return reason
+
+class MyRichardson(MyKSP):
+
+    def solve(self, ksp):
+        A, B, flag = ksp.getOperators()
+        P = ksp.getPC()
+        x = ksp.getSolution()
+        b = ksp.getRhs()
+        r, z = self.work
+        #
+        A.mult(x, r)
+        r.aypx(-1, b)
+        P.apply(r, z)
+        x.axpy(1, z)
+        while not self.loop(ksp, z):
+            A.mult(x, r)
+            r.aypx(-1, b)
+            P.apply(r, z)
+            x.axpy(1, z)
+
+class MyCG(MyKSP):
+
+    def setUp(self, ksp):
+        super(MyCG, self).setUp(ksp)
+        d = self.work[0].duplicate()
+        q = d.duplicate()
+        self.work += [d, q]
+
+    def solve(self, ksp):
+        A, B, flag = ksp.getOperators()
+        P = ksp.getPC()
+        x = ksp.getSolution()
+        b = ksp.getRhs()
+        r, z, d, q = self.work
+        #
+        A.mult(x, r)
+        r.aypx(-1, b)
+        r.copy(d)
+        delta_0 = r.dot(r)
+        delta = delta_0
+        while not self.loop(ksp, r):
+            A.mult(d, q)
+            alpha = delta / d.dot(q)
+            x.axpy(+alpha, d)
+            r.axpy(-alpha, q)
+            delta_old = delta
+            delta = r.dot(r)
+            beta = delta / delta_old
+            d.aypx(beta, r)
+
+class TestKSPPYTHONBase(TestKSPBase):
+
+    KSP_TYPE = PETSc.KSP.Type.PYTHON
+    ContextClass = None
+
+    def setUp(self):
+        super(TestKSPPYTHONBase, self).setUp()
+        ctx = self.ContextClass()
+        self.ksp.setPythonContext(ctx)
+
+class TestKSPPYTHON_RICH(TestKSPPYTHONBase, unittest.TestCase):
+    PC_TYPE  = PETSc.PC.Type.JACOBI
+    ContextClass = MyRichardson
+
+class TestKSPPYTHON_CG(TestKSPPYTHONBase, unittest.TestCase):
+    PC_TYPE  = PETSc.PC.Type.NONE
+    ContextClass = MyCG
 
 # --------------------------------------------------------------------
 

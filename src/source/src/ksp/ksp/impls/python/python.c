@@ -25,29 +25,43 @@ typedef struct {
 
 #define KSP_Py_Self(ksp) (((KSP_Py*)(ksp)->data)->self)
 
-#define KSP_PYTHON_CALL_HEAD(ksp, PyMethod)	\
+#define KSP_PYTHON_CALL_HEAD(ksp, PyMethod) \
   PETSC_PYTHON_CALL_HEAD(KSP_Py_Self(ksp), PyMethod)
-#define KSP_PYTHON_CALL_BODY(ksp, ARGS)		\
+#define KSP_PYTHON_CALL_JUMP(ksp, LABEL) \
+  PETSC_PYTHON_CALL_JUMP(LABEL)
+#define KSP_PYTHON_CALL_BODY(ksp, ARGS)	\
   PETSC_PYTHON_CALL_BODY(ARGS)
-#define KSP_PYTHON_CALL_TAIL(ksp, PyMethod)	\
+#define KSP_PYTHON_CALL_TAIL(ksp, PyMethod) \
   PETSC_PYTHON_CALL_TAIL()
 
-#define KSP_PYTHON_CALL(ksp, PyMethod, ARGS)	\
-  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);		\
-  KSP_PYTHON_CALL_BODY(ksp, ARGS);		\
-  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)		\
+#define KSP_PYTHON_CALL(ksp, PyMethod, ARGS) \
+  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);	     \
+  KSP_PYTHON_CALL_BODY(ksp, ARGS);	     \
+  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)	     \
 /**/  
 
-#define KSP_PYTHON_CALL_NOARGS(ksp, PyMethod)				\
-  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);					\
-  KSP_PYTHON_CALL_BODY(ksp, ("", NULL));				\
-  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)					\
+#define KSP_PYTHON_CALL_NOARGS(ksp, PyMethod) \
+  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);	      \
+  KSP_PYTHON_CALL_BODY(ksp, ("", NULL));      \
+  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)	      \
 /**/
 
-#define KSP_PYTHON_CALL_KSPARG(ksp, PyMethod)				\
-  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);					\
-  KSP_PYTHON_CALL_BODY(ksp, ("O&", PyPetscKSP_New, ksp));		\
-  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)					\
+#define KSP_PYTHON_CALL_KSPARG(ksp, PyMethod)		  \
+  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);			  \
+  KSP_PYTHON_CALL_BODY(ksp, ("O&", PyPetscKSP_New, ksp)); \
+  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)			  \
+/**/
+
+#define KSP_PYTHON_CALL_MAYBE(ksp, PyMethod, ARGS, LABEL) \
+  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);			  \
+  KSP_PYTHON_CALL_JUMP(ksp, LABEL);			  \
+  KSP_PYTHON_CALL_BODY(ksp, ARGS);			  \
+  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)			  \
+/**/
+
+#define KSP_PYTHON_SETERRSUP(ksp, PyMethod)			  \
+  SETERRQ1(PETSC_ERR_SUP,"method %s() not implemented",PyMethod); \
+  PetscFunctionReturn(PETSC_ERR_SUP)				  \
 /**/
 
 /* -------------------------------------------------------------------------- */
@@ -91,37 +105,46 @@ static PetscErrorCode KSPSetUp_Python(KSP ksp)
 #define __FUNCT__ "KSPSolve_Python"
 static PetscErrorCode KSPSolve_Python(KSP ksp)
 {
-  Vec B,X;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-
   ksp->its    = 0;
   ksp->rnorm  = 0;
+  ksp->rnorm0 = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
-  
-  B = ksp->vec_rhs;
-  X = ksp->vec_sol;
-
   if (!ksp->transpose_solve) {
-
-    ierr = 0;CHKERRQ(ierr);
-
+    KSP_PYTHON_CALL_MAYBE(ksp, "solve",
+			 ("O&", PyPetscKSP_New, ksp),
+			  notimplemented1);
   } else {
-
-    ierr = 0;CHKERRQ(ierr);
-
+    KSP_PYTHON_CALL_MAYBE(ksp, "solveTranspose",
+			  ("O&", PyPetscKSP_New, ksp),
+			  notimplemented2);
   }
-
   if (!ksp->reason) ksp->reason = KSP_CONVERGED_ITS;
-#if 0
- preonly:
-  ierr        = KSP_PCApply(ksp,B,X);CHKERRQ(ierr);
-  ksp->its    = 1;
-  ksp->rnorm  = 0;
-  ksp->reason = KSP_CONVERGED_ITS;
-#endif
+  PetscFunctionReturn(0);
+ notimplemented1:
+  PC_PYTHON_SETERRSUP(ksp, "solve");
+ notimplemented2:
+  PC_PYTHON_SETERRSUP(ksp, "solveTranspose");
+}
+
+#undef  __FUNCT__  
+#define __FUNCT__ "KSPBuildSolution_Python"
+static PetscErrorCode KSPBuildSolution_Python(KSP ksp, Vec v, Vec *V)
+{
+  PetscErrorCode ierr;
+  ierr = KSPDefaultBuildSolution(ksp, v, V);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef  __FUNCT__  
+#define __FUNCT__ "KSPBuildResidual_Python"
+static PetscErrorCode KSPBuildResidual_Python(KSP ksp, Vec t, Vec v, Vec *V)
+{
+  PetscErrorCode ierr;
+  ierr = KSPDefaultBuildResidual(ksp, t, v, V);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPView_Python"
@@ -213,8 +236,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Python(KSP ksp)
   ksp->ops->setfromoptions       = KSPSetFromOptions_Python;
   ksp->ops->setup                = KSPSetUp_Python;
   ksp->ops->solve                = KSPSolve_Python;
-  ksp->ops->buildsolution        = KSPDefaultBuildSolution;
-  ksp->ops->buildresidual        = KSPDefaultBuildResidual;
+  ksp->ops->buildsolution        = KSPBuildSolution_Python;
+  ksp->ops->buildresidual        = KSPBuildResidual_Python;
 
   PetscFunctionReturn(0);
 }

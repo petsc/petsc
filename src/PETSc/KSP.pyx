@@ -76,7 +76,8 @@ cdef class KSP(Object):
 
     def __call__(self, b, x=None):
         if x is None: # XXX do this better
-            x = self.getOperators()[0].getVecLeft()
+            A = self.getOperators()[0]
+            x = A.getVecLeft()
         self.solve(b, x)
         return x
 
@@ -178,6 +179,42 @@ cdef class KSP(Object):
         CHKERR( KSPGetNormType(self.ksp, &normtype) )
         return normtype
 
+    def getRhs(self):
+        cdef Vec vec = Vec()
+        CHKERR( KSPGetRhs(self.ksp, &vec.vec) )
+        PetscIncref(<PetscObject>vec.vec)
+        return vec
+
+    def getSolution(self):
+        cdef Vec vec = Vec()
+        CHKERR( KSPGetSolution(self.ksp, &vec.vec) )
+        PetscIncref(<PetscObject>vec.vec)
+        return vec
+
+    def getWorkVecs(self, right=None, left=None):
+        cdef bint R = right is not None
+        cdef bint L = left is not None
+        cdef PetscInt i=0, nr=0, nl=0
+        cdef PetscVec *vr=NULL, *vl=NULL
+        if R: nr = right
+        if L: nl = left
+        cdef object vecsr = [] if R else None
+        cdef object vecsl = [] if L else None
+        CHKERR( KSPGetVecs(self.ksp, nr, &vr, nl, &vr) )
+        try:
+            for i in range(nr):
+                vecsr.append(ref_Vec(vr[i]))
+            for i in range(nl):
+                vecsl.append(ref_Vec(vl[i]))
+        finally:
+            if nr and vr: VecDestroyVecs(vr, nr) # XXX errors?
+            if nl and vl: VecDestroyVecs(vl, nl) # XXX errors?
+        #
+        if R and L: return (vecsr, vecsl)
+        elif R:     return vecsr
+        elif L:     return vecsl
+        else:       return None
+
     # --- xxx ---
 
     def setTolerances(self, rtol=None, atol=None, divtol=None, max_it=None):
@@ -203,6 +240,13 @@ cdef class KSP(Object):
     def getConvergenceTest(self):
         return KSP_getCnv(self.ksp)
 
+    def callConvergenceTest(self, its, rnorm):
+        cdef PetscInt  ival = its
+        cdef PetscReal rval = rnorm
+        cdef PetscKSPConvergedReason reason = KSP_CONVERGED_ITERATING
+        CHKERR( KSPConvergenceTestCall(self.ksp, ival, rval, &reason) )
+        return reason
+
     def setConvergenceHistory(self, length=None, reset=False):
         cdef PetscReal *data = NULL
         cdef PetscInt   size = 10000
@@ -221,6 +265,11 @@ cdef class KSP(Object):
         CHKERR( KSPGetResidualHistory(self.ksp, &data, &size) )
         return array_r(size, data)
 
+    def logConvergenceHistory(self, its, rnorm):
+        cdef PetscInt  ival = its
+        cdef PetscReal rval = rnorm
+        CHKERR( KSPLogResidualHistoryCall(self.ksp, its, rval) )
+
     def setMonitor(self, monitor, *args, **kargs):
         if monitor is None: return
         KSP_setMon(self.ksp, (monitor, args, kargs))
@@ -228,8 +277,15 @@ cdef class KSP(Object):
     def getMonitor(self):
         return KSP_getMon(self.ksp)
 
+    def callMonitor(self, its, rnorm):
+        cdef PetscInt  ival = its
+        cdef PetscReal rval = rnorm
+        CHKERR( KSPMonitorCall(self.ksp, ival, rval) )
+
     def cancelMonitor(self):
-        KSP_clsMon(self.ksp)
+        KSP_delMon(self.ksp)
+
+    # --- xxx ---
 
     def setInitialGuessNonzero(self, bint flag):
         cdef PetscTruth guess_nonzero = PETSC_FALSE
@@ -251,7 +307,6 @@ cdef class KSP(Object):
         CHKERR( KSPGetInitialGuessKnoll(self.ksp, &guess_knoll) )
         return <bint>guess_knoll
 
-
     # --- xxx ---
 
     def setUp(self):
@@ -266,33 +321,32 @@ cdef class KSP(Object):
     def solveTranspose(self, Vec b not None, Vec x not None):
         CHKERR( KSPSolveTranspose(self.ksp, b.vec, x.vec) )
 
+    def setIterationNumber(self, its):
+        cdef PetscInt ival = its
+        CHKERR( KSPSetIterationNumber(self.ksp, ival) )
+
     def getIterationNumber(self):
         cdef PetscInt ival = 0
         CHKERR( KSPGetIterationNumber(self.ksp, &ival) )
         return ival
 
+    def setResidualNorm(self, rnorm):
+        cdef PetscReal rval = rnorm
+        CHKERR( KSPSetResidualNorm(self.ksp, rval) )
+
     def getResidualNorm(self):
         cdef PetscReal rval = 0
-        CHKERR(KSPGetResidualNorm(self.ksp, &rval) )
+        CHKERR( KSPGetResidualNorm(self.ksp, &rval) )
         return rval
 
+    def setConvergedReason(self, reason):
+        cdef PetscKSPConvergedReason val = reason
+        CHKERR( KSPSetConvergedReason(self.ksp, reason) )
+
     def getConvergedReason(self):
-        cdef PetscKSPConvergedReason reason
-        reason = KSP_CONVERGED_ITERATING
+        cdef PetscKSPConvergedReason reason = KSP_CONVERGED_ITERATING
         CHKERR( KSPGetConvergedReason(self.ksp, &reason) )
         return reason
-
-    def getRhs(self):
-        cdef Vec vec = Vec()
-        CHKERR( KSPGetRhs(self.ksp, &vec.vec) )
-        PetscIncref(<PetscObject>vec.vec)
-        return vec
-
-    def getSolution(self):
-        cdef Vec vec = Vec()
-        CHKERR( KSPGetSolution(self.ksp, &vec.vec) )
-        PetscIncref(<PetscObject>vec.vec)
-        return vec
 
     # --- xxx ---
 
@@ -331,6 +385,22 @@ cdef class KSP(Object):
     property vec_rhs:
         def __get__(self):
             return self.getRhs()
+
+    # --- operators ---
+
+    property mat_op:
+        def __get__(self):
+            return self.getOperators()[0]
+
+    property mat_pc:
+        def __get__(self):
+            return self.getOperators()[1]
+
+    property nullsp:
+        def __get__(self):
+            return self.getNullSpace()
+        def __set__(self, value):
+            self.setNullSpace(value)
 
     # --- initial guess ---
 
@@ -390,11 +460,31 @@ cdef class KSP(Object):
         def __set__(self, value):
             self.setTolerances(max_it=value)
 
+    # --- iteration ---
+
+    property its:
+        def __get__(self):
+            return self.getIterationNumber()
+        def __set__(self, value):
+            self.setIterationNumber(value)
+
+    property rnorm:
+        def __get__(self):
+            return self.getResidualNorm()
+        def __set__(self, value):
+            self.setResidualNorm(value)
+
+    property history:
+        def __get__(self):
+            return self.getConvergenceHistory()
+
     # --- convergence ---
 
     property reason:
         def __get__(self):
             return self.getConvergedReason()
+        def __set__(self, value):
+            self.setConvergedReason(value)
 
     property iterating:
         def __get__(self):
