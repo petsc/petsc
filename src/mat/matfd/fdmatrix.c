@@ -191,7 +191,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring matfd
 -  freq - frequency (default is 1)
 
    Options Database Keys:
-.  -mat_fd_coloring_freq <freq>  - Sets coloring frequency
+.  -mat_fd_coloring_freq <freq>  - Sets coloring frequency, use -2 to indicate recompute next time and
+      then never again, use -1 to indicate do not recompute 
 
    Level: advanced
 
@@ -201,9 +202,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring matfd
    efficiency.  This parameter indicates that a new Jacobian will be computed every
    <freq> nonlinear iterations.  
 
+   When the mat and pmat matrix are both the MatFD matrix, then this is exactly the same as -snes_lag_jacobian;
+   the difference is that if mat is not pmat (for example with -snes_mf_operator) then MatAssemblyBegin/End()
+   is called on the mat so the correct matrix-free multiples are done.
+
 .keywords: Mat, finite differences, coloring, set, frequency
 
-.seealso: MatFDColoringCreate(), MatFDColoringGetFrequency(), MatFDColoringSetRecompute()
+.seealso: MatFDColoringCreate(), MatFDColoringGetFrequency(), SNESSetLagJacobian()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFrequency(MatFDColoring matfd,PetscInt freq)
 {
@@ -427,7 +432,7 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 
 .seealso: MatFDColoringDestroy(),SNESDefaultComputeJacobianColor(), ISColoringCreate(),
           MatFDColoringSetFunction(), MatFDColoringSetFromOptions(), MatFDColoringApply(),
-          MatFDColoringSetFrequency(), MatFDColoringSetRecompute(), MatFDColoringView(),
+          MatFDColoringSetFrequency(), MatFDColoringView(),
           MatFDColoringSetParameters()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
@@ -463,8 +468,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
   c->error_rel         = PETSC_SQRT_MACHINE_EPSILON;
   c->umin              = 100.0*PETSC_SQRT_MACHINE_EPSILON;
   c->freq              = 1;
-  c->usersetsrecompute = PETSC_FALSE;
-  c->recompute         = PETSC_FALSE;
   c->currentcolor      = -1;
   c->htype             = "wp";
 
@@ -601,16 +604,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   PetscValidHeaderSpecific(coloring,MAT_FDCOLORING_COOKIE,2);
   PetscValidHeaderSpecific(x1,VEC_COOKIE,3);
   if (!f) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatFDColoringSetFunction()");
-
-  if (coloring->usersetsrecompute) {
-    if (!coloring->recompute) {
-      *flag = SAME_PRECONDITIONER;
-      ierr = PetscInfo(J,"Skipping Jacobian, since user called MatFDColorSetRecompute()\n");CHKERRQ(ierr);
-      PetscFunctionReturn(0);
-    } else {
-      coloring->recompute = PETSC_FALSE;
-    }
-  }
 
   ierr = PetscLogEventBegin(MAT_FDColoringApply,coloring,J,x1,0);CHKERRQ(ierr);
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
@@ -932,35 +925,5 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApplyTS(Mat J,MatFDColoring color
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatFDColoringSetRecompute()"
-/*@C
-   MatFDColoringSetRecompute - Indicates that the next time a Jacobian preconditioner
-     is needed it sholuld be recomputed. Once this is called and the new Jacobian is computed
-     no additional Jacobian's will be computed (the same one will be used) until this is
-     called again.
-
-   Collective on MatFDColoring
-
-   Input  Parameters:
-.  c - the coloring context
-
-   Level: intermediate
-
-   Notes: The MatFDColoringSetFrequency() is ignored once this is called
-
-.seealso: MatFDColoringCreate(), MatFDColoringSetFrequency()
-
-.keywords: Mat, finite differences, coloring
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetRecompute(MatFDColoring c)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE,1);
-  c->usersetsrecompute = PETSC_TRUE;
-  c->recompute         = PETSC_TRUE;
-  PetscFunctionReturn(0);
-}
 
 

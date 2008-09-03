@@ -3795,6 +3795,7 @@ spooles etc or PCFactorSetMatSolverPackage() or if working directly with<br>
 
 
 matrices, MatGetFactor(A,MATSPOOLES,...)</li>
+        <li>Removed MatFDSetRecompute(), now use MatFDSetFrequency(mat,-2) to have Jacobian computed at next Newton step but never again.</li>
 
 
 

@@ -355,8 +355,6 @@ struct  _p_MatFDColoring{
   void           *fctx;            /* optional user-defined context for use by the function f */
   PetscInt       **vscaleforrow;   /* location in vscale for each columnsforrow[] entry */
   Vec            vscale;           /* holds FD scaling, i.e. 1/dx for each perturbed column */
-  PetscTruth     usersetsrecompute;/* user determines when Jacobian is recomputed, via MatFDColoringSetRecompute() */
-  PetscTruth     recompute;        /* used with usersetrecompute to determine if Jacobian should be recomputed */
   Vec            F;                /* current value of user provided function; can set with MatFDColoringSetF() */
   PetscInt       currentcolor;     /* color for which function evaluation is being done now */
   const char     *htype;            /* "wp" or "ds" */
