@@ -298,7 +298,7 @@ namespace ALE {
     //   (0, 0)        ... (0, numCells-1):  dim-dimensional cells
     //   (0, numCells) ... (0, numVertices): vertices
     // The other cells are numbered as they are requested
-    static void buildTopology(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1, Obj<arrow_section_type> orientation = NULL) {
+    static void buildTopology(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1, Obj<arrow_section_type> orientation = NULL, int firstCell = 0) {
       int debug = sieve->debug();
 
       ALE_LOG_EVENT_BEGIN;
@@ -312,9 +312,9 @@ namespace ALE {
       std::map<int,PointArray> bdVertices;
       std::map<int,PointArray> faces;
       std::map<int,oPointArray> oFaces;
-      int                      curCell    = 0;
+      int                      curCell    = firstCell;
       int                      curVertex  = firstVertex;
-      int                      newElement = firstVertex+numVertices;
+      int                      newElement = firstVertex > firstCell ? firstVertex + numVertices : firstCell + numCells;
       int                      o          = 1;
 
       if (corners < 0) corners = dim+1;
