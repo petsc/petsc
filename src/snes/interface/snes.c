@@ -1458,6 +1458,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagPreconditioner(SNES snes,PetscInt *
    If  -1 is used before the very first nonlinear solve the CODE WILL FAIL! because no Jacobian is used, use -2 to indicate you want it recomputed
    at the next Newton step but never again (unless it is reset to another value)
 
+   You MUST NOT use any value besides 1 if you are using a matrix-free matrix vector product, for example with -snes_mf_operator, or with the matrices
+   obtained with MatCreateMFFD() or MatSNESCreateMF(). This is because the Jacobian computation has to be called at each iteration so that the base
+   vector for the matrix-free matrix-vector product Jacobian is set to the latest value. If you want to not compute the Jacobian used for the preconditioner,
+   the second matrix passed in your ComputeJacobian function at each iteration you should add a check in your ComputeJacobian function. If you are
+   using the SNESDefaultComputeJacobianColor() you can use the  -mat_fd_coloring_freq <freq> option to set how often the colored Jacobian is computed.
+
    Level: intermediate
 
 .keywords: SNES, nonlinear, set, convergence, tolerances

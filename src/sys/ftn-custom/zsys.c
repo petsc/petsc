@@ -5,13 +5,27 @@
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define chkmemfortran_             CHKMEMFORTRAN
 #define petscoffsetfortran_        PETSCOFFSETFORTRAN
+#define petscobjectstateincrease_  PETSCOBJECTSTATEINCREASE
+#define petscobjectstatedecrease_  PETSCOBJECTSTATEDECREASE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscoffsetfortran_        petscoffsetfortran     
 #define chkmemfortran_             chkmemfortran
-#define flush__                     flush_
+#define flush__                    flush_
+#define petscobjectstateincrease_  petscobjectstateincrease
+#define petscobjectstatedecrease_  petscobjectstatedecrease
 #endif
 
+
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL  petscobjectstateincrease_(PetscObject *obj, PetscErrorCode *ierr )
+{
+  *ierr = PetscObjectStateIncrease(*obj);
+}
+void PETSC_STDCALL  petscobjectstatedecrease_(PetscObject *obj, PetscErrorCode *ierr ){
+  *ierr = PetscObjectStateDecrease(*obj);
+}
+
 
 #if defined(PETSC_MISSING_FORTRAN_FLUSH_)
 void flush__(int unit)
