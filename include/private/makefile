@@ -3,12 +3,12 @@ CFLAGS   =
 FFLAGS   =
 SOURCEC  =
 SOURCEF  =
-SOURCEH  = petsc.h petscsys.h
+SOURCEH  = petscimpl.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = finclude private
-LOCDIR   = include/
+DIRS     = 
+LOCDIR   = include/private/
 MANSEC   = Sys
 
 include ${PETSC_DIR}/conf/base

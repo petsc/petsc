@@ -1070,7 +1070,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Ma
   PetscValidPointer(flg,5);
   PetscCheckSameComm(snes,1,X,2);
   if (!snes->ops->computejacobian) PetscFunctionReturn(0);
-  if (snes->lagjacobian == -1) {
+  if (snes->lagjacobian == -2) {
+    snes->lagjacobian = -1;
+    ierr = PetscInfo(snes,"Recomputing Jacobian/preconditioner because lag is -2 (means compute Jacobian, but then never again) \n");CHKERRQ(ierr);
+  } else if (snes->lagjacobian == -1) {
     *flg = SAME_PRECONDITIONER;
     ierr = PetscInfo(snes,"Reusing Jacobian/preconditioner because lag is -1\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -1444,7 +1447,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagPreconditioner(SNES snes,PetscInt *
    Input Parameters:
 +  snes - the SNES context
 -  lag - -1 indicates NEVER rebuild, 1 means rebuild every time the Jacobian is computed within a single nonlinear solve, 2 means every second time
-         the Jacobian is built etc.
+         the Jacobian is built etc. -2 means rebuild at next chance but then never again
 
    Options Database Keys: 
 .    -snes_lag_jacobian <lag>
@@ -1452,7 +1455,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagPreconditioner(SNES snes,PetscInt *
    Notes:
    The default is 1
    The Jacobian is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1
-   If  -1 is used before the very first nonlinear solve the CODE WILL FAIL! because no Jacobian is used
+   If  -1 is used before the very first nonlinear solve the CODE WILL FAIL! because no Jacobian is used, use -2 to indicate you want it recomputed
+   at the next Newton step but never again (unless it is reset to another value)
 
    Level: intermediate
 
@@ -1465,7 +1469,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagJacobian(SNES snes,PetscInt lag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  if (lag < -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -1, 1 or greater");
+  if (lag < -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -2, -1, 1 or greater");
   if (!lag) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
   snes->lagjacobian = lag;
   PetscFunctionReturn(0);

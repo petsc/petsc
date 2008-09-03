@@ -303,7 +303,7 @@ valid
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseBegin(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseEnd(PetscObject);
 
-/*MC
+/*M
    PetscObjectStateIncrease - Increases the state of any PetscObject, 
    regardless of the type.
 
@@ -336,7 +336,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseEnd(PetscObject);
 M*/
 #define PetscObjectStateIncrease(obj) ((obj)->state++,0)
 
-/*MC
+/*M
    PetscObjectStateDecrease - Decreases the state of any PetscObject, 
    regardless of the type.
 
