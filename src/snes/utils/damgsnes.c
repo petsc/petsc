@@ -537,7 +537,7 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 .    -dmmg_jacobian_mf_ad_operator
 .    -dmmg_jacobian_mf_ad
 .    -dmmg_iscoloring_type
--    -dmmg_jacobian_period <p> - Indicates how often in the SNES solve the Jacobian is recomputed (on all levels)
+-    -dmmg_lag_jacobian <p> - Indicates how often in the SNES solve the Jacobian is recomputed (on all levels)
                                  as suggested by Florin Dobrian if p is -1 then Jacobian is computed only on first
                                  SNES iteration (i.e. -1 is equivalent to infinity).  This is the same as -snes_lag_jacobian <p>, thus this
                                  option is redundant and could be removed, however, the period can be set differently for different levels
@@ -722,7 +722,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_Multigrid,dmmg);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-dmmg_jacobian_period",&period,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-dmmg_lag_jacobian",&period,PETSC_NULL);CHKERRQ(ierr);
     for (i=0; i<nlevels; i++) {
       dmmg[i]->updatejacobian       = PETSC_TRUE;
       dmmg[i]->updatejacobianperiod = period;
@@ -911,7 +911,7 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
 .    -dmmg_jacobian_mf_fd
 .    -dmmg_jacobian_mf_ad_operator
 .    -dmmg_jacobian_mf_ad
--    -dmmg_jacobian_period <p> - Indicates how often in the SNES solve the Jacobian is recomputed (on all levels)
+-    -dmmg_lag_jacobian <p> - Indicates how often in the SNES solve the Jacobian is recomputed (on all levels)
                                  as suggested by Florin Dobrian if p is -1 then Jacobian is computed only on first
                                  SNES iteration (i.e. -1 is equivalent to infinity).  This is the same as -snes_lag_jacobian <p>, thus this
                                  option is redundant and could be removed, however, the period can be set differently for different levels
