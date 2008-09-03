@@ -1462,7 +1462,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagPreconditioner(SNES snes,PetscInt *
    obtained with MatCreateMFFD() or MatSNESCreateMF(). This is because the Jacobian computation has to be called at each iteration so that the base
    vector for the matrix-free matrix-vector product Jacobian is set to the latest value. If you want to not compute the Jacobian used for the preconditioner,
    the second matrix passed in your ComputeJacobian function at each iteration you should add a check in your ComputeJacobian function. If you are
-   using the SNESDefaultComputeJacobianColor() you can use the  -mat_fd_coloring_freq <freq> option to set how often the colored Jacobian is computed.
+   using the SNESDefaultComputeJacobianColor() you can use the  -mat_fd_coloring_lag_jacobian <freq> option to set how often the colored Jacobian is computed.
 
    Level: intermediate
 

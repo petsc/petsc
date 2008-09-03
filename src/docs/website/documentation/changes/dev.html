@@ -3795,7 +3795,12 @@ spooles etc or PCFactorSetMatSolverPackage() or if working directly with<br>
 
 
 matrices, MatGetFactor(A,MATSPOOLES,...)</li>
-        <li>Removed MatFDSetRecompute(), now use MatFDSetFrequency(mat,-2) to have Jacobian computed at next Newton step but never again.</li>
+        <li>Removed MatFDColoringSetRecompute(), now use
+MatFDSetFrequency(mat,-2) to have Jacobian computed at next Newton step
+but never again.</li>
+        <li>Changed MatFDColoringSet/GetFrequency() and
+-mat_fd_coloring_freq to MatFDColoringSet/GetLagJacobian() and
+-mat_fd_coloring_lag_jacobian</li>
 
 
 
@@ -5816,6 +5821,7 @@ not get called.</li>
 
         <li>Removed -dmmg_ksp_monitor since now -ksp_monitor[_short)
 and -mg_levels_ksp_monitor[_short) etc will handle the proper indenting.</li>
+        <li>Changed -dmmg_jacobian_period to -dmmg_lag_jacobian</li>
 
 
 

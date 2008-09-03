@@ -24,7 +24,7 @@
 -   flag - flag indicating whether the matrix sparsity structure has changed
 
    Options Database Keys:
-$  -mat_fd_coloring_freq <freq> 
+$  -mat_fd_coloring_lag_jacobian <freq> 
 
    Level: intermediate
 
@@ -45,7 +45,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t
   */
   ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
   if (snes) {
-    ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
+    ierr = MatFDColoringGetLagJacobian(color,&freq);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
     if ((freq > 1) && ((it % freq) != 1)) {

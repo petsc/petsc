@@ -492,7 +492,7 @@ PetscErrorCode MySNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
   Vec            x1_loc;
 
   PetscFunctionBegin;
-  ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
+  ierr = MatFDColoringGetLagJacobian(color,&freq);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
   if ((freq > 1) && ((it % freq))) {

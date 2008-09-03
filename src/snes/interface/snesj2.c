@@ -23,7 +23,7 @@
 -   flag - flag indicating whether the matrix sparsity structure has changed
 
     Options Database Keys:
-.  -mat_fd_coloring_freq <freq> - -2 compute Jacobian at next call, then do not compute again, -1 do not compute Jacobian ever,
+.  -mat_fd_coloring_lag_jacobian <freq> - -2 compute Jacobian at next call, then do not compute again, -1 do not compute Jacobian ever,
          1 compute Jacobian every Newton iteration, 2 compute Jacobian every second Newton iteration etc.
 
     Level: intermediate
@@ -45,7 +45,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobianColor(SNES snes,Vec
   PetscErrorCode (*ff)(void),(*fd)(void);
 
   PetscFunctionBegin;
-  ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
+  ierr = MatFDColoringGetLagJacobian(color,&freq);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
   if (freq == -1) {
@@ -65,7 +65,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobianColor(SNES snes,Vec
     ierr  = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);
     if (freq == -2) {
       ierr = PetscInfo(color,"Compute Jacobian freq was -2, converting to -1\n");CHKERRQ(ierr);
-      ierr = MatFDColoringSetFrequency(color,-1);CHKERRQ(ierr);
+      ierr = MatFDColoringSetLagJacobian(color,-1);CHKERRQ(ierr);
     }
   }
   if (*J != *B) {
