@@ -728,10 +728,8 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCFieldSplitGetSubKSP_FieldSplit_Schur"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSubKSP_FieldSplit_Schur(PC pc,PetscInt *n,KSP **subksp)
 {
-  PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
-  PetscErrorCode    ierr;
-  PetscInt          cnt = 0;
-  PC_FieldSplitLink ilink = jac->head;
+  PC_FieldSplit *jac = (PC_FieldSplit*)pc->data;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscMalloc(jac->nsplits*sizeof(KSP*),subksp);CHKERRQ(ierr);
