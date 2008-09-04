@@ -1063,6 +1063,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeFunction(SNES snes,Vec x,Vec y)
 PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Mat *B,MatStructure *flg)
 {
   PetscErrorCode ierr;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -1070,16 +1071,29 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Ma
   PetscValidPointer(flg,5);
   PetscCheckSameComm(snes,1,X,2);
   if (!snes->ops->computejacobian) PetscFunctionReturn(0);
+
+  /* make sure that MatAssemblyBegin/End() is called on A matrix if it is matrix free */
+
   if (snes->lagjacobian == -2) {
     snes->lagjacobian = -1;
     ierr = PetscInfo(snes,"Recomputing Jacobian/preconditioner because lag is -2 (means compute Jacobian, but then never again) \n");CHKERRQ(ierr);
   } else if (snes->lagjacobian == -1) {
     *flg = SAME_PRECONDITIONER;
     ierr = PetscInfo(snes,"Reusing Jacobian/preconditioner because lag is -1\n");CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)*A,MATMFFD,&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    }
     PetscFunctionReturn(0);
   } else if (snes->lagjacobian > 1 && snes->iter % snes->lagjacobian) {
     *flg = SAME_PRECONDITIONER;
     ierr = PetscInfo2(snes,"Reusing Jacobian/preconditioner because lag is %D and SNES iteration is %D\n",snes->lagjacobian,snes->iter);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)*A,MATMFFD,&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+      ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    }
     PetscFunctionReturn(0);
   }
 
@@ -1457,12 +1471,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLagPreconditioner(SNES snes,PetscInt *
    The Jacobian is ALWAYS built in the first iteration of a nonlinear solve unless lag is -1
    If  -1 is used before the very first nonlinear solve the CODE WILL FAIL! because no Jacobian is used, use -2 to indicate you want it recomputed
    at the next Newton step but never again (unless it is reset to another value)
-
-   You MUST NOT use any value besides 1 if you are using a matrix-free matrix vector product, for example with -snes_mf_operator, or with the matrices
-   obtained with MatCreateMFFD() or MatSNESCreateMF(). This is because the Jacobian computation has to be called at each iteration so that the base
-   vector for the matrix-free matrix-vector product Jacobian is set to the latest value. If you want to not compute the Jacobian used for the preconditioner,
-   the second matrix passed in your ComputeJacobian function at each iteration you should add a check in your ComputeJacobian function. If you are
-   using the SNESDefaultComputeJacobianColor() you can use the  -mat_fd_coloring_lag_jacobian <freq> option to set how often the colored Jacobian is computed.
 
    Level: intermediate
 

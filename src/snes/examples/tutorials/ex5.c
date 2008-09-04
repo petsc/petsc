@@ -492,28 +492,19 @@ PetscErrorCode MySNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
   Vec            x1_loc;
 
   PetscFunctionBegin;
-  ierr = MatFDColoringGetLagJacobian(color,&freq);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
-
-  if ((freq > 1) && ((it % freq))) {
-    ierr = PetscInfo2(color,"Skipping Jacobian recomputation, it %D, freq %D\n",it,freq);CHKERRQ(ierr);
-    *flag = SAME_PRECONDITIONER;
-  } else {
-    ierr = PetscInfo2(color,"Computing Jacobian, it %D, freq %D\n",it,freq);CHKERRQ(ierr);
-    *flag = SAME_NONZERO_PATTERN;
-    ierr  = SNESGetFunction(snes,&f,(PetscErrorCode (**)(SNES,Vec,Vec,void*))&ff,0);CHKERRQ(ierr);
-    ierr  = MatFDColoringGetFunction(color,&fd,&fctx);CHKERRQ(ierr);
-    if (fd == ff) { /* reuse function value computed in SNES */
-      ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
-    }
-    /* Now, get x1_loc and scatter global x1 onto x1_loc */ 
-    da = *(DA*)fctx;
-    ierr = DAGetLocalVector(da,&x1_loc);CHKERRQ(ierr); 
-    ierr = DAGlobalToLocalBegin(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr); 
-    ierr = DAGlobalToLocalEnd(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr);   
-    ierr  = MatFDColoringApply(*B,color,x1_loc,flag,snes);CHKERRQ(ierr);   
-    ierr = DARestoreLocalVector(da,&x1_loc);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+  ierr  = SNESGetFunction(snes,&f,(PetscErrorCode (**)(SNES,Vec,Vec,void*))&ff,0);CHKERRQ(ierr);
+  ierr  = MatFDColoringGetFunction(color,&fd,&fctx);CHKERRQ(ierr);
+  if (fd == ff) { /* reuse function value computed in SNES */
+    ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
   }
+  /* Now, get x1_loc and scatter global x1 onto x1_loc */ 
+  da = *(DA*)fctx;
+  ierr = DAGetLocalVector(da,&x1_loc);CHKERRQ(ierr); 
+  ierr = DAGlobalToLocalBegin(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr); 
+  ierr = DAGlobalToLocalEnd(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr);   
+  ierr  = MatFDColoringApply(*B,color,x1_loc,flag,snes);CHKERRQ(ierr);   
+  ierr = DARestoreLocalVector(da,&x1_loc);CHKERRQ(ierr);
   if (*J != *B) {
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

@@ -349,7 +349,6 @@ struct  _p_MatFDColoring{
   PetscInt       **columnsforrow;  /* lists the corresponding columns for those rows (using the global column) */ 
   PetscReal      error_rel;        /* square root of relative error in computing function */
   PetscReal      umin;             /* minimum allowable u'dx value */
-  PetscInt       freq;             /* frequency at which new Jacobian is computed */
   Vec            w1,w2,w3;         /* work vectors used in computing Jacobian */
   PetscErrorCode (*f)(void);       /* function that defines Jacobian */
   void           *fctx;            /* optional user-defined context for use by the function f */

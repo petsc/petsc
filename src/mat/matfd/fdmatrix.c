@@ -178,83 +178,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetParameters(MatFDColoring matfd
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatFDColoringSetLagJacobian"
-/*@
-   MatFDColoringSetLagJacobian - Sets the frequency for computing new Jacobian
-   matrices. 
 
-   Collective on MatFDColoring
-
-   Input Parameters:
-+  coloring - the coloring context
--  freq - frequency (default is 1)
-
-   Options Database Keys:
-.  -mat_fd_coloring_lag_jacobian <freq>  - Sets coloring frequency, use -2 to indicate recompute next time and
-      then never again, use -1 to indicate do not recompute 
-
-   Level: advanced
-
-   Notes:
-   Using a modified Newton strategy, where the Jacobian remains fixed for several
-   iterations, can be cost effective in terms of overall nonlinear solution 
-   efficiency.  This parameter indicates that a new Jacobian will be computed every
-   <freq> nonlinear iterations.  
-
-   When the mat and pmat matrix are both the MatFD matrix, then this is exactly the same as -snes_lag_jacobian;
-   the difference is that if mat is not pmat (for example with -snes_mf_operator) then MatAssemblyBegin/End()
-   is called on the mat so the correct matrix-free multiples are done.
-
-.keywords: Mat, finite differences, coloring, set, frequency
-
-.seealso: MatFDColoringCreate(), MatFDColoringGetLagJacobian(), SNESSetLagJacobian()
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetLagJacobian(MatFDColoring matfd,PetscInt freq)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
-
-  matfd->freq = freq;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatFDColoringGetLagJacobian"
-/*@
-   MatFDColoringGetLagJacobian - Gets the frequency for computing new Jacobian
-   matrices. 
-
-   Not Collective
-
-   Input Parameters:
-.  coloring - the coloring context
-
-   Output Parameters:
-.  freq - frequency (default is 1)
-
-   Options Database Keys:
-.  -mat_fd_coloring_lag_jacobian <freq> - Sets coloring frequency
-
-   Level: advanced
-
-   Notes:
-   Using a modified Newton strategy, where the Jacobian remains fixed for several
-   iterations, can be cost effective in terms of overall nonlinear solution 
-   efficiency.  This parameter indicates that a new Jacobian will be computed every
-   <freq> nonlinear iterations.  
-
-.keywords: Mat, finite differences, coloring, get, frequency
-
-.seealso: MatFDColoringSetLagJacobian()
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetLagJacobian(MatFDColoring matfd,PetscInt *freq)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
-  *freq = matfd->freq;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringGetFunction"
@@ -345,7 +269,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring matfd,P
 +  -mat_fd_coloring_err <err> - Sets <err> (square root
            of relative error in the function)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
-.  -mat_fd_coloring_lag_jacobian <freq> - Sets frequency of computing a new Jacobian
 .  -mat_fd_type - "wp" or "ds" (see MATMFFD_WP or MATMFFD_DS)
 .  -mat_fd_coloring_view - Activates basic viewing
 .  -mat_fd_coloring_view_info - Activates viewing info
@@ -370,7 +293,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matf
   ierr = PetscOptionsBegin(((PetscObject)matfd)->comm,((PetscObject)matfd)->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_fd_coloring_lag_jacobian","How often Jacobian is recomputed","MatFDColoringSetLagJacobian",matfd->freq,&matfd->freq,0);CHKERRQ(ierr);
     ierr = PetscOptionsString("-mat_fd_type","Algorithm to compute h, wp or ds","MatFDColoringCreate",matfd->htype,value,2,&flg);CHKERRQ(ierr);
     if (flg) {
       if (value[0] == 'w' && value[1] == 'p') matfd->htype = "wp";
@@ -432,8 +354,7 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 
 .seealso: MatFDColoringDestroy(),SNESDefaultComputeJacobianColor(), ISColoringCreate(),
           MatFDColoringSetFunction(), MatFDColoringSetFromOptions(), MatFDColoringApply(),
-          MatFDColoringSetLagJacobian(), MatFDColoringView(),
-          MatFDColoringSetParameters()
+          MatFDColoringView(), MatFDColoringSetParameters()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscoloring,MatFDColoring *color)
 {
@@ -467,7 +388,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
 
   c->error_rel         = PETSC_SQRT_MACHINE_EPSILON;
   c->umin              = 100.0*PETSC_SQRT_MACHINE_EPSILON;
-  c->freq              = 1;
   c->currentcolor      = -1;
   c->htype             = "wp";
 
@@ -573,8 +493,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDColoring
 -   sctx - context required by function, if this is being used with the SNES solver then it is SNES object, otherwise it is null
 
     Options Database Keys:
-+    -mat_fd_coloring_lag_jacobian <freq> - Sets coloring frequency
-.    -mat_fd_type - "wp" or "ds"  (see MATMFFD_WP or MATMFFD_DS)
++    -mat_fd_type - "wp" or "ds"  (see MATMFFD_WP or MATMFFD_DS)
 .    -mat_fd_coloring_view - Activates basic viewing or coloring
 .    -mat_fd_coloring_view_draw - Activates drawing of coloring
 -    -mat_fd_coloring_view_info - Activates viewing of coloring info
@@ -785,9 +704,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
 .   coloring - coloring context created with MatFDColoringCreate()
 .   x1 - location at which Jacobian is to be computed
 -   sctx - context required by function, if this is being used with the TS solver then it is TS object, otherwise it is null
-
-   Options Database Keys:
-.  -mat_fd_coloring_lag_jacobian <freq> - Sets coloring frequency
 
    Level: intermediate
 

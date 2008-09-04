@@ -64,6 +64,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
     p[i]->comm     = comm;
     p[i]->user     = user;
     p[i]->galerkin = galerkin;
+    p[i]->updatejacobianperiod = 1;
+    p[i]->updatejacobian       = PETSC_TRUE;
     p[i]->isctype  = IS_COLORING_GHOSTED;   /* default to faster version, requires DMMGSetSNESLocal() */
     ierr           = PetscStrallocpy(MATAIJ,&p[i]->mtype);CHKERRQ(ierr);
   }

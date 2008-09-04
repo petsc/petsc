@@ -1302,6 +1302,9 @@ $   13 14 | 15 16
 $
 $   v[] should be passed in like
 $   v[] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+$
+$  If you are not using row oriented storage of v (that is you called MatSetOption(mat,MAT_ROW_ORIENTED,PETSC_FALSE)) then
+$   v[] = [1,5,9,13,2,6,10,14,3,7,11,15,4,8,12,16]
 
    Level: intermediate
 

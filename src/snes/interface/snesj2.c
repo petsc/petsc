@@ -22,10 +22,6 @@
 .   B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 -   flag - flag indicating whether the matrix sparsity structure has changed
 
-    Options Database Keys:
-.  -mat_fd_coloring_lag_jacobian <freq> - -2 compute Jacobian at next call, then do not compute again, -1 do not compute Jacobian ever,
-         1 compute Jacobian every Newton iteration, 2 compute Jacobian every second Newton iteration etc.
-
     Level: intermediate
 
 .keywords: SNES, finite differences, Jacobian, coloring, sparse
@@ -45,29 +41,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobianColor(SNES snes,Vec
   PetscErrorCode (*ff)(void),(*fd)(void);
 
   PetscFunctionBegin;
-  ierr = MatFDColoringGetLagJacobian(color,&freq);CHKERRQ(ierr);
-  ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
-
-  if (freq == -1) {
-    ierr = PetscInfo(color,"Skipping Jacobian recomputation because freq is -1\n");CHKERRQ(ierr);
-    *flag = SAME_PRECONDITIONER;
-  } else if ((freq > 1) && ((it % freq))) {
-    ierr = PetscInfo2(color,"Skipping Jacobian recomputation, it %D, freq %D\n",it,freq);CHKERRQ(ierr);
-    *flag = SAME_PRECONDITIONER;
-  } else {
-    ierr = PetscInfo2(color,"Computing Jacobian, it %D, freq %D\n",it,freq);CHKERRQ(ierr);
-    *flag = SAME_NONZERO_PATTERN;
-    ierr  = SNESGetFunction(snes,&f,(PetscErrorCode (**)(SNES,Vec,Vec,void*))&ff,0);CHKERRQ(ierr);
-    ierr  = MatFDColoringGetFunction(color,&fd,PETSC_NULL);CHKERRQ(ierr);
-    if (fd == ff) { /* reuse function value computed in SNES */
-      ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
-    }
-    ierr  = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);
-    if (freq == -2) {
-      ierr = PetscInfo(color,"Compute Jacobian freq was -2, converting to -1\n");CHKERRQ(ierr);
-      ierr = MatFDColoringSetLagJacobian(color,-1);CHKERRQ(ierr);
-    }
+  *flag = SAME_NONZERO_PATTERN;
+  ierr  = SNESGetFunction(snes,&f,(PetscErrorCode (**)(SNES,Vec,Vec,void*))&ff,0);CHKERRQ(ierr);
+  ierr  = MatFDColoringGetFunction(color,&fd,PETSC_NULL);CHKERRQ(ierr);
+  if (fd == ff) { /* reuse function value computed in SNES */
+    ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
   }
+  ierr  = MatFDColoringApply(*B,color,x1,flag,snes);CHKERRQ(ierr);
   if (*J != *B) {
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

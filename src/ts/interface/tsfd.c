@@ -23,9 +23,6 @@
 .   B - newly computed Jacobian matrix to use with preconditioner (generally the same as J)
 -   flag - flag indicating whether the matrix sparsity structure has changed
 
-   Options Database Keys:
-$  -mat_fd_coloring_lag_jacobian <freq> 
-
    Level: intermediate
 
 .keywords: TS, finite differences, Jacobian, coloring, sparse
@@ -40,23 +37,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t
   PetscInt       freq,it;
 
   PetscFunctionBegin;
-  /*
-       If we are not using SNES we have no way to know the current iteration.
-  */
-  ierr = TSGetSNES(ts,&snes);CHKERRQ(ierr);
-  if (snes) {
-    ierr = MatFDColoringGetLagJacobian(color,&freq);CHKERRQ(ierr);
-    ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
 
-    if ((freq > 1) && ((it % freq) != 1)) {
-      ierr = PetscInfo2(color,"Skipping Jacobian, it %D, freq %D\n",it,freq);CHKERRQ(ierr);
-      *flag = SAME_PRECONDITIONER;
-      goto end;
-    } else {
-      ierr = PetscInfo2(color,"Computing Jacobian, it %D, freq %D\n",it,freq);CHKERRQ(ierr);
-      *flag = SAME_NONZERO_PATTERN;
-    }
-  }
   ierr = MatFDColoringApplyTS(*B,color,t,x1,flag,ts);CHKERRQ(ierr);
   end:
   if (*J != *B) {
