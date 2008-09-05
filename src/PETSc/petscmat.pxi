@@ -436,6 +436,14 @@ ctypedef int (MatSetValuesFcn)(PetscMat,PetscInt,const_PetscInt[],
                                PetscInt,const_PetscInt[],
                                const_PetscScalar[],PetscInsertMode)
 
+cdef inline MatSetValuesFcn* matsetvalues_fcn(int blocked, int local):
+    cdef MatSetValuesFcn *setvalues = NULL
+    if blocked and local: setvalues = MatSetValuesBlockedLocal
+    elif blocked:         setvalues = MatSetValuesBlocked
+    elif local:           setvalues = MatSetValuesLocal
+    else:                 setvalues = MatSetValues
+    return setvalues
+
 cdef inline int matsetvalues(PetscMat A,
                              object oi, object oj, object ov,
                              object oaddv, int blocked, int local) except -1:
@@ -454,21 +462,64 @@ cdef inline int matsetvalues(PetscMat A,
     if ni*nj*bs*bs != nv: raise ValueError(
         "incompatible array sizes: " \
         "ni=%d, nj=%d, nv=%d" % (ni, nj, nv) )
-    # insert mode
+    # MatSetValuesXXX function and insert mode
+    cdef MatSetValuesFcn *setvalues = \
+         matsetvalues_fcn(blocked, local)
     cdef PetscInsertMode addv = insertmode(oaddv)
-    # MatSetValuesXXX function
-    cdef MatSetValuesFcn *setvalues = NULL
-    if blocked and local: setvalues = MatSetValuesBlockedLocal
-    elif blocked:         setvalues = MatSetValuesBlocked
-    elif local:           setvalues = MatSetValuesLocal
-    else:                 setvalues = MatSetValues
     # actual call
     CHKERR( setvalues(A, ni, i, nj, j, v, addv) )
     return 0
 
-cdef inline int matsetvaluescsr(PetscMat A, object om,
-                                object oi, object oj, object ov,
-                                object oaddv, int blocked, int local) except -1:
+cdef inline int matsetvalues_rcv(PetscMat A,
+                                 object oi, object oj, object ov,
+                                 object oaddv, int blocked, int local) except -1:
+    # block size
+    cdef PetscInt bs=1
+    if blocked: CHKERR( MatGetBlockSize(A, &bs) )
+    if bs < 1: bs = 1
+    # rows, cols, and values
+    cdef PetscInt ni=0, *i=NULL
+    cdef PetscInt nj=0, *j=NULL
+    cdef PetscInt nv=0
+    cdef PetscScalar *v=NULL
+    cdef ndarray ai = iarray_i(oi, &ni, &i)
+    cdef ndarray aj = iarray_i(oj, &nj, &j)
+    cdef ndarray av = iarray_s(ov, &nv, &v)
+    # check various dimensions
+    if ai.cndim != 2: raise ValueError(
+        "row indices must have two dimensions: " \
+        "rows.ndim=%d" % (ai.cndim) )
+    if aj.cndim != 2: raise ValueError(
+        "column indices must have two dimensions: " \
+        "cols.ndim=%d" % (aj.cndim) )
+    if av.cndim < 2: raise ValueError(
+        "values must have two or more dimensions: " \
+        "vals.ndim=%d" % (av.cndim) )
+    # check various shapes
+    cdef PetscInt k=0
+    cdef PetscInt nm = ai.cshape[0]
+    cdef PetscInt si = ai.cshape[1]
+    cdef PetscInt sj = aj.cshape[1]
+    cdef PetscInt sv = av.cshape[1]
+    for k in range(2, av.cndim): sv *= av.cshape[k]
+    if ((nm != aj.cshape[0]) or \
+        (nm != av.cshape[0]) or \
+        (si*bs * sj*bs != sv)): raise ValueError(
+        "input arrays have incompatible shapes: " \
+        "rows.shape=%s, cols.shape=%s, vals.shape=%s" % \
+        (ai.shape, aj.shape, av.shape))
+    # MatSetValuesXXX function and insert mode
+    cdef MatSetValuesFcn *setvalues = \
+         matsetvalues_fcn(blocked, local)
+    cdef PetscInsertMode addv = insertmode(oaddv)
+    # actual calls
+    for k in range(nm):
+        CHKERR( setvalues(A, si, &i[k*si], sj, &j[k*sj], &v[k*sv], addv) )
+    return 0
+
+cdef inline int matsetvalues_csr(PetscMat A, object om,
+                                 object oi, object oj, object ov,
+                                 object oaddv, int blocked, int local) except -1:
     # block size
     cdef PetscInt bs=1, bs2=1
     if blocked: CHKERR( MatGetBlockSize(A, &bs) )
@@ -502,14 +553,10 @@ cdef inline int matsetvaluescsr(PetscMat A, object om,
         raise ValueError("size(J) is %d, expected %d" % ( nj, i[ni-1]))
     if (nj*bs2  != nv):
         raise ValueError("size(V) is %d, expected %d" % ( nv, nj*bs2))
-    # insert mode
+    # MatSetValuesXXX function and insert mode
+    cdef MatSetValuesFcn *setvalues = \
+         matsetvalues_fcn(blocked, local)
     cdef PetscInsertMode addv = insertmode(oaddv)
-    # MatSetValuesXXX function
-    cdef MatSetValuesFcn *setvalues = NULL
-    if blocked and local: setvalues = MatSetValuesBlockedLocal
-    elif blocked:         setvalues = MatSetValuesBlocked
-    elif local:           setvalues = MatSetValuesLocal
-    else:                 setvalues = MatSetValues
     # actual call
     cdef PetscInt k=0, l=0
     cdef PetscInt irow=0, ncol=0, *icol=NULL

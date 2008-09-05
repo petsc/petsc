@@ -500,14 +500,20 @@ cdef class Mat(Object):
     def setValues(self, rows, cols, values, addv=None):
         matsetvalues(self.mat, rows, cols, values, addv, 0, 0)
 
+    def setValuesRCV(self, R, C, V, addv=None):
+        matsetvalues_rcv(self.mat, R, C, V, addv, 0, 0)
+
     def setValuesCSR(self, rows, I, J, V, addv=None):
-        matsetvaluescsr(self.mat, rows, I, J, V, addv, 0, 0)
+        matsetvalues_csr(self.mat, rows, I, J, V, addv, 0, 0)
 
     def setValuesBlocked(self, rows, cols, values, addv=None):
         matsetvalues(self.mat, rows, cols, values, addv, 1, 0)
 
+    def setValuesBlockedRCV(self, R, C, V, addv=None):
+        matsetvalues_rcv(self.mat, R, C, V, addv, 1, 0)
+
     def setValuesBlockedCSR(self, rows, I, J, V, addv=None):
-        matsetvaluescsr(self.mat, rows, I, J, V, addv, 1, 0)
+        matsetvalues_csr(self.mat, rows, I, J, V, addv, 1, 0)
 
     def setLGMap(self, LGMap lgmap not None):
         CHKERR( MatSetLocalToGlobalMapping(self.mat, lgmap.lgm) )
@@ -522,8 +528,11 @@ cdef class Mat(Object):
     def setValuesLocal(self, rows, cols, values, addv=None):
         matsetvalues(self.mat, rows, cols, values, addv, 0, 1)
 
+    def setValuesLocalRCV(self, R, C, V, addv=None):
+        matsetvalues_rcv(self.mat, R, C, V, addv, 0, 1)
+
     def setValuesLocalCSR(self, rows, I, J, V, addv=None):
-        matsetvaluescsr(self.mat, rows, I, J, V, addv, 0, 1)
+        matsetvalues_csr(self.mat, rows, I, J, V, addv, 0, 1)
 
     def setLGMapBlock(self, LGMap lgmap not None):
         CHKERR( MatSetLocalToGlobalMappingBlock(self.mat, lgmap.lgm) )
@@ -531,8 +540,11 @@ cdef class Mat(Object):
     def setValuesBlockedLocal(self, rows, cols, values, addv=None):
         matsetvalues(self.mat, rows, cols, values, addv, 1, 1)
 
+    def setValuesBlockedLocalRCV(self, R, C, V, addv=None):
+        matsetvalues_rcv(self.mat, R, C, V, addv, 1, 1)
+
     def setValuesBlockedLocalCSR(self, rows, I, J, V, addv=None):
-        matsetvaluescsr(self.mat, rows, I, J, V, addv, 1, 1)
+        matsetvalues_csr(self.mat, rows, I, J, V, addv, 1, 1)
 
     def zeroRows(self, rows, diag=1):
         cdef PetscScalar sval = diag
