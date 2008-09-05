@@ -188,6 +188,18 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
       }
       ierr = PetscFree(fields);CHKERRQ(ierr);
     }
+  } else if (jac->nsplits == 1) {
+    if (ilink->is) {
+      IS       is2;
+      PetscInt nmin,nmax;
+
+      ierr = MatGetOwnershipRange(pc->mat,&nmin,&nmax);CHKERRQ(ierr);
+      ierr = ISComplement(ilink->is,nmin,nmax,&is2);CHKERRQ(ierr);
+      ierr = PCFieldSplitSetIS(pc,is2);CHKERRQ(ierr);
+      ierr = ISDestroy(is2);CHKERRQ(ierr);
+    } else {
+      SETERRQ(PETSC_ERR_SUP,"Must provide at least two sets of fields to PCFieldSplit()");
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -287,14 +299,14 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     if (jac->schur) {
       ierr  = MatGetSize(pc->mat,PETSC_NULL,&N);CHKERRQ(ierr);
       ilink = jac->head;
-      ierr  = ISComplement(ilink->cis,N,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->cis,0,N,&ccis);CHKERRQ(ierr);
       ierr  = ISGetLocalSize(ilink->is,&nis);CHKERRQ(ierr);
       ierr  = MatGetLocalSize(pc->mat,PETSC_NULL,&nlocal);CHKERRQ(ierr);
       nlocal = nlocal - nis;
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,nlocal,MAT_REUSE_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(ccis);CHKERRQ(ierr);
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->cis,N,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->cis,0,N,&ccis);CHKERRQ(ierr);
       ierr  = ISGetLocalSize(ilink->is,&nis);CHKERRQ(ierr);
       ierr  = MatGetLocalSize(pc->mat,PETSC_NULL,&nlocal);CHKERRQ(ierr);
       nlocal = nlocal - nis;
@@ -313,14 +325,14 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
       /* extract the B and C matrices */
       ierr  = MatGetSize(pc->mat,PETSC_NULL,&N);CHKERRQ(ierr);
       ilink = jac->head;
-      ierr  = ISComplement(ilink->cis,N,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->cis,0,N,&ccis);CHKERRQ(ierr);
       ierr  = ISGetLocalSize(ilink->is,&nis);CHKERRQ(ierr);
       ierr  = MatGetLocalSize(pc->mat,PETSC_NULL,&nlocal);CHKERRQ(ierr);
       nlocal = nlocal - nis;
       ierr  = MatGetSubMatrix(pc->mat,ilink->is,ccis,nlocal,MAT_INITIAL_MATRIX,&jac->B);CHKERRQ(ierr);
       ierr  = ISDestroy(ccis);CHKERRQ(ierr);
       ilink = ilink->next;
-      ierr  = ISComplement(ilink->cis,N,&ccis);CHKERRQ(ierr);
+      ierr  = ISComplement(ilink->cis,0,N,&ccis);CHKERRQ(ierr);
       ierr  = ISGetLocalSize(ilink->is,&nis);CHKERRQ(ierr);
       ierr  = MatGetLocalSize(pc->mat,PETSC_NULL,&nlocal);CHKERRQ(ierr);
       nlocal = nlocal - nis;
@@ -339,7 +351,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
         ierr  = KSPSetOperators(jac->kspschur,jac->schur,jac->schur,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       } 
       ierr  = KSPSetOptionsPrefix(jac->kspschur,((PetscObject)pc)->prefix);CHKERRQ(ierr);
-      ierr  = KSPAppendOptionsPrefix(jac->kspschur,"schur_");CHKERRQ(ierr);
+      ierr  = KSPAppendOptionsPrefix(jac->kspschur,"fieldsplit_1_");CHKERRQ(ierr);
       /* really want setfromoptions called in PCSetFromOptions_FieldSplit(), but it is not ready yet */
       ierr = KSPSetFromOptions(jac->kspschur);CHKERRQ(ierr);
 
@@ -1074,8 +1086,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type
                   fields or groups of fields
 
 
-     To set options on the solvers for each block append -sub_ to all the PC
-        options database keys. For example, -sub_pc_type ilu -sub_pc_factor_levels 1
+     To set options on the solvers for each block append -fieldsplit_ to all the PC
+        options database keys. For example, -fieldsplit_pc_type ilu -fieldsplit_pc_factor_levels 1
         
      To set the options on the solvers separate for each block call PCFieldSplitGetSubKSP()
          and set the options directly on the resulting KSP object
@@ -1090,7 +1102,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type
 .    -pc_splitfield_type <additive,multiplicative,schur,symmetric_multiplicative>
 .    -pc_fieldsplit_schur_precondition <true,false> default is true
 
--    Options prefix for inner solvers when using Schur complement preconditioner are -schurAblock_ and -schur,
+-    Options prefix for inner solvers when using Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_
      for all other solvers they are -fieldsplit_%d_ for the dth field, use -fieldsplit_ for all fields
 
 
@@ -1113,12 +1125,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type
      the preconditioner is 
               (I   -B inv(A)) ( inv(A)   0    ) (I         0  )
               (0    I       ) (   0    inv(S) ) (-C inv(A) I  )
-     where the action of inv(A) is applied using the KSP solver with prefix -schurAblock_. The action of 
+     where the action of inv(A) is applied using the KSP solver with prefix -fieldsplit_0_. The action of 
      inv(S) is computed using the KSP solver with prefix -schur_. For PCFieldSplitGetKSP() when field number is
-     0 it returns the KSP associated with -schurAblock_ while field number 1 gives -schur_ KSP. By default
+     0 it returns the KSP associated with -fieldsplit_0_ while field number 1 gives -fieldsplit_1_ KSP. By default
      D is used to construct a preconditioner for S, use PCFieldSplitSchurPrecondition() to turn on or off this
      option.
      
+     If only one set of indices (one IS) is provided with PCFieldSplitSetIS() then the complement of that IS
+     is used automatically for a second block.
+
    Concepts: physics based preconditioners
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,

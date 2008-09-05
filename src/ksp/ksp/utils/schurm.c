@@ -140,7 +140,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
 
   ierr = KSPCreate(((PetscObject)A)->comm,&Na->ksp);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(Na->ksp,((PetscObject)A)->prefix);CHKERRQ(ierr);
-  ierr = KSPAppendOptionsPrefix(Na->ksp,"schurAblock_");CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(Na->ksp,"fieldsplit_0_");CHKERRQ(ierr);
   ierr = KSPSetOperators(Na->ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -159,7 +159,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
 .   ksp - the linear solver object
 
    Options Database:
--     -schurAblock_XXX sets KSP and PC options for the A block solver inside the Schur complement
+-     -fieldsplit_0_XXX sets KSP and PC options for the A block solver inside the Schur complement
 
    Level: intermediate
 

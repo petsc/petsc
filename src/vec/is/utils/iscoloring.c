@@ -628,17 +628,21 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm comm,PetscInt n,ISC
     ISComplement - Given a sequential index set (IS) generates the complement index set. That is all 
        all indices that are NOT in the given set.
 
-    Not Collective
+    Collective on IS
 
     Input Parameter:
-.   is - the index set
++   is - the index set
+.   nmin - the first index desired in the complement
+-   nmax - the largest index desired in the complement (note that all indices in is must be greater or equal to nmin and less than nmax)
 
     Output Parameter:
 .   isout - the complement
 
-    Notes:  The communicator for this new IS is PETSC_COMM_SELF
+    Notes:  The communicator for this new IS is the same as for the input IS
 
-      To generate the complement (on each process) of a parallel IS, first call ISAllGather() and then
+      For a parallel IS, this will generate the local part of the complement on each process
+
+      To generate the entire complement (on each process) of a parallel IS, first call ISAllGather() and then
     call this routine.
 
     Level: intermediate
@@ -649,21 +653,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm comm,PetscInt n,ISC
 
 .seealso: ISCreateGeneral(), ISCreateStride(), ISCreateBlock(), ISAllGatherIndices(), ISAllGather()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmax,IS *isout)
+PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
 {
   PetscErrorCode ierr;
   PetscInt       *indices, n,i,j,cnt,*nindices;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
   PetscTruth     sorted;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
   PetscValidPointer(isout,3);
-
-  ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Only works for sequential index sets");
+  if (nmin < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nmin %D cannot be negative",nmin);
+  if (nmin > nmax) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"nmin %D cannot be greater than nmax %D",nmin,nmax);
   ierr = ISSorted(is,&sorted);CHKERRQ(ierr);
   if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONG,"Index set must be sorted");
 
@@ -671,11 +671,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmax,IS *isout)
   ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
   for (i=0; i<n; i++) {
+    if (indices[i] <  nmin) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Index %D's value %D is smaller than minimum given %D",i,indices[i],nmin);
     if (indices[i] >= nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Index %D's value %D is larger than maximum given %D",i,indices[i],nmax);
   }
 #endif
   ierr = PetscMalloc((nmax - n)*sizeof(PetscInt),&nindices);CHKERRQ(ierr);
-  cnt = j = 0;
+  cnt = 0;
+  j   = nmin;
   for (i=0; i<n; i++) {
     for (; j<indices[i]; j++) {
       nindices[cnt++] = j;
@@ -685,8 +687,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmax,IS *isout)
   for (; j<nmax; j++) {
     nindices[cnt++] = j;
   }
-  if (cnt != nmax-n) SETERRQ2(PETSC_ERR_PLIB,"Number entries found in complement %D does not match expected %D",cnt,nmax-n);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,nmax-n,nindices,isout);CHKERRQ(ierr);
+  if (cnt != nmax-nmin - n) SETERRQ2(PETSC_ERR_PLIB,"Number entries found in complement %D does not match expected %D",cnt,nmax-n);
+  ierr = ISCreateGeneral(((PetscObject)is)->comm,nmax-nmin-n,nindices,isout);CHKERRQ(ierr);
   ierr = PetscFree(nindices);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

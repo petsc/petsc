@@ -88,13 +88,13 @@ runmp_8:
 	   ${RM} -f mp_8.tmp
 
 runmp_9:
-	-@${MPIEXEC} -n 1 ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -schur_ksp_monitor_short -schur_ksp_type fgmres -schurAblock_ksp_type gmres -schurAblock_ksp_monitor_short -pc_fieldsplit_schur_precondition true -snes_view > mp_9.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -fieldsplit_1_ksp_monitor_short -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -fieldsplit_0_ksp_monitor_short -pc_fieldsplit_schur_precondition true -snes_view > mp_9.tmp 2>&1;   \
 	   if (${DIFF} output/mp_9.out mp_9.tmp) then true; \
 	   else echo "Possible problem with mp_9, diffs above"; fi; \
 	   ${RM} -f mp_9.tmp
 
 runmp_10:
-	-@${MPIEXEC} -n 1 ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -schur_ksp_monitor_short -schur_ksp_type fgmres -schurAblock_ksp_type gmres -schurAblock_ksp_monitor_short -pc_fieldsplit_schur_precondition false -snes_view > mp_10.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -fieldsplit__ksp_monitor_short -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -fieldsplit_0_ksp_monitor_short -pc_fieldsplit_schur_precondition false -snes_view > mp_10.tmp 2>&1;   \
 	   if (${DIFF} output/mp_10.out mp_10.tmp) then true; \
 	   else echo "Possible problem with mp_10, diffs above"; fi; \
 	   ${RM} -f mp_10.tmp
