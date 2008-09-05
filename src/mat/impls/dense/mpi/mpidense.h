@@ -52,6 +52,10 @@ typedef struct {
   PetscMPIInt    nprows,npcols;
   PetscInt       nb_alg,ierror;
   PetscTruth     CleanUpPlapack;
+
+  PetscMPIInt    Plapack_nprows,Plapack_npcols,Plapack_ierror,Plapack_nb_alg;
+  MPI_Comm Plapack_comm_2d;
 } Mat_Plapack;
+
 
 #endif
