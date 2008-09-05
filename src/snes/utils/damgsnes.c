@@ -552,7 +552,7 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   PetscErrorCode          ierr;
-  PetscInt                i,nlevels = dmmg[0]->nlevels,period = 1;
+  PetscInt                i,nlevels = dmmg[0]->nlevels;
   PetscTruth              mffdoperator,mffd,fdjacobian;
   PetscTruth              useFAS = PETSC_FALSE, fasBlock, fasGMRES;
   PetscTruth              monitor, monitorAll;

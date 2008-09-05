@@ -484,7 +484,6 @@ PetscErrorCode MySNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
 {
   MatFDColoring  color = (MatFDColoring) ctx;
   PetscErrorCode ierr;
-  PetscInt       freq,it;
   Vec            f;
   PetscErrorCode (*ff)(void),(*fd)(void);
   void           *fctx;

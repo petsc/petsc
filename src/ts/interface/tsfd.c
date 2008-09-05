@@ -32,14 +32,11 @@
 PetscErrorCode PETSCTS_DLLEXPORT TSDefaultComputeJacobianColor(TS ts,PetscReal t,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)
 {
   MatFDColoring  color = (MatFDColoring) ctx;
-  SNES           snes;
   PetscErrorCode ierr;
-  PetscInt       freq,it;
 
   PetscFunctionBegin;
-
   ierr = MatFDColoringApplyTS(*B,color,t,x1,flag,ts);CHKERRQ(ierr);
-  end:
+  
   if (*J != *B) {
     ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
