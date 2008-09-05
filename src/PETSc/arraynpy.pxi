@@ -10,9 +10,9 @@ cdef extern from "arraynpy.h":
         pass
 
     ctypedef extern class numpy.ndarray [object PyArrayObject]:
-        cdef char*    cdata  "data"
-        cdef int      cndim  "nd"
-        cdef npy_intp cshape "dimensions"
+        cdef char*     cdata  "data"
+        cdef int       cndim  "nd"
+        cdef npy_intp* cshape "dimensions"
 
     enum: NPY_PETSC_INT
     enum: NPY_PETSC_REAL
