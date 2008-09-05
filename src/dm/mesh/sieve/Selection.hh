@@ -923,6 +923,39 @@ namespace ALE {
       newMesh->stratify();
       return newMesh;
     };
+    template<typename SieveType>
+    static void addClosureV(const Obj<SieveType>& sieveA, const Obj<SieveType>& sieveB, const point_type& p, const int depth = 1) {
+      typedef std::set<typename SieveType::point_type> coneSet;
+      ALE::ISieveVisitor::PointRetriever<SieveType> cV(std::max(1, sieveA->getMaxConeSize()));
+      Obj<coneSet> current = new coneSet();
+      Obj<coneSet> next    = new coneSet();
+      Obj<coneSet> tmp;
+
+      current->insert(p);
+      while(current->size()) {
+        for(typename coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+          sieveA->cone(*p_iter, cV);
+          const Mesh::point_type *cone = cV.getPoints();
+
+          for(int c = 0; c < cV.getSize(); ++c) {
+            sieveB->addArrow(cone[c], *p_iter);
+            next->insert(cone[c]);
+          }
+        }
+        tmp = current; current = next; next = tmp;
+        next->clear();
+      }
+      if (!depth) {
+        ALE::ISieveVisitor::PointRetriever<SieveType> sV(std::max(1, sieveA->getMaxSupportSize()));
+
+        sieveA->support(p, sV);
+        const typename SieveType::point_type *support = sV.getPoints();
+            
+        for(int s = 0; s < sV.getSize(); ++s) {
+          sieveB->addArrow(p, support[s]);
+        }
+      }
+    };
   public:
     static Obj<mesh_type> boundary(const Obj<mesh_type>& mesh) {
       const int dim   = mesh->getDimension();
@@ -943,6 +976,29 @@ namespace ALE {
         return newMesh;
       }
       throw ALE::Exception("Cannot handle partially interpolated meshes");
+    };
+    template<typename MeshTypeQ>
+    static Obj<MeshTypeQ> boundaryV(const Obj<MeshTypeQ>& mesh, const int faceHeight = 1) {
+      Obj<MeshTypeQ>                                      newMesh  = new MeshTypeQ(mesh->comm(), mesh->getDimension()-1, mesh->debug());
+      Obj<typename MeshTypeQ::sieve_type>                 newSieve = new typename MeshTypeQ::sieve_type(mesh->comm(), mesh->debug());
+      const Obj<typename MeshTypeQ::sieve_type>&          sieve    = mesh->getSieve();
+      const Obj<typename MeshTypeQ::label_sequence>&      faces    = mesh->heightStratum(faceHeight);
+      const typename MeshTypeQ::label_sequence::iterator  fBegin   = faces->begin();
+      const typename MeshTypeQ::label_sequence::iterator  fEnd     = faces->end();
+      const int                                           depth    = faceHeight - mesh->depth();
+      ALE::ISieveVisitor::PointRetriever<sieve_type>      sV(std::max(1, sieve->getMaxSupportSize()));
+
+      for(typename MeshTypeQ::label_sequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
+        sieve->support(*f_iter, sV);
+
+        if (sV.getSize() == 1) {
+          addClosureV(sieve, newSieve, *f_iter, depth);
+        }
+        sV.clear();
+      }
+      newMesh->setSieve(newSieve);
+      newMesh->stratify();
+      return newMesh;
     };
   public:
     static Obj<mesh_type> interpolateMesh(const Obj<mesh_type>& mesh) {

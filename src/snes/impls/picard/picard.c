@@ -69,6 +69,8 @@ static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
     if (flg) {
       ls->type = indx;
     }
+    ls->alpha = 1.0;
+    ierr = PetscOptionsReal("-snes_picard_alpha","Momentum parameter","SNES",ls->alpha,&ls->alpha,&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -125,7 +127,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
 { 
   SNES_Picard   *neP = (SNES_Picard *) snes->data;
   Vec            X, Y, F;
-  PetscReal      alpha = 1.0;
+  PetscReal      alpha = neP->alpha;
   PetscReal      fnorm;
   PetscInt       maxits, i;
   PetscErrorCode ierr;
@@ -169,7 +171,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (0) {
+    if (1) {
       /* Update guess Y = X^n - F(X^n) */
       ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
       /* X^{n+1} = (1 - \alpha) X^n + \alpha Y */
@@ -179,7 +181,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
       if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated norm");
     } else {
-      ierr = (*neP->LineSearch)(snes, PETSC_NULL/*neP->lsP*/,  X,  F,  F,  F,  X,  fnorm,  0.0,&dummyNorm,  &fnorm,  &lsSuccess);CHKERRQ(ierr);
+      ierr = (*neP->LineSearch)(snes, PETSC_NULL/*neP->lsP*/, X, F, F, F, X, fnorm, 0.0, &dummyNorm,  &fnorm,  &lsSuccess);CHKERRQ(ierr);
     }
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {
