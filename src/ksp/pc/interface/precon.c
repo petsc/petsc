@@ -966,6 +966,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCModifySubMatrices(PC pc,PetscInt nsub,const 
 -     DIFFERENT_NONZERO_PATTERN -
        Pmat does not have the same nonzero structure.
 
+    Passing a PETSC_NULL for Amat or Pmat removes the matrix that is currently used.
+
+    If you wish to replace either Amat or Pmat but leave the other one untouched then
+    first call KSPGetOperators() to get the one you wish to keep, call PetscObjectReference()
+    on it and then pass it back in in your call to KSPSetOperators().
+
    Caution:
    If you specify SAME_NONZERO_PATTERN, PETSc believes your assertion
    and does not check the structure of the matrix.  If you erroneously
