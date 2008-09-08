@@ -675,10 +675,10 @@ static PetscErrorCode MatView_MPIDense_ASCIIorDraworSocket(Mat mat,PetscViewer v
       ierr = VecScatterView(mdn->Mvctx,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PLAPACK)
       ierr = PetscViewerASCIIPrintf(viewer,"PLAPACK run parameters:\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Processor mesh: nprows %d, npcols %d\n",Plapack_nprows, Plapack_npcols);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Processor mesh: nprows %d, npcols %d\n",lu->Plapack_nprows, lu->Plapack_npcols);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"  Distr. block size nb: %d \n",lu->nb);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Error checking: %d\n",Plapack_ierror);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"  Algorithmic block size: %d\n",Plapack_nb_alg);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Error checking: %d\n",lu->Plapack_ierror);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Algorithmic block size: %d\n",lu->Plapack_nb_alg);CHKERRQ(ierr);
 #endif
       PetscFunctionReturn(0); 
     } else if (format == PETSC_VIEWER_ASCII_INFO) {
@@ -1138,13 +1138,193 @@ PetscErrorCode MatMatMult_MPIDense_MPIDense(Mat A,Mat B,MatReuse scall,PetscReal
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatSolve_MPIDense"
+PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
+{
+  MPI_Comm       comm = ((PetscObject)A)->comm;
+  Mat_Plapack    *lu = (Mat_Plapack*)A->spptr;
+  PetscErrorCode ierr;
+  PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,i,j,*idx_pla,*idx_petsc,loc_m,loc_stride;
+  PetscScalar    *array;
+  PetscReal      one = 1.0;
+  PetscMPIInt    size,rank,r_rank,r_nproc,c_rank,c_nproc;;
+  PLA_Obj        v_pla = NULL;
+  PetscScalar    *loc_buf;
+  Vec            loc_x;
+   
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+
+  /* Create PLAPACK vector objects, then copy b into PLAPACK b */
+  PLA_Mvector_create(lu->datatype,M,1,lu->templ,PLA_ALIGN_FIRST,&v_pla);  
+  PLA_Obj_set_to_zero(v_pla);
+
+  /* Copy b into rhs_pla */
+  PLA_API_begin();   
+  PLA_Obj_API_open(v_pla);
+  ierr = VecGetArray(b,&array);CHKERRQ(ierr);
+  PLA_API_axpy_vector_to_global(m,&one,(void *)array,1,v_pla,lu->rstart);
+  ierr = VecRestoreArray(b,&array);CHKERRQ(ierr);
+  PLA_Obj_API_close(v_pla);
+  PLA_API_end(); 
+
+  if (A->factor == MAT_FACTOR_LU){
+    /* Apply the permutations to the right hand sides */
+    PLA_Apply_pivots_to_rows (v_pla,lu->pivots);
+
+    /* Solve L y = b, overwriting b with y */
+    PLA_Trsv( PLA_LOWER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_UNIT_DIAG,lu->A,v_pla );
+
+    /* Solve U x = y (=b), overwriting b with x */
+    PLA_Trsv( PLA_UPPER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla );
+  } else { /*MAT_FACTOR_CHOLESKY */
+    PLA_Trsv( PLA_LOWER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla);
+    PLA_Trsv( PLA_LOWER_TRIANGULAR,(lu->datatype == MPI_DOUBLE ? PLA_TRANSPOSE : PLA_CONJUGATE_TRANSPOSE),
+                                    PLA_NONUNIT_DIAG,lu->A,v_pla);
+  }
+
+  /* Copy PLAPACK x into Petsc vector x  */   
+  PLA_Obj_local_length(v_pla, &loc_m);
+  PLA_Obj_local_buffer(v_pla, (void**)&loc_buf);
+  PLA_Obj_local_stride(v_pla, &loc_stride);
+  /*
+    PetscPrintf(PETSC_COMM_SELF," [%d] b - local_m %d local_stride %d, loc_buf: %g %g, nb: %d\n",rank,loc_m,loc_stride,loc_buf[0],loc_buf[(loc_m-1)*loc_stride],lu->nb); 
+  */
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,loc_m*loc_stride,loc_buf,&loc_x);CHKERRQ(ierr);
+  if (!lu->pla_solved){
+    
+    PLA_Temp_comm_row_info(lu->templ,&lu->comm_2d,&r_rank,&r_nproc);
+    PLA_Temp_comm_col_info(lu->templ,&lu->comm_2d,&c_rank,&c_nproc);
+    /* printf(" [%d] rank: %d %d, nproc: %d %d\n",rank,r_rank,c_rank,r_nproc,c_nproc); */
+
+    /* Create IS and cts for VecScatterring */
+    PLA_Obj_local_length(v_pla, &loc_m);
+    PLA_Obj_local_stride(v_pla, &loc_stride);
+    ierr = PetscMalloc((2*loc_m+1)*sizeof(PetscInt),&idx_pla);CHKERRQ(ierr);
+    idx_petsc = idx_pla + loc_m;
+
+    rstart = (r_rank*c_nproc+c_rank)*lu->nb;
+    for (i=0; i<loc_m; i+=lu->nb){
+      j = 0; 
+      while (j < lu->nb && i+j < loc_m){
+        idx_petsc[i+j] = rstart + j; j++;
+      }
+      rstart += size*lu->nb;
+    }
+
+    for (i=0; i<loc_m; i++) idx_pla[i] = i*loc_stride;
+
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,loc_m,idx_pla,&lu->is_pla);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,loc_m,idx_petsc,&lu->is_petsc);CHKERRQ(ierr);  
+    ierr = PetscFree(idx_pla);CHKERRQ(ierr);
+    ierr = VecScatterCreate(loc_x,lu->is_pla,x,lu->is_petsc,&lu->ctx);CHKERRQ(ierr);
+  }
+  ierr = VecScatterBegin(lu->ctx,loc_x,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(lu->ctx,loc_x,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  
+  /* Free data */
+  ierr = VecDestroy(loc_x);CHKERRQ(ierr);
+  PLA_Obj_free(&v_pla); 
+
+  lu->pla_solved = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__   
+#define __FUNCT__ "MatLUFactorNumeric_MPIDense"
+PetscErrorCode MatLUFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *F)
+{
+  Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
+  PetscErrorCode ierr;
+  PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,rend;
+  PetscInt       info_pla=0;
+  PetscScalar    *array,one = 1.0;
+
+  PetscFunctionBegin;
+  if (lu->mstruct == SAME_NONZERO_PATTERN){
+    PLA_Obj_free(&lu->A);
+    PLA_Obj_free (&lu->pivots);
+  }
+  /* Create PLAPACK matrix object */
+  lu->A = NULL; lu->pivots = NULL;
+  PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
+  PLA_Obj_set_to_zero(lu->A);
+  PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);
+
+  /* Copy A into lu->A */
+  PLA_API_begin();
+  PLA_Obj_API_open(lu->A);  
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  ierr = MatGetArray(A,&array);CHKERRQ(ierr);
+  PLA_API_axpy_matrix_to_global(m,M, &one,(void *)array,m,lu->A,rstart,0); 
+  ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
+  PLA_Obj_API_close(lu->A); 
+  PLA_API_end(); 
+
+  /* Factor P A -> L U overwriting lower triangular portion of A with L, upper, U */
+  info_pla = PLA_LU(lu->A,lu->pivots);
+  if (info_pla != 0) 
+    SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot encountered at row %d from PLA_LU()",info_pla);
+
+  lu->CleanUpPlapack = PETSC_TRUE;
+  lu->rstart         = rstart;
+  lu->mstruct        = SAME_NONZERO_PATTERN;
+  
+  (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__   
+#define __FUNCT__ "MatCholeskyFactorNumeric_MPIDense"
+PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *F)
+{
+  Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
+  PetscErrorCode ierr;
+  PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,rend;
+  PetscInt       info_pla=0;
+  PetscScalar    *array,one = 1.0;
+
+  PetscFunctionBegin;
+  if (lu->mstruct == SAME_NONZERO_PATTERN){
+    PLA_Obj_free(&lu->A);
+  }
+  /* Create PLAPACK matrix object */
+  lu->A      = NULL; 
+  lu->pivots = NULL; 
+  PLA_Matrix_create(lu->datatype,M,M,lu->templ,PLA_ALIGN_FIRST,PLA_ALIGN_FIRST,&lu->A);  
+
+  /* Copy A into lu->A */
+  PLA_API_begin();
+  PLA_Obj_API_open(lu->A);  
+  ierr = MatGetOwnershipRange(A,&rstart,&rend);CHKERRQ(ierr);
+  ierr = MatGetArray(A,&array);CHKERRQ(ierr);
+  PLA_API_axpy_matrix_to_global(m,M, &one,(void *)array,m,lu->A,rstart,0); 
+  ierr = MatRestoreArray(A,&array);CHKERRQ(ierr);
+  PLA_Obj_API_close(lu->A); 
+  PLA_API_end(); 
+
+  /* Factor P A -> Chol */
+  info_pla = PLA_Chol(PLA_LOWER_TRIANGULAR,lu->A);
+  if (info_pla != 0) 
+    SETERRQ1( PETSC_ERR_MAT_CH_ZRPVT,"Nonpositive definite matrix detected at row %d from PLA_Chol()",info_pla);
+
+  lu->CleanUpPlapack = PETSC_TRUE;
+  lu->rstart         = rstart;
+  lu->mstruct        = SAME_NONZERO_PATTERN;
+  
+  (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatFactorSymbolic_Plapack_Private"
 PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat            B = *F;
   Mat_Plapack    *lu;   
   PetscErrorCode ierr;
-  PetscInt       M=A->rmap.N,N=A->cmap.N;
+  PetscInt       M=A->rmap.N;
   MPI_Comm       comm=((PetscObject)A)->comm,comm_2d;
   PetscMPIInt    size;
   PetscInt       ierror;
@@ -1214,8 +1394,8 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
 
 /* Note the Petsc perm permutation is ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorSymbolic_Plapack"
-PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatCholeskyFactorSymbolic_MPIDense"
+PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat A,IS perm,MatFactorInfo *info,Mat *F)
 { 
   PetscErrorCode ierr;
   PetscTruth     issymmetric,set;
@@ -1230,8 +1410,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_Plapack(Mat A,IS perm,MatFactorInfo *in
 
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_Plapack"
-PetscErrorCode MatLUFactorSymbolic_Plapack(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatLUFactorSymbolic_MPIDense"
+PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
 {  
   PetscErrorCode ierr;
   PetscInt       M = A->rmap.N;
@@ -1250,6 +1430,9 @@ PetscErrorCode MatLUFactorSymbolic_Plapack(Mat A,IS r,IS c,MatFactorInfo *info,M
 PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
 {
   PetscErrorCode ierr;
+  Mat_Plapack    *lu;
+  PetscMPIInt    size;
+  PetscInt       M;
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
@@ -1262,7 +1445,7 @@ PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
   lu = (Mat_Plapack*)(A->spptr);
 
   /* Set default Plapack parameters */
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   lu->nb     = M/size;
   if (M - lu->nb*size) lu->nb++; /* without cyclic distribution */
  
@@ -1292,8 +1475,8 @@ PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
     (*F)->ops->lufactornumeric  = MatLUFactorNumeric_MPIDense;
     (*F)->ops->solve            = MatSolve_MPIDense;
   } else if (ftype == MAT_FACTOR_CHOLESKY) {
-    (*F)->ops->choleksyfactorsymbolic = MatCholeskyFactorSymbolic_MPIDense;
-    (*F)->ops->choleskyfactornumeric  = MatCholeksyFactorNumeric_MPIDense;
+    (*F)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPIDense;
+    (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIDense;
     (*F)->ops->solve                  = MatSolve_MPIDense;
   } else SETERRQ(PETSC_ERR_SUP,"No incomplete factorizations for dense matrices");
 
