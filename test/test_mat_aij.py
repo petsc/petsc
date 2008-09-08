@@ -164,8 +164,8 @@ class TestMatAnyAIJBase(object):
             setvalues = self.A.setValuesIJV
         else:
             setvalues = self.A.setValuesBlockedIJV
-        setvalues(row, ai, aj, av)
-        setvalues(None, ai, aj, av)
+        setvalues(ai, aj, av, rowmap=row)
+        setvalues(ai, aj, av, rowmap=None)
         return ai, aj, av
 
     def _chk_bs(self, A, bs):

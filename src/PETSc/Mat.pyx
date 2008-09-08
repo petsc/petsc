@@ -503,8 +503,9 @@ cdef class Mat(Object):
     def setValuesRCV(self, R, C, V, addv=None):
         matsetvalues_rcv(self.mat, R, C, V, addv, 0, 0)
 
-    def setValuesIJV(self, rows, I, J, V, addv=None):
-        matsetvalues_ijv(self.mat, rows, I, J, V, addv, 0, 0)
+    def setValuesIJV(self, I, J, V, addv=None,
+                     rowmap=None):
+        matsetvalues_ijv(self.mat, I, J, V, addv, rowmap, 0, 0)
 
     def setValuesBlocked(self, rows, cols, values, addv=None):
         matsetvalues(self.mat, rows, cols, values, addv, 1, 0)
@@ -512,8 +513,9 @@ cdef class Mat(Object):
     def setValuesBlockedRCV(self, R, C, V, addv=None):
         matsetvalues_rcv(self.mat, R, C, V, addv, 1, 0)
 
-    def setValuesBlockedIJV(self, rows, I, J, V, addv=None):
-        matsetvalues_ijv(self.mat, rows, I, J, V, addv, 1, 0)
+    def setValuesBlockedIJV(self, I, J, V, addv=None,
+                            rowmap=None):
+        matsetvalues_ijv(self.mat, I, J, V, addv, rowmap, 1, 0)
 
     def setLGMap(self, LGMap lgmap not None):
         CHKERR( MatSetLocalToGlobalMapping(self.mat, lgmap.lgm) )
@@ -531,8 +533,9 @@ cdef class Mat(Object):
     def setValuesLocalRCV(self, R, C, V, addv=None):
         matsetvalues_rcv(self.mat, R, C, V, addv, 0, 1)
 
-    def setValuesLocalIJV(self, rows, I, J, V, addv=None):
-        matsetvalues_ijv(self.mat, rows, I, J, V, addv, 0, 1)
+    def setValuesLocalIJV(self, I, J, V, addv=None,
+                          rowmap=None):
+        matsetvalues_ijv(self.mat, I, J, V, addv, rowmap, 0, 1)
 
     def setLGMapBlock(self, LGMap lgmap not None):
         CHKERR( MatSetLocalToGlobalMappingBlock(self.mat, lgmap.lgm) )
@@ -543,8 +546,9 @@ cdef class Mat(Object):
     def setValuesBlockedLocalRCV(self, R, C, V, addv=None):
         matsetvalues_rcv(self.mat, R, C, V, addv, 1, 1)
 
-    def setValuesBlockedLocalIJV(self, rows, I, J, V, addv=None):
-        matsetvalues_ijv(self.mat, rows, I, J, V, addv, 1, 1)
+    def setValuesBlockedLocalIJV(self, I, J, V, addv=None,
+                                 rowmap=None):
+        matsetvalues_ijv(self.mat, I, J, V, addv, rowmap, 1, 1)
 
     def zeroRows(self, rows, diag=1):
         cdef PetscScalar sval = diag

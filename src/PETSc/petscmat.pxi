@@ -517,14 +517,16 @@ cdef inline int matsetvalues_rcv(PetscMat A,
         CHKERR( setvalues(A, si, &i[k*si], sj, &j[k*sj], &v[k*sv], addv) )
     return 0
 
-cdef inline int matsetvalues_ijv(PetscMat A, object om,
+cdef inline int matsetvalues_ijv(PetscMat A,
                                  object oi, object oj, object ov,
-                                 object oaddv, int blocked, int local) except -1:
+                                 object oaddv,
+                                 object om,
+                                 int blocked, int local) except -1:
     # block size
-    cdef PetscInt bs=1, bs2=1
+    cdef PetscInt bs=1
     if blocked: CHKERR( MatGetBlockSize(A, &bs) )
     if bs < 1: bs = 1
-    bs2 = bs*bs
+    cdef PetscInt bs2 = bs*bs
     # column pointers, column indices, and values
     cdef PetscInt ni=0, *i=NULL
     cdef PetscInt nj=0, *j=NULL
