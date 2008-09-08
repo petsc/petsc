@@ -94,7 +94,7 @@ runmp_9:
 	   ${RM} -f mp_9.tmp
 
 runmp_10:
-	-@${MPIEXEC} -n 1 ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -fieldsplit__ksp_monitor_short -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -fieldsplit_0_ksp_monitor_short -pc_fieldsplit_schur_precondition false -snes_view > mp_10.tmp 2>&1;   \
+	-@${MPIEXEC} -n 1 ./mp -couple -snes_monitor_short -pc_type fieldsplit -ksp_monitor_short -pc_fieldsplit_type schur -fieldsplit_ksp_monitor_short -fieldsplit_1_ksp_type fgmres -fieldsplit_0_ksp_type gmres -fieldsplit_0_ksp_monitor_short -pc_fieldsplit_schur_precondition false -snes_view > mp_10.tmp 2>&1;   \
 	   if (${DIFF} output/mp_10.out mp_10.tmp) then true; \
 	   else echo "Possible problem with mp_10, diffs above"; fi; \
 	   ${RM} -f mp_10.tmp

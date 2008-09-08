@@ -156,6 +156,10 @@ EXTERN_C_END
 /*
     Returns the max of the first entry owned by this processor and the
 sum of the second entry.
+
+    The reason nprocs[2*i] contains lengths nprocs[2*i+1] contains flag of 1 if length is nonzero
+is so that the PetscMaxSum_Op() can set TWO values, if we passed in only nprocs[i] with lengths
+there would be no place to store the both needed results.
 */
 #undef __FUNCT__
 #define __FUNCT__ "PetscMaxSum"

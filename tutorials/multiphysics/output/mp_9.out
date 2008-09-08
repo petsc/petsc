@@ -298,14 +298,14 @@ SNES Object:
       Split number 0 Defined by IS
       Split number 1 Defined by IS
       KSP solver for A block 
-        KSP Object:(schurAblock_)
+        KSP Object:(fieldsplit_0_)
           type: gmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           left preconditioning
-        PC Object:(schurAblock_)
+        PC Object:(fieldsplit_0_)
           type: ilu
             ILU: 0 levels of fill
             ILU: factor fill ratio allocated 1
@@ -326,14 +326,14 @@ SNES Object:
             total: nonzeros=576, allocated nonzeros=576
               using I-node routines: found 16 nodes, limit used is 5
       KSP solver for S = D - C inv(A) B 
-        KSP Object:(schur_)
+        KSP Object:(fieldsplit_1_)
           type: fgmres
             GMRES: restart=30, using Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement
             GMRES: happy breakdown tolerance 1e-30
           maximum iterations=10000, initial guess is zero
           tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
           right preconditioning
-        PC Object:(schur_)
+        PC Object:(fieldsplit_1_)
           type: ilu
             ILU: 0 levels of fill
             ILU: factor fill ratio allocated 1
