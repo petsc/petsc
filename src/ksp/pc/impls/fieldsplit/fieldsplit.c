@@ -1132,9 +1132,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type
      If only one set of indices (one IS) is provided with PCFieldSplitSetIS() then the complement of that IS
      is used automatically for a second block.
 
-   Concepts: physics based preconditioners
+   Concepts: physics based preconditioners, block preconditioners
 
-.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, Block_Preconditioners
            PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSchurPrecondition()
 M*/
 
@@ -1178,3 +1178,36 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC pc)
 EXTERN_C_END
 
 
+/*MC
+   Block_Preconditioners - PETSc provides support for a variety of "block preconditioners", this provides an
+          overview of these methods. 
+
+      Consider the solution to ( A B ) (x_1)  =  (b_1)
+                               ( C D ) (x_2)     (b_2)
+
+      Important special cases, the Stokes equation: C = B' and D = 0  (A   B) (x_1) = (b_1)
+                                                                       B'  0) (x_2)   (b_2) 
+
+      One of the goals of the PCFieldSplit preconditioner in PETSc is to provide a variety of preconditioners
+      for this block system.
+   
+      Consider an additional matrix (Ap  Bp)
+                                    (Cp  Dp) where some or all of the entries may be the same as
+      in the original matrix (for example Ap == A).
+
+      In the following, A^ denotes the approximate application of the inverse of A, possibly using Ap in the 
+      approximation. In PETSc this simply means one has called KSPSetOperators(ksp,A,Ap,...) or KSPSetOperators(ksp,Ap,Ap,...)
+
+      Block Jacobi:   x_1 = A^ b_1
+                      x_2 = D^ b_2
+
+      Lower block Gauss-Seidel:   x_1 = A^ b_1
+                            x_2 = D^ (b_2 - C x_1)       variant x_2 = D^ (b_2 - Cp x_1)
+
+      Symmetric Gauss-Seidel:  x_1 = x_1 + A^(b_1 - A x_1 - B x_2)    variant  x_1 = x_1 + A^(b_1 - Ap x_1 - Bp x_2)
+          Interestingly this form is not actually a symmetric matrix, the symmetric version is 
+                              x_1 = A^(b_1 - B x_2)      variant x_1 = A^(b_1 - Bp x_2)
+
+.seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCFIELDSPLIT
+           PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSchurPrecondition()
+M*/

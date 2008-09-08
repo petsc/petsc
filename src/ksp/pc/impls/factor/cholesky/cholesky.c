@@ -21,7 +21,7 @@ typedef struct {
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetMatSolverPackage_LU"
+#define __FUNCT__ "PCFactorSetMatSolverPackage_Cholesky"
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Cholesky(PC pc,const MatSolverPackage stype)
 {
   PetscErrorCode ierr;
