@@ -64,7 +64,7 @@ class TestMatAnyAIJBase(object):
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_csr()
+        ai, aj, av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -81,7 +81,7 @@ class TestMatAnyAIJBase(object):
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av =self._set_values_csr()
+        ai, aj, av =self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -96,7 +96,7 @@ class TestMatAnyAIJBase(object):
         self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
-        self._set_values_csr()
+        self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -111,7 +111,7 @@ class TestMatAnyAIJBase(object):
         self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
-        self._set_values_csr()
+        self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -128,16 +128,16 @@ class TestMatAnyAIJBase(object):
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
-    def testSetValuesCSR(self):
+    def testSetValuesIJV(self):
         self._preallocate()
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_csr()
+        ai, aj, av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_csr()
+        ai, aj, av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
 
@@ -158,12 +158,12 @@ class TestMatAnyAIJBase(object):
             setvalues(r, aj[s:e], av[s:e])
         return ai, aj, av
 
-    def _set_values_csr(self):
+    def _set_values_ijv(self):
         row, ai, aj, av =self._get_aijv()
         if not self.BSIZE:
-            setvalues = self.A.setValuesCSR
+            setvalues = self.A.setValuesIJV
         else:
-            setvalues = self.A.setValuesBlockedCSR
+            setvalues = self.A.setValuesBlockedIJV
         setvalues(row, ai, aj, av)
         setvalues(None, ai, aj, av)
         return ai, aj, av
@@ -336,16 +336,16 @@ class TestMatAIJ_B_Base(TestMatAnyAIJBase, unittest.TestCase):
         ai, aj, av = self._set_values()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
-    def testSetValuesCSR(self):
+    def testSetValuesIJV(self):
         self._preallocate()
         opt = PETSc.Mat.Option.NEW_NONZERO_ALLOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_csr()
+        ai, aj, av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
         opt = PETSc.Mat.Option.NEW_NONZERO_LOCATION_ERR
         self.A.setOption(opt, True)
-        ai, aj, av = self._set_values_csr()
+        ai, aj, av = self._set_values_ijv()
         self.A.assemble()
         self._chk_aij(self.A, ai, aj)
     def _preallocate(self):

@@ -517,7 +517,7 @@ cdef inline int matsetvalues_rcv(PetscMat A,
         CHKERR( setvalues(A, si, &i[k*si], sj, &j[k*sj], &v[k*sv], addv) )
     return 0
 
-cdef inline int matsetvalues_csr(PetscMat A, object om,
+cdef inline int matsetvalues_ijv(PetscMat A, object om,
                                  object oi, object oj, object ov,
                                  object oaddv, int blocked, int local) except -1:
     # block size
