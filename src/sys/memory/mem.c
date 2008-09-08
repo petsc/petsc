@@ -23,11 +23,12 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-#include "petscfix.h"
 
+/* task_info seems to be buggy plus pgcc doesn't like including this file
 #if defined(PETSC_HAVE_TASK_INFO)
 #include <mach/mach.h>
 #endif
+*/
 
 #if defined(PETSC_HAVE_SYS_RESOURCE_H)
 #include <sys/resource.h>
