@@ -260,6 +260,13 @@ cdef extern from "custom.h":
     int MatAnyAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],
                                      PetscInt[],PetscScalar[])
 
+cdef extern from "custom.h":
+    int MatCreateAnyDense(MPI_Comm,
+                          PetscInt,PetscInt,
+                          PetscInt,PetscInt,
+                          PetscMat*)
+    int MatAnyDenseSetPreallocation(PetscMat,PetscInt,PetscScalar[])
+
 # --------------------------------------------------------------------
 
 cdef extern from "petscmat.h":
@@ -361,7 +368,6 @@ cdef inline int Mat_AllocAIJ_DEFAULT(PetscMat A,
     CHKERR( MatAnyAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
     return 0
 
-
 cdef inline int Mat_AllocAIJ_NNZ(PetscMat A, PetscInt bs, object NNZ) except -1:
     # unpack NNZ argument
     cdef object od_nnz, oo_nnz
@@ -391,7 +397,6 @@ cdef inline int Mat_AllocAIJ_NNZ(PetscMat A, PetscInt bs, object NNZ) except -1:
             raise ValueError("size(o_nnz) is %d, expected %d" % (o_n, m))
     # preallocate
     CHKERR( MatAnyAIJSetPreallocation(A, bs, d_nz, d_nnz, o_nz, o_nnz) )
-
 
 cdef inline int Mat_AllocAIJ_CSR(PetscMat A, PetscInt bs, object CSR) except -1:
     # unpack CSR argument
@@ -424,6 +429,27 @@ cdef inline int Mat_AllocAIJ_CSR(PetscMat A, PetscInt bs, object CSR) except -1:
     # preallocate
     CHKERR( MatAnyAIJSetPreallocationCSR(A, bs, i, j, v) )
 
+
+cdef inline int Mat_AllocDense_DEFAULT(PetscMat A,
+                                       PetscInt bs) except -1:
+    cdef PetscScalar *data=NULL
+    CHKERR( MatAnyDenseSetPreallocation(A, bs, data) )
+    return 0
+
+cdef inline int Mat_AllocDense_ARRAY(PetscMat A, PetscInt bs,
+                                        object array) except -1:
+    cdef PetscInt size=0
+    cdef PetscScalar *data=NULL
+    cdef PetscInt m=0, n=0, b=bs
+    CHKERR( MatGetLocalSize(A, &m, &n) )
+    if bs == PETSC_DECIDE: b = 1
+    array = ofarray_s(array, &size, &data)
+    if m*n != size:
+        raise ValueError("size(array) is %d, expected %dx%d=%d" % \
+                         (size, m, n, m*n))
+    CHKERR( MatAnyDenseSetPreallocation(A, bs, data) )
+    Object_setAttr(<PetscObject>A, "__array__", array)
+    return 0
 
 # --------------------------------------------------------------------
 

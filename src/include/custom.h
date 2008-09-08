@@ -55,38 +55,6 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreateAnyAIJ"
-PETSC_STATIC_INLINE PetscErrorCode
-MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs, 
-		PetscInt m, PetscInt n, 
-		PetscInt M, PetscInt N,
-		Mat *A)
-{
-  Mat            mat;
-  MatType        mtype;
-  PetscMPIInt    size;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidPointer(A,7);
-  ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
-  if (bs == PETSC_DECIDE || bs == PETSC_DEFAULT) {
-    if (size > 1) mtype = MATMPIAIJ;
-    else          mtype = MATSEQAIJ;
-  } else {
-    if (size > 1) mtype = MATMPIBAIJ;
-    else          mtype = MATSEQBAIJ;
-  }
-  ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
-  *A = mat;
-  PetscFunctionReturn(0);
-}
-
-#include "include/private/matimpl.h"
-
 #undef __FUNCT__
 #define __FUNCT__ "MatSetBlockSize_Patch"
 PETSC_STATIC_INLINE PetscErrorCode
@@ -121,6 +89,38 @@ MatIsPreallocated(Mat A,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateAnyAIJ"
+PETSC_STATIC_INLINE PetscErrorCode
+MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs, 
+		PetscInt m, PetscInt n, 
+		PetscInt M, PetscInt N,
+		Mat *A)
+{
+  Mat            mat;
+  MatType        mtype;
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(A,7);
+  ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  if (bs == PETSC_DECIDE || bs == PETSC_DEFAULT) {
+    if (size > 1) mtype = (MatType)MATMPIAIJ;
+    else          mtype = (MatType)MATSEQAIJ;
+  } else {
+    if (size > 1) mtype = (MatType)MATMPIBAIJ;
+    else          mtype = (MatType)MATSEQBAIJ;
+  }
+  ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
+  *A = mat;
+  PetscFunctionReturn(0);
+}
+
+#include "include/private/matimpl.h"
+
 #undef __FUNCT__
 #define __FUNCT__ "MatAnyAIJSetPreallocation"
 PETSC_STATIC_INLINE PetscErrorCode
@@ -138,7 +138,7 @@ MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
 
   ierr = MatIsPreallocated(A, &flag);CHKERRQ(ierr);
   if (flag) { SETERRQ(PETSC_ERR_ORDER, "matrix is already preallocated"); }
-
+  
   if (bs == PETSC_DECIDE || bs == PETSC_DEFAULT) {
     ierr = MatSeqAIJSetPreallocation(A,d_nz,d_nnz);CHKERRQ(ierr);
     ierr = MatMPIAIJSetPreallocation(A,d_nz,d_nnz,o_nz,o_nnz);CHKERRQ(ierr);
@@ -176,6 +176,59 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
     ierr = MatMPIBAIJSetPreallocationCSR(A,bs,Ii,Jj,V);CHKERRQ(ierr);
   }
 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateAnyAIJ"
+PETSC_STATIC_INLINE PetscErrorCode
+MatCreateAnyDense(MPI_Comm comm,
+		  PetscInt m, PetscInt n, 
+		  PetscInt M, PetscInt N,
+		  Mat *A)
+{
+  Mat            mat;
+  MatType        mtype;
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidPointer(A,7);
+  ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(mat,m,n,M,N);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
+  if (size > 1) mtype = (MatType)MATMPIDENSE;
+  else          mtype = (MatType)MATSEQDENSE;
+  ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
+  *A = mat;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatAnyAIJSetPreallocation"
+PETSC_STATIC_INLINE PetscErrorCode
+MatAnyDenseSetPreallocation(Mat A,PetscInt bs, PetscScalar *data) 
+{
+  PetscTruth     flag;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidType(A,1);
+  if (data) PetscValidScalarPointer(data,3);
+  if (bs == PETSC_DEFAULT) bs = PETSC_DECIDE;
+  if (bs != PETSC_DECIDE && bs < 1)
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,
+	     "Invalid block size specified, "
+	     "must be positive but it is %D",bs)
+  ierr = MatIsPreallocated(A, &flag);CHKERRQ(ierr);
+  if (flag) { SETERRQ(PETSC_ERR_ORDER, "matrix is already preallocated"); }
+  ierr = MatSeqDenseSetPreallocation(A, data);
+  ierr = MatMPIDenseSetPreallocation(A, data);
+  if (bs != PETSC_DECIDE) {
+    A->rmap.bs = A->cmap.bs = bs;
+    ierr = PetscMapSetUp(&A->rmap);CHKERRQ(ierr);
+    ierr = PetscMapSetUp(&A->cmap);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

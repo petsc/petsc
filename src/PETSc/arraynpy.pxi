@@ -23,6 +23,10 @@ cdef extern from "arraynpy.h":
     enum: NPY_OUT_ARRAY
     enum: NPY_INOUT_ARRAY
 
+    enum: NPY_IN_FARRAY
+    enum: NPY_OUT_FARRAY
+    enum: NPY_INOUT_FARRAY
+
     dtype    PyArray_DescrFromType(int)
     object   PyArray_TypeObjectFromType(int)
 
@@ -118,6 +122,13 @@ cdef inline ndarray oarray_r(object ob, PetscInt* size, PetscReal** data):
 
 cdef inline ndarray oarray_s(object ob, PetscInt* size, PetscScalar** data):
     ob = PyArray_FROM_OTF(ob, NPY_PETSC_SCALAR, NPY_OUT_ARRAY)
+    cdef ndarray ary = <ndarray> ob
+    if size!=NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
+    if data!=NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)
+    return ary
+
+cdef inline ndarray ofarray_s(object ob, PetscInt* size, PetscScalar** data):
+    ob = PyArray_FROM_OTF(ob, NPY_PETSC_SCALAR, NPY_OUT_FARRAY)
     cdef ndarray ary = <ndarray> ob
     if size!=NULL: size[0] = <PetscInt>     PyArray_SIZE(ary)
     if data!=NULL: data[0] = <PetscScalar*> PyArray_DATA(ary)

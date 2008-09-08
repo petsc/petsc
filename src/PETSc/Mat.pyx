@@ -183,6 +183,30 @@ cdef class Mat(Object):
             CHKERR( Mat_AllocAIJ_CSR(self.mat, bs, csr) )
         else:
             CHKERR( Mat_AllocAIJ_DEFAULT(self.mat, bs) )
+    #
+
+    def createDense(self, size, bsize=None, array=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt bs=0, m=0, n=0, M=0, N=0
+        CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
+        # create matrix
+        cdef PetscMat newmat = NULL
+        CHKERR( MatCreateAnyDense(ccomm, m, n, M, N, &newmat) )
+        PetscCLEAR(self.obj); self.mat = newmat
+        # preallocate matrix
+        if array is not None:
+            CHKERR( Mat_AllocDense_ARRAY(self.mat, bs, array) )
+        else:
+            CHKERR( Mat_AllocDense_DEFAULT(self.mat, bs) )
+        return self
+
+    def setPreallocationDense(self, array, bsize=None):
+        cdef PetscInt bs = PETSC_DECIDE
+        CHKERR( Mat_BlockSize(bsize, &bs) )
+        if array is not None:
+            CHKERR( Mat_AllocDense_ARRAY(self.mat, bs, array) )
+        else:
+            CHKERR( Mat_AllocDense_DEFAULT(self.mat, bs) )
 
     #
 
