@@ -261,7 +261,7 @@ cdef extern from "custom.h":
                                      PetscInt[],PetscScalar[])
 
 cdef extern from "custom.h":
-    int MatCreateAnyDense(MPI_Comm,
+    int MatCreateAnyDense(MPI_Comm,PetscInt,
                           PetscInt,PetscInt,
                           PetscInt,PetscInt,
                           PetscMat*)
@@ -437,7 +437,7 @@ cdef inline int Mat_AllocDense_DEFAULT(PetscMat A,
     return 0
 
 cdef inline int Mat_AllocDense_ARRAY(PetscMat A, PetscInt bs,
-                                        object array) except -1:
+                                     object array) except -1:
     cdef PetscInt size=0
     cdef PetscScalar *data=NULL
     cdef PetscInt m=0, n=0, b=bs

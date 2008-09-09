@@ -191,7 +191,7 @@ cdef class Mat(Object):
         CHKERR( Mat_SplitSizes(ccomm, size, bsize, &bs, &m, &n, &M, &N) )
         # create matrix
         cdef PetscMat newmat = NULL
-        CHKERR( MatCreateAnyDense(ccomm, m, n, M, N, &newmat) )
+        CHKERR( MatCreateAnyDense(ccomm, bs, m, n, M, N, &newmat) )
         PetscCLEAR(self.obj); self.mat = newmat
         # preallocate matrix
         if array is not None:
