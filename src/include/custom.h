@@ -195,7 +195,7 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatCreateAnyAIJ"
+#define __FUNCT__ "MatCreateAnyDense"
 PETSC_STATIC_INLINE PetscErrorCode
 MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
 		  PetscInt m, PetscInt n, 
@@ -231,7 +231,7 @@ MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatAnyAIJSetPreallocation"
+#define __FUNCT__ "MatAnyDenseSetPreallocation"
 PETSC_STATIC_INLINE PetscErrorCode
 MatAnyDenseSetPreallocation(Mat A,PetscInt bs, PetscScalar *data) 
 {
