@@ -1612,6 +1612,8 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
       }
     }
   }
+  ierr = PetscFree(olengths1);CHKERRQ(ierr);
+  ierr = PetscFree(onodes1);CHKERRQ(ierr);
   ierr = PetscFree3(rvalues,source,recv_waits);CHKERRQ(ierr);
 
   /* allocate entire receive scatter context */
@@ -2059,6 +2061,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
     ierr = MPI_Irecv((rvalues+2*count),2*olengths1[i],MPIU_INT,onodes1[i],tag,comm,recv_waits+i);CHKERRQ(ierr);
     count += olengths1[i];
   }
+  ierr = PetscFree(onodes1);CHKERRQ(ierr);
 
   /* do sends:
       1) starts[i] gives the starting index in svalues for stuff going to 
@@ -2106,6 +2109,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
       local_inidy[count++] = values[2*j+1];
     }
   }
+  ierr = PetscFree(olengths1);CHKERRQ(ierr);
 
   /* wait on sends */
   if (nsends) {ierr = MPI_Waitall(nsends,send_waits,send_status);CHKERRQ(ierr);}
