@@ -178,4 +178,17 @@ cdef api PetscAO PyPetscAO_Get(object arg) except ? NULL:
     retv = ob.ao
     return retv
 
+# -- DA --
+
+cdef api object PyPetscDA_New(PetscDA arg):
+    cdef DA retv = DA()
+    addref(arg); retv.da = arg
+    return retv
+
+cdef api PetscDA PyPetscDA_Get(object arg) except ? NULL:
+    cdef PetscDA retv = NULL
+    cdef DA ob = <DA?> arg
+    retv = ob.da
+    return retv
+
 #---------------------------------------------------------------------

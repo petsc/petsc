@@ -91,6 +91,7 @@ include "petscksp.pxi"
 include "petscsnes.pxi"
 include "petscts.pxi"
 include "petscao.pxi"
+include "petscda.pxi"
 
 # --------------------------------------------------------------------
 
@@ -111,6 +112,7 @@ include "KSP.pyx"
 include "SNES.pyx"
 include "TS.pyx"
 include "AO.pyx"
+include "DA.pyx"
 
 # --------------------------------------------------------------------
 
