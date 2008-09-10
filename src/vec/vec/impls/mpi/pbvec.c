@@ -181,7 +181,7 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscTruth alloc,PetscInt nghost,cons
   ierr = PetscMapSetUp(v->map);CHKERRQ(ierr);
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
-  if (alloc) {
+  if (alloc && !array) {
     PetscInt n         = v->map->n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
     ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
