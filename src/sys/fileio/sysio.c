@@ -294,6 +294,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
    byte-swapping operation is not done, thus saving some computation,
    but the buffer corrupted is corrupted.
 
+   Because byte-swapping may be done on the values in data it cannot be declared const
+
    Concepts: files^writing binary
    Concepts: binary files^writing
 
@@ -563,6 +565,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedRead(MPI_Comm comm,int fd,
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
+
+   Notes: because byte-swapping may be done on the values in data it cannot be declared const
 
    WARNING: This is NOT like PetscSynchronizedFPrintf()! This routine ignores calls on all but process 0,
    while PetscSynchronizedFPrintf() has all processes print their strings in order.

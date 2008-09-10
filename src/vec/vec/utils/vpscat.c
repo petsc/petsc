@@ -298,10 +298,8 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   out_to->sendfirst = in_to->sendfirst;
 
   ierr = PetscMalloc(out_to->n*sizeof(MPI_Request),&out_to->requests);CHKERRQ(ierr);
-  ierr = PetscMalloc4(bs*ny,PetscScalar,&out_to->values,ny,PetscInt,&out_to->indices,out_to->n+1,PetscInt,&out_to->starts,
-                      out_to->n,PetscMPIInt,&out_to->procs);CHKERRQ(ierr);
-  ierr = PetscMalloc2(PetscMax(in_to->n,in_from->n),MPI_Status,&out_to->sstatus,PetscMax(in_to->n,in_from->n),MPI_Status,
-                      &out_to->rstatus);CHKERRQ(ierr);
+  ierr = PetscMalloc4(bs*ny,PetscScalar,&out_to->values,ny,PetscInt,&out_to->indices,out_to->n+1,PetscInt,&out_to->starts,out_to->n,PetscMPIInt,&out_to->procs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(PetscMax(in_to->n,in_from->n),MPI_Status,&out_to->sstatus,PetscMax(in_to->n,in_from->n),MPI_Status,&out_to->rstatus);CHKERRQ(ierr);
   ierr = PetscMemcpy(out_to->indices,in_to->indices,ny*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(out_to->starts,in_to->starts,(out_to->n+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(out_to->procs,in_to->procs,(out_to->n)*sizeof(PetscMPIInt));CHKERRQ(ierr);
@@ -328,8 +326,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
   out_from->sendfirst = in_from->sendfirst;
 
   ierr = PetscMalloc(out_from->n*sizeof(MPI_Request),&out_from->requests);CHKERRQ(ierr);
-  ierr = PetscMalloc4(ny*bs,PetscScalar,&out_from->values,ny,PetscInt,&out_from->indices,
-                      out_from->n+1,PetscInt,&out_from->starts,out_from->n,PetscMPIInt,&out_from->procs);CHKERRQ(ierr);
+  ierr = PetscMalloc4(ny*bs,PetscScalar,&out_from->values,ny,PetscInt,&out_from->indices,out_from->n+1,PetscInt,&out_from->starts,out_from->n,PetscMPIInt,&out_from->procs);CHKERRQ(ierr);
   ierr = PetscMemcpy(out_from->indices,in_from->indices,ny*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(out_from->starts,in_from->starts,(out_from->n+1)*sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemcpy(out_from->procs,in_from->procs,(out_from->n)*sizeof(PetscMPIInt));CHKERRQ(ierr);
@@ -1589,10 +1586,8 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr  = PetscNewLog(ctx,VecScatter_MPI_General,&to);CHKERRQ(ierr);
   to->n = nrecvs; 
   ierr  = PetscMalloc(nrecvs*sizeof(MPI_Request),&to->requests);CHKERRQ(ierr);
-  ierr  = PetscMalloc4(bs*slen,PetscScalar,&to->values,slen,PetscInt,&to->indices,nrecvs+1,PetscInt,&to->starts,
-                       nrecvs,PetscMPIInt,&to->procs);CHKERRQ(ierr);
-  ierr  = PetscMalloc2(PetscMax(to->n,nsends),MPI_Status,&to->sstatus,PetscMax(to->n,nsends),MPI_Status,
-		       &to->rstatus);CHKERRQ(ierr);
+  ierr  = PetscMalloc4(bs*slen,PetscScalar,&to->values,slen,PetscInt,&to->indices,nrecvs+1,PetscInt,&to->starts,nrecvs,PetscMPIInt,&to->procs);CHKERRQ(ierr);
+  ierr  = PetscMalloc2(PetscMax(to->n,nsends),MPI_Status,&to->sstatus,PetscMax(to->n,nsends),MPI_Status,&to->rstatus);CHKERRQ(ierr);
   ctx->todata   = (void*)to;
   to->starts[0] = 0;
 
@@ -1620,8 +1615,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   from->n = nsends;
 
   ierr = PetscMalloc(nsends*sizeof(MPI_Request),&from->requests);CHKERRQ(ierr);
-  ierr = PetscMalloc4((ny-nprocslocal)*bs,PetscScalar,&from->values,ny-nprocslocal,PetscInt,&from->indices,
-                      nsends+1,PetscInt,&from->starts,from->n,PetscMPIInt,&from->procs);CHKERRQ(ierr);
+  ierr = PetscMalloc4((ny-nprocslocal)*bs,PetscScalar,&from->values,ny-nprocslocal,PetscInt,&from->indices,nsends+1,PetscInt,&from->starts,from->n,PetscMPIInt,&from->procs);CHKERRQ(ierr);
   ctx->fromdata  = (void*)from;
 
   /* move data into receive scatter */

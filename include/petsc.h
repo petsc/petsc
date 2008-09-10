@@ -1381,7 +1381,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList,char ***,int*);
 S*/
 typedef struct _n_PetscDLLibrary *PetscDLLibrary;
 extern PetscDLLibrary DLLibrariesLoaded;
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,int,PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,size_t,PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm,const char[],void **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm,PetscDLLibrary *,const char[],const char[],void **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm,PetscDLLibrary *,const char[]);

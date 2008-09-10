@@ -99,7 +99,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(void)
    ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR}, or ${any environmental variable}
    occuring in directoryname and filename will be replaced with appropriate values.
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,int llen,PetscTruth *found)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,size_t llen,PetscTruth *found)
 {
   char           *par2,buff[10],*en,*gz;
   PetscErrorCode ierr;

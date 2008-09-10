@@ -586,6 +586,8 @@ void PETSC_DLLEXPORT PetscErrorCxx(int line,const char *func,const char* file,co
 
   Level: intermediate
 
+    Developer Notes: idx cannot be const because may be passed to binary viewer where byte swappping is done
+
 .seealso: PetscRealView() 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewer viewer)
@@ -626,7 +628,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
     if (size > 1) {
       if (rank) {
         ierr = MPI_Gather(&NN,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
-        ierr = MPI_Gatherv(idx,NN,MPIU_INT,0,0,0,MPIU_INT,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((void*)idx,NN,MPIU_INT,0,0,0,MPIU_INT,0,comm);CHKERRQ(ierr);
       } else {
 	ierr      = PetscMalloc(size*sizeof(PetscMPIInt),&sizes);CHKERRQ(ierr);
         ierr      = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -638,7 +640,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
           displs[i] =  displs[i-1] + sizes[i-1];
         }
 	ierr = PetscMalloc(Ntotal*sizeof(PetscInt),&array);CHKERRQ(ierr);
-        ierr = MPI_Gatherv(idx,NN,MPIU_INT,array,sizes,displs,MPIU_INT,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((void*)idx,NN,MPIU_INT,array,sizes,displs,MPIU_INT,0,comm);CHKERRQ(ierr);
         ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
         ierr = PetscFree(displs);CHKERRQ(ierr);
@@ -668,6 +670,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
 -   viewer - location to print array,  PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF or 0
 
   Level: intermediate
+
+    Developer Notes: idx cannot be const because may be passed to binary viewer where byte swappping is done
 
 .seealso: PetscIntView() 
 @*/
@@ -710,7 +714,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscVie
     if (size > 1) {
       if (rank) {
         ierr = MPI_Gather(&NN,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
-        ierr = MPI_Gatherv(idx,NN,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((void*)idx,NN,MPI_DOUBLE,0,0,0,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
       } else {
 	ierr   = PetscMalloc(size*sizeof(PetscMPIInt),&sizes);CHKERRQ(ierr);
         ierr   = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -722,7 +726,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscVie
           displs[i] =  displs[i-1] + sizes[i-1];
         }
 	ierr = PetscMalloc(Ntotal*sizeof(PetscReal),&array);CHKERRQ(ierr);
-        ierr = MPI_Gatherv(idx,NN,MPI_DOUBLE,array,sizes,displs,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((void*)idx,NN,MPI_DOUBLE,array,sizes,displs,MPI_DOUBLE,0,comm);CHKERRQ(ierr);
         ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_REAL,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
         ierr = PetscFree(displs);CHKERRQ(ierr);
@@ -752,6 +756,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscVie
 -   viewer - location to print array,  PETSC_VIEWER_STDOUT_WORLD, PETSC_VIEWER_STDOUT_SELF or 0
 
   Level: intermediate
+
+    Developer Notes: idx cannot be const because may be passed to binary viewer where byte swappping is done
 
 .seealso: PetscIntView(), PetscRealView()
 @*/
@@ -806,7 +812,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,PetscScalar idx[],Pets
     if (size > 1) {
       if (rank) {
         ierr = MPI_Gather(&NN,1,MPI_INT,0,0,MPI_INT,0,comm);CHKERRQ(ierr);
-        ierr = MPI_Gatherv(idx,NN,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((void*)idx,NN,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
       } else {
 	ierr   = PetscMalloc(size*sizeof(PetscMPIInt),&sizes);CHKERRQ(ierr);
         ierr   = MPI_Gather(&NN,1,MPI_INT,sizes,1,MPI_INT,0,comm);CHKERRQ(ierr);
@@ -818,7 +824,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,PetscScalar idx[],Pets
           displs[i] =  displs[i-1] + sizes[i-1];
         }
 	ierr = PetscMalloc(Ntotal*sizeof(PetscScalar),&array);CHKERRQ(ierr);
-        ierr = MPI_Gatherv(idx,NN,MPIU_SCALAR,array,sizes,displs,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
+        ierr = MPI_Gatherv((void*)idx,NN,MPIU_SCALAR,array,sizes,displs,MPIU_SCALAR,0,comm);CHKERRQ(ierr);
         ierr = PetscViewerBinaryWrite(viewer,array,Ntotal,PETSC_SCALAR,PETSC_TRUE);CHKERRQ(ierr);
         ierr = PetscFree(sizes);CHKERRQ(ierr);
         ierr = PetscFree(displs);CHKERRQ(ierr);

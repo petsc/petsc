@@ -51,7 +51,7 @@
 
 .seealso: PetscGetFullPath()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscGetRealPath(char path[],char rpath[])
+PetscErrorCode PETSC_DLLEXPORT PetscGetRealPath(const char path[],char rpath[])
 {
   PetscErrorCode ierr;
   char           tmp3[PETSC_MAX_PATH_LEN];

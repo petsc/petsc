@@ -268,6 +268,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemcmp(const void *str1,const void *str2,siz
    Note:
    This routine is analogous to memmove().
 
+   Since b can overlap with a, b cannot be declared as const
+
    Concepts: memory^copying with overlap
    Concepts: copying^memory with overlap
 

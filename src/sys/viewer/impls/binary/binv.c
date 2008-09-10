@@ -586,6 +586,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryRead(PetscViewer viewer,void *da
 
    Level: beginner
 
+   Notes: because byte-swapping may be done on the values in data it cannot be declared const
+
    Concepts: binary files
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
