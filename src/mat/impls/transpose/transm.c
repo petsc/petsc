@@ -88,9 +88,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat A,Mat *N)
   (*N)->ops->multadd     = MatMultAdd_Transpose; 
   (*N)->assembled        = PETSC_TRUE;
 
-  (*N)->rmap.bs = (*N)->cmap.bs = A->rmap.bs;
-  ierr = PetscMapSetUp(&(*N)->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(&(*N)->cmap);CHKERRQ(ierr);
+  (*N)->rmap->bs = (*N)->cmap->bs = A->rmap->bs;
+  ierr = PetscMapSetUp((*N)->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp((*N)->cmap);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

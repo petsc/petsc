@@ -51,6 +51,43 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscMap *map
 }
 
 /*@C
+     PetscMapDestroy - Frees a map object and frees its range if that exists. 
+
+    Collective on MPI_Comm
+
+   Input Parameters:
+.    map - the PetscMap
+
+   Level: developer
+
+       Unlike regular PETSc objects you work with a pointer to the object instead of 
+     the object directly.
+
+      The PetscMap object and methods are intended to be used in the PETSc Vec and Mat implementions; it is 
+      recommended they not be used in user codes unless you really gain something in their use.
+
+    Fortran Notes: 
+      Not available from Fortran
+
+.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap, PetscMapInitialize(),
+          PetscMapGetRange(), PetscMapGetRanges(), PetscMapSetBlockSize(), PetscMapGetBlockSize(), PetscMapSetUp()
+
+@*/
+#undef __FUNCT__  
+#define __FUNCT__ "PetscMapDestroy"
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapDestroy(PetscMap *map)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!map->refcnt--) {
+    if (map->range) {ierr = PetscFree(map->range);CHKERRQ(ierr);}
+    ierr = PetscFree(map);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+/*@C
      PetscMapSetUp - given a map where you have set either the global or local
            size sets up the map so that it may be used.
 
@@ -64,12 +101,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapInitialize(MPI_Comm comm,PetscMap *map
     Notes: Typical calling sequence
        PetscMapInitialize(MPI_Comm,PetscMap *);
        PetscMapSetBlockSize(PetscMap*,1);
-       PetscMapSetSize(PetscMap*,n) or PetscMapSetLocalSize(PetscMap*,N);
+       PetscMapSetSize(PetscMap*,n) or PetscMapSetLocalSize(PetscMap*,N); or both
        PetscMapSetUp(PetscMap*);
        PetscMapGetSize(PetscMap*,PetscInt *);
 
        Unlike regular PETSc objects you work with a pointer to the object instead of 
      the object directly.
+
+       If the local size, global size are already set and range exists then this does nothing.
 
     Fortran Notes: 
       Not available from Fortran
@@ -87,9 +126,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetUp(PetscMap *map)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (map->bs <=0) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"BlockSize not yet set");}
+  if ((map->n >= 0) && (map->N >= 0) && (map->range)) PetscFunctionReturn(0);
+
   ierr = MPI_Comm_size(map->comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(map->comm, &rank);CHKERRQ(ierr); 
-  if (map->bs <=0) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"BlockSize not yet set");}
   if (map->n > 0) map->n = map->n/map->bs;
   if (map->N > 0) map->N = map->N/map->bs;
   ierr = PetscSplitOwnership(map->comm,&map->n,&map->N);CHKERRQ(ierr);
@@ -116,7 +157,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCopy(MPI_Comm comm,PetscMap *in,PetscM
 {
   PetscMPIInt    size;
   PetscErrorCode ierr;
-  PetscInt       *range = out->range;
+  PetscInt       *range = out->range; /* keep copy of this since PetscMemcpy() below will cover it */
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

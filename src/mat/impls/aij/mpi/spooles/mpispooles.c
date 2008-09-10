@@ -52,7 +52,7 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
 {
   Mat_Spooles   *lu = (Mat_Spooles*)A->spptr;
   PetscErrorCode ierr;
-  int           size,rank,m=A->rmap.n,irow,*rowindY;
+  int           size,rank,m=A->rmap->n,irow,*rowindY;
   PetscScalar   *array;
   DenseMtx      *newY ;
   SubMtxManager *solvemanager ; 
@@ -203,7 +203,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
   PetscScalar     *av, *bv; 
   PetscInt        *ai, *aj, *bi,*bj, nz, *ajj, *bjj, *garray,
                   i,j,irow,jcol,countA,countB,jB,*row,*col,colA_start,jj;
-  PetscInt        M=A->rmap.N,m=A->rmap.n,root,nedges,tagbound,lasttag;
+  PetscInt        M=A->rmap->N,m=A->rmap->n,root,nedges,tagbound,lasttag;
   Mat             F_diag;
   
   PetscFunctionBegin;	
@@ -240,7 +240,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     Mat_SeqAIJ  *bb=(Mat_SeqAIJ*)(mat->B)->data;
     ai=aa->i; aj=aa->j; av=aa->a;   
     bi=bb->i; bj=bb->j; bv=bb->a;
-    lu->rstart = A->rmap.rstart;
+    lu->rstart = A->rmap->rstart;
     nz         = aa->nz + bb->nz;
     garray     = mat->garray; 
   } else {         /* SPOOLES_SYMMETRIC  */
@@ -249,7 +249,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     Mat_SeqBAIJ    *bb=(Mat_SeqBAIJ*)(mat->B)->data;
     ai=aa->i; aj=aa->j; av=aa->a;  
     bi=bb->i; bj=bb->j; bv=bb->a;
-    lu->rstart = A->rmap.rstart;
+    lu->rstart = A->rmap->rstart;
     nz         = aa->nz + bb->nz;     
     garray     = mat->garray;
   } 

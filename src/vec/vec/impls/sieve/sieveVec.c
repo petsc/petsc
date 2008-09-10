@@ -13,7 +13,7 @@
 PetscErrorCode VecSet_Sieve(Vec v, PetscScalar alpha)
 {
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) v->data;
-  PetscInt               n     = v->map.n;
+  PetscInt               n     = v->map->n;
   PetscScalar           *xx    = (PetscScalar *) field->restrict(*field->getPatches()->begin());
   PetscErrorCode         ierr;
 
@@ -32,7 +32,7 @@ PetscErrorCode VecScale_Sieve(Vec v, PetscScalar alpha)
 {
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) v->data;
   PetscErrorCode         ierr;
-  PetscBLASInt           one = 1,bn    = PetscBLASIntCast(v->map.n);
+  PetscBLASInt           one = 1,bn    = PetscBLASIntCast(v->map->n);
 
   PetscFunctionBegin;
   if (alpha == 0.0) {
@@ -41,7 +41,7 @@ PetscErrorCode VecScale_Sieve(Vec v, PetscScalar alpha)
     PetscScalar a = alpha;
 
     BLASscal_(&bn, &a, (PetscScalar *) field->restrict(*field->getPatches()->begin()), &one);
-    ierr = PetscLogFlops(v->map.n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(v->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -57,7 +57,7 @@ PetscErrorCode VecCopy_Sieve(Vec x, Vec y)
   PetscFunctionBegin;
   if (x != y) {
     ierr = VecGetArray(y, &yy);CHKERRQ(ierr);
-    ierr = PetscMemcpy(yy, (PetscScalar *) field->restrict(*field->getPatches()->begin()), x->map.n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(yy, (PetscScalar *) field->restrict(*field->getPatches()->begin()), x->map->n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = VecRestoreArray(y, &yy);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -70,7 +70,7 @@ PetscErrorCode VecAXPY_Sieve(Vec y, PetscScalar alpha, Vec x)
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) y->data;
   PetscScalar           *xarray;
   PetscErrorCode         ierr;
-  PetscBLASInt           one = 1,bn = PetscBLASIntCast(y->map.n);
+  PetscBLASInt           one = 1,bn = PetscBLASIntCast(y->map->n);
 
   PetscFunctionBegin;
   /* assume that the BLAS handles alpha == 1.0 efficiently since we have no fast code for it */
@@ -80,7 +80,7 @@ PetscErrorCode VecAXPY_Sieve(Vec y, PetscScalar alpha, Vec x)
     ierr = VecGetArray(x, &xarray);CHKERRQ(ierr);
     BLASaxpy_(&bn, &oalpha, xarray, &one, (PetscScalar *) field->restrict(*field->getPatches()->begin()), &one);
     ierr = VecRestoreArray(x, &xarray);CHKERRQ(ierr);
-    ierr = PetscLogFlops(2*y->map.n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(2*y->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -91,7 +91,7 @@ PetscErrorCode VecAYPX_Sieve(Vec y, PetscScalar alpha, Vec x)
 {
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) y->data;
   PetscScalar           *yy    = (PetscScalar *) field->restrict(*field->getPatches()->begin());
-  PetscInt               n     = y->map.n;
+  PetscInt               n     = y->map->n;
   PetscScalar           *xx;
   PetscErrorCode         ierr;
 
@@ -128,7 +128,7 @@ PetscErrorCode VecAXPBY_Sieve(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) y->data;
   PetscScalar           *yy = (PetscScalar *) field->restrict(*field->getPatches()->begin());
   PetscScalar           *xx ,a = alpha,b = beta;
-  PetscInt               n = y->map.n, i;
+  PetscInt               n = y->map->n, i;
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
@@ -144,14 +144,14 @@ PetscErrorCode VecAXPBY_Sieve(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
       yy[i] = a*xx[i];
     }
     ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);
-    ierr = PetscLogFlops(x->map.n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(x->map->n);CHKERRQ(ierr);
   } else {
     ierr = VecGetArray(x, &xx);CHKERRQ(ierr);
     for(i = 0; i < n; i++) {
       yy[i] = a*xx[i] + b*yy[i];
     }
     ierr = VecRestoreArray(x, &xx);CHKERRQ(ierr);
-    ierr = PetscLogFlops(3*x->map.n);CHKERRQ(ierr);
+    ierr = PetscLogFlops(3*x->map->n);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -161,7 +161,7 @@ PetscErrorCode VecAXPBY_Sieve(Vec y, PetscScalar alpha, PetscScalar beta, Vec x)
 PetscErrorCode VecMAXPY_Sieve(Vec x, PetscInt nv, const PetscScalar *alpha, Vec *y)
 {
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) x->data;
-  PetscInt               n     = x->map.n,j,j_rem;
+  PetscInt               n     = x->map->n,j,j_rem;
   PetscScalar           *xx    = (PetscScalar *) field->restrict(*field->getPatches()->begin());
   PetscScalar           *yy0,*yy1,*yy2,*yy3,alpha0,alpha1,alpha2,alpha3;
   PetscErrorCode         ierr;
@@ -234,7 +234,7 @@ PetscErrorCode VecWAXPY_Sieve(Vec w, PetscScalar alpha, Vec x, Vec y)
 {
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) w->data;
   PetscScalar           *ww    = (PetscScalar *) field->restrict(*field->getPatches()->begin());
-  PetscInt               n     = w->map.n, i;
+  PetscInt               n     = w->map->n, i;
   PetscScalar           *yy, *xx;
   PetscErrorCode         ierr;
 
@@ -270,7 +270,7 @@ PetscErrorCode VecPointwiseMult_Sieve(Vec w, Vec x, Vec y)
 {
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) w->data;
   PetscScalar           *ww    = (PetscScalar *) field->restrict(*field->getPatches()->begin());
-  PetscInt               n     = w->map.n, i;
+  PetscInt               n     = w->map->n, i;
   PetscScalar           *xx, *yy;
   PetscErrorCode         ierr;
 
@@ -307,7 +307,7 @@ PetscErrorCode VecPointwiseDivide_Sieve(Vec w, Vec x, Vec y)
 {
   ALE::Mesh::field_type *field = (ALE::Mesh::field_type *) w->data;
   PetscScalar           *ww    = (PetscScalar *) field->restrict(*field->getPatches()->begin());
-  PetscInt               n     = w->map.n, i;
+  PetscInt               n     = w->map->n, i;
   PetscScalar           *xx, *yy;
   PetscErrorCode         ierr;
 
@@ -427,15 +427,15 @@ PetscErrorCode VecCreate_Sieve_Private(Vec v, ALE::Mesh::field_type *field)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
-  ierr           = PetscLogObjectMemory(v, sizeof(ALE::Mesh::field_type) + v->map.n*sizeof(double));CHKERRQ(ierr);
+  ierr           = PetscLogObjectMemory(v, sizeof(ALE::Mesh::field_type) + v->map->n*sizeof(double));CHKERRQ(ierr);
   ierr           = PetscMemcpy(v->ops, &DvOps, sizeof(DvOps));CHKERRQ(ierr);
   v->data        = (void *) field;
   v->mapping     = PETSC_NULL;
   v->bmapping    = PETSC_NULL;
   v->petscnative = PETSC_FALSE;
 
-  if (v->map.bs == -1) v->map.bs = 1;
-  ierr = PetscMapSetUp(&v->map);CHKERRQ(ierr);
+  if (v->map->bs == -1) v->map->bs = 1;
+  ierr = PetscMapSetUp(v->map);CHKERRQ(ierr);
   v->stash.insertmode = NOT_SET_VALUES;
                                                         
   ierr = PetscObjectChangeTypeName((PetscObject) v, VECSIEVE);CHKERRQ(ierr);
@@ -492,8 +492,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateSieve(ALE::Mesh::field_type *field, V
 
   PetscFunctionBegin;
   ierr = VecCreate(field->comm(), v);CHKERRQ(ierr);
-  (*v)->map.n = field->getSize();
-  (*v)->map.N = field->getGlobalOffsets()[field->commSize()];
+  (*v)->map->n = field->getSize();
+  (*v)->map->N = field->getGlobalOffsets()[field->commSize()];
   ierr = VecCreate_Sieve_Private(*v, field);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

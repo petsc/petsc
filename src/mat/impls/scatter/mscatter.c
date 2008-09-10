@@ -236,10 +236,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat A)
 
   A->data = (void*)b;
 
-  ierr = PetscMapSetBlockSize(&A->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(&A->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(&A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(&A->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(A->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(A->cmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(A->cmap);CHKERRQ(ierr);
 
   A->assembled     = PETSC_TRUE;
   A->preallocated  = PETSC_FALSE;
@@ -314,8 +314,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat mat,VecScatter sca
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidHeaderSpecific(scatter,VEC_SCATTER_COOKIE,2);
   PetscCheckSameComm((PetscObject)scatter,1,(PetscObject)mat,2);
-  if (mat->rmap.n != scatter->to_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local rows in matrix %D not equal local scatter size %D",mat->rmap.n,scatter->to_n);
-  if (mat->cmap.n != scatter->from_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local columns in matrix %D not equal local scatter size %D",mat->cmap.n,scatter->from_n);
+  if (mat->rmap->n != scatter->to_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local rows in matrix %D not equal local scatter size %D",mat->rmap->n,scatter->to_n);
+  if (mat->cmap->n != scatter->from_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local columns in matrix %D not equal local scatter size %D",mat->cmap->n,scatter->from_n);
 
   ierr = PetscObjectReference((PetscObject)scatter);CHKERRQ(ierr);
   if (mscatter->scatter) {ierr = VecScatterDestroy(mscatter->scatter);CHKERRQ(ierr);}

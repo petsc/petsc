@@ -19,7 +19,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
 {
   PetscScalar    *xx;
   PetscErrorCode ierr;
-  PetscInt       n = xin->map.n;
+  PetscInt       n = xin->map->n;
   PetscBLASInt   one = 1, bn = PetscBLASIntCast(n);
 
   PetscFunctionBegin;
@@ -92,7 +92,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
 {
   Vec_Seq           *x = (Vec_Seq *)xin->data;
   PetscErrorCode    ierr;
-  PetscInt          i,n = xin->map.n;
+  PetscInt          i,n = xin->map->n;
   const char        *name;
   PetscViewerFormat format;
 
@@ -230,7 +230,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
     if ((bs < 1) || (bs > 3)) {
       SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"%D\n", xin->map.N/bs);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"%D\n", xin->map->N/bs);CHKERRQ(ierr);
     for (i=0; i<n/bs; i++) {
       ierr = PetscViewerASCIIPrintf(viewer,"%7D   ", i+1);CHKERRQ(ierr);
       for (b=0; b<bs; b++) {
@@ -293,7 +293,7 @@ static PetscErrorCode VecView_Seq_Draw_LG(Vec xin,PetscViewer v)
 {
   Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
-  PetscInt       i,n = xin->map.n;
+  PetscInt       i,n = xin->map->n;
   PetscDraw      win;
   PetscReal      *xx;
   PetscDrawLG    lg;
@@ -360,7 +360,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
   Vec_Seq        *x = (Vec_Seq *)xin->data;
   PetscErrorCode ierr;
   int            fdes;
-  PetscInt       n = xin->map.n,cookie=VEC_FILE_COOKIE;
+  PetscInt       n = xin->map->n,cookie=VEC_FILE_COOKIE;
   FILE           *file;
 #if defined(PETSC_HAVE_MPIIO)
   PetscTruth     isMPIIO;
@@ -401,11 +401,11 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 #endif
 
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&file);CHKERRQ(ierr);
-  if (file && xin->map.bs > 1) {
+  if (file && xin->map->bs > 1) {
     if (((PetscObject)xin)->prefix) {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%s_vecload_block_size %D\n",((PetscObject)xin)->prefix,xin->map.bs);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-%s_vecload_block_size %D\n",((PetscObject)xin)->prefix,xin->map->bs);CHKERRQ(ierr);
     } else {
-      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",xin->map.bs);CHKERRQ(ierr);
+      ierr = PetscFPrintf(PETSC_COMM_SELF,file,"-vecload_block_size %D\n",xin->map->bs);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -417,7 +417,7 @@ static PetscErrorCode VecView_Seq_Binary(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 {
   PetscErrorCode ierr;
-  int            n = xin->map.n,ncid,xdim,xdim_num=1,xin_id,xstart=0;
+  int            n = xin->map->n,ncid,xdim,xdim_num=1,xin_id,xstart=0;
   PetscScalar    *xarray;
 
   PetscFunctionBegin;
@@ -531,7 +531,7 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
     if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
     if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
-    if (ix[i] >= xin->map.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D to large maximum allowed %D",ix[i],xin->map.n);
+    if (ix[i] >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D to large maximum allowed %D",ix[i],xin->map->n);
 #endif
     y[i] = xx[ix[i]];
   }
@@ -552,7 +552,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
-      if (ix[i] >= xin->map.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map.n);
+      if (ix[i] >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->n);
 #endif
       xx[ix[i]] = y[i];
     }
@@ -561,7 +561,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
       if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
-      if (ix[i] >= xin->map.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map.n);
+      if (ix[i] >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->n);
 #endif
       xx[ix[i]] += y[i];
     }  
@@ -575,7 +575,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
 {
   Vec_Seq     *x = (Vec_Seq *)xin->data;
   PetscScalar *xx = x->array,*y = (PetscScalar*)yin;
-  PetscInt    i,bs = xin->map.bs,start,j;
+  PetscInt    i,bs = xin->map->bs,start,j;
 
   /*
        For optimization could treat bs = 2, 3, 4, 5 as special cases with loop unrolling
@@ -586,7 +586,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-      if (start >= xin->map.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->map.n);
+      if (start >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->map->n);
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] = y[j];
@@ -598,7 +598,7 @@ PetscErrorCode VecSetValuesBlocked_Seq(Vec xin,PetscInt ni,const PetscInt ix[],c
       start = bs*ix[i];
       if (start < 0) continue;
 #if defined(PETSC_USE_DEBUG)
-      if (start >= xin->map.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->map.n);
+      if (start >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",start,xin->map->n);
 #endif
       for (j=0; j<bs; j++) {
         xx[start+j] += y[j];
@@ -623,7 +623,7 @@ PetscErrorCode VecDestroy_Seq(Vec v)
   ierr = PetscObjectDepublish(v);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
-  PetscLogObjectState((PetscObject)v,"Length=%D",v->map.n);
+  PetscLogObjectState((PetscObject)v,"Length=%D",v->map->n);
 #endif
   ierr = PetscFree(vs->array_allocated);CHKERRQ(ierr);
   ierr = PetscFree(vs);CHKERRQ(ierr);
@@ -718,8 +718,8 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   s->array           = (PetscScalar *)array;
   s->array_allocated = 0;
 
-  if (v->map.bs == -1) v->map.bs = 1;
-  ierr = PetscMapSetUp(&v->map);CHKERRQ(ierr);
+  if (v->map->bs == -1) v->map->bs = 1;
+  ierr = PetscMapSetUp(v->map);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQ);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
@@ -797,7 +797,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec V)
   Vec_Seq        *s;
   PetscScalar    *array;
   PetscErrorCode ierr;
-  PetscInt       n = PetscMax(V->map.n,V->map.N);
+  PetscInt       n = PetscMax(V->map->n,V->map->N);
   PetscMPIInt    size;
 
   PetscFunctionBegin;
@@ -823,7 +823,7 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecCreateSeq(((PetscObject)win)->comm,win->map.n,V);CHKERRQ(ierr);
+  ierr = VecCreateSeq(((PetscObject)win)->comm,win->map->n,V);CHKERRQ(ierr);
   if (win->mapping) {
     ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
     (*V)->mapping = win->mapping;
@@ -832,7 +832,7 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
     ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
     (*V)->bmapping = win->bmapping;
   }
-  (*V)->map.bs = win->map.bs;
+  (*V)->map->bs = win->map->bs;
   ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*V))->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*V))->qlist);CHKERRQ(ierr);
 

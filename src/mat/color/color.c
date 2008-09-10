@@ -211,7 +211,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_Natural(Mat mat,MatColoringType co
   for (i=start; i<end; i++) {
     colors[i-start] = i;
   }
-  ierr = ISColoringCreate(comm,mat->cmap.N,end-start,colors,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(comm,mat->cmap->N,end-start,colors,iscoloring);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -349,8 +349,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,const MatColoringType t
     ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
 
     /* convert iscoloring_seq to a parallel iscoloring */  
-    rstart = mat->rmap.rstart;
-    rend   = mat->rmap.rend;
+    rstart = mat->rmap->rstart;
+    rend   = mat->rmap->rend;
     N_loc  = rend - rstart; /* number of local nodes */
 
     /* get local colors for each local node */

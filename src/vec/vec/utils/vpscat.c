@@ -1511,7 +1511,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = PetscObjectGetComm((PetscObject)xin,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  owners = xin->map.range;
+  owners = xin->map->range;
   ierr = VecGetSize(yin,&lengthy);CHKERRQ(ierr);
   ierr = VecGetSize(xin,&lengthx);CHKERRQ(ierr);
 
@@ -1995,7 +1995,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag,imdex,n;
-  PetscInt       *owners = xin->map.range;
+  PetscInt       *owners = xin->map->range;
   PetscInt       *nprocs = PETSC_NULL,i,j,idx,nsends,nrecvs,*local_inidx = PETSC_NULL,*local_inidy = PETSC_NULL;
   PetscInt       *owner = PETSC_NULL,*starts = PETSC_NULL,count,slen;
   PetscInt       *rvalues = PETSC_NULL,*svalues = PETSC_NULL,base,nmax,*values = PETSC_NULL,*rsvalues,recvtotal,lastidx,*onodes1,*olengths1;

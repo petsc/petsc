@@ -79,7 +79,7 @@ PetscErrorCode MatGetFactor_seqsbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   PetscFunctionBegin;
   if (ftype != MAT_FACTOR_CHOLESKY) SETERRQ(PETSC_ERR_SUP,"Only Cholesky factorization is support for Spooles from SBAIJ matrix");
   ierr = MatCreate(((PetscObject)A)->comm,&B);
-  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);

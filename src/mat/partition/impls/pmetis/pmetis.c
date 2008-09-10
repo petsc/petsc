@@ -48,7 +48,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
     adj  = (Mat_MPIAdj *)newmat->data;
   }
 
-  vtxdist = mat->rmap.range;
+  vtxdist = mat->rmap->range;
   xadj    = adj->i;
   adjncy  = adj->j;
   ierr    = MPI_Comm_rank(((PetscObject)part)->comm,&rank);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   {
     int rstart;
     ierr = MatGetOwnershipRange(mat,&rstart,PETSC_NULL);CHKERRQ(ierr);
-    for (i=0; i<mat->rmap.n; i++) {
+    for (i=0; i<mat->rmap->n; i++) {
       for (j=xadj[i]; j<xadj[i+1]; j++) {
         if (adjncy[j] == i+rstart) SETERRQ1(PETSC_ERR_ARG_WRONG,"Row %d has diagonal entry; Parmetis forbids diagonal entry",i+rstart);
       }
@@ -68,7 +68,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   }
 #endif
 
-  ierr = PetscMalloc((mat->rmap.n+1)*sizeof(int),&locals);CHKERRQ(ierr);
+  ierr = PetscMalloc((mat->rmap->n+1)*sizeof(int),&locals);CHKERRQ(ierr);
 
   if (PetscLogPrintInfo) {itmp = parmetis->printout; parmetis->printout = 127;}
   ierr = PetscMalloc(ncon*nparts*sizeof(float),&tpwgts);CHKERRQ(ierr);
@@ -93,7 +93,7 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   ierr = PetscFree(ubvec);CHKERRQ(ierr);
   if (PetscLogPrintInfo) {parmetis->printout = itmp;}
 
-  ierr = ISCreateGeneral(((PetscObject)part)->comm,mat->rmap.n,locals,partitioning);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)part)->comm,mat->rmap->n,locals,partitioning);CHKERRQ(ierr);
   ierr = PetscFree(locals);CHKERRQ(ierr);
 
   if (!flg) {

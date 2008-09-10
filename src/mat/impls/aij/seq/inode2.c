@@ -131,7 +131,7 @@ PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
   Mat            B=*C;
   Mat_SeqAIJ     *c=(Mat_SeqAIJ*)B->data,*a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       m=A->rmap.n;
+  PetscInt       m=A->rmap->n;
 
   PetscFunctionBegin;
 

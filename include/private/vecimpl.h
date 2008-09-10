@@ -3,7 +3,6 @@
    This private file should not be included in users' code.
    Defines the fields shared by all vector implementations.
 
-   It is in the public include directories so that VecGetArray() (which is public) can be defined
 */
 
 #ifndef __VECIMPL_H
@@ -18,6 +17,7 @@ typedef struct {
   PetscInt  rstart,rend; /* local start, local end + 1 */
   PetscInt  *range;      /* the offset of each processor */
   PetscInt  bs;          /* number of elements in each block (generally for multi-component problems) Do NOT multiply above numbers by bs */
+  PetscInt  refcnt;      /* MPI Vecs obtained with VecDuplicate() and from MatGetVecs() reuse map of input object */
 } PetscMap;
 
 EXTERN PetscErrorCode PetscMapInitialize(MPI_Comm,PetscMap*);
@@ -132,7 +132,7 @@ typedef struct {
 
 struct _p_Vec {
   PETSCHEADER(struct _VecOps);
-  PetscMap               map;
+  PetscMap               *map;
   void                   *data;     /* implementation-specific data */
   ISLocalToGlobalMapping mapping;   /* mapping used in VecSetValuesLocal() */
   ISLocalToGlobalMapping bmapping;  /* mapping used in VecSetValuesBlockedLocal() */

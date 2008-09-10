@@ -107,7 +107,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pdti,*pdtj,*poti,*potj,*ptJ;
   PetscInt             *adi=ad->i,*adj=ad->j,*aoi=ao->i,*aoj=ao->j,nnz; 
   PetscInt             nlnk,*lnk,*owners_co,*coi,*coj,i,k,pnz,row;
-  PetscInt             am=A->rmap.n,pN=P->cmap.N,pn=P->cmap.n;  
+  PetscInt             am=A->rmap->n,pN=P->cmap->N,pn=P->cmap->n;  
   PetscBT              lnkbt;
   MPI_Comm             comm=((PetscObject)A)->comm;
   PetscMPIInt          size,rank,tag,*len_si,*len_s,*len_ri; 
@@ -222,7 +222,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = MatGetSymbolicTranspose_SeqAIJ(p->B,&poti,&potj);CHKERRQ(ierr);
 
   /* then, compute symbolic Co = (p->B)^T*AP */
-  pon = (p->B)->cmap.n; /* total num of rows to be sent to other processors 
+  pon = (p->B)->cmap->n; /* total num of rows to be sent to other processors 
                          >= (num of nonzero rows of C_seq) - pn */
   ierr = PetscMalloc((pon+1)*sizeof(PetscInt),&coi);CHKERRQ(ierr);
   coi[0] = 0;
@@ -500,7 +500,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt             *pi_loc,*pj_loc,*pi_oth,*pj_oth,*pJ,*pj;
   PetscInt             i,j,k,anz,pnz,apnz,nextap,row,*cj;
   MatScalar            *ada=ad->a,*aoa=ao->a,*apa,*pa,*ca,*pa_loc,*pa_oth;
-  PetscInt             am=A->rmap.n,cm=C->rmap.n,pon=(p->B)->cmap.n; 
+  PetscInt             am=A->rmap->n,cm=C->rmap->n,pon=(p->B)->cmap->n; 
   MPI_Comm             comm=((PetscObject)C)->comm;
   PetscMPIInt          size,rank,taga,*len_s;
   PetscInt             *owners,proc,nrows,**buf_ri_k,**nextrow,**nextci;
@@ -510,7 +510,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   MPI_Status           *status;
   MatScalar            **abuf_r,*ba_i,*pA,*coa,*ba; 
   PetscInt             *api,*apj,*coi,*coj; 
-  PetscInt             *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap.rstart,pcend=P->cmap.rend; 
+  PetscInt             *poJ=po->j,*pdJ=pd->j,pcstart=P->cmap->rstart,pcend=P->cmap->rend; 
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

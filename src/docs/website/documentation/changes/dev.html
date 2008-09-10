@@ -3288,6 +3288,9 @@ length of the count array (that is the number of partitions).</li>
 
 
         <li>Added logical argument to VecSetOption() to toggle option in either way</li>
+        <li>The PetscMap inside the Vec object is now allocated and
+reference counted and shared between vectors and matrices, this will
+decrease memory usage on systems with a large size.</li>
 
 
 
@@ -3801,7 +3804,11 @@ but never again.</li>
         <li>Removed MatFDColoringSet/GetFrequency() and
 -mat_fd_coloring_freq since you can now use SNESSetLagJacobian() or
 -snes_lag_jacobian</li>
+        <li>The PetscMap inside the Mat object is now allocated and reference
+counted and shared between vectors and matrices, this will decrease
+memory usage on systems with a large size.</li>
       </ul>
+      <u><b>PC:</b></u>
       <ul>
 
 

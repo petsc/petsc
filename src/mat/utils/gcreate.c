@@ -75,8 +75,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
 #endif
 
   ierr = PetscHeaderCreate(B,_p_Mat,struct _MatOps,MAT_COOKIE,0,"Mat",comm,MatDestroy,MatView);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(comm,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscNew(PetscMap,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscNew(PetscMap,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,B->cmap);CHKERRQ(ierr);
   B->preallocated  = PETSC_FALSE;
   *A               = B;
   PetscFunctionReturn(0);
@@ -125,13 +127,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
        call of MatSetSizes() (which must be called BEFORE MatSetType() */
     ierr = (*A->ops->setsizes)(A,m,n,M,N);CHKERRQ(ierr);
   } else {
-    if ((A->rmap.n >= 0 || A->rmap.N >= 0) && (A->rmap.n != m || A->rmap.N != M)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap.n,A->rmap.N);
-    if ((A->cmap.n >= 0 || A->cmap.N >= 0) && (A->cmap.n != n || A->cmap.N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->cmap.n,A->cmap.N);
+    if ((A->rmap->n >= 0 || A->rmap->N >= 0) && (A->rmap->n != m || A->rmap->N != M)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset row sizes to %D local %D global after previously setting them to %D local %D global",m,M,A->rmap->n,A->rmap->N);
+    if ((A->cmap->n >= 0 || A->cmap->N >= 0) && (A->cmap->n != n || A->cmap->N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset column sizes to %D local %D global after previously setting them to %D local %D global",n,N,A->cmap->n,A->cmap->N);
   }
-  A->rmap.n = m;
-  A->cmap.n = n;
-  A->rmap.N = M;
-  A->cmap.N = N;
+  A->rmap->n = m;
+  A->cmap->n = n;
+  A->rmap->N = M;
+  A->cmap->N = N;
   PetscFunctionReturn(0);
 }
 
@@ -234,6 +236,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat B)
 
 /*
         Copies from Cs header to A
+
+        This is somewhat different from MatHeaderReplace() it would be nice to merge the code
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatHeaderCopy"
@@ -264,8 +268,8 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
 
   ierr = PetscFree(C->spptr);CHKERRQ(ierr);
 
-  ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
-  ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
+  ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&((PetscObject)A)->qlist);CHKERRQ(ierr);
   ierr = PetscOListDestroy(((PetscObject)A)->olist);CHKERRQ(ierr);
 
@@ -289,6 +293,8 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
 /*
         Replace A's header with that of C
         This is essentially code moved from MatDestroy
+
+        This is somewhat different from MatHeaderCopy() it would be nice to merge the code
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatHeaderReplace"
@@ -301,8 +307,8 @@ PetscErrorCode MatHeaderReplace(Mat A,Mat C)
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy_Private((PetscObject)A);CHKERRQ(ierr);
   ierr = PetscFree(A->ops);CHKERRQ(ierr);
-  ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
-  ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
+  ierr = PetscMapDestroy(A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapDestroy(A->cmap);CHKERRQ(ierr);
   ierr = PetscFree(A->spptr);CHKERRQ(ierr);
   
   /* copy C over to A */

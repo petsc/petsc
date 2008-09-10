@@ -317,7 +317,8 @@ EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionTry1(), PetscExceptionValue()
 M*/
-PETSC_STATIC_INLINE PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr) {
+PETSC_STATIC_INLINE PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr) 
+{
   PetscInt i;
   if (xierr != zierr) return PETSC_FALSE;
   for (i=0; i<PetscErrorUncatchableCount; i++) {
@@ -351,7 +352,8 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscEr
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionTry1(), PetscExceptionCaught()
 M*/
-PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
+PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) 
+{
   PetscInt i;
   for (i=0; i<PetscExceptionsCount; i++) {
     if (PetscExceptions[i] == zierr) {

@@ -108,8 +108,8 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscContainer     container;
  
   PetscFunctionBegin;
-  if (A->cmap.rstart != B->rmap.rstart || A->cmap.rend != B->rmap.rend){
-    SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap.rstart,A->cmap.rend,B->rmap.rstart,B->rmap.rend);
+  if (A->cmap->rstart != B->rmap->rstart || A->cmap->rend != B->rmap->rend){
+    SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%D, %D) != (%D,%D)",A->cmap->rstart,A->cmap->rend,B->rmap->rstart,B->rmap->rend);
   }
   ierr = PetscNew(Mat_MatMatMultMPI,&mult);CHKERRQ(ierr);
 
@@ -117,7 +117,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = MatGetBrowsOfAcols(A,B,MAT_INITIAL_MATRIX,&mult->isrowb,&mult->iscolb,&mult->brstart,&mult->B_seq);CHKERRQ(ierr);
 
   /*  create a seq matrix A_seq = submatrix of A by taking all local rows of A */
-  start = A->rmap.rstart; end = A->rmap.rend;
+  start = A->rmap->rstart; end = A->rmap->rend;
   ierr = ISCreateStride(PETSC_COMM_SELF,end-start,start,1,&mult->isrowa);CHKERRQ(ierr); 
   ierr = MatGetLocalMatCondensed(A,MAT_INITIAL_MATRIX,&mult->isrowa,&mult->isrowb,&mult->A_loc);CHKERRQ(ierr); 
 
@@ -126,7 +126,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
 
   /* create mpi matrix C by concatinating C_seq */
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); /* prevent C_seq being destroyed by MatMerge() */
-  ierr = MatMerge(((PetscObject)A)->comm,mult->C_seq,B->cmap.n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
+  ierr = MatMerge(((PetscObject)A)->comm,mult->C_seq,B->cmap->n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
  
   /* attach the supporting struct to C for reuse of symbolic C */
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
@@ -170,7 +170,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->A_loc,mult->B_seq,MAT_REUSE_MATRIX,0.0,&mult->C_seq);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); 
-  ierr = MatMerge(((PetscObject)A)->comm,mult->C_seq,B->cmap.n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
+  ierr = MatMerge(((PetscObject)A)->comm,mult->C_seq,B->cmap->n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -212,17 +212,17 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
 {
   PetscErrorCode         ierr;
   Mat_MPIAIJ             *aij = (Mat_MPIAIJ*) A->data;
-  PetscInt               nz = aij->B->cmap.n;
+  PetscInt               nz = aij->B->cmap->n;
   PetscContainer         cont;
   MPIAIJ_MPIDense        *contents;
   VecScatter             ctx = aij->Mvctx; 
   VecScatter_MPI_General *from = (VecScatter_MPI_General*) ctx->fromdata;
   VecScatter_MPI_General *to   = ( VecScatter_MPI_General*) ctx->todata;
-  PetscInt               m=A->rmap.n,n=B->cmap.n;
+  PetscInt               m=A->rmap->n,n=B->cmap->n;
 
   PetscFunctionBegin; 
   ierr = MatCreate(((PetscObject)B)->comm,C);CHKERRQ(ierr);
-  ierr = MatSetSizes(*C,m,n,A->rmap.N,B->cmap.N);CHKERRQ(ierr);
+  ierr = MatSetSizes(*C,m,n,A->rmap->N,B->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(*C,MATMPIDENSE);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -233,11 +233,11 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   ierr = PetscContainerSetUserDestroy(cont,MPIAIJ_MPIDenseDestroy);CHKERRQ(ierr);
 
   /* Create work matrix used to store off processor rows of B needed for local product */
-  ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,B->cmap.N,PETSC_NULL,&contents->workB);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,B->cmap->N,PETSC_NULL,&contents->workB);CHKERRQ(ierr);
 
   /* Create work arrays needed */
-  ierr = PetscMalloc4(B->cmap.N*from->starts[from->n],PetscScalar,&contents->rvalues,
-                      B->cmap.N*to->starts[to->n],PetscScalar,&contents->svalues,
+  ierr = PetscMalloc4(B->cmap->N*from->starts[from->n],PetscScalar,&contents->rvalues,
+                      B->cmap->N*to->starts[to->n],PetscScalar,&contents->svalues,
                       from->n,MPI_Request,&contents->rwaits,
                       to->n,MPI_Request,&contents->swaits);CHKERRQ(ierr);
 
@@ -263,7 +263,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   PetscMPIInt            *sprocs,*rprocs,nrecvs;
   MPI_Request            *swaits,*rwaits;
   MPI_Comm               comm = ((PetscObject)A)->comm;
-  PetscMPIInt            tag = ((PetscObject)ctx)->tag,ncols = B->cmap.N, nrows = aij->B->cmap.n,imdex,nrowsB = B->rmap.n;
+  PetscMPIInt            tag = ((PetscObject)ctx)->tag,ncols = B->cmap->N, nrows = aij->B->cmap->n,imdex,nrowsB = B->rmap->n;
   MPI_Status             status;
   MPIAIJ_MPIDense        *contents;
   PetscContainer         cont;
@@ -274,7 +274,7 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   ierr = PetscContainerGetPointer(cont,(void**)&contents);CHKERRQ(ierr);
 
   workB = *outworkB = contents->workB;
-  if (nrows != workB->rmap.n) SETERRQ2(PETSC_ERR_PLIB,"Number of rows of workB %D not equal to columns of aij->B %D",nrows,workB->cmap.n);
+  if (nrows != workB->rmap->n) SETERRQ2(PETSC_ERR_PLIB,"Number of rows of workB %D not equal to columns of aij->B %D",nrows,workB->cmap->n);
   sindices  = to->indices;
   sstarts   = to->starts;
   sprocs    = to->procs;

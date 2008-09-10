@@ -7,8 +7,8 @@
 #include "private/vecimpl.h"    /*I "petscvec.h" I*/
 
 #define PetscCheckSameSizeVec(x,y) \
-  if ((x)->map.N != (y)->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths"); \
-  if ((x)->map.n != (y)->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
+  if ((x)->map->N != (y)->map->N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths"); \
+  if ((x)->map->n != (y)->map->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
 
 #undef __FUNCT__  
@@ -458,9 +458,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
 
   /* however, norms can be simply set */
   val = PetscAbsScalar(alpha);
-  ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map.N * val);CHKERRQ(ierr);
+  ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_1],x->map->N * val);CHKERRQ(ierr);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_INFINITY],val);CHKERRQ(ierr);
-  val = sqrt((double)x->map.N) * val;
+  val = sqrt((double)x->map->N) * val;
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_2],val);CHKERRQ(ierr);
   ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[NORM_FROBENIUS],val);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -396,7 +396,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   }
 
 
-  if (1) {
+  if (!jac->head->sctx) {
     Vec xtmp;
 
     /* compute scatter contexts needed by multiplicative versions and non-default splits */
@@ -634,6 +634,7 @@ static PetscErrorCode PCDestroy_FieldSplit(PC pc)
   if (jac->w1) {ierr = VecDestroy(jac->w1);CHKERRQ(ierr);}
   if (jac->w2) {ierr = VecDestroy(jac->w2);CHKERRQ(ierr);}
   if (jac->schur) {ierr = MatDestroy(jac->schur);CHKERRQ(ierr);}
+  if (jac->kspschur) {ierr = KSPDestroy(jac->kspschur);CHKERRQ(ierr);}
   if (jac->B) {ierr = MatDestroy(jac->B);CHKERRQ(ierr);}
   if (jac->C) {ierr = MatDestroy(jac->C);CHKERRQ(ierr);}
   ierr = PetscFree(jac);CHKERRQ(ierr);

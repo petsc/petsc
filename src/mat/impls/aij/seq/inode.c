@@ -15,8 +15,8 @@ static PetscErrorCode Mat_CreateColInode(Mat A,PetscInt* size,PetscInt ** ns)
   PetscInt       i,count,m,n,min_mn,*ns_row,*ns_col;
 
   PetscFunctionBegin;  
-  n      = A->cmap.n;
-  m      = A->rmap.n;
+  n      = A->cmap->n;
+  m      = A->rmap->n;
   ns_row = a->inode.size;
   
   min_mn = (m < n) ? m : n;
@@ -68,8 +68,8 @@ static PetscErrorCode MatGetRowIJ_Inode_Symmetric(Mat A,PetscInt *iia[],PetscInt
 
   PetscFunctionBegin;  
   nslim_row = a->inode.node_count;
-  m         = A->rmap.n;
-  n         = A->cmap.n;
+  m         = A->rmap->n;
+  n         = A->cmap->n;
   if (m != n) SETERRQ(PETSC_ERR_SUP,"MatGetRowIJ_Inode_Symmetric: Matrix should be square");
   
   /* Use the row_inode as column_inode */
@@ -160,7 +160,7 @@ static PetscErrorCode MatGetRowIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Petsc
 
   PetscFunctionBegin;  
   nslim_row = a->inode.node_count;
-  n         = A->cmap.n;
+  n         = A->cmap->n;
 
   /* Create The column_inode for this matrix */
   ierr = Mat_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
@@ -281,7 +281,7 @@ static PetscErrorCode MatGetColumnIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Pe
 
   PetscFunctionBegin;  
   nslim_row = a->inode.node_count;
-  n         = A->cmap.n;
+  n         = A->cmap->n;
 
   /* Create The column_inode for this matrix */
   ierr = Mat_CreateColInode(A,&nslim_col,&ns_col);CHKERRQ(ierr);
@@ -781,7 +781,7 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   IS                iscol = a->col,isrow = a->row;
   PetscErrorCode    ierr;
-  PetscInt          *r,*c,i,j,n = A->rmap.n,*ai = a->i,nz,*a_j = a->j;
+  PetscInt          *r,*c,i,j,n = A->rmap->n,*ai = a->i,nz,*a_j = a->j;
   PetscInt          node_max,*ns,row,nsz,aii,*vi,*ad,*aj,i0,i1,*rout,*cout;
   PetscScalar       *x,*tmp,*tmps,tmp0,tmp1;
   PetscScalar       sum1,sum2,sum3,sum4,sum5;
@@ -1165,7 +1165,7 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1177,7 +1177,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)C->data;
   IS                iscol = b->col,isrow = b->row,isicol = b->icol;
   PetscErrorCode    ierr;
-  PetscInt          *r,*ic,*c,n = A->rmap.n,*bi = b->i; 
+  PetscInt          *r,*ic,*c,n = A->rmap->n,*bi = b->i; 
   PetscInt          *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,nz_tmp,row,prow;
   PetscInt          *ics,i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nodesz;
   PetscInt          *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
@@ -1590,7 +1590,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
     }
   }
-  ierr = PetscLogFlops(C->cmap.n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1603,7 +1603,7 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
 {
   Mat_SeqAIJ       *a = (Mat_SeqAIJ*)mat->data;
   PetscErrorCode  ierr;
-  PetscInt        n = mat->cmap.n,m = a->inode.node_count,j,*ns = a->inode.size,row;
+  PetscInt        n = mat->cmap->n,m = a->inode.node_count,j,*ns = a->inode.size,row;
   PetscInt        *colorused,i;
   ISColoringValue *newcolor;
 
@@ -1938,7 +1938,7 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
 
       ibdiag = a->inode.ibdiag+a->inode.bdiagsize;
-      for (i=m-1, row=A->rmap.n-1; i>=0; i--) {
+      for (i=m-1, row=A->rmap->n-1; i>=0; i--) {
         ibdiag -= sizes[i]*sizes[i];
         sz      = ii[row+1] - diag[row] - 1;
         v1      = a->a + diag[row] + 1;
@@ -2122,7 +2122,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
   if (a->inode.checked && samestructure) PetscFunctionReturn(0);
 
 
-  m = A->rmap.n;    
+  m = A->rmap->n;    
   if (a->inode.size) {ns = a->inode.size;}
   else {ierr = PetscMalloc((m+1)*sizeof(PetscInt),&ns);CHKERRQ(ierr);}
 
@@ -2195,7 +2195,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_Inode(Mat A,IS *rperm,
 {
   Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       m = A->rmap.n,n = A->cmap.n,i,j,*ridx,*cidx,nslim_row = a->inode.node_count;
+  PetscInt       m = A->rmap->n,n = A->cmap->n,i,j,*ridx,*cidx,nslim_row = a->inode.node_count;
   PetscInt       row,col,*permr,*permc,*ns_row =  a->inode.size,*tns,start_val,end_val,indx;
   PetscInt       nslim_col,*ns_col;
   IS             ris = *rperm,cis = *cperm;

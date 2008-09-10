@@ -80,7 +80,8 @@ typedef struct {
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqXAIJFreeAIJ"
-PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i) {
+PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,MatScalar **a,PetscInt **j,PetscInt **i) 
+{
                                      PetscErrorCode ierr;
                                      Mat_SeqAIJ     *A = (Mat_SeqAIJ*) AA->data;
                                      if (A->singlemalloc) {

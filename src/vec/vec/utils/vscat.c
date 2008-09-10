@@ -1150,11 +1150,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
 
       if (cando) {
-        PetscMPIIntCheck(yin->map.N);
+        PetscMPIIntCheck(yin->map->N);
         ierr  = MPI_Comm_size(((PetscObject)ctx)->comm,&size);CHKERRQ(ierr);
 	ierr  = PetscMalloc(size*sizeof(PetscMPIInt),&displx);CHKERRQ(ierr);
 	ierr  = PetscMalloc2(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count);CHKERRQ(ierr);
-        range = xin->map.range;
+        range = xin->map->range;
         for (i=0; i<size; i++) {
           count[i]  = PetscMPIIntCast(range[i+1] - range[i]);
           displx[i] = PetscMPIIntCast(range[i]);
@@ -1207,11 +1207,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
       ierr = MPI_Allreduce(&totalv,&cando,1,MPI_INT,MPI_LAND,((PetscObject)xin)->comm);CHKERRQ(ierr);
 
       if (cando) {
-        PetscMPIIntCheck(yin->map.N);
+        PetscMPIIntCheck(yin->map->N);
         ierr  = MPI_Comm_size(((PetscObject)ctx)->comm,&size);CHKERRQ(ierr);
 	ierr  = PetscMalloc(size*sizeof(PetscMPIInt),&displx);CHKERRQ(ierr);
 	ierr  = PetscMalloc2(1,VecScatter_MPI_ToAll,&sto,size,PetscMPIInt,&count);CHKERRQ(ierr);
-        range = xin->map.range;
+        range = xin->map->range;
         for (i=0; i<size; i++) {
 	  count[i] = PetscMPIIntCast(range[i+1] - range[i]);
           displx[i] = PetscMPIIntCast(range[i]);

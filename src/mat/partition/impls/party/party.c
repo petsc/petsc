@@ -82,7 +82,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
     adj = (Mat_MPIAdj *) matMPI->data;  /* finaly adj contains adjacency graph */
     {
         /* Party library arguments definition */
-        int n = mat->rmap.N;         /* number of vertices in full graph */
+        int n = mat->rmap->N;         /* number of vertices in full graph */
         int *edge_p = adj->i;   /* start of edge list for each vertex */
         int *edge = adj->j;     /* edge list data */
         int *vertex_w = NULL;   /* weights for all vertices */
@@ -99,7 +99,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         int rec = party->rec;
         int output = party->output;
 
-        ierr = PetscMalloc((mat->rmap.N) * sizeof(int), &part_party);CHKERRQ(ierr);
+        ierr = PetscMalloc((mat->rmap->N) * sizeof(int), &part_party);CHKERRQ(ierr);
 
         /* redirect output to buffer party->mesg_log */
 #ifdef PETSC_HAVE_UNISTD_H
@@ -141,13 +141,13 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
     /* Creation of the index set */
     ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(((PetscObject)part)->comm, &size);CHKERRQ(ierr);
-    nb_locals = mat->rmap.N / size;
+    nb_locals = mat->rmap->N / size;
     locals = parttab + rank * nb_locals;
-    if (rank < mat->rmap.N % size) {
+    if (rank < mat->rmap->N % size) {
         nb_locals++;
         locals += rank;
     } else {
-        locals += mat->rmap.N % size;
+        locals += mat->rmap->N % size;
     }
     ierr = ISCreateGeneral(((PetscObject)part)->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
 
@@ -250,7 +250,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningPartySetCoarseLevel(MatPartitio
     if (level < 0 || level > 1.0) {
         SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Party: level of coarsening out of range [0.01-1.0]");
     } else {
-        party->nbvtxcoarsed = (int)(part->adj->cmap.N * level);
+        party->nbvtxcoarsed = (int)(part->adj->cmap->N * level);
     }
     if (party->nbvtxcoarsed < 20) party->nbvtxcoarsed = 20;
     PetscFunctionReturn(0);

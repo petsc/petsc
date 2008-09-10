@@ -23,10 +23,10 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
   PetscFunctionBegin;
 
   /* first processor allocates entire array and sends it's address to the others */
-  ierr = PetscSharedMalloc(((PetscObject)win)->comm,win->map.n*sizeof(PetscScalar),win->map.N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
+  ierr = PetscSharedMalloc(((PetscObject)win)->comm,win->map->n*sizeof(PetscScalar),win->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
 
   ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
-  ierr = VecSetSizes(*v,win->map.n,win->map.N);CHKERRQ(ierr);
+  ierr = VecSetSizes(*v,win->map->n,win->map->N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,PETSC_FALSE,w->nghost,array);CHKERRQ(ierr);
 
   /* New vector should inherit stashing property of parent */
@@ -45,7 +45,7 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
     (*v)->bmapping = win->bmapping;
   }
   (*v)->ops->duplicate = VecDuplicate_Shared;
-  (*v)->map.bs    = win->map.bs;
+  (*v)->map->bs    = win->map->bs;
   (*v)->bstash.bs = win->bstash.bs;
   PetscFunctionReturn(0);
 }
@@ -60,8 +60,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec vv)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  ierr = PetscSplitOwnership(((PetscObject)vv)->comm,&vv->map.n,&vv->map.N);CHKERRQ(ierr);
-  ierr = PetscSharedMalloc(((PetscObject)vv)->comm,vv->map.n*sizeof(PetscScalar),vv->map.N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr); 
+  ierr = PetscSplitOwnership(((PetscObject)vv)->comm,&vv->map->n,&vv->map->N);CHKERRQ(ierr);
+  ierr = PetscSharedMalloc(((PetscObject)vv)->comm,vv->map->n*sizeof(PetscScalar),vv->map->N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr); 
 
   ierr = VecCreate_MPI_Private(vv,PETSC_FALSE,0,array);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;

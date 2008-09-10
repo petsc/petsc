@@ -228,7 +228,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, const VecType itype,Vec *newve
       if (size > 1) {
 	/* read in other chuncks and send to other processors */
 	/* determine maximum chunck owned by other */
-	range = vec->map.range;
+	range = vec->map->range;
 	n = 1;
 	for (i=1; i<size; i++) {
 	  n = PetscMax(n,range[i+1] - range[i]);
@@ -255,7 +255,7 @@ PetscErrorCode VecLoad_Binary(PetscViewer viewer, const VecType itype,Vec *newve
 
     gsizes[0]  = PetscMPIIntCast(rows);
     lsizes[0]  = PetscMPIIntCast(n);
-    lstarts[0] = PetscMPIIntCast(vec->map.rstart);CHKERRQ(ierr);
+    lstarts[0] = PetscMPIIntCast(vec->map->rstart);CHKERRQ(ierr);
     ierr = MPI_Type_create_subarray(1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
     ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
 
@@ -425,7 +425,7 @@ PetscErrorCode VecLoadIntoVector_Binary(PetscViewer viewer,Vec vec)
     if (size > 1) {
       /* read in other chuncks and send to other processors */
       /* determine maximum chunck owned by other */
-      range = vec->map.range;
+      range = vec->map->range;
       n = 1;
       for (i=1; i<size; i++) {
         n = PetscMax(n,range[i+1] - range[i]);

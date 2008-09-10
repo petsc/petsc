@@ -124,7 +124,7 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat_UMFPACK *lu=(Mat_UMFPACK*)(*F)->spptr;
   PetscErrorCode ierr;
-  UF_long     *ai=lu->ai,*aj=lu->aj,m=A->rmap.n,status;
+  UF_long     *ai=lu->ai,*aj=lu->aj,m=A->rmap->n,status;
   PetscScalar *av=lu->av;
 
   PetscFunctionBegin;
@@ -180,7 +180,7 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,M
   Mat_SeqAIJ     *mat=(Mat_SeqAIJ*)A->data;
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)((*F)->spptr);
   PetscErrorCode ierr;
-  int            i,m=A->rmap.n,n=A->cmap.n,*ra;
+  int            i,m=A->rmap->n,n=A->cmap->n,*ra;
   UF_long        status;
   PetscScalar    *av=mat->a;
   
@@ -259,7 +259,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   Mat            B;
   Mat_UMFPACK    *lu;
   PetscErrorCode ierr;
-  int            m=A->rmap.n,n=A->cmap.n,idx;
+  int            m=A->rmap->n,n=A->cmap->n,idx;
 
   const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC","2BY2"},
                  *scale[]={"NONE","SUM","MAX"}; 

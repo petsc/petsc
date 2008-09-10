@@ -59,7 +59,7 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
   MPI_Comm       comm = ((PetscObject)A)->comm;
   Mat_Plapack    *lu = (Mat_Plapack*)A->spptr;
   PetscErrorCode ierr;
-  PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,i,j,*idx_pla,*idx_petsc,loc_m,loc_stride;
+  PetscInt       M=A->rmap->N,m=A->rmap->n,rstart,i,j,*idx_pla,*idx_petsc,loc_m,loc_stride;
   PetscScalar    *array;
   PetscReal      one = 1.0;
   PetscMPIInt    size,rank,r_rank,r_nproc,c_rank,c_nproc;;
@@ -152,7 +152,7 @@ PetscErrorCode MatLUFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F)
 {
   Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
   PetscErrorCode ierr;
-  PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,rend;
+  PetscInt       M=A->rmap->N,m=A->rmap->n,rstart,rend;
   PetscInt       info_pla=0;
   PetscScalar    *array,one = 1.0;
 
@@ -196,7 +196,7 @@ PetscErrorCode MatCholeskyFactorNumeric_Plapack(Mat A,MatFactorInfo *info,Mat *F
 {
   Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
   PetscErrorCode ierr;
-  PetscInt       M=A->rmap.N,m=A->rmap.n,rstart,rend;
+  PetscInt       M=A->rmap->N,m=A->rmap->n,rstart,rend;
   PetscInt       info_pla=0;
   PetscScalar    *array,one = 1.0;
 
@@ -239,7 +239,7 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
   Mat            B = *F;
   Mat_Plapack    *lu;   
   PetscErrorCode ierr;
-  PetscInt       M=A->rmap.N,N=A->cmap.N;
+  PetscInt       M=A->rmap->N,N=A->cmap->N;
   MPI_Comm       comm=((PetscObject)A)->comm,comm_2d;
   PetscMPIInt    size;
   PetscInt       ierror;

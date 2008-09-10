@@ -10,7 +10,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newty
   Mat            B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data; 
   PetscErrorCode ierr;
-  PetscInt       bs = A->rmap.bs,*ai = a->i,*aj = a->j,n = A->rmap.N/bs,i,j,k;
+  PetscInt       bs = A->rmap->bs,*ai = a->i,*aj = a->j,n = A->rmap->N/bs,i,j,k;
   PetscInt       *rowlengths,*rows,*cols,maxlen = 0,ncols;
   MatScalar      *aa = a->a;
 
@@ -23,7 +23,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newty
     }
   }
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
   ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
@@ -50,7 +50,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newty
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
-  B->rmap.bs = A->rmap.bs;
+  B->rmap->bs = A->rmap->bs;
 
   if (reuse == MAT_REUSE_MATRIX) {
     ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
@@ -72,7 +72,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqBAIJ(Mat A,const MatType 
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
-  PetscInt       *ai=a->i,m=A->rmap.N,n=A->cmap.N,i,*rowlengths;
+  PetscInt       *ai=a->i,m=A->rmap->N,n=A->cmap->N,i,*rowlengths;
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");

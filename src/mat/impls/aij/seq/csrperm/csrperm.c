@@ -146,10 +146,10 @@ PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M)
    * necessary.  But at this point, we know how large they need to be, and 
    * allocate only the necessary amount of memory.  So the duplicated matrix 
    * may actually use slightly less storage than the original! */
-  ierr = PetscMalloc(A->rmap.n*sizeof(PetscInt), csrperm_dest->iperm); CHKERRQ(ierr);
+  ierr = PetscMalloc(A->rmap->n*sizeof(PetscInt), csrperm_dest->iperm); CHKERRQ(ierr);
   ierr = PetscMalloc((csrperm->ngroup+1)*sizeof(PetscInt), csrperm_dest->xgroup); CHKERRQ(ierr);
   ierr = PetscMalloc((csrperm->ngroup)*sizeof(PetscInt), csrperm_dest->nzgroup); CHKERRQ(ierr);
-  ierr = PetscMemcpy(csrperm_dest->iperm,csrperm->iperm,sizeof(PetscInt)*A->rmap.n);CHKERRQ(ierr);
+  ierr = PetscMemcpy(csrperm_dest->iperm,csrperm->iperm,sizeof(PetscInt)*A->rmap->n);CHKERRQ(ierr);
   ierr = PetscMemcpy(csrperm_dest->xgroup,csrperm->xgroup,sizeof(PetscInt)*(csrperm->ngroup+1));CHKERRQ(ierr);
   ierr = PetscMemcpy(csrperm_dest->nzgroup,csrperm->nzgroup,sizeof(PetscInt)*csrperm->ngroup);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -181,7 +181,7 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
    * type MATSEQCSRPERM and return an error code if it is not.
    * Come back and do this! */
    
-  m  = A->rmap.n;
+  m  = A->rmap->n;
   ia = a->i;
    
   /* Allocate the arrays that will hold the permutation vector. */
@@ -424,7 +424,7 @@ PetscErrorCode MatMult_SeqCSRPERM(Mat A,Vec xx,Vec yy)
     } /* End handling matvec for chunk with nz > 1. */
   } /* End loop over igroup. */
 #endif
-  ierr = PetscLogFlops(2*a->nz - A->rmap.n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->rmap->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -587,7 +587,7 @@ PetscErrorCode MatMultAdd_SeqCSRPERM(Mat A,Vec xx,Vec ww,Vec yy)
   } /* End loop over igroup. */
 
 #endif
-  ierr = PetscLogFlops(2*a->nz - A->rmap.n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->rmap->n);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   if (yy != ww) {

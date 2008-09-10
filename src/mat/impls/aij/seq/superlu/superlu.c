@@ -125,10 +125,10 @@ PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,MatFactorInfo *info,Mat *F)
        Since SuperLU likes column-oriented matrices,we pass it the transpose,
        and then solve A^T X = B in MatSolve(). */
 #if defined(PETSC_USE_COMPLEX)
-  zCreate_CompCol_Matrix(&lu->A,A->cmap.n,A->rmap.n,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,
+  zCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,
                            SLU_NC,SLU_Z,SLU_GE);
 #else
-  dCreate_CompCol_Matrix(&lu->A,A->cmap.n,A->rmap.n,aa->nz,aa->a,aa->j,aa->i,
+  dCreate_CompCol_Matrix(&lu->A,A->cmap->n,A->rmap->n,aa->nz,aa->a,aa->j,aa->i,
                            SLU_NC,SLU_D,SLU_GE);
 #endif
   
@@ -332,7 +332,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
 {
   Mat_SuperLU    *lu = (Mat_SuperLU*)((*F)->spptr);
   PetscErrorCode ierr;
-  PetscInt       m=A->rmap.n,n=A->cmap.n;
+  PetscInt       m=A->rmap->n,n=A->cmap->n;
 
   PetscFunctionBegin;
 
@@ -396,7 +396,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 
   PetscFunctionBegin;
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 

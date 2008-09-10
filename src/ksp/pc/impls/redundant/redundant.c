@@ -101,9 +101,9 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     /* get local size of xsub/ysub */    
     ierr = MPI_Comm_size(subcomm,&subsize);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(subcomm,&subrank);CHKERRQ(ierr);
-    rstart_sub = pc->pmat->rmap.range[red->psubcomm->n*subrank]; /* rstart in xsub/ysub */    
+    rstart_sub = pc->pmat->rmap->range[red->psubcomm->n*subrank]; /* rstart in xsub/ysub */    
     if (subrank+1 < subsize){
-      rend_sub = pc->pmat->rmap.range[red->psubcomm->n*(subrank+1)];
+      rend_sub = pc->pmat->rmap->range[red->psubcomm->n*(subrank+1)];
     } else {
       rend_sub = m; 
     }

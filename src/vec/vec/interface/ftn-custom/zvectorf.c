@@ -162,7 +162,7 @@ void PETSC_STDCALL vecgetownershipranges_(Vec *x,PetscInt *range,PetscErrorCode 
   PetscMPIInt    size;
   const PetscInt *r;
 
-  *ierr = MPI_Comm_size((*x)->map.comm,&size);if (*ierr) return;
+  *ierr = MPI_Comm_size((*x)->map->comm,&size);if (*ierr) return;
   *ierr = VecGetOwnershipRanges(*x,&r);if (*ierr) return;
   *ierr = PetscMemcpy(range,r,(size+1)*sizeof(PetscInt));
 }

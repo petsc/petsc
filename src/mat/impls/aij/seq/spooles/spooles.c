@@ -37,7 +37,7 @@ PetscErrorCode MatSolve_SeqSpooles(Mat A,Vec b,Vec x)
   PetscScalar      *array;
   DenseMtx         *mtxY, *mtxX ;
   PetscErrorCode   ierr;
-  PetscInt         irow,neqns=A->cmap.n,nrow=A->rmap.n,*iv;
+  PetscInt         irow,neqns=A->cmap->n,nrow=A->rmap->n,*iv;
 #if defined(PETSC_USE_COMPLEX)
   double           x_real,x_imag;
 #else
@@ -117,7 +117,7 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
   Chv                *rootchv ;
   IVL                *adjIVL;
   PetscErrorCode     ierr;
-  PetscInt           nz,nrow=A->rmap.n,irow,nedges,neqns=A->cmap.n,*ai,*aj,i,*diag=0,fierr;
+  PetscInt           nz,nrow=A->rmap->n,irow,nedges,neqns=A->cmap->n,*ai,*aj,i,*diag=0,fierr;
   PetscScalar        *av;
   double             cputotal,facops;
 #if defined(PETSC_USE_COMPLEX)
@@ -149,7 +149,7 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
     if (lu->options.symflag == SPOOLES_NONSYMMETRIC) {
       nz=mat->nz;
     } else { /* SPOOLES_SYMMETRIC || SPOOLES_HERMITIAN */
-      nz=(mat->nz + A->rmap.n)/2;
+      nz=(mat->nz + A->rmap->n)/2;
       diag=mat->diag;
     }
   } else { /* A is SBAIJ */

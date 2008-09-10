@@ -101,13 +101,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
   PetscValidHeaderSpecific(C,MAT_COOKIE,2);
   PetscCheckSameComm(A,0,B,1);
   PetscCheckSameComm(A,0,C,2);
-  if (A->rmap.n != A->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local columns %D",A->rmap.n,A->cmap.n);
-  if (A->rmap.n != B->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows B %D",A->rmap.n,B->rmap.n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != B->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows B %D",A->rmap->n,B->rmap->n);
   if (D) {
     PetscValidHeaderSpecific(D,MAT_COOKIE,4);
     PetscCheckSameComm(A,0,D,3);
-    if (D->rmap.n != D->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap.n,D->cmap.n);
-    if (C->rmap.n != D->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap.n,D->rmap.n);
+    if (D->rmap->n != D->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap->n,D->cmap->n);
+    if (C->rmap->n != D->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap->n,D->rmap->n);
   }
 
   ierr = MatGetLocalSize(D,&m,&n);CHKERRQ(ierr);
@@ -134,9 +134,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
   (*N)->assembled           = PETSC_TRUE;
 
   /* treats the new matrix as having block size of 1 which is most likely the case */
-  (*N)->rmap.bs = (*N)->cmap.bs = 1;
-  ierr = PetscMapSetUp(&(*N)->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(&(*N)->cmap);CHKERRQ(ierr);
+  (*N)->rmap->bs = (*N)->cmap->bs = 1;
+  ierr = PetscMapSetUp((*N)->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp((*N)->cmap);CHKERRQ(ierr);
 
   ierr = KSPCreate(((PetscObject)A)->comm,&Na->ksp);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(Na->ksp,((PetscObject)A)->prefix);CHKERRQ(ierr);
@@ -213,13 +213,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat B,Mat
   PetscValidHeaderSpecific(C,MAT_COOKIE,2);
   PetscCheckSameComm(A,0,B,1);
   PetscCheckSameComm(A,0,C,2);
-  if (A->rmap.n != A->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local columns %D",A->rmap.n,A->cmap.n);
-  if (A->rmap.n != B->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows B %D",A->rmap.n,B->rmap.n);
+  if (A->rmap->n != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local columns %D",A->rmap->n,A->cmap->n);
+  if (A->rmap->n != B->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of A %D do not equal local rows B %D",A->rmap->n,B->rmap->n);
   if (D) {
     PetscValidHeaderSpecific(D,MAT_COOKIE,4);
     PetscCheckSameComm(A,0,D,3);
-    if (D->rmap.n != D->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap.n,D->cmap.n);
-    if (C->rmap.n != D->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap.n,D->rmap.n);
+    if (D->rmap->n != D->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of D %D do not equal local columns %D",D->rmap->n,D->cmap->n);
+    if (C->rmap->n != D->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap->n,D->rmap->n);
   }
 
   ierr      = MatDestroy(Na->A);CHKERRQ(ierr);

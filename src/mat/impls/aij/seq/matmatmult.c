@@ -33,7 +33,7 @@ PetscErrorCode MatMatMultSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal fill,Mat *
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ         *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c;
   PetscInt           *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci,*cj;
-  PetscInt           am=A->rmap.N,bn=B->cmap.N,bm=B->rmap.N;
+  PetscInt           am=A->rmap->N,bn=B->cmap->N,bm=B->rmap->N;
   PetscInt           i,j,anzi,brow,bnzj,cnzi,nlnk,*lnk,nspacedouble=0;
   MatScalar          *ca;
   PetscBT            lnkbt;
@@ -130,7 +130,7 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
   Mat_SeqAIJ     *b = (Mat_SeqAIJ *)B->data;
   Mat_SeqAIJ     *c = (Mat_SeqAIJ *)C->data;
   PetscInt       *ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j,*bjj,*ci=c->i,*cj=c->j;
-  PetscInt       am=A->rmap.N,cm=C->rmap.N;
+  PetscInt       am=A->rmap->N,cm=C->rmap->N;
   PetscInt       i,j,k,anzi,bnzi,cnzi,brow,nextb;
   MatScalar      *aa=a->a,*ba=b->a,*baj,*ca=c->a; 
 
@@ -192,7 +192,7 @@ PetscErrorCode MatMatMultTransposeSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat B,PetscReal f
   PetscFunctionBegin;
   /* create symbolic At */
   ierr = MatGetSymbolicTranspose_SeqAIJ(A,&ati,&atj);CHKERRQ(ierr);
-  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,A->cmap.n,A->rmap.n,ati,atj,PETSC_NULL,&At);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,A->cmap->n,A->rmap->n,ati,atj,PETSC_NULL,&At);CHKERRQ(ierr);
 
   /* get symbolic C=At*B */
   ierr = MatMatMultSymbolic_SeqAIJ_SeqAIJ(At,B,fill,C);CHKERRQ(ierr);
@@ -210,8 +210,8 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat A,Mat B,Mat C)
 {
   PetscErrorCode ierr; 
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data,*c=(Mat_SeqAIJ*)C->data;
-  PetscInt       am=A->rmap.n,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
-  PetscInt       cm=C->rmap.n,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k;
+  PetscInt       am=A->rmap->n,anzi,*ai=a->i,*aj=a->j,*bi=b->i,*bj,bnzi,nextb;
+  PetscInt       cm=C->rmap->n,*ci=c->i,*cj=c->j,crow,*cjj,i,j,k;
   PetscLogDouble flops=0.0;
   MatScalar      *aa=a->a,*ba,*ca=c->a,*caj;
  
@@ -282,14 +282,14 @@ PetscErrorCode MatMatMultNumeric_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   PetscErrorCode ierr;
   PetscScalar    *b,*c,r1,r2,r3,r4,*b1,*b2,*b3,*b4;
   MatScalar      *aa;
-  PetscInt       cm=C->rmap.n, cn=B->cmap.n, bm=B->rmap.n, col, i,j,n,*aj, am = A->rmap.n;
+  PetscInt       cm=C->rmap->n, cn=B->cmap->n, bm=B->rmap->n, col, i,j,n,*aj, am = A->rmap->n;
   PetscInt       am2 = 2*am, am3 = 3*am,  bm4 = 4*bm,colam;
 
   PetscFunctionBegin;
   if (!cm || !cn) PetscFunctionReturn(0);
-  if (bm != A->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap.n,bm);
-  if (A->rmap.n != C->rmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap.n,A->rmap.n);
-  if (B->cmap.n != C->cmap.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap.n,C->cmap.n);
+  if (bm != A->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number columns in A %D not equal rows in B %D\n",A->cmap->n,bm);
+  if (A->rmap->n != C->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number rows in C %D not equal rows in A %D\n",C->rmap->n,A->rmap->n);
+  if (B->cmap->n != C->cmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number columns in B %D not equal columns in C %D\n",B->cmap->n,C->cmap->n);
   ierr = MatGetArray(B,&b);CHKERRQ(ierr);
   ierr = MatGetArray(C,&c);CHKERRQ(ierr);
   b1 = b; b2 = b1 + bm; b3 = b2 + bm; b4 = b3 + bm;
@@ -349,7 +349,7 @@ PetscErrorCode MatMatMultNumericAdd_SeqAIJ_SeqDense(Mat A,Mat B,Mat C)
   PetscErrorCode ierr;
   PetscScalar    *b,*c,r1,r2,r3,r4,*b1,*b2,*b3,*b4;
   MatScalar      *aa;
-  PetscInt       cm=C->rmap.n, cn=B->cmap.n, bm=B->rmap.n, col, i,j,n,*aj, am = A->rmap.n,*ii,arm;
+  PetscInt       cm=C->rmap->n, cn=B->cmap->n, bm=B->rmap->n, col, i,j,n,*aj, am = A->rmap->n,*ii,arm;
   PetscInt       am2 = 2*am, am3 = 3*am,  bm4 = 4*bm,colam,*ridx;
 
   PetscFunctionBegin;

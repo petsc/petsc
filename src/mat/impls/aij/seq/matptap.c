@@ -46,7 +46,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*p = (Mat_SeqAIJ*)P->data,*c;
   PetscInt           *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
   PetscInt           *ci,*cj,*ptadenserow,*ptasparserow,*ptaj,nspacedouble=0;
-  PetscInt           an=A->cmap.N,am=A->rmap.N,pn=P->cmap.N;
+  PetscInt           an=A->cmap->N,am=A->rmap->N,pn=P->cmap->N;
   PetscInt           i,j,k,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi,nlnk,*lnk;
   MatScalar          *ca;
   PetscBT            lnkbt;
@@ -170,7 +170,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqAIJ(Mat A,Mat P,Mat C)
   Mat_SeqAIJ     *c  = (Mat_SeqAIJ *) C->data;
   PetscInt       *ai=a->i,*aj=a->j,*apj,*apjdense,*pi=p->i,*pj=p->j,*pJ=p->j,*pjj;
   PetscInt       *ci=c->i,*cj=c->j,*cjj;
-  PetscInt       am=A->rmap.N,cn=C->cmap.N,cm=C->rmap.N;
+  PetscInt       am=A->rmap->N,cn=C->cmap->N,cm=C->rmap->N;
   PetscInt       i,j,k,anzi,pnzi,apnzj,nextap,pnzj,prow,crow;
   MatScalar      *aa=a->a,*apa,*pa=p->a,*pA=p->a,*paj,*ca=c->a,*caj;
 

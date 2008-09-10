@@ -11,7 +11,7 @@
 #endif
 
 #define MPIBAIJHEADER \
-  PetscInt      *rangebs;              /* rmap.range/bs */                      		\
+  PetscInt      *rangebs;              /* rmap->range/bs */                      		\
   PetscInt      rstartbs,rendbs,cstartbs,cendbs;  /* map values / bs  */                        \
   Mat           A,B;                   /* local submatrices: A (diag part), B (off-diag part) */ \
   PetscMPIInt   size;                   /* size of communicator */                             \

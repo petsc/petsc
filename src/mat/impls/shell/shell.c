@@ -329,14 +329,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat A)
   ierr = PetscNewLog(A,Mat_Shell,&b);CHKERRQ(ierr);
   A->data = (void*)b;
 
-  if (A->rmap.n == PETSC_DECIDE || A->cmap.n == PETSC_DECIDE) {
+  if (A->rmap->n == PETSC_DECIDE || A->cmap->n == PETSC_DECIDE) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must give local row and column count for matrix");
   }
 
-  ierr = PetscMapSetBlockSize(&A->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(&A->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(&A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(&A->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(A->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(A->cmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(A->cmap);CHKERRQ(ierr);
 
   b->ctx           = 0;
   b->scale         = PETSC_FALSE;

@@ -68,10 +68,10 @@ PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
-  rstart = A->rmap.rstart;
-  rend   = A->rmap.rend;
-  cstart = A->cmap.rstart;
-  cend   = A->cmap.rend;
+  rstart = A->rmap->rstart;
+  rend   = A->rmap->rend;
+  cstart = A->cmap->rstart;
+  cend   = A->cmap->rend;
   ierr = HYPRE_IJMatrixCreate(((PetscObject)A)->comm,rstart,rend-1,cstart,cend-1,ij);CHKERRQ(ierr);
   ierr = HYPRE_IJMatrixSetObjectType(*ij,HYPRE_PARCSR);CHKERRQ(ierr);
   {
@@ -181,7 +181,7 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A,HYPRE_IJMatrix ij)
        this is the Hack part where we monkey directly with the hypre datastructures
   */
 
-  ierr = PetscMemcpy(hdiag->i,pdiag->i,(A->rmap.n + 1)*sizeof(PetscInt));
+  ierr = PetscMemcpy(hdiag->i,pdiag->i,(A->rmap->n + 1)*sizeof(PetscInt));
   ierr = PetscMemcpy(hdiag->j,pdiag->j,pdiag->nz*sizeof(PetscInt));
   ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));
 
@@ -225,7 +225,7 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A,HYPRE_IJMatrix ij)
        this is the Hack part where we monkey directly with the hypre datastructures
   */
 
-  ierr = PetscMemcpy(hdiag->i,pdiag->i,(pA->A->rmap.n + 1)*sizeof(PetscInt));
+  ierr = PetscMemcpy(hdiag->i,pdiag->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
   /* need to shift the diag column indices (hdiag->j) back to global numbering since hypre is expecting this */
   jj  = hdiag->j;
   pjj = pdiag->j;
@@ -234,7 +234,7 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A,HYPRE_IJMatrix ij)
   }
   ierr = PetscMemcpy(hdiag->data,pdiag->a,pdiag->nz*sizeof(PetscScalar));
 
-  ierr = PetscMemcpy(hoffd->i,poffd->i,(pA->A->rmap.n + 1)*sizeof(PetscInt));
+  ierr = PetscMemcpy(hoffd->i,poffd->i,(pA->A->rmap->n + 1)*sizeof(PetscInt));
   /* need to move the offd column indices (hoffd->j) back to global numbering since hypre is expecting this
      If we hacked a hypre a bit more we might be able to avoid this step */
   jj  = hoffd->j;
@@ -278,10 +278,10 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
-  rstart = A->rmap.rstart;
-  rend   = A->rmap.rend;
-  cstart = A->cmap.rstart;
-  cend   = A->cmap.rend;
+  rstart = A->rmap->rstart;
+  rend   = A->rmap->rend;
+  cstart = A->cmap->rstart;
+  cend   = A->cmap->rend;
   ierr = HYPRE_IJMatrixCreate(((PetscObject)A)->comm,rstart,rend-1,cstart,cend-1,ij);CHKERRQ(ierr);
   ierr = HYPRE_IJMatrixSetObjectType(*ij,HYPRE_PARCSR);CHKERRQ(ierr);
  

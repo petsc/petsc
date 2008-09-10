@@ -57,7 +57,7 @@ PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x)
   ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
   ierr = VecCopy(b,x);CHKERRQ(ierr);
   ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
-  dgss(&zero,&A->cmap.n,essl->a,essl->ia,essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
+  dgss(&zero,&A->cmap->n,essl->a,essl->ia,essl->ja,&essl->lna,xx,essl->aux,&essl->naux);
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -73,7 +73,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F)
 
   PetscFunctionBegin;
   /* copy matrix data into silly ESSL data structure (1-based Frotran style) */
-  for (i=0; i<A->rmap.n+1; i++) essl->ia[i] = aa->i[i] + 1;
+  for (i=0; i<A->rmap->n+1; i++) essl->ia[i] = aa->i[i] + 1;
   for (i=0; i<aa->nz; i++) essl->ja[i]  = aa->j[i] + 1;
  
   ierr = PetscMemcpy(essl->a,aa->a,(aa->nz)*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -87,7 +87,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F)
   essl->rparm[1] = 1.0;
   ierr = PetscOptionsGetReal(((PetscObject)A)->prefix,"-matessl_lu_threshold",&essl->rparm[1],PETSC_NULL);CHKERRQ(ierr);
 
-  dgsf(&one,&A->rmap.n,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
+  dgsf(&one,&A->rmap->n,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
   (*F)->assembled = PETSC_TRUE;
   (*F)->preallocated = PETSC_TRUE;
@@ -107,9 +107,9 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat 
   PetscReal      f = 1.0;
 
   PetscFunctionBegin;
-  if (A->cmap.N != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
@@ -123,7 +123,7 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat 
   f = info->fill;
   essl->nz   = a->nz;
   essl->lna  = (int)a->nz*f;
-  essl->naux = 100 + 10*A->rmap.n;
+  essl->naux = 100 + 10*A->rmap->n;
 
   /* since malloc is slow on IBM we try a single malloc */
   len               = essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar);
@@ -170,9 +170,9 @@ PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
   Mat_Essl       *essl;
 
   PetscFunctionBegin;
-  if (A->cmap.N != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
+  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 

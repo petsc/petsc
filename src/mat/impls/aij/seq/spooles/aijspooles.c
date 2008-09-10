@@ -60,7 +60,7 @@ PetscErrorCode MatGetFactor_seqaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   Mat            B;
   Mat_Spooles    *lu;   
   PetscErrorCode ierr;
-  int            m=A->rmap.n,n=A->cmap.n;
+  int            m=A->rmap->n,n=A->cmap->n;
 
   PetscFunctionBegin;	
   /* Create the factorization matrix */

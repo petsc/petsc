@@ -247,7 +247,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat A,MatFactorInfo *info,Mat *B)
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   C->factor    = MAT_FACTOR_LU;
   C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(C->cmap.n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -256,7 +256,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatGetFactor_seqbaij_petsc"
 PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
 {
-  PetscInt           n = A->rmap.n;
+  PetscInt           n = A->rmap->n;
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
@@ -301,7 +301,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
   Mat_SeqBAIJ    *a=(Mat_SeqBAIJ*)A->data;
   Mat_SeqSBAIJ   *b=(Mat_SeqSBAIJ*)C->data;
   IS             ip=b->row;
-  PetscInt       *rip,i,j,mbs=a->mbs,bs=A->rmap.bs,*bi=b->i,*bj=b->j,*bcol;
+  PetscInt       *rip,i,j,mbs=a->mbs,bs=A->rmap->bs,*bi=b->i,*bj=b->j,*bcol;
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
@@ -416,7 +416,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat A,MatFactorInfo *info,Mat 
   C->factor       = MAT_FACTOR_CHOLESKY; 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
-  ierr = PetscLogFlops(C->rmap.N);CHKERRQ(ierr);
+  ierr = PetscLogFlops(C->rmap->N);CHKERRQ(ierr);
   if (sctx.nshift){
     if (shiftnz) {
       ierr = PetscInfo2(A,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
@@ -547,7 +547,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat A,MatFacto
   C->factor       = MAT_FACTOR_CHOLESKY; 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
-  ierr = PetscLogFlops(C->rmap.N);CHKERRQ(ierr);
+  ierr = PetscLogFlops(C->rmap->N);CHKERRQ(ierr);
     if (sctx.nshift){
     if (shiftnz) {
       ierr = PetscInfo2(A,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
@@ -569,7 +569,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *info,Ma
   Mat                B;
   PetscErrorCode     ierr;
   PetscTruth         perm_identity;
-  PetscInt           reallocs=0,*rip,i,*ai=a->i,*aj=a->j,am=a->mbs,bs=A->rmap.bs,*ui;
+  PetscInt           reallocs=0,*rip,i,*ai=a->i,*aj=a->j,am=a->mbs,bs=A->rmap->bs,*ui;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
   PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,ncols_upper,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
   PetscReal          fill=info->fill,levels=info->levels;
@@ -790,7 +790,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
   PetscErrorCode     ierr;
   PetscTruth         perm_identity;
   PetscReal          fill = info->fill;
-  PetscInt           *rip,i,mbs=a->mbs,bs=A->rmap.bs,*ai=a->i,*aj=a->j,reallocs=0,prow;
+  PetscInt           *rip,i,mbs=a->mbs,bs=A->rmap->bs,*ai=a->i,*aj=a->j,reallocs=0,prow;
   PetscInt           *jl,jmin,jmax,nzk,*ui,k,j,*il,nextprow;
   PetscInt           nlnk,*lnk,ncols,ncols_upper,*cols,*uj,**ui_ptr,*uj_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
