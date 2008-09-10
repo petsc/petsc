@@ -8,6 +8,7 @@
 
 /* Logging support */
 PetscCookie PETSCDM_DLLEXPORT DM_COOKIE;
+PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE;
 PetscLogEvent  DA_GlobalToLocal, DA_LocalToGlobal, DA_LocalADFunction;
 
 #undef __FUNCT__  

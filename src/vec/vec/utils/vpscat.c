@@ -1498,9 +1498,11 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   PetscMPIInt            size,rank,imdex,tag,n;
   PetscInt               *source = PETSC_NULL,*owners = PETSC_NULL;
   PetscInt               *lowner = PETSC_NULL,*start = PETSC_NULL,lengthy,lengthx;
-  PetscInt               *nprocs = PETSC_NULL,i,j,idx,nsends,nrecvs;
+  PetscMPIInt            *nprocs = PETSC_NULL,nrecvs;
+  PetscInt               i,j,idx,nsends;
   PetscInt               *owner = PETSC_NULL,*starts = PETSC_NULL,count,slen;
-  PetscInt               *rvalues,*svalues,base,*values,*indx,nprocslocal,*onodes1,*olengths1,recvtotal,*rsvalues;
+  PetscInt               *rvalues,*svalues,base,*values,*indx,nprocslocal,recvtotal,*rsvalues;
+  PetscMPIInt            *onodes1,*olengths1;
   MPI_Comm               comm;
   MPI_Request            *send_waits = PETSC_NULL,*recv_waits = PETSC_NULL;
   MPI_Status             recv_status,*send_status;
@@ -1516,8 +1518,8 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   ierr = VecGetSize(xin,&lengthx);CHKERRQ(ierr);
 
   /*  first count number of contributors to each processor */
-  ierr = PetscMalloc2(size,PetscInt,&nprocs,nx,PetscInt,&owner);CHKERRQ(ierr);
-  ierr = PetscMemzero(nprocs,size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc2(size,PetscMPIInt,&nprocs,nx,PetscInt,&owner);CHKERRQ(ierr);
+  ierr = PetscMemzero(nprocs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
   j      = 0;
   nsends = 0;
   for (i=0; i<nx; i++) {
@@ -1531,16 +1533,13 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
       }
     }
   }
-  for (i=1; i<size; i++) {
-    PetscMPIIntCheck(nprocs[i]);
-  }
   nprocslocal  = nprocs[rank]; 
   nprocs[rank] = 0;
   if (nprocslocal) nsends--;
   /* inform other processors of number of messages and max length*/
   ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,nprocs,&nrecvs);CHKERRQ(ierr);
   ierr = PetscGatherMessageLengths(comm,nsends,nrecvs,nprocs,&onodes1,&olengths1);CHKERRQ(ierr);
-  ierr = PetscSortIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
+  ierr = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
   recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
 
   /* post receives:   */
@@ -1996,9 +1995,11 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag,imdex,n;
   PetscInt       *owners = xin->map->range;
-  PetscInt       *nprocs = PETSC_NULL,i,j,idx,nsends,nrecvs,*local_inidx = PETSC_NULL,*local_inidy = PETSC_NULL;
+  PetscMPIInt    *nprocs = PETSC_NULL;
+  PetscInt       i,j,idx,nsends,*local_inidx = PETSC_NULL,*local_inidy = PETSC_NULL;
   PetscInt       *owner = PETSC_NULL,*starts = PETSC_NULL,count,slen;
-  PetscInt       *rvalues = PETSC_NULL,*svalues = PETSC_NULL,base,nmax,*values = PETSC_NULL,*rsvalues,recvtotal,lastidx,*onodes1,*olengths1;
+  PetscInt       *rvalues = PETSC_NULL,*svalues = PETSC_NULL,base,nmax,*values = PETSC_NULL,*rsvalues,recvtotal,lastidx;
+  PetscMPIInt    *onodes1,*olengths1,nrecvs;
   MPI_Comm       comm;
   MPI_Request    *send_waits = PETSC_NULL,*recv_waits = PETSC_NULL;
   MPI_Status     recv_status,*send_status = PETSC_NULL;
@@ -2022,8 +2023,8 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
      They then call the StoPScatterCreate()
   */
   /*  first count number of contributors to each processor */
-  ierr  = PetscMalloc3(size,PetscInt,&nprocs,nx,PetscInt,&owner,(size+1),PetscInt,&starts);CHKERRQ(ierr);
-  ierr  = PetscMemzero(nprocs,size*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr  = PetscMalloc3(size,PetscMPIInt,&nprocs,nx,PetscInt,&owner,(size+1),PetscInt,&starts);CHKERRQ(ierr);
+  ierr  = PetscMemzero(nprocs,size*sizeof(PetscMPIInt));CHKERRQ(ierr);
   lastidx = -1;
   j       = 0;
   for (i=0; i<nx; i++) {
@@ -2050,7 +2051,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   /* inform other processors of number of messages and max length*/
   ierr = PetscGatherNumberOfMessages(comm,PETSC_NULL,nprocs,&nrecvs);CHKERRQ(ierr);
   ierr = PetscGatherMessageLengths(comm,nsends,nrecvs,nprocs,&onodes1,&olengths1);CHKERRQ(ierr);
-  ierr = PetscSortIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
+  ierr = PetscSortMPIIntWithArray(nrecvs,onodes1,olengths1);CHKERRQ(ierr);
   recvtotal = 0; for (i=0; i<nrecvs; i++) recvtotal += olengths1[i];
 
   /* post receives:   */

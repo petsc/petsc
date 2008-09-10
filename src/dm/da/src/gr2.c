@@ -396,7 +396,7 @@ static PetscErrorCode DAArrayMPIIO(DA da,PetscViewer viewer,Vec xin,PetscTruth w
   dof = PetscMPIIntCast(da->w);
   gsizes[0]  = dof; gsizes[1] = PetscMPIIntCast(da->M); gsizes[2] = PetscMPIIntCast(da->N); gsizes[3] = PetscMPIIntCast(da->P);
   lsizes[0]  = dof;lsizes[1] = PetscMPIIntCast((da->xe-da->xs)/dof); lsizes[2] = PetscMPIIntCast(da->ye-da->ys); lsizes[3] = PetscMPIIntCast(da->ze-da->zs);
-  lstarts[0] = 0;  lstarts[1] = PetscMPIIntCast(da->xs)/dof; lstarts[2] = PetscMPIIntCast(da->ys); lstarts[3] = PetscMPIIntCast(da->zs);
+  lstarts[0] = 0;  lstarts[1] = PetscMPIIntCast(da->xs/dof); lstarts[2] = PetscMPIIntCast(da->ys); lstarts[3] = PetscMPIIntCast(da->zs);
   ierr = MPI_Type_create_subarray(da->dim+1,gsizes,lsizes,lstarts,MPI_ORDER_FORTRAN,MPIU_SCALAR,&view);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&view);CHKERRQ(ierr);
   
