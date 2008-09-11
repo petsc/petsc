@@ -22,15 +22,10 @@ class Configure(config.package.Package):
     return
           
   def Install(self):
-        
-    umfpackDir = self.getDir() #~UMFPACK-v#
-    installDir = os.path.join(self.defaultInstallDir, self.arch) #$PETSC_DIR/$PETESC_ARCH
-    confDir    = os.path.join(installDir, 'conf')  #$PETSC_DIR/$PETSC_ARCH/conf
-    incDir     = os.path.join(installDir,'include')
-    libDir     = os.path.join(installDir,'lib')    
-    self.framework.log.write('umfpackDir = '+umfpackDir+' installDir '+installDir+'\n')
+    self.framework.log.write('umfpackDir = '+self.packageDir+' installDir '+self.installDir+'\n')
 
-    g = open(os.path.join(umfpackDir,'UFconfig/UFconfig.mk'),'w')
+    mkfile = 'UFconfig/UFconfig.mk'
+    g = open(os.path.join(self.packageDir, mkfile), 'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
     g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
@@ -45,10 +40,11 @@ class Configure(config.package.Package):
     g.close()
     
     # Build UMFPACK
-    try:
-      self.logPrintBox('Compiling UMFPACK; this may take several minutes')
-      output = config.base.Configure.executeShellCommand('cd '+umfpackDir+'/UMFPACK; UMFPACK_INSTALL_DIR='+installDir+'/lib; export UMFPACK_INSTALL_DIR; make; make clean; mv Lib/*.a '+libDir+'; cp Include/*.h '+incDir+'; cd ..; cp UFconfig/*.h '+incDir+'; cd AMD; mv Lib/*.a '+libDir+'; cp Include/*.h '+incDir, timeout=2500, log = self.framework.log)[0]
-    
-    except RuntimeError, e:
-      raise RuntimeError('Error running make on UMFPACK: '+str(e))
-    return installDir
+    if self.installNeeded(mkfile):
+      try:
+        self.logPrintBox('Compiling UMFPACK; this may take several minutes')
+        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/UMFPACK; UMFPACK_INSTALL_DIR='+self.installDir+'/lib; export UMFPACK_INSTALL_DIR; make; make clean; mv Lib/*.a '+self.libDir+'; cp Include/*.h '+self.includeDir+'; cd ..; cp UFconfig/*.h '+self.includeDir+'; cd AMD; mv Lib/*.a '+self.libDir+'; cp Include/*.h '+self.includeDir, timeout=2500, log = self.framework.log)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running make on UMFPACK: '+str(e))
+      self.checkInstall(output, mkfile)
+    return self.installDir

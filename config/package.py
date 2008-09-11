@@ -148,7 +148,33 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
+    self.installDir = os.path.join(self.defaultInstallDir, self.arch)
+    self.confDir    = os.path.join(self.installDir, 'conf')
+    self.includeDir = os.path.join(self.installDir, 'include')
+    self.libDir     = os.path.join(self.installDir, 'lib')
+    self.packageDir = self.getDir()
+    if not os.path.isdir(self.installDir): os.mkdir(self.installDir)
+    if not os.path.isdir(self.libDir):     os.mkdir(self.libDir)
+    if not os.path.isdir(self.includeDir): os.mkdir(self.includeDir)
+    if not os.path.isdir(self.confDir):    os.mkdir(self.confDir)
     return os.path.abspath(self.Install())
+
+  def getChecksum(self,source, chunkSize = 1024*1024):  
+    '''Return the md5 checksum for a given file, which may also be specified by its filename
+       - The chunkSize argument specifies the size of blocks read from the file'''
+    import md5
+    if isinstance(source, file):
+      f = source
+    else:
+      f = file(source)
+    m = md5.new()
+    size = chunkSize
+    buf  = f.read(size)
+    while buf:
+      m.update(buf)
+      buf = f.read(size)
+    f.close()
+    return m.hexdigest()
 
   def generateLibList(self, directory):
     '''Generates full path list of libraries from self.liblist'''
@@ -248,6 +274,25 @@ class Package(config.base.Configure):
         fd.close()
       return self.getInstallDir()
     return ''
+
+  def installNeeded(self, mkfile):
+    if not os.path.isfile(os.path.join(self.confDir, self.name)) or not (self.getChecksum(os.path.join(self.confDir, self.name)) == self.getChecksum(os.path.join(self.packageDir, mkfile))):
+      self.framework.log.write('Have to rebuild '+self.name+', '+mkfile+' != '+os.path.join(self.confDir, self.name))
+      return 1
+    else:
+      self.framework.log.write('Do not need to rebuild '+self.name)
+      return 0
+
+  def checkInstall(self, output, mkfile):
+    '''Did the install process actually create a library?'''
+    if not os.path.isfile(os.path.join(self.installDir, self.libdir, self.liblist[0][0])):
+      self.framework.log.write('Error running make on '+self.name+'   ******(libraries not installed)*******\n')
+      self.framework.log.write('********Output of running make on '+self.name+' follows *******\n')        
+      self.framework.log.write(output)
+      self.framework.log.write('********End of Output of running make on '+self.name+' *******\n')
+      raise RuntimeError('Error running make on '+self.name+', libraries not installed')
+    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, mkfile)+' '+os.path.join(self.confDir, self.name), timeout=5, log = self.framework.log)[0]            
+    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
 
   def matchExcludeDir(self,dir):
     '''Check is the dir matches something in the excluded directory list'''
