@@ -41,7 +41,8 @@ cdef extern from "petscda.h":
     #int DASetElementType(PetscDA,PetscDAElementType)
     #int DASetInterpolationType(PetscDA,PetscDAInterpolationType)
 
-    int DAGetInfo(PetscDA,PetscInt*,
+    int DAGetInfo(PetscDA,
+                  PetscInt*,
                   PetscInt*,PetscInt*,PetscInt*,
                   PetscInt*,PetscInt*,PetscInt*,
                   PetscInt*,PetscInt*,
