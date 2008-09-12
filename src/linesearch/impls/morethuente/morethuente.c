@@ -75,12 +75,12 @@ static PetscErrorCode TaoLineSearchApply_MT(TaoLineSearch ls, Vec x, PetscReal *
     PetscErrorCode ierr;
     TAOLINESEARCH_MT_CTX *mt;
 #if defined(PETSC_USE_SCALAR)
-    PetscScalar cdginit;
+    PetscReal cdginit;
 #endif
     
-    PetscScalar    xtrapf = 4.0;
-    PetscScalar   finit, width, width1, dginit, fm, fxm, fym, dgm, dgxm, dgym;
-    PetscScalar    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1=0.0;
+    PetscReal    xtrapf = 4.0;
+    PetscReal   finit, width, width1, dginit, fm, fxm, fym, dgm, dgxm, dgym;
+    PetscReal    dgx, dgy, dg, fx, fy, stx, sty, dgtest, ftest1=0.0;
     PetscInt  i, stage1;
 
     PetscFunctionBegin;

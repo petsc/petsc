@@ -2,18 +2,18 @@
 
 typedef struct {
     int n;
-    PetscScalar alpha;
+    PetscReal alpha;
 } AppCtx;
 PetscErrorCode viewme(Vec v); 
 
-PetscErrorCode MyFuncGrad(TaoLineSearch ls, Vec X, PetscScalar *f, Vec G, void *ctx);
+PetscErrorCode MyFuncGrad(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ctx);
 
 int main(int argc, char *argv[])
 {
     TaoLineSearch ls;
     TaoLineSearchTerminationReason reason;
     Vec x,g,s;
-    PetscScalar f,step;
+    PetscReal f,step;
     AppCtx user;
     int ierr;
     
@@ -61,13 +61,13 @@ int main(int argc, char *argv[])
 }
 
 
-PetscErrorCode MyFuncGrad(TaoLineSearch ls, Vec X, PetscScalar *f, Vec G, void *ctx)
+PetscErrorCode MyFuncGrad(TaoLineSearch ls, Vec X, PetscReal *f, Vec G, void *ctx)
 {
     AppCtx *user = (AppCtx*)ctx;
     PetscErrorCode    ierr;
     PetscInt i,nn=user->n/2;
     double ff=0,t1,t2,alpha=user->alpha;
-    PetscScalar *x,*g;
+    PetscReal *x,*g;
 
     /* Get pointers to vector data */
     ierr = VecGetArray(X,&x); CHKERRQ(ierr);

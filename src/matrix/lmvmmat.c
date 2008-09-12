@@ -83,25 +83,25 @@ EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
     ctx->rescale_history = PetscMin(ctx->rescale_history, ctx->lm);
 
 
-    info = PetscMalloc((ctx->lm+1)*sizeof(PetscScalar),(void**)&ctx->rho); 
+    info = PetscMalloc((ctx->lm+1)*sizeof(PetscReal),(void**)&ctx->rho); 
                        CHKERRQ(info);
-    info = PetscMalloc((ctx->lm+1)*sizeof(PetscScalar),(void**)&ctx->beta); 
+    info = PetscMalloc((ctx->lm+1)*sizeof(PetscReal),(void**)&ctx->beta); 
                        CHKERRQ(info);
 
     nhistory = PetscMax(ctx->scalar_history,1);
-    info = PetscMalloc(nhistory*sizeof(PetscScalar),(void**)&ctx->yy_history); 
+    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->yy_history); 
                        CHKERRQ(info);
-    info = PetscMalloc(nhistory*sizeof(PetscScalar),(void**)&ctx->ys_history);
+    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ys_history);
                        CHKERRQ(info);
-    info = PetscMalloc(nhistory*sizeof(PetscScalar),(void**)&ctx->ss_history); 
+    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ss_history); 
                        CHKERRQ(info);
 
     nhistory = PetscMax(ctx->rescale_history,1);
-    info = PetscMalloc(nhistory*sizeof(PetscScalar),(void**)&ctx->yy_rhistory);
+    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->yy_rhistory);
                        CHKERRQ(info);
-    info = PetscMalloc(nhistory*sizeof(PetscScalar),(void**)&ctx->ys_rhistory);
+    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ys_rhistory);
                        CHKERRQ(info);
-    info = PetscMalloc(nhistory*sizeof(PetscScalar),(void**)&ctx->ss_rhistory); 
+    info = PetscMalloc(nhistory*sizeof(PetscReal),(void**)&ctx->ss_rhistory); 
                        CHKERRQ(info);
 
 
@@ -136,7 +136,7 @@ EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
 #define __FUNCT__ "MatLMVMSolve"
 EXTERN PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x) 
 {
-    PetscScalar      sq, yq, dd;
+    PetscReal      sq, yq, dd;
     PetscInt       ll;
     PetscTruth     scaled;
     MatLMVMCtx     *shell;
@@ -295,14 +295,14 @@ EXTERN PetscErrorCode MatLMVMReset(Mat M)
 EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 {
   MatLMVMCtx *ctx;
-  PetscScalar rhotemp, rhotol;
-  PetscScalar y0temp, s0temp;
-  PetscScalar yDy, yDs, sDs;
-  PetscScalar sigmanew, denom;
+  PetscReal rhotemp, rhotol;
+  PetscReal y0temp, s0temp;
+  PetscReal yDy, yDs, sDs;
+  PetscReal sigmanew, denom;
   PetscErrorCode ierr;
   PetscInt i;
   PetscTruth same;
-  PetscScalar yy_sum, ys_sum, ss_sum;
+  PetscReal yy_sum, ys_sum, ss_sum;
 
   PetscFunctionBegin;
 
@@ -732,7 +732,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMSetDelta"
-EXTERN PetscErrorCode MatLMVMSetDelta(Mat m, PetscScalar d)
+EXTERN PetscErrorCode MatLMVMSetDelta(Mat m, PetscReal d)
 {
     MatLMVMCtx *ctx;
     PetscErrorCode ierr;

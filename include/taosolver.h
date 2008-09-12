@@ -57,23 +57,23 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterDestroy(void);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver,TaoSolverConvergedReason*);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver, Vec);
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjective(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscScalar*,void*), void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjective(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*,void*), void*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscScalar*, Vec, void*), void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*), void*);
 
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver, Vec, PetscScalar*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver, Vec, Vec);
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolver, Vec, PetscScalar*, Vec);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolver, Vec, PetscReal*, Vec);
 
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver, PetscScalar*, PetscScalar*, PetscScalar*, PetscScalar*, PetscScalar*);
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetTolerances(TaoSolver, PetscScalar, PetscScalar, PetscScalar, PetscScalar, PetscScalar);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetTolerances(TaoSolver, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverResetStatistics(TaoSolver);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetDefaultMonitors(TaoSolver);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSolver,void*);
 
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver, PetscScalar, PetscScalar, PetscScalar); 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver, PetscReal, PetscReal, PetscReal); 
 
 
 PETSC_EXTERN_CXX_END

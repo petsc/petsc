@@ -63,7 +63,7 @@ PetscErrorCode initializevecs(Vec **vv, PetscInt numvecs, PetscInt size)
     PetscInt l,h;
     int i,j;
     Vec *v;
-    PetscScalar **xarr,*x;
+    PetscReal **xarr,*x;
     Vec tmp;
     PetscFunctionBegin;
     if (numvecs*size > length) {

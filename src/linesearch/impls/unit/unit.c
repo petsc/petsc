@@ -56,11 +56,11 @@ static PetscErrorCode TaoLineSearchView_Unit(TaoLineSearch ls,PetscViewer pv)
    Info is set to 0.
 
 @ */
-static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscScalar *f,Vec g,Vec step_direction)
+static PetscErrorCode TaoLineSearchApply_Unit(TaoLineSearch ls,Vec x,PetscReal *f,Vec g,Vec step_direction)
 {
   PetscErrorCode   info;
-  PetscScalar ftry;
-  PetscScalar startf = *f;
+  PetscReal ftry;
+  PetscReal startf = *f;
   //  Vec XL,XU; 
 
   PetscFunctionBegin;

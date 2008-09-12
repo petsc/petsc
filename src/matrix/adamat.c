@@ -96,7 +96,7 @@ int MatCreateADA(Mat mat,Vec d1, Vec d2, Mat *J)
 int MatMult_ADA(Mat mat,Vec a,Vec y)
 {
   TaoMatADACtx ctx;
-  PetscScalar        one = 1.0;
+  PetscReal        one = 1.0;
   int           info;
 
   PetscFunctionBegin;
@@ -130,7 +130,7 @@ int MatMultTranspose_ADA(Mat mat,Vec a,Vec y)
 int MatDiagonalShift_ADA(Vec D, Mat M)
 {
   TaoMatADACtx ctx;
-  PetscScalar        zero=0.0,one = 1.0;
+  PetscReal        zero=0.0,one = 1.0;
   int           info;
 
   PetscFunctionBegin;
@@ -189,7 +189,7 @@ int MatView_ADA(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatShift_ADA"
-int MatShift_ADA(Mat Y, PetscScalar a)
+int MatShift_ADA(Mat Y, PetscReal a)
 {
   int          info;
   TaoMatADACtx ctx;
@@ -250,7 +250,7 @@ int MatEqual_ADA(Mat A,Mat B,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScale_ADA"
-int MatScale_ADA(Mat mat, PetscScalar a)
+int MatScale_ADA(Mat mat, PetscReal a)
 {
   int          info;
   TaoMatADACtx ctx;
@@ -284,7 +284,7 @@ int MatTranspose_ADA(Mat mat,Mat *B)
 int MatADAComputeDiagonal(Mat mat)
 {
   int          i,m,n,low,high,info;
-  PetscScalar       *dtemp,*dptr;
+  PetscReal       *dtemp,*dptr;
   TaoMatADACtx ctx;
 
   PetscFunctionBegin;
@@ -293,7 +293,7 @@ int MatADAComputeDiagonal(Mat mat)
   info = MatGetOwnershipRange(mat, &low, &high);CHKERRQ(info);
   info = MatGetSize(mat,&m,&n);CHKERRQ(info);
   
-  info = PetscMalloc( n*sizeof(PetscScalar),&dtemp ); CHKERRQ(info);
+  info = PetscMalloc( n*sizeof(PetscReal),&dtemp ); CHKERRQ(info);
 
   for (i=0; i<n; i++){
     info = MatGetColumnVector(ctx->A, ctx->W, i);CHKERRQ(info);
@@ -320,7 +320,7 @@ int MatADAComputeDiagonal(Mat mat)
 int MatGetDiagonal_ADA(Mat mat,Vec v)
 {
   int          info;
-  PetscScalar       one=1.0;
+  PetscReal       one=1.0;
   TaoMatADACtx ctx;
 
   PetscFunctionBegin;
@@ -359,7 +359,7 @@ int MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,
   int          info,low,high;
   int          n,nlocal,i;
   int          *iptr;
-  PetscScalar       *dptr,*ddptr,zero=0.0;
+  PetscReal       *dptr,*ddptr,zero=0.0;
   VecType type_name;
   IS           ISrow;
   Vec          D1,D2;
@@ -418,7 +418,7 @@ int MatGetSubMatrix_ADA(Mat mat,IS isrow,IS iscol,int csize,MatReuse cll,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowADA"
-int MatGetRowADA(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
+int MatGetRowADA(Mat mat,int row,int *ncols,int **cols,PetscReal **vals)
 {
   int info,m,n;
 
@@ -427,7 +427,7 @@ int MatGetRowADA(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
 
   if (*ncols>0){
     info = PetscMalloc( (*ncols)*sizeof(int),cols );CHKERRQ(info);
-    info = PetscMalloc( (*ncols)*sizeof(PetscScalar),vals );CHKERRQ(info);
+    info = PetscMalloc( (*ncols)*sizeof(PetscReal),vals );CHKERRQ(info);
   } else {
     *cols=PETSC_NULL;
     *vals=PETSC_NULL;
@@ -438,7 +438,7 @@ int MatGetRowADA(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowADA"
-int MatRestoreRowADA(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
+int MatRestoreRowADA(Mat mat,int row,int *ncols,int **cols,PetscReal **vals)
 {
   int info;
   PetscFunctionBegin;
@@ -456,7 +456,7 @@ int MatRestoreRowADA(Mat mat,int row,int *ncols,int **cols,PetscScalar **vals)
 int MatGetColumnVector_ADA(Mat mat,Vec Y, int col)
 {
   int    info,low,high;
-  PetscScalar zero=0.0,one=1.0;
+  PetscReal zero=0.0,one=1.0;
 
   PetscFunctionBegin;
   info=VecSet(Y, zero);CHKERRQ(info);
@@ -487,7 +487,7 @@ int MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
   } else if (newtype==MATMPIDENSE){
 
     int i,j,low,high,m,n,M,N;
-    PetscScalar *dptr;
+    PetscReal *dptr;
     Vec X;
 
     info = VecDuplicate(ctx->D2,&X);CHKERRQ(info);
@@ -511,7 +511,7 @@ int MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
   } else if (newtype==MATSEQDENSE && size==1){
 
     int i,j,low,high,m,n,M,N;
-    PetscScalar *dptr;
+    PetscReal *dptr;
     Vec X;
 
     info = VecDuplicate(ctx->D2,&X);CHKERRQ(info);
@@ -540,7 +540,7 @@ int MatConvert_ADA(Mat mat,MatType newtype,Mat *NewMat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNorm_ADA"
-int MatNorm_ADA(Mat mat,NormType type,PetscScalar *norm)
+int MatNorm_ADA(Mat mat,NormType type,PetscReal *norm)
 {
   int info;
   TaoMatADACtx  ctx;

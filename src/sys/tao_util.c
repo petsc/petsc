@@ -3,11 +3,11 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPow"
-PetscErrorCode VecPow(Vec Vec1, PetscScalar p)
+PetscErrorCode VecPow(Vec Vec1, PetscReal p)
 {
   PetscErrorCode ierr;
   PetscInt n,i;
-  PetscScalar *v1;
+  PetscReal *v1;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Vec1, VEC_COOKIE, 1); 
@@ -83,7 +83,7 @@ int VecMedian(Vec Vec1, Vec Vec2, Vec Vec3, Vec VMedian)
 {
   int ierr;
   PetscInt i,n,low1,low2,low3,low4,high1,high2,high3,high4;
-  PetscScalar *v1,*v2,*v3,*vmed;
+  PetscReal *v1,*v2,*v3,*vmed;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Vec1,VEC_COOKIE,1); 

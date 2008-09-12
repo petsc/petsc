@@ -155,7 +155,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchDestroy(TaoLineSearch ls)
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchApply"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscScalar *f, Vec g, Vec s, PetscScalar *steplength, TaoLineSearchTerminationReason *reason)
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchApply(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, Vec s, PetscReal *steplength, TaoLineSearchTerminationReason *reason)
 {
     PetscErrorCode ierr;
     PetscTruth flg;
@@ -376,7 +376,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetType(TaoLineSearch ls, co
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetObjective"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjective(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, PetscScalar*, void*), void *ctx)
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjective(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, PetscReal*, void*), void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
@@ -403,7 +403,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetGradient(TaoLineSearch ls
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchSetObjectiveGradient"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjectiveAndGradient(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, PetscScalar *, Vec g, void*), void *ctx)
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjectiveAndGradient(TaoLineSearch ls, PetscErrorCode(*func)(TaoLineSearch ls, Vec x, PetscReal *, Vec g, void*), void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
@@ -415,7 +415,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchSetObjectiveAndGradient(TaoL
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchObjective_Default"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchObjectiveGradient_Default(TaoLineSearch ls, Vec x, PetscScalar *f, Vec g, void *ctx) 
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchObjectiveGradient_Default(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, void *ctx) 
 { 
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -448,7 +448,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchUseTaoSolverRoutines(TaoLine
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchComputeObjective"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscScalar *f) 
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjective(TaoLineSearch ls, Vec x, PetscReal *f) 
 {
     PetscErrorCode ierr;
     Vec gdummy;
@@ -481,7 +481,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjective(TaoLineSear
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchComputeObjectiveAndGradient"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x, PetscScalar *f, Vec g) 
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjectiveAndGradient(TaoLineSearch ls, Vec x, PetscReal *f, Vec g) 
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -519,7 +519,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeObjectiveAndGradient(
 PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeGradient(TaoLineSearch ls, Vec x, Vec g) 
 {
     PetscErrorCode ierr;
-    PetscScalar fdummy;
+    PetscReal fdummy;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
     PetscValidHeaderSpecific(x,VEC_COOKIE,2);
@@ -546,7 +546,7 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchComputeGradient(TaoLineSearc
 
 #undef __FUNCT__
 #define __FUNCT__ "TaoLineSearchGetSolution"
-PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscScalar *f, Vec g, PetscScalar *steplength, TaoLineSearchTerminationReason *reason) 
+PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetSolution(TaoLineSearch ls, Vec x, PetscReal *f, Vec g, PetscReal *steplength, TaoLineSearchTerminationReason *reason) 
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;

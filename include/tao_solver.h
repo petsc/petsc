@@ -47,7 +47,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetObjective(TaoSolver, PetscErro
 EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverSetObjectiveAndGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*), void*);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverComputeObjective(TaoSolver, Vec, PetscScalar*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT TaoSolverComputeGradient(TaoSolver, Vec, Vec);
 
 PETSC_EXTERN_CXX_END

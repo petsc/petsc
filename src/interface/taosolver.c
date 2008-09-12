@@ -463,7 +463,7 @@ $ f_{k+1} <= f_k + frtol*|f_k|
           TaoSetConstraintTolerances()
 
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetTolerances(TaoSolver tao, PetscScalar fatol, PetscScalar frtol, PetscScalar gatol, PetscScalar grtol, PetscScalar gttol)
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetTolerances(TaoSolver tao, PetscReal fatol, PetscReal frtol, PetscReal gatol, PetscReal grtol, PetscReal gttol)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
@@ -535,7 +535,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetTolerances(TaoSolver tao, PetscSc
   Notes: Use PETSC_NULL as an argument to ignore one or more tolerances.
 .seealse TaoSolverSetTolerances()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver tao, PetscScalar *fatol, PetscScalar *frtol, PetscScalar *gatol, PetscScalar *grtol, PetscScalar *gttol)
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver tao, PetscReal *fatol, PetscReal *frtol, PetscReal *gatol, PetscReal *grtol, PetscReal *gttol)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
@@ -585,12 +585,12 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetDefaultMonitors(TaoSolver tao)
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSolver tao,void *dummy)
 {
   PetscInt niter=tao->niter, nfuncs=tao->nfuncs, max_funcs=tao->max_funcs;
-  PetscScalar gnorm=tao->residual, gnorm0=tao->gnorm0;
-  PetscScalar f=tao->fc, trtol=tao->trtol,trradius=tao->step;
-  PetscScalar gatol=tao->gatol,grtol=tao->grtol,gttol=tao->gttol;
-  PetscScalar fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
-  PetscScalar fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
-  PetscScalar gnorm2;
+  PetscReal gnorm=tao->residual, gnorm0=tao->gnorm0;
+  PetscReal f=tao->fc, trtol=tao->trtol,trradius=tao->step;
+  PetscReal gatol=tao->gatol,grtol=tao->grtol,gttol=tao->gttol;
+  PetscReal fatol=tao->fatol,frtol=tao->frtol,catol=tao->catol,crtol=tao->crtol;
+  PetscReal fmin=tao->fmin, cnorm=tao->cnorm, cnorm0=tao->cnorm0;
+  PetscReal gnorm2;
   TaoSolverConvergedReason reason=TAO_CONTINUE_ITERATING;
   PetscErrorCode ierr;
 
@@ -733,7 +733,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetType(TaoSolver tao, const TaoSolv
 
 #undef __FUNCT__ 
 #define __FUNCT__ "TaoSolverMonitor"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver tao, PetscScalar f, PetscScalar res, PetscScalar steplength) 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver tao, PetscReal f, PetscReal res, PetscReal steplength) 
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;

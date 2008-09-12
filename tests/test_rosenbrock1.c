@@ -30,7 +30,7 @@ T*/
 */
 typedef struct {
   int n;          /* dimension */
-  PetscScalar alpha;   /* condition parameter */
+  PetscReal alpha;   /* condition parameter */
 } AppCtx;
 
 /* -------------- User-defined routines ---------- */
@@ -41,7 +41,7 @@ int FormFunctionGradient(TaoSolver,Vec,double*,Vec,void*);
 int main(int argc,char **argv)
 {
   int        info;                  /* used to check for functions returning nonzeros */
-  PetscScalar zero=0.0;
+  PetscReal zero=0.0;
   Vec        x;                     /* solution vector */
   TaoSolver  tao;                   /* TAO_SOLVER solver context */
   PetscTruth  flg;
@@ -139,7 +139,7 @@ int FormFunctionGradient(TaoSolver tao,Vec X,double *f, Vec G,void *ptr)
   AppCtx *user = (AppCtx *) ptr;  
   int    i,info,nn=user->n/2;
   double ff=0,t1,t2,alpha=user->alpha;
-  PetscScalar *x,*g;
+  PetscReal *x,*g;
 
   /* Get pointers to vector data */
   info = VecGetArray(X,&x); CHKERRQ(info);
@@ -184,7 +184,7 @@ int FormHessian(TaoSolver tao,Vec X,Mat *HH, Mat *Hpre, MatStructure *flag,void 
   AppCtx  *user = (AppCtx*)ptr;
   int     i, nn=user->n/2, info, ind[2];
   double  alpha=user->alpha;
-  PetscScalar  v[2][2],*x;
+  PetscReal  v[2][2],*x;
   Mat H=*HH;
   PetscTruth assembled;
 

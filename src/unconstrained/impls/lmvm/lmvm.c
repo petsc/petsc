@@ -16,10 +16,10 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
   
 //  PetscTruth success;
 
-  PetscScalar f, fold, gdx, gnorm;
-  PetscScalar step = 1.0;
+  PetscReal f, fold, gdx, gnorm;
+  PetscReal step = 1.0;
 
-  PetscScalar delta;
+  PetscReal delta;
 
   PetscErrorCode ierr;
   PetscInt stepType;

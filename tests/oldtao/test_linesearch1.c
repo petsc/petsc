@@ -3,10 +3,10 @@
 
 typedef struct {
     int n;
-    PetscScalar alpha;
+    PetscReal alpha;
 } AppCtx;
 
-PetscErrorCode MyFuncGrad(TAO_APPLICATION myapp, Vec X, PetscScalar *f, Vec G, void *ctx);
+PetscErrorCode MyFuncGrad(TAO_APPLICATION myapp, Vec X, PetscReal *f, Vec G, void *ctx);
 
 int main(int argc, char *argv[])
 { 
@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     TAO_APPLICATION app;
     Vec x,g,s,w;
     TaoVec *X, *G, *S, *W;
-    PetscScalar f,f_full,step;
+    PetscReal f,f_full,step;
     TaoInt flg;
     AppCtx user;
     int info;
@@ -81,13 +81,13 @@ int main(int argc, char *argv[])
 }
 
 
-PetscErrorCode MyFuncGrad(TAO_APPLICATION tao, Vec X, PetscScalar *f, Vec G, void *ctx)
+PetscErrorCode MyFuncGrad(TAO_APPLICATION tao, Vec X, PetscReal *f, Vec G, void *ctx)
 {
     AppCtx *user = (AppCtx*)ctx;
     PetscErrorCode    info;
     PetscInt i,nn=user->n/2;
     double ff=0,t1,t2,alpha=user->alpha;
-    PetscScalar *x,*g;
+    PetscReal *x,*g;
 
     /* Get pointers to vector data */
     info = VecGetArray(X,&x); CHKERRQ(info);
