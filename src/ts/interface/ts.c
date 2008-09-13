@@ -946,6 +946,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetSNES(TS ts,SNES *snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   PetscValidPointer(snes,2);
+  if (((PetscObject)ts)->type_name == PETSC_NULL) 
+    SETERRQ(PETSC_ERR_ARG_NULL,"SNES is not created yet. Call TSSetType() first");
   if (ts->problem_type == TS_LINEAR) SETERRQ(PETSC_ERR_ARG_WRONG,"Nonlinear only; use TSGetKSP()");
   *snes = ts->snes;
   PetscFunctionReturn(0);
