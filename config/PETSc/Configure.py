@@ -55,6 +55,14 @@ class Configure(config.base.Configure):
     self.umfpack.archProvider         = self.arch
     self.umfpack.languageProvider     = self.languages
     self.umfpack.installDirProvider   = self.petscdir
+    self.Boost         = framework.require('config.packages.Boost',      self)
+    self.Boost.archProvider           = self.arch
+    self.Boost.languageProvider       = self.languages
+    self.Boost.installDirProvider     = self.petscdir
+    self.Fiat          = framework.require('config.packages.Fiat',       self)
+    self.Fiat.archProvider            = self.arch
+    self.Fiat.languageProvider        = self.languages
+    self.Fiat.installDirProvider      = self.petscdir
 
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
