@@ -267,7 +267,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   }
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetNumericFactorization(*B,row_identity && col_identity);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetNumericFactorization(*B,(PetscTruth)(row_identity && col_identity));CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }
 

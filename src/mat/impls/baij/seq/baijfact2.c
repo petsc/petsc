@@ -3285,7 +3285,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     (*fact)->info.fill_ratio_given  = f;
     (*fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
   }
-  ierr = MatSeqBAIJSetNumericFactorization(*fact,row_identity && col_identity);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetNumericFactorization(*fact,(PetscTruth)(row_identity && col_identity));CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

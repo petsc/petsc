@@ -393,7 +393,7 @@ getmpiexec:
           grep -v Anachronism | \
           grep -v "/opt/ibmcmp/xlsmp/1.3/lib" | \
           grep -v "add line info to anonymous symbol" | \
-          Grep -v "/opt/ibmcmp/xlsmp/1.3/../.." | \
+          grep -v "/opt/ibmcmp/xlsmp/1.3/../.." | \
           grep -v "IPO Error: unresolved" | \
           grep -v "may result in errors or" | \
 	  egrep -i '(Error|warning|Can|Unresolved)' >> /dev/null;\
