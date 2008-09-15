@@ -51,6 +51,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   lu->options.symflag      = SPOOLES_SYMMETRIC;  /* default */
 
   ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
+  (*F)->ops->choleskyfactornumeric  = MatFactorNumeric_MPISpooles;
+  (*F)->ops->solve            = MatSolve_MPISpooles;
   *F = B;
   PetscFunctionReturn(0); 
 }
@@ -112,8 +114,6 @@ PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 
   if (ftype == MAT_FACTOR_CHOLESKY) {
     B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;
-    B->ops->choleskyfactornumeric  = MatFactorNumeric_MPISpooles;
-    B->ops->solve            = MatSolve_MPISpooles;
     B->ops->destroy         = MatDestroy_MPISBAIJSpooles;  
     B->factor               = MAT_FACTOR_CHOLESKY;  
 

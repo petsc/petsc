@@ -354,6 +354,9 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
 
   lu->flg            = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpSuperLU = PETSC_TRUE;
+  (*F)->ops->lufactornumeric  = MatLUFactorNumeric_SuperLU;
+  (*F)->ops->solve            = MatSolve_SuperLU;
+  (*F)->ops->solvetranspose   = MatSolveTranspose_SuperLU;
   PetscFunctionReturn(0);
 }
 
@@ -400,10 +403,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric  = MatLUFactorNumeric_SuperLU;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU;
-  B->ops->solve            = MatSolve_SuperLU;
-  B->ops->solvetranspose   = MatSolveTranspose_SuperLU;
   B->ops->destroy          = MatDestroy_SuperLU;
   B->factor               = MAT_FACTOR_LU;
   B->assembled            = PETSC_TRUE;  /* required by -ksp_view */

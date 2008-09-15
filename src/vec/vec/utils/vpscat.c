@@ -1498,7 +1498,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   PetscMPIInt            *nprocs = PETSC_NULL,nrecvs;
   PetscInt               i,j,idx,nsends;
   PetscInt               *owner = PETSC_NULL,*starts = PETSC_NULL,count,slen;
-  PetscInt               *rvalues,*svalues,base,*values,*indx,nprocslocal,recvtotal,*rsvalues;
+  PetscInt               *rvalues,*svalues,base,*values,nprocslocal,recvtotal,*rsvalues;
   PetscMPIInt            *onodes1,*olengths1;
   MPI_Comm               comm;
   MPI_Request            *send_waits = PETSC_NULL,*recv_waits = PETSC_NULL;
@@ -1992,7 +1992,7 @@ PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt 
   PetscMPIInt    *nprocs = PETSC_NULL;
   PetscInt       i,j,idx,nsends,*local_inidx = PETSC_NULL,*local_inidy = PETSC_NULL;
   PetscInt       *owner = PETSC_NULL,*starts = PETSC_NULL,count,slen;
-  PetscInt       *rvalues = PETSC_NULL,*svalues = PETSC_NULL,base,nmax,*values = PETSC_NULL,*rsvalues,recvtotal,lastidx;
+  PetscInt       *rvalues = PETSC_NULL,*svalues = PETSC_NULL,base,*values = PETSC_NULL,*rsvalues,recvtotal,lastidx;
   PetscMPIInt    *onodes1,*olengths1,nrecvs;
   MPI_Comm       comm;
   MPI_Request    *send_waits = PETSC_NULL,*recv_waits = PETSC_NULL;

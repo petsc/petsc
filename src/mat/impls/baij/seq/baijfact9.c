@@ -180,7 +180,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5(Mat A,MatFactorInfo *info,Mat *B)
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->factor = MAT_FACTOR_LU;
+  C->ops->solve          = MatSolve_SeqBAIJ_5;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*125*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);

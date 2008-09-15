@@ -1580,7 +1580,10 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&c);CHKERRQ(ierr);
-  C->factor      = MAT_FACTOR_LU;
+  (*B)->ops->solve           = MatSolve_Inode;
+  /* do not set solve add, since MatSolve_Inode + Add is faster */
+  C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ;
+  C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ;
   C->assembled   = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   if (sctx.nshift) {
@@ -2155,8 +2158,6 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     A->ops->mult            = MatMult_Inode;
     A->ops->relax           = MatRelax_Inode;
     A->ops->multadd         = MatMultAdd_Inode;
-    A->ops->solve           = MatSolve_Inode;
-    A->ops->lufactornumeric = MatLUFactorNumeric_Inode;
     A->ops->getrowij        = MatGetRowIJ_Inode;
     A->ops->restorerowij    = MatRestoreRowIJ_Inode;
     A->ops->getcolumnij     = MatGetColumnIJ_Inode;

@@ -102,37 +102,6 @@ PetscErrorCode MatIsHermitian_SeqDense(Mat A,PetscReal rtol,PetscTruth *fl)
   PetscFunctionReturn(0);
 }
   
-/* ---------------------------------------------------------------*/
-/* COMMENT: I have chosen to hide row permutation in the pivots,
-   rather than put it in the Mat->row slot.*/
-#undef __FUNCT__  
-#define __FUNCT__ "MatLUFactor_SeqDense"
-PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
-{
-#if defined(PETSC_MISSING_LAPACK_GETRF) 
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
-#else
-  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
-  PetscBLASInt   n,m,info;
-
-  PetscFunctionBegin;
-  n = PetscBLASIntCast(A->cmap->n);
-  m = PetscBLASIntCast(A->rmap->n);
-  if (!mat->pivots) {
-    ierr = PetscMalloc((A->rmap->n+1)*sizeof(PetscBLASInt),&mat->pivots);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,A->rmap->n*sizeof(PetscBLASInt));CHKERRQ(ierr);
-  }
-  A->factor = MAT_FACTOR_LU;
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
-  LAPACKgetrf_(&m,&n,mat->v,&mat->lda,mat->pivots,&info);
-  if (info<0) SETERRQ(PETSC_ERR_LIB,"Bad argument to LU factorization");
-  if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
-  ierr = PetscLogFlops((2*A->cmap->n*A->cmap->n*A->cmap->n)/3);CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-}
 
 
 #undef __FUNCT__  
@@ -175,41 +144,6 @@ PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newm
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,MatFactorInfo *info,Mat *fact)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatDuplicateNoCreate_SeqDense(A,MAT_COPY_VALUES,fact);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorSymbolic_SeqDense"
-PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatFactorInfo *info,Mat *fact)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatDuplicateNoCreate_SeqDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatGetFactor_seqdense_petsc"
-PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
-  ierr = MatSetSizes(*fact,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
-  ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  (*fact)->factor = ftype;
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqDense"
@@ -234,43 +168,6 @@ PetscErrorCode MatLUFactorNumeric_SeqDense(Mat A,MatFactorInfo *info_dummy,Mat *
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactor_SeqDense"
-PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
-{
-#if defined(PETSC_MISSING_LAPACK_POTRF) 
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
-#else
-  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
-  PetscBLASInt   info,n = PetscBLASIntCast(A->cmap->n);
-  
-  PetscFunctionBegin;
-  ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
-  mat->pivots = 0;
-
-  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
-  LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info);
-  if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %D",(PetscInt)info-1);
-  A->factor = MAT_FACTOR_CHOLESKY;
-  ierr = PetscLogFlops((A->cmap->n*A->cmap->n*A->cmap->n)/3);CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatCholeskyFactorNumeric_SeqDense"
-PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat A,MatFactorInfo *info_dummy,Mat *fact)
-{
-  PetscErrorCode ierr;
-  MatFactorInfo  info;
-
-  PetscFunctionBegin;
-  info.fill = 1.0;
-  ierr = MatCholeskyFactor_SeqDense(*fact,0,&info);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqDense"
@@ -433,6 +330,138 @@ PetscErrorCode MatSolveTransposeAdd_SeqDense(Mat A,Vec xx,Vec zz,Vec yy)
   ierr = PetscLogFlops(2*A->cmap->n*A->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+/* ---------------------------------------------------------------*/
+/* COMMENT: I have chosen to hide row permutation in the pivots,
+   rather than put it in the Mat->row slot.*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactor_SeqDense"
+PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo)
+{
+#if defined(PETSC_MISSING_LAPACK_GETRF) 
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"GETRF - Lapack routine is unavailable.");
+#else
+  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscBLASInt   n,m,info;
+
+  PetscFunctionBegin;
+  n = PetscBLASIntCast(A->cmap->n);
+  m = PetscBLASIntCast(A->rmap->n);
+  if (!mat->pivots) {
+    ierr = PetscMalloc((A->rmap->n+1)*sizeof(PetscBLASInt),&mat->pivots);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(A,A->rmap->n*sizeof(PetscBLASInt));CHKERRQ(ierr);
+  }
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  LAPACKgetrf_(&m,&n,mat->v,&mat->lda,mat->pivots,&info);
+  if (info<0) SETERRQ(PETSC_ERR_LIB,"Bad argument to LU factorization");
+  if (info>0) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Bad LU factorization");
+  A->ops->solve             = MatSolve_SeqDense;
+  A->ops->solvetranspose    = MatSolveTranspose_SeqDense;
+  A->ops->solveadd          = MatSolveAdd_SeqDense;
+  A->ops->solvetransposeadd = MatSolveTransposeAdd_SeqDense;
+  A->factor = MAT_FACTOR_LU;
+
+  ierr = PetscLogFlops((2*A->cmap->n*A->cmap->n*A->cmap->n)/3);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactor_SeqDense"
+PetscErrorCode MatCholeskyFactor_SeqDense(Mat A,IS perm,MatFactorInfo *factinfo)
+{
+#if defined(PETSC_MISSING_LAPACK_POTRF) 
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"POTRF - Lapack routine is unavailable.");
+#else
+  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscBLASInt   info,n = PetscBLASIntCast(A->cmap->n);
+  
+  PetscFunctionBegin;
+  ierr = PetscFree(mat->pivots);CHKERRQ(ierr);
+  mat->pivots = 0;
+
+  if (!A->rmap->n || !A->cmap->n) PetscFunctionReturn(0);
+  LAPACKpotrf_("L",&n,mat->v,&mat->lda,&info);
+  if (info) SETERRQ1(PETSC_ERR_MAT_CH_ZRPVT,"Bad factorization: zero pivot in row %D",(PetscInt)info-1);
+  A->ops->solve             = MatSolve_SeqDense;
+  A->ops->solvetranspose    = MatSolveTranspose_SeqDense;
+  A->ops->solveadd          = MatSolveAdd_SeqDense;
+  A->ops->solvetransposeadd = MatSolveTransposeAdd_SeqDense;
+  A->factor = MAT_FACTOR_CHOLESKY;
+  ierr = PetscLogFlops((A->cmap->n*A->cmap->n*A->cmap->n)/3);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorNumeric_SeqDense"
+PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat A,MatFactorInfo *info_dummy,Mat *fact)
+{
+  PetscErrorCode ierr;
+  MatFactorInfo  info;
+
+  PetscFunctionBegin;
+  info.fill = 1.0;
+  ierr = MatCholeskyFactor_SeqDense(*fact,0,&info);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
+PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat A,IS row,MatFactorInfo *info,Mat *fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDuplicateNoCreate_SeqDense(A,MAT_COPY_VALUES,fact);CHKERRQ(ierr);
+  (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqDense;
+  (*fact)->ops->solve                 = MatSolve_SeqDense;
+  (*fact)->ops->solvetranspose        = MatSolveTranspose_SeqDense;
+  (*fact)->ops->solveadd              = MatSolveAdd_SeqDense;
+  (*fact)->ops->solvetransposeadd     = MatSolveTransposeAdd_SeqDense;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorSymbolic_SeqDense"
+PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat A,IS row,IS col,MatFactorInfo *info,Mat *fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatDuplicateNoCreate_SeqDense(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
+  (*fact)->ops->lufactornumeric   = MatLUFactorNumeric_SeqDense;
+  (*fact)->ops->solve             = MatSolve_SeqDense;
+  (*fact)->ops->solvetranspose    = MatSolveTranspose_SeqDense;
+  (*fact)->ops->solveadd          = MatSolveAdd_SeqDense;
+  (*fact)->ops->solvetransposeadd = MatSolveTransposeAdd_SeqDense;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_seqdense_petsc"
+PetscErrorCode MatGetFactor_seqdense_petsc(Mat A,MatFactorType ftype,Mat *fact)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
+  ierr = MatSetSizes(*fact,A->rmap->n,A->cmap->n,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
+  if (ftype == MAT_FACTOR_LU){
+    (*fact)->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqDense;
+  } else {
+    (*fact)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqDense;
+  }
+  (*fact)->factor = ftype;
+  PetscFunctionReturn(0);
+}
+
 /* ------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqDense"
@@ -1742,10 +1771,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
 /* 4*/ MatMultAdd_SeqDense,
        MatMultTranspose_SeqDense,
        MatMultTransposeAdd_SeqDense,
-       MatSolve_SeqDense,
-       MatSolveAdd_SeqDense,
-       MatSolveTranspose_SeqDense,
-/*10*/ MatSolveTransposeAdd_SeqDense,
+       0,
+       0,
+       0,
+/*10*/ 0,
        MatLUFactor_SeqDense,
        MatCholeskyFactor_SeqDense,
        MatRelax_SeqDense,
@@ -1761,10 +1790,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatSetOption_SeqDense,
        MatZeroEntries_SeqDense,
 /*25*/ MatZeroRows_SeqDense,
-       MatLUFactorSymbolic_SeqDense,
-       MatLUFactorNumeric_SeqDense,
-       MatCholeskyFactorSymbolic_SeqDense,
-       MatCholeskyFactorNumeric_SeqDense,
+       0,
+       0,       
+       0,
+       0,
 /*30*/ MatSetUpPreallocation_SeqDense,
        0,
        0,

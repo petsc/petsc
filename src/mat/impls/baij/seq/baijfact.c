@@ -91,6 +91,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2(Mat A,MatFactorInfo *info,Mat *B)
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+  C->ops->solve          = MatSolve_SeqBAIJ_2;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_2;
   C->factor = MAT_FACTOR_LU;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*8*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
@@ -175,7 +177,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_2_NaturalOrdering(Mat A,MatFactorInfo 
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
-  C->factor    = MAT_FACTOR_LU;
+  C->ops->solve          = MatSolve_SeqBAIJ_2_NaturalOrdering;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_2_NaturalOrdering;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*8*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);
@@ -245,7 +248,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat A,MatFactorInfo *info,Mat *B)
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->factor    = MAT_FACTOR_LU;
+  C->ops->solve          = MatSolve_SeqBAIJ_1;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_1;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -264,12 +268,25 @@ PetscErrorCode MatGetFactor_seqbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     ierr = MatSetType(*B,MATSEQBAIJ);CHKERRQ(ierr);
+    (*B)->ops->lufactorsymbolic  = MatLUFactorSymbolic_SeqBAIJ;  
+    (*B)->ops->ilufactorsymbolic = MatILUFactorSymbolic_SeqBAIJ;  
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqBAIJ;
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqBAIJ;
   } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactorAvailable_seqaij_petsc"
+PetscErrorCode MatGetFactorAvailable_seqbaij_petsc(Mat A,MatFactorType ftype,PetscTruth *flg)
+{
+  PetscFunctionBegin;
+  *flg = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -286,6 +303,8 @@ PetscErrorCode MatLUFactor_SeqBAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
   ierr = MatGetFactor(A,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&C);CHKERRQ(ierr);
   ierr = MatLUFactorSymbolic(A,row,col,info,&C);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric(A,info,&C);CHKERRQ(ierr);
+  A->ops->solve            = C->ops->solve;
+  A->ops->solvetranspose   = C->ops->solvetranspose;
   ierr = MatHeaderCopy(A,C);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(A,((Mat_SeqBAIJ*)(A->data))->icol);CHKERRQ(ierr);
   PetscFunctionReturn(0);

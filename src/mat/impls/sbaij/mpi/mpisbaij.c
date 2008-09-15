@@ -1324,7 +1324,7 @@ PetscErrorCode MatSetUpPreallocation_MPISBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatMPISBAIJSetPreallocation(A,PetscMax(A->rmap->bs,1),PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr = MatMPISBAIJSetPreallocation(A,-PetscMax(A->rmap->bs,1),PETSC_DEFAULT,0,PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1512,14 +1512,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation_MPISBAIJ(Mat B,Pet
 {
   Mat_MPISBAIJ   *b;
   PetscErrorCode ierr;
-  PetscInt       i,mbs,Mbs;
+  PetscInt       i,mbs,Mbs,newbs = PetscAbs(bs);
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for MPISBAIJ matrix","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatMPIBAIJSetPreallocation",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (bs < 0){
+    ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Options for MPISBAIJ matrix","Mat");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatMPIBAIJSetPreallocation",newbs,&newbs,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    bs   = PetscAbs(bs);
+  }
+  if ((d_nnz || o_nnz) && newbs != bs) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot change blocksize from command line if setting d_nnz or o_nnz");
+  }
+  bs = newbs;
 
-  if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive");
   if (d_nz == PETSC_DECIDE || d_nz == PETSC_DEFAULT) d_nz = 3;
   if (o_nz == PETSC_DECIDE || o_nz == PETSC_DEFAULT) o_nz = 1;
   if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);

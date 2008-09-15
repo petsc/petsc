@@ -290,7 +290,7 @@ runex5_4:
 	   -ksp_rtol .000001;\
 	echo "ex5_4: This program tested the ILU preconditioner in BlockSolve95."
 runex5_5:
-	-@${MPIEXEC} -n 2 ./ex5 -mat_block_size 2 -ksp_gmres_cgs_refinement_type refine_always > ex5_5.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex5 -ksp_gmres_cgs_refinement_type refine_always > ex5_5.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   ${RM} -f ex5_5.tmp

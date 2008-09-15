@@ -24,8 +24,8 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
     PetscErrorCode (*f)(Mat,PetscTruth*,MatReuse,Mat*);
     ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
     if (size == 1) {
-      ierr = MatHasOperation(pc->pmat,MATOP_ICCFACTOR_SYMBOLIC,&flg1);CHKERRQ(ierr);
-      ierr = MatHasOperation(pc->pmat,MATOP_ILUFACTOR_SYMBOLIC,&flg2);CHKERRQ(ierr);
+      ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ICC,&flg1);CHKERRQ(ierr);
+      ierr = MatGetFactorAvailable(pc->pmat,"petsc",MAT_FACTOR_ILU,&flg2);CHKERRQ(ierr);
       ierr = MatIsSymmetricKnown(pc->pmat,&set,&flg3);CHKERRQ(ierr);
       if (flg1 && (!flg2 || (set && flg3))) {
 	*type = PCICC;

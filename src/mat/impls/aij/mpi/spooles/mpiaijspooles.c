@@ -20,6 +20,8 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
     lu = (Mat_Spooles*) (*F)->spptr;
     lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
   }
+  (*F)->ops->lufactornumeric  = MatFactorNumeric_MPISpooles;
+  (*F)->ops->solve            = MatSolve_MPISpooles;
   PetscFunctionReturn(0); 
 }
 
@@ -47,10 +49,8 @@ PetscErrorCode MatGetFactor_mpiaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJSpooles;
-    B->ops->lufactornumeric  = MatFactorNumeric_MPISpooles;
-    B->ops->solve            = MatSolve_MPISpooles;
-    B->ops->destroy         = MatDestroy_MPIAIJSpooles;  
-    B->factor               = MAT_FACTOR_LU;  
+    B->ops->destroy          = MatDestroy_MPIAIJSpooles;  
+    B->factor                = MAT_FACTOR_LU;  
 
     lu->options.symflag      = SPOOLES_NONSYMMETRIC;
     lu->options.pivotingflag = SPOOLES_PIVOTING; 
