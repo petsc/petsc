@@ -13,7 +13,7 @@ class DAPeriodicType(object):
 
 class DAStencilType(object):
     STAR = DA_STENCIL_STAR
-    BOX = DA_STENCIL_BOX
+    BOX  = DA_STENCIL_BOX
 
 class DAInterpolationType(object):
     Q0 = DA_INTERPOLATION_Q0
@@ -46,9 +46,9 @@ cdef class DA(Object):
         self.da = NULL
         return self
 
-    def create(self, sizes,
+    def create(self, sizes, proc_sizes=None,
                periodic=None, stencil=None,
-               dof=1, sw=1, comm=None):
+               ndof=1, width=1, comm=None):
         cdef PetscDAPeriodicType ptype = DA_PERIODIC_NONE
         cdef PetscDAStencilType  stype = DA_STENCIL_BOX
         if periodic is not None: ptype = periodic
@@ -58,11 +58,17 @@ cdef class DA(Object):
         cdef PetscInt P = PETSC_DECIDE, p = PETSC_DECIDE, *lz=NULL
         sizes = tuple(sizes)
         cdef PetscInt dim = len(sizes)
+        assert dim==1 or dim==2 or dim==3
         if   dim == 1: M, = sizes
         elif dim == 2: M, N = sizes
         elif dim == 3: M, N, P = sizes
-        cdef PetscInt idof = dof
-        cdef PetscInt isw = sw
+        if proc_sizes is not None:
+            proc_sizes = tuple(proc_sizes)
+            if   dim == 1: m, = proc_sizes
+            elif dim == 2: m, n = proc_sizes
+            elif dim == 3: m, n, p = proc_sizes
+        cdef PetscInt nd = ndof
+        cdef PetscInt sw = width
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscDA newda = NULL
         CHKERR( DACreate(ccomm,
@@ -70,33 +76,143 @@ cdef class DA(Object):
                          ptype, stype,
                          M, N, P,
                          m, n, p,
-                         idof, isw,
+                         ndof, width,
                          lx, ly, lz,
                          &newda) )
         PetscCLEAR(self.obj); self.da = newda
         return self
 
-
-    def getInfo(self):
+    #
+    
+    def getDim(self):
         cdef PetscInt dim = 0
-        cdef PetscInt M = PETSC_DECIDE, m = PETSC_DECIDE, *lx=NULL
-        cdef PetscInt N = PETSC_DECIDE, n = PETSC_DECIDE, *ly=NULL
-        cdef PetscInt P = PETSC_DECIDE, p = PETSC_DECIDE, *lz=NULL
-        cdef PetscInt dof = 1
-        cdef PetscInt sw = 1
-        cdef PetscDAPeriodicType ptype = DA_PERIODIC_NONE
-        cdef PetscDAStencilType  stype = DA_STENCIL_BOX
+        CHKERR( DAGetInfo(self.da,
+                          &dim,
+                          NULL, NULL, NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL,
+                          NULL, NULL) )
+        return dim
+
+    def getSizes(self):
+        cdef PetscInt dim = 0
+        cdef PetscInt M = PETSC_DECIDE
+        cdef PetscInt N = PETSC_DECIDE
+        cdef PetscInt P = PETSC_DECIDE
         CHKERR( DAGetInfo(self.da,
                           &dim,
                           &M, &N, &P,
+                          NULL, NULL, NULL,
+                          NULL, NULL,
+                          NULL, NULL) )
+        return (M,N,P)[:dim]
+
+    def getProcSizes(self):
+        cdef PetscInt dim = 0
+        cdef PetscInt m = PETSC_DECIDE
+        cdef PetscInt n = PETSC_DECIDE
+        cdef PetscInt p = PETSC_DECIDE
+        CHKERR( DAGetInfo(self.da,
+                          &dim,
+                          NULL, NULL, NULL,
                           &m, &n, &p,
-                          &dof, &sw,
-                          &ptype, &stype) )
-        return (dim,
-                (M,N,P)[:dim],
-                (m,n,p)[:dim],
-                dof, sw,
-                ptype, stype)
+                          NULL, NULL,
+                          NULL, NULL) )
+        return (m,n,p)[:dim]
+
+    def getNDof(self):
+        cdef PetscInt ndof = 0
+        CHKERR( DAGetInfo(self.da,
+                          NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL, NULL,
+                          &ndof, NULL,
+                          NULL, NULL) )
+        return ndof
+
+    def getWidth(self):
+        cdef PetscInt width = 0
+        CHKERR( DAGetInfo(self.da,
+                          NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL, NULL,
+                          NULL, &width,
+                          NULL, NULL) )
+        return width
+
+    def getPeriodicType(self):
+        cdef PetscDAPeriodicType ptype = DA_PERIODIC_NONE
+        CHKERR( DAGetInfo(self.da,
+                          NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL,
+                          &ptype, NULL) )
+        return ptype
+        
+    def getStencilType(self):
+        cdef PetscDAStencilType  stype = DA_STENCIL_BOX
+        CHKERR( DAGetInfo(self.da,
+                          NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL,
+                          NULL, &stype) )
+        return stype
+
+    def getCorners(self):
+        cdef PetscInt dim = 0
+        CHKERR( DAGetInfo(self.da,
+                          &dim,
+                          NULL, NULL, NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL,
+                          NULL, NULL) )
+        cdef PetscInt x, y, z
+        cdef PetscInt m, n, p
+        CHKERR( DAGetCorners(self.da,
+                             &x, &y, &z,
+                             &m, &n, &p) )
+        return ((x, y, z)[:dim],
+                (m, n, p)[:dim])
+
+    def getGhostCorners(self):
+        cdef PetscInt dim = 0
+        CHKERR( DAGetInfo(self.da,
+                          &dim,
+                          NULL, NULL, NULL,
+                          NULL, NULL, NULL,
+                          NULL, NULL,
+                          NULL, NULL) )
+        cdef PetscInt x, y, z
+        cdef PetscInt m, n, p
+        CHKERR( DAGetGhostCorners(self.da,
+                                  &x, &y, &z,
+                                  &m, &n, &p) )
+        return ((x, y, z)[:dim],
+                (m, n, p)[:dim])
+
+    ## def getInfo(self):
+    ##     cdef PetscInt dim = 0
+    ##     cdef PetscInt M = PETSC_DECIDE, m = PETSC_DECIDE
+    ##     cdef PetscInt N = PETSC_DECIDE, n = PETSC_DECIDE
+    ##     cdef PetscInt P = PETSC_DECIDE, p = PETSC_DECIDE
+    ##     cdef PetscInt ndof = 1, width = 1
+    ##     cdef PetscDAPeriodicType ptype = DA_PERIODIC_NONE
+    ##     cdef PetscDAStencilType  stype = DA_STENCIL_BOX
+    ##     CHKERR( DAGetInfo(self.da,
+    ##                       &dim,
+    ##                       &M, &N, &P,
+    ##                       &m, &n, &p,
+    ##                       &ndof, &width,
+    ##                       &ptype, &stype) )
+    ##     return (dim,
+    ##             (M,N,P)[:dim],
+    ##             (m,n,p)[:dim],
+    ##             ndof, width,
+    ##             ptype, stype)
+
+    #
 
     def createNaturalVector(self):
         cdef Vec vn = Vec()
@@ -113,26 +229,22 @@ cdef class DA(Object):
         CHKERR( DACreateLocalVector(self.da, &vl.vec) )
         return vl
 
-    def globalToNatural(self, Vec vg not None, Vec vn not None,
-                        addv=None):
+    def globalToNatural(self, Vec vg not None, Vec vn not None, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DAGlobalToNaturalBegin(self.da, vg.vec, im, vn.vec) )
         CHKERR( DAGlobalToNaturalEnd  (self.da, vg.vec, im, vn.vec) )
 
-    def naturalToGlobal(self, Vec vn not None, Vec vg not None,
-                        addv=None):
+    def naturalToGlobal(self, Vec vn not None, Vec vg not None, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DANaturalToGlobalBegin(self.da, vn.vec, im, vg.vec) )
         CHKERR( DANaturalToGlobalEnd  (self.da, vn.vec, im, vg.vec) )
 
-    def globalToLocal(self, Vec vg not None, Vec vl not None,
-                      addv=None):
+    def globalToLocal(self, Vec vg not None, Vec vl not None, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DAGlobalToLocalBegin(self.da, vg.vec, im, vl.vec) )
         CHKERR( DAGlobalToLocalEnd  (self.da, vg.vec, im, vl.vec) )
 
-    def localToGlobal(self, Vec vl not None, Vec vg not None,
-                      addv=None):
+    def localToGlobal(self, Vec vl not None, Vec vg not None, addv=None):
         cdef PetscInsertMode im = insertmode(addv)
         CHKERR( DALocalToGlobal(self.da, vl.vec, im, vg.vec) )
 
@@ -141,7 +253,7 @@ cdef class DA(Object):
         CHKERR( DALocalToGlobalEnd  (self.da, vl.vec, vg.vec) )
 
     def getMatrix(self, mat_type=None):
-        cdef PetscMatType mtype = <PetscMatType>MATAIJ
+        cdef PetscMatType mtype = MATAIJ
         if mat_type is not None: mtype = str2cp(mat_type)
         cdef Mat mat = Mat()
         CHKERR( DAGetMatrix(self.da, mtype, &mat.mat) )
@@ -174,3 +286,41 @@ cdef class DA(Object):
         PetscIncref(<PetscObject>g2l.sct)
         PetscIncref(<PetscObject>l2l.sct)
         return (l2g, g2l, l2l)
+
+    property dim:
+        def __get__(self):
+            return self.getDim()
+
+    property sizes:
+        def __get__(self):
+            return self.getSizes
+
+    property proc_sizes:
+        def __get__(self):
+            return self.getProcSizes()
+
+    property ndof:
+        def __get__(self):
+            return self.getNDof()
+
+    property width:
+        def __get__(self):
+            return self.getWidth()
+
+    property periodic_type:
+        def __get__(self):
+            return self.getPeriodicType()
+
+    property stencil_type:
+        def __get__(self):
+            return self.getStencilType()
+
+    property corners:
+        def __get__(self):
+            return self.getCorners()
+
+    property ghost_corners:
+        def __get__(self):
+            return self.getGhostCorners()
+
+# --------------------------------------------------------------------
