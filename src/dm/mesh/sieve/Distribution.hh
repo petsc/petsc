@@ -291,7 +291,7 @@ namespace ALE {
 
       const Obj<typename Mesh::send_overlap_type> sendMeshOverlap = new typename Mesh::send_overlap_type(mesh->comm(), mesh->debug());
       const Obj<typename Mesh::recv_overlap_type> recvMeshOverlap = new typename Mesh::recv_overlap_type(mesh->comm(), mesh->debug());
-      std::map<point_type,point_type>    renumbering;
+      std::map<point_type,point_type>&            renumbering     = newMesh->getRenumbering();
       // Distribute the mesh
       Obj<partition_type> partition = distributeMeshV(mesh, newMesh, renumbering, sendMeshOverlap, recvMeshOverlap);
       if (mesh->debug()) {
