@@ -862,7 +862,7 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
   ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
   ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout;
 
-  for (neq=0; neq<n; neq++){
+  for (neq=0; neq<B->cmap->n; neq++){
     /* forward solve the lower triangular */
     tmp[0] = b[r[0]];
     tmps   = tmp;

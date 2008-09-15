@@ -57,7 +57,7 @@ class Configure(PETSc.package.Package):
     self.setCompilers.pushLanguage('FC') 
     g.write('FC = '+self.setCompilers.getCompiler()+'\n')
     g.write('FL = '+self.setCompilers.getCompiler()+'\n')
-    g.write('OPTF    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
+    g.write('OPTF    = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','').replace('-Mfree','') +'\n')
     self.setCompilers.popLanguage()
 
     # set fortran name mangling
