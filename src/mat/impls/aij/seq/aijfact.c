@@ -597,6 +597,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   C->ops->solveadd           = MatSolveAdd_SeqAIJ;
   C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ;
   C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ;
+  C->ops->matsolve           = MatMatSolve_SeqAIJ;
   C->assembled    = PETSC_TRUE;
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
