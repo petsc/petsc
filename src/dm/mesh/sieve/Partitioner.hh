@@ -172,6 +172,8 @@ namespace ALE {
     public:
       typedef int    part_type;
       typedef Alloc_ alloc_type;
+    protected:
+      alloc_type _allocator;
     public:
       static bool zeroBase() {return false;}
       // This method returns the partition section mapping sieve points (here cells) to partitions
@@ -184,8 +186,8 @@ namespace ALE {
         //static part_type *partitionSieve(const Obj<bundle_type>& bundle, const int dim) {
         int    nvtxs      = numVertices; // The number of vertices in full graph
         int   *vtxdist;                  // Distribution of vertices across processes
-        int   *xadj       = start;       // Start of edge list for each vertex
-        int   *adjncy     = adjacency;   // Edge lists for all vertices
+        int   *xadj       = const_cast<int*>(start);       // Start of edge list for each vertex
+        int   *adjncy     = const_cast<int*>(adjacency);   // Edge lists for all vertices
         int   *vwgt       = NULL;        // Vertex weights
         int   *adjwgt     = NULL;        // Edge weights
         int    wgtflag    = 0;           // Indicates which weights are present
@@ -267,10 +269,9 @@ namespace ALE {
 
         for(int i = 0; i < nvtxs; ++i) {this->_allocator.destroy(assignment+i);}
         this->_allocator.deallocate(assignment, nvtxs);
-          return assignment;
-        };
       };
     };
+  };
 #endif
   namespace Simple {
     template<typename Alloc_ = malloc_allocator<short int> >
