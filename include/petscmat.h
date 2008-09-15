@@ -98,6 +98,7 @@ E*/
 E*/
 typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC} MatFactorType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,const MatSolverPackage,MatFactorType,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat,const MatSolverPackage,MatFactorType,PetscTruth*);
 
 
 /* Logging support */

@@ -249,6 +249,8 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,M
   lu->flg = DIFFERENT_NONZERO_PATTERN;
   lu->av  = av;
   lu->CleanUpUMFPACK = PETSC_TRUE;
+  (*F)->ops->lufactornumeric  = MatLUFactorNumeric_UMFPACK;
+  (*F)->ops->solve            = MatSolve_UMFPACK;
   PetscFunctionReturn(0);
 }
 
@@ -273,9 +275,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscNewLog(B,Mat_UMFPACK,&lu);CHKERRQ(ierr);
   B->spptr                 = lu;
-  B->ops->lufactornumeric  = MatLUFactorNumeric_UMFPACK;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_UMFPACK;
-  B->ops->solve            = MatSolve_UMFPACK;
   B->ops->destroy          = MatDestroy_UMFPACK;
   B->factor                = MAT_FACTOR_LU;
   B->assembled             = PETSC_TRUE;  /* required by -ksp_view */

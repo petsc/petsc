@@ -382,6 +382,8 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   /* Initialize ScalePermstruct and LUstruct. */
   ScalePermstructInit(M, N, &lu->ScalePermstruct);
   LUstructInit(M, N, &lu->LUstruct); 
+  (*F)->ops->lufactornumeric  = MatLUFactorNumeric_SuperLU_DIST;
+  (*F)->ops->solve            = MatSolve_SuperLU_DIST;
   PetscFunctionReturn(0); 
 }
 
@@ -409,9 +411,7 @@ PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat A,MatFactorType ftype,Mat *F
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric  = MatLUFactorNumeric_SuperLU_DIST;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
-  B->ops->solve            = MatSolve_SuperLU_DIST;
   B->factor                = MAT_FACTOR_LU;  
 
   ierr = PetscNewLog(B,Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);

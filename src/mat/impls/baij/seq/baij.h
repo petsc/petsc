@@ -58,9 +58,7 @@ EXTERN PetscErrorCode MatGetInfo_SeqBAIJ(Mat,MatInfoType,MatInfo *);
 EXTERN PetscErrorCode MatZeroEntries_SeqBAIJ(Mat);
 
 EXTERN PetscErrorCode MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat);
-EXTERN PetscErrorCode MatSeqBAIJ_UpdateSolvers(Mat);
 
-EXTERN PetscErrorCode MatSolve_SeqBAIJ_Update(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_1(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqBAIJ_2(Mat,Vec,Vec);

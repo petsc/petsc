@@ -316,7 +316,6 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
   ierr = PetscTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 
     (*F)->ops->solve   = MatSolve_MUMPS;
-    (*F)->ops->destroy = MatDestroy_MUMPS;
 
     /* Initialize a MUMPS instance */
     ierr = MPI_Comm_rank(((PetscObject)A)->comm, &lu->myid);
@@ -539,8 +538,9 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat A,IS r,IS c,MatFactorInfo *info,
   Mat_MUMPS      *lu = (Mat_MUMPS*)(*F)->spptr;   
 
   PetscFunctionBegin;
-  lu->sym                 = 0;
-  lu->matstruc            = DIFFERENT_NONZERO_PATTERN;
+  lu->sym                     = 0;
+  lu->matstruc                = DIFFERENT_NONZERO_PATTERN;
+  (*F)->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   PetscFunctionReturn(0); 
 }
 
@@ -566,7 +566,6 @@ PetscErrorCode MatGetFactor_seqaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
   B->factor                = MAT_FACTOR_LU;  
 
@@ -576,8 +575,8 @@ PetscErrorCode MatGetFactor_seqaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   mumps->scat_rhs                  = PETSC_NULL;
   mumps->scat_sol                  = PETSC_NULL;
   mumps->nSolve                    = 0;
-  mumps->MatDestroy                = A->ops->destroy;
-
+  mumps->MatDestroy                = B->ops->destroy;
+  B->ops->destroy                  = MatDestroy_MUMPS;
   B->spptr                         = (void*)mumps;
 
   *F = B;
@@ -605,7 +604,6 @@ PetscErrorCode MatGetFactor_mpiaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
   B->factor                = MAT_FACTOR_LU;  
 
@@ -632,8 +630,12 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *in
   Mat_MUMPS      *lu = (Mat_MUMPS*)(*F)->spptr;   
 
   PetscFunctionBegin;
-  lu->sym                       = 2;
-  lu->matstruc                  = DIFFERENT_NONZERO_PATTERN;
+  lu->sym                          = 2;
+  lu->matstruc                     = DIFFERENT_NONZERO_PATTERN;
+  (*F)->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
+#if !defined(PETSC_USE_COMPLEX)
+  (*F)->ops->getinertia            = MatGetInertia_SBAIJMUMPS;
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -658,10 +660,6 @@ PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
-  B->ops->choleskyfactornumeric  = MatFactorNumeric_MUMPS;
-#if !defined(PETSC_USE_COMPLEX)
-  B->ops->getinertia             = MatGetInertia_SBAIJMUMPS;
-#endif
   B->factor                      = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
@@ -670,7 +668,9 @@ PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   mumps->scat_rhs                  = PETSC_NULL;
   mumps->scat_sol                  = PETSC_NULL;
   mumps->nSolve                    = 0;
-  mumps->MatDestroy                = A->ops->destroy;
+  mumps->MatDestroy                = B->ops->destroy;
+  B->ops->destroy                  = MatDestroy_MUMPS;
+
   B->spptr                         = (void*)mumps;
   *F = B;
   PetscFunctionReturn(0);
@@ -698,10 +698,6 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
-  B->ops->choleskyfactornumeric  = MatFactorNumeric_MUMPS;
-#if !defined(PETSC_USE_COMPLEX)
-  B->ops->getinertia             = MatGetInertia_SBAIJMUMPS;
-#endif
   B->factor                      = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);

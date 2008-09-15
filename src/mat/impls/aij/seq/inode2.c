@@ -164,15 +164,22 @@ PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatSolve_Inode(Mat,Vec,Vec);
+extern PetscErrorCode MatLUFactorNumeric_Inode(Mat,MatFactorInfo*,Mat*);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_Inode"
 PetscErrorCode MatLUFactorSymbolic_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
+  Mat_SeqAIJ     *f = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
     /* check for identical nodes. If found, use inode functions */
   ierr = Mat_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
+  if (f->inode.use) {
+    (*fact)->ops->lufactornumeric = MatLUFactorNumeric_Inode;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -181,10 +188,14 @@ PetscErrorCode MatLUFactorSymbolic_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *
 PetscErrorCode MatILUFactorSymbolic_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
+  Mat_SeqAIJ     *f = (Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
     /* check for identical nodes. If found, use inode functions */
   ierr = Mat_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
+  if (f->inode.use) {
+    (*fact)->ops->lufactornumeric = MatLUFactorNumeric_Inode;
+  }
   PetscFunctionReturn(0);
 }
 

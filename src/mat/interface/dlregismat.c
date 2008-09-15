@@ -45,9 +45,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   /* Inialize subpackage */
   if (initialized) PetscFunctionReturn(0);
   ierr = MatMFFDInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_PLAPACK)
-  ierr = PetscPLAPACKInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscCookieRegister("Matrix",&MAT_COOKIE);CHKERRQ(ierr);

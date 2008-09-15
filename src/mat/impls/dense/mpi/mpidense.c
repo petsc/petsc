@@ -1492,11 +1492,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
 /* 4*/ MatMultAdd_MPIDense,
        MatMultTranspose_MPIDense,
        MatMultTransposeAdd_MPIDense,
-#if defined(PETSC_HAVE_PLAPACK)
-       MatSolve_MPIDense,
-#else
        0,
-#endif
        0,
        0,
 /*10*/ 0,
@@ -1515,17 +1511,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatSetOption_MPIDense,
        MatZeroEntries_MPIDense,
 /*25*/ MatZeroRows_MPIDense,
-#if defined(PETSC_HAVE_PLAPACK)
-       MatLUFactorSymbolic_MPIDense,
-       MatLUFactorNumeric_MPIDense,
-       MatCholeskyFactorSymbolic_MPIDense,
-       MatCholeskyFactorNumeric_MPIDense,
-#else
        0,
        0,
        0,
        0,
-#endif
 /*30*/ MatSetUpPreallocation_MPIDense,
        0,
        0,
@@ -1699,6 +1688,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetFactor_mpidense_plapack_C",
                                      "MatGetFactor_mpidense_plapack",
                                       MatGetFactor_mpidense_plapack);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_PLAPACK)
+  ierr = PetscPLAPACKInitializePackage(((PetscObject)mat)->comm);CHKERRQ(ierr);
+#endif
+
 #endif
   ierr = PetscObjectChangeTypeName((PetscObject)mat,MATMPIDENSE);CHKERRQ(ierr);
 
@@ -2171,20 +2164,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void)
 #define __FUNCT__ "PetscPLAPACKInitializePackage" 
 /*@C
   PetscPLAPACKInitializePackage - This function initializes everything in the Petsc interface to PLAPACK. It is
-  called from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
-  when using static libraries.
+  called from MatCreate_MPIDense() the first time an MPI dense matrix is called.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+.   comm - the communicator the matrix lives on
 
   Level: developer
+
+   Notes: PLAPACK does not have a good fit with MPI communicators; all (parallel) PLAPACK objects have to live in the
+  same communicator (because there is some global state that is initialized and used for all matrices). In addition if 
+  PLAPACK is initialized (that is the initial matrices created) are on subcommunicators of MPI_COMM_WORLD, these subcommunicators
+  cannot overlap.
 
 .keywords: Petsc, initialize, package, PLAPACK
 .seealso: PetscInitializePackage(), PetscInitialize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(const char path[]) 
+PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(MPI_Comm comm) 
 {
-  MPI_Comm       comm = PETSC_COMM_WORLD;
   PetscMPIInt    size;
   PetscErrorCode ierr;
 

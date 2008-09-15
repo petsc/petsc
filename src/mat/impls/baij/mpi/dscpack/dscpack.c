@@ -405,6 +405,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,
   PetscFunctionBegin; 
   lu->My_DSC_Solver = DSC_Begin();
   lu->CleanUpDSCPACK = PETSC_TRUE;
+  (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_DSCPACK;
   PetscFunctionReturn(0); 
 }
 
@@ -430,7 +431,6 @@ PetscErrorCode MatGetFactor_seqbaij_dscpack(Mat A,MatFactorType ftype,Mat *F)
   ierr = MatMPIBAIJSetPreallocation(B,bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscNewLog(B,Mat_DSCPACKPACK,&lu);CHKERRQ(ierr);    
 
-  B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_DSCPACK;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_DSCPACK;
   B->ops->solve                  = MatSolve_DSCPACK;
   B->ops->destroy                = MatDestroy_DSCPACK;

@@ -171,7 +171,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_5_NaturalOrdering(Mat A,MatFactorInfo 
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
-  C->factor    = MAT_FACTOR_LU;
+  C->ops->solve          = MatSolve_SeqBAIJ_5_NaturalOrdering;
+  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_5_NaturalOrdering;
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(1.3333*125*b->mbs);CHKERRQ(ierr); /* from inverting diagonal blocks */
   PetscFunctionReturn(0);

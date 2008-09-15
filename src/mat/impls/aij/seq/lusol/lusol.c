@@ -436,6 +436,8 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, 
   lusol->indr = lusol->indc + nnz;
   lusol->data = (double *)(lusol->indr + nnz);
   lusol->CleanUpLUSOL = PETSC_TRUE;
+  B->ops->lufactornumeric  = MatLUFactorNumeric_LUSOL;
+  B->ops->solve            = MatSolve_LUSOL;
   *F = B;
   PetscFunctionReturn(0);
 }
@@ -459,10 +461,8 @@ PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscNewLog(B,Mat_LUSOL,&lusol);CHKERRQ(ierr);
   B->spptr                 = lusol;
 
-  B->ops->lufactornumeric  = MatLUFactorNumeric_LUSOL;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_LUSOL;
   B->ops->destroy          = MatDestroy_LUSOL;
-  B->ops->solve            = MatSolve_LUSOL;
   B->factor                = MAT_FACTOR_LU;
   PetscFunctionReturn(0);
 }

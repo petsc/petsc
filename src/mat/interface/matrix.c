@@ -3333,6 +3333,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, const MatType newtype,MatR
 .  type - name of solver type, for example, spooles, superlu, plapack, petsc (to use PETSc's default)
 -  ftype - factor type, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ICC, MAT_FACTOR_ILU, 
 
+   Output Parameters:
+.  f - the factor matrix used with MatXXFactorSymbolic() calls 
+
    Notes:
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
      such as superlu, mumps, spooles etc. 
@@ -3341,7 +3344,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, const MatType newtype,MatR
 
    Level: intermediate
 
-.seealso: MatCopy(), MatDuplicate()
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage type,MatFactorType ftype,Mat *f)
 {
@@ -3372,6 +3375,58 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
     }
   }
   ierr = (*conv)(mat,ftype,f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactorAvailable"
+/*@C  
+   MatGetFactorAvailable - Returns a a flag if matrix supports particular package and factor type
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  type - name of solver type, for example, spooles, superlu, plapack, petsc (to use PETSc's default)
+-  ftype - factor type, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ICC, MAT_FACTOR_ILU, 
+
+   Output Parameter:
+.    flg - PETSC_TRUE if the factorization is available
+
+   Notes:
+      Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
+     such as superlu, mumps, spooles etc. 
+
+      PETSc must have been config/configure.py to use the external solver, using the option --download-package
+
+   Level: intermediate
+
+.seealso: MatCopy(), MatDuplicate(), MatGetFactor()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat mat, const MatSolverPackage type,MatFactorType ftype,PetscTruth *flg)
+{
+  PetscErrorCode         ierr;
+  char                   convname[256];
+  PetscErrorCode         (*conv)(Mat,MatFactorType,PetscTruth*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = PetscStrcpy(convname,"MatGetFactorAvailable_");CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,((PetscObject)mat)->type_name);CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,type);CHKERRQ(ierr);
+  ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+  if (!conv) {
+    *flg = PETSC_FALSE;
+  } else {
+    ierr = (*conv)(mat,ftype,flg);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -5062,7 +5117,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUFactorSymbolic(Mat mat,IS row,IS col,Mat
   PetscValidPointer(fact,5);
   if (info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %D",(PetscInt)info->levels);
   if (info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %G",info->fill);
-  if (!mat->ops->ilufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ILU",((PetscObject)mat)->type_name);
+  if (!(*fact)->ops->ilufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ILU",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
@@ -5118,7 +5173,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactorSymbolic(Mat mat,IS perm,MatFactor
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %D",(PetscInt) info->levels);
   if (info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %G",info->fill);
-  if (!mat->ops->iccfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",((PetscObject)mat)->type_name);
+  if (!(*fact)->ops->iccfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 

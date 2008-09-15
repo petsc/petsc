@@ -2111,6 +2111,7 @@ PetscErrorCode MatSetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
   PetscFunctionReturn(0);
 } 
 
+EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscTruth);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactor_SeqBAIJ"
@@ -2145,19 +2146,11 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
   ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
   
-  /*
-      Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
-      for ILU(0) factorization with natural ordering
-  */
-  if (inA->rmap->bs < 8) {
-    ierr = MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(inA);CHKERRQ(ierr);
-  } else {
-    if (!a->solve_work) {
-      ierr = PetscMalloc((inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory(inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);
-    }
+  ierr = MatSeqBAIJSetNumericFactorization(inA,(PetscTruth)(row_identity && col_identity));CHKERRQ(ierr);
+  if (!a->solve_work) {
+    ierr = PetscMalloc((inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);
   }
-
   ierr = MatLUFactorNumeric(inA,info,&outA);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -2297,7 +2290,7 @@ PetscErrorCode MatSetUpPreallocation_SeqBAIJ(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr =  MatSeqBAIJSetPreallocation_SeqBAIJ(A,PetscMax(A->rmap->bs,1),PETSC_DEFAULT,0);CHKERRQ(ierr);
+  ierr =  MatSeqBAIJSetPreallocation_SeqBAIJ(A,-PetscMax(A->rmap->bs,1),PETSC_DEFAULT,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2392,7 +2385,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
 /* 4*/ MatMultAdd_SeqBAIJ_N,
        MatMultTranspose_SeqBAIJ,
        MatMultTransposeAdd_SeqBAIJ,
-       MatSolve_SeqBAIJ_N,
+       0,
        0,
        0,
 /*10*/ 0,
@@ -2411,13 +2404,13 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatSetOption_SeqBAIJ,
        MatZeroEntries_SeqBAIJ,
 /*25*/ MatZeroRows_SeqBAIJ,
-       MatLUFactorSymbolic_SeqBAIJ,
-       MatLUFactorNumeric_SeqBAIJ_N,
-       MatCholeskyFactorSymbolic_SeqBAIJ,
-       MatCholeskyFactorNumeric_SeqBAIJ_N,
+       0,
+       0,
+       0,
+       0,
 /*30*/ MatSetUpPreallocation_SeqBAIJ,
-       MatILUFactorSymbolic_SeqBAIJ,
-       MatICCFactorSymbolic_SeqBAIJ,
+       0,
+       0,
        MatGetArray_SeqBAIJ,
        MatRestoreArray_SeqBAIJ,
 /*35*/ MatDuplicate_SeqBAIJ,
@@ -2563,7 +2556,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
 {
   Mat_SeqBAIJ    *b;
   PetscErrorCode ierr;
-  PetscInt       i,mbs,nbs,bs2,newbs = bs;
+  PetscInt       i,mbs,nbs,bs2,newbs = PetscAbs(bs);
   PetscTruth     flg,skipallocation = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -2573,10 +2566,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     nz             = 0;
   }
 
-  ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Block options for SEQBAIJ matrix 1","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSeqBAIJSetPreallocation",bs,&newbs,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-
+  if (bs < 0) {
+    ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Block options for SEQBAIJ matrix 1","Mat");CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSeqBAIJSetPreallocation",newbs,&newbs,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();CHKERRQ(ierr);
+    bs   = PetscAbs(bs);
+  }
   if (nnz && newbs != bs) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot change blocksize from command line if setting nnz");
   }
@@ -2610,54 +2605,44 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for block size (slow)",PETSC_NULL,PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
-  B->ops->solve               = MatSolve_SeqBAIJ_Update;
-  B->ops->solvetranspose      = MatSolveTranspose_SeqBAIJ_Update;
   if (!flg) {
     switch (bs) {
     case 1:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_1;  
       B->ops->mult            = MatMult_SeqBAIJ_1;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_1;
       B->ops->pbrelax         = MatPBRelax_SeqBAIJ_1;
       break;
     case 2:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_2;  
       B->ops->mult            = MatMult_SeqBAIJ_2;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_2;
       B->ops->pbrelax         = MatPBRelax_SeqBAIJ_2;
       break;
     case 3:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_3;  
       B->ops->mult            = MatMult_SeqBAIJ_3;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_3;
       B->ops->pbrelax         = MatPBRelax_SeqBAIJ_3;
       break;
     case 4:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_4;  
       B->ops->mult            = MatMult_SeqBAIJ_4;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_4;
       B->ops->pbrelax         = MatPBRelax_SeqBAIJ_4;
       break;
     case 5:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_5;  
       B->ops->mult            = MatMult_SeqBAIJ_5;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_5;
       B->ops->pbrelax         = MatPBRelax_SeqBAIJ_5;
       break;
     case 6:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_6;  
       B->ops->mult            = MatMult_SeqBAIJ_6;
       B->ops->multadd         = MatMultAdd_SeqBAIJ_6;
       B->ops->pbrelax         = MatPBRelax_SeqBAIJ_6;
       break;
     case 7:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_7;  
       B->ops->mult            = MatMult_SeqBAIJ_7; 
       B->ops->multadd         = MatMultAdd_SeqBAIJ_7;
       B->ops->pbrelax         = MatPBRelax_SeqBAIJ_7;
       break;
     default:
-      B->ops->lufactornumeric = MatLUFactorNumeric_SeqBAIJ_N;  
       B->ops->mult            = MatMult_SeqBAIJ_N; 
       B->ops->multadd         = MatMultAdd_SeqBAIJ_N;
       break;
@@ -2761,6 +2746,7 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqbaij_petsc(Mat,MatFactorType,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable_seqbaij_petsc(Mat,MatFactorType,Mat*);
 EXTERN_C_END
 
 /*MC
@@ -2816,6 +2802,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
   b->compressedrow.checked = PETSC_FALSE;
   B->same_nonzero          = PETSC_FALSE;
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactorAvailable_seqbaij_petsc_C",
+                                     "MatGetFactorAvailable_seqbaij_petsc",
+                                     MatGetFactorAvailable_seqbaij_petsc);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqbaij_petsc_C",
                                      "MatGetFactor_seqbaij_petsc",
                                      MatGetFactor_seqbaij_petsc);CHKERRQ(ierr);
