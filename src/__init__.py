@@ -51,7 +51,7 @@ def get_include():
 
     Extension modules that need to compile against petsc4py should use
     this function to locate the appropriate include directory. Using
-    Python distutils (or perhaps NumPy distutils):
+    Python distutils (or perhaps NumPy distutils)::
 
       import petsc4py
       Extension('extension_name', ...
