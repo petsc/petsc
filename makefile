@@ -46,10 +46,17 @@ fullclean: distclean srcclean
 CYTHON = cython
 CYTHON_FLAGS = --cleanup 9
 CYTHON_INCLUDE = -I. -Iinclude
-CY_SRC_DIR = src/PETSc
 CY_SRC_PXD = $(wildcard src/include/petsc4py/*.pxd)
 CY_SRC_PXI = $(wildcard src/PETSc/*.pxi)
 CY_SRC_PYX = $(wildcard src/PETSc/*.pyx)
 src/petsc4py_PETSc.c: ${CY_SRC_PXD} ${CY_SRC_PXI} ${CY_SRC_PYX}
-	${CYTHON} ${CYTHON_FLAGS} -w src ${CYTHON_INCLUDE} petsc4py.PETSc.pyx -o petsc4py_PETSc.c
+	${CYTHON} ${CYTHON_FLAGS} ${CYTHON_INCLUDE} -w src petsc4py.PETSc.pyx -o petsc4py_PETSc.c
 	mv src/petsc4py_PETSc_api.h src/petsc4py_PETSc.h src/include/petsc4py
+
+EPYDOC = ./misc/epydoc-cython.py
+EPYDOC_CONF = ./misc/epydoc.cfg
+EPYDOC_FLAGS =
+EPYDOC_CMD = ${EPYDOC} -v --config=${EPYDOC_CONF} ${EPYDOC_FLAGS}
+EPYDOC_OUT = /tmp/petsc4py-api-doc
+epydoc:
+	${EPYDOC_CMD} -o ${EPYDOC_OUT}
