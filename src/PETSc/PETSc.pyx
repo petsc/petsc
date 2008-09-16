@@ -95,6 +95,9 @@ include "petscda.pxi"
 
 # --------------------------------------------------------------------
 
+__doc__ = \
+"""Portable, Extensible Toolkit for Scientific Computation"""
+
 include "Const.pyx"
 include "Error.pyx"
 include "Options.pyx"
