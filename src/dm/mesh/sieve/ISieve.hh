@@ -755,7 +755,7 @@ namespace ALE {
           this->allocatedPoints = true;
         }
       };
-      void clear() {this->i = 0;};
+      void clear() {this->i = 0; this->p = 0;};
     };
     template<typename Sieve, typename Label>
     class MarkVisitor {
