@@ -4235,6 +4235,127 @@ namespace ALE {
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
     };
+    template<typename Mesh>
+    static void refineTetrahedra(const Mesh& mesh, Mesh& newMesh) {
+      typedef typename Mesh::sieve_type        sieve_type;
+      typedef typename Mesh::point_type        point_type;
+      typedef std::pair<point_type,point_type> edge_type;
+
+      const int numCells       = mesh.heightStratum(0)->size();
+      const int numVertices    = mesh.depthStratum(0)->size();
+      // Calculate number of new cells
+      const int numNewCells    = numCells * 8;
+      // Bound number of new vertices
+      const int maxNewVertices = numCells * 6;
+      int       curNewVertex   = numNewCells + numVertices;
+      std::hash_map<edge_type, point_type> edge2vertex;
+
+      // Loop over cells
+      const Obj<sieve_type>&                         sieve    = mesh.getSieve();
+      const Obj<sieve_type>&                         newSieve = newMesh.getSieve();
+      ALE::ISieveVisitor::PointRetriever<sieve_type> cV(std::max(1, sieve->getMaxConeSize()));
+
+      for(int c = 0; c < numCells; ++c) {
+        sieve->cone(c, cV);
+        assert(cV.getSize() == 4);
+        const point_type *cone = cV.getPoints();
+
+        //   As per Brad's diagram
+        edge_type edges[6] = {edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1])),
+                              edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2])),
+                              edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0])),
+                              edge_type(std::min(cone[0], cone[3]), std::max(cone[0], cone[3])),
+                              edge_type(std::min(cone[1], cone[3]), std::max(cone[1], cone[3])),
+                              edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]))}
+        //   Check that vertex does not yet exist
+        for(int v = 0; v < 6; ++v) {
+          if (!edge2vertex.find(edges[v])) {
+            edge2vertex[edges[v]] = curNewVertex++;
+          }
+        }
+        cV.clear();
+      }
+      newSieve->setChart(typename Mesh::chart_type(0, curNewVertex));
+      newSieve->allocate();
+      const int   numNewVertices = curNewVertex - numNewCells;
+      point_type *vertex2edge    = new point_type[numNewVertices];
+
+      for(int c = 0; c < numCells; ++c) {
+        sieve->cone(c_iter, cV);
+        assert(cV.getSize() == 4);
+        const point_type *cone = cV.getPoints();
+
+        // As per Brad's diagram
+        edge_type edges[6] = {edge_type(std::min(cone[0], cone[1]), std::max(cone[0], cone[1])),
+                              edge_type(std::min(cone[1], cone[2]), std::max(cone[1], cone[2])),
+                              edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0])),
+                              edge_type(std::min(cone[0], cone[3]), std::max(cone[0], cone[3])),
+                              edge_type(std::min(cone[1], cone[3]), std::max(cone[1], cone[3])),
+                              edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]))}
+        //   Check that vertex does not yet exist
+        point_type newVertices[6];
+
+        for(int v = 0; v < 6; ++v) {
+          if (!edge2vertex.find(edges[v])) {
+            throw ALE::Exception("Missing edge in refined mesh");
+          }
+          newVertices[v] = edge2vertex[edges[v]];
+          vertex2edge[(newVertices[v]-numNewCells-numVertices)*2+0] = edges[v].first;
+          vertex2edge[(newVertices[v]-numNewCells-numVertices)*2+1] = edges[v].second;
+        }
+        // Create new cells
+        const point_type offset = numNewCells - numCells;
+
+        point_type cell0[4] = {cone[0]+offset, newVertices[3], newVertices[0], newVertices[2]};
+        newSieve.setCone(cell0, c*8+0);
+        point_type cell1[4] = {cone[1]+offset, newVertices[4], newVertices[1], newVertices[0]};
+        newSieve.setCone(cell1, c*8+1);
+        point_type cell2[4] = {cone[2]+offset, newVertices[5], newVertices[2], newVertices[1]};
+        newSieve.setCone(cell2, c*8+2);
+        point_type cell3[4] = {cone[3]+offset, newVertices[3], newVertices[5], newVertices[4]};
+        newSieve.setCone(cell3, c*8+3);
+        point_type cell4[4] = {newVertices[0], newVertices[3], newVertices[4], newVertices[2]};
+        newSieve.setCone(cell4, c*8+4);
+        point_type cell5[4] = {newVertices[1], newVertices[4], newVertices[5], newVertices[3]};
+        newSieve.setCone(cell5, c*8+5);
+        point_type cell6[4] = {newVertices[2], newVertices[5], newVertices[3], newVertices[1]};
+        newSieve.setCone(cell6, c*8+6);
+        point_type cell7[4] = {newVertices[0], newVertices[1], newVertices[2], newVertices[3]};
+        newSieve.setCone(cell7, c*8+7);
+        cV.clear();
+      }
+      // Create new coordinates
+      Obj<typename Mesh::real_section_type>& coordinates    = mesh.getRealSection("coordinates");
+      Obj<typename Mesh::real_section_type>& newCoordinates = newMesh.getRealSection("coordinates");
+
+      newCoordinates->setChart(typename Mesh::chart_type(numNewCells, curNewVertex));
+      for(int v = numNewCells; v < curNewVertex; ++v) {
+        newCoordinates->setFiberDimension(v, 3);
+      }
+      newCoordinates->allocate();
+      for(int v = 0; v < numVertices; ++v) {
+        newCoordinates->update(v+numNewCells, coordinates->restrict(v+numCells));
+      }
+      for(int v = numNewCells+numVertices; v < curNewVertex; ++v) {
+        const int    endpointA  = vertex2edge[(v-numNewCells+numVertices)*2+0];
+        const int    endpointB  = vertex2edge[(v-numNewCells+numVertices)*2+1];
+        const double coordsA[3] = coordinates->restrict(endpointA);
+        double       coords[3];
+
+        for(int d = 0; d < 3; ++d) {
+          coords[d]  = coordsA[d];
+        }
+        const double coordsB[3] = coordinates->restrict(endpointB);
+        for(int d = 0; d < 3; ++d) {
+          coords[d] += coordsB[d];
+          coords[d] *= 0.5;
+        }
+        newCoordinates->update(v, coords);
+      }
+      delete [] vertex2edge;
+      // Exchange new boundary vertices
+      //   We can convert endpoints, and then just match to new vertex on this side
+    };
   };
 } // namespace ALE
 #endif
