@@ -4235,10 +4235,10 @@ namespace ALE {
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
     };
-    template<typename Mesh>
-    static void refineTetrahedra(const Mesh& mesh, Mesh& newMesh) {
-      typedef typename Mesh::sieve_type        sieve_type;
-      typedef typename Mesh::point_type        point_type;
+    template<typename MeshType>
+    static void refineTetrahedra(const MeshType& mesh, MeshType& newMesh) {
+      typedef typename MeshType::sieve_type        sieve_type;
+      typedef typename MeshType::point_type        point_type;
       typedef std::pair<point_type,point_type> edge_type;
 
       const int numCells       = mesh.heightStratum(0)->size();
@@ -4248,7 +4248,7 @@ namespace ALE {
       // Bound number of new vertices
       const int maxNewVertices = numCells * 6;
       int       curNewVertex   = numNewCells + numVertices;
-      std::hash_map<edge_type, point_type> edge2vertex;
+      std::map<edge_type, point_type> edge2vertex;
 
       // Loop over cells
       const Obj<sieve_type>&                         sieve    = mesh.getSieve();
@@ -4266,7 +4266,7 @@ namespace ALE {
                               edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0])),
                               edge_type(std::min(cone[0], cone[3]), std::max(cone[0], cone[3])),
                               edge_type(std::min(cone[1], cone[3]), std::max(cone[1], cone[3])),
-                              edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]))}
+                              edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]))};
         //   Check that vertex does not yet exist
         for(int v = 0; v < 6; ++v) {
           if (!edge2vertex.find(edges[v])) {
@@ -4275,13 +4275,13 @@ namespace ALE {
         }
         cV.clear();
       }
-      newSieve->setChart(typename Mesh::chart_type(0, curNewVertex));
+      newSieve->setChart(typename MeshType::chart_type(0, curNewVertex));
       newSieve->allocate();
       const int   numNewVertices = curNewVertex - numNewCells;
       point_type *vertex2edge    = new point_type[numNewVertices];
 
       for(int c = 0; c < numCells; ++c) {
-        sieve->cone(c_iter, cV);
+        sieve->cone(c, cV);
         assert(cV.getSize() == 4);
         const point_type *cone = cV.getPoints();
 
@@ -4291,7 +4291,7 @@ namespace ALE {
                               edge_type(std::min(cone[2], cone[0]), std::max(cone[2], cone[0])),
                               edge_type(std::min(cone[0], cone[3]), std::max(cone[0], cone[3])),
                               edge_type(std::min(cone[1], cone[3]), std::max(cone[1], cone[3])),
-                              edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]))}
+                              edge_type(std::min(cone[2], cone[3]), std::max(cone[2], cone[3]))};
         //   Check that vertex does not yet exist
         point_type newVertices[6];
 
@@ -4325,10 +4325,10 @@ namespace ALE {
         cV.clear();
       }
       // Create new coordinates
-      Obj<typename Mesh::real_section_type>& coordinates    = mesh.getRealSection("coordinates");
-      Obj<typename Mesh::real_section_type>& newCoordinates = newMesh.getRealSection("coordinates");
+      Obj<typename MeshType::real_section_type>& coordinates    = mesh.getRealSection("coordinates");
+      Obj<typename MeshType::real_section_type>& newCoordinates = newMesh.getRealSection("coordinates");
 
-      newCoordinates->setChart(typename Mesh::chart_type(numNewCells, curNewVertex));
+      newCoordinates->setChart(typename MeshType::chart_type(numNewCells, curNewVertex));
       for(int v = numNewCells; v < curNewVertex; ++v) {
         newCoordinates->setFiberDimension(v, 3);
       }
