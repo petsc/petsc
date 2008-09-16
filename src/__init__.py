@@ -4,11 +4,26 @@
 
 # --------------------------------------------------------------------
 
-__author__    = 'Lisandro Dalcin'
-__credits__   = "PETSc Team <petsc-maint@mcs.anl.gov>"
-__version__   = '1.0.0'
+"""
+PETSc for Python
+================
 
-__docformat__ = 'reStructuredText'
+This package is an interface to PETSc libraries.
+
+PETSc_ (the Portable, Extensible Toolkit for Scientific Computation)
+is a suite of data structures and routines for the scalable (parallel)
+solution of scientific applications modeled by partial differential
+equations. It employs the MPI_ standard for all message-passing
+communication.
+
+.. _PETSc: http://www-unix.mcs.anl.gov/petsc
+.. _MPI:   http://www.mpi-forum.org
+
+"""
+
+__author__    = 'Lisandro Dalcin'
+__version__   = '1.0.0'
+__credits__   = "PETSc Team <petsc-maint@mcs.anl.gov>"
 
 # --------------------------------------------------------------------
 
