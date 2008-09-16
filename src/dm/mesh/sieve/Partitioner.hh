@@ -175,7 +175,7 @@ namespace ALE {
     protected:
       alloc_type _allocator;
     public:
-      static bool zeroBase() {return false;}
+      static bool zeroBase() {return true;}
       // This method returns the partition section mapping sieve points (here cells) to partitions
       //   start:     start of edge list for each vertex
       //   adjacency: adj[start[v]] is edge list data for vertex v
