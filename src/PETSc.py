@@ -1,3 +1,5 @@
-from petsc4py.lib import Import
-PETSc = Import(); del Import
-PETSc._initialize(); del PETSc
+from petsc4py.lib import ImportPETSc
+PETSc = ImportPETSc()
+del ImportPETSc
+PETSc._initialize()
+del PETSc

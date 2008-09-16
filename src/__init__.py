@@ -39,7 +39,7 @@ def init(args=None, arch=None):
       the very beginning of the bootstrap script of an application.
     """
     import petsc4py.lib
-    PETSc = petsc4py.lib.Import(arch)
+    PETSc = petsc4py.lib.ImportPETSc(arch)
     if args is None:
         args = []
     elif isinstance(args, str):
