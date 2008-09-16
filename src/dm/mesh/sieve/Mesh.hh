@@ -4246,7 +4246,7 @@ namespace ALE {
       // Calculate number of new cells
       const int numNewCells    = numCells * 8;
       // Bound number of new vertices
-      const int maxNewVertices = numCells * 6;
+      //const int maxNewVertices = numCells * 6;
       int       curNewVertex   = numNewCells + numVertices;
       std::map<edge_type, point_type> edge2vertex;
 
@@ -4342,7 +4342,6 @@ namespace ALE {
           newVertices[v] = edge2vertex[edges[v]];
           vertex2edge[(newVertices[v]-numNewCells-numVertices)*2+0] = edges[v].first;
           vertex2edge[(newVertices[v]-numNewCells-numVertices)*2+1] = edges[v].second;
-          std::cout << "Putting in " << newVertices[v]-numNewCells-numVertices << "("<<edges[v].first<<","<<edges[v].second<<")" << std::endl;
         }
         // Create new cells
         const point_type offset = numNewCells - numCells;
@@ -4379,22 +4378,18 @@ namespace ALE {
         newCoordinates->updatePoint(v+numNewCells, coordinates->restrictPoint(v+numCells));
       }
       for(int v = numNewCells+numVertices; v < curNewVertex; ++v) {
-        std::cout << "Looking for " << v-numNewCells-numVertices << std::endl;
         const int     endpointA = vertex2edge[(v-numNewCells-numVertices)*2+0];
         const int     endpointB = vertex2edge[(v-numNewCells-numVertices)*2+1];
-        std::cout << "  endA: " << endpointA << " endB: " << endpointB << std::endl;
         const double *coordsA   = coordinates->restrictPoint(endpointA);
         double        coords[3];
 
         for(int d = 0; d < 3; ++d) {
           coords[d]  = coordsA[d];
-          std::cout << "coordsA["<<d<<"]: " << coordsA[d] << std::endl;
         }
         const double *coordsB = coordinates->restrictPoint(endpointB);
         for(int d = 0; d < 3; ++d) {
           coords[d] += coordsB[d];
           coords[d] *= 0.5;
-          std::cout << "coordsB["<<d<<"]: " << coordsB[d] << std::endl;
         }
         newCoordinates->updatePoint(v, coords);
       }
