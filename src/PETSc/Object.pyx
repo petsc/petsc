@@ -2,7 +2,7 @@
 
 cdef class Object:
 
-    #
+    # --- special methods ---
 
     def __cinit__(self):
         self.oval = NULL
@@ -12,27 +12,20 @@ cdef class Object:
         CHKERR( PetscDEALLOC(self.obj) )
         self.obj = NULL
 
-    def __richcmp__(Object self, Object other, int op):
-        if op!=2 and op!=3: raise TypeError("only '==' and '!='")
-        cdef int eq = (op==2)
-        if self.obj == NULL or other.obj == NULL:
-            if eq: return self is other
-            else:  return self is not other
-        else:
-            if eq: return (self.obj[0] == other.obj[0])
-            else:  return (self.obj[0] != other.obj[0])
+    def __richcmp__(self, other, int op):
+        if not isinstance(self,  Object): return NotImplemented
+        if not isinstance(other, Object): return NotImplemented
+        cdef Object s = self, o = other
+        if   op == 2: return (s.obj[0] == o.obj[0])
+        elif op == 3: return (s.obj[0] != o.obj[0])
+        else: raise TypeError("only '==' and '!='")
 
     def __nonzero__(self):
-        if self.obj == NULL: return False
-        return self.obj[0] != NULL
-
-    def __bool__(self):
-        if self.obj == NULL: return False
         return self.obj[0] != NULL
 
     # --- reference management ---
 
-    cdef long incRef(self) except -1:
+    cdef long inc_ref(self) except -1:
         cdef PetscObject obj = self.obj[0]
         cdef PetscInt refct = 0
         if obj != NULL:
@@ -41,7 +34,7 @@ cdef class Object:
         return refct
 
 
-    cdef long decRef(self) except -1:
+    cdef long dec_ref(self) except -1:
         cdef PetscObject obj = self.obj[0]
         cdef PetscInt refct = 0
         if obj != NULL:
@@ -50,6 +43,18 @@ cdef class Object:
             CHKERR( PetscObjectDereference(obj) )
             refct -= 1
         return refct
+
+    # --- attribute management ---
+
+    cdef object get_attr(self, char name[]):
+        return Object_getAttr(self.obj[0], name)
+
+    cdef object set_attr(self, char name[], object attr):
+        Object_setAttr(self.obj[0], name, attr)
+        return None
+
+    cdef object get_dict(self):
+        return Object_getDict(self.obj[0])
 
     #
 
@@ -109,17 +114,24 @@ cdef class Object:
         CHKERR( PetscObjectGetReference(self.obj[0], &refcnt) )
         return refcnt
 
-    # --- general Python support ---
+    # --- general support ---
 
-    cpdef object getAttr(self, char name[]):
-        return Object_getAttr(self.obj[0], name)
+    def incRef(self):
+        return self.inc_ref()
 
-    cpdef object setAttr(self, char name[], object attr):
-        Object_setAttr(self.obj[0], name, attr)
-        return None
+    def decRef(self):
+        return self.dec_ref()
+
+    def getAttr(self, name):
+        cdef char *cname = str2cp(name)
+        return self.get_attr(cname)
+
+    def setAttr(self, name, attr):
+        cdef char *cname = str2cp(name)
+        self.set_attr(cname, attr)
 
     def getDict(self):
-        return Object_getDict(self.obj[0])
+        return self.get_dict()
 
     # --- properties ---
 

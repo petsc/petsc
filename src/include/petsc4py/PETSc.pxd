@@ -67,10 +67,11 @@ cdef public api class Comm [type PyPetscComm_Type, object PyPetscCommObject]:
 cdef public api class Object [type PyPetscObject_Type, object PyPetscObjectObject]:
     cdef PetscObject oval
     cdef PetscObject *obj
-    cdef long incRef(self) except -1
-    cdef long decRef(self) except -1
-    cpdef object getAttr(self, char name[])
-    cpdef object setAttr(self, char name[], object attr)
+    cdef long inc_ref(self) except -1
+    cdef long dec_ref(self) except -1
+    cdef object get_attr(self, char name[])
+    cdef object set_attr(self, char name[], object attr)
+    cdef object get_dict(self)
 
 cdef public api class Viewer(Object) [type PyPetscViewer_Type, object PyPetscViewerObject]:
     cdef PetscViewer vwr
