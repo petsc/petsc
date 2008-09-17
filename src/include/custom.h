@@ -1,5 +1,13 @@
 /* ---------------------------------------------------------------- */
 
+#include "include/private/vecimpl.h"
+#include "include/private/matimpl.h"
+#include "include/private/kspimpl.h"
+#include "include/private/snesimpl.h"
+#include "include/private/tsimpl.h"
+
+/* ---------------------------------------------------------------- */
+
 #undef __FUNCT__  
 #define __FUNCT__ "ISValid"
 PETSC_STATIC_INLINE PetscErrorCode
@@ -126,8 +134,6 @@ MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
   *A = mat;
   PetscFunctionReturn(0);
 }
-
-#include "include/private/matimpl.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatAnyAIJSetPreallocation"
@@ -259,8 +265,6 @@ MatAnyDenseSetPreallocation(Mat A,PetscInt bs, PetscScalar *data)
 
 /* ---------------------------------------------------------------- */
 
-#include "include/private/kspimpl.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetIterationNumber"
 PETSC_STATIC_INLINE PetscErrorCode
@@ -339,8 +343,6 @@ KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 }
 
 /* ---------------------------------------------------------------- */
-
-#include "include/private/matimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetOptionsPrefix"
@@ -510,8 +512,6 @@ SNESSetUseFDColoring(SNES snes,PetscTruth flag)
 
 /* ---------------------------------------------------------------- */
 
-#include "include/private/tsimpl.h"
-
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetRHSFunction_Ex"
 static PetscErrorCode 
@@ -658,8 +658,6 @@ TSSolve_Patch(TS ts, Vec x)
 }
 #undef  TSSolve
 #define TSSolve TSSolve_Patch
-
-#include "include/private/tsimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetTimeStepNumber"
