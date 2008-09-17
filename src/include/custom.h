@@ -63,6 +63,12 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 
 /* ---------------------------------------------------------------- */
 
+#if 0 /* petsc-dev */
+#define PetscGetMap(o, m) ((o)->m)
+#else /* petsc-233 */
+#define PetscGetMap(o, m) (&((o)->m))
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MatSetBlockSize_Patch"
 PETSC_STATIC_INLINE PetscErrorCode
@@ -76,9 +82,11 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
 		       "Invalid block size specified, must "
 		       "be positive but it is %D",bs);
   if (mat->ops->setblocksize) {
-    mat->rmap.bs = mat->cmap.bs = bs;
+    PetscGetMap(mat,rmap)->bs = bs;
+    PetscGetMap(mat,cmap)->bs = bs;
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
-  } else if (mat->rmap.bs != bs || mat->cmap.bs != bs) {
+  } else if (PetscGetMap(mat,rmap)->bs != bs || 
+	     PetscGetMap(mat,cmap)->bs != bs) {
     SETERRQ1(PETSC_ERR_ARG_INCOMP,"Cannot set/change the block size for matrix type %s",((PetscObject)mat)->type_name);
   }
   PetscFunctionReturn(0);
@@ -228,9 +236,10 @@ MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
   else           mtype = (MatType)MATSEQDENSE;
   ierr = MatSetType(mat,mtype);CHKERRQ(ierr);
   if (bs != PETSC_DECIDE) {
-    mat->rmap.bs = mat->cmap.bs = bs;
-    ierr = PetscMapSetUp(&mat->rmap);CHKERRQ(ierr);
-    ierr = PetscMapSetUp(&mat->cmap);CHKERRQ(ierr);
+    PetscGetMap(mat,rmap)->bs = bs;
+    PetscGetMap(mat,cmap)->bs = bs;
+    ierr = PetscMapSetUp(PetscGetMap(mat,rmap));CHKERRQ(ierr);
+    ierr = PetscMapSetUp(PetscGetMap(mat,cmap));CHKERRQ(ierr);
   }
   *A = mat;
   PetscFunctionReturn(0);
@@ -239,15 +248,15 @@ MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
 #undef __FUNCT__
 #define __FUNCT__ "MatAnyDenseSetPreallocation"
 PETSC_STATIC_INLINE PetscErrorCode
-MatAnyDenseSetPreallocation(Mat A,PetscInt bs, PetscScalar *data) 
+MatAnyDenseSetPreallocation(Mat mat,PetscInt bs, PetscScalar *data) 
 {
   PetscTruth     flag;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidType(A,1);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
   if (data) PetscValidScalarPointer(data,3);
-  ierr = MatIsPreallocated(A, &flag);CHKERRQ(ierr);
+  ierr = MatIsPreallocated(mat, &flag);CHKERRQ(ierr);
   if (flag) { SETERRQ(PETSC_ERR_ORDER, "matrix is already preallocated"); }
   if (bs == PETSC_DEFAULT)
     bs = PETSC_DECIDE;
@@ -255,10 +264,11 @@ MatAnyDenseSetPreallocation(Mat A,PetscInt bs, PetscScalar *data)
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,
 	     "Invalid block size specified, "
 	     "must be positive but it is %D",bs);
-  ierr = MatSeqDenseSetPreallocation(A, data);
-  ierr = MatMPIDenseSetPreallocation(A, data);
+  ierr = MatSeqDenseSetPreallocation(mat, data);
+  ierr = MatMPIDenseSetPreallocation(mat, data);
   if (bs != PETSC_DECIDE) {
-    A->rmap.bs = A->cmap.bs = bs;
+    PetscGetMap(mat,rmap)->bs = bs;
+    PetscGetMap(mat,cmap)->bs = bs;
   }
   PetscFunctionReturn(0);
 }
