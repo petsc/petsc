@@ -1,10 +1,24 @@
 /* ---------------------------------------------------------------- */
 
+#include "compat.h"
+
 #include "include/private/vecimpl.h"
 #include "include/private/matimpl.h"
 #include "include/private/kspimpl.h"
 #include "include/private/snesimpl.h"
 #include "include/private/tsimpl.h"
+
+#if PETSC_232
+#define PetscGetMap(o, m) (&(o)->m)
+#define PetscSetUpMap(o, m) PetscMapInitialize((o)->comm,&(o)->m)
+#elif PETSC_233
+#define PetscGetMap(o, m) (&(o)->m)
+#define PetscSetUpMap(o, m) PetscMapSetUp(&(o)->m)
+#else
+#define PetscGetMap(o, m) ((o)->m)
+#define PetscSetUpMap(o, m) PetscMapSetUp((o)->m)
+#endif
+
 
 /* ---------------------------------------------------------------- */
 
@@ -62,12 +76,6 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 }
 
 /* ---------------------------------------------------------------- */
-
-#if 0 /* petsc-dev */
-#define PetscGetMap(o, m) ((o)->m)
-#else /* petsc-233 */
-#define PetscGetMap(o, m) (&((o)->m))
-#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetBlockSize_Patch"
@@ -238,8 +246,8 @@ MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
   if (bs != PETSC_DECIDE) {
     PetscGetMap(mat,rmap)->bs = bs;
     PetscGetMap(mat,cmap)->bs = bs;
-    ierr = PetscMapSetUp(PetscGetMap(mat,rmap));CHKERRQ(ierr);
-    ierr = PetscMapSetUp(PetscGetMap(mat,cmap));CHKERRQ(ierr);
+    ierr = PetscSetUpMap(mat,rmap);CHKERRQ(ierr);
+    ierr = PetscSetUpMap(mat,rmap);CHKERRQ(ierr);
   }
   *A = mat;
   PetscFunctionReturn(0);

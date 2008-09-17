@@ -1,3 +1,6 @@
+#if !defined(PETSC_COMPAT_H)
+#define PETSC_COMPAT_H
+
 #ifndef PETSC_UNUSED
 # if defined(__GNUC__)
 #   if !(defined(__cplusplus)) || (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4))
@@ -17,6 +20,9 @@
      PETSC_VERSION_SUBMINOR == 3 && \
      PETSC_VERSION_RELEASE  == 1)
 #include "compat/petsc233.h"
+#define PETSC_233 1
+#else
+#define PETSC_233 0
 #endif
 
 #if (PETSC_VERSION_MAJOR    == 2 && \
@@ -24,5 +30,9 @@
      PETSC_VERSION_SUBMINOR == 2 && \
      PETSC_VERSION_RELEASE  == 1)
 #include "compat/petsc232.h"
+#define PETSC_232 1
+#else
+#define PETSC_232 0
 #endif
 
+#endif /* !PETSC_COMPAT_H */
