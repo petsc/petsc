@@ -135,6 +135,37 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtod(const char name[],PetscReal *a)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsAtol"
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsAtol(const char value[], PetscTruth *a)
+{
+  PetscTruth     istrue, isfalse;
+  size_t         len;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrlen(value, &len);CHKERRQ(ierr);
+  if (!len) SETERRQ(PETSC_ERR_ARG_WRONG, "Character string of length zero has no logical value");
+  ierr = PetscStrcasecmp(value,"TRUE",&istrue);CHKERRQ(ierr);
+  if (istrue) {*a = PETSC_TRUE; PetscFunctionReturn(0);}
+  ierr = PetscStrcasecmp(value,"YES",&istrue);CHKERRQ(ierr);
+  if (istrue) {*a = PETSC_TRUE; PetscFunctionReturn(0);}
+  ierr = PetscStrcasecmp(value,"1",&istrue);CHKERRQ(ierr);
+  if (istrue) {*a = PETSC_TRUE; PetscFunctionReturn(0);}
+  ierr = PetscStrcasecmp(value,"on",&istrue);CHKERRQ(ierr);
+  if (istrue) {*a = PETSC_TRUE; PetscFunctionReturn(0);}
+  ierr = PetscStrcasecmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
+  if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
+  ierr = PetscStrcasecmp(value,"NO",&isfalse);CHKERRQ(ierr);
+  if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
+  ierr = PetscStrcasecmp(value,"0",&isfalse);CHKERRQ(ierr);
+  if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
+  ierr = PetscStrcasecmp(value,"off",&isfalse);CHKERRQ(ierr);
+  if (isfalse) {*a = PETSC_FALSE; PetscFunctionReturn(0);}
+  SETERRQ1(PETSC_ERR_ARG_WRONG, "Unknown logical value: %s", value);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscGetProgramName"
 /*@C
     PetscGetProgramName - Gets the name of the running program. 
@@ -1215,7 +1246,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetEnum(const char pre[],const char o
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char name[],PetscTruth *ivalue,PetscTruth *flg)
 {
   char           *value;
-  PetscTruth     flag,istrue,isfalse;
+  PetscTruth     flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1227,33 +1258,78 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruth(const char pre[],const char 
     if (!value) {
       *ivalue = PETSC_TRUE;
     } else {
-      *ivalue = PETSC_TRUE;
-      ierr = PetscStrcasecmp(value,"TRUE",&istrue);CHKERRQ(ierr);
-      if (istrue) PetscFunctionReturn(0);
-      ierr = PetscStrcasecmp(value,"YES",&istrue);CHKERRQ(ierr);
-      if (istrue) PetscFunctionReturn(0);
-      ierr = PetscStrcasecmp(value,"1",&istrue);CHKERRQ(ierr);
-      if (istrue) PetscFunctionReturn(0);
-      ierr = PetscStrcasecmp(value,"on",&istrue);CHKERRQ(ierr);
-      if (istrue) PetscFunctionReturn(0);
-
-      *ivalue = PETSC_FALSE;
-      ierr = PetscStrcasecmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
-      if (isfalse) PetscFunctionReturn(0);
-      ierr = PetscStrcasecmp(value,"NO",&isfalse);CHKERRQ(ierr);
-      if (isfalse) PetscFunctionReturn(0);
-      ierr = PetscStrcasecmp(value,"0",&isfalse);CHKERRQ(ierr);
-      if (isfalse) PetscFunctionReturn(0);
-      ierr = PetscStrcasecmp(value,"off",&isfalse);CHKERRQ(ierr);
-      if (isfalse) PetscFunctionReturn(0);
-
-      SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown logical value: %s",value);
+      ierr = PetscOptionsAtol(value, ivalue);CHKERRQ(ierr);
     }
   } else {
     if (flg) *flg = PETSC_FALSE;
   }
   PetscFunctionReturn(0); 
 } 
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsGetTruthArray"
+/*@C
+   PetscOptionsGetTruthArray - Gets an array of Logical (true or false) values for a particular 
+   option in the database.  The values must be separated with commas with 
+   no intervening spaces. 
+
+   Not Collective
+
+   Input Parameters:
++  pre - string to prepend to each name or PETSC_NULL
+.  name - the option one is seeking
+-  nmax - maximum number of values to retrieve
+
+   Output Parameter:
++  dvalue - the integer values to return
+.  nmax - actual number of values retreived
+-  flg - PETSC_TRUE if found, else PETSC_FALSE
+
+   Level: beginner
+
+   Concepts: options database^array of ints
+
+   Notes:
+       TRUE, true, YES, yes, nostring, and 1 all translate to PETSC_TRUE
+       FALSE, false, NO, no, and 0 all translate to PETSC_FALSE
+
+.seealso: PetscOptionsGetInt(), PetscOptionsHasName(), 
+           PetscOptionsGetString(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
+          PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
+          PetscOptionsStringArray(),PetscOptionsRealArray(), PetscOptionsScalar(),
+          PetscOptionsTruthGroupBegin(), PetscOptionsTruthGroup(), PetscOptionsTruthGroupEnd(),
+          PetscOptionsList(), PetscOptionsEList()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetTruthArray(const char pre[],const char name[],PetscTruth dvalue[],PetscInt *nmax,PetscTruth *flg)
+{
+  char           *value;
+  PetscErrorCode ierr;
+  PetscInt       n = 0;
+  PetscTruth     flag;
+  PetscToken     token;
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(name,2);
+  PetscValidIntPointer(dvalue,3);
+  ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
+  if (!flag)  {if (flg) *flg = PETSC_FALSE; *nmax = 0; PetscFunctionReturn(0);}
+  if (!value) {if (flg) *flg = PETSC_TRUE; *nmax = 0; PetscFunctionReturn(0);}
+
+  if (flg) *flg = PETSC_TRUE;
+
+  ierr = PetscTokenCreate(value,',',&token);CHKERRQ(ierr);
+  ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+  while (n < *nmax) {
+    if (!value) break;
+    ierr = PetscOptionsAtol(value,dvalue);CHKERRQ(ierr);
+    ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
+    dvalue++;
+    n++;
+  }
+  ierr  = PetscTokenDestroy(token);CHKERRQ(ierr);
+  *nmax = n;
+  PetscFunctionReturn(0); 
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsGetReal"
