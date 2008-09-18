@@ -142,6 +142,8 @@ PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newm
   PetscFunctionReturn(0);
 }
 
+EXTERN PetscErrorCode MatLUFactor_SeqDense(Mat A,IS row,IS col,MatFactorInfo *minfo);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqDense"
 PetscErrorCode MatLUFactorNumeric_SeqDense(Mat A,MatFactorInfo *info_dummy,Mat *fact)
