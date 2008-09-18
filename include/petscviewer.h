@@ -251,7 +251,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWriteStringArray(PetscVie
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName(PetscViewer,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetName(PetscViewer,char**);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(MPI_Comm com);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetPointer(PetscViewer, FILE**);
