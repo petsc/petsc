@@ -334,6 +334,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     ierr = MPI_Errhandler_set(comm,err_handler);CHKERRQ(ierr);
     ierr = PetscPushErrorHandler(PetscAttachDebuggerErrorHandler,0);CHKERRQ(ierr);
   }
+  ierr = PetscOptionsGetString(PETSC_NULL,"-debug_terminal",string,64,&flg1);CHKERRQ(ierr);
+  if (flg1) { ierr = PetscSetDebugTerminal(string);CHKERRQ(ierr); }
   ierr = PetscOptionsGetString(PETSC_NULL,"-start_in_debugger",string,64,&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-stop_for_debugger",string,64,&flg2);CHKERRQ(ierr);
   if (flg1 || flg2) {
