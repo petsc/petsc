@@ -20,23 +20,28 @@ PetscErrorCode DAView_3d(DA da,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D P %D m %D n %D p %D w %D s %D\n",
-               rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D, Z range of indices: %D %D\n",
-               da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);CHKERRQ(ierr);
+    PetscViewerFormat format;
+
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D N %D P %D m %D n %D p %D w %D s %D\n",
+                                                rank,da->M,da->N,da->P,da->m,da->n,da->p,da->w,da->s);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D, Y range of indices: %D %D, Z range of indices: %D %D\n",
+                                                da->xs,da->xe,da->ys,da->ye,da->zs,da->ze);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
-    if (da->coordinates) {
-      PetscInt  last;
-      PetscReal *coors;
-      ierr = VecGetArray(da->coordinates,&coors);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(da->coordinates,&last);CHKERRQ(ierr);
-      last = last - 3;
-      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %G %G %G : Upper right %G %G %G\n",
-               coors[0],coors[1],coors[2],coors[last],coors[last+1],coors[last+2]);CHKERRQ(ierr);
-      ierr = VecRestoreArray(da->coordinates,&coors);CHKERRQ(ierr);
-    }
+      if (da->coordinates) {
+        PetscInt  last;
+        PetscReal *coors;
+        ierr = VecGetArray(da->coordinates,&coors);CHKERRQ(ierr);
+        ierr = VecGetLocalSize(da->coordinates,&last);CHKERRQ(ierr);
+        last = last - 3;
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Lower left corner %G %G %G : Upper right %G %G %G\n",
+                                                  coors[0],coors[1],coors[2],coors[last],coors[last+1],coors[last+2]);CHKERRQ(ierr);
+        ierr = VecRestoreArray(da->coordinates,&coors);CHKERRQ(ierr);
+      }
 #endif
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    }
   } else if (isdraw) {
     PetscDraw       draw;
     PetscReal     ymin = -1.0,ymax = (PetscReal)da->N;

@@ -23,10 +23,15 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D m %D w %D s %D\n",rank,da->M,
-                 da->m,da->w,da->s);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",da->xs,da->xe);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    PetscViewerFormat format;
+
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format != PETSC_VIEWER_ASCII_VTK && format != PETSC_VIEWER_ASCII_VTK_CELL) {
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Processor [%d] M %D m %D w %D s %D\n",rank,da->M,
+                                                da->m,da->w,da->s);CHKERRQ(ierr);
+      ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",da->xs,da->xe);CHKERRQ(ierr);
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+    }
   } else if (isdraw) {
     PetscDraw  draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
