@@ -32,6 +32,8 @@ PetscErrorCode TetrahedronTest(const Options *options)
 {
   typedef ALE::IMesh            mesh_type;
   typedef mesh_type::sieve_type sieve_type;
+  typedef mesh_type::point_type point_type;
+  typedef std::pair<point_type,point_type> edge_type;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -45,6 +47,7 @@ PetscErrorCode TetrahedronTest(const Options *options)
                        1.0, 0.0, 0.0,
                        0.0, 0.0, 1.0};
   double v0[3], J[9], invJ[9], detJ;
+  std::map<edge_type, point_type> edge2vertex;
 
   sieve->setChart(sieve_type::chart_type(0, 5));
   sieve->setConeSize(0, 4);
@@ -63,7 +66,8 @@ PetscErrorCode TetrahedronTest(const Options *options)
     Obj<sieve_type> newSieve = new sieve_type(newMesh->comm(), options->debug);
 
     newMesh->setSieve(newSieve);
-    ALE::MeshBuilder<mesh_type>::refineTetrahedra(*mesh, *newMesh);
+    ALE::MeshBuilder<mesh_type>::refineTetrahedra(*mesh, *newMesh, edge2vertex);
+    edge2vertex.clear();
     if (options->debug) {
       PetscViewer viewer;
 

@@ -4235,11 +4235,11 @@ namespace ALE {
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
     };
-    template<typename MeshType>
-    static void refineTetrahedra(MeshType& mesh, MeshType& newMesh) {
-      typedef typename MeshType::sieve_type        sieve_type;
-      typedef typename MeshType::point_type        point_type;
-      typedef std::pair<point_type,point_type> edge_type;
+    template<typename MeshType, typename MapType>
+    static void refineTetrahedra(MeshType& mesh, MeshType& newMesh, MapType& edge2vertex) {
+      typedef typename MeshType::sieve_type sieve_type;
+      typedef typename MeshType::point_type point_type;
+      typedef typename MapType::key_type    edge_type;
 
       const int numCells       = mesh.heightStratum(0)->size();
       const int numVertices    = mesh.depthStratum(0)->size();
@@ -4248,7 +4248,6 @@ namespace ALE {
       // Bound number of new vertices
       //const int maxNewVertices = numCells * 6;
       int       curNewVertex   = numNewCells + numVertices;
-      std::map<edge_type, point_type> edge2vertex;
 
       // Loop over cells
       const Obj<sieve_type>&                         sieve    = mesh.getSieve();
