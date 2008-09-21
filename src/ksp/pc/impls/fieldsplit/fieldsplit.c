@@ -19,7 +19,7 @@ struct _PC_FieldSplitLink {
 
 typedef struct {
   PCCompositeType   type;              
-  PetscTruth        defaultsplit;
+  PetscTruth        defaultsplit; /* Flag for a system with a set of 'k' scalar fields with the same layout (and bs = k) */
   PetscInt          bs;
   PetscInt          nsplits;
   Vec               *x,*y,w1,w2;
@@ -1054,10 +1054,10 @@ EXTERN_C_END
 
    Input Parameter:
 .  pc - the preconditioner context
-.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE
+.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL, PC_COMPOSITE_SCHUR
 
    Options Database Key:
-.  -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets fieldsplit preconditioner type
+.  -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
 
    Level: Developer
 

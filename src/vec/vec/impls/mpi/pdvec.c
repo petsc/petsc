@@ -141,9 +141,6 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
       ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
       n    = PetscMPIIntCast(nLen);
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
-      if ((bs < 1) || (bs > 3)) {
-        SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
-      }
       if (format == PETSC_VIEWER_ASCII_VTK) {
         if (outputState == 0) {
           outputState = 1;
@@ -159,7 +156,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
         }
         if (doOutput) {
-          ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", xin->map->N);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", xin->map->N/bs);CHKERRQ(ierr);
         }
       } else {
         if (outputState == 0) {
@@ -176,7 +173,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           doOutput = 0;
         }
         if (doOutput) {
-          ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", xin->map->N);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", xin->map->N/bs);CHKERRQ(ierr);
         }
       }
       ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
@@ -191,9 +188,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           if (b > 0) {
             ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
           }
-#if !defined(PETSC_USE_COMPLEX)
-          ierr = PetscViewerASCIIPrintf(viewer,"%G",xarray[i*bs+b]);CHKERRQ(ierr);
-#endif
+          ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(xarray[i*bs+b]));CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
       }
@@ -205,9 +200,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
             if (b > 0) {
               ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
             }
-#if !defined(PETSC_USE_COMPLEX)
-            ierr = PetscViewerASCIIPrintf(viewer,"%G",values[i*bs+b]);CHKERRQ(ierr);
-#endif
+            ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(values[i*bs+b]));CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
         }
@@ -226,9 +219,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
           if (b > 0) {
             ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
           }
-#if !defined(PETSC_USE_COMPLEX)
-          ierr = PetscViewerASCIIPrintf(viewer,"%G",xarray[i*bs+b]);CHKERRQ(ierr);
-#endif
+          ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(xarray[i*bs+b]));CHKERRQ(ierr);
         }
         for (b=bs; b<3; b++) {
           ierr = PetscViewerASCIIPrintf(viewer," 0.0");CHKERRQ(ierr);
@@ -243,9 +234,7 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
             if (b > 0) {
               ierr = PetscViewerASCIIPrintf(viewer," ");CHKERRQ(ierr);
             }
-#if !defined(PETSC_USE_COMPLEX)
-            ierr = PetscViewerASCIIPrintf(viewer,"%G",values[i*bs+b]);CHKERRQ(ierr);
-#endif
+            ierr = PetscViewerASCIIPrintf(viewer,"%G",PetscRealPart(values[i*bs+b]));CHKERRQ(ierr);
           }
           for (b=bs; b<3; b++) {
             ierr = PetscViewerASCIIPrintf(viewer," 0.0");CHKERRQ(ierr);
