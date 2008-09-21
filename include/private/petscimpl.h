@@ -126,6 +126,7 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
    PetscLogObjectCreate(h) ||						\
    PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
+EXTERN PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject,PetscCookie,PetscInt,const char[],MPI_Comm,PetscErrorCode (*)(PetscObject),PetscErrorCode (*)(PetscObject,PetscViewer));
 
 /*@C
@@ -140,6 +141,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderCreate_Private(PetscObject,Pets
 @*/ 
 #define PetscHeaderDestroy(h)			   \
   (PetscLogObjectDestroy((PetscObject)(h)) ||	   \
+   PetscComposedQuantitiesDestroy((PetscObject)h) || \
    PetscHeaderDestroy_Private((PetscObject)(h)) || \
    PetscFree((h)->ops) ||			   \
    PetscFree(h))
