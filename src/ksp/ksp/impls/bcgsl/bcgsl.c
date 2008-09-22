@@ -160,19 +160,20 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     if (bBombed==PETSC_TRUE) break;
 
     /* Polynomial part */
-
-    for (i=0; i<=bcgsl->ell; i++) {
-      for (j=0; j<i; j++) {
-        ierr = VecDot(VVR[j], VVR[i], &nu);CHKERRQ(ierr);
-        MZa[i+ldMZ*j] = nu;
-        MZa[j+ldMZ*i] = nu;
-        MZb[i+ldMZ*j] = nu;
-        MZb[j+ldMZ*i] = nu;
+    for(i = 0; i <= bcgsl->ell; ++i) {
+      ierr = VecMDot(VVR[i], i+1, VVR, &MZa[i*ldMZ]);CHKERRQ(ierr);
+    }
+    /* Symmetrize MZa */
+    for(i = 0; i <= bcgsl->ell; ++i) {
+      for(j = i+1; j <= bcgsl->ell; ++j) {
+        MZa[i*ldMZ+j] = MZa[j*ldMZ+i];
       }
-
-      ierr = VecDot(VVR[i], VVR[i], &nu);CHKERRQ(ierr);
-      MZa[i+ldMZ*i] = nu;
-      MZb[i+ldMZ*i] = nu;
+    }
+    /* Copy MZa to MZb */
+    for(i = 0; i <= bcgsl->ell; ++i) {
+      for(j = 0; j <= bcgsl->ell; ++j) {
+        MZb[i+ldMZ*j] = MZa[i+ldMZ*j];
+      }
     }
 
     if (!bcgsl->bConvex || bcgsl->ell==1) {
