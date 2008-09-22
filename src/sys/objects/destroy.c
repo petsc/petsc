@@ -20,6 +20,43 @@ PetscErrorCode PetscObjectDestroy_GenericObject(GenericObject obj)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PetscComposedQuantitiesDestroy(PetscObject obj)
+{
+  PetscErrorCode ierr; int i;
+  PetscFunctionBegin;
+  if (obj->intstar_idmax>0) {
+    for (i=0; i<obj->intstar_idmax; i++) {
+      if (obj->intstarcomposeddata[i]) {
+	ierr = PetscFree(obj->intstarcomposeddata[i]); CHKERRQ(ierr);
+	obj->intstarcomposeddata[i] = 0;
+      }
+    }
+    ierr = PetscFree(obj->intstarcomposeddata); CHKERRQ(ierr);
+    ierr = PetscFree(obj->intstarcomposedstate); CHKERRQ(ierr);
+  }
+  if (obj->realstar_idmax>0) {
+    for (i=0; i<obj->realstar_idmax; i++) {
+      if (obj->realstarcomposeddata[i]) {
+	ierr = PetscFree(obj->realstarcomposeddata[i]); CHKERRQ(ierr);
+	obj->realstarcomposeddata[i] = 0;
+      }
+    }
+    ierr = PetscFree(obj->realstarcomposeddata); CHKERRQ(ierr);
+    ierr = PetscFree(obj->realstarcomposedstate); CHKERRQ(ierr);
+  }
+  if (obj->scalarstar_idmax>0) {
+    for (i=0; i<obj->scalarstar_idmax; i++) {
+      if (obj->scalarstarcomposeddata[i]) {
+	ierr = PetscFree(obj->scalarstarcomposeddata[i]); CHKERRQ(ierr);
+	obj->scalarstarcomposeddata[i] = 0;
+      }
+    }
+    ierr = PetscFree(obj->scalarstarcomposeddata); CHKERRQ(ierr);
+    ierr = PetscFree(obj->scalarstarcomposedstate); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectCreate"
 /*@C
