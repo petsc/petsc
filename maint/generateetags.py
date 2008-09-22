@@ -49,6 +49,8 @@ def processDir(tagfile,dirname,names):
   	  if status:
 	    raise RuntimeError("Error running etags "+output)
 	if 'output' in names: del names[names.index('output')]
+	if 'quadratic' in names: del names[names.index('quadratic')]
+	if 'least_squares' in names: del names[names.index('least_squares')]
 	if 'test' in names: del names[names.index('test')]
 
 def main():

@@ -42,6 +42,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverCreate(MPI_Comm comm, TaoSolver *new
     tao->ops->computeobjective=0;
     tao->ops->computeobjectiveandgradient=0;
     tao->ops->computegradient=0;
+    tao->ops->computehessian=0;
     tao->ops->convergencetest=TaoSolverDefaultConvergenceTest;
     tao->ops->convergencedestroy=0;
     tao->ops->setup=0;

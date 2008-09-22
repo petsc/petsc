@@ -154,6 +154,7 @@ typedef struct {
   // Other parameters
   PetscScalar min_radius;    // lower bound on initial radius value
   PetscScalar max_radius;    // upper bound on trust region radius
+  PetscScalar trust0;        // initial trust region radius
   PetscScalar epsilon;       // tolerance used when computing ared/pred
 
   PetscInt newt;		// Newton directions attempted
@@ -167,7 +168,7 @@ typedef struct {
   PetscInt bfgs_scale_type;	// Scaling matrix to used for the bfgs preconditioner
   PetscInt init_type;	// Trust-region initialization method
   PetscInt update_type;      // Trust-region update method
-
+    
   PetscInt ksp_atol;
   PetscInt ksp_rtol;
   PetscInt ksp_ctol;

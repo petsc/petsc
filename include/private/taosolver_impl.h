@@ -11,6 +11,7 @@ struct _TaoSolverOps {
     PetscErrorCode (*computeobjective)(TaoSolver, Vec, PetscReal*, void*);
     PetscErrorCode (*computeobjectiveandgradient)(TaoSolver, Vec, PetscReal*, Vec, void*);
     PetscErrorCode (*computegradient)(TaoSolver, Vec, Vec, void*);
+    PetscErrorCode (*computehessian)(TaoSolver, Vec, Mat*, Mat*, MatStructure*, void*);
     PetscErrorCode (*convergencetest)(TaoSolver,void*);
     PetscErrorCode (*convergencedestroy)(void*);
 
@@ -44,6 +45,8 @@ struct _p_TaoSolver {
     Vec solution;
     Vec gradient;
     Vec stepdirection;
+    Mat hessian;
+    Mat hessian_pre;
     PetscReal step;
     PetscReal residual;
     PetscReal gnorm0;

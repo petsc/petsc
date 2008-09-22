@@ -108,8 +108,8 @@ EXTERN PetscErrorCode MatCreateLMVM(MPI_Comm comm, PetscInt n, PetscInt N, Mat *
     // Finish initializations
     ctx->lmnow = 0;
     ctx->iter = 0;
-    ctx->updates = 0;
-    ctx->rejects = 0;
+    ctx->nupdates = 0;
+    ctx->nrejects = 0;
     ctx->delta = 1.0;
 
     ctx->Gprev = 0;
@@ -202,6 +202,8 @@ EXTERN PetscErrorCode MatLMVMSolve(Mat A, Vec b, Vec x)
     PetscFunctionReturn(0);
 }
 
+
+
   
 #undef __FUNCT__
 #define __FUNCT__ "MatView_LMVM"
@@ -221,8 +223,8 @@ EXTERN PetscErrorCode MatView_LMVM(Mat A, PetscViewer pv)
 	info = PetscViewerASCIIPrintf(pv," scale type: %s\n",Scale_Table[lmP->scaleType]); CHKERRQ(info);
 	info = PetscViewerASCIIPrintf(pv," rescale type: %s\n",Rescale_Table[lmP->rScaleType]); CHKERRQ(info);
 	info = PetscViewerASCIIPrintf(pv," limit type: %s\n",Limit_Table[lmP->limitType]); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," updates: %d\n",lmP->updates); CHKERRQ(info);
-	info = PetscViewerASCIIPrintf(pv," rejects: %d\n",lmP->rejects); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," updates: %d\n",lmP->nupdates); CHKERRQ(info);
+	info = PetscViewerASCIIPrintf(pv," rejects: %d\n",lmP->nrejects); CHKERRQ(info);
 	
     }
     else {
@@ -282,7 +284,7 @@ EXTERN PetscErrorCode MatLMVMReset(Mat M)
     }
 
     ctx->iter=0;
-    ctx->updates=0;
+    ctx->nupdates=0;
     ctx->lmnow=0;
 
     
@@ -327,7 +329,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 
     rhotol = ctx->eps * y0temp;
     if (rhotemp > rhotol) {
-      ++ctx->updates;
+      ++ctx->nupdates;
 
       ctx->lmnow = PetscMin(ctx->lmnow+1, ctx->lm);
       ierr=PetscObjectDereference((PetscObject)ctx->S[ctx->lm]); CHKERRQ(ierr);
@@ -355,15 +357,15 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 	// Scalar is positive; safeguards are not required.
 
         // Save information for scalar scaling
-        ctx->yy_history[(ctx->updates - 1) % ctx->scalar_history] = y0temp;
-        ctx->ys_history[(ctx->updates - 1) % ctx->scalar_history] = rhotemp;
-        ctx->ss_history[(ctx->updates - 1) % ctx->scalar_history] = s0temp;
+        ctx->yy_history[(ctx->nupdates - 1) % ctx->scalar_history] = y0temp;
+        ctx->ys_history[(ctx->nupdates - 1) % ctx->scalar_history] = rhotemp;
+        ctx->ss_history[(ctx->nupdates - 1) % ctx->scalar_history] = s0temp;
 
         // Compute summations for scalar scaling
         yy_sum = 0;	// No safeguard required; y^T y > 0
         ys_sum = 0;	// No safeguard required; y^T s > 0
         ss_sum = 0;	// No safeguard required; s^T s > 0
-        for (i = 0; i < PetscMin(ctx->updates, ctx->scalar_history); ++i) {
+        for (i = 0; i < PetscMin(ctx->nupdates, ctx->scalar_history); ++i) {
           yy_sum += ctx->yy_history[i];
           ys_sum += ctx->ys_history[i];
           ss_sum += ctx->ss_history[i];
@@ -524,12 +526,12 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 	  ierr = VecDot(ctx->Xprev,ctx->Xprev,&s0temp); CHKERRQ(ierr);
 
           // Save information for special cases of scalar rescaling
-          ctx->yy_rhistory[(ctx->updates - 1) % ctx->rescale_history] = y0temp;
-          ctx->ys_rhistory[(ctx->updates - 1) % ctx->rescale_history] = rhotemp;
-          ctx->ss_rhistory[(ctx->updates - 1) % ctx->rescale_history] = s0temp;
+          ctx->yy_rhistory[(ctx->nupdates - 1) % ctx->rescale_history] = y0temp;
+          ctx->ys_rhistory[(ctx->nupdates - 1) % ctx->rescale_history] = rhotemp;
+          ctx->ss_rhistory[(ctx->nupdates - 1) % ctx->rescale_history] = s0temp;
 
           if (0.5 == ctx->r_beta) {
-            if (1 == PetscMin(ctx->updates, ctx->rescale_history)) {
+            if (1 == PetscMin(ctx->nupdates, ctx->rescale_history)) {
 	      ierr = VecPointwiseMult(ctx->V,ctx->Y[0],ctx->P); CHKERRQ(ierr);
 	      ierr = VecDot(ctx->V,ctx->Y[0],&yy_sum); CHKERRQ(ierr);
 	      
@@ -546,7 +548,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
               yy_sum = 0;	// No safeguard required
               ys_sum = 0;	// No safeguard required
               ss_sum = 0;	// No safeguard required
-              for (i = 0; i < PetscMin(ctx->updates, ctx->rescale_history); ++i) {
+              for (i = 0; i < PetscMin(ctx->nupdates, ctx->rescale_history); ++i) {
 		ierr = VecPointwiseMult(ctx->V,ctx->Y[i],ctx->P); CHKERRQ(ierr);
 		ierr = VecDot(ctx->V,ctx->Y[i],&yDy); CHKERRQ(ierr);
 		yy_sum += yDy;
@@ -559,7 +561,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
             }
 	  }
           else if (0.0 == ctx->r_beta) {
-            if (1 == PetscMin(ctx->updates, ctx->rescale_history)) {
+            if (1 == PetscMin(ctx->nupdates, ctx->rescale_history)) {
               // Compute summations for scalar scaling
               ierr = VecPointwiseDivide(ctx->W,ctx->S[0],ctx->P); CHKERRQ(ierr);
 
@@ -575,7 +577,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
               yy_sum = 0;	// No safeguard required
               ys_sum = 0;	// No safeguard required
               ss_sum = 0;	// No safeguard required
-              for (i = 0; i < PetscMin(ctx->updates, ctx->rescale_history); ++i) {
+              for (i = 0; i < PetscMin(ctx->nupdates, ctx->rescale_history); ++i) {
                 ierr = VecPointwiseMult(ctx->W, ctx->S[i], ctx->Q); CHKERRQ(ierr);
 		ierr = VecDot(ctx->W, ctx->Y[i], &yDs); CHKERRQ(ierr);
                 ys_sum += yDs;
@@ -592,7 +594,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
             yy_sum = 0;	// No safeguard required
             ys_sum = 0;	// No safeguard required
             ss_sum = 0;	// No safeguard required
-            for (i = 0; i < PetscMin(ctx->updates, ctx->rescale_history); ++i) {
+            for (i = 0; i < PetscMin(ctx->nupdates, ctx->rescale_history); ++i) {
 	      ierr = VecPointwiseMult(ctx->V, ctx->Y[i], ctx->P); CHKERRQ(ierr);
 	      ierr = VecDot(ctx->V, ctx->S[i], &yDs); CHKERRQ(ierr);
               ys_sum += yDs;
@@ -613,7 +615,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
             yy_sum = 0;	// No safeguard required
             ys_sum = 0;	// No safeguard required
             ss_sum = 0;	// No safeguard required
-            for (i = 0; i < PetscMin(ctx->updates, ctx->rescale_history); ++i) {
+            for (i = 0; i < PetscMin(ctx->nupdates, ctx->rescale_history); ++i) {
 	      ierr = VecPointwiseMult(ctx->V, ctx->P, ctx->Y[i]); CHKERRQ(ierr);
 	      ierr = VecPointwiseMult(ctx->W, ctx->Q, ctx->S[i]); CHKERRQ(ierr);
 
@@ -720,7 +722,7 @@ EXTERN PetscErrorCode MatLMVMUpdate(Mat M, Vec x, Vec g)
 
     } 
     else { 
-      ++ctx->rejects;
+      ++ctx->nrejects;
     }
   }
   
@@ -776,9 +778,20 @@ EXTERN PetscErrorCode MatLMVMSetScale(Mat m, Vec s)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLMVMGetRejects"
-EXTERN PetscErrorCode MatLMVMGetRejects(Mat m)
+EXTERN PetscErrorCode MatLMVMGetRejects(Mat m, PetscInt *nrejects)
 {
     PetscFunctionBegin;
+    MatLMVMCtx *ctx;
+    PetscErrorCode ierr;
+    PetscTruth same;
+    PetscFunctionBegin;
+    PetscValidHeaderSpecific(m,MAT_COOKIE,1);
+    ierr = PetscTypeCompare((PetscObject)m,MATSHELL,&same); CHKERRQ(ierr);
+    if (!same) {
+	SETERRQ(1,"Matrix m is not type MatLMVM");
+    }
+    ierr = MatShellGetContext(m,(void**)&ctx); CHKERRQ(ierr);
+    *nrejects = ctx->nrejects;
     PetscFunctionReturn(0);
 }
 

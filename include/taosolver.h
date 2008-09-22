@@ -2,6 +2,7 @@
 #define __TAOSOLVER_H
 
 #include "petscvec.h"
+#include "petscmat.h"
 #include "tao.h"
 PETSC_EXTERN_CXX_BEGIN
 
@@ -64,6 +65,8 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradient(TaoSo
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver, Vec, Vec);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolver, Vec, PetscReal*, Vec);
+
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeHessian(TaoSolver, Vec, Mat*, Mat*, MatStructure*);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetTolerances(TaoSolver, PetscReal*, PetscReal*, PetscReal*, PetscReal*, PetscReal*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetTolerances(TaoSolver, PetscReal, PetscReal, PetscReal, PetscReal, PetscReal);

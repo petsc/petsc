@@ -54,8 +54,8 @@ typedef struct{
 
   PetscInt lmnow;
   PetscInt iter;
-  PetscInt updates;
-  PetscInt rejects;
+  PetscInt nupdates;
+  PetscInt nrejects;
 
   Vec *S;
   Vec *Y;
@@ -113,7 +113,7 @@ PetscErrorCode MatLMVMReset(Mat);
 PetscErrorCode MatLMVMUpdate(Mat,Vec, Vec);
 PetscErrorCode MatLMVMSetDelta(Mat,PetscReal);
 PetscErrorCode MatLMVMSetScale(Mat,Vec);
-PetscErrorCode MatLMVMGetRejects(Mat);
+PetscErrorCode MatLMVMGetRejects(Mat,PetscInt*);
 PetscErrorCode MatLMVMSetH0(Mat,Mat);
 PetscErrorCode MatLMVMGetX0(Mat,Vec);
 PetscErrorCode MatLMVMRefine(Mat, Mat, Vec, Vec);
