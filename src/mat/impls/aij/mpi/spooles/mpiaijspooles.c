@@ -49,6 +49,7 @@ PetscErrorCode MatGetFactor_mpiaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJSpooles;
+    B->ops->view             = MatView_Spooles;
     B->ops->destroy          = MatDestroy_MPIAIJSpooles;  
     B->factor                = MAT_FACTOR_LU;  
 

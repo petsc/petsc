@@ -412,6 +412,7 @@ PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat A,MatFactorType ftype,Mat *F
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
+  B->ops->view             = MatView_SuperLU_DIST;
   B->factor                = MAT_FACTOR_LU;  
 
   ierr = PetscNewLog(B,Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);
