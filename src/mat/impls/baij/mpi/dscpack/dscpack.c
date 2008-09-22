@@ -433,6 +433,7 @@ PetscErrorCode MatGetFactor_seqbaij_dscpack(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_DSCPACK;
   B->ops->solve                  = MatSolve_DSCPACK;
+  B->ops->view                   = MatView_DSCPACK;
   B->ops->destroy                = MatDestroy_DSCPACK;
   B->factor                      = MAT_FACTOR_CHOLESKY;  
 
