@@ -1033,7 +1033,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSchurBlocks(PC pc,Mat *A,Mat *B
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (jac->type == PC_COMPOSITE_SCHUR) {SETERRQ(PETSC_ERR_ARG_WRONG, "FieldSplit is not using a Schur complement approach.");}
+  if (jac->type != PC_COMPOSITE_SCHUR) {SETERRQ(PETSC_ERR_ARG_WRONG, "FieldSplit is not using a Schur complement approach.");}
   if (A) *A = jac->pmat[0];
   if (B) *B = jac->B;
   if (C) *C = jac->C;
