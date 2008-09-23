@@ -81,7 +81,7 @@ cdef class Viewer(Object):
     def view(self, obj=None):
         if obj is None:
             CHKERR( PetscViewerView(self.vwr, NULL) )
-        elif typecheck(obj, Viewer):
+        elif isinstance(obj, Viewer):
             CHKERR( PetscViewerView(self.vwr, (<Viewer?>obj).vwr) )
         else:
             assert (<Object?>obj).obj != NULL

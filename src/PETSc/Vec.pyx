@@ -25,25 +25,25 @@ cdef class Vec(Object):
         self.vec = NULL
 
     def __add__(self, other):
-        if typecheck(self, Vec):
+        if isinstance(self, Vec):
             return vec_add(self, other)
         else:
             return vec_radd(other, self)
 
     def __sub__(self, other):
-        if typecheck(self, Vec):
+        if isinstance(self, Vec):
             return vec_sub(self, other)
         else:
             return vec_rsub(other, self)
 
     def __mul__(self, other):
-        if typecheck(self, Vec):
+        if isinstance(self, Vec):
             return vec_mul(self, other)
         else:
             return vec_rmul(other, self)
 
     def __div__(self, other):
-        if typecheck(self, Vec):
+        if isinstance(self, Vec):
             return vec_div(self, other)
         else:
             return vec_rdiv(other, self)

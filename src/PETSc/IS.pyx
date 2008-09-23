@@ -295,7 +295,7 @@ cdef class LGMap(Object):
         cdef PetscInt nidx = 0
         cdef PetscInt *idx = NULL
         cdef PetscLGMap newlgm = NULL
-        if typecheck(indices, IS):
+        if isinstance(indices, IS):
             iset = indices
             CHKERR( ISLocalToGlobalMappingCreateIS(iset.iset, &newlgm) )
         else:
@@ -326,7 +326,7 @@ cdef class LGMap(Object):
         cdef IS isetin, iset
         cdef PetscInt niidx = 0, *iidx = NULL
         cdef PetscInt noidx = 0, *oidx = NULL
-        if typecheck(indices, IS):
+        if isinstance(indices, IS):
             isetin = indices; iset = IS()
             CHKERR( ISLocalToGlobalMappingApplyIS(self.lgm, isetin.iset, &iset.iset) )
             return iset

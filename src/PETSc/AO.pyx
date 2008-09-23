@@ -30,7 +30,7 @@ cdef class AO(Object):
         cdef PetscInt npetsc = 0, *idxpetsc = NULL
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscAO newao = NULL
-        if typecheck(app, IS):
+        if isinstance(app, IS):
             isapp = (<IS>app).iset
             if petsc is not None:
                 ispetsc = (<IS?>petsc).iset
@@ -50,7 +50,7 @@ cdef class AO(Object):
         cdef PetscInt npetsc = 0, *idxpetsc = NULL
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscAO newao = NULL
-        if typecheck(app, IS):
+        if isinstance(app, IS):
             isapp = (<IS>app).iset
             if petsc is not None:
                 ispetsc = (<IS?>petsc).iset
@@ -72,7 +72,7 @@ cdef class AO(Object):
     def app2petsc(self, indices):
         cdef PetscIS iset = NULL
         cdef PetscInt nidx = 0, *idx = NULL
-        if typecheck(indices, IS):
+        if isinstance(indices, IS):
             iset = (<IS>indices).iset
             CHKERR( AOApplicationToPetscIS(self.ao, iset) )
         else:
@@ -83,7 +83,7 @@ cdef class AO(Object):
     def petsc2app(self, indices):
         cdef PetscIS iset = NULL
         cdef PetscInt nidx = 0, *idx = NULL
-        if typecheck(indices, IS):
+        if isinstance(indices, IS):
             iset = (<IS>indices).iset
             CHKERR( AOPetscToApplicationIS(self.ao, iset) )
         else:

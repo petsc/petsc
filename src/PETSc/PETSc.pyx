@@ -4,12 +4,11 @@ cdef extern from "Python.h":
     void incref"Py_INCREF"(object)
     void decref"Py_DECREF"(object)
 
-cdef extern from "Python.h":
-    ctypedef struct PyTypeObject
-    int PyObject_TypeCheck(object, PyTypeObject*)
-
-cdef inline int typecheck(object ob, object tp):
-    return PyObject_TypeCheck(ob, <PyTypeObject*>tp)
+## cdef extern from "Python.h":
+##     ctypedef struct PyTypeObject
+##     int PyObject_TypeCheck(object, PyTypeObject*)
+## cdef inline int typecheck(object ob, object tp):
+##     return PyObject_TypeCheck(ob, <PyTypeObject*>tp)
 
 cdef extern from *:
     ctypedef char* char_p       "char*"

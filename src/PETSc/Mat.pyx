@@ -577,7 +577,7 @@ cdef class Mat(Object):
     def zeroRows(self, rows, diag=1):
         cdef PetscScalar sval = diag
         cdef PetscInt ni=0, *i=NULL
-        if typecheck(rows, IS):
+        if isinstance(rows, IS):
             CHKERR( MatZeroRowsIS(self.mat, (<IS>rows).iset, sval) )
         else:
             rows = iarray_i(rows, &ni, &i)
@@ -586,7 +586,7 @@ cdef class Mat(Object):
     def zeroRowsLocal(self, rows, diag=1):
         cdef PetscScalar sval = diag
         cdef PetscInt ni=0, *i=NULL
-        if typecheck(rows, IS):
+        if isinstance(rows, IS):
             CHKERR( MatZeroRowsLocalIS(self.mat, (<IS>rows).iset, sval) )
         else:
             rows = iarray_i(rows, &ni, &i)

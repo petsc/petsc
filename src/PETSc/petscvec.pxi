@@ -175,10 +175,10 @@ cdef inline Vec vec_abs(Vec self):
 cdef Vec vec_iadd(Vec self, other):
     cdef PetscScalar alpha = 1
     cdef Vec vec
-    if typecheck(other, Vec):
+    if isinstance(other, Vec):
         alpha = 1; vec = other
         CHKERR( VecAXPY(self.vec, alpha, vec.vec) )
-    elif typecheck(other, (tuple, list)):
+    elif isinstance(other, (tuple, list)):
         alpha, vec = other
         CHKERR( VecAXPY(self.vec, alpha, vec.vec) )
     else:
@@ -189,10 +189,10 @@ cdef Vec vec_iadd(Vec self, other):
 cdef vec_isub(Vec self, other):
     cdef PetscScalar alpha = 1
     cdef Vec vec
-    if typecheck(other, Vec):
+    if isinstance(other, Vec):
         alpha = 1; vec = other
         CHKERR( VecAXPY(self.vec, -alpha, vec.vec) )
-    elif typecheck(other, (tuple, list)):
+    elif isinstance(other, (tuple, list)):
         alpha, vec = other
         CHKERR( VecAXPY(self.vec, -alpha, vec.vec) )
     else:
@@ -317,9 +317,9 @@ cdef object vec_getitem(Vec self, object i):
     cdef PetscInt n=0
     if i is Ellipsis:
         return asarray(self)
-    if typecheck(i, int):
+    if isinstance(i, int):
         return self.getValue(i)
-    if typecheck(i, slice):
+    if isinstance(i, slice):
         CHKERR( VecGetSize(self.vec, &n) )
         start, stop, stride = i.indices(n)
         i = arange(start, stop, stride)
@@ -328,12 +328,12 @@ cdef object vec_getitem(Vec self, object i):
 cdef object vec_setitem(Vec self, object i, object v):
     cdef PetscInt N=0
     if i is Ellipsis:
-        if typecheck(v, Vec):
+        if isinstance(v, Vec):
             CHKERR( VecCopy((<Vec>v).vec, self.vec) )
         else:
             vecset(self.vec, v)
         return
-    if typecheck(i, slice):
+    if isinstance(i, slice):
         CHKERR( VecGetSize(self.vec, &N) )
         start, stop, stride = i.indices(N)
         i = arange(start, stop, stride)

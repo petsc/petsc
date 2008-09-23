@@ -607,11 +607,11 @@ cdef inline int matsetvalues_ijv(PetscMat A,
 cdef object mat_getitem(Mat self, object ij):
     cdef PetscInt M=0, N=0
     i, j = ij
-    if typecheck(i, slice):
+    if isinstance(i, slice):
         CHKERR( MatGetSize(self.mat, &M, NULL) )
         start, stop, stride = i.indices(M)
         i = arange(start, stop, stride)
-    if typecheck(j, slice):
+    if isinstance(j, slice):
         CHKERR( MatGetSize(self.mat, NULL, &N) )
         start, stop, stride = j.indices(N)
         j = arange(start, stop, stride)
@@ -621,11 +621,11 @@ cdef object mat_getitem(Mat self, object ij):
 cdef object mat_setitem(Mat self, object ij, object v):
     cdef PetscInt M=0, N=0
     oi, oj = ij
-    if typecheck(oi, slice):
+    if isinstance(oi, slice):
         CHKERR( MatGetSize(self.mat, &M, NULL) )
         start, stop, stride = oi.indices(M)
         oi = arange(start, stop, stride)
-    if typecheck(oj, slice):
+    if isinstance(oj, slice):
         CHKERR( MatGetSize(self.mat, NULL, &N) )
         start, stop, stride = oj.indices(N)
         oj = arange(start, stop, stride)
