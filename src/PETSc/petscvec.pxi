@@ -314,30 +314,30 @@ cdef inline int vecsetvalues(PetscVec V,
     return 0
 
 cdef object vec_getitem(Vec self, object i):
-    cdef PetscInt n=0
+    cdef PetscInt N=0
     if i is Ellipsis:
         return asarray(self)
     if isinstance(i, int):
         return self.getValue(i)
     if isinstance(i, slice):
-        CHKERR( VecGetSize(self.vec, &n) )
-        start, stop, stride = i.indices(n)
+        CHKERR( VecGetSize(self.vec, &N) )
+        start, stop, stride = i.indices(N)
         i = arange(start, stop, stride)
     return self.getValues(i)
 
-cdef object vec_setitem(Vec self, object i, object v):
+cdef int vec_setitem(Vec self, object i, object v) except -1:
     cdef PetscInt N=0
     if i is Ellipsis:
         if isinstance(v, Vec):
             CHKERR( VecCopy((<Vec>v).vec, self.vec) )
         else:
             vecset(self.vec, v)
-        return
+        return 0
     if isinstance(i, slice):
         CHKERR( VecGetSize(self.vec, &N) )
         start, stop, stride = i.indices(N)
         i = arange(start, stop, stride)
     vecsetvalues(self.vec, i, v, None, 0, 0)
-    return
+    return 0
 
 # --------------------------------------------------------------------
