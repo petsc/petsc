@@ -1,5 +1,16 @@
 # --------------------------------------------------------------------
 
+cdef extern from "Python.h":
+    void incref"Py_INCREF"(object)
+    void decref"Py_DECREF"(object)
+
+cdef extern from "Python.h":
+    ctypedef struct PyTypeObject
+    int PyObject_TypeCheck(object, PyTypeObject*)
+
+cdef inline int typecheck(object ob, object tp):
+    return PyObject_TypeCheck(ob, <PyTypeObject*>tp)
+
 cdef extern from *:
     ctypedef char* char_p       "char*"
     ctypedef char* const_char_p "const char*"
@@ -11,11 +22,6 @@ cdef inline object cp2str(const_char_p p):
 cdef inline char_p str2cp(object s) except ? NULL:
     if s is None: return NULL
     else:         return s
-
-cdef extern from "Python.h":
-    int typecheck"PyObject_IsInstance"(object, object) except -1
-    void incref"Py_INCREF"(object)
-    void decref"Py_DECREF"(object)
 
 include "allocate.pxi"
 
