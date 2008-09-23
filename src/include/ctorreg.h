@@ -4,6 +4,8 @@
      PETSC_VERSION_MINOR    == 3 && \
      PETSC_VERSION_SUBMINOR == 2 && \
      PETSC_VERSION_RELEASE  == 1)
+#define VecInitializePackage(path) VecInitializePackage((char*)path)
+#define MatInitializePackage(path) MatInitializePackage((char*)path)
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_ISX(Mat A);
 EXTERN_C_END
