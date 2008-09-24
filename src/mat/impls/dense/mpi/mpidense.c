@@ -1319,9 +1319,9 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat F,Mat A,MatFactorInfo *info
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorSymbolic_Plapack_Private"
-PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat F,Mat A,MatFactorInfo *info)
 {
-  Mat            B = *F;
+  Mat            B = F;
   Mat_Plapack    *lu;   
   PetscErrorCode ierr;
   PetscInt       M=A->rmap->N;
@@ -1388,7 +1388,6 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
   lu->pla_solved     = PETSC_FALSE; /* MatSolve_Plapack() is called yet */
   lu->mstruct        = DIFFERENT_NONZERO_PATTERN;
   lu->CleanUpPlapack = PETSC_TRUE;
-  *F                 = B;
   PetscFunctionReturn(0);
 }
 
@@ -1418,7 +1417,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat F,Mat A,IS r,IS c,MatFactorInfo 
   Mat_Plapack    *lu;
 
   PetscFunctionBegin;
-  ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
+  ierr = MatFactorSymbolic_Plapack_Private(F,A,info);CHKERRQ(ierr);
   lu = (Mat_Plapack*)F->spptr;
   ierr = PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);CHKERRQ(ierr);
   F->ops->lufactornumeric  = MatLUFactorNumeric_MPIDense;

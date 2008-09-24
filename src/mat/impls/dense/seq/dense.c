@@ -149,8 +149,10 @@ extern PetscErrorCode MatLUFactor_SeqDense(Mat,IS,IS,MatFactorInfo*);
 PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact,Mat A,MatFactorInfo *info_dummy)
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data,*l = (Mat_SeqDense*)fact->data;
+  MatFactorInfo  info;
+  PetscInt       lda1 = mat->lda, lda2 = l->lda;
+  PetscInt       m = A->rmap->n, n = A->cmap->n, j;
   PetscErrorCode ierr;
-  MatFactorInfo  info; 
 
   PetscFunctionBegin;
   /* copy the numerical values */
@@ -159,7 +161,7 @@ PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact,Mat A,MatFactorInfo *info_du
       ierr = PetscMemcpy(l->v+j*lda2,mat->v+j*lda1,m*sizeof(PetscScalar));CHKERRQ(ierr);
     }
   } else {
-    ierr = PetscMemcpy(l->v,mat->v,A->rmap->n*A->cmap->n*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(l->v,mat->v,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   }
   ierr = MatLUFactor_SeqDense(fact,0,0,&info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -411,6 +413,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact,Mat A,MatFactorInfo *i
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,MatFactorInfo *info)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES);CHKERRQ(ierr);
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqDense;
@@ -421,6 +425,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,MatFacto
 #define __FUNCT__ "MatLUFactorSymbolic_SeqDense"
 PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,MatFactorInfo *info)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_DO_NOT_COPY_VALUES);CHKERRQ(ierr);
   fact->ops->lufactornumeric   = MatLUFactorNumeric_SeqDense;
