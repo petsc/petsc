@@ -241,7 +241,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
     if (test) {
       Mat mat;
       ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-      ierr = MatNullSpaceTest(ksp->nullsp,mat);CHKERRQ(ierr);
+      ierr = MatNullSpaceTest(ksp->nullsp,mat,PETSC_NULL);CHKERRQ(ierr);
     }
   }
   ksp->setupcalled = 2;

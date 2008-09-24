@@ -1530,7 +1530,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace,Pe
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace,Vec,Vec*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceAttach(Mat,MatNullSpace);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace,Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace,Mat,PetscTruth *);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderingSeqSBAIJ(Mat,IS);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetHashTableFactor(Mat,PetscReal);

@@ -682,7 +682,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatNullSpaceTest(J->nullsp,J);CHKERRQ(ierr);
+    ierr = MatNullSpaceTest(J->nullsp,J,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = MatFDColoringView_Private(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
