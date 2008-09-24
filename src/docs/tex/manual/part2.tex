@@ -7201,12 +7201,17 @@ The \sindex{symbolic factorization}
 two \findex{MatCholeskyFactorSymbolic()} \findex{MatLUFactorSymbolic()}
 factorization 
 stages \findex{MatCholeskyFactorNumeric()} \findex{MatLUFactorNumeric()}
-can also be performed separately, by using the out-of-place mode:
+can also be performed separately, by using the out-of-place mode, first
+one obtains that matrix object that will hold the factor
 \begin{tabbing}
-  MatCholeskyFactorSymbolic(Mat matrix,IS perm, double pf,Mat *result);\\
-  MatLUFactorSymbolic(Mat matrix,IS rowperm,IS colperm,MatLUInfo *info,Mat *result);\\
-  MatCholeskyFactorNumeric(Mat matrix,Mat *result);\\
-  MatLUFactorNumeric(Mat matrix, Mat *result);
+  MatGetFactor(Mat matrix,MatFactorType,char *packagename,Mat *factor);
+\end{tabbing}
+and then performs the factorization
+\begin{tabbing}
+  MatCholeskyFactorSymbolic(Mat factor,Mat matrix,IS perm, double pf);\\
+  MatLUFactorSymbolic(Mat factor,Mat matrix,IS rowperm,IS colperm,MatLUInfo *info);\\
+  MatCholeskyFactorNumeric(Mat factor,Mat matrix);\\
+  MatLUFactorNumeric(Mat factor,Mat matrix);
 \end{tabbing}
 In this case, the contents of the matrix \trl{result} is undefined between 
 the symbolic and numeric factorization stages. 

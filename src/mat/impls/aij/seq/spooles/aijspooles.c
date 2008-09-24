@@ -31,12 +31,12 @@ PetscErrorCode MatView_Spooles(Mat A,PetscViewer viewer)
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJSpooles"
-PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
 {
-  Mat_Spooles    *lu = (Mat_Spooles*)((*F)->spptr);;
+  Mat_Spooles    *lu = (Mat_Spooles*)(F->spptr);;
 
   PetscFunctionBegin;	
-  (*F)->ops->lufactornumeric =  MatFactorNumeric_SeqSpooles;
+  F->ops->lufactornumeric =  MatFactorNumeric_SeqSpooles;
   if (!info->dtcol) {
     lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;
   }
@@ -46,12 +46,12 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSAIJSpooles"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat F,Mat A,IS r,MatFactorInfo *info)
 { 
   PetscFunctionBegin;	
-  (*F)->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;
+  F->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;
 #if !defined(PETSC_USE_COMPLEX)
-  (*F)->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
+  F->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
 #endif
   PetscFunctionReturn(0); 
 }
@@ -82,16 +82,16 @@ PetscErrorCode MatGetFactor_seqaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 
   if (ftype == MAT_FACTOR_LU) {
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJSpooles;
-    B->factor                = MAT_FACTOR_LU;
 
     lu->options.symflag      = SPOOLES_NONSYMMETRIC;
     lu->options.pivotingflag = SPOOLES_PIVOTING;
   } else if (ftype == MAT_FACTOR_CHOLESKY) {
     B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJSpooles;
-    B->factor                      = MAT_FACTOR_CHOLESKY;  
     lu->options.symflag            = SPOOLES_SYMMETRIC;   /* default */
   } else SETERRQ(PETSC_ERR_SUP,"Spooles only supports LU and Cholesky factorizations");
   B->ops->destroy = MatDestroy_SeqAIJSpooles;  
+  B->factor       = ftype;  
+
   *F = B;
   PetscFunctionReturn(0); 
 }

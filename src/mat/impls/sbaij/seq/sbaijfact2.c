@@ -1886,7 +1886,7 @@ extern PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat,PetscTruth);
 /* Use Modified Sparse Row storage for u and ju, see Saad pp.85 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqSBAIJ_MSR"
-PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *info,Mat *B) 
+PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,MatFactorInfo *info) 
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b;  
   PetscErrorCode ierr;
@@ -2039,10 +2039,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
   ierr = PetscFree(lev);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(*B,bs,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,PETSC_NULL);CHKERRQ(ierr);
 
-  /* ierr = PetscLogObjectParent(*B,iperm);CHKERRQ(ierr); */
-  b    = (Mat_SeqSBAIJ*)(*B)->data;
+  /* ierr = PetscLogObjectParent(B,iperm);CHKERRQ(ierr); */
+  b    = (Mat_SeqSBAIJ*)(B)->data;
   ierr = PetscFree2(b->imax,b->ilen);CHKERRQ(ierr);
   b->singlemalloc = PETSC_FALSE;
   b->free_a       = PETSC_TRUE;
@@ -2069,18 +2069,17 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
   ierr    = PetscMalloc((bs*mbs+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
-  ierr    = PetscLogObjectMemory(*B,(iu[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr    = PetscLogObjectMemory(B,(iu[mbs]-mbs)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = iu[mbs];
   
-  (*B)->factor                 = MAT_FACTOR_CHOLESKY;
-  (*B)->info.factor_mallocs    = reallocs;
-  (*B)->info.fill_ratio_given  = f;
+  (B)->info.factor_mallocs    = reallocs;
+  (B)->info.fill_ratio_given  = f;
   if (ai[mbs] != 0) {
-    (*B)->info.fill_ratio_needed = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
+    (B)->info.fill_ratio_needed = ((PetscReal)iu[mbs])/((PetscReal)ai[mbs]);
   } else {
-    (*B)->info.fill_ratio_needed = 0.0;
+    (B)->info.fill_ratio_needed = 0.0;
   }
-  ierr = MatSeqSBAIJSetNumericFactorization(*B,perm_identity);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetNumericFactorization(B,perm_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 
@@ -2088,7 +2087,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat A,IS perm,MatFactorInfo *in
 #include "src/mat/utils/freespace.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqSBAIJ"
-PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,MatFactorInfo *info)
 {
   Mat_SeqSBAIJ       *a = (Mat_SeqSBAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
@@ -2117,7 +2116,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
    MatCholeskyFactorNumeric_() is modified for using sbaij symbolic factor.
   */
   if (bs > 1){ 
-    ierr = MatICCFactorSymbolic_SeqSBAIJ_MSR(A,perm,info,fact);CHKERRQ(ierr);
+    ierr = MatICCFactorSymbolic_SeqSBAIJ_MSR(fact,A,perm,info);CHKERRQ(ierr);
     PetscFunctionReturn(0); 
   }
 
@@ -2258,9 +2257,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   } /* end of case: levels>0 || (levels=0 && !perm_identity) */
 
   /* put together the new matrix in MATSEQSBAIJ format */
-  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(*fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
 
-  b = (Mat_SeqSBAIJ*)(*fact)->data;
+  b = (Mat_SeqSBAIJ*)(fact)->data;
   ierr = PetscFree2(b->imax,b->ilen);CHKERRQ(ierr);
   b->singlemalloc = PETSC_FALSE;
   b->free_a  = PETSC_TRUE;
@@ -2279,11 +2278,10 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   b->maxnz = b->nz = ui[am];
   
-  (*fact)->factor                 = MAT_FACTOR_CHOLESKY;
-  (*fact)->info.factor_mallocs    = reallocs;
-  (*fact)->info.fill_ratio_given  = fill;
-  (*fact)->info.fill_ratio_needed = ratio_needed;
-  ierr = MatSeqSBAIJSetNumericFactorization(*fact,perm_identity);CHKERRQ(ierr);
+  (fact)->info.factor_mallocs    = reallocs;
+  (fact)->info.fill_ratio_given  = fill;
+  (fact)->info.fill_ratio_needed = ratio_needed;
+  ierr = MatSeqSBAIJSetNumericFactorization(fact,perm_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 

@@ -185,9 +185,9 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_MPISpooles"
-PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,MatFactorInfo *info)
 {
-  Mat_Spooles     *lu = (Mat_Spooles*)(*F)->spptr;
+  Mat_Spooles     *lu = (Mat_Spooles*)(F)->spptr;
   PetscErrorCode  ierr;
   int             rank,size,lookahead=0,sierr;
   ChvManager      *chvmanager ;
@@ -214,11 +214,11 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     /* get input parameters */
     ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr);
 
-    (*F)->assembled    = PETSC_TRUE;
-    if ((*F)->factor == MAT_FACTOR_LU){
-      F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
+    (F)->assembled    = PETSC_TRUE;
+    if ((F)->factor == MAT_FACTOR_LU){
+      F_diag = ((Mat_MPIAIJ *)(F)->data)->A;
     } else {
-      F_diag = ((Mat_MPISBAIJ *)(*F)->data)->A;
+      F_diag = ((Mat_MPISBAIJ *)(F)->data)->A;
     }
     F_diag->assembled  = PETSC_TRUE; 
 
@@ -621,6 +621,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
   }
   lu->scat = PETSC_NULL;  
   lu->flg = SAME_NONZERO_PATTERN;
+  F->ops->solve            = MatSolve_MPISpooles;
 
   lu->CleanUpSpooles = PETSC_TRUE;
   PetscFunctionReturn(0);

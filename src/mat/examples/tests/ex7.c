@@ -48,8 +48,8 @@ int main(int argc,char **args)
   luinfo.zeropivot = 1.e-14; 
   luinfo.pivotinblocks = 1.0; 
   ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&LU);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(C,perm,iperm,&luinfo,&LU);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(C,&luinfo,&LU);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(LU,C,perm,iperm,&luinfo);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(LU,C,&luinfo);CHKERRQ(ierr);
   ierr = MatView(LU,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,m*n,&u);CHKERRQ(ierr);

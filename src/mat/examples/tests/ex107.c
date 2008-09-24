@@ -108,7 +108,7 @@ int main(int argc,char **args)
 
   /* Test LU Factorization */
   ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(C,perm,iperm,&info,&F);CHKERRQ(ierr); 
+  ierr = MatLUFactorSymbolic(F,C,perm,iperm,&info);CHKERRQ(ierr); 
   for (nfact = 0; nfact < 2; nfact++){
     if (!rank) printf(" LU nfact %d\n",nfact);   
     if (nfact>0){ /* change matrix value for testing repeated MatLUFactorNumeric() */
@@ -128,7 +128,7 @@ int main(int argc,char **args)
       ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
       ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);   
     }    
-    ierr = MatLUFactorNumeric(C,&info,&F);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric(F,C,&info);CHKERRQ(ierr);
 
     /* Test MatSolve() */
     for (nsolve = 0; nsolve < 2; nsolve++){
@@ -210,10 +210,10 @@ int main(int argc,char **args)
   /* Test Cholesky Factorization */
   ierr = MatShift(Csymm,M);CHKERRQ(ierr);  /* make Csymm positive definite */
   ierr = MatGetFactor(Csymm,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorSymbolic(Csymm,perm,&info,&F);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorSymbolic(F,Csymm,perm,&info);CHKERRQ(ierr);
   for (nfact = 0; nfact < 2; nfact++){
     if (!rank) printf(" Cholesky nfact %d\n",nfact);
-    ierr = MatCholeskyFactorNumeric(Csymm,&info,&F);CHKERRQ(ierr);
+    ierr = MatCholeskyFactorNumeric(F,Csymm,&info,&F);CHKERRQ(ierr);
 
     /* Test MatSolve() */
     for (nsolve = 0; nsolve < 2; nsolve++){

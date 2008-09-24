@@ -10,9 +10,8 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat A,MatFactorInfo *info,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_3_NaturalOrdering(Mat C,Mat A,MatFactorInfo *info)
 {
-  Mat            C = *B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   PetscErrorCode ierr;
   PetscInt       i,j,n = a->mbs,*bi = b->i,*bj = b->j;

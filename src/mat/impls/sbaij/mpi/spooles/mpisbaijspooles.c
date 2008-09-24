@@ -35,14 +35,12 @@ PetscErrorCode MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npo
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPISBAIJSpooles"
-PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat B,Mat A,IS r,MatFactorInfo *info)
 {
-  Mat           B = *F;
   Mat_Spooles   *lu;   
   PetscErrorCode ierr;
   
   PetscFunctionBegin;	
-  B->factor                = MAT_FACTOR_CHOLESKY;  
 
   lu                       = (Mat_Spooles*)(B->spptr);
   lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
@@ -51,9 +49,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   lu->options.symflag      = SPOOLES_SYMMETRIC;  /* default */
 
   ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
-  (*F)->ops->choleskyfactornumeric  = MatFactorNumeric_MPISpooles;
-  (*F)->ops->solve            = MatSolve_MPISpooles;
-  *F = B;
+  (B)->ops->choleskyfactornumeric  = MatFactorNumeric_MPISpooles;
   PetscFunctionReturn(0); 
 }
 
@@ -115,12 +111,12 @@ PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   if (ftype == MAT_FACTOR_CHOLESKY) {
     B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;
     B->ops->destroy         = MatDestroy_MPISBAIJSpooles;  
-    B->factor               = MAT_FACTOR_CHOLESKY;  
 
     lu->options.symflag      = SPOOLES_NONSYMMETRIC;
     lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
     lu->options.symflag      = SPOOLES_SYMMETRIC;
   } else SETERRQ(PETSC_ERR_SUP,"Only Cholesky for SBAIJ matrices");
+  B->factor = ftype;
 
   ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
 

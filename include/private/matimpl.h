@@ -47,14 +47,14 @@ struct _MatOps {
   PetscErrorCode (*zeroentries)(Mat);
   /*25*/
   PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar);
-  PetscErrorCode (*lufactorsymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  PetscErrorCode (*lufactornumeric)(Mat,MatFactorInfo*,Mat*);
-  PetscErrorCode (*choleskyfactorsymbolic)(Mat,IS,MatFactorInfo*,Mat*);
-  PetscErrorCode (*choleskyfactornumeric)(Mat,MatFactorInfo*,Mat*);
+  PetscErrorCode (*lufactorsymbolic)(Mat,Mat,IS,IS,MatFactorInfo*);
+  PetscErrorCode (*lufactornumeric)(Mat,Mat,MatFactorInfo*);
+  PetscErrorCode (*choleskyfactorsymbolic)(Mat,Mat,IS,MatFactorInfo*);
+  PetscErrorCode (*choleskyfactornumeric)(Mat,Mat,MatFactorInfo*);
   /*30*/
   PetscErrorCode (*setuppreallocation)(Mat);
-  PetscErrorCode (*ilufactorsymbolic)(Mat,IS,IS,MatFactorInfo*,Mat*);
-  PetscErrorCode (*iccfactorsymbolic)(Mat,IS,MatFactorInfo*,Mat*);
+  PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,MatFactorInfo*);
+  PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,MatFactorInfo*);
   PetscErrorCode (*getarray)(Mat,PetscScalar**);
   PetscErrorCode (*restorearray)(Mat,PetscScalar**);
   /*35*/

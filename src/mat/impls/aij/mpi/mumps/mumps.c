@@ -300,9 +300,9 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_MUMPS"
-PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F) 
+PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,MatFactorInfo *info) 
 {
-  Mat_MUMPS      *lu =(Mat_MUMPS*)(*F)->spptr; 
+  Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
   PetscErrorCode ierr;
   PetscInt       rnz,nnz,nz=0,i,M=A->rmap->N,*ai,*aj,icntl;
   PetscTruth     valOnly,flg;
@@ -315,7 +315,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
   ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)A,MATSEQSBAIJ,&isSeqSBAIJ);CHKERRQ(ierr);
   if (lu->matstruc == DIFFERENT_NONZERO_PATTERN){ 
-    (*F)->ops->solve   = MatSolve_MUMPS;
+    (F)->ops->solve   = MatSolve_MUMPS;
 
     /* Initialize a MUMPS instance */
     ierr = MPI_Comm_rank(((PetscObject)A)->comm, &lu->myid);
@@ -510,10 +510,10 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
   }
 
   if (lu->size > 1){
-    if ((*F)->factor == MAT_FACTOR_LU){
-      F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
+    if ((F)->factor == MAT_FACTOR_LU){
+      F_diag = ((Mat_MPIAIJ *)(F)->data)->A;
     } else {
-      F_diag = ((Mat_MPISBAIJ *)(*F)->data)->A;
+      F_diag = ((Mat_MPISBAIJ *)(F)->data)->A;
     }
     F_diag->assembled = PETSC_TRUE;
     if (lu->nSolve){
@@ -522,7 +522,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
       ierr = VecDestroy(lu->x_seq);CHKERRQ(ierr);
     }
   }
-  (*F)->assembled   = PETSC_TRUE;
+  (F)->assembled   = PETSC_TRUE;
   lu->matstruc      = SAME_NONZERO_PATTERN;
   lu->CleanUpMUMPS  = PETSC_TRUE;
   lu->nSolve        = 0;
@@ -533,14 +533,14 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMUMPS"
-PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
 {
-  Mat_MUMPS      *lu = (Mat_MUMPS*)(*F)->spptr;   
+  Mat_MUMPS      *lu = (Mat_MUMPS*)F->spptr;   
 
   PetscFunctionBegin;
-  lu->sym                     = 0;
-  lu->matstruc                = DIFFERENT_NONZERO_PATTERN;
-  (*F)->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
+  lu->sym                  = 0;
+  lu->matstruc             = DIFFERENT_NONZERO_PATTERN;
+  F->ops->lufactornumeric  = MatFactorNumeric_MUMPS;
   PetscFunctionReturn(0); 
 }
 
@@ -625,16 +625,16 @@ EXTERN_C_END
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SBAIJMUMPS"
-PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *info,Mat *F) 
+PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat F,Mat A,IS r,MatFactorInfo *info) 
 {
-  Mat_MUMPS      *lu = (Mat_MUMPS*)(*F)->spptr;   
+  Mat_MUMPS      *lu = (Mat_MUMPS*)(F)->spptr;   
 
   PetscFunctionBegin;
   lu->sym                          = 2;
   lu->matstruc                     = DIFFERENT_NONZERO_PATTERN;
-  (*F)->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
+  (F)->ops->choleskyfactornumeric = MatFactorNumeric_MUMPS;
 #if !defined(PETSC_USE_COMPLEX)
-  (*F)->ops->getinertia            = MatGetInertia_SBAIJMUMPS;
+  (F)->ops->getinertia            = MatGetInertia_SBAIJMUMPS;
 #endif
   PetscFunctionReturn(0);
 }

@@ -46,8 +46,8 @@ int main(int argc,char **args)
    ierr = ISDestroy(colp);CHKERRQ(ierr);    
    info.fill=1.0; 
    ierr = MatGetFactor(mat,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&fact);CHKERRQ(ierr);
-   ierr = MatCholeskyFactorSymbolic(mat,perm,&info,&fact); CHKERRQ(ierr);
-   ierr = MatCholeskyFactorNumeric(mat,&info,&fact);CHKERRQ(ierr);
+   ierr = MatCholeskyFactorSymbolic(fact,mat,perm,&info); CHKERRQ(ierr);
+   ierr = MatCholeskyFactorNumeric(fact,mat,&info,&fact);CHKERRQ(ierr);
    printf("Chol factor: \n");
    ierr = MatView(fact, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 

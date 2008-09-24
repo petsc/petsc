@@ -1559,14 +1559,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP ksp,void **ctx)
 .vb
       KSPBuildSolution(ksp,PETSC_NULL,&V);
    or
-      KSPBuildSolution(ksp,v,PETSC_NULL); 
+      KSPBuildSolution(ksp,v,PETSC_NULL); or KSPBuildSolution(ksp,v,&v);
 .ve
    In the first case an internal vector is allocated to store the solution
    (the user cannot destroy this vector). In the second case the solution
    is generated in the vector that the user provides. Note that for certain 
    methods, such as KSPCG, the second case requires a copy of the solution,
    while in the first case the call is essentially free since it simply 
-   returns the vector where the solution already is stored.
+   returns the vector where the solution already is stored. For some methods
+   like GMRES this is a reasonably expensive operation and should only be
+   used in truly needed.
 
    Level: advanced
 

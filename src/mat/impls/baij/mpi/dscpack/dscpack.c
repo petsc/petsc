@@ -225,10 +225,10 @@ PetscErrorCode MatSolve_DSCPACK(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatCholeskyFactorNumeric_DSCPACK"
-PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F) 
+PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,MatFactorInfo *info) 
 {
   Mat_SeqBAIJ    *a_seq;
-  Mat_DSCPACK    *lu=(Mat_DSCPACK*)(*F)->spptr; 
+  Mat_DSCPACK    *lu=(Mat_DSCPACK*)(F)->spptr; 
   Mat            *tseq,A_seq=PETSC_NULL;
   RealNumberType *my_a_nonz;
   PetscErrorCode ierr;
@@ -385,11 +385,12 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F
   }  
   
   if (size > 1) {
-    F_diag = ((Mat_MPIBAIJ *)(*F)->data)->A;
+    F_diag = ((Mat_MPIBAIJ *)(F)->data)->A;
     F_diag->assembled = PETSC_TRUE;
   }
-  (*F)->assembled   = PETSC_TRUE; 
+  F->assembled   = PETSC_TRUE; 
   lu->flg           = SAME_NONZERO_PATTERN;
+  F->ops->solve                  = MatSolve_DSCPACK;
 
   PetscFunctionReturn(0);
 }
@@ -397,15 +398,15 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F
 /* Note the Petsc permutation r is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_DSCPACK"
-PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,Mat *F) 
+PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat F,Mat A,IS r,MatFactorInfo *info) 
 {
-  Mat_DSCPACK    *lu = (Mat_DSCPACK*)(*F)->spptr;
+  Mat_DSCPACK    *lu = (Mat_DSCPACK*)(F)->spptr;
   PetscErrorCode ierr;
 
   PetscFunctionBegin; 
   lu->My_DSC_Solver = DSC_Begin();
   lu->CleanUpDSCPACK = PETSC_TRUE;
-  (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_DSCPACK;
+  (F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_DSCPACK;
   PetscFunctionReturn(0); 
 }
 
@@ -432,7 +433,6 @@ PetscErrorCode MatGetFactor_seqbaij_dscpack(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscNewLog(B,Mat_DSCPACKPACK,&lu);CHKERRQ(ierr);    
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_DSCPACK;
-  B->ops->solve                  = MatSolve_DSCPACK;
   B->ops->destroy                = MatDestroy_DSCPACK;
   B->factor                      = MAT_FACTOR_CHOLESKY;  
 

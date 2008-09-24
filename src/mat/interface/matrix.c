@@ -2227,15 +2227,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUFactor(Mat mat,IS row,IS col,MatFactorIn
    Collective on Mat
 
    Input Parameters:
-+  mat - the matrix
++  fact - the factor matrix obtained with MatGetFactor()
+.  mat - the matrix
 .  row, col - row and column permutations
 -  info - options for factorization, includes 
 $          fill - expected fill as ratio of original fill.
 $          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
 $                   Run with the option -info to determine an optimal value to use
 
-   Output Parameter:
-.  fact - new matrix that has been symbolically factored
 
    Notes:
    See the users manual for additional information about
@@ -2251,7 +2250,7 @@ $                   Run with the option -info to determine an optimal value to u
 
 .seealso: MatLUFactor(), MatLUFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
+PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -2264,13 +2263,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorSymbolic(Mat mat,IS row,IS col,MatF
   PetscValidPointer(fact,5);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!(*fact)->ops->lufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic LU",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->lufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic LU",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
-  ierr = (*(*fact)->ops->lufactorsymbolic)(mat,row,col,info,fact);CHKERRQ(ierr);
+  ierr = (fact->ops->lufactorsymbolic)(fact,mat,row,col,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_LUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)*fact);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2283,9 +2282,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorSymbolic(Mat mat,IS row,IS col,MatF
    Collective on Mat
 
    Input Parameters:
-+  mat - the matrix
-.  info - options for factorization
--  fact - the matrix generated for the factor, from MatLUFactorSymbolic()
++  fact - the factor matrix obtained with MatGetFactor()
+.  mat - the matrix
+-  info - options for factorization
 
    Notes:
    See MatLUFactor() for in-place factorization.  See 
@@ -2301,7 +2300,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorSymbolic(Mat mat,IS row,IS col,MatF
 
 .seealso: MatLUFactorSymbolic(), MatLUFactor(), MatCholeskyFactor()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorNumeric(Mat mat,MatFactorInfo *info,Mat *fact)
+PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorNumeric(Mat fact,Mat mat,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -2309,19 +2308,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLUFactorNumeric(Mat mat,MatFactorInfo *info
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   PetscValidPointer(fact,2);
-  PetscValidHeaderSpecific(*fact,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(fact,MAT_COOKIE,2);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (mat->rmap->N != (*fact)->rmap->N || mat->cmap->N != (*fact)->cmap->N) {
-    SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat mat,Mat *fact: global dimensions are different %D should = %D %D should = %D",mat->rmap->N,(*fact)->rmap->N,mat->cmap->N,(*fact)->cmap->N);
+  if (mat->rmap->N != (fact)->rmap->N || mat->cmap->N != (fact)->cmap->N) {
+    SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat mat,Mat fact: global dimensions are different %D should = %D %D should = %D",mat->rmap->N,(fact)->rmap->N,mat->cmap->N,(fact)->cmap->N);
   }
-  if (!(*fact)->ops->lufactornumeric) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->lufactornumeric) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
-  ierr = (*(*fact)->ops->lufactornumeric)(mat,info,fact);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
+  ierr = (fact->ops->lufactornumeric)(fact,mat,info);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_LUFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
 
-  ierr = MatView_Private(*fact);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)*fact);CHKERRQ(ierr);
+  ierr = MatView_Private(fact);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2385,15 +2384,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactor(Mat mat,IS perm,MatFactorInf
    Collective on Mat
 
    Input Parameters:
-+  mat - the matrix
++  fact - the factor matrix obtained with MatGetFactor()
+.  mat - the matrix
 .  perm - row and column permutations
 -  info - options for factorization, includes 
 $          fill - expected fill as ratio of original fill.
 $          dtcol - pivot tolerance (0 no pivot, 1 full column pivoting)
 $                   Run with the option -info to determine an optimal value to use
-
-   Output Parameter:
-.  fact - the factored matrix
 
    Notes:
    See MatLUFactorSymbolic() for the nonsymmetric case.  See also
@@ -2411,7 +2408,7 @@ $                   Run with the option -info to determine an optimal value to u
           MatGetOrdering()
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic(Mat fact,Mat mat,IS perm,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -2424,13 +2421,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic(Mat mat,IS perm,MatF
   if (mat->rmap->N != mat->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!(*fact)->ops->choleskyfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->choleskyfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
-  ierr = (*(*fact)->ops->choleskyfactorsymbolic)(mat,perm,info,fact);CHKERRQ(ierr);
+  ierr = (fact->ops->choleskyfactorsymbolic)(fact,mat,perm,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_CholeskyFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)*fact);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2443,13 +2440,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic(Mat mat,IS perm,MatF
 
    Collective on Mat
 
-   Input Parameter:
+   Input Parameters:
++  fact - the factor matrix obtained with MatGetFactor()
 .  mat - the initial matrix
 .  info - options for factorization
 -  fact - the symbolic factor of mat
 
-   Output Parameter:
-.  fact - the factored matrix
 
    Notes:
    Most users should employ the simplified KSP interface for linear solvers
@@ -2462,7 +2458,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic(Mat mat,IS perm,MatF
 
 .seealso: MatCholeskyFactorSymbolic(), MatCholeskyFactor(), MatLUFactorNumeric()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorNumeric(Mat mat,MatFactorInfo *info,Mat *fact)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorNumeric(Mat fact,Mat mat,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -2470,20 +2466,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorNumeric(Mat mat,MatFactorInfo
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
   PetscValidPointer(fact,2);
-  PetscValidHeaderSpecific(*fact,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(fact,MAT_COOKIE,2);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
-  if (!(*fact)->ops->choleskyfactornumeric) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
-  if (mat->rmap->N != (*fact)->rmap->N || mat->cmap->N != (*fact)->cmap->N) {
-    SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat mat,Mat *fact: global dim %D should = %D %D should = %D",mat->rmap->N,(*fact)->rmap->N,mat->cmap->N,(*fact)->cmap->N);
+  if (!(fact)->ops->choleskyfactornumeric) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  if (mat->rmap->N != (fact)->rmap->N || mat->cmap->N != (fact)->cmap->N) {
+    SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat mat,Mat fact: global dim %D should = %D %D should = %D",mat->rmap->N,(fact)->rmap->N,mat->cmap->N,(fact)->cmap->N);
   }
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
-  ierr = (*(*fact)->ops->choleskyfactornumeric)(mat,info,fact);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,*fact,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
+  ierr = (fact->ops->choleskyfactornumeric)(fact,mat,info);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_CholeskyFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
 
-  ierr = MatView_Private(*fact);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)*fact);CHKERRQ(ierr);
+  ierr = MatView_Private(fact);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -5104,7 +5100,7 @@ $      1 or 0 - indicating force fill on diagonal (improves robustness for matri
           MatGetOrdering(), MatFactorInfo
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatILUFactorSymbolic(Mat mat,IS row,IS col,MatFactorInfo *info,Mat *fact)
+PetscErrorCode PETSCMAT_DLLEXPORT MatILUFactorSymbolic(Mat fact,Mat mat,IS row,IS col,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -5117,13 +5113,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatILUFactorSymbolic(Mat mat,IS row,IS col,Mat
   PetscValidPointer(fact,5);
   if (info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels of fill negative %D",(PetscInt)info->levels);
   if (info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %G",info->fill);
-  if (!(*fact)->ops->ilufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ILU",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->ilufactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ILU",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_ILUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
-  ierr = (*(*fact)->ops->ilufactorsymbolic)(mat,row,col,info,fact);CHKERRQ(ierr);
+  ierr = (fact->ops->ilufactorsymbolic)(fact,mat,row,col,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ILUFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -5160,7 +5156,7 @@ $      expected fill - as ratio of original fill.
 
 .seealso: MatCholeskyFactorNumeric(), MatCholeskyFactor(), MatFactorInfo
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactorSymbolic(Mat mat,IS perm,MatFactorInfo *info,Mat *fact)
+PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,MatFactorInfo *info)
 {
   PetscErrorCode ierr;
 
@@ -5173,12 +5169,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactorSymbolic(Mat mat,IS perm,MatFactor
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (info->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Levels negative %D",(PetscInt) info->levels);
   if (info->fill < 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Expected fill less than 1.0 %G",info->fill);
-  if (!(*fact)->ops->iccfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",((PetscObject)mat)->type_name);
+  if (!(fact)->ops->iccfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ICC",((PetscObject)mat)->type_name);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
-  ierr = (*(*fact)->ops->iccfactorsymbolic)(mat,perm,info,fact);CHKERRQ(ierr);
+  ierr = (fact->ops->iccfactorsymbolic)(fact,mat,perm,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

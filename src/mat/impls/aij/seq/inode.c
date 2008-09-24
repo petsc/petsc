@@ -789,7 +789,6 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   const PetscScalar *b;
 
   PetscFunctionBegin;  
-  if (A->factor != MAT_FACTOR_LU) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unfactored matrix");
   if (!a->inode.size) SETERRQ(PETSC_ERR_COR,"Missing Inode Structure");
   node_max = a->inode.node_count;   
   ns       = a->inode.size;     /* Node Size array */
@@ -1171,9 +1170,9 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_Inode"
-PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
+PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,MatFactorInfo *info)
 {
-  Mat               C = *B;
+  Mat               C = B;
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)C->data;
   IS                iscol = b->col,isrow = b->row,isicol = b->icol;
   PetscErrorCode    ierr;
@@ -1580,7 +1579,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
   ierr = ISRestoreIndices(iscol,&c);CHKERRQ(ierr);
-  (*B)->ops->solve           = MatSolve_Inode;
+  (B)->ops->solve           = MatSolve_Inode;
   /* do not set solve add, since MatSolve_Inode + Add is faster */
   C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ;
   C->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ;

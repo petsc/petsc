@@ -63,7 +63,7 @@ class Configure(config.base.Configure):
       for i in self.framework.packages:
         ejobs.append(i.name.upper())
 
-    self.addMakeMacro('TEST_RUNS',' '.join(rjobs)+' '+' '.join(ejobs)+' '+' '.join(jobs))
+    self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))
     return
   
 

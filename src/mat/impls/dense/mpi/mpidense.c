@@ -1233,9 +1233,9 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatLUFactorNumeric_MPIDense"
-PetscErrorCode MatLUFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorNumeric_MPIDense(Mat F,Mat A,MatFactorInfo *info)
 {
-  Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
+  Mat_Plapack    *lu = (Mat_Plapack*)(F)->spptr;
   PetscErrorCode ierr;
   PetscInt       M=A->rmap->N,m=A->rmap->n,rstart,rend;
   PetscInt       info_pla=0;
@@ -1270,16 +1270,16 @@ PetscErrorCode MatLUFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *F)
   lu->CleanUpPlapack = PETSC_TRUE;
   lu->rstart         = rstart;
   lu->mstruct        = SAME_NONZERO_PATTERN;
-  
-  (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
+  F->ops->solve      = MatSolve_MPIDense;
+  F->assembled       = PETSC_TRUE;  /* required by -ksp_view */
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatCholeskyFactorNumeric_MPIDense"
-PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat F,Mat A,MatFactorInfo *info)
 {
-  Mat_Plapack    *lu = (Mat_Plapack*)(*F)->spptr;
+  Mat_Plapack    *lu = (Mat_Plapack*)F->spptr;
   PetscErrorCode ierr;
   PetscInt       M=A->rmap->N,m=A->rmap->n,rstart,rend;
   PetscInt       info_pla=0;
@@ -1312,8 +1312,8 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat A,MatFactorInfo *info,Mat *
   lu->CleanUpPlapack = PETSC_TRUE;
   lu->rstart         = rstart;
   lu->mstruct        = SAME_NONZERO_PATTERN;
-  
-  (*F)->assembled    = PETSC_TRUE;  /* required by -ksp_view */
+  F->ops->solve      = MatSolve_MPIDense;  
+  F->assembled       = PETSC_TRUE;  /* required by -ksp_view */
   PetscFunctionReturn(0);
 }
 
@@ -1395,7 +1395,7 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
 /* Note the Petsc perm permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPIDense"
-PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat A,IS perm,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat F,Mat A,IS perm,MatFactorInfo *info)
 { 
   PetscErrorCode ierr;
   PetscTruth     issymmetric,set;
@@ -1403,15 +1403,15 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat A,IS perm,MatFactorInfo *i
   PetscFunctionBegin;
   ierr = MatIsSymmetricKnown(A,&set,&issymmetric); CHKERRQ(ierr);
   if (!set || !issymmetric) SETERRQ(PETSC_ERR_USER,"Matrix must be set as MAT_SYMMETRIC for CholeskyFactor()");
-  ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
-  (*F)->factor = MAT_FACTOR_CHOLESKY;  
+  ierr = MatFactorSymbolic_Plapack_Private(F,A,info);CHKERRQ(ierr);
+  F->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIDense;
   PetscFunctionReturn(0);
 }
 
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIDense"
-PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
 {  
   PetscErrorCode ierr;
   PetscInt       M = A->rmap->N;
@@ -1419,9 +1419,9 @@ PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat A,IS r,IS c,MatFactorInfo *info,
 
   PetscFunctionBegin;
   ierr = MatFactorSymbolic_Plapack_Private(A,info,F);CHKERRQ(ierr);
-  lu = (Mat_Plapack*)(*F)->spptr;
+  lu = (Mat_Plapack*)F->spptr;
   ierr = PLA_Mvector_create(MPI_INT,M,1,lu->templ,PLA_ALIGN_FIRST,&lu->pivots);CHKERRQ(ierr);
-  (*F)->factor = MAT_FACTOR_LU;  
+  F->ops->lufactornumeric  = MatLUFactorNumeric_MPIDense;
   PetscFunctionReturn(0);
 }
 
@@ -1472,14 +1472,10 @@ PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
 
   if (ftype == MAT_FACTOR_LU) {
     (*F)->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIDense;
-    (*F)->ops->lufactornumeric  = MatLUFactorNumeric_MPIDense;
-    (*F)->ops->solve            = MatSolve_MPIDense;
   } else if (ftype == MAT_FACTOR_CHOLESKY) {
     (*F)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPIDense;
-    (*F)->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIDense;
-    (*F)->ops->solve                  = MatSolve_MPIDense;
   } else SETERRQ(PETSC_ERR_SUP,"No incomplete factorizations for dense matrices");
-
+  (*F)->factor = ftype;
   PetscFunctionReturn(0);
 }
 #endif

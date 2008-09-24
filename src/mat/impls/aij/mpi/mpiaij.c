@@ -1865,7 +1865,7 @@ PetscErrorCode MatImaginaryPart_MPIAIJ(Mat A)
 /*
   This uses the parallel ILU factorization of Peter Gottschling <pgottsch@osl.iu.edu>
 */
-PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorInfo *info, Mat *fact)
+PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, MatFactorInfo *info)
 {
   namespace petsc = boost::distributed::petsc;
   
@@ -1899,21 +1899,20 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorI
   ierr = MatCreate(((PetscObject)A)->comm, fact);CHKERRQ(ierr);
   ierr = MatGetLocalSize(A, &m, &n);CHKERRQ(ierr);
   ierr = MatGetSize(A, &M, &N);CHKERRQ(ierr);
-  ierr = MatSetSizes(*fact, m, n, M, N);CHKERRQ(ierr);
-  ierr = MatSetType(*fact, ((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatAssemblyBegin(*fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  (*fact)->factor = MAT_FACTOR_LU;
+  ierr = MatSetSizes(fact, m, n, M, N);CHKERRQ(ierr);
+  ierr = MatSetType(fact, ((PetscObject)A)->type_name);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = PetscContainerCreate(((PetscObject)A)->comm, &c);
   ierr = PetscContainerSetPointer(c, lgraph_p);
-  ierr = PetscObjectCompose((PetscObject) (*fact), "graph", (PetscObject) c);
+  ierr = PetscObjectCompose((PetscObject) (fact), "graph", (PetscObject) c);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ"
-PetscErrorCode MatLUFactorNumeric_MPIAIJ(Mat A, MatFactorInfo *info, Mat *B)
+PetscErrorCode MatLUFactorNumeric_MPIAIJ(Mat B,Mat A, MatFactorInfo *info)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -2465,7 +2464,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /*25*/ MatZeroRows_MPIAIJ,
        0,
 #ifdef PETSC_HAVE_PBGL
-       MatLUFactorNumeric_MPIAIJ,
+       0,
 #else
        0,
 #endif
@@ -2473,7 +2472,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
 /*30*/ MatSetUpPreallocation_MPIAIJ,
 #ifdef PETSC_HAVE_PBGL
-       MatILUFactorSymbolic_MPIAIJ,
+       0,
 #else
        0,
 #endif

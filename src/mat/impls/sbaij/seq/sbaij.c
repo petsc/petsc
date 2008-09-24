@@ -929,7 +929,7 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
     ierr = PetscLogObjectMemory(inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);
   }
    
-  ierr = MatCholeskyFactorNumeric(inA,info,&outA);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(outA,inA,info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1154,7 +1154,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
 /*10*/ 0,
        0,
-       MatCholeskyFactor_SeqSBAIJ,
+       0,
        MatRelax_SeqSBAIJ,
        MatTranspose_SeqSBAIJ,
 /*15*/ MatGetInfo_SeqSBAIJ,
@@ -1178,8 +1178,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatGetArray_SeqSBAIJ,
        MatRestoreArray_SeqSBAIJ,
 /*35*/ MatDuplicate_SeqSBAIJ,
-       MatForwardSolve_SeqSBAIJ_N,
-       MatBackwardSolve_SeqSBAIJ_N,
+       0,
+       0,
        0,
        MatICCFactor_SeqSBAIJ,
 /*40*/ MatAXPY_SeqSBAIJ,
@@ -1543,7 +1543,7 @@ PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat B,PetscTruth natural)
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*); 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat, MatType,MatReuse,Mat*); 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,IS,MatFactorInfo*,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,Mat,IS,MatFactorInfo*);
 EXTERN_C_END
 
   
@@ -1564,6 +1564,7 @@ PetscErrorCode MatGetFactor_seqsbaij_petsc(Mat A,MatFactorType ftype,Mat *B)
     (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJ;
     (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqSBAIJ;
   } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
+  (*B)->factor = ftype;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
