@@ -379,10 +379,12 @@ PetscErrorCode PCView_BFBt(PC pc, PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-  if (ctx->M == PETSC_NULL) {
+  if (ctx->M != PETSC_NULL) {
+    ierr = PetscViewerASCIIPrintf(viewer, "bfbt: Scaled by diag(M)\n");CHKERRQ(ierr);
+  } else if (ctx->scaled) {
+    ierr = PetscViewerASCIIPrintf(viewer, "bfbt: Scaled by diag(K)\n");CHKERRQ(ierr);
+  } else {
     ierr = PetscViewerASCIIPrintf(viewer, "bfbt: Standard\n");CHKERRQ(ierr);
-  }else {
-    ierr = PetscViewerASCIIPrintf(viewer, "bfbt: Least Squares Commutator\n");CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIPrintf( viewer, "bfbt-ksp\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
