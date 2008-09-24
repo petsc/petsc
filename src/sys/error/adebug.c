@@ -18,7 +18,47 @@
       These are the debugger and display used if the debugger is started up
 */
 static char       Debugger[PETSC_MAX_PATH_LEN];
+static char       DebugTerminal[PETSC_MAX_PATH_LEN];
 static PetscTruth Xterm = PETSC_TRUE;
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscSetDebugTerminal"
+/*@C
+   PetscSetDebugTerminal - Sets the terminal to use (instead of xterm) for debugging.
+
+   Not Collective
+
+   Input Parameters:
++  terminal - name of terminal and any flags required to execute a program.
+              For example "xterm -e", "urxvt -e".
+
+   Options Database Keys:
+   -debug_terminal terminal - use this terminal instead of xterm
+
+   Level: developer
+
+   Notes:
+   You can start the debugger for all processes in the same GNU screen session.
+
+     mpirun -n 4 ./myapp -start_in_debugger -debug_terminal "screen -X -S debug screen"
+
+   will open 4 windows in the session named "debug".
+     
+   Fortran Note:
+   This routine is not supported in Fortran.
+
+   Concepts: debugger^setting
+
+.seealso: PetscSetDebugger()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscSetDebugTerminal(const char terminal[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrcpy(DebugTerminal,terminal);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSetDebugger" 
@@ -85,6 +125,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetDefaultDebugger(void)
 #else  /* Default is gdb */
   ierr = PetscSetDebugger("gdb",PETSC_TRUE);CHKERRQ(ierr);
 #endif
+  ierr = PetscSetDebugTerminal("xterm -e");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -207,6 +248,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
   if (child) { /* I am the parent, will run the debugger */
     const char *args[10];
     char       pid[10];
+    PetscInt   j,jj;
     PetscTruth isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop,isddd;
 
     ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
@@ -252,138 +294,87 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
         perror("Unable to start debugger");
         exit(0);
       }
-    } else if (!Xterm) {
-      args[1] = program; args[2] = pid; args[3] = 0;
-      args[0] = Debugger;
+    } else {
+      j = 0;
+      if (Xterm) {
+        PetscTruth cmp;
+        char *tmp,*tmp1;
+        ierr = PetscStrncmp(DebugTerminal,"screen",6,&cmp);CHKERRQ(ierr);
+        if (cmp) display[0] = 0; /* when using screen, we never pass -display */
+        args[j++] = tmp = DebugTerminal;
+        if (display[0]) {
+          args[j++] = "-display"; args[j++] = display;
+        }
+        while (*tmp) {
+          ierr = PetscStrchr(tmp,' ',&tmp1);CHKERRQ(ierr);
+          if (!tmp1) break;
+          *tmp1 = 0;
+          tmp = tmp1+1;
+          args[j++] = tmp;
+        }
+      }
+      args[j++] = Debugger;
+      jj = j;
+      args[j++] = program; args[j++] = pid; args[j++] = 0;
+
       if (isidb) {
-        args[1] = "-pid";
-        args[2] = pid;
-        args[3] = "-gdb";
-        args[4] = program;
-        args[5] = 0;
+        j = jj;
+        args[j++] = "-pid";
+        args[j++] = pid;
+        args[j++] = "-gdb";
+        args[j++] = program;
+        args[j++] = 0;
       }
 #if defined(PETSC_USE_P_FOR_DEBUGGER)
       if (isdbx) {
-        args[1] = "-p";
-        args[2] = pid;
-        args[3] = program;
-        args[4] = 0;
+        j = jj;
+        args[j++] = "-p";
+        args[j++] = pid;
+        args[j++] = program;
+        args[j++] = 0;
       }
 #elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
       if (isxdb) {
-        args[1] = "-l";
-        args[2] = "ALL";
-        args[3] = "-P";
-        args[4] = pid;
-        args[5] = program;
-        args[6] = 0;
+        j = jj;
+        args[j++] = "-l";
+        args[j++] = "ALL";
+        args[j++] = "-P";
+        args[j++] = pid;
+        args[j++] = program;
+        args[j++] = 0;
       }
 #elif defined(PETSC_USE_A_FOR_DEBUGGER)
       if (isdbx) {
-        args[1] = "-a";
-        args[2] = pid;
-        args[3] = 0;
+        j = jj;
+        args[j++] = "-a";
+        args[j++] = pid;
+        args[j++] = 0;
       }
 #elif defined(PETSC_USE_PID_FOR_DEBUGGER)
       if (isdbx) {
-        args[1] = "-pid";
-        args[2] = pid;
-        args[3] = program;
-        args[4] = 0;
+        j = jj;
+        args[j++] = "-pid";
+        args[j++] = pid;
+        args[j++] = program;
+        args[j++] = 0;
       }
 #endif
-      (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on %s\n",Debugger,program,pid,hostname);
-      if (execvp(args[0],(char**)args)  < 0) {
-        perror("Unable to start debugger");
-        exit(0);
-      }
-    } else {
-      if (!display[0]) {
-        args[0] = "xterm";  args[1] = "-e"; 
-        args[2] = Debugger; args[3] = program; 
-        args[4] = pid;      args[5] = 0;
-        if (isidb) {
-          args[3] = "-pid";
-          args[4] = pid;
-          args[5] = "-gdb";
-          args[6] = program;
-          args[7] = 0;
+      if (Xterm) {
+        if (display[0]) {
+          (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",Debugger,program,pid,display,hostname);
+        } else {
+          (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s on %s\n",Debugger,program,pid,hostname);
         }
-#if defined(PETSC_USE_P_FOR_DEBUGGER)
-        if (isdbx) {
-          args[3] = "-p";
-          args[4] = pid;
-          args[5] = program;
-          args[6] = 0;
+        if (execvp(args[0],(char**)args)  < 0) {
+          perror("Unable to start debugger in xterm");
+          exit(0);
         }
-#elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
-        if (isxdb) {
-          args[5] = program;
-          args[3] = "-P";
-          args[4] = pid;
-          args[6] = 0;
-        }
-#elif defined(PETSC_USE_A_FOR_DEBUGGER)
-        if (isdbx) {
-          args[3] = "-a";
-          args[4] = pid;
-          args[5] = 0;
-        }
-#elif defined(PETSC_USE_PID_FOR_DEBUGGER)
-      if (isdbx) {
-        args[3] = "-pid";
-        args[4] = pid;
-        args[5] = program;
-        args[6] = 0;
-      }
-#endif
-      (*PetscErrorPrintf)("PETSC: Attaching %s to %s on pid %s on %s\n",Debugger,program,pid,hostname);
       } else {
-        args[0] = "xterm";  args[1] = "-display";
-        args[2] = display;  args[3] = "-e";
-        args[4] = Debugger; args[5] = program;
-        args[6] = pid;      args[7] = 0;
-        if (isidb) {
-          args[5] = "-pid";
-          args[6] = pid;
-          args[7] = "-gdb";
-          args[8] = program;
-          args[9] = 0;
+        (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on %s\n",Debugger,program,pid,hostname);
+        if (execvp(args[0],(char**)args)  < 0) {
+          perror("Unable to start debugger");
+          exit(0);
         }
-#if defined(PETSC_USE_P_FOR_DEBUGGER)
-        if (isdbx) {
-          args[5] = "-p";
-          args[6] = pid;
-          args[7] = program;
-          args[8] = 0;
-        }
-#elif defined(PETSC_USE_LARGEP_FOR_DEBUGGER)
-        if (isxdb) {
-          args[7] = program;
-          args[5] = "-P";
-          args[6] = pid;
-          args[8] = 0;
-        }
-#elif defined(PETSC_USE_A_FOR_DEBUGGER)
-        if (isdbx) {
-          args[5] = "-a";
-          args[6] = pid;
-          args[7] = 0;
-        }
-#elif defined(PETSC_USE_PID_FOR_DEBUGGER)
-      if (isdbx) {
-        args[5] = "-pid";
-        args[6] = pid;
-        args[7] = program;
-        args[8] = 0;
-      }
-#endif
-      (*PetscErrorPrintf)("PETSC: Attaching %s to %s of pid %s on display %s on machine %s\n",Debugger,program,pid,display,hostname);
-      }
-
-      if (execvp("xterm",(char**)args)  < 0) {
-        perror("Unable to start debugger in xterm");
-        exit(0);
       }
     }
   } else {   /* I am the child, continue with user code */

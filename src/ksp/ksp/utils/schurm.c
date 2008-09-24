@@ -242,3 +242,35 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat N,Mat A,Mat B,Mat
   ierr = KSPSetOperators(Na->ksp,A,A,str);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSchurComplementGetSubmatrices"
+/*@C
+  MatSchurComplementGetSubmatrices - Get the individual submatrices in the Schur complement
+
+  Collective on Mat
+
+  Input Parameters:
++ N - the matrix obtained with MatCreateSchurComplement()
+- A,B,C,D  - the four parts of the original matrix (D is optional)
+
+  Note:
+  D is optional, and thus can be PETSC_NULL
+
+  Level: intermediate
+
+.seealso: MatCreateNormal(), MatMult(), MatCreate(), MatSchurComplementGetKSP(), MatCreateSchurComplement(), MatSchurComplementUpdate()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementGetSubmatrices(Mat N,Mat *A,Mat *B,Mat *C,Mat *D)
+{
+  Mat_SchurComplement *Na = (Mat_SchurComplement *) N->data;  
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(N,MAT_COOKIE,0);
+  if (A) {*A = Na->A;}
+  if (B) {*B = Na->B;}
+  if (C) {*C = Na->C;}
+  if (D) {*D = Na->D;}
+  PetscFunctionReturn(0);
+}

@@ -103,6 +103,10 @@ memoryTests: memoryTests.o chkopts
 distributionTests: distributionTests.o chkopts
 	-${CLINKER} -o distributionTests distributionTests.o ${PETSC_DM_LIB}
 	${RM} -f distributionTests.o
+
+refinementTest: refinementTest.o chkopts
+	-${CLINKER} -o refinementTest refinementTest.o ${PETSC_DM_LIB}
+	${RM} -f refinementTest.o
 #-----------------------------------------------------------------
 BOOST_LIBS = -Wl,-rpath,${BOOST_DIR}/lib -L${BOOST_DIR}/lib -lboost_program_options-gcc41
 args0: args0.o chkopts

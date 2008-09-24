@@ -120,6 +120,42 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DAView_VTK"
+PetscErrorCode DAView_VTK(DA da, PetscViewer viewer)
+{
+  PetscInt       dim, dof, M, N, P;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetInfo(da, &dim, &M, &N, &P, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  if (dim != 3) {SETERRQ(PETSC_ERR_SUP, "VTK output only works for three dimensional DAs.");}
+  if (!da->coordinates) {SETERRQ(PETSC_ERR_SUP, "VTK output requires DA coordinates.");}
+  // Write Header
+  ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"ASCII\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"DATASET STRUCTURED_GRID\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"DIMENSIONS %d %d %d\n", M, N, P);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"POINTS %d double\n", M*N*P);CHKERRQ(ierr);
+  if (da->coordinates) {
+    DA  dac;
+    Vec natural;
+
+    ierr = DAGetCoordinateDA(da, &dac);CHKERRQ(ierr);
+    ierr = DACreateNaturalVector(dac, &natural);CHKERRQ(ierr);
+    ierr = PetscObjectSetOptionsPrefix((PetscObject) natural, "coor_");CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalBegin(dac, da->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
+    ierr = DAGlobalToNaturalEnd(dac, da->coordinates, INSERT_VALUES, natural);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_COORDS);CHKERRQ(ierr);
+    ierr = VecView(natural, viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = VecDestroy(natural);CHKERRQ(ierr);
+    ierr = DADestroy(dac);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DAView"
 /*@C
    DAView - Visualizes a distributed array object.
@@ -201,22 +237,29 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
   if (iascii) {
-    for (i=0; i<dof; i++) {
-      if (da->fieldname[i]) {
-        fieldsnamed = PETSC_TRUE;
-        break;
-      }
-    }
-    if (fieldsnamed) {
-      ierr = PetscViewerASCIIPrintf(viewer,"FieldNames: ");CHKERRQ(ierr);
+    PetscViewerFormat format;
+
+    ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
+      ierr = DAView_VTK(da, viewer);CHKERRQ(ierr);
+    } else {
       for (i=0; i<dof; i++) {
         if (da->fieldname[i]) {
-          ierr = PetscViewerASCIIPrintf(viewer,"%s ",da->fieldname[i]);CHKERRQ(ierr);
-        } else {
-          ierr = PetscViewerASCIIPrintf(viewer,"(not named) ");CHKERRQ(ierr);
+          fieldsnamed = PETSC_TRUE;
+          break;
         }
       }
-      ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+      if (fieldsnamed) {
+        ierr = PetscViewerASCIIPrintf(viewer,"FieldNames: ");CHKERRQ(ierr);
+        for (i=0; i<dof; i++) {
+          if (da->fieldname[i]) {
+            ierr = PetscViewerASCIIPrintf(viewer,"%s ",da->fieldname[i]);CHKERRQ(ierr);
+          } else {
+            ierr = PetscViewerASCIIPrintf(viewer,"(not named) ");CHKERRQ(ierr);
+          }
+        }
+        ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);
+      }
     }
   }
   if (isbinary){

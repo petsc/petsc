@@ -20,6 +20,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetIntArray(const char[],cons
 PetscPolymorphicSubroutine(PetscOptionsGetIntArray,(const char b[],PetscInt i[],PetscInt *ii,PetscTruth *f),(PETSC_NULL,b,i,ii,f))
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetRealArray(const char[],const char[],PetscReal[],PetscInt *,PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsGetRealArray,(const char b[],PetscReal i[],PetscInt *ii,PetscTruth *f),(PETSC_NULL,b,i,ii,f))
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetTruthArray(const char[],const char[],PetscTruth[],PetscInt *,PetscTruth*);
+PetscPolymorphicSubroutine(PetscOptionsGetTruthArray,(const char b[],PetscTruth i[],PetscInt *ii,PetscTruth *f),(PETSC_NULL,b,i,ii,f))
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetString(const char[],const char[],char[],size_t,PetscTruth*);
 PetscPolymorphicSubroutine(PetscOptionsGetString,(const char b[],char i[],size_t s,PetscTruth *f),(PETSC_NULL,b,i,s,f))
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetStringArray(const char[],const char[],char*[],PetscInt*,PetscTruth*);
@@ -162,6 +164,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsEList(const char[],const char[
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsRealArray(const char[],const char[],const char[],PetscReal[],PetscInt*,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsStringArray(const char[],const char[],const char[],char*[],PetscInt*,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsTruthArray(const char[],const char[],const char[],PetscTruth[],PetscInt*,PetscTruth*);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void);
 PETSC_EXTERN_CXX_END

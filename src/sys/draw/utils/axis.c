@@ -596,6 +596,10 @@ static PetscErrorCode PetscMod(PetscReal x,PetscReal y,PetscReal *result)
   int     i;
 
   PetscFunctionBegin;
+  if (y == 1) {
+    *result = 0;
+    PetscFunctionReturn(0);
+  }
   i   = ((int)x) / ((int)y);
   x   = x - i * y;
   while (x > y) x -= y;

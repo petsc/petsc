@@ -405,9 +405,10 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU;
   B->ops->destroy          = MatDestroy_SuperLU;
-  B->factor               = MAT_FACTOR_LU;
-  B->assembled            = PETSC_TRUE;  /* required by -ksp_view */
-  B->preallocated         = PETSC_TRUE;
+  B->ops->view             = MatView_SuperLU;
+  B->factor                = MAT_FACTOR_LU;
+  B->assembled             = PETSC_TRUE;  /* required by -ksp_view */
+  B->preallocated          = PETSC_TRUE;
   
   ierr = PetscNewLog(B,Mat_SuperLU,&lu);CHKERRQ(ierr);
   set_default_options(&lu->options);

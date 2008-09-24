@@ -19,16 +19,19 @@ struct _PC_FieldSplitLink {
 
 typedef struct {
   PCCompositeType   type;              
-  PetscTruth        defaultsplit;
-  PetscInt          bs;
-  PetscInt          nsplits;
+  PetscTruth        defaultsplit; /* Flag for a system with a set of 'k' scalar fields with the same layout (and bs = k) */
+  PetscInt          bs;           /* Block size for IS and Mat structures */
+  PetscInt          nsplits;      /* Number of field divisions defined */
   Vec               *x,*y,w1,w2;
-  Mat               *pmat;
-  Mat               *Afield; /* the rows of the matrix associated with each field */
+  Mat               *pmat;        /* The diagonal block for each split */
+  Mat               *Afield;      /* The rows of the matrix associated with each split */
   PetscTruth        issetup;
-  Mat               B,C,schur;   /* only used when Schur complement preconditioning is used */
-  KSP               kspschur;
-  PetscTruth        schurpre;    /* preconditioner for the Schur complement is built from pmat[1] == D */
+  /* Only used when Schur complement preconditioning is used */
+  Mat               B;            /* The (0,1) block */
+  Mat               C;            /* The (1,0) block */
+  Mat               schur;        /* The Schur complement S = D - C A^{-1} B */
+  KSP               kspschur;     /* The solver for S */
+  PetscTruth        schurpre;     /* preconditioner for the Schur complement is built from pmat[1] == D */
   PC_FieldSplitLink head;
 } PC_FieldSplit;
 
@@ -1004,6 +1007,40 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSchurPrecondition_FieldSplit(PC pc
 }
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCFieldSplitGetSchurBlocks"
+/*@C
+   PCFieldSplitGetSchurBlocks - Gets the all matrix blocks for the Schur complement
+   
+   Collective on KSP
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
++  A - the (0,0) block
+.  B - the (0,1) block
+.  C - the (1,0) block
+-  D - the (1,1) block
+
+   Level: advanced
+
+.seealso: PCFIELDSPLIT
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitGetSchurBlocks(PC pc,Mat *A,Mat *B,Mat *C, Mat *D)
+{
+  PC_FieldSplit *jac = (PC_FieldSplit *) pc->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  if (jac->type != PC_COMPOSITE_SCHUR) {SETERRQ(PETSC_ERR_ARG_WRONG, "FieldSplit is not using a Schur complement approach.");}
+  if (A) *A = jac->pmat[0];
+  if (B) *B = jac->B;
+  if (C) *C = jac->C;
+  if (D) *D = jac->pmat[1];
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetType_FieldSplit"
@@ -1054,10 +1091,10 @@ EXTERN_C_END
 
    Input Parameter:
 .  pc - the preconditioner context
-.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE
+.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL, PC_COMPOSITE_SCHUR
 
    Options Database Key:
-.  -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets fieldsplit preconditioner type
+.  -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
 
    Level: Developer
 

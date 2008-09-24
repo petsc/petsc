@@ -1500,9 +1500,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(VecScatter inctx,Vec x,Vec y,I
 #endif
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE,5);
+  PetscValidHeaderSpecific(inctx,VEC_SCATTER_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   if (inctx->inuse) SETERRQ(PETSC_ERR_ARG_WRONGSTATE," Scatter ctx already in use");
   CHKMEMQ;
 
@@ -1569,9 +1569,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterEnd(VecScatter ctx,Vec x,Vec y,Inser
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
-  PetscValidHeaderSpecific(y,VEC_COOKIE,2);
-  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,5);
+  PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
+  PetscValidHeaderSpecific(x,VEC_COOKIE,2);
+  PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   ctx->inuse = PETSC_FALSE;
   if (!ctx->end) PetscFunctionReturn(0);
   CHKMEMQ;

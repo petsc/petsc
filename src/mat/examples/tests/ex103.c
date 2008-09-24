@@ -96,7 +96,6 @@ int main(int argc,char **args)
   ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr); 
 
-  ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
   ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
   ierr = MatCholeskyFactorSymbolic(F,C,perm,&info);CHKERRQ(ierr);
   for (nfact = 0; nfact < 2; nfact++){
@@ -124,7 +123,6 @@ int main(int argc,char **args)
       }
     }
   }
-  ierr = MatDestroy(C1);CHKERRQ(ierr);
   ierr = MatDestroy(F);CHKERRQ(ierr);
 
   /* Free data structures */
