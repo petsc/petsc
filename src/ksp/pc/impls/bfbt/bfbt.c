@@ -9,6 +9,7 @@ typedef struct {
   Vec        s, t, X;  /* s is [M], t is [N], X is [M] */
   KSP        ksp;
   PetscTruth form_GtG; /* Don't allow anything else yet */
+  PetscTruth scaled;   /* Use K for M */
 } PC_BFBt;
 
 EXTERN_C_BEGIN
@@ -307,10 +308,15 @@ PetscErrorCode PCSetUp_BFBt(PC pc)
   /* Create structures */
   ierr = MatGetVecs(ctx->K, &ctx->s, &ctx->X);CHKERRQ(ierr);
   ierr = MatGetVecs(ctx->G, &ctx->t, PETSC_NULL);CHKERRQ(ierr);
-  if (ctx->M != PETSC_NULL) {
-    ierr = MatGetVecs(ctx->K, &ctx->inv_diag_M, PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatGetDiagonal(ctx->M, ctx->inv_diag_M);CHKERRQ(ierr);
-    ierr = VecReciprocal(ctx->inv_diag_M);CHKERRQ(ierr);
+  if ((ctx->M != PETSC_NULL) || (ctx->scaled)) {
+    if (ctx->M != PETSC_NULL) {
+      ierr = MatGetVecs(ctx->K, &ctx->inv_diag_M, PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetDiagonal(ctx->M, ctx->inv_diag_M);CHKERRQ(ierr);
+      ierr = VecReciprocal(ctx->inv_diag_M);CHKERRQ(ierr);
+    } else {
+      ierr = MatGetDiagonal(ctx->K, ctx->inv_diag_M);CHKERRQ(ierr);
+      ierr = VecReciprocal(ctx->inv_diag_M);CHKERRQ(ierr);
+    }
     /* change the pc_apply routines */
     pc->ops->apply          = PCApply_BFBt_diagonal_scaling;
     pc->ops->applytranspose = PCApplyTranspose_BFBt_diagonal_scaling;
@@ -353,7 +359,14 @@ PetscErrorCode PCDestroy_BFBt(PC pc)
 #define __FUNCT__ "PCSetFromOptions_BFBt"
 PetscErrorCode PCSetFromOptions_BFBt(PC pc)
 {
+  PC_BFBt       *ctx = (PC_BFBt *) pc->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
+  ierr = PetscOptionsHead("BFBt options");CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_bfbt_scaled","Scale by the diagonal of K","PCBFBtSetScaled",ctx->scaled,&ctx->scaled,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsTail();CHKERRQ(ierr);
+  ierr = KSPSetFromOptions(ctx->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
