@@ -110,7 +110,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat A,Mat B,Mat C,Mat
     if (C->rmap->n != D->rmap->n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local rows of C %D do not equal local rows D %D",C->rmap->n,D->rmap->n);
   }
 
-  ierr = MatGetLocalSize(D,&m,&n);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(B,PETSC_NULL,&n);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(C,&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(((PetscObject)A)->comm,N);CHKERRQ(ierr);
   ierr = MatSetSizes(*N,m,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATSCHURCOMPLEMENT);CHKERRQ(ierr);
