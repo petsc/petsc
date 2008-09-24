@@ -309,8 +309,8 @@ PetscErrorCode PCSetUp_BFBt(PC pc)
   ierr = MatGetVecs(ctx->K, &ctx->s, &ctx->X);CHKERRQ(ierr);
   ierr = MatGetVecs(ctx->G, &ctx->t, PETSC_NULL);CHKERRQ(ierr);
   if ((ctx->M != PETSC_NULL) || (ctx->scaled)) {
+    ierr = MatGetVecs(ctx->K, &ctx->inv_diag_M, PETSC_NULL);CHKERRQ(ierr);
     if (ctx->M != PETSC_NULL) {
-      ierr = MatGetVecs(ctx->K, &ctx->inv_diag_M, PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetDiagonal(ctx->M, ctx->inv_diag_M);CHKERRQ(ierr);
       ierr = VecReciprocal(ctx->inv_diag_M);CHKERRQ(ierr);
     } else {
