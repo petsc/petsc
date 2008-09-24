@@ -54,8 +54,8 @@ int main(int argc,char **args)
   ierr = MatGetOrdering(C,MATORDERING_QMD,&row,&col);CHKERRQ(ierr);
 
   ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&A);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(C,row,col,PETSC_NULL,&A);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(C,PETSC_NULL,&A);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(A,C,row,col,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(A,C,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSolveTranspose(A,b,x);CHKERRQ(ierr);
 
   ierr = VecAXPY(x,-1.0,u);CHKERRQ(ierr);

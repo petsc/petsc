@@ -11,7 +11,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_MPIRowbs"
-PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *factp) 
+PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat factp,Mat mat,MatFactorInfo *info) 
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
   PetscErrorCode ierr;
@@ -45,15 +45,16 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat
   ierr = PetscLogFlops((int)(BSlocal_flops()-flop1));CHKERRQ(ierr);
 #endif
 
-  mbs->factor = MAT_FACTOR_CHOLESKY;
-  (*factp)->assembled = PETSC_TRUE;
-
+  factp->ops->solve         = MatSolve_MPIRowbs;
+  factp->ops->forwardsolve  = MatForwardSolve_MPIRowbs;
+  factp->ops->backwardsolve = MatBackSolve_MPIRowbs;
+  factp->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIRowbs"
-PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *factp) 
+PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat factp,Mat mat,MatFactorInfo *info) 
 {
   Mat_MPIRowbs   *mbs = (Mat_MPIRowbs*)mat->data;
 
@@ -83,8 +84,11 @@ PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *fact
     BSset_diag(mbs->fpA,mbs->alpha,mbs->procinfo);CHKERRBS(0);
     ierr = PetscInfo3(mat,"BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",mbs->failures,mbs->ierr,mbs->alpha);CHKERRQ(ierr);
   }
-  mbs->factor = MAT_FACTOR_LU;
-  (*factp)->assembled = PETSC_TRUE;
+  factp->assembled          = PETSC_TRUE;
+  factp->ops->solve         = MatSolve_MPIRowbs;
+  factp->ops->forwardsolve  = MatForwardSolve_MPIRowbs;
+  factp->ops->backwardsolve = MatBackSolve_MPIRowbs;
+
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogFlops((int)(BSlocal_flops()-flop1));CHKERRQ(ierr);
 #endif

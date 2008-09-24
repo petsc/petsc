@@ -1443,7 +1443,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
 /* 4*/ MatMultAdd_MPIRowbs,
        MatMult_MPIRowbs,
        MatMultAdd_MPIRowbs,
-       MatSolve_MPIRowbs,
+       0,
        0,
        0,
 /*10*/ 0,
@@ -1463,17 +1463,17 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
        MatZeroEntries_MPIRowbs,
 /*25*/ MatZeroRows_MPIRowbs,
        0,
-       MatLUFactorNumeric_MPIRowbs,
        0,
-       MatCholeskyFactorNumeric_MPIRowbs,
+       0,
+       0,
 /*30*/ MatSetUpPreallocation_MPIRowbs,
-       MatILUFactorSymbolic_MPIRowbs,
-       MatIncompleteCholeskyFactorSymbolic_MPIRowbs,
+       0,
+       0,
        0,
        0,
 /*35*/ 0,
-       MatForwardSolve_MPIRowbs,
-       MatBackwardSolve_MPIRowbs,
+       0,
+       0,
        0,
        0,
 /*40*/ 0,
@@ -1935,10 +1935,9 @@ static PetscErrorCode MatView_MPIRowbs_Factored(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncompleteCholeskyFactorSymbolic_MPIRowbs"
-PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,MatFactorInfo *info,Mat *newfact)
+PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat newmat,Mat mat,IS isrow,MatFactorInfo *info)
 {
   /* Note:  f is not currently used in BlockSolve */
-  Mat          newmat;
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
   PetscErrorCode ierr;
   PetscTruth   idn;
@@ -1993,16 +1992,14 @@ PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,Mat
   ierr = PetscMapCopy(((PetscObject)mat)->comm,mat->cmap,newmat->cmap);CHKERRQ(ierr);
 
   ierr = PetscStrallocpy(MATMPIROWBS,&((PetscObject)newmat)->type_name);CHKERRQ(ierr);
-
-  *newfact = newmat; 
+  newmat->ops->lufactornumeric = MatLUFactorNumeric_MPIRowbs;
   PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_MPIRowbs"
-PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactorInfo* info,Mat *newfact)
+PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat newmat,Mat mat,IS isrow,IS iscol,MatFactorInfo* info)
 {
-  Mat          newmat;
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
   PetscErrorCode ierr;
   PetscTruth   idn;
@@ -2055,6 +2052,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactor
 
   ierr = PetscStrallocpy(MATMPIROWBS,&((PetscObject)newmat)->type_name);CHKERRQ(ierr);
 
+  newmat->ops->lufactornumeric = MatLUFactorNumeric_MPIRowbs;
   *newfact = newmat; 
   PetscFunctionReturn(0); 
 }

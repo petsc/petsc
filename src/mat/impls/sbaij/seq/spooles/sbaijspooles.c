@@ -57,12 +57,9 @@ PetscErrorCode MatGetInertia_SeqSBAIJSpooles(Mat F,int *nneg,int *nzero,int *npo
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJSpooles"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat B,Mat A,IS r,MatFactorInfo *info)
 { 
-  Mat            B = *F;
-
   PetscFunctionBegin;	
-  B->factor = MAT_FACTOR_CHOLESKY;  
   B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;
 #if !defined(PETSC_USE_COMPLEX)
   B->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
@@ -96,6 +93,7 @@ PetscErrorCode MatGetFactor_seqsbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJSpooles;
   B->ops->destroy                = MatDestroy_SeqSBAIJSpooles;  
+  B->factor                      = ftype;
   *F = B;
   PetscFunctionReturn(0);
 }

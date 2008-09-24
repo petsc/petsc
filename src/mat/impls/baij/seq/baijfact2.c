@@ -3076,12 +3076,12 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
    except that the data structure of Mat_SeqAIJ is slightly different.
    Not a good example of code reuse.
 */
-EXTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
+EXTERN PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat,Mat,MatDuplicateOption);
 EXTERN PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat,PetscTruth);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqBAIJ"
-PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b;
   IS             isicol;
@@ -3102,10 +3102,10 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
 
   if (!levels && row_identity && col_identity) {  /* special case copy the nonzero structure */
-    ierr = MatDuplicateNoCreate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
-    (*fact)->factor = MAT_FACTOR_LU;
-    b               = (Mat_SeqBAIJ*)(*fact)->data;
-    ierr = MatMissingDiagonal_SeqBAIJ(*fact,&flg,&dd);CHKERRQ(ierr);
+    ierr = MatDuplicateNoCreate_SeqBAIJ(fact,A,MAT_DO_NOT_COPY_VALUES);CHKERRQ(ierr);
+    fact->factor = MAT_FACTOR_ILU;
+    b               = (Mat_SeqBAIJ*)(fact)->data;
+    ierr = MatMissingDiagonal_SeqBAIJ(fact,&flg,&dd);CHKERRQ(ierr);
     if (flg) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",dd);
     b->row        = isrow;
     b->col        = iscol;
@@ -3113,7 +3113,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     ierr          = PetscObjectReference((PetscObject)iscol);CHKERRQ(ierr);
     b->icol       = isicol;
     b->pivotinblocks = (info->pivotinblocks) ? PETSC_TRUE : PETSC_FALSE;
-    ierr          = PetscMalloc(((*fact)->rmap->N+1+(*fact)->rmap->bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
+    ierr          = PetscMalloc(((fact)->rmap->N+1+(fact)->rmap->bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   } else { /* general case perform the symbolic factorization */
     ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
     ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
@@ -3255,9 +3255,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
 #endif
 
     /* put together the new matrix */
-    ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(*fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(*fact,isicol);CHKERRQ(ierr);
-    b    = (Mat_SeqBAIJ*)(*fact)->data;
+    ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(fact,isicol);CHKERRQ(ierr);
+    b    = (Mat_SeqBAIJ*)(fact)->data;
     b->free_a       = PETSC_TRUE;
     b->free_ij      = PETSC_TRUE;
     b->singlemalloc = PETSC_FALSE;
@@ -3277,15 +3277,14 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     ierr = PetscMalloc((bs*n+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
     /* In b structure:  Free imax, ilen, old a, old j.  
        Allocate dloc, solve_work, new a, new j */
-    ierr = PetscLogObjectMemory(*fact,(ainew[n]-n)*(sizeof(PetscInt))+bs2*ainew[n]*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(fact,(ainew[n]-n)*(sizeof(PetscInt))+bs2*ainew[n]*sizeof(PetscScalar));CHKERRQ(ierr);
     b->maxnz          = b->nz = ainew[n];
-    (*fact)->factor   = MAT_FACTOR_LU;
 
-    (*fact)->info.factor_mallocs    = reallocate;
-    (*fact)->info.fill_ratio_given  = f;
-    (*fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
+    (fact)->info.factor_mallocs    = reallocate;
+    (fact)->info.fill_ratio_given  = f;
+    (fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
   }
-  ierr = MatSeqBAIJSetNumericFactorization(*fact,(PetscTruth)(row_identity && col_identity));CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetNumericFactorization(fact,row_identity && col_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 

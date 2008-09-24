@@ -277,16 +277,16 @@ int main(int argc,char **args)
     if (lf==-1) {  /* Cholesky factor of sB (duplicate sA) */
       factinfo.fill = 5.0;   
       ierr = MatGetFactor(sB,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&sC);CHKERRQ(ierr);
-      ierr = MatCholeskyFactorSymbolic(sB,perm,&factinfo,&sC);CHKERRQ(ierr); 
+      ierr = MatCholeskyFactorSymbolic(sC,sB,perm,&factinfo);CHKERRQ(ierr); 
     } else if (!doIcc){
       break;
     } else {       /* incomplete Cholesky factor */
       factinfo.fill   = 5.0;
       factinfo.levels = lf;
       ierr = MatGetFactor(sB,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&sC);CHKERRQ(ierr);
-      ierr = MatICCFactorSymbolic(sB,perm,&factinfo,&sC);CHKERRQ(ierr);
+      ierr = MatICCFactorSymbolic(sC,sB,perm,&factinfo);CHKERRQ(ierr);
     }
-    ierr = MatCholeskyFactorNumeric(sB,&factinfo,&sC);CHKERRQ(ierr);
+    ierr = MatCholeskyFactorNumeric(sC,sB,&factinfo);CHKERRQ(ierr);
     /* MatView(sC, PETSC_VIEWER_DRAW_WORLD); */
 
     /* test MatGetDiagonal on numeric factor */

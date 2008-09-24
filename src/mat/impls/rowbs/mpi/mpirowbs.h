@@ -57,10 +57,10 @@ typedef struct {
   int        assembled_icc_storage; /* Indicates that the block solve assembly was performed for icc format */
 } Mat_MPIRowbs;
 
-EXTERN PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat,MatFactorInfo*,Mat*);
-EXTERN PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,IS,MatFactorInfo*,Mat *);
-EXTERN PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat,MatFactorInfo*,Mat*);
-EXTERN PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat,IS,IS,MatFactorInfo*,Mat *);
+EXTERN PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat,Mat,MatFactorInfo*);
+EXTERN PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat,Mat,IS,MatFactorInfo*);
+EXTERN PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat,Mat,MatFactorInfo*);
+EXTERN PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat,Mat,IS,IS,MatFactorInfo*);
 EXTERN PetscErrorCode MatSolve_MPIRowbs(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatForwardSolve_MPIRowbs(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatBackwardSolve_MPIRowbs(Mat,Vec,Vec);

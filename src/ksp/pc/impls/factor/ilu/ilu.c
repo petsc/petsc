@@ -545,7 +545,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       ierr = MatILUDTFactor(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
       ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     } else {
-      ierr = MatLUFactorNumeric(pc->pmat,&ilu->info,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatLUFactorNumeric(ilu->fact,pc->pmat,&ilu->info);CHKERRQ(ierr);
     }
   } else {
     if (!pc->setupcalled) {
@@ -558,7 +558,7 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,ilu->nonzerosalongdiagonaltol,ilu->row,ilu->col);CHKERRQ(ierr);
       }
       ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ILU,&ilu->fact);CHKERRQ(ierr);
-      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUFactorSymbolic(ilu->fact,pc->pmat,ilu->row,ilu->col,&ilu->info);CHKERRQ(ierr);
       ierr = MatGetInfo(ilu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ilu->actualfill = info.fill_ratio_needed;
       ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
@@ -577,12 +577,12 @@ static PetscErrorCode PCSetUp_ILU(PC pc)
       }
       ierr = MatDestroy(ilu->fact);CHKERRQ(ierr);
       ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ILU,&ilu->fact);CHKERRQ(ierr);
-      ierr = MatILUFactorSymbolic(pc->pmat,ilu->row,ilu->col,&ilu->info,&ilu->fact);CHKERRQ(ierr);
+      ierr = MatILUFactorSymbolic(ilu->fact,pc->pmat,ilu->row,ilu->col,&ilu->info);CHKERRQ(ierr);
       ierr = MatGetInfo(ilu->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       ilu->actualfill = info.fill_ratio_needed;
       ierr = PetscLogObjectParent(pc,ilu->fact);CHKERRQ(ierr);
     }
-    ierr = MatLUFactorNumeric(pc->pmat,&ilu->info,&ilu->fact);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric(ilu->fact,pc->pmat,&ilu->info);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

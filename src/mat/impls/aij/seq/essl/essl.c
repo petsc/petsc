@@ -64,10 +64,10 @@ PetscErrorCode MatSolve_Essl(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_Essl"
-PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F) 
+PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,MatFactorInfo *info) 
 {
   Mat_SeqAIJ     *aa=(Mat_SeqAIJ*)(A)->data;
-  Mat_Essl       *essl=(Mat_Essl*)(*F)->spptr;
+  Mat_Essl       *essl=(Mat_Essl*)(F)->spptr;
   PetscErrorCode ierr;
   int            i,one = 1;
 
@@ -89,17 +89,19 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat A,MatFactorInfo *info,Mat *F)
 
   dgsf(&one,&A->rmap->n,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
-  (*F)->assembled = PETSC_TRUE;
-  (*F)->preallocated = PETSC_TRUE;
+  B->ops->solve = MatSolve_Essl;
+  (F)->assembled = PETSC_TRUE;
+  (F)->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
 
+
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_Essl"
-PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) 
+PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,MatFactorInfo *info) 
 {
-  Mat            B;
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   int            len;
@@ -107,16 +109,6 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat 
   PetscReal      f = 1.0;
 
   PetscFunctionBegin;
-  if (A->cmap->N != A->rmap->N) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,A->rmap->n,A->cmap->n);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
-
-  B->ops->solve           = MatSolve_Essl;
-  B->ops->lufactornumeric = MatLUFactorNumeric_Essl;
-  B->factor               = MAT_FACTOR_LU;
-  
   essl = (Mat_Essl *)(B->spptr);
 
   /* allocate the work arrays required by ESSL */
@@ -135,9 +127,9 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat 
 
   ierr = PetscLogObjectMemory(B,len);CHKERRQ(ierr);
   B->ops->lufactornumeric  = MatLUFactorNumeric_Essl;
-  *F = B;
   PetscFunctionReturn(0);
 }
+
 
 /*MC
   MATESSL - MATESSL = "essl" - A matrix type providing direct solvers (LU) for sequential matrices 
@@ -179,7 +171,6 @@ PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
 
   ierr = PetscNewLog(B,Mat_Essl,&essl);CHKERRQ(ierr);
   B->spptr                 = essl;
-  B->ops->solve            = MatSolve_Essl;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_Essl;
   B->factor                = MAT_FACTOR_LU;
   *F                       = B;

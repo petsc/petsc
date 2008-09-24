@@ -2151,7 +2151,7 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
     ierr = PetscMalloc((inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(inA,(inA->rmap->N+inA->rmap->bs)*sizeof(PetscScalar));CHKERRQ(ierr);
   }
-  ierr = MatLUFactorNumeric(inA,info,&outA);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(outA,inA,info);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -2839,9 +2839,8 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDuplicateNoCreate_SeqBAIJ"
-PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
+PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat C,Mat A,MatDuplicateOption cpvalues)
 {
-  Mat            C = *B;
   Mat_SeqBAIJ    *c = (Mat_SeqBAIJ*)C->data,*a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,mbs = a->mbs,nz = a->nz,bs2 = a->bs2;
@@ -2906,7 +2905,6 @@ PetscErrorCode MatDuplicateNoCreate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Ma
     c->compressedrow.rindex = PETSC_NULL;
   }
   C->same_nonzero = A->same_nonzero;
-  *B = C;
   ierr = PetscFListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -2921,7 +2919,7 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,A->rmap->N,A->cmap->n,A->rmap->N,A->cmap->n);CHKERRQ(ierr);
   ierr = MatSetType(*B,MATSEQBAIJ);CHKERRQ(ierr);
-  ierr = MatDuplicateNoCreate_SeqBAIJ(A,cpvalues,B);
+  ierr = MatDuplicateNoCreate_SeqBAIJ(*B,A,cpvalues);
   PetscFunctionReturn(0);
 }
 

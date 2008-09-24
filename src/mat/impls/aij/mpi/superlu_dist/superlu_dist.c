@@ -43,11 +43,11 @@ typedef struct {
 } Mat_SuperLU_DIST;
 
 extern PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat,PetscViewer);
-extern PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat,MatFactorInfo *,Mat *);
+extern PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat,Mat,MatFactorInfo *);
 extern PetscErrorCode MatDestroy_SuperLU_DIST(Mat);
 extern PetscErrorCode MatView_SuperLU_DIST(Mat,PetscViewer);
 extern PetscErrorCode MatSolve_SuperLU_DIST(Mat,Vec,Vec);
-extern PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat,IS,IS,MatFactorInfo *,Mat *);
+extern PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat,Mat,IS,IS,MatFactorInfo *);
 extern PetscErrorCode MatDestroy_MPIAIJ(Mat);
 
 #undef __FUNCT__  
@@ -168,11 +168,11 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU_DIST"
-PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,MatFactorInfo *info)
 {
   Mat              *tseq,A_seq = PETSC_NULL;
   Mat_SeqAIJ       *aa,*bb;
-  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(*F)->spptr;
+  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(F)->spptr;
   PetscErrorCode   ierr;
   PetscInt         M=A->rmap->N,N=A->cmap->N,sinfo,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
                    m=A->rmap->n, irow,colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
@@ -358,11 +358,11 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
   }
   PStatFree(&stat);  
   if (size > 1){
-    F_diag = ((Mat_MPIAIJ *)(*F)->data)->A;
+    F_diag = ((Mat_MPIAIJ *)(F)->data)->A;
     F_diag->assembled = PETSC_TRUE; 
   }
-  (*F)->assembled    = PETSC_TRUE;
-  (*F)->preallocated = PETSC_TRUE;
+  (F)->assembled    = PETSC_TRUE;
+  (F)->preallocated = PETSC_TRUE;
   lu->options.Fact = FACTORED; /* The factored form of A is supplied. Local option used by this func. only */
   PetscFunctionReturn(0);
 }
@@ -370,9 +370,9 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SuperLU_DIST"
-PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
 {
-  Mat_SuperLU_DIST  *lu = (Mat_SuperLU_DIST*) (*F)->spptr;   
+  Mat_SuperLU_DIST  *lu = (Mat_SuperLU_DIST*) (F)->spptr;   
   PetscInt          M=A->rmap->N,N=A->cmap->N;
 
   PetscFunctionBegin;
@@ -382,8 +382,8 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   /* Initialize ScalePermstruct and LUstruct. */
   ScalePermstructInit(M, N, &lu->ScalePermstruct);
   LUstructInit(M, N, &lu->LUstruct); 
-  (*F)->ops->lufactornumeric  = MatLUFactorNumeric_SuperLU_DIST;
-  (*F)->ops->solve            = MatSolve_SuperLU_DIST;
+  (F)->ops->lufactornumeric  = MatLUFactorNumeric_SuperLU_DIST;
+  (F)->ops->solve            = MatSolve_SuperLU_DIST;
   PetscFunctionReturn(0); 
 }
 

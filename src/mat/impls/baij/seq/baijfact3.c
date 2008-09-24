@@ -114,7 +114,7 @@ PetscErrorCode MatSeqBAIJSetNumericFactorization(Mat inA,PetscTruth natural)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqBAIJ"
-PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *B)
+PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b;
   IS             isicol;
@@ -233,9 +233,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = PetscFree(fill);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(*B,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(*B,isicol);CHKERRQ(ierr);
-  b = (Mat_SeqBAIJ*)(*B)->data;
+  ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(B,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscLogObjectParent(B,isicol);CHKERRQ(ierr);
+  b = (Mat_SeqBAIJ*)(B)->data;
   b->singlemalloc = PETSC_FALSE;
   b->free_a     = PETSC_TRUE;
   b->free_ij    = PETSC_TRUE;
@@ -254,20 +254,19 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   ierr = PetscMalloc((bs*n+bs)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   /* In b structure:  Free imax, ilen, old a, old j.  
      Allocate idnew, solve_work, new a, new j */
-  ierr = PetscLogObjectMemory(*B,(ainew[n]-n)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(B,(ainew[n]-n)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ainew[n];
   
-  (*B)->factor                 = MAT_FACTOR_LU;
-  (*B)->info.factor_mallocs    = reallocs;
-  (*B)->info.fill_ratio_given  = f;
+  (B)->info.factor_mallocs    = reallocs;
+  (B)->info.fill_ratio_given  = f;
   if (ai[n] != 0) {
-    (*B)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
+    (B)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[n]);
   } else {
-    (*B)->info.fill_ratio_needed = 0.0;
+    (B)->info.fill_ratio_needed = 0.0;
   }
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetNumericFactorization(*B,(PetscTruth)(row_identity && col_identity));CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetNumericFactorization(B,row_identity && col_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }
 

@@ -48,8 +48,8 @@ PetscErrorCode MatRelax_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORTy
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERING_ND,&row,&col);CHKERRQ(ierr);
-      ierr = MatCholeskyFactorSymbolic(a->a[a->diag[i]],row,&info,a->diags+i);CHKERRQ(ierr);
-      ierr = MatCholeskyFactorNumeric(a->a[a->diag[i]],&info,a->diags+i);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorSymbolic(a->diags[i],a->a[a->diag[i]],row,&info);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorNumeric(a->diags[i],a->a[a->diag[i]],&info);CHKERRQ(ierr);
       ierr = ISDestroy(row);CHKERRQ(ierr);
       ierr = ISDestroy(col);CHKERRQ(ierr);
     }
@@ -153,8 +153,8 @@ PetscErrorCode MatRelax_BlockMat(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERING_ND,&row,&col);CHKERRQ(ierr);
-      ierr = MatLUFactorSymbolic(a->a[a->diag[i]],row,col,&info,a->diags+i);CHKERRQ(ierr);
-      ierr = MatLUFactorNumeric(a->a[a->diag[i]],&info,a->diags+i);CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(a->diags[i],a->a[a->diag[i]],row,col,&info);CHKERRQ(ierr);
+      ierr = MatLUFactorNumeric(a->diags[i],a->a[a->diag[i]],&info);CHKERRQ(ierr);
       ierr = ISDestroy(row);CHKERRQ(ierr);
       ierr = ISDestroy(col);CHKERRQ(ierr);
     }

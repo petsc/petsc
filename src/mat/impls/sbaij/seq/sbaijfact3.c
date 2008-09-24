@@ -6,9 +6,8 @@
 /* Version for when blocks are 3 by 3  */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqSBAIJ_3"
-PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat A,MatFactorInfo *info,Mat *B)
+PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_3(Mat C,Mat A,MatFactorInfo *info)
 {
-  Mat            C = *B;
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS             perm = b->row;
   PetscErrorCode ierr;

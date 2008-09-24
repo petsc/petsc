@@ -132,9 +132,9 @@ int main(int argc,char **args)
   for (i=0; i<its_max; i++){
     /* printf(" it %d\n",i); */
     ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-    ierr = MatLUFactorSymbolic(C,perm,iperm,&factinfo,&F);CHKERRQ(ierr);
+    ierr = MatLUFactorSymbolic(F,C,perm,iperm,&factinfo);CHKERRQ(ierr);
     for (j=0; j<1; j++){
-    ierr = MatLUFactorNumeric(C,&factinfo,&F);CHKERRQ(ierr);
+      ierr = MatLUFactorNumeric(F,C,&factinfo);CHKERRQ(ierr);
     }
     ierr = MatSolve(F,b,x);CHKERRQ(ierr);
     ierr = MatDestroy(F);CHKERRQ(ierr);

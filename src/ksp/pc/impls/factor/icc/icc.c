@@ -110,18 +110,18 @@ static PetscErrorCode PCSetup_ICC(PC pc)
 
   if (!pc->setupcalled) {
     ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&icc->fact);CHKERRQ(ierr);
-    ierr = MatICCFactorSymbolic(pc->pmat,perm,&icc->info,&icc->fact);CHKERRQ(ierr);
+    ierr = MatICCFactorSymbolic(icc->fact,pc->pmat,perm,&icc->info);CHKERRQ(ierr);
   } else if (pc->flag != SAME_NONZERO_PATTERN) {
     ierr = MatDestroy(icc->fact);CHKERRQ(ierr);
     ierr = MatGetFactor(pc->pmat,MAT_SOLVER_PETSC,MAT_FACTOR_ICC,&icc->fact);CHKERRQ(ierr);
-    ierr = MatICCFactorSymbolic(pc->pmat,perm,&icc->info,&icc->fact);CHKERRQ(ierr);
+    ierr = MatICCFactorSymbolic(icc->fact,pc->pmat,perm,&icc->info);CHKERRQ(ierr);
   }
   ierr = MatGetInfo(icc->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
   icc->actualfill = info.fill_ratio_needed;
 
   ierr = ISDestroy(cperm);CHKERRQ(ierr);
   ierr = ISDestroy(perm);CHKERRQ(ierr);
-  ierr = MatCholeskyFactorNumeric(pc->pmat,&icc->info,&icc->fact);CHKERRQ(ierr);
+  ierr = MatCholeskyFactorNumeric(icc->fact,pc->pmat,&icc->info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -237,7 +237,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
     } else {
         ierr = PetscViewerASCIIPrintf(viewer,"  ICC: %D levels of fill\n",(PetscInt)icc->info.levels);CHKERRQ(ierr);
     }
-    ierr = PetscViewerASCIIPrintf(viewer,"  ICC: factor fill ratio allocated %G\n",icc->info.fill);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  ICC: factor fill ratio allocated %G, ordering used %s\n",icc->info.fill,icc->ordering);CHKERRQ(ierr);
     if (icc->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using Manteuffel shift\n");CHKERRQ(ierr);}
     if (icc->info.shiftnz) {ierr = PetscViewerASCIIPrintf(viewer,"  ICC: using diagonal shift to prevent zero pivot\n");CHKERRQ(ierr);}
     if (icc->fact) {

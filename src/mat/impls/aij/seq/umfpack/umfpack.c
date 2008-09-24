@@ -120,9 +120,9 @@ PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_UMFPACK"
-PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,MatFactorInfo *info,Mat *F) 
+PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,MatFactorInfo *info) 
 {
-  Mat_UMFPACK *lu=(Mat_UMFPACK*)(*F)->spptr;
+  Mat_UMFPACK *lu=(Mat_UMFPACK*)(F)->spptr;
   PetscErrorCode ierr;
   UF_long     *ai=lu->ai,*aj=lu->aj,m=A->rmap->n,status;
   PetscScalar *av=lu->av;
@@ -167,6 +167,7 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,MatFactorInfo *info,Mat *F)
 
   lu->flg = SAME_NONZERO_PATTERN;
   lu->CleanUpUMFPACK = PETSC_TRUE;
+  (F)->ops->solve            = MatSolve_UMFPACK;
   PetscFunctionReturn(0);
 }
 
@@ -175,10 +176,10 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat A,MatFactorInfo *info,Mat *F)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_UMFPACK"
-PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F) 
+PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,MatFactorInfo *info) 
 {
   Mat_SeqAIJ     *mat=(Mat_SeqAIJ*)A->data;
-  Mat_UMFPACK    *lu = (Mat_UMFPACK*)((*F)->spptr);
+  Mat_UMFPACK    *lu = (Mat_UMFPACK*)(F->spptr);
   PetscErrorCode ierr;
   int            i,m=A->rmap->n,n=A->cmap->n,*ra;
   UF_long        status;
@@ -249,8 +250,7 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat A,IS r,IS c,MatFactorInfo *info,M
   lu->flg = DIFFERENT_NONZERO_PATTERN;
   lu->av  = av;
   lu->CleanUpUMFPACK = PETSC_TRUE;
-  (*F)->ops->lufactornumeric  = MatLUFactorNumeric_UMFPACK;
-  (*F)->ops->solve            = MatSolve_UMFPACK;
+  (F)->ops->lufactornumeric  = MatLUFactorNumeric_UMFPACK;
   PetscFunctionReturn(0);
 }
 

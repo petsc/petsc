@@ -12,9 +12,8 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat A,MatFactorInfo *info,Mat *B)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4(Mat C,Mat A,MatFactorInfo *info)
 {
-  Mat            C = *B;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;

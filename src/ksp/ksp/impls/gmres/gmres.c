@@ -331,9 +331,7 @@ static PetscErrorCode BuildGmresSoln(PetscScalar* nrs,Vec vs,Vec vdest,KSP ksp,P
 
   /* If it is < 0, no gmres steps have been performed */
   if (it < 0) {
-    if (vdest != vs) {
-      ierr = VecCopy(vs,vdest);CHKERRQ(ierr);
-    }
+    ierr = VecCopy(vs,vdest);CHKERRQ(ierr); /* VecCopy() is smart, exists immediately if vguess == vdest */
     PetscFunctionReturn(0);
   }
   if (*HH(it,it) == 0.0) SETERRQ2(PETSC_ERR_CONV_FAILED,"HH(it,it) is identically zero; it = %D GRS(it) = %G",it,PetscAbsScalar(*GRS(it)));
@@ -483,7 +481,7 @@ PetscErrorCode KSPBuildSolution_GMRES(KSP ksp,Vec  ptr,Vec *result)
   }
 
   ierr = BuildGmresSoln(gmres->nrs,ksp->vec_sol,ptr,ksp,gmres->it);CHKERRQ(ierr);
-  *result = ptr;
+  if (result) *result = ptr;
   PetscFunctionReturn(0);
 }
 

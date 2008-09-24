@@ -527,9 +527,7 @@ static PetscErrorCode BuildLgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
 
   /* If it is < 0, no lgmres steps have been performed */
   if (it < 0) {
-    if (vdest != vguess) {
-      ierr = VecCopy(vguess,vdest);CHKERRQ(ierr);
-    }
+    ierr = VecCopy(vguess,vdest);CHKERRQ(ierr); /* VecCopy() is smart, exists immediately if vguess == vdest */
     PetscFunctionReturn(0);
   }
 
@@ -789,7 +787,7 @@ PetscErrorCode KSPBuildSolution_LGMRES(KSP ksp,Vec ptr,Vec *result)
   }
  
   ierr = BuildLgmresSoln(lgmres->nrs,ksp->vec_sol,ptr,ksp,lgmres->it);CHKERRQ(ierr);
-  *result = ptr; 
+  if (result) *result = ptr; 
   
   PetscFunctionReturn(0);
 }

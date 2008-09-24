@@ -41,8 +41,8 @@ int main(int argc,char **args)
   ierr = ISView(rowperm,0);CHKERRQ(ierr);
   ierr = ISView(colperm,0);CHKERRQ(ierr);
   ierr = MatGetFactor(A,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&LU);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(A,rowperm,colperm,PETSC_NULL,&LU);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(A,PETSC_NULL,&LU);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(LU,A,rowperm,colperm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(LU,A,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatView(LU,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,PETSC_DECIDE,4);CHKERRQ(ierr);

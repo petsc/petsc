@@ -1870,9 +1870,9 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 
   ierr = MatMarkDiagonal_SeqAIJ(inA);CHKERRQ(ierr);
   if (row_identity && col_identity) {
-    ierr = MatLUFactorNumeric_SeqAIJ(inA,info,&outA);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric_SeqAIJ(outA,inA,info);CHKERRQ(ierr);
   } else {
-    ierr = MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(inA,info,&outA);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(outA,inA,info);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -3154,6 +3154,9 @@ extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_spooles(Mat,MatFact
 #if defined(PETSC_HAVE_UMFPACK)
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_umfpack(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_LUSOL)
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_lusol(Mat,MatFactorType,Mat*);
+#endif
 EXTERN_C_END
 
 
@@ -3202,6 +3205,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_ESSL)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_essl_C",
+                                     "MatGetFactor_seqaij_essl",
+                                     MatGetFactor_seqaij_essl);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_SUPERLU)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_superlu_C",
                                      "MatGetFactor_seqaij_superlu",
@@ -3221,6 +3229,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_umfpack_C",
                                      "MatGetFactor_seqaij_umfpack",
                                      MatGetFactor_seqaij_umfpack);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_LUSOL)
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_lusol_C",
+                                     "MatGetFactor_seqaij_lusol",
+                                     MatGetFactor_seqaij_lusol);CHKERRQ(ierr);
 #endif
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_petsc_C",
                                      "MatGetFactor_seqaij_petsc",
@@ -3284,9 +3297,8 @@ EXTERN_C_END
 /*
     Given a matrix generated with MatGetFactor() duplicates all the information in A into B
 */
-PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
+PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalues)
 {
-  Mat            C = *B;
   Mat_SeqAIJ     *c,*a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,m = A->rmap->n;
@@ -3386,7 +3398,7 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   ierr = MatSetType(*B,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatDuplicateNoCreate_SeqAIJ(A,cpvalues,B);CHKERRQ(ierr);
+  ierr = MatDuplicateNoCreate_SeqAIJ(*B,A,cpvalues);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

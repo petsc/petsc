@@ -240,10 +240,10 @@ PetscErrorCode MatSolve_LUSOL(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_LUSOL"
-PetscErrorCode MatLUFactorNumeric_LUSOL(Mat A,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a;
-  Mat_LUSOL      *lusol = (Mat_LUSOL*)(*F)->spptr;
+  Mat_LUSOL      *lusol = (Mat_LUSOL*)F->spptr;
   PetscErrorCode ierr;
   int            m, n, nz, nnz, status;
   int            i, rs, re;
@@ -338,8 +338,9 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat A,MatFactorInfo *info,Mat *F)
 
       factorizations++;
     } while (status == 7);
-  (*F)->assembled = PETSC_TRUE;
-  (*F)->preallocated = PETSC_TRUE;
+  F->ops->solve   = MatSolve_LUSOL;
+  F->assembled    = PETSC_TRUE;
+  F->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -374,14 +375,7 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,MatFactorInfo *info, 
   /* Create the factorization.                                            */
   /************************************************************************/
 
-  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
-
   B->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
-  B->ops->solve           = MatSolve_LUSOL;
-  B->factor               = MAT_FACTOR_LU;
   lusol                   = (Mat_LUSOL*)(B->spptr);
 
   /************************************************************************/

@@ -110,9 +110,9 @@ PetscErrorCode MatSolve_SeqSpooles(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_SeqSpooles"
-PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatFactorNumeric_SeqSpooles(Mat F,Mat A,MatFactorInfo *info)
 {  
-  Mat_Spooles        *lu = (Mat_Spooles*)(*F)->spptr;
+  Mat_Spooles        *lu = (Mat_Spooles*)(F)->spptr;
   ChvManager         *chvmanager ;
   Chv                *rootchv ;
   IVL                *adjIVL;
@@ -131,8 +131,8 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
   
   PetscFunctionBegin;
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      
-    (*F)->ops->solve   = MatSolve_SeqSpooles;
-    (*F)->assembled    = PETSC_TRUE; 
+    (F)->ops->solve   = MatSolve_SeqSpooles;
+    (F)->assembled    = PETSC_TRUE; 
     
     /* set Spooles options */
     ierr = SetSpoolesOptions(A, &lu->options);CHKERRQ(ierr); 
