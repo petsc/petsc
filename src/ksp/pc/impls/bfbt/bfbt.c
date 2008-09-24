@@ -323,14 +323,6 @@ PetscErrorCode PCSetUp_BFBt(PC pc)
   }
   ierr = PCBFBtCreateGtG(pc, ctx->G, ctx->inv_diag_M, &ctx->GtG);CHKERRQ(ierr);
   ierr = KSPSetOperators(ctx->ksp, ctx->GtG, ctx->GtG, SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  if (!pc->setupcalled) {	
-    const char *prefix;
-
-    /* -pc_bfbt_ksp_type <type>, -ksp_bfbt_pc_type <type> */
-    ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(ctx->ksp, prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(ctx->ksp, "pc_bfbt_");CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -401,6 +393,7 @@ PetscErrorCode PCCreate_BFBt(PC pc)
 {
   PC_BFBt       *ctx = (PC_BFBt *) pc->data;
   MPI_Comm       comm;
+  const char    *prefix;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -421,6 +414,9 @@ PetscErrorCode PCCreate_BFBt(PC pc)
   /* create internals */
   ierr = PetscObjectGetComm((PetscObject) pc, &comm);CHKERRQ(ierr);
   ierr = KSPCreate(comm, &ctx->ksp);CHKERRQ(ierr);
+  ierr = PCGetOptionsPrefix(pc, &prefix);CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(ctx->ksp, prefix);CHKERRQ(ierr);
+  ierr = KSPAppendOptionsPrefix(ctx->ksp, "pc_bfbt_");CHKERRQ(ierr);
   /* set ctx onto pc */
   pc->data = (void *) ctx;
   /* define operations */
