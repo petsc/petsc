@@ -123,7 +123,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,MatFact
   PetscInt       *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = A->rmap->bs,bs2=a->bs2;
   PetscInt       *idnew,idx,row,m,fm,nnz,nzi,reallocs = 0,nzbd,*im;
   PetscReal      f = 1.0;
-  PetscTruth     row_identity,col_identity;
+  PetscTruth     row_identity,col_identity,both_identity;
 
   PetscFunctionBegin;
   if (A->rmap->N != A->cmap->N) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be square");
@@ -266,7 +266,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,MatFact
   }
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetNumericFactorization(B,row_identity && col_identity);CHKERRQ(ierr);
+  both_identity = row_identity && col_identity;
+  ierr = MatSeqBAIJSetNumericFactorization(B,both_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0);
  }
 

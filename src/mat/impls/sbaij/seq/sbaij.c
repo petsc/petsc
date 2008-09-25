@@ -1543,7 +1543,6 @@ PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat B,PetscTruth natural)
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat, MatType,MatReuse,Mat*); 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat, MatType,MatReuse,Mat*); 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCholeskyFactorSymbolic_SeqSBAIJ(Mat,Mat,IS,MatFactorInfo*);
 EXTERN_C_END
 
   

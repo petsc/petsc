@@ -111,9 +111,9 @@ PetscErrorCode PCBFBtCreateGtG(PC pc, Mat G, Vec inv_diag_M, Mat *GtG)
     ierr = MatDiagonalSet(Ident, inv_diag_M, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr  = MatGetInfo(Ident, MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
-  nnz_I = info.nz_used;
+  nnz_I = (PetscInt) info.nz_used;
   ierr  = MatGetInfo(G,     MAT_GLOBAL_SUM, &info);CHKERRQ(ierr);
-  nnz_G = info.nz_used;
+  nnz_G = (PetscInt) info.nz_used;
   /* Not sure the best way to estimate the fill factor.
      GtG is a laplacian on the pressure space.
      This might tell us something useful... */

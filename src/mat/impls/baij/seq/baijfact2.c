@@ -3090,7 +3090,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,Mat
   PetscInt       *ainew,*ajnew,jmax,*fill,*xi,nz,*im,*ajfill,*flev;
   PetscInt       *dloc,idx,row,m,fm,nzf,nzi,reallocate = 0,dcount = 0;
   PetscInt       incrlev,nnz,i,bs = A->rmap->bs,bs2 = a->bs2,levels,diagonal_fill,dd;
-  PetscTruth     col_identity,row_identity,flg;
+  PetscTruth     col_identity,row_identity,both_identity,flg;
   PetscReal      f;
 
   PetscFunctionBegin;
@@ -3100,8 +3100,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,Mat
   ierr = ISInvertPermutation(iscol,PETSC_DECIDE,&isicol);CHKERRQ(ierr);
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(iscol,&col_identity);CHKERRQ(ierr);
+  both_identity = row_identity && col_identity;
 
-  if (!levels && row_identity && col_identity) {  /* special case copy the nonzero structure */
+  if (!levels && both_identity) {  /* special case copy the nonzero structure */
     ierr = MatDuplicateNoCreate_SeqBAIJ(fact,A,MAT_DO_NOT_COPY_VALUES);CHKERRQ(ierr);
     fact->factor = MAT_FACTOR_ILU;
     b               = (Mat_SeqBAIJ*)(fact)->data;
@@ -3284,7 +3285,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,Mat
     (fact)->info.fill_ratio_given  = f;
     (fact)->info.fill_ratio_needed = ((PetscReal)ainew[n])/((PetscReal)ai[prow]);
   }
-  ierr = MatSeqBAIJSetNumericFactorization(fact,row_identity && col_identity);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetNumericFactorization(fact,both_identity);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }
 
