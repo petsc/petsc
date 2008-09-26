@@ -47,7 +47,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineCreate(MPI_Comm comm,const char 
 
   if (!machine) machine = "\0";
   ierr = PetscInfo1(0,"Starting Matlab engine on %s\n",machine);CHKERRQ(ierr);
-  e->ep = engOpen(machine);
+  e->ep = engOpen("matlab -nodisplay -nojvm");
   if (!e->ep) SETERRQ1(PETSC_ERR_LIB,"Unable to start Matlab engine on %s\n",machine);
   engOutputBuffer(e->ep,e->buffer,1024);
 
@@ -201,9 +201,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEnginePrintOutput(PetscMatlabEngine me
   PetscMPIInt    rank;
 
   PetscFunctionBegin;  
-  ierr = MPI_Comm_rank(mengine->comm,&rank);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFPrintf(mengine->comm,fd,"[%d]%s",rank,mengine->buffer);CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(mengine->comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)mengine)->comm,&rank);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFPrintf(((PetscObject)mengine)->comm,fd,"[%d]%s",rank,mengine->buffer);CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(((PetscObject)mengine)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

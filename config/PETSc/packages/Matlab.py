@@ -39,8 +39,7 @@ class Configure(PETSc.package.Package):
 
   def alternateConfigureLibrary(self):
     if self.framework.argDB['with-matlab-engine']:
-      raise RuntimeError('--with-matlab-engine flag also requires --with-matlab flag\n")
-
+      raise RuntimeError('--with-matlab-engine flag also requires --with-matlab flag\n')
 
   def configureLibrary(self):
     '''Find a Matlab installation and check if it can work with PETSc'''
