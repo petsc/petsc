@@ -1695,7 +1695,8 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
   PetscErrorCode ierr;
   PetscInt       *smap,i,k,kstart,kend,oldcols = A->cmap->n,*lens;
   PetscInt       row,mat_i,*mat_j,tcol,first,step,*mat_ilen,sum,lensi;
-  PetscInt       *irow,*icol,nrows,ncols;
+  const PetscInt *irow,*icol;
+  PetscInt       nrows,ncols;
   PetscInt       *starts,*j_new,*i_new,*aj = a->j,*ai = a->i,ii,*ailen = a->ilen;
   MatScalar      *a_new,*mat_a;
   Mat            C;
@@ -1917,7 +1918,8 @@ PetscErrorCode MatIncreaseOverlap_SeqAIJ(Mat A,PetscInt is_max,IS is[],PetscInt 
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       row,i,j,k,l,m,n,*idx,*nidx,isz,val;
+  PetscInt       row,i,j,k,l,m,n,*nidx,isz,val;
+  const PetscInt *idx;
   PetscInt       start,end,*ai,*aj;
   PetscBT        table;
 
@@ -1974,8 +1976,9 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
 { 
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,nz,m = A->rmap->n,n = A->cmap->n,*col;
-  PetscInt       *row,*cnew,j,*lens;
+  PetscInt       i,nz,m = A->rmap->n,n = A->cmap->n;
+  const PetscInt *row,*col;
+  PetscInt       *cnew,j,*lens;
   IS             icolp,irowp;
   PetscInt       *cwork;
   PetscScalar    *vwork;

@@ -64,7 +64,8 @@ PetscErrorCode MatIncreaseOverlap_MPIBAIJ(Mat C,PetscInt imax,IS is[],PetscInt o
 static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[])
 {
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
-  PetscInt       **idx,*n,*w3,*w4,*rtable,**data,len,*idx_i;
+  const PetscInt **idx,*idx_i;
+  PetscInt       *n,*w3,*w4,*rtable,**data,len;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag1,tag2,*w2,*w1,nrqr;
   PetscInt       Mbs,i,j,k,**rbuf,row,proc,nrqs,msz,**outdat,**ptr;
@@ -630,13 +631,14 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   Mat_MPIBAIJ    *c = (Mat_MPIBAIJ*)C->data;
   Mat            A = c->A;
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)c->B->data,*mat;
-  PetscInt       **irow,**icol,*nrow,*ncol,*w3,*w4,start;
+  const PetscInt **irow,**icol,*irow_i;
+  PetscInt       *nrow,*ncol,*w3,*w4,start;
   PetscErrorCode ierr;
   PetscMPIInt    size,tag0,tag1,tag2,tag3,*w1,*w2,nrqr,idex,end,proc;
   PetscInt       **sbuf1,**sbuf2,rank,i,j,k,l,ct1,ct2,**rbuf1,row;
   PetscInt       nrqs,msz,**ptr,*req_size,*ctr,*pa,*tmp,tcol;
   PetscInt       **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2;
-  PetscInt       **lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;
+  PetscInt       **lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax;
   PetscInt       len,ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*lens_i;
   PetscInt       bs=C->rmap->bs,bs2=c->bs2,*a_j=a->j,*b_j=b->j,*cworkA,*cworkB;
   PetscInt       cstart = c->cstartbs,nzA,nzB,*a_i=a->i,*b_i=b->i,imark;
@@ -989,7 +991,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   /* Form the matrix */
   /* create col map */
   {
-    PetscInt *icol_i;
+    const PetscInt *icol_i;
 #if defined (PETSC_USE_CTABLE)
     /* Create row map*/
     ierr = PetscMalloc((1+ismax)*sizeof(PetscTable),&colmaps);CHKERRQ(ierr);

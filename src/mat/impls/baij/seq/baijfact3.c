@@ -119,8 +119,8 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,MatFact
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b;
   IS             isicol;
   PetscErrorCode ierr;
-  PetscInt       *r,*ic,i,n = a->mbs,*ai = a->i,*aj = a->j;
-  PetscInt       *ainew,*ajnew,jmax,*fill,*ajtmp,nz,bs = A->rmap->bs,bs2=a->bs2;
+  const PetscInt *r,*ic,*ai = a->i,*aj = a->j,*ajtmp;
+  PetscInt       n = a->mbs,*ainew,*ajnew,jmax,*fill,nz,bs = A->rmap->bs,bs2=a->bs2,i,*ajtmp2;
   PetscInt       *idnew,idx,row,m,fm,nnz,nzi,reallocs = 0,nzbd,*im;
   PetscReal      f = 1.0;
   PetscTruth     row_identity,col_identity,both_identity;
@@ -197,20 +197,20 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,MatFact
       jmax += maxadd;
 
       /* allocate a longer ajnew */
-      ierr  = PetscMalloc(jmax*sizeof(PetscInt),&ajtmp);CHKERRQ(ierr);
-      ierr  = PetscMemcpy(ajtmp,ajnew,ainew[i]*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr  = PetscMalloc(jmax*sizeof(PetscInt),&ajtmp2);CHKERRQ(ierr);
+      ierr  = PetscMemcpy(ajtmp2,ajnew,ainew[i]*sizeof(PetscInt));CHKERRQ(ierr);
       ierr  = PetscFree(ajnew);CHKERRQ(ierr);
-      ajnew = ajtmp;
+      ajnew = ajtmp2;
       reallocs++; /* count how many times we realloc */
     }
-    ajtmp = ajnew + ainew[i];
-    fm    = fill[n];
-    nzi   = 0;
-    im[i] = nnz;
+    ajtmp2 = ajnew + ainew[i];
+    fm     = fill[n];
+    nzi    = 0;
+    im[i]  = nnz;
     while (nnz--) {
       if (fm < i) nzi++;
-      *ajtmp++ = fm;
-      fm       = fill[fm];
+      *ajtmp2++ = fm;
+      fm        = fill[fm];
     }
     idnew[i] = ainew[i] + nzi;
   }

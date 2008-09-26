@@ -461,7 +461,8 @@ PetscErrorCode DataPartitionElements(GridData *gdata)
 PetscErrorCode DataMoveElements(GridData *gdata)
 {
   PetscErrorCode ierr;
-  PetscInt       *counts,i,*idx;
+  PetscInt       *counts,i,*tidx;
+  const PetscInt *idx;
   PetscMPIInt    rank,size;
   Vec            vele,veleold;
   PetscScalar    *array;
@@ -503,11 +504,13 @@ PetscErrorCode DataMoveElements(GridData *gdata)
     of the vectors of having a block size of 3, then there is one index in idx[] for each element)
   */
   ierr = ISGetIndices(isnum,&idx);CHKERRQ(ierr);
+  ierr = PetscMalloc(gdata->mlocal_ele*sizeof(PetscInt),&tidx);CHKERRQ(ierr);
   for (i=0; i<gdata->mlocal_ele; i++) {
-    idx[i] *= 3;
+    tidx[i] = 3*idx[i];
   }
-  ierr = ISCreateBlock(PETSC_COMM_WORLD,3,gdata->mlocal_ele,idx,&isscat);CHKERRQ(ierr);
+  ierr = ISCreateBlock(PETSC_COMM_WORLD,3,gdata->mlocal_ele,tidx,&isscat);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isnum,&idx);CHKERRQ(ierr);
+  ierr = PetscFree(tidx);CHKERRQ(ierr);
   ierr = ISDestroy(isnum);CHKERRQ(ierr);
 
   /* 

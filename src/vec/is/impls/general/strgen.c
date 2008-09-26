@@ -3,8 +3,8 @@
 
 EXTERN PetscErrorCode ISDuplicate_General(IS,IS *);
 EXTERN PetscErrorCode ISDestroy_General(IS);
-EXTERN PetscErrorCode ISGetIndices_General(IS,PetscInt **);
-EXTERN PetscErrorCode ISRestoreIndices_General(IS,PetscInt **);
+EXTERN PetscErrorCode ISGetIndices_General(IS,const PetscInt *[]);
+EXTERN PetscErrorCode ISRestoreIndices_General(IS,const PetscInt *[]);
 EXTERN PetscErrorCode ISGetSize_General(IS,PetscInt *);
 EXTERN PetscErrorCode ISGetLocalSize_General(IS,PetscInt *);
 EXTERN PetscErrorCode ISInvertPermutation_General(IS,PetscInt,IS *);
@@ -46,6 +46,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   PetscInt       step;
   IS_General     *sub;
   PetscTruth     stride,flg;
+  const PetscInt *idx;
 
   PetscFunctionBegin;
   ierr = ISStride(inis,&stride);CHKERRQ(ierr);
@@ -53,9 +54,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
 
   ierr = PetscNewLog(inis,IS_General,&sub);CHKERRQ(ierr);
   
-  ierr   = ISGetIndices(inis,&sub->idx);CHKERRQ(ierr);
-  /* Note: we never restore the indices, since we need to keep the copy generated */
   ierr   = ISGetLocalSize(inis,&sub->n);CHKERRQ(ierr);
+  ierr   = ISGetIndices(inis,&idx);CHKERRQ(ierr);
+  ierr   = PetscMalloc(sub->n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
+  ierr   = PetscMemcpy(sub->idx,idx,sub->n*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr   = ISRestoreIndices(inis,&idx);CHKERRQ(ierr);
 
   ierr = ISStrideGetInfo(inis,PETSC_NULL,&step);CHKERRQ(ierr);
   if (step > 0) sub->sorted = PETSC_TRUE; else sub->sorted = PETSC_FALSE;

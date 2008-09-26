@@ -456,7 +456,7 @@ PetscErrorCode VecView_Seq_Matlab(Vec vec,PetscViewer viewer)
   ierr = VecGetLocalSize(vec,&n);CHKERRQ(ierr);
   ierr = PetscObjectName((PetscObject)vec);CHKERRQ(ierr);
   ierr = VecGetArray(vec,&array);CHKERRQ(ierr);
-  ierr = PetscViewerMatlabPutArray(viewer,n,1,array,vec->name);CHKERRQ(ierr);
+  ierr = PetscViewerMatlabPutArray(viewer,n,1,array,((PetscObject)vec)->name);CHKERRQ(ierr);
   ierr = VecRestoreArray(vec,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

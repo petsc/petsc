@@ -11,9 +11,10 @@ static char help[] = "Tests IS stride routines.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt   i,n,*ii,start,stride;
-  IS         is;
-  PetscTruth flg;
+  PetscInt       i,n,start,stride;
+  const PetscInt *ii;
+  IS             is;
+  PetscTruth     flg;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 

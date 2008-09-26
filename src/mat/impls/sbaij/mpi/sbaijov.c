@@ -60,7 +60,8 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
   Mat_MPISBAIJ  *c = (Mat_MPISBAIJ*)C->data;
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag1,tag2,*len_s,nrqr,nrqs,*id_r1,*len_r1,flag,len;
-  PetscInt       idx,*idx_i,isz,col,*n,*data1,**data1_start,*data2,*data2_i,*data,*data_i,
+  const PetscInt *idx_i;
+  PetscInt       idx,isz,col,*n,*data1,**data1_start,*data2,*data2_i,*data,*data_i,
                  Mbs,i,j,k,*odata1,*odata2,
                  proc_id,**odata2_ptr,*ctable=0,*btable,len_max,len_est;
   PetscInt       proc_end=0,*iwork,len_unused,nodata2;

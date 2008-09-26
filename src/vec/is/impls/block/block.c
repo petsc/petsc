@@ -29,7 +29,7 @@ PetscErrorCode ISDestroy_Block(IS is)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_Block" 
-PetscErrorCode ISGetIndices_Block(IS in,PetscInt **idx)
+PetscErrorCode ISGetIndices_Block(IS in,const PetscInt *idx[])
 {
   IS_Block       *sub = (IS_Block*)in->data;
   PetscErrorCode ierr;
@@ -54,14 +54,14 @@ PetscErrorCode ISGetIndices_Block(IS in,PetscInt **idx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISRestoreIndices_Block" 
-PetscErrorCode ISRestoreIndices_Block(IS in,PetscInt **idx)
+PetscErrorCode ISRestoreIndices_Block(IS in,const PetscInt *idx[])
 {
   IS_Block       *sub = (IS_Block*)in->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (sub->bs != 1) {
-    ierr = PetscFree(*idx);CHKERRQ(ierr);
+    ierr = PetscFree(*(void**)idx);CHKERRQ(ierr);
   } else {
     if (*idx !=  sub->idx) {
       SETERRQ(PETSC_ERR_ARG_WRONG,"Must restore with value from ISGetIndices()");
@@ -312,7 +312,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscI
 
 .seealso: ISGetIndices(), ISBlockRestoreIndices()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS in,PetscInt *idx[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS in,const PetscInt *idx[])
 {
   IS_Block *sub;
 
@@ -347,7 +347,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISBlockGetIndices(IS in,PetscInt *idx[])
 
 .seealso: ISRestoreIndices(), ISBlockGetIndices()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices(IS is,PetscInt *idx[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISBlockRestoreIndices(IS is,const PetscInt *idx[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);

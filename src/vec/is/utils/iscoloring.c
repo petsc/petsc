@@ -314,7 +314,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt ncolor
 PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS part,IS *is)
 {
   MPI_Comm       comm;
-  PetscInt       i,*indices = PETSC_NULL,np,npt,n,*starts = PETSC_NULL,*sums = PETSC_NULL,*lsizes = PETSC_NULL,*newi = PETSC_NULL;
+  PetscInt       i,np,npt,n,*starts = PETSC_NULL,*sums = PETSC_NULL,*lsizes = PETSC_NULL,*newi = PETSC_NULL;
+  const PetscInt *indices = PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -399,7 +400,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningToNumbering(IS part,IS *is)
 PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt len,PetscInt count[])
 {
   MPI_Comm       comm;
-  PetscInt       i,*indices,n,*lsizes;
+  PetscInt       i,n,*lsizes;
+  const PetscInt *indices;
   PetscErrorCode ierr;
   PetscMPIInt    npp;
 
@@ -475,7 +477,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt len,Petsc
 PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
 {
   PetscErrorCode ierr;
-  PetscInt       *indices,n,*lindices,i,N,step,first;
+  PetscInt       *indices,n,i,N,step,first;
+  const PetscInt *lindices;
   MPI_Comm       comm;
   PetscMPIInt    size,*sizes = PETSC_NULL,*offsets = PETSC_NULL,nn;
   PetscTruth     stride;
@@ -502,7 +505,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
     
     ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
     ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
-    ierr = MPI_Allgatherv(lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
+    ierr = MPI_Allgatherv((void*)lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
     ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
     ierr = PetscFree(sizes);CHKERRQ(ierr);
 
@@ -656,7 +659,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm comm,PetscInt n,ISC
 PetscErrorCode PETSCVEC_DLLEXPORT ISComplement(IS is,PetscInt nmin,PetscInt nmax,IS *isout)
 {
   PetscErrorCode ierr;
-  PetscInt       *indices, n,i,j,cnt,*nindices;
+  const PetscInt *indices;
+  PetscInt       n,i,j,cnt,*nindices;
   PetscTruth     sorted;
 
   PetscFunctionBegin;

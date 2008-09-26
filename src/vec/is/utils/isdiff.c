@@ -33,7 +33,8 @@
 PetscErrorCode PETSCVEC_DLLEXPORT ISDifference(IS is1,IS is2,IS *isout)
 {
   PetscErrorCode ierr;
-  PetscInt       i,*i1,*i2,n1,n2,imin,imax,nout,*iout;
+  PetscInt       i,n1,n2,imin,imax,nout,*iout;
+  const PetscInt *i1,*i2;
   PetscBT        mask;
   MPI_Comm       comm;
 
@@ -124,7 +125,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSum(IS is1,IS is2,IS *is3)
   MPI_Comm       comm;
   PetscTruth     f;
   PetscMPIInt    size;
-  PetscInt       *i1,*i2,n1,n2,n3, p1,p2, *iout;
+  const PetscInt *i1,*i2;
+  PetscInt       n1,n2,n3, p1,p2, *iout;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -241,7 +243,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSum(IS is1,IS is2,IS *is3)
 PetscErrorCode ISExpand(IS is1,IS is2,IS *isout)
 {
   PetscErrorCode ierr;
-  PetscInt       i,*i1,*i2,n1,n2,imin,imax,nout,*iout;
+  PetscInt       i,n1,n2,imin,imax,nout,*iout;
+  const PetscInt *i1,*i2;
   PetscBT        mask;
   MPI_Comm       comm;
 

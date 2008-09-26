@@ -23,6 +23,7 @@ int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
   PetscInt       *indices,n;
+  const PetscInt *nindices;
   PetscMPIInt    rank;
   IS             is;
 
@@ -59,18 +60,18 @@ int main(int argc,char **argv)
   /*
      Get the indices in the index set
   */
-  ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
+  ierr = ISGetIndices(is,&nindices);CHKERRQ(ierr);
   /*
      Now any code that needs access to the list of integers
    has access to it here through indices[].
    */
-  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] First index %D\n",rank,indices[0]);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] First index %D\n",rank,nindices[0]);CHKERRQ(ierr);
 
   /*
      Once we no longer need access to the indices they should 
      returned to the system 
   */
-  ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(is,&nindices);CHKERRQ(ierr);
 
   /*
      One should destroy any PETSc object once one is completely

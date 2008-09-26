@@ -1266,7 +1266,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAbs(Vec v)
 PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec x, IS row, PetscTruth inv)
 {
   PetscScalar    *array, *newArray;
-  PetscInt       *idx;
+  const PetscInt *idx;
   PetscInt       i;
   PetscErrorCode ierr;
 

@@ -11,7 +11,8 @@ static char help[] = "Tests IS general routines.\n\n";
 int main(int argc,char **argv)
 {
   PetscMPIInt    rank,size;
-  PetscInt       i,n,*indices,*ii;
+  PetscInt       i,n,*indices;
+  const PetscInt *ii;
   IS             is,newis;
   PetscTruth     flg;
   PetscErrorCode ierr;

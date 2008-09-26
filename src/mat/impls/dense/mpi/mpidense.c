@@ -186,7 +186,8 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,PetscInt 
   Mat_MPIDense   *mat = (Mat_MPIDense*)A->data,*newmatd;
   Mat_SeqDense   *lmat = (Mat_SeqDense*)mat->A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,*irow,*icol,rstart,rend,nrows,ncols,nlrows,nlcols;
+  PetscInt       i,j,rstart,rend,nrows,ncols,nlrows,nlcols;
+  const PetscInt *irow,*icol;
   PetscScalar    *av,*bv,*v = lmat->v;
   Mat            newmat;
 

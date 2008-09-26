@@ -42,7 +42,7 @@ PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
     mxSetFieldByNumber(mx,0,6,mxCreateDoubleScalar((double)periodic));
     mxSetFieldByNumber(mx,0,7,mxCreateDoubleScalar((double)stencil));
     ierr = PetscObjectName((PetscObject)da);CHKERRQ(ierr);
-    ierr = PetscViewerMatlabPutVariable(viewer,da->name,mx);CHKERRQ(ierr);
+    ierr = PetscViewerMatlabPutVariable(viewer,((PetscObject)da)->name,mx);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

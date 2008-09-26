@@ -22,15 +22,15 @@ void PETSC_STDCALL isview_(IS *is,PetscViewer *vin,PetscErrorCode *ierr)
 
 void PETSC_STDCALL isgetindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
-  PetscInt   *lx;
+  const PetscInt *lx;
 
   *ierr = ISGetIndices(*x,&lx); if (*ierr) return;
-  *ia      = PetscIntAddressToFortran(fa,lx);
+  *ia   = PetscIntAddressToFortran(fa,(PetscInt*)lx);
 }
 
 void PETSC_STDCALL isrestoreindices_(IS *x,PetscInt *fa,size_t *ia,PetscErrorCode *ierr)
 {
-  PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
+  const PetscInt *lx = PetscIntAddressFromFortran(fa,*ia);
   *ierr = ISRestoreIndices(*x,&lx);
 }
 

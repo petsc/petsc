@@ -17,9 +17,8 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat C,Mat A,MatFactorInfo *info)
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
-  PetscInt       *r,*ic,i,j,n = a->mbs,*bi = b->i,*bj = b->j;
-  PetscInt       *ajtmpold,*ajtmp,nz,row;
-  PetscInt       *diag_offset = b->diag,idx,*ai=a->i,*aj=a->j,*pj;
+  const PetscInt *ajtmpold,*ajtmp,*diag_offset = b->diag,*r,*ic,*bi = b->i,*bj = b->j,*ai=a->i,*aj=a->j,*pj;
+  PetscInt       nz,row,i,j,n = a->mbs,idx;
   MatScalar      *pv,*v,*rtmp,*pc,*w,*x;
   MatScalar      p1,p2,p3,p4,m1,m2,m3,m4,m5,m6,m7,m8,m9,x1,x2,x3,x4;
   MatScalar      p5,p6,p7,p8,p9,x5,x6,x7,x8,x9,x10,x11,x12,x13,x14,x15,x16;

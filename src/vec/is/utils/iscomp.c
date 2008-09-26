@@ -37,7 +37,8 @@ $    is2 = {2, 3} {0, 1}
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISEqual(IS is1,IS is2,PetscTruth *flg)
 {
-  PetscInt       sz1,sz2,*ptr1,*ptr2,*a1,*a2;
+  PetscInt       sz1,sz2,*a1,*a2;
+  const PetscInt *ptr1,*ptr2;
   PetscTruth     flag;
   MPI_Comm       comm;
   PetscErrorCode ierr;

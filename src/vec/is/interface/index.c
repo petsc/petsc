@@ -130,7 +130,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSetPermutation(IS is)
 
     ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
-      PetscInt i,n,*idx,*iidx;
+      PetscInt       i,n,*idx;
+      const PetscInt *iidx;
     
       ierr = ISGetSize(is,&n);CHKERRQ(ierr);
       ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
@@ -311,7 +312,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISRestoreIndices(), ISGetIndicesF90()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISGetIndices(IS is,PetscInt *ptr[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISGetIndices(IS is,const PetscInt *ptr[])
 {
   PetscErrorCode ierr;
 
@@ -355,7 +356,7 @@ $       call ISRestoreIndices(is,is_array,i_is,ierr)
 
 .seealso: ISGetIndices(), ISRestoreIndicesF90()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreIndices(IS is,PetscInt *ptr[])
+PetscErrorCode PETSCVEC_DLLEXPORT ISRestoreIndices(IS is,const PetscInt *ptr[])
 {
   PetscErrorCode ierr;
 

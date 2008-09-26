@@ -14,16 +14,16 @@ EXTERN_C_BEGIN
 
 void PETSC_STDCALL isgetindicesf90_(IS *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  PetscInt*fa;
-  PetscInt len;
+  const PetscInt *fa;
+  PetscInt       len;
 
   *__ierr = ISGetIndices(*x,&fa); if (*__ierr) return;
   *__ierr = ISGetLocalSize(*x,&len);   if (*__ierr) return;
-  *__ierr = F90Array1dCreate(fa,PETSC_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *__ierr = F90Array1dCreate((void*)fa,PETSC_INT,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 void PETSC_STDCALL isrestoreindicesf90_(IS *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  PetscInt *fa;
+  const PetscInt *fa;
   *__ierr = F90Array1dAccess(ptr,PETSC_INT,(void**)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = F90Array1dDestroy(ptr,PETSC_INT PETSC_F90_2PTR_PARAM(ptrd));if (*__ierr) return;
   *__ierr = ISRestoreIndices(*x,&fa);

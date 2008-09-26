@@ -410,7 +410,7 @@ $ -ao_view : call AOView() at the conclusion of AOCreateMappingIS()
 PetscErrorCode PETSCDM_DLLEXPORT AOCreateMappingIS(IS isapp, IS ispetsc, AO *aoout)
 {
   MPI_Comm       comm;
-  PetscInt       *mypetsc, *myapp;
+  const PetscInt *mypetsc, *myapp;
   PetscInt       napp, npetsc;
   PetscErrorCode ierr;
 

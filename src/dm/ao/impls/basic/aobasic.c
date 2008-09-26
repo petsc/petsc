@@ -346,7 +346,8 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
 PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasicIS(IS isapp,IS ispetsc,AO *aoout)
 {
   PetscErrorCode ierr;
-  PetscInt       *mypetsc = 0,*myapp,napp,npetsc;
+  const PetscInt *mypetsc = 0,*myapp;
+  PetscInt       napp,npetsc;
   MPI_Comm       comm;
 
   PetscFunctionBegin;

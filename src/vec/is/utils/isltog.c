@@ -101,7 +101,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapp
 PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
-  PetscInt       n,*indices;
+  PetscInt       n;
+  const PetscInt *indices;
   MPI_Comm       comm;
 
   PetscFunctionBegin;
@@ -305,7 +306,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingDestroy(ISLocalToGlobalM
 PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis)
 {
   PetscErrorCode ierr;
-  PetscInt       n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
+  PetscInt       n,i,*idxmap,*idxout,Nmax = mapping->n;
+  const PetscInt *idxin;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);

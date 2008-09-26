@@ -39,9 +39,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderingSeqSBAIJ(Mat A,IS perm)
 {
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ *)A->data;
   PetscErrorCode ierr;
-  PetscInt       *r,i,mbs=a->mbs,*rip,*riip;
-  PetscInt       *ai,*aj;
-  PetscInt       *nzr,nz,jmin,jmax,j,k,ajk,len;
+  const PetscInt mbs=a->mbs,*rip,*riip;
+  PetscInt       *ai,*aj,*r;
+  PetscInt       *nzr,nz,jmin,jmax,j,k,ajk,len,i;
   IS             iperm;  /* inverse of perm */
 
   PetscFunctionBegin;

@@ -55,7 +55,7 @@ PetscErrorCode ISIdentity_General(IS is,PetscTruth *ident)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_General" 
-PetscErrorCode ISGetIndices_General(IS in,PetscInt **idx)
+PetscErrorCode ISGetIndices_General(IS in,const PetscInt *idx[])
 {
   IS_General *sub = (IS_General*)in->data;
 
@@ -66,7 +66,7 @@ PetscErrorCode ISGetIndices_General(IS in,PetscInt **idx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISRestoreIndices_General" 
-PetscErrorCode ISRestoreIndices_General(IS in,PetscInt **idx)
+PetscErrorCode ISRestoreIndices_General(IS in,const PetscInt *idx[])
 {
   IS_General *sub = (IS_General*)in->data;
 
@@ -104,7 +104,8 @@ PetscErrorCode ISGetLocalSize_General(IS is,PetscInt *size)
 PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
 {
   IS_General     *sub = (IS_General *)is->data;
-  PetscInt       i,*ii,n = sub->n,*idx = sub->idx,nstart;
+  PetscInt       i,*ii,n = sub->n,nstart;
+  const PetscInt *idx = sub->idx;
   PetscMPIInt    size;
   IS             istmp,nistmp;
   PetscErrorCode ierr;

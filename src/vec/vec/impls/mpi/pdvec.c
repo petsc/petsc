@@ -669,7 +669,7 @@ PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
     ierr = PetscFree(lens);CHKERRQ(ierr);
 
     ierr = PetscObjectName((PetscObject)xin);CHKERRQ(ierr);
-    ierr = PetscViewerMatlabPutArray(viewer,N,1,xx,xin->name);CHKERRQ(ierr);
+    ierr = PetscViewerMatlabPutArray(viewer,N,1,xx,((PetscObject)xin)->name);CHKERRQ(ierr);
 
     ierr = PetscFree(xx);CHKERRQ(ierr);
   } else {

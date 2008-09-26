@@ -1409,7 +1409,8 @@ static PetscErrorCode MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,PetscInt 
 {
   Mat_SeqDense   *mat = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,j,*irow,*icol,nrows,ncols;
+  PetscInt       i,j,nrows,ncols;
+  const PetscInt *irow,*icol;
   PetscScalar    *av,*bv,*v = mat->v;
   Mat            newmat;
 

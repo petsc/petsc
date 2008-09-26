@@ -11,7 +11,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   Mat_MPIAIJ            *aij = (Mat_MPIAIJ*)mat->data;
   PetscErrorCode        ierr;
   PetscMPIInt           size,*ncolsonproc,*disp,nn;
-  PetscInt              i,*is,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
+  PetscInt              i,n,nrows,j,k,m,*rows = 0,*A_ci,*A_cj,ncols,col;
+  const PetscInt        *is;
   PetscInt              nis = iscoloring->n,nctot,*cols,*B_ci,*B_cj;
   PetscInt              *rowhit,M = mat->rmap->n,cstart = mat->cmap->rstart,cend = mat->cmap->rend,colb;
   PetscInt              *columnsforrow,l;
@@ -86,7 +87,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
       /* Get complete list of columns for color on each processor */
       ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-      ierr = MPI_Allgatherv(is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgatherv((void*)is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
       ierr = PetscFree(ncolsonproc);CHKERRQ(ierr);
     } else if (ctype == IS_COLORING_GHOSTED){
       /* Determine local number of columns of this color on this process, including ghost points */

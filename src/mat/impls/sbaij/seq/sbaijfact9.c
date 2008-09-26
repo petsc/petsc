@@ -11,8 +11,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_6(Mat C,Mat A,MatFactorInfo *in
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS             perm = b->row;
   PetscErrorCode ierr;
-  PetscInt       *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
-  PetscInt       *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  const PetscInt *ai,*aj,*perm_ptr,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscInt       i,j,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*d,*w,*wp,u0,u1,u2,u3,u4,u5,u6,u7,u8,u9,u10,u11,u12;
   MatScalar      u13,u14,u15,u16,u17,u18,u19,u20,u21,u22,u23,u24,u25,u26,u27;

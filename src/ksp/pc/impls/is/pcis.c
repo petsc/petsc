@@ -336,7 +336,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISApplySchur(PC pc, Vec v, Vec vec1_B, Vec v
 #define __FUNCT__ "PCISScatterArrayNToVecB"
 PetscErrorCode PETSCKSP_DLLEXPORT PCISScatterArrayNToVecB (PetscScalar *array_N, Vec v_B, InsertMode imode, ScatterMode smode, PC pc)
 {
-  PetscInt       i, *idex;
+  PetscInt       i;
+  const PetscInt *idex;
   PetscErrorCode ierr;
   PetscScalar    *array_B;
   PC_IS          *pcis = (PC_IS*)(pc->data);

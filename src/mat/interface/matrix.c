@@ -3911,7 +3911,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPermute(Mat mat,IS row,IS col,Mat *B)
 PetscErrorCode PETSCMAT_DLLEXPORT MatPermuteSparsify(Mat A, PetscInt band, PetscReal frac, PetscReal tol, IS rowp, IS colp, Mat *B)
 {
   IS                irowp, icolp;
-  PetscInt          *rows, *cols;
+  const PetscInt    *rows, *cols;
   PetscInt          M, N, locRowStart, locRowEnd;
   PetscInt          nz, newNz;
   const PetscInt    *cwork;
@@ -4712,7 +4712,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
 PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat mat,IS is,PetscScalar diag)
 {
   PetscInt       numRows;
-  PetscInt       *rows;
+  const PetscInt *rows;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -4777,8 +4777,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
   if (mat->ops->zerorowslocal) {
     ierr = (*mat->ops->zerorowslocal)(mat,numRows,rows,diag);CHKERRQ(ierr);
   } else {
-    IS       is, newis;
-    PetscInt *newRows;
+    IS             is, newis;
+    const PetscInt *newRows;
 
     if (!mat->mapping) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to provide local to global mapping to matrix first");
     ierr = ISCreateGeneral(PETSC_COMM_SELF,numRows,rows,&is);CHKERRQ(ierr);
@@ -4832,7 +4832,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocalIS(Mat mat,IS is,PetscScalar d
 {
   PetscErrorCode ierr;
   PetscInt       numRows;
-  PetscInt       *rows;
+  const PetscInt *rows;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
