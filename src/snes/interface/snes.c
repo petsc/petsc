@@ -1106,7 +1106,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESComputeJacobian(SNES snes,Vec X,Mat *A,Ma
   PetscStackPop;
   ierr = PetscLogEventEnd(SNES_JacobianEval,snes,X,*A,*B);CHKERRQ(ierr);
 
-  if (snes->lagpreconditioner == -1) {
+  if (snes->lagpreconditioner == -2) {
+    ierr = PetscInfo(snes,"Rebuilding preconditioner exactly once since lag is -2\n");CHKERRQ(ierr);
+    snes->lagpreconditioner = -1;
+  } else if (snes->lagpreconditioner == -1) {
     *flg = SAME_PRECONDITIONER;
     ierr = PetscInfo(snes,"Reusing preconditioner because lag is -1\n");CHKERRQ(ierr);
   } else if (snes->lagpreconditioner > 1 && snes->iter % snes->lagpreconditioner) {
@@ -1387,7 +1390,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
    Input Parameters:
 +  snes - the SNES context
 -  lag - -1 indicates NEVER rebuild, 1 means rebuild every time the Jacobian is computed within a single nonlinear solve, 2 means every second time
-         the Jacobian is built etc.
+         the Jacobian is built etc. -2 indicates rebuild preconditioner at next chance but then never rebuild after that
 
    Options Database Keys: 
 .    -snes_lag_preconditioner <lag>
@@ -1408,7 +1411,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagPreconditioner(SNES snes,PetscInt l
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  if (lag < -1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -1, 1 or greater");
+  if (lag < -2) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag must be -2, -1, 1 or greater");
   if (!lag) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Lag cannot be 0");
   snes->lagpreconditioner = lag;
   PetscFunctionReturn(0);
@@ -1426,7 +1429,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetLagPreconditioner(SNES snes,PetscInt l
  
    Output Parameter:
 .   lag - -1 indicates NEVER rebuild, 1 means rebuild every time the Jacobian is computed within a single nonlinear solve, 2 means every second time
-         the Jacobian is built etc.
+         the Jacobian is built etc. -2 indicates rebuild preconditioner at next chance but then never rebuild after that
 
    Options Database Keys: 
 .    -snes_lag_preconditioner <lag>
