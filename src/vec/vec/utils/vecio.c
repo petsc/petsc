@@ -95,6 +95,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
+
+  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PNETCDF)
   if (isnetcdf) {
     ierr = VecLoad_Netcdf(viewer,newvec);CHKERRQ(ierr);
@@ -129,6 +131,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
     if (!r) SETERRQ1(PETSC_ERR_SUP,"VecLoad is not supported for type: %s",outtype);
     ierr = (*r)(viewer,outtype,newvec);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

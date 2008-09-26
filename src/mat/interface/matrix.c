@@ -579,6 +579,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   if (!mat->assembled) SETERRQ(PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
+  ierr = PetscLogEventBegin(MAT_View,mat,viewer,0,0);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
@@ -613,6 +614,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
   }
+  ierr = PetscLogEventEnd(MAT_View,mat,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

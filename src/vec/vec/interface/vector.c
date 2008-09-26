@@ -686,6 +686,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
   PetscCheckSameComm(vec,1,viewer,2);
   if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
 
+  ierr = PetscLogEventBegin(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   /*
      Check if default viewer has been overridden, but user request it anyways
   */
@@ -697,6 +698,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
   } else {
     ierr = (*vec->ops->view)(vec,viewer);CHKERRQ(ierr);
   }
+  ierr = PetscLogEventEnd(VEC_View,vec,viewer,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1007,7 +1009,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
   if (!vec->ops->loadintovector) {
     SETERRQ(PETSC_ERR_SUP,"Vector does not support load");
   }
+  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = (*vec->ops->loadintovector)(viewer,vec);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
