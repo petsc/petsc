@@ -83,6 +83,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO ao)
 }
 
 
+#include "src/vec/is/impls/general/general.h"
 /* ---------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "AOPetscToApplicationIS" 
@@ -114,7 +115,8 @@ PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO ao)
 PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationIS(AO ao,IS is)
 {
   PetscErrorCode ierr;
-  PetscInt       n,*ia;
+  PetscInt       n;
+  PetscInt       *ia;
   PetscTruth     flag;
 
   PetscFunctionBegin;
@@ -126,11 +128,9 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationIS(AO ao,IS is)
   if (flag) {
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
   }
-
+  ia   = ((IS_General*)is->data)->idx;
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&ia);CHKERRQ(ierr);
   ierr = (*ao->ops->petsctoapplication)(ao,n,ia);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -176,10 +176,9 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscIS(AO ao,IS is)
     ierr = ISStrideToGeneral(is);CHKERRQ(ierr);
   }
 
+  ia   = ((IS_General*)is->data)->idx;
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&ia);CHKERRQ(ierr);
   ierr = (*ao->ops->applicationtopetsc)(ao,n,ia);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(is,&ia);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

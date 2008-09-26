@@ -10,7 +10,8 @@ int main(int argc,char **args)
   Vec            x,y,b,s1,s2;      
   Mat            A;           /* linear system matrix */ 
   Mat            sA;         /* symmetric part of the matrices */ 
-  PetscInt       n,mbs=16,bs=1,nz=3,prob=2,i,j,col[3],row,Ii,J,n1,*ip_ptr;
+  PetscInt       n,mbs=16,bs=1,nz=3,prob=2,i,j,col[3],row,Ii,J,n1;
+  const PetscInt *ip_ptr;
   PetscScalar    neg_one = -1.0,value[3],alpha=0.1;
   PetscMPIInt    size;
   PetscErrorCode ierr;
@@ -232,12 +233,19 @@ int main(int argc,char **args)
   ip = isrow;
 
   if (reorder){
+    IS       nip;
+    PetscInt *nip_ptr;
+    ierr = PetscMalloc(mbs*sizeof(PetscInt),&nip_ptr);CHKERRQ(ierr);
     ierr = ISGetIndices(ip,&ip_ptr);CHKERRQ(ierr);
-    i = ip_ptr[1]; ip_ptr[1] = ip_ptr[mbs-2]; ip_ptr[mbs-2] = i; 
-    i = ip_ptr[0]; ip_ptr[0] = ip_ptr[mbs-1]; ip_ptr[mbs-1] = i; 
-    ierr= ISRestoreIndices(ip,&ip_ptr);CHKERRQ(ierr);
+    ierr = PetscMemcpy(nip_ptr,ip_ptr,mbs*sizeof(PetscInt));CHKERRQ(ierr);
+    i = nip_ptr[1]; nip_ptr[1] = nip_ptr[mbs-2]; nip_ptr[mbs-2] = i; 
+    i = nip_ptr[0]; nip_ptr[0] = nip_ptr[mbs-1]; nip_ptr[mbs-1] = i; 
+    ierr = ISRestoreIndices(ip,&ip_ptr);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,mbs,nip_ptr,&nip);CHKERRQ(ierr);
+    ierr = PetscFree(nip_ptr);CHKERRQ(ierr);
 
     ierr = MatReorderingSeqSBAIJ(sA, ip);CHKERRQ(ierr);  
+    ierr = ISDestroy(nip);CHKERRQ(ierr);
     /* ierr = ISView(ip, VIEWER_STDOUT_SELF);CHKERRQ(ierr); 
        ierr = MatView(sA,VIEWER_DRAW_SELF);CHKERRQ(ierr); */
   }

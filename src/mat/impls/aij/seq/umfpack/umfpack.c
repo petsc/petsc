@@ -181,7 +181,8 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,MatFactorInfo *
   Mat_SeqAIJ     *mat=(Mat_SeqAIJ*)A->data;
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)(F->spptr);
   PetscErrorCode ierr;
-  int            i,m=A->rmap->n,n=A->cmap->n,*ra;
+  int            i,m=A->rmap->n,n=A->cmap->n;
+  const PetscInt *ra;
   UF_long        status;
   PetscScalar    *av=mat->a;
   

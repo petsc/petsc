@@ -52,8 +52,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,MatFac
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b;
   PetscErrorCode ierr;
-  PetscInt       *rip,i,mbs = a->mbs,*ai,*aj;
-  PetscInt       *jutmp,bs = A->rmap->bs,bs2=a->bs2;
+  const PetscInt *rip,*ai,*aj;
+  PetscInt       i,mbs = a->mbs,*jutmp,bs = A->rmap->bs,bs2=a->bs2;
   PetscInt       m,reallocs = 0,prow;
   PetscInt       *jl,*q,jmin,jmax,juidx,nzk,qm,*iu,*ju,k,j,vj,umax,maxadd;
   PetscReal      f = info->fill;
@@ -227,7 +227,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,MatFact
   PetscErrorCode     ierr;
   PetscTruth         perm_identity,missing;
   PetscReal          fill = info->fill;
-  PetscInt           *rip,i,mbs=a->mbs,bs=A->rmap->bs,*ai,*aj,reallocs=0,prow,d;
+  const PetscInt     *rip,*ai,*aj;
+  PetscInt           i,mbs=a->mbs,bs=A->rmap->bs,reallocs=0,prow,d;
   PetscInt           *jl,jmin,jmax,nzk,*ui,k,j,*il,nextprow;
   PetscInt           nlnk,*lnk,ncols,*cols,*uj,**ui_ptr,*uj_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
@@ -405,8 +406,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_N(Mat C,Mat A,MatFactorInfo *in
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS             perm = b->row;
   PetscErrorCode ierr;
-  PetscInt       *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
-  PetscInt       *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  const PetscInt *ai,*aj,*perm_ptr,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscInt       i,j;
+  PetscInt       *a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   PetscInt       bs=A->rmap->bs,bs2 = a->bs2,bslog = 0;
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
@@ -706,8 +708,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_2(Mat C,Mat A,MatFactorInfo *in
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data,*b = (Mat_SeqSBAIJ *)C->data;
   IS             perm = b->row;
   PetscErrorCode ierr;
-  PetscInt       *perm_ptr,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
-  PetscInt       *ai,*aj,*a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
+  const PetscInt *ai,*aj,*perm_ptr;
+  PetscInt       i,j,mbs=a->mbs,*bi=b->i,*bj=b->j;
+  PetscInt       *a2anew,k,k1,jmin,jmax,*jl,*il,vj,nexti,ili;
   MatScalar      *ba = b->a,*aa,*ap,*dk,*uik;
   MatScalar      *u,*diag,*rtmp,*rtmp_ptr;
   PetscReal      shift = info->shiftinblocks;
@@ -1022,8 +1025,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1(Mat C,Mat A,MatFactorInfo *in
   Mat_SeqSBAIJ   *a=(Mat_SeqSBAIJ*)A->data,*b=(Mat_SeqSBAIJ *)C->data;
   IS             ip=b->row;
   PetscErrorCode ierr;
-  PetscInt       *rip,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j,*bcol;
-  PetscInt       *ai,*aj,*a2anew;
+  const PetscInt *ai,*aj,*rip;
+  PetscInt       *a2anew,i,j,mbs=a->mbs,*bi=b->i,*bj=b->j,*bcol;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa,dk,uikdi;
   PetscReal      zeropivot,rs,shiftnz;

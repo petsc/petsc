@@ -39,8 +39,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISPermutation(IS,PetscTruth*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSetIdentity(IS);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISIdentity(IS,PetscTruth*);
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetIndices(IS,PetscInt *[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreIndices(IS,PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetIndices(IS,const PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISRestoreIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISGetLocalSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISInvertPermutation(IS,PetscInt,IS*);
@@ -53,8 +53,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISSum(IS,IS,IS*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISExpand(IS,IS,IS*);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlock(IS,PetscTruth*);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetIndices(IS,PetscInt *[]);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockRestoreIndices(IS,PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetIndices(IS,const PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockRestoreIndices(IS,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetLocalSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetSize(IS,PetscInt *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISBlockGetBlockSize(IS,PetscInt *);

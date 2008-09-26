@@ -2172,11 +2172,12 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   BSspmat       *A = c->A;
   Mat_SeqAIJ    *mat;
   PetscErrorCode ierr;
-  int         **irow,**icol,*nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
+  const int      **irow,**icol,*irow_i;
+  int         *nrow,*ncol,*w1,*w2,*w3,*w4,*rtable,start,end,size;
   int         **sbuf1,**sbuf2,rank,m,i,j,k,l,ct1,ct2,**rbuf1,row,proc;
   int         nrqs,msz,**ptr,idx,*req_size,*ctr,*pa,*tmp,tcol,nrqr;
   int         **rbuf3,*req_source,**sbuf_aj,**rbuf2,max1,max2,**rmap;
-  int         **cmap,**lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax,*irow_i;
+  int         **cmap,**lens,is_no,ncols,*cols,mat_i,*mat_j,tmp2,jmax;
   int         len,ctr_j,*sbuf1_j,*sbuf_aj_i,*rbuf1_i,kmax,*cmap_i,*lens_i;
   int         *rmap_i,tag0,tag1,tag2,tag3;
   MPI_Request *s_waits1,*r_waits1,*s_waits2,*r_waits2,*r_waits3;
@@ -2786,7 +2787,8 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   Mat_SeqAIJ    *matA,*matB; /* on prac , off proc part of submat */
   Mat_MPIAIJ    *mat;  /* submat->data */
   PetscErrorCode ierr;
-  int    *irow,*icol,nrow,ncol,*rtable,size,rank,tag0,tag1,tag2,tag3;
+  const int      *irow,*icol;
+  int    nrow,ncol,*rtable,size,rank,tag0,tag1,tag2,tag3;
   int    *w1,*w2,*pa,nrqs,nrqr,msz,row_t;
   int    i,j,k,l,len,jmax,proc,idx;
   int    **sbuf1,**sbuf2,**rbuf1,**rbuf2,*req_size,**sbuf3,**rbuf3;

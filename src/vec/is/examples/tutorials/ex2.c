@@ -22,8 +22,9 @@ T*/
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,*indices,first,step;
+  PetscInt       i,n,first,step;
   IS             set;
+  const PetscInt *indices;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
       

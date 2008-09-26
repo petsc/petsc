@@ -7,7 +7,8 @@
 PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
 {
   PetscErrorCode ierr;
-  PetscInt       i,*is,n,nrows,N = mat->cmap->N,j,k,m,*rows,*ci,*cj,ncols,col;
+  PetscInt       i,n,nrows,N = mat->cmap->N,j,k,m,*rows,*ci,*cj,ncols,col;
+  const PetscInt *is;
   PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,l;
   IS             *isa;
   PetscTruth     done,flg;

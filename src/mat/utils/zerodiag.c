@@ -66,6 +66,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal(Mat mat,PetscReal
 EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 
+#include "src/vec/is/impls/general/general.h"
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatReorderForNonzeroDiagonal_SeqAIJ"
@@ -78,10 +80,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,Pe
   IS             icis;
 
   PetscFunctionBegin;
-  ierr = ISGetIndices(ris,&row);CHKERRQ(ierr);
-  ierr = ISGetIndices(cis,&col);CHKERRQ(ierr);
+  /* access the indices of the IS directly, because it changes them */
+  row  = ((IS_General*)ris->data)->idx;
+  col  = ((IS_General*)cis->data)->idx;
   ierr = ISInvertPermutation(cis,PETSC_DECIDE,&icis);CHKERRQ(ierr);
-  ierr = ISGetIndices(icis,&icol);CHKERRQ(ierr);
+  icol  = ((IS_General*)icis->data)->idx;
   ierr = MatGetSize(mat,&m,&n);CHKERRQ(ierr);
 
   for (prow=0; prow<n; prow++) {
@@ -143,9 +146,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal_SeqAIJ(Mat mat,Pe
     }
     ierr = MatRestoreRow_SeqAIJ(mat,row[prow],&nz,&j,&v);CHKERRQ(ierr);
   }
-  ierr = ISRestoreIndices(ris,&row);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(cis,&col);CHKERRQ(ierr);
-  ierr = ISRestoreIndices(icis,&icol);CHKERRQ(ierr);
   ierr = ISDestroy(icis);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

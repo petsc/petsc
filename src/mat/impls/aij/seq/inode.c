@@ -781,8 +781,9 @@ PetscErrorCode MatSolve_Inode(Mat A,Vec bb,Vec xx)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
   IS                iscol = a->col,isrow = a->row;
   PetscErrorCode    ierr;
-  PetscInt          *r,*c,i,j,n = A->rmap->n,*ai = a->i,nz,*a_j = a->j;
-  PetscInt          node_max,*ns,row,nsz,aii,*vi,*ad,*aj,i0,i1,*rout,*cout;
+  const PetscInt    *r,*c,*rout,*cout;
+  PetscInt          i,j,n = A->rmap->n,*ai = a->i,nz,*a_j = a->j;
+  PetscInt          node_max,*ns,row,nsz,aii,*vi,*ad,*aj,i0,i1;
   PetscScalar       *x,*tmp,*tmps,tmp0,tmp1;
   PetscScalar       sum1,sum2,sum3,sum4,sum5;
   const MatScalar   *v1,*v2,*v3,*v4,*v5,*a_a = a->a,*aa;
@@ -1176,9 +1177,10 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat B,Mat A,MatFactorInfo *info)
   Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data,*b = (Mat_SeqAIJ*)C->data;
   IS                iscol = b->col,isrow = b->row,isicol = b->icol;
   PetscErrorCode    ierr;
-  PetscInt          *r,*ic,*c,n = A->rmap->n,*bi = b->i; 
+  const PetscInt    *r,*ic,*c,*ics;
+  PetscInt          n = A->rmap->n,*bi = b->i; 
   PetscInt          *bj = b->j,*nbj=b->j +1,*ajtmp,*bjtmp,nz,nz_tmp,row,prow;
-  PetscInt          *ics,i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nodesz;
+  PetscInt          i,j,idx,*ai = a->i,*aj = a->j,*bd = b->diag,node_max,nodesz;
   PetscInt          *ns,*tmp_vec1,*tmp_vec2,*nsmap,*pj;
   PetscScalar       mul1,mul2,mul3,tmp;
   MatScalar         *pc1,*pc2,*pc3,*ba = b->a,*pv,*rtmp11,*rtmp22,*rtmp33;
@@ -2195,7 +2197,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInodeAdjustForInodes_Inode(Mat A,IS *rperm,
 {
   Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       m = A->rmap->n,n = A->cmap->n,i,j,*ridx,*cidx,nslim_row = a->inode.node_count;
+  PetscInt       m = A->rmap->n,n = A->cmap->n,i,j,nslim_row = a->inode.node_count;
+  const PetscInt *ridx,*cidx;
   PetscInt       row,col,*permr,*permc,*ns_row =  a->inode.size,*tns,start_val,end_val,indx;
   PetscInt       nslim_col,*ns_col;
   IS             ris = *rperm,cis = *cperm;

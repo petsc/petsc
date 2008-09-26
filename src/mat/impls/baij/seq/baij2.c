@@ -11,7 +11,8 @@ PetscErrorCode MatIncreaseOverlap_SeqBAIJ(Mat A,PetscInt is_max,IS is[],PetscInt
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       row,i,j,k,l,m,n,*idx,*nidx,isz,val,ival;
+  PetscInt       row,i,j,k,l,m,n,*nidx,isz,val,ival;
+  const PetscInt *idx;
   PetscInt       start,end,*ai,*aj,bs,*nidx2;
   PetscBT        table;
 
@@ -79,7 +80,8 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,PetscInt 
   PetscErrorCode ierr;
   PetscInt       *smap,i,k,kstart,kend,oldcols = a->nbs,*lens;
   PetscInt       row,mat_i,*mat_j,tcol,*mat_ilen;
-  PetscInt       *irow,*icol,nrows,ncols,*ssmap,bs=A->rmap->bs,bs2=a->bs2;
+  const PetscInt *irow,*icol;
+  PetscInt       nrows,ncols,*ssmap,bs=A->rmap->bs,bs2=a->bs2;
   PetscInt       *aj = a->j,*ai = a->i;
   MatScalar      *mat_a;
   Mat            C;
@@ -165,7 +167,8 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ(Mat A,IS isrow,IS iscol,PetscInt cs,MatRe
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   IS             is1,is2;
   PetscErrorCode ierr;
-  PetscInt       *vary,*iary,*irow,*icol,nrows,ncols,i,bs=A->rmap->bs,count;
+  PetscInt       *vary,*iary,nrows,ncols,i,bs=A->rmap->bs,count;
+  const PetscInt *irow,*icol;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);

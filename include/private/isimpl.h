@@ -12,8 +12,8 @@ and matrices.
 struct _ISOps {
   PetscErrorCode (*getsize)(IS,PetscInt*);
   PetscErrorCode (*getlocalsize)(IS,PetscInt*);
-  PetscErrorCode (*getindices)(IS,PetscInt**);
-  PetscErrorCode (*restoreindices)(IS,PetscInt**);
+  PetscErrorCode (*getindices)(IS,const PetscInt*[]);
+  PetscErrorCode (*restoreindices)(IS,const PetscInt*[]);
   PetscErrorCode (*invertpermutation)(IS,PetscInt,IS*);
   PetscErrorCode (*sortindices)(IS);
   PetscErrorCode (*sorted)(IS,PetscTruth *);

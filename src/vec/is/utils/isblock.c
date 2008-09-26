@@ -24,7 +24,8 @@
 PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode     ierr;
-  PetscInt           isz,len,i,j,*idx,ival,Nbs;
+  PetscInt           isz,len,i,j,ival,Nbs;
+  const PetscInt     *idx;
 #if defined (PETSC_USE_CTABLE)
   PetscTable         gid1_lid1;
   PetscInt           tt, gid1, *nidx;
@@ -96,7 +97,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt b
 PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode ierr;
-  PetscInt       i,j,k,val,len,*idx,*nidx,*idx_local,bbs;
+  PetscInt       i,j,k,val,len,*nidx,bbs;
+  const PetscInt *idx,*idx_local;
   PetscTruth     flg,isblock;
 #if defined (PETSC_USE_CTABLE)
   PetscInt       maxsz;
@@ -166,7 +168,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesSorted(PetscInt n,PetscInt bs
 PetscErrorCode PETSCVEC_DLLEXPORT ISExpandIndicesGeneral(PetscInt n,PetscInt bs,PetscInt imax,const IS is_in[],IS is_out[])
 {
   PetscErrorCode ierr;
-  PetscInt       len,i,j,k,*idx,*nidx;
+  PetscInt       len,i,j,k,*nidx;
+  const PetscInt *idx;
 #if defined (PETSC_USE_CTABLE)
   PetscInt       maxsz;
 #else

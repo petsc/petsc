@@ -12,7 +12,8 @@ PetscErrorCode MatIncreaseOverlap_SeqSBAIJ(Mat A,PetscInt is_max,IS is[],PetscIn
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       brow,i,j,k,l,mbs,n,*idx,*nidx,isz,bcol,bcol_max,start,end,*ai,*aj,bs,*nidx2;
+  PetscInt       brow,i,j,k,l,mbs,n,*nidx,isz,bcol,bcol_max,start,end,*ai,*aj,bs,*nidx2;
+  const PetscInt *idx;
   PetscBT        table,table0; 
 
   PetscFunctionBegin;
@@ -98,8 +99,8 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,PetscInt
   PetscErrorCode ierr;
   PetscInt       *smap,i,k,kstart,kend,oldcols = a->mbs,*lens;
   PetscInt       row,mat_i,*mat_j,tcol,*mat_ilen;
-  PetscInt       *irow,nrows,*ssmap,bs=A->rmap->bs,bs2=a->bs2;
-  PetscInt       *aj = a->j,*ai = a->i;
+  PetscInt       nrows,*ssmap,bs=A->rmap->bs,bs2=a->bs2;
+  const PetscInt *irow,*aj = a->j,*ai = a->i;
   MatScalar      *mat_a;
   Mat            C;
   PetscTruth     flag;
@@ -182,7 +183,8 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ(Mat A,IS isrow,IS iscol,PetscInt cs,MatR
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   IS             is1;
   PetscErrorCode ierr;
-  PetscInt       *vary,*iary,*irow,nrows,i,bs=A->rmap->bs,count;
+  PetscInt       *vary,*iary,nrows,i,bs=A->rmap->bs,count;
+  const PetscInt *irow;
 
   PetscFunctionBegin;
   if (isrow != iscol) SETERRQ(PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 

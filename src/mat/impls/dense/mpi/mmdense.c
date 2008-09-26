@@ -83,10 +83,11 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,tag0,tag1,idex,end,i;
   PetscInt       N = C->cmap->N,rstart = C->rmap->rstart,count;
-  PetscInt       **irow,**icol,*nrow,*ncol,*w1,*w3,*w4,*rtable,start;
+  const PetscInt **irow,**icol,*irow_i;
+  PetscInt       *nrow,*ncol,*w1,*w3,*w4,*rtable,start;
   PetscInt       **sbuf1,m,j,k,l,ct1,**rbuf1,row,proc;
   PetscInt       nrqs,msz,**ptr,*ctr,*pa,*tmp,bsz,nrqr;
-  PetscInt       is_no,jmax,*irow_i,**rmap,*rmap_i;
+  PetscInt       is_no,jmax,**rmap,*rmap_i;
   PetscInt       len,ctr_j,*sbuf1_j,*rbuf1_i;
   MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2;
   MPI_Status     *r_status1,*r_status2,*s_status1,*s_status2;

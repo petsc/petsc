@@ -42,15 +42,15 @@ PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
 #define __FUNCT__ "ISInvertPermutation_Stride" 
 PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
 {
-  IS_Stride *isstride = (IS_Stride*)is->data;
+  IS_Stride      *isstride = (IS_Stride*)is->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (is->isidentity) {
     ierr = ISCreateStride(PETSC_COMM_SELF,isstride->n,0,1,perm);CHKERRQ(ierr);
   } else {
-    IS  tmp;
-    PetscInt *indices,n = isstride->n;
+    IS             tmp;
+    const PetscInt *indices,n = isstride->n;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISCreateGeneral(((PetscObject)is)->comm,n,indices,&tmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(tmp); CHKERRQ(ierr);
@@ -153,29 +153,29 @@ PetscErrorCode ISDestroy_Stride(IS is)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices_Stride" 
-PetscErrorCode ISGetIndices_Stride(IS in,PetscInt **idx)
+PetscErrorCode ISGetIndices_Stride(IS in,const PetscInt *idx[])
 {
-  IS_Stride *sub = (IS_Stride*)in->data;
+  IS_Stride      *sub = (IS_Stride*)in->data;
   PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt       i,**dx = (PetscInt**)idx;
 
   PetscFunctionBegin;
   ierr      = PetscMalloc(sub->n*sizeof(PetscInt),idx);CHKERRQ(ierr);
   if (sub->n) {
-    (*idx)[0] = sub->first;
-    for (i=1; i<sub->n; i++) (*idx)[i] = (*idx)[i-1] + sub->step;
+    (*dx)[0] = sub->first;
+    for (i=1; i<sub->n; i++) (*dx)[i] = (*dx)[i-1] + sub->step;
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISRestoreIndices_Stride" 
-PetscErrorCode ISRestoreIndices_Stride(IS in,PetscInt **idx)
+PetscErrorCode ISRestoreIndices_Stride(IS in,const PetscInt *idx[])
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFree(*idx);CHKERRQ(ierr);
+  ierr = PetscFree(*(void**)idx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
