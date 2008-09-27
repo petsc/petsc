@@ -498,7 +498,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
   sctx.shift_hi   = 0;
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
-  if (info->shiftpd && info->shiftnz) info->shiftnz = 0.0; 
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
     PetscInt *aai = a->i;
     ddiag          = a->diag;
@@ -603,10 +602,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
   if (sctx.nshift){
-    if (info->shiftnz) {
-      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (info->shiftpd) {
+     if (info->shiftpd) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+    } else if (info->shiftnz) {
+      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -653,7 +652,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,MatFactorIn
   sctx.shift_hi   = 0;
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
-  if (info->shiftpd && info->shiftnz) info->shiftnz = 0.0; 
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
     sctx.shift_top = 0;
     for (i=0; i<n; i++) {
@@ -756,11 +754,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,MatFactorIn
   A->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(A->cmap->n);CHKERRQ(ierr);
   if (sctx.nshift){
-    if (info->shiftnz) {
-      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (info->shiftpd) {
+    if (info->shiftpd) {
       ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
-    }
+    } else if (info->shiftnz) {
+      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+    } 
   }
   PetscFunctionReturn(0);
 }

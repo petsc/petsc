@@ -436,11 +436,11 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat C,Mat A,MatFactorInfo *inf
   C->preallocated = PETSC_TRUE;
   ierr = PetscLogFlops(C->rmap->N);CHKERRQ(ierr);
   if (sctx.nshift){
-    if (shiftnz) {
-      ierr = PetscInfo2(A,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    } else if (shiftpd) {
+    if (shiftpd) {
       ierr = PetscInfo2(A,"number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    }
+    } else if (shiftnz) {
+      ierr = PetscInfo2(A,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+    } 
   }
   PetscFunctionReturn(0);
 }
