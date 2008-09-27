@@ -15,7 +15,7 @@
 static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 {
   KSP_BiCGStabL  *bcgsl = (KSP_BiCGStabL *) ksp->data;
-  PetscScalar    alpha, beta, nu, omega, sigma;
+  PetscScalar    alpha, beta, omega, sigma;
   PetscScalar    rho0, rho1;
   PetscReal      kappa0, kappaA, kappa1;
   PetscReal      ghat, epsilon, abstol;
@@ -88,10 +88,8 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   ierr = KSPGetTolerances(ksp, &epsilon, &abstol, PETSC_NULL, &maxit);CHKERRQ(ierr);
 
   for (k=0; k<maxit; k += bcgsl->ell) {
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
     ksp->its   = k;
     ksp->rnorm = zeta;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
     KSPLogResidualHistory(ksp, zeta);
     KSPMonitor(ksp, ksp->its, zeta);
@@ -112,10 +110,9 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       }
       beta = alpha*(rho1/rho0);
       rho0 = rho1;
-      nu = -beta;
       for (i=0; i<=j; i++) {
         /* u_i <- r_i - beta*u_i */
-        ierr = VecAYPX(VVU[i], nu, VVR[i]);CHKERRQ(ierr);
+        ierr = VecAYPX(VVU[i], -beta, VVR[i]);CHKERRQ(ierr);
       }
       /* u_{j+1} <- inv(K)*A*u_j */
       ierr = KSP_PCApplyBAorAB(ksp, VVU[j], VVU[j+1], VTM);CHKERRQ(ierr);
@@ -131,10 +128,9 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       /* x <- x + alpha*u_0 */
       ierr = VecAXPY(VX, alpha, VVU[0]);CHKERRQ(ierr);
 
-      nu = -alpha;
       for (i=0; i<=j; i++) {
         /* r_i <- r_i - alpha*u_{i+1} */
-        ierr = VecAXPY(VVR[i], nu, VVU[i+1]);CHKERRQ(ierr);
+        ierr = VecAXPY(VVR[i], -alpha, VVU[i+1]);CHKERRQ(ierr);
       }
 
       /* r_{j+1} <- inv(K)*A*r_j */
@@ -249,12 +245,9 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     }
 
     for (i=1; i<=bcgsl->ell; i++) {
-      nu = -AY0c[i];
-      ierr = VecAXPY(VVU[0], nu, VVU[i]);CHKERRQ(ierr);
-      nu = AY0c[i];
-      ierr = VecAXPY(VX, nu, VVR[i-1]);CHKERRQ(ierr);
-      nu = -AY0c[i];
-      ierr = VecAXPY(VVR[0], nu, VVR[i]);CHKERRQ(ierr);
+      ierr = VecAXPY(VVU[0], -AY0c[i], VVU[i]);CHKERRQ(ierr);
+      ierr = VecAXPY(VX, AY0c[i], VVR[i-1]);CHKERRQ(ierr);
+      ierr = VecAXPY(VVR[0], -AY0c[i], VVR[i]);CHKERRQ(ierr);
     }
 
     ierr = VecNorm(VVR[0], NORM_2, &zeta);CHKERRQ(ierr);
@@ -268,13 +261,11 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       if ((zeta<bcgsl->delta*rnmax_true && zeta0<=rnmax_true) || bUpdateX) {
         /* r0 <- b-inv(K)*A*X */
         ierr = KSP_PCApplyBAorAB(ksp, VX, VVR[0], VTM);CHKERRQ(ierr);
-        nu = -1;
-        ierr = VecAYPX(VVR[0], nu, VB);CHKERRQ(ierr);
+        ierr = VecAYPX(VVR[0], -1.0, VB);CHKERRQ(ierr);
         rnmax_true = zeta;
 
         if (bUpdateX) {
-          nu = 1;
-          ierr = VecAXPY(VXR,nu,VX);CHKERRQ(ierr);
+          ierr = VecAXPY(VXR,1.0,VX);CHKERRQ(ierr);
           ierr = VecSet(VX,0.0);CHKERRQ(ierr);
           ierr = VecCopy(VVR[0], VB);CHKERRQ(ierr);
           rnmax_computed = zeta;
@@ -282,12 +273,8 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
       }
     }
   }
-
-  KSPMonitor(ksp, ksp->its, zeta);
-
   if (bcgsl->delta>0.0) {
-    nu   = 1;
-    ierr = VecAXPY(VX,nu,VXR);CHKERRQ(ierr);
+    ierr = VecAXPY(VX,1.0,VXR);CHKERRQ(ierr);
   }
 
   ierr = (*ksp->converged)(ksp, k, zeta, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
