@@ -1051,6 +1051,86 @@ PetscErrorCode VecReciprocal_Default(Vec v)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "VecExp"
+/*@
+  VecExp - Replaces each component of a vector by e^x_i
+
+  Not collective
+
+  Input Parameter:
+. v - The vector
+
+  Output Parameter:
+. v - The vector of exponents
+
+  Level: beginner
+
+.seealso:  VecLog(), VecAbs(), VecSqrt()
+
+.keywords: vector, sqrt, square root
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecExp(Vec v)
+{
+  PetscScalar    *x;
+  PetscInt       i, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_COOKIE,1);
+  if (v->ops->exp) {
+    ierr = (*v->ops->exp)(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+    ierr = VecGetArray(v, &x);CHKERRQ(ierr);
+    for(i = 0; i < n; i++) {
+      x[i] = PetscExpScalar(x[i]);
+    }
+    ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecLog"
+/*@
+  VecLog - Replaces each component of a vector by log(e^x_i)
+
+  Not collective
+
+  Input Parameter:
+. v - The vector
+
+  Output Parameter:
+. v - The vector of logs
+
+  Level: beginner
+
+.seealso:  VecExp(), VecAbs(), VecSqrt()
+
+.keywords: vector, sqrt, square root
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecLog(Vec v)
+{
+  PetscScalar    *x;
+  PetscInt       i, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(v, VEC_COOKIE,1);
+  if (v->ops->log) {
+    ierr = (*v->ops->log)(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+    ierr = VecGetArray(v, &x);CHKERRQ(ierr);
+    for(i = 0; i < n; i++) {
+      x[i] = PetscLogScalar(x[i]);
+    }
+    ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "VecSqrt"
 /*@
   VecSqrt - Replaces each component of a vector by the square root of its magnitude.
@@ -1077,12 +1157,16 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSqrt(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE,1);
-  ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
-  ierr = VecGetArray(v, &x);CHKERRQ(ierr);
-  for(i = 0; i < n; i++) {
-    x[i] = sqrt(PetscAbsScalar(x[i]));
+  if (v->ops->sqrt) {
+    ierr = (*v->ops->sqrt)(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetLocalSize(v, &n);CHKERRQ(ierr);
+    ierr = VecGetArray(v, &x);CHKERRQ(ierr);
+    for(i = 0; i < n; i++) {
+      x[i] = sqrt(PetscAbsScalar(x[i]));
+    }
+    ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1205,12 +1289,16 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec v,PetscScalar shift)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
-  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr); 
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    x[i] += shift;
+  if (v->ops->shift) {
+    ierr = (*v->ops->shift)(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr); 
+    ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      x[i] += shift;
+    }
+    ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1237,12 +1325,16 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAbs(Vec v)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
-  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
-  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
-  for (i=0; i<n; i++) {
-    x[i] = PetscAbsScalar(x[i]);
+  if (v->ops->abs) {
+    ierr = (*v->ops->abs)(v);CHKERRQ(ierr);
+  } else {
+    ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+    ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      x[i] = PetscAbsScalar(x[i]);
+    }
+    ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   }
-  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

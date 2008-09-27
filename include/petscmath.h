@@ -40,6 +40,7 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_2INT;
 #define PetscSqrtScalar(a)    std::sqrt(a)
 #define PetscPowScalar(a,b)   std::pow(a,b)
 #define PetscExpScalar(a)     std::exp(a)
+#define PetscLogScalar(a)     std::log(a)
 #define PetscSinScalar(a)     std::sin(a)
 #define PetscCosScalar(a)     std::cos(a)
 
@@ -70,6 +71,7 @@ typedef float complex PetscScalar;
 #define PetscSqrtScalar(a)    csqrtf(a)
 #define PetscPowScalar(a,b)   cpowf(a,b)
 #define PetscExpScalar(a)     cexpf(a)
+#define PetscLogScalar(a)     clogf(a)
 #define PetscSinScalar(a)     csinf(a)
 #define PetscCosScalar(a)     ccosf(a)
 #elif defined(PETSC_USE_LONG_DOUBLE)
@@ -82,6 +84,7 @@ typedef long double complex PetscScalar;
 #define PetscSqrtScalar(a)    csqrtl(a)
 #define PetscPowScalar(a,b)   cpowl(a,b)
 #define PetscExpScalar(a)     cexpl(a)
+#define PetscLogScalar(a)     clogl(a)
 #define PetscSinScalar(a)     csinl(a)
 #define PetscCosScalar(a)     ccosl(a)
 
@@ -95,6 +98,7 @@ typedef double complex PetscScalar;
 #define PetscSqrtScalar(a)    csqrt(a)
 #define PetscPowScalar(a,b)   cpow(a,b)
 #define PetscExpScalar(a)     cexp(a)
+#define PetscLogScalar(a)     clog(a)
 #define PetscSinScalar(a)     csin(a)
 #define PetscCosScalar(a)     ccos(a)
 #endif
@@ -135,6 +139,7 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;
 #  define PetscSqrtScalar(a)    sqrt(a)
 #  define PetscPowScalar(a,b)   pow(a,b)
 #  define PetscExpScalar(a)     exp(a)
+#  define PetscLogScalar(a)     log(a)
 #  define PetscSinScalar(a)     sin(a)
 #  define PetscCosScalar(a)     cos(a)
 

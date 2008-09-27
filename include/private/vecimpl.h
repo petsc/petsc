@@ -95,6 +95,11 @@ struct _VecOps {
   PetscErrorCode (*pointwisemaxabs)(Vec,Vec,Vec);
   PetscErrorCode (*pointwisemin)(Vec,Vec,Vec);
   PetscErrorCode (*getvalues)(Vec,PetscInt,const PetscInt[],PetscScalar[]);
+  PetscErrorCode (*sqrt)(Vec);
+  PetscErrorCode (*abs)(Vec);
+  PetscErrorCode (*exp)(Vec);
+  PetscErrorCode (*log)(Vec);
+  PetscErrorCode (*shift)(Vec);
 };
 
 /* 
