@@ -11,7 +11,7 @@
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJSpooles"
-PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_Spooles    *lu;
 

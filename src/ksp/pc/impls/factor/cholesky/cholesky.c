@@ -8,15 +8,15 @@
 #include "private/pcimpl.h"                /*I "petscpc.h" I*/
 
 typedef struct {
-  Mat             fact;             /* factored matrix */
-  PetscReal       actualfill;       /* actual fill in factor */
-  PetscTruth      inplace;          /* flag indicating in-place factorization */
-  IS              row,col;          /* index sets used for reordering */
-  MatOrderingType ordering;         /* matrix ordering */
-  PetscTruth      reuseordering;    /* reuses previous reordering computed */
-  PetscTruth      reusefill;        /* reuse fill from previous Cholesky */
-  MatFactorInfo   info;
-  MatSolverPackage   solvertype;
+  Mat              fact;             /* factored matrix */
+  PetscReal        actualfill;       /* actual fill in factor */
+  PetscTruth       inplace;          /* flag indicating in-place factorization */
+  IS               row,col;          /* index sets used for reordering */
+  MatOrderingType  ordering;         /* matrix ordering */
+  PetscTruth       reuseordering;    /* reuses previous reordering computed */
+  PetscTruth       reusefill;        /* reuse fill from previous Cholesky */
+  MatFactorInfo    info;
+  MatSolverPackage solvertype;
 } PC_Cholesky;
 
 EXTERN_C_BEGIN
@@ -76,7 +76,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_Cholesky(PC pc,PetscTruth s
   PetscFunctionBegin;
   dir = (PC_Cholesky*)pc->data;
   if (shift) {
-    dir->info.shift_fraction = 0.0;
     dir->info.shiftpd = 1.0;
   } else {
     dir->info.shiftpd = 0.0;
@@ -511,7 +510,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   dir->info.fill              = 5.0;
   dir->info.shiftnz           = 0.0;
   dir->info.shiftpd           = 0.0; /* false */
-  dir->info.shift_fraction    = 0.0;
   dir->info.pivotinblocks     = 1.0;
   dir->col                    = 0;
   dir->row                    = 0;

@@ -300,7 +300,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_MUMPS"
-PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,MatFactorInfo *info) 
+PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info) 
 {
   Mat_MUMPS      *lu =(Mat_MUMPS*)(F)->spptr; 
   PetscErrorCode ierr;
@@ -533,7 +533,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,MatFactorInfo *info)
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_AIJMUMPS"
-PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_MUMPS      *lu = (Mat_MUMPS*)F->spptr;   
 
@@ -548,7 +548,7 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat F,Mat A,IS r,IS c,MatFactorInfo 
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SBAIJMUMPS"
-PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat F,Mat A,IS r,MatFactorInfo *info) 
+PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat F,Mat A,IS r,const MatFactorInfo *info) 
 {
   Mat_MUMPS      *lu = (Mat_MUMPS*)(F)->spptr;   
 

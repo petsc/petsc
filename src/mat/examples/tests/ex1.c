@@ -74,7 +74,6 @@ int main(int argc,char **argv)
   luinfo.zeropivot      = 1.e-12;
   luinfo.pivotinblocks  = 1.0;
   luinfo.shiftpd        = 0.0; /* false */
-  luinfo.shift_fraction = 0.0;
   ierr = MatLUFactor(fact,perm,perm,&luinfo);CHKERRQ(ierr);
   ierr = MatSolve(fact,b,y);CHKERRQ(ierr);
   value = -1.0; ierr = VecAXPY(y,value,x);CHKERRQ(ierr);

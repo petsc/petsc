@@ -51,7 +51,7 @@ PetscErrorCode MatSolve_MPIAIJ_XXT(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_XXT"
-PetscErrorCode MatLUFactorNumeric_MPIAIJ_XXT(Mat A,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorNumeric_MPIAIJ_XXT(Mat A,const MatFactorInfo *info,Mat *F)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -80,7 +80,7 @@ static PetscErrorCode LocalMult_XXT(Mat A,PetscScalar *xin,PetscScalar *xout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_XXT"
-PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,const MatFactorInfo *info,Mat *F)
 {
   Mat            B;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
@@ -179,7 +179,7 @@ PetscErrorCode MatSolve_MPIAIJ_XYT(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ_XYT"
-PetscErrorCode MatLUFactorNumeric_MPIAIJ_XYT(Mat A,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorNumeric_MPIAIJ_XYT(Mat A,const MatFactorInfo *info,Mat *F)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
@@ -208,7 +208,7 @@ static PetscErrorCode LocalMult_XYT(Mat A,PetscScalar *xin,PetscScalar *xout)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_XYT"
-PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,const MatFactorInfo *info,Mat *F)
 {
   Mat            B;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
@@ -264,7 +264,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *inf
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIAIJ_TFS"
-PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatFactorInfo *info,Mat *F)
+PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,const MatFactorInfo *info,Mat *F)
 {
   PetscErrorCode ierr;
 

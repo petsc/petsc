@@ -29,8 +29,8 @@ struct _MatOps {
   PetscErrorCode (*solvetranspose)(Mat,Vec,Vec);
   /*10*/
   PetscErrorCode (*solvetransposeadd)(Mat,Vec,Vec,Vec);
-  PetscErrorCode (*lufactor)(Mat,IS,IS,MatFactorInfo*);
-  PetscErrorCode (*choleskyfactor)(Mat,IS,MatFactorInfo*);
+  PetscErrorCode (*lufactor)(Mat,IS,IS,const MatFactorInfo*);
+  PetscErrorCode (*choleskyfactor)(Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*relax)(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
   PetscErrorCode (*transpose)(Mat,MatReuse,Mat *);
   /*15*/
@@ -47,22 +47,22 @@ struct _MatOps {
   PetscErrorCode (*zeroentries)(Mat);
   /*25*/
   PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar);
-  PetscErrorCode (*lufactorsymbolic)(Mat,Mat,IS,IS,MatFactorInfo*);
-  PetscErrorCode (*lufactornumeric)(Mat,Mat,MatFactorInfo*);
-  PetscErrorCode (*choleskyfactorsymbolic)(Mat,Mat,IS,MatFactorInfo*);
-  PetscErrorCode (*choleskyfactornumeric)(Mat,Mat,MatFactorInfo*);
+  PetscErrorCode (*lufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
+  PetscErrorCode (*lufactornumeric)(Mat,Mat,const MatFactorInfo*);
+  PetscErrorCode (*choleskyfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
+  PetscErrorCode (*choleskyfactornumeric)(Mat,Mat,const MatFactorInfo*);
   /*30*/
   PetscErrorCode (*setuppreallocation)(Mat);
-  PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,MatFactorInfo*);
-  PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,MatFactorInfo*);
+  PetscErrorCode (*ilufactorsymbolic)(Mat,Mat,IS,IS,const MatFactorInfo*);
+  PetscErrorCode (*iccfactorsymbolic)(Mat,Mat,IS,const MatFactorInfo*);
   PetscErrorCode (*getarray)(Mat,PetscScalar**);
   PetscErrorCode (*restorearray)(Mat,PetscScalar**);
   /*35*/
   PetscErrorCode (*duplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*forwardsolve)(Mat,Vec,Vec);
   PetscErrorCode (*backwardsolve)(Mat,Vec,Vec);
-  PetscErrorCode (*ilufactor)(Mat,IS,IS,MatFactorInfo*);
-  PetscErrorCode (*iccfactor)(Mat,IS,MatFactorInfo*);
+  PetscErrorCode (*ilufactor)(Mat,IS,IS,const MatFactorInfo*);
+  PetscErrorCode (*iccfactor)(Mat,IS,const MatFactorInfo*);
   /*40*/
   PetscErrorCode (*axpy)(Mat,PetscScalar,Mat,MatStructure);
   PetscErrorCode (*getsubmatrices)(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
@@ -74,7 +74,7 @@ struct _MatOps {
   PetscErrorCode (*scale)(Mat,PetscScalar);
   PetscErrorCode (*shift)(Mat,PetscScalar);
   PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
-  PetscErrorCode (*iludtfactor)(Mat,IS,IS,MatFactorInfo*,Mat *);
+  PetscErrorCode (*iludtfactor)(Mat,IS,IS,const MatFactorInfo*,Mat *);
   /*50*/
   PetscErrorCode (*setblocksize)(Mat,PetscInt);
   PetscErrorCode (*getrowij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
@@ -381,7 +381,7 @@ struct _p_MatNullSpace {
 */
 typedef struct {
   PetscInt       nshift,nshift_max;
-  PetscReal      shift_amount,shift_lo,shift_hi,shift_top;
+  PetscReal      shift_amount,shift_lo,shift_hi,shift_top,shift_fraction;
   PetscTruth     lushift;
   PetscReal      rs;  /* active row sum of abs(offdiagonals) */
   PetscScalar    pv;  /* pivot of the active row */
@@ -427,14 +427,14 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
       ierr = MatFactorDumpMatrix(A);CHKERRQ(ierr);\
       SETERRQ1(PETSC_ERR_CONV_FAILED,"Unable to determine shift to enforce positive definite preconditioner after %d tries",sctx.nshift);\
     } else if (sctx.nshift == sctx.nshift_max) {\
-      info->shift_fraction = sctx.shift_hi;\
+      sctx.shift_fraction = sctx.shift_hi;\
       sctx.lushift        = PETSC_TRUE;\
     } else {\
-      sctx.shift_lo = info->shift_fraction;\
-      info->shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;\
+      sctx.shift_lo = sctx.shift_fraction;\
+      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;\
       sctx.lushift  = PETSC_TRUE;\
     }\
-    sctx.shift_amount = info->shift_fraction * sctx.shift_top;\
+    sctx.shift_amount = sctx.shift_fraction * sctx.shift_top;\
     sctx.nshift++;\
     _newshift = 1;\
   } else if (PetscAbsScalar(sctx.pv) <= _zero){\

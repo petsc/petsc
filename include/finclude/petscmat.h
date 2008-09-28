@@ -255,21 +255,19 @@
       PetscEnum MAT_FACTORINFO_DTCOUNT
       PetscEnum MAT_FACTORINFO_DAMPING
       PetscEnum MAT_FACTORINFO_SHIFT
-      PetscEnum MAT_FACTORINFO_SHIFT_FRACTION
       PetscEnum MAT_FACTORINFO_ZERO_PIVOT
       PetscEnum MAT_FACTORINFO_PIVOT_IN_BLOCKS
 
       parameter (MAT_FACTORINFO_DAMPING = 1)
       parameter (MAT_FACTORINFO_SHIFT = 2)
-      parameter (MAT_FACTORINFO_SHIFT_FRACTION = 3)
-      parameter (MAT_FACTORINFO_DIAGONAL_FILL = 4)
-      parameter (MAT_FACTORINFO_DT = 5)
-      parameter (MAT_FACTORINFO_DTCOL = 6)
-      parameter (MAT_FACTORINFO_DTCOUNT = 7)
-      parameter (MAT_FACTORINFO_LEVELS = 8)
-      parameter (MAT_FACTORINFO_FILL = 9)
-      parameter (MAT_FACTORINFO_PIVOT_IN_BLOCKS = 10)
-      parameter (MAT_FACTORINFO_ZERO_PIVOT = 11)
+      parameter (MAT_FACTORINFO_DIAGONAL_FILL = 3)
+      parameter (MAT_FACTORINFO_DT = 4)
+      parameter (MAT_FACTORINFO_DTCOL = 5)
+      parameter (MAT_FACTORINFO_DTCOUNT = 6)
+      parameter (MAT_FACTORINFO_LEVELS = 7)
+      parameter (MAT_FACTORINFO_FILL = 8)
+      parameter (MAT_FACTORINFO_PIVOT_IN_BLOCKS = 9)
+      parameter (MAT_FACTORINFO_ZERO_PIVOT = 10)
 
 
 !

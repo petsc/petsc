@@ -1935,7 +1935,7 @@ static PetscErrorCode MatView_MPIRowbs_Factored(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIncompleteCholeskyFactorSymbolic_MPIRowbs"
-PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat newmat,Mat mat,IS isrow,MatFactorInfo *info)
+PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat newmat,Mat mat,IS isrow,const MatFactorInfo *info)
 {
   /* Note:  f is not currently used in BlockSolve */
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
@@ -1998,7 +1998,7 @@ PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat newmat,Mat mat,I
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_MPIRowbs"
-PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat newmat,Mat mat,IS isrow,IS iscol,MatFactorInfo* info)
+PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat newmat,Mat mat,IS isrow,IS iscol,const MatFactorInfo* info)
 {
   Mat_MPIRowbs *mbs = (Mat_MPIRowbs*)mat->data;
   PetscErrorCode ierr;

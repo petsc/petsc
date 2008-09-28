@@ -1234,7 +1234,7 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatLUFactorNumeric_MPIDense"
-PetscErrorCode MatLUFactorNumeric_MPIDense(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_MPIDense(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_Plapack    *lu = (Mat_Plapack*)(F)->spptr;
   PetscErrorCode ierr;
@@ -1278,7 +1278,7 @@ PetscErrorCode MatLUFactorNumeric_MPIDense(Mat F,Mat A,MatFactorInfo *info)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatCholeskyFactorNumeric_MPIDense"
-PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_Plapack    *lu = (Mat_Plapack*)F->spptr;
   PetscErrorCode ierr;
@@ -1320,7 +1320,7 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIDense(Mat F,Mat A,MatFactorInfo *info
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorSymbolic_Plapack_Private"
-PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat            B = F;
   Mat_Plapack    *lu;   
@@ -1395,7 +1395,7 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat F,Mat A,MatFactorInfo *info
 /* Note the Petsc perm permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPIDense"
-PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat F,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat F,Mat A,IS perm,const MatFactorInfo *info)
 { 
   PetscErrorCode ierr;
   PetscTruth     issymmetric,set;
@@ -1411,7 +1411,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat F,Mat A,IS perm,MatFactorI
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_MPIDense"
-PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {  
   PetscErrorCode ierr;
   PetscInt       M = A->rmap->N;

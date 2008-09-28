@@ -154,7 +154,7 @@ PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUDTFactor_Inode"
-PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
 
@@ -165,11 +165,11 @@ PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,
 }
 
 extern PetscErrorCode MatSolve_Inode(Mat,Vec,Vec);
-extern PetscErrorCode MatLUFactorNumeric_Inode(Mat,Mat,MatFactorInfo*);
+extern PetscErrorCode MatLUFactorNumeric_Inode(Mat,Mat,const MatFactorInfo*);
 
 #undef __FUNCT__
 #define __FUNCT__ "MatLUFactorSymbolic_Inode"
-PetscErrorCode MatLUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *f = (Mat_SeqAIJ*)A->data;
@@ -185,7 +185,7 @@ PetscErrorCode MatLUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,MatFac
 
 #undef __FUNCT__
 #define __FUNCT__ "MatILUFactorSymbolic_Inode"
-PetscErrorCode MatILUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatILUFactorSymbolic_Inode(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *f = (Mat_SeqAIJ*)A->data;

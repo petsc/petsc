@@ -225,7 +225,7 @@ PetscErrorCode MatSolve_DSCPACK(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatCholeskyFactorNumeric_DSCPACK"
-PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,MatFactorInfo *info) 
+PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,const MatFactorInfo *info) 
 {
   Mat_SeqBAIJ    *a_seq;
   Mat_DSCPACK    *lu=(Mat_DSCPACK*)(F)->spptr; 
@@ -398,7 +398,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat F,Mat A,MatFactorInfo *info)
 /* Note the Petsc permutation r is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_DSCPACK"
-PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat F,Mat A,IS r,MatFactorInfo *info) 
+PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat F,Mat A,IS r,const MatFactorInfo *info) 
 {
   Mat_DSCPACK    *lu = (Mat_DSCPACK*)(F)->spptr;
   PetscErrorCode ierr;

@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat C,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat C,Mat A,const MatFactorInfo *info)
 {
 /*
     Default Version for when blocks are 4 by 4 Using natural ordering
@@ -157,7 +157,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering(Mat C,Mat A,MatFacto
 /* SSE Version for when blocks are 4 by 4 Using natural ordering */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   PetscErrorCode ierr;
@@ -1039,7 +1039,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj_Inplace(Mat 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_4_NaturalOrdering_SSE_usj(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ*)C->data;
   PetscErrorCode ierr;

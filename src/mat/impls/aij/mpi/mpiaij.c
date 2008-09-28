@@ -1866,7 +1866,7 @@ PetscErrorCode MatImaginaryPart_MPIAIJ(Mat A)
 /*
   This uses the parallel ILU factorization of Peter Gottschling <pgottsch@osl.iu.edu>
 */
-PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, MatFactorInfo *info)
+PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, const MatFactorInfo *info)
 {
   namespace petsc = boost::distributed::petsc;
   
@@ -1913,7 +1913,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat fact,Mat A, IS isrow, IS iscol, M
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_MPIAIJ"
-PetscErrorCode MatLUFactorNumeric_MPIAIJ(Mat B,Mat A, MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_MPIAIJ(Mat B,Mat A, const MatFactorInfo *info)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);

@@ -7,17 +7,17 @@
 #include "petscmat.h"
 
 typedef struct {
-  Mat             fact;             /* factored matrix */
-  PetscReal       actualfill;       /* actual fill in factor */
-  PetscTruth      inplace;          /* flag indicating in-place factorization */
-  IS              row,col;          /* index sets used for reordering */
-  MatOrderingType ordering;         /* matrix ordering */
-  PetscTruth      reuseordering;    /* reuses previous reordering computed */
-  PetscTruth      reusefill;        /* reuse fill from previous LU */
-  MatFactorInfo   info;
-  PetscTruth      nonzerosalongdiagonal;
-  PetscReal       nonzerosalongdiagonaltol;
-  MatSolverPackage   solvertype;
+  Mat              fact;             /* factored matrix */
+  PetscReal        actualfill;       /* actual fill in factor */
+  PetscTruth       inplace;          /* flag indicating in-place factorization */
+  IS               row,col;          /* index sets used for reordering */
+  MatOrderingType  ordering;         /* matrix ordering */
+  PetscTruth       reuseordering;    /* reuses previous reordering computed */
+  PetscTruth       reusefill;        /* reuse fill from previous LU */
+  MatFactorInfo    info;
+  PetscTruth       nonzerosalongdiagonal;
+  PetscReal        nonzerosalongdiagonaltol;
+  MatSolverPackage solvertype;
 } PC_LU;
 
 #endif

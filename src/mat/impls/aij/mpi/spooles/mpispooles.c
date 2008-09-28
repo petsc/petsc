@@ -185,7 +185,7 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_MPISpooles"
-PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_Spooles     *lu = (Mat_Spooles*)(F)->spptr;
   PetscErrorCode  ierr;

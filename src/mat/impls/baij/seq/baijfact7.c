@@ -12,7 +12,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqBAIJ_6"
-PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat C,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqBAIJ_6(Mat C,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data,*b = (Mat_SeqBAIJ *)C->data;
   IS             isrow = b->row,isicol = b->icol;

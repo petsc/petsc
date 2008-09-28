@@ -110,7 +110,7 @@ PetscErrorCode MatSolve_SeqSpooles(Mat A,Vec b,Vec x)
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatFactorNumeric_SeqSpooles"
-PetscErrorCode MatFactorNumeric_SeqSpooles(Mat F,Mat A,MatFactorInfo *info)
+PetscErrorCode MatFactorNumeric_SeqSpooles(Mat F,Mat A,const MatFactorInfo *info)
 {  
   Mat_Spooles        *lu = (Mat_Spooles*)(F)->spptr;
   ChvManager         *chvmanager ;

@@ -31,7 +31,7 @@ PetscErrorCode MatView_Spooles(Mat A,PetscViewer viewer)
 /* Note the Petsc r and c permutations are ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJSpooles"
-PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat F,Mat A,IS r,IS c,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_Spooles    *lu = (Mat_Spooles*)(F->spptr);;
 
@@ -46,7 +46,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat F,Mat A,IS r,IS c,MatFactor
 /* Note the Petsc r permutation is ignored */
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSAIJSpooles"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat F,Mat A,IS r,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat F,Mat A,IS r,const MatFactorInfo *info)
 { 
   PetscFunctionBegin;	
   F->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;

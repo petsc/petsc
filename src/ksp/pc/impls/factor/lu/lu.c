@@ -63,7 +63,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_LU(PC pc,PetscTruth shift)
  
   PetscFunctionBegin;
   if (shift) {
-    dir->info.shift_fraction = 0.0;
     dir->info.shiftpd = 1.0;
   } else {
     dir->info.shiftpd = 0.0;
@@ -730,7 +729,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   dir->info.zeropivot      = 1.e-12;
   dir->info.pivotinblocks  = 1.0;
   dir->info.shiftpd        = 0.0; /* false */
-  dir->info.shift_fraction = 0.0;
   dir->col                 = 0;
   dir->row                 = 0;
 

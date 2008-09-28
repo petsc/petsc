@@ -48,7 +48,7 @@ EXTERN PetscErrorCode SPARSEKIT2msrcsr(PetscInt*,MatScalar*,PetscInt*,MatScalar*
 
      ------------------------------------------------------------
 */
-PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact)
+PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
 #if defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
   PetscFunctionBegin;
@@ -66,16 +66,16 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   PetscInt       *ordcol,*iwk,*iperm,*jw;
   PetscInt       jmax,lfill,job,*o_i,*o_j;
   MatScalar      *old_a = a->a,*w,*new_a,*old_a2 = 0,*wk,*o_a;
-  PetscReal      af;
+  PetscReal      af,dt,dtcount,dtcol,fill;
 
   PetscFunctionBegin;
 
-  if (info->dt == PETSC_DEFAULT)      info->dt      = .005;
-  if (info->dtcount == PETSC_DEFAULT) info->dtcount = (PetscInt)(1.5*a->rmax); 
-  if (info->dtcol == PETSC_DEFAULT)   info->dtcol   = .01;
-  if (info->fill == PETSC_DEFAULT)    info->fill    = ((double)(n*(info->dtcount+1)))/a->nz;
-  lfill   = (PetscInt)(info->dtcount/2.0);
-  jmax    = (PetscInt)(info->fill*a->nz);
+  if (info->dt == PETSC_DEFAULT)      dt      = .005; else dt = info->dt;
+  if (info->dtcount == PETSC_DEFAULT) dtcount = (PetscInt)(1.5*a->rmax);  else dtcount = info->dtcount;
+  if (info->dtcol == PETSC_DEFAULT)   dtcol   = .01; else dtcol = info->dtcol;
+  if (info->fill == PETSC_DEFAULT)    fill    = ((double)(n*(info->dtcount+1)))/a->nz; else fill = info->fill;
+  lfill   = (PetscInt)(dtcount/2.0);
+  jmax    = (PetscInt)(fill*a->nz);
 
 
   /* ------------------------------------------------------------
@@ -144,14 +144,14 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   ierr = PetscMalloc(2*n*sizeof(PetscInt),&jw);CHKERRQ(ierr);
   ierr = PetscMalloc(n*sizeof(PetscScalar),&w);CHKERRQ(ierr);
 
-  SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,(PetscReal)info->dt,&info->dtcol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&sierr); 
+  SPARSEKIT2ilutp(&n,o_a,o_j,o_i,&lfill,(PetscReal)dt,&dtcol,&n,new_a,new_j,new_i,&jmax,w,jw,iperm,&sierr); 
   if (sierr) {
     switch (sierr) {
-      case -3: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix U overflows, need larger info->fill current fill %G space allocated %D",info->fill,jmax);
-      case -2: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix L overflows, need larger info->fill current fill %G space allocated %D",info->fill,jmax);
+      case -3: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix U overflows, need larger fill current fill %G space allocated %D",fill,jmax);
+      case -2: SETERRQ2(PETSC_ERR_LIB,"ilutp(), matrix L overflows, need larger fill current fill %G space allocated %D",fill,jmax);
       case -5: SETERRQ(PETSC_ERR_LIB,"ilutp(), zero row encountered");
       case -1: SETERRQ(PETSC_ERR_LIB,"ilutp(), input matrix may be wrong");
-      case -4: SETERRQ1(PETSC_ERR_LIB,"ilutp(), illegal info->fill value %D",jmax);
+      case -4: SETERRQ1(PETSC_ERR_LIB,"ilutp(), illegal fill value %D",jmax);
       default: SETERRQ1(PETSC_ERR_LIB,"ilutp(), zero pivot detected on row %D",sierr);
     }
   }
@@ -243,7 +243,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   (*fact)->info.factor_mallocs = 0;
 
   af = ((double)b->nz)/((double)a->nz) + .001;
-  ierr = PetscInfo2(A,"Fill ratio:given %G needed %G\n",info->fill,af);CHKERRQ(ierr);
+  ierr = PetscInfo2(A,"Fill ratio:given %G needed %G\n",fill,af);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G);\n",af);CHKERRQ(ierr);
   ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
@@ -293,7 +293,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_SeqAIJ"
-PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   IS                 isicol;
@@ -468,7 +468,7 @@ extern PetscErrorCode MatSolve_Inode(Mat,Vec,Vec);
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ"
-PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C=B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ *)C->data;
@@ -492,10 +492,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
   ierr  = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   rtmps = rtmp; ics = ic;
 
-  sctx.shift_top  = 0;
-  sctx.nshift_max = 0;
-  sctx.shift_lo   = 0;
-  sctx.shift_hi   = 0;
+  sctx.shift_top      = 0;
+  sctx.nshift_max     = 0;
+  sctx.shift_lo       = 0;
+  sctx.shift_hi       = 0;
+  sctx.shift_fraction = 0;
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
@@ -569,14 +570,14 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
       if (newshift == 1) break;
     } 
 
-    if (info->shiftpd && !sctx.lushift && info->shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
+    if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
       /*
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
        */
-      sctx.shift_hi        = info->shift_fraction;
-      info->shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
-      sctx.shift_amount    = info->shift_fraction * sctx.shift_top;
+      sctx.shift_hi        = sctx.shift_fraction;
+      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
+      sctx.shift_amount    = sctx.shift_fraction * sctx.shift_top;
       sctx.lushift         = PETSC_TRUE;
       sctx.nshift++;
     }
@@ -603,7 +604,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
   if (sctx.nshift){
      if (info->shiftpd) {
-      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
     } else if (info->shiftnz) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
@@ -623,7 +624,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_InplaceWithPerm"
-PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data; 
   IS             isrow = a->row,isicol = a->icol;
@@ -646,10 +647,11 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,MatFactorIn
   ierr  = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   ics = ic;
 
-  sctx.shift_top  = 0;
-  sctx.nshift_max = 0;
-  sctx.shift_lo   = 0;
-  sctx.shift_hi   = 0;
+  sctx.shift_top      = 0;
+  sctx.nshift_max     = 0;
+  sctx.shift_lo       = 0;
+  sctx.shift_hi       = 0;
+  sctx.shift_fraction = 0;
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
@@ -725,14 +727,14 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,MatFactorIn
       if (newshift == 1) break;
     } 
 
-    if (info->shiftpd && !sctx.lushift && info->shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
+    if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
       /*
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
        */
-      sctx.shift_hi        = info->shift_fraction;
-      info->shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
-      sctx.shift_amount    = info->shift_fraction * sctx.shift_top;
+      sctx.shift_hi        = sctx.shift_fraction;
+      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
+      sctx.shift_amount    = sctx.shift_fraction * sctx.shift_top;
       sctx.lushift         = PETSC_TRUE;
       sctx.nshift++;
     }
@@ -755,7 +757,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,MatFactorIn
   ierr = PetscLogFlops(A->cmap->n);CHKERRQ(ierr);
   if (sctx.nshift){
     if (info->shiftpd) {
-      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
     } else if (info->shiftnz) {
       ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     } 
@@ -766,7 +768,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat B,Mat A,MatFactorIn
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactor_SeqAIJ"
-PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,MatFactorInfo *info)
+PetscErrorCode MatLUFactor_SeqAIJ(Mat A,IS row,IS col,const MatFactorInfo *info)
 {
   PetscErrorCode ierr;
   Mat            C;
@@ -1187,7 +1189,7 @@ EXTERN PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat,Mat,MatDuplicateOption);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ"
-PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,MatFactorInfo *info)
+PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   IS                 isicol;
@@ -1380,7 +1382,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,MatF
 #include "src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
-PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
 {
   Mat            C = B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
@@ -1527,7 +1529,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,MatFactorInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqAIJ"
-PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
@@ -1727,7 +1729,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,MatFactorInfo 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqAIJ"
-PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,MatFactorInfo *info)
+PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)
 {
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ       *b;
