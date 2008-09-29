@@ -1142,7 +1142,7 @@ namespace ALE {
     template<typename Bundle>
     int sizeV(Bundle& mesh) {
       typedef typename ISieveVisitor::PointRetriever<typename Bundle::sieve_type> Visitor;
-      Visitor pV((int) pow(mesh.getSieve()->getMaxConeSize(), mesh.depth())+1, true);
+      Visitor pV((int) pow((double) mesh.getSieve()->getMaxConeSize(), mesh.depth())+1, true);
       ISieveTraversal<typename Bundle::sieve_type>::orientedClosure(*mesh.getSieve(), *mesh.heightStratum(0)->begin(), pV);
       const typename Visitor::point_type *oPoints = pV.getPoints();
       const int                           oSize   = pV.getSize();
@@ -1641,7 +1641,7 @@ namespace ALE {
       if (this->depth() == 1) {
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
       } else {
-        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, rV, true);
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, rV, true);
 
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
       }
@@ -1683,7 +1683,7 @@ namespace ALE {
       if (this->depth() == 1) {
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
       } else {
-        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAllVisitor<Section> > pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, uV, true);
+        ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAllVisitor<Section> > pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, uV, true);
 
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
       }
