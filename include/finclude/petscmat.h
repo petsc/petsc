@@ -90,9 +90,20 @@
 #define MATSBAIJ           'sbaij'
 #define MATDAAD            'daad'
 #define MATMFFD            'mffd'
-#define MATESI             'esi'
-#define MATPETSCESI        'petscesi'
 #define MATNORMAL          'normal'
+#define MATLRC             'lrc'
+#define MATSEQCSRPERM      'seqcsrperm'
+#define MATMPICSRPERM      'mpicsrperm'
+#define MATCSRPERM         'csrperm'
+#define MATSEQCRL          'seqcrl'
+#define MATMPICRL          'mpicrl'
+#define MATCRL             'crl'
+#define MATSCATTER         'scatter'
+#define MATBLOCKMAT        'blockmat'
+#define MATCOMPOSITE       'composite'
+#define MATSEQFFTW         'seqfftw'
+#define MATTRANSPOSEMAT    'transpose'
+#define MATSCHURCOMPLEMENT 'schurcomplement'
 !
 ! MatSolverPackages
 !

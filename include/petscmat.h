@@ -61,7 +61,7 @@ E*/
 #define MATBLOCKMAT        "blockmat"
 #define MATCOMPOSITE       "composite"
 #define MATSEQFFTW         "seqfftw"
-#define MATTRANSPOSE       "transpose"
+#define MATTRANSPOSEMAT    "transpose"
 #define MATSCHURCOMPLEMENT "schurcomplement"
 
 /*E
