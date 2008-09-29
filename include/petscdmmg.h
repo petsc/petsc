@@ -98,7 +98,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseGalerkinCoarse(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG*,PetscTruth,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG*,const MatType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetISColoringType(DMMG*,ISColoringType);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetPrefix(DMMG*,const char*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetOptionsPrefix(DMMG*,const char[]);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGFormFunction(SNES,Vec,Vec,void *);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGGetSNESLocal(DMMG*,DALocalFunction1*,DALocalFunction1*);

@@ -108,9 +108,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,const MatType mtype
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "DMMGSetPrefix"
+#define __FUNCT__ "DMMGSetOptionsPrefix"
 /*@C
-    DMMGSetPrefix - Sets the prefix used for the solvers inside a DMMG
+    DMMGSetOptionsPrefix - Sets the prefix used for the solvers inside a DMMG
 
     Collective on MPI_Comm 
 
@@ -123,7 +123,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,const MatType mtype
 .seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser(), DMMGCreate(), DMMGSetNullSpace()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetPrefix(DMMG *dmmg,const char* prefix)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetOptionsPrefix(DMMG *dmmg,const char prefix[])
 {
   PetscInt       i;
   PetscErrorCode ierr;
