@@ -1935,7 +1935,7 @@ namespace ALE {
         const Obj<ALE::Discretization>& disc      = this->getDiscretization(*f_iter);
         std::string                     labelName = "exclude-"+*f_iter;
         std::set<point_type>            seen;
-        Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth()), true);
+        Visitor pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth()), true);
 
         if (this->hasLabel(labelName)) {
           const Obj<label_type>&         label     = this->getLabel(labelName);
@@ -2010,7 +2010,7 @@ namespace ALE {
         disc->setIndices(indices[*d_iter].second);
       }
       const Obj<label_sequence>& cells   = this->heightStratum(0);
-      Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, true);
+      Visitor pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, true);
       ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), *cells->begin(), pV);
       const Visitor::point_type *oPoints = pV.getPoints();
       const int                  oSize   = pV.getSize();
@@ -2052,7 +2052,7 @@ namespace ALE {
       int       marker = 0;
       std::map<indices_type, int> indexMap;
       indices_type                indices;
-      Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, true);
+      Visitor pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, true);
 
       for(names_type::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
         const Obj<Discretization>& disc = this->getDiscretization(*d_iter);
@@ -2176,7 +2176,7 @@ namespace ALE {
         double                        *v0            = new double[this->getDimension()];
         double                        *J             = new double[this->getDimension()*this->getDimension()];
         double                         detJ;
-        Visitor pV((int) pow(this->getSieve()->getMaxConeSize(), this->depth())+1, true);
+        Visitor pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, true);
 
         for(label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
           ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), *c_iter, pV);
