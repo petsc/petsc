@@ -186,12 +186,6 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   PetscFunctionBegin;
   mg[levels-1]->b = b; 
   mg[levels-1]->x = x;
-  if (!mg[levels-1]->r && mg[0]->am != PC_MG_ADDITIVE && levels > 1) {
-    Vec tvec;
-    ierr = VecDuplicate(mg[levels-1]->b,&tvec);CHKERRQ(ierr);
-    ierr = PCMGSetR(pc,levels-1,tvec);CHKERRQ(ierr);
-    ierr = VecDestroy(tvec);CHKERRQ(ierr);
-  }
   if (mg[0]->am == PC_MG_MULTIPLICATIVE) {
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     for (i=0; i<mg[0]->cyclesperpcapply; i++) {

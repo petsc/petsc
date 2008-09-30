@@ -514,7 +514,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyTransposeExists(PC pc,PetscTruth *flg)
 #undef __FUNCT__  
 #define __FUNCT__ "PCApplyBAorAB"
 /*@
-   PCApplyBAorAB - Applies the preconditioner and operator to a vector. 
+   PCApplyBAorAB - Applies the preconditioner and operator to a vector. y = B*A*x or y = A*B*x.
 
    Collective on PC and Vec
 
