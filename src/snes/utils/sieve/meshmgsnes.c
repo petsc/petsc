@@ -73,7 +73,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   ierr = MeshCreate(PETSC_COMM_SELF, &smallMesh);CHKERRQ(ierr);
   ierr = DMMGCreate(PETSC_COMM_SELF, -1, PETSC_NULL, &smallDmmg);CHKERRQ(ierr);
   //ierr = DMMGSetMatType(smallDmmg, MATSEQDENSE);CHKERRQ(ierr);
-  ierr = DMMGSetPrefix(smallDmmg, "fas_");CHKERRQ(ierr);
+  ierr = DMMGSetOptionsPrefix(smallDmmg, "fas_");CHKERRQ(ierr);
   ierr = DMMGSetUser(smallDmmg, 0, DMMGGetUser(dmmg, 0));CHKERRQ(ierr);
   ierr = DMMGGetSNESLocal(dmmg, &func, &jac);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
