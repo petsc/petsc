@@ -148,21 +148,11 @@ extern PetscErrorCode MatLUFactor_SeqDense(Mat,IS,IS,const MatFactorInfo*);
 #define __FUNCT__ "MatLUFactorNumeric_SeqDense"
 PetscErrorCode MatLUFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactorInfo *info_dummy)
 {
-  Mat_SeqDense   *mat = (Mat_SeqDense*)A->data,*l = (Mat_SeqDense*)fact->data;
   MatFactorInfo  info;
-  PetscInt       lda1 = mat->lda, lda2 = l->lda;
-  PetscInt       m = A->rmap->n, n = A->cmap->n, j;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* copy the numerical values */
-  if (lda1>m || lda2>m ) {
-    for (j=0; j<n; j++) {
-      ierr = PetscMemcpy(l->v+j*lda2,mat->v+j*lda1,m*sizeof(PetscScalar));CHKERRQ(ierr);
-    }
-  } else {
-    ierr = PetscMemcpy(l->v,mat->v,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
-  }
+  ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES);CHKERRQ(ierr);
   ierr = MatLUFactor_SeqDense(fact,0,0,&info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -405,6 +395,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactorI
 
   PetscFunctionBegin;
   info.fill = 1.0;
+  ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES);CHKERRQ(ierr);
   ierr = MatCholeskyFactor_SeqDense(fact,0,&info);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -413,10 +404,8 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqDense(Mat fact,Mat A,const MatFactorI
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqDense"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const MatFactorInfo *info)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_COPY_VALUES);CHKERRQ(ierr);
+  fact->assembled                  = PETSC_TRUE;
   fact->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqDense;
   PetscFunctionReturn(0);
 }
@@ -425,11 +414,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,const Ma
 #define __FUNCT__ "MatLUFactorSymbolic_SeqDense"
 PetscErrorCode MatLUFactorSymbolic_SeqDense(Mat fact,Mat A,IS row,IS col,const MatFactorInfo *info)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  ierr = MatDuplicateNoCreate_SeqDense(fact,A,MAT_DO_NOT_COPY_VALUES);CHKERRQ(ierr);
-  fact->ops->lufactornumeric   = MatLUFactorNumeric_SeqDense;
+  fact->assembled            = PETSC_TRUE;
+  fact->ops->lufactornumeric = MatLUFactorNumeric_SeqDense;
   PetscFunctionReturn(0);
 }
 

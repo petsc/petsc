@@ -13,7 +13,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank,nproc;
   PetscInt       i,M = 10,m,n,nfact,nsolve;
   PetscScalar    *array,rval;
-  PetscReal      norm;
+  PetscReal      norm,tol=1.e-12;
   IS             perm,iperm;
   MatFactorInfo  info;
   PetscRandom    rand;
@@ -26,7 +26,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr); 
+  ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(C);CHKERRQ(ierr); 
   
   ierr = MatGetLocalSize(C,&m,&n);CHKERRQ(ierr);
@@ -79,8 +79,10 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
       ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-      if (!rank){
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
+      if (norm > tol){ 
+        if (!rank){
+          ierr = PetscPrintf(PETSC_COMM_SELF,"Error: Norm of error %g, LU nfact %d\n",norm,nfact);CHKERRQ(ierr);
+        }
       }
     }
   }
@@ -100,7 +102,7 @@ int main(int argc,char **args)
   ierr = MatCholeskyFactorSymbolic(F,C,perm,&info);CHKERRQ(ierr);
   for (nfact = 0; nfact < 2; nfact++){
     if (!rank) printf(" Cholesky nfact %d\n",nfact);
-    ierr = MatCholeskyFactorNumeric(F,C1,&info);CHKERRQ(ierr);
+    ierr = MatCholeskyFactorNumeric(F,C,&info);CHKERRQ(ierr);
 
     /* Test MatSolve() */
     for (nsolve = 0; nsolve < 5; nsolve++){
@@ -118,8 +120,10 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
       ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-      if (!rank){
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
+      if (norm > tol){ 
+        if (!rank){
+          ierr = PetscPrintf(PETSC_COMM_SELF,"Error: Norm of error %g, Cholesky nfact %d\n",norm,nfact);CHKERRQ(ierr);
+        }
       }
     }
   }
