@@ -1065,6 +1065,12 @@ runex102:
 	   else echo "Possible problem with ex102, diffs above"; fi; \
 	   ${RM} -f ex102.tmp
 
+runex103:
+	-@${MPIEXEC} -n 1 ./ex103 > ex103.tmp 2>&1; \
+	   if (${DIFF} output/ex103.out ex103.tmp) then true; \
+	   else echo "Possible problem with ex103, diffs above"; fi; \
+	   ${RM} -f ex103.tmp
+
 runex109:
 	-@${MPIEXEC} -n 1 ./ex109 > ex109.tmp 2>&1; \
 	   if (${DIFF} output/ex109.out ex109.tmp) then true; \
