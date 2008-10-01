@@ -415,6 +415,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
       ierr = KSPMonitorSet(ksp,KSPMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
+      Prints preconditioned residual norm at each iteration
+    */
+    ierr = PetscOptionsString("-ksp_monitor_range","Monitor percent of residual entries more than 10 percent of max","KSPMonitorRange","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,((PetscObject)ksp)->tablevel,&monviewer);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorRange,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+    }
+    /*
       Plots the vector solution 
     */
     ierr = PetscOptionsName("-ksp_monitor_solution","Monitor solution graphically","KSPMonitorSet",&flg);CHKERRQ(ierr);

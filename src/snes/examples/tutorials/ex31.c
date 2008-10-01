@@ -524,7 +524,7 @@ PetscErrorCode MyPCSetUp(void* ctx)
   PetscFunctionBegin;
   /* create the linear solver for the Neutron diffusion */
   ierr = DMMGCreate(app->comm,1,0,&app->fdmmg);CHKERRQ(ierr);
-  ierr = DMMGSetPrefix(app->fdmmg,"phi_");CHKERRQ(ierr);
+  ierr = DMMGSetOptionsPrefix(app->fdmmg,"phi_");CHKERRQ(ierr);
   ierr = DMMGSetUser(app->fdmmg,0,app);CHKERRQ(ierr);
   ierr = DACreate2d(app->comm,DA_NONPERIODIC,DA_STENCIL_STAR,app->nxv,app->nyvf,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(app->fdmmg,(DM)da);CHKERRQ(ierr); 

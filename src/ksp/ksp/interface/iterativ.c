@@ -280,6 +280,79 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPMonitorRange"
+/*@C
+   KSPMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
+
+   Collective on KSP
+
+   Input Parameters:
++  ksp   - iterative context
+.  it    - iteration number
+.  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
+-  dummy - unused monitor context 
+
+   Options Database Key:
+.  -ksp_monitor_range - Activates KSPMonitorRange()
+
+
+   Notes:
+   When using either ICC or ILU preconditioners in BlockSolve95 
+   (via MATMPIROWBS matrix format), then use this monitor will
+   print both the residual norm associated with the original
+   (unscaled) matrix.
+
+   Level: intermediate
+
+.keywords: KSP, default, monitor, residual
+
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGCreate()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
+{
+  PetscErrorCode          ierr;
+  Vec                     resid,work;
+  PetscReal               rmax,per,pwork;
+  PC                      pc;
+  Mat                     A,B;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
+  PetscInt                i,n,N;
+  PetscScalar             *r;
+
+  PetscFunctionBegin;
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
+
+  /*
+     Unscale the residual if the matrix is, for example, a BlockSolve matrix
+    but only if both matrices are the same matrix, since only then would 
+    they be scaled.
+  */
+  ierr = VecCopy(resid,work);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
+  if (A == B) {
+    ierr = MatUnScaleSystem(A,work,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = VecNorm(work,NORM_INFINITY,&rmax);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(work,&n);CHKERRQ(ierr);
+  ierr = VecGetSize(work,&N);CHKERRQ(ierr);
+  ierr = VecGetArray(work,&r);CHKERRQ(ierr);
+  pwork = 0.0;
+  for (i=0; i<n; i++) {
+    pwork += (PetscAbsScalar(r[i]) > .10*rmax); 
+  }
+  ierr = MPI_Allreduce(&pwork,&per,1,MPIU_REAL,PetscSum_Op,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+  ierr = VecRestoreArray(work,&r);CHKERRQ(ierr);
+  ierr = VecDestroy(work);CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 10 percent of maximum %5.2f\n",it,rnorm,100.0*per/N);CHKERRQ(ierr);
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPMonitorDefaultShort"
 /*
   Default (short) KSP Monitor, same as KSPMonitorDefault() except
