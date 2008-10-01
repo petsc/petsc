@@ -178,7 +178,7 @@ cdef Vec vec_iadd(Vec self, other):
     if isinstance(other, Vec):
         alpha = 1; vec = other
         CHKERR( VecAXPY(self.vec, alpha, vec.vec) )
-    elif isinstance(other, (tuple, list)):
+    elif isinstance(other, tuple) or isinstance(other, list):
         alpha, vec = other
         CHKERR( VecAXPY(self.vec, alpha, vec.vec) )
     else:
@@ -192,7 +192,7 @@ cdef vec_isub(Vec self, other):
     if isinstance(other, Vec):
         alpha = 1; vec = other
         CHKERR( VecAXPY(self.vec, -alpha, vec.vec) )
-    elif isinstance(other, (tuple, list)):
+    elif isinstance(other, tuple) or isinstance(other, list):
         alpha, vec = other
         CHKERR( VecAXPY(self.vec, -alpha, vec.vec) )
     else:

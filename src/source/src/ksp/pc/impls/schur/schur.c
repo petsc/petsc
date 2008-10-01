@@ -15,6 +15,15 @@
 #define VecScatterEnd(sct,x,y,im,sm)   VecScatterEnd(x,y,im,sm,sct)
 #endif
 
+#if (PETSC_VERSION_MAJOR    == 2     &&		\
+     PETSC_VERSION_MINOR    == 3     &&		\
+     (PETSC_VERSION_SUBMINOR == 2 ||		\
+      PETSC_VERSION_SUBMINOR == 3)   &&		\
+     PETSC_VERSION_RELEASE  == 1)
+#define ISGetIndices(is,idx)     ISGetIndices(is,(PetscInt**)(idx))
+#define ISRestoreIndices(is,idx) ISRestoreIndices(is,(PetscInt**)(idx))
+#endif
+
 
 #if !defined(PetscMallocInt)
 #define PetscMallocInt(n,p) PetscMalloc((n)*sizeof(PetscInt),p)
@@ -650,7 +659,8 @@ static PetscErrorCode PCSetUp_Schur(PC pc)
     } else {         
       PetscInt i,j,node;
       PetscInt n_neigh=0,*neigh=PETSC_NULL,*n_shared=PETSC_NULL,**shared=PETSC_NULL;
-      PetscInt *powner,nghost,*ighost,nowned=0,*iowned;
+      PetscInt nghost; const PetscInt *ighost;
+      PetscInt *powner,nowned=0,*iowned;
 
       ierr = ISLocalToGlobalMappingGetInfo(mapping,&n_neigh,&neigh,&n_shared,&shared);CHKERRQ(ierr);
       /* XXX this part should be done better for load balancing */
@@ -711,7 +721,9 @@ static PetscErrorCode PCSetUp_Schur(PC pc)
       schur->N_S = schur->n_B;
     } else {
       /* local index set for global interface (S) nodes in global, natural numbering */
-      PetscInt i,n_i,*idx_i,n_g,*idx_g,nowned=0,*iowned;
+      PetscInt i, n_i, n_g;
+      const PetscInt *idx_i, *idx_g;
+      PetscInt nowned=0,*iowned;
       AO       ao;
       /* list of locally owned interface nodes in local numbering */
       ierr = PetscMallocInt(schur->n_B,&iowned);CHKERRQ(ierr);
@@ -781,9 +793,10 @@ static PetscErrorCode PCSetUp_Schur(PC pc)
       ierr = VecScatterCreate(vec,schur->is_I,schur->vec1_I,PETSC_NULL,&schur->G_to_I);CHKERRQ(ierr);
       ierr = VecDestroy(vec);CHKERRQ(ierr);
     } else {
-      PetscInt *idx,*idx_G;
-      IS        is_G;
-      Vec       vec_G;
+      const PetscInt *idx; 
+      PetscInt       *idx_G;
+      IS             is_G;
+      Vec            vec_G;
       /* auxiliar data */
       ierr = MatGetVecs(pc->pmat,PETSC_NULL,&vec_G);CHKERRQ(ierr);
       ierr = PetscMallocInt(PetscMax(schur->n_B,schur->n_I),&idx_G);CHKERRQ(ierr);
@@ -835,7 +848,8 @@ static PetscErrorCode PCSetUp_Schur(PC pc)
 	  ierr = ISDestroy(layer);CHKERRQ(ierr);
 	}
       } else {
-	PetscInt               nidx,*idx;
+	PetscInt               nidx;
+	const PetscInt         *idx;
 	IS                     strip;
 	ISLocalToGlobalMapping ltog;
 	if (schur->layers == 1) {
@@ -845,7 +859,8 @@ static PetscErrorCode PCSetUp_Schur(PC pc)
 	  ierr = PetscObjectReference((PetscObject)is_S);CHKERRQ(ierr);
 	  strip = is_S;
 	} else if (schur->layers > 1) {
-	  PetscInt i,n_s,*idx_s,n_i,*idx_i,n_g,*idx_g;
+	  PetscInt i,n_s,n_i,n_g;
+	  const PetscInt *idx_s,*idx_i,*idx_g;
 	  PetscInt nowned=0,*iowned;
 	  PetscInt rstart,rend;
 	  IS       strip_I,range_L;

@@ -18,8 +18,8 @@ cdef extern from "petscis.h":
 
     int ISGetSize(PetscIS,PetscInt*)
     int ISGetLocalSize(PetscIS,PetscInt*)
-    int ISGetIndices(PetscIS,PetscInt*[])
-    int ISRestoreIndices(PetscIS,PetscInt*[])
+    int ISGetIndices(PetscIS,const_PetscInt*[])
+    int ISRestoreIndices(PetscIS,const_PetscInt*[])
 
     int ISEqual(PetscIS,PetscIS,PetscTruth*)
 
@@ -36,8 +36,8 @@ cdef extern from "petscis.h":
     int ISDifference(PetscIS,PetscIS,PetscIS*)
 
     int ISBlock(PetscIS,PetscTruth*)
-    int ISBlockGetIndices(PetscIS,PetscInt*[])
-    int ISBlockRestoreIndices(PetscIS,PetscInt*[])
+    int ISBlockGetIndices(PetscIS,const_PetscInt*[])
+    int ISBlockRestoreIndices(PetscIS,const_PetscInt*[])
     int ISBlockGetSize(PetscIS,PetscInt*)
     int ISBlockGetLocalSize(PetscIS,PetscInt*)
     int ISBlockGetBlockSize(PetscIS,PetscInt*)

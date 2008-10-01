@@ -68,11 +68,11 @@ static PyObject* Petsc_array_struct_new(PyObject* self,
 static PyObject* PetscIS_array_struct(PyObject* self, IS is)
 {
   PetscErrorCode ierr;
-  PetscTruth valid  = PETSC_FALSE;
-  PetscTruth stride = PETSC_FALSE;
-  PetscTruth block  = PETSC_FALSE;
-  PetscInt   size   = 0;
-  PetscInt   *array = PETSC_NULL;
+  PetscTruth 	 valid  = PETSC_FALSE;
+  PetscTruth 	 stride = PETSC_FALSE;
+  PetscTruth 	 block  = PETSC_FALSE;
+  PetscInt   	 size   = 0;
+  const PetscInt *array = PETSC_NULL;
   PyObject   *iface = NULL;
   /* check index set handle */
   ierr = ISValid(is,&valid);

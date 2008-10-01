@@ -126,7 +126,7 @@ cdef class IS(Object):
 
     def getIndices(self):
         cdef PetscInt size = 0
-        cdef PetscInt *indices = NULL
+        cdef const_PetscInt *indices = NULL
         CHKERR( ISGetLocalSize(self.iset, &size) )
         CHKERR( ISGetIndices(self.iset, &indices) )
         cdef object oindices = None
@@ -141,7 +141,7 @@ cdef class IS(Object):
         CHKERR( ISBlock(self.iset, &block) )
         if block == PETSC_FALSE: return self.getIndices()
         cdef PetscInt size = 0, bs = 0
-        cdef PetscInt *indices=NULL
+        cdef const_PetscInt *indices=NULL
         CHKERR( ISGetLocalSize(self.iset, &size) )
         CHKERR( ISBlockGetBlockSize(self.iset, &bs) )
         CHKERR( ISBlockGetIndices(self.iset, &indices) )

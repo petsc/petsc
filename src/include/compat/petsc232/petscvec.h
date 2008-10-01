@@ -2,6 +2,74 @@
 #define _PETSC_COMPAT_VEC_H
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISGetIndices_232"
+PETSC_STATIC_INLINE PetscErrorCode 
+ISGetIndices_232(IS is, const PetscInt *ptr[])
+{
+  PetscInt *idx = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(ptr,2);
+  ierr = ISGetIndices(is,&idx);CHKERRQ(ierr);
+  *ptr = idx;
+  PetscFunctionReturn(0);
+  
+}
+#define ISGetIndices ISGetIndices_232
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISRestoreIndices_232"
+PETSC_STATIC_INLINE PetscErrorCode 
+ISRestoreIndices_232(IS is, const PetscInt *ptr[])
+{
+  PetscInt *idx = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(ptr,2);
+  idx = (PetscInt *) (*ptr);
+  ierr = ISRestoreIndices(is,&idx);CHKERRQ(ierr);
+  *ptr = idx;
+  PetscFunctionReturn(0);
+}
+#define ISRestoreIndices ISRestoreIndices_232
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockGetIndices_232"
+PETSC_STATIC_INLINE PetscErrorCode 
+ISBlockGetIndices_232(IS is, const PetscInt *ptr[])
+{
+  PetscInt *idx = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(ptr,2);
+  ierr = ISBlockGetIndices(is,&idx);CHKERRQ(ierr);
+  *ptr = idx;
+  PetscFunctionReturn(0);
+  
+}
+#define ISBlockGetIndices ISBlockGetIndices_232
+
+#undef __FUNCT__  
+#define __FUNCT__ "ISBlockRestoreIndices_232"
+PETSC_STATIC_INLINE PetscErrorCode 
+ISBlockRestoreIndices_232(IS is, const PetscInt *ptr[])
+{
+  PetscInt *idx = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  PetscValidPointer(ptr,2);
+  idx = (PetscInt *) (*ptr);
+  ierr = ISBlockRestoreIndices(is,&idx);CHKERRQ(ierr);
+  *ptr = idx;
+  PetscFunctionReturn(0);
+}
+#define ISBlockRestoreIndices ISBlockRestoreIndices_232
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISBlockGetSize_232"
 PETSC_STATIC_INLINE PetscErrorCode 
 ISBlockGetSize_232(IS is, PetscInt *size)
