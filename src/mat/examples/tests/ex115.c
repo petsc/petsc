@@ -28,13 +28,10 @@ int main(int argc,char **args)
 
   for (solve_count=0; solve_count<3; solve_count++){
     if (solve_count == 1){
-      /*ierr = MatSetType(C,MATSBAIJMUMPS);CHKERRQ(ierr); */
-      /* ierr = MatSetType(C,MATSBAIJSPOOLES);CHKERRQ(ierr);*/
+      ierr = MatSetType(C,MATSBAIJ);CHKERRQ(ierr);
       ierr = MatSetOption(C,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     } else {
       ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr);
-      /*ierr = MatSetType(C,MATAIJSPOOLES);CHKERRQ(ierr);*/
-	/*ierr = MatSetType(C,MATAIJMUMPS);CHKERRQ(ierr);*/
     }
    
     ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);

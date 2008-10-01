@@ -1,7 +1,7 @@
 static char help[] = "Tests PLAPACK interface.\n\n";
 
 /* Usage:
-     mpiexec -n 4 ex107 -M 50 -mat_plapack_nprows 2 -mat_plapack_npcols 2 -mat_plapack_nb 1 
+     mpiexec -n 4 ./ex107 -M 50 -mat_plapack_nprows 2 -mat_plapack_npcols 2 -mat_plapack_nb 1 
  */
 
 #include "petscmat.h"
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscMPIInt    rank,nproc;
   PetscInt       i,j,k,M = 10,m,n,nfact,nsolve,Istart,Iend,*im,*in;
   PetscScalar    *array,rval;
-  PetscReal      norm;
+  PetscReal      norm,tol=1.e-12;
   IS             perm,iperm;
   MatFactorInfo  info;
   PetscRandom    rand;
@@ -61,7 +61,7 @@ int main(int argc,char **args)
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(C,&Istart,&Iend);CHKERRQ(ierr);
-  printf(" [%d] C m: %d, Istart/end: %d %d\n",rank,m,Istart,Iend);
+  /* printf(" [%d] C m: %d, Istart/end: %d %d\n",rank,m,Istart,Iend); */
   
   ierr = PetscMalloc((m*M+1)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   ierr = PetscMalloc((m+M+1)*sizeof(PetscInt),&im);CHKERRQ(ierr);
@@ -146,19 +146,14 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
       ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-      if (!rank){
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
+      if (norm > tol){
+        if (!rank){
+          ierr = PetscPrintf(PETSC_COMM_SELF,"Error: Norm of error %g, LU nfact %d\n",norm,nfact);CHKERRQ(ierr);
+        }
       }
     }
   } 
   ierr = MatDestroy(F);CHKERRQ(ierr); 
-
-  /* Test repeated MatLUFactorSymbolic() -- fail??? */
-  /*
-  ierr = MatLUFactorSymbolic(C,perm,iperm,&info,&F);CHKERRQ(ierr); 
-  ierr = MatLUFactorNumeric(C,&info,&F);CHKERRQ(ierr);
-  ierr = MatDestroy(F);CHKERRQ(ierr);
-  */
   
   /* Test non-symmetric operations */
   /*-------------------------------*/
@@ -213,7 +208,7 @@ int main(int argc,char **args)
   ierr = MatCholeskyFactorSymbolic(F,Csymm,perm,&info);CHKERRQ(ierr);
   for (nfact = 0; nfact < 2; nfact++){
     if (!rank) printf(" Cholesky nfact %d\n",nfact);
-    ierr = MatCholeskyFactorNumeric(F,Csymm,&info,&F);CHKERRQ(ierr);
+    ierr = MatCholeskyFactorNumeric(F,Csymm,&info);CHKERRQ(ierr);
 
     /* Test MatSolve() */
     for (nsolve = 0; nsolve < 2; nsolve++){
@@ -230,19 +225,14 @@ int main(int argc,char **args)
       /* Check the error */
       ierr = VecAXPY(u,-1.0,x);CHKERRQ(ierr);  /* u <- (-1.0)x + u */
       ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-      if (!rank){
-        ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error %A\n",norm);CHKERRQ(ierr);
+      if (norm > tol){ 
+        if (!rank){
+          ierr = PetscPrintf(PETSC_COMM_SELF,"Error: Norm of error %g, Cholesky nfact %d\n",norm,nfact);CHKERRQ(ierr);
+        }
       }
     }
   }
   ierr = MatDestroy(F);CHKERRQ(ierr); 
-
-  /* Test repeated MatFactorSymbolic() -- fail??? */
-  /*
-  ierr = MatCholeskyFactorSymbolic(Csymm,perm,&info,&F);CHKERRQ(ierr); 
-  ierr = MatCholeskyFactorNumeric(Csymm,&info,&F);CHKERRQ(ierr);
-  ierr = MatDestroy(F);CHKERRQ(ierr);
-  */
 
   /* Free data structures */
   ierr = ISDestroy(perm);CHKERRQ(ierr);
@@ -255,9 +245,8 @@ int main(int argc,char **args)
   ierr = VecDestroy(u);CHKERRQ(ierr); 
   
   ierr = MatDestroy(Cpetsc);CHKERRQ(ierr); 
-  ierr = MatDestroy(C);CHKERRQ(ierr);/* works! */
+  ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(Csymm);CHKERRQ(ierr);
-  /* ierr = MatDestroy(C);CHKERRQ(ierr); */
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;

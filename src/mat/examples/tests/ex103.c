@@ -17,6 +17,7 @@ int main(int argc,char **args)
   IS             perm,iperm;
   MatFactorInfo  info;
   PetscRandom    rand;
+  PetscTruth     flg;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &rank);CHKERRQ(ierr);
@@ -54,11 +55,17 @@ int main(int argc,char **args)
 
   /* Test MatDuplicate() */
   ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr); 
+  ierr = MatEqual(C,C1,&flg);CHKERRQ(ierr);
+  if (!flg){
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Duplicate C1 != C");
+  }
 
   /* Test LU Factorization */
   ierr = MatGetOrdering(C1,MATORDERING_NATURAL,&perm,&iperm);CHKERRQ(ierr);
   ierr = MatGetFactor(C1,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+
   ierr = MatLUFactorSymbolic(F,C1,perm,iperm,&info);CHKERRQ(ierr);
+
   for (nfact = 0; nfact < 2; nfact++){
     if (!rank) printf(" LU nfact %d\n",nfact);
     ierr = MatLUFactorNumeric(F,C1,&info);CHKERRQ(ierr);
