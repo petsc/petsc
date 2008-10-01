@@ -2387,10 +2387,19 @@ PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
   if (n != A->rmap->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<m; i++) {
     ncols = ai[1] - ai[0]; ai++;
-    x[i] = 0.0; 
-    for (j=0; j<ncols; j++){
-      atmp = PetscAbsScalar(*aa);         
-      if (PetscAbsScalar(x[i]) > atmp) {x[i] = atmp; if (idx) idx[i] = *aj;}
+    if (ncols) {
+      /* Get first nonzero */
+      for(j = 0; j < ncols; j++) {
+        atmp = PetscAbsScalar(aa[j]);
+        if (atmp > 1.0e-12) {x[i] = atmp; if (idx) idx[i] = aj[j]; break;}
+      }
+      if (j == ncols) {x[i] = *aa; if (idx) idx[i] = *aj;}
+    } else {
+      x[i] = 0.0; if (idx) idx[i] = 0;
+    }
+    for(j = 0; j < ncols; j++) {
+      atmp = PetscAbsScalar(*aa);
+      if (atmp > 1.0e-12 && PetscAbsScalar(x[i]) > atmp) {x[i] = atmp; if (idx) idx[i] = *aj;}
       aa++; aj++;
     }   
   }
