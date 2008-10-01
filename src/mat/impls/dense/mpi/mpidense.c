@@ -1857,9 +1857,6 @@ static PetscErrorCode MatDuplicate_MPIDense(Mat A,MatDuplicateOption cpvalues,Ma
   ierr = MatDuplicate(oldmat->A,cpvalues,&a->A);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,a->A);CHKERRQ(ierr);
 
-#if defined(PETSC_HAVE_PLAPACK)
-  ierr = PetscMemcpy(mat->spptr,A->spptr,sizeof(Mat_Plapack));CHKERRQ(ierr);
-#endif
   *newmat = mat;
   PetscFunctionReturn(0);
 }
