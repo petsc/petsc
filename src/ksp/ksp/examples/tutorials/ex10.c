@@ -230,6 +230,42 @@ int main(int argc,char **args)
     ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
 
+
+    /* Check scaling in A */
+    ierr = PetscOptionsHasName(PETSC_NULL, "-check_scaling", &flg);CHKERRQ(ierr);
+    if (flg) {
+      Vec         max, min;
+      PetscInt    idx;
+      PetscScalar val;
+
+      ierr = VecDuplicate(x, &max);CHKERRQ(ierr);
+      ierr = VecDuplicate(x, &min);CHKERRQ(ierr);
+      ierr = MatGetRowMaxAbs(A, max, PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetRowMinAbs(A, min, PETSC_NULL);CHKERRQ(ierr);
+      {
+        PetscViewer viewer;
+
+        ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "max.data", &viewer);CHKERRQ(ierr);
+        ierr = VecView(max, viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, "min.data", &viewer);CHKERRQ(ierr);
+        ierr = VecView(min, viewer);CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      }
+      ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+      ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+      ierr = VecView(min, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+      ierr = VecMin(min, &idx, &val);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+      ierr = VecPointwiseDivide(max, max, min);CHKERRQ(ierr);
+      ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %G at row %d\n", val, idx);CHKERRQ(ierr);
+      ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+      ierr = VecDestroy(max);CHKERRQ(ierr);
+      ierr = VecDestroy(min);CHKERRQ(ierr);
+    }
+
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

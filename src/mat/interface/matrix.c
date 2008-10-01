@@ -3566,6 +3566,50 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMinAbs"
+/*@ 
+   MatGetRowMinAbs - Gets the minimum value (in absolute value) of each
+        row of the matrix
+
+   Collective on Mat and Vec
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameter:
++  v - the vector for storing the minimums
+-  idx - the indices of the column found for each row (optional)
+
+   Level: intermediate
+
+   Notes: if a row is completely empty or has only 0.0 values then the idx[] value for that
+    row is 0 (the first column).
+
+    This code is only implemented for a couple of matrix formats.
+
+   Concepts: matrices^getting row maximums
+
+.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMaxAbs(), MatGetRowMin()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMinAbs(Mat mat,Vec v,PetscInt idx[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,2);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (!mat->ops->getrowminabs) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  if (idx) {ierr = PetscMemzero(idx,mat->rmap->n*sizeof(PetscInt));CHKERRQ(ierr);}
+
+  ierr = (*mat->ops->getrowminabs)(mat,v,idx);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetRowMax"
 /*@ 
    MatGetRowMax - Gets the maximum value (of the real part) of each
