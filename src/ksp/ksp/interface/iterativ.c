@@ -280,6 +280,48 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPMonitorRange_Private"
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange_Private(KSP ksp,PetscInt it,PetscReal *per)
+{
+  PetscErrorCode          ierr;
+  Vec                     resid,work;
+  PetscReal               rmax,pwork;
+  PC                      pc;
+  Mat                     A,B;
+  PetscInt                i,n,N;
+  PetscScalar             *r;
+
+  PetscFunctionBegin;
+  ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
+  ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
+
+  /*
+     Unscale the residual if the matrix is, for example, a BlockSolve matrix
+    but only if both matrices are the same matrix, since only then would 
+    they be scaled.
+  */
+  ierr = VecCopy(resid,work);CHKERRQ(ierr);
+  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+  ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
+  if (A == B) {
+    ierr = MatUnScaleSystem(A,work,PETSC_NULL);CHKERRQ(ierr);
+  }
+  ierr = VecNorm(work,NORM_INFINITY,&rmax);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(work,&n);CHKERRQ(ierr);
+  ierr = VecGetSize(work,&N);CHKERRQ(ierr);
+  ierr = VecGetArray(work,&r);CHKERRQ(ierr);
+  pwork = 0.0;
+  for (i=0; i<n; i++) {
+    pwork += (PetscAbsScalar(r[i]) > .20*rmax); 
+  }
+  ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,PetscSum_Op,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+  ierr = VecRestoreArray(work,&r);CHKERRQ(ierr);
+  ierr = VecDestroy(work);CHKERRQ(ierr);
+  *per  = *per/N;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPMonitorRange"
 /*@C
    KSPMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
@@ -311,43 +353,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,
 PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorRange(KSP ksp,PetscInt it,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode          ierr;
-  Vec                     resid,work;
-  PetscReal               rmax,per,pwork;
-  PC                      pc;
-  Mat                     A,B;
+  PetscReal               perc,rel;
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
-  PetscInt                i,n,N;
-  PetscScalar             *r;
+  /* should be in a MonitorRangeContext */
+  static PetscReal        prev;
 
   PetscFunctionBegin;
+  if (!it) prev = rnorm;
   if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
-  ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
-  ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
+  ierr = KSPMonitorRange_Private(ksp,it,&perc);CHKERRQ(ierr);
 
-  /*
-     Unscale the residual if the matrix is, for example, a BlockSolve matrix
-    but only if both matrices are the same matrix, since only then would 
-    they be scaled.
-  */
-  ierr = VecCopy(resid,work);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  ierr = PCGetOperators(pc,&A,&B,PETSC_NULL);CHKERRQ(ierr);
-  if (A == B) {
-    ierr = MatUnScaleSystem(A,work,PETSC_NULL);CHKERRQ(ierr);
-  }
-  ierr = VecNorm(work,NORM_INFINITY,&rmax);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(work,&n);CHKERRQ(ierr);
-  ierr = VecGetSize(work,&N);CHKERRQ(ierr);
-  ierr = VecGetArray(work,&r);CHKERRQ(ierr);
-  pwork = 0.0;
-  for (i=0; i<n; i++) {
-    pwork += (PetscAbsScalar(r[i]) > .10*rmax); 
-  }
-  ierr = MPI_Allreduce(&pwork,&per,1,MPIU_REAL,PetscSum_Op,((PetscObject)ksp)->comm);CHKERRQ(ierr);
-  ierr = VecRestoreArray(work,&r);CHKERRQ(ierr);
-  ierr = VecDestroy(work);CHKERRQ(ierr);
-
-  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 10 percent of maximum %5.2f\n",it,rnorm,100.0*per/N);CHKERRQ(ierr);
+  rel  = (prev - rnorm)/prev;
+  prev = rnorm;
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,rnorm,100.0*perc,rel,rel/perc);CHKERRQ(ierr);
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

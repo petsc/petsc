@@ -468,6 +468,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     if (flg){
       ierr = KSPMonitorSet(ksp,KSPMonitorLGTrueResidualNorm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
+    /*
+      Graphically plots preconditioned residual norm and range of residual element values
+    */
+    ierr = PetscOptionsName("-ksp_monitor_range_draw","Monitor graphically preconditioned residual norm","KSPMonitorSet",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = KSPMonitorSet(ksp,KSPMonitorLGRange,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    }
 
     /* -----------------------------------------------------------------------*/
 

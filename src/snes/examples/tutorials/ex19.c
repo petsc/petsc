@@ -174,6 +174,10 @@ int main(int argc,char **argv)
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
 
+/********  PetscDraw draw;
+  ierr = PetscViewerDrawGetDraw(PETSC_VIEWER_DRAW_(PETSC_COMM_WORLD),0,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetPause(draw,-1);CHKERRQ(ierr);
+  ierr = PetscDrawPause(draw);CHKERRQ(ierr); */
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

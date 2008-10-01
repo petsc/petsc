@@ -247,7 +247,7 @@ EXTERN_C_BEGIN
 void PETSC_DLLEXPORT PetscSum_Local(void *in,void *out,PetscMPIInt *cnt,MPI_Datatype *datatype)
 {
   PetscScalar *xin = (PetscScalar *)in,*xout = (PetscScalar*)out;
-  PetscInt         i,count = *cnt;
+  PetscInt    i,count = *cnt;
 
   PetscFunctionBegin;
   if (*datatype != MPIU_SCALAR) {

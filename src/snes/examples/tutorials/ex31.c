@@ -501,7 +501,6 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 #define __FUNCT__ "MyFormMatrix"
 PetscErrorCode MyFormMatrix(DMMG fdmmg,Mat A,Mat B)
 {
-  AppCtx         *app = (AppCtx*)fdmmg->user;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
