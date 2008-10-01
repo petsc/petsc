@@ -493,6 +493,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonal(Mat,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMin(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMaxAbs(Mat,Vec,PetscInt[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMinAbs(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat,MatReuse,Mat*);
 PetscPolymorphicFunction(MatTranspose,(Mat A),(A,MAT_INITIAL_MATRIX,&t),Mat,t)
@@ -1444,15 +1445,15 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_VALUES_LOCAL=68,
                MATOP_ZERO_ROWS_LOCAL=69,
                MATOP_GET_ROW_MAX_ABS=70,
-               MATOP_CONVERT=71,
-               MATOP_SET_COLORING=72,
-               MATOP_SET_VALUES_ADIC=73,
-               MATOP_SET_VALUES_ADIFOR=74,
-               MATOP_FD_COLORING_APPLY=75,
-               MATOP_SET_FROM_OPTIONS=76,
-               MATOP_MULT_CON=77,
-               MATOP_MULT_TRANSPOSE_CON=78,
-               MATOP_ILU_FACTOR_SYMBOLIC_CON=79,
+               MATOP_GET_ROW_MIN_ABS=71,
+               MATOP_CONVERT=72,
+               MATOP_SET_COLORING=73,
+               MATOP_SET_VALUES_ADIC=74,
+               MATOP_SET_VALUES_ADIFOR=75,
+               MATOP_FD_COLORING_APPLY=76,
+               MATOP_SET_FROM_OPTIONS=77,
+               MATOP_MULT_CON=78,
+               MATOP_MULT_TRANSPOSE_CON=79,
                MATOP_PERMUTE_SPARSIFY=80,
                MATOP_MULT_MULTIPLE=81,
                MATOP_SOLVE_MULTIPLE=82,
