@@ -86,11 +86,24 @@ def main():
                           'build_ext'  : build_ext},
           **metadata)
 
-# --------------------------------------------------------------------
-
 if __name__ == '__main__':
+    def cython_help():
+        import sys, os
+        csource = os.path.join('src', 'petsc4py_PETSc.c')
+        if os.path.exists(csource): return
+        warn = lambda msg='': sys.stderr.write(msg+'\n')
+        warn("*"*70)
+        warn()
+        warn("You need to generate C source files with Cython !!!")
+        warn("Please execute in your shell:")
+        warn()
+        warn("$ python ./conf/cythonize.py")
+        warn()
+        warn("*"*70)
+        warn()
     ## from distutils import log
     ## log.set_verbosity(log.DEBUG)
+    cython_help()
     main()
 
 # --------------------------------------------------------------------
