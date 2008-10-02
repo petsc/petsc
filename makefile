@@ -7,9 +7,9 @@ default: build
 config: 
 	${PYTHON} setup.py config ${CONFIGOPT}
 
-src: src/petsc4py_PETSc.c
+src: src/PETSc.c
 
-build:
+build: src
 	${PYTHON} setup.py build ${BUILDOPT}
 
 test:
@@ -49,6 +49,7 @@ CYTHON_INCLUDE = -I. -Iinclude
 CY_SRC_PXD = $(wildcard src/include/petsc4py/*.pxd)
 CY_SRC_PXI = $(wildcard src/PETSc/*.pxi)
 CY_SRC_PYX = $(wildcard src/PETSc/*.pyx)
+src/PETSc.c: src/petsc4py_PETSc.c
 src/petsc4py_PETSc.c: ${CY_SRC_PXD} ${CY_SRC_PXI} ${CY_SRC_PYX}
 	${CYTHON} ${CYTHON_FLAGS} ${CYTHON_INCLUDE} -w src petsc4py.PETSc.pyx -o petsc4py_PETSc.c
 	mv src/petsc4py_PETSc_api.h src/petsc4py_PETSc.h src/include/petsc4py
