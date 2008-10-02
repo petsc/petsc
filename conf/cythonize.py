@@ -39,7 +39,9 @@ def cythonize(source, includes=(),
             pass
         os.rename(header, dest)
 
-def run(source, wdir=os.path.curdir):
+def run(source,
+        wdir=os.path.curdir
+        includes=[]):
     name, ext = os.path.splitext(source)
     if name.count('.') == 0:
         package = ''
@@ -53,7 +55,8 @@ def run(source, wdir=os.path.curdir):
     try:
         cythonize(source,
                   includes=[os.curdir, 'include',
-                            os.path.join('include', package)],
+                            os.path.join('include', package),
+                            ] + includes,
                   output_h=os.path.join('include', package),
                   )
     finally:
