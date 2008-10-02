@@ -2381,6 +2381,48 @@ PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMinAbs_MPIAIJ"
+PetscErrorCode MatGetRowMinAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
+{
+  Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,*idxb = 0;
+  PetscScalar    *va,*vb;
+  Vec            vtmp;
+
+  PetscFunctionBegin; 
+  ierr = MatGetRowMinAbs(a->A,v,idx);CHKERRQ(ierr); 
+  ierr = VecGetArray(v,&va);CHKERRQ(ierr);
+  if (idx) {
+    for (i=0; i<A->cmap->n; i++) {
+      if (PetscAbsScalar(va[i])) idx[i] += A->cmap->rstart;
+    }
+  }
+
+  ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap->n,&vtmp);CHKERRQ(ierr);
+  if (idx) {
+    ierr = PetscMalloc(A->rmap->n*sizeof(PetscInt),&idxb);CHKERRQ(ierr);
+  }
+  ierr = MatGetRowMinAbs(a->B,vtmp,idxb);CHKERRQ(ierr);
+  ierr = VecGetArray(vtmp,&vb);CHKERRQ(ierr);
+
+  for (i=0; i<A->rmap->n; i++){
+    if (PetscAbsScalar(va[i]) > PetscAbsScalar(vb[i])) {
+      va[i] = vb[i]; 
+      if (idx) idx[i] = a->garray[idxb[i]];
+    }
+  }
+
+  ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
+  if (idxb) {
+    ierr = PetscFree(idxb);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(vtmp);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetRowMin_MPIAIJ"
 PetscErrorCode MatGetRowMin_MPIAIJ(Mat A, Vec v, PetscInt idx[])
 {
@@ -2405,6 +2447,47 @@ PetscErrorCode MatGetRowMin_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   ierr = VecGetArray(offdiagV, &offdiagA);CHKERRQ(ierr);
   for(r = 0; r < n; ++r) {
     if (PetscAbsScalar(diagA[r]) <= PetscAbsScalar(offdiagA[r])) {
+      a[r]   = diagA[r];
+      idx[r] = cstart + diagIdx[r];
+    } else {
+      a[r]   = offdiagA[r];
+      idx[r] = cmap[offdiagIdx[r]];
+    }
+  }
+  ierr = VecRestoreArray(v,        &a);CHKERRQ(ierr);
+  ierr = VecRestoreArray(diagV,    &diagA);CHKERRQ(ierr);
+  ierr = VecRestoreArray(offdiagV, &offdiagA);CHKERRQ(ierr);
+  ierr = VecDestroy(diagV);CHKERRQ(ierr);
+  ierr = VecDestroy(offdiagV);CHKERRQ(ierr);
+  ierr = PetscFree2(diagIdx, offdiagIdx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMax_MPIAIJ"
+PetscErrorCode MatGetRowMax_MPIAIJ(Mat A, Vec v, PetscInt idx[])
+{
+  Mat_MPIAIJ    *mat    = (Mat_MPIAIJ *) A->data;
+  PetscInt       n      = A->rmap->n;
+  PetscInt       cstart = A->cmap->rstart;
+  PetscInt      *cmap   = mat->garray;
+  PetscInt      *diagIdx, *offdiagIdx;
+  Vec            diagV, offdiagV;
+  PetscScalar   *a, *diagA, *offdiagA;
+  PetscInt       r;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc2(n,PetscInt,&diagIdx,n,PetscInt,&offdiagIdx);CHKERRQ(ierr);
+  ierr = VecCreateSeq(((PetscObject)A)->comm, n, &diagV);CHKERRQ(ierr);
+  ierr = VecCreateSeq(((PetscObject)A)->comm, n, &offdiagV);CHKERRQ(ierr);
+  ierr = MatGetRowMax(mat->A, diagV,    diagIdx);CHKERRQ(ierr);
+  ierr = MatGetRowMax(mat->B, offdiagV, offdiagIdx);CHKERRQ(ierr);
+  ierr = VecGetArray(v,        &a);CHKERRQ(ierr);
+  ierr = VecGetArray(diagV,    &diagA);CHKERRQ(ierr);
+  ierr = VecGetArray(offdiagV, &offdiagA);CHKERRQ(ierr);
+  for(r = 0; r < n; ++r) {
+    if (PetscAbsScalar(diagA[r]) >= PetscAbsScalar(offdiagA[r])) {
       a[r]   = diagA[r];
       idx[r] = cstart + diagIdx[r];
     } else {
@@ -2490,7 +2573,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatIncreaseOverlap_MPIAIJ,
        MatGetValues_MPIAIJ,
        MatCopy_MPIAIJ,
-/*45*/ 0,
+/*45*/ MatGetRowMax_MPIAIJ,
        MatScale_MPIAIJ,
        0,
        0,
@@ -2516,6 +2599,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
 /*70*/ MatGetRowMaxAbs_MPIAIJ,
+       MatGetRowMinAbs_MPIAIJ,
        0,
        MatSetColoring_MPIAIJ,
 #if defined(PETSC_HAVE_ADIC)
@@ -2530,7 +2614,6 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
 /*80*/ 0,
-       0,
        0,
        0,
 /*84*/ MatLoad_MPIAIJ,

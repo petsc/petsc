@@ -378,6 +378,7 @@
       PetscEnum MATOP_SET_VALUES_LOCAL
       PetscEnum MATOP_ZERO_ROWS_LOCAL
       PetscEnum MATOP_GET_ROW_MAX_ABS
+      PetscEnum MATOP_GET_ROW_MIN_ABS
       PetscEnum MATOP_CONVERT
       PetscEnum MATOP_SET_COLORING
       PetscEnum MATOP_SET_VALUES_ADIC
@@ -386,7 +387,6 @@
       PetscEnum MATOP_SET_FROM_OPTIONS
       PetscEnum MATOP_MULT_CON
       PetscEnum MATOP_MULT_TRANSPOSE_CON
-      PetscEnum MATOP_ILU_FACTOR_SYMBOLIC_CON
       PetscEnum MATOP_PERMUTE_SPARSIFY
       PetscEnum MATOP_MULT_MULTIPLE
       PetscEnum MATOP_SOLVE_MULTIPLE
@@ -496,15 +496,15 @@
       parameter(MATOP_SET_VALUES_LOCAL=68)
       parameter(MATOP_ZERO_ROWS_LOCAL=69)
       parameter(MATOP_GET_ROW_MAX_ABS=70)
-      parameter(MATOP_CONVERT=71)
-      parameter(MATOP_SET_COLORING=72)
-      parameter(MATOP_SET_VALUES_ADIC=73)
-      parameter(MATOP_SET_VALUES_ADIFOR=74)
-      parameter(MATOP_FD_COLORING_APPLY=75)
-      parameter(MATOP_SET_FROM_OPTIONS=76)
-      parameter(MATOP_MULT_CON=77)
-      parameter(MATOP_MULT_TRANSPOSE_CON=78)
-      parameter(MATOP_ILU_FACTOR_SYMBOLIC_CON=79)
+      parameter(MATOP_GET_ROW_MIN_ABS=71)
+      parameter(MATOP_CONVERT=72)
+      parameter(MATOP_SET_COLORING=73)
+      parameter(MATOP_SET_VALUES_ADIC=74)
+      parameter(MATOP_SET_VALUES_ADIFOR=75)
+      parameter(MATOP_FD_COLORING_APPLY=76)
+      parameter(MATOP_SET_FROM_OPTIONS=77)
+      parameter(MATOP_MULT_CON=78)
+      parameter(MATOP_MULT_TRANSPOSE_CON=79)
       parameter(MATOP_PERMUTE_SPARSIFY=80)
       parameter(MATOP_MULT_MULTIPLE=81)
       parameter(MATOP_SOLVE_MULTIPLE=82)

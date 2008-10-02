@@ -154,6 +154,81 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES snes,PetscInt its,Pet
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMonitorRange_Private"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange_Private(SNES snes,PetscInt it,PetscReal *per)
+{
+  PetscErrorCode          ierr;
+  Vec                     resid;
+  PetscReal               rmax,pwork;
+  PetscInt                i,n,N;
+  PetscScalar             *r;
+
+  PetscFunctionBegin;
+  ierr = SNESGetFunction(snes,&resid,0,0);CHKERRQ(ierr);
+  ierr = VecNorm(resid,NORM_INFINITY,&rmax);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(resid,&n);CHKERRQ(ierr);
+  ierr = VecGetSize(resid,&N);CHKERRQ(ierr);
+  ierr = VecGetArray(resid,&r);CHKERRQ(ierr);
+  pwork = 0.0;
+  for (i=0; i<n; i++) {
+    pwork += (PetscAbsScalar(r[i]) > .20*rmax); 
+  }
+  ierr = MPI_Allreduce(&pwork,per,1,MPIU_REAL,PetscSum_Op,((PetscObject)snes)->comm);CHKERRQ(ierr);
+  ierr = VecRestoreArray(resid,&r);CHKERRQ(ierr);
+  *per  = *per/N;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMonitorRange"
+/*@C
+   SNESMonitorRange - Prints the percentage of residual elements that are more then 10 percent of the maximum value.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes   - iterative context
+.  it    - iteration number
+.  rnorm - 2-norm (preconditioned) residual value (may be estimated).  
+-  dummy - unused monitor context 
+
+   Options Database Key:
+.  -snes_monitor_range - Activates SNESMonitorRange()
+
+
+   Notes:
+   When using either ICC or ILU preconditioners in BlockSolve95 
+   (via MATMPIROWBS matrix format), then use this monitor will
+   print both the residual norm associated with the original
+   (unscaled) matrix.
+
+   Level: intermediate
+
+.keywords: SNES, default, monitor, residual
+
+.seealso: SNESMonitorSet(), SNESMonitorDefault(), SNESMonitorLGCreate()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange(SNES snes,PetscInt it,PetscReal rnorm,void *dummy)
+{
+  PetscErrorCode          ierr;
+  PetscReal               perc,rel;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
+  /* should be in a MonitorRangeContext */
+  static PetscReal        prev;
+
+  PetscFunctionBegin;
+  if (!it) prev = rnorm;
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  ierr = SNESMonitorRange_Private(snes,it,&perc);CHKERRQ(ierr);
+
+  rel  = (prev - rnorm)/prev;
+  prev = rnorm;
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES preconditioned resid norm %14.12e Percent values above 20 percent of maximum %5.2f relative decrease %5.2e ratio %5.2e \n",it,rnorm,100.0*perc,rel,rel/perc);CHKERRQ(ierr);
+  if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 typedef struct {
   PetscViewerASCIIMonitor viewer;
   PetscReal               *history;

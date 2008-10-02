@@ -290,6 +290,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
       ierr = SNESMonitorSet(snes,SNESMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
 
+    ierr = PetscOptionsString("-snes_monitor_range","Monitor range of elements of function","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = SNESMonitorSet(snes,SNESMonitorRange,0,0);CHKERRQ(ierr);
+    }
+
     ierr = PetscOptionsString("-snes_ratiomonitor","Monitor ratios of norms of function","SNESMonitorSetRatio","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,monfilename,((PetscObject)snes)->tablevel,&monviewer);CHKERRQ(ierr);
@@ -310,6 +315,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorResidual,0,0);CHKERRQ(ierr);}
     ierr = PetscOptionsName("-snes_monitor_draw","Plot function norm at each iteration","SNESMonitorLG",&flg);CHKERRQ(ierr);
     if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorLG,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
+    ierr = PetscOptionsName("-snes_monitor_range_draw","Plot function range at each iteration","SNESMonitorLG",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorLGRange,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
     ierr = PetscOptionsName("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESDefaultComputeJacobian",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -1669,6 +1676,96 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGCreate(const char host[],const c
 #undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorLGDestroy"
 PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGDestroy(PetscDrawLG draw)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPMonitorLGDestroy(draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMonitorLGRange"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGRange(SNES snes,PetscInt n,PetscReal rnorm,void *monctx)
+{
+  PetscDrawLG      lg;
+  PetscErrorCode   ierr;
+  PetscReal        x,y,per;
+  PetscViewer      v = (PetscViewer)monctx;
+  static PetscReal prev; /* should be in the context */
+  PetscDraw        draw;
+  PetscFunctionBegin;
+  if (!monctx) {
+    MPI_Comm    comm;
+
+    ierr   = PetscObjectGetComm((PetscObject)snes,&comm);CHKERRQ(ierr);
+    v      = PETSC_VIEWER_DRAW_(comm);
+  }
+  ierr   = PetscViewerDrawGetDrawLG(v,0,&lg);CHKERRQ(ierr);
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  ierr   = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
+  ierr   = PetscDrawSetTitle(draw,"Residual norm");CHKERRQ(ierr);
+  x = (PetscReal) n;
+  if (rnorm > 0.0) y = log10(rnorm); else y = -15.0;
+  ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
+  if (n < 20 || !(n % 5)) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  }
+
+  ierr = PetscViewerDrawGetDrawLG(v,1,&lg);CHKERRQ(ierr);
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetTitle(draw,"% elemts > .2*max elemt");CHKERRQ(ierr);
+  ierr =  SNESMonitorRange_Private(snes,n,&per);CHKERRQ(ierr);
+  x = (PetscReal) n;
+  y = 100.0*per;
+  ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
+  if (n < 20 || !(n % 5)) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  }
+
+  ierr = PetscViewerDrawGetDrawLG(v,2,&lg);CHKERRQ(ierr);
+  if (!n) {prev = rnorm;ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetTitle(draw,"(norm -oldnorm)/oldnorm");CHKERRQ(ierr);
+  x = (PetscReal) n;
+  y = (prev - rnorm)/prev;
+  ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
+  if (n < 20 || !(n % 5)) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  }
+
+  ierr = PetscViewerDrawGetDrawLG(v,3,&lg);CHKERRQ(ierr);
+  if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
+  ierr = PetscDrawLGGetDraw(lg,&draw);CHKERRQ(ierr);
+  ierr = PetscDrawSetTitle(draw,"(norm -oldnorm)/oldnorm*(% > .2 max)");CHKERRQ(ierr);
+  x = (PetscReal) n;
+  y = (prev - rnorm)/(prev*per);
+  if (n > 2) { /*skip initial crazy value */
+    ierr = PetscDrawLGAddPoint(lg,&x,&y);CHKERRQ(ierr);
+  }
+  if (n < 20 || !(n % 5)) {
+    ierr = PetscDrawLGDraw(lg);CHKERRQ(ierr);
+  }
+  prev = rnorm;
+  PetscFunctionReturn(0);
+} 
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMonitorLGRangeCreate"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGRangeCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPMonitorLGCreate(host,label,x,y,m,n,draw);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESMonitorLGRangeDestroy"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGRangeDestroy(PetscDrawLG draw)
 {
   PetscErrorCode ierr;
 

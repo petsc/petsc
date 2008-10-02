@@ -101,16 +101,16 @@ struct _MatOps {
   PetscErrorCode (*zerorowslocal)(Mat,PetscInt,const PetscInt[],PetscScalar);
   /*70*/
   PetscErrorCode (*getrowmaxabs)(Mat,Vec,PetscInt[]);
+  PetscErrorCode (*getrowminabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, const MatType,MatReuse,Mat*);
   PetscErrorCode (*setcoloring)(Mat,ISColoring);
   PetscErrorCode (*setvaluesadic)(Mat,void*);
-  PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
   /*75*/
+  PetscErrorCode (*setvaluesadifor)(Mat,PetscInt,void*);
   PetscErrorCode (*fdcoloringapply)(Mat,MatFDColoring,Vec,MatStructure*,void*);
   PetscErrorCode (*setfromoptions)(Mat);
   PetscErrorCode (*multconstrained)(Mat,Vec,Vec);
   PetscErrorCode (*multtransposeconstrained)(Mat,Vec,Vec);
-  PetscErrorCode (*ilufactorsymbolicconstrained)(Mat,IS,IS,double,PetscInt,PetscInt,Mat *);
   /*80*/
   PetscErrorCode (*permutesparsify)(Mat, PetscInt, double, double, IS, IS, Mat *);
   PetscErrorCode (*mults)(Mat, Vecs, Vecs);

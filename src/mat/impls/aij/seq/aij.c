@@ -2365,6 +2365,49 @@ PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMinAbs_SeqAIJ"
+PetscErrorCode MatGetRowMinAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,m = A->rmap->n,*ai,*aj,ncols,n;
+  PetscReal      atmp;
+  PetscScalar    *x;
+  MatScalar      *aa;
+
+  PetscFunctionBegin;
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+  aa   = a->a;
+  ai   = a->i;
+  aj   = a->j;
+
+  ierr = VecSet(v,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  if (n != A->rmap->n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  for (i=0; i<m; i++) {
+    ncols = ai[1] - ai[0]; ai++;
+    if (ncols) {
+      /* Get first nonzero */
+      for(j = 0; j < ncols; j++) {
+        atmp = PetscAbsScalar(aa[j]);
+        if (atmp > 1.0e-12) {x[i] = atmp; if (idx) idx[i] = aj[j]; break;}
+      }
+      if (j == ncols) {x[i] = *aa; if (idx) idx[i] = *aj;}
+    } else {
+      x[i] = 0.0; if (idx) idx[i] = 0;
+    }
+    for(j = 0; j < ncols; j++) {
+      atmp = PetscAbsScalar(*aa);
+      if (atmp > 1.0e-12 && PetscAbsScalar(x[i]) > atmp) {x[i] = atmp; if (idx) idx[i] = *aj;}
+      aa++; aj++;
+    }   
+  }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatGetRowMin_SeqAIJ"
 PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 {
@@ -2481,6 +2524,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
 /*70*/ MatGetRowMaxAbs_SeqAIJ,
+       MatGetRowMinAbs_SeqAIJ,
        0,
        MatSetColoring_SeqAIJ,
 #if defined(PETSC_HAVE_ADIC)
@@ -2488,9 +2532,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
 #else
        0,
 #endif
-       MatSetValuesAdifor_SeqAIJ,
-/*75*/ 0, 
-       0,
+/*75*/ MatSetValuesAdifor_SeqAIJ,
+       0, 
        0,
        0,
        0,
