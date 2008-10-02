@@ -311,9 +311,6 @@ M*/
 #define PETSC_MAX_INT            1000000000
 #define PETSC_MIN_INT            -1000000000
 
-#define PETSC_MPI_INT_MAX PETSC_MAX_INT
-#define PETSC_MPI_INT_MIN PETSC_MIN_INT
-
 #if defined(PETSC_USE_SINGLE)
 #  define PETSC_MAX                     1.e30
 #  define PETSC_MIN                    -1.e30
