@@ -87,10 +87,10 @@ def main():
           **metadata)
 
 if __name__ == '__main__':
+    import sys, os
+    C_SOURCE = os.path.join('src', 'petsc4py_PETSc.c')
     def cython_help():
-        import sys, os
-        csource = os.path.join('src', 'petsc4py_PETSc.c')
-        if os.path.exists(csource): return
+        if os.path.exists(C_SOURCE): return
         warn = lambda msg='': sys.stderr.write(msg+'\n')
         warn("*"*70)
         warn()
