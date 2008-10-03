@@ -30,6 +30,10 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(PETSC_ERR_SUP,"Cannot use natural norm with KSPBCGSL");
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_LEFT) SETERRQ(PETSC_ERR_SUP,"Use -ksp_norm_type unpreconditioned for right preconditioning and KSPBCGSL");
+  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(PETSC_ERR_SUP,"Use -ksp_norm_type preconditioned for left preconditioning and KSPBCGSL");
+
   /* set up temporary vectors */
   vi = 0;
   ell = bcgsl->ell;
