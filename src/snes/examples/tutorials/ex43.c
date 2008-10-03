@@ -9,6 +9,8 @@ static char help[] = "Newton's method to solve a many-variable system that comes
 
   This is a toy code for playing around
 
+  Counts residual entries as small if they are less then .2 times the maximum
+  Decides to solve a reduced problem if the number of large entries is less than 20 percent of all entries (and this has been true for criteria_reduce iterations)
 */
 #include "petscsnes.h"
 
@@ -69,12 +71,12 @@ PetscErrorCode SolveSubproblem(SNES snes,Ctx *inctx)
   ierr = VecGetArray(residual,&r);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<n; i++) {
-    if (PetscAbsScalar(r[i]) > .2*rmax ) cnt++;
+    if (PetscAbsScalar(r[i]) > .20*rmax ) cnt++;
   }
   ierr = PetscMalloc(cnt*sizeof(PetscInt),&indices);CHKERRQ(ierr);
   cnt  = 0;
   for (i=0; i<n; i++) {
-    if (PetscAbsScalar(r[i]) > .2*rmax ) indices[cnt++] = i;
+    if (PetscAbsScalar(r[i]) > .20*rmax ) indices[cnt++] = i;
   }
   if (cnt > .2*n) PetscFunctionReturn(0);
 
@@ -270,7 +272,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ictx)
   }
   ff[ctx->p+1] = -200.0*xx[ctx->p]*xx[ctx->p] + 200.0*xx[ctx->p+1];
   for (i=ctx->p+2; i<2+ctx->p+ctx->n; i++) {
-    ff[i] = xx[i] - xx[0] + .7*xx[1] - .2*xx[i-1];
+    ff[i] = xx[i] - xx[0] + .7*xx[1] - .2*xx[i-1]*xx[i-1];
   }
 
   /* Restore vectors */
@@ -312,25 +314,25 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
       - Since this is such a small problem, we set all entries for
         the matrix at once.
   */
-  ierr = MatSetValue(*B,0,0, 2.0 + 1200.0*xx[0]*xx[0] - 400.0*xx[1],INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValue(*B,0,1,-400*xx[0] ,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(*B,0,0, 2.0 + 1200.0*xx[0]*xx[0] - 400.0*xx[1],ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(*B,0,1,-400*xx[0] ,ADD_VALUES);CHKERRQ(ierr);
 
   for (i=1; i<ctx->p+1; i++) {
-    ierr = MatSetValue(*B,i,i-1, -400*xx[i-1] ,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValue(*B,i,i, 2.0 + 1200.0*xx[i]*xx[i] - 400.0*xx[i+1] + 200.0,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValue(*B,i,i+1,-400*xx[i] ,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,i-1, -400*xx[i-1] ,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,i, 2.0 + 1200.0*xx[i]*xx[i] - 400.0*xx[i+1] + 200.0,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,i+1,-400*xx[i] ,ADD_VALUES);CHKERRQ(ierr);
   }
 
-  ierr = MatSetValue(*B,ctx->p+1,ctx->p, -400*xx[ctx->p] ,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValue(*B,ctx->p+1,ctx->p+1,200 ,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(*B,ctx->p+1,ctx->p, -400*xx[ctx->p] ,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(*B,ctx->p+1,ctx->p+1,200 ,ADD_VALUES);CHKERRQ(ierr);
 
   *flag = SAME_NONZERO_PATTERN;
 
   for (i=ctx->p+2; i<2+ctx->p+ctx->n; i++) {
-    ierr = MatSetValue(*B,i,i,1.0,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValue(*B,i,0,-1.0,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValue(*B,i,1,.2,INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValue(*B,i,i-1,.2,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,i,1.0,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,0,-1.0,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,1,.7,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,i-1,-.4*xx[i-1],ADD_VALUES);CHKERRQ(ierr);
   }
   /*
      Restore vector
