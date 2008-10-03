@@ -172,6 +172,9 @@ ex41: ex41.o  chkopts
 ex42: ex42.o  chkopts
 	-${CLINKER} -o ex42 ex42.o ${PETSC_SNES_LIB}
 	${RM} ex42.o
+ex43: ex43.o  chkopts
+	-${CLINKER} -o ex43 ex43.o ${PETSC_SNES_LIB}
+	${RM} ex43.o
 
 #--------------------------------------------------------------------------
 runex1:
