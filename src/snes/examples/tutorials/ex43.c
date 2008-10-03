@@ -267,13 +267,10 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ictx)
   ff[0] = -2.0 + 2.0*xx[0] + 400.0*xx[0]*xx[0]*xx[0] - 400.0*xx[0]*xx[1];
   for (i=1; i<1+ctx->p; i++) {
     ff[i] = -2.0 + 2.0*xx[i] + 400.0*xx[i]*xx[i]*xx[i] - 400.0*xx[i]*xx[i+1] + 200.0*(xx[i] - xx[i-1]*xx[i-1]);
-    CHKMEMQ;
   }
   ff[ctx->p+1] = -200.0*xx[ctx->p]*xx[ctx->p] + 200.0*xx[ctx->p+1];
-    CHKMEMQ;
   for (i=ctx->p+2; i<2+ctx->p+ctx->n; i++) {
-    ff[i] = xx[i] - xx[0] + .2*xx[1];
-    CHKMEMQ;
+    ff[i] = xx[i] - xx[0] + .7*xx[1] - .2*xx[i-1];
   }
 
   /* Restore vectors */
@@ -303,6 +300,8 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
   PetscErrorCode ierr;
   PetscInt       i;
   Ctx            *ctx = (Ctx*)ictx;
+
+  ierr = MatZeroEntries(*B);CHKERRQ(ierr);
   /*
      Get pointer to vector data
   */
@@ -331,6 +330,7 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
     ierr = MatSetValue(*B,i,i,1.0,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValue(*B,i,0,-1.0,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValue(*B,i,1,.2,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,i-1,.2,INSERT_VALUES);CHKERRQ(ierr);
   }
   /*
      Restore vector
