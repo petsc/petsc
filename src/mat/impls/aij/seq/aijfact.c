@@ -593,7 +593,14 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   if (b->inode.use) {
     C->ops->solve   = MatSolve_Inode;
   } else {
-    C->ops->solve   = MatSolve_SeqAIJ;
+    PetscTruth row_identity, col_identity;
+    ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
+    ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
+    if (row_identity && col_identity) {
+      C->ops->solve   = MatSolve_SeqAIJ_NaturalOrdering;
+    } else {
+      C->ops->solve   = MatSolve_SeqAIJ;
+    }
   }
   C->ops->solveadd           = MatSolveAdd_SeqAIJ;
   C->ops->solvetranspose     = MatSolveTranspose_SeqAIJ;

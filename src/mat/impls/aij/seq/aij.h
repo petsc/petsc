@@ -161,6 +161,7 @@ EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat,Mat,const MatFactorInfo*);
 EXTERN PetscErrorCode MatLUFactor_SeqAIJ(Mat,IS,IS,const MatFactorInfo*);
 EXTERN PetscErrorCode MatSolve_SeqAIJ(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatSolve_SeqAIJ_NaturalOrdering(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatSolveAdd_SeqAIJ(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatSolveTranspose_SeqAIJ(Mat,Vec,Vec);
