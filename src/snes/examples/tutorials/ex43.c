@@ -14,23 +14,15 @@ static char help[] = "Newton's method to solve a many-variable system that comes
 */
 #include "petscsnes.h"
 
-extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormFunctionSub(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormJacobianSub(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
-typedef struct {
-  PetscInt   n,p;
-  Mat        A,B;
-} Ctx;
 
 typedef struct {
-  PetscInt   n;
   Vec        xwork,fwork;
   VecScatter scatter;
   SNES       snes;
   IS         is;
-  Ctx        *ctx;
 } SubCtx;
 
 #undef __FUNCT__
@@ -43,7 +35,7 @@ PetscErrorCode FormFunctionSub(SNES snes,Vec x,Vec f,void *ictx)
   PetscFunctionBegin;
   ierr = VecScatterBegin(ctx->scatter,x,ctx->xwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx->scatter,x,ctx->xwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = FormFunction1(ctx->snes,ctx->xwork,ctx->fwork,(void*)ctx->ctx);CHKERRQ(ierr);
+  ierr = SNESComputeFunction(ctx->snes,ctx->xwork,ctx->fwork);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx->scatter,ctx->fwork,f,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx->scatter,ctx->fwork,f,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -55,16 +47,17 @@ PetscErrorCode FormJacobianSub(SNES snes,Vec x,Mat *A, Mat *B, MatStructure *str
 {
   PetscErrorCode ierr;
   SubCtx         *ctx = (SubCtx*) ictx;
+  Mat            As,Bs;
 
   PetscFunctionBegin;
   ierr = VecScatterBegin(ctx->scatter,x,ctx->xwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx->scatter,x,ctx->xwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = SNESGetJacobian(ctx->snes,&ctx->ctx->A,&ctx->ctx->B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-  ierr = FormJacobian1(ctx->snes,ctx->xwork,&ctx->ctx->A,&ctx->ctx->B,str,(void*)ctx->ctx);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(ctx->snes,&As,&Bs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = SNESComputeJacobian(ctx->snes,ctx->xwork,&As,&Bs,str);CHKERRQ(ierr);
   if (*B) {
-    ierr = MatGetSubMatrix(ctx->ctx->B,ctx->is,ctx->is,PETSC_DECIDE,MAT_REUSE_MATRIX,B);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(Bs,ctx->is,ctx->is,PETSC_DECIDE,MAT_REUSE_MATRIX,B);CHKERRQ(ierr);
   } else {
-    ierr = MatGetSubMatrix(ctx->ctx->B,ctx->is,ctx->is,PETSC_DECIDE,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix(Bs,ctx->is,ctx->is,PETSC_DECIDE,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
   }
   if (!*A) {
     *A = *B;
@@ -79,7 +72,7 @@ PetscErrorCode FormJacobianSub(SNES snes,Vec x,Mat *A, Mat *B, MatStructure *str
 
 #undef __FUNCT__
 #define __FUNCT__ "SolveSubproblem"
-PetscErrorCode SolveSubproblem(SNES snes,Ctx *inctx)
+PetscErrorCode SolveSubproblem(SNES snes)
 {
   PetscErrorCode ierr;
   Vec            residual,solution;
@@ -93,7 +86,6 @@ PetscErrorCode SolveSubproblem(SNES snes,Ctx *inctx)
 
   PetscFunctionBegin;
   ctx.snes = snes;
-  ctx.ctx  = inctx;
   ierr = SNESGetSolution(snes,&solution);CHKERRQ(ierr);
   ierr = SNESGetFunction(snes,&residual,0,0);CHKERRQ(ierr);
   ierr = VecNorm(residual,NORM_INFINITY,&rmax);CHKERRQ(ierr);
@@ -150,6 +142,7 @@ PetscErrorCode SolveSubproblem(SNES snes,Ctx *inctx)
   PetscFunctionReturn(0);
 }
 
+
 extern PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRange_Private(SNES,PetscInt,PetscReal*);
 static PetscInt CountGood = 0;
 
@@ -165,6 +158,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT MonitorRange(SNES snes,PetscInt it,PetscReal 
   else CountGood = 0;
   PetscFunctionReturn(0);
 }
+
+extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
+
+typedef struct {
+  PetscInt   n,p;
+} Ctx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -251,7 +251,7 @@ int main(int argc,char **argv)
     ierr = SNESGetConvergedReason(snes,&reason);CHKERRQ(ierr);
     if (reason && reason != SNES_DIVERGED_MAX_IT) break;
     if (CountGood > criteria_reduce) {
-      ierr = SolveSubproblem(snes,&ctx);CHKERRQ(ierr);
+      ierr = SolveSubproblem(snes);CHKERRQ(ierr);
        CountGood = 0;
     }
   }
