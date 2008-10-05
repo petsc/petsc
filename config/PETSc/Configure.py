@@ -120,7 +120,7 @@ class Configure(config.base.Configure):
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('PCC_LINKER_LIBS',self.toString(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
+    self.addMakeMacro('PCC_LINKER_LIBS',self.toStringLibs(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
 
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
@@ -146,7 +146,7 @@ class Configure(config.base.Configure):
       self.setCompilers.popLanguage()
       # '' for Unix, .exe for Windows
       self.addMakeMacro('FC_LINKER_SUFFIX','')
-      self.addMakeMacro('FC_LINKER_LIBS',self.toString(self.compilers.flibs+self.compilers.LIBS.split(' ')))      
+      self.addMakeMacro('FC_LINKER_LIBS',self.toStringLibs(self.compilers.flibs+self.compilers.LIBS.split(' ')))      
     else:
       self.addMakeMacro('FC','')
 
@@ -163,9 +163,9 @@ class Configure(config.base.Configure):
     else:
       self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
     if self.setCompilers.isDarwin() and self.languages.clanguage == 'Cxx':
-      self.addMakeMacro('SL_LINKER_LIBS',self.toString(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
+      self.addMakeMacro('SL_LINKER_LIBS',self.toStringLibs(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
     else:
-      self.addMakeMacro('SL_LINKER_LIBS',self.toString(self.compilers.flibs+self.compilers.LIBS.split(' ')))            
+      self.addMakeMacro('SL_LINKER_LIBS',self.toStringLibs(self.compilers.flibs+self.compilers.LIBS.split(' ')))            
 #-----------------------------------------------------------------------------------------------------
 
     # CONLY or CPP. We should change the PETSc makefiles to do this better
@@ -192,17 +192,20 @@ class Configure(config.base.Configure):
 #-----------------------------------------------------------------------------------------------------
     # print include and lib for external packages
     self.framework.packages.reverse()
+    includes = []
+    libs = []
     for i in self.framework.packages:
       self.addDefine('HAVE_'+i.PACKAGE, 1)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
       self.addMakeMacro(i.PACKAGE+'_LIB', ' '.join([self.libraries.getLibArgument(l) for l in i.lib]))
+      libs.extend([self.libraries.getLibArgument(l) for l in i.lib])
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
           i.include = [i.include]
-        self.addMakeMacro(i.PACKAGE+'_INCLUDE', ' '.join([self.headers.getIncludeArgument(inc) for inc in i.include]))
-    self.addMakeMacro('PACKAGES_LIBS',' '.join(['${'+package.PACKAGE+'_LIB}' for package in self.framework.packages]+[self.libraries.getLibArgument(l) for l in self.libraries.math]))
-    self.addMakeMacro('PACKAGES_INCLUDES',' '.join(['${'+p.PACKAGE+'_INCLUDE}' for p in self.framework.packages if hasattr(p,'include')]))
+        includes.extend([self.headers.getIncludeArgument(inc) for inc in i.include]) 
+    self.addMakeMacro('PACKAGES_LIBS',self.toStringLibs(libs+[self.libraries.getLibArgument(l) for l in self.libraries.math]))
+    self.addMakeMacro('PACKAGES_INCLUDES',self.toStringIncludes(includes))
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
 
@@ -213,7 +216,7 @@ class Configure(config.base.Configure):
     self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"'))
     return
 
-  def toString(self,libs):
+  def toStringLibs(self,libs):
     '''Converts a list of libraries to a string suitable for a linker, removes duplicates'''
     libs = [self.libraries.getLibArgument(lib) for lib in libs]
     newlibs = []
@@ -228,6 +231,21 @@ class Configure(config.base.Configure):
       newlibs.append(j)
     libs = newlibs
     return ' '.join(libs)
+
+  def toStringIncludes(self,includes):
+    '''Converts a list of -Iincludes to a string suitable for a compiler, removes duplicates'''
+    newincludes = []
+    # sometimes a single entry in the list is actually several items (why?)
+    for j in includes:
+      newincludes.extend(j.split(' '))
+    includes = newincludes
+    newincludes = []
+    # do not remove duplicate -l, because there is a tiny chance that order may matter
+    for j in includes:
+      if j in newincludes and j.startswith('-I'): continue
+      newincludes.append(j)
+    includes = newincludes
+    return ' '.join(includes)
 
   def dumpConfigInfo(self):
     import time
