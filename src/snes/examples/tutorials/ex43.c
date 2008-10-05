@@ -17,9 +17,11 @@ static char help[] = "Newton's method to solve a many-variable system that comes
 extern PetscErrorCode FormJacobian1(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 extern PetscErrorCode FormFunction1(SNES,Vec,Vec,void*);
 extern PetscErrorCode FormFunctionSub(SNES,Vec,Vec,void*);
+extern PetscErrorCode FormJacobianSub(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 typedef struct {
   PetscInt   n,p;
+  Mat        A,B;
 } Ctx;
 
 typedef struct {
@@ -27,6 +29,7 @@ typedef struct {
   Vec        xwork,fwork;
   VecScatter scatter;
   SNES       snes;
+  IS         is;
   Ctx        *ctx;
 } SubCtx;
 
@@ -47,6 +50,34 @@ PetscErrorCode FormFunctionSub(SNES snes,Vec x,Vec f,void *ictx)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "FormJaocbianSub"
+PetscErrorCode FormJacobianSub(SNES snes,Vec x,Mat *A, Mat *B, MatStructure *str,void *ictx)
+{
+  PetscErrorCode ierr;
+  SubCtx         *ctx = (SubCtx*) ictx;
+
+  PetscFunctionBegin;
+  ierr = VecScatterBegin(ctx->scatter,x,ctx->xwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(ctx->scatter,x,ctx->xwork,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = SNESGetJacobian(ctx->snes,&ctx->ctx->A,&ctx->ctx->B,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = FormJacobian1(ctx->snes,ctx->xwork,&ctx->ctx->A,&ctx->ctx->B,str,(void*)ctx->ctx);CHKERRQ(ierr);
+  if (*B) {
+    ierr = MatGetSubMatrix(ctx->ctx->B,ctx->is,ctx->is,PETSC_DECIDE,MAT_REUSE_MATRIX,B);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetSubMatrix(ctx->ctx->B,ctx->is,ctx->is,PETSC_DECIDE,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
+  }
+  if (!*A) {
+    *A = *B;
+    ierr = PetscObjectReference((PetscObject)*A);CHKERRQ(ierr);
+  }
+  if (*A != *B) {
+    ierr = MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "SolveSubproblem"
 PetscErrorCode SolveSubproblem(SNES snes,Ctx *inctx)
 {
@@ -55,7 +86,6 @@ PetscErrorCode SolveSubproblem(SNES snes,Ctx *inctx)
   PetscReal      rmax;
   PetscInt       i,n,cnt,*indices;
   PetscScalar    *r;
-  IS             is;
   SNES           snessub;
   Vec            x,f;
   SubCtx         ctx;
@@ -82,19 +112,19 @@ PetscErrorCode SolveSubproblem(SNES snes,Ctx *inctx)
 
   printf("number in subproblem %d\n",cnt);CHKERRQ(ierr);
   ierr = VecRestoreArray(residual,&r);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,indices,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_WORLD,cnt,indices,&ctx.is);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   ierr = SNESGetJacobian(snes,0,&mat,0,0);CHKERRQ(ierr);
-  ierr = MatIncreaseOverlap(mat,1,&is,1);CHKERRQ(ierr);
-  ierr = ISGetLocalSize(is,&cnt);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlap(mat,1,&ctx.is,1);CHKERRQ(ierr);
+  ierr = ISSort(ctx.is);CHKERRQ(ierr);
+  ierr = ISGetLocalSize(ctx.is,&cnt);CHKERRQ(ierr);
   printf("number in subproblem %d\n",cnt);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
   ierr = VecSetSizes(x,cnt,cnt);CHKERRQ(ierr);
   ierr = VecSetType(x,VECSEQ);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&f);CHKERRQ(ierr);
-  ierr = VecScatterCreate(solution,is,x,PETSC_NULL,&ctx.scatter);CHKERRQ(ierr);
-  ierr = ISDestroy(is);CHKERRQ(ierr);
+  ierr = VecScatterCreate(solution,ctx.is,x,PETSC_NULL,&ctx.scatter);CHKERRQ(ierr);
 
   ierr = VecDuplicate(solution,&ctx.xwork);CHKERRQ(ierr);
   ierr = VecCopy(solution,ctx.xwork);CHKERRQ(ierr);
@@ -104,11 +134,13 @@ PetscErrorCode SolveSubproblem(SNES snes,Ctx *inctx)
   ierr = SNESCreate(PETSC_COMM_WORLD,&snessub);CHKERRQ(ierr);
   ierr = SNESSetOptionsPrefix(snessub,"sub_");CHKERRQ(ierr);
   ierr = SNESSetFunction(snessub,f,FormFunctionSub,(void*)&ctx);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snessub,0,0,FormJacobianSub,(void*)&ctx);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snessub);CHKERRQ(ierr);
   ierr = SNESSolve(snessub,PETSC_NULL,x);CHKERRQ(ierr);
   ierr = VecScatterBegin(ctx.scatter,x,solution,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(ctx.scatter,x,solution,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
+  ierr = ISDestroy(ctx.is);CHKERRQ(ierr);
   ierr = VecDestroy(ctx.xwork);CHKERRQ(ierr);
   ierr = VecDestroy(ctx.fwork);CHKERRQ(ierr);
   ierr = VecScatterDestroy(ctx.scatter);CHKERRQ(ierr);
