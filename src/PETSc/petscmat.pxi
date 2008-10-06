@@ -271,7 +271,7 @@ cdef extern from "custom.h":
 
 cdef extern from "petscmat.h":
 
-    ctypedef int (PetscNullSpaceFunction)(PetscVec,void*) except PETSC_ERR_PYTHON
+    ctypedef int PetscNullSpaceFunction(PetscVec,void*) except PETSC_ERR_PYTHON
 
     int MatNullSpaceDestroy(PetscNullSpace)
     int MatNullSpaceCreate(MPI_Comm,PetscTruth,PetscInt,PetscVec[],PetscNullSpace*)
@@ -458,9 +458,9 @@ cdef extern from "petsc.h":
     ctypedef PetscReal   const_PetscReal   "const PetscReal"
     ctypedef PetscScalar const_PetscScalar "const PetscScalar"
 
-ctypedef int (MatSetValuesFcn)(PetscMat,PetscInt,const_PetscInt[],
-                               PetscInt,const_PetscInt[],
-                               const_PetscScalar[],PetscInsertMode)
+ctypedef int MatSetValuesFcn(PetscMat,PetscInt,const_PetscInt[],
+                             PetscInt,const_PetscInt[],
+                             const_PetscScalar[],PetscInsertMode)
 
 cdef inline MatSetValuesFcn* matsetvalues_fcn(int blocked, int local):
     cdef MatSetValuesFcn *setvalues = NULL

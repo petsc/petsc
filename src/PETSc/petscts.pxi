@@ -12,27 +12,27 @@ cdef extern from "petscts.h":
         TS_LINEAR
         TS_NONLINEAR
 
-    ctypedef int (PetscTSCtxDel)(void*)
+    ctypedef int PetscTSCtxDel(void*)
 
-    ctypedef int (PetscTSFunction)(PetscTS,
-                                   PetscReal,
-                                   PetscVec,
-                                   PetscVec,
-                                   void*) except PETSC_ERR_PYTHON
+    ctypedef int PetscTSFunction(PetscTS,
+                                 PetscReal,
+                                 PetscVec,
+                                 PetscVec,
+                                 void*) except PETSC_ERR_PYTHON
 
-    ctypedef int (PetscTSJacobian)(PetscTS,
-                                   PetscReal,
-                                   PetscVec,
-                                   PetscMat*,
-                                   PetscMat*,
-                                   PetscMatStructure*,
-                                   void*) except PETSC_ERR_PYTHON
+    ctypedef int PetscTSJacobian(PetscTS,
+                                 PetscReal,
+                                 PetscVec,
+                                 PetscMat*,
+                                 PetscMat*,
+                                 PetscMatStructure*,
+                                 void*) except PETSC_ERR_PYTHON
 
-    ctypedef int (PetscTSMonitor)(PetscTS,
-                                  PetscInt,
-                                  PetscReal,
-                                  PetscVec,
-                                  void*) except PETSC_ERR_PYTHON
+    ctypedef int PetscTSMonitor(PetscTS,
+                                PetscInt,
+                                PetscReal,
+                                PetscVec,
+                                void*) except PETSC_ERR_PYTHON
 
     int TSCreate(MPI_Comm comm, PetscTS*)
     int TSDestroy(PetscTS)

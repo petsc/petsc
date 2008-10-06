@@ -281,8 +281,8 @@ cdef inline int vecset(PetscVec v, object o) except -1:
     CHKERR( VecRestoreArray(v, &vv) )
     return 0
 
-ctypedef int (VecSetValuesFcn)(PetscVec,PetscInt,const_PetscInt[],
-                               const_PetscScalar[],PetscInsertMode)
+ctypedef int VecSetValuesFcn(PetscVec,PetscInt,const_PetscInt[],
+                             const_PetscScalar[],PetscInsertMode)
 
 cdef inline int vecsetvalues(PetscVec V,
                              object oi, object ov, object oim,

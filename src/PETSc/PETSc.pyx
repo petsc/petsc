@@ -134,7 +134,7 @@ cdef extern from "Python.h":
 
 cdef extern from "petsc.h":
     int PetscErrorMessage(int,char*[],char**)
-    ctypedef int (PetscTBF)(int,char*,char*,char*,int,int,char*,void*)
+    ctypedef int PetscTBF(int,char*,char*,char*,int,int,char*,void*)
     PetscTBF PetscTBEH "PetscTraceBackErrorHandler"
     int PetscPushErrorHandler(PetscTBF*,void*)
     int PetscPopErrorHandler()

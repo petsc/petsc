@@ -24,35 +24,35 @@ cdef extern from "petscsnes.h":
       SNES_DIVERGED_LOCAL_MIN
 
 
-    ctypedef int (PetscSNESCtxDel)(void*)
+    ctypedef int PetscSNESCtxDel(void*)
 
-    ctypedef int (PetscSNESFunction)(PetscSNES,
-                                     PetscVec,
-                                     PetscVec,
-                                     void*) except PETSC_ERR_PYTHON
+    ctypedef int PetscSNESFunction(PetscSNES,
+                                   PetscVec,
+                                   PetscVec,
+                                   void*) except PETSC_ERR_PYTHON
 
-    ctypedef int (PetscSNESUpdate)(PetscSNES,
-                                   PetscInt) except PETSC_ERR_PYTHON
+    ctypedef int PetscSNESUpdate(PetscSNES,
+                                 PetscInt) except PETSC_ERR_PYTHON
 
-    ctypedef int (PetscSNESJacobian)(PetscSNES,
-                                     PetscVec,
-                                     PetscMat*,
-                                     PetscMat*,
-                                     PetscMatStructure*,
-                                     void*) except PETSC_ERR_PYTHON
+    ctypedef int PetscSNESJacobian(PetscSNES,
+                                   PetscVec,
+                                   PetscMat*,
+                                   PetscMat*,
+                                   PetscMatStructure*,
+                                   void*) except PETSC_ERR_PYTHON
 
-    ctypedef int (PetscSNESConverged)(PetscSNES,
-                                      PetscInt,
-                                      PetscReal,
-                                      PetscReal,
-                                      PetscReal,
-                                      PetscSNESConvergedReason*,
-                                      void*)  except PETSC_ERR_PYTHON
-
-    ctypedef int (PetscSNESMonitor)(PetscSNES,
+    ctypedef int PetscSNESConverged(PetscSNES,
                                     PetscInt,
                                     PetscReal,
-                                    void*) except PETSC_ERR_PYTHON
+                                    PetscReal,
+                                    PetscReal,
+                                    PetscSNESConvergedReason*,
+                                    void*)  except PETSC_ERR_PYTHON
+
+    ctypedef int PetscSNESMonitor(PetscSNES,
+                                  PetscInt,
+                                  PetscReal,
+                                  void*) except PETSC_ERR_PYTHON
 
     int SNESCreate(MPI_Comm,PetscSNES*)
     int SNESDestroy(PetscSNES)

@@ -53,18 +53,18 @@ cdef extern from "petscksp.h":
         KSP_DIVERGED_NAN
         KSP_DIVERGED_INDEFINITE_MAT
 
-    ctypedef int (PetscKSPCtxDel)(void*)
+    ctypedef int PetscKSPCtxDel(void*)
 
-    ctypedef int (PetscKSPConverged)(PetscKSP,
-                                     PetscInt,
-                                     PetscReal,
-                                     PetscKSPConvergedReason*,
-                                     void*)  except PETSC_ERR_PYTHON
-
-    ctypedef int (PetscKSPMonitor)(PetscKSP,
+    ctypedef int PetscKSPConverged(PetscKSP,
                                    PetscInt,
                                    PetscReal,
-                                   void*) except PETSC_ERR_PYTHON
+                                   PetscKSPConvergedReason*,
+                                   void*)  except PETSC_ERR_PYTHON
+
+    ctypedef int PetscKSPMonitor(PetscKSP,
+                                 PetscInt,
+                                 PetscReal,
+                                 void*) except PETSC_ERR_PYTHON
 
     int KSPCreate(MPI_Comm,PetscKSP* CREATE)
     int KSPDestroy(PetscKSP)
