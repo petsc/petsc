@@ -118,7 +118,7 @@ $                 of the preconditioned residual
 $   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
 $                 CG, CHEBYCHEV, and RICHARDSON, automatically true for right (see KSPSetPreconditioningSide()) 
 $                 preconditioning..
-$   KSP_NORM_NATURAL - supported  by cg, cr, and cgs 
+$   KSP_NORM_NATURAL - supported  by KSPCG, KSPCR, KSPCGNE, KSPCGS
 
 
    Options Database Key:

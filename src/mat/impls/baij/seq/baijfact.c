@@ -200,6 +200,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat C,Mat A,const MatFactorInfo *inf
   PetscInt       *diag_offset = b->diag,diag,*pj;
   MatScalar      *pv,*v,*rtmp,multiplier,*pc;
   MatScalar      *ba = b->a,*aa = a->a;
+  PetscTruth     row_identity, col_identity;
 
   PetscFunctionBegin;
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -247,8 +248,15 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat C,Mat A,const MatFactorInfo *inf
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->ops->solve          = MatSolve_SeqBAIJ_1;
-  C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_1;
+  ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
+  ierr = ISIdentity(isicol,&col_identity);CHKERRQ(ierr);
+  if (row_identity && col_identity) {
+    C->ops->solve          = MatSolve_SeqBAIJ_1_NaturalOrdering;
+    C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_1_NaturalOrdering;
+  } else {
+    C->ops->solve          = MatSolve_SeqBAIJ_1;
+    C->ops->solvetranspose = MatSolveTranspose_SeqBAIJ_1;
+  }
   C->assembled = PETSC_TRUE;
   ierr = PetscLogFlops(C->cmap->n);CHKERRQ(ierr);
   PetscFunctionReturn(0);

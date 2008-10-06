@@ -68,6 +68,8 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
   Mat            A;
 
   PetscFunctionBegin;
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_LEFT) SETERRQ(PETSC_ERR_SUP,"Use -ksp_norm_type unpreconditioned for right preconditioning and KSPIBCGS");
+  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(PETSC_ERR_SUP,"Use -ksp_norm_type preconditioned for left preconditioning and KSPIBCGS");
   if (!ksp->vec_rhs->petscnative) SETERRQ(PETSC_ERR_SUP,"Only coded for PETSc vectors");
 
   ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);

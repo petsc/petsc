@@ -35,6 +35,9 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   MatStructure   pflag;
 
   PetscFunctionBegin;
+  if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(PETSC_ERR_SUP,"Cannot use natural residual norm with KSPIBCGS");
+  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) SETERRQ(PETSC_ERR_SUP,"Cannot use unpreconditioned residual norm and KSPIBCGS");
+
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 

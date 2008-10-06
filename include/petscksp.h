@@ -283,10 +283,13 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec(KSP,Vec*);
 
    Level: advanced
 
+   Each solver only supports a subset of these and some may support different ones
+   depending on left or right preconditioning, see KSPSetPCSide()
+
    Notes: this must match finclude/petscksp.h 
 
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
-          KSPSetConvergenceTest()
+          KSPSetConvergenceTest(), KSPSetPCSide()
 E*/
 typedef enum {KSP_NORM_NO = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
 extern const char *KSPNormTypes[];
@@ -322,7 +325,7 @@ M*/
 
 /*MC
     KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the 
-       convergence test routine.
+       convergence test routine. This is only supported by  KSPCG, KSPCR, KSPCGNE, KSPCGS
 
    Level: advanced
 

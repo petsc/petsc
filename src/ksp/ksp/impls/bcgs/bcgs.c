@@ -27,6 +27,9 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
   PetscReal      dp = 0.0;
 
   PetscFunctionBegin;
+  if (ksp->normtype == KSP_NORM_NATURAL) SETERRQ(PETSC_ERR_SUP,"Cannot use natural residual norm with KSPBCGS");
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->pc_side != PC_LEFT) SETERRQ(PETSC_ERR_SUP,"Use -ksp_norm_type unpreconditioned for right preconditioning and KSPBCGS");
+  if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->pc_side != PC_RIGHT) SETERRQ(PETSC_ERR_SUP,"Use -ksp_norm_type preconditioned for left preconditioning and KSPBCGS");
 
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;

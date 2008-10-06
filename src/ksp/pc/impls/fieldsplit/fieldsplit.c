@@ -1091,7 +1091,7 @@ EXTERN_C_END
 
    Input Parameter:
 .  pc - the preconditioner context
-.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL, PC_COMPOSITE_SCHUR
+.  type - PC_COMPOSITE_ADDITIVE, PC_COMPOSITE_MULTIPLICATIVE (default), PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE, PC_COMPOSITE_SPECIAL, PC_COMPOSITE_SCHUR
 
    Options Database Key:
 .  -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special, schur> - Sets fieldsplit preconditioner type
@@ -1131,11 +1131,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC pc,PCCompositeType type
    Level: intermediate
 
    Options Database Keys:
-+   -pc_splitfield_%d_fields <a,b,..> - indicates the fields to be used in the %d'th split
-.   -pc_splitfield_default - automatically add any fields to additional splits that have not
-                              been supplied explicitly by -pc_splitfield_%d_fields
-.   -pc_splitfield_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
-.    -pc_splitfield_type <additive,multiplicative,schur,symmetric_multiplicative>
++   -pc_fieldsplit_%d_fields <a,b,..> - indicates the fields to be used in the %d'th split
+.   -pc_fieldsplit_default - automatically add any fields to additional splits that have not
+                              been supplied explicitly by -pc_fieldsplit_%d_fields
+.   -pc_fieldsplit_block_size <bs> - size of block that defines fields (i.e. there are bs fields)
+.    -pc_fieldsplit_type <additive,multiplicative,schur,symmetric_multiplicative>
 .    -pc_fieldsplit_schur_precondition <true,false> default is true
 
 -    Options prefix for inner solvers when using Schur complement preconditioner are -fieldsplit_0_ and -fieldsplit_1_
