@@ -844,8 +844,8 @@ PetscErrorCode MatGetFactor_mpiaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   mumps->scat_rhs                  = PETSC_NULL;
   mumps->scat_sol                  = PETSC_NULL;
   mumps->nSolve                    = 0;
-  mumps->MatDestroy                = A->ops->destroy;
-
+  mumps->MatDestroy                = B->ops->destroy;
+  B->ops->destroy                  = MatDestroy_MUMPS;
   B->spptr                         = (void*)mumps;
 
   *F = B;
@@ -885,8 +885,8 @@ PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   mumps->nSolve                    = 0;
   mumps->MatDestroy                = B->ops->destroy;
   B->ops->destroy                  = MatDestroy_MUMPS;
-
   B->spptr                         = (void*)mumps;
+
   *F = B;
   PetscFunctionReturn(0);
 }
@@ -922,8 +922,10 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
   mumps->scat_rhs                  = PETSC_NULL;
   mumps->scat_sol                  = PETSC_NULL;
   mumps->nSolve                    = 0;
-  mumps->MatDestroy                = A->ops->destroy;
+  mumps->MatDestroy                = B->ops->destroy;
+  B->ops->destroy                  = MatDestroy_MUMPS;
   B->spptr                         = (void*)mumps;
+
   *F = B;
   PetscFunctionReturn(0);
 }
