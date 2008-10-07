@@ -667,7 +667,8 @@ static PetscErrorCode PCSetFromOptions_FieldSplit(PC pc)
     ierr = PCFieldSplitSetType(pc,ctype);CHKERRQ(ierr);
   }
 
-  if (jac->bs > 0) {
+  /* Only setup fields once */
+  if ((jac->bs > 0) && (jac->nsplits == 0)) {
     /* only allow user to set fields from command line if bs is already known.
        otherwise user can set them in PCFieldSplitSetDefaults() */
     ierr = PetscMalloc(jac->bs*sizeof(PetscInt),&fields);CHKERRQ(ierr);
