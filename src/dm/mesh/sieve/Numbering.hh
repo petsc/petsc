@@ -614,6 +614,10 @@ namespace ALE {
       }
       return this->_orders[bundle.ptr()][name];
     };
+    template<typename ABundle_>
+    void setGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<order_type>& order) {
+      this->_orders[bundle.ptr()][name] = order;
+    };
   };
 }
 #endif
