@@ -63,6 +63,8 @@ struct _p_KSP {
   PetscTruth    res_hist_reset;       /* reset history to size zero for each new solve */
 
   PetscInt      chknorm;             /* only compute/check norm if iterations is great than this */
+  PetscTruth    lagnorm;             /* Lag the residual norm calculation so that it is computed as part of the 
+                                        MPI_Allreduce() for computing the inner products for the next iteration. */ 
   /* --------User (or default) routines (most return -1 on error) --------*/
   PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP,PetscInt,PetscReal,void*); /* returns control to user after */
   PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void*);         /* */

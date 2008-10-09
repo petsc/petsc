@@ -366,6 +366,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
 
     ierr = PetscOptionsInt("-ksp_check_norm_iteration","First iteration to compute residual norm","KSPSetCheckNormIteration",ksp->chknorm,&ksp->chknorm,PETSC_NULL);CHKERRQ(ierr);
 
+    ierr = PetscOptionsName("-ksp_lag_norm","Lag the calculation of the residual norm","KSPSetLagNorm",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = KSPSetLagNorm(ksp,PETSC_TRUE);CHKERRQ(ierr);
+    }
+
     ierr = PetscOptionsName("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetDiagonalScale(ksp,PETSC_TRUE);CHKERRQ(ierr);

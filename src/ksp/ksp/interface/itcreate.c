@@ -182,6 +182,43 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP ksp,PetscInt it)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPSetLagNorm"
+/*@
+   KSPSetLagNorm - Lags the residual norm calculation so that it is computed as part of the MPI_Allreduce() for 
+   computing the inner products for the next iteration.  This can reduce communication costs at the expense of doing 
+   one additional iteration.
+
+
+   Collective on KSP
+
+   Input Parameter:
++  ksp - Krylov solver context
+-  flg - PETSC_TRUE or PETSC_FALSE
+
+   Options Database Keys:
+.  -ksp_lag_norm - lag the calculated residual norm
+
+   Notes: 
+   Currently only works with KSPIBCGS.
+
+   Use KSPSetNormType(ksp,KSP_NORM_NO) to never check the norm
+
+   If you lag the norm and run with, for example, -ksp_monitor, the residual norm reported will be the lagged one.
+   Level: advanced
+
+.keywords: KSP, create, context, norms
+
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()                               
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP ksp,PetscTruth flg)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  ksp->lagnorm = flg;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPGetNormType"
 /*@
    KSPGetNormType - Sets the norm that is used for convergence testing.
