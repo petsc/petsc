@@ -95,4 +95,3 @@ cdef class Random(Object):
             self.setInterval(value)
 
 # --------------------------------------------------------------------
-

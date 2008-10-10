@@ -23,6 +23,20 @@
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscObjectGetClassName"
+PETSC_STATIC_INLINE PetscErrorCode
+PetscObjectGetClassName(PetscObject obj, const char *class_name[])
+{
+  PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidPointer(class_name,2);
+  *class_name = obj->class_name;
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------- */
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISValid"
 PETSC_STATIC_INLINE PetscErrorCode
 ISValid(IS is, PetscTruth *flg)

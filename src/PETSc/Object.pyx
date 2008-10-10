@@ -69,7 +69,8 @@ cdef class Object:
         return self
 
     def getType(self):
-        cdef char* tname = self.obj[0].type_name
+        cdef const_char_p tname = NULL
+        CHKERR( PetscObjectGetType(self.obj[0], &tname) )
         return cp2str(tname)
 
     #
@@ -106,7 +107,8 @@ cdef class Object:
         return cookie
 
     def getClassName(self):
-        cdef char* cname = self.obj[0].class_name
+        cdef const_char_p cname = NULL
+        CHKERR( PetscObjectGetClassName(self.obj[0], &cname) )
         return cp2str(cname)
 
     def getRefCount(self):
@@ -115,6 +117,24 @@ cdef class Object:
         return refcnt
 
     # --- general support ---
+
+    def compose(self, name, Object obj):
+        cdef char *cname = str2cp(name)
+        cdef PetscObject cobj = NULL
+        if obj is not None: cobj = obj.obj[0]
+        CHKERR( PetscObjectCompose(self.obj[0], cname, cobj) )
+
+    def query(self, name):
+        cdef char *cname = str2cp(name)
+        cdef PetscObject cobj = NULL
+        CHKERR( PetscObjectQuery(self.obj[0], cname, &cobj) )
+        if cobj == NULL: return None
+        cdef PetscCookie cookie = 0
+        CHKERR( PetscObjectGetCookie(cobj, &cookie) )
+        cdef type Class = CookieToPyType(cookie)
+        cdef Object newobj = Class()
+        PetscIncref(cobj); newobj.obj[0] = cobj
+        return newobj
 
     def incRef(self):
         return self.inc_ref()
@@ -168,5 +188,26 @@ cdef class Object:
     property refcount:
         def __get__(self):
             return self.getRefCount()
+
+# --------------------------------------------------------------------
+
+cdef dict cookie2type = { 0 : None }
+
+cdef int RegisterPyType(PetscCookie cookie, type cls) except -1:
+    global cookie2type
+    cdef object key = cookie
+    assert key not in cookie2type, \
+           "alredy registered: %d -> %s" % (key, cls)
+    cookie2type[key] = cls
+
+cdef type CookieToPyType(PetscCookie cookie):
+    global cookie2type
+    cdef object key = cookie
+    cdef type cls = Object
+    try:
+        cls = cookie2type[key]
+    except KeyError:
+        cls = Object
+    return cls
 
 # --------------------------------------------------------------------

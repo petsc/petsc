@@ -129,6 +129,43 @@ include "CAPI.pyx"
 
 # --------------------------------------------------------------------
 
+cdef extern from *:
+    PetscCookie PETSC_OBJECT_COOKIE    "PETSC_OBJECT_COOKIE"
+    PetscCookie PETSC_VIEWER_COOKIE    "PETSC_VIEWER_COOKIE"
+    PetscCookie PETSC_RANDOM_COOKIE    "PETSC_RANDOM_COOKIE"
+    PetscCookie PETSC_IS_COOKIE        "IS_COOKIE"
+    PetscCookie PETSC_LGMAP_COOKIE     "IS_LTOGM_COOKIE"
+    PetscCookie PETSC_VEC_COOKIE       "VEC_COOKIE"
+    PetscCookie PETSC_SCATTER_COOKIE   "VEC_SCATTER_COOKIE"
+    PetscCookie PETSC_MAT_COOKIE       "MAT_COOKIE"
+    PetscCookie PETSC_NULLSPACE_COOKIE "MAT_NULLSPACE_COOKIE"
+    PetscCookie PETSC_PC_COOKIE        "PC_COOKIE"
+    PetscCookie PETSC_KSP_COOKIE       "KSP_COOKIE"
+    PetscCookie PETSC_SNES_COOKIE      "SNES_COOKIE"
+    PetscCookie PETSC_TS_COOKIE        "TS_COOKIE"
+    PetscCookie PETSC_AO_COOKIE        "AO_COOKIE"
+    PetscCookie PETSC_DA_COOKIE        "DM_COOKIE"
+
+cdef int PyPetscRegisterPyTypes() except -1:
+    RegisterPyType(PETSC_OBJECT_COOKIE,    Object)
+    RegisterPyType(PETSC_VIEWER_COOKIE,    Viewer)
+    RegisterPyType(PETSC_RANDOM_COOKIE,    Random)
+    RegisterPyType(PETSC_IS_COOKIE,        IS)
+    RegisterPyType(PETSC_LGMAP_COOKIE,     LGMap)
+    RegisterPyType(PETSC_VEC_COOKIE,       Vec)
+    RegisterPyType(PETSC_SCATTER_COOKIE,   Scatter)
+    RegisterPyType(PETSC_MAT_COOKIE,       Mat)
+    RegisterPyType(PETSC_NULLSPACE_COOKIE, NullSpace)
+    RegisterPyType(PETSC_PC_COOKIE,        PC)
+    RegisterPyType(PETSC_KSP_COOKIE,       KSP)
+    RegisterPyType(PETSC_SNES_COOKIE,      SNES)
+    RegisterPyType(PETSC_TS_COOKIE,        TS)
+    RegisterPyType(PETSC_AO_COOKIE,        AO)
+    RegisterPyType(PETSC_DA_COOKIE,        DA)
+    return 0
+
+# --------------------------------------------------------------------
+
 cdef extern from "Python.h":
     int Py_IsInitialized()
 
@@ -243,6 +280,7 @@ cdef void finalize():
 cdef int initialize(object args) except -1:
     if (<int>PetscInitializeCalled):
         CHKERR( PyPetscRegisterAll(NULL) )
+        PyPetscRegisterPyTypes()
         return 0
     if (<int>PetscFinalizeCalled):
         return 0
@@ -259,6 +297,8 @@ cdef int initialize(object args) except -1:
                           "PetscFinalize() with Py_AtExit()")
     # register custom implementations
     CHKERR( PyPetscRegisterAll(NULL) )
+    # register Python types
+    PyPetscRegisterPyTypes()
     return 0 # and we are done, enjoy !!
 
 # --------------------------------------------------------------------

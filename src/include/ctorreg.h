@@ -1,15 +1,39 @@
 /* ---------------------------------------------------------------- */
 
+#if (PETSC_VERSION_MAJOR    == 2   && \
+     PETSC_VERSION_MINOR    == 3   && \
+     (PETSC_VERSION_SUBMINOR == 3  || \
+      PETSC_VERSION_SUBMINOR == 2) && \
+     PETSC_VERSION_RELEASE  == 1)
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+#undef  __FUNCT__  
+#define __FUNCT__ "ISInitializePackage"
+static PetscErrorCode ISInitializePackage(const char path[])
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  PetscErrorCode ierr;
+  if (initialized) return 0;
+  initialized = PETSC_TRUE;
+  PetscFunctionBegin;
+  ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,"IS L to G Mapping");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
+#endif /* PETSC_233 | PETSC_232 */
+
 #if (PETSC_VERSION_MAJOR    == 2 && \
      PETSC_VERSION_MINOR    == 3 && \
      PETSC_VERSION_SUBMINOR == 2 && \
      PETSC_VERSION_RELEASE  == 1)
-#define VecInitializePackage(path) VecInitializePackage((char*)path)
-#define MatInitializePackage(path) MatInitializePackage((char*)path)
+#define PetscInitializePackage(path)       PetscInitializePackage((char*)path)
+#define PetscViewerInitializePackage(path) 0
+#define PetscRandomInitializePackage(path) PetscRandomInitializePackage((char*)path)
+#define VecInitializePackage(path)         VecInitializePackage((char*)path)
+#define MatInitializePackage(path)         MatInitializePackage((char*)path)
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_ISX(Mat A);
 EXTERN_C_END
-#endif
+#endif /* PETSC_232 */
 
 /* ---------------------------------------------------------------- */
 
@@ -96,19 +120,23 @@ static PetscErrorCode PyPetscRegisterAll(const char path[])
 {
   static PetscTruth initialized = PETSC_FALSE;
   PetscErrorCode ierr;
-
   if (initialized) return 0;
   initialized = PETSC_TRUE;
 
   PetscFunctionBegin;
 
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = PetscInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
+  ierr = ISInitializePackage(path);CHKERRQ(ierr);
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
   ierr = MatInitializePackage(path);CHKERRQ(ierr);
   ierr = KSPInitializePackage(path);CHKERRQ(ierr);
   ierr = PCInitializePackage(path);CHKERRQ(ierr);
   ierr = SNESInitializePackage(path);CHKERRQ(ierr);
   ierr = TSInitializePackage(path);CHKERRQ(ierr);
+  ierr = DMInitializePackage(path);CHKERRQ(ierr);
 #endif
 
 #if (PETSC_VERSION_MAJOR    == 2 && \

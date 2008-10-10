@@ -116,3 +116,11 @@ cdef public api class DA(Object) [type PyPetscDA_Type, object PyPetscDAObject]:
     cdef PetscDA da
 
 # --------------------------------------------------------------------
+
+cdef extern from "petsc.h":
+    ctypedef int PetscCookie
+
+cdef int  RegisterPyType(PetscCookie, type) except -1
+cdef type CookieToPyType(PetscCookie)
+
+# --------------------------------------------------------------------

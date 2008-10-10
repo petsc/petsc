@@ -5,3 +5,4 @@
 #include "petsc233/petscksp.h"
 #include "petsc233/petscsnes.h"
 #include "petsc233/petscts.h"
+#include "petsc233/petscda.h"

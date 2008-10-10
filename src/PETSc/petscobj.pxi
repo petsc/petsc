@@ -2,13 +2,6 @@
 
 cdef extern from "petsc.h":
 
-    ctypedef int PetscCookie
-
-    ctypedef struct _p_PetscObject:
-        int   type
-        char* type_name
-        char* class_name
-
     int PetscObjectView(PetscObject,PetscViewer)
     int PetscObjectDestroy(PetscObject)
     int PetscObjectGetReference(PetscObject,PetscInt*)
@@ -19,10 +12,12 @@ cdef extern from "petsc.h":
     int PetscObjectGetOptionsPrefix(PetscObject,char*[])
     int PetscObjectSetFromOptions(PetscObject)
 
-    int PetscObjectSetName(PetscObject,char[])
-    int PetscObjectGetName(PetscObject,char*[])
     int PetscObjectGetComm(PetscObject,MPI_Comm*)
     int PetscObjectGetCookie(PetscObject,PetscCookie*)
+    int PetscObjectGetType(PetscObject,char*[])
+    int PetscObjectGetClassName(PetscObject,char*[])
+    int PetscObjectSetName(PetscObject,char[])
+    int PetscObjectGetName(PetscObject,char*[])
 
     int PetscObjectCompose(PetscObject,char[],PetscObject)
     int PetscObjectQuery(PetscObject,char[],PetscObject*)

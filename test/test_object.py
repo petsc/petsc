@@ -12,7 +12,6 @@ class TestObjectBase(object):
         self.obj = self.CLASS()
         getattr(self.obj,self.FACTORY)(*self.TARGS, **self.KARGS)
         if not self.obj: self.obj.create()
-        #print self.obj.klass, self.obj.type
 
     def tearDown(self):
         self.obj = None
@@ -25,8 +24,6 @@ class TestObjectBase(object):
         self.assertTrue(bool(self.obj))
 
     def testDestroy(self):
-        ## this = self.obj.this
-        ## self.assertTrue(self.obj.this is this)
         self.assertTrue(bool(self.obj))
         self.obj.destroy()
         self.assertFalse(bool(self.obj))
@@ -57,18 +54,23 @@ class TestObjectBase(object):
         self.obj.setName(oldname)
         self.assertEqual(self.obj.getName(), oldname)
 
-    ## def testRefCount(self):
-    ##     self.assertEqual(self.obj.getRefCount(), 1)
-    ##     self.obj.addReference()
-    ##     self.assertEqual(self.obj.getRefCount(), 2)
-    ##     self.obj.addReference()
-    ##     self.assertEqual(self.obj.getRefCount(), 3)
-    ##     self.obj.delReference()
-    ##     self.assertEqual(self.obj.getRefCount(), 2)
-    ##     self.obj.delReference()
-    ##     self.assertEqual(self.obj.getRefCount(), 1)
-    ##     self.obj.delReference()
-    ##     self.assertFalse(bool(self.obj))
+    def testComm(self):
+        comm = self.obj.getComm()
+        self.assertTrue(isinstance(comm, PETSc.Comm))
+        self.assertTrue(comm in [PETSc.COMM_SELF, PETSc.COMM_WORLD])
+
+    def testRefCount(self):
+        self.assertEqual(self.obj.getRefCount(), 1)
+        self.obj.incRef()
+        self.assertEqual(self.obj.getRefCount(), 2)
+        self.obj.incRef()
+        self.assertEqual(self.obj.getRefCount(), 3)
+        self.obj.decRef()
+        self.assertEqual(self.obj.getRefCount(), 2)
+        self.obj.decRef()
+        self.assertEqual(self.obj.getRefCount(), 1)
+        self.obj.decRef()
+        self.assertFalse(bool(self.obj))
 
     ## def testState(self):
     ##     state = self.obj.getState()
@@ -83,30 +85,24 @@ class TestObjectBase(object):
     ##     self.obj.decreaseState()
     ##     self.assertEqual(self.obj.getState(), state + 3)
 
-    ## def testComposeQuery(self):
-    ##     self.obj.compose('myobj', self.obj)
-    ##     self.assertEqual(self.obj.query('myobj'), self.obj)
-    ##     self.assertEqual(self.obj.getRefCount(), 2)
-    ##     self.obj.compose('myobj', None)
-    ##     self.assertEqual(self.obj.getRefCount(), 1)
-    ##     self.assertEqual(self.obj.query('myobj'), None)
-
-    def testComm(self):
-        comm = self.obj.getComm()
-        self.assertTrue(isinstance(comm, PETSc.Comm))
-        self.assertTrue(comm in [PETSc.COMM_SELF, PETSc.COMM_WORLD])
+    def testComposeQuery(self):
+        self.assertEqual(self.obj.getRefCount(), 1)
+        self.obj.compose('myobj', self.obj)
+        self.assertTrue(type(self.obj.query('myobj')) is self.CLASS)
+        self.assertEqual(self.obj.query('myobj'), self.obj)
+        self.assertEqual(self.obj.getRefCount(), 2)
+        self.obj.compose('myobj', None)
+        self.assertEqual(self.obj.getRefCount(), 1)
+        self.assertEqual(self.obj.query('myobj'), None)
 
     def testProperties(self):
         self.assertEqual(self.obj.getCookie(),    self.obj.cookie)
         self.assertEqual(self.obj.getClassName(), self.obj.klass)
         self.assertEqual(self.obj.getType(),      self.obj.type)
         self.assertEqual(self.obj.getName(),      self.obj.name)
-        ## self.assertEqual(self.obj.getState(),     self.obj.state)
         self.assertEqual(self.obj.getComm(),      self.obj.comm)
         self.assertEqual(self.obj.getRefCount(),  self.obj.refcount)
-        ## self.assertNotEqual(self.obj.this,  None)
-        ## self.assertTrue(self.obj.this is self.obj.this)
-        ## self.assertFalse(self.obj.thisown)
+        ## self.assertEqual(self.obj.getState(),     self.obj.state)
 
 # --------------------------------------------------------------------
 
