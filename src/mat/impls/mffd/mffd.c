@@ -987,7 +987,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat J)
 
     Notes: This is rarely used directly
 
-    Warning: for a given Mat, this must be called either ALWAYS with an F or never
+    If F is provided then it is not recomputed. Otherwise the function is evaluated at the base
+    point during the first MatMult() after each call to MatMFFDSetBase().
 
     Level: advanced
 
