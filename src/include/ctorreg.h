@@ -30,9 +30,6 @@ static PetscErrorCode ISInitializePackage(const char path[])
 #define PetscRandomInitializePackage(path) PetscRandomInitializePackage((char*)path)
 #define VecInitializePackage(path)         VecInitializePackage((char*)path)
 #define MatInitializePackage(path)         MatInitializePackage((char*)path)
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_ISX(Mat A);
-EXTERN_C_END
 #endif /* PETSC_232 */
 
 /* ---------------------------------------------------------------- */
@@ -73,12 +70,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC,void**);
 PETSC_EXTERN_CXX_END
 
 
-#define PCSCHUR "schur"
-
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Schur(PC);
-EXTERN_C_END
-
 /* ---------------------------------------------------------------- */
 
 #define SNESPYTHON "python"
@@ -104,6 +95,23 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS,void**);
 PETSC_EXTERN_CXX_END
 
 
+
+/* ---------------------------------------------------------------- */
+
+#if (PETSC_VERSION_MAJOR    == 2 && \
+     PETSC_VERSION_MINOR    == 3 && \
+     PETSC_VERSION_SUBMINOR == 2 && \
+     PETSC_VERSION_RELEASE  == 1)
+EXTERN_C_BEGIN
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_ISX(Mat A);
+EXTERN_C_END
+#endif /* PETSC_232 */
+
+#define PCSCHUR "schur"
+
+EXTERN_C_BEGIN
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Schur(PC);
+EXTERN_C_END
 
 #define TS_USER "user"
 
@@ -132,32 +140,33 @@ static PetscErrorCode PyPetscRegisterAll(const char path[])
   ierr = ISInitializePackage(path);CHKERRQ(ierr);
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
   ierr = MatInitializePackage(path);CHKERRQ(ierr);
-  ierr = KSPInitializePackage(path);CHKERRQ(ierr);
   ierr = PCInitializePackage(path);CHKERRQ(ierr);
+  ierr = KSPInitializePackage(path);CHKERRQ(ierr);
   ierr = SNESInitializePackage(path);CHKERRQ(ierr);
   ierr = TSInitializePackage(path);CHKERRQ(ierr);
   ierr = DMInitializePackage(path);CHKERRQ(ierr);
 #endif
 
+  /* Mat */
+  ierr = MatRegisterDynamic(MATPYTHON, path, "MatCreate_Python", MatCreate_Python);CHKERRQ(ierr);
+  /* PC */
+  ierr = PCRegisterDynamic(PCPYTHON, path, "PCCreate_Python", PCCreate_Python);CHKERRQ(ierr);
+  /* KSP */
+  ierr = KSPRegisterDynamic(KSPPYTHON, path, "KSPCreate_Python", KSPCreate_Python);CHKERRQ(ierr);
+  /* SNES */
+  ierr = SNESRegisterDynamic(SNESPYTHON, path, "SNESCreate_Python", SNESCreate_Python);CHKERRQ(ierr);
+  /* TS */
+  ierr = TSRegisterDynamic(TS_PYTHON, path, "TSCreate_Python", TSCreate_Python);CHKERRQ(ierr);
+
+  /* register some other stuff */
 #if (PETSC_VERSION_MAJOR    == 2 && \
      PETSC_VERSION_MINOR    == 3 && \
      PETSC_VERSION_SUBMINOR == 2 && \
      PETSC_VERSION_RELEASE  == 1)
   ierr = MatRegisterDynamic(MATIS, path, "MatCreate_ISX", MatCreate_ISX);CHKERRQ(ierr);
 #endif
-
-  /* Mat */
-  ierr = MatRegisterDynamic(MATPYTHON, path, "MatCreate_Python",  MatCreate_Python);CHKERRQ(ierr);
-  /* KSP */
-  ierr = KSPRegisterDynamic(KSPPYTHON, path, "KSPCreate_Python", KSPCreate_Python);CHKERRQ(ierr);
-  /* PC */
-  ierr = PCRegisterDynamic(PCSCHUR,  path, "PCCreate_Schur",  PCCreate_Schur);CHKERRQ(ierr);
-  ierr = PCRegisterDynamic(PCPYTHON, path, "PCCreate_Python", PCCreate_Python);CHKERRQ(ierr);
-  /* SNES */
-  ierr = SNESRegisterDynamic(SNESPYTHON, path, "SNESCreate_Python", SNESCreate_Python);CHKERRQ(ierr);
-  /* TS */
-  ierr = TSRegisterDynamic(TS_USER,   path, "TSCreate_User",   TSCreate_User);CHKERRQ(ierr);
-  ierr = TSRegisterDynamic(TS_PYTHON, path, "TSCreate_Python", TSCreate_Python);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCSCHUR, path, "PCCreate_Schur", PCCreate_Schur);CHKERRQ(ierr);
+  ierr = TSRegisterDynamic(TS_USER, path, "TSCreate_User",  TSCreate_User);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
