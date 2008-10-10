@@ -335,6 +335,7 @@ M*/
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP,KSPNormType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNormType(KSP,KSPNormType*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetLagNorm(KSP,PetscTruth);
 
 /*E
     KSPConvergedReason - reason a Krylov method was said to 

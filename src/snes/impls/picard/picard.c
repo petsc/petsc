@@ -19,6 +19,12 @@ PetscErrorCode SNESDestroy_Picard(SNES snes)
   PetscFunctionBegin;
   if (snes->vec_sol_update) {
     ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
+    snes->vec_sol_update = PETSC_NULL;
+  }
+  if (snes->nwork) {
+    ierr = VecDestroyVecs(snes->work, snes->nwork);CHKERRQ(ierr);
+    snes->nwork = 0;
+    snes->work  = PETSC_NULL;
   }
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -41,7 +47,15 @@ PetscErrorCode SNESSetUp_Picard(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDuplicate(snes->vec_sol, &snes->vec_sol_update);CHKERRQ(ierr);
+  if (!snes->vec_sol_update) {
+    ierr = VecDuplicate(snes->vec_sol, &snes->vec_sol_update);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(snes, snes->vec_sol_update);CHKERRQ(ierr);
+  }
+  if (!snes->work) {
+    snes->nwork = 1;
+    ierr = VecDuplicateVecs(snes->vec_sol, snes->nwork, &snes->work);CHKERRQ(ierr);
+    ierr = PetscLogObjectParents(snes,snes->nwork, snes->work);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -58,16 +72,27 @@ PetscErrorCode SNESSetUp_Picard(SNES snes)
 static PetscErrorCode SNESSetFromOptions_Picard(SNES snes)
 {
   SNES_Picard   *ls = (SNES_Picard *)snes->data;
-  const char    *types[] = {"basic"};
-  PetscInt       indx;
+  const char    *types[] = {"basic", "quadratic", "cubic"};
+  PetscInt       indx = 0;
   PetscTruth     flg;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Picard options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-snes_picard","Picard Type","SNESLineSearchSet",types,1,"basic",&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-snes_picard","Picard Type","SNESLineSearchSet",types,3,"basic",&indx,&flg);CHKERRQ(ierr);
+    ls->type = indx;
     if (flg) {
-      ls->type = indx;
+      switch (indx) {
+      case 0:
+        ierr = SNESLineSearchSet(snes,SNESLineSearchNo,PETSC_NULL);CHKERRQ(ierr);
+        break;
+      case 1:
+        ierr = SNESLineSearchSet(snes,SNESLineSearchQuadratic,PETSC_NULL);CHKERRQ(ierr);
+        break;
+      case 2:
+        ierr = SNESLineSearchSet(snes,SNESLineSearchCubic,PETSC_NULL);CHKERRQ(ierr);
+        break;
+      }
     }
     ls->alpha = 1.0;
     ierr = PetscOptionsReal("-snes_picard_alpha","Momentum parameter","SNES",ls->alpha,&ls->alpha,&flg);CHKERRQ(ierr);
@@ -126,7 +151,7 @@ static PetscErrorCode SNESView_Picard(SNES snes, PetscViewer viewer)
 PetscErrorCode SNESSolve_Picard(SNES snes)
 { 
   SNES_Picard   *neP = (SNES_Picard *) snes->data;
-  Vec            X, Y, F;
+  Vec            X, Y, F, W;
   PetscReal      alpha = neP->alpha;
   PetscReal      fnorm;
   PetscInt       maxits, i;
@@ -139,6 +164,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
   X      = snes->vec_sol;	     /* X^n */
   Y      = snes->vec_sol_update; /* \tilde X */
   F      = snes->vec_func;       /* residual vector */
+  W      = snes->work[0];        /* work vector */
 
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
@@ -165,13 +191,13 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
 
   for(i = 0; i < maxits; i++) {
     PetscTruth lsSuccess = PETSC_TRUE;
-    PetscReal  dummyNorm;
 
     /* Call general purpose update function */
     if (snes->ops->update) {
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
-    if (1) {
+    if (neP->type == 0) {
+      ierr = PetscPrintf(snes->hdr.comm, "Fixed alpha = %g\n", alpha);CHKERRQ(ierr);
       /* Update guess Y = X^n - F(X^n) */
       ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
       /* X^{n+1} = (1 - \alpha) X^n + \alpha Y */
@@ -181,7 +207,57 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
       ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
       if PetscIsInfOrNanReal(fnorm) SETERRQ(PETSC_ERR_FP,"Infinite or not-a-number generated norm");
     } else {
-      ierr = (*neP->LineSearch)(snes, PETSC_NULL/*neP->lsP*/, X, F, F, F, X, fnorm, 0.0, &dummyNorm,  &fnorm,  &lsSuccess);CHKERRQ(ierr);
+      /* Compute a (scaled) negative update in the line search routine: 
+         Y <- X - lambda*Y 
+         and evaluate G = function(Y) (depends on the line search). */
+#if 0
+      ierr = (*neP->LineSearch)(snes, PETSC_NULL/*neP->lsP*/, X, F, F/*G*/, F/*Y*/, X/*W*/, fnorm, 0.0, &dummyNorm,  &fnorm,  &lsSuccess);CHKERRQ(ierr);
+#else
+      /* Put this in function after it works */
+      PetscReal norms[4];
+      PetscInt  i;
+
+      norms[0] = fnorm;
+      /* Calculate the solution increment, Y = X^n - F(X^n) */
+      ierr = VecWAXPY(Y, -1.0, F, X);CHKERRQ(ierr);
+      /* Calculate trial solutions */
+#if 1
+      for(alpha = 0.5, i = 1; alpha <= 1.0; alpha += 0.5, ++i) {
+        /* Calculate X^{n+1} = (1 - \alpha) X^n + \alpha Y */
+        ierr = VecCopy(X, W);CHKERRQ(ierr);
+        ierr = VecAXPBY(W, alpha, 1 - alpha, Y);CHKERRQ(ierr);
+        ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+        ierr = VecNorm(F, NORM_2, &norms[i]);CHKERRQ(ierr);
+      }
+      /* Fit a quadratic:
+           If we have x_{0,1,2} = 0, 0.5, 1.0 which generate norms y_{0,1,2}
+           a =  2 y_3 + 2 y_1 - 4 y_2
+           b = -3 y_1 + 4 y_2 -   y_3
+           c =    y_1
+           x_min = -b/2a = (3 y_1 - 4 y_2 + y_3)/(4 y_3 + 4 y_1 - 8 y_2)
+      */
+      if (2.0*norms[2] + 2.0*norms[0] - 4.0*norms[1] >= 0.0) {
+        alpha = (3.0*norms[0] - 4.0*norms[1] + norms[2])/(4.0*norms[2] + 4.0*norms[0] - 8.0*norms[1]);
+        alpha = PetscMin(alpha, 1.0);
+        alpha = PetscMax(alpha, 0.0);
+        alpha *= 0.9;
+      } else {
+        alpha = 1.0;
+      }
+      ierr = PetscPrintf(snes->hdr.comm, "norms[0] = %g, norms[1] = %g, norms[2] = %g\n", norms[0], norms[1], norms[2]);CHKERRQ(ierr);
+      ierr = PetscPrintf(snes->hdr.comm, "Choose alpha = %g\n", alpha);CHKERRQ(ierr);
+      ierr = VecAXPBY(X, alpha, 1 - alpha, Y);CHKERRQ(ierr);
+      ierr = SNESComputeFunction(snes, X, F);CHKERRQ(ierr);
+      ierr = VecNorm(F, NORM_2, &fnorm);CHKERRQ(ierr);
+#else
+      for(alpha = 0.333333, i = 1; alpha <= 1.0; alpha += 0.333333, ++i) {
+        /* Calculate X^{n+1} = (1 - \alpha) X^n + \alpha Y */
+        ierr = VecWAXPBY(W, X, alpha, 1 - alpha, Y);CHKERRQ(ierr);
+        ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
+        ierr = VecNorm(F, NORM_2, &norms[i]);CHKERRQ(ierr);
+      }
+#endif
+#endif      
     }
     if (!lsSuccess) {
       if (++snes->numFailures >= snes->maxFailures) {

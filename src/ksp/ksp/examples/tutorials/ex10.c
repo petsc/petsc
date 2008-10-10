@@ -254,10 +254,12 @@ int main(int argc,char **args)
       }
       ierr = VecView(max, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
       ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest max row element %G at row %d\n", val, idx);CHKERRQ(ierr);
       ierr = VecView(min, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
       ierr = VecMin(min, &idx, &val);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest min row element %G at row %d\n", val, idx);CHKERRQ(ierr);
+      ierr = VecMin(max, &idx, &val);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "Smallest max row element %G at row %d\n", val, idx);CHKERRQ(ierr);
       ierr = VecPointwiseDivide(max, max, min);CHKERRQ(ierr);
       ierr = VecMax(max, &idx, &val);CHKERRQ(ierr);
       ierr = PetscPrintf(PETSC_COMM_WORLD, "Largest row ratio %G at row %d\n", val, idx);CHKERRQ(ierr);

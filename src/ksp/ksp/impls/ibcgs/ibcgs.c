@@ -53,9 +53,9 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
      Note for developers that does not effect the code. Intel's long double is implemented by storing the 80 bits of extended double
      precision into a 16 byte space (the rest of the space is ignored)  */
-  long double    insums[6],outsums[6];
+  long double    insums[7],outsums[7];
 #else
-  PetscScalar    insums[6],outsums[6];
+  PetscScalar    insums[7],outsums[7];
 #endif
   PetscScalar    sigman_2, sigman_1, sigman, pin_1, pin, phin_1, phin,tmp1,tmp2;
   PetscScalar    taun_1, taun, rhon_1, rhon, alphan_1, alphan, omegan_1, omegan;
@@ -191,11 +191,20 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     insums[3] = etan;
     insums[4] = thetan;
     insums[5] = kappan;
+    insums[6] = rnormin;
     ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX)
-    ierr = MPI_Allreduce(insums,outsums,6,MPI_LONG_DOUBLE,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    if (ksp->lagnorm && ksp->its > 1) {
+      ierr = MPI_Allreduce(insums,outsums,7,MPI_LONG_DOUBLE,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    } else {
+      ierr = MPI_Allreduce(insums,outsums,6,MPI_LONG_DOUBLE,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    }
 #else
-    ierr = MPI_Allreduce(insums,outsums,6,MPIU_SCALAR,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    if (ksp->lagnorm && ksp->its > 1) {
+      ierr = MPI_Allreduce(insums,outsums,7,MPIU_SCALAR,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    } else {
+      ierr = MPI_Allreduce(insums,outsums,6,MPIU_SCALAR,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
+    }
 #endif
     ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
     phin     = outsums[0];
@@ -204,6 +213,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     etan     = outsums[3];
     thetan   = outsums[4];
     kappan   = outsums[5];
+    if (ksp->lagnorm && ksp->its > 1) rnorm = sqrt(outsums[6]);
 
     if (kappan == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"kappan is zero, iteration %D",ksp->its);
     if (thetan == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"thetan is zero, iteration %D",ksp->its);
@@ -224,7 +234,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     ierr = PetscLogFlops(7*N);
     ierr = PetscLogEventEnd(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
 
-    if (ksp->chknorm < ksp->its) {
+    if (!ksp->lagnorm && ksp->chknorm < ksp->its) {
       ierr = PetscLogEventBarrierBegin(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
       ierr = MPI_Allreduce(&rnormin,&rnorm,1,MPIU_REAL,MPI_SUM,((PetscObject)ksp)->comm);CHKERRQ(ierr);
       ierr = PetscLogEventBarrierEnd(VEC_ReduceBarrier,0,0,0,0,((PetscObject)ksp)->comm);CHKERRQ(ierr);
@@ -276,7 +286,10 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
           The paper has two errors in the algorithm presented, they are fixed in the code in KSPSolve_IBCGS()
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS
+          For maximum reduction in the number of global reduction operations, this solver should be used with 
+          KSPSetLagNorm().
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS, KSPSetLagNorm()
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
