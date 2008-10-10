@@ -193,6 +193,8 @@ cdef class Object:
 
 cdef dict cookie2type = { 0 : None }
 
+_type_registry = cookie2type
+
 cdef int RegisterPyType(PetscCookie cookie, type cls) except -1:
     global cookie2type
     cdef object key = cookie
