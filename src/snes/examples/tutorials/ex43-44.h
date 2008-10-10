@@ -102,7 +102,7 @@ PetscErrorCode SolveSubproblem(SNES snes)
   ierr = PetscFree(indices);CHKERRQ(ierr);
 
   ierr = SNESGetJacobian(snes,0,&mat,0,0);CHKERRQ(ierr);
-  ierr = MatIncreaseOverlap(mat,1,&ctx.is,1);CHKERRQ(ierr);
+  ierr = MatIncreaseOverlap(mat,1,&ctx.is,2);CHKERRQ(ierr);
   ierr = ISSort(ctx.is);CHKERRQ(ierr);
   ierr = ISGetLocalSize(ctx.is,&cnt);CHKERRQ(ierr);
   printf("number in subproblem %d\n",cnt);CHKERRQ(ierr);

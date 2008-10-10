@@ -317,8 +317,8 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /* w = u + ha */
   ierr = VecWAXPY(w,h,a,U);CHKERRQ(ierr);
 
-  /* compute func(U) as base for differencing; only needed first time in */
-  if (ctx->ncurrenth == 1) {
+  /* compute func(U) as base for differencing; only needed first time in and not when provided by user */
+  if (ctx->ncurrenth == 1 && ctx->current_f_allocated) {
     ierr = (*ctx->func)(ctx->funcctx,U,F);CHKERRQ(ierr);
   }
   ierr = (*ctx->func)(ctx->funcctx,w,y);CHKERRQ(ierr);
@@ -983,7 +983,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat J)
     Input Parameters:
 +   J - the MatMFFD matrix
 .   U - the vector
--   F - vector that contains F(u) if it has been already computed
+-   F - (optional) vector that contains F(u) if it has been already computed
 
     Notes: This is rarely used directly
 

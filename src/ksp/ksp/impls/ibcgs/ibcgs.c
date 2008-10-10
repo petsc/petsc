@@ -141,7 +141,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
         vn = un_1 + betan*vn_1 - deltan*qn_1
         sn = rn_1 - alphan*vn
 
-       The algorithm in the paper is missing the alphan/alphan_1 term in the xn update
+       The algorithm in the paper is missing the alphan/alphan_1 term in the zn update
     */
     ierr = PetscLogEventBegin(VEC_Ops,0,0,0,0);CHKERRQ(ierr);
     tmp1 = (alphan/alphan_1)*betan;
