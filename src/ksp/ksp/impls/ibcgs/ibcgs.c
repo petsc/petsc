@@ -289,7 +289,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
           For maximum reduction in the number of global reduction operations, this solver should be used with 
           KSPSetLagNorm().
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS, KSPLagNorm()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS, KSPSetLagNorm()
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
