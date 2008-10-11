@@ -41,7 +41,7 @@ typedef struct {
 .keywords: matrix, shell, get, context
 
 .seealso: MatCreateShell(), MatShellSetOperation(), MatShellSetContext()
-C@*/
+@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatShellGetContext(Mat mat,void **ctx)
 {
   PetscErrorCode ierr;
@@ -449,7 +449,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateShell(MPI_Comm comm,PetscInt m,PetscI
       unfortunately it cannot be a Fortran array or derived type.
 
 .seealso: MatCreateShell(), MatShellGetContext(), MatShellGetOperation()
-C@*/
+@*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetContext(Mat mat,void *ctx)
 {
   Mat_Shell      *shell = (Mat_Shell*)mat->data;

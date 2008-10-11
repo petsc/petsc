@@ -1247,6 +1247,8 @@ EXTERN_C_END
           Interestingly this form is not actually a symmetric matrix, the symmetric version is 
                               x_1 = A^(b_1 - B x_2)      variant x_1 = A^(b_1 - Bp x_2)
 
+   Level: intermediate
+
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCFIELDSPLIT
            PCFieldSplitGetSubKSP(), PCFieldSplitSetFields(), PCFieldSplitSetType(), PCFieldSplitSetIS(), PCFieldSplitSchurPrecondition()
 M*/
