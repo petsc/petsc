@@ -2,7 +2,7 @@
 static char help[] = "Tests sequential and parallel MatMatMult() and MatPtAP(), sequential MatMatMultTranspose()\n\
 Input arguments are:\n\
   -f0 <input_file> -f1 <input_file> -f2 <input_file> -f3 <input_file> : file to load\n\n";
-/* e.g., ex94 -f0 $D/small -f1 $D/small -f2 $D/arco1 -f3 $D/arco1 */
+/* e.g., mpiexec -n 3 ./ex94 -f0 $D/medium -f1 $D/medium -f2 $D/arco1 -f3 $D/arco1 */
 
 #include "petscmat.h"
 
@@ -25,7 +25,7 @@ int main(int argc,char **args)
   Vec            v3,v4,v5;
   PetscInt       pm,pn,pM,pN;
   PetscTruth     Test_MatPtAP=PETSC_TRUE;
-
+  
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -73,7 +73,7 @@ int main(int argc,char **args)
   if (Test_MatMatMult){
     ierr = MatDuplicate(A_save,MAT_COPY_VALUES,&A);CHKERRQ(ierr);
     ierr = MatMatMult(A,B,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr);
-   
+
     /* Test MAT_REUSE_MATRIX - reuse symbolic C */
     alpha=1.0;
     for (i=0; i<2; i++){
@@ -81,7 +81,7 @@ int main(int argc,char **args)
       ierr = MatScale(A,alpha);CHKERRQ(ierr);
       ierr = MatMatMult(A,B,MAT_REUSE_MATRIX,fill,&C);CHKERRQ(ierr);
     }
-  
+
     /* Create vector x that is compatible with B */
     ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
     ierr = MatGetLocalSize(B,PETSC_NULL,&n);CHKERRQ(ierr);
@@ -102,10 +102,13 @@ int main(int argc,char **args)
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|: %G\n",norm);CHKERRQ(ierr);
     }
 
+    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+
     /* Test MatDuplicate() of C */
     ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
     ierr = MatDestroy(C1);CHKERRQ(ierr);
-
+    ierr = MatDestroy(C);CHKERRQ(ierr); 
   } /* if (Test_MatMatMult) */
 
   /* Test MatMatMultTranspose() */
