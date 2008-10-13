@@ -19,7 +19,7 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
     is used to discretize the boundary value problem to obtain a nonlinear 
     system of equations.
 
-    Usage: ex26 -ksp_monitor_short -pc_type ml
+    Usage: ./ex26 -ksp_monitor_short -pc_type ml
            -mg_coarse_ksp_max_it 10  
            -mg_levels_1_ksp_max_it 10 -mg_levels_2_ksp_max_it 10 
            -mg_fine_ksp_max_it 10
@@ -47,7 +47,6 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       its,n,Nx=PETSC_DECIDE,Ny=PETSC_DECIDE,nlocal;
   PetscMPIInt    size;
-  PC             pc; 
   PetscScalar    one = 1.0;
   PetscInt       mx,my;
   Mat            A; 
