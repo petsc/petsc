@@ -12,6 +12,7 @@ class Configure(PETSc.package.Package):
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
     self.liblist    = [['libsuperlu_dist_2.2.a']]
+    self.requires32bitint = 0;
     self.complex    = 1
     return
 
@@ -44,11 +45,14 @@ class Configure(PETSc.package.Package):
     g.write('LOADOPTS     = \n')
     self.setCompilers.popLanguage()
     if self.blasLapack.mangling == 'underscore':
-      g.write('CDEFS   = -DAdd_\n')
+      g.write('CDEFS   = -DAdd_')
     elif self.blasLapack.mangling == 'caps':
-      g.write('CDEFS   = -DUpCase\n')
+      g.write('CDEFS   = -DUpCase')
     else:
-      g.write('CDEFS   = -DNoChange\n')
+      g.write('CDEFS   = -DNoChange')
+    if self.framework.argDB['with-64-bit-indices']:
+      g.write(' -D_LONGINT')
+    g.write('\n')
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
