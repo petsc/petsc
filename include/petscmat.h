@@ -1329,6 +1329,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetFromOptions(MatPartit
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning,const MatPartitioningType*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisSetCoarseSequential(MatPartitioning);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisGetEdgeCut(MatPartitioning, PetscInt *);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseLevel(MatPartitioning,PetscReal);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseSequential(MatPartitioning);

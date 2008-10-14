@@ -153,6 +153,30 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisSetCoarseSequential(Mat
   parmetis->parallel = 1;
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatPartitioningParmetisGetEdgeCut"
+/*@
+  MatPartitioningParmetisGetEdgeCut - Returns the number of edge cuts in the vertex partition.
+
+  Input Parameter:
+. part - the partitioning context
+
+  Output Parameter:
+. cut - the edge cut
+
+   Level: advanced
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisGetEdgeCut(MatPartitioning part, PetscInt *cut)
+{
+  MatPartitioning_Parmetis *parmetis = (MatPartitioning_Parmetis *) part->data;
+
+  PetscFunctionBegin;
+  *cut = parmetis->cuts;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatPartitioningSetFromOptions_Parmetis" 
 PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
