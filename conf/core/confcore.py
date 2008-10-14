@@ -28,7 +28,7 @@ import confutils as cfgutils
 # --------------------------------------------------------------------
 
 if not hasattr(sys, 'version_info') or \
-       sys.version_info < (2, 4, 0,'final'):
+       sys.version_info < (2, 4, 0, 'final'):
     raise SystemExit("Python 2.4 or later is required "
                      "to build this package.")
 
@@ -46,9 +46,6 @@ class PetscConfig:
         self.PETSC_DIR  = self['PETSC_DIR']
         self.PETSC_ARCH = self['PETSC_ARCH']
         self.language = self._map_lang(self['PETSC_LANGUAGE'])
-
-    def __call__(self, extension):
-        self.configure(extension)
 
     def __getitem__(self, item):
         return self.configdict[item]
@@ -159,7 +156,31 @@ class PetscConfig:
                             extdict[key].append(value)
 
     def _configure_compiler(self, compiler):
-        pass
+        from distutils.sysconfig import get_config_vars
+        if compiler.compiler_type == 'unix':
+            (cc, cxx, cflags, ccshared, ldshared, so_ext) = \
+            get_config_vars('CC', 'CXX', 'CFLAGS',
+                            'CCSHARED', 'LDSHARED', 'SO')
+            #
+            def extra_flags(cmd):
+                cmd  = cmd.split(' ', 1)
+                try: return cmd[1]
+                except IndexError: return ''
+            if self.language == 'c':
+                cc_cmd = cc
+                ld_cmd = ldshared
+            elif self.language == 'c++':
+                cc_cmd = cxx
+                ld_cmd = ldshared
+            ccflags = '%s %s %s' % (extra_flags(cc_cmd), cflags, ccshared,)
+            ldflags = '%s'       % (extra_flags(ld_cmd),)
+            CC_SHARED  = self['PCC']        + ' ' + ccflags
+            LD_SHARED  = self['PCC_LINKER'] + ' ' + ldflags
+            compiler.set_executables(
+                compiler_so = CC_SHARED,
+                linker_so   = LD_SHARED,
+                )
+            compiler.shared_lib_extension = so_ext
 
     def log_info(self):
         log.info('PETSC_DIR:   %s' % self['PETSC_DIR'])
@@ -421,7 +442,7 @@ class build_ext(_build_ext):
             if ext.language != config.language: continue
             config.log_info()
             pkgpath, newext = self._copy_ext(ext)
-            config.configure(newext)
+            config.configure(newext, self.compiler)
             name =  self.distribution.get_name()
             version = self.distribution.get_version()
             distdir = '\'\"%s-%s/\"\'' % (name, version)
