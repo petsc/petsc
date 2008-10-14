@@ -13,6 +13,7 @@ class Configure(PETSc.package.Package):
     self.includes   = ['slu_ddefs.h']
     self.liblist    = [['libsuperlu_3.1.a']]
     self.complex    = 1
+    self.requires32bitint = 0;
     self.excludename = ['SuperLU_DIST']
     return
 
@@ -42,11 +43,15 @@ class Configure(PETSc.package.Package):
 
     # set blas name mangling
     if self.blasLapack.mangling == 'underscore':
-      g.write('CDEFS   = -DAdd_\n')
+      g.write('CDEFS   = -DAdd_')
     elif self.blasLapack.mangling == 'caps':
-      g.write('CDEFS   = -DUpCase\n')
+      g.write('CDEFS   = -DUpCase')
     else:
-      g.write('CDEFS   = -DNoChange\n')
+      g.write('CDEFS   = -DNoChange')
+    if self.framework.argDB['with-64-bit-indices']:
+      g.write(' -D_LONGINT')
+    g.write('\n')
+
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
       g.write('FORTRAN      = '+self.setCompilers.getCompiler()+'\n')
