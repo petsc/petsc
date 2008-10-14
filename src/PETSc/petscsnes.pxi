@@ -264,7 +264,7 @@ cdef inline int SNES_clsMon(PetscSNES snes) except -1:
 
 # --------------------------------------------------------------------
 
-cdef extern from "ctorreg.h":
+cdef extern from "libpetsc4py.h":
     PetscSNESType SNESPYTHON
     int SNESPythonSetContext(PetscSNES,void*)
     int SNESPythonGetContext(PetscSNES,void**)

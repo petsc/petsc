@@ -77,7 +77,7 @@ cdef extern from "petscpc.h":
 
 # --------------------------------------------------------------------
 
-cdef extern from "ctorreg.h":
+cdef extern from "libpetsc4py.h":
     PetscPCType PCPYTHON
     int PCPythonSetContext(PetscPC,void*)
     int PCPythonGetContext(PetscPC,void**)

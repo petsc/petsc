@@ -634,7 +634,7 @@ cdef int mat_setitem(Mat self, object ij, object v) except -1:
 
 # --------------------------------------------------------------------
 
-cdef extern from "ctorreg.h":
+cdef extern from "libpetsc4py.h":
     PetscMatType MATPYTHON
     int MatPythonSetContext(PetscMat,void*)
     int MatPythonGetContext(PetscMat,void**)

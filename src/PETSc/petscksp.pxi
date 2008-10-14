@@ -225,7 +225,7 @@ cdef inline int KSP_delMon(PetscKSP ksp) except -1:
 
 # --------------------------------------------------------------------
 
-cdef extern from "ctorreg.h":
+cdef extern from "libpetsc4py.h":
     PetscKSPType KSPPYTHON
     int KSPPythonSetContext(PetscKSP,void*)
     int KSPPythonGetContext(PetscKSP,void**)

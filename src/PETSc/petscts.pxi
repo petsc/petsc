@@ -176,7 +176,7 @@ cdef inline int TS_clsMon(PetscTS ts) except -1:
 
 # --------------------------------------------------------------------
 
-cdef extern from "ctorreg.h":
+cdef extern from "libpetsc4py.h":
     PetscTSType TS_PYTHON
     int TSPythonSetContext(PetscTS,void*)
     int TSPythonGetContext(PetscTS,void**)

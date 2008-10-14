@@ -225,8 +225,11 @@ cdef extern from "Python.h":
     int Py_AtExit(void (*)())
     void PySys_WriteStderr(char*,...)
 
-cdef extern from "ctorreg.h":
-    int PyPetscRegisterAll(char[])
+cdef extern from "initpkg.h":
+    int PetscInitializeAllPackages(char[])
+
+cdef extern from "libpetsc4py.h":
+    int PetscPythonRegisterAll(char[])
 
 cdef int    PyPetsc_Argc = 0
 cdef char** PyPetsc_Argv = NULL
@@ -277,9 +280,10 @@ cdef void finalize():
     if ierr != 0: pass # XXX print error to stdout
     # and we are done, see you later !!
 
-cdef int initialize(object args) except -1:
+cdef int initialize(object args, char path[]) except -1:
     if (<int>PetscInitializeCalled):
-        CHKERR( PyPetscRegisterAll(NULL) )
+        CHKERR( PetscInitializeAllPackages(NULL) )
+        CHKERR( PetscPythonRegisterAll(path) )
         PyPetscRegisterPyTypes()
         return 0
     if (<int>PetscFinalizeCalled):
@@ -295,8 +299,10 @@ cdef int initialize(object args) except -1:
     if Py_AtExit(finalize) < 0:
         PySys_WriteStderr("warning: could not register"
                           "PetscFinalize() with Py_AtExit()")
+    # make sure all PETSc packages are initialized
+    CHKERR( PetscInitializeAllPackages(NULL) )
     # register custom implementations
-    CHKERR( PyPetscRegisterAll(NULL) )
+    CHKERR( PetscPythonRegisterAll(path) )
     # register Python types
     PyPetscRegisterPyTypes()
     return 0 # and we are done, enjoy !!
@@ -305,8 +311,12 @@ cdef int initialize(object args) except -1:
 
 def _initialize(args=None):
     if args is None: args = ()
+    global tracebacklist
     Error._traceback_ = tracebacklist
-    initialize(args)
+    #
+    global __file__
+    cdef char* path = str2cp(__file__)
+    initialize(args, path)
     #
     global COMM_NULL, COMM_SELF, COMM_WORLD
     (<Comm?>COMM_NULL).comm  = MPI_COMM_NULL
