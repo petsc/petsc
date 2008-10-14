@@ -4,6 +4,7 @@ function PetscBinaryWrite(inarg,varargin)
 %  if the array is multidimensional and dense it is saved
 %  as a one dimensional array
 %
+%   PetscBinaryWrite(inarg,args to write)
 %   inarg may be:
 %      filename 
 %      socket number (0 for PETSc default)
