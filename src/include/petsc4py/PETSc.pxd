@@ -60,11 +60,11 @@ cdef extern from "petscda.h":
 
 # --------------------------------------------------------------------
 
-cdef public api class Comm [type PyPetscComm_Type, object PyPetscCommObject]:
+ctypedef public api class Comm [type PyPetscComm_Type, object PyPetscCommObject]:
     cdef MPI_Comm comm
     cdef int isdup
 
-cdef public api class Object [type PyPetscObject_Type, object PyPetscObjectObject]:
+ctypedef public api class Object [type PyPetscObject_Type, object PyPetscObjectObject]:
     cdef PetscObject oval
     cdef PetscObject *obj
     cdef long inc_ref(self) except -1
@@ -73,46 +73,46 @@ cdef public api class Object [type PyPetscObject_Type, object PyPetscObjectObjec
     cdef object set_attr(self, char name[], object attr)
     cdef object get_dict(self)
 
-cdef public api class Viewer(Object) [type PyPetscViewer_Type, object PyPetscViewerObject]:
+ctypedef public api class Viewer(Object) [type PyPetscViewer_Type, object PyPetscViewerObject]:
     cdef PetscViewer vwr
 
-cdef public api class Random(Object) [type PyPetscRandom_Type, object PyPetscRandomObject]:
+ctypedef public api class Random(Object) [type PyPetscRandom_Type, object PyPetscRandomObject]:
     cdef PetscRandom rnd
 
-cdef public api class IS(Object) [type PyPetscIS_Type, object PyPetscISObject]:
+ctypedef public api class IS(Object) [type PyPetscIS_Type, object PyPetscISObject]:
     cdef PetscIS iset
 
-cdef public api class LGMap(Object) [type PyPetscLGMap_Type, object PyPetscLGMapObject]:
+ctypedef public api class LGMap(Object) [type PyPetscLGMap_Type, object PyPetscLGMapObject]:
     cdef PetscLGMap lgm
 
-cdef public api class Vec(Object) [type PyPetscVec_Type, object PyPetscVecObject]:
+ctypedef public api class Vec(Object) [type PyPetscVec_Type, object PyPetscVecObject]:
     cdef PetscVec vec
 
-cdef public api class Scatter(Object) [type PyPetscScatter_Type, object PyPetscScatterObject]:
+ctypedef public api class Scatter(Object) [type PyPetscScatter_Type, object PyPetscScatterObject]:
     cdef PetscScatter sct
 
-cdef public api class Mat(Object) [type PyPetscMat_Type, object PyPetscMatObject]:
+ctypedef public api class Mat(Object) [type PyPetscMat_Type, object PyPetscMatObject]:
     cdef PetscMat mat
 
-cdef public api class NullSpace(Object) [type PyPetscNullSpace_Type, object PyPetscNullSpaceObject]:
+ctypedef public api class NullSpace(Object) [type PyPetscNullSpace_Type, object PyPetscNullSpaceObject]:
     cdef PetscNullSpace nsp
 
-cdef public api class PC(Object) [type PyPetscPC_Type, object PyPetscPCObject]:
+ctypedef public api class PC(Object) [type PyPetscPC_Type, object PyPetscPCObject]:
     cdef PetscPC pc
 
-cdef public api class KSP(Object) [type PyPetscKSP_Type, object PyPetscKSPObject]:
+ctypedef public api class KSP(Object) [type PyPetscKSP_Type, object PyPetscKSPObject]:
     cdef PetscKSP ksp
 
-cdef public api class SNES(Object) [type PyPetscSNES_Type, object PyPetscSNESObject]:
+ctypedef public api class SNES(Object) [type PyPetscSNES_Type, object PyPetscSNESObject]:
     cdef PetscSNES snes
 
-cdef public api class TS(Object) [type PyPetscTS_Type, object PyPetscTSObject]:
+ctypedef public api class TS(Object) [type PyPetscTS_Type, object PyPetscTSObject]:
     cdef PetscTS ts
 
-cdef public api class AO(Object) [type PyPetscAO_Type, object PyPetscAOObject]:
+ctypedef public api class AO(Object) [type PyPetscAO_Type, object PyPetscAOObject]:
     cdef PetscAO ao
 
-cdef public api class DA(Object) [type PyPetscDA_Type, object PyPetscDAObject]:
+ctypedef public api class DA(Object) [type PyPetscDA_Type, object PyPetscDAObject]:
     cdef PetscDA da
 
 # --------------------------------------------------------------------
