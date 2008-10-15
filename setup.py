@@ -47,6 +47,7 @@ def get_ext_modules(Extension):
     for pth, dirs, files in walk('src'):
         depends += glob(path.join(pth, '*.h'))
     for pth, dirs, files in walk(path.join('src', 'source')):
+        depends += glob(path.join(pth, '*.h'))
         depends += glob(path.join(pth, '*.c'))
     return [Extension('petsc4py.lib.PETSc',
                       sources=['src/PETSc.c',
