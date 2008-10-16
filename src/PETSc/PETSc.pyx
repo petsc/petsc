@@ -236,11 +236,14 @@ cdef void finalize():
     if (<int>PetscFinalizeCalled): return
     # deinstall custom error handler
     ierr = PetscPopErrorHandler()
-    if ierr != 0: pass # XXX print error to stdout
+    if ierr != 0:
+        PySys_WriteStderr("PetscPopErrorHandler() failed "
+                          "[error code: %d]\n", ierr)
     # finalize PETSc
-    cdef int ierr2 = 0
     ierr = PetscFinalize()
-    if ierr != 0: pass # XXX print error to stdout
+    if ierr != 0:
+        PySys_WriteStderr("PetscFinalize() failed "
+                          "[error code: %d]\n", ierr)
     # and we are done, see you later !!
 
 cdef int initialize(object args) except -1:
@@ -300,7 +303,7 @@ cdef int register(char path[]) except -1:
     RegisterPyType(PETSC_AO_COOKIE,        AO)
     RegisterPyType(PETSC_DA_COOKIE,        DA)
     return 0 # and we are done, enjoy !!
-    
+
 # --------------------------------------------------------------------
 
 def _initialize(args=None):
