@@ -100,10 +100,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *f
 #endif
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
   *fullLength = vsnprintf(str,len,newformat,(char *)Argp);
+#elif defined(PETSC_HAVE_VSNPRINTF)
+  *fullLength = vsnprintf(str,len,newformat,Argp);
 #elif defined(PETSC_HAVE__VSNPRINTF)
   *fullLength = _vsnprintf(str,len,newformat,Argp);
 #else
-  *fullLength = vsnprintf(str,len,newformat,Argp);
+#error "vsnprintf not found"
 #endif
   if (oldLength >= 8*1024) {
     ierr = PetscFree(newformat);CHKERRQ(ierr);
