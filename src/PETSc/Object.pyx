@@ -191,23 +191,30 @@ cdef class Object:
 
 # --------------------------------------------------------------------
 
-cdef dict cookie2type = { 0 : None }
+cdef dict petsc2type = { 0 : None }
 
-_type_registry = cookie2type
+_type_registry = petsc2type
 
 cdef int RegisterPyType(PetscCookie cookie, type cls) except -1:
-    global cookie2type
+    global petsc2type
     cdef object key = cookie
-    assert key not in cookie2type, \
-           "alredy registered: %d -> %s" % (key, cls)
-    cookie2type[key] = cls
+    cdef object value = cls
+    if key not in petsc2type:
+        petsc2type[key] = cls
+    else:
+        value = petsc2type[key]
+        assert cls is value, \
+               "key: %d, " \
+               "cannot register: %s, " \
+               "already registered: %s" % (key, cls, value)
+    return 0
 
 cdef type CookieToPyType(PetscCookie cookie):
-    global cookie2type
+    global petsc2type
     cdef object key = cookie
     cdef type cls = Object
     try:
-        cls = cookie2type[key]
+        cls = petsc2type[key]
     except KeyError:
         cls = Object
     return cls

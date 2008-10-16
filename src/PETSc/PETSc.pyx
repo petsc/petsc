@@ -129,43 +129,6 @@ include "CAPI.pyx"
 
 # --------------------------------------------------------------------
 
-cdef extern from *:
-    PetscCookie PETSC_OBJECT_COOKIE    "PETSC_OBJECT_COOKIE"
-    PetscCookie PETSC_VIEWER_COOKIE    "PETSC_VIEWER_COOKIE"
-    PetscCookie PETSC_RANDOM_COOKIE    "PETSC_RANDOM_COOKIE"
-    PetscCookie PETSC_IS_COOKIE        "IS_COOKIE"
-    PetscCookie PETSC_LGMAP_COOKIE     "IS_LTOGM_COOKIE"
-    PetscCookie PETSC_VEC_COOKIE       "VEC_COOKIE"
-    PetscCookie PETSC_SCATTER_COOKIE   "VEC_SCATTER_COOKIE"
-    PetscCookie PETSC_MAT_COOKIE       "MAT_COOKIE"
-    PetscCookie PETSC_NULLSPACE_COOKIE "MAT_NULLSPACE_COOKIE"
-    PetscCookie PETSC_PC_COOKIE        "PC_COOKIE"
-    PetscCookie PETSC_KSP_COOKIE       "KSP_COOKIE"
-    PetscCookie PETSC_SNES_COOKIE      "SNES_COOKIE"
-    PetscCookie PETSC_TS_COOKIE        "TS_COOKIE"
-    PetscCookie PETSC_AO_COOKIE        "AO_COOKIE"
-    PetscCookie PETSC_DA_COOKIE        "DM_COOKIE"
-
-cdef int PyPetscRegisterPyTypes() except -1:
-    RegisterPyType(PETSC_OBJECT_COOKIE,    Object)
-    RegisterPyType(PETSC_VIEWER_COOKIE,    Viewer)
-    RegisterPyType(PETSC_RANDOM_COOKIE,    Random)
-    RegisterPyType(PETSC_IS_COOKIE,        IS)
-    RegisterPyType(PETSC_LGMAP_COOKIE,     LGMap)
-    RegisterPyType(PETSC_VEC_COOKIE,       Vec)
-    RegisterPyType(PETSC_SCATTER_COOKIE,   Scatter)
-    RegisterPyType(PETSC_MAT_COOKIE,       Mat)
-    RegisterPyType(PETSC_NULLSPACE_COOKIE, NullSpace)
-    RegisterPyType(PETSC_PC_COOKIE,        PC)
-    RegisterPyType(PETSC_KSP_COOKIE,       KSP)
-    RegisterPyType(PETSC_SNES_COOKIE,      SNES)
-    RegisterPyType(PETSC_TS_COOKIE,        TS)
-    RegisterPyType(PETSC_AO_COOKIE,        AO)
-    RegisterPyType(PETSC_DA_COOKIE,        DA)
-    return 0
-
-# --------------------------------------------------------------------
-
 cdef extern from "Python.h":
     int Py_IsInitialized()
 
@@ -280,12 +243,9 @@ cdef void finalize():
     if ierr != 0: pass # XXX print error to stdout
     # and we are done, see you later !!
 
-cdef int initialize(object args, char path[]) except -1:
+cdef int initialize(object args) except -1:
     if (<int>PetscInitializeCalled):
-        CHKERR( PetscInitializeAllPackages(NULL) )
-        CHKERR( PetscPythonRegisterAll(path) )
-        PyPetscRegisterPyTypes()
-        return 0
+        return 1
     if (<int>PetscFinalizeCalled):
         return 0
     # allocate command line arguments
@@ -296,17 +256,51 @@ cdef int initialize(object args, char path[]) except -1:
     # install custom error handler
     CHKERR( PetscPushErrorHandler(traceback, <void*>tracebacklist) )
     # register finalization function
-    if Py_AtExit(finalize) < 0:
+    if Py_AtExit(finalize) < 0: # XXX review this !!
         PySys_WriteStderr("warning: could not register"
                           "PetscFinalize() with Py_AtExit()")
+    return 1 # and we are done, enjoy !!
+
+cdef extern from *:
+    PetscCookie PETSC_OBJECT_COOKIE    "PETSC_OBJECT_COOKIE"
+    PetscCookie PETSC_VIEWER_COOKIE    "PETSC_VIEWER_COOKIE"
+    PetscCookie PETSC_RANDOM_COOKIE    "PETSC_RANDOM_COOKIE"
+    PetscCookie PETSC_IS_COOKIE        "IS_COOKIE"
+    PetscCookie PETSC_LGMAP_COOKIE     "IS_LTOGM_COOKIE"
+    PetscCookie PETSC_VEC_COOKIE       "VEC_COOKIE"
+    PetscCookie PETSC_SCATTER_COOKIE   "VEC_SCATTER_COOKIE"
+    PetscCookie PETSC_MAT_COOKIE       "MAT_COOKIE"
+    PetscCookie PETSC_NULLSPACE_COOKIE "MAT_NULLSPACE_COOKIE"
+    PetscCookie PETSC_PC_COOKIE        "PC_COOKIE"
+    PetscCookie PETSC_KSP_COOKIE       "KSP_COOKIE"
+    PetscCookie PETSC_SNES_COOKIE      "SNES_COOKIE"
+    PetscCookie PETSC_TS_COOKIE        "TS_COOKIE"
+    PetscCookie PETSC_AO_COOKIE        "AO_COOKIE"
+    PetscCookie PETSC_DA_COOKIE        "DM_COOKIE"
+
+cdef int register(char path[]) except -1:
     # make sure all PETSc packages are initialized
     CHKERR( PetscInitializeAllPackages(NULL) )
     # register custom implementations
     CHKERR( PetscPythonRegisterAll(path) )
     # register Python types
-    PyPetscRegisterPyTypes()
+    RegisterPyType(PETSC_OBJECT_COOKIE,    Object)
+    RegisterPyType(PETSC_VIEWER_COOKIE,    Viewer)
+    RegisterPyType(PETSC_RANDOM_COOKIE,    Random)
+    RegisterPyType(PETSC_IS_COOKIE,        IS)
+    RegisterPyType(PETSC_LGMAP_COOKIE,     LGMap)
+    RegisterPyType(PETSC_VEC_COOKIE,       Vec)
+    RegisterPyType(PETSC_SCATTER_COOKIE,   Scatter)
+    RegisterPyType(PETSC_MAT_COOKIE,       Mat)
+    RegisterPyType(PETSC_NULLSPACE_COOKIE, NullSpace)
+    RegisterPyType(PETSC_PC_COOKIE,        PC)
+    RegisterPyType(PETSC_KSP_COOKIE,       KSP)
+    RegisterPyType(PETSC_SNES_COOKIE,      SNES)
+    RegisterPyType(PETSC_TS_COOKIE,        TS)
+    RegisterPyType(PETSC_AO_COOKIE,        AO)
+    RegisterPyType(PETSC_DA_COOKIE,        DA)
     return 0 # and we are done, enjoy !!
-
+    
 # --------------------------------------------------------------------
 
 def _initialize(args=None):
@@ -316,7 +310,8 @@ def _initialize(args=None):
     #
     global __file__
     cdef char* path = str2cp(__file__)
-    initialize(args, path)
+    cdef int ready = initialize(args)
+    if ready: register(path)
     #
     global COMM_NULL, COMM_SELF, COMM_WORLD
     (<Comm?>COMM_NULL).comm  = MPI_COMM_NULL
@@ -328,6 +323,9 @@ def _initialize(args=None):
 
 def _finalize():
     finalize()
+    #
+    global petsc2type
+    petsc2type.clear()
     #
     global COMM_NULL, COMM_SELF, COMM_WORLD
     (<Comm?>COMM_NULL).comm  = MPI_COMM_NULL

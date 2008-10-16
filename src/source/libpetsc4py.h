@@ -88,6 +88,14 @@ EXTERN_C_END
 
 /* ---------------------------------------------------------------- */
 
+/* XXX Up to now, this is the way it works :-( */
+
+#define MatRegisterStatic(a,b,c,d)  MatRegister(a,0,c,d)
+#define PCRegisterStatic(a,b,c,d)   PCRegister(a,0,c,d)
+#define KSPRegisterStatic(a,b,c,d)  KSPRegister(a,0,c,d)
+#define SNESRegisterStatic(a,b,c,d) SNESRegister(a,0,c,d)
+#define TSRegisterStatic(a,b,c,d)   TSRegister(a,0,c,d)
+
 #undef  __FUNCT__  
 #define __FUNCT__ "PetscPythonRegisterAll"
 static PetscErrorCode PetscPythonRegisterAll(const char path[])
@@ -98,44 +106,20 @@ static PetscErrorCode PetscPythonRegisterAll(const char path[])
   registered = PETSC_TRUE;
 
   PetscFunctionBegin;
-  
-#if 0  
 
-  /* XXX This should be the right way ... !!! */
-
-  ierr = MatRegisterDynamic  ( MATPYTHON,  path, "MatCreate_Python",  MatCreate_Python  ); CHKERRQ(ierr);
-  ierr = PCRegisterDynamic   ( PCPYTHON,   path, "PCCreate_Python",   PCCreate_Python   ); CHKERRQ(ierr);
-  ierr = KSPRegisterDynamic  ( KSPPYTHON,  path, "KSPCreate_Python",  KSPCreate_Python  ); CHKERRQ(ierr);
-  ierr = SNESRegisterDynamic ( SNESPYTHON, path, "SNESCreate_Python", SNESCreate_Python ); CHKERRQ(ierr);
-  ierr = TSRegisterDynamic   ( TS_PYTHON,  path, "TSCreate_Python",   TSCreate_Python   ); CHKERRQ(ierr);
+  ierr = MatRegisterStatic  ( MATPYTHON,  path, "MatCreate_Python",  MatCreate_Python  ); CHKERRQ(ierr);
+  ierr = PCRegisterStatic   ( PCPYTHON,   path, "PCCreate_Python",   PCCreate_Python   ); CHKERRQ(ierr);
+  ierr = KSPRegisterStatic  ( KSPPYTHON,  path, "KSPCreate_Python",  KSPCreate_Python  ); CHKERRQ(ierr);
+  ierr = SNESRegisterStatic ( SNESPYTHON, path, "SNESCreate_Python", SNESCreate_Python ); CHKERRQ(ierr);
+  ierr = TSRegisterStatic   ( TS_PYTHON,  path, "TSCreate_Python",   TSCreate_Python   ); CHKERRQ(ierr);
 #if (PETSC_VERSION_MAJOR    == 2 && \
      PETSC_VERSION_MINOR    == 3 && \
      PETSC_VERSION_SUBMINOR == 2 && \
      PETSC_VERSION_RELEASE  == 1)
-  ierr = MatRegisterDynamic ( MATIS,   path, "MatCreate_ISX",  MatCreate_ISX  ); CHKERRQ(ierr);
+  ierr = MatRegisterStatic  ( MATIS,   path, "MatCreate_ISX",  MatCreate_ISX  ); CHKERRQ(ierr);
 #endif
-  ierr = PCRegisterDynamic  ( PCSCHUR, path, "PCCreate_Schur", PCCreate_Schur ); CHKERRQ(ierr);
-  ierr = TSRegisterDynamic  ( TS_USER, path, "TSCreate_User",  TSCreate_User  ); CHKERRQ(ierr);
-
-#else
-
-  /* XXX But up to now, this is the way it works !!! */
-
-  ierr = MatRegister  ( MATPYTHON,  PETSC_NULL, "MatCreate_Python",  MatCreate_Python  ); CHKERRQ(ierr);
-  ierr = PCRegister   ( PCPYTHON,   PETSC_NULL, "PCCreate_Python",   PCCreate_Python   ); CHKERRQ(ierr);
-  ierr = KSPRegister  ( KSPPYTHON,  PETSC_NULL, "KSPCreate_Python",  KSPCreate_Python  ); CHKERRQ(ierr);
-  ierr = SNESRegister ( SNESPYTHON, PETSC_NULL, "SNESCreate_Python", SNESCreate_Python ); CHKERRQ(ierr);
-  ierr = TSRegister   ( TS_PYTHON,  PETSC_NULL, "TSCreate_Python",   TSCreate_Python   ); CHKERRQ(ierr);
-#if (PETSC_VERSION_MAJOR    == 2 && \
-     PETSC_VERSION_MINOR    == 3 && \
-     PETSC_VERSION_SUBMINOR == 2 && \
-     PETSC_VERSION_RELEASE  == 1)
-  ierr = MatRegister ( MATIS,   PETSC_NULL, "MatCreate_ISX",  MatCreate_ISX  ); CHKERRQ(ierr);
-#endif
-  ierr = PCRegister  ( PCSCHUR, PETSC_NULL, "PCCreate_Schur", PCCreate_Schur ); CHKERRQ(ierr);
-  ierr = TSRegister  ( TS_USER, PETSC_NULL, "TSCreate_User",  TSCreate_User  ); CHKERRQ(ierr);
-
-#endif
+  ierr = PCRegisterStatic   ( PCSCHUR, path, "PCCreate_Schur", PCCreate_Schur ); CHKERRQ(ierr);
+  ierr = TSRegisterStatic   ( TS_USER, path, "TSCreate_User",  TSCreate_User  ); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
