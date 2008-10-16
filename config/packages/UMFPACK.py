@@ -28,7 +28,7 @@ class Configure(config.package.Package):
     g = open(os.path.join(self.packageDir, mkfile), 'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+'\n')
+    g.write('CFLAGS       = '+self.setCompilers.getCompilerFlags()+''' -DUF_long="long long" -DUF_long_max=LONG_LONG_MAX -DUF_long_id='"%lld"' \n''')
     self.setCompilers.popLanguage()
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
     g.write('AR = ar cr\n')
@@ -43,7 +43,7 @@ class Configure(config.package.Package):
     if self.installNeeded(mkfile):
       try:
         self.logPrintBox('Compiling UMFPACK; this may take several minutes')
-        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/UMFPACK; UMFPACK_INSTALL_DIR='+self.installDir+'/lib; export UMFPACK_INSTALL_DIR; make; make clean; mv Lib/*.a '+self.libDir+'; cp Include/*.h '+self.includeDir+'; cd ..; cp UFconfig/*.h '+self.includeDir+'; cd AMD; mv Lib/*.a '+self.libDir+'; cp Include/*.h '+self.includeDir, timeout=2500, log = self.framework.log)[0]
+        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'/UMFPACK; UMFPACK_INSTALL_DIR='+self.installDir+'''/lib; export UMFPACK_INSTALL_DIR; make; make clean; mv Lib/*.a '''+self.libDir+'; cp Include/*.h '+self.includeDir+'; cd ..; cp UFconfig/*.h '+self.includeDir+'; cd AMD; mv Lib/*.a '+self.libDir+'; cp Include/*.h '+self.includeDir, timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on UMFPACK: '+str(e))
       self.checkInstall(output, mkfile)
