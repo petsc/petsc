@@ -1069,12 +1069,15 @@ namespace ALE {
 
         for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
           // TODO: This must become a more general iterator over colors
-          const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
-          // Just taking the first value
-          const typename Section::point_type&            localPoint  = *p_iter;
-          const typename OverlapSection::point_type&     remotePoint = points->begin().color();
+          const typename Section::point_type&                localPoint = *p_iter;
+          const Obj<typename RecvOverlap::coneSequence>&     points     = recvOverlap->cone(*p_iter);
+          const typename RecvOverlap::coneSequence::iterator cEnd       = points->end();
 
-          section->updateAddPoint(localPoint, overlapSection->restrictPoint(remotePoint));
+          for(typename RecvOverlap::coneSequence::iterator c_iter = points->begin(); c_iter != cEnd; ++c_iter) {
+            const typename OverlapSection::point_type& remotePoint = c_iter.color();
+
+            section->updateAddPoint(localPoint, overlapSection->restrictPoint(remotePoint));
+          }
         }
       };
     };
