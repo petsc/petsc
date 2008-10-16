@@ -256,7 +256,7 @@ cdef int initialize(object args) except -1:
     # install custom error handler
     CHKERR( PetscPushErrorHandler(traceback, <void*>tracebacklist) )
     # register finalization function
-    if Py_AtExit(finalize) < 0: # XXX review this !!
+    if Py_AtExit(finalize) < 0:
         PySys_WriteStderr("warning: could not register"
                           "PetscFinalize() with Py_AtExit()")
     return 1 # and we are done, enjoy !!
