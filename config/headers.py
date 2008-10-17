@@ -13,21 +13,37 @@ class Configure(config.base.Configure):
     self.compilers = self.framework.require('config.compilers', self)
     return
 
-  def getIncludeArgument(self, include):
-    '''Return the proper include line argument for the given filename
+  def getIncludeArgumentList(self, include):
+    '''Return the proper include line argument for the given filename as a list
        - If the path is empty, return it unchanged
        - If starts with - then return unchanged
        - Otherwise return -I<include>'''
     if not include:
-      return ''
-    include = include.replace(' ', '\\ ')
+      return []
+    include = include.replace('\\ ',' ').replace(' ', '\\ ')
     if include[0] == '-':
-      return include
-    return '-I'+include
+      return [include]
+    return ['-I'+include]
+
+  def getIncludeArgument(self, include):
+    '''Same as getIncludeArgumentList - except it returns a string instead of list.'''
+    return  ' '.join(self.getIncludeArgumentList(include))
 
   def toString(self,includes):
     '''Converts a list of includes to a string suitable for a compiler'''
     return ' '.join([self.getIncludeArgument(include) for include in includes])
+
+  def toStringNoDupes(self,includes):
+    '''Converts a list of -Iincludes to a string suitable for a compiler, removes duplicates'''
+    newincludes = []
+    for include in includes:
+      newincludes += self.getIncludeArgumentList(include)
+    includes = newincludes
+    newincludes = []
+    for j in includes:
+      if j in newincludes: continue
+      newincludes.append(j)
+    return ' '.join(newincludes)
 
   def getDefineName(self, header):
     return 'HAVE_'+header.upper().replace('.', '_').replace('/', '_')

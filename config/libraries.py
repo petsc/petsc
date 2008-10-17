@@ -24,8 +24,8 @@ class Configure(config.base.Configure):
     self.headers      = framework.require('config.headers',      self)
     return
 
-  def getLibArgument(self, library):
-    '''Return the proper link line argument for the given filename library
+  def getLibArgumentList(self, library):
+    '''Return the proper link line argument for the given filename library as a list of options
       - If the path is empty, return it unchanged
       - If starts with - then return unchanged
       - If the path ends in ".lib" return it unchanged
@@ -35,34 +35,38 @@ class Configure(config.base.Configure):
       - If the path is absolute, return it unchanged
       - Otherwise return -l<library>'''
     if not library:
-      return ''
+      return []
     if library.startswith('${CC_LINKER_SLFLAG}'):
-      return library
+      return [library]
     if library.startswith('${FC_LINKER_SLFLAG}'):
-      return library
+      return [library]
     if library.lstrip()[0] == '-':
-      return library
+      return [library]
     if len(library) > 3 and library[-4:] == '.lib':
-      return library.replace(' ', '\\ ')
+      return [library.replace('\\ ',' ').replace(' ', '\\ ')]
     if os.path.basename(library).startswith('lib'):
       name = self.getLibName(library)
       if ((len(library) > 2 and library[1] == ':') or os.path.isabs(library)):
         flagName  = self.language[-1]+'SharedLinkerFlag'
         flagSubst = self.language[-1].upper()+'_LINKER_SLFLAG'
-        dirname   = os.path.dirname(library).replace(' ', '\\ ')
+        dirname   = os.path.dirname(library).replace('\\ ',' ').replace(' ', '\\ ')
         if hasattr(self.setCompilers, flagName) and not getattr(self.setCompilers, flagName) is None:
-          return getattr(self.setCompilers, flagName)+dirname+' -L'+dirname+' -l'+name
+          return [getattr(self.setCompilers, flagName)+dirname,'-L'+dirname,'-l'+name]
         if flagSubst in self.framework.argDB:
-          return self.framework.argDB[flagSubst]+dirname+' -L'+dirname+' -l'+name
+          return [self.framework.argDB[flagSubst]+dirname,'-L'+dirname,'-l'+name]
         else:
-          return '-L'+dirname+' -l'+name
+          return ['-L'+dirname,' -l'+name]
       else:
-        return '-l'+name
+        return ['-l'+name]
     if os.path.splitext(library)[1] == '.so':
-      return library
+      return [library]
     if os.path.isabs(library):
-      return library
-    return '-l'+library
+      return [library]
+    return ['-l'+library]
+
+  def getLibArgument(self, library):
+    '''Same as getLibArgumentList - except it returns a string instead of list.'''
+    return  ' '.join(self.getLibArgumentList(library))
 
   def getLibName(library):
     if os.path.basename(library).startswith('lib'):
@@ -91,6 +95,19 @@ class Configure(config.base.Configure):
   def toString(self,libs):
     '''Converts a list of libraries to a string suitable for a linker'''
     return ' '.join([self.getLibArgument(lib) for lib in libs])
+
+  def toStringNoDupes(self,libs):
+    '''Converts a list of libraries to a string suitable for a linker, removes duplicates'''
+    newlibs = []
+    for lib in libs:
+      newlibs += self.getLibArgumentList(lib)
+    libs = newlibs
+    newlibs = []
+    # do not remove duplicate -l, because there is a tiny chance that order may matter
+    for j in libs:
+      if j in newlibs and not j.startswith('-l'): continue
+      newlibs.append(j)
+    return ' '.join(newlibs)
 
   def getShortLibName(self,lib):
     '''Checks the given name for a valid library name. If not valid - returns empty string.
