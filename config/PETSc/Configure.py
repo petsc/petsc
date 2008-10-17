@@ -142,11 +142,13 @@ class Configure(config.base.Configure):
         self.addMakeMacro('FC_LINKER',pcc_linker)
       else:
         self.addMakeMacro('FC_LINKER',fc_linker)
-      self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
-      self.setCompilers.popLanguage()
+      #Currently unused variables - so commented to keep petscvariables clean
+      #self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       # '' for Unix, .exe for Windows
-      self.addMakeMacro('FC_LINKER_SUFFIX','')
-      self.addMakeMacro('FC_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.LIBS.split(' ')))
+      #self.addMakeMacro('FC_LINKER_SUFFIX','')
+      #FC_LINKER_LIBS is currently unused
+      #self.addMakeMacro('FC_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.LIBS.split(' ')))
+      self.setCompilers.popLanguage()
     else:
       self.addMakeMacro('FC','')
 
@@ -162,10 +164,11 @@ class Configure(config.base.Configure):
       self.addMakeMacro('SL_LINKER_SUFFIX', '')
     else:
       self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
-    if self.setCompilers.isDarwin() and self.languages.clanguage == 'Cxx':
-      self.addMakeMacro('SL_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
-    else:
-      self.addMakeMacro('SL_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.LIBS.split(' ')))
+    
+    #SL_LINKER_LIBS is currently same as PCC_LINKER_LIBS - so simplify
+    self.addMakeMacro('SL_LINKER_LIBS','${PCC_LINKER_LIBS}')
+    #self.addMakeMacro('SL_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
+
 #-----------------------------------------------------------------------------------------------------
 
     # CONLY or CPP. We should change the PETSc makefiles to do this better
