@@ -9,8 +9,8 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/MUMPS_4.8.3.tar.gz']
-    self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a'],
-                      ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a','libpthread.a']]
+    self.liblist   = [['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a'],
+                     ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libmumps_common.a','libpord.a','libpthread.a']]
     self.functions = ['dmumps_c']
     self.includes  = ['dmumps_c.h']
     self.complex   = 1
@@ -29,8 +29,8 @@ class Configure(PETSc.package.Package):
   def Install(self):
 
     g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
-    g.write('LPORDDIR   = ../PORD/lib/\n')
-    g.write('IPORD      = -I../PORD/include/\n')
+    g.write('LPORDDIR   = $(topdir)/PORD/lib/\n')
+    g.write('IPORD      = -I$(topdir)/PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
     g.write('IMETIS =\n')
     g.write('LMETIS = '+self.libraries.toString(self.parmetis.lib)+'\n') 
@@ -74,8 +74,8 @@ class Configure(PETSc.package.Package):
     g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+' '+self.libraries.toString(self.blacs.lib)+'\n')
     g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('LIBPAR  = $(SCALAP) '+self.libraries.toString(self.mpi.lib)+'\n') #PARALLE LIBRARIES USED by MUMPS
-    g.write('INCSEQ  = -I../libseq\n')
-    g.write('LIBSEQ  =  $(LAPACK) -L../libseq -lmpiseq\n')
+    g.write('INCSEQ  = -I$(topdir)/libseq\n')
+    g.write('LIBSEQ  =  $(LAPACK) -L$(topdir)/libseq -lmpiseq\n')
     g.write('LIBBLAS = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('OPTL    = -O -I.\n')
     g.write('INC = $(INCPAR)\n')
