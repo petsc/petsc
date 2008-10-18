@@ -110,8 +110,7 @@ class Configure(config.base.Configure):
     return ' '.join(newlibs)
 
   def getShortLibName(self,lib):
-    '''Checks the given name for a valid library name. If not valid - returns empty string.
-       If valid - returns the short name for the library. Valid names are -lfoo or libfoo.[a,so,lib]'''
+    '''returns the short name for the library. Valid names are foo -lfoo or libfoo.[a,so,lib]'''
     if lib.startswith('-l'):
       libname = lib[2:]
       return libname
@@ -119,7 +118,8 @@ class Configure(config.base.Configure):
       libname = os.path.splitext(os.path.basename(lib))[0]
       if lib.startswith('lib'): libname = libname[3:]
       return libname
-    return ''
+    # no match - assuming the given name is already in short notation
+    return lib
 
   def check(self, libName, funcs, libDir = None, otherLibs = [], prototype = '', call = '', fortranMangle = 0, cxxMangle = 0):
     '''Checks that the library "libName" contains "funcs", and if it does defines HAVE_LIB"libName"
