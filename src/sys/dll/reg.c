@@ -27,12 +27,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListGetPathAndFunction(const char name[],ch
   PetscFunctionReturn(0);
 }
 
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-
 /*
     This is the list used by the DLRegister routines
 */
 PetscDLLibrary DLLibrariesLoaded = 0;
+
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLoadDynamicLibrary"
@@ -108,25 +108,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscFinalize_DynamicLibraries"
-/*
-     PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
-*/ 
-PetscErrorCode PetscFinalize_DynamicLibraries(void)
-{
-  PetscErrorCode ierr;
-  PetscTruth     flg;
-
-  PetscFunctionBegin;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dll_view",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscDLLibraryPrintPath();CHKERRQ(ierr);
-  }
-  ierr = PetscDLLibraryClose(DLLibrariesLoaded);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #else /* not using dynamic libraries */
 
 #undef __FUNCT__  
@@ -145,15 +126,27 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFinalize_DynamicLibraries"
+/*
+     PetscFinalize_DynamicLibraries - Closes the opened dynamic libraries.
+*/ 
 PetscErrorCode PetscFinalize_DynamicLibraries(void)
 {
-  PetscFunctionBegin;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
 
+  PetscFunctionBegin;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dll_view",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscDLLibraryPrintPath();CHKERRQ(ierr);
+  }
+  ierr = PetscDLLibraryClose(DLLibrariesLoaded);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
 
 /* ------------------------------------------------------------------------------*/
 struct _n_PetscFList {
