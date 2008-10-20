@@ -459,7 +459,7 @@ runex19_10:
 	   else echo "Possible problem with ex19_10, diffs above"; fi; \
 	   ${RM} -f ex19_10.tmp
 testex19: ex19.PETSc
-	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
+	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \
            echo "your systems batch system"; \
 	elif [ -f ex19 ]; then \
@@ -476,10 +476,8 @@ testex19: ex19.PETSc
 	   else echo "Possible error running C/C++ src/snes/examples/tutorials/ex19 with 2 MPI processes"; \
            echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; \
-	if [ "${PETSC_HAVE_X11}" != "" ]; then havex="1"; else havex="0"; fi;\
         D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
-	if [ "$${D2}" != "" ]; then havex="1"; fi;\
-	if [ $${havex} = "1" ]; then \
+        if [ "$$?" = 0 ]; then \
            ${MPIEXEC} -n 1 ./ex19 -dmmg_nlevels 4 -snes_monitor_draw  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "Graphics example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \

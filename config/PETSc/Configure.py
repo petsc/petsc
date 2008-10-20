@@ -116,7 +116,7 @@ class Configure(config.base.Configure):
     self.setCompilers.pushLanguage(self.languages.clanguage)
     pcc_linker = self.setCompilers.getLinker()
     self.addMakeMacro('PCC_LINKER',pcc_linker)
-    self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    self.addMakeMacro('PCC_LINKER_FLAGS',self.libraries.toStringNoDupes(self.setCompilers.getLinkerFlags().split(' ')))
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
@@ -156,7 +156,7 @@ class Configure(config.base.Configure):
     self.setCompilers.pushLanguage(self.languages.clanguage)
     # need to fix BuildSystem to collect these separately
     self.addMakeMacro('SL_LINKER',self.setCompilers.getLinker())
-    self.addMakeMacro('SL_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    self.addMakeMacro('SL_LINKER_FLAGS','${PCC_LINKER_FLAGS}')
     self.setCompilers.popLanguage()
     # One of 'a', 'so', 'lib', 'dll', 'dylib' (perhaps others also?) depending on the library generator and architecture
     # Note: . is not included in this macro, consistent with AR_LIB_SUFFIX
