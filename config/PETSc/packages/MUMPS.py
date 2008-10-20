@@ -13,6 +13,8 @@ class Configure(PETSc.package.Package):
                       ['libcmumps.a','libdmumps.a','libsmumps.a','libzmumps.a','libpord.a','libpthread.a']]
     self.functions = ['dmumps_c']
     self.includes  = ['dmumps_c.h']
+    #
+    # Mumps does NOT work with 64 bit integers without a huge number of hacks we ain't making
     self.complex   = 1
     return
 

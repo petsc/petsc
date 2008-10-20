@@ -13,7 +13,7 @@ class Configure(PETSc.package.Package):
     self.includes   = ['slu_ddefs.h']
     self.liblist    = [['libsuperlu_3.1.a']]
     self.complex    = 1
-    self.requires32bitint = 0;
+    # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
     self.excludename = ['SuperLU_DIST']
     return
 

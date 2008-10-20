@@ -12,6 +12,9 @@ class Configure(PETSc.package.Package):
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
     self.liblist    = [['libsuperlu_dist_2.2.a']]
+    #
+    #  SuperLU_dist supports 64 bit integers but uses ParMetis which does not, it has
+    #  a hack that uses the 32 bit parmetis
     self.requires32bitint = 0;
     self.complex    = 1
     return
@@ -66,7 +69,7 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling superlu_dist; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';SUPERLU_DIST_INSTALL_DIR='+self.installDir+'/lib;export SUPERLU_DIST_INSTALL_DIR; make clean; make lib LAAUX=""; mv *.a '+os.path.join(self.installDir,'lib')+'; cp SRC/*.h '+os.path.join(self.installDir,'include')+'/.', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';SUPERLU_DIST_INSTALL_DIR='+self.installDir+'/lib;export SUPERLU_DIST_INSTALL_DIR; make clean; make lib LAAUX=""; mv -f *.a '+os.path.join(self.installDir,'lib')+'; cp SRC/*.h '+os.path.join(self.installDir,'include')+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
       self.checkInstall(output,'make.inc')

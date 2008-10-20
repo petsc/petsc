@@ -13,6 +13,7 @@ class Configure(PETSc.package.Package):
     self.includes  = []
     self.fc        = 1
     self.functions = ['blacs_pinfo']
+    self.requires32bitint = 0;
     self.functionsFortran = 1
     self.complex   = 1
     return

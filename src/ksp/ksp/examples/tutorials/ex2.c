@@ -39,7 +39,7 @@ int main(int argc,char **args)
   PetscTruth     flg;
   PetscScalar    v,one = 1.0,neg_one = -1.0;
 #if defined(PETSC_USE_LOG)
-  PetscInt       stage;
+  PetscLogStage  stage;
 #endif
 
   PetscInitialize(&argc,&args,(char *)0,help);
