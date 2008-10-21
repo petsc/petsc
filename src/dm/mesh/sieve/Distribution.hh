@@ -63,12 +63,12 @@ namespace ALE {
   template<typename Mesh, typename Partitioner = ALE::Partitioner<> >
   class DistributionNew {
   public:
-    typedef typename Mesh::point_type            point_type;
-    typedef OrientedPoint<point_type>            oriented_point_type;
-    typedef typename Partitioner::part_type      rank_type;
-    typedef ALE::ISection<rank_type, point_type> partition_type;
-    typedef ALE::Section<point_type, point_type> cones_type;
-    typedef ALE::Section<point_type, oriented_point_type> oriented_cones_type;
+    typedef typename Mesh::point_type                     point_type;
+    typedef OrientedPoint<point_type>                     oriented_point_type;
+    typedef typename Partitioner::part_type               rank_type;
+    typedef ALE::ISection<rank_type, point_type>          partition_type;
+    typedef ALE::Section<ALE::Pair<int, point_type>, point_type>          cones_type;
+    typedef ALE::Section<ALE::Pair<int, point_type>, oriented_point_type> oriented_cones_type;
   public:
     template<typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<cones_type> completeCones(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
