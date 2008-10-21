@@ -141,8 +141,8 @@ void createOperator(const ALE::Obj<Mesh>& mesh, const ALE::Obj<Section>& s, cons
 
   opRenumbering = renumbering;
   for(typename ConeOverlap::chart_type::const_iterator p_iter = overlapChart.begin(); p_iter != overlapChart.end(); ++p_iter) {
-    if (opRenumbering.find(*p_iter) == opRenumbering.end()) {
-      opRenumbering[*p_iter] = p++;
+    if (opRenumbering.find(p_iter->second) == opRenumbering.end()) {
+      opRenumbering[p_iter->second] = p++;
     }
   }
   ALE::SetFromMap<ALE::Mesh::renumbering_type> opGlobalPoints(opRenumbering);
