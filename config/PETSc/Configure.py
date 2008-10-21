@@ -116,11 +116,11 @@ class Configure(config.base.Configure):
     self.setCompilers.pushLanguage(self.languages.clanguage)
     pcc_linker = self.setCompilers.getLinker()
     self.addMakeMacro('PCC_LINKER',pcc_linker)
-    self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    self.addMakeMacro('PCC_LINKER_FLAGS',self.libraries.toStringNoDupes(self.setCompilers.getLinkerFlags().split(' ')))
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
-    self.addMakeMacro('PCC_LINKER_LIBS',self.toStringLibs(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
+    self.addMakeMacro('PCC_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
 
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
@@ -142,11 +142,13 @@ class Configure(config.base.Configure):
         self.addMakeMacro('FC_LINKER',pcc_linker)
       else:
         self.addMakeMacro('FC_LINKER',fc_linker)
-      self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
-      self.setCompilers.popLanguage()
+      #Currently unused variables - so commented to keep petscvariables clean
+      #self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       # '' for Unix, .exe for Windows
-      self.addMakeMacro('FC_LINKER_SUFFIX','')
-      self.addMakeMacro('FC_LINKER_LIBS',self.toStringLibs(self.compilers.flibs+self.compilers.LIBS.split(' ')))      
+      #self.addMakeMacro('FC_LINKER_SUFFIX','')
+      #FC_LINKER_LIBS is currently unused
+      #self.addMakeMacro('FC_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.LIBS.split(' ')))
+      self.setCompilers.popLanguage()
     else:
       self.addMakeMacro('FC','')
 
@@ -154,7 +156,7 @@ class Configure(config.base.Configure):
     self.setCompilers.pushLanguage(self.languages.clanguage)
     # need to fix BuildSystem to collect these separately
     self.addMakeMacro('SL_LINKER',self.setCompilers.getLinker())
-    self.addMakeMacro('SL_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+    self.addMakeMacro('SL_LINKER_FLAGS','${PCC_LINKER_FLAGS}')
     self.setCompilers.popLanguage()
     # One of 'a', 'so', 'lib', 'dll', 'dylib' (perhaps others also?) depending on the library generator and architecture
     # Note: . is not included in this macro, consistent with AR_LIB_SUFFIX
@@ -162,10 +164,11 @@ class Configure(config.base.Configure):
       self.addMakeMacro('SL_LINKER_SUFFIX', '')
     else:
       self.addMakeMacro('SL_LINKER_SUFFIX', self.setCompilers.sharedLibraryExt)
-    if self.setCompilers.isDarwin() and self.languages.clanguage == 'Cxx':
-      self.addMakeMacro('SL_LINKER_LIBS',self.toStringLibs(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
-    else:
-      self.addMakeMacro('SL_LINKER_LIBS',self.toStringLibs(self.compilers.flibs+self.compilers.LIBS.split(' ')))            
+    
+    #SL_LINKER_LIBS is currently same as PCC_LINKER_LIBS - so simplify
+    self.addMakeMacro('SL_LINKER_LIBS','${PCC_LINKER_LIBS}')
+    #self.addMakeMacro('SL_LINKER_LIBS',self.libraries.toStringNoDupes(self.compilers.flibs+self.compilers.cxxlibs+self.compilers.LIBS.split(' ')))
+
 #-----------------------------------------------------------------------------------------------------
 
     # CONLY or CPP. We should change the PETSc makefiles to do this better
@@ -200,14 +203,14 @@ class Configure(config.base.Configure):
         self.addDefine('HAVE_'+i.PACKAGE, 1)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
-      self.addMakeMacro(i.PACKAGE+'_LIB', ' '.join([self.libraries.getLibArgument(l) for l in i.lib]))
-      libs.extend([self.libraries.getLibArgument(l) for l in i.lib])
+      self.addMakeMacro(i.PACKAGE+'_LIB', self.libraries.toStringNoDupes(i.lib))
+      libs.extend(i.lib)
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
           i.include = [i.include]
-        includes.extend([self.headers.getIncludeArgument(inc) for inc in i.include]) 
-    self.addMakeMacro('PACKAGES_LIBS',self.toStringLibs(libs+[self.libraries.getLibArgument(l) for l in self.libraries.math]))
-    self.addMakeMacro('PACKAGES_INCLUDES',self.toStringIncludes(includes))
+        includes.extend(i.include)
+    self.addMakeMacro('PACKAGES_LIBS',self.libraries.toStringNoDupes(libs+self.libraries.math))
+    self.addMakeMacro('PACKAGES_INCLUDES',self.headers.toStringNoDupes(includes))
     
     self.addMakeMacro('INSTALL_DIR',self.installdir)
 
@@ -217,37 +220,6 @@ class Configure(config.base.Configure):
     # add a makefile entry for configure options
     self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"'))
     return
-
-  def toStringLibs(self,libs):
-    '''Converts a list of libraries to a string suitable for a linker, removes duplicates'''
-    libs = [self.libraries.getLibArgument(lib) for lib in libs]
-    newlibs = []
-    # sometimes a single entry in the list is actually several items (why?)
-    for j in libs:
-      newlibs.extend(j.split(' '))
-    libs = newlibs
-    newlibs = []
-    # do not remove duplicate -l, because there is a tiny chance that order may matter
-    for j in libs:
-      if j in newlibs and (j.startswith('-L') or j.startswith('-Wl,-rpath')): continue
-      newlibs.append(j)
-    libs = newlibs
-    return ' '.join(libs)
-
-  def toStringIncludes(self,includes):
-    '''Converts a list of -Iincludes to a string suitable for a compiler, removes duplicates'''
-    newincludes = []
-    # sometimes a single entry in the list is actually several items (why?)
-    for j in includes:
-      newincludes.extend(j.split(' '))
-    includes = newincludes
-    newincludes = []
-    # do not remove duplicate -l, because there is a tiny chance that order may matter
-    for j in includes:
-      if j in newincludes and j.startswith('-I'): continue
-      newincludes.append(j)
-    includes = newincludes
-    return ' '.join(includes)
 
   def dumpConfigInfo(self):
     import time
