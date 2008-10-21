@@ -3,25 +3,79 @@
 /* 
    Provides an interface to the UMFPACKv5.1 sparse solver
 
-   This interface uses the "UF_long version" of the UMFPACK API
-   (*_dl_* and *_zl_* routines, instead of *_di_* and *_zi_* routines)
-   so that UMFPACK can address more than 2Gb of memory on 64 bit
-   machines.
+   When build with PETSC_USE_64BIT_INDICES this will use UF_Long as the 
+   integer type in UMFPACK, otherwise it will use int. This means
+   all integers in this file as simply declared as PetscInt. Also it means
+   that UMFPACK UL_Long version MUST be built with 64 bit integers when used.
 
-   If sizeof(UF_long) == 32 the interface only allocates the memory
-   necessary for UMFPACK's working arrays (W, Wi and possibly
-   perm_c). If sizeof(UF_long) == 64, in addition to allocating the
-   working arrays, the interface also has to re-allocate the matrix
-   index arrays (ai and aj, which must be stored as UF_long).
-
-   The interface is implemented for both real and complex
-   arithmetic. Complex numbers are assumed to be in packed format,
-   which requires UMFPACK >= 4.4.
-
-   We thank Christophe Geuzaine <geuzaine@acm.caltech.edu> for upgrading this interface to the UMFPACKv5.1
 */
-
 #include "src/mat/impls/aij/seq/aij.h"
+
+#if defined(PETSC_USE_64BIT_INDICES)
+#if defined(PETSC_USE_COMPLEX)
+#define umfpack_UMF_free_symbolic   umfpack_zl_free_symbolic
+#define umfpack_UMF_free_numeric    umfpack_zl_free_numeric
+#define umfpack_UMF_wsolve          umfpack_zl_wsolve
+#define umfpack_UMF_numeric         umfpack_zl_numeric
+#define umfpack_UMF_report_numeric  umfpack_zl_report_numeric
+#define umfpack_UMF_report_control  umfpack_zl_report_control
+#define umfpack_UMF_report_status   umfpack_zl_report_status
+#define umfpack_UMF_report_info     umfpack_zl_report_info
+#define umfpack_UMF_report_symbolic umfpack_zl_report_symbolic
+#define umfpack_UMF_qsymbolic       umfpack_zl_qsymbolic
+#define umfpack_UMF_symbolic        umfpack_zl_symbolic
+#define umfpack_UMF_defaults        umfpack_zl_defaults
+
+#else
+#define umfpack_UMF_free_symbolic   umfpack_dl_free_symbolic
+#define umfpack_UMF_free_numeric    umfpack_dl_free_numeric
+#define umfpack_UMF_wsolve          umfpack_dl_wsolve
+#define umfpack_UMF_numeric         umfpack_dl_numeric
+#define umfpack_UMF_report_numeric  umfpack_dl_report_numeric
+#define umfpack_UMF_report_control  umfpack_dl_report_control
+#define umfpack_UMF_report_status   umfpack_dl_report_status
+#define umfpack_UMF_report_info     umfpack_dl_report_info
+#define umfpack_UMF_report_symbolic umfpack_dl_report_symbolic
+#define umfpack_UMF_qsymbolic       umfpack_dl_qsymbolic
+#define umfpack_UMF_symbolic        umfpack_dl_symbolic
+#define umfpack_UMF_defaults        umfpack_dl_defaults
+#endif
+
+#else
+#if defined(PETSC_USE_COMPLEX)
+#define umfpack_UMF_free_symbolic   umfpack_zi_free_symbolic
+#define umfpack_UMF_free_numeric    umfpack_zi_free_numeric
+#define umfpack_UMF_wsolve          umfpack_zi_wsolve
+#define umfpack_UMF_numeric         umfpack_zi_numeric
+#define umfpack_UMF_report_numeric  umfpack_zi_report_numeric
+#define umfpack_UMF_report_control  umfpack_zi_report_control
+#define umfpack_UMF_report_status   umfpack_zi_report_status
+#define umfpack_UMF_report_info     umfpack_zi_report_info
+#define umfpack_UMF_report_symbolic umfpack_zi_report_symbolic
+#define umfpack_UMF_qsymbolic       umfpack_zi_qsymbolic
+#define umfpack_UMF_symbolic        umfpack_zi_symbolic
+#define umfpack_UMF_defaults        umfpack_zi_defaults
+
+#else
+#define umfpack_UMF_free_symbolic   umfpack_di_free_symbolic
+#define umfpack_UMF_free_numeric    umfpack_di_free_numeric
+#define umfpack_UMF_wsolve          umfpack_di_wsolve
+#define umfpack_UMF_numeric         umfpack_di_numeric
+#define umfpack_UMF_report_numeric  umfpack_di_report_numeric
+#define umfpack_UMF_report_control  umfpack_di_report_control
+#define umfpack_UMF_report_status   umfpack_di_report_status
+#define umfpack_UMF_report_info     umfpack_di_report_info
+#define umfpack_UMF_report_symbolic umfpack_di_report_symbolic
+#define umfpack_UMF_qsymbolic       umfpack_di_qsymbolic
+#define umfpack_UMF_symbolic        umfpack_di_symbolic
+#define umfpack_UMF_defaults        umfpack_di_defaults
+#endif
+#endif
+
+
+#define UF_long long long
+#define UF_long_max LONG_LONG_MAX
+#define UF_long_id "%lld"
 
 EXTERN_C_BEGIN
 #include "umfpack.h"
@@ -30,7 +84,7 @@ EXTERN_C_END
 typedef struct {
   void         *Symbolic, *Numeric;
   double       Info[UMFPACK_INFO], Control[UMFPACK_CONTROL],*W;
-  UF_long      *Wi,*ai,*aj,*perm_c;
+  PetscInt      *Wi,*ai,*aj,*perm_c;
   PetscScalar  *av;
   MatStructure flg;
   PetscTruth   PetscMatOdering;
@@ -48,19 +102,10 @@ PetscErrorCode MatDestroy_UMFPACK(Mat A)
 
   PetscFunctionBegin;
   if (lu->CleanUpUMFPACK) {
-#if defined(PETSC_USE_COMPLEX)
-    umfpack_zl_free_symbolic(&lu->Symbolic);
-    umfpack_zl_free_numeric(&lu->Numeric);
-#else
-    umfpack_dl_free_symbolic(&lu->Symbolic);
-    umfpack_dl_free_numeric(&lu->Numeric);
-#endif
+    umfpack_UMF_free_symbolic(&lu->Symbolic);
+    umfpack_UMF_free_numeric(&lu->Numeric);
     ierr = PetscFree(lu->Wi);CHKERRQ(ierr);
     ierr = PetscFree(lu->W);CHKERRQ(ierr);
-    if(sizeof(UF_long) != sizeof(int)){
-      ierr = PetscFree(lu->ai);CHKERRQ(ierr);
-      ierr = PetscFree(lu->aj);CHKERRQ(ierr);
-    }
     if (lu->PetscMatOdering) {
       ierr = PetscFree(lu->perm_c);CHKERRQ(ierr);
     }
@@ -76,44 +121,29 @@ PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
   Mat_UMFPACK *lu = (Mat_UMFPACK*)A->spptr;
   PetscScalar *av=lu->av,*ba,*xa;
   PetscErrorCode ierr;
-  UF_long     *ai=lu->ai,*aj=lu->aj,status;
+  PetscInt     *ai=lu->ai,*aj=lu->aj,status;
   
   PetscFunctionBegin;
   /* solve Ax = b by umfpack_*_wsolve */
   /* ----------------------------------*/
 
-#if defined(PETSC_USE_COMPLEX)
   ierr = VecConjugate(b);
-#endif
 
   ierr = VecGetArray(b,&ba);
   ierr = VecGetArray(x,&xa);
 
-#if defined(PETSC_USE_COMPLEX)
-  status = umfpack_zl_wsolve(UMFPACK_At,ai,aj,(double*)av,NULL,(double*)xa,NULL,(double*)ba,NULL,
-			     lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);  
-  umfpack_zl_report_info(lu->Control, lu->Info); 
+  status = umfpack_UMF_wsolve(UMFPACK_At,ai,aj,av,xa,ba,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);  
+  umfpack_UMF_report_info(lu->Control, lu->Info); 
   if (status < 0){
-    umfpack_zl_report_status(lu->Control, status);
-    SETERRQ(PETSC_ERR_LIB,"umfpack_zl_wsolve failed");
+    umfpack_UMF_report_status(lu->Control, status);
+    SETERRQ(PETSC_ERR_LIB,"umfpack_UMF_wsolve failed");
   }
-#else
-  status = umfpack_dl_wsolve(UMFPACK_At,ai,aj,av,xa,ba,
-			     lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);  
-  umfpack_dl_report_info(lu->Control, lu->Info); 
-  if (status < 0){
-    umfpack_dl_report_status(lu->Control, status);
-    SETERRQ(PETSC_ERR_LIB,"umfpack_dl_wsolve failed");
-  }
-#endif
 
   ierr = VecRestoreArray(b,&ba);
   ierr = VecRestoreArray(x,&xa);
 
-#if defined(PETSC_USE_COMPLEX)
   ierr = VecConjugate(b);
   ierr = VecConjugate(x);
-#endif
 
   PetscFunctionReturn(0);
 }
@@ -124,45 +154,32 @@ PetscErrorCode MatLUFactorNumeric_UMFPACK(Mat F,Mat A,const MatFactorInfo *info)
 {
   Mat_UMFPACK *lu=(Mat_UMFPACK*)(F)->spptr;
   PetscErrorCode ierr;
-  UF_long     *ai=lu->ai,*aj=lu->aj,m=A->rmap->n,status;
+  PetscInt     *ai=lu->ai,*aj=lu->aj,m=A->rmap->n,status;
   PetscScalar *av=lu->av;
 
   PetscFunctionBegin;
   /* numeric factorization of A' */
   /* ----------------------------*/
 
+  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric){
+    umfpack_UMF_free_numeric(&lu->Numeric);
+  }
 #if defined(PETSC_USE_COMPLEX)
-  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric){
-    umfpack_zl_free_numeric(&lu->Numeric);
-  }
-  status = umfpack_zl_numeric(ai,aj,(double*)av,NULL,lu->Symbolic,&lu->Numeric,lu->Control,lu->Info);
-  if (status < 0) {
-    umfpack_zl_report_status(lu->Control, status);
-    SETERRQ(PETSC_ERR_LIB,"umfpack_zl_numeric failed");
-  }
-  /* report numeric factorization of A' when Control[PRL] > 3 */
-  (void) umfpack_zl_report_numeric(lu->Numeric, lu->Control);
+  status = umfpack_UMF_numeric(ai,aj,(double*)av,NULL,lu->Symbolic,&lu->Numeric,lu->Control,lu->Info);
 #else
-  if (lu->flg == SAME_NONZERO_PATTERN && lu->Numeric){
-    umfpack_dl_free_numeric(&lu->Numeric);
-  }
-  status = umfpack_dl_numeric(ai,aj,av,lu->Symbolic,&lu->Numeric,lu->Control,lu->Info);
+  status = umfpack_UMF_numeric(ai,aj,av,lu->Symbolic,&lu->Numeric,lu->Control,lu->Info);
+#endif
   if (status < 0) {
-    umfpack_zl_report_status(lu->Control, status);
-    SETERRQ(PETSC_ERR_LIB,"umfpack_dl_numeric failed");
+    umfpack_UMF_report_status(lu->Control, status);
+    SETERRQ(PETSC_ERR_LIB,"umfpack_UMF_numeric failed");
   }
   /* report numeric factorization of A' when Control[PRL] > 3 */
-  (void) umfpack_dl_report_numeric(lu->Numeric, lu->Control);
-#endif
+  (void) umfpack_UMF_report_numeric(lu->Numeric, lu->Control);
 
   if (lu->flg == DIFFERENT_NONZERO_PATTERN){  /* first numeric factorization */
     /* allocate working space to be used by Solve */
-    ierr = PetscMalloc(m * sizeof(UF_long), &lu->Wi);CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-    ierr = PetscMalloc(2*5*m * sizeof(double), &lu->W);CHKERRQ(ierr);
-#else
-    ierr = PetscMalloc(5*m * sizeof(double), &lu->W);CHKERRQ(ierr);
-#endif
+    ierr = PetscMalloc(m * sizeof(PetscInt), &lu->Wi);CHKERRQ(ierr);
+    ierr = PetscMalloc(5*m * sizeof(PetscScalar), &lu->W);CHKERRQ(ierr);
   }
 
   lu->flg = SAME_NONZERO_PATTERN;
@@ -181,72 +198,48 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const MatFactor
   Mat_SeqAIJ     *mat=(Mat_SeqAIJ*)A->data;
   Mat_UMFPACK    *lu = (Mat_UMFPACK*)(F->spptr);
   PetscErrorCode ierr;
-  int            i,m=A->rmap->n,n=A->cmap->n;
+  PetscInt       i,m=A->rmap->n,n=A->cmap->n;
   const PetscInt *ra;
-  UF_long        status;
+  PetscInt        status;
   PetscScalar    *av=mat->a;
   
   PetscFunctionBegin;
   if (lu->PetscMatOdering) {
     ierr = ISGetIndices(r,&ra);CHKERRQ(ierr);
-    ierr = PetscMalloc(m*sizeof(UF_long),&lu->perm_c);CHKERRQ(ierr);  
+    ierr = PetscMalloc(m*sizeof(PetscInt),&lu->perm_c);CHKERRQ(ierr);  
     /* we cannot simply memcpy on 64 bit archs */
     for(i = 0; i < m; i++) lu->perm_c[i] = ra[i];
     ierr = ISRestoreIndices(r,&ra);CHKERRQ(ierr);
   }
 
-  if(sizeof(UF_long) != sizeof(int)){
-    /* we cannot directly use mat->i and mat->j on 64 bit archs */
-    ierr = PetscMalloc((m+1)*sizeof(UF_long),&lu->ai);CHKERRQ(ierr);  
-    ierr = PetscMalloc(mat->nz*sizeof(UF_long),&lu->aj);CHKERRQ(ierr);  
-    for(i = 0; i < m + 1; i++) lu->ai[i] = mat->i[i];
-    for(i = 0; i < mat->nz; i++) lu->aj[i] = mat->j[i];
-  }
-  else{
-    lu->ai = (UF_long*)mat->i;
-    lu->aj = (UF_long*)mat->j;
-  }
+  lu->ai = mat->i;
+  lu->aj = mat->j;
 
   /* print the control parameters */
-#if defined(PETSC_USE_COMPLEX)
-  if(lu->Control[UMFPACK_PRL] > 1) umfpack_zl_report_control(lu->Control);
-#else
-  if(lu->Control[UMFPACK_PRL] > 1) umfpack_dl_report_control(lu->Control);
-#endif
+  if(lu->Control[UMFPACK_PRL] > 1) umfpack_UMF_report_control(lu->Control);
 
   /* symbolic factorization of A' */
   /* ---------------------------------------------------------------------- */
-#if defined(PETSC_USE_COMPLEX)
   if (lu->PetscMatOdering) { /* use Petsc row ordering */
-    status = umfpack_zl_qsymbolic(n,m,lu->ai,lu->aj,(double*)av,NULL,
-				  lu->perm_c,&lu->Symbolic,lu->Control,lu->Info);
-  } else { /* use Umfpack col ordering */
-    status = umfpack_zl_symbolic(n,m,lu->ai,lu->aj,(double*)av,NULL,
-				 &lu->Symbolic,lu->Control,lu->Info);
-  }
-  if (status < 0){
-    umfpack_zl_report_info(lu->Control, lu->Info);
-    umfpack_zl_report_status(lu->Control, status);
-    SETERRQ(PETSC_ERR_LIB,"umfpack_dl_symbolic failed");
-  }
-  /* report sumbolic factorization of A' when Control[PRL] > 3 */
-  (void) umfpack_zl_report_symbolic(lu->Symbolic, lu->Control);
+#if !defined(PETSC_USE_COMPLEX)
+    status = umfpack_UMF_qsymbolic(n,m,lu->ai,lu->aj,av,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info);
 #else
-  if (lu->PetscMatOdering) { /* use Petsc row ordering */
-    status = umfpack_dl_qsymbolic(n,m,lu->ai,lu->aj,av,
-				  lu->perm_c,&lu->Symbolic,lu->Control,lu->Info);
+    status = umfpack_UMF_qsymbolic(n,m,lu->ai,lu->aj,av,NULL,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info);
+#endif
   } else { /* use Umfpack col ordering */
-    status = umfpack_dl_symbolic(n,m,lu->ai,lu->aj,av,
-				 &lu->Symbolic,lu->Control,lu->Info);
+#if !defined(PETSC_USE_COMPLEX)
+    status = umfpack_UMF_symbolic(n,m,lu->ai,lu->aj,av,&lu->Symbolic,lu->Control,lu->Info);
+#else
+    status = umfpack_UMF_symbolic(n,m,lu->ai,lu->aj,av,NULL,&lu->Symbolic,lu->Control,lu->Info);
+#endif
   }
   if (status < 0){
-    umfpack_dl_report_info(lu->Control, lu->Info);
-    umfpack_dl_report_status(lu->Control, status);
-    SETERRQ(PETSC_ERR_LIB,"umfpack_dl_symbolic failed");
+    umfpack_UMF_report_info(lu->Control, lu->Info);
+    umfpack_UMF_report_status(lu->Control, status);
+    SETERRQ(PETSC_ERR_LIB,"umfpack_UMF_symbolic failed");
   }
   /* report sumbolic factorization of A' when Control[PRL] > 3 */
-  (void) umfpack_dl_report_symbolic(lu->Symbolic, lu->Control);
-#endif
+  (void) umfpack_UMF_report_symbolic(lu->Symbolic, lu->Control);
 
   lu->flg = DIFFERENT_NONZERO_PATTERN;
   lu->av  = av;
@@ -355,7 +348,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   Mat            B;
   Mat_UMFPACK    *lu;
   PetscErrorCode ierr;
-  int            m=A->rmap->n,n=A->cmap->n,idx;
+  PetscInt       m=A->rmap->n,n=A->cmap->n,idx;
 
   const char     *strategy[]={"AUTO","UNSYMMETRIC","SYMMETRIC","2BY2"},
                  *scale[]={"NONE","SUM","MAX"}; 
@@ -379,11 +372,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   /* initializations */
   /* ------------------------------------------------*/
   /* get the default control parameters */
-#if defined(PETSC_USE_COMPLEX)
-  umfpack_zl_defaults(lu->Control);
-#else
-  umfpack_dl_defaults(lu->Control);
-#endif
+  umfpack_UMF_defaults(lu->Control);
   lu->perm_c = PETSC_NULL;  /* use defaul UMFPACK col permutation */
   lu->Control[UMFPACK_IRSTEP] = 0; /* max num of iterative refinement steps to attempt */
 

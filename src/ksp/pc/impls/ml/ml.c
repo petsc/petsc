@@ -1,7 +1,7 @@
 #define PETSCKSP_DLL
 
 /* 
-   Provides an interface to the ML 5.0 smoothed Aggregation 
+   Provides an interface to the ML smoothed Aggregation 
 */
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
 #include "src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
@@ -186,7 +186,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ML_Aggregate_Set_Threshold(agg_object,pc_ml->Threshold); 
   ML_Aggregate_Set_DampingFactor(agg_object,pc_ml->DampingFactor); 
   if (pc_ml->SpectralNormScheme_Anorm){
-    ML_Aggregate_Set_SpectralNormScheme_Anorm(agg_object); 
+    ML_Set_SpectralNormScheme_Anorm((ML *)agg_object);
   }
 
   Nlevels = ML_Gen_MGHierarchy_UsingAggregation(ml_object,0,ML_INCREASING,agg_object);
@@ -414,7 +414,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
   
   ierr = PetscOptionsReal("-pc_ml_Threshold","Smoother drop tol","ML_Aggregate_Set_Threshold",pc_ml->Threshold,&pc_ml->Threshold,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = PetscOptionsTruth("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Aggregate_Set_SpectralNormScheme_Anorm",pc_ml->SpectralNormScheme_Anorm,&pc_ml->SpectralNormScheme_Anorm,PETSC_NULL);
+  ierr = PetscOptionsTruth("-pc_ml_SpectralNormScheme_Anorm","Method used for estimating spectral radius","ML_Set_SpectralNormScheme_Anorm",pc_ml->SpectralNormScheme_Anorm,&pc_ml->SpectralNormScheme_Anorm,PETSC_NULL);
   
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -452,7 +452,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
 .  -pc_ml_CoarsenScheme <Uncoupled>: (one of) Uncoupled Coupled MIS METIS
 .  -pc_ml_DampingFactor <1.33333>: P damping factor (ML_Aggregate_Set_DampingFactor)
 .  -pc_ml_Threshold <0>: Smoother drop tol (ML_Aggregate_Set_Threshold)
--  -pc_ml_SpectralNormScheme_Anorm <false>: Method used for estimating spectral radius (ML_Aggregate_Set_SpectralNormScheme_Anorm)
+-  pc_ml_SpectralNormScheme_Anorm <false>: Method used for estimating spectral radius (ML_Set_SpectralNormScheme_Anorm)
 
    Level: intermediate
 

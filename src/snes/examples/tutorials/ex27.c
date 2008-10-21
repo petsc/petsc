@@ -651,7 +651,7 @@ PetscErrorCode Update(DMMG *dmmg)
  PetscInt       nfailsCum = 0,nfails = 0;
 
   PetscFunctionBegin;
-
+  /* Note: print_flag displays diagnostic info, not convergence behavior. Use '-snes_monitor' for converges info. */
   ierr = PetscOptionsHasName(PETSC_NULL,"-print",&print_flag);CHKERRQ(ierr);
   if (user->param->PreLoading) 
    max_steps = 1;
@@ -663,7 +663,7 @@ PetscErrorCode Update(DMMG *dmmg)
   for (tsCtx->itstep = 0; (tsCtx->itstep < max_steps) && 
 	 (fratio <= tsCtx->fnorm_ratio); tsCtx->itstep++) {
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
-    snes = DMMGGetSNES(dmmg);
+    snes = DMMGGetSNES(dmmg);CHKERRQ(ierr);
     ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
     ierr = SNESGetNonlinearStepFailures(snes,&nfails);CHKERRQ(ierr);
@@ -671,7 +671,7 @@ PetscErrorCode Update(DMMG *dmmg)
     if (nfailsCum >= 2) SETERRQ(1,"Unable to find a Newton Step");
     /*tsCtx->qcur = DMMGGetx(dmmg);
       ierr = VecCopy(tsCtx->qcur,tsCtx->qold);CHKERRQ(ierr);*/
-
+   
     ierr = VecCopy(dmmg[param->mglevels-1]->x, ((AppCtx*)dmmg[param->mglevels-1]->user)->Xold);CHKERRQ(ierr);
     for (its=param->mglevels-1; its>0 ;its--) {
       ierr = MatRestrict(dmmg[its]->R, ((AppCtx*)dmmg[its]->user)->Xold, ((AppCtx*)dmmg[its-1]->user)->Xold);CHKERRQ(ierr);
@@ -691,10 +691,12 @@ PetscErrorCode Update(DMMG *dmmg)
     cpuloc = time2-time1;            
     ierr = MPI_Barrier(PETSC_COMM_WORLD);CHKERRQ(ierr);
   } /* End of time step loop */
-  
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Total wall clock time needed %G seconds for %D time steps\n",
+
+  if (print_flag) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Total wall clock time needed %G seconds for %D time steps\n",
 		     cpuloc,tsCtx->itstep);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"cfl = %G fnorm = %G\n",tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"cfl = %G fnorm = %G\n",tsCtx->cfl,tsCtx->fnorm);CHKERRQ(ierr);
+  }
   if (user->param->PreLoading) {
     tsCtx->fnorm_ini = 0.0;
     ierr = PetscPrintf(PETSC_COMM_WORLD,"Preloading done ...\n");CHKERRQ(ierr);
