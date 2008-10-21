@@ -4,7 +4,7 @@ static char help[] ="Solvers Laplacian with multigrid, bad way.\n\
   -Nx <npx>, where <npx> = number of processors in the x-direction\n\
   -Ny <npy>, where <npy> = number of processors in the y-direction\n\n";
 
-/*  Modified from ~src/ksp/examples/tests/ex19.c. Used for testing ML 3.0 interface.
+/*  Modified from ~src/ksp/examples/tests/ex19.c. Used for testing ML 6.2 interface.
 
     This problem is modeled by
     the partial differential equation
