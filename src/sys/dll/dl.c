@@ -67,10 +67,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(PetscDLLibrary libs)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,size_t llen,PetscTruth *found)
 {
-  char           *par2,suffix[16],*gz,*so;
+  char           *buf,*par2,suffix[16],*gz,*so;
+  size_t         len;
+  PetscTruth     match;
   PetscErrorCode ierr;
-  size_t         len1,len2,len;
-  PetscTruth     tflg,flg;
 
   PetscFunctionBegin;
   /* 
@@ -79,53 +79,40 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
   */
   ierr = PetscStrlen(libname,&len);CHKERRQ(ierr);
   len  = PetscMax(4*len,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscMalloc(len*sizeof(char),&par2);CHKERRQ(ierr);
+  ierr = PetscMalloc(len*sizeof(char),&buf);CHKERRQ(ierr);
+  par2 = buf;
   ierr = PetscStrreplace(comm,libname,par2,len);CHKERRQ(ierr);
 
-  /* 
-     Remove any file: header
-  */
-  ierr = PetscStrncmp(par2,"file:",5,&tflg);CHKERRQ(ierr);
-  if (tflg) { 
-    /* XXX BUG: overlapping buffers, undefined */
-    ierr = PetscStrcpy(par2,par2+5);CHKERRQ(ierr);
-  }
+  /* remove any file: header */
+  ierr = PetscStrncmp(par2,"file:",5,&match);CHKERRQ(ierr);
+  if (match) { par2 = par2 + 5; }
 
   /* strip out .a from it if user put it in by mistake */
   ierr = PetscStrlen(par2,&len);CHKERRQ(ierr);
   if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
 
-  /* remove .gz if it ends library name */
-  ierr = PetscStrstr(par2,".gz",&gz);CHKERRQ(ierr);
+  /* temporarily remove .gz if it ends library name */
+  ierr = PetscStrrstr(par2,".gz",&gz);CHKERRQ(ierr);
   if (gz) {
     ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
-    if (len == 3) {
-      *gz = 0;
-    }
+    if (len != 3) gz  = 0; /* do not end (exactly) with .gz */
+    else          *gz = 0; /* ends with .gz, so remove it   */
   }
 
   /* see if library name does already not have suffix attached */
   ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
   ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
   ierr = PetscStrrstr(par2,suffix,&so);CHKERRQ(ierr);
-  if (so) {
-    ierr = PetscStrlen(so,&len1);CHKERRQ(ierr);
-    ierr = PetscStrlen(suffix,&len2);CHKERRQ(ierr);
-    flg = (PetscTruth) (len1 != len2);
-  } else {
-    flg = PETSC_TRUE;
-  }
-  if (flg) {
-    ierr = PetscStrcat(par2,".");CHKERRQ(ierr);
-    ierr = PetscStrcat(par2,PETSC_SLSUFFIX);CHKERRQ(ierr);
-  }
+  /* and attach the suffix if it is not there */
+  if (!so) { ierr = PetscStrcat(par2,suffix);CHKERRQ(ierr); }
 
-  /* put the .gz back on if it was there */
-  if (gz) {
-    ierr = PetscStrcat(par2,".gz");CHKERRQ(ierr);
-  }
+  /* restore the .gz suffix if it was there */
+  if (gz) { ierr = PetscStrcat(par2,".gz");CHKERRQ(ierr); }
+
+  /* and finally retrieve the file */
   ierr = PetscFileRetrieve(comm,par2,lname,llen,found);CHKERRQ(ierr);
-  ierr = PetscFree(par2);CHKERRQ(ierr);
+
+  ierr = PetscFree(buf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
