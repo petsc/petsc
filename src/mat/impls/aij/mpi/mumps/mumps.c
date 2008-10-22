@@ -223,11 +223,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
       ierr = PetscMalloc((1+lsol_loc)*(sizeof(PetscScalar)+sizeof(PetscInt)),&sol_loc);CHKERRQ(ierr);
       lu->id.isol_loc = (PetscInt *)(sol_loc + lsol_loc);
       lu->id.lsol_loc = lsol_loc;
-#if defined(PETSC_USE_COMPLEX)
-      lu->id.sol_loc  = (ZMUMPS_COMPLEX *)sol_loc;
-#else
-      lu->id.sol_loc  = (DMUMPS_REAL *)sol_loc;
-#endif
+      lu->id.sol_loc  = (PetscScalar *)sol_loc;
       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,lsol_loc,sol_loc,&lu->x_seq);CHKERRQ(ierr);
     }
   }

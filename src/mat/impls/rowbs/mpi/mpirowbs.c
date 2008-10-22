@@ -1244,10 +1244,6 @@ PetscErrorCode MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,MatInfo *info)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  info->rows_global    = (double)A->rmap->N;
-  info->columns_global = (double)A->cmap->N;
-  info->rows_local     = (double)A->cmap->n;
-  info->columns_local  = (double)A->rmap->n;
   info->block_size     = 1.0;
   info->mallocs        = (double)mat->reallocs;
   isend[0] = mat->nz; isend[1] = mat->maxnz; isend[2] =  mat->maxnz -  mat->nz;
