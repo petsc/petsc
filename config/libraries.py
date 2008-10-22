@@ -111,11 +111,11 @@ class Configure(config.base.Configure):
 
   def getShortLibName(self,lib):
     '''returns the short name for the library. Valid names are foo -lfoo or libfoo.[a,so,lib]'''
-    if lib.startswith('-L'):
-      return ''
     if lib.startswith('-l'):
       libname = lib[2:]
       return libname
+    if lib.startswith('-'): # must be some compiler options - not a library
+      return ''
     if lib.endswith('.a') or lib.endswith('.so') or lib.endswith('.lib'):
       libname = os.path.splitext(os.path.basename(lib))[0]
       if lib.startswith('lib'): libname = libname[3:]
