@@ -30,11 +30,11 @@
 
 #define SNESPYTHON "python"
 
-PETSC_EXTERN_CXX_BEGIN
+PETSC_EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreatePython(MPI_Comm,const char *,const char *,SNES*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES,void**);
-PETSC_EXTERN_CXX_END
+PETSC_EXTERN_C_END
 
 /*  -------------------------------------------------------------------- */
 

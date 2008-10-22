@@ -7,11 +7,11 @@
 
 #define KSPPYTHON "python"
 
-PETSC_EXTERN_CXX_BEGIN
+PETSC_EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreatePython(MPI_Comm,const char*,const char*,KSP*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonGetContext(KSP,void**);
-PETSC_EXTERN_CXX_END
+PETSC_EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 

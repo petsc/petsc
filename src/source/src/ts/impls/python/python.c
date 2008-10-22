@@ -36,11 +36,11 @@
 #define TS_PYTHON "python"
 #define TSPYTHON  "python"
 
-PETSC_EXTERN_CXX_BEGIN
+PETSC_EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreatePython(MPI_Comm,const char *,const char *,TS*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS,void*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS,void**);
-PETSC_EXTERN_CXX_END
+PETSC_EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 

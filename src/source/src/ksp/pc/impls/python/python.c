@@ -25,11 +25,11 @@
 
 #define PCPYTHON "python"
 
-PETSC_EXTERN_CXX_BEGIN
+PETSC_EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreatePython(MPI_Comm,const char*,const char*,PC*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC,void**);
-PETSC_EXTERN_CXX_END
+PETSC_EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 

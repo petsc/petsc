@@ -27,11 +27,11 @@
 
 #define MATPYTHON "python"
 
-PETSC_EXTERN_CXX_BEGIN
+PETSC_EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm,const char*,const char*,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat,void*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat,void**);
-PETSC_EXTERN_CXX_END
+PETSC_EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 

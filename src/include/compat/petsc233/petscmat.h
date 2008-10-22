@@ -155,7 +155,10 @@ PetscErrorCode MatGetOwnershipRangeColumn_233(Mat mat,PetscInt *m,PetscInt *n)
 }
 #define MatGetOwnershipRangeColumn MatGetOwnershipRangeColumn_233
 
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangesColumn_233(Mat mat,const PetscInt *ranges[])
+#undef __FUNCT__
+#define __FUNCT__ "MatGetOwnershipRangesColumn_233"
+static PETSC_UNUSED
+PetscErrorCode MatGetOwnershipRangesColumn_233(Mat mat,const PetscInt *ranges[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
