@@ -269,10 +269,14 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_GETCOMPUTERNAME',1)
       kernel32=1
     if kernel32:
-      if self.checkLink('#include <Windows.h>','GetProcAddress(0,0)'):
-        self.addDefine('HAVE_GETPROCADDRESS',1)
       if self.checkLink('#include <Windows.h>','LoadLibrary(0)'):
         self.addDefine('HAVE_LOADLIBRARY',1)
+      if self.checkLink('#include <Windows.h>','GetProcAddress(0,0)'):
+        self.addDefine('HAVE_GETPROCADDRESS',1)
+      if self.checkLink('#include <Windows.h>','GetLastError()'):
+        self.addDefine('HAVE_GETLASTERROR',1)
+      if self.checkLink('#include <Windows.h>','FreeLibrary(0)'):
+        self.addDefine('HAVE_FREELIBRARY',1)
       if self.checkLink('#include <Windows.h>\n','QueryPerformanceCounter(0);\n'):
         self.addDefine('USE_NT_TIME',1)
     if self.libraries.add('Advapi32.lib','GetUserName',prototype='#include <Windows.h>', call='GetUserName(NULL,NULL);'):
