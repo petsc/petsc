@@ -23,7 +23,7 @@ struct DMCompositeLink {
   PetscInt               grstart;       /* grstart is relative to all processes */
 
   /* only used for DMCOMPOSITE_DM */
-  PetscInt               *grstarts;     /* global row for first unknown of this DA on each process */
+  PetscInt               *grstarts;     /* global row for first unknown of this DM on each process */
   DM                     dm;
 
   /* only used for DMCOMPOSITE_ARRAY */
@@ -1617,7 +1617,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetInterpolation(DMComposite coarse,
     Collective on DA
 
     Input Parameter:
-+   da - the distributed array
++   packer - the distributed array
 -   mtype - Supported types are MATSEQAIJ, MATMPIAIJ
 
     Output Parameters:

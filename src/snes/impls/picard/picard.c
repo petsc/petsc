@@ -228,6 +228,7 @@ PetscErrorCode SNESSolve_Picard(SNES snes)
         ierr = VecAXPBY(W, alpha, 1 - alpha, Y);CHKERRQ(ierr);
         ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
         ierr = VecNorm(F, NORM_2, &norms[i]);CHKERRQ(ierr);
+        norms[i] = PetscSqr(norms[i]);
       }
       /* Fit a quadratic:
            If we have x_{0,1,2} = 0, 0.5, 1.0 which generate norms y_{0,1,2}

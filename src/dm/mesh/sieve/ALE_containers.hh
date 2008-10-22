@@ -158,6 +158,41 @@ namespace ALE {
       return os;
     };
   };
+  template<typename FirstType, typename SecondType>
+  class Pair {
+  public:
+    typedef FirstType  first_type;
+    typedef SecondType second_type;
+    first_type  first;
+    second_type second;
+    // Constructors
+    Pair() : first(0), second(0) {};
+    Pair(FirstType f, SecondType s) : first(f), second(s) {};
+    Pair(const Pair& p) : first(p.first), second(p.second) {};
+    // Comparisons
+    class less_than {
+    public: 
+      bool operator()(const Pair& p, const Pair& q) const {
+        return( (p.first < q.first) || ((p.first == q.first) && (p.second < q.second)));
+      };
+    };
+    typedef less_than Cmp;
+    
+    bool operator==(const Pair& q) const {
+      return((this->first == q.first) && (this->second == q.second));
+    };
+    bool operator!=(const Pair& q) const {
+      return((this->first != q.first) || (this->second != q.second));
+    };
+    bool operator<(const Pair& q) const {
+      return((this->first < q.first) || ((this->first == q.first) && (this->second < q.second)));
+    };
+    // Printing
+    friend std::ostream& operator<<(std::ostream& os, const Pair& p) {
+      os << "(" << p.first << ", "<< p.second << ")";
+      return os;
+    };
+  };
 
   template <typename Element_>
   class array : public std::vector<Element_, ALE_ALLOCATOR<Element_> > {

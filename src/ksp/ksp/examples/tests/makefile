@@ -368,6 +368,11 @@ runex26_ml_2:
 	if (${DIFF} output/ex26_ml_2.out ex26_2.tmp) then true; \
 	   else echo "Possible problem with ex26_ml_2, diffs above"; fi; \
 	   ${RM} -f ex26_2.tmp
+runex26_ml_3:
+	-@${MPIEXEC} -n 1 ./ex26 -ksp_monitor_short -pc_type ml -mat_no_inode -pc_mg_type ADDITIVE > ex26_2.tmp 2>&1; \
+	if (${DIFF} output/ex26_ml_3.out ex26_2.tmp) then true; \
+	   else echo "Possible problem with ex26_ml_3, diffs above"; fi; \
+	   ${RM} -f ex26_2.tmp
 # See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#datafiles for how to obtain the datafiles used below
 runex27:
 	-@${MPIEXEC} -n 1 ./ex27 -f ${DATAFILESPATH}/matrices/small > ex27.tmp 2>&1; \
@@ -398,6 +403,6 @@ TESTEXAMPLES_C_NOCOMPLEX       = ex6.PETSc runex6 runex6_2 runex6_3 ex6.rm
 TESTEXAMPLES_BLOCKSOLVE95      = ex6.PETSc runex6_6 ex6.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex16f.PETSc runex16f ex16f.rm  ex12f.PETSc runex12f ex12f.rm 
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
-TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
+TESTEXAMPLES_ML                = ex26.PETSc runex26_ml runex26_ml_2 runex26_ml_3 ex26.rm ex29.PETSc runex29 runex29_2 ex29.rm
 
 include ${PETSC_DIR}/conf/test

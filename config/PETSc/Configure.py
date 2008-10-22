@@ -198,7 +198,9 @@ class Configure(config.base.Configure):
     includes = []
     libs = []
     for i in self.framework.packages:
-      self.addDefine('HAVE_'+i.PACKAGE, 1)
+      if not i.PACKAGE == 'PARMETIS' or not self.framework.argDB['with-64-bit-indices']:
+        # Parmetis cannot be built with 64 bits, but we still want to use the libraries with SuperLU_Dist so we turn off PETSc access to it
+        self.addDefine('HAVE_'+i.PACKAGE, 1)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
       self.addMakeMacro(i.PACKAGE+'_LIB', self.libraries.toStringNoDupes(i.lib))

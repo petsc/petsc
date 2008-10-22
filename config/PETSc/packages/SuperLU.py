@@ -13,7 +13,7 @@ class Configure(PETSc.package.Package):
     self.includes   = ['slu_ddefs.h']
     self.liblist    = [['libsuperlu_3.1.a']]
     self.complex    = 1
-    self.requires32bitint = 0;
+    # SuperLU has NO support for 64 bit integers, use SuperLU_Dist if you need that
     self.excludename = ['SuperLU_DIST']
     return
 
@@ -66,7 +66,7 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling superlu; this may take several minutes')
-        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; SUPERLU_INSTALL_DIR='+self.installDir+'/lib; export SUPERLU_INSTALL_DIR; make clean; make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX=""; mv SRC/*.a '+os.path.join(self.installDir,'lib')+';  cp SRC/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; SUPERLU_INSTALL_DIR='+self.installDir+'/lib; export SUPERLU_INSTALL_DIR; make clean; make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX=""; mv -f SRC/*.a '+os.path.join(self.installDir,'lib')+';  cp -f SRC/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
       self.checkInstall(output,'make.inc')

@@ -13,6 +13,7 @@ class Configure(PETSc.package.Package):
     self.includes  = []
     self.liblist   = [['libscalapack.a']]
     self.functions = ['pssytrd']
+    self.requires32bitint = 0;
     self.functionsFortran = 1
     self.complex   = 1
     return

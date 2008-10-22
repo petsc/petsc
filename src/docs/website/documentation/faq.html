@@ -7703,7 +7703,7 @@ unknowns per process, better is 20,000 or more.</li>
 
 
 
-        <li>Most preconditioners require more iterations when used on
+        <li>Check the number of solver iterates with the parallel solver against the sequential solver. Most preconditioners require more iterations when used on
 more processes, this is particularly true for block Jaccobi, the
 default parallel preconditioner, you can try -pc_type asm (<a href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCASM.html">PCASM</a>) its iterations scale a bit better for more processes. You may also consider multigrid preconditioners like <a href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a> or BoomerAMG in <a href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
 
