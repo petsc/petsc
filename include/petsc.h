@@ -1371,32 +1371,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListConcat(const char [],const char 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList,char ***,int*);
 
 /*S
-     PetscDLHandle - A handle to a dynamic library
-
-   Level: advanced
-
-.seealso:  PetscDLOpen(), PetscDLClose(), PetscDLSym()
-S*/
-typedef void* PetscDLHandle;
-
-/*S
-     PetscDLFlags - Flags for opening a dynamic library
-
-   Level: advanced
-
-.seealso:  PetscDLOpen()
-S*/
-typedef enum { 
-  PETSC_DL_DEFAULT =  0,
-  PETSC_DL_NOW     =  1,
-  PETSC_DL_GLOBAL  =  2
-} PetscDLFlags;
-
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char[],int,PetscDLHandle*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle,const char[],void**);
-
-/*S
      PetscDLLibrary - Linked list of dynamics libraries to search for functions
 
    Level: advanced
@@ -1407,13 +1381,13 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle,const char[],void
 S*/
 typedef struct _n_PetscDLLibrary *PetscDLLibrary;
 extern PETSC_DLLEXPORT PetscDLLibrary DLLibrariesLoaded;
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,size_t,PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm,const char[],PetscDLLibrary *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm,PetscDLLibrary *,const char[],const char[],void **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm,PetscDLLibrary *,const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm,PetscDLLibrary *,const char[],const char[],void **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(PetscDLLibrary);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,size_t,PetscTruth *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm,const char[],PetscDLLibrary *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 
 /*

@@ -3,8 +3,7 @@
    Low-level routines for managing dynamic link libraries (DLLs).
 */
 
-#include "petsc.h"
-#include "petscfix.h"
+#include "src/sys/dll/dlimpl.h"
 
 /* XXX Should be done better !!!*/
 #if !defined(PETSC_HAVE_DYNAMIC_LIBRARIES)
@@ -73,8 +72,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHa
   if (!dlhandle) {
 #if defined(PETSC_HAVE_GETLASTERROR)
     PetscErrorCode ierr;
-    DWORD          erc;
-    char           *buff;
+    DWORD erc;
+    char  *buff = NULL;
     erc = GetLastError();
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 		  NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
@@ -104,12 +103,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHa
   if (flags & PETSC_DL_NOW)
     dlflags1 = RTLD_NOW;
 #endif
-#if defined(PETSC_HAVE_RTLD_LOCAL)
-  dlflags2 = RTLD_LOCAL;
-#endif
 #if defined(PETSC_HAVE_RTLD_GLOBAL)
-  if (flags & PETSC_DL_GLOBAL)
-    dlflags2 = RTLD_GLOBAL;
+  dlflags2 = RTLD_GLOBAL;
+#endif
+#if defined(PETSC_HAVE_RTLD_LOCAL)
+  if (flags & PETSC_DL_LOCAL)
+    dlflags2 = RTLD_LOCAL;
 #endif
 #if defined(PETSC_HAVE_DLERROR)
   dlerror(); /* clear any previous error */
@@ -159,7 +158,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
   if (FreeLibrary(dlhandle) == 0) {
 #if defined(PETSC_HAVE_GETLASTERROR)
     DWORD erc;
-    char  *buff;
+    char  *buff = NULL;
     erc = GetLastError();
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 		  NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
@@ -240,16 +239,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol
 #endif
   dlvalue = dlsym(dlhandle,symbol);
 #if defined(PETSC_HAVE_DLERROR)
-  if (!dlvalue) { /* dvalue could be actually NULL */
-    const char *errmsg = dlerror();
-    if (errmsg) { /* XXX Should we fail/inform about this? */
-#if 0
-      SETERRQ2(PETSC_ERR_FILE_UNEXPECTED,"Unable to load symbol %s\n  Error message from dlsym() %s\n",symbol,errmsg);
-#else
-      errmsg = 0;
-#endif
-    }
-  }
+  dlerror(); /* clear any previous error */
 #endif
 
   /* 

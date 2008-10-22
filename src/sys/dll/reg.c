@@ -27,11 +27,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListGetPathAndFunction(const char name[],ch
   PetscFunctionReturn(0);
 }
 
-/*
-    This is the list used by the DLRegister routines
-*/
-PetscDLLibrary DLLibrariesLoaded = 0;
-
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 
 #undef __FUNCT__  
