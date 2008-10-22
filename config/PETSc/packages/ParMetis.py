@@ -11,7 +11,7 @@ class Configure(PETSc.package.Package):
     self.liblist      = [['libparmetis.a','libmetis.a']]
     self.needsMath    = 1
     self.complex      = 1
-    self.requires32bitint = 0;
+    self.requires32bitint = 1;
     return
 
   def setupDependencies(self, framework):
@@ -65,16 +65,6 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on ParMetis: '+str(e))
       self.checkInstall(output,'make.inc')
     return self.installDir
-
-  def configureLibrary(self):
-    '''If PETSc is using 64 bits then we do NOT turn on the ParMetis interface but do build the library for SuperLU_Dist'''
-    if self.framework.argDB['with-64-bit-indices']:
-      if self.framework.argDB['download-superlu_dist'] and self.framework.argDB['download-parmetis']:
-        PETSc.package.Package.configureLibrary(self)
-      else:
-        raise RuntimeError('Cannot built PETSc interface for ParMetis using --with-64-bit-indices, since not supported by ParMetis: '+str(e))        
-    else:
-      PETSc.package.Package.configureLibrary(self)
 
     
 if __name__ == '__main__':

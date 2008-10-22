@@ -15,7 +15,8 @@ class Configure(PETSc.package.Package):
     #
     #  SuperLU_dist supports 64 bit integers but uses ParMetis which does not, it has
     #  a hack that uses the 32 bit parmetis
-    self.requires32bitint = 0;
+    #  SuperLU_dist's support for 64 bit integers is nonsense! (Fortran code -qintsize=8 compile options)
+    self.requires32bitint = 1;
     self.complex    = 1
     return
 
