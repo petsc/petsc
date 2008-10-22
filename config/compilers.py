@@ -284,9 +284,15 @@ class Configure(config.base.Configure):
     return
 
   def checkDynamicLoadFlag(self):
-    '''Checks that dlopen() takes RTLD_GLOBAL, and defines PETSC_HAVE_RTLD_GLOBAL if it does'''
+    '''Checks that dlopen() takes RTLD_XXX, and defines PETSC_HAVE_RTLD_XXX if it does'''
     if self.setCompilers.dynamicLibraries:
-      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY | RTLD_GLOBAL);\n'):
+      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LAZY);\n'):
+        self.addDefine('HAVE_RTLD_LAZY', 1)
+      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_NOW);\n'):
+        self.addDefine('HAVE_RTLD_NOW', 1)
+      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_LOCAL);\n'):
+        self.addDefine('HAVE_RTLD_LOCAL', 1)
+      if self.checkLink('#include <dlfcn.h>\nchar *libname;\n', 'dlopen(libname, RTLD_GLOBAL);\n'):
         self.addDefine('HAVE_RTLD_GLOBAL', 1)
     return
 
