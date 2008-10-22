@@ -465,8 +465,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat,PetscInt,PetscTr
 .seealso:  MatGetInfo(), MatInfoType
 S*/
 typedef struct {
-  PetscLogDouble rows_global,columns_global;         /* number of global rows and columns */
-  PetscLogDouble rows_local,columns_local;           /* number of local rows and columns */
   PetscLogDouble block_size;                         /* block size */
   PetscLogDouble nz_allocated,nz_used,nz_unneeded;   /* number of nonzeros */
   PetscLogDouble memory;                             /* memory allocated */
