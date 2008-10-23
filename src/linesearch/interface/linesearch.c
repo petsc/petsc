@@ -574,7 +574,6 @@ PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetSolution(TaoLineSearch ls
 #define __FUNCT__ "TaoLineSearchGetFullStepObjective"
 PetscErrorCode TAOLINESEARCH_DLLEXPORT TaoLineSearchGetFullStepObjective(TaoLineSearch ls, PetscReal *f_fullstep)
 {
-    PetscErrorCode ierr;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(ls,TAOLINESEARCH_COOKIE,1);
     *f_fullstep = ls->f_fullstep;

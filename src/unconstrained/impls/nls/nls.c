@@ -105,7 +105,6 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
   KSPConvergedReason ksp_reason;
   TaoLineSearchTerminationReason ls_reason;
   TaoSolverConvergedReason reason;
-  PetscTruth success;
   
   PetscReal fmin, ftrial, f_full, prered, actred, kappa, sigma;
   PetscReal tau, tau_1, tau_2, tau_max, tau_min, max_radius;
@@ -1051,8 +1050,6 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
 static int TaoSolverSetUp_NLS(TaoSolver tao)
 {
   TAO_NLS *nlsP = (TAO_NLS *)tao->data;
-  Vec X;
-  Mat H;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1090,24 +1087,42 @@ static int TaoSolverDestroy_NLS(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(nlsP->D); CHKERRQ(ierr);
-  ierr = VecDestroy(nlsP->W); CHKERRQ(ierr);
-  ierr = VecDestroy(nlsP->Xold); CHKERRQ(ierr);
-  ierr = VecDestroy(nlsP->Gold); CHKERRQ(ierr);
-  nlsP->D = 0;
-  nlsP->W = 0;
-  nlsP->Xold = 0;
-  nlsP->Gold = 0;
-
+  if (nlsP->D) {
+    ierr = VecDestroy(nlsP->D); CHKERRQ(ierr);
+  }
+  if (nlsP->W) {
+    ierr = VecDestroy(nlsP->W); CHKERRQ(ierr);
+  }
+  if (nlsP->Xold) {
+    ierr = VecDestroy(nlsP->Xold); CHKERRQ(ierr);
+  }
+  if (nlsP->Gold) {
+    ierr = VecDestroy(nlsP->Gold); CHKERRQ(ierr);
+  }
   if (nlsP->Diag) {
     ierr = VecDestroy(nlsP->Diag); CHKERRQ(ierr);
-    nlsP->Diag = 0;
   }
-
   if (nlsP->M) {
     ierr = MatDestroy(nlsP->M); CHKERRQ(ierr);
-    nlsP->M = 0;
   }
+  if (tao->gradient) {
+    ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
+  }
+  if (tao->stepdirection) {
+    ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
+  }
+  if (tao->linesearch) {
+    ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
+  }
+  if (tao->data) {
+    ierr = PetscFree(tao->data); CHKERRQ(ierr);
+  }
+
+  tao->gradient=PETSC_NULL;
+  tao->stepdirection=PETSC_NULL;
+  tao->linesearch = PETSC_NULL;
+  tao->data = PETSC_NULL;
+
   PetscFunctionReturn(0);
 }
 

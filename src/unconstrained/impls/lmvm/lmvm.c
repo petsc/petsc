@@ -224,19 +224,36 @@ static PetscErrorCode TaoSolverDestroy_LMVM(TaoSolver tao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
+  if (tao->gradient) {
+    ierr = VecDestroy(tao->gradient); CHKERRQ(ierr);
+  }
+  if (tao->stepdirection) {
+    ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
+  }
+  if (lmP->W) {
+    ierr = VecDestroy(lmP->W); CHKERRQ(ierr);
+  }
+  if (lmP->Xold) {
+    ierr = VecDestroy(lmP->Xold); CHKERRQ(ierr);
+  }
+  if (lmP->Gold) {
+    ierr = VecDestroy(lmP->Gold); CHKERRQ(ierr);
+  }
+  if (lmP->M) {
+    ierr = MatDestroy(lmP->M); CHKERRQ(ierr);
+  }
+  if (tao->data) {
+    ierr = PetscFree(tao->data); CHKERRQ(ierr);
+  }
+  if (tao->linesearch) {
+    ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
+  }
+
   tao->gradient=PETSC_NULL;
-  ierr = VecDestroy(tao->stepdirection); CHKERRQ(ierr);
   tao->stepdirection=PETSC_NULL;
-
-  ierr = VecDestroy(lmP->W); CHKERRQ(ierr);
-  ierr = VecDestroy(lmP->Xold); CHKERRQ(ierr);
-  ierr = VecDestroy(lmP->Gold); CHKERRQ(ierr);
-  ierr = MatDestroy(lmP->M); CHKERRQ(ierr);
-  ierr = PetscFree(tao->data); CHKERRQ(ierr);
-
-  ierr = TaoLineSearchDestroy(tao->linesearch); CHKERRQ(ierr);
   tao->linesearch = PETSC_NULL;
+  tao->data = PETSC_NULL;
+
 
   PetscFunctionReturn(0); 
 

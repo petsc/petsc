@@ -571,12 +571,119 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverResetStatistics(TaoSolver tao)
     PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__
 #define __FUNCT__ "TaoSolverSetDefaultMonitors"
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetDefaultMonitors(TaoSolver tao)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverSetMonitor"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetMonitor(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, void*), void *ctx, PetscErrorCode (*dest)(TaoSolver, void*))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
+  if (tao->numbermonitors >= MAXTAOMONITORS) {
+    SETERRQ1(tao,"Cannot attach another monitor -- max=",MAXTAOMONITORS);
+  }
+  tao->monitor[tao->numbermonitors] = func;
+  tao->monitorcontext[tao->numbermonitors] = ctx;
+  tao->monitordestroy[tao->numbermonitors] = dest;
+  PetscFunctionReturn(0);
+}
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverDefaultMonitor"
+/*@C
+   TaoDefaultMonitor - Default routine for monitoring progress of the 
+   TAO_SOLVER solvers (default).
+
+   Collective on TAO_SOLVER
+
+   Input Parameters:
++  tao - the TAO_SOLVER context
+-  dummy - unused context
+
+   Notes:
+   The routine prints the function value and gradient norm at each iteration.
+
+   Level: advanced
+
+.keywords: TAO_SOLVER, default, monitor, norm
+
+.seealso: TaoSolverSetMonitor(), TaoSolverVecViewMonitor()
+@*/
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultMonitor(TaoSolver tao, void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscInt its;
+  PetscScalar fct,gnorm;
+
+  PetscFunctionBegin;
+  its=tao->niter;
+  fct=tao->nfuncs;
+  gnorm=tao->residual;
+  ierr=PetscPrintf(tao,"iter = %d,",its); CHKERRQ(ierr);
+  ierr=PetscPrintf(tao," Function value: %12.10e,",fct); CHKERRQ(ierr);
+  ierr=PetscPrintf(tao,"  Residual: %12.10e \n",gnorm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
+
+#undef __FUNCT__
+#define __FUNCT__ "TaoSolverDefaultSMonitor"
+/*@C
+   TaoSolverDefaultSMonitor - Default routine for monitoring progress of the 
+   TAO_SOLVER solvers (default).
+
+   same as TaoDefaultMonitor() except
+   it prints fewer digits of the residual as the residual gets smaller.
+   This is because the later digits are meaningless and are often 
+   different on different machines; by using this routine different 
+   machines will usually generate the same output.
+   
+   Collective on TAO_SOLVER
+
+   Input Parameters:
++  tao - the TAO_SOLVER context
+-  dummy - unused context
+
+   Notes:
+   The routine prints the function value and gradient norm at each iteration.
+
+   Level: advanced
+
+.keywords: TAO_SOLVER, default, monitor, norm
+
+.seealso: TaoSolverDefaultMonitor
+@*/
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultSMonitor(TaoSolver tao, void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscInt its;
+  PetscScalar fct,gnorm;
+
+  PetscFunctionBegin;
+  its=tao->niter;
+  fct=tao->nfuncs;
+  gnorm=tao->residual;
+  ierr=PetscPrintf(tao,"iter = %d,",its); CHKERRQ(ierr);
+  ierr=PetscPrintf(tao," Function value: %12.10e,",fct); CHKERRQ(ierr);
+  ierr=PetscPrintf(tao,"  Residual: %12.10e \n",gnorm);CHKERRQ(ierr);
+  if (gnorm > 1.e-6) {
+    ierr=PetscPrintf(tao," Residual: %7.6f \n",gnorm);CHKERRQ(ierr);
+  } else if (gnorm > 1.e-11) {
+    ierr=PetscPrintf(tao," Residual: < 1.0e-6 \n"); CHKERRQ(ierr);
+  } else {
+    ierr=PetscPrintf(tao," Residual: < 1.0e-11 \n");CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

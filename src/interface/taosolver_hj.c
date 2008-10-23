@@ -71,7 +71,6 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetHessian(TaoSolver tao, Mat H, Mat
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeHessian(TaoSolver tao, Vec X, Mat *H, Mat *Hpre, MatStructure *flg)
 {
     PetscErrorCode ierr;
-    PetscTruth flag;
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
     PetscValidHeaderSpecific(X, VEC_COOKIE,2);
