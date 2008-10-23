@@ -728,6 +728,26 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
 M*/
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetInfo_MUMPS"
+PetscErrorCode MatGetInfo_MUMPS(Mat A,MatInfoType flag,MatInfo *info)
+{
+    Mat_MUMPS  *lu =(Mat_MUMPS*)A->spptr;
+
+  PetscFunctionBegin;
+  info->block_size        = 1.0;
+  info->nz_allocated      = lu->id.INFOG(20);
+  info->nz_used           = lu->id.INFOG(20);
+  info->nz_unneeded       = 0.0;
+  info->assemblies        = 0.0;
+  info->mallocs           = 0.0;
+  info->memory            = 0.0;
+  info->fill_ratio_given  = 0;
+  info->fill_ratio_needed = 0;
+  info->factor_mallocs    = 0;
+  PetscFunctionReturn(0);
+}
+
 /*MC
   MATSBAIJMUMPS - MATSBAIJMUMPS = "sbaijmumps" - A symmetric matrix type providing direct solvers (Cholesky) for
   distributed and sequential matrices via the external package MUMPS.
@@ -770,6 +790,17 @@ M*/
 M*/
 
 EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_mumps"
+PetscErrorCode MatFactorGetSolverPackage_mumps(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_MUMPS;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN 
 /*
     The seq and mpi versions of this function are the same 
 */
@@ -793,6 +824,8 @@ PetscErrorCode MatGetFactor_seqaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
   B->ops->view             = MatView_MUMPS;
+  B->ops->getinfo          = MatGetInfo_MUMPS;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;  
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
@@ -832,6 +865,7 @@ PetscErrorCode MatGetFactor_mpiaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_AIJMUMPS;
   B->ops->view             = MatView_MUMPS;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;  
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
@@ -871,6 +905,8 @@ PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
   B->ops->view                   = MatView_MUMPS;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
+
   B->factor                      = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
@@ -910,6 +946,7 @@ PetscErrorCode MatGetFactor_mpisbaij_mumps(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SBAIJMUMPS;
   B->ops->view                   = MatView_MUMPS;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mumps",MatFactorGetSolverPackage_mumps);CHKERRQ(ierr);
   B->factor                      = MAT_FACTOR_CHOLESKY;
 
   ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);

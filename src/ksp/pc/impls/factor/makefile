@@ -4,7 +4,7 @@ ALL: lib
 CFLAGS   =
 FFLAGS   =
 SOURCEC  = factor.c
-SOURCEH  = 
+SOURCEH  = factor.h
 OBJSC    = factor.o
 LIBBASE  = libpetscksp
 DIRS     = lu ilu icc cholesky
