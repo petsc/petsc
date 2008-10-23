@@ -431,6 +431,8 @@ class Configure(config.package.Package):
         # disable dylibs on mac due to mpich build issues
         if not config.setCompilers.Configure.isDarwin():
           args.append('--enable-sharedlibs=gcc')
+      elif config.setCompilers.Configure.isSun(compiler):
+        args.append('--enable-sharedlibs=solaris-cc')
       else:
         args.append('--enable-sharedlibs=libtool')
     if 'download-mpich-device' in self.argDB:
