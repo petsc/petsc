@@ -772,10 +772,6 @@ PetscErrorCode MatGetInfo_MPIDense(Mat A,MatInfoType flag,MatInfo *info)
   PetscReal      isend[5],irecv[5];
 
   PetscFunctionBegin;
-  info->rows_global    = (double)A->rmap->N;
-  info->columns_global = (double)A->cmap->N;
-  info->rows_local     = (double)A->rmap->n;
-  info->columns_local  = (double)A->cmap->N;
   info->block_size     = 1.0;
   ierr = MatGetInfo(mdn,MAT_LOCAL,info);CHKERRQ(ierr);
   isend[0] = info->nz_used; isend[1] = info->nz_allocated; isend[2] = info->nz_unneeded;

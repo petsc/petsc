@@ -127,6 +127,17 @@ PetscErrorCode MatLUFactorSymbolic_Matlab(Mat F,Mat A,IS r,IS c,const MatFactorI
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_matlab"
+PetscErrorCode MatFactorGetSolverPackage_seqaij_matlab(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_MATLAB;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqaij_matlab"
 PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
@@ -140,6 +151,7 @@ PetscErrorCode MatGetFactor_seqaij_matlab(Mat A,MatFactorType ftype,Mat *F)
   ierr                        = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr                        = MatSeqAIJSetPreallocation(*F,0,PETSC_NULL);CHKERRQ(ierr);
   (*F)->ops->lufactorsymbolic = MatLUFactorSymbolic_Matlab;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_matlab",MatFactorGetSolverPackage_seqaij_matlab);CHKERRQ(ierr);
 
   (*F)->factor                = MAT_FACTOR_LU;
   PetscFunctionReturn(0);

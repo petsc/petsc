@@ -68,6 +68,16 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat B,Mat A,IS r,const 
   PetscFunctionReturn(0); 
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_seqsbaij_spooles"
+PetscErrorCode MatFactorGetSolverPackage_seqsbaij_spooles(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_SPOOLES;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -93,6 +103,7 @@ PetscErrorCode MatGetFactor_seqsbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJSpooles;
   B->ops->destroy                = MatDestroy_SeqSBAIJSpooles;  
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqsbaij_spooles",MatFactorGetSolverPackage_seqsbaij_spooles);CHKERRQ(ierr);
   B->factor                      = ftype;
   *F = B;
   PetscFunctionReturn(0);

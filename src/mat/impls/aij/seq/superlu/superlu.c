@@ -360,6 +360,17 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat F,Mat A,IS r,IS c,const MatFactor
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_superlu"
+PetscErrorCode MatFactorGetSolverPackage_seqaij_superlu(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_SUPERLU;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+  
 
 /*MC
   MAT_SOLVER_SUPERLU = "superlu" - A matrix type providing direct solvers (LU) for sequential matrices 
@@ -447,6 +458,7 @@ PetscErrorCode MatGetFactor_seqaij_superlu(Mat A,MatFactorType ftype,Mat *F)
 #ifdef SUPERLU2
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatCreateNull","MatCreateNull_SuperLU",(void(*)(void))MatCreateNull_SuperLU);CHKERRQ(ierr);
 #endif
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_superlu",MatFactorGetSolverPackage_seqaij_superlu);CHKERRQ(ierr);
   B->spptr = lu;
   *F = B;
   PetscFunctionReturn(0);

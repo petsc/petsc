@@ -89,7 +89,7 @@ PetscErrorCode MatLUFactorNumeric_Essl(Mat F,Mat A,const MatFactorInfo *info)
 
   dgsf(&one,&A->rmap->n,&essl->nz,essl->a,essl->ia,essl->ja,&essl->lna,essl->iparm,essl->rparm,essl->oparm,essl->aux,&essl->naux);
 
-  B->ops->solve = MatSolve_Essl;
+  F->ops->solve = MatSolve_Essl;
   (F)->assembled = PETSC_TRUE;
   (F)->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -130,6 +130,16 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_essl"
+PetscErrorCode MatFactorGetSolverPackage_essl(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_ESSL;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 /*MC
   MATESSL - MATESSL = "essl" - A matrix type providing direct solvers (LU) for sequential matrices 
@@ -158,7 +168,6 @@ M*/
 PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F) 
 {
   Mat            B;
-  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   Mat_Essl       *essl;
 
@@ -172,6 +181,7 @@ PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
   ierr = PetscNewLog(B,Mat_Essl,&essl);CHKERRQ(ierr);
   B->spptr                 = essl;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_Essl;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_essl",MatFactorGetSolverPackage_essl);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;
   *F                       = B;
   PetscFunctionReturn(0);

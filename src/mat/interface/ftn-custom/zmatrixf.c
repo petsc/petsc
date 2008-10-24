@@ -3,6 +3,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matgetfactor_                    MATGETFACTOR
+#define matfactorgetsolverpackage_       MATFACTORGETSOLVERPACKAGE
 #define matgetrowij_                     MATGETROWIJ
 #define matrestorerowij_                 MATRESTOREROWIJ
 #define matgetrow_                       MATGETROW
@@ -21,6 +22,7 @@
 #define matnullspaceremove_              MATNULLSPACEREMOVE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matgetfactor_                    matgetfactor
+#define matfactorgetsolverpackage_       matfactorgetsolverpackage
 #define matgetvecs_                      matgetvecs
 #define matgetrowij_                     matgetrowij
 #define matrestorerowij_                 matrestorerowij
@@ -141,6 +143,17 @@ void PETSC_STDCALL matrestorearray_(Mat *mat,PetscScalar *fa,size_t *ia,PetscErr
   *ierr = MatGetSize(*mat,&m,&n); if (*ierr) return;
   *ierr = PetscScalarAddressFromFortran((PetscObject)*mat,fa,*ia,m*n,&lx);if (*ierr) return;
   *ierr = MatRestoreArray(*mat,&lx);if (*ierr) return;
+}
+
+void PETSC_STDCALL matfactorgetsolverpackage_(Mat *mat,CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  const char *tname;
+
+  *ierr = MatFactorGetSolverPackage(*mat,&tname);if (*ierr) return;
+  if (name != PETSC_NULL_CHARACTER_Fortran) {
+    *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
+  }
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
 void PETSC_STDCALL matgetfactor_(Mat *mat,CHAR outtype PETSC_MIXED_LEN(len),MatFactorType ftype,Mat *M,PetscErrorCode *ierr PETSC_END_LEN(len))

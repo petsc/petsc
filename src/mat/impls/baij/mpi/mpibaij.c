@@ -1403,10 +1403,6 @@ PetscErrorCode MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG,"Unknown MatInfoType argument %d",(int)flag);
   }
-  info->rows_global       = (PetscReal)A->rmap->N;
-  info->columns_global    = (PetscReal)A->cmap->N;
-  info->rows_local        = (PetscReal)A->rmap->N;
-  info->columns_local     = (PetscReal)A->cmap->N;
   info->fill_ratio_given  = 0; /* no parallel LU/ILU/Cholesky */
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;

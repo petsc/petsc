@@ -56,6 +56,16 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat F,Mat A,IS r,const Ma
   PetscFunctionReturn(0); 
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_spooles"
+PetscErrorCode MatFactorGetSolverPackage_seqaij_spooles(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_SPOOLES;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
   
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -91,6 +101,7 @@ PetscErrorCode MatGetFactor_seqaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   } else SETERRQ(PETSC_ERR_SUP,"Spooles only supports LU and Cholesky factorizations");
   B->ops->view    = MatView_Spooles;
   B->ops->destroy = MatDestroy_SeqAIJSpooles;  
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_spooles",MatFactorGetSolverPackage_seqaij_spooles);CHKERRQ(ierr);
   B->factor       = ftype;  
 
   *F = B;

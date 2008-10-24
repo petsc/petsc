@@ -99,6 +99,7 @@ E*/
 typedef enum {MAT_FACTOR_NONE, MAT_FACTOR_LU, MAT_FACTOR_CHOLESKY, MAT_FACTOR_ILU, MAT_FACTOR_ICC} MatFactorType;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat,const MatSolverPackage,MatFactorType,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable(Mat,const MatSolverPackage,MatFactorType,PetscTruth*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatFactorGetSolverPackage(Mat,const MatSolverPackage*);
 
 
 /* Logging support */
@@ -465,8 +466,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat,PetscInt,PetscTr
 .seealso:  MatGetInfo(), MatInfoType
 S*/
 typedef struct {
-  PetscLogDouble rows_global,columns_global;         /* number of global rows and columns */
-  PetscLogDouble rows_local,columns_local;           /* number of local rows and columns */
   PetscLogDouble block_size;                         /* block size */
   PetscLogDouble nz_allocated,nz_used,nz_unneeded;   /* number of nonzeros */
   PetscLogDouble memory;                             /* memory allocated */

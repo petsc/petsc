@@ -24,7 +24,7 @@ void PETSC_STDCALL matgettype_(Mat *mm,CHAR name PETSC_MIXED_LEN(len),PetscError
 {
   const char *tname;
 
-  *ierr = MatGetType(*mm,&tname);
+  *ierr = MatGetType(*mm,&tname);if (*ierr) return;
   if (name != PETSC_NULL_CHARACTER_Fortran) {
     *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
   }
