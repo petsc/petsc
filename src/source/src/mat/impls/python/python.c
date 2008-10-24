@@ -28,7 +28,12 @@
 #define MATPYTHON "python"
 
 PETSC_EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm,const char*,const char*,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm comm,
+							 PetscInt m,PetscInt n,
+							 PetscInt M,PetscInt N,
+							 const char *modname,
+							 const char *clsname,
+							 Mat *mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat,void*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat,void**);
 PETSC_EXTERN_C_END
@@ -107,7 +112,7 @@ static PetscErrorCode MatPythonFillOperations(Mat mat)
 {
   PetscFunctionBegin;
   if (MatPythonHasOperation(mat, "multTranspose"))
-    mat->ops->multtranspose = MatApplySymmetricLeft_Python;
+    mat->ops->multtranspose = MatMultTransopse_Python;
   PetscFunctionReturn(0);
 }
 #endif
@@ -790,9 +795,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
    Collective on MPI_Comm
 
    Input Parameters:
-.  comm - MPI communicator 
-.  modname - module name
-.  clsname - factory/class name
++  comm - MPI communicator 
+.  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
+.  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
+.  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
+.  N - number of global columns (or PETSC_DECIDE to have calculated if n is given)
+.  modname - full dotted Python module name
+-  clsname - factory/class name in module
 
    Output Parameter:
 .  mat - location to put the matrix context
@@ -804,6 +813,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
 .seealso: Mat, MatCreate(), MatSetType(), MatPYTHON
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm comm,
+						  PetscInt m,PetscInt n,
+						  PetscInt M,PetscInt N,
 						  const char *modname,
 						  const char *clsname,
 						  Mat *mat)
@@ -816,6 +827,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm comm,
   if (clsname) PetscValidCharPointer(clsname,3);
   /* create the Mat context and set its type */
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATPYTHON);CHKERRQ(ierr);
   if (modname == PETSC_NULL) PetscFunctionReturn(0);
   if (clsname == PETSC_NULL) PetscFunctionReturn(0);
