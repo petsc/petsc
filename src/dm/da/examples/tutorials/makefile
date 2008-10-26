@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        = 
 LOCDIR          = src/dm/da/examples/tutorials/
-EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c
 EXAMPLESF       = ex6f90.F
 MANSEC          = DA
 
@@ -41,6 +41,10 @@ ex6f90: ex6f90.o   chkopts
 ex7: ex7.o   chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_DM_LIB}
 	${RM} -f ex7.o
+
+ex8: ex8.o   chkopts
+	-${CLINKER} -o ex8 ex8.o  ${PETSC_DM_LIB}
+	${RM} -f ex8.o
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 2 ./ex1

@@ -11,6 +11,7 @@ class Configure(PETSc.package.Package):
     self.liblist      = [['libparmetis.a','libmetis.a']]
     self.needsMath    = 1
     self.complex      = 1
+    self.requires32bitint = 1;
     return
 
   def setupDependencies(self, framework):
@@ -64,7 +65,8 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on ParMetis: '+str(e))
       self.checkInstall(output,'make.inc')
     return self.installDir
-  
+
+    
 if __name__ == '__main__':
   import config.framework
   import sys

@@ -18,6 +18,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_LU(PC pc,const Mat
   PC_LU          *lu = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
+  if (lu->fact) {
+    const MatSolverPackage ltype;
+    PetscTruth             flg;
+    ierr = MatFactorGetSolverPackage(lu->fact,&ltype);CHKERRQ(ierr);
+    ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
+    }
+  }
   ierr = PetscStrfree(lu->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -456,7 +465,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC pc,PetscR
    
    Input Parameters:
 +  pc - the preconditioner context
--  stype - for example, spooles, superlu, superlu_d
+-  stype - for example, spooles, superlu, superlu_dist
 
    Options Database Key:
 .  -pc_factor_mat_solver_package <stype> - spooles, petsc, superlu, superlu_dist, mumps
@@ -465,6 +474,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC pc,PetscR
 
    Note:
      By default this will use the PETSc factorization if it exists
+
+     Use PCFactorGetMatrix(pc,&mat); MatFactorGetPackage(mat,&package); to see what package is being used
+     
 
 .keywords: PC, set, factorization, direct, fill
 

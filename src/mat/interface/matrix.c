@@ -593,11 +593,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
       ierr = MatGetType(mat,&cstr);CHKERRQ(ierr);
       ierr = MatGetSize(mat,&rows,&cols);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"type=%s, rows=%D, cols=%D\n",cstr,rows,cols);CHKERRQ(ierr);
+      if (mat->factor) {
+        const MatSolverPackage solver;
+        ierr = MatFactorGetSolverPackage(mat,&solver);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"package used to perform factorization: %s\n",solver);CHKERRQ(ierr);
+      }
       if (mat->ops->getinfo) {
         MatInfo info;
         ierr = MatGetInfo(mat,MAT_GLOBAL_SUM,&info);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%D, allocated nonzeros=%D\n",
-                          (PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"total: nonzeros=%D, allocated nonzeros=%D\n",(PetscInt)info.nz_used,(PetscInt)info.nz_allocated);CHKERRQ(ierr);
       }
     }
   }
@@ -3316,6 +3320,45 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, const MatType newtype,MatR
     ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   }
   ierr = PetscObjectStateIncrease((PetscObject)*M);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage"
+/*@C  
+   MatFactorGetSolverPackage - Returns name of the package providing the factorization routines
+
+   Not Collective
+
+   Input Parameter:
+.  mat - the matrix, must be a factored matrix
+
+   Output Parameter:
+.   type - the string name of the package (do not free this string)
+
+   Notes:
+      In Fortran you pass in a empty string and the package name will be copied into it. 
+    (Make sure the string is long enough)
+
+   Level: intermediate
+
+.seealso: MatCopy(), MatDuplicate(), MatGetFactorAvailable(), MatGetFactor()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatFactorGetSolverPackage(Mat mat, const MatSolverPackage *type)
+{
+  PetscErrorCode         ierr;
+  PetscErrorCode         (*conv)(Mat,const MatSolverPackage*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  if (!mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Only for factored matrix"); 
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatFactorGetSolverPackage_C",(void (**)(void))&conv);CHKERRQ(ierr);
+  if (!conv) {
+    *type = MAT_SOLVER_PETSC;
+  } else {
+    ierr = (*conv)(mat,type);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

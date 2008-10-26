@@ -43,7 +43,7 @@ class Configure(PETSc.package.Package):
           lgrindexe = lgrindexe+'.exe'
           lgrind    = 'lgrind.exe'
         else: lgrind = 'lgrind'
-        output  = config.base.Configure.executeShellCommand('mv '+lgrindexe+' '+os.path.join(self.installDir,'bin'), timeout=25, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('mv -f '+lgrindexe+' '+os.path.join(self.installDir,'bin'), timeout=25, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error copying lgrind executable: '+str(e))
     output = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'source')+'; make clean',timeout=25, log = self.framework.log)[0]

@@ -310,6 +310,18 @@ PetscErrorCode MatView_UMFPACK(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_umfpack"
+PetscErrorCode MatFactorGetSolverPackage_seqaij_umfpack(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_UMFPACK;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+  
+
 /*MC
   MAT_SOLVER_UMFPACK = "umfpack" - A matrix type providing direct solvers (LU) for sequential matrices 
   via the external package UMFPACK.
@@ -365,6 +377,7 @@ PetscErrorCode MatGetFactor_seqaij_umfpack(Mat A,MatFactorType ftype,Mat *F)
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_UMFPACK;
   B->ops->destroy          = MatDestroy_UMFPACK;
   B->ops->view             = MatView_UMFPACK;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_umfpack",MatFactorGetSolverPackage_seqaij_umfpack);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;
   B->assembled             = PETSC_TRUE;  /* required by -ksp_view */
   B->preallocated          = PETSC_TRUE;

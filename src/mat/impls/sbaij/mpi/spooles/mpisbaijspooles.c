@@ -86,6 +86,17 @@ PetscErrorCode MatDestroy_MPISBAIJSpooles(Mat A)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_mpisbaij_spooles"
+PetscErrorCode MatFactorGetSolverPackage_mpisbaij_spooles(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_SPOOLES;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_mpisbaij_spooles"
@@ -111,6 +122,7 @@ PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   if (ftype == MAT_FACTOR_CHOLESKY) {
     B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;
     B->ops->destroy         = MatDestroy_MPISBAIJSpooles;  
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mpisbaij_spooles",MatFactorGetSolverPackage_mpisbaij_spooles);CHKERRQ(ierr);
 
     lu->options.symflag      = SPOOLES_NONSYMMETRIC;
     lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 

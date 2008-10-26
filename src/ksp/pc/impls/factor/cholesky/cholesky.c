@@ -25,11 +25,20 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Cholesky(PC pc,const MatSolverPackage stype)
 {
   PetscErrorCode ierr;
-  PC_Cholesky    *choleksy = (PC_Cholesky*)pc->data;
+  PC_Cholesky    *cholesky = (PC_Cholesky*)pc->data;
 
   PetscFunctionBegin;
-  ierr = PetscStrfree(choleksy->solvertype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(stype,&choleksy->solvertype);CHKERRQ(ierr);
+  if (cholesky->fact) {
+    const MatSolverPackage ltype;
+    PetscTruth             flg;
+    ierr = MatFactorGetSolverPackage(cholesky->fact,&ltype);CHKERRQ(ierr);
+    ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
+    if (!flg) {
+      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
+    }
+  }
+  ierr = PetscStrfree(cholesky->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(stype,&cholesky->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

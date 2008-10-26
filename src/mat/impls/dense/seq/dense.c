@@ -40,10 +40,6 @@ PetscErrorCode MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
   PetscInt     N = A->rmap->n*A->cmap->n;
 
   PetscFunctionBegin;
-  info->rows_global       = (double)A->rmap->n;
-  info->columns_global    = (double)A->cmap->n;
-  info->rows_local        = (double)A->rmap->n;
-  info->columns_local     = (double)A->cmap->n;
   info->block_size        = 1.0;
   info->nz_allocated      = (double)N;
   info->nz_used           = (double)N;

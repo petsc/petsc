@@ -16,7 +16,7 @@
 !
 
       PetscErrorCode  ierr
-      PetscInt its
+      PetscInt its,m,n,mlocal,nlocal
       PetscTruth flg
       PetscScalar      norm,none
       Vec              x,b,u
@@ -38,16 +38,18 @@
       call MatLoad(fd,MATSEQAIJ,A,ierr)
 
 ! Get information about matrix
+      call MatGetSize(A,m,n,ierr)
+      call MatGetLocalSize(A,mlocal,nlocal,ierr)
       call MatGetInfo(A,MAT_GLOBAL_SUM,info,ierr)
-      write(*,100) info(MAT_INFO_ROWS_GLOBAL),                          &
-     &  info(MAT_INFO_COLUMNS_GLOBAL),                                  &
-     &  info(MAT_INFO_ROWS_LOCAL),info(MAT_INFO_COLUMNS_LOCAL),         &
+      write(*,100) m,                                                   &
+     &  n,                                                              &
+     &  mlocal,nlocal,                                                  &
      &  info(MAT_INFO_BLOCK_SIZE),info(MAT_INFO_NZ_ALLOCATED),          &
      &  info(MAT_INFO_NZ_USED),info(MAT_INFO_NZ_UNNEEDED),              &
      &  info(MAT_INFO_MEMORY),info(MAT_INFO_ASSEMBLIES),                &
      &  info(MAT_INFO_MALLOCS)
 
- 100  format(11(g7.1,1x))
+ 100  format(4(i4,1x),7(g7.1,1x))
       call VecLoad(fd,PETSC_NULL_CHARACTER,b,ierr)
       call PetscViewerDestroy(fd,ierr)
 

@@ -278,13 +278,19 @@ PetscErrorCode MatGetFactor_seqaij_petsc(Mat A,MatFactorType ftype,Mat *B)
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
   if (ftype == MAT_FACTOR_LU || ftype == MAT_FACTOR_ILU) {
     ierr = MatSetType(*B,MATSEQAIJ);CHKERRQ(ierr);
-    (*B)->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ;
-    (*B)->ops->ilufactorsymbolic= MatILUFactorSymbolic_SeqAIJ;
+    if (ftype == MAT_FACTOR_ILU) {
+      (*B)->ops->ilufactorsymbolic= MatILUFactorSymbolic_SeqAIJ;
+    } else {
+      (*B)->ops->lufactorsymbolic = MatLUFactorSymbolic_SeqAIJ;
+    }
   } else if (ftype == MAT_FACTOR_CHOLESKY || ftype == MAT_FACTOR_ICC) {
     ierr = MatSetType(*B,MATSEQSBAIJ);CHKERRQ(ierr);
     ierr = MatSeqSBAIJSetPreallocation(*B,1,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
-    (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJ;
-    (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ;
+    if (ftype == MAT_FACTOR_ICC) {
+      (*B)->ops->iccfactorsymbolic      = MatICCFactorSymbolic_SeqAIJ;
+    } else {
+      (*B)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJ;
+    }
   } else SETERRQ(PETSC_ERR_SUP,"Factor type not supported");
   (*B)->factor = ftype;
   PetscFunctionReturn(0);
@@ -1355,6 +1361,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
 #endif
 
   /* put together the new matrix */
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(fact,isicol);CHKERRQ(ierr);
   b = (Mat_SeqAIJ*)(fact)->data;
   b->free_a       = PETSC_TRUE;

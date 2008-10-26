@@ -10,6 +10,11 @@
 #include "stdlib.h"
 #endif
 
+#if defined(PETSC_USE_64BIT_INDICES)
+/* ugly SuperLU_Dist variable telling it to use long long int */
+#define _LONGINT
+#endif
+
 EXTERN_C_BEGIN 
 #if defined(PETSC_USE_COMPLEX)
 #include "superlu_zdefs.h"
@@ -19,6 +24,7 @@ EXTERN_C_BEGIN
 EXTERN_C_END 
 
 typedef enum {GLOBAL,DISTRIBUTED} SuperLU_MatInputMode;
+const char *SuperLU_MatInputModes[]    = {"GLOBAL","DISTRIBUTED","SuperLU_MatInputMode","PETSC_",0};
 
 typedef struct {
   int_t                   nprow,npcol,*row,*col;
@@ -28,7 +34,7 @@ typedef struct {
   ScalePermstruct_t       ScalePermstruct;
   LUstruct_t              LUstruct;
   int                     StatPrint;
-  int                     MatInputMode;
+  SuperLU_MatInputMode    MatInputMode;
   SOLVEstruct_t           SOLVEstruct; 
   fact_t                  FactPattern;
   MPI_Comm                comm_superlu;
@@ -97,11 +103,12 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   SuperLUStat_t    stat;  
   double           berr[1];
   PetscScalar      *bptr;  
-  PetscInt         info, nrhs=1;
+  PetscInt         nrhs=1;
   Vec              x_seq;
   IS               iden;
   VecScatter       scat;
-  
+  int              info; /* SuperLU_Dist info code is ALWAYS an int, even with long long indices */
+
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {  
@@ -174,8 +181,9 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
   Mat_SeqAIJ       *aa,*bb;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)(F)->spptr;
   PetscErrorCode   ierr;
-  PetscInt         M=A->rmap->N,N=A->cmap->N,sinfo,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
+  PetscInt         M=A->rmap->N,N=A->cmap->N,i,*ai,*aj,*bi,*bj,nz,rstart,*garray,
                    m=A->rmap->n, irow,colA_start,j,jcol,jB,countA,countB,*bjj,*ajj;
+  int              sinfo; /* SuperLU_Dist info flag is always an int even with long long indices */
   PetscMPIInt      size,rank;
   SuperLUStat_t    stat;
   double           *berr=0;
@@ -317,7 +325,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 
   /* Factor the matrix. */
   PStatInit(&stat);   /* Initialize the statistics variables. */
-
+  CHKMEMQ;
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, 
@@ -387,6 +395,17 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,const MatF
   PetscFunctionReturn(0); 
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_aij_superlu_dist"
+PetscErrorCode MatFactorGetSolverPackage_aij_superlu_dist(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_SUPERLU_DIST;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_aij_superlu_dist"
 PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
@@ -412,6 +431,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
   B->ops->view             = MatView_SuperLU_DIST;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_aij_superlu_dist",MatFactorGetSolverPackage_aij_superlu_dist);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;  
 
   ierr = PetscNewLog(B,Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);
@@ -450,7 +470,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
       SETERRQ3(PETSC_ERR_ARG_SIZ,"Number of processes %d must equal to nprow %d * npcol %d",size,lu->nprow,lu->npcol);
   
     lu->MatInputMode = DISTRIBUTED;
-    ierr = PetscOptionsInt("-mat_superlu_dist_matinput","Matrix input mode (0: GLOBAL; 1: DISTRIBUTED)","None",lu->MatInputMode,&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-mat_superlu_dist_matinput","Matrix input mode (global or distributed)","None",SuperLU_MatInputModes,(PetscEnum)lu->MatInputMode,(PetscEnum*)&lu->MatInputMode,PETSC_NULL);CHKERRQ(ierr);
     if(lu->MatInputMode == DISTRIBUTED && size == 1) lu->MatInputMode = GLOBAL;
 
     ierr = PetscOptionsTruth("-mat_superlu_dist_equil","Equilibrate matrix","None",PETSC_TRUE,&flg,0);CHKERRQ(ierr); 

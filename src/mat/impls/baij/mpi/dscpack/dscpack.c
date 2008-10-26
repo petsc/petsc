@@ -410,6 +410,18 @@ PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat F,Mat A,IS r,const MatFacto
   PetscFunctionReturn(0); 
 }
 
+
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_dscpack"
+PetscErrorCode MatFactorGetSolverPackage_seqaij_dscpack(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_DSCPACK;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+  
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqbaij_dscpack"
 PetscErrorCode MatGetFactor_seqbaij_dscpack(Mat A,MatFactorType ftype,Mat *F) 
@@ -434,6 +446,7 @@ PetscErrorCode MatGetFactor_seqbaij_dscpack(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_DSCPACK;
   B->ops->destroy                = MatDestroy_DSCPACK;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_dscpack",MatFactorGetSolverPackage_seqaij_dscpack);CHKERRQ(ierr);
   B->factor                      = MAT_FACTOR_CHOLESKY;  
 
   /* Set the default input options */

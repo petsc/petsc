@@ -1534,10 +1534,6 @@ PetscErrorCode MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
   Mat_SeqBAIJ *a = (Mat_SeqBAIJ*)A->data;
 
   PetscFunctionBegin;
-  info->rows_global    = (double)A->rmap->N;
-  info->columns_global = (double)A->cmap->n;
-  info->rows_local     = (double)A->rmap->n;
-  info->columns_local  = (double)A->cmap->n;
   info->block_size     = a->bs2;
   info->nz_allocated   = a->maxnz;
   info->nz_used        = a->bs2*a->nz;

@@ -25,6 +25,17 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat F,Mat A,IS r,IS c,const Mat
   PetscFunctionReturn(0); 
 }
 
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_spooles"
+PetscErrorCode MatFactorGetSolverPackage_spooles(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_SPOOLES;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 EXTERN_C_BEGIN  
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_mpiaij_spooles"
@@ -51,6 +62,7 @@ PetscErrorCode MatGetFactor_mpiaij_spooles(Mat A,MatFactorType ftype,Mat *F)
     B->ops->lufactorsymbolic = MatLUFactorSymbolic_MPIAIJSpooles;
     B->ops->view             = MatView_Spooles;
     B->ops->destroy          = MatDestroy_MPIAIJSpooles;  
+    ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_spooles",MatFactorGetSolverPackage_spooles);CHKERRQ(ierr);
     B->factor                = MAT_FACTOR_LU;  
 
     lu->options.symflag      = SPOOLES_NONSYMMETRIC;

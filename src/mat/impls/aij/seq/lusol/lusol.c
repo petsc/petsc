@@ -346,7 +346,7 @@ PetscErrorCode MatLUFactorNumeric_LUSOL(Mat F,Mat A,const MatFactorInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatLUFactorSymbolic_LUSOL"
-PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,const MatFactorInfo *info, Mat *F) 
+PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat F,Mat A, IS r, IS c,const MatFactorInfo *info) 
 {
   /************************************************************************/
   /* Input                                                                */
@@ -357,7 +357,6 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,const MatFactorInfo *
   /* Output                                                               */
   /*     F  - matrix storing the factorization;                           */
   /************************************************************************/
-  Mat            B;
   Mat_LUSOL      *lusol;
   PetscErrorCode ierr;
   int            i, m, n, nz, nnz;
@@ -375,8 +374,8 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,const MatFactorInfo *
   /* Create the factorization.                                            */
   /************************************************************************/
 
-  B->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
-  lusol                   = (Mat_LUSOL*)(B->spptr);
+  F->ops->lufactornumeric = MatLUFactorNumeric_LUSOL;
+  lusol                   = (Mat_LUSOL*)(F->spptr);
 
   /************************************************************************/
   /* Initialize parameters                                                */
@@ -430,11 +429,20 @@ PetscErrorCode MatLUFactorSymbolic_LUSOL(Mat A, IS r, IS c,const MatFactorInfo *
   lusol->indr = lusol->indc + nnz;
   lusol->data = (double *)(lusol->indr + nnz);
   lusol->CleanUpLUSOL = PETSC_TRUE;
-  B->ops->lufactornumeric  = MatLUFactorNumeric_LUSOL;
-  B->ops->solve            = MatSolve_LUSOL;
-  *F = B;
+  F->ops->lufactornumeric  = MatLUFactorNumeric_LUSOL;
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_BEGIN 
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorGetSolverPackage_seqaij_lusol"
+PetscErrorCode MatFactorGetSolverPackage_seqaij_lusol(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_LUSOL;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetFactor_seqaij_lusol"
@@ -443,7 +451,7 @@ PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
   Mat            B;
   Mat_LUSOL      *lusol;
   PetscErrorCode ierr;
-  int            i, m, n, nz, nnz;
+  int            m, n;
 
   PetscFunctionBegin;
   ierr = MatGetSize(A, &m, &n);CHKERRQ(ierr);
@@ -457,6 +465,7 @@ PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_LUSOL;
   B->ops->destroy          = MatDestroy_LUSOL;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_seqaij_lusol",MatFactorGetSolverPackage_seqaij_lusol);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;
   PetscFunctionReturn(0);
 }
