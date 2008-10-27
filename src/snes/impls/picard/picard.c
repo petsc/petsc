@@ -140,22 +140,23 @@ static PetscErrorCode SNESView_Picard(SNES snes, PetscViewer viewer)
 #define __FUNCT__ "PicardLineSearchQuadratic"
 PetscErrorCode PicardLineSearchQuadratic(SNES snes, void *lsctx, Vec X, Vec F, Vec dummyG, Vec Y, Vec W, PetscReal fnorm, PetscReal dummyXnorm, PetscReal *dummyYnorm, PetscReal *gnorm, PetscTruth *flag)
 {
+  PetscInt       i;
   PetscReal      alphas[3] = {0.0, 0.5, 1.0};
   PetscReal      norms[3];
-  PetscReal      alpha;
+  PetscReal      alpha,a,b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   norms[0]  = fnorm;
   /* Calculate trial solutions */
-  for(PetscInt  i = 1; i < 3; ++i) {
+  for(i = 1; i < 3; ++i) {
     /* Calculate X^{n+1} = (1 - \alpha) X^n + \alpha Y */
     ierr = VecCopy(X, W);CHKERRQ(ierr);
     ierr = VecAXPBY(W, alphas[i], 1 - alphas[i], Y);CHKERRQ(ierr);
     ierr = SNESComputeFunction(snes, W, F);CHKERRQ(ierr);
     ierr = VecNorm(F, NORM_2, &norms[i]);CHKERRQ(ierr);
   }
-  for(PetscInt i = 0; i < 3; ++i) {
+  for(i = 0; i < 3; ++i) {
     norms[i] = PetscSqr(norms[i]);
   }
   /* Fit a quadratic:
@@ -170,9 +171,9 @@ PetscErrorCode PicardLineSearchQuadratic(SNES snes, void *lsctx, Vec X, Vec F, V
        b =  -y_2 + 4 y_1 - 3 y_0
        c =   y_0
   */
-  const PetscReal a = (alphas[1]*norms[2] - alphas[2]*norms[1] + (alphas[2] - alphas[1])*norms[0])/
+  a = (alphas[1]*norms[2] - alphas[2]*norms[1] + (alphas[2] - alphas[1])*norms[0])/
     (PetscSqr(alphas[2])*alphas[1] - alphas[2]*PetscSqr(alphas[1]));
-  const PetscReal b = (PetscSqr(alphas[1])*norms[2] - PetscSqr(alphas[2])*norms[1] + (PetscSqr(alphas[2]) - PetscSqr(alphas[1]))*norms[0])/
+  b = (PetscSqr(alphas[1])*norms[2] - PetscSqr(alphas[2])*norms[1] + (PetscSqr(alphas[2]) - PetscSqr(alphas[1]))*norms[0])/
     (alphas[2]*PetscSqr(alphas[1]) - PetscSqr(alphas[2])*alphas[1]);
   /* Check for positive a (concave up) */
   if (a >= 0.0) {
