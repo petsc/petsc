@@ -236,7 +236,7 @@ int main(int argc,char **args)
     if (flg) {
       Vec         max, min;
       PetscInt    idx;
-      PetscScalar val;
+      PetscReal   val;
 
       ierr = VecDuplicate(x, &max);CHKERRQ(ierr);
       ierr = VecDuplicate(x, &min);CHKERRQ(ierr);

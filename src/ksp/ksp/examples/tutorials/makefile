@@ -628,7 +628,16 @@ runex10_superlu_dist_redundant:
 	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_superlu_dist_redundant.tmp) then true; \
 	  else echo "Possible problem with ex10_superlu_dist_redundant, diffs above"; fi; \
 	${RM} -f ex10_superlu_dist_redundant.tmp;
-
+runex10_ILU: # test ilu fill greater than zero
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -pc_factor_levels 1  > ex10_20.tmp 2>&1; \
+	   if (${DIFF} output/ex10_ILU.out ex10_20.tmp) then true; \
+	   else echo "Possible problem with ex10_ILU, diffs above"; fi; \
+	   ${RM} -f ex10_20.tmp
+runex10_ILUBAIJ: # test ilu fill greater than zero
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -pc_factor_levels 1 -matload_type baij > ex10_20.tmp 2>&1; \
+	   if (${DIFF} output/ex10_ILU.out ex10_20.tmp) then true; \
+	   else echo "Possible problem with ex10_ILU, diffs above"; fi; \
+	   ${RM} -f ex10_20.tmp
 runex11:
 	-@${MPIEXEC} -n 1 ./ex11 -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -786,7 +795,7 @@ runex40:
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc runex2 runex2_2 runex2_3 \
                                  runex2_4 ex2.rm ex7.PETSc runex7 ex7.rm ex5.PETSc runex5 runex5_2 ex5.rm \
-                                 ex9.PETSc runex9 ex9.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
+                                 ex9.PETSc runex9 ex9.rm ex10.PETSC runex10_ILU runex10_ILUBAIJ ex10.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex22.PETSc runex22 ex22.rm \
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc  ex29.rm \

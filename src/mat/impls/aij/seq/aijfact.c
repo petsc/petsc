@@ -1361,6 +1361,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
 #endif
 
   /* put together the new matrix */
+  ierr = MatSeqAIJSetPreallocation_SeqAIJ(fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(fact,isicol);CHKERRQ(ierr);
   b = (Mat_SeqAIJ*)(fact)->data;
   b->free_a       = PETSC_TRUE;

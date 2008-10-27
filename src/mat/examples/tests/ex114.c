@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   const MatType  type;
   PetscMPIInt    size;
-  PetscTruth     doTest;
+  PetscTruth     doTest=PETSC_TRUE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
