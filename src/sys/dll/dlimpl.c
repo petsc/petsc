@@ -17,26 +17,6 @@
 #include <dlfcn.h>
 #endif
 
-/* XXX ----------------------------------- */
-/* Just for testing, REMOVE THIS when done */
-#if 0
-#undef PETSC_HAVE_WINDOWS_H
-#undef PETSC_HAVE_DLFCN_H
-#elif 0
-#undef  PETSC_HAVE_DLFCN_H
-#define PETSC_HAVE_WINDOWS_H
-#define PETSC_HAVE_LOADLIBRARY
-#define PETSC_HAVE_GETPROCADDRESS
-#define PETSC_HAVE_FREELIBRARY
-#define HMODULE int
-extern HMODULE LoadLibrary(const char*);
-extern int     FreeLibrary(HMODULE);
-extern HMODULE GetCurrentProcess(void);
-extern void*   GetProcAddress(HMODULE,const char*);
-#endif
-/* XXX ----------------------------------- */
-
-
 #if defined(PETSC_HAVE_WINDOWS_H)
 typedef HMODULE dlhandle_t;
 #elif defined(PETSC_HAVE_DLFCN_H)
@@ -56,13 +36,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHa
   dlhandle_t dlhandle;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(name, 1);
-  PetscValidPointer(handle, 3);
+  PetscValidCharPointer(name,1);
+  PetscValidPointer(handle,3);
 
   dlflags1 = 0;
   dlflags2 = 0;
   dlhandle = (dlhandle_t) 0;
-  *handle = (PetscDLHandle) 0;
+  *handle  = (PetscDLHandle) 0;
 
   /* 
      --- LoadLibrary ---
@@ -89,7 +69,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLOpen(const char name[],int flags,PetscDLHa
   /* 
      --- dlopen ---
   */  
-#elif defined(PETSC_HAVE_DLFCN_H)
+#elif defined(PETSC_HAVE_DLFCN_H) && defined(PETSC_HAVE_DLOPEN)
   /*
       Mode indicates symbols required by symbol loaded with dlsym() 
      are only loaded when required (not all together) also indicates
@@ -157,9 +137,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
 #if defined(PETSC_HAVE_FREELIBRARY)
   if (FreeLibrary(dlhandle) == 0) {
 #if defined(PETSC_HAVE_GETLASTERROR)
-    DWORD erc;
     char  *buff = NULL;
-    erc = GetLastError();
+    DWORD erc   = GetLastError();
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
 		  NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
     PetscErrorPrintf("Error closing dynamic library:\n  Error message from FreeLibrary() %s\n",buff);
@@ -174,6 +153,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
      --- dclose --- 
   */  
 #elif defined(PETSC_HAVE_DLFCN_H)
+#if defined(PETSC_HAVE_DLCLOSE)
 #if defined(PETSC_HAVE_DLERROR)
   dlerror(); /* clear any previous error */
 #endif
@@ -185,6 +165,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
 #endif
     PetscErrorPrintf("Error closing dynamic library:\n  Error message from dlclose() %s\n", errmsg);
   }
+#endif /* !PETSC_HAVE_DLCLOSE */
 
   /* 
      --- unimplemented --- 
@@ -214,22 +195,29 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol
   PetscValidPointer(value,3);
 
   dlhandle = (dlhandle_t) 0;
-  *value = 0;
+  dlvalue  = (void *) 0;
+  *value   = (void *) 0;
 
   /* 
      --- GetProcAddress ---
   */  
-#if defined(PETSC_HAVE_WINDOWS_H) && defined(PETSC_HAVE_GETPROCADDRESS)
+#if defined(PETSC_HAVE_WINDOWS_H) 
+#if defined(PETSC_HAVE_GETPROCADDRESS)
   if (handle != PETSC_NULL)
     dlhandle = (dlhandle_t) handle;
   else
     dlhandle = (dlhandle_t) GetCurrentProcess();
   dlvalue = GetProcAddress(dlhandle,symbol);
+#if defined(PETSC_HAVE_SETLASTERROR)
+  SetLastError((DWORD)0); /* clear any previous error */
+#endif
+#endif /* !PETSC_HAVE_GETPROCADDRESS */
 
   /* 
      --- dlsym ---
   */  
 #elif defined(PETSC_HAVE_DLFCN_H)
+#if defined(PETSC_HAVE_DLSYM)
   if (handle != PETSC_NULL)
     dlhandle = (dlhandle_t) handle;
   else
@@ -241,6 +229,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol
 #if defined(PETSC_HAVE_DLERROR)
   dlerror(); /* clear any previous error */
 #endif
+#endif /* !PETSC_HAVE_DLSYM */
 
   /* 
      --- unimplemented --- 
