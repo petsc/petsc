@@ -6,7 +6,7 @@ configure_options = [
   '--with-fc=mpixlf77_r -qnosave',
 
   '--with-mpi-dir=/bgsys/drivers/ppcfloor/comm',  # required by BLACS to get mpif.h
-  '--with-blas-lapack-lib=[/soft/apps/blas-lapack-lib/liblapack_bgp.a,libgoto.a]',
+  '--with-blas-lapack-lib=-L/soft/apps/LAPACK -llapack_bgp -L/soft/apps/LIBGOTO -lgoto',
   '--with-x=0',
 
   '--with-is-color-value-type=short',
