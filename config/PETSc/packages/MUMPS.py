@@ -43,7 +43,7 @@ class Configure(PETSc.package.Package):
     else:
       g.write('ORDERINGSC = -Dmetis -Dpord\n')
     if self.compilers.FortranDefineCompilerOption:
-      g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'metis'+' -Dpord\n')
+      g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'metis'+' '+self.compilers.FortranDefineCompilerOption+'pord\n')
     else:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')     
     g.write('LORDERINGS = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
@@ -91,7 +91,7 @@ class Configure(PETSc.package.Package):
         pass
       try:
         self.logPrintBox('Compiling Mumps; this may take several minutes')
-        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make all',timeout=2500, log = self.framework.log)[0]
+        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make alllib',timeout=2500, log = self.framework.log)[0]
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
         output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; mv -f lib/*.* '+libDir+'/.; cp -f include/*.* '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
