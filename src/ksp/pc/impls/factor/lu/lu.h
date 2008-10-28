@@ -4,20 +4,17 @@
 #if !defined(__LU_H)
 #define __LU_H
 
-#include "petscmat.h"
+#include "src/ksp/pc/impls/factor/factor.h"
 
 typedef struct {
-  Mat              fact;             /* factored matrix */
-  PetscReal        actualfill;       /* actual fill in factor */
-  PetscTruth       inplace;          /* flag indicating in-place factorization */
-  IS               row,col;          /* index sets used for reordering */
-  MatOrderingType  ordering;         /* matrix ordering */
-  PetscTruth       reuseordering;    /* reuses previous reordering computed */
-  PetscTruth       reusefill;        /* reuse fill from previous LU */
-  MatFactorInfo    info;
-  PetscTruth       nonzerosalongdiagonal;
-  PetscReal        nonzerosalongdiagonaltol;
-  MatSolverPackage solvertype;
+  PC_Factor   hdr;
+  PetscReal   actualfill;       /* actual fill in factor */
+  PetscTruth  inplace;          /* flag indicating in-place factorization */
+  IS          row,col;          /* index sets used for reordering */
+  PetscTruth  reuseordering;    /* reuses previous reordering computed */
+  PetscTruth  reusefill;        /* reuse fill from previous LU */
+  PetscTruth  nonzerosalongdiagonal;
+  PetscReal   nonzerosalongdiagonaltol;
 } PC_LU;
 
 #endif
