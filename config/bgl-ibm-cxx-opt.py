@@ -43,6 +43,7 @@ configure_options = [
   '--bits_per_byte=8',
   '--sizeof_MPI_Comm=4',
   '--sizeof_MPI_Fint=4',
+  '--have-mpi-long-double=1',
 
   '--download-f-blas-lapack=1',
   '--download-hypre=1',
