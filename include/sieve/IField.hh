@@ -263,6 +263,8 @@ namespace ALE {
         this->updatePoint(*c_iter, section->restrictPoint(*c_iter));
       }
     };
+    const value_type *getDefault() const {return this->_emptyValue;};
+    void setDefault(const value_type v[]) {for(int i = 0; i < fiberDim; ++i) {this->_emptyValue.v[i] = v[i];}};
   public: // Sizes
     void clear() {
       this->_atlas->clear(); 
@@ -298,28 +300,26 @@ namespace ALE {
     int size() const {return this->_atlas->getChart().size()*fiberDim;};
     int sizeWithBC() const {return this->size();};
     void allocatePoint() {
-      const value_type dummy = 0;
       this->_array = this->_allocator.allocate(this->sizeWithBC());
       this->_array -= this->getChart().min()*fiberDim;
-      for(index_type i = this->getChart().min()*fiberDim; i < this->getChart().max()*fiberDim; ++i) {this->_allocator.construct(this->_array+i, dummy);}
+      for(index_type i = this->getChart().min()*fiberDim; i < this->getChart().max()*fiberDim; ++i) {this->_allocator.construct(this->_array+i, this->_emptyValue.v[0]);}
     };
     bool reallocatePoint(const chart_type& chart, values_type *oldData = NULL) {
       const chart_type  oldChart = this->getChart();
       const int         oldSize  = this->sizeWithBC();
-      const values_type oldArray = this->_array;
+      values_type       oldArray = this->_array;
       if (!this->resizeChart(chart)) return false;
       const int         size     = this->sizeWithBC();
-      const value_type  dummy    = 0;
 
       this->_array = this->_allocator.allocate(size);
       this->_array -= this->getChart().min()*fiberDim;
-      for(index_type i = this->getChart().min()*fiberDim; i < this->getChart().max()*fiberDim; ++i) {this->_allocator.construct(this->_array+i, dummy);}
+      for(index_type i = this->getChart().min()*fiberDim; i < this->getChart().max()*fiberDim; ++i) {this->_allocator.construct(this->_array+i, this->_emptyValue.v[0]);}
       for(int i = oldChart.min()*fiberDim; i < oldChart.max()*fiberDim; ++i) {
         this->_array[i] = oldArray[i];
       }
       if (!oldData) {
         for(index_type i = oldChart.min()*fiberDim; i < oldChart.max()*fiberDim; ++i) {this->_allocator.destroy(oldArray+i);}
-        this->_array += this->getChart().min()*fiberDim;
+        oldArray += this->getChart().min()*fiberDim;
         this->_allocator.deallocate(oldArray, oldSize);
         ///std::cout << "Freed IUniformSection data" << std::endl;
       } else {
@@ -327,6 +327,17 @@ namespace ALE {
         *oldData = oldArray;
       }
       return true;
+    };
+    template<typename Iterator, typename Extractor>
+    bool reallocatePoint(const Iterator& begin, const Iterator& end, const Extractor& extractor) {
+      point_type min = this->getChart().min();
+      point_type max = this->getChart().max()-1;
+
+      for(Iterator p_iter = begin; p_iter != end; ++p_iter) {
+        min = std::min(extractor(*p_iter), min);
+        max = std::max(extractor(*p_iter), max);
+      }
+      return reallocatePoint(chart_type(min, max+1));
     };
   public: // Restriction
     // Return a pointer to the entire contiguous storage array

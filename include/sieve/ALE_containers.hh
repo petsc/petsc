@@ -167,6 +167,7 @@ namespace ALE {
     second_type second;
     // Constructors
     Pair() : first(0), second(0) {};
+    Pair(FirstType f) : first(f), second(0) {};
     Pair(FirstType f, SecondType s) : first(f), second(s) {};
     Pair(const Pair& p) : first(p.first), second(p.second) {};
     // Comparisons
@@ -186,6 +187,10 @@ namespace ALE {
     };
     bool operator<(const Pair& q) const {
       return((this->first < q.first) || ((this->first == q.first) && (this->second < q.second)));
+    };
+    void operator+=(const Pair& q) {
+      this->first  += q.first;
+      this->second += q.second;
     };
     // Printing
     friend std::ostream& operator<<(std::ostream& os, const Pair& p) {

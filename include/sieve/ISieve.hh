@@ -30,7 +30,7 @@ namespace ALE {
       const_iterator(const point_type p): _p(p) {};
       ~const_iterator() {};
     public:
-      const_iterator& operator=(const const_iterator& iter) {this->_p = iter._p;};
+      const_iterator& operator=(const const_iterator& iter) {this->_p = iter._p; return *this;};
       bool operator==(const const_iterator& iter) const {return this->_p == iter._p;};
       bool operator!=(const const_iterator& iter) const {return this->_p != iter._p;};
       const_iterator& operator++() {++this->_p; return *this;}

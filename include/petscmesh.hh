@@ -239,6 +239,13 @@ struct SelectSource : public std::unary_function<Arrow, typename Arrow::source_t
   const typename Arrow::source_type& operator()(const Arrow& x) const {return x.source;}
 };
 
+template<class Pair>
+struct Select1st : public std::unary_function<Pair, typename Pair::first_type>
+{
+  typename Pair::first_type& operator()(Pair& x) const {return x.first;}
+  const typename Pair::first_type& operator()(const Pair& x) const {return x.first;}
+};
+
 template<typename Mesh, typename Order>
 PetscErrorCode globalizeLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const ALE::Obj<ALE::Mesh::sieve_type>& adjGraph, const ALE::Obj<ALE::Mesh::send_overlap_type>& sendOverlap, const ALE::Obj<Order>& globalOrder)
 {
@@ -352,11 +359,19 @@ PetscErrorCode globalizeLocalAdjacencyGraph(const ALE::Obj<Mesh>& mesh, const AL
     adjGraph->addArrow(invRenumbering[a_iter->source], a_iter->target);
   }
   // Add new points into ordering
+#if 1
   for(typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type::const_iterator p_iter = renumbering.begin(); p_iter != renumbering.end(); ++p_iter) {
     if (debug) {std::cout << "["<<globalOrder->commRank()<<"]: Updating " << p_iter->first << " to " << globalOrder->restrictPoint(p_iter->second)[0] << std::endl;}
     globalOrder->addPoint(p_iter->first);
     globalOrder->updatePoint(p_iter->first, globalOrder->restrictPoint(p_iter->second));
   }
+#else
+  globalOrder->reallocatePoint(renumbering.begin(), renumbering.end(), Select1st<typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type::const_iterator::value_type>());
+  for(typename ALE::PointFactory<typename Mesh::point_type>::renumbering_type::const_iterator p_iter = renumbering.begin(); p_iter != renumbering.end(); ++p_iter) {
+    if (debug) {std::cout << "["<<globalOrder->commRank()<<"]: Updating " << p_iter->first << " to " << globalOrder->restrictPoint(p_iter->second)[0] << std::endl;}
+    globalOrder->updatePoint(p_iter->first, globalOrder->restrictPoint(p_iter->second));
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -498,7 +513,7 @@ PetscErrorCode renumberLocalAdjacencyGraph(const ALE::Obj<ALE::Mesh>& mesh, cons
      Create a shared resource that bestows globally consistent names.
 */
 template<typename Mesh, typename Atlas>
-PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], Mat A)
+PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<typename Mesh::order_type>& globalOrder, PetscInt dnz[], PetscInt onz[], Mat A)
 {
   MPI_Comm                              comm      = mesh->comm();
   const int                             rank      = mesh->commRank();
@@ -554,16 +569,16 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
 
     if (globalOrder->isLocal(point)) {
       const ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence>& adj   = graph->cone(point);
-      const ALE::Mesh::order_type::value_type&                     rIdx  = globalOrder->restrictPoint(point)[0];
+      const typename Mesh::order_type::value_type&                 rIdx  = globalOrder->restrictPoint(point)[0];
       const int                                                    row   = rIdx.prefix;
       const int                                                    rSize = rIdx.index/bs;
 
       if ((debug > 1) && ((bs == 1) || rIdx.index%bs)) std::cout << "["<<graph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
       if (rSize == 0) continue;
       for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
-        const ALE::Mesh::point_type&             neighbor = *v_iter;
-        const ALE::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
-        const int&                               cSize    = cIdx.index/bs;
+        const ALE::Mesh::point_type&                 neighbor = *v_iter;
+        const typename Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
+        const int&                                   cSize    = cIdx.index/bs;
 
         if ((debug > 1) && ((bs == 1) || cIdx.index%bs)) std::cout << "["<<graph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
         if (cSize > 0) {
