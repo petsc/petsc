@@ -45,19 +45,19 @@
 /* -------------------------------------------------------------------------- */
 
 #if PY_VERSION_HEX < 0x02050000
-#define PetscPyExceptionClassCheck(exc) PyClass_Check(exc)
-#define PetscPyExceptionClassName(exc)  PyString_AsString(((PyClassObject*)exc)->cl_name)
+#define PetscPyExceptionClassCheck(exc) PyClass_Check((exc))
+#define PetscPyExceptionClassName(exc)  PyString_AsString(((PyClassObject*)(exc))->cl_name)
 #else
-#define PetscPyExceptionClassCheck(exc) PyExceptionClass_Check(exc)
-#define PetscPyExceptionClassName(exc)  PyExceptionClass_Name(exc)
+#define PetscPyExceptionClassCheck(exc) PyExceptionClass_Check((exc))
+#define PetscPyExceptionClassName(exc)  PyExceptionClass_Name((exc))
 #endif
 
 #if PY_VERSION_HEX < 0x02050000
-#define PetscPyObjectGetAttrStr(ob,attr) PyObject_GetAttrString((ob),(char *)attr)
-#define PetscPyImportModule(modname) PyImport_ImportModule((char *)modname);
+#define PetscPyImportModule(modname) PyImport_ImportModule((char *)(modname));
+#define PetscPyObjectGetAttrStr(ob,attr) PyObject_GetAttrString((ob),(char *)(attr))
 #else
-#define PetscPyObjectGetAttrStr(ob,attr) PyObject_GetAttrString((ob),attr)
-#define PetscPyImportModule(modname) PyImport_ImportModule(modname);
+#define PetscPyImportModule(modname) PyImport_ImportModule((modname));
+#define PetscPyObjectGetAttrStr(ob,attr) PyObject_GetAttrString((ob),(attr))
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -78,19 +78,6 @@ static const char * PetscHandlePythonError(void)
 
 /* -------------------------------------------------------------------------- */
 
-static PetscErrorCode PetscForPythonInit(void)
-{
-  PetscErrorCode ierr = PETSC_ERR_PYTHON;
-  PyObject *mod = PetscPyImportModule("petsc4py.PETSc");
-  if (mod != NULL) {
-    if (import_petsc4py() < 0) goto finally;
-    ierr = 0; 
-  }
- finally:
-  Py_DecRef(mod);
-  return ierr;
-}
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscInitializePython"
 static PetscErrorCode PetscInitializePython(void)
@@ -100,12 +87,12 @@ static PetscErrorCode PetscInitializePython(void)
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);
   if (!Py_IsInitialized()) Py_InitializeEx(0);
-  ierr = PetscForPythonInit(); if (ierr) goto fail;
+  if (import_petsc4py() < 0) goto fail;
   initialized = PETSC_TRUE;
   PetscFunctionReturn(0);
  fail:
   PetscHandlePythonError();
-  SETERRQ(ierr,"could not import Python package 'petsc4py'");
+  SETERRQ(PETSC_ERR_PYTHON,"could not import Python package 'petsc4py.PETSc'");
   PetscFunctionReturn(ierr);
 }
 
@@ -214,8 +201,8 @@ static PetscErrorCode PetscCreatePythonObject(const char* modname,
 #undef __FUNCT__
 #define __FUNCT__ "PetscPythonGetModuleAndClass"
 static PetscErrorCode PetscPythonGetModuleAndClass(PyObject *self,
-						   char **modname,
-						   char **clsname)
+						   char *modname[],
+						   char *clsname[])
 {
   PyObject *cls=NULL, *omodname=NULL, *oclsname=NULL;
   const char *ModName = "<unknown>";
