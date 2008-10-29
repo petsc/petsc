@@ -6,8 +6,7 @@
          a direct solver.
 */
 
-#include "private/pcimpl.h"                /*I "petscpc.h" I*/
-#include "src/ksp/pc/impls/factor/lu/lu.h"
+#include "src/ksp/pc/impls/factor/lu/lu.h"  /*I "petscpc.h" I*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -18,17 +17,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_LU(PC pc,const Mat
   PC_LU          *lu = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  if (lu->fact) {
+  if (((PC_Factor*)lu)->fact) {
     const MatSolverPackage ltype;
     PetscTruth             flg;
-    ierr = MatFactorGetSolverPackage(lu->fact,&ltype);CHKERRQ(ierr);
+    ierr = MatFactorGetSolverPackage(((PC_Factor*)lu)->fact,&ltype);CHKERRQ(ierr);
     ierr = PetscStrcmp(stype,ltype,&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot change solver matrix package after PC has been setup or used");
     }
   }
-  ierr = PetscStrfree(lu->solvertype);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrfree(((PC_Factor*)lu)->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(stype,&((PC_Factor*)lu)->solvertype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -41,7 +40,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_LU(PC pc,PetscReal z)
   PC_LU *lu = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  lu->info.zeropivot = z;
+  ((PC_Factor*)lu)->info.zeropivot = z;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -55,9 +54,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero_LU(PC pc,PetscReal shi
 
   PetscFunctionBegin;
   if (shift == (PetscReal) PETSC_DECIDE) {
-    dir->info.shiftnz = 1.e-12;
+    ((PC_Factor*)dir)->info.shiftnz = 1.e-12;
   } else {
-    dir->info.shiftnz = shift;
+    ((PC_Factor*)dir)->info.shiftnz = shift;
   }
   PetscFunctionReturn(0);
 }
@@ -72,9 +71,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_LU(PC pc,PetscTruth shift)
  
   PetscFunctionBegin;
   if (shift) {
-    dir->info.shiftpd = 1.0;
+    ((PC_Factor*)dir)->info.shiftpd = 1.0;
   } else {
-    dir->info.shiftpd = 0.0;
+    ((PC_Factor*)dir)->info.shiftpd = 0.0;
   } 
   PetscFunctionReturn(0);
 }
@@ -142,18 +141,18 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     if (flg) {
       ierr = PCFactorSetUseInPlace(pc);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in LU/non-zeros in matrix","PCFactorSetFill",lu->info.fill,&lu->info.fill,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_fill","Expected non-zeros in LU/non-zeros in matrix","PCFactorSetFill",((PC_Factor*)lu)->info.fill,&((PC_Factor*)lu)->info.fill,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
         ierr = PCFactorSetShiftNonzero(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",lu->info.shiftnz,&lu->info.shiftnz,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",((PC_Factor*)lu)->info.shiftnz,&((PC_Factor*)lu)->info.shiftnz,0);CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",lu->info.zeropivot,&lu->info.zeropivot,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)lu)->info.zeropivot,&((PC_Factor*)lu)->info.zeropivot,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -165,13 +164,13 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
     }
 
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in LU","PCFactorSetMatOrderingType",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in LU","PCFactorSetMatOrderingType",ordlist,((PC_Factor*)lu)->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
     }
 
     /* maybe should have MatGetSolverTypes(Mat,&list) like the ordering list */
-    ierr = PetscOptionsString("-pc_factor_mat_solver_package","Specific LU solver to use","MatGetFactor",lu->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-pc_factor_mat_solver_package","Specific LU solver to use","MatGetFactor",((PC_Factor*)lu)->solvertype,solvertype,64,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetMatSolverPackage(pc,solvertype);CHKERRQ(ierr);
     }
@@ -183,9 +182,9 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
       ierr = PCFactorReorderForNonzeroDiagonal(pc,tol);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsReal("-pc_factor_pivoting","Pivoting tolerance (used only for some factorization)","PCFactorSetPivoting",lu->info.dtcol,&lu->info.dtcol,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_factor_pivoting","Pivoting tolerance (used only for some factorization)","PCFactorSetPivoting",((PC_Factor*)lu)->info.dtcol,&((PC_Factor*)lu)->info.dtcol,&flg);CHKERRQ(ierr);
 
-    flg = lu->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
+    flg = ((PC_Factor*)lu)->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
     ierr = PetscOptionsTruth("-pc_factor_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
     if (set) {
       ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
@@ -209,17 +208,17 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
 
     if (lu->inplace) {ierr = PetscViewerASCIIPrintf(viewer,"  LU: in-place factorization\n");CHKERRQ(ierr);}
     else             {ierr = PetscViewerASCIIPrintf(viewer,"  LU: out-of-place factorization\n");CHKERRQ(ierr);}
-    ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",lu->ordering);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  LU: tolerance for zero pivot %G\n",lu->info.zeropivot);CHKERRQ(ierr);
-    if (lu->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  LU: using Manteuffel shift\n");CHKERRQ(ierr);}
-    if (lu->fact) {
+    ierr = PetscViewerASCIIPrintf(viewer,"    matrix ordering: %s\n",((PC_Factor*)lu)->ordering);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  LU: tolerance for zero pivot %G\n",((PC_Factor*)lu)->info.zeropivot);CHKERRQ(ierr);
+    if (((PC_Factor*)lu)->info.shiftpd) {ierr = PetscViewerASCIIPrintf(viewer,"  LU: using Manteuffel shift\n");CHKERRQ(ierr);}
+    if (((PC_Factor*)lu)->fact) {
       ierr = PetscViewerASCIIPrintf(viewer,"  LU: factor fill ratio needed %G\n",lu->actualfill);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"       Factored matrix follows\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = MatView(lu->fact,viewer);CHKERRQ(ierr);
+      ierr = MatView(((PC_Factor*)lu)->fact,viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
@@ -228,7 +227,7 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
     if (lu->reusefill)    {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing fill from past factorization\n");CHKERRQ(ierr);}
     if (lu->reuseordering) {ierr = PetscViewerASCIIPrintf(viewer,"       Reusing reordering from past factorization\n");CHKERRQ(ierr);}
   } else if (isstring) {
-    ierr = PetscViewerStringSPrintf(viewer," order=%s",lu->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
+    ierr = PetscViewerStringSPrintf(viewer," order=%s",((PC_Factor*)lu)->ordering);CHKERRQ(ierr);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCLU",((PetscObject)viewer)->type_name);
   }
@@ -242,8 +241,8 @@ static PetscErrorCode PCFactorGetMatrix_LU(PC pc,Mat *mat)
   PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  if (!dir->fact) SETERRQ(PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
-  *mat = dir->fact;
+  if (!((PC_Factor*)dir)->fact) SETERRQ(PETSC_ERR_ORDER,"Matrix not yet factored; call after KSPSetUp() or PCSetUp()");
+  *mat = ((PC_Factor*)dir)->fact;
   PetscFunctionReturn(0);
 }
 
@@ -255,22 +254,22 @@ static PetscErrorCode PCSetUp_LU(PC pc)
   PC_LU          *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  if (dir->reusefill && pc->setupcalled) dir->info.fill = dir->actualfill;
+  if (dir->reusefill && pc->setupcalled) ((PC_Factor*)dir)->info.fill = dir->actualfill;
 
   if (dir->inplace) {
     if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
     if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
-    ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
+    ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
     if (dir->row) {
       ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr); 
       ierr = PetscLogObjectParent(pc,dir->col);CHKERRQ(ierr);
     }
-    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,&dir->info);CHKERRQ(ierr);
-    dir->fact = pc->pmat;
+    ierr = MatLUFactor(pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+    ((PC_Factor*)dir)->fact = pc->pmat;
   } else {
     MatInfo info;
     if (!pc->setupcalled) {
-      ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
+      ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
       if (dir->nonzerosalongdiagonal) {
         ierr = MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col);CHKERRQ(ierr);
       }
@@ -278,16 +277,16 @@ static PetscErrorCode PCSetUp_LU(PC pc)
         ierr = PetscLogObjectParent(pc,dir->row);CHKERRQ(ierr); 
         ierr = PetscLogObjectParent(pc,dir->col);CHKERRQ(ierr);
       }
-      ierr = MatGetFactor(pc->pmat,dir->solvertype,MAT_FACTOR_LU,&dir->fact);CHKERRQ(ierr);
-      ierr = MatLUFactorSymbolic(dir->fact,pc->pmat,dir->row,dir->col,&dir->info);CHKERRQ(ierr);
-      ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+      ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_LU,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+      ierr = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
-      ierr = PetscLogObjectParent(pc,dir->fact);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent(pc,((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     } else if (pc->flag != SAME_NONZERO_PATTERN) {
       if (!dir->reuseordering) {
         if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
         if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
-        ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
+        ierr = MatGetOrdering(pc->pmat,((PC_Factor*)dir)->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
         if (dir->nonzerosalongdiagonal) {
           ierr = MatReorderForNonzeroDiagonal(pc->pmat,dir->nonzerosalongdiagonaltol,dir->row,dir->col);CHKERRQ(ierr);
         }
@@ -296,14 +295,14 @@ static PetscErrorCode PCSetUp_LU(PC pc)
           ierr = PetscLogObjectParent(pc,dir->col);CHKERRQ(ierr);
         }
       }
-      ierr = MatDestroy(dir->fact);CHKERRQ(ierr);
-      ierr = MatGetFactor(pc->pmat,dir->solvertype,MAT_FACTOR_LU,&dir->fact);CHKERRQ(ierr);
-      ierr = MatLUFactorSymbolic(dir->fact,pc->pmat,dir->row,dir->col,&dir->info);CHKERRQ(ierr);
-      ierr = MatGetInfo(dir->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
+      ierr = MatDestroy(((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      ierr = MatGetFactor(pc->pmat,((PC_Factor*)dir)->solvertype,MAT_FACTOR_LU,&((PC_Factor*)dir)->fact);CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(((PC_Factor*)dir)->fact,pc->pmat,dir->row,dir->col,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+      ierr = MatGetInfo(((PC_Factor*)dir)->fact,MAT_LOCAL,&info);CHKERRQ(ierr);
       dir->actualfill = info.fill_ratio_needed;
-      ierr = PetscLogObjectParent(pc,dir->fact);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent(pc,((PC_Factor*)dir)->fact);CHKERRQ(ierr);
     }
-    ierr = MatLUFactorNumeric(dir->fact,pc->pmat,&dir->info);CHKERRQ(ierr);
+    ierr = MatLUFactorNumeric(((PC_Factor*)dir)->fact,pc->pmat,&((PC_Factor*)dir)->info);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -316,11 +315,11 @@ static PetscErrorCode PCDestroy_LU(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!dir->inplace && dir->fact) {ierr = MatDestroy(dir->fact);CHKERRQ(ierr);}
+  if (!dir->inplace && ((PC_Factor*)dir)->fact) {ierr = MatDestroy(((PC_Factor*)dir)->fact);CHKERRQ(ierr);}
   if (dir->row && dir->col && dir->row != dir->col) {ierr = ISDestroy(dir->row);CHKERRQ(ierr);}
   if (dir->col) {ierr = ISDestroy(dir->col);CHKERRQ(ierr);}
-  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
-  ierr = PetscStrfree(dir->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrfree(((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree(((PC_Factor*)dir)->solvertype);CHKERRQ(ierr);
   ierr = PetscFree(dir);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -334,7 +333,7 @@ static PetscErrorCode PCApply_LU(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (dir->inplace) {ierr = MatSolve(pc->pmat,x,y);CHKERRQ(ierr);}
-  else              {ierr = MatSolve(dir->fact,x,y);CHKERRQ(ierr);}
+  else              {ierr = MatSolve(((PC_Factor*)dir)->fact,x,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -347,7 +346,7 @@ static PetscErrorCode PCApplyTranspose_LU(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (dir->inplace) {ierr = MatSolveTranspose(pc->pmat,x,y);CHKERRQ(ierr);}
-  else              {ierr = MatSolveTranspose(dir->fact,x,y);CHKERRQ(ierr);}
+  else              {ierr = MatSolveTranspose(((PC_Factor*)dir)->fact,x,y);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -361,7 +360,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill_LU(PC pc,PetscReal fill)
   PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  dir->info.fill = fill;
+  ((PC_Factor*)dir)->info.fill = fill;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -388,8 +387,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_LU(PC pc,const MatO
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrfree(dir->ordering);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ordering,&dir->ordering);CHKERRQ(ierr);
+  ierr = PetscStrfree(((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(ordering,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -403,7 +402,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivoting_LU(PC pc,PetscReal dtcol)
 
   PetscFunctionBegin;
   if (dtcol < 0.0 || dtcol > 1.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Column pivot tolerance is %G must be between 0 and 1",dtcol);
-  dir->info.dtcol = dtcol;
+  ((PC_Factor*)dir)->info.dtcol = dtcol;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -416,7 +415,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_LU(PC pc,PetscTruth p
   PC_LU *dir = (PC_LU*)pc->data;
 
   PetscFunctionBegin;
-  dir->info.pivotinblocks = pivot ? 1.0 : 0.0;
+  ((PC_Factor*)dir)->info.pivotinblocks = pivot ? 1.0 : 0.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -730,26 +729,26 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_LU,&dir);CHKERRQ(ierr);
 
-  ierr = MatFactorInfoInitialize(&dir->info);CHKERRQ(ierr);
-  dir->fact                  = 0;
+  ierr = MatFactorInfoInitialize(&((PC_Factor*)dir)->info);CHKERRQ(ierr);
+  ((PC_Factor*)dir)->fact                  = 0;
   dir->inplace               = PETSC_FALSE;
   dir->nonzerosalongdiagonal = PETSC_FALSE;
 
-  dir->info.fill           = 5.0;
-  dir->info.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
-  dir->info.shiftnz        = 0.0;
-  dir->info.zeropivot      = 1.e-12;
-  dir->info.pivotinblocks  = 1.0;
-  dir->info.shiftpd        = 0.0; /* false */
+  ((PC_Factor*)dir)->info.fill           = 5.0;
+  ((PC_Factor*)dir)->info.dtcol          = 1.e-6; /* default to pivoting; this is only thing PETSc LU supports */
+  ((PC_Factor*)dir)->info.shiftnz        = 0.0;
+  ((PC_Factor*)dir)->info.zeropivot      = 1.e-12;
+  ((PC_Factor*)dir)->info.pivotinblocks  = 1.0;
+  ((PC_Factor*)dir)->info.shiftpd        = 0.0; /* false */
   dir->col                 = 0;
   dir->row                 = 0;
 
-  ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&dir->solvertype);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(MAT_SOLVER_PETSC,&((PC_Factor*)dir)->solvertype);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERING_ND,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   } else {
-    ierr = PetscStrallocpy(MATORDERING_NATURAL,&dir->ordering);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(MATORDERING_NATURAL,&((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
   }
   dir->reusefill        = PETSC_FALSE;
   dir->reuseordering    = PETSC_FALSE;

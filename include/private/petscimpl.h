@@ -43,41 +43,6 @@ typedef struct {
    PetscErrorCode (*publish)(PetscObject);
 } PetscOps;
 
-#define PETSCHEADERBASE						\
-  PetscCookie    cookie;                                        \
-  PetscOps       *bops;                                         \
-  MPI_Comm       comm;                                          \
-  PetscInt       type;                                          \
-  PetscLogDouble flops,time,mem;                                \
-  PetscInt       id;                                            \
-  PetscInt       refct;                                         \
-  PetscMPIInt    tag;                                           \
-  PetscFList     qlist;                                         \
-  PetscOList     olist;                                         \
-  char           *class_name;                                   \
-  char           *type_name;                                    \
-  PetscObject    parent;                                        \
-  PetscInt       parentid;                                      \
-  char*          name;                                          \
-  char           *prefix;                                       \
-  PetscInt       tablevel;                                      \
-  void           *cpp;                                          \
-  PetscInt       amem;                                          \
-  PetscInt       state;                                         \
-  PetscInt       int_idmax,        intstar_idmax;               \
-  PetscInt       *intcomposedstate,*intstarcomposedstate;       \
-  PetscInt       *intcomposeddata, **intstarcomposeddata;       \
-  PetscInt       real_idmax,        realstar_idmax;             \
-  PetscInt       *realcomposedstate,*realstarcomposedstate;     \
-  PetscReal      *realcomposeddata, **realstarcomposeddata;     \
-  PetscInt       scalar_idmax,        scalarstar_idmax;         \
-  PetscInt       *scalarcomposedstate,*scalarstarcomposedstate; \
-  PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata; \
-  void           (**fortran_func_pointers)(void);               \
-  void           *python_context;                               \
-  PetscErrorCode (*python_destroy)(void*)
-  /*  ... */                               
-
 /*
    All PETSc objects begin with the fields defined in PETSCHEADER.
    The PetscObject is a way of examining these fields regardless of 
@@ -85,7 +50,38 @@ typedef struct {
    from which all objects are derived.
 */
 typedef struct _p_PetscObject {
-  PETSCHEADERBASE;
+  PetscCookie    cookie;                                        
+  PetscOps       *bops;                                         
+  MPI_Comm       comm;                                          
+  PetscInt       type;                                          
+  PetscLogDouble flops,time,mem;                                
+  PetscInt       id;                                            
+  PetscInt       refct;                                         
+  PetscMPIInt    tag;                                           
+  PetscFList     qlist;                                         
+  PetscOList     olist;                                         
+  char           *class_name;                                   
+  char           *type_name;                                    
+  PetscObject    parent;                                        
+  PetscInt       parentid;                                      
+  char*          name;                                          
+  char           *prefix;                                       
+  PetscInt       tablevel;                                      
+  void           *cpp;                                          
+  PetscInt       amem;                                          
+  PetscInt       state;                                         
+  PetscInt       int_idmax,        intstar_idmax;               
+  PetscInt       *intcomposedstate,*intstarcomposedstate;       
+  PetscInt       *intcomposeddata, **intstarcomposeddata;       
+  PetscInt       real_idmax,        realstar_idmax;             
+  PetscInt       *realcomposedstate,*realstarcomposedstate;     
+  PetscReal      *realcomposeddata, **realstarcomposeddata;     
+  PetscInt       scalar_idmax,        scalarstar_idmax;         
+  PetscInt       *scalarcomposedstate,*scalarstarcomposedstate; 
+  PetscScalar    *scalarcomposeddata, **scalarstarcomposeddata; 
+  void           (**fortran_func_pointers)(void);                  /* used by Fortran interface functions to stash user provided Fortran functions */
+  void           *python_context;                               
+  PetscErrorCode (*python_destroy)(void*);
 } _p_PetscObject;
 
 #define PETSCHEADER(ObjectOps) \

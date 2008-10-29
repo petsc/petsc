@@ -1,15 +1,13 @@
 
-#include "private/pcimpl.h"          
-
 #if !defined(__ICC_H)
 #define __ICC_H
+
+#include "src/ksp/pc/impls/factor/factor.h"
 
 /* Incomplete Cholesky factorization context */
 
 typedef struct {
-  Mat             fact;
-  MatOrderingType ordering;
-  MatFactorInfo   info;
+  PC_Factor       hdr;
   PetscReal       actualfill;
   void            *implctx;
 } PC_ICC;

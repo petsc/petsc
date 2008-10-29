@@ -41,7 +41,8 @@ configure_options = [
   '--sizeof_double=8',
   '--bits_per_byte=8',
   '--sizeof_MPI_Comm=4',
-  '--sizeof_MPI_Fint=4'
+  '--sizeof_MPI_Fint=4',
+  '--have-mpi-long-double=1',
   ]
 
 if __name__ == '__main__':

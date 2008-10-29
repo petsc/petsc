@@ -29,6 +29,7 @@ configure_options = [
   '--with-endian=big',
   '--bits_per_byte=8',
   '--sizeof_MPI_Fint=4',
+  '--have-mpi-long-double=1',
   '--sizeof_long_long=8',
   '--sizeof_float=4',
   '--sizeof_short=2'
