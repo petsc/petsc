@@ -6,7 +6,7 @@ configure_options = [
   '--with-fc=mpixlf77_r -qnosave',
 
   '--with-mpi-dir=/bgsys/drivers/ppcfloor/comm',  # required by BLACS to get mpif.h
-  '--with-blas-lapack-lib=[/soft/apps/blas-lapack-lib/liblapack_bgp.a,libgoto.a]',
+  '--with-blas-lapack-lib=-L/soft/apps/LAPACK -llapack_bgp -L/soft/apps/LIBGOTO -lgoto',
   '--with-x=0',
 
   '--with-is-color-value-type=short',
@@ -35,6 +35,7 @@ configure_options = [
   '--bits_per_byte=8',
   '--sizeof_MPI_Comm=4',
   '--sizeof_MPI_Fint=4',
+  '--have-mpi-long-double=1',
 
   '--download-hypre=1',
   '--download-plapack=1',

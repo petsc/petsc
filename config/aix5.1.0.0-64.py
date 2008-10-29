@@ -21,6 +21,7 @@ configure_options = [
   '--bits_per_byte=8',
   '--sizeof_MPI_Comm=8',
   '--sizeof_MPI_Fint=4',
+  '--have-mpi-long-double=1',
   '--with-f90-interface=rs6000',
   '--with-cc=mpcc -q64',
   '--with-fc=mpxlf -q64',

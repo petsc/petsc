@@ -75,7 +75,7 @@ PetscErrorCode MatDestroy_LRC(Mat N)
 
    Level: intermediate
 
-   Notes: The matrix A + U*V' formed! Rather the new matrix
+   Notes: The matrix A + U*V' is not formed! Rather the new matrix
           object performs the matrix-vector product by first multiplying by
           A and then adding the other term
 @*/

@@ -50,6 +50,7 @@ configure_options = [
   '--bits_per_byte=8',
   '--sizeof_MPI_Comm=4',
   '--sizeof_MPI_Fint=4',
+  '--have-mpi-long-double=1',
   '--sizeof_size_t=8',  
   '--with-debugging=0',
   'COPTFLAGS=-fastsse -O3 -Munroll=c:4 -tp k8-64',

@@ -43,7 +43,7 @@ class Configure(PETSc.package.Package):
     else:
       g.write('ORDERINGSC = -Dmetis -Dpord\n')
     if self.compilers.FortranDefineCompilerOption:
-      g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'metis'+' -Dpord\n')
+      g.write('ORDERINGSF = '+self.compilers.FortranDefineCompilerOption+'metis'+' '+self.compilers.FortranDefineCompilerOption+'pord\n')
     else:
       raise RuntimeError('Fortran compiler cannot handle preprocessing directives from command line.')     
     g.write('LORDERINGS = $(LMETIS) $(LPORD) $(LSCOTCH)\n')
