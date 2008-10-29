@@ -27,6 +27,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListGetPathAndFunction(const char name[],ch
   PetscFunctionReturn(0);
 }
 
+/*
+    This is the default list used by PETSc with the PetscDLLibrary register routines
+*/
+PetscDLLibrary DLLibrariesLoaded = 0;
+
+
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 
 #undef __FUNCT__  
@@ -53,6 +59,8 @@ static PetscErrorCode PETSC_DLLEXPORT PetscLoadDynamicLibrary(const char *name,P
   PetscFunctionReturn(0);
 }
 
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitialize_DynamicLibraries"
 /*
@@ -64,8 +72,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
   char           *libname[32];
   PetscErrorCode ierr;
   PetscInt       nmax,i;
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
   PetscTruth     found;
-
+#endif
   PetscFunctionBegin;
 
   nmax = 32;
@@ -75,6 +84,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
+#if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
+  /*
+      This just initializes the most basic PETSc stuff.
+
+    The classes, from PetscDraw to PetscTS, are initialized the first
+    time an XXCreate() is called.
+  */
+  ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#else
   ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);
   if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
   ierr = PetscLoadDynamicLibrary("vec",&found);CHKERRQ(ierr);
@@ -92,6 +110,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
 
   ierr = PetscLoadDynamicLibrary("mesh",&found);CHKERRQ(ierr);
   ierr = PetscLoadDynamicLibrary("contrib",&found);CHKERRQ(ierr);
+#endif
 
   nmax = 32;
   ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
@@ -100,29 +119,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
     ierr = PetscDLLibraryCCAAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
+
   PetscFunctionReturn(0);
 }
-
-#else /* not using dynamic libraries */
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscInitalize_DynamicLibraries"
-PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /*
-      This just initializes the most basic PETSc stuff.
-
-    The classes, from PetscDraw to PetscTS, are initialized the first
-    time an XXCreate() is called.
-  */
-  ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFinalize_DynamicLibraries"
@@ -137,7 +136,7 @@ PetscErrorCode PetscFinalize_DynamicLibraries(void)
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL,"-dll_view",&flg);CHKERRQ(ierr);
   if (flg) { ierr = PetscDLLibraryPrintPath(DLLibrariesLoaded);CHKERRQ(ierr); }
-  ierr = PetscDLLibraryClose(DLLibrariesLoaded);CHKERRQ(ierr);
+  ierr = PetscDLLibraryClose(&DLLibrariesLoaded);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

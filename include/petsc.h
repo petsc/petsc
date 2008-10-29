@@ -1384,10 +1384,10 @@ extern PETSC_DLLEXPORT PetscDLLibrary DLLibrariesLoaded;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm,PetscDLLibrary *,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm,PetscDLLibrary *,const char[],const char[],void **);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(PetscDLLibrary);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm,const char[],char *,size_t,PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm,const char[],PetscDLLibrary *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm,PetscDLLibrary *,const char[]);
 
 /*

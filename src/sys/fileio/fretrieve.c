@@ -364,7 +364,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char libnam
   int               i;
   PetscMPIInt       rank;
   size_t            len = 0;
-  PetscTruth        flg1,flg2,sharedtmp,exists;
+  PetscTruth        flg1,flg2,flg3,sharedtmp,exists;
 
   PetscFunctionBegin;
   *found = PETSC_FALSE;
@@ -375,7 +375,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char libnam
 
   ierr = PetscStrncmp(libname,"ftp://",6,&flg1);CHKERRQ(ierr);
   ierr = PetscStrncmp(libname,"http://",7,&flg2);CHKERRQ(ierr);
-  if (!flg1 && !flg2 && (!par || len != 3)) {
+  ierr = PetscStrncmp(libname,"file://",7,&flg3);CHKERRQ(ierr);
+  if (!flg1 && !flg2 && !flg3 && (!par || len != 3)) {
     ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
     ierr = PetscTestFile(libname,'r',found);CHKERRQ(ierr);
     if (*found) {

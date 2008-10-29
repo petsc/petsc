@@ -8,12 +8,6 @@
 #include "petscsys.h"
 #include "src/sys/dll/dlimpl.h"
 
-/*
-   Contains the list of registered CCA components
-*/
-PetscFList CCAList = 0;
-
-
 /* ------------------------------------------------------------------------------*/
 /*
       Code to maintain a list of opened dynamic libraries and load symbols
@@ -23,12 +17,6 @@ struct _n_PetscDLLibrary {
   PetscDLHandle  handle;
   char           libname[PETSC_MAX_PATH_LEN];
 };
-
-/*
-    This is the list used by the PetscDLLibrary register routines
-*/
-PetscDLLibrary DLLibrariesLoaded = 0;
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryPrintPath"
@@ -69,7 +57,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
 {
   char           *buf,*par2,suffix[16],*gz,*so;
   size_t         len;
-  PetscTruth     match;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -83,14 +70,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
   par2 = buf;
   ierr = PetscStrreplace(comm,libname,par2,len);CHKERRQ(ierr);
 
-  /* remove any file: header */
-  ierr = PetscStrncmp(par2,"file:",5,&match);CHKERRQ(ierr);
-  if (match) { par2 = par2 + 5; }
-
-  /* strip out .a from it if user put it in by mistake */
-  ierr = PetscStrlen(par2,&len);CHKERRQ(ierr);
-  if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
-
   /* temporarily remove .gz if it ends library name */
   ierr = PetscStrrstr(par2,".gz",&gz);CHKERRQ(ierr);
   if (gz) {
@@ -98,6 +77,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
     if (len != 3) gz  = 0; /* do not end (exactly) with .gz */
     else          *gz = 0; /* ends with .gz, so remove it   */
   }
+  /* strip out .a from it if user put it in by mistake */
+  ierr = PetscStrlen(par2,&len);CHKERRQ(ierr);
+  if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
+
 
   /* see if library name does already not have suffix attached */
   ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
@@ -166,10 +149,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char path[
   if (!foundlibrary) SETERRQ2(PETSC_ERR_FILE_OPEN,"Dynamic library is not executable:\n  %s\n  %s\n",path,par2);
 #endif
 
-  /* copy path and remove suffix from libname */
+  /* copy path and setup shared library suffix  */
   ierr = PetscStrncpy(libname,path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
   ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
+  /* remove wrong suffixes from libname */
+  ierr = PetscStrrstr(libname,".gz",&s);CHKERRQ(ierr);
+  if (s && s[3] == 0) s[0] = 0;
+  ierr = PetscStrrstr(libname,".a",&s);CHKERRQ(ierr);
+  if (s && s[2] == 0) s[0] = 0;
+  /* remove shared suffix from libname */
   ierr = PetscStrrstr(libname,suffix,&s);CHKERRQ(ierr);
   if (s) s[0] = 0;
 
@@ -498,27 +487,45 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrar
     Collective on PetscDLLibrary
 
     Input Parameter:
-.     next - library list
+.     head - library list
 
      Level: developer
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary next)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary *list)
 {
-  PetscDLLibrary prev;
+  PetscTruth     done = PETSC_FALSE;
+  PetscDLLibrary head,prev,tail;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  while (next) {
-    prev = next;
-    next = next->next;
-    /* close the dynamic library */
-    ierr = PetscDLClose(&prev->handle);CHKERRQ(ierr);
-    /* free the space in the prev data-structure */
-    ierr = PetscFree(prev);CHKERRQ(ierr);
-  }
+  PetscValidPointer(list,1);
+  head = *list;
+  if (!head) PetscFunctionReturn(0);
+  /* traverse the list in reverse order */
+  while (!done) {
+    if (!head->next) done = PETSC_TRUE;
+    prev = tail = head;
+    while (tail->next) {
+      prev = tail;
+      tail = tail->next;
+    }
+    prev->next = 0;
+    /* close the dynamic library and free the space in entry data-structure*/
+    ierr = PetscInfo1(0,"Closing dynamic library %s\n",tail->libname);CHKERRQ(ierr);
+    ierr = PetscDLClose(&tail->handle);CHKERRQ(ierr);
+    ierr = PetscFree(tail);CHKERRQ(ierr);
+  };
+  *list = 0;
   PetscFunctionReturn(0);
 }
+
+/* ------------------------------------------------------------------------------*/
+
+/*
+   Contains the list of registered CCA components
+*/
+PetscFList CCAList = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryCCAAppend"
