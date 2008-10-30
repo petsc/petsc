@@ -1,6 +1,6 @@
   0 SNES Function norm 222.222 
     0 KSP Residual norm 222.222 
-        0 KSP Residual norm 0.435314 
+        0 KSP Residual norm 0.435315 
         1 KSP Residual norm 0.0222212 
         2 KSP Residual norm 0.00174918 
         3 KSP Residual norm 4.01496e-05 
@@ -27,7 +27,7 @@
         4 KSP Residual norm 0.00388317 
         5 KSP Residual norm 0.000191972 
       3 KSP Residual norm 1.31693e-05 
-        0 KSP Residual norm 4.6259 
+        0 KSP Residual norm 4.62589 
         1 KSP Residual norm 0.225038 
         2 KSP Residual norm 0.0310319 
         3 KSP Residual norm 0.00303309 
@@ -35,12 +35,12 @@
         5 KSP Residual norm 2.10475e-05 
       4 KSP Residual norm 5.34342e-07 
         0 KSP Residual norm 34.1266 
-        1 KSP Residual norm 2.97909 
+        1 KSP Residual norm 2.9791 
         2 KSP Residual norm 0.391728 
         3 KSP Residual norm 0.0500956 
         4 KSP Residual norm 0.00431574 
         5 KSP Residual norm 0.00028847 
-      5 KSP Residual norm 7.88297e-09 
+      5 KSP Residual norm 7.88295e-09 
         0 KSP Residual norm 0.43791 
         1 KSP Residual norm 0.0243428 
         2 KSP Residual norm 0.00191276 
@@ -52,7 +52,7 @@
         2 KSP Residual norm 0.00562557 
         3 KSP Residual norm 0.000159455 
         4 KSP Residual norm 5.53784e-06 
-        5 KSP Residual norm 6.75e-07 
+        5 KSP Residual norm 6.74999e-07 
       0 KSP Residual norm 0.0054201 
         0 KSP Residual norm 28.5821 
         1 KSP Residual norm 2.15988 
@@ -68,10 +68,10 @@
         4 KSP Residual norm 0.00208604 
         5 KSP Residual norm 0.000117641 
       2 KSP Residual norm 0.000183891 
-        0 KSP Residual norm 17.0771 
+        0 KSP Residual norm 17.0772 
         1 KSP Residual norm 1.89193 
         2 KSP Residual norm 0.218344 
-        3 KSP Residual norm 0.029721 
+        3 KSP Residual norm 0.0297211 
         4 KSP Residual norm 0.00243267 
         5 KSP Residual norm 0.000181764 
         6 KSP Residual norm 1.39223e-05 
@@ -79,33 +79,33 @@
         0 KSP Residual norm 17.0853 
         1 KSP Residual norm 1.82479 
         2 KSP Residual norm 0.15243 
-        3 KSP Residual norm 0.0242956 
+        3 KSP Residual norm 0.0242955 
         4 KSP Residual norm 0.00154713 
-        5 KSP Residual norm 9.91989e-05 
-      4 KSP Residual norm 8.5221e-07 
+        5 KSP Residual norm 9.9199e-05 
+      4 KSP Residual norm 8.52211e-07 
         0 KSP Residual norm 24.4937 
-        1 KSP Residual norm 1.85046 
+        1 KSP Residual norm 1.85045 
         2 KSP Residual norm 0.217629 
         3 KSP Residual norm 0.0299214 
-        4 KSP Residual norm 0.00264841 
-        5 KSP Residual norm 0.000275271 
-        6 KSP Residual norm 2.14409e-05 
-      5 KSP Residual norm 8.01063e-08 
+        4 KSP Residual norm 0.0026484 
+        5 KSP Residual norm 0.000275273 
+        6 KSP Residual norm 2.1441e-05 
+      5 KSP Residual norm 8.01064e-08 
         0 KSP Residual norm 18.1952 
-        1 KSP Residual norm 2.00065 
+        1 KSP Residual norm 2.00066 
         2 KSP Residual norm 0.252679 
         3 KSP Residual norm 0.0316818 
-        4 KSP Residual norm 0.00284118 
+        4 KSP Residual norm 0.00284119 
         5 KSP Residual norm 0.000219892 
-        6 KSP Residual norm 1.8002e-05 
+        6 KSP Residual norm 1.80021e-05 
       6 KSP Residual norm 1.963e-10 
         0 KSP Residual norm 0.337599 
-        1 KSP Residual norm 0.0512825 
+        1 KSP Residual norm 0.0512824 
         2 KSP Residual norm 0.00666129 
         3 KSP Residual norm 0.000358389 
-        4 KSP Residual norm 3.34702e-05 
+        4 KSP Residual norm 3.34701e-05 
         5 KSP Residual norm 4.21162e-06 
-        6 KSP Residual norm 1.69702e-07 
+        6 KSP Residual norm 1.69701e-07 
     2 KSP Residual norm 1.46286e-09 
   1 SNES Function norm 86.4218 
     0 KSP Residual norm 86.4218 
@@ -143,7 +143,7 @@
         0 KSP Residual norm 10.6233 
         1 KSP Residual norm 0.610546 
         2 KSP Residual norm 0.0581012 
-        3 KSP Residual norm 0.00633963 
+        3 KSP Residual norm 0.00633962 
         4 KSP Residual norm 0.00188577 
         5 KSP Residual norm 7.16148e-05 
       4 KSP Residual norm 8.69103e-07 
@@ -171,7 +171,7 @@
         3 KSP Residual norm 0.000140055 
         4 KSP Residual norm 2.13656e-05 
         5 KSP Residual norm 4.67554e-06 
-        6 KSP Residual norm 6.85011e-07 
+        6 KSP Residual norm 6.8501e-07 
       0 KSP Residual norm 0.00760324 
         0 KSP Residual norm 9.03542 
         1 KSP Residual norm 0.745635 
@@ -202,14 +202,14 @@
         3 KSP Residual norm 0.013399 
         4 KSP Residual norm 0.00104624 
         5 KSP Residual norm 3.8476e-05 
-      4 KSP Residual norm 1.11804e-07 
+      4 KSP Residual norm 1.11805e-07 
         0 KSP Residual norm 13.8458 
         1 KSP Residual norm 1.15861 
         2 KSP Residual norm 0.107812 
         3 KSP Residual norm 0.0262767 
         4 KSP Residual norm 0.002756 
         5 KSP Residual norm 0.000144881 
-        6 KSP Residual norm 8.68168e-06 
+        6 KSP Residual norm 8.68169e-06 
       5 KSP Residual norm < 1.e-11
         0 KSP Residual norm 0.338542 
         1 KSP Residual norm 0.0216275 
@@ -232,7 +232,7 @@
         0 KSP Residual norm 10.4415 
         1 KSP Residual norm 0.776282 
         2 KSP Residual norm 0.0735525 
-        3 KSP Residual norm 0.00971697 
+        3 KSP Residual norm 0.00971698 
         4 KSP Residual norm 0.00123551 
         5 KSP Residual norm 0.000318277 
         6 KSP Residual norm 3.47446e-05 
@@ -240,7 +240,7 @@
         0 KSP Residual norm 19.1038 
         1 KSP Residual norm 0.519157 
         2 KSP Residual norm 0.102087 
-        3 KSP Residual norm 0.0114365 
+        3 KSP Residual norm 0.0114366 
         4 KSP Residual norm 0.000834073 
         5 KSP Residual norm 7.83707e-05 
       2 KSP Residual norm 0.000234861 
@@ -248,7 +248,7 @@
         1 KSP Residual norm 2.42042 
         2 KSP Residual norm 0.271088 
         3 KSP Residual norm 0.0683434 
-        4 KSP Residual norm 0.00681946 
+        4 KSP Residual norm 0.00681945 
         5 KSP Residual norm 0.000267809 
         6 KSP Residual norm 3.87188e-05 
       3 KSP Residual norm 6.05079e-05 
@@ -256,7 +256,7 @@
         1 KSP Residual norm 0.866368 
         2 KSP Residual norm 0.0707331 
         3 KSP Residual norm 0.0160483 
-        4 KSP Residual norm 0.00148414 
+        4 KSP Residual norm 0.00148415 
         5 KSP Residual norm 5.0636e-05 
       4 KSP Residual norm 3.63881e-06 
         0 KSP Residual norm 6.87569 
@@ -274,8 +274,8 @@
         4 KSP Residual norm 3.76354e-05 
         5 KSP Residual norm 7.816e-06 
         6 KSP Residual norm 1.12883e-06 
-    1 KSP Residual norm 8.45117e-08 
-  4 SNES Function norm 4.05803e-07 
+    1 KSP Residual norm 8.45118e-08 
+  4 SNES Function norm 4.05792e-07 
 SNES Object:
   type: ls
     line search variant: SNESLineSearchCubic
@@ -318,6 +318,7 @@ SNES Object:
                  Factored matrix follows
                 Matrix Object:
                   type=seqaij, rows=48, cols=48
+                  package used to perform factorization: petsc
                   total: nonzeros=576, allocated nonzeros=576
                     using I-node routines: found 16 nodes, limit used is 5
           linear system matrix = precond matrix:
@@ -346,6 +347,7 @@ SNES Object:
                  Factored matrix follows
                 Matrix Object:
                   type=seqaij, rows=16, cols=16
+                  package used to perform factorization: petsc
                   total: nonzeros=64, allocated nonzeros=64
                     not using I-node routines
           linear system matrix followed by preconditioner matrix:

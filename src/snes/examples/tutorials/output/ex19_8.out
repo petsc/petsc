@@ -1,10 +1,10 @@
 lid velocity = 0.0204082, prandtl # = 1, grashof # = 1
   0 SNES Function norm 0.146194 
-  0 KSP Residual norm 0.146194 
-  1 KSP Residual norm < 1.e-11
+    0 KSP Residual norm 0.146194 
+    1 KSP Residual norm < 1.e-11
   1 SNES Function norm 2.50702e-05 
-  0 KSP Residual norm 2.50702e-05 
-  1 KSP Residual norm < 1.e-11
+    0 KSP Residual norm 2.50702e-05 
+    1 KSP Residual norm < 1.e-11
   2 SNES Function norm < 1.e-11
 SNES Object:
   type: ls
@@ -40,6 +40,7 @@ SNES Object:
                Factored matrix follows
               Matrix Object:
                 type=seqaij, rows=196, cols=196
+                package used to perform factorization: petsc
                 total: nonzeros=8880, allocated nonzeros=8880
                   using I-node routines: found 49 nodes, limit used is 5
         linear system matrix = precond matrix:
@@ -62,6 +63,7 @@ SNES Object:
                Factored matrix follows
               Matrix Object:
                 type=seqaij, rows=196, cols=196
+                package used to perform factorization: petsc
                 total: nonzeros=8880, allocated nonzeros=8880
                   using I-node routines: found 49 nodes, limit used is 5
         linear system matrix = precond matrix:

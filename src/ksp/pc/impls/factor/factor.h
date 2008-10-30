@@ -13,4 +13,20 @@ typedef struct {
   MatSolverPackage  solvertype;
 } PC_Factor;
 
+EXTERN_C_BEGIN
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_Factor(PC,PetscReal);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero_Factor(PC,PetscReal);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_Factor(PC,PetscTruth);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance_Factor(PC,PetscReal,PetscReal,PetscInt);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill_Factor(PC,PetscReal);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Factor(PC,const MatOrderingType);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels_Factor(PC,PetscInt);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetAllowDiagonalFill_Factor(PC);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks_Factor(PC,PetscTruth);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftInBlocks_Factor(PC,PetscReal);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix_Factor(PC,Mat*);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC,const MatSolverPackage);
+extern PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivoting_Factor(PC,PetscReal);
+EXTERN_C_END
+
 #endif

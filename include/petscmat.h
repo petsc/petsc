@@ -1084,6 +1084,7 @@ typedef struct {
   PetscReal     shiftnz;        /* scaling of identity added to matrix to prevent zero pivots */
   PetscReal     shiftpd;        /* if true, shift until positive pivots */
   PetscReal     diagonal_fill;  /* force diagonal to fill in if initially not filled */
+  PetscReal     usedt;
   PetscReal     dt;             /* drop tolerance */
   PetscReal     dtcol;          /* tolerance for pivoting */
   PetscReal     dtcount;        /* maximum nonzeros to be allowed per row */
