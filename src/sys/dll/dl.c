@@ -109,10 +109,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
 
    Input Parameters:
 +   comm - processors that are opening the library
--   libname - name of the library, can be relative or absolute
+-   path - name of the library, can be relative or absolute
 
    Output Parameter:
-.   handle - library handle 
+.   entry - a PETSc dynamic link library entry
 
    Level: developer
 
@@ -203,7 +203,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char path[
 
    Input Parameter:
 +  comm - communicator that will open the library
-.  inlist - list of already open libraries that may contain symbol (checks here before path)
+.  outlist - list of already open libraries that may contain symbol (checks here before path)
 .  path     - optional complete library name
 -  insymbol - name of symbol
 
@@ -311,7 +311,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *o
 
      Input Parameters:
 +     comm - MPI communicator
--     libname - name of the library
+-     path - name of the library
 
      Output Parameter:
 .     outlist - list of libraries
@@ -397,7 +397,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary
 
      Input Parameters:
 +     comm - MPI communicator
--     libname - name of the library
+-     path - name of the library
 
      Output Parameter:
 .     outlist - list of libraries
@@ -492,20 +492,18 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrar
      Level: developer
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary *list)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary list)
 {
   PetscTruth     done = PETSC_FALSE;
-  PetscDLLibrary head,prev,tail;
+  PetscDLLibrary prev,tail;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(list,1);
-  head = *list;
-  if (!head) PetscFunctionReturn(0);
+  if (!list) PetscFunctionReturn(0);
   /* traverse the list in reverse order */
   while (!done) {
-    if (!head->next) done = PETSC_TRUE;
-    prev = tail = head;
+    if (!list->next) done = PETSC_TRUE;
+    prev = tail = list;
     while (tail->next) {
       prev = tail;
       tail = tail->next;
@@ -516,7 +514,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary *list)
     ierr = PetscDLClose(&tail->handle);CHKERRQ(ierr);
     ierr = PetscFree(tail);CHKERRQ(ierr);
   };
-  *list = 0;
   PetscFunctionReturn(0);
 }
 
@@ -537,7 +534,7 @@ PetscFList CCAList = 0;
 
      Input Parameters:
 +     comm - MPI communicator
--     libname - name of directory to check
+-     dirname - name of directory to check
 
      Output Parameter:
 .     outlist - list of libraries
