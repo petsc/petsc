@@ -5,11 +5,13 @@
 typedef struct _Mat_CompositeLink *Mat_CompositeLink;
 struct _Mat_CompositeLink {
   Mat               mat;
-  Mat_CompositeLink next;
+  Vec               work;
+  Mat_CompositeLink next,prev;
 };
   
 typedef struct {
-  Mat_CompositeLink head;
+  MatCompositeType  type;
+  Mat_CompositeLink head,tail;
   Vec               work;
 } Mat_Composite;
 
@@ -19,16 +21,71 @@ PetscErrorCode MatDestroy_Composite(Mat mat)
 {
   PetscErrorCode   ierr;
   Mat_Composite    *shell = (Mat_Composite*)mat->data;
-  Mat_CompositeLink next = shell->head;
+  Mat_CompositeLink next = shell->head,oldnext;
 
   PetscFunctionBegin;
   while (next) {
     ierr = MatDestroy(next->mat);CHKERRQ(ierr);
-    next = next->next;
+    if (next->work && (!next->next || next->work != next->next->work)) {
+      ierr = VecDestroy(next->work);CHKERRQ(ierr);
+    }
+    oldnext = next;
+    next     = next->next;
+    ierr     = PetscFree(oldnext);CHKERRQ(ierr);
   }
   if (shell->work) {ierr = VecDestroy(shell->work);CHKERRQ(ierr);}
   ierr      = PetscFree(shell);CHKERRQ(ierr);
   mat->data = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_Composite_Multiplicative"
+PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
+{
+  Mat_Composite     *shell = (Mat_Composite*)A->data;  
+  Mat_CompositeLink next = shell->head;
+  PetscErrorCode    ierr;
+  Vec               in,out;
+
+  PetscFunctionBegin;
+  if (!next) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  in = x;
+  while (next->next) {
+    if (!next->work) { /* should reuse previous work if the same size */
+      ierr = MatGetVecs(next->mat,PETSC_NULL,&next->work);CHKERRQ(ierr);
+    }
+    out = next->work;
+    ierr = MatMult(next->mat,in,out);CHKERRQ(ierr);
+    in   = out;
+    next = next->next;
+  }
+  ierr = MatMult(next->mat,in,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTranspose_Composite_Multiplicative"
+PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
+{
+  Mat_Composite     *shell = (Mat_Composite*)A->data;  
+  Mat_CompositeLink tail = shell->tail;
+  PetscErrorCode    ierr;
+  Vec               in,out;
+
+  PetscFunctionBegin;
+  if (!tail) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  in = x;
+  while (tail->prev) {
+    if (!tail->prev->work) { /* should reuse previous work if the same size */
+      ierr = MatGetVecs(tail->mat,PETSC_NULL,&tail->prev->work);CHKERRQ(ierr);
+    }
+    out = tail->prev->work;
+    ierr = MatMultTranspose(tail->mat,in,out);CHKERRQ(ierr);
+    in   = out;
+    tail = tail->prev;
+  }
+  ierr = MatMultTranspose(tail->mat,in,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -204,11 +261,13 @@ static struct _MatOps MatOps_Values = {0,
        0};
 
 /*MC
-   MATCOMPOSITE - A matrix defined by the sum of one or more matrices (all matrices are of same size and parallel layout)
+   MATCOMPOSITE - A matrix defined by the sum (or product) of one or more matrices (all matrices are of same size and parallel layout).
+
+   Notes: to use the product of the matrices call MatCompositeSetType(mat,MAT_COMPOSITE_MULTIPLICATIVE);
 
   Level: advanced
 
-.seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeMerge()
+.seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeMerge(), MatCompositeSetType(), MatCompositeType
 M*/
 
 EXTERN_C_BEGIN
@@ -231,6 +290,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Composite(Mat A)
 
   A->assembled     = PETSC_TRUE;
   A->preallocated  = PETSC_FALSE;
+  b->type          = MAT_COMPOSITE_ADDITIVE;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -264,7 +324,9 @@ $       MatCompositeAddMat(mat,mats[nmat-1]);
 $       MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);
 $       MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);
 
-.seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCompositeMerge()
+     For the multiplicative form the product is mat[nmat-1]*mat[nmat-2]*....*mat[0]
+
+.seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCompositeMerge(), MatCompositeSetType(), MatCompositeType
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Mat *mat)
@@ -327,9 +389,55 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
       next = next->next;
     }
     next->next      = ilink;
+    ilink->prev     = next;
+  }
+  shell->tail = ilink;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatCompositeSetType"
+/*@C
+   MatCompositeSetType - Indicates if the matrix is defined as the sum of a set of matrices or the product
+
+  Collective on MPI_Comm
+
+   Input Parameters:
+.  mat - the composite matrix
+
+
+   Level: advanced
+
+   Notes:
+      The MatType of the resulting matrix will be the same as the MatType of the FIRST
+    matrix in the composite matrix.
+
+.seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MATCOMPOSITE
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat mat,MatCompositeType type)
+{
+  Mat_Composite  *b = (Mat_Composite*)mat->data;  
+  PetscTruth     flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)mat,MATCOMPOSITE,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can only use with composite matrix");
+  if (type == MAT_COMPOSITE_MULTIPLICATIVE) {
+    mat->ops->getdiagonal   = 0;
+    mat->ops->mult          = MatMult_Composite_Multiplicative;
+    mat->ops->multtranspose = MatMultTranspose_Composite_Multiplicative;
+    b->type                 = MAT_COMPOSITE_MULTIPLICATIVE;
+  } else {
+    mat->ops->getdiagonal   = MatGetDiagonal_Composite;
+    mat->ops->mult          = MatMult_Composite;
+    mat->ops->multtranspose = MatMultTranspose_Composite;
+    b->type                 = MAT_COMPOSITE_ADDITIVE;
   }
   PetscFunctionReturn(0);
 }
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCompositeMerge"
@@ -358,19 +466,27 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
 PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat mat)
 {
   Mat_Composite     *shell = (Mat_Composite*)mat->data;  
-  Mat_CompositeLink next = shell->head;
+  Mat_CompositeLink next = shell->head, prev = shell->tail;
   PetscErrorCode    ierr;
-  Mat               tmat;
+  Mat               tmat,newmat;
 
   PetscFunctionBegin;
   if (!next) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
 
   PetscFunctionBegin;
-  ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
-  while ((next = next->next)) {
-    ierr = MatAXPY(tmat,1.0,next->mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  if (shell->type == MAT_COMPOSITE_ADDITIVE) {
+    ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
+    while ((next = next->next)) {
+      ierr = MatAXPY(tmat,1.0,next->mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+  } else {
+    ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
+    while ((prev = prev->prev)) {
+      ierr = MatMatMult(tmat,prev->mat,MAT_INITIAL_MATRIX,PETSC_DECIDE,&newmat);CHKERRQ(ierr);
+      ierr = MatDestroy(tmat);CHKERRQ(ierr);
+      tmat = newmat;
+    }
   }
-  ierr = MatDestroy_Composite(mat);CHKERRQ(ierr);
-
+  ierr = MatHeaderReplace(mat,tmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

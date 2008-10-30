@@ -6993,9 +6993,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetBlockSize(*right,mat->rmap->bs);CHKERRQ(ierr);
       if (size > 1) {
         /* New vectors uses Mat cmap and does not create a new one */
-        ierr = PetscMapDestroy((*right)->map);CHKERRQ(ierr);
-        (*right)->map = mat->cmap;
-        mat->cmap->refcnt++;
+	ierr = PetscMapDestroy((*right)->map);CHKERRQ(ierr);
+	(*right)->map = mat->cmap;
+	mat->cmap->refcnt++;
 
         ierr = VecSetType(*right,VECMPI);CHKERRQ(ierr);
       } else {ierr = VecSetType(*right,VECSEQ);CHKERRQ(ierr);}
@@ -7006,9 +7006,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat mat,Vec *right,Vec *left)
       ierr = VecSetBlockSize(*left,mat->rmap->bs);CHKERRQ(ierr);
       if (size > 1) {
         /* New vectors uses Mat rmap and does not create a new one */
-        ierr = PetscMapDestroy((*left)->map);CHKERRQ(ierr);
-        (*left)->map = mat->rmap;
-        mat->rmap->refcnt++;
+	ierr = PetscMapDestroy((*left)->map);CHKERRQ(ierr);
+	(*left)->map = mat->rmap;
+	mat->rmap->refcnt++;
 
         ierr = VecSetType(*left,VECMPI);CHKERRQ(ierr);
       } else {ierr = VecSetType(*left,VECSEQ);CHKERRQ(ierr);}
@@ -7272,7 +7272,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
     PetscValidPointer(*C,5);
     PetscValidHeaderSpecific(*C,MAT_COOKIE,5);
   }
-  if (fill == PETSC_DEFAULT) fill = 2.0;
+  if (fill == PETSC_DEFAULT || fill == PETSC_DECIDE) fill = 2.0;
   if (fill < 1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
