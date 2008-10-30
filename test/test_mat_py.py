@@ -79,7 +79,7 @@ class TestMatrix(unittest.TestCase):
             A.setSizes([N,N])
             A.setType('python')
             OptDB = PETSc.Options(A)
-            OptDB['mat_python'] = ','.join([self.PYMOD,self.PYCLS])
+            OptDB['mat_python'] = '%s.%s' % (self.PYMOD,self.PYCLS)
             A.setFromOptions()
             A.setUp()
             del OptDB['mat_python']

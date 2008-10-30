@@ -126,7 +126,7 @@ class TestPCPYTHON(unittest.TestCase):
         self.pc.prefix = self.PC_PREFIX
         OptDB = PETSc.Options(self.pc)
         assert OptDB.prefix == self.pc.prefix
-        OptDB['pc_python'] = '%s,%s' % (module, factory)
+        OptDB['pc_python'] = '%s.%s' % (module, factory)
         self.pc.setFromOptions()
         del OptDB['pc_python']
         assert PC_PYTHON.log['create'] == 1
