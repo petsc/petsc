@@ -195,7 +195,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC pc,const
   PC_Factor      *lu = (PC_Factor*)pc->data;
 
   PetscFunctionBegin;
-  if (((PC_Factor*)lu)->fact) {
+  if (lu->fact) {
     const MatSolverPackage ltype;
     PetscTruth             flg;
     ierr = MatFactorGetSolverPackage(lu->fact,&ltype);CHKERRQ(ierr);
@@ -206,6 +206,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage_Factor(PC pc,const
   }
   ierr = PetscStrfree(lu->solvertype);CHKERRQ(ierr);
   ierr = PetscStrallocpy(stype,&lu->solvertype);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorGetMatSolverPackage_Factor"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage_Factor(PC pc,const MatSolverPackage *stype)
+{
+  PC_Factor      *lu = (PC_Factor*)pc->data;
+
+  PetscFunctionBegin;
+  *stype = lu->solvertype;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
