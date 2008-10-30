@@ -303,6 +303,9 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateBlockMat(MPI_Comm,PetscInt,Pet
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat,Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,const Mat*,Mat*);
+typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeType);
+
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat*);
@@ -1081,6 +1084,7 @@ typedef struct {
   PetscReal     shiftnz;        /* scaling of identity added to matrix to prevent zero pivots */
   PetscReal     shiftpd;        /* if true, shift until positive pivots */
   PetscReal     diagonal_fill;  /* force diagonal to fill in if initially not filled */
+  PetscReal     usedt;
   PetscReal     dt;             /* drop tolerance */
   PetscReal     dtcol;          /* tolerance for pivoting */
   PetscReal     dtcount;        /* maximum nonzeros to be allowed per row */

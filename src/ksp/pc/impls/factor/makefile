@@ -3,9 +3,9 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = factor.c
+SOURCEC  = factor.c factimpl.c
 SOURCEH  = factor.h
-OBJSC    = factor.o
+OBJSC    = factor.o factimpl.o
 LIBBASE  = libpetscksp
 DIRS     = lu ilu icc cholesky
 LOCDIR   = src/ksp/pc/impls/factor/

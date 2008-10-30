@@ -40,6 +40,7 @@ SNES Object:
              Factored matrix follows
             Matrix Object:
               type=seqaij, rows=4, cols=4
+              package used to perform factorization: petsc
               total: nonzeros=12, allocated nonzeros=12
                 not using I-node routines
       linear system matrix = precond matrix:

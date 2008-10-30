@@ -353,7 +353,7 @@ runex26:
 	   else echo "Possible problem with ex26_1, diffs above"; fi; \
 	   ${RM} -f ex26_1.tmp
 runex26_2:
-	-@${MPIEXEC} -n 3 ex26 -ksp_monitor_short > ex26_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex26 -ksp_monitor_short > ex26_2.tmp 2>&1; \
 	if (${DIFF} output/ex26_2.out ex26_2.tmp) then true; \
 	   else echo "Possible problem with ex26_2, diffs above"; fi; \
 	   ${RM} -f ex26_2.tmp

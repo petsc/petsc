@@ -2,94 +2,6 @@
 
 #include "src/ksp/pc/impls/factor/icc/icc.h"   /*I "petscpc.h" I*/
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetZeroPivot_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetZeroPivot_ICC(PC pc,PetscReal z)
-{
-  PC_ICC *icc  = (PC_ICC*)pc->data;
-
-  PetscFunctionBegin;
-  ((PC_Factor*)icc)->info.zeropivot = z;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetShiftNonzero_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero_ICC(PC pc,PetscReal shift)
-{
-  PC_ICC *dir  = (PC_ICC*)pc->data;
-
-  PetscFunctionBegin;
-  if (shift == (PetscReal) PETSC_DECIDE) {
-     ((PC_Factor*)dir)->info.shiftnz = 1.e-12;
-  } else {
-     ((PC_Factor*)dir)->info.shiftnz = shift;
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetShiftPd_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftPd_ICC(PC pc,PetscTruth shift)
-{
-  PC_ICC *dir = (PC_ICC*)pc->data;
- 
-  PetscFunctionBegin;
-  if (shift) {
-     ((PC_Factor*)dir)->info.shiftpd = 1.0;
-  } else {
-     ((PC_Factor*)dir)->info.shiftpd = 0.0;
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetMatOrderingType_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_ICC(PC pc,const MatOrderingType ordering)
-{
-  PC_ICC         *dir = (PC_ICC*)pc->data;
-  PetscErrorCode ierr;
- 
-  PetscFunctionBegin;
-  ierr = PetscStrfree(((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ordering,& ((PC_Factor*)dir)->ordering);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetFill_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetFill_ICC(PC pc,PetscReal fill)
-{
-  PC_ICC *dir = (PC_ICC*)pc->data;
-
-  PetscFunctionBegin;
-  ((PC_Factor*)dir)->info.fill = fill;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetLevels_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetLevels_ICC(PC pc,PetscInt levels)
-{
-  PC_ICC *icc = (PC_ICC*)pc->data;
-
-  PetscFunctionBegin;
-   ((PC_Factor*)icc)->info.levels = levels;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetup_ICC"
 static PetscErrorCode PCSetup_ICC(PC pc)
@@ -166,17 +78,6 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   ierr = MatBackwardSolve(((PC_Factor*)icc)->fact,x,y);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCFactorGetMatrix_ICC"
-static PetscErrorCode PCFactorGetMatrix_ICC(PC pc,Mat *mat)
-{
-  PC_ICC *icc = (PC_ICC*)pc->data;
-
-  PetscFunctionBegin;
-  *mat = ((PC_Factor*)icc)->fact;
   PetscFunctionReturn(0);
 }
 
@@ -326,23 +227,25 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
   pc->ops->destroy	       = PCDestroy_ICC;
   pc->ops->setfromoptions      = PCSetFromOptions_ICC;
   pc->ops->view                = PCView_ICC;
-  pc->ops->getfactoredmatrix   = PCFactorGetMatrix_ICC;
+  pc->ops->getfactoredmatrix   = PCFactorGetMatrix_Factor;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ICC;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ICC;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_ICC",
-                    PCFactorSetZeroPivot_ICC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_ICC",
-                    PCFactorSetShiftNonzero_ICC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_ICC",
-                    PCFactorSetShiftPd_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorGetMatSolverPackage_C","PCFactorGetMatSolverPackage_Factor",
+                    PCFactorGetMatSolverPackage_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Factor",
+                    PCFactorSetZeroPivot_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftNonzero_C","PCFactorSetShiftNonzero_Factor",
+                    PCFactorSetShiftNonzero_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetShiftPd_C","PCFactorSetShiftPd_Factor",
+                    PCFactorSetShiftPd_Factor);CHKERRQ(ierr);
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetLevels_C","PCFactorSetLevels_ICC",
-                    PCFactorSetLevels_ICC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_ICC",
-                    PCFactorSetFill_ICC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_ICC",
-                    PCFactorSetMatOrderingType_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetLevels_C","PCFactorSetLevels_Factor",
+                    PCFactorSetLevels_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_Factor",
+                    PCFactorSetFill_Factor);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_Factor",
+                    PCFactorSetMatOrderingType_Factor);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
