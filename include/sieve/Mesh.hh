@@ -7,6 +7,10 @@
 #include <Numbering.hh>
 #endif
 
+#ifndef  included_ALE_INumbering_hh
+#include <INumbering.hh>
+#endif
+
 #ifndef  included_ALE_Field_hh
 #include <Field.hh>
 #endif
@@ -1632,6 +1636,13 @@ namespace ALE {
       section->allocatePoint();
     };
   public: // Restrict/Update closures
+    template<typename Sieve, typename Visitor>
+    void closure1(const Sieve& sieve, const point_type& p, Visitor& v)
+    {
+      v.visitPoint(p, 0);
+      // Cone is guarateed to be ordered correctly
+      sieve.orientedCone(p, v);
+    };
     // Return the values for the closure of this point
     template<typename Section>
     const typename Section::value_type *restrictClosure(const Obj<Section>& section, const point_type& p) {
@@ -1639,7 +1650,7 @@ namespace ALE {
       ISieveVisitor::RestrictVisitor<Section> rV(*section, size, section->getRawArray(size));
 
       if (this->depth() == 1) {
-        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+        closure1(*this->getSieve(), p, rV);
       } else {
         ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, rV, true);
 
@@ -1654,7 +1665,7 @@ namespace ALE {
       ISieveVisitor::RestrictVisitor<Section> rV(*section, size, values);
 
       if (this->depth() == 1) {
-        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, rV);
+        closure1(*this->getSieve(), p, rV);
       } else {
         ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::RestrictVisitor<Section> > pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, rV, true);
 
@@ -1662,13 +1673,21 @@ namespace ALE {
       }
       return rV.getValues();
     };
+    template<typename Visitor>
+    void restrictClosure(const point_type& p, Visitor& v) {
+      if (this->depth() == 1) {
+        closure1(*this->getSieve(), p, v);
+      } else {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, v);
+      }
+    };
     // Replace the values for the closure of this point
     template<typename Section>
     void update(const Obj<Section>& section, const point_type& p, const typename Section::value_type *v) {
       ISieveVisitor::UpdateVisitor<Section> uV(*section, v);
 
       if (this->depth() == 1) {
-        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+        closure1(*this->getSieve(), p, uV);
       } else {
         ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateVisitor<Section> > pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, uV, true);
 
@@ -1681,7 +1700,7 @@ namespace ALE {
       ISieveVisitor::UpdateAllVisitor<Section> uV(*section, v);
 
       if (this->depth() == 1) {
-        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+        closure1(*this->getSieve(), p, uV);
       } else {
         ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAllVisitor<Section> > pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, uV, true);
 
@@ -1694,7 +1713,7 @@ namespace ALE {
       ISieveVisitor::UpdateAddVisitor<Section> uV(*section, v);
 
       if (this->depth() == 1) {
-        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, uV);
+        closure1(*this->getSieve(), p, uV);
       } else {
         ISieveVisitor::PointRetriever<sieve_type,ISieveVisitor::UpdateAddVisitor<Section> > pV((int) pow((double) this->getSieve()->getMaxConeSize(), this->depth())+1, uV, true);
 
