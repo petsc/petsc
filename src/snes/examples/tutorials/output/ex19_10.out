@@ -1,32 +1,32 @@
 lid velocity = 0.0204082, prandtl # = 1, grashof # = 1
   0 SNES Function norm 0.146194 
-  0 KSP Residual norm 0.146194 
-  1 KSP Residual norm 0.0479011 
-  2 KSP Residual norm 0.010778 
-  3 KSP Residual norm 0.00272661 
-  4 KSP Residual norm 0.000690594 
-  5 KSP Residual norm 0.000210687 
-  6 KSP Residual norm 0.000105322 
-  7 KSP Residual norm 6.5975e-05 
-  8 KSP Residual norm 2.80726e-05 
-  9 KSP Residual norm 1.87879e-05 
- 10 KSP Residual norm 8.24594e-06 
- 11 KSP Residual norm 1.72955e-06 
- 12 KSP Residual norm 5.17053e-07 
+    0 KSP Residual norm 0.146194 
+    1 KSP Residual norm 0.0479011 
+    2 KSP Residual norm 0.010778 
+    3 KSP Residual norm 0.00272661 
+    4 KSP Residual norm 0.000690594 
+    5 KSP Residual norm 0.000210687 
+    6 KSP Residual norm 0.000105322 
+    7 KSP Residual norm 6.5975e-05 
+    8 KSP Residual norm 2.80726e-05 
+    9 KSP Residual norm 1.87879e-05 
+   10 KSP Residual norm 8.24594e-06 
+   11 KSP Residual norm 1.72955e-06 
+   12 KSP Residual norm 5.17053e-07 
   1 SNES Function norm 2.5023e-05 
-  0 KSP Residual norm 2.5023e-05 
-  1 KSP Residual norm 5.03001e-06 
-  2 KSP Residual norm 1.40061e-06 
-  3 KSP Residual norm 5.68423e-07 
-  4 KSP Residual norm 1.98909e-07 
-  5 KSP Residual norm 9.6167e-08 
-  6 KSP Residual norm 4.64061e-08 
-  7 KSP Residual norm 9.70043e-09 
-  8 KSP Residual norm 2.76343e-09 
-  9 KSP Residual norm 9.531e-10 
- 10 KSP Residual norm 4.492e-10 
- 11 KSP Residual norm 2.978e-10 
- 12 KSP Residual norm 1.484e-10 
+    0 KSP Residual norm 2.5023e-05 
+    1 KSP Residual norm 5.03001e-06 
+    2 KSP Residual norm 1.40061e-06 
+    3 KSP Residual norm 5.68423e-07 
+    4 KSP Residual norm 1.98909e-07 
+    5 KSP Residual norm 9.6167e-08 
+    6 KSP Residual norm 4.64061e-08 
+    7 KSP Residual norm 9.70043e-09 
+    8 KSP Residual norm 2.76343e-09 
+    9 KSP Residual norm 9.531e-10 
+   10 KSP Residual norm 4.492e-10 
+   11 KSP Residual norm 2.978e-10 
+   12 KSP Residual norm 1.484e-10 
   2 SNES Function norm 1.484e-10 
 SNES Object:
   type: ls
@@ -75,6 +75,7 @@ SNES Object:
                  Factored matrix follows
                 Matrix Object:
                   type=seqaij, rows=21, cols=21
+                  package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
                     not using I-node routines
           linear system matrix = precond matrix:
@@ -115,6 +116,7 @@ SNES Object:
                  Factored matrix follows
                 Matrix Object:
                   type=seqaij, rows=21, cols=21
+                  package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
                     not using I-node routines
           linear system matrix = precond matrix:
@@ -155,6 +157,7 @@ SNES Object:
                  Factored matrix follows
                 Matrix Object:
                   type=seqaij, rows=21, cols=21
+                  package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
                     not using I-node routines
           linear system matrix = precond matrix:
@@ -195,6 +198,7 @@ SNES Object:
                  Factored matrix follows
                 Matrix Object:
                   type=seqaij, rows=21, cols=21
+                  package used to perform factorization: petsc
                   total: nonzeros=85, allocated nonzeros=85
                     not using I-node routines
           linear system matrix = precond matrix:

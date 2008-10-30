@@ -29,6 +29,7 @@ PC Object:
              Factored matrix follows
             Matrix Object:
               type=seqaij, rows=48, cols=48
+              package used to perform factorization: petsc
               total: nonzeros=576, allocated nonzeros=576
                 using I-node routines: found 16 nodes, limit used is 5
       linear system matrix = precond matrix:
@@ -55,6 +56,7 @@ PC Object:
              Factored matrix follows
             Matrix Object:
               type=seqaij, rows=16, cols=16
+              package used to perform factorization: petsc
               total: nonzeros=64, allocated nonzeros=64
                 not using I-node routines
       linear system matrix = precond matrix:
@@ -98,6 +100,7 @@ PC Object:
              Factored matrix follows
             Matrix Object:
               type=seqaij, rows=48, cols=48
+              package used to perform factorization: petsc
               total: nonzeros=576, allocated nonzeros=576
                 using I-node routines: found 16 nodes, limit used is 5
       linear system matrix = precond matrix:
@@ -124,6 +127,7 @@ PC Object:
              Factored matrix follows
             Matrix Object:
               type=seqaij, rows=16, cols=16
+              package used to perform factorization: petsc
               total: nonzeros=64, allocated nonzeros=64
                 not using I-node routines
       linear system matrix = precond matrix:
