@@ -167,6 +167,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapCopy(MPI_Comm comm,PetscMap *in,PetscM
   } else {
     out->range = range;
   }
+  out->refcnt = 0;
   ierr = PetscMemcpy(out->range,in->range,(size+1)*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

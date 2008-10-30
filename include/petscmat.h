@@ -303,6 +303,9 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateBlockMat(MPI_Comm,PetscInt,Pet
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat,Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,const Mat*,Mat*);
+typedef enum {MAT_COMPOSITE_ADDITIVE,MAT_COMPOSITE_MULTIPLICATIVE} MatCompositeType;
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeType);
+
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat*);
