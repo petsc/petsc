@@ -32,7 +32,7 @@ class MyNewton(object):
     def setFromOptions(self, snes):
         OptDB = PETSc.Options(snes)
         self.trace = OptDB.getTruth('trace',self.trace)
-        self._log('setSetFromOptions',snes)
+        self._log('setFromOptions',snes)
 
     def setUp(self, snes):
         self._log('setUp', snes)

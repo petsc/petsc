@@ -26,7 +26,7 @@
 #define PCPYTHON "python"
 
 PETSC_EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreatePython(MPI_Comm,const char*,const char*,PC*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreatePython(MPI_Comm,const char[],PC*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC,void**);
 PETSC_EXTERN_C_END
@@ -105,27 +105,22 @@ static PetscErrorCode PCDestroy_Python(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef  __FUNCT__
 #define __FUNCT__ "PCSetFromOptions_Python"
 static PetscErrorCode PCSetFromOptions_Python(PC pc)
 {
-  char           *modcls[2] = {0, 0};
-  PetscInt       nmax = 2;
+  char           fullname[2*PETSC_MAX_PATH_LEN];
   PetscTruth     flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Python options");CHKERRQ(ierr);
-  ierr = PetscOptionsStringArray("-pc_python","Python module and class/factory",
-				 "PCCreatePython",modcls,&nmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("PC Python options");CHKERRQ(ierr);
+  ierr = PetscOptionsString("-pc_python","Python package.module[.{class|function}]",
+			    "PCCreatePython",0,fullname,sizeof(fullname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg) {
-    if (nmax == 2) {
-      PyObject *self = NULL;
-      ierr = PetscCreatePythonObject(modcls[0],modcls[1],&self);CHKERRQ(ierr);
-      ierr = PCPythonSetContext(pc,self);Py_DecRef(self);CHKERRQ(ierr);
-    }
-    ierr = PetscStrfree(modcls[0]);CHKERRQ(ierr);
-    ierr = PetscStrfree(modcls[1]);CHKERRQ(ierr);
+  if (flg && fullname[0]) {
+    PyObject *self = NULL;
+    ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
+    ierr = PCPythonSetContext(pc,self);Py_DecRef(self);CHKERRQ(ierr);
   }
   PC_PYTHON_CALL_PCARG(pc, "setFromOptions");
   PetscFunctionReturn(0);
@@ -142,20 +137,15 @@ static PetscErrorCode PCView_Python(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (isascii || isstring) {
-    ierr = PetscStrfree(py->module);CHKERRQ(ierr); 
-    ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
-    ierr = PetscPythonGetModuleAndClass(py->self,&py->module,&py->factory);CHKERRQ(ierr);
-  }
   if (isascii) {
     const char* module  = py->module  ? py->module  : "no yet set";
-    const char* factory = py->factory ? py->factory : "no yet set";
+    const char* factory = py->factory ? py->factory : (py->module?"":"no yet set");
     ierr = PetscViewerASCIIPrintf(viewer,"  module:  %s\n",module);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  factory: %s\n",factory);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  class:   %s\n",factory);CHKERRQ(ierr);
   }
   if (isstring) {
     const char* module  = py->module  ? py->module  : "<module>";
-    const char* factory = py->factory ? py->factory : "<factory>";
+    const char* factory = py->factory ? py->factory : "<class>";
     ierr = PetscViewerStringSPrintf(viewer,"%s.%s",module,factory);CHKERRQ(ierr);
   }
   PC_PYTHON_CALL(pc, "view", ("O&O&",
@@ -450,6 +440,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the PC object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
+  ierr = PetscStrfree(py->module);CHKERRQ(ierr); 
+  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
+  ierr = PetscPythonGetModuleAndClass(py->self,&py->module,&py->factory);CHKERRQ(ierr);
   PC_PYTHON_CALL_PCARG(pc, "create");
   if (pc->setupcalled) pc->setupcalled = 1;
 #if (PETSC_VERSION_MAJOR    == 2 && \
@@ -469,9 +462,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
    Collective on MPI_Comm
 
    Input Parameters:
-.  comm - MPI communicator 
-.  modname - module name
-.  clsname - factory/class name
++  comm - MPI communicator 
+-  fullname - full dotted name package.module.function/class
 
    Output Parameter:
 .  pc - location to put the preconditioner context
@@ -483,23 +475,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
 .seealso: PC, PCCreate(), PCSetType(), PCPYTHON
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreatePython(MPI_Comm comm,
-						 const char *modname,
-						 const char *clsname,
+						 const char fullname[],
 						 PC *pc)
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (modname) PetscValidCharPointer(modname,2);
-  if (clsname) PetscValidCharPointer(clsname,3);
+  if (fullname) PetscValidCharPointer(fullname,2);
   /* create the PC context and set its type */
   ierr = PCCreate(comm,pc);CHKERRQ(ierr);
   ierr = PCSetType(*pc,PCPYTHON);CHKERRQ(ierr);
-  if (modname == PETSC_NULL) PetscFunctionReturn(0);
-  if (clsname == PETSC_NULL) PetscFunctionReturn(0);
+  if (fullname == PETSC_NULL) PetscFunctionReturn(0);
   /* create the Python object from module and class/factory  */
-  ierr = PetscCreatePythonObject(modname,clsname,&self);CHKERRQ(ierr);
+  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
   /* set the created Python object in PC context */
   ierr = PCPythonSetContext(*pc,self);Py_DecRef(self);CHKERRQ(ierr);
   PetscFunctionReturn(0);

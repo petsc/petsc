@@ -156,26 +156,31 @@ do {									\
 
 #undef __FUNCT__
 #define __FUNCT__ "PetscCreatePythonObject"
-static PetscErrorCode PetscCreatePythonObject(const char* modname,
-					      const char* clsname,
+static PetscErrorCode PetscCreatePythonObject(const char fullname[],
 					      PyObject **outself)
 {
-  PyObject *mod, *cls, *self;
+  char modname[2*PETSC_MAX_PATH_LEN],*clsname=0,*dot;
+  PyObject *mod, *cls, *inst, *self;
+  PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (outself) *outself = NULL;
-  PetscValidCharPointer(modname,1);
-  PetscValidCharPointer(clsname,2);
-  PetscValidCharPointer(outself,3);
-  /* import the Python module */
-  mod = PetscPyImportModule(modname);
+  PetscValidCharPointer(fullname,1);
+  PetscValidCharPointer(outself,2);
+
+  ierr = PetscStrncpy(modname,fullname,sizeof(modname));CHKERRQ(ierr);
+  ierr = PetscStrrchr(modname,'.',&dot);CHKERRQ(ierr);
+  if (dot != modname) { dot[-1] = 0; clsname = dot; }
+  
+  /* import the Python package/module */
+  self = mod = PetscPyImportModule(modname);
   if (mod == NULL) {
     const char *excname = PetscHandlePythonError();
     SETERRQ2(PETSC_ERR_PYTHON,"Python: error importing "
 	     "module '%s', exception '%s'",modname,excname);
     PetscFunctionReturn(PETSC_ERR_PYTHON);
   }
-  /* get the Python class (or callable) */
-  cls = PetscPyObjectGetAttrStr(mod,clsname);
+  if (!clsname) goto done;
+  /* get the Python module/class/callable */
+  self = cls = PetscPyObjectGetAttrStr(mod,clsname);
   Py_DecRef(mod);
   if (cls == NULL) {
     const char *excname = PetscHandlePythonError();
@@ -184,16 +189,18 @@ static PetscErrorCode PetscCreatePythonObject(const char* modname,
 	     clsname,modname,excname);
     PetscFunctionReturn(PETSC_ERR_PYTHON);
   }
+  if (!PyCallable_Check(cls)) goto done;
   /* create the Python instance */
-  self = PyObject_CallFunction(cls, NULL);
+  self = inst = PyObject_CallFunction(cls, NULL);
   Py_DecRef(cls);
-  if (self == NULL) {
+  if (inst == NULL) {
     const char *excname = PetscHandlePythonError();
     SETERRQ3(PETSC_ERR_PYTHON,"Python: error calling "
 	     "function/class '%s' from module '%s', exception '%s'",
 	     clsname,modname,excname);
     PetscFunctionReturn(PETSC_ERR_PYTHON);
   }
+ done:
   *outself = self;
   PetscFunctionReturn(0);
 }
@@ -205,8 +212,8 @@ static PetscErrorCode PetscPythonGetModuleAndClass(PyObject *self,
 						   char *clsname[])
 {
   PyObject *cls=NULL, *omodname=NULL, *oclsname=NULL;
-  const char *ModName = "<unknown>";
-  const char *ClsName = "<unknown>";
+  const char *ModName = 0;
+  const char *ClsName = 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (self) PetscValidPointer(self,1);
@@ -216,19 +223,27 @@ static PetscErrorCode PetscPythonGetModuleAndClass(PyObject *self,
     *modname = *clsname = PETSC_NULL;
     PetscFunctionReturn(0);
   }
-  cls = PetscPyObjectGetAttrStr(self,"__class__");
-  if (cls != NULL) {
-    omodname = PetscPyObjectGetAttrStr(cls,"__module__");
+  if (PyModule_Check(self)) {
+    omodname = PetscPyObjectGetAttrStr(self,"__name__");
     if (omodname != NULL) {
       if (PyString_Check(omodname))
 	ModName = PyString_AsString(omodname);
     } else PyErr_Clear();
-    oclsname = PetscPyObjectGetAttrStr(cls,"__name__"); 
-    if (oclsname != NULL) {
-      if (PyString_Check(oclsname))
-	ClsName = PyString_AsString(oclsname);
+  } else {
+    cls = PetscPyObjectGetAttrStr(self,"__class__");
+    if (cls != NULL) {
+      omodname = PetscPyObjectGetAttrStr(cls,"__module__");
+      if (omodname != NULL) {
+	if (PyString_Check(omodname))
+	  ModName = PyString_AsString(omodname);
+      } else PyErr_Clear();
+      oclsname = PetscPyObjectGetAttrStr(cls,"__name__"); 
+      if (oclsname != NULL) {
+	if (PyString_Check(oclsname))
+	  ClsName = PyString_AsString(oclsname);
+      } else PyErr_Clear();
     } else PyErr_Clear();
-  } else PyErr_Clear();
+  }
   ierr = PetscStrallocpy(ModName,modname);CHKERRQ(ierr);
   ierr = PetscStrallocpy(ClsName,clsname);CHKERRQ(ierr);
   if (cls)      Py_DecRef(cls);

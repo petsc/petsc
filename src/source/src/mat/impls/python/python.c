@@ -29,10 +29,9 @@
 
 PETSC_EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm comm,
-							 PetscInt m,PetscInt n,
-							 PetscInt M,PetscInt N,
-							 const char *modname,
-							 const char *clsname,
+							 PetscInt,PetscInt,
+							 PetscInt,PetscInt,
+							 const char[],
 							 Mat *mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat,void*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat,void**);
@@ -122,25 +121,20 @@ static PetscErrorCode MatPythonFillOperations(Mat mat)
 #define __FUNCT__ "MatSetFromOptions_Python"
 static PetscErrorCode MatSetFromOptions_Python(Mat mat)
 {
-  char           *modcls[2] = {0, 0};
-  PetscInt       nmax = 2;
+  char           fullname[2*PETSC_MAX_PATH_LEN];
   PetscTruth     flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,"Matrix options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsHead("Python options");CHKERRQ(ierr);
-  ierr = PetscOptionsStringArray("-mat_python","Python module and class/factory",
-				 "MatCreatePython", modcls,&nmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-mat_python","Python package.module[.{class|function}]",
+			    "MatCreatePython",0,fullname,sizeof(fullname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (flg) {
-    if (nmax == 2) {
-      PyObject *self = NULL;
-      ierr = PetscCreatePythonObject(modcls[0],modcls[1],&self);CHKERRQ(ierr);
-      ierr = MatPythonSetContext(mat,self);Py_DecRef(self);CHKERRQ(ierr);
-    }
-    ierr = PetscStrfree(modcls[0]);CHKERRQ(ierr);
-    ierr = PetscStrfree(modcls[1]);CHKERRQ(ierr);
+  if (flg && fullname[0]) {
+    PyObject *self = NULL;
+    ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
+    ierr = MatPythonSetContext(mat,self);Py_DecRef(self);CHKERRQ(ierr);
   }
   MAT_PYTHON_CALL_MATARG(mat, "setFromOptions");
   PetscFunctionReturn(0);
@@ -156,20 +150,15 @@ static PetscErrorCode MatView_Python(Mat mat,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (isascii || isstring) {
-    ierr = PetscStrfree(py->module);CHKERRQ(ierr); 
-    ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
-    ierr = PetscPythonGetModuleAndClass(py->self,&py->module,&py->factory);CHKERRQ(ierr);
-  }
   if (isascii) {
     const char* module  = py->module  ? py->module  : "no yet set";
-    const char* factory = py->factory ? py->factory : "no yet set";
+    const char* factory = py->factory ? py->factory : (py->module?"":"no yet set");
     ierr = PetscViewerASCIIPrintf(viewer,"  module:  %s\n",module);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  factory: %s\n",factory);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  class:   %s\n",factory);CHKERRQ(ierr);
   }
   if (isstring) {
     const char* module  = py->module  ? py->module  : "<module>";
-    const char* factory = py->factory ? py->factory : "<factory>";
+    const char* factory = py->factory ? py->factory : "<class>";
     ierr = PetscViewerStringSPrintf(viewer,"%s.%s",module,factory);CHKERRQ(ierr);
   }
   MAT_PYTHON_CALL(mat, "view", ("O&O&",
@@ -229,8 +218,8 @@ static PetscErrorCode MatSetUpPreallocation_Python(Mat mat)
   if (!Py_IsInitialized()) PetscFunctionReturn(0);
 #if defined(MAT_PYTHON_FIX_SETFROMOPTIONS)
   { 
-    PyObject       *self = Mat_Py_Self(mat);
     PetscErrorCode ierr;
+    PyObject *self = Mat_Py_Self(mat);
     if (self == NULL || self == Py_None) {
       ierr = MatSetFromOptions_Python(mat);CHKERRQ(ierr); 
     }
@@ -783,6 +772,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the Mat object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
+  ierr = PetscStrfree(py->module);CHKERRQ(ierr);  
+  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
+  ierr = PetscPythonGetModuleAndClass(py->self,&py->module,&py->factory);CHKERRQ(ierr);
   MAT_PYTHON_CALL_MATARG(mat, "create");
   PetscFunctionReturn(0);
 }
@@ -800,8 +792,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
 .  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
 .  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
 .  N - number of global columns (or PETSC_DECIDE to have calculated if n is given)
-.  modname - full dotted Python module name
--  clsname - factory/class name in module
+-  fullname - full dotted name package.module.function/class
 
    Output Parameter:
 .  mat - location to put the matrix context
@@ -815,24 +806,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm comm,
 						  PetscInt m,PetscInt n,
 						  PetscInt M,PetscInt N,
-						  const char *modname,
-						  const char *clsname,
+						  const char fullname[],
 						  Mat *mat)
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  if (modname) PetscValidCharPointer(modname,2);
-  if (clsname) PetscValidCharPointer(clsname,3);
+  if (fullname) PetscValidCharPointer(fullname,2);
   /* create the Mat context and set its type */
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATPYTHON);CHKERRQ(ierr);
-  if (modname == PETSC_NULL) PetscFunctionReturn(0);
-  if (clsname == PETSC_NULL) PetscFunctionReturn(0);
+  if (fullname == PETSC_NULL) PetscFunctionReturn(0);
   /* create the Python object from module and class/factory  */
-  ierr = PetscCreatePythonObject(modname,clsname,&self);CHKERRQ(ierr);
+  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
   /* set the created Python object in Mat context */
   ierr = MatPythonSetContext(*mat,self);Py_DecRef(self);CHKERRQ(ierr);
   PetscFunctionReturn(0);

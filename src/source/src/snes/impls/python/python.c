@@ -31,7 +31,7 @@
 #define SNESPYTHON "python"
 
 PETSC_EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreatePython(MPI_Comm,const char *,const char *,SNES*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreatePython(MPI_Comm,const char[],SNES*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES,void**);
 PETSC_EXTERN_C_END
@@ -500,7 +500,7 @@ static PetscErrorCode SNESSetUp_Python(SNES snes)
     if (snes->vec_sol) {
       ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
     } else {
-      ierr = MatGetVecs(snes->jacobian,&snes->vec_sol_update, PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetVecs(snes->jacobian,&snes->vec_sol_update,PETSC_NULL);CHKERRQ(ierr);
     }
     ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
   }
@@ -528,20 +528,15 @@ static PetscErrorCode SNESView_Python(SNES snes,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
-  if (isascii || isstring) {
-    ierr = PetscStrfree(py->module);CHKERRQ(ierr); 
-    ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
-    ierr = PetscPythonGetModuleAndClass(py->self,&py->module,&py->factory);CHKERRQ(ierr);
-  }
   if (isascii) {
     const char* module  = py->module  ? py->module  : "no yet set";
-    const char* factory = py->factory ? py->factory : "no yet set";
+    const char* factory = py->factory ? py->factory : (py->module?"":"no yet set");
     ierr = PetscViewerASCIIPrintf(viewer,"  module:  %s\n",module);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  factory: %s\n",factory);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  class:   %s\n",factory);CHKERRQ(ierr);
   }
   if (isstring) {
     const char* module  = py->module  ? py->module  : "<module>";
-    const char* factory = py->factory ? py->factory : "<factory>";
+    const char* factory = py->factory ? py->factory : "<class>";
     ierr = PetscViewerStringSPrintf(viewer,"%s.%s",module,factory);CHKERRQ(ierr);
   }
   SNES_PYTHON_CALL(snes, "view", ("O&O&", 
@@ -558,31 +553,27 @@ static PetscErrorCode SNESView_Python(SNES snes,PetscViewer viewer)
 
    Application Interface Routine: SNESSetFromOptions()
 */
-#undef __FUNCT__
+#undef  __FUNCT__
 #define __FUNCT__ "SNESSetFromOptions_Python"
 static PetscErrorCode SNESSetFromOptions_Python(SNES snes)
 {
-  char           *modcls[2] = { 0, 0};
-  PetscInt       nmax = 2;
+  char           fullname[2*PETSC_MAX_PATH_LEN];
   PetscTruth     flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Python options");CHKERRQ(ierr);
-  ierr = PetscOptionsStringArray("-snes_python","Python module and class/factory",
-				 "SNESCreatePython", modcls,&nmax,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHead("SNES Python options");CHKERRQ(ierr);
+  ierr = PetscOptionsString("-snes_python","Python package.module[.{class|function}]",
+			    "SNESCreatePython",0,fullname,sizeof(fullname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg) {
-    if (nmax == 2) {
-      PyObject *self = NULL;
-      ierr = PetscCreatePythonObject(modcls[0],modcls[1],&self);CHKERRQ(ierr);
-      ierr = SNESPythonSetContext(snes,self);Py_DecRef(self);CHKERRQ(ierr);
-    }
-    ierr = PetscStrfree(modcls[0]); CHKERRQ(ierr);
-    ierr = PetscStrfree(modcls[1]); CHKERRQ(ierr);
+  if (flg && fullname[0]) {
+    PyObject *self = NULL;
+    ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
+    ierr = SNESPythonSetContext(snes,self);Py_DecRef(self);CHKERRQ(ierr);
   }
   SNES_PYTHON_CALL_SNESARG(snes, "setFromOptions");
   PetscFunctionReturn(0);
 }
+
 /* -------------------------------------------------------------------------- */
 /*
    SNESDestroy_Python - Destroys the private SNES_Py context that was created
@@ -750,6 +741,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the SNES object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
+  ierr = PetscStrfree(py->module);CHKERRQ(ierr);  
+  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
+  ierr = PetscPythonGetModuleAndClass(py->self,&py->module,&py->factory);CHKERRQ(ierr);
   SNES_PYTHON_CALL_SNESARG(snes, "create");
   if (snes->setupcalled) snes->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -763,9 +757,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
    Collective on MPI_Comm
 
    Input Parameters:
-.  comm - MPI communicator 
-.  modname - module name
-.  clsname - factory/class name
++  comm - MPI communicator 
+-  fullname - full dotted name package.module.function/class
 
    Output Parameter:
 .  snes - location to put the nonlinear solver context
@@ -777,23 +770,20 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
 .seealso: SNES, SNESCreate(), SNESSetType(), SNESPYTHON
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESCreatePython(MPI_Comm comm,
-						    const char *modname,
-						    const char *clsname,
+						    const char fullname[],
 						    SNES *snes)
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  if (modname) PetscValidCharPointer(modname,2);
-  if (clsname) PetscValidCharPointer(clsname,3);
+  if (fullname) PetscValidCharPointer(fullname,2);
   /* create the SNES context and set its type */
   ierr = SNESCreate(comm,snes);CHKERRQ(ierr);
   ierr = SNESSetType(*snes,SNESPYTHON);CHKERRQ(ierr);
-  if (modname == PETSC_NULL) PetscFunctionReturn(0);
-  if (clsname == PETSC_NULL) PetscFunctionReturn(0);
+  if (fullname == PETSC_NULL) PetscFunctionReturn(0);
   /* create the Python object from module and class/factory  */
-  ierr = PetscCreatePythonObject(modname,clsname,&self);CHKERRQ(ierr);
+  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
   /* set the created Python object in SNES context */
   ierr = SNESPythonSetContext(*snes,self);Py_DecRef(self);CHKERRQ(ierr);
   PetscFunctionReturn(0);
