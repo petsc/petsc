@@ -5,7 +5,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 MANSEC           = Vec
 LOCDIR		 = src/vec/vec/examples/tutorials/
-EXAMPLESC	 = ex1.c ex1e.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c ex16.c ex17.c ex18.c
+EXAMPLESC	 = ex1.c ex1e.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c ex16.c ex17.c ex18.c ex42.c ex42a.c
 EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F ex9f.F ex11f.F ex14f.F ex20f90.F90
 
 include ${PETSC_DIR}/conf/base
@@ -125,6 +125,14 @@ ex19: ex19.o  chkopts
 ex20f90: ex20f90.o  chkopts
 	-${FLINKER} -o ex20f90 ex20f90.o ${PETSC_VEC_LIB}
 	${RM} -f ex20f90.o
+
+ex42: ex42.o chkopts
+	-${CLINKER} -o ex42 ex42.o ${PETSC_SNES_LIB}
+	${RM} ex42.o
+
+ex42a: ex42a.o chkopts
+	-${CLINKER} -o ex42a ex42a.o ${PETSC_SNES_LIB}
+	${RM} ex42a.o
 #-------------------------------------------------------------------------------------------
 #   This section is used for testing examples and can be ignored 
 #-------------------------------------------------------------------------------------------
@@ -272,7 +280,7 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 runex1_2 ex1.rm ex1e.PETSc runex1e runex1
                               ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 runex5_2 ex5.rm ex6.PETSc \
                               runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex11.PETSc runex11 ex11.rm \
                               ex12.PETSc runex12 ex12.rm ex9.PETSc runex9 runex9_2 ex9.rm ex16.PETSc \
-                              ex16.rm ex17.PETSc runex17 ex17.rm
+                              ex16.rm ex17.PETSc runex17 ex17.rm  ex42.PETSc ex42.rm ex42a.PETSc ex42a.rm
 TESTEXAMPLES_C_X11	    = ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_FORTRAN	    = ex1f.PETSc runex1f runex1f_2 ex1f.rm ex2f.PETSc runex2f ex2f.rm ex4f.PETSc \
                               runex4f ex4f.rm ex3f.PETSc ex3f.rm ex7.PETSc runex7 ex7.rm ex9f.PETSc runex9f \
