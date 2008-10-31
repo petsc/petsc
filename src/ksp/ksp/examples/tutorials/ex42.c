@@ -1,28 +1,13 @@
 
-static char help[] = "Reads a PETSc matrix and vector from a socket connection,  solves a linear system and sends the result back.\n";
+static char help[] = "Reads a PETSc vector from a socket connection, then sends it back within a loop. Works with ex42.m or ex42a.c\n";
 
-/*T
-   Concepts: KSP^solving a linear system
-   Processors: n
-T*/
-
-/* 
-  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
-  automatically includes:
-     petsc.h       - base PETSc routines   petscvec.h - vectors
-     petscsys.h    - system routines       petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-*/
-#include "petscksp.h"
+#include "petscvec.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  KSP            ksp;             /* linear solver context */
-  Mat            A;            /* matrix */
-  Vec            x,b;          /* approx solution, RHS, exact solution */
+  Vec            b;       
   PetscViewer    fd;               /* viewer */
   PetscErrorCode ierr;
   PetscInt       i;
@@ -31,7 +16,7 @@ int main(int argc,char **args)
   fd = PETSC_VIEWER_SOCKET_WORLD;
 
   for (i=0;i<1000;i++){
-    ierr = VecLoad(fd,VECSEQ,&b);CHKERRQ(ierr);
+    ierr = VecLoad(fd,VECMPI,&b);CHKERRQ(ierr);
     ierr = VecView(b,fd);CHKERRQ(ierr);
     ierr = VecDestroy(b);CHKERRQ(ierr);
   }
