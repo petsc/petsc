@@ -1461,7 +1461,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualHistory(KSP ksp,PetscReal *a[],P
    Input Parameters:
 +  ksp - iterative context obtained from KSPCreate()
 .  converge - pointer to int function
--  cctx    - context for private data for the convergence routine (may be null)
+.  cctx    - context for private data for the convergence routine (may be null)
+-  destroy - a routine for destroying the context (may be null)
 
    Calling sequence of converge:
 $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,void *mctx)
