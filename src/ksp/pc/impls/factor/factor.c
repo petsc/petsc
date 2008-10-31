@@ -298,13 +298,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC pc,PetscR
 
    Note:
      By default this will use the PETSc factorization if it exists
-
-     Use PCFactorGetMatrix(pc,&mat); MatFactorGetPackage(mat,&package); to see what package is being used
      
 
 .keywords: PC, set, factorization, direct, fill
 
-.seealso: MatGetFactor(), MatSolverPackage
+.seealso: MatGetFactor(), MatSolverPackage, PCFactorGetMatSolverPackage()
 
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage(PC pc,const MatSolverPackage stype)
@@ -314,6 +312,40 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage(PC pc,const MatSol
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorSetMatSolverPackage_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,stype);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCFactorGetMatSolverPackage"
+/*@
+   PCFactorGetMatSolverPackage - gets the software that is used to perform the factorization
+
+   Collective on PC
+   
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameter:
+.   stype - for example, spooles, superlu, superlu_dist
+
+   Level: intermediate
+
+
+.keywords: PC, set, factorization, direct, fill
+
+.seealso: MatGetFactor(), MatSolverPackage, PCFactorGetMatSolverPackage()
+
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatSolverPackage(PC pc,const MatSolverPackage *stype)
+{
+  PetscErrorCode ierr,(*f)(PC,const MatSolverPackage*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCFactorGetMatSolverPackage_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,stype);CHKERRQ(ierr);
   } 

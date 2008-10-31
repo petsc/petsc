@@ -31,7 +31,7 @@ class Configure(PETSc.package.Package):
   def setupHelp(self, help):
     PETSc.package.Package.setupHelp(self, help)
     import nargs
-    help.addArgument('Sieve', '-with-opt-sieve=<bool>', nargs.ArgBool(None, 0, 'Use IMesh which are optimized for interval point sets'))
+    help.addArgument('Sieve', '-with-opt-sieve=<bool>', nargs.ArgBool(None, 1, 'Use IMesh which are optimized for interval point sets'))
     help.addArgument('Sieve', '-with-sieve-memory-logging=<bool>', nargs.ArgBool(None, 0, 'Turn on memory logging for Sieve objects'))
     return
 
