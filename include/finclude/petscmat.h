@@ -38,7 +38,7 @@
 #define MatDuplicateOption PetscEnum
 #define MatStructure PetscEnum
 #define MatPartitioningType character*(80)
-
+#define MatCompositeType PetscEnum
 #define MatStencil PetscInt
 #define MatStencil_k 1
 #define MatStencil_j 2
@@ -244,6 +244,15 @@
 
       parameter (MAT_LOCAL=1,MAT_GLOBAL_MAX=2,MAT_GLOBAL_SUM=3)
 
+!
+!  MatCompositeType
+!
+      PetscEnum MAT_COMPOSITE_ADDITIVE
+      PetscEnum MAT_COMPOSITE_MULTIPLICATIVE
+
+      parameter (MAT_COMPOSITE_ADDITIVE = 0)
+      parameter (MAT_COMPOSITE_MULTIPLICATIVE = 1)
+!
 !
 !  Note: MAT_FACTORINFO_SIZE must equal # elements in MatFactorInfo structure
 !  (See petsc/include/petscmat.h)

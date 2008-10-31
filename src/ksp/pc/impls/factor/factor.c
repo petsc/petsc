@@ -282,7 +282,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorReorderForNonzeroDiagonal(PC pc,PetscR
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorSetMatSolverPackage"
-/*@
+/*@C
    PCFactorSetMatSolverPackage - sets the software that is used to perform the factorization
 
    Collective on PC
@@ -320,7 +320,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatSolverPackage(PC pc,const MatSol
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCFactorGetMatSolverPackage"
-/*@
+/*@C
    PCFactorGetMatSolverPackage - gets the software that is used to perform the factorization
 
    Collective on PC
