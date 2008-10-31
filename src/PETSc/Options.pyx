@@ -82,7 +82,7 @@ cdef class Options:
     def getAll(self):
         cdef char *allopts = NULL
         CHKERR( PetscOptionsGetAll(&allopts) )
-        options = allopts
+        options = cp2str(allopts)
         CHKERR( PetscStrfree(allopts) )
         return parseopt(options, self.prefix)
 

@@ -117,6 +117,43 @@ static PetscErrorCode MatPythonFillOperations(Mat mat)
 #endif
 /* -------------------------------------------------------------------------- */
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatPythonInit_PYTHON"
+PetscErrorCode PETSCMAT_DLLEXPORT MatPythonInit_PYTHON(Mat mat,const char fullname[])
+{
+  PyObject       *self = NULL;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  /* create the Python object from module/class/function  */
+  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
+  /* set the created Python object in Mat context */
+  ierr = MatPythonSetContext(mat,self);Py_DecRef(self);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__
+#define __FUNCT__ "MatDestroy_Python"
+static PetscErrorCode MatDestroy_Python(Mat mat)
+{
+  Mat_Py         *py   = (Mat_Py *)mat->data;
+  PyObject       *self = py->self;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (Py_IsInitialized()) {
+    MAT_PYTHON_CALL_NOARGS(mat, "destroy");
+    py->self = NULL; Py_DecRef(self);
+  }
+  ierr = PetscStrfree(py->module);CHKERRQ(ierr);
+  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
+  ierr = PetscFree(mat->data);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatPythonInit_C",
+				    "",PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef  __FUNCT__
 #define __FUNCT__ "MatSetFromOptions_Python"
 static PetscErrorCode MatSetFromOptions_Python(Mat mat)
@@ -131,11 +168,7 @@ static PetscErrorCode MatSetFromOptions_Python(Mat mat)
 			    "MatCreatePython",0,fullname,sizeof(fullname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (flg && fullname[0]) {
-    PyObject *self = NULL;
-    ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
-    ierr = MatPythonSetContext(mat,self);Py_DecRef(self);CHKERRQ(ierr);
-  }
+  if (flg && fullname[0]) { ierr = MatPythonInit_PYTHON(mat, fullname);CHKERRQ(ierr); }
   MAT_PYTHON_CALL_MATARG(mat, "setFromOptions");
   PetscFunctionReturn(0);
 }
@@ -166,26 +199,6 @@ static PetscErrorCode MatView_Python(Mat mat,PetscViewer viewer)
 				PyPetscViewer_New,  viewer));
   PetscFunctionReturn(0);
 }
-
-#undef __FUNCT__
-#define __FUNCT__ "MatDestroy_Python"
-static PetscErrorCode MatDestroy_Python(Mat mat)
-{
-  Mat_Py         *py   = (Mat_Py *)mat->data;
-  PyObject       *self = py->self;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  if (Py_IsInitialized()) {
-    MAT_PYTHON_CALL_NOARGS(mat, "destroy");
-    py->self = NULL; Py_DecRef(self);
-  }
-  ierr = PetscStrfree(py->module);CHKERRQ(ierr);
-  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
-  ierr = PetscFree(mat->data);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetOption_Python"
@@ -691,7 +704,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat mat)
   mat->factor       = 0;
   mat->assembled    = PETSC_TRUE;
   mat->preallocated = PETSC_FALSE;
+
   ierr = PetscObjectChangeTypeName((PetscObject)mat,MATPYTHON);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)mat,
+				    "MatPythonInit_C","MatPythonInit_PYTHON",
+				    (PetscVoidFunction)MatPythonInit_PYTHON);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -809,7 +826,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm comm,
 						  const char fullname[],
 						  Mat *mat)
 {
-  PyObject       *self = NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -818,11 +834,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm comm,
   ierr = MatCreate(comm,mat);CHKERRQ(ierr);
   ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*mat,MATPYTHON);CHKERRQ(ierr);
-  if (fullname == PETSC_NULL) PetscFunctionReturn(0);
-  /* create the Python object from module and class/factory  */
-  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
-  /* set the created Python object in Mat context */
-  ierr = MatPythonSetContext(*mat,self);Py_DecRef(self);CHKERRQ(ierr);
+  if (fullname) { ierr = MatPythonInit_PYTHON(*mat,fullname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

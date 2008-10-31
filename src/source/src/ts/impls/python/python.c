@@ -109,6 +109,22 @@ typedef struct {
 
 /* -------------------------------------------------------------------------- */
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "TSPythonInit_PYTHON"
+PetscErrorCode PETSCTS_DLLEXPORT TSPythonInit_PYTHON(TS ts,const char fullname[])
+{
+  PyObject       *self = NULL;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  /* create the Python object from module/class/function  */
+  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
+  /* set the created Python object in TS context */
+  ierr = TSPythonSetContext(ts,self);Py_DecRef(self);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "TSDestroy_Python"
 static PetscErrorCode TSDestroy_Python(TS ts)
@@ -129,6 +145,8 @@ static PetscErrorCode TSDestroy_Python(TS ts)
   ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ts->data = PETSC_NULL;
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPythonInit_C",
+				    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -144,11 +162,7 @@ static PetscErrorCode TSSetFromOptions_Python(TS ts)
   ierr = PetscOptionsString("-ts_python","Python package.module[.{class|function}]",
 			    "TSCreatePython",0,fullname,sizeof(fullname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg && fullname[0]) {
-    PyObject *self = NULL;
-    ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
-    ierr = TSPythonSetContext(ts,self);Py_DecRef(self);CHKERRQ(ierr);
-  }
+  if (flg && fullname[0]) { ierr = TSPythonInit_PYTHON(ts,fullname);CHKERRQ(ierr); }
   TS_PYTHON_CALL_TSARG(ts, "setFromOptions");
   PetscFunctionReturn(0);
 }
@@ -512,6 +526,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
   py->vec_func = PETSC_NULL;
   py->vec_rhs  = PETSC_NULL;
   
+  ierr = PetscObjectComposeFunction((PetscObject)ts,
+				    "TSPythonInit_C","TSPythonInit_PYTHON",
+				    (PetscVoidFunction)TSPythonInit_PYTHON);CHKERRQ(ierr);
+  
   ts->problem_type = TS_NONLINEAR;
 
   if (ts->problem_type == TS_NONLINEAR) {
@@ -521,7 +539,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
     ierr = KSPCreate(((PetscObject)ts)->comm,&ts->ksp);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(ts,ts->ksp);CHKERRQ(ierr);
   }
-  
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -633,7 +651,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreatePython(MPI_Comm comm,
 						const char fullname[],
 						TS *ts)
 {
-  PyObject       *self = NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -641,11 +658,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreatePython(MPI_Comm comm,
   /* create the TS context and set its type */
   ierr = TSCreate(comm,ts);CHKERRQ(ierr);
   ierr = TSSetType(*ts,TSPYTHON);CHKERRQ(ierr);
-  if (fullname == PETSC_NULL) PetscFunctionReturn(0);
-  /* create the Python object from module and class/factory  */
-  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
-  /* set the created Python object in TS context */
-  ierr = TSPythonSetContext(*ts,self);Py_DecRef(self);CHKERRQ(ierr);
+  if (fullname) { ierr = TSPythonInit_PYTHON(*ts,fullname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

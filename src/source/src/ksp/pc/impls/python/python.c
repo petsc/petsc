@@ -1,4 +1,4 @@
-#define PETSCPC_DLL
+#define PETSCKSP_DLL
 
 /* -------------------------------------------------------------------------- */
 
@@ -85,6 +85,22 @@ typedef struct {
 
 /* -------------------------------------------------------------------------- */
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCPythonInit_PYTHON"
+PetscErrorCode PETSCKSP_DLLEXPORT PCPythonInit_PYTHON(PC pc,const char fullname[])
+{
+  PyObject       *self = NULL;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  /* create the Python object from module/class/function  */
+  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
+  /* set the created Python object in PC context */
+  ierr = PCPythonSetContext(pc,self);Py_DecRef(self);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_Python"
 static PetscErrorCode PCDestroy_Python(PC pc)
@@ -92,7 +108,6 @@ static PetscErrorCode PCDestroy_Python(PC pc)
   PC_Py          *py   = (PC_Py *)pc->data;
   PyObject       *self = py->self;
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (Py_IsInitialized()) {
     PC_PYTHON_CALL_NOARGS(pc, "destroy");
@@ -102,6 +117,8 @@ static PetscErrorCode PCDestroy_Python(PC pc)
   ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   pc->data = PETSC_NULL;
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPythonInit_C",
+				    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -117,11 +134,7 @@ static PetscErrorCode PCSetFromOptions_Python(PC pc)
   ierr = PetscOptionsString("-pc_python","Python package.module[.{class|function}]",
 			    "PCCreatePython",0,fullname,sizeof(fullname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg && fullname[0]) {
-    PyObject *self = NULL;
-    ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
-    ierr = PCPythonSetContext(pc,self);Py_DecRef(self);CHKERRQ(ierr);
-  }
+  if (flg && fullname[0]) { ierr = PCPythonInit_PYTHON(pc,fullname);CHKERRQ(ierr); }
   PC_PYTHON_CALL_PCARG(pc, "setFromOptions");
   PetscFunctionReturn(0);
 }
@@ -361,12 +374,13 @@ PetscErrorCode PETSCTS_DLLEXPORT PCCreate_Python(PC pc)
   pc->ops->applytranspose      = PETSC_NULL/*PCApplyTranspose_Python*/;
   pc->ops->applyrichardson     = PETSC_NULL/*PCApplyRichardson_Python*/;
 
+  ierr = PetscObjectComposeFunction((PetscObject)pc,
+				    "PCPythonInit_C","PCPythonInit_PYTHON",
+				    (PetscVoidFunction)PCPythonInit_PYTHON);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-/* -------------------------------------------------------------------------- */
-
 
 /* -------------------------------------------------------------------------- */
 
@@ -478,7 +492,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreatePython(MPI_Comm comm,
 						 const char fullname[],
 						 PC *pc)
 {
-  PyObject       *self = NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -486,11 +499,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreatePython(MPI_Comm comm,
   /* create the PC context and set its type */
   ierr = PCCreate(comm,pc);CHKERRQ(ierr);
   ierr = PCSetType(*pc,PCPYTHON);CHKERRQ(ierr);
-  if (fullname == PETSC_NULL) PetscFunctionReturn(0);
-  /* create the Python object from module and class/factory  */
-  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
-  /* set the created Python object in PC context */
-  ierr = PCPythonSetContext(*pc,self);Py_DecRef(self);CHKERRQ(ierr);
+  if (fullname) { ierr = PCPythonInit_PYTHON(*pc, fullname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

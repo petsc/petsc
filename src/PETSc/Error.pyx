@@ -21,8 +21,9 @@ class Error(RuntimeError):
 
     def __str__(self):
         cdef int csize=1, crank=0
-        MPI_Comm_size(PETSC_COMM_WORLD, &csize)
-        MPI_Comm_rank(PETSC_COMM_WORLD, &crank)
+        if not (<int>PetscFinalizeCalled):
+            MPI_Comm_size(PETSC_COMM_WORLD, &csize)
+            MPI_Comm_rank(PETSC_COMM_WORLD, &crank)
         width, rank = len(str(csize-1)), crank
         tblist = ['error code %d' % self.ierr]
         for entry in self._traceback_:

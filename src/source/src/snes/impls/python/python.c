@@ -508,6 +508,23 @@ static PetscErrorCode SNESSetUp_Python(SNES snes)
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "SNESPythonInit_PYTHON"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonInit_PYTHON(SNES snes,const char fullname[])
+{
+  PyObject       *self = NULL;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  /* create the Python object from module/class/function  */
+  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
+  /* set the created Python object in SNES context */
+  ierr = SNESPythonSetContext(snes,self);Py_DecRef(self);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 /*
    SNESView_Python - Prints info from the SNESPYTHON data structure.
 
@@ -544,7 +561,7 @@ static PetscErrorCode SNESView_Python(SNES snes,PetscViewer viewer)
 				  PyPetscViewer_New, viewer));
   PetscFunctionReturn(0);
 }
-/* -------------------------------------------------------------------------- */
+
 /*
    SNESSetFromOptions_Python - Sets various parameters for the SNESPYTHON method.
 
@@ -565,16 +582,11 @@ static PetscErrorCode SNESSetFromOptions_Python(SNES snes)
   ierr = PetscOptionsString("-snes_python","Python package.module[.{class|function}]",
 			    "SNESCreatePython",0,fullname,sizeof(fullname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg && fullname[0]) {
-    PyObject *self = NULL;
-    ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
-    ierr = SNESPythonSetContext(snes,self);Py_DecRef(self);CHKERRQ(ierr);
-  }
+  if (flg && fullname[0]) { ierr = SNESPythonInit_PYTHON(snes,fullname);CHKERRQ(ierr); }
   SNES_PYTHON_CALL_SNESARG(snes, "setFromOptions");
   PetscFunctionReturn(0);
 }
 
-/* -------------------------------------------------------------------------- */
 /*
    SNESDestroy_Python - Destroys the private SNES_Py context that was created
    with SNESCreate_Python().
@@ -591,7 +603,6 @@ static PetscErrorCode SNESDestroy_Python(SNES snes)
   SNES_Py        *py = (SNES_Py *)snes->data;
   PyObject       *self = py->self;
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (Py_IsInitialized()) {
     SNES_PYTHON_CALL_NOARGS(snes, "destroy");
@@ -605,8 +616,11 @@ static PetscErrorCode SNESDestroy_Python(SNES snes)
   ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   snes->data = PETSC_NULL;
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESPythonInit_C",
+				    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
 /* -------------------------------------------------------------------------- */
 
 /*MC
@@ -653,6 +667,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES snes)
   py->ops->converged         = SNESConverged_Python;
   
   /* PETSc */
+  snes->vec_sol_update = PETSC_NULL;
+
   snes->ops->converged       = SNESDefaultConverged;
   snes->ops->computescaling  = PETSC_NULL;
   snes->ops->update          = PETSC_NULL;
@@ -663,7 +679,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES snes)
   snes->ops->setup	     = SNESSetUp_Python;
   snes->ops->solve	     = SNESSolve_Python;
 
-  snes->vec_sol_update = PETSC_NULL;
+  ierr = PetscObjectComposeFunction((PetscObject)snes,
+				    "SNESPythonInit_C","SNESPythonInit_PYTHON",
+				    (PetscVoidFunction)SNESPythonInit_PYTHON);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -773,7 +791,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreatePython(MPI_Comm comm,
 						    const char fullname[],
 						    SNES *snes)
 {
-  PyObject       *self = NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -781,11 +798,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreatePython(MPI_Comm comm,
   /* create the SNES context and set its type */
   ierr = SNESCreate(comm,snes);CHKERRQ(ierr);
   ierr = SNESSetType(*snes,SNESPYTHON);CHKERRQ(ierr);
-  if (fullname == PETSC_NULL) PetscFunctionReturn(0);
-  /* create the Python object from module and class/factory  */
-  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
-  /* set the created Python object in SNES context */
-  ierr = SNESPythonSetContext(*snes,self);Py_DecRef(self);CHKERRQ(ierr);
+  if (fullname) { ierr = SNESPythonInit_PYTHON(*snes,fullname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
