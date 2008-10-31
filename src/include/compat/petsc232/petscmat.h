@@ -7,6 +7,24 @@
 
 #include "include/private/matimpl.h"
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSetUp_232"
+static PETSC_UNUSED
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp_232(Mat A)
+{
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  if (!((PetscObject)A)->type_name) {
+    ierr = MPI_Comm_size(((PetscObject)A)->comm, &size);CHKERRQ(ierr);
+    if (size == 1) { ierr = MatSetType(A, MATSEQAIJ);CHKERRQ(ierr); }
+    else           { ierr = MatSetType(A, MATMPIAIJ);CHKERRQ(ierr); }
+  }
+  ierr = MatSetUpPreallocation(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatSetUp MatSetUp_232
 
 #define MAT_ROW_ORIENTED                  MAT_ROW_ORIENTED
 #define MAT_NEW_NONZERO_LOCATIONS         MAT_YES_NEW_NONZERO_LOCATIONS
@@ -136,9 +154,9 @@ PetscErrorCode MatTranspose_232(Mat mat,MatReuse reuse,Mat *B)
 #define MatTranspose MatTranspose_232
 
 #undef __FUNCT__
-#define __FUNCT__ "MatSetBlockSize_233"
+#define __FUNCT__ "MatSetBlockSize_232"
 static PETSC_UNUSED
-PetscErrorCode MatSetBlockSize_233(Mat mat,PetscInt bs)
+PetscErrorCode MatSetBlockSize_232(Mat mat,PetscInt bs)
 {
   PetscErrorCode ierr;
 
@@ -155,7 +173,7 @@ PetscErrorCode MatSetBlockSize_233(Mat mat,PetscInt bs)
   }
   PetscFunctionReturn(0);
 }
-#define MatSetBlockSize MatSetBlockSize_233
+#define MatSetBlockSize MatSetBlockSize_232
 
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges_232(Mat mat,const PetscInt *ranges[])
 {

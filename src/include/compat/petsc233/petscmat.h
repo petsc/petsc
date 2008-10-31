@@ -7,6 +7,25 @@
 
 #include "include/private/matimpl.h"
 
+#undef __FUNCT__
+#define __FUNCT__ "MatSetUp_233"
+static PETSC_UNUSED
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp_233(Mat A)
+{
+  PetscMPIInt    size;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  if (!((PetscObject)A)->type_name) {
+    ierr = MPI_Comm_size(((PetscObject)A)->comm, &size);CHKERRQ(ierr);
+    if (size == 1) { ierr = MatSetType(A, MATSEQAIJ);CHKERRQ(ierr); }
+    else           { ierr = MatSetType(A, MATMPIAIJ);CHKERRQ(ierr); }
+  }
+  ierr = MatSetUpPreallocation(A);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define MatSetUp MatSetUp_233
+
 
 #define MAT_NEW_NONZERO_LOCATIONS MAT_YES_NEW_NONZERO_LOCATIONS
 #define MAT_NEW_DIAGONALS         MAT_YES_NEW_DIAGONALS
