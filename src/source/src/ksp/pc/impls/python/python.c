@@ -36,8 +36,7 @@ PETSC_EXTERN_C_END
 typedef struct {
   /**/
   PyObject   *self;
-  char       *module;
-  char       *factory;
+  char       *pyname;
 } PC_Py;
 
 /* -------------------------------------------------------------------------- */
@@ -88,13 +87,13 @@ typedef struct {
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCPythonInit_PYTHON"
-PetscErrorCode PETSCKSP_DLLEXPORT PCPythonInit_PYTHON(PC pc,const char fullname[])
+PetscErrorCode PETSCKSP_DLLEXPORT PCPythonInit_PYTHON(PC pc,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* create the Python object from module/class/function  */
-  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
+  ierr = PetscCreatePythonObject(pyname,&self);CHKERRQ(ierr);
   /* set the created Python object in PC context */
   ierr = PCPythonSetContext(pc,self);Py_DecRef(self);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -113,8 +112,7 @@ static PetscErrorCode PCDestroy_Python(PC pc)
     PC_PYTHON_CALL_NOARGS(pc, "destroy");
     py->self = NULL; Py_DecRef(self);
   }
-  ierr = PetscStrfree(py->module);CHKERRQ(ierr);
-  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
+  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   pc->data = PETSC_NULL;
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPythonInit_C",
@@ -126,15 +124,19 @@ static PetscErrorCode PCDestroy_Python(PC pc)
 #define __FUNCT__ "PCSetFromOptions_Python"
 static PetscErrorCode PCSetFromOptions_Python(PC pc)
 {
-  char           fullname[2*PETSC_MAX_PATH_LEN];
+  PC_Py          *py = (PC_Py *)pc->data;
+  char           pyname[2*PETSC_MAX_PATH_LEN+3];
   PetscTruth     flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PC Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-pc_python","Python package.module[.{class|function}]",
-			    "PCCreatePython",0,fullname,sizeof(fullname),&flg);CHKERRQ(ierr);
+			    "PCCreatePython",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg && fullname[0]) { ierr = PCPythonInit_PYTHON(pc,fullname);CHKERRQ(ierr); }
+  if (flg && pyname[0]) { 
+    ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
+    if (!flg) { ierr = PCPythonInit_PYTHON(pc,pyname);CHKERRQ(ierr); }
+  }
   PC_PYTHON_CALL_PCARG(pc, "setFromOptions");
   PetscFunctionReturn(0);
 }
@@ -151,15 +153,12 @@ static PetscErrorCode PCView_Python(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    const char* module  = py->module  ? py->module  : "no yet set";
-    const char* factory = py->factory ? py->factory : (py->module?"":"no yet set");
-    ierr = PetscViewerASCIIPrintf(viewer,"  module:  %s\n",module);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  class:   %s\n",factory);CHKERRQ(ierr);
+    const char* pyname  = py->pyname ? py->pyname  : "no yet set";
+    ierr = PetscViewerASCIIPrintf(viewer,"  Python:  %s\n",pyname);CHKERRQ(ierr);
   }
   if (isstring) {
-    const char* module  = py->module  ? py->module  : "<module>";
-    const char* factory = py->factory ? py->factory : "<class>";
-    ierr = PetscViewerStringSPrintf(viewer,"%s.%s",module,factory);CHKERRQ(ierr);
+    const char* pyname  = py->pyname ? py->pyname  : "<unknown>";
+    ierr = PetscViewerStringSPrintf(viewer,"%s",pyname);CHKERRQ(ierr);
   }
   PC_PYTHON_CALL(pc, "view", ("O&O&",
 			      PyPetscPC_New,     pc,
@@ -357,8 +356,7 @@ PetscErrorCode PETSCTS_DLLEXPORT PCCreate_Python(PC pc)
 
   /* Python */
   py->self    = NULL;
-  py->module  = NULL;
-  py->factory = NULL;
+  py->pyname  = NULL;
 
   /* PETSc  */
   pc->ops->destroy         = PCDestroy_Python;
@@ -454,9 +452,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the PC object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
-  ierr = PetscStrfree(py->module);CHKERRQ(ierr); 
-  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
-  ierr = PetscPythonGetModuleAndClass(py->self,&py->module,&py->factory);CHKERRQ(ierr);
+  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr); 
+  ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   PC_PYTHON_CALL_PCARG(pc, "create");
   if (pc->setupcalled) pc->setupcalled = 1;
 #if (PETSC_VERSION_MAJOR    == 2 && \
@@ -477,7 +474,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
 
    Input Parameters:
 +  comm - MPI communicator 
--  fullname - full dotted name package.module.function/class
+-  pyname - full dotted name package.module.function/class
 
    Output Parameter:
 .  pc - location to put the preconditioner context
@@ -489,17 +486,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
 .seealso: PC, PCCreate(), PCSetType(), PCPYTHON
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreatePython(MPI_Comm comm,
-						 const char fullname[],
+						 const char pyname[],
 						 PC *pc)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (fullname) PetscValidCharPointer(fullname,2);
+  if (pyname) PetscValidCharPointer(pyname,2);
   /* create the PC context and set its type */
   ierr = PCCreate(comm,pc);CHKERRQ(ierr);
   ierr = PCSetType(*pc,PCPYTHON);CHKERRQ(ierr);
-  if (fullname) { ierr = PCPythonInit_PYTHON(*pc, fullname);CHKERRQ(ierr); }
+  if (pyname) { ierr = PCPythonInit_PYTHON(*pc, pyname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

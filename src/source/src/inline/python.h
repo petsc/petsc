@@ -206,6 +206,62 @@ static PetscErrorCode PetscCreatePythonObject(const char fullname[],
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PetscPythonGetFullName"
+static PetscErrorCode PetscPythonGetFullName(PyObject *self, char *pyname[])
+{
+  PyObject *cls=NULL, *omodname=NULL, *oclsname=NULL;
+  const char *ModName = 0;
+  const char *ClsName = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (self) PetscValidPointer(self,1);
+  PetscValidPointer(pyname,2);
+  *pyname = PETSC_NULL;
+  if (self == NULL) PetscFunctionReturn(0);
+  /* --- */
+  if (PyModule_Check(self)) {
+    omodname = PetscPyObjectGetAttrStr(self,"__name__");
+    if (!omodname) PyErr_Clear();
+    else if (PyString_Check(omodname))
+      ModName = PyString_AsString(omodname);
+  } else {
+    cls = PetscPyObjectGetAttrStr(self,"__class__");
+    if (!cls) PyErr_Clear();
+    else {
+      omodname = PetscPyObjectGetAttrStr(cls,"__module__");
+      if (!omodname) PyErr_Clear();
+      else if (PyString_Check(omodname))
+	ModName = PyString_AsString(omodname);
+      oclsname = PetscPyObjectGetAttrStr(cls,"__name__"); 
+      if (!oclsname) PyErr_Clear();
+      else if (PyString_Check(oclsname))
+	ClsName = PyString_AsString(oclsname);
+    }
+  }
+  /* --- */
+  if (ModName) {
+    if (!ClsName) {
+      ierr = PetscStrallocpy(ModName,pyname);CHKERRQ(ierr);
+    } else {
+      size_t len1, len2;
+      ierr = PetscStrlen(ModName,&len1);CHKERRQ(ierr);
+      ierr = PetscStrlen(ClsName,&len2);CHKERRQ(ierr);
+      ierr = PetscMalloc((len1+1+len2+1)*sizeof(char),pyname);CHKERRQ(ierr);
+      ierr = PetscStrncat(*pyname,ModName,len1);CHKERRQ(ierr);
+      ierr = PetscStrncat(*pyname,".",1);CHKERRQ(ierr);
+      ierr = PetscStrncat(*pyname,ClsName,len2);CHKERRQ(ierr);
+    }
+  } else if (ClsName) {
+    ierr = PetscStrallocpy(ClsName,pyname);CHKERRQ(ierr);
+  }
+  /* --- */
+  if (cls)      Py_DecRef(cls);
+  if (omodname) Py_DecRef(omodname);
+  if (oclsname) Py_DecRef(oclsname);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "PetscPythonGetModuleAndClass"
 static PetscErrorCode PetscPythonGetModuleAndClass(PyObject *self,
 						   char *modname[],
