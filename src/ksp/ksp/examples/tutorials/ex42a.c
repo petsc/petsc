@@ -16,7 +16,7 @@ int main(int argc,char **args)
   /* server indicates we WAIT for someone to connect to our socket */
   ierr = PetscViewerSocketOpen(PETSC_COMM_WORLD,"server",PETSC_DEFAULT,&fd);CHKERRQ(ierr);
 
-  ierr = VecCreateMPI(PETSC_COMM_WORLD,100,PETSC_DECIDE,&b);CHKERRQ(ierr);
+  ierr = VecCreateMPI(PETSC_COMM_WORLD,10000,PETSC_DECIDE,&b);CHKERRQ(ierr);
   for (i=0;i<1000;i++){
     ierr = VecView(b,fd);CHKERRQ(ierr);
     ierr = VecDestroy(b);CHKERRQ(ierr);
