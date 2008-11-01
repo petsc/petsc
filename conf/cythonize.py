@@ -40,7 +40,7 @@ def cythonize(source, includes=(),
         os.rename(header, dest)
 
 def run(source,
-        wdir=os.path.curdir
+        wdir=os.path.curdir,
         includes=[]):
     name, ext = os.path.splitext(source)
     if name.count('.') == 0:
