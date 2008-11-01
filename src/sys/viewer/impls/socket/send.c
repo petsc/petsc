@@ -141,6 +141,7 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
         sleep((unsigned) 1);
       } else if (errno == ECONNREFUSED) {
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
+        ierr = PetscInfo(0,"Connection refused in attaching socket, trying again");CHKERRQ(ierr);
         sleep((unsigned) 1);
       } else {
         perror(NULL); SETERRQ(PETSC_ERR_SYS,"system error");

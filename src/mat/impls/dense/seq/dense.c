@@ -903,7 +903,7 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
   ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_BINARY_NATIVE) {
+  if (format == PETSC_VIEWER_NATIVE) {
     /* store the matrix as a dense matrix */
     ierr = PetscMalloc(4*sizeof(PetscInt),&col_lens);CHKERRQ(ierr);
     col_lens[0] = MAT_FILE_COOKIE;

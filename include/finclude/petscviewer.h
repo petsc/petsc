@@ -99,25 +99,23 @@
       parameter (PETSC_VIEWER_ASCII_FACTOR_INFO = 17)
 
       PetscEnum PETSC_VIEWER_BINARY_DEFAULT
-      PetscEnum PETSC_VIEWER_BINARY_NATIVE
 
       parameter (PETSC_VIEWER_BINARY_DEFAULT = 18)
-      parameter (PETSC_VIEWER_BINARY_NATIVE = 19)
 
       PetscEnum PETSC_VIEWER_DRAW_BASIC
       PetscEnum PETSC_VIEWER_DRAW_LG
       PetscEnum PETSC_VIEWER_DRAW_CONTOUR
       PetscEnum PETSC_VIEWER_DRAW_PORTS
 
-      parameter (PETSC_VIEWER_DRAW_BASIC = 20)
-      parameter (PETSC_VIEWER_DRAW_LG = 21)
-      parameter (PETSC_VIEWER_DRAW_CONTOUR = 22)
-      parameter (PETSC_VIEWER_DRAW_PORTS = 23)
+      parameter (PETSC_VIEWER_DRAW_BASIC = 19)
+      parameter (PETSC_VIEWER_DRAW_LG = 20)
+      parameter (PETSC_VIEWER_DRAW_CONTOUR = 21)
+      parameter (PETSC_VIEWER_DRAW_PORTS = 22)
 
       PetscEnum PETSC_VIEWER_NATIVE
-      parameter (PETSC_VIEWER_NATIVE = 24)
+      parameter (PETSC_VIEWER_NATIVE = 23)
       PetscEnum PETSC_VIEWER_NOFORMAT
-      parameter (PETSC_VIEWER_NOFORMAT = 25)
+      parameter (PETSC_VIEWER_NOFORMAT = 24)
 !
 !  End of Fortran include file for the PetscViewer package in PETSc
 
