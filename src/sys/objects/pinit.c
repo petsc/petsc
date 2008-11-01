@@ -681,7 +681,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = PetscMemoryShowUsage(PETSC_VIEWER_STDOUT_WORLD,"Summary of Memory Usage in PETSc\n");CHKERRQ(ierr);
   }
 
-  /* Destroy any packages that registered a finalize */
+  /*
+     Free all objects registered with PetscObjectRegisterDestroy() such as PETSC_VIEWER_XXX_().
+  */
+  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
+
+  /*
+       Free all the registered create functions, such as KSPList, VecList, SNESList, etc
+  */
+  ierr = PetscFListDestroyAll();CHKERRQ(ierr); 
+
+  /* 
+     Destroy any packages that registered a finalize 
+  */
   ierr = PetscRegisterFinalizeAll();CHKERRQ(ierr);
 
   /*
@@ -698,11 +710,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   }
 #endif
 
-  /*
-     Free all objects registered with PetscObjectRegisterDestroy() such ast
-    PETSC_VIEWER_XXX_().
-  */
-  ierr = PetscObjectRegisterDestroyAll();CHKERRQ(ierr);  
   ierr = PetscOptionsHelpDestroyList();CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
@@ -797,11 +804,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   }
 
   ierr = PetscInfoAllow(PETSC_FALSE,PETSC_NULL);CHKERRQ(ierr);
-
-  /*
-       Free all the registered create functions, such as KSPList, VecList, SNESList, etc
-  */
-  ierr = PetscFListDestroyAll();CHKERRQ(ierr); 
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg3);CHKERRQ(ierr);

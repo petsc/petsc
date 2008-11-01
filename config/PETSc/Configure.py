@@ -79,7 +79,8 @@ class Configure(config.base.Configure):
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
-                 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','strcasecmp','bzero','dlerror',
+                 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','strcasecmp','bzero',
+                 'dlopen', 'dlsym', 'dlclose', 'dlerror',
                  '_intel_fast_memcpy','_intel_fast_memset','isinf','isnan','_finite','_isnan','vsnprintf','_vsnprintf']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.headers.headers.extend(headersC)
@@ -269,10 +270,16 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_GETCOMPUTERNAME',1)
       kernel32=1
     if kernel32:
-      if self.checkLink('#include <Windows.h>','GetProcAddress(0,0)'):
-        self.addDefine('HAVE_GETPROCADDRESS',1)
       if self.checkLink('#include <Windows.h>','LoadLibrary(0)'):
         self.addDefine('HAVE_LOADLIBRARY',1)
+      if self.checkLink('#include <Windows.h>','GetProcAddress(0,0)'):
+        self.addDefine('HAVE_GETPROCADDRESS',1)
+      if self.checkLink('#include <Windows.h>','FreeLibrary(0)'):
+        self.addDefine('HAVE_FREELIBRARY',1)
+      if self.checkLink('#include <Windows.h>','GetLastError()'):
+        self.addDefine('HAVE_GETLASTERROR',1)
+      if self.checkLink('#include <Windows.h>','SetLastError(0)'):
+        self.addDefine('HAVE_SETLASTERROR',1)
       if self.checkLink('#include <Windows.h>\n','QueryPerformanceCounter(0);\n'):
         self.addDefine('USE_NT_TIME',1)
     if self.libraries.add('Advapi32.lib','GetUserName',prototype='#include <Windows.h>', call='GetUserName(NULL,NULL);'):

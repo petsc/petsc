@@ -39,6 +39,10 @@ class Configure(config.base.Configure):
     return
 
   def configureSharedLibraries(self):
+    '''Checks whether dynamic libraries should be used, for which you must
+      - Specify --with-shared
+      - Have found a working dynamic linker
+    Defines PETSC_USE_SHARED_LIBRARIES if they are used'''
     self.useShared = (self.argDB['with-dynamic'] or self.argDB['with-shared']) and not self.setCompilers.staticLibraries
     if self.useShared:
       if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
@@ -49,12 +53,21 @@ class Configure(config.base.Configure):
     else:
       self.addMakeRule('shared_arch','')
       self.addMakeMacro('BUILDSHAREDLIB','no')
+    if self.setCompilers.sharedLibraries:
+      self.addDefine('HAVE_SHARED_LIBRARIES', 1)
+    if self.useShared:
+      self.addDefine('USE_SHARED_LIBRARIES', 1)
+    else:
+      self.logPrint('Shared libraries - disabled')
+    return
 
   def configureDynamicLibraries(self):
     '''Checks whether dynamic libraries should be used, for which you must
       - Specify --with-dynamic
       - Have found a working dynamic linker (with dlfcn.h and libdl)
     Defines PETSC_USE_DYNAMIC_LIBRARIES if they are used'''
+    if self.setCompilers.dynamicLibraries:
+      self.addDefine('HAVE_DYNAMIC_LIBRARIES', 1)
     self.useDynamic = self.argDB['with-dynamic'] and self.useShared and self.setCompilers.dynamicLibraries
     if self.useDynamic:
       self.addDefine('USE_DYNAMIC_LIBRARIES', 1)
