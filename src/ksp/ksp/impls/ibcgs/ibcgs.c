@@ -213,7 +213,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
     etan     = outsums[3];
     thetan   = outsums[4];
     kappan   = outsums[5];
-    if (ksp->lagnorm && ksp->its > 1) rnorm = sqrt(outsums[6]);
+    if (ksp->lagnorm && ksp->its > 1) rnorm = sqrt(PetscRealPart(outsums[6]));
 
     if (kappan == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"kappan is zero, iteration %D",ksp->its);
     if (thetan == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"thetan is zero, iteration %D",ksp->its);
