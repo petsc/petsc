@@ -4427,6 +4427,10 @@ namespace ALE {
       newMesh.setDepth(1);
       // Exchange new boundary vertices
       //   We can convert endpoints, and then just match to new vertex on this side
+      //   1) Create the overlap of edges which are vertex pairs (do not need for interpolated meshes)
+      //   2) Create a section of overlap edge --> new vertex (this will generalize to other split points in interpolated meshes)
+      //   3) Copy across new overlap
+      //   4) Fuse matches new vertex pairs and inserts them into the old overlap
     };
   };
 } // namespace ALE
