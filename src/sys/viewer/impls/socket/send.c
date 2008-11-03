@@ -88,6 +88,11 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 /*--------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "SOCKCall_Private" 
+/*
+    SOCKCall_Private - handles connected to an open port where someone is waiting.
+
+.seealso:   SOCKAnswer_Private()
+*/
 PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *t)
 {
   struct sockaddr_in sa;
@@ -136,6 +141,7 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
         sleep((unsigned) 1);
       } else if (errno == ECONNREFUSED) {
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
+        ierr = PetscInfo(0,"Connection refused in attaching socket, trying again");CHKERRQ(ierr);
         sleep((unsigned) 1);
       } else {
         perror(NULL); SETERRQ(PETSC_ERR_SYS,"system error");
@@ -154,6 +160,84 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
   PetscFunctionReturn(0);
 }
 
+#define MAXHOSTNAME 100
+/*-----------------------------------------------------------------*/
+/* The listenport variable is an ugly hack. If the user hits a         */
+/* control c while we are listening then we stop listening         */
+/* but do not close the listen. Therefore if we try to bind again  */
+/* and get an address in use, close the listen which was left      */
+/* hanging; the problem is if the user uses several portnumbers    */
+/* and control c we may not be able to close the correct listener. */
+static int listenport;
+#undef __FUNCT__  
+#define __FUNCT__ "SOCKEstablish_Private"
+static PetscErrorCode SOCKEstablish_Private(u_short portnum,int *ss)
+{
+  char               myname[MAXHOSTNAME+1];
+  int                s;
+  PetscErrorCode     ierr;
+  struct sockaddr_in sa;  
+  struct hostent     *hp;
+  int                optval = 1; /* Turn on the option */
+
+  PetscFunctionBegin;
+  ierr = PetscGetHostName(myname,MAXHOSTNAME);CHKERRQ(ierr);
+
+  ierr = PetscMemzero(&sa,sizeof(struct sockaddr_in));CHKERRQ(ierr);
+
+  hp = gethostbyname(myname);
+  if (!hp) SETERRQ(PETSC_ERR_SYS,"Unable to get hostent information from system");
+
+  sa.sin_family = hp->h_addrtype; 
+  sa.sin_port = htons(portnum); 
+
+  if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) {
+    SETERRQ(PETSC_ERR_SYS,"Error running socket() command");CHKERRQ(ierr);
+  }
+  ierr = setsockopt(s,SOL_SOCKET,SO_REUSEADDR,(char *)&optval,sizeof(optval));CHKERRQ(ierr);
+
+  while (bind(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
+#if defined(PETSC_HAVE_WSAGETLASTERROR)
+    ierr = WSAGetLastError();
+    if (ierr != WSAEADDRINUSE) {
+#else
+    if (errno != EADDRINUSE) { 
+#endif
+      close(s);
+      SETERRQ(PETSC_ERR_SYS,"Error from bind()");
+    }
+    close(listenport); 
+  }
+  listen(s,0);
+  *ss = s;
+  return(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SOCKAnswer_Private"
+static PetscErrorCode SOCKAnswer_Private(int portnumber,int *t)
+{
+  PetscErrorCode     ierr;
+  struct sockaddr_in isa; 
+#if defined(PETSC_HAVE_ACCEPT_SIZE_T)
+  size_t             i;
+#else
+  int                i;
+#endif
+
+  PetscFunctionBegin;
+/* open port*/
+  ierr = SOCKEstablish_Private((u_short) portnumber,&listenport);CHKERRQ(ierr);
+
+/* wait for someone to try to connect */
+  i = sizeof(struct sockaddr_in);
+  if ((*t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) {
+    SETERRQ(PETSC_ERR_SYS,"error from accept()\n");
+  }
+  close(listenport);  
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSocketOpen" 
 /*@C
@@ -164,7 +248,8 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
 
    Input Parameters:
 +  comm - the MPI communicator
-.  machine - the machine the server is running on
+.  machine - the machine the server is running on,, use PETSC_NULL for the local machine, use "server" to passively wait for
+             a connection from elsewhere
 -  port - the port to connect to, use PETSC_DEFAULT for the default
 
    Output Parameter:
@@ -284,8 +369,9 @@ EXTERN_C_END
 
   Input Parameters:
 +   v - viewer to connect
-.   machine - host to connect to
--   port - the port on the machine one is connecting to
+.   machine - host to connect to, use PETSC_NULL for the local machine,use "server" to passively wait for
+             a connection from elsewhere
+-   port - the port on the machine one is connecting to, use PETSC_DEFAULT for default
 
     Level: advanced
 
@@ -320,8 +406,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,cons
 
   ierr = MPI_Comm_rank(((PetscObject)v)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    ierr = PetscInfo2(v,"Connecting to socket process on port %D machine %s\n",port,mach);CHKERRQ(ierr);
-    ierr = SOCKCall_Private(mach,(int)port,&vmatlab->port);CHKERRQ(ierr);
+    ierr = PetscStrcmp(mach,"server",&tflg);CHKERRQ(ierr);
+    if (tflg) {
+      ierr = PetscInfo1(v,"Waiting for connection from socket process on port %D\n",port);CHKERRQ(ierr);
+      ierr = SOCKAnswer_Private((int)port,&vmatlab->port);CHKERRQ(ierr);
+    } else {
+      ierr = PetscInfo2(v,"Connecting to socket process on port %D machine %s\n",port,mach);CHKERRQ(ierr);
+      ierr = SOCKCall_Private(mach,(int)port,&vmatlab->port);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

@@ -31,9 +31,10 @@
        element number next to each vector entry
 .    PETSC_VIEWER_ASCII_SYMMODU - print parallel vectors without
        indicating the processor ranges
-.    PETSC_VIEWER_BINARY_NATIVE - store the object to the binary
+.    PETSC_VIEWER_NATIVE - store the object to the binary
       file in its native format (for example, dense
-       matrices are stored as dense)
+       matrices are stored as dense), DA vectors are dumped directly to the
+       file instead of being first put in the natural ordering
 .    PETSC_VIEWER_DRAW_BASIC - views the vector with a simple 1d plot
 .    PETSC_VIEWER_DRAW_LG - views the vector with a line graph
 -    PETSC_VIEWER_DRAW_CONTOUR - views the vector with a contour plot
@@ -86,13 +87,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscView
        all objects of a particular type
 .    PETSC_VIEWER_ASCII_INDEX - (for vectors) prints the vector
        element number next to each vector entry
-.    PETSC_VIEWER_BINARY_NATIVE - store the object to the binary
+.    PETSC_VIEWER_NATIVE - store the object to the binary
       file in its native format (for example, dense
-       matrices are stored as dense)
+       matrices are stored as dense), for DA vectors displays vectors in DA ordering, not natural
 .    PETSC_VIEWER_DRAW_BASIC - views the vector with a simple 1d plot
 .    PETSC_VIEWER_DRAW_LG - views the vector with a line graph
-.    PETSC_VIEWER_DRAW_CONTOUR - views the vector with a contour plot
--    PETSC_VIEWER_NATIVE - for DA vectors displays vectors in DA ordering, not natural
+-    PETSC_VIEWER_DRAW_CONTOUR - views the vector with a contour plot
 
    These formats are most often used for viewing matrices and vectors.
    Currently, the object name is used only in the Matlab format.

@@ -1000,7 +1000,8 @@ and PetscBinaryWrite() to see how this may be done.
 @*/  
 PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
+  PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -1010,7 +1011,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
     SETERRQ(PETSC_ERR_SUP,"Vector does not support load");
   }
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
-  ierr = (*vec->ops->loadintovector)(viewer,vec);CHKERRQ(ierr);
+  /*
+     Check if default loader has been overridden, but user request it anyways
+  */
+  ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+  if (vec->ops->loadintovectornative && format == PETSC_VIEWER_NATIVE) {
+    ierr   = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    ierr = (*vec->ops->loadintovectornative)(viewer,vec);CHKERRQ(ierr);
+    ierr   = PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
+  } else {
+    ierr = (*vec->ops->loadintovector)(viewer,vec);CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1059,6 +1070,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOperation(Vec vec,VecOperation op, void 
   /* save the native version of the viewer */
   if (op == VECOP_VIEW && !vec->ops->viewnative) {
     vec->ops->viewnative = vec->ops->view;
+  } else if (op == VECOP_LOADINTOVECTOR && !vec->ops->loadintovectornative) {
+    vec->ops->loadintovectornative = vec->ops->loadintovector;
   }
   (((void(**)(void))vec->ops)[(int)op]) = f;
   PetscFunctionReturn(0);

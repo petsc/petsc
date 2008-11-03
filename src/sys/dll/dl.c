@@ -6,69 +6,23 @@
 
 #include "petsc.h"
 #include "petscsys.h"
-#include "petscfix.h"
-
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-
-#if defined(PETSC_HAVE_PWD_H)
-#include <pwd.h>
-#endif
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#if defined(PETSC_HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(PETSC_HAVE_STDLIB_H)
-#include <stdlib.h>
-#endif
-#if defined(PETSC_HAVE_SYS_UTSNAME_H)
-#include <sys/utsname.h>
-#endif
-#if defined(PETSC_HAVE_WINDOWS_H)
-#include <windows.h>
-#endif
-#include <fcntl.h>
-#include <time.h>  
-#if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
-#include <sys/systeminfo.h>
-#endif
-#if defined(PETSC_HAVE_DLFCN_H)
-#include <dlfcn.h>
-#endif
-
-#endif
-
-
-/*
-   Contains the list of registered CCA components
-*/
-PetscFList CCAList = 0;
-
+#include "src/sys/dll/dlimpl.h"
 
 /* ------------------------------------------------------------------------------*/
 /*
       Code to maintain a list of opened dynamic libraries and load symbols
 */
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
 struct _n_PetscDLLibrary {
   PetscDLLibrary next;
-  void           *handle;
+  PetscDLHandle  handle;
   char           libname[PETSC_MAX_PATH_LEN];
 };
 
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode Petsc_DelTag(MPI_Comm,int,void*,void*);
-EXTERN_C_END
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryPrintPath"
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(void)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(PetscDLLibrary libs)
 {
-  PetscDLLibrary libs;
-
   PetscFunctionBegin;
-  libs = DLLibrariesLoaded;
   while (libs) {
     PetscErrorPrintf("  %s\n",libs->libname);
     libs = libs->next;
@@ -101,10 +55,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(void)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char libname[],char *lname,size_t llen,PetscTruth *found)
 {
-  char           *par2,buff[10],*en,*gz;
+  char           *buf,*par2,suffix[16],*gz,*so;
+  size_t         len;
   PetscErrorCode ierr;
-  size_t         len1,len2,len;
-  PetscTruth     tflg,flg;
 
   PetscFunctionBegin;
   /* 
@@ -113,53 +66,36 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
   */
   ierr = PetscStrlen(libname,&len);CHKERRQ(ierr);
   len  = PetscMax(4*len,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
-  ierr = PetscMalloc(len*sizeof(char),&par2);CHKERRQ(ierr);
+  ierr = PetscMalloc(len*sizeof(char),&buf);CHKERRQ(ierr);
+  par2 = buf;
   ierr = PetscStrreplace(comm,libname,par2,len);CHKERRQ(ierr);
 
-  /* 
-     Remove any file: header
-  */
-  ierr = PetscStrncmp(par2,"file:",5,&tflg);CHKERRQ(ierr);
-  if (tflg) {
-    ierr = PetscStrcpy(par2,par2+5);CHKERRQ(ierr);
-  }
-
-  /* strip out .a from it if user put it in by mistake */
-  ierr    = PetscStrlen(par2,&len);CHKERRQ(ierr);
-  if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
-
-  /* remove .gz if it ends library name */
-  ierr = PetscStrstr(par2,".gz",&gz);CHKERRQ(ierr);
+  /* temporarily remove .gz if it ends library name */
+  ierr = PetscStrrstr(par2,".gz",&gz);CHKERRQ(ierr);
   if (gz) {
     ierr = PetscStrlen(gz,&len);CHKERRQ(ierr);
-    if (len == 3) {
-      *gz = 0;
-    }
+    if (len != 3) gz  = 0; /* do not end (exactly) with .gz */
+    else          *gz = 0; /* ends with .gz, so remove it   */
   }
+  /* strip out .a from it if user put it in by mistake */
+  ierr = PetscStrlen(par2,&len);CHKERRQ(ierr);
+  if (par2[len-1] == 'a' && par2[len-2] == '.') par2[len-2] = 0;
+
 
   /* see if library name does already not have suffix attached */
-  ierr = PetscStrcpy(buff,".");CHKERRQ(ierr);
-  ierr = PetscStrcat(buff,PETSC_SLSUFFIX);CHKERRQ(ierr);
-  ierr = PetscStrstr(par2,buff,&en);CHKERRQ(ierr);
-  if (en) {
-    ierr = PetscStrlen(en,&len1);CHKERRQ(ierr);
-    ierr = PetscStrlen(PETSC_SLSUFFIX,&len2);CHKERRQ(ierr); 
-    flg = (PetscTruth) (len1 != 1 + len2);
-  } else {
-    flg = PETSC_TRUE;
-  }
-  if (flg) {
-    ierr = PetscStrcat(par2,".");CHKERRQ(ierr);
-    ierr = PetscStrcat(par2,PETSC_SLSUFFIX);CHKERRQ(ierr);
-  }
+  ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
+  ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
+  ierr = PetscStrrstr(par2,suffix,&so);CHKERRQ(ierr);
+  /* and attach the suffix if it is not there */
+  if (!so) { ierr = PetscStrcat(par2,suffix);CHKERRQ(ierr); }
 
-  /* put the .gz back on if it was there */
-  if (gz) {
-    ierr = PetscStrcat(par2,".gz");CHKERRQ(ierr);
-  }
+  /* restore the .gz suffix if it was there */
+  if (gz) { ierr = PetscStrcat(par2,".gz");CHKERRQ(ierr); }
 
+  /* and finally retrieve the file */
   ierr = PetscFileRetrieve(comm,par2,lname,llen,found);CHKERRQ(ierr);
-  ierr = PetscFree(par2);CHKERRQ(ierr);
+
+  ierr = PetscFree(buf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -167,16 +103,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryOpen"
 /*@C
-   PetscDLLibraryOpen - Opens a dynamic link library
+   PetscDLLibraryOpen - Opens a PETSc dynamic link library
 
      Collective on MPI_Comm
 
    Input Parameters:
 +   comm - processors that are opening the library
--   libname - name of the library, can be relative or absolute
+-   path - name of the library, can be relative or absolute
 
    Output Parameter:
-.   handle - library handle 
+.   entry - a PETSc dynamic link library entry
 
    Level: developer
 
@@ -186,85 +122,75 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
    ${PETSC_ARCH} occuring in directoryname and filename 
    will be replaced with the appropriate value.
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libname[],void **handle)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char path[],PetscDLLibrary *entry)
 {
   PetscErrorCode ierr;
-  char           *par2,registername[128],*ptr,*ptrp;
-  PetscTruth     foundlibrary;
+  PetscTruth     foundlibrary,match;
+  char           libname[PETSC_MAX_PATH_LEN],par2[PETSC_MAX_PATH_LEN],suffix[16],*s;
+  char           *basename,registername[128];
+  PetscDLHandle  handle;
   PetscErrorCode (*func)(const char*) = NULL;
   size_t         len;
 
   PetscFunctionBegin;
-  *handle = NULL;
-  ierr = PetscMalloc(PETSC_MAX_PATH_LEN*sizeof(char),&par2);CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(comm,libname,par2,PETSC_MAX_PATH_LEN,&foundlibrary);CHKERRQ(ierr);
-  if (!foundlibrary) SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to locate dynamic library:\n  %s\n",libname);
+  PetscValidCharPointer(libname,2);
+  PetscValidPointer(entry,3);
 
+  *entry = PETSC_NULL;
+  
+  /* retrieve the library */
+  ierr = PetscInfo1(0,"Retrieving %s\n",path);CHKERRQ(ierr);
+  ierr = PetscDLLibraryRetrieve(comm,path,par2,PETSC_MAX_PATH_LEN,&foundlibrary);CHKERRQ(ierr);
+  if (!foundlibrary) SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to locate dynamic library:\n  %s\n",path);
   /* Eventually config/configure.py should determine if the system needs an executable dynamic library */
 #define PETSC_USE_NONEXECUTABLE_SO
 #if !defined(PETSC_USE_NONEXECUTABLE_SO)
   ierr  = PetscTestFile(par2,'x',&foundlibrary);CHKERRQ(ierr);
-  if (!foundlibrary) SETERRQ2(PETSC_ERR_FILE_OPEN,"Dynamic library is not executable:\n  %s\n  %s\n",libname,par2);
+  if (!foundlibrary) SETERRQ2(PETSC_ERR_FILE_OPEN,"Dynamic library is not executable:\n  %s\n  %s\n",path,par2);
 #endif
 
-  /*
-      Mode indicates symbols required by symbol loaded with dlsym() 
-     are only loaded when required (not all together) also indicates
-     symbols required can be contained in other libraries also opened
-     with dlopen()
-  */
-  ierr = PetscInfo1(0,"Opening %s\n",libname);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_LOADLIBRARY)
-  *handle = LoadLibrary(par2);
-#elif defined(PETSC_HAVE_RTLD_GLOBAL)
-  *handle = dlopen(par2,RTLD_LAZY | RTLD_GLOBAL); 
-#else
-  *handle = dlopen(par2,RTLD_LAZY); 
-#endif
+  /* copy path and setup shared library suffix  */
+  ierr = PetscStrncpy(libname,path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+  ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
+  ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
+  /* remove wrong suffixes from libname */
+  ierr = PetscStrrstr(libname,".gz",&s);CHKERRQ(ierr);
+  if (s && s[3] == 0) s[0] = 0;
+  ierr = PetscStrrstr(libname,".a",&s);CHKERRQ(ierr);
+  if (s && s[2] == 0) s[0] = 0;
+  /* remove shared suffix from libname */
+  ierr = PetscStrrstr(libname,suffix,&s);CHKERRQ(ierr);
+  if (s) s[0] = 0;
 
-  if (!*handle) {
-#if defined(PETSC_HAVE_DLERROR)
-    SETERRQ3(PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  %s\n  Error message from dlopen() %s\n",libname,par2,dlerror());
-#elif defined(PETSC_HAVE_GETLASTERROR)
-    {
-      DWORD erc;
-      char  *buff;
-      erc   = GetLastError();
-      FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL,erc,MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),(LPSTR)&buff,0,NULL);
-      ierr = PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,PETSC_ERR_FILE_OPEN,1,
-                        "Unable to open dynamic library:\n  %s\n  %s\n  Error message from LoadLibrary() %s\n",libname,par2,buff);
-      LocalFree(buff);
-      return(ierr);
-    }
-#endif
+  /* open the dynamic library */
+  ierr = PetscInfo1(0,"Opening dynamic library %s\n",libname);CHKERRQ(ierr);
+  ierr = PetscDLOpen(par2,PETSC_DL_DECIDE,&handle);CHKERRQ(ierr);
+
+  /* look for [path/]libXXXXX.YYY and extract out the XXXXXX */
+  ierr = PetscStrrchr(libname,'/',&basename);CHKERRQ(ierr); /* XXX Windows ??? */
+  if (!basename) basename = libname;
+  ierr = PetscStrncmp(basename,"lib",3,&match);CHKERRQ(ierr);
+  if (match) { 
+    basename = basename + 3; 
+  } else { 
+    ierr = PetscInfo1(0,"Dynamic library %s do not have lib prefix\n",libname);CHKERRQ(ierr); 
   }
-
-  /* build name of symbol to look for based on libname */
+  ierr = PetscStrlen(basename,&len);CHKERRQ(ierr);
   ierr = PetscStrcpy(registername,"PetscDLLibraryRegister_");CHKERRQ(ierr);
-  /* look for libXXXXX.YYY and extract out the XXXXXX */
-  ierr = PetscStrrstr(libname,"lib",&ptr);CHKERRQ(ierr);
-  if (!ptr) SETERRQ1(PETSC_ERR_ARG_WRONG,"Dynamic library name must have lib prefix:%s",libname);
-  ierr = PetscStrchr(ptr+3,'.',&ptrp);CHKERRQ(ierr);
-  if (ptrp) {
-    len = ptrp - ptr - 3;
-  } else {
-    ierr = PetscStrlen(ptr+3,&len);CHKERRQ(ierr);
-  }
-  ierr = PetscStrncat(registername,ptr+3,len);CHKERRQ(ierr);
-
-#if defined(PETSC_HAVE_GETPROCADDRESS)
-  func = (PetscErrorCode (*)(const char *)) GetProcAddress((HMODULE)*handle,registername);
-#else
-  func = (PetscErrorCode (*)(const char *)) dlsym(*handle,registername);
-#endif
+  ierr = PetscStrncat(registername,basename,len);CHKERRQ(ierr);
+  ierr = PetscDLSym(handle,registername,(void**)&func);CHKERRQ(ierr);
   if (func) {
-    ierr = (*func)(libname);CHKERRQ(ierr);
     ierr = PetscInfo1(0,"Loading registered routines from %s\n",libname);CHKERRQ(ierr);
+    ierr = (*func)(libname);CHKERRQ(ierr);
   } else {
-    SETERRQ2(PETSC_ERR_FILE_UNEXPECTED,"Able to locate dynamic library %s, but cannot load symbol  %s\n",libname,registername);
+    ierr = PetscInfo2(0,"Dynamic library %s do not have symbol %s\n",libname,registername);CHKERRQ(ierr);
   }
-  ierr = PetscFree(par2);CHKERRQ(ierr);
+  
+  ierr = PetscNew(struct _n_PetscDLLibrary,entry);CHKERRQ(ierr);
+  (*entry)->next   = 0;
+  (*entry)->handle = handle;
+  ierr = PetscStrcpy((*entry)->libname,libname);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
@@ -277,7 +203,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libna
 
    Input Parameter:
 +  comm - communicator that will open the library
-.  inlist - list of already open libraries that may contain symbol (checks here before path)
+.  outlist - list of already open libraries that may contain symbol (checks here before path)
 .  path     - optional complete library name
 -  insymbol - name of symbol
 
@@ -292,73 +218,59 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libna
         Will attempt to (retrieve and) open the library if it is not yet been opened.
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *inlist,const char path[],const char insymbol[],void **value)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *outlist,const char path[],const char insymbol[],void **value)
 {
-  char           *par1,*symbol;
-  PetscErrorCode ierr;
+  char           libname[PETSC_MAX_PATH_LEN],suffix[16],*symbol,*s;
   size_t         len;
   PetscDLLibrary nlist,prev,list;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (inlist) list = *inlist; else list = PETSC_NULL;
+  PetscValidPointer(outlist,2);
+  if (path) PetscValidCharPointer(path,3);
+  PetscValidCharPointer(insymbol,4);
+  PetscValidPointer(value,5);
+
+  list   = *outlist;
   *value = 0;
 
   /* make copy of symbol so we can edit it in place */
   ierr = PetscStrlen(insymbol,&len);CHKERRQ(ierr);
   ierr = PetscMalloc((len+1)*sizeof(char),&symbol);CHKERRQ(ierr);
   ierr = PetscStrcpy(symbol,insymbol);CHKERRQ(ierr);
-
-  /* 
-      If symbol contains () then replace with a NULL, to support functionname() 
-  */
-  ierr = PetscStrchr(symbol,'(',&par1);CHKERRQ(ierr);
-  if (par1) *par1 = 0;
-
+  /* If symbol contains () then replace with a NULL, to support functionname() */
+  ierr = PetscStrchr(symbol,'(',&s);CHKERRQ(ierr);
+  if (s) s[0] = 0;
 
   /*
        Function name does include library 
        -------------------------------------
   */
   if (path && path[0] != '\0') {
-    void *handle;
-    
-    /*   
-        Look if library is already opened and in path
-    */
-    nlist = list;
+    /* copy path and remove suffix from libname */
+    ierr = PetscStrncpy(libname,path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
+    ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
+    ierr = PetscStrrstr(libname,suffix,&s);CHKERRQ(ierr);
+    if (s) s[0] = 0;
+    /* Look if library is already opened and in path */
     prev  = 0;
+    nlist = list;
     while (nlist) {
       PetscTruth match;
-
-      ierr = PetscStrcmp(nlist->libname,path,&match);CHKERRQ(ierr);
-      if (match) {
-        handle = nlist->handle;
-        goto done;
-      }
+      ierr = PetscStrcmp(nlist->libname,libname,&match);CHKERRQ(ierr);
+      if (match) goto done;
       prev  = nlist;
       nlist = nlist->next;
     }
-    ierr = PetscDLLibraryOpen(comm,path,&handle);CHKERRQ(ierr);
-
-    ierr          = PetscNew(struct _n_PetscDLLibrary,&nlist);CHKERRQ(ierr);
-    nlist->next   = 0;
-    nlist->handle = handle;
-    ierr = PetscStrcpy(nlist->libname,path);CHKERRQ(ierr);
-
-    if (prev) {
-      prev->next = nlist;
-    } else {
-      if (inlist) *inlist = nlist;
-      else {ierr = PetscDLLibraryClose(nlist);CHKERRQ(ierr);}
-    }
+    /* open the library and append it to path */
+    ierr = PetscDLLibraryOpen(comm,path,&nlist);CHKERRQ(ierr);
     ierr = PetscInfo1(0,"Appending %s to dynamic library search path\n",path);CHKERRQ(ierr);
+    if (prev) { prev->next = nlist; }
+    else      { *outlist   = nlist; }
 
-    done:;
-#if defined(PETSC_HAVE_GETPROCADDRESS)
-    *value   = GetProcAddress((HMODULE)handle,symbol);
-#else
-    *value   = dlsym(handle,symbol);
-#endif
+  done:;
+    ierr = PetscDLSym(nlist->handle,symbol,value);CHKERRQ(ierr);
     if (!*value) {
       SETERRQ2(PETSC_ERR_PLIB,"Unable to locate function %s in dynamic library %s",insymbol,path);
     }
@@ -370,25 +282,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *i
   */
   } else {
     while (list) {
-#if defined(PETSC_HAVE_GETPROCADDRESS)
-      *value = GetProcAddress((HMODULE)list->handle,symbol);
-#else
-      *value =  dlsym(list->handle,symbol);
-#endif
+      ierr = PetscDLSym(list->handle,symbol,value);CHKERRQ(ierr);
       if (*value) {
-        ierr = PetscInfo2(0,"Loading function %s from dynamic library %s\n",symbol,list->libname);CHKERRQ(ierr);
+        ierr = PetscInfo2(0,"Loading symbol %s from dynamic library %s\n",symbol,list->libname);CHKERRQ(ierr);
         break;
       }
       list = list->next;
     }
     if (!*value) {
-#if defined(PETSC_HAVE_GETPROCADDRESS)
-      *value = GetProcAddress(GetCurrentProcess(),symbol);
-#else
-      *value = dlsym(0,symbol);
-#endif
+      ierr = PetscDLSym(PETSC_NULL,symbol,value);CHKERRQ(ierr);
       if (*value) {
-        ierr = PetscInfo1(0,"Loading function %s from object code\n",symbol);CHKERRQ(ierr);
+        ierr = PetscInfo1(0,"Loading symbol %s from object code\n",symbol);CHKERRQ(ierr);
       }
     }
   }
@@ -407,7 +311,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *i
 
      Input Parameters:
 +     comm - MPI communicator
--     libname - name of the library
+-     path - name of the library
 
      Output Parameter:
 .     outlist - list of libraries
@@ -416,23 +320,24 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *i
 
      Notes: if library is already in path will not add it.
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const char libname[])
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const char path[])
 {
   PetscDLLibrary list,prev;
-  void*          handle;
   PetscErrorCode ierr;
   size_t         len;
   PetscTruth     match,dir;
-  char           program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
+  char           program[PETSC_MAX_PATH_LEN],found[8*PETSC_MAX_PATH_LEN];
+  char           *libname,suffix[16],*s;
   PetscToken     token;
 
   PetscFunctionBegin;
-
-  /* is libname a directory? */
-  ierr = PetscTestDirectory(libname,'r',&dir);CHKERRQ(ierr);
+  PetscValidPointer(outlist,2);
+  
+  /* is path a directory? */
+  ierr = PetscTestDirectory(path,'r',&dir);CHKERRQ(ierr);
   if (dir) {
-    ierr = PetscInfo1(0,"Checking directory %s for dynamic libraries\n",libname);CHKERRQ(ierr);
-    ierr  = PetscStrcpy(program,libname);CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"Checking directory %s for dynamic libraries\n",path);CHKERRQ(ierr);
+    ierr  = PetscStrcpy(program,path);CHKERRQ(ierr);
     ierr  = PetscStrlen(program,&len);CHKERRQ(ierr);
     if (program[len-1] == '/') {
       ierr  = PetscStrcat(program,"*.");CHKERRQ(ierr);
@@ -441,52 +346,42 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary
     }
     ierr  = PetscStrcat(program,PETSC_SLSUFFIX);CHKERRQ(ierr);
 
-    ierr = PetscLs(comm,program,buf,8*PETSC_MAX_PATH_LEN,&dir);CHKERRQ(ierr);
+    ierr = PetscLs(comm,program,found,8*PETSC_MAX_PATH_LEN,&dir);CHKERRQ(ierr);
     if (!dir) PetscFunctionReturn(0);
-    found = buf;
   } else {
-    found = (char*)libname;
+    ierr = PetscStrncpy(found,path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   }
   ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
   ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
 
   ierr = PetscTokenCreate(found,'\n',&token);CHKERRQ(ierr);
-  ierr = PetscTokenFind(token,&libname1);CHKERRQ(ierr);
-  ierr = PetscStrstr(libname1,suffix,&s);CHKERRQ(ierr);
-  if (s) s[0] = 0;
-  while (libname1) {
-
+  ierr = PetscTokenFind(token,&libname);CHKERRQ(ierr);
+  while (libname) {
+    /* remove suffix from libname */
+    ierr = PetscStrrstr(libname,suffix,&s);CHKERRQ(ierr);
+    if (s) s[0] = 0;
     /* see if library was already open then we are done */
     list  = prev = *outlist;
     match = PETSC_FALSE;
     while (list) {
-
-      ierr = PetscStrcmp(list->libname,libname1,&match);CHKERRQ(ierr);
+      ierr = PetscStrcmp(list->libname,libname,&match);CHKERRQ(ierr);
       if (match) break;
       prev = list;
       list = list->next;
     }
+    /* restore suffix from libname */
+    if (s) s[0] = '.';
     if (!match) {
-
-      ierr = PetscDLLibraryOpen(comm,libname1,&handle);CHKERRQ(ierr);
-
-      ierr         = PetscNew(struct _n_PetscDLLibrary,&list);CHKERRQ(ierr);
-      list->next   = 0;
-      list->handle = handle;
-      ierr = PetscStrcpy(list->libname,libname1);CHKERRQ(ierr);
-
+      /* open the library and add to end of list */
+      ierr = PetscDLLibraryOpen(comm,libname,&list);CHKERRQ(ierr);
+      ierr = PetscInfo1(0,"Appending %s to dynamic library search path\n",libname);CHKERRQ(ierr);
       if (!*outlist) {
 	*outlist   = list;
       } else {
 	prev->next = list;
       }
-      ierr = PetscInfo1(0,"Appending %s to dynamic library search path\n",libname1);CHKERRQ(ierr);
     }
-    ierr = PetscTokenFind(token,&libname1);CHKERRQ(ierr);
-    if (libname1) {
-      ierr = PetscStrstr(libname1,suffix,&s);CHKERRQ(ierr);
-      if (s) s[0] = 0;
-    }
+    ierr = PetscTokenFind(token,&libname);CHKERRQ(ierr);
   }
   ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -502,7 +397,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary
 
      Input Parameters:
 +     comm - MPI communicator
--     libname - name of the library
+-     path - name of the library
 
      Output Parameter:
 .     outlist - list of libraries
@@ -512,23 +407,24 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary
      Notes: If library is already in path will remove old reference.
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrary *outlist,const char libname[])
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrary *outlist,const char path[])
 {
   PetscDLLibrary list,prev;
-  void*          handle;
   PetscErrorCode ierr;
   size_t         len;
   PetscTruth     match,dir;
-  char           program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
+  char           program[PETSC_MAX_PATH_LEN],found[8*PETSC_MAX_PATH_LEN];
+  char           *libname,suffix[16],*s;
   PetscToken     token;
 
   PetscFunctionBegin;
+  PetscValidPointer(outlist,2);
  
-  /* is libname a directory? */
-  ierr = PetscTestDirectory(libname,'r',&dir);CHKERRQ(ierr);
+  /* is path a directory? */
+  ierr = PetscTestDirectory(path,'r',&dir);CHKERRQ(ierr);
   if (dir) {
-    ierr = PetscInfo1(0,"Checking directory %s for dynamic libraries\n",libname);CHKERRQ(ierr);
-    ierr  = PetscStrcpy(program,libname);CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"Checking directory %s for dynamic libraries\n",path);CHKERRQ(ierr);
+    ierr  = PetscStrcpy(program,path);CHKERRQ(ierr);
     ierr  = PetscStrlen(program,&len);CHKERRQ(ierr);
     if (program[len-1] == '/') {
       ierr  = PetscStrcat(program,"*.");CHKERRQ(ierr);
@@ -537,54 +433,47 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrar
     }
     ierr  = PetscStrcat(program,PETSC_SLSUFFIX);CHKERRQ(ierr);
 
-    ierr = PetscLs(comm,program,buf,8*PETSC_MAX_PATH_LEN,&dir);CHKERRQ(ierr);
+    ierr = PetscLs(comm,program,found,8*PETSC_MAX_PATH_LEN,&dir);CHKERRQ(ierr);
     if (!dir) PetscFunctionReturn(0);
-    found = buf;
   } else {
-    found = (char*)libname;
+    ierr = PetscStrncpy(found,path,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   }
 
   ierr = PetscStrcpy(suffix,".");CHKERRQ(ierr);
   ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
 
   ierr = PetscTokenCreate(found,'\n',&token);CHKERRQ(ierr);
-  ierr = PetscTokenFind(token,&libname1);CHKERRQ(ierr);
-  ierr = PetscStrstr(libname1,suffix,&s);CHKERRQ(ierr);
-  if (s) s[0] = 0;
-  while (libname1) {
+  ierr = PetscTokenFind(token,&libname);CHKERRQ(ierr);
+  while (libname) {
+    /* remove suffix from libname */
+    ierr = PetscStrstr(libname,suffix,&s);CHKERRQ(ierr);
+    if (s) s[0] = 0;
     /* see if library was already open and move it to the front */
-    list  = *outlist;
     prev  = 0;
+    list  = *outlist;
     match = PETSC_FALSE;
     while (list) {
-
-      ierr = PetscStrcmp(list->libname,libname1,&match);CHKERRQ(ierr);
+      ierr = PetscStrcmp(list->libname,libname,&match);CHKERRQ(ierr);
       if (match) {
+	ierr = PetscInfo1(0,"Moving %s to begin of dynamic library search path\n",libname);CHKERRQ(ierr);
 	if (prev) prev->next = list->next;
-	list->next = *outlist;
-	*outlist   = list;
+	if (prev) list->next = *outlist;
+	*outlist = list;
 	break;
       }
       prev = list;
       list = list->next;
     }
+    /* restore suffix from libname */
+    if (s) s[0] = '.';
     if (!match) {
       /* open the library and add to front of list */
-      ierr = PetscDLLibraryOpen(comm,libname1,&handle);CHKERRQ(ierr);
-      
-      ierr = PetscInfo1(0,"Prepending %s to dynamic library search path\n",libname1);CHKERRQ(ierr);
-
-      ierr         = PetscNew(struct _n_PetscDLLibrary,&list);CHKERRQ(ierr);
-      list->handle = handle;
-      list->next   = *outlist;
-      ierr = PetscStrcpy(list->libname,libname1);CHKERRQ(ierr);
-      *outlist     = list;
+      ierr = PetscDLLibraryOpen(comm,libname,&list);CHKERRQ(ierr);
+      ierr = PetscInfo1(0,"Prepending %s to dynamic library search path\n",libname);CHKERRQ(ierr);
+      list->next = *outlist;
+      *outlist   = list;
     }
-    ierr = PetscTokenFind(token,&libname1);CHKERRQ(ierr);
-    if (libname1) {
-      ierr = PetscStrstr(libname1,suffix,&s);CHKERRQ(ierr);
-      if (s) s[0] = 0;
-    }
+    ierr = PetscTokenFind(token,&libname);CHKERRQ(ierr);
   }
   ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -598,25 +487,42 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrar
     Collective on PetscDLLibrary
 
     Input Parameter:
-.     next - library list
+.     head - library list
 
      Level: developer
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary next)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary list)
 {
-  PetscDLLibrary prev;
+  PetscTruth     done = PETSC_FALSE;
+  PetscDLLibrary prev,tail;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  while (next) {
-    prev = next;
-    next = next->next;
-    /* free the space in the prev data-structure */
-    ierr = PetscFree(prev);CHKERRQ(ierr);
-  }
+  if (!list) PetscFunctionReturn(0);
+  /* traverse the list in reverse order */
+  while (!done) {
+    if (!list->next) done = PETSC_TRUE;
+    prev = tail = list;
+    while (tail->next) {
+      prev = tail;
+      tail = tail->next;
+    }
+    prev->next = 0;
+    /* close the dynamic library and free the space in entry data-structure*/
+    ierr = PetscInfo1(0,"Closing dynamic library %s\n",tail->libname);CHKERRQ(ierr);
+    ierr = PetscDLClose(&tail->handle);CHKERRQ(ierr);
+    ierr = PetscFree(tail);CHKERRQ(ierr);
+  };
   PetscFunctionReturn(0);
 }
+
+/* ------------------------------------------------------------------------------*/
+
+/*
+   Contains the list of registered CCA components
+*/
+PetscFList CCAList = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryCCAAppend"
@@ -628,7 +534,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary next)
 
      Input Parameters:
 +     comm - MPI communicator
--     libname - name of directory to check
+-     dirname - name of directory to check
 
      Output Parameter:
 .     outlist - list of libraries
@@ -696,8 +602,3 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibr
   ierr = PetscTokenDestroy(token1);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-#endif
-
-

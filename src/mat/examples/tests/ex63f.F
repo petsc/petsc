@@ -46,7 +46,7 @@
 !
          call PetscViewerBinaryOpen(PETSC_COMM_SELF,'dense.mat',           &
      &        FILE_MODE_WRITE,view,ierr)
-         call PetscViewerSetFormat(view,PETSC_VIEWER_BINARY_NATIVE,ierr)
+         call PetscViewerSetFormat(view,PETSC_VIEWER_NATIVE,ierr)
          call MatView(A,view,ierr)
          call PetscViewerDestroy(view,ierr)
          call MatDestroy(A,ierr)

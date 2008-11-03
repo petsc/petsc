@@ -57,7 +57,7 @@ int main(int argc,char **args)
       Store the binary matrix to a file
   */
   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD, "matrix.dat", FILE_MODE_WRITE, &view);CHKERRQ(ierr);
-  ierr = PetscViewerSetFormat(view, PETSC_VIEWER_BINARY_NATIVE);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(view, PETSC_VIEWER_NATIVE);CHKERRQ(ierr);
   ierr = MatView(A,view);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(view);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);

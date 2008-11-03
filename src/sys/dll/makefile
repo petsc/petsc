@@ -3,10 +3,10 @@ ALL: lib
 CFLAGS    =  -DPETSC_SLSUFFIX='"${SL_LINKER_SUFFIX}"'
 FFLAGS    =
 CPPFLAGS  = 
-SOURCEC	  =  dl.c   reg.c
+SOURCEC	  = dlimpl.c dl.c   reg.c
 SOURCEF	  =
 SOURCEH	  = 
-OBJSC	  = dl.o   reg.o
+OBJSC	  = dlimpl.o dl.o   reg.o
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc

@@ -11,18 +11,17 @@
 
 typedef struct  {
   int           fdes;            /* file descriptor, ignored if using MPI IO */
+#if defined(PETSC_HAVE_MPIIO)
+  PetscTruth    MPIIO;
+  MPI_File      mfdes;           /* ignored unless using MPI IO */    
+  MPI_Offset    moff;
+#endif
   PetscFileMode btype;           /* read or write? */
   FILE          *fdes_info;      /* optional file containing info on binary file*/
   PetscTruth    storecompressed; /* gzip the write binary file when closing it*/
   char          *filename;
    PetscTruth    skipinfo;        /* Don't create info file for writing; don't use for reading */
   PetscTruth    skipoptions;     /* don't use PETSc options database when loading */
-
-#if defined(PETSC_HAVE_MPIIO)
-  PetscTruth    MPIIO;
-  MPI_File      mfdes;           /* ignored unless using MPI IO */    
-  MPI_Offset    moff;
-#endif
 } PetscViewer_Binary;
 
 #undef __FUNCT__  

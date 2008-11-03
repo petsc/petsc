@@ -590,7 +590,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
     ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
 
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_BINARY_NATIVE) {
+    if (format == PETSC_VIEWER_NATIVE) {
 
       if (!rank) {
         /* store the matrix as a dense matrix */
@@ -640,7 +640,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
         ierr = MPI_Send(a->v,mat->rmap->n*mat->cmap->N,MPIU_SCALAR,0,tag,((PetscObject)mat)->comm);CHKERRQ(ierr);
       }
     } else {
-      SETERRQ(PETSC_ERR_SUP,"To store a parallel dense matrix you must first call PetscViewerSetFormat(viewer,PETSC_VIEWER_BINARY_NATIVE");
+      SETERRQ(PETSC_ERR_SUP,"To store a parallel dense matrix you must first call PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE");
     }
   }
   PetscFunctionReturn(0);

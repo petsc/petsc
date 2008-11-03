@@ -1,6 +1,6 @@
 /* 
-     This is the definition of the Matlab viewer structure. Note: 
-  each viewer has a different data structure.
+     This is the definition of the socket viewer structure. This starts the same as the PetscViewer_Binary() so the
+   binary read/writes can be called directly on it.
 */
 
 #include "src/sys/viewer/viewerimpl.h"   /*I  "petsc.h"  I*/
@@ -8,6 +8,9 @@
 
 typedef struct {
   int           port;
+#if defined(PETSC_HAVE_MPIIO)
+  PetscTruth    MPIIO;
+#endif
 } PetscViewer_Socket;
 
 #define PETSCSOCKETDEFAULTPORT    5005
