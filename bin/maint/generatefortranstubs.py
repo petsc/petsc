@@ -47,9 +47,12 @@ def FixDir(petscdir,indir,dir):
       return
     inbuf = fd.read()
     fd.close()
+    cppflags = ""
     libbase = ""
     locdir = ""
     for line in inbuf.splitlines():
+      if line.find('CPPFLAGS') >=0:
+        cppflags = line
       if line.find('LIBBASE') >=0:
         libbase = line
       elif line.find('LOCDIR') >=0:
@@ -62,6 +65,7 @@ def FixDir(petscdir,indir,dir):
     outbuf  =  '\n'
     outbuf +=  "#requirespackage   'PETSC_HAVE_FORTRAN'\n"
     outbuf +=  'ALL: lib\n'
+    outbuf +=   cppflags + '\n'
     outbuf +=  'CFLAGS   =\n'
     outbuf +=  'FFLAGS   =\n'
     outbuf +=  'SOURCEC  = ' +' '.join(names)+ '\n'
