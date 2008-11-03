@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_SeqAIJ"

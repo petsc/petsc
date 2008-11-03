@@ -38,7 +38,7 @@ T*/
 #include "petscda.h"
 #include "petscdmmg.h"
 #include "petscsnes.h"
-#include "src/snes/impls/ls/ls.h"
+#include "../src/snes/impls/ls/ls.h"
 /* 
    User-defined application context - contains data needed by the 
    application-provided call-back routines, FormJacobianLocal() and

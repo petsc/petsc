@@ -5,7 +5,7 @@
 */
 
 #include "petscsys.h"
-#include "src/sys/viewer/impls/socket/socket.h"
+#include "../src/sys/viewer/impls/socket/socket.h"
 
 #include <errno.h>
 #if defined(PETSC_HAVE_STDLIB_H)

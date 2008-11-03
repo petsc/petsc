@@ -5,7 +5,7 @@
 */
 
     
-#include "src/mat/impls/dense/mpi/mpidense.h"    /*I   "petscmat.h"  I*/
+#include "../src/mat/impls/dense/mpi/mpidense.h"    /*I   "petscmat.h"  I*/
 #if defined(PETSC_HAVE_PLAPACK)
 static PetscMPIInt Plapack_nprows,Plapack_npcols,Plapack_ierror,Plapack_nb_alg;
 static MPI_Comm Plapack_comm_2d;

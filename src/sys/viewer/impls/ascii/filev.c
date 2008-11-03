@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petsc.h"   I*/
+#include "../src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petsc.h"   I*/
 #include "petscfix.h"
 #include <stdarg.h>
 
@@ -369,7 +369,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIUseTabs(PetscViewer viewer,PetscT
 
 /* ----------------------------------------------------------------------- */
 
-#include "src/sys/fileio/mprint.h" /* defines the queue datastructures and variables */
+#include "../src/sys/fileio/mprint.h" /* defines the queue datastructures and variables */
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerASCIIPrintf" 

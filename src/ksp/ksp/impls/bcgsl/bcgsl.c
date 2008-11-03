@@ -6,7 +6,7 @@
  * round-off buildup.
  */
 #include "petscblaslapack.h"
-#include "include/private/kspimpl.h"              /*I   "petscksp.h" I*/
+#include "private/kspimpl.h"              /*I   "petscksp.h" I*/
 #include "bcgsl.h"
 
 

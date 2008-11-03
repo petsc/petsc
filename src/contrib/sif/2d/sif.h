@@ -21,18 +21,18 @@ C  Other include statements may be needed if using additional PETSc
 C  routines in a Fortran program, e.g.,
 C     is.h     - index sets
 
-#include "include/FINCLUDE/petsc.h"
-#include "include/FINCLUDE/is.h"
-#include "include/FINCLUDE/vec.h"
-#include "include/FINCLUDE/da.h"
-#include "include/FINCLUDE/mat.h"
-#include "include/FINCLUDE/ksp.h"
-#include "include/FINCLUDE/pc.h"
-#include "include/FINCLUDE/sles.h"
-#include "include/FINCLUDE/snes.h"
-#include "include/FINCLUDE/ts.h"
-#include "include/FINCLUDE/viewer.h"
-#include "include/FINCLUDE/draw.h"
+#include "fINCLUDE/petsc.h"
+#include "fINCLUDE/is.h"
+#include "fINCLUDE/vec.h"
+#include "fINCLUDE/da.h"
+#include "fINCLUDE/mat.h"
+#include "fINCLUDE/ksp.h"
+#include "fINCLUDE/pc.h"
+#include "fINCLUDE/sles.h"
+#include "fINCLUDE/snes.h"
+#include "fINCLUDE/ts.h"
+#include "fINCLUDE/viewer.h"
+#include "fINCLUDE/draw.h"
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C

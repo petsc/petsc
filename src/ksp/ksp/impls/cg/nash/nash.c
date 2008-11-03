@@ -1,7 +1,7 @@
 #define PETSCKSP_DLL
 
-#include "include/private/kspimpl.h"             /*I "petscksp.h" I*/
-#include "src/ksp/ksp/impls/cg/nash/nash.h"
+#include "private/kspimpl.h"             /*I "petscksp.h" I*/
+#include "../src/ksp/ksp/impls/cg/nash/nash.h"
 
 #define NASH_PRECONDITIONED_DIRECTION   0
 #define NASH_UNPRECONDITIONED_DIRECTION 1

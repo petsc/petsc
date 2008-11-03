@@ -5,10 +5,10 @@
           C = A * B
 */
 
-#include "src/mat/impls/aij/seq/aij.h" /*I "petscmat.h" I*/
-#include "src/mat/utils/freespace.h"
+#include "../src/mat/impls/aij/seq/aij.h" /*I "petscmat.h" I*/
+#include "../src/mat/utils/freespace.h"
 #include "petscbt.h"
-#include "src/mat/impls/dense/seq/dense.h" /*I "petscmat.h" I*/
+#include "../src/mat/impls/dense/seq/dense.h" /*I "petscmat.h" I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMult_SeqAIJ_SeqAIJ"

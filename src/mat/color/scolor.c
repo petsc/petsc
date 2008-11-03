@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
  
 #include "petscmat.h"
-#include "src/mat/color/color.h"
+#include "../src/mat/color/color.h"
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoring_Natural(Mat,MatColoringType,ISColoring*);

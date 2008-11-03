@@ -4,7 +4,7 @@
     Creates hypre ijmatrix from PETSc matrix
 */
 
-#include "include/private/matimpl.h"          /*I "petscmat.h" I*/
+#include "private/matimpl.h"          /*I "petscmat.h" I*/
 EXTERN_C_BEGIN
 #include "HYPRE.h"
 #include "HYPRE_parcsr_ls.h"
@@ -152,7 +152,7 @@ PetscErrorCode MatHYPRE_IJMatrixCopy(Mat A,HYPRE_IJMatrix ij)
 */
 #include "_hypre_IJ_mv.h"
 #include "HYPRE_IJ_mv.h"
-#include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatHYPRE_IJMatrixFastCopy_SeqIJ"

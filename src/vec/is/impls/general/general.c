@@ -2,7 +2,7 @@
 /*
      Provides the functions for index sets (IS) defined by a list of integers.
 */
-#include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
+#include "../src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 #include "petscvec.h"
 
 #undef __FUNCT__  

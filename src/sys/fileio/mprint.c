@@ -2,7 +2,7 @@
 /*
       Utilites routines to add simple ASCII IO capability.
 */
-#include "src/sys/fileio/mprint.h"
+#include "../src/sys/fileio/mprint.h"
 /*
    If petsc_history is on, then all Petsc*Printf() results are saved
    if the appropriate (usually .petschistory) file.

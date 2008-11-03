@@ -1,6 +1,6 @@
 #define PETSCTS_DLL
 
-#include "include/private/tsimpl.h"      /*I "petscts.h"  I*/
+#include "private/tsimpl.h"      /*I "petscts.h"  I*/
 
 PetscFList TSList                       = PETSC_NULL;
 PetscTruth TSRegisterAllCalled          = PETSC_FALSE;

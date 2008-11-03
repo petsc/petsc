@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for the MAXPY() vector routine
 !
-#include "include/finclude/petscdef.h"
+#include "finclude/petscdef.h"
 !
       subroutine FortranMAXPY4(x,a1,a2,a3,a4,y1,y2,y3,y4,n)
       implicit none

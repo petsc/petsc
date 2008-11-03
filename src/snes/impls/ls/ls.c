@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "src/snes/impls/ls/ls.h"
+#include "../src/snes/impls/ls/ls.h"
 
 /*
      Checks if J^T F = 0 which implies we've found a local minimum of the norm of the function,

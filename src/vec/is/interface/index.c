@@ -3,7 +3,7 @@
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
-#include "include/private/isimpl.h"      /*I "petscis.h" I*/
+#include "private/isimpl.h"      /*I "petscis.h" I*/
 #include "petscsys.h"
 
 /* Logging support */

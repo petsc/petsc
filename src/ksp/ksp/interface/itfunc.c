@@ -4,7 +4,7 @@
       Interface KSP routines that the user calls.
 */
 
-#include "include/private/kspimpl.h"   /*I "petscksp.h" I*/
+#include "private/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPComputeExtremeSingularValues"

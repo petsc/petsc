@@ -3,10 +3,10 @@
    Defines some vector operation functions that are shared by 
   sequential and parallel vectors.
 */
-#include "src/vec/vec/impls/dvecimpl.h"   
-#include "src/inline/dot.h"
-#include "src/inline/setval.h"
-#include "src/inline/axpy.h"
+#include "../src/vec/vec/impls/dvecimpl.h"   
+#include "../src/inline/dot.h"
+#include "../src/inline/setval.h"
+#include "../src/inline/axpy.h"
 
 #if defined(PETSC_USE_FORTRAN_KERNEL_MDOT)
 #undef __FUNCT__  

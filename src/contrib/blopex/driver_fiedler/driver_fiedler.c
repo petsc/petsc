@@ -19,7 +19,7 @@ mpiexec -n 2 ./driver_fiedler -matrix my_matrix.bin -n_eigs 3 -tol 1e-6 -itr 20\
 #include "petscksp.h"
 #include <assert.h>
 #include "lobpcg.h" 
-#include "src/contrib/blopex/petsc-interface/petsc-interface.h" 
+#include "../src/contrib/blopex/petsc-interface/petsc-interface.h" 
 #include "interpreter.h"
 #include "multivector.h"
 #include "temp_multivector.h"

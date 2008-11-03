@@ -4,7 +4,7 @@
   This file provides high performance routines for the Inode format (compressed sparse row)
   by taking advantage of rows with identical nonzero structure (I-nodes).
 */
-#include "src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "Mat_CreateColInode"
@@ -1641,7 +1641,7 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
   PetscFunctionReturn(0);
 }
 
-#include "src/inline/ilu.h"
+#include "../src/inline/ilu.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_Inode"

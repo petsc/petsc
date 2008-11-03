@@ -5,7 +5,7 @@
     elements are nonzero.
  */
 
-#include "include/private/matimpl.h"       /*I  "petscmat.h"  I*/
+#include "private/matimpl.h"       /*I  "petscmat.h"  I*/
 
 #define SWAP(a,b) {PetscInt _t; _t = a; a = b; b = _t; }
 
@@ -66,7 +66,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal(Mat mat,PetscReal
 EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 
-#include "src/vec/is/impls/general/general.h"
+#include "../src/vec/is/impls/general/general.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

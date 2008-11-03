@@ -4,7 +4,7 @@
    This is where the abstract matrix operations are defined
 */
 
-#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
+#include "private/matimpl.h"        /*I "petscmat.h" I*/
 #include "private/vecimpl.h"  
 
 /* Logging support */

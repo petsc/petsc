@@ -2,7 +2,7 @@
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "petsctime.h"
-#include "src/sys/plog/plog.h"
+#include "../src/sys/plog/plog.h"
 
 /* Variables for the tracing logger */
 extern FILE          *tracefile;

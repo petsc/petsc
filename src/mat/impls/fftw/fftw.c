@@ -5,7 +5,7 @@
     Testing examples can be found in ~src/mat/examples/tests
 */
 
-#include "include/private/matimpl.h"          /*I "petscmat.h" I*/
+#include "private/matimpl.h"          /*I "petscmat.h" I*/
 EXTERN_C_BEGIN 
 #if defined(PETSC_USE_COMPLEX)
 #include "fftw3.h"

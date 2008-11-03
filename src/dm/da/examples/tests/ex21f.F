@@ -1,9 +1,9 @@
 !
 !
       program main
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscda.h"
 
 !         For testing purposes this example also creates a 
 !   DA context. Actually codes using SDA routines will probably 

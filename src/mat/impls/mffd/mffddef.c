@@ -32,8 +32,8 @@
    includes information about the computation of h. It is shared by 
    all implementations that people provide
 */
-#include "include/private/matimpl.h"
-#include "src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
+#include "private/matimpl.h"
+#include "../src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
 
 /*
       The  method has one parameter that is used to 

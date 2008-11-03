@@ -1,11 +1,11 @@
 /* Example file for Feti-DP */
 /* src/sles/pc/impls/is/feti/examples/ex1.c */
 
-#include "src/mat/impls/feti/feti.h"
-#include "src/sles/pc/impls/is/feti/fetipc.h"
+#include "../src/mat/impls/feti/feti.h"
+#include "../src/sles/pc/impls/is/feti/fetipc.h"
 
-#include "src/mat/impls/feti/feti.c"
-#include "src/sles/pc/impls/is/feti/fetipc.c"
+#include "../src/mat/impls/feti/feti.c"
+#include "../src/sles/pc/impls/is/feti/fetipc.c"
 
 #define PRINT(A) PetscPrintf(PETSC_COMM_WORLD,"debug:%d\n",(A))
 

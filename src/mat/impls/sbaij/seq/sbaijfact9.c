@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/sbaij/seq/sbaij.h"
-#include "src/inline/ilu.h"
+#include "../src/mat/impls/sbaij/seq/sbaij.h"
+#include "../src/inline/ilu.h"
 
 /* Version for when blocks are 6 by 6 */
 #undef __FUNCT__  

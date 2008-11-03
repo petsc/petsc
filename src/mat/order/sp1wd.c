@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
 #include "petscmat.h"
-#include "src/mat/order/order.h"
+#include "../src/mat/order/order.h"
 
 EXTERN_C_BEGIN
 /*

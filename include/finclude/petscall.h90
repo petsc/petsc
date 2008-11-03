@@ -1,9 +1,9 @@
 !
 !  Single Fortran 90 include file
 !
-#include "include/finclude/petscall.h"
-#include "include/finclude/petscviewer.h90"
-#include "include/finclude/petscis.h90"
-#include "include/finclude/petscvec.h90"
-#include "include/finclude/petscmat.h90"
-#include "include/finclude/petscda.h90"
+#include "finclude/petscall.h"
+#include "finclude/petscviewer.h90"
+#include "finclude/petscis.h90"
+#include "finclude/petscvec.h90"
+#include "finclude/petscmat.h90"
+#include "finclude/petscda.h90"

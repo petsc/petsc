@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for the WAXPY() vector routine
 !
-#include "include/finclude/petscdef.h"
+#include "finclude/petscdef.h"
 !
       subroutine FortranWAXPY(n,a,x,y,w)
       implicit none

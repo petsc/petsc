@@ -27,7 +27,7 @@ at the old time advected to the new time.
 #include "petscda.h"
 #include "petscdmmg.h"
 #include "petscbag.h"
-#include "src/contrib/semiLagrange/characteristic.h"
+#include "../src/contrib/semiLagrange/characteristic.h"
 
 #define EXAMPLE_NUMBER 1
 #define SHEAR_CELL     0

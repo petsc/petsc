@@ -4,9 +4,9 @@
     Defines the basic matrix operations for the SBAIJ (compressed row)
   matrix storage format.
 */
-#include "src/mat/impls/baij/seq/baij.h"         /*I "petscmat.h" I*/
-#include "src/inline/spops.h"
-#include "src/mat/impls/sbaij/seq/sbaij.h"
+#include "../src/mat/impls/baij/seq/baij.h"         /*I "petscmat.h" I*/
+#include "../src/inline/spops.h"
+#include "../src/mat/impls/sbaij/seq/sbaij.h"
 
 extern PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat,PetscTruth);
 #define CHUNKSIZE  10

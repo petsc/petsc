@@ -17,8 +17,8 @@
      This single directory handles both the sequential and parallel codes
 */
 
-#include "src/mat/impls/maij/maij.h"
-#include "src/mat/utils/freespace.h"
+#include "../src/mat/impls/maij/maij.h"
+#include "../src/mat/utils/freespace.h"
 #include "private/vecimpl.h"
 
 #undef __FUNCT__  
@@ -2785,7 +2785,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newty
 }
 EXTERN_C_END
 
-#include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

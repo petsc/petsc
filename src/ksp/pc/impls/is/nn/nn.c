@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/pc/impls/is/nn/nn.h"
+#include "../src/ksp/pc/impls/is/nn/nn.h"
 
 /* -------------------------------------------------------------------------- */
 /*

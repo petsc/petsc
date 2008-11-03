@@ -7,7 +7,7 @@
 #define MLOG
 #endif
 
-#include "src/mat/impls/rowbs/mpi/mpirowbs.h"
+#include "../src/mat/impls/rowbs/mpi/mpirowbs.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_MPIRowbs"

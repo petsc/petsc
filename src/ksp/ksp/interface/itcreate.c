@@ -3,7 +3,7 @@
 /*
      The basic KSP routines, Create, View etc. are here.
 */
-#include "include/private/kspimpl.h"      /*I "petscksp.h" I*/
+#include "private/kspimpl.h"      /*I "petscksp.h" I*/
 #include "petscsys.h"
 
 /* Logging support */

@@ -1,8 +1,8 @@
 #define PETSCSNES_DLL
 
-#include "include/private/snesimpl.h"  /*I  "petscsnes.h" I*/
-#include "include/private/matimpl.h" 
-#include "src/mat/impls/mffd/mffdimpl.h"
+#include "private/snesimpl.h"  /*I  "petscsnes.h" I*/
+#include "private/matimpl.h" 
+#include "../src/mat/impls/mffd/mffdimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDComputeJacobian"

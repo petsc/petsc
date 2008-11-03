@@ -4,8 +4,8 @@
    This provides a matrix that consists of Mats
 */
 
-#include "include/private/matimpl.h"              /*I "petscmat.h" I*/
-#include "src/mat/impls/baij/seq/baij.h"    /* use the common AIJ data-structure */
+#include "private/matimpl.h"              /*I "petscmat.h" I*/
+#include "../src/mat/impls/baij/seq/baij.h"    /* use the common AIJ data-structure */
 #include "petscksp.h"
 
 #define CHUNKSIZE   15

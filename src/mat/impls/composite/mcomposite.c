@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
+#include "private/matimpl.h"        /*I "petscmat.h" I*/
 
 typedef struct _Mat_CompositeLink *Mat_CompositeLink;
 struct _Mat_CompositeLink {

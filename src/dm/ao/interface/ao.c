@@ -3,7 +3,7 @@
 /*  
    Defines the abstract operations on AO (application orderings) 
 */
-#include "src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
+#include "../src/dm/ao/aoimpl.h"      /*I "petscao.h" I*/
 
 /* Logging support */
 PetscCookie PETSCDM_DLLEXPORT AO_COOKIE;
@@ -83,7 +83,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO ao)
 }
 
 
-#include "src/vec/is/impls/general/general.h"
+#include "../src/vec/is/impls/general/general.h"
 /* ---------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "AOPetscToApplicationIS" 

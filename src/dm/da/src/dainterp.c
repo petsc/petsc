@@ -4,7 +4,7 @@
   Code for interpolating between grids represented by DAs
 */
 
-#include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
+#include "../src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 #include "petscmg.h"
 
 #undef __FUNCT__  

@@ -6,7 +6,7 @@
 
 #if defined(USE_FAST_MAT_SET_VALUES)
 PETSC_EXTERN_CXX_BEGIN
-#include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
 PETSC_EXTERN_CXX_END
 #define MatSetValues MatSetValues_MPIAIJ
 #else 

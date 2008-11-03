@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
 
 EXTERN PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
 

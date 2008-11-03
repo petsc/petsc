@@ -1,9 +1,9 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/baij/seq/baij.h" 
-#include "src/mat/impls/sbaij/seq/sbaij.h"
-#include "src/inline/ilu.h"
-#include "include/petscis.h"
+#include "../src/mat/impls/baij/seq/baij.h" 
+#include "../src/mat/impls/sbaij/seq/sbaij.h"
+#include "../src/inline/ilu.h"
+#include "petscis.h"
 
 #if !defined(PETSC_USE_COMPLEX)
 /* 
@@ -217,7 +217,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ_MSR(Mat F,Mat A,IS perm,const 
     Symbolic U^T*D*U factorization for SBAIJ format. 
 */
 #include "petscbt.h"
-#include "src/mat/utils/freespace.h"
+#include "../src/mat/utils/freespace.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorSymbolic_SeqSBAIJ"
 PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)

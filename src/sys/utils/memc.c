@@ -7,7 +7,7 @@
 
 */
 #include "petsc.h"        /*I  "petsc.h"   I*/
-#include "src/inline/axpy.h"
+#include "../src/inline/axpy.h"
 
 /*
     On the IBM Rs6000 using the Gnu G++ compiler you may have to include 

@@ -1,7 +1,7 @@
 #define PETSCSNES_DLL
  
 #include "petscda.h"      /*I      "petscda.h"    I*/
-#include "src/dm/da/daimpl.h" 
+#include "../src/dm/da/daimpl.h" 
 /* It appears that preprocessor directives are not respected by bfort */
 #ifdef PETSC_HAVE_SIEVE
 #include "petscmesh.h"
@@ -346,7 +346,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
 } 
 
 /* ------------------------------------------------------------------------------*/
-#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
+#include "private/matimpl.h"        /*I "petscmat.h" I*/
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianWithFD"
 PetscErrorCode DMMGComputeJacobianWithFD(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)

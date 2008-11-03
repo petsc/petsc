@@ -4,8 +4,8 @@
 */
 #include <Mesh.hh>
 #include "private/vecimpl.h" /*I  "petscvec.h"  I*/
-#include "src/inline/axpy.h"
-#include "src/inline/setval.h"
+#include "../src/inline/axpy.h"
+#include "../src/inline/setval.h"
 #include "petscblaslapack.h"
 
 #undef __FUNCT__  

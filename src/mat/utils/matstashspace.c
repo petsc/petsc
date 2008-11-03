@@ -1,7 +1,7 @@
 
 #define PETSCMAT_DLL
 
-#include "include/private/matimpl.h"
+#include "private/matimpl.h"
 
 /* Get new PetscMatStashSpace into the existing space */
 #undef __FUNCT__

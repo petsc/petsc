@@ -49,12 +49,12 @@
 
 ! the PETSc include files
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscsys.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscsys.h"
 
 ! a type containing a PETSc Vec, so we can declare an array of them to solve
 ! for multiple eigenvectors
@@ -118,12 +118,12 @@
 !     petscviewer.h - viewers
 !     petscis.h     - index sets
 !
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscsys.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscsys.h"
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -467,9 +467,9 @@
 
       implicit none
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscksp.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscksp.h"
 
       KSP              ksp
       Vec              x
@@ -512,9 +512,9 @@
 
       implicit none
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscksp.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscksp.h"
 
       KSP              ksp
       PetscErrorCode ierr
@@ -546,12 +546,12 @@
 
       use hold_vars
       implicit none
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscsys.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscsys.h"
 
 !----------------------------------------------------
 ! Dummy arguments
@@ -590,12 +590,12 @@
 
       use hold_vars
       implicit none
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscsys.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscsys.h"
 
 !----------------------------------------------------
 ! Dummy arguments
@@ -624,12 +624,12 @@
 
       use hold_vars
       implicit none
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscsys.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscsys.h"
 
 !----------------------------------------------------
 ! Dummy arguments
@@ -658,12 +658,12 @@
 
       use hold_vars
       implicit none
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscsys.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscsys.h"
 
 !----------------------------------------------------
 ! Dummy arguments
@@ -695,12 +695,12 @@
 
       use hold_vars
       implicit none
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscsys.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscsys.h"
 
 !----------------------------------------------------
 ! Dummy arguments

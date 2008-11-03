@@ -19,7 +19,7 @@ static char help[] = "Generates, partitions, and outputs an unstructured mesh.\n
 #include <Generator.hh>
 #include "petscmesh.h"
 #include "petscviewer.h"
-#include "src/dm/mesh/meshpcice.h"
+#include "../src/dm/mesh/meshpcice.h"
 
 using ALE::Obj;
 

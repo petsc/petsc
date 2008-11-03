@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/impls/gmres/gmresp.h"
+#include "../src/ksp/ksp/impls/gmres/gmresp.h"
 #include "petscblaslapack.h"
 
 #undef __FUNCT__  

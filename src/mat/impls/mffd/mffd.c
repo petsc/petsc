@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "include/private/matimpl.h"
-#include "src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
+#include "private/matimpl.h"
+#include "../src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
 
 PetscFList MatMFFDPetscFList        = 0;
 PetscTruth MatMFFDRegisterAllCalled = PETSC_FALSE;

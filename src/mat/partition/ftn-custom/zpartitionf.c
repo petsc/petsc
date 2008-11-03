@@ -1,4 +1,4 @@
-#include "src/mat/impls/adj/mpi/mpiadj.h"
+#include "../src/mat/impls/adj/mpi/mpiadj.h"
 #include "private/fortranimpl.h"
 #include "petscmat.h"
 

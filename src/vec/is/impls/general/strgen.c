@@ -1,5 +1,5 @@
 #define PETSCVEC_DLL
-#include "src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
+#include "../src/vec/is/impls/general/general.h" /*I  "petscis.h"  I*/
 
 EXTERN PetscErrorCode ISDuplicate_General(IS,IS *);
 EXTERN PetscErrorCode ISDestroy_General(IS);

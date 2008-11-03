@@ -13,8 +13,8 @@
    See src/mat/impls/aij/seq/crl/crl.c for the sequential version
 */
 
-#include "src/mat/impls/aij/mpi/mpiaij.h"
-#include "src/mat/impls/aij/seq/crl/crl.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include "../src/mat/impls/aij/seq/crl/crl.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDestroy_MPICRL"

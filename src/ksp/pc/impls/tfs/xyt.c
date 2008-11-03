@@ -17,7 +17,7 @@ contact:
 
 Last Modification: 3.20.01
 **************************************xyt.c***********************************/
-#include "src/ksp/pc/impls/tfs/tfs.h"
+#include "../src/ksp/pc/impls/tfs/tfs.h"
 
 #define LEFT  -1
 #define RIGHT  1

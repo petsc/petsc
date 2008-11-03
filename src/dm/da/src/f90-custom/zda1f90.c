@@ -1,4 +1,4 @@
-#include "src/sys/f90/f90impl.h"
+#include "../src/sys/f90/f90impl.h"
 #include "petscda.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)

@@ -4,11 +4,11 @@
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
 */
-#include "src/mat/impls/baij/seq/baij.h"
-#include "src/inline/spops.h"
+#include "../src/mat/impls/baij/seq/baij.h"
+#include "../src/inline/spops.h"
 #include "petscsys.h"                     /*I "petscmat.h" I*/
 
-#include "src/inline/ilu.h"
+#include "../src/inline/ilu.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBAIJInvertBlockDiagonal"

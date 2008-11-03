@@ -2,7 +2,7 @@
  
 #include "petscda.h"     /*I      "petscda.h"     I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
-#include "src/dm/dmimpl.h"    /*I      "petscmat.h"    I*/
+#include "../src/dm/dmimpl.h"    /*I      "petscmat.h"    I*/
 
 
 typedef struct _SlicedOps *SlicedOps;

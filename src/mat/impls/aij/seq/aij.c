@@ -5,9 +5,10 @@
   matrix storage format.
 */
 
-#include "src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "src/inline/spops.h"
-#include "src/inline/dot.h"
+
+#include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
+#include "../src/inline/spops.h"
+#include "../src/inline/dot.h"
 #include "petscbt.h"
 
 #undef __FUNCT__  
@@ -3084,8 +3085,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
 }
 EXTERN_C_END
 
-#include "src/mat/impls/dense/seq/dense.h"
-#include "src/inline/axpy.h"
+#include "../src/mat/impls/dense/seq/dense.h"
+#include "../src/inline/axpy.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"

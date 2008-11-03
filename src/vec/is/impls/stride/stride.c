@@ -3,7 +3,7 @@
        Index sets of evenly space integers, defined by a 
     start, stride and length.
 */
-#include "include/private/isimpl.h"             /*I   "petscis.h"   I*/
+#include "private/isimpl.h"             /*I   "petscis.h"   I*/
 #include "petscvec.h"
 
 typedef struct {

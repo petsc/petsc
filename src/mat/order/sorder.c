@@ -4,7 +4,7 @@
      Provides the code that allows PETSc users to register their own
   sequential matrix Ordering routines.
 */
-#include "include/private/matimpl.h"
+#include "private/matimpl.h"
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
 PetscFList      MatOrderingList = 0;
@@ -132,7 +132,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterDestroy(void)
   PetscFunctionReturn(0);
 }
 
-#include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOrdering"
 /*@C

@@ -64,7 +64,7 @@ T*/
 #include "petscsnes.h"
 #include "petscda.h"
 #include "petscdmmg.h"
-#include "src/snes/impls/ls/ls.h"
+#include "../src/snes/impls/ls/ls.h"
 /* 
    User-defined routines and data structures
 */

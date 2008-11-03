@@ -2,8 +2,8 @@
 /*
      Code for some of the parallel vector primatives.
 */
-#include "src/vec/vec/impls/mpi/pvecimpl.h" 
-#include "src/inline/dot.h"
+#include "../src/vec/vec/impls/mpi/pvecimpl.h" 
+#include "../src/inline/dot.h"
 #include "petscblaslapack.h"
 
 #undef __FUNCT__  

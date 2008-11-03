@@ -4,10 +4,10 @@
     Factorization code for SBAIJ format. 
 */
 
-#include "src/mat/impls/sbaij/seq/sbaij.h"
-#include "src/mat/impls/baij/seq/baij.h"
-#include "src/inline/ilu.h"
-#include "src/inline/dot.h"
+#include "../src/mat/impls/sbaij/seq/sbaij.h"
+#include "../src/mat/impls/baij/seq/baij.h"
+#include "../src/inline/ilu.h"
+#include "../src/inline/dot.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SeqSBAIJ_N"
@@ -2091,7 +2091,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ_MSR(Mat B,Mat A,IS perm,const MatFa
 }
 
 #include "petscbt.h"
-#include "src/mat/utils/freespace.h"
+#include "../src/mat/utils/freespace.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqSBAIJ"
 PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat fact,Mat A,IS perm,const MatFactorInfo *info)

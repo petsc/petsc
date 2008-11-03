@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "include/private/snesimpl.h"      /*I "petscsnes.h"  I*/
+#include "private/snesimpl.h"      /*I "petscsnes.h"  I*/
 
 PetscTruth SNESRegisterAllCalled = PETSC_FALSE;
 PetscFList SNESList              = PETSC_NULL;

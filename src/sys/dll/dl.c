@@ -6,7 +6,7 @@
 
 #include "petsc.h"
 #include "petscsys.h"
-#include "src/sys/dll/dlimpl.h"
+#include "../src/sys/dll/dlimpl.h"
 
 /* ------------------------------------------------------------------------------*/
 /*

@@ -4,9 +4,9 @@
     Factorization code for BAIJ format. 
 */
 
-#include "src/mat/impls/baij/seq/baij.h"
-#include "src/inline/ilu.h"
-#include "src/inline/dot.h"
+#include "../src/mat/impls/baij/seq/baij.h"
+#include "../src/inline/ilu.h"
+#include "../src/inline/dot.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolveTranspose_SeqBAIJ_1_NaturalOrdering"
