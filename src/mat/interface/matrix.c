@@ -863,9 +863,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat mat,PetscInt m,const PetscInt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
+  if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidIntPointer(idxm,3);
   PetscValidIntPointer(idxn,5);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
@@ -1326,9 +1326,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
+  if (!m || !n) PetscFunctionReturn(0); /* no values to insert */
   PetscValidIntPointer(idxm,3);
   PetscValidIntPointer(idxn,5);
   PetscValidScalarPointer(v,6);
@@ -1351,8 +1351,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
   if (mat->ops->setvaluesblocked) {
     ierr = (*mat->ops->setvaluesblocked)(mat,m,idxm,n,idxn,v,addv);CHKERRQ(ierr);
   } else {
-    PetscInt i,j,*iidxm,*iidxn,bs = mat->rmap->bs;
-    ierr = PetscMalloc2(m*bs,PetscInt,&iidxm,n*bs,PetscInt,&iidxn);CHKERRQ(ierr);
+    PetscInt buf[4096],*ibufm=0,*ibufn=0;
+    PetscInt i,j,*iidxm,*iidxn,bs=mat->rmap->bs;
+    if ((m+n)*bs <= 4096) {
+      iidxm = buf; iidxn = buf + m*bs;
+    } else {
+      ierr = PetscMalloc2(m*bs,PetscInt,&ibufm,n*bs,PetscInt,&ibufn);CHKERRQ(ierr);
+      iidxm = ibufm; iidxn = ibufn;
+    }
     for (i=0; i<m; i++) {
       for (j=0; j<bs; j++) {
 	iidxm[i*bs+j] = bs*idxm[i] + j;
@@ -1364,7 +1370,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
       }
     }
     ierr = MatSetValues(mat,bs*m,iidxm,bs*n,iidxn,v,addv);CHKERRQ(ierr);
-    ierr = PetscFree2(iidxm,iidxn);CHKERRQ(ierr);
+    ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1550,6 +1556,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesLocal(Mat mat,PetscInt nrow,const 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
+  if (!nrow || !ncol) PetscFunctionReturn(0); /* no values to insert */
   PetscValidIntPointer(irow,3);
   PetscValidIntPointer(icol,5);
   PetscValidScalarPointer(y,6);
@@ -1627,6 +1634,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
+  if (!nrow || !ncol) PetscFunctionReturn(0); /* no values to insert */
   PetscValidIntPointer(irow,3);
   PetscValidIntPointer(icol,5);
   PetscValidScalarPointer(y,6);
@@ -1657,8 +1665,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
   if (mat->ops->setvaluesblocked) {
   ierr = (*mat->ops->setvaluesblocked)(mat,nrow,irowm,ncol,icolm,y,addv);CHKERRQ(ierr);
   } else {
-    PetscInt i,j,*iirowm,*iicolm,bs = mat->rmap->bs;
-    ierr = PetscMalloc2(nrow*bs,PetscInt,&iirowm,ncol*bs,PetscInt,&iicolm);CHKERRQ(ierr);
+    PetscInt buf[4096],*ibufm=0,*ibufn=0;
+    PetscInt i,j,*iirowm,*iicolm,bs=mat->rmap->bs;
+    if ((nrow+ncol)*bs <= 4096) {
+      iirowm = buf; iicolm = buf + nrow*bs;
+    } else {
+      ierr = PetscMalloc2(nrow*bs,PetscInt,&ibufm,ncol*bs,PetscInt,&ibufn);CHKERRQ(ierr);
+      iirowm = ibufm; iicolm = ibufn;
+    }
     for (i=0; i<nrow; i++) {
       for (j=0; j<bs; j++) {
 	iirowm[i*bs+j] = bs*irowm[i] + j;
@@ -1670,8 +1684,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlockedLocal(Mat mat,PetscInt nrow
       }
     }
     ierr = MatSetValues(mat,bs*nrow,iirowm,bs*ncol,iicolm,y,addv);CHKERRQ(ierr);
-    ierr = PetscFree2(iirowm,iicolm);CHKERRQ(ierr);
-
+    ierr = PetscFree2(ibufm,ibufn);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
