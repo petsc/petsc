@@ -42,7 +42,7 @@ struct _DMOps {
   DMOPS(DM)
 };
 
-#define DM_MAX_WORK_VECTORS 10 /* work vectors available to users  via DMGetGlobalVector(), DMGetLocalVector() */
+#define DM_MAX_WORK_VECTORS 100 /* work vectors available to users  via DMGetGlobalVector(), DMGetLocalVector() */
 
 #define DMHEADER \
   Vec   localin[DM_MAX_WORK_VECTORS],localout[DM_MAX_WORK_VECTORS];   \
