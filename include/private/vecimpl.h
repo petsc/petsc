@@ -101,6 +101,7 @@ struct _VecOps {
   PetscErrorCode (*exp)(Vec);
   PetscErrorCode (*log)(Vec);
   PetscErrorCode (*shift)(Vec);
+  PetscErrorCode (*create)(Vec);
 };
 
 /* 

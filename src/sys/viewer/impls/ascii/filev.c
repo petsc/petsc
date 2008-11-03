@@ -764,7 +764,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_ASCII(PetscViewer viewer)
   vascii->mode           = FILE_MODE_WRITE;
   vascii->bviewer        = 0;
   vascii->sviewer        = 0;
-  viewer->format         = PETSC_VIEWER_ASCII_DEFAULT;
+  viewer->format         = PETSC_VIEWER_DEFAULT;
   viewer->iformat        = 0;
   vascii->tab            = 0;
   vascii->tab_store      = 0;

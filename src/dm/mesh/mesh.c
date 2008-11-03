@@ -216,7 +216,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView_Mesh(Mesh mesh, PetscViewer viewer)
    The user can call PetscViewerSetFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
-+    PETSC_VIEWER_ASCII_DEFAULT - default, prints mesh information
++    PETSC_VIEWER_DEFAULT - default, prints mesh information
 -    PETSC_VIEWER_ASCII_VTK - outputs a VTK file describing the mesh
 
    Level: beginner

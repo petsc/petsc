@@ -142,7 +142,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_VU(PetscViewer viewer)
   viewer->ops->flush            = PetscViewerFlush_VU;
   viewer->ops->getsingleton     = PETSC_NULL;
   viewer->ops->restoresingleton = PETSC_NULL;
-  viewer->format                = PETSC_VIEWER_ASCII_DEFAULT;
+  viewer->format                = PETSC_VIEWER_DEFAULT;
   viewer->iformat               = 0;
 
   vu->fd          = PETSC_NULL;

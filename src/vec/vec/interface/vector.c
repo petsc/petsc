@@ -653,7 +653,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
    The user can call PetscViewerSetFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
-+    PETSC_VIEWER_ASCII_DEFAULT - default, prints vector contents
++    PETSC_VIEWER_DEFAULT - default, prints vector contents
 .    PETSC_VIEWER_ASCII_MATLAB - prints vector contents in Matlab format
 .    PETSC_VIEWER_ASCII_INDEX - prints vector contents, including indices of vector elements
 -    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a 
@@ -1394,12 +1394,18 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec vec)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec v, PetscInt n, PetscInt N)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v, VEC_COOKIE,1); 
   if (N > 0 && n > N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Local size %D cannot be larger than global size %D",n,N);
   if ((v->map->n >= 0 || v->map->N >= 0) && (v->map->n != n || v->map->N != N)) SETERRQ4(PETSC_ERR_SUP,"Cannot change/reset vector sizes to %D local %D global after previously setting them to %D local %D global",n,N,v->map->n,v->map->N);
   v->map->n = n;
   v->map->N = N;
+  if (v->ops->create) {
+    ierr = (*v->ops->create)(v);CHKERRQ(ierr);
+    v->ops->create = 0;
+  }
   PetscFunctionReturn(0);
 }
 

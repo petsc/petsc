@@ -71,7 +71,7 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
    The user can call PetscViewerSetFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
-+    PETSC_VIEWER_ASCII_DEFAULT - default, prints section information
++    PETSC_VIEWER_DEFAULT - default, prints section information
 -    PETSC_VIEWER_ASCII_VTK - outputs a VTK file describing the section
 
    Level: beginner
@@ -888,7 +888,7 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
    The user can call PetscViewerSetFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
-+    PETSC_VIEWER_ASCII_DEFAULT - default, prints section information
++    PETSC_VIEWER_DEFAULT - default, prints section information
 -    PETSC_VIEWER_ASCII_VTK - outputs a VTK file describing the section
 
    Level: beginner
