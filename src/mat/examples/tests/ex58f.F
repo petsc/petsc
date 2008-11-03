@@ -3,10 +3,10 @@
 !   This program demonstrates use of MatGetRow() and MatGetRowMaxAbs() from Fortran
 !
       program main
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscviewer.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscviewer.h"
 
       Mat      A
       PetscErrorCode ierr
