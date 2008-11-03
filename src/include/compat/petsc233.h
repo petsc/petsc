@@ -1,4 +1,5 @@
 #include "petsc233/petsc.h"
+#include "petsc233/petscviewer.h"
 #include "petsc233/petscsys.h"
 #include "petsc233/petscvec.h"
 #include "petsc233/petscmat.h"

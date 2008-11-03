@@ -14,7 +14,8 @@ class ViewerType(object):
     ## MATLAB      = PETSC_VIEWER_MATLAB
 
 class ViewerFormat(object):
-    ASCII_DEFAULT     = PETSC_VIEWER_ASCII_DEFAULT
+    DEFAULT           = PETSC_VIEWER_DEFAULT
+    NATIVE            = PETSC_VIEWER_NATIVE
     ASCII_MATLAB      = PETSC_VIEWER_ASCII_MATLAB
     ASCII_MATHEMATICA = PETSC_VIEWER_ASCII_MATHEMATICA
     ASCII_IMPL        = PETSC_VIEWER_ASCII_IMPL
@@ -25,13 +26,10 @@ class ViewerFormat(object):
     ASCII_INDEX       = PETSC_VIEWER_ASCII_INDEX
     ASCII_DENSE       = PETSC_VIEWER_ASCII_DENSE
     ASCII_FACTOR_INFO = PETSC_VIEWER_ASCII_FACTOR_INFO
-    BINARY_DEFAULT    = PETSC_VIEWER_BINARY_DEFAULT
-    BINARY_NATIVE     = PETSC_VIEWER_BINARY_NATIVE
     DRAW_BASIC        = PETSC_VIEWER_DRAW_BASIC
     DRAW_LG           = PETSC_VIEWER_DRAW_LG
     DRAW_CONTOUR      = PETSC_VIEWER_DRAW_CONTOUR
     DRAW_PORTS        = PETSC_VIEWER_DRAW_PORTS
-    NATIVE            = PETSC_VIEWER_NATIVE
     NOFORMAT          = PETSC_VIEWER_NOFORMAT
 
 class FileMode(object):
@@ -105,7 +103,7 @@ cdef class Viewer(Object):
         cdef char *cname = str2cp(name)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: cmode = mode
-        cdef PetscViewerFormat cvfmt = PETSC_VIEWER_ASCII_DEFAULT
+        cdef PetscViewerFormat cvfmt = PETSC_VIEWER_DEFAULT
         if format is not None: cvfmt = format
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerASCIIOpen(ccomm, cname, &newvwr) )
@@ -120,7 +118,7 @@ cdef class Viewer(Object):
         cdef char *cname = str2cp(name)
         cdef PetscFileMode cmode = PETSC_FILE_MODE_WRITE
         if mode is not None: cmode = mode
-        cdef PetscViewerFormat cvfmt = PETSC_VIEWER_BINARY_DEFAULT
+        cdef PetscViewerFormat cvfmt = PETSC_VIEWER_DEFAULT
         if format is not None: cvfmt = format
         cdef PetscViewer newvwr = NULL
         CHKERR( PetscViewerBinaryOpen(ccomm, cname, cmode, &newvwr) )
@@ -161,7 +159,7 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerSetFormat(self.vwr, format) )
 
     def getFormat(self):
-        cdef PetscViewerFormat format
+        cdef PetscViewerFormat format = PETSC_VIEWER_DEFAULT
         CHKERR( PetscViewerGetFormat(self.vwr, &format) )
         return format
 
