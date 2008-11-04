@@ -31,6 +31,18 @@ class TestVersion(unittest.TestCase):
         v, date = PETSc.Sys.getVersion(date=True)
         self.assertEqual(date, info['date'])
 
+    def testGetSetDefaultComm(self):
+        c = PETSc.Sys.getDefaultComm()
+        self.assertEqual(c, PETSc.COMM_WORLD)
+        PETSc.Sys.setDefaultComm(PETSc.COMM_SELF)
+        c = PETSc.Sys.getDefaultComm()
+        self.assertEqual(c, PETSc.COMM_SELF)
+        PETSc.Sys.setDefaultComm(PETSc.COMM_WORLD)
+        c = PETSc.Sys.getDefaultComm()
+        self.assertEqual(c, PETSc.COMM_WORLD)
+        f = lambda : PETSc.Sys.setDefaultComm(PETSc.COMM_NULL)
+        self.assertRaises(ValueError, f)
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':

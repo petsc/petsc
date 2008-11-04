@@ -63,6 +63,7 @@ cdef extern from "petscda.h":
 ctypedef public api class Comm [type PyPetscComm_Type, object PyPetscCommObject]:
     cdef MPI_Comm comm
     cdef int isdup
+    cdef object base
 
 ctypedef public api class Object [type PyPetscObject_Type, object PyPetscObjectObject]:
     cdef PetscObject oval

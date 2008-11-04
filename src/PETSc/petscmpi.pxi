@@ -28,15 +28,39 @@ cdef extern from "petsc.h":
 
 # --------------------------------------------------------------------
 
+cdef extern from "Python.h":
+    void* PyCObject_AsVoidPtr(object) except ? NULL
+
+ctypedef MPI_Comm* PyMPICommGet(object) except NULL
+
+cdef inline MPI_Comm mpi4py_Comm(object comm) except *:
+    from mpi4py.MPI import __pyx_capi__ as capi
+    cdef object cobj = capi['PyMPIComm_Get']
+    cdef PyMPICommGet *get = <PyMPICommGet*>PyCObject_AsVoidPtr(cobj)
+    if get == NULL: return MPI_COMM_NULL
+    cdef MPI_Comm *ptr = get(comm)
+    if ptr == NULL: return MPI_COMM_NULL
+    return ptr[0]
+
+
+cdef inline MPI_Comm def_Comm(object comm,
+                              MPI_Comm defv) except *:
+    cdef MPI_Comm retv = MPI_COMM_NULL
+    if comm is None:
+        retv = defv
+    elif isinstance(comm, Comm):
+        retv = (<Comm>comm).comm
+    elif type(comm).__module__ == 'mpi4py.MPI':
+        retv = mpi4py_Comm(comm)
+    else:
+        retv = (<Comm?>comm).comm
+    return retv
+
+
 cdef inline Comm new_Comm(MPI_Comm comm):
     cdef Comm ob = <Comm> Comm()
     ob.comm = comm
     return ob
-
-cdef inline MPI_Comm def_Comm(object comm,
-                              MPI_Comm deft) except *:
-    if comm is None: return deft
-    return (<Comm?>comm).comm
 
 # --------------------------------------------------------------------
 

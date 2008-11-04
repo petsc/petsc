@@ -52,9 +52,19 @@ class TestComm(unittest.TestCase):
         self.assertEqual(PETSc.COMM_WORLD.getRank(),
                          PETSc.COMM_WORLD.rank)
 
-        #self.assertNotEqual(PETSc.COMM_NULL.this,  None)
-        #self.assertNotEqual(PETSc.COMM_SELF.this,  None)
-        #self.assertNotEqual(PETSc.COMM_WORLD.this, None)
+    def testCompatMPI4PY(self):
+        try:
+            from mpi4py import MPI
+        except ImportError:
+            return
+        cn = PETSc.Comm(MPI.COMM_NULL)
+        cs = PETSc.Comm(MPI.COMM_SELF)
+        cw = PETSc.Comm(MPI.COMM_WORLD)
+        self.assertEqual(cn, PETSc.COMM_NULL)
+        self.assertEqual(cs, PETSc.COMM_SELF)
+        self.assertEqual(cw, PETSc.COMM_WORLD)
+        f = lambda : PETSc.Comm(MPI.GROUP_NULL)
+        self.assertRaises(TypeError, f)
 
 # --------------------------------------------------------------------
 

@@ -68,11 +68,12 @@ cdef class Sys:
         return comm
 
     @classmethod
-    def setDefaultComm(cls, Comm comm not None):
-        if comm.comm == MPI_COMM_NULL:
+    def setDefaultComm(cls, comm):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_WORLD)
+        if ccomm == MPI_COMM_NULL:
             raise ValueError("null communicator")
         global PETSC_COMM_DEFAULT
-        PETSC_COMM_DEFAULT = comm.comm
+        PETSC_COMM_DEFAULT = ccomm
 
     # --- xxx ---
 
