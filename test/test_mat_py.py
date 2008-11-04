@@ -254,7 +254,11 @@ class TestDiagonal(TestMatrix):
         D = Matrix.SELF.D
         self.assertTrue(D.equal(old*6))
 
-# --------------------------------------------------------------------
+if PETSc.Sys.getVersion() == (2,3,2):
+    del TestMatrix
+    del TestIdentity
+    del TestDiagonal
 
+# --------------------------------------------------------------------
 if __name__ == '__main__':
     unittest.main()

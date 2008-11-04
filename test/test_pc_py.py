@@ -243,7 +243,6 @@ class TestPCPYTHON4(TestPCPYTHON3):
         assert clsname == OptDB['impl']
         del OptDB['impl']
 
-
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':
