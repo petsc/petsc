@@ -46,7 +46,10 @@ class Retriever(logger.Logger):
        - All the logic for removing old versions, updating etc. must move'''
 
     archive    = '_d_'+name+'.tar'
-    archiveZip = archive+'.gz'
+    if url.find(".bz") > -1 or url.find(".tbz") > -1:
+      archiveZip = archive+'.bz2'
+    else:
+      archiveZip = archive+'.gz'
     localFile  = os.path.join(root, archiveZip)
 
     self.logPrint('Downloading '+url+' to '+localFile)
@@ -72,7 +75,10 @@ Unable to download package %s from: %s
     if os.path.exists(localFile):
       os.remove(localFile)
     try:
-      config.base.Configure.executeShellCommand('cd '+root+'; gunzip '+archiveZip, log = self.log)
+      if archiveZip.find("bz2") > -1:
+        config.base.Configure.executeShellCommand('cd '+root+'; bunzip2 '+archiveZip, log = self.log)
+      else:
+        config.base.Configure.executeShellCommand('cd '+root+'; gunzip '+archiveZip, log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error unzipping '+archiveZip+': '+str(e))
     self.logPrint('Expanding '+localFile)
