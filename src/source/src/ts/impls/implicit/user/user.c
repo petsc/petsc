@@ -8,7 +8,7 @@
 		 x^0 = x_0
 
 */
-#include "include/private/tsimpl.h"                /*I   "petscts.h"   I*/
+#include "private/tsimpl.h"
 
 /* -------------------------------------------------------------------------- */
 

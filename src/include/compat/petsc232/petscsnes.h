@@ -1,7 +1,7 @@
 #ifndef _PETSC_COMPAT_SNES_H
 #define _PETSC_COMPAT_SNES_H
 
-#include "include/private/snesimpl.h"
+#include "private/snesimpl.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "SNESSetFunction_232"

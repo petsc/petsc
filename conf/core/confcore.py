@@ -84,13 +84,13 @@ class PetscConfig:
                not os.path.isdir(os.path.join(petsc_dir, petsc_arch)):
             petsc_arch = ''
             PETSC_ARCH = petsc_arch
-            PETSC_INCLUDE =  '-I${PETSC_DIR} -I${PETSC_DIR}/include'
+            PETSC_INCLUDE =  '-I${PETSC_DIR}/include'
             PETSC_LIB_DIR = '${PETSC_DIR}/lib'
         else:
             PETSC_ARCH = petsc_arch
-            PETSC_INCLUDE = '-I${PETSC_DIR} -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include'
+            PETSC_INCLUDE = ' -I${PETSC_DIR}/include -I${PETSC_DIR}/${PETSC_ARCH}/include'
             PETSC_LIB_DIR = '${PETSC_DIR}/${PETSC_ARCH}/lib'
-        PETSC_INCLUDE += ' ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}'
+        PETSC_INCLUDE += ' ${PACKAGES_INCLUDES} ${PETSC_BLASLAPACK_FLAGS}'
         variables = os.path.join(petsc_dir, 'conf', 'variables')
         petscconf = os.path.join(petsc_dir, petsc_arch, 'conf', 'petscvariables')
         variables = open(variables)

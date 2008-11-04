@@ -1,13 +1,14 @@
 #ifndef _PETSC_COMPAT_KSP_H
 #define _PETSC_COMPAT_KSP_H
 
+#include "private/kspimpl.h"
+
 #define KSPNASH "nash"
 #define KSPGLTR "gltr"
 
 #define PCFactorGetMatrix      PCGetFactoredMatrix
 #define PCApplyTransposeExists PCHasApplyTranspose
 
-#include "include/private/kspimpl.h"
 
 #define KSP_NORM_NO		  KSP_NO_NORM
 #define KSP_NORM_PRECONDITIONED   KSP_PRECONDITIONED_NORM

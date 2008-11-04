@@ -1,11 +1,11 @@
 #ifndef _PETSC_COMPAT_MAT_H
 #define _PETSC_COMPAT_MAT_H
 
+#include "private/matimpl.h"
+
 #define MATBLOCKMAT  "blockmat"
 #define MATCOMPOSITE "composite"
 #define MATSEQFFTW   "seqfftw"
-
-#include "include/private/matimpl.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetUp_232"

@@ -1,7 +1,7 @@
 /*  -------------------------------------------------------------------- */
 
+#include "private/snesimpl.h"
 #include "src/inline/python.h"
-#include "include/private/snesimpl.h"
 
 /*  -------------------------------------------------------------------- */
 

@@ -1,7 +1,7 @@
 #ifndef _PETSC_COMPAT_TS_H
 #define _PETSC_COMPAT_TS_H
 
-#include "include/private/tsimpl.h"
+#include "private/tsimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSGetType_232"

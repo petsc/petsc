@@ -2,11 +2,11 @@
 
 #include "compat.h"
 
-#include "include/private/vecimpl.h"
-#include "include/private/matimpl.h"
-#include "include/private/kspimpl.h"
-#include "include/private/snesimpl.h"
-#include "include/private/tsimpl.h"
+#include "private/vecimpl.h"
+#include "private/matimpl.h"
+#include "private/kspimpl.h"
+#include "private/snesimpl.h"
+#include "private/tsimpl.h"
 
 #if PETSC_232
 #define PetscGetMap(o, m) (&(o)->m)
