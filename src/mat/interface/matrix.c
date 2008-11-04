@@ -4208,9 +4208,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScale(Mat mat,PetscScalar a)
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->scale)(mat,a);CHKERRQ(ierr);
+  if (a != 1.0) {
+    ierr = (*mat->ops->scale)(mat,a);CHKERRQ(ierr);
+    ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  } 
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 

@@ -374,24 +374,25 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScale (Vec x, PetscScalar alpha)
   PetscValidType(x,1);
   if (x->stash.insertmode != NOT_SET_VALUES) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled vector");
   ierr = PetscLogEventBegin(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
-  ierr = (*x->ops->scale)(x,alpha);CHKERRQ(ierr);
+  if (alpha != 1.0) {
+    ierr = (*x->ops->scale)(x,alpha);CHKERRQ(ierr);
 
-  /*
-   * Update cached data
-   */
-  for (i=0; i<4; i++) {
-    ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
-  }
+    /*
+     * Update cached data
+     */
+    for (i=0; i<4; i++) {
+      ierr = PetscObjectComposedDataGetReal((PetscObject)x,NormIds[i],norms[i],flgs[i]);CHKERRQ(ierr);
+    }
 
-  /* in general we consider this object touched */
-  ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
+    /* in general we consider this object touched */
+    ierr = PetscObjectStateIncrease((PetscObject)x);CHKERRQ(ierr);
 
-  for (i=0; i<4; i++) {
-    if (flgs[i]) {
-      ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],PetscAbsScalar(alpha)*norms[i]);CHKERRQ(ierr);
+    for (i=0; i<4; i++) {
+      if (flgs[i]) {
+        ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[i],PetscAbsScalar(alpha)*norms[i]);CHKERRQ(ierr);
+      }
     }
   }
-
   ierr = PetscLogEventEnd(VEC_Scale,x,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
