@@ -1,5 +1,5 @@
 #define PETSC_AVOID_DECLARATIONS
-#include "include/finclude/petscall.h"
+#include "finclude/petscall.h"
 !
 !   Notes:
 !     This uses Fortran 90 free-form, this means the lines can be up to 132 columns wide
@@ -129,9 +129,9 @@
 
       program ex37f90
       use mex37f90
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscviewer.h"
-#include "include/finclude/petscvec.h"
+#include "finclude/petsc.h"
+#include "finclude/petscviewer.h"
+#include "finclude/petscvec.h"
 
       DMMGArray        dmmg
       DMMG             dmmglevel 

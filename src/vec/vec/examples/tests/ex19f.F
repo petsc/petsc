@@ -1,8 +1,8 @@
 !
 !
       program main
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
 !
 !  This example demonstrates basic use of the PETSc Fortran interface
 !  to vectors.

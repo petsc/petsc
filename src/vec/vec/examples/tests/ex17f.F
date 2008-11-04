@@ -4,10 +4,10 @@
 !  this case each local vector is as long as the entire parallel vector.
 !
       implicit none
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscsys.h"
+#include "finclude/petsc.h"
+#include "finclude/petscis.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscsys.h"
 
       PetscErrorCode ierr
       PetscMPIInt  size,rank

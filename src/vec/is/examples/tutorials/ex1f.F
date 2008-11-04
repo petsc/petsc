@@ -15,8 +15,8 @@
       program main
       implicit none
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscis.h"
+#include "finclude/petsc.h"
+#include "finclude/petscis.h"
 
       PetscErrorCode ierr
       PetscInt indices(5),n,index1,index5
