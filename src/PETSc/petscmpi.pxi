@@ -28,6 +28,15 @@ cdef extern from "petsc.h":
 
 # --------------------------------------------------------------------
 
+cdef inline int PetscCommDEALLOC(MPI_Comm* comm):
+    if comm == NULL: return 0
+    cdef MPI_Comm tmp = comm[0]
+    if tmp == MPI_COMM_NULL: return 0
+    comm[0] = MPI_COMM_NULL
+    if not (<int>PetscInitializeCalled): return 0
+    if (<int>PetscFinalizeCalled): return 0
+    return PetscCommDestroy(&tmp)
+
 cdef extern from "Python.h":
     void* PyCObject_AsVoidPtr(object) except ? NULL
 

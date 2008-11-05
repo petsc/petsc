@@ -14,8 +14,7 @@ cdef class Comm:
 
     def __dealloc__(self):
         if self.isdup:
-            if self.comm != MPI_COMM_NULL:
-                CHKERR( PetscCommDestroy(&self.comm) )
+            CHKERR( PetscCommDEALLOC(&self.comm) )
         self.comm = MPI_COMM_NULL
         self.isdup = 0
         self.base = None
