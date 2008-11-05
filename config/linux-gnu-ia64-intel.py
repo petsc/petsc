@@ -4,6 +4,7 @@ configure_options = [
   '--with-vendor-compilers=intel',
   '--with-mpi-dir=/home/balay/soft/mpich2-1.0.4-intel', 
   '--download-parmetis=1',
+  'DATAFILESPATH=/home/balay/datafiles',
   ]
 
 if __name__ == '__main__':

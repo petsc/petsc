@@ -2,7 +2,8 @@
 
 configure_options = [
   '--with-shared=1',
-  '--download-mpich=1'
+  '--download-mpich=1',
+  'DATAFILESPATH=/home/balay/datafiles',
   ]
 
 if __name__ == '__main__':

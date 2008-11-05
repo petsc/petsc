@@ -6,7 +6,8 @@ configure_options = [
   '--with-fc=0',
   '--with-ranlib=true',
   '--with-blas-lapack-dir=/cygdrive/c/software/f2cblaslapack/win32_borland',
-  '--with-mpi=0'
+  '--with-mpi=0',
+  'DATAFILESPATH=/home/balay/datafiles',
   ]
   
 if __name__ == '__main__':
