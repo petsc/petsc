@@ -55,14 +55,6 @@ hg -q pull >>& $nPETSC_DIR/test.log
 hg update  >>& $nPETSC_DIR/test.log
 popd
 
-set DATAFILESPATH=/home/petsc/datafiles
-set NICE=''
-set TESTMODE='testexamples'
-# possibly overwrite the values above
-if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}) then
-  source ${nPETSC_DIR}/config/${ARCH}
-endif
-
 setenv PETSC_DIR $nPETSC_DIR
 set PETSC_ARCH=${ARCH}
 set CONFIGURE='yes'
@@ -79,7 +71,7 @@ echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DI
   #remove external packages - so they get rebuilt again
   /bin/rm -rf externalpackages
   # now configure
-  ./config/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& test.log
+  ./config/examples/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& test.log
   echo '****************************************************' >>& $nPETSC_DIR/test.log
   tar cf buildoutput.tar configure.log bmake/$PETSC_ARCH/*
 
@@ -90,8 +82,14 @@ echo '****************************************************' >>& test.log
 echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& test.log
 tar rf buildoutput.tar test.log
 #
-#
 # Run examples
+#
+set flag=`grep PETSC_WITH_BATCH ${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables`
+if ( $? ) then
+  set TESTMODE='testexamples'
+else
+  set TESTMODE='buildexamples'
+endif
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH  `date` " > examples.log
 $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  alltests TESTMODE=$TESTMODE DATAFILESPATH=$DATAFILESPATH |& grep -v 'up to date' >>& examples.log
