@@ -71,7 +71,7 @@ echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DI
   #remove external packages - so they get rebuilt again
   /bin/rm -rf externalpackages
   # now configure
-  ./config/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& test.log
+  ./config/examples/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& test.log
   echo '****************************************************' >>& $nPETSC_DIR/test.log
   tar cf buildoutput.tar configure.log bmake/$PETSC_ARCH/*
 
