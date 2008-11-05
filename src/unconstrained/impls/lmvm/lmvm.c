@@ -23,7 +23,8 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
 
   PetscErrorCode ierr;
   PetscInt stepType;
-//  PetscInt iter = 0;
+  PetscInt iter = 0;
+  TaoSolverConvergedReason reason = TAO_CONTINUE_ITERATING;
   TaoLineSearchTerminationReason ls_status = TAOLINESEARCH_CONTINUE_ITERATING;
 //  PetscInt bfgsUpdates = 0;
 
@@ -36,10 +37,10 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
     SETERRQ(1, "User provided compute function generated Inf or NaN");
   }
 
-//  info = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(info);
-//  if (reason != TAO_CONTINUE_ITERATING) {
-//    TaoFunctionReturn(0);
-//  }
+  ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
+  if (reason != TAO_CONTINUE_ITERATING) {
+    PetscFunctionReturn(0);
+  }
 
   // Set initial scaling for the function
   if (f != 0.0) {
@@ -56,7 +57,7 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
   lmP->grad = 0;
 
   // Have not converged; continue with Newton method
-  while (tao->reason == TAO_CONTINUE_ITERATING) {
+  while (reason == TAO_CONTINUE_ITERATING) {
     // Compute direction
     ierr = MatLMVMUpdate(lmP->M,tao->solution,tao->gradient); CHKERRQ(ierr);
     ierr = MatLMVMSolve(lmP->M, tao->gradient, lmP->D); CHKERRQ(ierr);
@@ -182,8 +183,8 @@ static PetscErrorCode TaoSolverSolve_LMVM(TaoSolver tao)
     }
     // Check for termination
     ierr = VecNorm(tao->gradient, NORM_2, &gnorm); CHKERRQ(ierr);
-    tao->niter++;
-    ierr = TaoSolverMonitor(tao,f,gnorm,step); CHKERRQ(ierr);
+    iter++;
+    ierr = TaoSolverMonitor(tao,iter,f,gnorm,0.0,step,&reason); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

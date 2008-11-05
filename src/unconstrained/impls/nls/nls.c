@@ -139,6 +139,44 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
   nlsP->ksp_iter = 0;
   nlsP->ksp_othr = 0;
 
+
+
+  // Modify the linear solver to a conjugate gradient method
+
+  switch(nlsP->ksp_type) {
+  case NLS_KSP_CG:
+    ierr = KSPSetType(tao->ksp, KSPCG); CHKERRQ(ierr);
+    if (tao->ksp->ops->setfromoptions) {
+	(*tao->ksp->ops->setfromoptions)(ksp);
+    }
+    break;
+
+  case NLS_KSP_NASH:
+    ierr = KSPSetType(tao->ksp, KSPNASH); CHKERRQ(ierr);
+    if (tao->ksp->ops->setfromoptions) {
+      (*tao->ksp->ops->setfromoptions)(tao->ksp);
+    }
+    break;
+
+  case NLS_KSP_STCG:
+    ierr = KSPSetType(tao->ksp, KSPSTCG); CHKERRQ(ierr);
+    if (tao->ksp->ops->setfromoptions) {
+      (*tao->ksp->ops->setfromoptions)(tao->ksp);
+    }
+    break;
+
+  case NLS_KSP_GLTR:
+    ierr = KSPSetType(tao->ksp, KSPGLTR); CHKERRQ(ierr);
+    if (tao->ksp->ops->setfromoptions) {
+      (*tao->ksp->ops->setfromoptions)(tao->ksp);
+    }
+    break;
+
+  default:
+    // Use the method set by the ksp_type
+    break;
+  }
+
   // Initialize trust-region radius when using nash, stcg, or gltr
   // Will be reset during the first iteration
   if (NLS_KSP_NASH == nlsP->ksp_type) {
@@ -150,11 +188,10 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
   }
   
   
-  /*
   if (NLS_KSP_NASH == nlsP->ksp_type ||
       NLS_KSP_STCG == nlsP->ksp_type || 
       NLS_KSP_GLTR == nlsP->ksp_type) {
-    ierr = TaoGetInitialTrustRegionRadius(tao, &radius); CHKERRQ(ierr);
+    radius = nlsP->trust0;
     if (radius < 0.0) {
       SETERRQ(1, "Initial radius negative");
     }
@@ -163,7 +200,6 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
     radius = PetscMax(radius, nlsP->min_radius);
     radius = PetscMin(radius, nlsP->max_radius);
   }
-  */
 
   // Get vectors we will need
 
@@ -182,10 +218,10 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
   }
   needH = 1;
 
-//  ierr = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
-//  if (reason != TAO_CONTINUE_ITERATING) {
-//    TaoFunctionReturn(0);
-//  }
+  ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
+  if (reason != TAO_CONTINUE_ITERATING) {
+    PetscFunctionReturn(0);
+  }
 
   // Create vectors for the limited memory preconditioner
   if ((NLS_PC_BFGS == nlsP->pc_type) && 
@@ -195,46 +231,9 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
     }
   }
 
-  // Modify the linear solver to a conjugate gradient method
-//  ierr = TaoGetLinearSolver(tao, &tls); CHKERRQ(ierr);
-//  pls  = dynamic_cast <TaoLinearSolverPetsc *> (tls);
-
-  switch(nlsP->ksp_type) {
-  case NLS_KSP_CG:
-    ierr = KSPSetType(ksp, KSPCG); CHKERRQ(ierr);
-    if (ksp->ops->setfromoptions) {
-	(*ksp->ops->setfromoptions)(ksp);
-    }
-    break;
-
-  case NLS_KSP_NASH:
-    ierr = KSPSetType(ksp, KSPNASH); CHKERRQ(ierr);
-    if (ksp->ops->setfromoptions) {
-      (*ksp->ops->setfromoptions)(ksp);
-    }
-    break;
-
-  case NLS_KSP_STCG:
-    ierr = KSPSetType(ksp, KSPSTCG); CHKERRQ(ierr);
-    if (ksp->ops->setfromoptions) {
-      (*ksp->ops->setfromoptions)(ksp);
-    }
-    break;
-
-  case NLS_KSP_GLTR:
-    ierr = KSPSetType(ksp, KSPGLTR); CHKERRQ(ierr);
-    if (ksp->ops->setfromoptions) {
-      (*ksp->ops->setfromoptions)(ksp);
-    }
-    break;
-
-  default:
-    // Use the method set by the ksp_type
-    break;
-  }
 
   // Modify the preconditioner to use the bfgs approximation
-  ierr = KSPGetPC(ksp, &pc); CHKERRQ(ierr);
+  ierr = KSPGetPC(tao->ksp, &pc); CHKERRQ(ierr);
   switch(nlsP->pc_type) {
   case NLS_PC_NONE:
     ierr = PCSetType(pc, PCNONE); CHKERRQ(ierr);
@@ -392,10 +391,10 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
           }
           needH = 1;
   
-//          info = TaoMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(info);
-//          if (reason != TAO_CONTINUE_ITERATING) {
-//            TaoFunctionReturn(0);
-//          }
+          ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, 1.0, &reason); CHKERRQ(ierr);
+          if (reason != TAO_CONTINUE_ITERATING) {
+            PetscFunctionReturn(0);
+          }
         }
       }
       radius = PetscMax(radius, max_radius);
@@ -1039,7 +1038,7 @@ static PetscErrorCode TaoSolverSolve_NLS(TaoSolver tao)
     }
     needH = 1;
 
-//    info = TaoMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(info);
+    ierr = TaoSolverMonitor(tao, iter, f, gnorm, 0.0, step, &reason); CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1066,8 +1065,6 @@ static int TaoSolverSetUp_NLS(TaoSolver tao)
 
 
   // Set linear solver to default for symmetric matrices
-  //  ierr = TaoGetHessian(tao, &H); CHKERRQ(ierr);
-  //  ierr = TaoCreateLinearSolver(tao, H, 200, 0); CHKERRQ(ierr);
   ierr = KSPCreate(((PetscObject)tao)->comm,&tao->ksp); CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(tao->ksp,"tao_"); CHKERRQ(ierr);
   ierr = KSPSetFromOptions(tao->ksp); CHKERRQ(ierr);
@@ -1187,7 +1184,6 @@ static PetscErrorCode TaoSolverSetFromOptions_NLS(TaoSolver tao)
   ierr = PetscOptionsReal("-tao_nls_max_radius", "upper bound on radius", "", nlsP->max_radius, &nlsP->max_radius, 0); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_trust0", "initial trust region radius", "", nlsP->trust0, &nlsP->trust0, 0); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-tao_nls_epsilon", "tolerance used when computing actual and predicted reduction", "", nlsP->epsilon, &nlsP->epsilon, 0); CHKERRQ(ierr);
-//  ierr = TaoLineSearchSetFromOptions(tao); CHKERRQ(ierr);
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1247,6 +1243,7 @@ PetscErrorCode TaoSolverCreate_NLS(TaoSolver tao)
   tao->max_its = 2000;
   tao->fatol = 1e-10;
   tao->frtol = 1e-10;
+  tao->data = (void*)nlsP;
   nlsP->trust0 = 100.0;
 
   //  ierr = TaoSetTrustRegionTolerance(tao, 1.0e-12); CHKERRQ(ierr);

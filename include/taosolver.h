@@ -58,9 +58,11 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterDestroy(void);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverGetConvergedReason(TaoSolver,TaoSolverConvergedReason*);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver, Vec);
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjective(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*,void*), void*);
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
-EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradient(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*), void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*,void*), void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradientRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, Vec, void*), void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradientRoutine(TaoSolver, PetscErrorCode(*)(TaoSolver, Vec, PetscReal*, Vec, void*), void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetHessianMat(TaoSolver, Mat, Mat);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetHessianRoutine(TaoSolver,Mat,Mat, PetscErrorCode(*)(TaoSolver,Vec, Mat*, Mat*, MatStructure*, void*), void*);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver, Vec, PetscReal*);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver, Vec, Vec);
@@ -75,8 +77,11 @@ EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverResetStatistics(TaoSolver);
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetDefaultMonitors(TaoSolver);
 
 EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultConvergenceTest(TaoSolver,void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetMonitor(TaoSolver, PetscErrorCode (*)(TaoSolver,void*),void *, PetscErrorCode (*)(void*));
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultMonitor(TaoSolver, void*);
+EXTERN PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverDefaultSMonitor(TaoSolver, void*);
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver, PetscInt, PetscReal, PetscReal, PetscReal, PetscReal, TaoSolverConvergedReason*); 
 
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverMonitor(TaoSolver, PetscReal, PetscReal, PetscReal); 
 
 
 PETSC_EXTERN_CXX_END

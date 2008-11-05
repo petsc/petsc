@@ -34,7 +34,8 @@ typedef struct {
 } AppCtx;
 
 /* -------------- User-defined routines ---------- */
-int FormFunctionGradient(TaoSolver,Vec,double*,Vec,void*);
+PetscErrorCode FormFunctionGradient(TaoSolver,Vec,double*,Vec,void*);
+PetscErrorCode FormHessian(TaoSolver,Vec,Mat*,Mat*,MatStructure*,void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -43,6 +44,7 @@ int main(int argc,char **argv)
   int        info;                  /* used to check for functions returning nonzeros */
   PetscReal zero=0.0;
   Vec        x;                     /* solution vector */
+  Mat        H;
   TaoSolver  tao;                   /* TAO_SOLVER solver context */
   PetscTruth  flg;
   int        size,rank;                  /* number of processes running */
@@ -72,7 +74,7 @@ int main(int argc,char **argv)
 
   /* Allocate vectors for the solution and gradient */
   info = VecCreateSeq(PETSC_COMM_SELF,user.n,&x); CHKERRQ(info);
-
+  info = MatCreateSeqBAIJ(PETSC_COMM_SELF,2,user.n,user.n,1,PETSC_NULL,&H); CHKERRQ(info);
 
   /* The TAO code begins here */
 
@@ -85,8 +87,8 @@ int main(int argc,char **argv)
   info = TaoSolverSetInitialVector(tao,x); CHKERRQ(info); 
 
   /* Set routines for function, gradient, hessian evaluation */
-  info = TaoSolverSetObjectiveAndGradient(tao,FormFunctionGradient,(void *)&user); 
-  CHKERRQ(info);
+  info = TaoSolverSetObjectiveAndGradientRoutine(tao,FormFunctionGradient,(void *)&user); CHKERRQ(info);
+  info = TaoSolverSetHessianRoutine(tao,H,H,FormHessian,&user); CHKERRQ(info);
 
   info = PetscOptionsSetValue("-tao_lmm_vectors","15"); CHKERRQ(info);
   /* Check for TAO command line options */
@@ -107,6 +109,7 @@ int main(int argc,char **argv)
 
   /* Free PETSc data structures */
   info = VecDestroy(x); CHKERRQ(info);
+  info = MatDestroy(H); CHKERRQ(info);
 
 
   PetscFinalize();
@@ -134,7 +137,7 @@ int main(int argc,char **argv)
     at the same time.  Evaluating both at once may be more efficient that
     evaluating each separately. 
 */
-int FormFunctionGradient(TaoSolver tao,Vec X,double *f, Vec G,void *ptr)
+PetscErrorCode FormFunctionGradient(TaoSolver tao,Vec X,double *f, Vec G,void *ptr)
 {
   AppCtx *user = (AppCtx *) ptr;  
   int    i,info,nn=user->n/2;
@@ -179,7 +182,7 @@ int FormFunctionGradient(TaoSolver tao,Vec X,double *f, Vec G,void *ptr)
    Note:  Providing the Hessian may not be necessary.  Only some solvers
    require this matrix.
 */
-int FormHessian(TaoSolver tao,Vec X,Mat *HH, Mat *Hpre, MatStructure *flag,void *ptr)
+PetscErrorCode FormHessian(TaoSolver tao,Vec X,Mat *HH, Mat *Hpre, MatStructure *flag,void *ptr)
 {
   AppCtx  *user = (AppCtx*)ptr;
   int     i, nn=user->n/2, info, ind[2];

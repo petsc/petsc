@@ -5,8 +5,8 @@
 
 EXTERN_C_BEGIN
 extern PetscErrorCode TaoSolverCreate_LMVM(TaoSolver);
+extern PetscErrorCode TaoSolverCreate_NLS(TaoSolver);
 /*
-extern int TaoCreate_NLS(TAO_SOLVER);
 extern int TaoCreate_NTR(TAO_SOLVER);
 extern int TaoCreate_NTL(TAO_SOLVER);
 extern int TaoCreate_CG(TAO_SOLVER);
@@ -82,9 +82,8 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverRegisterAll(const char path[])
   TaoSolverRegisterAllCalled = PETSC_TRUE;
   
   ierr = TaoSolverRegisterDynamic("tao_lmvm",path,"TaoSolverCreate_LMVM",TaoSolverCreate_LMVM); CHKERRQ(ierr);
-
+  ierr = TaoSolverRegisterDynamic("tao_nls",path,"TaoSolverCreate_NLS",TaoSolverCreate_NLS); CHKERRQ(ierr);
 /*
-  ierr = TaoSolverRegisterDynamic("tao_nls",path,"TaoCreate_NLS",TaoCreate_NLS); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_cg",path,"TaoCreate_CG",TaoCreate_CG); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_bqpip",path,"TaoCreate_BQPIP",TaoCreate_BQPIP); CHKERRQ(ierr);
   ierr = TaoSolverRegisterDynamic("tao_blmvm",path,"TaoCreate_BLMVM",TaoCreate_BLMVM); CHKERRQ(ierr);

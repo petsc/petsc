@@ -37,7 +37,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetInitialVector(TaoSolver tao, Vec 
 
   Level: advanced
 
-.seealso: TaoSolverComputeObjective(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetGradient()
+.seealso: TaoSolverComputeObjective(), TaoSolverComputeObjectiveAndGradient(), TaoSolverSetGradientRoutine()
 @*/
 PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X, Vec G) 
 {
@@ -68,7 +68,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeGradient(TaoSolver tao, Vec X
 	ierr = PetscLogEventEnd(TaoSolver_ObjGradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
 	tao->nfuncgrads++;
     }  else {
-	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetGradient() has not been called");
+	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetGradientRoutine() has not been called");
     }
     PetscFunctionReturn(0);
 }
@@ -126,7 +126,7 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjective(TaoSolver tao, Vec 
 	tao->nfuncgrads++;
 
     }  else {
-	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjective() has not been called");
+	SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjectiveRoutine() has not been called");
     }
     ierr = PetscInfo1(tao,"TAO Function evaluation: %14.12e\n",*f);CHKERRQ(ierr);    
     PetscFunctionReturn(0);
@@ -171,16 +171,16 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverComputeObjectiveAndGradient(TaoSolve
       ierr = PetscLogEventEnd(TaoSolver_GradientEval,tao,X,G,PETSC_NULL); CHKERRQ(ierr);
       tao->ngrads++;
   } else {
-      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjective() or TaoSolverSetGradient() not set");
+      SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"TaoSolverSetObjectiveRoutine() or TaoSolverSetGradientRoutine() not set");
   }
   ierr = PetscInfo1(tao,"TAO Function evaluation: %14.12e\n",*f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetObjective"
+#define __FUNCT__ "TaoSolverSetObjectiveRoutine"
 /*@
-  TaoSolverSetObjective - Sets the function evaluation routine for minimization
+  TaoSolverSetObjectiveRoutine - Sets the function evaluation routine for minimization
 
   Collective on TaoSolver
 
@@ -199,9 +199,9 @@ $      func (TaoSolver tao, Vec x, PetscReal *f, void *ctx);
 
   Level: beginner
 
-.seealso: TaoSolverSetGradient(), TaoSolverSetHessian() TaoSolverSetObjectiveAndGradient()
+.seealso: TaoSolverSetGradientRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjective(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal*,void*),void *ctx) 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal*,void*),void *ctx) 
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
@@ -213,9 +213,9 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjective(TaoSolver tao, PetscErr
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetGradient"
+#define __FUNCT__ "TaoSolverSetGradientRoutine"
 /*@
-  TaoSolverSetGradient - Sets the gradient evaluation routine for minimization
+  TaoSolverSetGradientRoutine - Sets the gradient evaluation routine for minimization
 
   Collective on TaoSolver
 
@@ -234,9 +234,9 @@ $      func (TaoSolver tao, Vec x, Vec g, void *ctx);
 
   Level: beginner
 
-.seealso: TaoSolverSetObjective(), TaoSolverSetHessian() TaoSolverSetObjectiveAndGradient()
+.seealso: TaoSolverSetObjectiveRoutine(), TaoSolverSetHessianRoutine() TaoSolverSetObjectiveAndGradientRoutine()
 @*/
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradient(TaoSolver tao,  PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx) 
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradientRoutine(TaoSolver tao,  PetscErrorCode (*func)(TaoSolver, Vec, Vec, void*),void *ctx) 
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);
@@ -247,8 +247,8 @@ PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetGradient(TaoSolver tao,  PetscErr
 
 
 #undef __FUNCT__
-#define __FUNCT__ "TaoSolverSetObjectiveAndGradient"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradient(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal *, Vec, void*), void *ctx)
+#define __FUNCT__ "TaoSolverSetObjectiveAndGradientRoutine"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetObjectiveAndGradientRoutine(TaoSolver tao, PetscErrorCode (*func)(TaoSolver, Vec, PetscReal *, Vec, void*), void *ctx)
 {
     PetscFunctionBegin;
     PetscValidHeaderSpecific(tao,TAOSOLVER_COOKIE,1);

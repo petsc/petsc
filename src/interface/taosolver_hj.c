@@ -1,8 +1,8 @@
 #include "include/private/taosolver_impl.h"
 
 #undef __FUNCT__ 
-#define __FUNCT__ "TaoSolverSetHessian"
-PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetHessian(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
+#define __FUNCT__ "TaoSolverSetHessianRoutine"
+PetscErrorCode TAOSOLVER_DLLEXPORT TaoSolverSetHessianRoutine(TaoSolver tao, Mat H, Mat Hpre, PetscErrorCode (*func)(TaoSolver, Vec, Mat*, Mat *, MatStructure *, void*), void *ctx)
 {
     PetscErrorCode ierr;
     PetscFunctionBegin;
