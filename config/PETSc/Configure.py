@@ -203,10 +203,12 @@ class Configure(config.base.Configure):
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
       libs.extend(i.lib)
+      self.addMakeMacro(i.PACKAGE+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
           i.include = [i.include]
         includes.extend(i.include)
+        self.addMakeMacro(i.PACKAGE+'_INCLUDE',self.headers.toStringNoDupes(i.include))
     self.addMakeMacro('PACKAGES_LIBS',self.libraries.toStringNoDupes(libs+self.libraries.math))
     self.addMakeMacro('PACKAGES_INCLUDES',self.headers.toStringNoDupes(includes))
     
