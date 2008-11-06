@@ -97,6 +97,8 @@ typedef enum { DA_X,DA_Y,DA_Z } DADirection;
 
 extern PetscCookie PETSCDM_DLLEXPORT DM_COOKIE;
 
+#define MATSEQUSFFT        "sequsfft"
+
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate1d(MPI_Comm,DAPeriodicType,PetscInt,PetscInt,PetscInt,const PetscInt[],DA *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate2d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],DA *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate3d(MPI_Comm,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,const PetscInt[],const PetscInt[],const PetscInt[],DA*);
@@ -191,6 +193,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    SDAArrayView(SDA,PetscScalar*,PetscVi
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    MatRegisterDAAD(void);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    MatCreateDAAD(DA,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT   MatCreateSeqUSFFT(DA, DA,Mat*);
 
 /*S
      DALocalInfo - C struct that contains information about a structured grid and a processors logical
