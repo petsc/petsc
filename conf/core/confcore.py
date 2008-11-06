@@ -346,16 +346,22 @@ class build_py(_build_py):
         config_py = open(py_file, 'r')
         config_data = config_py.read()
         config_py.close()
-        if '%(PETSC_DIR)s' not in config_data:
-            return # already configured
+        #
         config = self.get_finalized_command('config')
         petsc_dir  = config.petsc_dir
         petsc_arch = config.petsc_arch
-        if petsc_dir:
-            PETSC_DIR  = petsc_dir
+        pathsep    = os.path.pathsep
+        #
+        if '%(PETSC_DIR)s' not in config_data:
+            return # already configured
+        if not petsc_dir:
+            return # nothing known to put
+        #
+        PETSC_DIR  = petsc_dir
         if petsc_arch:
-            separator   = os.path.pathsep
-            PETSC_ARCH = separator.join(petsc_arch)
+            PETSC_ARCH = pathsep.join(petsc_arch)
+        elif not config.have_bmake:
+            PETSC_ARCH = 'default'
         log.info('writing %s' % py_file)
         config_py = open(py_file, 'w')
         config_py.write(config_data % vars())
