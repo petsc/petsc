@@ -152,19 +152,24 @@ PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatSolve_Inode(Mat,Vec,Vec);
+
 #undef __FUNCT__
 #define __FUNCT__ "MatILUDTFactor_Inode"
 PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,const MatFactorInfo *info,Mat *fact)
 {
   PetscErrorCode ierr;
+  Mat_SeqAIJ     *f = (Mat_SeqAIJ*)(*fact)->data;
 
   PetscFunctionBegin;
     /* check for identical nodes. If found, use inode functions */
   ierr = Mat_CheckInode(*fact,PETSC_FALSE);CHKERRQ(ierr);
+  if (f->inode.use) {
+    (*fact)->ops->solve = MatSolve_Inode;
+  }
   PetscFunctionReturn(0);
 }
 
-extern PetscErrorCode MatSolve_Inode(Mat,Vec,Vec);
 extern PetscErrorCode MatLUFactorNumeric_Inode(Mat,Mat,const MatFactorInfo*);
 
 #undef __FUNCT__
