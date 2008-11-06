@@ -136,10 +136,9 @@ class PetscConfig:
         self._configure_ext(extension, petsc_lib)
         # extra compiler and linker configuration
         ccflags = self['PCC_FLAGS'].split()
-        try:
-            ccflags.remove('-Wwrite-strings')
-        except ValueError:
-            pass
+        if sys.version_info[:2] < (2, 5):
+            try: ccflags.remove('-Wwrite-strings')
+            except ValueError: pass
         extension.extra_compile_args.extend(ccflags)
         ldflags = self['PETSC_EXTERNAL_LIB_BASIC'].split()
         extension.extra_link_args.extend(ldflags)
