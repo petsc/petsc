@@ -5,7 +5,7 @@
 #if !defined(_DAIMPL_H)
 #define _DAIMPL_H
 
-#include "../src/dm/dmimpl.h"
+#include "private/dmimpl.h"
 
 typedef struct _DAOps *DAOps;
 struct _DAOps {
