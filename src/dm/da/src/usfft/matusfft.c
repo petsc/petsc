@@ -6,13 +6,8 @@
 */
 
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
-#include "petscda.h"                          /* Unlike equispaced FFT, USFFT requires geometric information encoded by a DA */
-EXTERN_C_BEGIN 
-#if defined(PETSC_USE_COMPLEX)
+#include "petscda.h"                  /*I "petscda.h"  I*/ /* Unlike equispaced FFT, USFFT requires geometric information encoded by a DA */
 #include "fftw3.h"
-#endif
-EXTERN_C_END 
-
 
 typedef struct {
   DA             inda;
@@ -95,7 +90,7 @@ PetscErrorCode MatMultTranspose_SeqUSFFT(Mat A,Vec x,Vec y)
   Mat_USFFT       *usfft = (Mat_USFFT*)A->data;
   PetscFunctionBegin;
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
-  MatApply_USFFT_Private(usfft, &usfft->p_backward, FFTW_BACKWARD, x,y); CHKERRQ(ierr);
+  ierr = MatApply_USFFT_Private(usfft, &usfft->p_backward, FFTW_BACKWARD, x,y); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
