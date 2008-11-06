@@ -27,7 +27,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscInt       func;
   FuncType       function = TANH;
   DA             da, coordsda;
-  PetscTruth     view_x = PETSC_FALSE;
+  PetscTruth     view_x = PETSC_FALSE, view_y = PETSC_FALSE, view_z = PETSC_FALSE;
   PetscErrorCode ierr;
 
   ierr = PetscInitialize(&argc,&args,(char *)0,help);CHKERRQ(ierr);
@@ -41,6 +41,8 @@ PetscInt main(PetscInt argc,char **args)
     function = (FuncType) func;
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-view_x",&view_x,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-view_y",&view_y,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-view_z",&view_z,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetIntArray(PETSC_NULL,"-dim",dim,&ndim,PETSC_NULL);CHKERRQ(ierr); 
 
   
@@ -127,7 +129,7 @@ PetscInt main(PetscInt argc,char **args)
   /* create USFFT object */
   ierr = MatCreateSeqUSFFT(da,da,&A);CHKERRQ(ierr);
   /* create FFTW object */
-  ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,1,&N,&AA);CHKERRQ(ierr);
+  ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,3,dim,&AA);CHKERRQ(ierr);
   
   /* apply USFFT and FFTW FORWARD "preemptively", so the fftw_plans can be reused on different vectors */
   ierr = MatMult(A,x,z);CHKERRQ(ierr);
@@ -138,6 +140,20 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatMult(AA,xx,yy);CHKERRQ(ierr); 
     ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
     ierr = MatMultTranspose(AA,yy,zz);CHKERRQ(ierr);
+  }
+
+  if(view_y) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "y = \n"); CHKERRQ(ierr);
+    ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "yy = \n"); CHKERRQ(ierr);
+    ierr = VecView(yy, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+  }
+  
+  if(view_z) {
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "z = \n"); CHKERRQ(ierr);
+    ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "zz = \n"); CHKERRQ(ierr);
+    ierr = VecView(zz, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
   }
   
   /* compare x and z. USFFT computes an unnormalized DFT, thus z = N*x */

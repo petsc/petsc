@@ -2,7 +2,7 @@
 
 ALL: lib
 
-CFLAGS   = ${MATLAB_INCLUDE} ${PNETCDF_INCLUDE}
+CFLAGS   = ${MATLAB_INCLUDE} ${PNETCDF_INCLUDE} 
 FFLAGS   =
 SOURCEC  = da2.c da1.c da3.c daghost.c dacorn.c dagtol.c daltol.c \
            daltog.c daindex.c dascatter.c dadestroy.c dalocal.c \

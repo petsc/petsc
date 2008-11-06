@@ -35,6 +35,15 @@ PetscErrorCode MatApply_USFFT_Private(Mat_USFFT *usfft, fftw_plan *plan, int dir
   ierr = VecGetArray(y,&y_array);CHKERRQ(ierr);
   if (!*plan){ /* create a plan then execute it*/
     if(usfft->dof == 1) {
+#ifdef PETSC_DEBUG_USFFT
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim); CHKERRQ(ierr);
+      for(int ii = 0; ii < usfft->ndim; ++ii) {
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]); CHKERRQ(ierr);
+      }
+#endif 
+#if 0
+      *plan = fftw_plan_dft(usfft->ndim,usfft->outdim,(fftw_complex*)x_array,(fftw_complex*)y_array,direction,usfft->p_flag);
+#endif
       switch (usfft->ndim){
       case 1:
         *plan = fftw_plan_dft_1d(usfft->outdim[0],(fftw_complex*)x_array,(fftw_complex*)y_array,direction,usfft->p_flag);   
