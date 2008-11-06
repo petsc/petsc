@@ -1,6 +1,6 @@
 !
       module mex34f90
-#include "include/finclude/petscall.h90"
+#include "finclude/petscall.h90"
 
 !   Data structure used to contain information about the problem
 !   You can add physical values etc here

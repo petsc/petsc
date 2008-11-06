@@ -4,8 +4,8 @@
         Provides an interface to the Tufo-Fischer parallel direct solver
 
 */
-#include "src/mat/impls/aij/mpi/mpiaij.h"
-#include "src/ksp/pc/impls/tfs/tfs.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
+#include "../src/ksp/pc/impls/tfs/tfs.h"
 
 typedef struct {
   xxt_ADT xxt;
@@ -134,7 +134,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,const MatFactorInf
   PetscFunctionReturn(0);
 }
 
-#include "src/ksp/pc/impls/tfs/tfs.h"
+#include "../src/ksp/pc/impls/tfs/tfs.h"
 
 typedef struct {
   xyt_ADT xyt;

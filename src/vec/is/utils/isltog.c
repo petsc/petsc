@@ -1,7 +1,7 @@
 #define PETSCVEC_DLL
 
 #include "petscvec.h"   /*I "petscsys.h" I*/
-#include "include/private/isimpl.h"    /*I "petscis.h"  I*/
+#include "private/isimpl.h"    /*I "petscis.h"  I*/
 
 PetscCookie PETSCVEC_DLLEXPORT IS_LTOGM_COOKIE;
 

@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "src/snes/impls/picard/picard.h"
+#include "../src/snes/impls/picard/picard.h"
 
 /*
   SNESDestroy_Picard - Destroys the private SNES_Picard context that was created with SNESCreate_Picard().

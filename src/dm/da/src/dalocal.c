@@ -4,7 +4,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
+#include "../src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 /*
    This allows the DA vectors to properly tell Matlab their dimensions

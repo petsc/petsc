@@ -15,7 +15,7 @@
 /*
      Defines the data structure for the base matrix type (SeqAIJ)
 */
-#include "src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 
 /*
      SuperLU include files

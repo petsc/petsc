@@ -4,7 +4,7 @@
   Code for manipulating distributed regular arrays in parallel.
 */
 
-#include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
+#include "../src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 /* Logging support */
 PetscCookie PETSCDM_DLLEXPORT DM_COOKIE;

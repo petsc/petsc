@@ -1,7 +1,7 @@
 #define PETSCKSP_DLL
 
 #include "fetipc.h"
-#include "src/mat/impls/feti/feti.h" 
+#include "../src/mat/impls/feti/feti.h" 
 
 int PETSCKSP_DLLEXPORT PCCreateFeti(PC *pc)
 {

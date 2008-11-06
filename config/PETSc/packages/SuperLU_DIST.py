@@ -8,10 +8,10 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.2-April_04_2008-hg.tar.gz']
+    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_DIST_2.3-hg.tar.gz']
     self.functions  = ['set_default_options_dist']
     self.includes   = ['superlu_ddefs.h']
-    self.liblist    = [['libsuperlu_dist_2.2.a']]
+    self.liblist    = [['libsuperlu_dist_2.3.a']]
     #
     #  SuperLU_dist supports 64 bit integers but uses ParMetis which does not, it has
     #  a hack that uses the 32 bit parmetis
@@ -32,7 +32,7 @@ class Configure(PETSc.package.Package):
 
     g = open(os.path.join(self.packageDir,'make.inc'),'w')
     g.write('DSuperLUroot = '+self.packageDir+'\n')
-    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_2.2.a\n')
+    g.write('DSUPERLULIB  = $(DSuperLUroot)/libsuperlu_dist_2.3.a\n')
     g.write('BLASDEF      = -DUSE_VENDOR_BLAS\n')
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
     g.write('IMPI         = '+self.headers.toString(self.mpi.include)+'\n')

@@ -43,7 +43,7 @@
 /*
   This defines the data structures for the smoothed aggregation procedure
 */
-#include "src/ksp/pc/impls/asa/asa.h"
+#include "../src/ksp/pc/impls/asa/asa.h"
 
 /*
   We need the QR algorithm from LAPACK

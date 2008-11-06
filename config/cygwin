@@ -1,4 +1,0 @@
-#! /bin/csh
-set DATAFILESPATH=/home/balay/datafiles
-set APPEND='2>&1 >>'
-

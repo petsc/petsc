@@ -1,4 +1,4 @@
-#include "src/sys/f90/f90impl.h"
+#include "../src/sys/f90/f90impl.h"
 #include "private/fortranimpl.h"
 #include "petscviewer.h"
 

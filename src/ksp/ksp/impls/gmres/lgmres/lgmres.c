@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/impls/gmres/lgmres/lgmresp.h"   /*I petscksp.h I*/
+#include "../src/ksp/ksp/impls/gmres/lgmres/lgmresp.h"   /*I petscksp.h I*/
 
 #define LGMRES_DELTA_DIRECTIONS 10
 #define LGMRES_DEFAULT_MAXK     30

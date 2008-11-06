@@ -4,7 +4,7 @@
     ADIC matrix-free matrix implementation
 */
 
-#include "include/private/matimpl.h"
+#include "private/matimpl.h"
 #include "petscda.h"          /*I   "petscda.h"    I*/
 #include "petscsnes.h"        /*I   "petscsnes.h"  I*/
 #include "petscsys.h"
@@ -56,7 +56,7 @@ PetscErrorCode MatMult_DAAD(Mat A,Vec xx,Vec yy)
   PetscFunctionReturn(0);
 }
 
-#include "src/dm/da/daimpl.h"
+#include "../src/dm/da/daimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal_DAAD"

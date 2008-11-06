@@ -16,7 +16,7 @@
       subroutine FORLINK()
 
       implicit none
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -45,7 +45,7 @@
 !=====================================================================72
       block data Block_Initialization
       implicit none
-#include "include/finclude/petscdef.h"
+#include "finclude/petscdef.h"
       PetscScalar vkar,cmu,ce1,ce2
       PetscScalar aplus1,aplus2,turbinf
       PetscScalar cb1,sig,cb2,cw1,cw2
@@ -72,7 +72,7 @@
 #define __FUNCT__ "INIT"
       subroutine INIT(nnodes, qvec, turbre, amut,nvnode, ivnode,irank)
       implicit none
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       PetscScalar  turbre(1),amut(1)
       integer ivnode(1),nnodes,nvnode,irank
       PetscScalar  title(20),beta,alpha
@@ -215,7 +215,7 @@
       subroutine READR1(ileast, irank)
 
       implicit none
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -288,7 +288,7 @@
      &                  irank)
 !
       implicit none      
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       PetscScalar pinf
       PetscScalar gamma,gm1,gp1,gm1g,gp1g,ggm1
       PetscScalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
@@ -448,7 +448,7 @@
      &                 evec,qvec,xyz,sface_bit,vface_bit,               &
      &                 clift, cdrag, cmom,irank,nvertices)
       implicit none      
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -721,7 +721,7 @@
      &                  LocalTS,irank,nvertices)
 !
       implicit none      
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -974,7 +974,7 @@
      &                irank,nvertices)
 #endif  
       implicit none      
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -1800,7 +1800,7 @@
       subroutine SUMGS(nnodes,nedge,evec,xyz,rxy,irank,nvertices)
 
       implicit none      
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       integer nnodes,nedge,irank,nvertices
 #if defined(INTERLACING)
       PetscScalar xyz(3,nvertices)
@@ -2055,7 +2055,7 @@
      &                 rxy,irank,nvertices)
 !
       implicit none      
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       integer nnodes,nedge,irank,nvertices
 !
 #if defined(INTERLACING)
@@ -2383,7 +2383,7 @@
 #endif
 !
       implicit none      
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
 !
       integer nnodes, ncell, nedge,                                         &
      &        nbface,ileast,ires,                                           &
@@ -2672,7 +2672,7 @@
 #define __FUNCT__ "GETIA"
       subroutine GETIA(nnodes,nedge,evec,ia,ideg,irank)
       implicit none      
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       integer nnodes,nedge,irank
       integer ia(1),ideg(1)
 #if defined(INTERLACING)
@@ -2723,7 +2723,7 @@
 #define __FUNCT__ "GETJA"
       subroutine GETJA(nnodes,nedge,evec,ia,ja,iwork,irank)
       implicit none      
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       integer nnodes,nedge,irank
       integer ia(1),ja(1),iwork(1)
 #if defined(INTERLACING)
@@ -2842,7 +2842,7 @@
 #define __FUNCT__ "SORTER"
       subroutine SORTER(istart,iend,ja,inode)
       implicit none      
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
       integer istart,iend,inode
       integer ja(1)
 !

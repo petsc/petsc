@@ -9,10 +9,10 @@
    they start with the name of the base class and have a suffix for the derived class
 -  the pointer to the struct (this-pointer) is always the first argument              */
 
-#include "src/sles/pc/pcimpl.h"      /* also includes petscksp.h and petscpc.h */
+#include "../src/sles/pc/pcimpl.h"      /* also includes petscksp.h and petscpc.h */
 #include "petscsles.h"
 
-#include "src/mat/impls/feti/feti.h" /* */
+#include "../src/mat/impls/feti/feti.h" /* */
 
 #define FETIDP_KBB     "Kbb"
 #define FETIDP_KII     "Kii"

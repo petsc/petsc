@@ -1,4 +1,4 @@
-#include "src/contrib/semiLagrange/characteristicimpl.h"  /*I "characteristic.h" I*/
+#include "../src/contrib/semiLagrange/characteristicimpl.h"  /*I "characteristic.h" I*/
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode CharacteristicCreate_DA(Characteristic);

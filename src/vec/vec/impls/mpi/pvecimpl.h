@@ -3,7 +3,7 @@
 #define __PVECIMPL
 
 #include "private/vecimpl.h"
-#include "src/vec/vec/impls/dvecimpl.h"
+#include "../src/vec/vec/impls/dvecimpl.h"
 
 typedef struct {
   VECHEADER

@@ -1,7 +1,8 @@
 
 ALL: lib
 
-CFLAGS   =
+CPPFLAGS = -I${PETSC_DIR}/src/contrib
+CFLAGS   = 
 FFLAGS   =
 SOURCEC  = characteristic.c mocregis.c dlregis.c
 SOURCEF  =

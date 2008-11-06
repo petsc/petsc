@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/rowbs/mpi/mpirowbs.h"
+#include "../src/mat/impls/rowbs/mpi/mpirowbs.h"
 
 #define CHUNCKSIZE_LOCAL   10
 
@@ -2122,8 +2122,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIRowbs(MPI_Comm comm,int m,int M,in
 
 /* -------------------------------------------------------------------------*/
 
-#include "src/mat/impls/aij/seq/aij.h"
-#include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrices_MPIRowbs" 
@@ -2774,7 +2774,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_MPIRowbs" 
-#include "src/vec/is/impls/general/general.h"
+#include "../src/vec/is/impls/general/general.h"
 PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReuse scall,Mat *submat)
 { 
   Mat_MPIRowbs  *c = (Mat_MPIRowbs*)C->data;

@@ -4,7 +4,7 @@
    This file was created by Peter Mell   6/30/95    
 */
 
-#include "src/dm/da/daimpl.h"     /*I  "petscda.h"   I*/
+#include "../src/dm/da/daimpl.h"     /*I  "petscda.h"   I*/
 
 const char *DAPeriodicTypes[] = {"NONPERIODIC","XPERIODIC","YPERIODIC","XYPERIODIC",
                                  "XYZPERIODIC","XZPERIODIC","YZPERIODIC","ZPERIODIC","XYZGHOSTED","DAPeriodicType","DA_",0};

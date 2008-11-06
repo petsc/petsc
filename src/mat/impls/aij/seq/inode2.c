@@ -1,5 +1,5 @@
 #define PETSCMAT_DLL
-#include "src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 
 EXTERN PetscErrorCode Mat_CheckInode(Mat,PetscTruth);
 EXTERN_C_BEGIN

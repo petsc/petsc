@@ -465,7 +465,7 @@ PetscErrorCode FormFunction2(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
-#include "src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petsc.h"   I*/
+#include "../src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petsc.h"   I*/
 /* 
    PetscLogPrintSummaryToPy() is customized from PetscLogPrintSummary().
    It replaces input parameter "const char filename[]" with "PetscViewer viewer".

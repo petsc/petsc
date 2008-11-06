@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "include/private/snesimpl.h"
+#include "private/snesimpl.h"
 
 /* Data used by Jorge's diff parameter computation method */
 typedef struct {

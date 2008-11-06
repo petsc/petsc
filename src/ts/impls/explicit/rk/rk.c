@@ -9,7 +9,7 @@
  * http://asbjorn.aarrestad.com/
  * 
  */
-#include "include/private/tsimpl.h"                /*I   "petscts.h"   I*/
+#include "private/tsimpl.h"                /*I   "petscts.h"   I*/
 #include "time.h"
 
 typedef struct {

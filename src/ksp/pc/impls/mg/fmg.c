@@ -1,7 +1,7 @@
 /*
      Full multigrid using either additive or multiplicative V or W cycle
 */
-#include "src/ksp/pc/impls/mg/mgimpl.h"
+#include "../src/ksp/pc/impls/mg/mgimpl.h"
 
 EXTERN PetscErrorCode PCMGMCycle_Private(PC,PC_MG **,PCRichardsonConvergedReason*);
 

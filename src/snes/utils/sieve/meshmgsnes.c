@@ -4,7 +4,7 @@
 #include <Selection.hh>
 
 /* Just to set iterations */
-#include "include/private/snesimpl.h"      /*I "petscsnes.h"  I*/
+#include "private/snesimpl.h"      /*I "petscsnes.h"  I*/
 
 PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr);
 

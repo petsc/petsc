@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/pc/impls/factor/icc/icc.h"   /*I "petscpc.h" I*/
+#include "../src/ksp/pc/impls/factor/icc/icc.h"   /*I "petscpc.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetup_ICC"

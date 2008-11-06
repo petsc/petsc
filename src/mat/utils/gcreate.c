@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "include/private/matimpl.h"       /*I "petscmat.h"  I*/
+#include "private/matimpl.h"       /*I "petscmat.h"  I*/
 #include "petscsys.h"
 
 #if 0
@@ -134,6 +134,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetSizes(Mat A, PetscInt m, PetscInt n, Pet
   A->cmap->n = n;
   A->rmap->N = M;
   A->cmap->N = N;
+  if (A->ops->create) {
+    ierr = (*A->ops->create)(A);CHKERRQ(ierr);
+    A->ops->create = 0;
+  }
+
   PetscFunctionReturn(0);
 }
 

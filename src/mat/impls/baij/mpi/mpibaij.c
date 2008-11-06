@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
+#include "../src/mat/impls/baij/mpi/mpibaij.h"   /*I  "petscmat.h"  I*/
 
 EXTERN PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat); 
 EXTERN PetscErrorCode DisAssemble_MPIBAIJ(Mat);

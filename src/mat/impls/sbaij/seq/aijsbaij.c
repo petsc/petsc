@@ -1,8 +1,8 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/aij/seq/aij.h"
-#include "src/mat/impls/baij/seq/baij.h"
-#include "src/mat/impls/sbaij/seq/sbaij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/baij/seq/baij.h"
+#include "../src/mat/impls/sbaij/seq/sbaij.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

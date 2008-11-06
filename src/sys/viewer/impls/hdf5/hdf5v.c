@@ -1,4 +1,4 @@
-#include <src/sys/viewer/viewerimpl.h>    /*I   "petsc.h"   I*/
+#include "../src/sys/viewer/viewerimpl.h"    /*I   "petsc.h"   I*/
 #include <hdf5.h>
 
 typedef struct {

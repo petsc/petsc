@@ -7,7 +7,7 @@
      At the moment the DXNL library only offers sparse matrix vector product.
      Note: matrix i,j index must be 1-based (Fortran style)!
 */
-#include "src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqAIJ_DXML"

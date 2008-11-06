@@ -1,7 +1,7 @@
 #define PETSCKSP_DLL
 
-#include "include/private/kspimpl.h"             /*I "petscksp.h" I*/
-#include "src/ksp/ksp/impls/cg/stcg/stcg.h"
+#include "private/kspimpl.h"             /*I "petscksp.h" I*/
+#include "../src/ksp/ksp/impls/cg/stcg/stcg.h"
 
 #define STCG_PRECONDITIONED_DIRECTION   0
 #define STCG_UNPRECONDITIONED_DIRECTION 1

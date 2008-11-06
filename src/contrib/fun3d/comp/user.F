@@ -988,7 +988,7 @@ c
 !  I have eliminated dq - D. K. Kaushik (1/23/97)
 c=====================================================================72
       subroutine L2NORM(res,nnodes,nnode_glo,x,y,z,vol,irank)
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
  
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -1134,7 +1134,7 @@ c
      &                 amut,
      &                 sface_bit,vface_bit,
      &                 clift, cdrag, cmom,irank,nvertices)
-#include "include/finclude/petsc.h"
+#include "finclude/petsc.h"
 
       common/info/title(20),xmach,alpha,yaw,Re,dt,tot,res0,resc,
      1            ntt,mseq,ivisc,irest,icyc,ihane,ntturb

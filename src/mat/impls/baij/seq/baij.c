@@ -4,11 +4,11 @@
     Defines the basic matrix operations for the BAIJ (compressed row)
   matrix storage format.
 */
-#include "src/mat/impls/baij/seq/baij.h"
-#include "src/inline/spops.h"
+#include "../src/mat/impls/baij/seq/baij.h"
+#include "../src/inline/spops.h"
 #include "petscsys.h"                     /*I "petscmat.h" I*/
 
-#include "src/inline/ilu.h"
+#include "../src/inline/ilu.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBAIJInvertBlockDiagonal"
@@ -2334,6 +2334,7 @@ PetscErrorCode MatAXPY_SeqBAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     if (!y->xtoy) { /* get xtoy */
       ierr = MatAXPYGetxtoy_Private(x->mbs,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);
       y->XtoY = X;
+      ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
     }
     bs2 = bs*bs;
     for (i=0; i<x->nz; i++) {

@@ -9,7 +9,7 @@
    that UMFPACK UL_Long version MUST be built with 64 bit integers when used.
 
 */
-#include "src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 
 #if defined(PETSC_USE_64BIT_INDICES)
 #if defined(PETSC_USE_COMPLEX)

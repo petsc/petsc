@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "include/private/kspimpl.h"
+#include "private/kspimpl.h"
 
 /* ---------------------------------------Method 1------------------------------------------------------------*/
 typedef struct {

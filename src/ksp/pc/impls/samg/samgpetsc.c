@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 #include "petscksp.h"
-#include "src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 #include "global.h"
 #include "externc.h"
 #include "samgfunc.h"

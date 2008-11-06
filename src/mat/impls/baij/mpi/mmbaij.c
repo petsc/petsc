@@ -3,7 +3,7 @@
 /*
    Support for the parallel BAIJ matrix vector multiply
 */
-#include "src/mat/impls/baij/mpi/mpibaij.h"
+#include "../src/mat/impls/baij/mpi/mpibaij.h"
 
 EXTERN PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 

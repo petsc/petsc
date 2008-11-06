@@ -11,7 +11,7 @@
   Eventually a variety of permutations may be supported.
 */
 
-#include "src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 
 #define NDIM 512
     /* NDIM specifies how many rows at a time we should work with when 
@@ -290,7 +290,7 @@ PetscErrorCode MatAssemblyEnd_SeqCSRPERM(Mat A, MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
-#include "src/inline/dot.h"
+#include "../src/inline/dot.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_SeqCSRPERM"

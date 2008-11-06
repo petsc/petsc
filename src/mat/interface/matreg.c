@@ -3,7 +3,7 @@
 /*
      Mechanism for register PETSc matrix types
 */
-#include "include/private/matimpl.h"      /*I "petscmat.h" I*/
+#include "private/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
 PetscTruth MatRegisterAllCalled = PETSC_FALSE;
@@ -44,7 +44,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, const MatType matype)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  if (mat->rmap->n < 0 && mat->rmap->N < 0 && mat->cmap->n < 0 && mat->cmap->N < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call MatSetSizes() first");
+
   ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (sametype) PetscFunctionReturn(0);
 
@@ -60,7 +60,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, const MatType matype)
   }
 
   /* create the new data structure */
-  ierr = (*r)(mat);CHKERRQ(ierr);
+  if (mat->rmap->n < 0 && mat->rmap->N < 0 && mat->cmap->n < 0 && mat->cmap->N < 0) {
+    mat->ops->create = r;
+  } else {
+    ierr = (*r)(mat);CHKERRQ(ierr);
+  }
   ierr = PetscPublishAll(mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

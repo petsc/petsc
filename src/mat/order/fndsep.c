@@ -4,7 +4,7 @@
 */
 
 #include "petsc.h"
-#include "src/mat/order/order.h"
+#include "../src/mat/order/order.h"
 EXTERN PetscErrorCode SPARSEPACKfnroot(PetscInt*, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *, PetscInt *);
 
 /*****************************************************************/

@@ -1,9 +1,9 @@
 
       module MyModule
 #define PETSC_AVOID_DECLARATIONS
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscbag.h"
-#include "include/finclude/petscviewer.h"
+#include "finclude/petsc.h"
+#include "finclude/petscbag.h"
+#include "finclude/petscviewer.h"
 #undef PETSC_AVOID_DECLARATIONS
 !   Data structure used to contain information about the problem
 !   You can add physical values etc here
@@ -33,9 +33,9 @@
       use MyModule
       use MyInterface
       implicit none
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscbag.h"
-#include "include/finclude/petscviewer.h"
+#include "finclude/petsc.h"
+#include "finclude/petscbag.h"
+#include "finclude/petscviewer.h"
 
       PetscBag bag
       PetscErrorCode ierr

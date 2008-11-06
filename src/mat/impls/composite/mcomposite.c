@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
+#include "private/matimpl.h"        /*I "petscmat.h" I*/
 
 typedef struct _Mat_CompositeLink *Mat_CompositeLink;
 struct _Mat_CompositeLink {
@@ -13,6 +13,9 @@ typedef struct {
   MatCompositeType  type;
   Mat_CompositeLink head,tail;
   Vec               work;
+  PetscScalar       scale;        /* scale factor supplied with MatScale() */
+  Vec               left,right;   /* left and right diagonal scaling provided with MatDiagonalScale() */
+  Vec               leftwork,rightwork;
 } Mat_Composite;
 
 #undef __FUNCT__  
@@ -34,6 +37,10 @@ PetscErrorCode MatDestroy_Composite(Mat mat)
     ierr     = PetscFree(oldnext);CHKERRQ(ierr);
   }
   if (shell->work) {ierr = VecDestroy(shell->work);CHKERRQ(ierr);}
+  if (shell->left) {ierr = VecDestroy(shell->left);CHKERRQ(ierr);}
+  if (shell->right) {ierr = VecDestroy(shell->right);CHKERRQ(ierr);}
+  if (shell->leftwork) {ierr = VecDestroy(shell->leftwork);CHKERRQ(ierr);}
+  if (shell->rightwork) {ierr = VecDestroy(shell->rightwork);CHKERRQ(ierr);}
   ierr      = PetscFree(shell);CHKERRQ(ierr);
   mat->data = 0;
   PetscFunctionReturn(0);
@@ -51,6 +58,13 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   if (!next) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
+  if (shell->right) {
+    if (!shell->rightwork) {
+      ierr = VecDuplicate(shell->right,&shell->rightwork);CHKERRQ(ierr);
+    }
+    ierr = VecPointwiseMult(shell->rightwork,shell->right,in);CHKERRQ(ierr);
+    in   = shell->rightwork;
+  }
   while (next->next) {
     if (!next->work) { /* should reuse previous work if the same size */
       ierr = MatGetVecs(next->mat,PETSC_NULL,&next->work);CHKERRQ(ierr);
@@ -61,6 +75,10 @@ PetscErrorCode MatMult_Composite_Multiplicative(Mat A,Vec x,Vec y)
     next = next->next;
   }
   ierr = MatMult(next->mat,in,y);CHKERRQ(ierr);
+  if (shell->left) {
+    ierr = VecPointwiseMult(y,shell->left,y);CHKERRQ(ierr);
+  }
+  ierr = VecScale(y,shell->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -76,6 +94,13 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
   PetscFunctionBegin;
   if (!tail) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
   in = x;
+  if (shell->left) {
+    if (!shell->leftwork) {
+      ierr = VecDuplicate(shell->left,&shell->leftwork);CHKERRQ(ierr);
+    }
+    ierr = VecPointwiseMult(shell->leftwork,shell->left,in);CHKERRQ(ierr);
+    in   = shell->leftwork;
+  }
   while (tail->prev) {
     if (!tail->prev->work) { /* should reuse previous work if the same size */
       ierr = MatGetVecs(tail->mat,PETSC_NULL,&tail->prev->work);CHKERRQ(ierr);
@@ -86,6 +111,10 @@ PetscErrorCode MatMultTranspose_Composite_Multiplicative(Mat A,Vec x,Vec y)
     tail = tail->prev;
   }
   ierr = MatMultTranspose(tail->mat,in,y);CHKERRQ(ierr);
+  if (shell->right) {
+    ierr = VecPointwiseMult(y,shell->right,y);CHKERRQ(ierr);
+  }
+  ierr = VecScale(y,shell->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -96,13 +125,26 @@ PetscErrorCode MatMult_Composite(Mat A,Vec x,Vec y)
   Mat_Composite     *shell = (Mat_Composite*)A->data;  
   Mat_CompositeLink next = shell->head;
   PetscErrorCode    ierr;
+  Vec               in;
 
   PetscFunctionBegin;
   if (!next) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
-  ierr = MatMult(next->mat,x,y);CHKERRQ(ierr);
-  while ((next = next->next)) {
-    ierr = MatMultAdd(next->mat,x,y,y);CHKERRQ(ierr);
+  in = x;
+  if (shell->right) {
+    if (!shell->rightwork) {
+      ierr = VecDuplicate(shell->right,&shell->rightwork);CHKERRQ(ierr);
+    }
+    ierr = VecPointwiseMult(shell->rightwork,shell->right,in);CHKERRQ(ierr);
+    in   = shell->rightwork;
   }
+  ierr = MatMult(next->mat,in,y);CHKERRQ(ierr);
+  while ((next = next->next)) {
+    ierr = MatMultAdd(next->mat,in,y,y);CHKERRQ(ierr);
+  }
+  if (shell->left) {
+    ierr = VecPointwiseMult(y,shell->left,y);CHKERRQ(ierr);
+  }
+  ierr = VecScale(y,shell->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -113,13 +155,26 @@ PetscErrorCode MatMultTranspose_Composite(Mat A,Vec x,Vec y)
   Mat_Composite     *shell = (Mat_Composite*)A->data;  
   Mat_CompositeLink next = shell->head;
   PetscErrorCode    ierr;
+  Vec               in;
 
   PetscFunctionBegin;
   if (!next) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
-  ierr = MatMultTranspose(next->mat,x,y);CHKERRQ(ierr);
-  while ((next = next->next)) {
-    ierr = MatMultTransposeAdd(next->mat,x,y,y);CHKERRQ(ierr);
+  in = x;
+  if (shell->left) {
+    if (!shell->leftwork) {
+      ierr = VecDuplicate(shell->left,&shell->leftwork);CHKERRQ(ierr);
+    }
+    ierr = VecPointwiseMult(shell->leftwork,shell->left,in);CHKERRQ(ierr);
+    in   = shell->leftwork;
   }
+  ierr = MatMultTranspose(next->mat,in,y);CHKERRQ(ierr);
+  while ((next = next->next)) {
+    ierr = MatMultTransposeAdd(next->mat,in,y,y);CHKERRQ(ierr);
+  }
+  if (shell->right) {
+    ierr = VecPointwiseMult(y,shell->right,y);CHKERRQ(ierr);
+  }
+  ierr = VecScale(y,shell->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -133,6 +188,8 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
 
   PetscFunctionBegin;
   if (!next) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+  if (shell->right || shell->left) SETERRQ(PETSC_ERR_SUP,"Cannot get diagonal if left or right scaling");
+
   ierr = MatGetDiagonal(next->mat,v);CHKERRQ(ierr);
   if (next->next && !shell->work) {
     ierr = VecDuplicate(v,&shell->work);CHKERRQ(ierr);
@@ -141,6 +198,7 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
     ierr = MatGetDiagonal(next->mat,shell->work);CHKERRQ(ierr);
     ierr = VecAXPY(v,1.0,shell->work);CHKERRQ(ierr);
   }
+  ierr = VecScale(v,shell->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -159,6 +217,35 @@ PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatScale_Composite"
+PetscErrorCode MatScale_Composite(Mat inA,PetscScalar alpha)
+{
+  Mat_Composite  *a = (Mat_Composite*)inA->data;
+
+  PetscFunctionBegin;
+  a->scale = alpha;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalScale_Composite"
+PetscErrorCode MatDiagonalScale_Composite(Mat inA,Vec left,Vec right)
+{
+  Mat_Composite  *a = (Mat_Composite*)inA->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (left) {
+    ierr = VecDuplicate(left,&a->left);CHKERRQ(ierr);
+    ierr = VecCopy(left,a->left);CHKERRQ(ierr);
+  }
+  if (right) {
+    ierr = VecDuplicate(right,&a->right);CHKERRQ(ierr);
+    ierr = VecCopy(right,a->right);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 static struct _MatOps MatOps_Values = {0,
        0,
@@ -178,7 +265,7 @@ static struct _MatOps MatOps_Values = {0,
 /*15*/ 0,
        0,
        MatGetDiagonal_Composite,
-       0,
+       MatDiagonalScale_Composite,
        0,
 /*20*/ 0,
        MatAssemblyEnd_Composite,
@@ -206,7 +293,7 @@ static struct _MatOps MatOps_Values = {0,
        0,
        0,
 /*45*/ 0,
-       0,
+       MatScale_Composite,
        0,
        0,
        0,
@@ -291,6 +378,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Composite(Mat A)
   A->assembled     = PETSC_TRUE;
   A->preallocated  = PETSC_FALSE;
   b->type          = MAT_COMPOSITE_ADDITIVE;
+  b->scale         = 1.0;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATCOMPOSITE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -333,7 +421,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat
 {
   PetscErrorCode ierr;
   PetscInt       m,n,M,N,i;
-
+  
   PetscFunctionBegin;
   if (nmat < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must pass in at least one matrix");
   PetscValidPointer(mat,3);
@@ -488,5 +576,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat mat)
     }
   }
   ierr = MatHeaderReplace(mat,tmat);CHKERRQ(ierr);
+  ierr = MatDiagonalScale(mat,shell->left,shell->right);CHKERRQ(ierr);
+  ierr = MatScale(mat,shell->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

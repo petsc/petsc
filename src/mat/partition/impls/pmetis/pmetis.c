@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
  
-#include "src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
+#include "../src/mat/impls/adj/mpi/mpiadj.h"    /*I "petscmat.h" I*/
 
 /* 
    Currently using ParMetis-2.0. The following include file has

@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
  
-#include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
+#include "../src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
 typedef struct {
   void *ctx;

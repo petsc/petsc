@@ -1,4 +1,4 @@
-#include "src/contrib/semiLagrange/characteristicimpl.h"
+#include "../src/contrib/semiLagrange/characteristicimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicInitializePackage"

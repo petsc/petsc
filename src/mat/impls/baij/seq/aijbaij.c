@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/baij/seq/baij.h"
+#include "../src/mat/impls/baij/seq/baij.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -61,7 +61,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqAIJ(Mat A, MatType newty
 }
 EXTERN_C_END
 
-#include "src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "include/private/matimpl.h"
+#include "private/matimpl.h"
 
 #define DEFAULT_STASH_SIZE   10000
 

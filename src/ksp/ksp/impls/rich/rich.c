@@ -3,8 +3,8 @@
 /*          
             This implements Richardson Iteration.       
 */
-#include "include/private/kspimpl.h"              /*I "petscksp.h" I*/
-#include "src/ksp/ksp/impls/rich/richctx.h"
+#include "private/kspimpl.h"              /*I "petscksp.h" I*/
+#include "../src/ksp/ksp/impls/rich/richctx.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_Richardson"

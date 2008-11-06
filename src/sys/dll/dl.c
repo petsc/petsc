@@ -6,7 +6,7 @@
 
 #include "petsc.h"
 #include "petscsys.h"
-#include "src/sys/dll/dlimpl.h"
+#include "../src/sys/dll/dlimpl.h"
 
 /* ------------------------------------------------------------------------------*/
 /*
@@ -133,7 +133,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char path[
   size_t         len;
 
   PetscFunctionBegin;
-  PetscValidCharPointer(libname,2);
+  PetscValidCharPointer(path,2);
   PetscValidPointer(entry,3);
 
   *entry = PETSC_NULL;

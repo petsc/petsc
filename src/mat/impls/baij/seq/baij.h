@@ -1,8 +1,8 @@
 
 #if !defined(__BAIJ_H)
 #define __BAIJ_H
-#include "include/private/matimpl.h"
-#include "src/mat/impls/aij/seq/aij.h"
+#include "private/matimpl.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 
 
 /*  

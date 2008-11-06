@@ -24,7 +24,7 @@ Contains C routines for the interface with BLOPEX compiled with PETSc.
 #include "petscksp.h"
 #include "petscda.h"
 #include "lobpcg.h"
-#include "src/contrib/blopex/petsc-interface/petsc-interface.h"
+#include "../src/contrib/blopex/petsc-interface/petsc-interface.h"
 #include "interpreter.h"
 #include "multivector.h"
 

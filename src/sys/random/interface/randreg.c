@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/random/randomimpl.h"         /*I "petscsys.h" I*/
+#include "../src/sys/random/randomimpl.h"         /*I "petscsys.h" I*/
 
 PetscFList PetscRandomList              = PETSC_NULL;
 PetscTruth PetscRandomRegisterAllCalled = PETSC_FALSE;

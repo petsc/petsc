@@ -1,7 +1,7 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
-#include "src/inline/spops.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
+#include "../src/inline/spops.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDistribute_MPIAIJ"
@@ -3912,7 +3912,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
   PetscFunctionReturn(0);
 }
 
-#include "src/mat/utils/freespace.h"
+#include "../src/mat/utils/freespace.h"
 #include "petscbt.h"
 
 #undef __FUNCT__  
@@ -4833,7 +4833,7 @@ extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat,const MatT
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
-#include "src/mat/impls/dense/mpi/mpidense.h"
+#include "../src/mat/impls/dense/mpi/mpidense.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_MPIDense_MPIAIJ"

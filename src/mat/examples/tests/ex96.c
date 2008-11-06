@@ -15,8 +15,8 @@ static char help[] ="Tests sequential and parallel DAGetMatrix(), MatMatMult() a
 #include "petscksp.h"
 #include "petscda.h"
 #include "petscmg.h"
-#include "src/mat/impls/aij/seq/aij.h"
-#include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
 
 /* User-defined application contexts */
 typedef struct {

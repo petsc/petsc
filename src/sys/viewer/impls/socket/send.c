@@ -46,7 +46,7 @@ typedef unsigned long   u_long;
 #include <Winsock2.h>
 #endif
 
-#include "src/sys/viewer/impls/socket/socket.h"
+#include "../src/sys/viewer/impls/socket/socket.h"
 #include "petscfix.h"
 
 EXTERN_C_BEGIN

@@ -2,7 +2,7 @@
 /*
    This file contains routines for Parallel vector operations.
  */
-#include "src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
+#include "../src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
 #if 0
 #undef __FUNCT__  

@@ -4819,7 +4819,7 @@ The Fortran include files for PETSc are located in the directory
 \trl{${PETSC_DIR}/include/finclude} and should be used via statements 
 such as the following:
 \begin{tabbing}
-    \#include "include/finclude/includefile.h"
+    \#include "finclude/includefile.h"
 \end{tabbing}
 Since one must be very careful to include each file no more than once
 in a Fortran routine, application programmers must manually include
@@ -5090,7 +5090,7 @@ use the routines VecGetArrayF90(), VecRestoreArrayF90()
 VecDuplicateVecsF90(), and VecDestroyVecsF90(), one must
 use the Fortran90 vector include file,
 \begin{tabbing}
-    \#include "include/finclude/petscvec.h90"
+    \#include "finclude/petscvec.h90"
 \end{tabbing}
 Analogous include files for other libraries are \trl{petscda.h90},
 \trl{petscmat.h90}, and \trl{petscis.h90}.
@@ -6247,10 +6247,10 @@ created by PetscViewerASCIIOpen() by calling
 \begin{tabbing}
   PetscViewerSetFormat(PetscViewer viewer,int format);
 \end{tabbing}  
-\findex{PETSC_VIEWER_ASCII_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB} 
+\findex{PETSC_VIEWER_DEFAULT} \findex{PETSC_VIEWER_ASCII_MATLAB} 
 \findex{PETSC_VIEWER_ASCII_IMPL} \findex{PetscViewerSetFormat()}
 Possible formats include 
-\trl{PETSC_VIEWER_ASCII_DEFAULT}, \trl{PETSC_VIEWER_ASCII_MATLAB}, and
+\trl{PETSC_VIEWER_DEFAULT}, \trl{PETSC_VIEWER_ASCII_MATLAB}, and
 \trl{PETSC_VIEWER_ASCII_IMPL}.  The implementation-specific format, 
 \trl{PETSC_VIEWER_ASCII_IMPL}, displays the object in the most natural way
 for a particular implementation.  

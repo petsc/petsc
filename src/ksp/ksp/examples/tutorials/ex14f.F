@@ -57,13 +57,13 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscda.h"
+#include "finclude/petsc.h"
+#include "finclude/petscis.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscda.h"
 
       MPI_Comm comm
       Vec      X,Y,F,localX,localF
@@ -302,13 +302,13 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscda.h"
+#include "finclude/petsc.h"
+#include "finclude/petscis.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscda.h"
       PetscErrorCode    ierr
       PetscOffset      idx
       Vec       X,localX,localF
@@ -387,13 +387,13 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscda.h"
+#include "finclude/petsc.h"
+#include "finclude/petscis.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscda.h"
 
       Vec              X,F,localX,localF
       PetscInt         gys,gxm,gym
@@ -494,13 +494,13 @@
 !     petscis.h     - index sets            petscksp.h - Krylov subspace methods
 !     petscviewer.h - viewers               petscpc.h  - preconditioners
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscda.h"
+#include "finclude/petsc.h"
+#include "finclude/petscis.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscda.h"
 
       Vec         X
       Mat         jac

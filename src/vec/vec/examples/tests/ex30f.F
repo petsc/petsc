@@ -5,9 +5,9 @@
       program main
       implicit none
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscvec.h"
+#include "finclude/petsc.h"
+#include "finclude/petscis.h"
+#include "finclude/petscvec.h"
 
       PetscErrorCode ierr
       PetscInt  nlocal, n, row

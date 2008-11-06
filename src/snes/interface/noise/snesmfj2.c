@@ -1,7 +1,7 @@
 #define PETSCSNES_DLL
 
-#include "include/private/snesimpl.h"   /*I  "petscsnes.h"   I*/
-#include "include/private/matimpl.h"
+#include "private/snesimpl.h"   /*I  "petscsnes.h"   I*/
+#include "private/matimpl.h"
 
 EXTERN PetscErrorCode DiffParameterCreate_More(SNES,Vec,void**);
 EXTERN PetscErrorCode DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);

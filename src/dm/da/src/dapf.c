@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
  
-#include "src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
+#include "../src/dm/da/daimpl.h"    /*I   "petscda.h"   I*/
 
 
 #undef __FUNCT__  

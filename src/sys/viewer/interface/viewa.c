@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
+#include "../src/sys/viewer/viewerimpl.h"  /*I "petsc.h" I*/  
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerSetFormat" 
@@ -17,7 +17,7 @@
 
    Notes:
    Available formats include
-+    PETSC_VIEWER_ASCII_DEFAULT - default format
++    PETSC_VIEWER_DEFAULT - default format
 .    PETSC_VIEWER_ASCII_MATLAB - Matlab format
 .    PETSC_VIEWER_ASCII_DENSE - print matrix as dense
 .    PETSC_VIEWER_ASCII_IMPL - implementation-specific format
@@ -76,7 +76,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetFormat(PetscViewer viewer,PetscView
 
    Notes:
    Available formats include
-+    PETSC_VIEWER_ASCII_DEFAULT - default format
++    PETSC_VIEWER_DEFAULT - default format
 .    PETSC_VIEWER_ASCII_MATLAB - Matlab format
 .    PETSC_VIEWER_ASCII_IMPL - implementation-specific format
       (which is in many cases the same as the default)

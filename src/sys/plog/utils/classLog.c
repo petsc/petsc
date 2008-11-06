@@ -2,7 +2,7 @@
 
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "petsctime.h"
-#include "src/sys/plog/plog.h"
+#include "../src/sys/plog/plog.h"
 
 /*----------------------------------------------- Creation Functions -------------------------------------------------*/
 /* Note: these functions do not have prototypes in a public directory, so they are considered "internal" and not exported. */

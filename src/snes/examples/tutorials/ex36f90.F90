@@ -1,5 +1,5 @@
 #define PETSC_AVOID_DECLARATIONS
-#include "include/finclude/petscall.h"
+#include "finclude/petscall.h"
 
 !  Error handler that aborts when error is detected
 !
@@ -124,9 +124,9 @@
       program ex36f90
       use mex36f90
 !     use mex36f90interfaces
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscviewer.h"
-#include "include/finclude/petscvec.h"
+#include "finclude/petsc.h"
+#include "finclude/petscviewer.h"
+#include "finclude/petscvec.h"
 
 
       DMMGArray        dmmg

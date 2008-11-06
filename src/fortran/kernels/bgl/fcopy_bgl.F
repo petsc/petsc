@@ -2,7 +2,7 @@
 !
 !    Fortran kernel for the copy vector routine
 !
-#include "include/finclude/petscdef.h"
+#include "finclude/petscdef.h"
 !
       subroutine FortranCopy_BGL(n,x,y)
       implicit none

@@ -19,17 +19,17 @@ C  Other include statements may be needed if using additional PETSc
 C  routines in a Fortran program, e.g.,
 C     is.h     - index sets
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsnes.h"
-#include "include/finclude/petscts.h"
-#include "include/finclude/petscviewer.h"
-#include "include/finclude/petscdraw.h"
+#include "finclude/petsc.h"
+#include "finclude/petscis.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscda.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsnes.h"
+#include "finclude/petscts.h"
+#include "finclude/petscviewer.h"
+#include "finclude/petscdraw.h"
 
 C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 C

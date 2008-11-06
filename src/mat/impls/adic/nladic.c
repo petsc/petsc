@@ -14,8 +14,8 @@ EXTERN_C_BEGIN
 #include "adic/ad_utils.h"
 EXTERN_C_END
 
-#include "src/dm/da/daimpl.h"
-#include "src/inline/ilu.h"
+#include "../src/dm/da/daimpl.h"
+#include "../src/inline/ilu.h"
 
 struct NLF_DAAD {
   DA         da;

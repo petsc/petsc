@@ -1,5 +1,5 @@
 
-#include "src/dm/da/daimpl.h"
+#include "../src/dm/da/daimpl.h"
 #include "private/fortranimpl.h"
 #include "petscmat.h"
 #include "petscda.h"

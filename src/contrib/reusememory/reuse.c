@@ -2,7 +2,7 @@
 static char vcid[] = "$Id: reuse.c,v 1.1 1997/04/10 14:38:41 bsmith Exp bsmith $";
 #endif
 
-#include "src/mat/impls/aij/mpi/mpiaij.h"
+#include "../src/mat/impls/aij/mpi/mpiaij.h"
 
 
 #undef __FUNC__  

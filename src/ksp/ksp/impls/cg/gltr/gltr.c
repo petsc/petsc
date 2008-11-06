@@ -1,8 +1,8 @@
 #define PETSCKSP_DLL
 
-#include "include/private/kspimpl.h"             /*I "petscksp.h" I*/
-#include "include/petscblaslapack.h"
-#include "src/ksp/ksp/impls/cg/gltr/gltr.h"
+#include "private/kspimpl.h"             /*I "petscksp.h" I*/
+#include "petscblaslapack.h"
+#include "../src/ksp/ksp/impls/cg/gltr/gltr.h"
 
 #define GLTR_PRECONDITIONED_DIRECTION   0
 #define GLTR_UNPRECONDITIONED_DIRECTION 1

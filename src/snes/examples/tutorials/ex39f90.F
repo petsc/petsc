@@ -36,9 +36,9 @@
       module f90module
       type userctx
 #define PETSC_AVOID_DECLARATIONS
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscda.h"
 #undef PETSC_AVOID_DECLARATIONS
         DA      da
         integer xs,xe,xm,gxs,gxe,gxm
@@ -71,16 +71,16 @@
       subroutine FormFunction(snes,X,F,user,ierr)
       implicit none
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsnes.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscda.h"
+#include "finclude/petscis.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsnes.h"
 
-#include "include/finclude/petscvec.h90"
+#include "finclude/petscvec.h90"
 
 
 !  Input/output variables:
@@ -144,16 +144,16 @@
       implicit none
 !
 !
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsnes.h"
-#include "include/finclude/petscvec.h90"
-#include "include/finclude/petscda.h90"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscda.h"
+#include "finclude/petscis.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsnes.h"
+#include "finclude/petscvec.h90"
+#include "finclude/petscda.h90"
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !                   Variable declarations
@@ -357,14 +357,14 @@
 
       use f90module
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscvec.h90"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscmat.h90"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsnes.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscvec.h90"
+#include "finclude/petscmat.h"
+#include "finclude/petscmat.h90"
+#include "finclude/petscksp.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsnes.h"
 
       SNES              snes
       type (userctx)    user
@@ -407,15 +407,15 @@
       use f90module
       implicit none
 
-#include "include/finclude/petscvec.h90"
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsnes.h"
+#include "finclude/petscvec.h90"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscda.h"
+#include "finclude/petscis.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsnes.h"
 
 !  Input/output variables:
       type (userctx)         user
@@ -474,14 +474,14 @@
       use f90module
       implicit none
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsnes.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscda.h"
+#include "finclude/petscis.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsnes.h"
 
 !  Input/output variables:
       type (userctx)         user
@@ -630,16 +630,16 @@
       use f90module
       implicit none
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsnes.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscda.h"
+#include "finclude/petscis.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsnes.h"
 
-#include "include/finclude/petscvec.h90"
+#include "finclude/petscvec.h90"
 
 !  Input/output variables:
       SNES         snes
@@ -751,14 +751,14 @@
       use f90module
       implicit none
 
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsnes.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscda.h"
+#include "finclude/petscis.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscksp.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsnes.h"
 
 !  Input/output variables:
       type (userctx) user

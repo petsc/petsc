@@ -3,7 +3,7 @@
 !
 !    Fortran kernel for the MAXPY() vector routine
 !
-#include "include/finclude/petscdef.h"
+#include "finclude/petscdef.h"
 !
 
       Subroutine FortranMAXPY4_BGL(x, a0, a1, a2, a3, y0, y1, y2, y3, n)

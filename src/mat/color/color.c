@@ -4,8 +4,8 @@
      Routines that call the kernel minpack coloring subroutines
 */
 
-#include "include/private/matimpl.h"
-#include "src/mat/color/color.h"
+#include "private/matimpl.h"
+#include "../src/mat/color/color.h"
 
 /*
     MatFDColoringDegreeSequence_Minpack - Calls the MINPACK routine seqr() that

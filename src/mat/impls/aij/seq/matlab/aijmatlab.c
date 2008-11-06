@@ -4,7 +4,7 @@
         Provides an interface for the Matlab engine sparse solver
 
 */
-#include "src/mat/impls/aij/seq/aij.h"
+#include "../src/mat/impls/aij/seq/aij.h"
 
 #include "engine.h"   /* Matlab include file */
 #include "mex.h"      /* Matlab include file */

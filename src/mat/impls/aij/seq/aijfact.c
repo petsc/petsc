@@ -1,10 +1,10 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/impls/aij/seq/aij.h"
-#include "src/inline/dot.h"
-#include "src/inline/spops.h"
+#include "../src/mat/impls/aij/seq/aij.h"
+#include "../src/inline/dot.h"
+#include "../src/inline/spops.h"
 #include "petscbt.h"
-#include "src/mat/utils/freespace.h"
+#include "../src/mat/utils/freespace.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatOrdering_Flow_SeqAIJ"
@@ -1393,7 +1393,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   PetscFunctionReturn(0); 
 }
 
-#include "src/mat/impls/sbaij/seq/sbaij.h"
+#include "../src/mat/impls/sbaij/seq/sbaij.h"
 #undef __FUNCT__  
 #define __FUNCT__ "MatCholeskyFactorNumeric_SeqAIJ"
 PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)

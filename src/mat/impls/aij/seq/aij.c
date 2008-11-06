@@ -5,9 +5,10 @@
   matrix storage format.
 */
 
-#include "src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
-#include "src/inline/spops.h"
-#include "src/inline/dot.h"
+
+#include "../src/mat/impls/aij/seq/aij.h"          /*I "petscmat.h" I*/
+#include "../src/inline/spops.h"
+#include "../src/inline/dot.h"
 #include "petscbt.h"
 
 #undef __FUNCT__  
@@ -2869,7 +2870,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,Petsc
    Collective on MPI_Comm
 
    Input Parameters:
-+  B - The matrix
++  B - The matrix-free
 .  nz - number of nonzeros per row (same for all rows)
 -  nnz - array containing the number of nonzeros in the various rows 
          (possibly different for each row) or PETSC_NULL
@@ -3084,8 +3085,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
 }
 EXTERN_C_END
 
-#include "src/mat/impls/dense/seq/dense.h"
-#include "src/inline/axpy.h"
+#include "../src/mat/impls/dense/seq/dense.h"
+#include "../src/inline/axpy.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "MatMatMultNumeric_SeqDense_SeqAIJ"

@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "include/private/kspimpl.h"
+#include "private/kspimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_BiCG"

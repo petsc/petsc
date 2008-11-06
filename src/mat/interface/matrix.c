@@ -4,7 +4,7 @@
    This is where the abstract matrix operations are defined
 */
 
-#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
+#include "private/matimpl.h"        /*I "petscmat.h" I*/
 #include "private/vecimpl.h"  
 
 /* Logging support */
@@ -520,7 +520,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat A)
    The user can call PetscViewerSetFormat() to specify the output
    format of ASCII printed objects (when using PETSC_VIEWER_STDOUT_SELF,
    PETSC_VIEWER_STDOUT_WORLD and PetscViewerASCIIOpen).  Available formats include
-+    PETSC_VIEWER_ASCII_DEFAULT - default, prints matrix contents
++    PETSC_VIEWER_DEFAULT - default, prints matrix contents
 .    PETSC_VIEWER_ASCII_MATLAB - prints matrix contents in Matlab format
 .    PETSC_VIEWER_ASCII_DENSE - prints entire matrix including zeros
 .    PETSC_VIEWER_ASCII_COMMON - prints matrix contents, using a sparse 
@@ -4208,9 +4208,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScale(Mat mat,PetscScalar a)
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->scale)(mat,a);CHKERRQ(ierr);
+  if (a != 1.0) {
+    ierr = (*mat->ops->scale)(mat,a);CHKERRQ(ierr);
+    ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
+  } 
   ierr = PetscLogEventEnd(MAT_Scale,mat,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectStateIncrease((PetscObject)mat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 

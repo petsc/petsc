@@ -4,9 +4,9 @@
     Defines the basic matrix operations for the SBAIJ (compressed row)
   matrix storage format.
 */
-#include "src/mat/impls/baij/seq/baij.h"         /*I "petscmat.h" I*/
-#include "src/inline/spops.h"
-#include "src/mat/impls/sbaij/seq/sbaij.h"
+#include "../src/mat/impls/baij/seq/baij.h"         /*I "petscmat.h" I*/
+#include "../src/inline/spops.h"
+#include "../src/mat/impls/sbaij/seq/sbaij.h"
 
 extern PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat,PetscTruth);
 #define CHUNKSIZE  10
@@ -909,6 +909,7 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,const MatFactorInfo *info)
   if (inA->rmap->bs != 1) SETERRQ1(PETSC_ERR_SUP,"Matrix block size %D is not supported",inA->rmap->bs); /* Need to replace MatCholeskyFactorSymbolic_SeqSBAIJ_MSR()! */
 
   outA        = inA; 
+  inA->factor = MAT_FACTOR_ICC;
   
   ierr = MatMarkDiagonal_SeqSBAIJ(inA);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetNumericFactorization(inA,row_identity);CHKERRQ(ierr);
@@ -1154,7 +1155,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
 /*10*/ 0,
        0,
-       0,
+       MatCholeskyFactor_SeqSBAIJ,
        MatRelax_SeqSBAIJ,
        MatTranspose_SeqSBAIJ,
 /*15*/ MatGetInfo_SeqSBAIJ,

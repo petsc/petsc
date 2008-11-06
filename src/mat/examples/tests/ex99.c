@@ -11,7 +11,7 @@ e.g. ./ex99 -f0 $D/small -fA $D/Eigdftb/dftb_bin/diamond_xxs_A -fB $D/Eigdftb/df
 
 #include "petscmat.h"
 #include "petscblaslapack.h"
-#include "src/mat/impls/sbaij/seq/sbaij.h"
+#include "../src/mat/impls/sbaij/seq/sbaij.h"
 
 extern PetscErrorCode CkEigenSolutions(PetscInt*,Mat*,PetscReal*,Vec*,PetscInt*,PetscInt*,PetscReal*);
 

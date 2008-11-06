@@ -3,8 +3,8 @@
 #include "petscda.h"      /*I      "petscda.h"    I*/
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 #include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
-#include "src/inline/ilu.h"
-#include "src/snes/impls/ls/ls.h"
+#include "../src/inline/ilu.h"
+#include "../src/snes/impls/ls/ls.h"
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFRelax_DAAD(NLF,MatSORType,PetscInt,Vec);
@@ -88,7 +88,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdic(SNES snes,Vec X
   PetscFunctionReturn(0);
 }
 
-#include "src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
+#include "../src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/
 /*
           This is pre-beta FAS code. It's design should not be taken seriously!
 

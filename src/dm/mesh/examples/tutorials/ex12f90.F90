@@ -5,7 +5,7 @@
 !    partition a cell-centered unstructured mesh
 
       program ex12f90
-#include "include/finclude/petscall.h"     
+#include "finclude/petscall.h"     
       DM mesh
       PetscErrorCode   ierr
       Vec gvec,lvec

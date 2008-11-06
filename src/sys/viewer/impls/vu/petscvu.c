@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
+#include "../src/sys/viewer/viewerimpl.h"  /*I     "petsc.h"   I*/
 #include <stdarg.h>
 #include "petscfix.h"
 
@@ -142,7 +142,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_VU(PetscViewer viewer)
   viewer->ops->flush            = PetscViewerFlush_VU;
   viewer->ops->getsingleton     = PETSC_NULL;
   viewer->ops->restoresingleton = PETSC_NULL;
-  viewer->format                = PETSC_VIEWER_ASCII_DEFAULT;
+  viewer->format                = PETSC_VIEWER_DEFAULT;
   viewer->iformat               = 0;
 
   vu->fd          = PETSC_NULL;

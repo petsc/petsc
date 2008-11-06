@@ -1,6 +1,6 @@
 #define PETSCVEC_DLL
 
-#include "src/vec/pf/pfimpl.h"            /*I "petscpf.h" I*/
+#include "../src/vec/pf/pfimpl.h"            /*I "petscpf.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFApply_Constant"

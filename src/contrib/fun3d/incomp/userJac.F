@@ -20,11 +20,11 @@
      &                 vol,xyzn,cfl,irank,nvertices)
 !
       implicit none     
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsnes.h"
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscpc.h"
+#include "finclude/petscsnes.h"
       integer nnodes,nedge,nsface,nsnode,nvnode,nfnode,irank,nvertices
 
       integer isface(1)
@@ -856,7 +856,7 @@
 #define __FUNCT__ "CHK_ERR"
       subroutine CHK_ERR(irank, ierr, irow, icol)
       implicit none
-#include "include/finclude/petscdef.h"
+#include "finclude/petscdef.h"
       integer irank,ierr,irow,icol
       if (ierr .gt. 0) then 
        write(*,*) 'On processor ',irank, ': Non-zero entry in row ',     &

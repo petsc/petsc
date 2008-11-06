@@ -1,5 +1,5 @@
 #define PETSC_AVOID_DECLARATIONS
-#include "include/finclude/petscall.h"
+#include "finclude/petscall.h"
 
 !
 !      Implements a nonlinear solver for a simple domain

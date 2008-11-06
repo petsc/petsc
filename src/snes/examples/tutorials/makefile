@@ -4,7 +4,7 @@
 
 #CFLAGS		 = -I/PETSc3/geodynamics/PetscSimulationsViewers/src
 CFLAGS       =
-FFLAGS		 = -I${PETSC_DIR}/include/finclude
+FFLAGS		 = 
 CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR		 = src/snes/examples/tutorials/

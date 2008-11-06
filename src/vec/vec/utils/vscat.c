@@ -5,8 +5,8 @@
   some special cases for parallel scatters.
 */
 
-#include "include/private/isimpl.h"              /*I "petscis.h" I*/
-#include "include/private/vecimpl.h"             /*I "petscvec.h" I*/
+#include "private/isimpl.h"              /*I "petscis.h" I*/
+#include "private/vecimpl.h"             /*I "petscvec.h" I*/
 
 /* Logging support */
 PetscCookie PETSCVEC_DLLEXPORT VEC_SCATTER_COOKIE;
