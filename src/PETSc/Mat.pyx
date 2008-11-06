@@ -766,12 +766,11 @@ cdef class Mat(Object):
         raise NotImplementedError
 
     def factorILUDT(self, IS isrow not None, IS iscol not None, options=None):
-        raise NotImplementedError
-        ## cdef PetscMatFactorInfo info
-        ## matfactorinfo(PETSC_TRUE, options, &info)
-        ## cdef Mat mat = Mat()
-        ## CHKERR( MatILUDTFactor(self.mat, isrow.iset, iscol.iset, &info, &mat.mat) )
-        ## return mat
+        cdef PetscMatFactorInfo info
+        matfactorinfo(PETSC_TRUE, options, &info)
+        cdef Mat mat = Mat()
+        CHKERR( MatILUDTFactor(self.mat, isrow.iset, iscol.iset, &info, &mat.mat) )
+        return mat
 
     def getInertia(self):
         cdef PetscInt nneg=0, nzero=0, npos=0

@@ -310,6 +310,7 @@ MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
     info->dt             = PETSC_DEFAULT;
     info->dtcount        = PETSC_DEFAULT;
     info->dtcol          = PETSC_DEFAULT;
+    info->fill           = PETSC_DEFAULT;
     info->shiftnz        = 1.e-12;
     info->shiftpd        = 0.0;
     info->zeropivot      = 1.e-12;
@@ -318,12 +319,12 @@ MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
     info->shiftinblocks  = 1.e-12;
 #endif
   } else {
-    info->fill           = 5.0;
     info->dtcol          = 1.e-6;
+    info->fill           = 5.0;
     info->shiftnz        = 0.0;
+    info->shiftpd        = 0.0;
     info->zeropivot      = 1.e-12;
     info->pivotinblocks  = 1.0;
-    info->shiftpd        = 0.0;
   }
   PetscFunctionReturn(0);
 }
