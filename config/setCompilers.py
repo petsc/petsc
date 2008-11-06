@@ -1010,9 +1010,9 @@ class Configure(config.base.Configure):
         yield (self.framework.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
       #yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
-        yield ("g++", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
+#        yield ("g++", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
         yield (self.CXX, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')        
-      yield ("gcc", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
+#      yield ("gcc", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
       yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')      
     if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
       # C++ compiler default
@@ -1118,7 +1118,10 @@ class Configure(config.base.Configure):
       flag = '-L'
       self.pushLanguage(language)
       # test '-R' before '-rpath' as sun compilers [c,fortran] don't give proper errors with wrong options.
-      testFlags = ['-Wl,-rpath,', '-R','-rpath ' , '-Wl,-R,']
+      if not Configure.isDarwin():      
+        testFlags = ['-Wl,-rpath,', '-R','-rpath ' , '-Wl,-R,']
+      else:
+        testFlags = []
       # test '-R' before '-Wl,-rpath' for SUN compilers [as cc on linux accepts -Wl,-rpath, but  f90 & CC do not.
       if self.isSun(self.framework.getCompiler()):
         testFlags.insert(0,'-R')
@@ -1168,9 +1171,9 @@ class Configure(config.base.Configure):
         yield (self.framework.argDB['with-dynamic-ld'], ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
       #yield ('libtool', ['-noprebind','-dynamic','-single_module','-flat_namespace -undefined warning','-multiply_defined suppress'], 'dylib')
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
-        yield ("g++", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
+#        yield ("g++", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
         yield (self.CXX, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')        
-      yield ("gcc", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
+#      yield ("gcc", ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
       yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')      
     # Shared default
     if hasattr(self, 'sharedLinker'):
