@@ -435,7 +435,6 @@ PETSC_STATIC_INLINE PetscErrorCode PetscExceptionTrySync_Private(MPI_Comm comm,P
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscExceptionTry1()
 M*/
-extern PetscErrorCode PetscExceptionTmp;
 #define PetscExceptionTrySyncNorm(comm,a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : \
                                         (PetscExceptionTmp = a , PetscExceptionPop(b),PetscExceptionTrySyncNorm_Private(comm,PetscExceptionTmp,b))
 

@@ -195,7 +195,6 @@ M*/
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
 #endif
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char[]);
 extern PetscTruth MatRegisterAllCalled;
 extern PetscFList MatList;
 
@@ -308,8 +307,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeSetType(Mat,MatCompositeTyp
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat,Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSchurComplement(Mat,Mat,Mat,Mat,Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSchurComplementUpdate(Mat,Mat,Mat,Mat,Mat,MatStructure);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat);

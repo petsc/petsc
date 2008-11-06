@@ -121,7 +121,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGetOwnershipRanges(DA,const PetscIn
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateGlobalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateLocalVector(DA,Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateNaturalVector(DA,Vec *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreateLocalVector(DA,Vec *);
 #define  DAGetLocalVector(da,v)      DMGetLocalVector((DM)da,v)
 #define  DARestoreLocalVector(da,v)  DMRestoreLocalVector((DM)da,v)
 #define  DAGetGlobalVector(da,v)     DMGetGlobalVector((DM)da,v)
