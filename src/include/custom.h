@@ -8,10 +8,10 @@
 #include "private/snesimpl.h"
 #include "private/tsimpl.h"
 
-#if PETSC_232
+#if defined(PETSC_232)
 #define PetscGetMap(o, m) (&(o)->m)
 #define PetscSetUpMap(o, m) PetscMapInitialize((o)->comm,&(o)->m)
-#elif PETSC_233
+#elif defined(PETSC_233)
 #define PetscGetMap(o, m) (&(o)->m)
 #define PetscSetUpMap(o, m) PetscMapSetUp(&(o)->m)
 #else
@@ -286,11 +286,44 @@ MatAnyDenseSetPreallocation(Mat mat,PetscInt bs, PetscScalar *data)
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,
 	     "Invalid block size specified, "
 	     "must be positive but it is %D",bs);
-  ierr = MatSeqDenseSetPreallocation(mat, data);
-  ierr = MatMPIDenseSetPreallocation(mat, data);
+  ierr = MatSeqDenseSetPreallocation(mat, data);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(mat, data);CHKERRQ(ierr);
   if (bs != PETSC_DECIDE) {
     PetscGetMap(mat,rmap)->bs = bs;
     PetscGetMap(mat,cmap)->bs = bs;
+  }
+  PetscFunctionReturn(0);
+}
+
+/* ---------------------------------------------------------------- */
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorInfoDefaults()"
+PETSC_STATIC_INLINE PetscErrorCode
+MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidPointer(info,2);
+  ierr = MatFactorInfoInitialize(info);CHKERRQ(ierr);
+  if (incomplete) {
+    info->dt             = PETSC_DEFAULT;
+    info->dtcount        = PETSC_DEFAULT;
+    info->dtcol          = PETSC_DEFAULT;
+    info->shiftnz        = 1.e-12;
+    info->shiftpd        = 0.0;
+    info->zeropivot      = 1.e-12;
+    info->pivotinblocks  = 1.0;
+#if !defined(PETSC_233) && !defined(PETSC_232)
+    info->shiftinblocks  = 1.e-12;
+#endif
+  } else {
+    info->fill           = 5.0;
+    info->dtcol          = 1.e-6;
+    info->shiftnz        = 0.0;
+    info->zeropivot      = 1.e-12;
+    info->pivotinblocks  = 1.0;
+    info->shiftpd        = 0.0;
   }
   PetscFunctionReturn(0);
 }

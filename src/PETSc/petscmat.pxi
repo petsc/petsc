@@ -221,6 +221,8 @@ cdef extern from "petscmat.h":
         PetscReal fill, diagonal_fill
         PetscReal dt, dtcol, dtcount, levels
         PetscReal zeropivot, pivotinblocks
+    int MatFactorInfoInitialize(PetscMatFactorInfo*)
+
     int MatCholeskyFactor(PetscMat,PetscIS,PetscMatFactorInfo*)
     int MatCholeskyFactorSymbolic(PetscMat,PetscIS,PetscMatFactorInfo*,PetscMat*)
     int MatCholeskyFactorNumeric(PetscMat,PetscMatFactorInfo*,PetscMat*)
@@ -600,6 +602,18 @@ cdef inline int matsetvalues_ijv(PetscMat A,
         else:
             sval = v + i[k]
             CHKERR( setvalues(A, 1, &irow, ncol, icol, sval, addv) )
+    return 0
+
+# --------------------------------------------------------------------
+
+cdef extern from "custom.h":
+    int MatFactorInfoDefaults(PetscTruth,PetscMatFactorInfo*)
+
+cdef int matfactorinfo(PetscTruth incomplete, object options,
+                       PetscMatFactorInfo *info) except -1:
+    CHKERR( MatFactorInfoDefaults(incomplete, info) )
+    if options is None: return 0
+    cdef dict opts = options
     return 0
 
 # --------------------------------------------------------------------

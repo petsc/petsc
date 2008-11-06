@@ -735,32 +735,43 @@ cdef class Mat(Object):
         cdef PetscIS rp = isrow.iset, cp = iscol.iset
         CHKERR( MatReorderForNonzeroDiagonal(self.mat, rval, rp, cp) )
 
-    def factorCholesky(self, IS isperm not None, options=None):
+    def factorLU(self, IS isrow not None, IS iscol not None, options=None):
+        cdef PetscMatFactorInfo info
+        matfactorinfo(PETSC_FALSE, options, &info)
+        CHKERR( MatLUFactor(self.mat, isrow.iset, iscol.iset, &info) )
+    def factorSymbolicLU(self, Mat mat not None, IS isrow not None, IS iscol not None, options=None):
         raise NotImplementedError
+    def factorNumericLU(self, Mat mat not None, options=None):
+        raise NotImplementedError
+    def factorILU(self, IS isrow not None, IS iscol not None, options=None):
+        cdef PetscMatFactorInfo info
+        matfactorinfo(PETSC_TRUE, options, &info)
+        CHKERR( MatILUFactor(self.mat, isrow.iset, iscol.iset, &info) )
+    def factorSymbolicILU(self, IS isrow not None, IS iscol not None, options=None):
+        raise NotImplementedError
+
+    def factorCholesky(self, IS isperm not None, options=None):
+        cdef PetscMatFactorInfo info
+        matfactorinfo(PETSC_FALSE, options, &info)
+        CHKERR( MatCholeskyFactor(self.mat, isperm.iset, &info) )
     def factorSymbolicCholesky(self, IS isperm not None, options=None):
         raise NotImplementedError
     def factorNumericCholesky(self, Mat mat not None, options=None):
         raise NotImplementedError
-
-    def factorLU(self, IS isrow not None, IS iscol not None, options=None):
-        raise NotImplementedError
-    def factorSymbolicLU(self, IS isrow not None, IS iscol not None, options=None):
-        raise NotImplementedError
-    def factorNumericLU(self, Mat mat not None, options=None):
-        raise NotImplementedError
-
     def factorICC(self, IS isperm not None, options=None):
-        raise NotImplementedError
+        cdef PetscMatFactorInfo info
+        matfactorinfo(PETSC_TRUE, options, &info)
+        CHKERR( MatICCFactor(self.mat, isperm.iset, &info) )
     def factorSymbolicICC(self, IS isperm not None, options=None):
-        raise NotImplementedError
-
-    def factorILU(self, IS isrow not None, IS iscol not None, options=None):
-        raise NotImplementedError
-    def factorSymbolicILU(self, IS isrow not None, IS iscol not None, options=None):
         raise NotImplementedError
 
     def factorILUDT(self, IS isrow not None, IS iscol not None, options=None):
         raise NotImplementedError
+        ## cdef PetscMatFactorInfo info
+        ## matfactorinfo(PETSC_TRUE, options, &info)
+        ## cdef Mat mat = Mat()
+        ## CHKERR( MatILUDTFactor(self.mat, isrow.iset, iscol.iset, &info, &mat.mat) )
+        ## return mat
 
     def getInertia(self):
         cdef PetscInt nneg=0, nzero=0, npos=0

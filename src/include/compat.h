@@ -16,13 +16,18 @@
 #endif
 
 #if (PETSC_VERSION_MAJOR    == 2 && \
+     PETSC_VERSION_MINOR    == 4 && \
+     PETSC_VERSION_SUBMINOR == 0 && \
+     PETSC_VERSION_RELEASE  == 1)
+#define PETSC_240 1
+#endif
+
+#if (PETSC_VERSION_MAJOR    == 2 && \
      PETSC_VERSION_MINOR    == 3 && \
      PETSC_VERSION_SUBMINOR == 3 && \
      PETSC_VERSION_RELEASE  == 1)
 #include "compat/petsc233.h"
 #define PETSC_233 1
-#else
-#define PETSC_233 0
 #endif
 
 #if (PETSC_VERSION_MAJOR    == 2 && \
@@ -31,8 +36,6 @@
      PETSC_VERSION_RELEASE  == 1)
 #include "compat/petsc232.h"
 #define PETSC_232 1
-#else
-#define PETSC_232 0
 #endif
 
 #endif /* !PETSC_COMPAT_H */
