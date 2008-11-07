@@ -17,11 +17,12 @@ petsc-233:
 petsc-dev:						       
 	${MAKE} -f misc/makefile.dev PETSC_DIR=${PETSC_DEV} torture
 
+TEST_DIR=/tmp/petsc4py-build-test
 PETSC_OPTIONS='-malloc_dump -log_summary'
 torture:
-	${RM} -r build /tmp/lib/python/petsc4py*
+	${RM} -r build ${TEST_DIR}/lib/python/petsc4py*
 	${PYTHON} setup.py clean --all
-	${PYTHON} setup.py install --home=/tmp
-	PYTHONPATH=/tmp/lib/python PETSC_OPTIONS=${PETSC_OPTIONS} ${PYTHON} test/runtests.py
+	${PYTHON} setup.py install --home=${TEST_DIR}
+	PYTHONPATH=${TEST_DIR}/lib/python PETSC_OPTIONS=${PETSC_OPTIONS} ${PYTHON} test/runtests.py
 	${RM} tests/*.py[co]
-	${RM} -r build /tmp/lib/python/petsc4py*
+	${RM} -r build ${TEST_DIR}/lib/python/petsc4py*

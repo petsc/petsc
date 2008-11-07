@@ -18,7 +18,7 @@ Python bindings for PETSc libraries.
 # Metadata
 # --------------------------------------------------------------------
 
-from conf import metadata
+from conf.metadata import metadata
 
 name     = 'petsc4py'
 version  = open('VERSION.txt').read().strip()
@@ -66,8 +66,8 @@ def get_ext_modules(Extension):
 # Setup
 # --------------------------------------------------------------------
 
-from conf.core import setup, Extension
-from conf.core import config, build, build_py, build_ext
+from conf.petscconf import setup, Extension
+from conf.petscconf import config, build, build_py, build_ext
 
 def main():
     setup(packages     = ['petsc4py',

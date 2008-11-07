@@ -27,13 +27,6 @@ import confutils as cfgutils
 
 # --------------------------------------------------------------------
 
-if not hasattr(sys, 'version_info') or \
-       sys.version_info < (2, 4, 0, 'final'):
-    raise SystemExit("Python 2.4 or later is required "
-                     "to build this package.")
-
-# --------------------------------------------------------------------
-
 class PetscConfig:
 
     def __init__(self, petsc_dir, petsc_arch):
@@ -96,7 +89,7 @@ class PetscConfig:
         PETSC_INCLUDE += ' ${PACKAGES_INCLUDES} ${PETSC_BLASLAPACK_FLAGS}'
         #
         variables = os.path.join(petsc_dir, 'conf', 'variables')
-        if not os.path.isdir(variables):
+        if not os.path.exists(variables):
             variables = os.path.join(petsc_dir, petsc_arch, 'conf', 'variables')
         petscconf = os.path.join(petsc_dir, petsc_arch, 'conf', 'petscvariables')
         #
