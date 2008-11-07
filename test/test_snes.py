@@ -162,6 +162,8 @@ class TestSNESBase(object):
         self.assertEqual(len(ih), 0)
         self.assertAlmostEqual(abs(x[0]), 1.0)
         self.assertAlmostEqual(abs(x[1]), 2.0)
+        reason = self.snes.callConvergenceTest(0, 0, 0, 0)
+        self.assertTrue(reason > 0)
 
     def testSetMonitor(self):
         reshist = {}
@@ -177,6 +179,9 @@ class TestSNESBase(object):
         self.assertEqual(getrefcount(monitor), refcnt)
         self.testSolve()
         self.assertTrue(len(reshist) == 0)
+        self.snes.setMonitor(monitor)
+        self.snes.callMonitor(1, 7)
+        self.assertTrue(reshist[1] == 7)
         ## Monitor = PETSc.SNES.Monitor
         ## self.snes.setMonitor(Monitor())
         ## self.snes.setMonitor(Monitor.DEFAULT)

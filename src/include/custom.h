@@ -411,12 +411,46 @@ KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__  
+#define __FUNCT__ "SNESMonitorCall"
+PETSC_STATIC_INLINE PetscErrorCode
+SNESMonitorCall(SNES snes, PetscInt its, PetscReal rnorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
+  if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
+  SNESMonitor(snes,its,rnorm);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESConvergenceTestCall"
+PETSC_STATIC_INLINE PetscErrorCode
+SNESConvergenceTestCall(SNES snes, PetscInt its,
+			PetscReal xnorm, PetscReal ynorm, PetscReal fnorm,
+			SNESConvergedReason *reason)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(reason,4);//SNESSetConvergenceTest SNESSolve_LS
+  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
+  if (xnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"solution norm must be nonnegative");
+  if (ynorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"step norm must be nonnegative");
+  if (fnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
+  ierr = (*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  *reason = snes->reason;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetOptionsPrefix"
 PETSC_STATIC_INLINE PetscErrorCode
 MatMFFDSetOptionsPrefix(Mat mat, const char prefix[]) {
-  MatMFFD        mfctx = (MatMFFD)mat->data;
+  MatMFFD        mfctx = mat ? (MatMFFD)mat->data : PETSC_NULL ;
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidHeaderSpecific(mfctx,MATMFFD_COOKIE,1);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)mfctx,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -432,8 +466,6 @@ MatFDColoringSetOptionsPrefix(MatFDColoring fdc, const char prefix[]) {
   ierr = PetscObjectSetOptionsPrefix((PetscObject)fdc,prefix);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-/* ---------------------------------------------------------------- */
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESSetUseMFFD"

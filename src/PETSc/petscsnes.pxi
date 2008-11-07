@@ -126,6 +126,11 @@ cdef extern from "custom.h":
     int SNESSetUseFDColoring(PetscSNES,PetscTruth)
     int SNESGetUseFDColoring(PetscSNES,PetscTruth*)
 
+    int SNESMonitorCall(PetscSNES,PetscInt,PetscReal)
+    int SNESConvergenceTestCall(PetscSNES,PetscInt,
+                                PetscReal,PetscReal,PetscReal,
+                                PetscSNESConvergedReason*)
+
 # --------------------------------------------------------------------
 
 cdef inline SNES ref_SNES(PetscSNES snes):

@@ -164,6 +164,16 @@ cdef class SNES(Object):
     def getConvergenceTest(self):
         return SNES_getCnv(self.snes)
 
+    def callConvergenceTest(self, its, xnorm, ynorm, fnorm):
+        cdef PetscInt  ival  = its
+        cdef PetscReal rval1 = xnorm
+        cdef PetscReal rval2 = ynorm
+        cdef PetscReal rval3 = fnorm
+        cdef PetscSNESConvergedReason reason = SNES_CONVERGED_ITERATING
+        CHKERR( SNESConvergenceTestCall(self.snes, ival,
+                                        rval1, rval2, rval3, &reason) )
+        return reason
+
     def setConvergenceHistory(self, length=None, reset=False):
         cdef PetscInt  *idata = NULL
         cdef PetscReal *rdata = NULL
@@ -192,6 +202,11 @@ cdef class SNES(Object):
 
     def getMonitor(self):
         return SNES_getMon(self.snes)
+
+    def callMonitor(self, its, rnorm):
+        cdef PetscInt  ival = its
+        cdef PetscReal rval = rnorm
+        CHKERR( SNESMonitorCall(self.snes, ival, rval) )
 
     def cancelMonitor(self):
         SNES_clsMon(self.snes)
