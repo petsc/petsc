@@ -240,16 +240,17 @@ static PetscErrorCode PetscPythonGetFullName(PyObject *self, char *pyname[])
   }
   /* --- */
   if (ModName) {
-    if (!ClsName) {
-      ierr = PetscStrallocpy(ModName,pyname);CHKERRQ(ierr);
-    } else {
+    if (ClsName) {
       size_t len1, len2;
       ierr = PetscStrlen(ModName,&len1);CHKERRQ(ierr);
       ierr = PetscStrlen(ClsName,&len2);CHKERRQ(ierr);
       ierr = PetscMalloc((len1+1+len2+1)*sizeof(char),pyname);CHKERRQ(ierr);
-      ierr = PetscStrncat(*pyname,ModName,len1);CHKERRQ(ierr);
+      ierr = PetscMemzero(*pyname,(len1+1+len2+1)*sizeof(char));CHKERRQ(ierr);
+      ierr = PetscStrncpy(*pyname,ModName,len1);CHKERRQ(ierr);
       ierr = PetscStrncat(*pyname,".",1);CHKERRQ(ierr);
       ierr = PetscStrncat(*pyname,ClsName,len2);CHKERRQ(ierr);
+    } else {
+      ierr = PetscStrallocpy(ModName,pyname);CHKERRQ(ierr);
     }
   } else if (ClsName) {
     ierr = PetscStrallocpy(ClsName,pyname);CHKERRQ(ierr);
