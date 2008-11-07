@@ -135,9 +135,9 @@ typedef std::priority_queue<PQNode> ShortestPathPriorityQueue;
   Function headers
 */
 PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *pre,
-				      PetscScalar tol,PetscScalar& maxCong);
+				      PetscReal tol,PetscReal& maxCong);
 PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscTruth augment,
-					       PetscScalar tol,PetscScalar& maxCong);
+					       PetscReal tol,PetscReal& maxCong);
 PetscErrorCode LowStretchSpanningTreeHelper(Graph& g,const PetscInt root,const PetscScalar alpha,PetscInt perm[]);
 PetscErrorCode StarDecomp(const Graph g,const PetscInt root,const PetscScalar delta,const PetscScalar epsilon,
 			  PetscInt& k,std::vector<PetscInt>& size,std::vector<std::vector<PetscInt> >& idx,
@@ -177,7 +177,7 @@ PetscErrorCode AddBridges(Graph& g,
 #undef __FUNCT__  
 #define __FUNCT__ "LowStretchSpanningTree"
 PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact,
-				      PetscScalar tol,PetscScalar& maxCong)
+				      PetscReal tol,PetscReal& maxCong)
 {
   PetscErrorCode    ierr;
 
