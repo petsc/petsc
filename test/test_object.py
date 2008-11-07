@@ -72,19 +72,6 @@ class TestObjectBase(object):
         self.obj.decRef()
         self.assertFalse(bool(self.obj))
 
-    ## def testState(self):
-    ##     state = self.obj.getState()
-    ##     self.obj.increaseState()
-    ##     self.assertEqual(self.obj.getState(), state + 1)
-    ##     self.obj.increaseState()
-    ##     self.assertEqual(self.obj.getState(), state + 2)
-    ##     self.obj.setState(state + 3)
-    ##     self.assertEqual(self.obj.getState(), state + 3)
-    ##     self.obj.increaseState()
-    ##     self.assertEqual(self.obj.getState(), state + 4)
-    ##     self.obj.decreaseState()
-    ##     self.assertEqual(self.obj.getState(), state + 3)
-
     def testComposeQuery(self):
         self.assertEqual(self.obj.getRefCount(), 1)
         self.obj.compose('myobj', self.obj)
@@ -102,7 +89,6 @@ class TestObjectBase(object):
         self.assertEqual(self.obj.getName(),      self.obj.name)
         self.assertEqual(self.obj.getComm(),      self.obj.comm)
         self.assertEqual(self.obj.getRefCount(),  self.obj.refcount)
-        ## self.assertEqual(self.obj.getState(),     self.obj.state)
 
 # --------------------------------------------------------------------
 
@@ -110,15 +96,9 @@ class TestObjectRandom(TestObjectBase, unittest.TestCase):
     CLASS = PETSc.Random
     FACTORY = 'create'
 
-## class TestObjectViewerASCII(TestObjectBase, unittest.TestCase):
-##     CLASS = PETSc.ViewerASCII
-##     TARGS = ('stdout',)
-
-## class TestObjectViewerBinary(TestObjectBase, unittest.TestCase):
-##     CLASS = PETSc.ViewerBinary
-
-## class TestObjectViewerDraw(TestObjectBase, unittest.TestCase):
-##     CLASS = PETSc.ViewerDraw
+class TestObjectViewer(TestObjectBase, unittest.TestCase):
+    CLASS = PETSc.Viewer
+    FACTORY = 'create'
 
 class TestObjectIS(TestObjectBase, unittest.TestCase):
     CLASS  = PETSc.IS
@@ -130,14 +110,15 @@ class TestObjectLGMap(TestObjectBase, unittest.TestCase):
     FACTORY = 'create'
     TARGS = ([],)
 
-## class TestObjectAO(TestObjectBase, unittest.TestCase):
-##     CLASS  = PETSc.AOMapping
-##     TARGS = ([], [])
+class TestObjectAO(TestObjectBase, unittest.TestCase):
+    CLASS  = PETSc.AO
+    FACTORY = 'createMapping'
+    TARGS = ([], [])
 
-## class TestObjectDA(TestObjectBase, unittest.TestCase):
-##     CLASS  = PETSc.DA
-##     def setUp(self):
-##         self.obj = self.CLASS().create([3,3,3])
+class TestObjectDA(TestObjectBase, unittest.TestCase):
+    CLASS  = PETSc.DA
+    FACTORY = 'create'
+    TARGS = ([3,3,3],)
 
 class TestObjectVec(TestObjectBase, unittest.TestCase):
     CLASS   = PETSc.Vec
