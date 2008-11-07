@@ -286,7 +286,7 @@ static PetscErrorCode MatScale_Python(Mat mat,PetscScalar a)
   PetscFunctionReturn(0);
  scale: /* MatScale */
   py->scale  = PETSC_TRUE;
-  py->vscale = a;
+  py->vscale *= a;
   PetscFunctionReturn(0);
 }
 
@@ -319,7 +319,7 @@ static PetscErrorCode MatShift_Python(Mat mat,PetscScalar a)
   PetscFunctionReturn(0);
  shift: /* MatShift */
   py->shift  = PETSC_TRUE;
-  py->vshift = a;
+  py->vshift += a;
   PetscFunctionReturn(0);
 }
 
@@ -345,8 +345,8 @@ static PetscErrorCode MatAssemblyEnd_Python(Mat mat,MatAssemblyType type)
 				       PyPetscMat_New, mat,
 				       (int)           type));
   if (type == MAT_FINAL_ASSEMBLY) {
-    py->scale = PETSC_FALSE; py->vscale = 1.0;
-    py->shift = PETSC_FALSE; py->vshift = 0.0;
+    py->scale = PETSC_FALSE; py->vscale = 1;
+    py->shift = PETSC_FALSE; py->vshift = 0;
   }
   PetscFunctionReturn(0);
 }
