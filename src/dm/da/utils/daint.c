@@ -14,9 +14,9 @@
 static PetscErrorCode DAGetWireBasket(DA da)
 {
   PetscErrorCode ierr;
-  PetscInt       dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,*Iint,*Iface,*Iwire,cint = 0,cface = 0,cwire = 0,istart,jstart,kstart;
+  PetscInt       dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,*Iint,*Iface,*Iwire,cint = 0,cface = 0,cwire = 0,istart,jstart,kstart,*I,N,c;
   Mat            P, Xint, Xface, Xwire; 
-  IS             isint,isface,iswire;
+  IS             isint,isface,iswire,is;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da,&dim,0,0,0,&m,&n,&p,&dof,0,0,0);CHKERRQ(ierr);
@@ -40,6 +40,7 @@ static PetscErrorCode DAGetWireBasket(DA da)
     Symbolically one could write P = (  Xface  ) after interchanging the rows to match the natural ordering on the domain
                                         Xwire
   */
+  N     = (m - istart)*(n - jstart)*(p - kstart);
   Nint  = (m-2)*(n-2)*(p-2);
   Nface = 2*( (m-2)*(n-2) + (m-2)*(p-2) + (n-2)*(p-2) ); 
   Nwire = 4*( (m-2) + (n-2) + (p-2) );
@@ -48,14 +49,17 @@ static PetscErrorCode DAGetWireBasket(DA da)
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nwire,20,PETSC_NULL,&Xwire);CHKERRQ(ierr);
 
   /* 
+       I are the indices for all the needed vertices (in global numbering)
        Ixxx are the indices for the interior values, the face values and the wirebasket values
-            (in the natural ordering on the grid)
+            (in the local natural ordering on the local grid)
   */
 #define Endpoint(a,start,b) (a == start || a == (b-1))
-  ierr = PetscMalloc3(Nint,PetscInt,&Iint,Nface,PetscInt,&Iface,Nwire,PetscInt,&Iwire);CHKERRQ(ierr);
+  ierr = PetscMalloc4(N,PetscInt,&I,Nint,PetscInt,&Iint,Nface,PetscInt,&Iface,Nwire,PetscInt,&Iwire);CHKERRQ(ierr);
   for (k=kstart; k<p; k++) {
     for (j=jstart; j<n; j++) {
       for (i=istart; i<m; i++) {
+        I[c++] = i + j*m + k*m*n; /* wrong */
+
         if (!Endpoint(i,istart,m) && !Endpoint(j,jstart,n) && !Endpoint(k,kstart,p)) {
           Iint[cint++] = i + j*m + k*m*n;
         } else if ((Endpoint(i,istart,m) && Endpoint(j,jstart,n)) || (Endpoint(i,istart,m) && Endpoint(k,istart,p)) || (Endpoint(j,jstart,n) && Endpoint(k,kstart,p))) {
@@ -66,6 +70,7 @@ static PetscErrorCode DAGetWireBasket(DA da)
       }
     }
   }
+  if (c != N) SETERRQ(PETSC_ERR_PLIB,"c != N");
   if (cint != Nint) SETERRQ(PETSC_ERR_PLIB,"cint != Nint");
   if (cface != Nface) SETERRQ(PETSC_ERR_PLIB,"cface != Nface");
   if (cwire != Nwire) SETERRQ(PETSC_ERR_PLIB,"cwire != Nwire");
