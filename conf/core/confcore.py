@@ -65,16 +65,19 @@ class PetscConfig:
     def _get_petsc_conf_old(self, petsc_dir, petsc_arch):
         variables = os.path.join(petsc_dir, 'bmake','common',    'variables')
         petscconf = os.path.join(petsc_dir, 'bmake', petsc_arch, 'petscconf')
+        #
         variables = open(variables)
+        contents = variables.read()
+        variables.close()
         petscconf = open(petscconf)
+        contents += petscconf.read()
+        petscconf.close()
+        #
         confstr  = 'PETSC_DIR = %s\n'  % petsc_dir
         confstr += 'PETSC_ARCH = %s\n' % petsc_arch
-        confstr += variables.read()
-        confstr += petscconf.read()
+        confstr += contents
         confstr += 'PACKAGES_INCLUDES = ${MPI_INCLUDE} ${X11_INCLUDE} ${BLASLAPACK_INCLUDE}\n'
         confstr += 'PACKAGES_LIBS = ${MPI_LIB} ${X11_LIB} ${BLASLAPACK_LIB}\n'
-        variables.close()
-        petscconf.close()
         confdct = cfgutils.makefile(StringIO(confstr))
         return confdct
 
@@ -84,27 +87,33 @@ class PetscConfig:
                not os.path.isdir(os.path.join(petsc_dir, petsc_arch)):
             petsc_arch = ''
             PETSC_ARCH = petsc_arch
-            PETSC_INCLUDE =  '-I${PETSC_DIR}/include'
+            PETSC_INCLUDE = '-I${PETSC_DIR}/include'
             PETSC_LIB_DIR = '${PETSC_DIR}/lib'
         else:
             PETSC_ARCH = petsc_arch
             PETSC_INCLUDE = ' -I${PETSC_DIR}/include -I${PETSC_DIR}/${PETSC_ARCH}/include'
             PETSC_LIB_DIR = '${PETSC_DIR}/${PETSC_ARCH}/lib'
         PETSC_INCLUDE += ' ${PACKAGES_INCLUDES} ${PETSC_BLASLAPACK_FLAGS}'
+        #
         variables = os.path.join(petsc_dir, 'conf', 'variables')
+        if not os.path.isdir(variables):
+            variables = os.path.join(petsc_dir, petsc_arch, 'conf', 'variables')
         petscconf = os.path.join(petsc_dir, petsc_arch, 'conf', 'petscvariables')
+        #
         variables = open(variables)
+        contents = variables.read()
+        variables.close()
         petscconf = open(petscconf)
+        contents += petscconf.read()
+        petscconf.close()
+        #
         confstr  = 'PETSC_DIR  = %s\n' % PETSC_DIR
         confstr += 'PETSC_ARCH = %s\n' % PETSC_ARCH
-        confstr += variables.read()
-        confstr += petscconf.read()
+        confstr += contents
         confstr += 'PETSC_INCLUDE = %s\n' % PETSC_INCLUDE
         confstr += 'PETSC_LIB_DIR = %s\n' % PETSC_LIB_DIR
         confstr += 'PACKAGES_INCLUDES = ${MPI_INCLUDE} ${X11_INCLUDE} ${BLASLAPACK_INCLUDE}\n'
         confstr += 'PACKAGES_LIBS = ${MPI_LIB} ${X11_LIB} ${BLASLAPACK_LIB}\n'
-        variables.close()
-        petscconf.close()
         confdict = cfgutils.makefile(StringIO(confstr))
         return confdict
 
@@ -200,59 +209,75 @@ class Extension(_Extension):
 
 # --------------------------------------------------------------------
 
+cmd_petsc_opts = [
+    ('petsc-dir=', None,
+     "define PETSC_DIR, overriding environmental variables"),
+    ('petsc-arch=', None,
+     "define PETSC_ARCH, overriding environmental variables"),
+    ]
+
 class config(_config):
+
+    user_options = _config.user_options + cmd_petsc_opts
 
     Config = PetscConfig
 
-    user_options = _config.user_options + [
-        ('petsc-dir=', None,
-         "define PETSC_DIR, overriding environmental variables"),
-        ('petsc-arch=', None,
-         "define PETSC_ARCH, overriding environmental variables"),
-        ]
-
     def initialize_options(self):
         _config.initialize_options(self)
-        self.have_bmake = False
         self.petsc_dir  = None
         self.petsc_arch = None
 
-    def finalize_options(self):
-        _config.finalize_options(self)
-        self.petsc_dir   = self._get_petsc_dir(self.petsc_dir)
-        if self.petsc_dir is  None: return
-        isdir, join = os.path.isdir, os.path.join
-        self.have_bmake = isdir(join(self.petsc_dir, 'bmake'))
-        self.petsc_arch  = self._get_petsc_arch(self.petsc_dir,
-                                                self.petsc_arch)
-        self.petsc_arch  = self.petsc_arch or []
-
     def run(self):
         _config.run(self)
-        if self.petsc_dir is None: return
-        self._log_info()
+        petsc_dir  = config.get_petsc_dir(self.petsc_dir)
+        if petsc_dir is None: return
+        petsc_arch = config.get_petsc_arch(petsc_dir, self.petsc_arch)
+        bmake_dir = os.path.join(petsc_dir, 'bmake')
+        have_bmake = os.path.isdir(bmake_dir)
+        log.info('-' * 70)
+        log.info('PETSC_DIR:   %s' % petsc_dir)
+        arch_list = petsc_arch
+        if not have_bmake and not arch_list :
+            arch_list = [ None ]
+        for arch in arch_list:
+            conf = self.Config(petsc_dir, arch)
+            archname    = conf.PETSC_ARCH or '<default>'
+            language    = conf['PETSC_LANGUAGE']
+            compiler    = conf['PCC']
+            scalar_type = conf['PETSC_SCALAR']
+            precision   = conf['PETSC_PRECISION']
+            log.info('-'*70)
+            log.info('PETSC_ARCH:  %s' % archname)
+            log.info('language:    %s' % language)
+            log.info('compiler:    %s' % compiler)
+            log.info('scalar-type: %s' % scalar_type)
+            log.info('precision:   %s' % precision)
+        log.info('-' * 70)
 
-
-    def _get_petsc_dir(self, petsc_dir):
+    @staticmethod
+    def get_petsc_dir(petsc_dir):
+        if not petsc_dir: return None
         petsc_dir = os.path.expandvars(petsc_dir)
         if not petsc_dir or '$PETSC_DIR' in petsc_dir:
             log.warn("PETSC_DIR not specified")
             return None
         petsc_dir = os.path.expanduser(petsc_dir)
         petsc_dir = os.path.abspath(petsc_dir)
-        return self._chk_petsc_dir(petsc_dir)
+        return config.chk_petsc_dir(petsc_dir)
 
-    def _chk_petsc_dir(self, petsc_dir):
+    @staticmethod
+    def chk_petsc_dir(petsc_dir):
         if not os.path.isdir(petsc_dir):
             log.error('invalid PETSC_DIR: %s (ignored)' % petsc_dir)
             return None
         return petsc_dir
 
-    def _get_petsc_arch(self, petsc_dir, petsc_arch):
-        if not petsc_dir:
-            return None
+    @staticmethod
+    def get_petsc_arch(petsc_dir, petsc_arch):
+        if not petsc_dir:  return None
+        have_bmake = os.path.isdir(os.path.join(petsc_dir, 'bmake'))
         petsc_arch = os.path.expandvars(petsc_arch)
-        if self.have_bmake and (not petsc_arch or '$PETSC_ARCH' in petsc_arch):
+        if have_bmake and (not petsc_arch or '$PETSC_ARCH' in petsc_arch):
             log.warn("PETSC_ARCH not specified, trying default")
             petscconf = os.path.join(petsc_dir, 'bmake', 'petscconf')
             if not os.path.exists(petscconf):
@@ -264,54 +289,32 @@ class config(_config):
             if not petsc_arch:
                 log.warn("default PETSC_ARCH not found")
                 return None
-        if os.pathsep in petsc_arch:
-            arch_sep = os.pathsep
-        else:
-            arch_sep = ','
-        petsc_arch = petsc_arch.split(arch_sep)
+        petsc_arch = petsc_arch.split(os.pathsep)
         petsc_arch = cfgutils.unique(petsc_arch)
         petsc_arch = [arch for arch in petsc_arch if arch]
-        return self._chk_petsc_arch(petsc_dir, petsc_arch)
+        return config.chk_petsc_arch(petsc_dir, petsc_arch)
 
-    def _chk_petsc_arch(self, petsc_dir, petsc_arch):
+    @staticmethod
+    def chk_petsc_arch(petsc_dir, petsc_arch):
+        have_bmake = os.path.isdir(os.path.join(petsc_dir, 'bmake'))
         valid_archs = []
         for arch in petsc_arch:
-            if self.have_bmake:
+            if have_bmake:
                 arch_path = os.path.join(petsc_dir, 'bmake', arch)
             else:
                 arch_path = os.path.join(petsc_dir, arch)
-            if not os.path.isdir(arch_path):
+            if os.path.isdir(arch_path):
+                valid_archs.append(arch)
+            else:
                 log.warn("invalid PETSC_ARCH '%s' (ignored)" % arch)
-                continue
-            valid_archs.append(arch)
-        if self.have_bmake and not valid_archs:
-            log.warn("could not find a valid PETSC_ARCH")
-            return None
+        if have_bmake and not valid_archs:
+            log.warn("could not find any valid PETSC_ARCH")
         return valid_archs
-
-    def _log_info(self):
-        log.info('-' * 70)
-        log.info('PETSC_DIR:   %s' % self.petsc_dir)
-        arch_list = self.petsc_arch
-        if not arch_list and not self.have_bmake:
-            arch_list = [ None ]
-        for arch in arch_list:
-            config = self.Config(self.petsc_dir, arch)
-            archname = config.PETSC_ARCH or '<default>'
-            language = config['PETSC_LANGUAGE']
-            compiler = config['PCC']
-            scalar_type = config['PETSC_SCALAR']
-            precision = config['PETSC_PRECISION']
-            log.info('-'*70)
-            log.info('PETSC_ARCH:  %s' % archname)
-            log.info('language:    %s' % language)
-            log.info('compiler:    %s' % compiler)
-            log.info('scalar-type: %s' % scalar_type)
-            log.info('precision:   %s' % precision)
-        log.info('-' * 70)
 
 
 class build(_build):
+
+    user_options = _build.user_options + cmd_petsc_opts
 
     def initialize_options(self):
         _build.initialize_options(self)
@@ -323,11 +326,25 @@ class build(_build):
         self.set_undefined_options('config',
                                    ('petsc_dir',  'petsc_dir'),
                                    ('petsc_arch', 'petsc_arch'))
+        self.petsc_dir  = config.get_petsc_dir(self.petsc_dir)
+        self.petsc_arch = config.get_petsc_arch(self.petsc_dir,
+                                                self.petsc_arch)
 
 
 class build_py(_build_py):
 
     config_file = 'petsc.cfg'
+
+    def initialize_options(self):
+        _build_py.initialize_options(self)
+        self.petsc_dir  = None
+        self.petsc_arch = None
+
+    def finalize_options(self):
+        _build_py.finalize_options(self)
+        self.set_undefined_options('build',
+                                   ('petsc_dir',  'petsc_dir'),
+                                   ('petsc_arch', 'petsc_arch'))
 
     def build_package_data (self):
         _build_py.build_package_data(self)
@@ -346,9 +363,8 @@ class build_py(_build_py):
         config_data = config_py.read()
         config_py.close()
         #
-        config = self.get_finalized_command('config')
-        petsc_dir  = config.petsc_dir
-        petsc_arch = config.petsc_arch
+        petsc_dir  = self.petsc_dir
+        petsc_arch = self.petsc_arch
         pathsep    = os.path.pathsep
         #
         if '%(PETSC_DIR)s' not in config_data:
@@ -356,10 +372,13 @@ class build_py(_build_py):
         if not petsc_dir:
             return # nothing known to put
         #
+        bmake_dir = os.path.join(petsc_dir, 'bmake')
+        have_bmake = os.path.isdir(bmake_dir)
+        #
         PETSC_DIR  = petsc_dir
         if petsc_arch:
             PETSC_ARCH = pathsep.join(petsc_arch)
-        elif not config.have_bmake:
+        elif not have_bmake:
             PETSC_ARCH = 'default'
         log.info('writing %s' % py_file)
         config_py = open(py_file, 'w')
@@ -388,6 +407,9 @@ class build_ext(_build_ext):
 
     def finalize_options(self):
         _build_ext.finalize_options(self)
+        self.set_undefined_options('build',
+                                   ('petsc_dir',  'petsc_dir'),
+                                   ('petsc_arch', 'petsc_arch'))
         import sys, os
         from distutils import sysconfig
         if (sys.platform.startswith('linux') or \
@@ -404,9 +426,6 @@ class build_ext(_build_ext):
             pylib_dir = sysconfig.get_config_var("LIBDIR")
             if pylib_dir not in self.library_dirs:
                 self.library_dirs.append(pylib_dir)
-        self.set_undefined_options('build',
-                                   ('petsc_dir',  'petsc_dir'),
-                                   ('petsc_arch', 'petsc_arch'))
 
     def _get_config(self, petsc_dir, petsc_arch):
         return PetscConfig(petsc_dir, petsc_arch)
