@@ -83,7 +83,7 @@ cdef class DA(Object):
         return self
 
     #
-    
+
     def getDim(self):
         cdef PetscInt dim = 0
         CHKERR( DAGetInfo(self.da,
@@ -149,7 +149,7 @@ cdef class DA(Object):
                           NULL, NULL,
                           &ptype, NULL) )
         return ptype
-        
+
     def getStencilType(self):
         cdef PetscDAStencilType  stype = DA_STENCIL_BOX
         CHKERR( DAGetInfo(self.da,
@@ -191,26 +191,6 @@ cdef class DA(Object):
                                   &m, &n, &p) )
         return ((x, y, z)[:dim],
                 (m, n, p)[:dim])
-
-    ## def getInfo(self):
-    ##     cdef PetscInt dim = 0
-    ##     cdef PetscInt M = PETSC_DECIDE, m = PETSC_DECIDE
-    ##     cdef PetscInt N = PETSC_DECIDE, n = PETSC_DECIDE
-    ##     cdef PetscInt P = PETSC_DECIDE, p = PETSC_DECIDE
-    ##     cdef PetscInt ndof = 1, width = 1
-    ##     cdef PetscDAPeriodicType ptype = DA_PERIODIC_NONE
-    ##     cdef PetscDAStencilType  stype = DA_STENCIL_BOX
-    ##     CHKERR( DAGetInfo(self.da,
-    ##                       &dim,
-    ##                       &M, &N, &P,
-    ##                       &m, &n, &p,
-    ##                       &ndof, &width,
-    ##                       &ptype, &stype) )
-    ##     return (dim,
-    ##             (M,N,P)[:dim],
-    ##             (m,n,p)[:dim],
-    ##             ndof, width,
-    ##             ptype, stype)
 
     #
 
