@@ -1,7 +1,7 @@
 #if !defined(_ADDA_H)
 #define _ADDA_H
 
-#include "../src/dm/dmimpl.h"
+#include "private/dmimpl.h"
 
 typedef struct _ADDAOps *ADDAOps;
 struct _ADDAOps {

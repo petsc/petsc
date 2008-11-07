@@ -73,7 +73,7 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   if (info->dt == PETSC_DEFAULT)      dt      = .005; else dt = info->dt;
   if (info->dtcount == PETSC_DEFAULT) dtcount = (PetscInt)(1.5*a->rmax);  else dtcount = info->dtcount;
   if (info->dtcol == PETSC_DEFAULT)   dtcol   = .01; else dtcol = info->dtcol;
-  if (info->fill == PETSC_DEFAULT)    fill    = ((double)(n*(info->dtcount+1)))/a->nz; else fill = info->fill;
+  if (info->fill == PETSC_DEFAULT)    fill    = ((double)(n*(dtcount+1)))/a->nz; else fill = info->fill;
   lfill   = (PetscInt)(dtcount/2.0);
   jmax    = (PetscInt)(fill*a->nz);
 
@@ -248,6 +248,12 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,const MatFactorInfo
   ierr = PetscInfo1(A,"PCFactorSetFill(pc,%G);\n",af);CHKERRQ(ierr);
   ierr = PetscInfo(A,"for best performance.\n");CHKERRQ(ierr);
 
+  if (reorder) (*fact)->ops->solve = MatSolve_SeqAIJ;
+  else         (*fact)->ops->solve = MatSolve_SeqAIJ_NaturalOrdering;
+  (*fact)->ops->solveadd           = MatSolveAdd_SeqAIJ;
+  (*fact)->ops->solvetranspose     = MatSolveTranspose_SeqAIJ;
+  (*fact)->ops->solvetransposeadd  = MatSolveTransposeAdd_SeqAIJ;
+  
   ierr = MatILUDTFactor_Inode(A,isrow,iscol,info,fact);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
