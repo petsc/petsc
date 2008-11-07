@@ -669,9 +669,11 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
     k++;
   }
   */
+#ifndef PETSC_USE_COMPLEX
   delete [] succ;
   delete [] dist;
   delete [] cone_succ;
+#endif
   PetscFunctionReturn(0);
 }
 
