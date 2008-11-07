@@ -220,8 +220,6 @@ class config(_config):
 
     user_options = _config.user_options + cmd_petsc_opts
 
-    Config = PetscConfig
-
     def initialize_options(self):
         _config.initialize_options(self)
         self.petsc_dir  = None
@@ -240,7 +238,7 @@ class config(_config):
         if not have_bmake and not arch_list :
             arch_list = [ None ]
         for arch in arch_list:
-            conf = self.Config(petsc_dir, arch)
+            conf = PetscConfig(petsc_dir, arch)
             archname    = conf.PETSC_ARCH or '<default>'
             language    = conf['PETSC_LANGUAGE']
             compiler    = conf['PCC']
@@ -396,8 +394,6 @@ class build_src(_build_src):
 
 
 class build_ext(_build_ext):
-
-    Config = PetscConfig
 
     def initialize_options(self):
         _build_ext.initialize_options(self)
