@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
 configure_options = [
-  # with gnu compilers + mpich autodetect
-  '--with-blas-lib=/cygdrive/c/software/fblaslapack/win32_gnu/libfblas.a',
-  '--with-lapack-lib=/cygdrive/c/software/fblaslapack/win32_gnu/libflapack.a',
-  'DATAFILESPATH=/home/balay/datafiles',
+  # Blas autodetec with cygwin blas at /usr/lib/liblapack,a,libblas.a
+  # MPICH2 binary install autodtect in c:/Program Files/MPICH2
+  '--with-cc=gcc',
+  '--with-fc=g77',
+  'DATAFILESPATH=/home/sbalay/datafiles',
+  '--with-mpiexec=mpiexec --localonly',
   ]
 
 if __name__ == '__main__':

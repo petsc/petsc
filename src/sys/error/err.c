@@ -600,7 +600,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,3);
-  PetscValidIntPointer(idx,2);
+  if (N) PetscValidIntPointer(idx,2);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);

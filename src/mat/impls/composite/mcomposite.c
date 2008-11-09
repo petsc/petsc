@@ -224,7 +224,7 @@ PetscErrorCode MatScale_Composite(Mat inA,PetscScalar alpha)
   Mat_Composite  *a = (Mat_Composite*)inA->data;
 
   PetscFunctionBegin;
-  a->scale = alpha;
+  a->scale *= alpha;
   PetscFunctionReturn(0);
 }
 
@@ -237,12 +237,20 @@ PetscErrorCode MatDiagonalScale_Composite(Mat inA,Vec left,Vec right)
 
   PetscFunctionBegin;
   if (left) {
-    ierr = VecDuplicate(left,&a->left);CHKERRQ(ierr);
-    ierr = VecCopy(left,a->left);CHKERRQ(ierr);
+    if (!a->left) {
+      ierr = VecDuplicate(left,&a->left);CHKERRQ(ierr);
+      ierr = VecCopy(left,a->left);CHKERRQ(ierr);
+    } else {
+      ierr = VecPointwiseMult(a->left,left,a->left);CHKERRQ(ierr);
+    }
   }
   if (right) {
-    ierr = VecDuplicate(right,&a->right);CHKERRQ(ierr);
-    ierr = VecCopy(right,a->right);CHKERRQ(ierr);
+    if (!a->right) {
+      ierr = VecDuplicate(right,&a->right);CHKERRQ(ierr);
+      ierr = VecCopy(right,a->right);CHKERRQ(ierr);
+    } else {
+      ierr = VecPointwiseMult(a->right,right,a->right);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }

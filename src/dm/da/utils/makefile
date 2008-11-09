@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = fdda.c pack.c dm.c sda2.c sliced.c binaryMatlab.c
+SOURCEC  = fdda.c pack.c dm.c sda2.c sliced.c binaryMatlab.c daint.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = fdda.o pack.o dm.o sda2.o sliced.o binaryMatlab.o
+OBJSC    = fdda.o pack.o dm.o sda2.o sliced.o binaryMatlab.o daint.o
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = DA
