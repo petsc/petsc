@@ -3,10 +3,37 @@
 #include "private/matimpl.h"          /*I "petscmat.h" I*/
 
 typedef struct {
-  Mat         A,left,right;   /* left and right scaling not yet implemented */
-  Vec         w;
+  Mat         A;  
+  Vec         w,left,right,leftwork,rightwork;
   PetscScalar scale;
 } Mat_Normal;
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalScale_Normal"
+PetscErrorCode MatDiagonalScale_Normal(Mat inA,Vec left,Vec right)
+{
+  Mat_Normal     *a = (Mat_Normal*)inA->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (left) {
+    if (!a->left) {
+      ierr = VecDuplicate(left,&a->left);CHKERRQ(ierr);
+      ierr = VecCopy(left,a->left);CHKERRQ(ierr);
+    } else {
+      ierr = VecPointwiseMult(a->left,left,a->left);CHKERRQ(ierr);
+    }
+  }
+  if (right) {
+    if (!a->right) {
+      ierr = VecDuplicate(right,&a->right);CHKERRQ(ierr);
+      ierr = VecCopy(right,a->right);CHKERRQ(ierr);
+    } else {
+      ierr = VecPointwiseMult(a->right,right,a->right);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMult_Normal"
@@ -14,10 +41,22 @@ PetscErrorCode MatMult_Normal(Mat N,Vec x,Vec y)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
   PetscErrorCode ierr;
+  Vec            in;
 
   PetscFunctionBegin;
-  ierr = MatMult(Na->A,x,Na->w);CHKERRQ(ierr);
+  in = x;
+  if (Na->right) {
+    if (!Na->rightwork) {
+      ierr = VecDuplicate(Na->right,&Na->rightwork);CHKERRQ(ierr);
+    }
+    ierr = VecPointwiseMult(Na->rightwork,Na->right,in);CHKERRQ(ierr);
+    in   = Na->rightwork;
+  }
+  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr);
   ierr = MatMultTranspose(Na->A,Na->w,y);CHKERRQ(ierr);
+  if (Na->left) {
+    ierr = VecPointwiseMult(y,Na->left,y);CHKERRQ(ierr);
+  }
   ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -28,11 +67,26 @@ PetscErrorCode MatMultAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
 { 
   Mat_Normal     *Na = (Mat_Normal*)N->data; 
   PetscErrorCode ierr; 
- 
+  Vec            in;
+
   PetscFunctionBegin; 
-  ierr = MatMult(Na->A,v1,Na->w);CHKERRQ(ierr); 
+  in = v1;
+  if (Na->right) {
+    if (!Na->rightwork) {
+      ierr = VecDuplicate(Na->right,&Na->rightwork);CHKERRQ(ierr);
+    }
+    ierr = VecPointwiseMult(Na->rightwork,Na->right,in);CHKERRQ(ierr);
+    in   = Na->rightwork;
+  }
+  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr); 
   ierr = VecScale(Na->w,Na->scale);CHKERRQ(ierr);
-  ierr = MatMultTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr); 
+  if (Na->left) {
+    ierr = MatMultTranspose(Na->A,Na->w,v3);CHKERRQ(ierr); 
+    ierr = VecPointwiseMult(v3,Na->left,v3);CHKERRQ(ierr);
+    ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr); 
+  }
   PetscFunctionReturn(0); 
 } 
 
@@ -42,10 +96,22 @@ PetscErrorCode MatMultTranspose_Normal(Mat N,Vec x,Vec y)
 {
   Mat_Normal     *Na = (Mat_Normal*)N->data;
   PetscErrorCode ierr;
+  Vec            in;
 
   PetscFunctionBegin;
-  ierr = MatMult(Na->A,x,Na->w);CHKERRQ(ierr);
+  in = x;
+  if (Na->left) {
+    if (!Na->leftwork) {
+      ierr = VecDuplicate(Na->left,&Na->leftwork);CHKERRQ(ierr);
+    }
+    ierr = VecPointwiseMult(Na->leftwork,Na->left,in);CHKERRQ(ierr);
+    in   = Na->leftwork;
+  }
+  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr);
   ierr = MatMultTranspose(Na->A,Na->w,y);CHKERRQ(ierr);
+  if (Na->right) {
+    ierr = VecPointwiseMult(y,Na->right,y);CHKERRQ(ierr);
+  }
   ierr = VecScale(y,Na->scale);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -56,11 +122,26 @@ PetscErrorCode MatMultTransposeAdd_Normal(Mat N,Vec v1,Vec v2,Vec v3)
 { 
   Mat_Normal     *Na = (Mat_Normal*)N->data; 
   PetscErrorCode ierr; 
- 
+  Vec            in;
+
   PetscFunctionBegin; 
-  ierr = MatMult(Na->A,v1,Na->w);CHKERRQ(ierr); 
+  in = v1;
+  if (Na->left) {
+    if (!Na->leftwork) {
+      ierr = VecDuplicate(Na->left,&Na->leftwork);CHKERRQ(ierr);
+    }
+    ierr = VecPointwiseMult(Na->leftwork,Na->left,in);CHKERRQ(ierr);
+    in   = Na->leftwork;
+  }
+  ierr = MatMult(Na->A,in,Na->w);CHKERRQ(ierr); 
   ierr = VecScale(Na->w,Na->scale);CHKERRQ(ierr);
-  ierr = MatMultTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr); 
+  if (Na->right) {
+    ierr = MatMultTranspose(Na->A,Na->w,v3);CHKERRQ(ierr); 
+    ierr = VecPointwiseMult(v3,Na->right,v3);CHKERRQ(ierr);
+    ierr = VecAXPY(v3,1.0,v2);CHKERRQ(ierr);
+  } else {
+    ierr = MatMultTransposeAdd(Na->A,Na->w,v2,v3);CHKERRQ(ierr); 
+  }
   PetscFunctionReturn(0); 
 } 
 
@@ -74,6 +155,10 @@ PetscErrorCode MatDestroy_Normal(Mat N)
   PetscFunctionBegin;
   if (Na->A) { ierr = MatDestroy(Na->A);CHKERRQ(ierr); }
   if (Na->w) { ierr = VecDestroy(Na->w);CHKERRQ(ierr); }
+  if (Na->left) { ierr = VecDestroy(Na->left);CHKERRQ(ierr); }
+  if (Na->right) { ierr = VecDestroy(Na->right);CHKERRQ(ierr); }
+  if (Na->leftwork) { ierr = VecDestroy(Na->leftwork);CHKERRQ(ierr); }
+  if (Na->rightwork) { ierr = VecDestroy(Na->rightwork);CHKERRQ(ierr); }
   ierr = PetscFree(Na);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
