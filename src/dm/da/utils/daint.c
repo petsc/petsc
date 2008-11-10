@@ -21,6 +21,7 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
   ISLocalToGlobalMapping ltg;
   MPI_Comm               comm;
   Mat                    A,Aii,Aif,Aiw,Afi,Aff,Afw,Awi,Awf,Aww,*Aholder;
+  PetscMPIInt rank;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
@@ -105,7 +106,6 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
      Solve for the interpolation onto the faces Xface
   */
 
-  PetscMPIInt rank;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
   if (rank == -1) {
     PetscIntView(N,I,0);

@@ -367,41 +367,45 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
      Determine locally owned region 
      [x, y, or z]s is the first local node number, [x, y, z] is the number of local nodes 
   */
-  if (!lx) { /* user decided distribution */
-    ierr = PetscMalloc(m*sizeof(PetscInt),&flx);CHKERRQ(ierr);
+
+  ierr = PetscMalloc(m*sizeof(PetscInt),&flx);CHKERRQ(ierr);
+  if (lx) { /* user decided distribution */
+    ierr = PetscMemcpy(flx,lx,m*sizeof(PetscInt));CHKERRQ(ierr);
+  } else {
     for (i=0; i<m; i++) {
       flx[i] = M/m + ((M % m) > (i % m));
     }
-    lx = flx;
   }
-  x  = lx[rank % m];
+  x  = flx[rank % m];
   xs = 0;
-  for (i=0; i<(rank%m); i++) { xs += lx[i];}
+  for (i=0; i<(rank%m); i++) { xs += flx[i];}
   if (m > 1 && x < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column width is too thin for stencil! %D %D",x,s);
 
-  if (!ly) { /* user decided distribution */
-    ierr = PetscMalloc(n*sizeof(PetscInt),&fly);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&fly);CHKERRQ(ierr);
+  if (ly) { /* user decided distribution */
+    ierr = PetscMemcpy(fly,ly,n*sizeof(PetscInt));CHKERRQ(ierr);
+  } else {
     for (i=0; i<n; i++) {
       fly[i] = N/n + ((N % n) > (i % n));
     }
-    ly = fly;
   }
-  y  = ly[(rank % (m*n))/m];
+  y  = fly[(rank % (m*n))/m];
   if (n > 1 && y < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row width is too thin for stencil! %D %D",y,s);      
   ys = 0;
-  for (i=0; i<(rank % (m*n))/m; i++) { ys += ly[i];}
+  for (i=0; i<(rank % (m*n))/m; i++) { ys += fly[i];}
 
-  if (!lz) { /* user decided distribution */
-    ierr = PetscMalloc(p*sizeof(PetscInt),&flz);CHKERRQ(ierr);
+  ierr = PetscMalloc(p*sizeof(PetscInt),&flz);CHKERRQ(ierr);
+  if (lz) { /* user decided distribution */
+    ierr = PetscMemcpy(flz,lz,p*sizeof(PetscInt));CHKERRQ(ierr);
+  } else {
     for (i=0; i<p; i++) {
       flz[i] = P/p + ((P % p) > (i % p));
     }
-    lz = flz;
   }
-  z  = lz[rank/(m*n)];
+  z  = flz[rank/(m*n)];
   if (p > 1 && z < s) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Plane width is too thin for stencil! %D %D",z,s);      
   zs = 0;
-  for (i=0; i<(rank/(m*n)); i++) { zs += lz[i];}
+  for (i=0; i<(rank/(m*n)); i++) { zs += flz[i];}
   ye = ys + y;
   xe = xs + x;
   ze = zs + z;
@@ -809,23 +813,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   for (k=0; k<s_z; k++) {  
     for (i=1; i<=s_y; i++) {
       if (n0 >= 0) { /* left below */
-        x_t = lx[n0 % m]*dof; 
-        y_t = ly[(n0 % (m*n))/m]; 
-        z_t = lz[n0 / (m*n)]; 
+        x_t = flx[n0 % m]*dof; 
+        y_t = fly[(n0 % (m*n))/m]; 
+        z_t = flz[n0 / (m*n)]; 
         s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t - s_x - (s_z-k-1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n1 >= 0) { /* directly below */
         x_t = x;
-        y_t = ly[(n1 % (m*n))/m];
-        z_t = lz[n1 / (m*n)];
+        y_t = fly[(n1 % (m*n))/m];
+        z_t = flz[n1 / (m*n)];
         s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n2 >= 0) { /* right below */
-        x_t = lx[n2 % m]*dof;
-        y_t = ly[(n2 % (m*n))/m];
-        z_t = lz[n2 / (m*n)];
+        x_t = flx[n2 % m]*dof;
+        y_t = fly[(n2 % (m*n))/m];
+        z_t = flz[n2 / (m*n)];
         s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -833,9 +837,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=0; i<y; i++) {
       if (n3 >= 0) { /* directly left */
-        x_t = lx[n3 % m]*dof;
+        x_t = flx[n3 % m]*dof;
         y_t = y;
-        z_t = lz[n3 / (m*n)];
+        z_t = flz[n3 / (m*n)];
         s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -843,15 +847,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
       if (n4 >= 0) { /* middle */
         x_t = x;
         y_t = y;
-        z_t = lz[n4 / (m*n)];
+        z_t = flz[n4 / (m*n)];
         s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
 
       if (n5 >= 0) { /* directly right */
-        x_t = lx[n5 % m]*dof;
+        x_t = flx[n5 % m]*dof;
         y_t = y;
-        z_t = lz[n5 / (m*n)];
+        z_t = flz[n5 / (m*n)];
         s_t = bases[n5] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -859,23 +863,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=1; i<=s_y; i++) {
       if (n6 >= 0) { /* left above */
-        x_t = lx[n6 % m]*dof;
-        y_t = ly[(n6 % (m*n))/m];
-        z_t = lz[n6 / (m*n)];
+        x_t = flx[n6 % m]*dof;
+        y_t = fly[(n6 % (m*n))/m];
+        z_t = flz[n6 / (m*n)];
         s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n7 >= 0) { /* directly above */
         x_t = x;
-        y_t = ly[(n7 % (m*n))/m];
-        z_t = lz[n7 / (m*n)];
+        y_t = fly[(n7 % (m*n))/m];
+        z_t = flz[n7 / (m*n)];
         s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n8 >= 0) { /* right above */
-        x_t = lx[n8 % m]*dof;
-        y_t = ly[(n8 % (m*n))/m];
-        z_t = lz[n8 / (m*n)];
+        x_t = flx[n8 % m]*dof;
+        y_t = fly[(n8 % (m*n))/m];
+        z_t = flz[n8 / (m*n)];
         s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -886,22 +890,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   for (k=0; k<z; k++) {  
     for (i=1; i<=s_y; i++) {
       if (n9 >= 0) { /* left below */
-        x_t = lx[n9 % m]*dof;
-        y_t = ly[(n9 % (m*n))/m];
+        x_t = flx[n9 % m]*dof;
+        y_t = fly[(n9 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n10 >= 0) { /* directly below */
         x_t = x;
-        y_t = ly[(n10 % (m*n))/m]; 
+        y_t = fly[(n10 % (m*n))/m]; 
         /* z_t = z; */
         s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n11 >= 0) { /* right below */
-        x_t = lx[n11 % m]*dof;
-        y_t = ly[(n11 % (m*n))/m];
+        x_t = flx[n11 % m]*dof;
+        y_t = fly[(n11 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
@@ -910,7 +914,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=0; i<y; i++) {
       if (n12 >= 0) { /* directly left */
-        x_t = lx[n12 % m]*dof;
+        x_t = flx[n12 % m]*dof;
         y_t = y;
         /* z_t = z; */
         s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
@@ -922,7 +926,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
       for (j=0; j<x; j++) { idx[nn++] = s_t++;}
 
       if (n14 >= 0) { /* directly right */
-        x_t = lx[n14 % m]*dof;
+        x_t = flx[n14 % m]*dof;
         y_t = y;
         /* z_t = z; */
         s_t = bases[n14] + i*x_t + k*x_t*y_t;
@@ -932,22 +936,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=1; i<=s_y; i++) {
       if (n15 >= 0) { /* left above */
-        x_t = lx[n15 % m]*dof; 
-        y_t = ly[(n15 % (m*n))/m];
+        x_t = flx[n15 % m]*dof; 
+        y_t = fly[(n15 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n16 >= 0) { /* directly above */
         x_t = x;
-        y_t = ly[(n16 % (m*n))/m];
+        y_t = fly[(n16 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n17 >= 0) { /* right above */
-        x_t = lx[n17 % m]*dof;
-        y_t = ly[(n17 % (m*n))/m]; 
+        x_t = flx[n17 % m]*dof;
+        y_t = fly[(n17 % (m*n))/m]; 
         /* z_t = z; */
         s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
@@ -959,23 +963,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   for (k=0; k<s_z; k++) {  
     for (i=1; i<=s_y; i++) {
       if (n18 >= 0) { /* left below */
-        x_t = lx[n18 % m]*dof;
-        y_t = ly[(n18 % (m*n))/m]; 
-        /* z_t = lz[n18 / (m*n)]; */
+        x_t = flx[n18 % m]*dof;
+        y_t = fly[(n18 % (m*n))/m]; 
+        /* z_t = flz[n18 / (m*n)]; */
         s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n19 >= 0) { /* directly below */
         x_t = x;
-        y_t = ly[(n19 % (m*n))/m]; 
-        /* z_t = lz[n19 / (m*n)]; */
+        y_t = fly[(n19 % (m*n))/m]; 
+        /* z_t = flz[n19 / (m*n)]; */
         s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n20 >= 0) { /* right below */
-        x_t = lx[n20 % m]*dof;
-        y_t = ly[(n20 % (m*n))/m];
-        /* z_t = lz[n20 / (m*n)]; */
+        x_t = flx[n20 % m]*dof;
+        y_t = fly[(n20 % (m*n))/m];
+        /* z_t = flz[n20 / (m*n)]; */
         s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -983,9 +987,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=0; i<y; i++) {
       if (n21 >= 0) { /* directly left */
-        x_t = lx[n21 % m]*dof;
+        x_t = flx[n21 % m]*dof;
         y_t = y;
-        /* z_t = lz[n21 / (m*n)]; */
+        /* z_t = flz[n21 / (m*n)]; */
         s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -993,15 +997,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
       if (n22 >= 0) { /* middle */
         x_t = x;
         y_t = y;
-        /* z_t = lz[n22 / (m*n)]; */
+        /* z_t = flz[n22 / (m*n)]; */
         s_t = bases[n22] + i*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
 
       if (n23 >= 0) { /* directly right */
-        x_t = lx[n23 % m]*dof;
+        x_t = flx[n23 % m]*dof;
         y_t = y;
-        /* z_t = lz[n23 / (m*n)]; */
+        /* z_t = flz[n23 / (m*n)]; */
         s_t = bases[n23] + i*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1009,23 +1013,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=1; i<=s_y; i++) {
       if (n24 >= 0) { /* left above */
-        x_t = lx[n24 % m]*dof;
-        y_t = ly[(n24 % (m*n))/m]; 
-        /* z_t = lz[n24 / (m*n)]; */
+        x_t = flx[n24 % m]*dof;
+        y_t = fly[(n24 % (m*n))/m]; 
+        /* z_t = flz[n24 / (m*n)]; */
         s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n25 >= 0) { /* directly above */
         x_t = x;
-        y_t = ly[(n25 % (m*n))/m];
-        /* z_t = lz[n25 / (m*n)]; */
+        y_t = fly[(n25 % (m*n))/m];
+        /* z_t = flz[n25 / (m*n)]; */
         s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n26 >= 0) { /* right above */
-        x_t = lx[n26 % m]*dof;
-        y_t = ly[(n26 % (m*n))/m]; 
-        /* z_t = lz[n26 / (m*n)]; */
+        x_t = flx[n26 % m]*dof;
+        y_t = fly[(n26 % (m*n))/m]; 
+        /* z_t = flz[n26 / (m*n)]; */
         s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1073,23 +1077,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
     for (k=0; k<s_z; k++) {  
       for (i=1; i<=s_y; i++) {
         if (n0 >= 0) { /* left below */
-          x_t = lx[n0 % m]*dof; 
-          y_t = ly[(n0 % (m*n))/m]; 
-          z_t = lz[n0 / (m*n)]; 
+          x_t = flx[n0 % m]*dof; 
+          y_t = fly[(n0 % (m*n))/m]; 
+          z_t = flz[n0 / (m*n)]; 
           s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t - s_x - (s_z-k-1)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n1 >= 0) { /* directly below */
           x_t = x;
-          y_t = ly[(n1 % (m*n))/m];
-          z_t = lz[n1 / (m*n)];
+          y_t = fly[(n1 % (m*n))/m];
+          z_t = flz[n1 / (m*n)];
           s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n2 >= 0) { /* right below */
-          x_t = lx[n2 % m]*dof;
-          y_t = ly[(n2 % (m*n))/m];
-          z_t = lz[n2 / (m*n)];
+          x_t = flx[n2 % m]*dof;
+          y_t = fly[(n2 % (m*n))/m];
+          z_t = flz[n2 / (m*n)];
           s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1097,9 +1101,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
       for (i=0; i<y; i++) {
         if (n3 >= 0) { /* directly left */
-          x_t = lx[n3 % m]*dof;
+          x_t = flx[n3 % m]*dof;
           y_t = y;
-          z_t = lz[n3 / (m*n)];
+          z_t = flz[n3 / (m*n)];
           s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1107,15 +1111,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
         if (n4 >= 0) { /* middle */
           x_t = x;
           y_t = y;
-          z_t = lz[n4 / (m*n)];
+          z_t = flz[n4 / (m*n)];
           s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
 
         if (n5 >= 0) { /* directly right */
-          x_t = lx[n5 % m]*dof;
+          x_t = flx[n5 % m]*dof;
           y_t = y;
-          z_t = lz[n5 / (m*n)];
+          z_t = flz[n5 / (m*n)];
           s_t = bases[n5] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1123,23 +1127,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
       for (i=1; i<=s_y; i++) {
         if (n6 >= 0) { /* left above */
-          x_t = lx[n6 % m]*dof;
-          y_t = ly[(n6 % (m*n))/m];
-          z_t = lz[n6 / (m*n)];
+          x_t = flx[n6 % m]*dof;
+          y_t = fly[(n6 % (m*n))/m];
+          z_t = flz[n6 / (m*n)];
           s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n7 >= 0) { /* directly above */
           x_t = x;
-          y_t = ly[(n7 % (m*n))/m];
-          z_t = lz[n7 / (m*n)];
+          y_t = fly[(n7 % (m*n))/m];
+          z_t = flz[n7 / (m*n)];
           s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n8 >= 0) { /* right above */
-          x_t = lx[n8 % m]*dof;
-          y_t = ly[(n8 % (m*n))/m];
-          z_t = lz[n8 / (m*n)];
+          x_t = flx[n8 % m]*dof;
+          y_t = fly[(n8 % (m*n))/m];
+          z_t = flz[n8 / (m*n)];
           s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1150,22 +1154,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
     for (k=0; k<z; k++) {  
       for (i=1; i<=s_y; i++) {
         if (n9 >= 0) { /* left below */
-          x_t = lx[n9 % m]*dof;
-          y_t = ly[(n9 % (m*n))/m];
+          x_t = flx[n9 % m]*dof;
+          y_t = fly[(n9 % (m*n))/m];
           /* z_t = z; */
           s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n10 >= 0) { /* directly below */
           x_t = x;
-          y_t = ly[(n10 % (m*n))/m]; 
+          y_t = fly[(n10 % (m*n))/m]; 
           /* z_t = z; */
           s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n11 >= 0) { /* right below */
-          x_t = lx[n11 % m]*dof;
-          y_t = ly[(n11 % (m*n))/m];
+          x_t = flx[n11 % m]*dof;
+          y_t = fly[(n11 % (m*n))/m];
           /* z_t = z; */
           s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
@@ -1174,7 +1178,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
       for (i=0; i<y; i++) {
         if (n12 >= 0) { /* directly left */
-          x_t = lx[n12 % m]*dof;
+          x_t = flx[n12 % m]*dof;
           y_t = y;
           /* z_t = z; */
           s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
@@ -1186,7 +1190,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
         for (j=0; j<x; j++) { idx[nn++] = s_t++;}
 
         if (n14 >= 0) { /* directly right */
-          x_t = lx[n14 % m]*dof;
+          x_t = flx[n14 % m]*dof;
           y_t = y;
           /* z_t = z; */
           s_t = bases[n14] + i*x_t + k*x_t*y_t;
@@ -1196,22 +1200,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
       for (i=1; i<=s_y; i++) {
         if (n15 >= 0) { /* left above */
-          x_t = lx[n15 % m]*dof; 
-          y_t = ly[(n15 % (m*n))/m];
+          x_t = flx[n15 % m]*dof; 
+          y_t = fly[(n15 % (m*n))/m];
           /* z_t = z; */
           s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n16 >= 0) { /* directly above */
           x_t = x;
-          y_t = ly[(n16 % (m*n))/m];
+          y_t = fly[(n16 % (m*n))/m];
           /* z_t = z; */
           s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n17 >= 0) { /* right above */
-          x_t = lx[n17 % m]*dof;
-          y_t = ly[(n17 % (m*n))/m]; 
+          x_t = flx[n17 % m]*dof;
+          y_t = fly[(n17 % (m*n))/m]; 
           /* z_t = z; */
           s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
@@ -1223,23 +1227,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
     for (k=0; k<s_z; k++) {  
       for (i=1; i<=s_y; i++) {
         if (n18 >= 0) { /* left below */
-          x_t = lx[n18 % m]*dof;
-          y_t = ly[(n18 % (m*n))/m]; 
-          /* z_t = lz[n18 / (m*n)]; */
+          x_t = flx[n18 % m]*dof;
+          y_t = fly[(n18 % (m*n))/m]; 
+          /* z_t = flz[n18 / (m*n)]; */
           s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n19 >= 0) { /* directly below */
           x_t = x;
-          y_t = ly[(n19 % (m*n))/m]; 
-          /* z_t = lz[n19 / (m*n)]; */
+          y_t = fly[(n19 % (m*n))/m]; 
+          /* z_t = flz[n19 / (m*n)]; */
           s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n20 >= 0) { /* right below */
-          x_t = lx[n20 % m]*dof;
-          y_t = ly[(n20 % (m*n))/m];
-          /* z_t = lz[n20 / (m*n)]; */
+          x_t = flx[n20 % m]*dof;
+          y_t = fly[(n20 % (m*n))/m];
+          /* z_t = flz[n20 / (m*n)]; */
           s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1247,9 +1251,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
       for (i=0; i<y; i++) {
         if (n21 >= 0) { /* directly left */
-          x_t = lx[n21 % m]*dof;
+          x_t = flx[n21 % m]*dof;
           y_t = y;
-          /* z_t = lz[n21 / (m*n)]; */
+          /* z_t = flz[n21 / (m*n)]; */
           s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1257,15 +1261,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
         if (n22 >= 0) { /* middle */
           x_t = x;
           y_t = y;
-          /* z_t = lz[n22 / (m*n)]; */
+          /* z_t = flz[n22 / (m*n)]; */
           s_t = bases[n22] + i*x_t + k*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
 
         if (n23 >= 0) { /* directly right */
-          x_t = lx[n23 % m]*dof;
+          x_t = flx[n23 % m]*dof;
           y_t = y;
-          /* z_t = lz[n23 / (m*n)]; */
+          /* z_t = flz[n23 / (m*n)]; */
           s_t = bases[n23] + i*x_t + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1273,23 +1277,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
       for (i=1; i<=s_y; i++) {
         if (n24 >= 0) { /* left above */
-          x_t = lx[n24 % m]*dof;
-          y_t = ly[(n24 % (m*n))/m]; 
-          /* z_t = lz[n24 / (m*n)]; */
+          x_t = flx[n24 % m]*dof;
+          y_t = fly[(n24 % (m*n))/m]; 
+          /* z_t = flz[n24 / (m*n)]; */
           s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
         if (n25 >= 0) { /* directly above */
           x_t = x;
-          y_t = ly[(n25 % (m*n))/m];
-          /* z_t = lz[n25 / (m*n)]; */
+          y_t = fly[(n25 % (m*n))/m];
+          /* z_t = flz[n25 / (m*n)]; */
           s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
           for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
         }
         if (n26 >= 0) { /* right above */
-          x_t = lx[n26 % m]*dof;
-          y_t = ly[(n26 % (m*n))/m]; 
-          /* z_t = lz[n26 / (m*n)]; */
+          x_t = flx[n26 % m]*dof;
+          y_t = fly[(n26 % (m*n))/m]; 
+          /* z_t = flz[n26 / (m*n)]; */
           s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
           for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
         }
@@ -1512,23 +1516,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   for (k=0; k<s_z; k++) {  
     for (i=1; i<=s_y; i++) {
       if (n0 >= 0) { /* left below */
-        x_t = lx[n0 % m]*dof;
-        y_t = ly[(n0 % (m*n))/m];
-        z_t = lz[n0 / (m*n)];
+        x_t = flx[n0 % m]*dof;
+        y_t = fly[(n0 % (m*n))/m];
+        z_t = flz[n0 / (m*n)];
         s_t = bases[n0] + x_t*y_t*z_t - (s_y-i)*x_t -s_x - (s_z-k-1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n1 >= 0) { /* directly below */
         x_t = x;
-        y_t = ly[(n1 % (m*n))/m];
-        z_t = lz[n1 / (m*n)];
+        y_t = fly[(n1 % (m*n))/m];
+        z_t = flz[n1 / (m*n)];
         s_t = bases[n1] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n2 >= 0) { /* right below */
-        x_t = lx[n2 % m]*dof;
-        y_t = ly[(n2 % (m*n))/m];
-        z_t = lz[n2 / (m*n)];
+        x_t = flx[n2 % m]*dof;
+        y_t = fly[(n2 % (m*n))/m];
+        z_t = flz[n2 / (m*n)];
         s_t = bases[n2] + x_t*y_t*z_t - (s_y+1-i)*x_t - (s_z-k-1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1536,9 +1540,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=0; i<y; i++) {
       if (n3 >= 0) { /* directly left */
-        x_t = lx[n3 % m]*dof;
+        x_t = flx[n3 % m]*dof;
         y_t = y;
-        z_t = lz[n3 / (m*n)];
+        z_t = flz[n3 / (m*n)];
         s_t = bases[n3] + (i+1)*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1546,15 +1550,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
       if (n4 >= 0) { /* middle */
         x_t = x;
         y_t = y;
-        z_t = lz[n4 / (m*n)];
+        z_t = flz[n4 / (m*n)];
         s_t = bases[n4] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
 
       if (n5 >= 0) { /* directly right */
-        x_t = lx[n5 % m]*dof;
+        x_t = flx[n5 % m]*dof;
         y_t = y;
-        z_t = lz[n5 / (m*n)];
+        z_t = flz[n5 / (m*n)];
         s_t = bases[n5] + i*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1562,23 +1566,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=1; i<=s_y; i++) {
       if (n6 >= 0) { /* left above */
-        x_t = lx[n6 % m]*dof;
-        y_t = ly[(n6 % (m*n))/m]; 
-        z_t = lz[n6 / (m*n)];
+        x_t = flx[n6 % m]*dof;
+        y_t = fly[(n6 % (m*n))/m]; 
+        z_t = flz[n6 / (m*n)];
         s_t = bases[n6] + i*x_t - s_x + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n7 >= 0) { /* directly above */
         x_t = x;
-        y_t = ly[(n7 % (m*n))/m];
-        z_t = lz[n7 / (m*n)];
+        y_t = fly[(n7 % (m*n))/m];
+        z_t = flz[n7 / (m*n)];
         s_t = bases[n7] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n8 >= 0) { /* right above */
-        x_t = lx[n8 % m]*dof;
-        y_t = ly[(n8 % (m*n))/m];
-        z_t = lz[n8 / (m*n)];
+        x_t = flx[n8 % m]*dof;
+        y_t = fly[(n8 % (m*n))/m];
+        z_t = flz[n8 / (m*n)];
         s_t = bases[n8] + (i-1)*x_t + x_t*y_t*z_t - (s_z-k)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1589,22 +1593,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   for (k=0; k<z; k++) {  
     for (i=1; i<=s_y; i++) {
       if (n9 >= 0) { /* left below */
-        x_t = lx[n9 % m]*dof;
-        y_t = ly[(n9 % (m*n))/m];
+        x_t = flx[n9 % m]*dof;
+        y_t = fly[(n9 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n9] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n10 >= 0) { /* directly below */
         x_t = x;
-        y_t = ly[(n10 % (m*n))/m];
+        y_t = fly[(n10 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n10] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n11 >= 0) { /* right below */
-        x_t = lx[n11 % m]*dof;
-        y_t = ly[(n11 % (m*n))/m];
+        x_t = flx[n11 % m]*dof;
+        y_t = fly[(n11 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n11] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
@@ -1613,7 +1617,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=0; i<y; i++) {
       if (n12 >= 0) { /* directly left */
-        x_t = lx[n12 % m]*dof;
+        x_t = flx[n12 % m]*dof;
         y_t = y;
         /* z_t = z; */
         s_t = bases[n12] + (i+1)*x_t - s_x + k*x_t*y_t;
@@ -1625,7 +1629,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
       for (j=0; j<x; j++) { idx[nn++] = s_t++;}
 
       if (n14 >= 0) { /* directly right */
-        x_t = lx[n14 % m]*dof;
+        x_t = flx[n14 % m]*dof;
         y_t = y;
         /* z_t = z; */
         s_t = bases[n14] + i*x_t + k*x_t*y_t;
@@ -1635,22 +1639,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=1; i<=s_y; i++) {
       if (n15 >= 0) { /* left above */
-        x_t = lx[n15 % m]*dof;
-        y_t = ly[(n15 % (m*n))/m];
+        x_t = flx[n15 % m]*dof;
+        y_t = fly[(n15 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n15] + i*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n16 >= 0) { /* directly above */
         x_t = x;
-        y_t = ly[(n16 % (m*n))/m];
+        y_t = fly[(n16 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n16] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n17 >= 0) { /* right above */
-        x_t = lx[n17 % m]*dof;
-        y_t = ly[(n17 % (m*n))/m];
+        x_t = flx[n17 % m]*dof;
+        y_t = fly[(n17 % (m*n))/m];
         /* z_t = z; */
         s_t = bases[n17] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
@@ -1662,23 +1666,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   for (k=0; k<s_z; k++) {  
     for (i=1; i<=s_y; i++) {
       if (n18 >= 0) { /* left below */
-        x_t = lx[n18 % m]*dof;
-        y_t = ly[(n18 % (m*n))/m];
-        /* z_t = lz[n18 / (m*n)]; */
+        x_t = flx[n18 % m]*dof;
+        y_t = fly[(n18 % (m*n))/m];
+        /* z_t = flz[n18 / (m*n)]; */
         s_t = bases[n18] - (s_y-i)*x_t -s_x + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n19 >= 0) { /* directly below */
         x_t = x;
-        y_t = ly[(n19 % (m*n))/m];
-        /* z_t = lz[n19 / (m*n)]; */
+        y_t = fly[(n19 % (m*n))/m];
+        /* z_t = flz[n19 / (m*n)]; */
         s_t = bases[n19] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n20 >= 0) { /* right belodof */
-        x_t = lx[n20 % m]*dof;
-        y_t = ly[(n20 % (m*n))/m];
-        /* z_t = lz[n20 / (m*n)]; */
+        x_t = flx[n20 % m]*dof;
+        y_t = fly[(n20 % (m*n))/m];
+        /* z_t = flz[n20 / (m*n)]; */
         s_t = bases[n20] - (s_y+1-i)*x_t + (k+1)*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1686,9 +1690,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=0; i<y; i++) {
       if (n21 >= 0) { /* directly left */
-        x_t = lx[n21 % m]*dof;
+        x_t = flx[n21 % m]*dof;
         y_t = y;
-        /* z_t = lz[n21 / (m*n)]; */
+        /* z_t = flz[n21 / (m*n)]; */
         s_t = bases[n21] + (i+1)*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1696,15 +1700,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
       if (n22 >= 0) { /* middle */
         x_t = x;
         y_t = y;
-        /* z_t = lz[n22 / (m*n)]; */
+        /* z_t = flz[n22 / (m*n)]; */
         s_t = bases[n22] + i*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
 
       if (n23 >= 0) { /* directly right */
-        x_t = lx[n23 % m]*dof;
+        x_t = flx[n23 % m]*dof;
         y_t = y;
-        /* z_t = lz[n23 / (m*n)]; */
+        /* z_t = flz[n23 / (m*n)]; */
         s_t = bases[n23] + i*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1712,23 +1716,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=1; i<=s_y; i++) {
       if (n24 >= 0) { /* left above */
-        x_t = lx[n24 % m]*dof;
-        y_t = ly[(n24 % (m*n))/m];
-        /* z_t = lz[n24 / (m*n)]; */
+        x_t = flx[n24 % m]*dof;
+        y_t = fly[(n24 % (m*n))/m];
+        /* z_t = flz[n24 / (m*n)]; */
         s_t = bases[n24] + i*x_t - s_x + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n25 >= 0) { /* directly above */
         x_t = x;
-        y_t = ly[(n25 % (m*n))/m];
-        /* z_t = lz[n25 / (m*n)]; */
+        y_t = fly[(n25 % (m*n))/m];
+        /* z_t = flz[n25 / (m*n)]; */
         s_t = bases[n25] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n26 >= 0) { /* right above */
-        x_t = lx[n26 % m]*dof;
-        y_t = ly[(n26 % (m*n))/m];
-        /* z_t = lz[n26 / (m*n)]; */
+        x_t = flx[n26 % m]*dof;
+        y_t = fly[(n26 % (m*n))/m];
+        /* z_t = flz[n26 / (m*n)]; */
         s_t = bases[n26] + (i-1)*x_t + k*x_t*y_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -1755,18 +1759,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->ltol = PETSC_NULL;
   da->ao   = PETSC_NULL;
 
-  if (!flx) {
-    ierr = PetscMalloc(m*sizeof(PetscInt),&flx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(flx,lx,m*sizeof(PetscInt));CHKERRQ(ierr);
-  }
-  if (!fly) {
-    ierr = PetscMalloc(n*sizeof(PetscInt),&fly);CHKERRQ(ierr);
-    ierr = PetscMemcpy(fly,ly,n*sizeof(PetscInt));CHKERRQ(ierr);
-  }
-  if (!flz) {
-    ierr = PetscMalloc(p*sizeof(PetscInt),&flz);CHKERRQ(ierr);
-    ierr = PetscMemcpy(flz,lz,p*sizeof(PetscInt));CHKERRQ(ierr);
-  }
   da->lx = flx;
   da->ly = fly;
   da->lz = flz;
