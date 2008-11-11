@@ -15,7 +15,7 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
 {
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*I,N,c = 0;
-  PetscInt               mwidth,nwidth,pwidth,cnt;
+  PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal;
   Mat                    P, Xint, Xsurf,Xint_tmp;
   IS                     isint,issurf,is,row,col;
   ISLocalToGlobalMapping ltg;
@@ -28,7 +28,7 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
 #endif
 
   PetscFunctionBegin;
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0);CHKERRQ(ierr);
   if (dof != 1) SETERRQ(PETSC_ERR_SUP,"Only for single field problems");
   if (dim != 3) SETERRQ(PETSC_ERR_SUP,"Only coded for 3d problems");
   ierr = DAGetCorners(da,0,0,0,&m,&n,&p);CHKERRQ(ierr);
@@ -58,19 +58,27 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nint,26,PETSC_NULL,&Xint);CHKERRQ(ierr);
   ierr = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,26,PETSC_NULL,&Xsurf);CHKERRQ(ierr);
   ierr = MatGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
-  /* fill up the 8 vertex nodule basis */
+
+  /*
+     Require that all 12 edges and 6 faces have at least one grid point. Otherwise some of the columns of 
+     Xsurf will be all zero (thus making the coarse matrix singular). 
+  */
+  if (m-istart < 3) SETERRQ(PETSC_ERR_SUP,"Number of grid points per process in X direction must be at least 3");
+  if (n-jstart < 3) SETERRQ(PETSC_ERR_SUP,"Number of grid points per process in Y direction must be at least 3");
+  if (p-kstart < 3) SETERRQ(PETSC_ERR_SUP,"Number of grid points per process in Z direction must be at least 3");
+
   cnt = 0;
   xsurf[cnt++] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + Nsurf] = 1;} xsurf[cnt++ + 2*Nsurf] = 1;
-  for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 3*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 20*Nsurf] = 1;} xsurf[cnt++ + 4*Nsurf] = 1;}
-  xsurf[cnt++ + 5*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 6*Nsurf] = 1;} xsurf[cnt++ + 7*Nsurf] = 1;
+  for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 3*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 4*Nsurf] = 1;} xsurf[cnt++ + 5*Nsurf] = 1;}
+  xsurf[cnt++ + 6*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 7*Nsurf] = 1;} xsurf[cnt++ + 8*Nsurf] = 1;
   for (k=1;k<p-1-kstart;k++) {
-    xsurf[cnt++ + 8*Nsurf] = 1;  for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 21*Nsurf] = 1;}  xsurf[cnt++ + 9*Nsurf] = 1;
-    for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 22*Nsurf] = 1;xsurf[cnt++ + 23*Nsurf] = 1;}
-    xsurf[cnt++ + 10*Nsurf] = 1;  for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 24*Nsurf] = 1;} xsurf[cnt++ + 11*Nsurf] = 1;
+    xsurf[cnt++ + 9*Nsurf] = 1;  for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 10*Nsurf] = 1;}  xsurf[cnt++ + 11*Nsurf] = 1;
+    for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 12*Nsurf] = 1; /* these are the interior nodes */ xsurf[cnt++ + 13*Nsurf] = 1;}
+    xsurf[cnt++ + 14*Nsurf] = 1;  for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 15*Nsurf] = 1;} xsurf[cnt++ + 16*Nsurf] = 1;
   }
-  xsurf[cnt++ + 12*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 13*Nsurf] = 1;} xsurf[cnt++ + 14*Nsurf] = 1;
-  for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 15*Nsurf] = 1;  xsurf[cnt++ + 16*Nsurf] = 1;}
-  xsurf[cnt++ + 17*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 25*Nsurf] = 1;} for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 18*Nsurf] = 1;} xsurf[cnt++ + 19*Nsurf] = 1;
+  xsurf[cnt++ + 17*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 18*Nsurf] = 1;} xsurf[cnt++ + 19*Nsurf] = 1;
+  for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 20*Nsurf] = 1;  for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 21*Nsurf] = 1;} xsurf[cnt++ + 22*Nsurf] = 1;}
+  xsurf[cnt++ + 23*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 24*Nsurf] = 1;} xsurf[cnt++ + 25*Nsurf] = 1;
 
 #if defined(PETSC_USE_DEBUG)
   for (i=0; i<Nsurf; i++) {
@@ -78,17 +86,15 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
     for (j=0; j<26; j++) {
       tmp += xsurf[i+j*Nsurf];
     }
-    ;/*    if (PetscAbs(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,tmp);*/
+    if (PetscAbs(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,tmp);
   }
 #endif
   ierr = MatRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
-  int rank; MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  if (rank == 1) {
-    MatView(Xsurf,0);}
+
 
   /* 
        I are the indices for all the needed vertices (in global numbering)
-       Ixxx are the indices for the interior values, the face values and the wirebasket values
+       Iint are the indices for the interior values, I surf for the surface values
             (in the local natural ordering on the local grid)
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
@@ -125,10 +131,6 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
   ierr = MatGetSubMatrix(A,isint,issurf,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(A,issurf,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
 
-  if (rank == 1) {
-   printf("A\n");
-   MatView(A,0);}
-
   /* 
      Solve for the interpolation onto the interior Xint
   */
@@ -153,21 +155,15 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
     for (j=0; j<26; j++) {
       tmp += xint[i+j*Nint];
     }
-    if (PetscAbs(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,tmp); 
+    if (PetscAbs(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,tmp);  
   }
   ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
 #endif
 
-#if defined(PETSC_DEBUG_WORK)
-  PetscMPIInt rank;
-  MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  if (rank == 0) {
-    PetscIntView(N,I,0);
-    PetscIntView(Nint,Iint,0);
-    PetscIntView(Nface,Iface,0);
-    PetscIntView(Nwire,Iwire,0);
-  }
-#endif
+
+  /*         total vertices             total faces                                  total edges */
+  Ntotal = (mp + 1)*(np + 1)*(pp + 1) + mp*np*(pp+1) + mp*pp*(np+1) + np*pp*(mp+1) + mp*(np+1)*(pp+1) + np*(mp+1)*(pp+1) +  pp*(mp+1)*(np+1);
+
 
   ierr = MatDestroy(Aii);CHKERRQ(ierr);
   ierr = MatDestroy(Ais);CHKERRQ(ierr);
