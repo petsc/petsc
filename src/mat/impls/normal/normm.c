@@ -9,6 +9,17 @@ typedef struct {
 } Mat_Normal;
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatScale_Normal"
+PetscErrorCode MatScale_Normal(Mat inA,PetscScalar scale)
+{
+  Mat_Normal     *a = (Mat_Normal*)inA->data;
+
+  PetscFunctionBegin;
+  a->scale *= scale;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalScale_Normal"
 PetscErrorCode MatDiagonalScale_Normal(Mat inA,Vec left,Vec right)
 {
@@ -245,6 +256,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
   (*N)->ops->multtransposeadd = MatMultTransposeAdd_Normal;
   (*N)->ops->multadd          = MatMultAdd_Normal; 
   (*N)->ops->getdiagonal      = MatGetDiagonal_Normal;
+  (*N)->ops->scale            = MatScale_Normal;
+  (*N)->ops->diagonalscale    = MatDiagonalScale_Normal;
   (*N)->assembled             = PETSC_TRUE;
   (*N)->cmap->N               = A->cmap->N;
   (*N)->rmap->N               = A->cmap->N;
