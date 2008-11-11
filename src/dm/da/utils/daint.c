@@ -14,13 +14,18 @@
 PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
 {
   PetscErrorCode         ierr;
-  PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,*Iint,*Iface,*Iwire,cint = 0,cface = 0,cwire = 0,istart,jstart,kstart,*I,N,c = 0;
-  PetscInt               mwidth,nwidth,pwidth;
-  Mat                    P, Xint, Xface, Xwire; 
-  IS                     isint,isface,iswire,is;
+  PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*I,N,c = 0;
+  PetscInt               mwidth,nwidth,pwidth,cnt;
+  Mat                    P, Xint, Xsurf,Xint_tmp;
+  IS                     isint,issurf,is,row,col;
   ISLocalToGlobalMapping ltg;
   MPI_Comm               comm;
-  Mat                    A,Aii,Aif,Aiw,Afi,Aff,Afw,Awi,Awf,Aww,*Aholder;
+  Mat                    A,Aii,Ais,Asi,*Aholder,iAii;
+  MatFactorInfo          info;
+  PetscScalar            *xsurf,*xint;
+#if defined(PETSC_USE_DEBUG)
+  PetscScalar            tmp;
+#endif
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,&dof,0,0,0);CHKERRQ(ierr);
@@ -40,18 +45,46 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
 
     Xface are the interpolation onto faces but not into the interior 
 
-    Xwire are the interpolation onto the vertices and edges (the wirebasket) 
+    Xsurf are the interpolation onto the vertices and edges (the surfbasket) 
                                         Xint
     Symbolically one could write P = (  Xface  ) after interchanging the rows to match the natural ordering on the domain
-                                        Xwire
+                                        Xsurf
   */
   N     = (m - istart)*(n - jstart)*(p - kstart);
   Nint  = (m-2-istart)*(n-2-jstart)*(p-2-kstart);
   Nface = 2*( (m-2-istart)*(n-2-jstart) + (m-2-istart)*(p-2-kstart) + (n-2-jstart)*(p-2-kstart) ); 
   Nwire = 4*( (m-2-istart) + (n-2-jstart) + (p-2-kstart) ) + 8;
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,Nint,20,PETSC_NULL,&Xint);CHKERRQ(ierr);
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,Nface,20,PETSC_NULL,&Xface);CHKERRQ(ierr);
-  ierr = MatCreateSeqDense(MPI_COMM_SELF,Nwire,20,PETSC_NULL,&Xwire);CHKERRQ(ierr);
+  Nsurf = Nface + Nwire;
+  ierr = MatCreateSeqDense(MPI_COMM_SELF,Nint,26,PETSC_NULL,&Xint);CHKERRQ(ierr);
+  ierr = MatCreateSeqDense(MPI_COMM_SELF,Nsurf,26,PETSC_NULL,&Xsurf);CHKERRQ(ierr);
+  ierr = MatGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  /* fill up the 8 vertex nodule basis */
+  cnt = 0;
+  xsurf[cnt++] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + Nsurf] = 1;} xsurf[cnt++ + 2*Nsurf] = 1;
+  for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 3*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 20*Nsurf] = 1;} xsurf[cnt++ + 4*Nsurf] = 1;}
+  xsurf[cnt++ + 5*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 6*Nsurf] = 1;} xsurf[cnt++ + 7*Nsurf] = 1;
+  for (k=1;k<p-1-kstart;k++) {
+    xsurf[cnt++ + 8*Nsurf] = 1;  for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 21*Nsurf] = 1;}  xsurf[cnt++ + 9*Nsurf] = 1;
+    for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 22*Nsurf] = 1;xsurf[cnt++ + 23*Nsurf] = 1;}
+    xsurf[cnt++ + 10*Nsurf] = 1;  for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 24*Nsurf] = 1;} xsurf[cnt++ + 11*Nsurf] = 1;
+  }
+  xsurf[cnt++ + 12*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 13*Nsurf] = 1;} xsurf[cnt++ + 14*Nsurf] = 1;
+  for (j=1;j<n-1-jstart;j++) { xsurf[cnt++ + 15*Nsurf] = 1;  xsurf[cnt++ + 16*Nsurf] = 1;}
+  xsurf[cnt++ + 17*Nsurf] = 1; for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 25*Nsurf] = 1;} for (i=1; i<m-istart-1; i++) { xsurf[cnt++ + 18*Nsurf] = 1;} xsurf[cnt++ + 19*Nsurf] = 1;
+
+#if defined(PETSC_USE_DEBUG)
+  for (i=0; i<Nsurf; i++) {
+    tmp = 0.0;
+    for (j=0; j<26; j++) {
+      tmp += xsurf[i+j*Nsurf];
+    }
+    ;/*    if (PetscAbs(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,tmp);*/
+  }
+#endif
+  ierr = MatRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  int rank; MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  if (rank == 1) {
+    MatView(Xsurf,0);}
 
   /* 
        I are the indices for all the needed vertices (in global numbering)
@@ -59,7 +92,7 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
             (in the local natural ordering on the local grid)
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
-  ierr = PetscMalloc4(N,PetscInt,&I,Nint,PetscInt,&Iint,Nface,PetscInt,&Iface,Nwire,PetscInt,&Iwire);CHKERRQ(ierr);
+  ierr = PetscMalloc3(N,PetscInt,&I,Nint,PetscInt,&Iint,Nsurf,PetscInt,&Isurf);CHKERRQ(ierr);
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {
@@ -67,70 +100,84 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
 
         if (!Endpoint(i,istart,m) && !Endpoint(j,jstart,n) && !Endpoint(k,kstart,p)) {
           Iint[cint++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
-        } else if ((Endpoint(i,istart,m) && Endpoint(j,jstart,n)) || (Endpoint(i,istart,m) && Endpoint(k,kstart,p)) || (Endpoint(j,jstart,n) && Endpoint(k,kstart,p))) {
-          Iwire[cwire++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
         } else {
-          Iface[cface++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
-        }
+          Isurf[csurf++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
+        } 
       }
     }
   }
   if (c != N) SETERRQ(PETSC_ERR_PLIB,"c != N");
   if (cint != Nint) SETERRQ(PETSC_ERR_PLIB,"cint != Nint");
-  if (cface != Nface) SETERRQ(PETSC_ERR_PLIB,"cface != Nface");
-  if (cwire != Nwire) SETERRQ(PETSC_ERR_PLIB,"cwire != Nwire");
+  if (csurf != Nsurf) SETERRQ(PETSC_ERR_PLIB,"csurf != Nsurf");
   ierr = DAGetISLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,N,I,I);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,N,I,&is);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,&isint);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nface,Iface,&isface);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nwire,Iwire,&iswire);CHKERRQ(ierr);
-  ierr = PetscFree4(I,Iint,Iface,Iwire);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,&issurf);CHKERRQ(ierr);
+  ierr = PetscFree3(I,Iint,Isurf);CHKERRQ(ierr);
 
   ierr = MatGetSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);
   A    = *Aholder;
   ierr = PetscFree(Aholder);CHKERRQ(ierr);
+
   ierr = MatGetSubMatrix(A,isint,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,isint,isface,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Aif);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,isint,iswire,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Aiw);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,isface,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Afi);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,isface,isface,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Aff);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,isface,iswire,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Afw);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,iswire,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Awi);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,iswire,isface,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Awf);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,iswire,iswire,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Aww);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,isint,issurf,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,issurf,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
+
+  if (rank == 1) {
+   printf("A\n");
+   MatView(A,0);}
 
   /* 
-     Solve for the interpolation onto the faces Xface
+     Solve for the interpolation onto the interior Xint
   */
+  ierr = MatGetFactor(Aii,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
+  ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+  ierr = MatGetOrdering(Aii,MATORDERING_ND,&row,&col);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
+  ierr = ISDestroy(row);CHKERRQ(ierr);
+  ierr = ISDestroy(col);CHKERRQ(ierr);
+  ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
+  ierr = MatDuplicate(Xint,MAT_DO_NOT_COPY_VALUES,&Xint_tmp);CHKERRQ(ierr);
+  ierr = MatMatMult(Ais,Xsurf,MAT_REUSE_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
+  ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
+  ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
+  ierr = MatDestroy(Xint_tmp);CHKERRQ(ierr);
+  ierr = MatDestroy(iAii);CHKERRQ(ierr);
 
+#if defined(PETSC_USE_DEBUG)
+  ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
+  for (i=0; i<Nint; i++) {
+    tmp = 0.0;
+    for (j=0; j<26; j++) {
+      tmp += xint[i+j*Nint];
+    }
+    if (PetscAbs(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,tmp); 
+  }
+  ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
+#endif
+
+#if defined(PETSC_DEBUG_WORK)
   PetscMPIInt rank;
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
-  if (rank == -1) {
+  if (rank == 0) {
     PetscIntView(N,I,0);
     PetscIntView(Nint,Iint,0);
     PetscIntView(Nface,Iface,0);
     PetscIntView(Nwire,Iwire,0);
   }
+#endif
 
   ierr = MatDestroy(Aii);CHKERRQ(ierr);
-  ierr = MatDestroy(Aif);CHKERRQ(ierr);
-  ierr = MatDestroy(Aiw);CHKERRQ(ierr);
-  ierr = MatDestroy(Afi);CHKERRQ(ierr);
-  ierr = MatDestroy(Aff);CHKERRQ(ierr);
-  ierr = MatDestroy(Afw);CHKERRQ(ierr);
-  ierr = MatDestroy(Awi);CHKERRQ(ierr);
-  ierr = MatDestroy(Awf);CHKERRQ(ierr);
-  ierr = MatDestroy(Aww);CHKERRQ(ierr);
+  ierr = MatDestroy(Ais);CHKERRQ(ierr);
+  ierr = MatDestroy(Asi);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
   ierr = ISDestroy(isint);CHKERRQ(ierr);
-  ierr = ISDestroy(isface);CHKERRQ(ierr);
-  ierr = ISDestroy(iswire);CHKERRQ(ierr);
+  ierr = ISDestroy(issurf);CHKERRQ(ierr);
   ierr = MatDestroy(Xint);CHKERRQ(ierr);
-  ierr = MatDestroy(Xface);CHKERRQ(ierr);
-  ierr = MatDestroy(Xwire);CHKERRQ(ierr);
+  ierr = MatDestroy(Xsurf);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

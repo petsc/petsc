@@ -101,8 +101,8 @@ class Package(config.base.Configure):
     if self.found:
       output  = self.name+':\n'
       if self.version: output += '  Version: '+self.version+'\n'
-      if self.include: output += '  Includes: '+str(self.include)+'\n'
-      if self.lib:     output += '  Library: '+str(self.lib)+'\n'
+      if self.include: output += '  Includes: '+self.headers.toStringNoDupes(self.include)+'\n'
+      if self.lib:     output += '  Library:  '+self.libraries.toStringNoDupes(self.lib)+'\n'
     return output
   
   def setupHelp(self,help):

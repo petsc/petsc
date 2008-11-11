@@ -177,7 +177,7 @@ Now run the testsuite to verify the install with the following:
   def run(self):
     self.setup()
     self.setupDirectories()
-    if os.path.exists(self.installDir) and os.path.samefile(self.installDir, self.rootDir):
+    if os.path.exists(self.installDir) and os.path.samefile(self.installDir, os.path.join(self.rootDir,self.arch)):
       print '********************************************************************'
       print 'Install directory is current directory; nothing needs to be done'
       print '********************************************************************'

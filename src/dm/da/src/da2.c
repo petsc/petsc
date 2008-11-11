@@ -424,22 +424,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
      Determine locally owned region 
      xs is the first local node number, x is the number of local nodes 
   */
-  if (!lx) { /* user sets distribution */
-    ierr = PetscMalloc(m*sizeof(PetscInt),&flx);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&flx);CHKERRQ(ierr);
+  if (lx) { /* user sets distribution */
+    ierr = PetscMemcpy(flx,lx,m*sizeof(PetscInt));CHKERRQ(ierr);
+  } else {
     for (i=0; i<m; i++) {
       flx[i] = M/m + ((M % m) > i);
     }
-    lx = flx;
   }
-  x  = lx[rank % m];
+  x  = flx[rank % m];
   xs = 0;
   for (i=0; i<(rank % m); i++) {
-    xs += lx[i];
+    xs += flx[i];
   }
 #if defined(PETSC_USE_DEBUG)
   left = xs;
   for (i=(rank % m); i<m; i++) {
-    left += lx[i];
+    left += flx[i];
   }
   if (left != M) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of lx across processors not equal to M: %D %D",left,M);
@@ -450,22 +451,23 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
      Determine locally owned region 
      ys is the first local node number, y is the number of local nodes 
   */
-  if (!ly) { /* user sets distribution */
-    ierr = PetscMalloc(n*sizeof(PetscInt),&fly);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&fly);CHKERRQ(ierr);
+  if (ly) { /* user sets distribution */
+    ierr = PetscMemcpy(fly,ly,n*sizeof(PetscInt));CHKERRQ(ierr);
+  } else {
     for (i=0; i<n; i++) {
       fly[i] = N/n + ((N % n) > i);
     }
-    ly  = fly;
   }
-  y  = ly[rank/m];
+  y  = fly[rank/m];
   ys = 0;
   for (i=0; i<(rank/m); i++) {
-    ys += ly[i];
+    ys += fly[i];
   }
 #if defined(PETSC_USE_DEBUG)
   left = ys;
   for (i=(rank/m); i<n; i++) {
-    left += ly[i];
+    left += fly[i];
   }
   if (left != N) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Sum of ly across processors not equal to N: %D %D",left,N);
@@ -682,20 +684,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   xbase = bases[rank];
   for (i=1; i<=s_y; i++) {
     if (n0 >= 0) { /* left below */
-      x_t = lx[n0 % m]*dof;
-      y_t = ly[(n0/m)];
+      x_t = flx[n0 % m]*dof;
+      y_t = fly[(n0/m)];
       s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
     if (n1 >= 0) { /* directly below */
       x_t = x;
-      y_t = ly[(n1/m)];
+      y_t = fly[(n1/m)];
       s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
       for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
     }
     if (n2 >= 0) { /* right below */
-      x_t = lx[n2 % m]*dof;
-      y_t = ly[(n2/m)];
+      x_t = flx[n2 % m]*dof;
+      y_t = fly[(n2/m)];
       s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
@@ -703,7 +705,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 
   for (i=0; i<y; i++) {
     if (n3 >= 0) { /* directly left */
-      x_t = lx[n3 % m]*dof;
+      x_t = flx[n3 % m]*dof;
       /* y_t = y; */
       s_t = bases[n3] + (i+1)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
@@ -712,7 +714,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
     for (j=0; j<x; j++) { idx[nn++] = xbase++; } /* interior */
 
     if (n5 >= 0) { /* directly right */
-      x_t = lx[n5 % m]*dof;
+      x_t = flx[n5 % m]*dof;
       /* y_t = y; */
       s_t = bases[n5] + (i)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
@@ -721,20 +723,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 
   for (i=1; i<=s_y; i++) {
     if (n6 >= 0) { /* left above */
-      x_t = lx[n6 % m]*dof;
-      /* y_t = ly[(n6/m)]; */
+      x_t = flx[n6 % m]*dof;
+      /* y_t = fly[(n6/m)]; */
       s_t = bases[n6] + (i)*x_t - s_x;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
     if (n7 >= 0) { /* directly above */
       x_t = x;
-      /* y_t = ly[(n7/m)]; */
+      /* y_t = fly[(n7/m)]; */
       s_t = bases[n7] + (i-1)*x_t;
       for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
     }
     if (n8 >= 0) { /* right above */
-      x_t = lx[n8 % m]*dof;
-      /* y_t = ly[(n8/m)]; */
+      x_t = flx[n8 % m]*dof;
+      /* y_t = fly[(n8/m)]; */
       s_t = bases[n8] + (i-1)*x_t;
       for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
     }
@@ -767,20 +769,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
     xbase = bases[rank];
     for (i=1; i<=s_y; i++) {
       if (n0 >= 0) { /* left below */
-        x_t = lx[n0 % m]*dof;
-        y_t = ly[(n0/m)];
+        x_t = flx[n0 % m]*dof;
+        y_t = fly[(n0/m)];
         s_t = bases[n0] + x_t*y_t - (s_y-i)*x_t - s_x;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n1 >= 0) { /* directly below */
         x_t = x;
-        y_t = ly[(n1/m)];
+        y_t = fly[(n1/m)];
         s_t = bases[n1] + x_t*y_t - (s_y+1-i)*x_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n2 >= 0) { /* right below */
-        x_t = lx[n2 % m]*dof;
-        y_t = ly[(n2/m)];
+        x_t = flx[n2 % m]*dof;
+        y_t = fly[(n2/m)];
         s_t = bases[n2] + x_t*y_t - (s_y+1-i)*x_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -788,7 +790,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=0; i<y; i++) {
       if (n3 >= 0) { /* directly left */
-        x_t = lx[n3 % m]*dof;
+        x_t = flx[n3 % m]*dof;
         /* y_t = y; */
         s_t = bases[n3] + (i+1)*x_t - s_x;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
@@ -797,7 +799,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
       for (j=0; j<x; j++) { idx[nn++] = xbase++; } /* interior */
 
       if (n5 >= 0) { /* directly right */
-        x_t = lx[n5 % m]*dof;
+        x_t = flx[n5 % m]*dof;
         /* y_t = y; */
         s_t = bases[n5] + (i)*x_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
@@ -806,20 +808,20 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 
     for (i=1; i<=s_y; i++) {
       if (n6 >= 0) { /* left above */
-        x_t = lx[n6 % m]*dof;
-        /* y_t = ly[(n6/m)]; */
+        x_t = flx[n6 % m]*dof;
+        /* y_t = fly[(n6/m)]; */
         s_t = bases[n6] + (i)*x_t - s_x;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
       if (n7 >= 0) { /* directly above */
         x_t = x;
-        /* y_t = ly[(n7/m)]; */
+        /* y_t = fly[(n7/m)]; */
         s_t = bases[n7] + (i-1)*x_t;
         for (j=0; j<x_t; j++) { idx[nn++] = s_t++;}
       }
       if (n8 >= 0) { /* right above */
-        x_t = lx[n8 % m]*dof;
-        /* y_t = ly[(n8/m)]; */
+        x_t = flx[n8 % m]*dof;
+        /* y_t = fly[(n8/m)]; */
         s_t = bases[n8] + (i-1)*x_t;
         for (j=0; j<s_x; j++) { idx[nn++] = s_t++;}
       }
@@ -857,15 +859,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->ltol = PETSC_NULL;
   da->ao   = PETSC_NULL;
 
-
-  if (!flx) {
-    ierr = PetscMalloc(m*sizeof(PetscInt),&flx);CHKERRQ(ierr);
-    ierr = PetscMemcpy(flx,lx,m*sizeof(PetscInt));CHKERRQ(ierr);
-  }
-  if (!fly) {
-    ierr = PetscMalloc(n*sizeof(PetscInt),&fly);CHKERRQ(ierr);
-    ierr = PetscMemcpy(fly,ly,n*sizeof(PetscInt));CHKERRQ(ierr);
-  }
   da->lx = flx;
   da->ly = fly;
   ierr = DAView_Private(da);CHKERRQ(ierr);

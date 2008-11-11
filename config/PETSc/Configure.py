@@ -358,7 +358,7 @@ class Configure(config.base.Configure):
     if self.framework.argDB['prefix']:
       self.installdir = self.framework.argDB['prefix']
     else:
-      self.installdir = self.petscdir.dir
+      self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
     return
 
   def configureGCOV(self):

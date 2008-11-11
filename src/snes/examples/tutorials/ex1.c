@@ -44,6 +44,7 @@ int main(int argc,char **argv)
   PetscScalar    pfive = .5,*xx;
   PetscTruth     flg;
   AppCtx         user;         /* user-defined work context */
+  IS             isglobal,islocal;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -70,7 +71,6 @@ int main(int argc,char **argv)
     ierr = VecDuplicate(user.xloc,&user.rloc);CHKERRQ(ierr);
 
     /* Create the scatter between the global x and local xloc */
-    IS   isglobal,islocal;
     ierr = ISCreateStride(MPI_COMM_SELF,2,0,1,&islocal);CHKERRQ(ierr);
     ierr = ISCreateStride(MPI_COMM_SELF,2,0,1,&isglobal);CHKERRQ(ierr);
     ierr = VecScatterCreate(x,isglobal,user.xloc,islocal,&user.scatter);CHKERRQ(ierr);

@@ -47,8 +47,8 @@ runex9:
 	-@${MPIEXEC} -n 2 ./ex9 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
 #-------------------------------------------------------------
-TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm ex9.PETSc runex9 ex9.rm
-TESTEXAMPLES_C_X11	    = ex2.PETSc ex2.rm
+TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm
+TESTEXAMPLES_C_X11	    = ex2.PETSc ex2.rm ex9.PETSc runex9 ex9.rm
 TESTEXAMPLES_FORTRAN	    = 
 TESTEXAMPLES_C_X11_MPIUNI   = 
 TESTEXAMPLES_C_NOCOMPLEX    = ex1.PETSc runex1 ex1.rm ex5.PETSc runex5 ex5.rm

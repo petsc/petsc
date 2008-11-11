@@ -29,7 +29,7 @@ PetscErrorCode MatAXPY_SeqDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
   } else {
     BLASaxpy_(&N,&oalpha,x->v,&one,y->v,&one);
   }
-  ierr = PetscLogFlops(2*N-1);CHKERRQ(ierr);
+  ierr = PetscLogFlops(PetscMax(2*N-1,0));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1953,6 +1953,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation_SeqDense(Mat B,Pet
     b->v          = data;
     b->user_alloc = PETSC_TRUE;
   }
+  B->assembled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
