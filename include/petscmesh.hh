@@ -552,7 +552,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
     if (debug > 1) adjGraph->view("Localized adjacency graph");
     /* Distribute indices for new points */
     ALE::Distribution<ALE::Mesh>::updateOverlap(vertexSendOverlap, vertexRecvOverlap, sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
-    mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, true);
+    mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, true, false);
     if (debug > 1) globalOrder->view("Completed global order");
     ierr = renumberLocalAdjacencyGraph(mesh, adjGraph, vertexSendOverlap, globalOrder);
     if (debug > 1) adjGraph->view("Renumbered adjacency graph");
