@@ -4,7 +4,6 @@
 
 typedef struct {
   Mat A;
-  Vec w;
 } Mat_Transpose;
 
 #undef __FUNCT__  
@@ -28,6 +27,30 @@ PetscErrorCode MatMultAdd_Transpose(Mat N,Vec v1,Vec v2,Vec v3)
  
   PetscFunctionBegin; 
   ierr = MatMultTransposeAdd(Na->A,v1,v2,v3);CHKERRQ(ierr); 
+  PetscFunctionReturn(0); 
+} 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMultTranspose_Transpose"
+PetscErrorCode MatMultTranspose_Transpose(Mat N,Vec x,Vec y)
+{
+  Mat_Transpose  *Na = (Mat_Transpose*)N->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMult(Na->A,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+ 
+#undef __FUNCT__   
+#define __FUNCT__ "MatMultTransposeAdd_Transpose" 
+PetscErrorCode MatMultTransposeAdd_Transpose(Mat N,Vec v1,Vec v2,Vec v3) 
+{ 
+  Mat_Transpose  *Na = (Mat_Transpose*)N->data; 
+  PetscErrorCode ierr; 
+ 
+  PetscFunctionBegin; 
+  ierr = MatMultAdd(Na->A,v1,v2,v3);CHKERRQ(ierr); 
   PetscFunctionReturn(0); 
 } 
 
@@ -83,10 +106,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat A,Mat *N)
   ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   Na->A     = A;
 
-  (*N)->ops->destroy     = MatDestroy_Transpose;
-  (*N)->ops->mult        = MatMult_Transpose;
-  (*N)->ops->multadd     = MatMultAdd_Transpose; 
-  (*N)->assembled        = PETSC_TRUE;
+  (*N)->ops->destroy          = MatDestroy_Transpose;
+  (*N)->ops->mult             = MatMult_Transpose;
+  (*N)->ops->mult             = MatMult_Transpose;
+  (*N)->ops->multtranspose    = MatMultTranspose_Transpose; 
+  (*N)->ops->multtransposeadd = MatMultTransposeAdd_Transpose; 
+  (*N)->assembled             = PETSC_TRUE;
 
   (*N)->rmap->bs = (*N)->cmap->bs = A->rmap->bs;
   ierr = PetscMapSetUp((*N)->rmap);CHKERRQ(ierr);
