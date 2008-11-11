@@ -16,13 +16,13 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*I,N,c = 0;
   PetscInt               mwidth,nwidth,pwidth,cnt;
-  Mat                    P, Xint, Xface, Xsurf,Xface_tmp,Xint_tmp,Xint_b; 
+  Mat                    P, Xint, Xsurf,Xint_tmp;
   IS                     isint,issurf,is,row,col;
   ISLocalToGlobalMapping ltg;
   MPI_Comm               comm;
-  Mat                    A,Aii,Aif,Aiw,Afi,Aff,Afw,Awi,Awf,Aww,*Aholder,iAff,iAii;
+  Mat                    A,Aii,Ais,Asi,*Aholder,iAii;
   MatFactorInfo          info;
-  PetscScalar            *xsurf;
+  PetscScalar            *xsurf,*xint;
 #if defined(PETSC_USE_DEBUG)
   PetscScalar            tmp;
 #endif
@@ -78,11 +78,13 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
     for (j=0; j<26; j++) {
       tmp += xsurf[i+j*Nsurf];
     }
-    if (tmp != 1.0) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,tmp);
+    ;/*    if (PetscAbs(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,tmp);*/
   }
 #endif
   ierr = MatRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
-
+  int rank; MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
+  if (rank == 1) {
+    MatView(Xsurf,0);}
 
   /* 
        I are the indices for all the needed vertices (in global numbering)
@@ -106,7 +108,7 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
   }
   if (c != N) SETERRQ(PETSC_ERR_PLIB,"c != N");
   if (cint != Nint) SETERRQ(PETSC_ERR_PLIB,"cint != Nint");
-  if (surf != Nsurf) SETERRQ(PETSC_ERR_PLIB,"csurf != Nsurf");
+  if (csurf != Nsurf) SETERRQ(PETSC_ERR_PLIB,"csurf != Nsurf");
   ierr = DAGetISLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,N,I,I);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
@@ -121,54 +123,39 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
 
   ierr = MatGetSubMatrix(A,isint,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Aii);CHKERRQ(ierr);
   ierr = MatGetSubMatrix(A,isint,issurf,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Ais);CHKERRQ(ierr);
-  ierr = MatGetSubMatrix(A,issurf,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Afi);CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,issurf,isint,PETSC_DECIDE,MAT_INITIAL_MATRIX,&Asi);CHKERRQ(ierr);
 
-  printf("A\n");
-  MatView(A,0);
-
-  printf("Xwire\n");
-  MatView(Xwire,0);
-  printf("Afw\n");
-  MatView(Afw,0);
-  printf("Aff\n");
-  MatView(Aff,0);
+  if (rank == 1) {
+   printf("A\n");
+   MatView(A,0);}
 
   /* 
-     Solve for the interpolation onto the faces Xface
+     Solve for the interpolation onto the interior Xint
   */
-  ierr = MatGetFactor(Aff,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&iAff);CHKERRQ(ierr);
+  ierr = MatGetFactor(Aii,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&iAii);CHKERRQ(ierr);
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
-  ierr = MatGetOrdering(Aff,MATORDERING_ND,&row,&col);CHKERRQ(ierr);
-  ierr = MatLUFactorSymbolic(iAff,Aff,row,col,&info);CHKERRQ(ierr);
+  ierr = MatGetOrdering(Aii,MATORDERING_ND,&row,&col);CHKERRQ(ierr);
+  ierr = MatLUFactorSymbolic(iAii,Aii,row,col,&info);CHKERRQ(ierr);
   ierr = ISDestroy(row);CHKERRQ(ierr);
   ierr = ISDestroy(col);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric(iAff,Aff,&info);CHKERRQ(ierr);
-  ierr = MatDuplicate(Xface,MAT_DO_NOT_COPY_VALUES,&Xface_tmp);CHKERRQ(ierr);
-  ierr = MatMatMult(Afw,Xwire,MAT_REUSE_MATRIX,PETSC_DETERMINE,&Xface_tmp);CHKERRQ(ierr);
-  ierr = MatScale(Xface_tmp,-1.0);CHKERRQ(ierr);
-  ierr = MatMatSolve(iAff,Xface_tmp,Xface);CHKERRQ(ierr);
-  ierr = MatDestroy(Xface_tmp);CHKERRQ(ierr);
-  ierr = MatDestroy(iAff);CHKERRQ(ierr);
-
-  ierr = MatGetArray(Xface,&xwire);CHKERRQ(ierr);
-  for (i=0; i<Nface; i++) {
-    for (j=0; j<20; j++) {
-      ;
-    }
-  }
-  ierr = MatRestoreArray(Xface,&xwire);CHKERRQ(ierr);
-
+  ierr = MatLUFactorNumeric(iAii,Aii,&info);CHKERRQ(ierr);
+  ierr = MatDuplicate(Xint,MAT_DO_NOT_COPY_VALUES,&Xint_tmp);CHKERRQ(ierr);
+  ierr = MatMatMult(Ais,Xsurf,MAT_REUSE_MATRIX,PETSC_DETERMINE,&Xint_tmp);CHKERRQ(ierr);
+  ierr = MatScale(Xint_tmp,-1.0);CHKERRQ(ierr);
+  ierr = MatMatSolve(iAii,Xint_tmp,Xint);CHKERRQ(ierr);
+  ierr = MatDestroy(Xint_tmp);CHKERRQ(ierr);
+  ierr = MatDestroy(iAii);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_DEBUG)
-  ierr = MatGetArray(Xint,&xwire);CHKERRQ(ierr);
+  ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
   for (i=0; i<Nint; i++) {
     tmp = 0.0;
-    for (j=0; j<20; j++) {
-      tmp += xwire[i+j*Nint];
+    for (j=0; j<26; j++) {
+      tmp += xint[i+j*Nint];
     }
-    if (tmp != 1.0) printf("Wrong Xint row %d value %g\n",i,tmp); /*SETERRQ2(PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,tmp); */
+    if (PetscAbs(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,tmp); 
   }
-  ierr = MatRestoreArray(Xint,&xwire);CHKERRQ(ierr);
+  ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
 #endif
 
 #if defined(PETSC_DEBUG_WORK)
