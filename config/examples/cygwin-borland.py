@@ -5,9 +5,10 @@ configure_options = [
   '--with-vendor-compilers=borland',
   '--with-fc=0',
   '--with-ranlib=true',
-  '--with-blas-lapack-dir=/cygdrive/c/software/f2cblaslapack/win32_borland',
+  '--with-blas-lapack-dir=/home/sbalay/soft/borland-f2cblas',
+  '--download-c-blas-lapack=1',
   '--with-mpi=0',
-  'DATAFILESPATH=/home/balay/datafiles',
+  'DATAFILESPATH=/home/sbalay/datafiles',
   ]
   
 if __name__ == '__main__':

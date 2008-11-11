@@ -35,10 +35,10 @@
 
 
 !     Create large IS and test ISGetIndices(,ierr)
-
+!     fortran indices start from 1 - but IS indices start from 0
       n = 1000
-      do 10, i=0,n-1
-        indices(i) = i
+      do 10, i=1,n
+        indices(i) = i-1
  10   continue
       call ISCreateGeneral(PETSC_COMM_SELF,n,indices,is,ierr) 
            CHKERRQ(ierr)
@@ -63,7 +63,7 @@
       endif
       call ISIdentity(is,flag,ierr) 
            CHKERRQ(ierr)
-      if (flag) then
+      if (.not. flag) then
          print*, 'Error checking identity'
          stop
       endif

@@ -719,6 +719,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
   Vec_MPI        *w;
   PetscScalar    *larray;
   IS             from,to;
+  ISLocalToGlobalMapping ltog;
+  PetscInt       rstart,i,nb,*indices;
 
   PetscFunctionBegin;
   *vv = 0;
@@ -726,11 +728,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
   if (n == PETSC_DECIDE)      SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must set local size");
   if (nghost == PETSC_DECIDE) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must set local ghost size");
   if (nghost < 0)             SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Ghost length must be >= 0");
+  if (n % bs)                 SETERRQ(PETSC_ERR_ARG_INCOMP,"Local size must be a multiple of block size");
   ierr = PetscSplitOwnership(comm,&n,&N);CHKERRQ(ierr);
   /* Create global representation */
   ierr = VecCreate(comm,vv);CHKERRQ(ierr);
   ierr = VecSetSizes(*vv,n,N);CHKERRQ(ierr);
-  ierr = VecCreate_MPI_Private(*vv,PETSC_FALSE,nghost*bs,array);CHKERRQ(ierr);
+  ierr = VecCreate_MPI_Private(*vv,PETSC_TRUE,nghost*bs,array);CHKERRQ(ierr);
   ierr = VecSetBlockSize(*vv,bs);CHKERRQ(ierr);
   w    = (Vec_MPI *)(*vv)->data;
   /* Create local representation */
@@ -749,6 +752,22 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreateGhostBlockWithArray(MPI_Comm comm,Pet
   ierr = PetscLogObjectParent(*vv,w->localupdate);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
   ierr = ISDestroy(from);CHKERRQ(ierr);
+
+  /* set local to global mapping for ghosted vector */
+  nb = n/bs;
+  ierr = PetscMalloc((nb+nghost)*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(*vv,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  for (i=0; i<nb; i++) {
+    indices[i] = rstart + i*bs;
+  }
+  for (i=0; i<nghost; i++) {
+    indices[nb+i] = ghosts[i];
+  }
+  ierr = ISLocalToGlobalMappingCreate(comm,nb+nghost,indices,&ltog);CHKERRQ(ierr);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
+  ierr = VecSetLocalToGlobalMappingBlock(*vv,ltog);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(ltog);CHKERRQ(ierr);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

@@ -2,7 +2,7 @@ static char help[] = "Test sequential MatMatMult() and MatPtAP() for AIJ matrice
 
 #include "petscmat.h"
 
-extern PetscErrorCode testPTAPRectangular();
+extern PetscErrorCode testPTAPRectangular(void);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -74,20 +74,23 @@ int main(int argc,char **argv) {
 #define PETSc_CHKERRQ CHKERRQ
 #undef __FUNCT__
 #define __FUNCT__ "testPTAPRectangular"
-PetscErrorCode testPTAPRectangular() 
+PetscErrorCode testPTAPRectangular(void)
 {
 
   const int rows = 3;
   const int cols = 5;
   PetscErrorCode _ierr;
+  int i;
+  Mat A;
+  Mat P;
+  Mat C;
 
   PetscFunctionBegin;
-  // set up A
-  Mat A;
+  /* set up A  */
   _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, rows,
                             1, PETSC_NULL, &A);
   PETSc_CHKERRQ(_ierr);
-  for (int i=0; i<rows; i++) {
+  for (i=0; i<rows; i++) {
     _ierr = MatSetValue(A, i, i, 1.0, INSERT_VALUES);
     PETSc_CHKERRQ(_ierr);
   }
@@ -96,8 +99,7 @@ PetscErrorCode testPTAPRectangular()
   _ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
   PETSc_CHKERRQ(_ierr);
 
-  // set up P
-  Mat P;
+  /* set up P */
   _ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, rows, cols,
                             5, PETSC_NULL, &P);
   PETSc_CHKERRQ(_ierr);
@@ -119,11 +121,8 @@ PetscErrorCode testPTAPRectangular()
   PETSc_CHKERRQ(_ierr);
   _ierr = MatAssemblyEnd(P,MAT_FINAL_ASSEMBLY);
   PETSc_CHKERRQ(_ierr);
-  //printf("P:\n");
-  // _ierr = MatView(P,PETSC_VIEWER_STDOUT_WORLD);PETSc_CHKERRQ(_ierr);
 
-  // compute C
-  Mat C;
+  /* compute C */
   _ierr = MatPtAP( A, P, MAT_INITIAL_MATRIX, 1.0, &C);
   PETSc_CHKERRQ(_ierr);
 
@@ -132,7 +131,7 @@ PetscErrorCode testPTAPRectangular()
   _ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);
   PETSc_CHKERRQ(_ierr);
 
-  // compare results
+  /* compare results */
   /*
   printf("C:\n");
   _ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);PETSc_CHKERRQ(_ierr);
