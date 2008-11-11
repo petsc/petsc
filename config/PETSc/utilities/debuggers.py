@@ -42,32 +42,37 @@ class Configure(config.base.Configure):
       f.close()
       foundOption = 0
       if not foundOption:
-        pid = str(os.getpid())
+        pid = os.fork()
+        if not pid:
+          import time
+          import sys
+          time.sleep(15)
+          sys.exit()
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -p '+pid, log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -p '+str(pid), log = self.framework.log)
           if not status:
             for line in output:
-              if re.match(r'Process '+pid, line):
+              if re.match(r'Process '+str(pid), line):
                 self.addDefine('USE_P_FOR_DEBUGGER', 1)
                 foundOption = 1
                 break
         except RuntimeError: pass
       if not foundOption:
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -a '+pid, log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -a '+str(pid), log = self.framework.log)
           if not status:
             for line in output:
-              if re.match(r'Process '+pid, line):
+              if re.match(r'Process '+str(pid), line):
                 self.addDefine('USE_A_FOR_DEBUGGER', 1)
                 foundOption = 1
                 break
         except RuntimeError: pass
       if not foundOption:
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -pid '+pid, log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -pid '+str(pid), log = self.framework.log)
           if not status:
             for line in output:
-              if re.match(r'Process '+pid, line):
+              if re.match(r'Process '+str(pid), line):
                 self.addDefine('USE_PID_FOR_DEBUGGER', 1)
                 foundOption = 1
                 break
