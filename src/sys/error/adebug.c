@@ -69,7 +69,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetDebugTerminal(const char terminal[])
 
    Input Parameters:
 +  debugger - name of debugger, which should be in your path,
-              usually "dbx", "gdb", "idb", "xxgdb" or "ddd".  Also, HP-UX
+              usually "dbx", "gdb", "idb", "xxgdb", "kdgb" or "ddd". Also, HP-UX
               supports "xdb", and IBM rs6000 supports "xldb".
 
 -  xterm - flag to indicate debugger window, set to either 1 (to indicate
@@ -181,6 +181,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetDebuggerFromString(char *string)
   ierr = PetscCheckDebugger_Private("idb",      string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("xxgdb",    string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("ddd",      string, &debugger);CHKERRQ(ierr);
+  ierr = PetscCheckDebugger_Private("kdbg",     string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("ups",      string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("workshop", string, &debugger);CHKERRQ(ierr);
   ierr = PetscCheckDebugger_Private("pgdbg",    string, &debugger);CHKERRQ(ierr);
@@ -249,7 +250,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
     const char *args[10];
     char       pid[10];
     PetscInt   j,jj;
-    PetscTruth isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop,isddd;
+    PetscTruth isdbx,isidb,isxldb,isxxgdb,isups,isxdb,isworkshop,isddd,iskdbg;
 
     ierr = PetscGetHostName(hostname,64);CHKERRQ(ierr);
     /*
@@ -263,6 +264,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
 
     ierr = PetscStrcmp(Debugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"ddd",&isddd);CHKERRQ(ierr);
+    ierr = PetscStrcmp(Debugger,"kdbg",&iskdbg);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"ups",&isups);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
@@ -270,10 +272,18 @@ PetscErrorCode PETSC_DLLEXPORT PetscAttachDebugger(void)
     ierr = PetscStrcmp(Debugger,"idb",&isidb);CHKERRQ(ierr);
     ierr = PetscStrcmp(Debugger,"workshop",&isworkshop);CHKERRQ(ierr);
 
-    if (isxxgdb || isups || isddd) {
+    if (isxxgdb || isups || isddd ) {
       args[1] = program; args[2] = pid; args[3] = "-display";
       args[0] = Debugger; args[4] = display; args[5] = 0;
       (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[1],pid,hostname);
+      if (execvp(args[0],(char**)args)  < 0) {
+        perror("Unable to start debugger");
+        exit(0);
+      }
+    } else if (iskdbg) {
+      args[1] = "-p"; args[2] = pid; args[3] = program;  args[4] = "-display";
+      args[0] = Debugger; args[5] = display; args[6] = 0;
+      (*PetscErrorPrintf)("PETSC: Attaching %s to %s %s on %s\n",args[0],args[3],pid,hostname);
       if (execvp(args[0],(char**)args)  < 0) {
         perror("Unable to start debugger");
         exit(0);
@@ -497,7 +507,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStopForDebugger(void)
   int            ppid;
   PetscMPIInt    rank;
   char           program[PETSC_MAX_PATH_LEN],hostname[256];
-  PetscTruth     isdbx,isxldb,isxxgdb,isddd,isups,isxdb;
+  PetscTruth     isdbx,isxldb,isxxgdb,isddd,iskdbg,isups,isxdb;
 #endif
 
   PetscFunctionBegin;
@@ -525,12 +535,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscStopForDebugger(void)
 
   ierr = PetscStrcmp(Debugger,"xxgdb",&isxxgdb);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"ddd",&isddd);CHKERRQ(ierr);
+  ierr = PetscStrcmp(Debugger,"kdbg",&iskdbg);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"ups",&isups);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"xldb",&isxldb);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"xdb",&isxdb);CHKERRQ(ierr);
   ierr = PetscStrcmp(Debugger,"dbx",&isdbx);CHKERRQ(ierr);
 
-  if (isxxgdb || isups || isddd ) {
+  if (isxxgdb || isups || isddd || iskdbg ) {
     (*PetscErrorPrintf)("[%d]%s>>%s %s %d\n",rank,hostname,Debugger,program,ppid);
   }
 #if defined(PETSC_USE_A_FOR_DEBUGGER)
