@@ -107,6 +107,10 @@ distributionTests: distributionTests.o chkopts
 refinementTest: refinementTest.o chkopts
 	-${CLINKER} -o refinementTest refinementTest.o ${PETSC_DM_LIB}
 	${RM} -f refinementTest.o
+
+sieveTests: sieveTests.o chkopts
+	-${CLINKER} -o sieveTests sieveTests.o ${PETSC_DM_LIB}
+	${RM} -f sieveTests.o
 #-----------------------------------------------------------------
 BOOST_LIBS = -Wl,-rpath,${BOOST_DIR}/lib -L${BOOST_DIR}/lib -lboost_program_options-gcc41
 args0: args0.o chkopts

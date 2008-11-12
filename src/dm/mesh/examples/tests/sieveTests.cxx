@@ -1,0 +1,305 @@
+static char help[] = "Sieve Package Tests.\n\n";
+
+#include <petscmesh.hh>
+
+using ALE::Obj;
+
+typedef struct {
+  PetscInt   debug;
+  PetscInt   rank;
+  PetscInt   size;
+  // Classes
+  PetscTruth overlap;     // Run the Overlap tests
+  // Mesh flags
+  PetscTruth interpolate; // Interpolate the mesh
+  PetscReal  refine;      // The refinement limit
+} Options;
+
+#undef __FUNCT__
+#define __FUNCT__ "ProcessOptions"
+PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
+{
+  PetscErrorCode     ierr;
+
+  PetscFunctionBegin;
+  options->debug       = 0;
+  options->overlap     = PETSC_FALSE;
+  options->interpolate = PETSC_FALSE;
+  options->refine      = 0.0;
+
+  ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "Debugging flag", "sieveTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-overlap", "Run Overlap tests", "sieveTests", options->overlap, &options->overlap, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "sieveTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refine", "The refinement limit", "sieveTests", options->refine, &options->refine, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+
+  ierr = MPI_Comm_rank(comm, &options->rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &options->size);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateSquareMesh"
+template<typename MeshT>
+PetscErrorCode CreateSquareMesh(Obj<MeshT>& mesh, const Options *options)
+{
+  double lower[2] = {0.0, 0.0};
+  double upper[2] = {1.0, 1.0};
+  int    edges[2] = {2, 2};
+  Obj<MeshT> imB;
+  Obj<typename MeshT::sieve_type> isieve;
+
+  PetscFunctionBegin;
+  const Obj<ALE::Mesh> mB = ALE::MeshBuilder<ALE::Mesh>::createSquareBoundary(PETSC_COMM_WORLD, lower, upper, edges, 0);
+  imB    = new MeshT(mB->comm(), mB->getDimension(), mB->debug());
+  isieve = new typename MeshT::sieve_type(mB->comm(), mB->debug());
+  imB->setSieve(isieve);
+  ALE::ISieveConverter::convertMesh(*mB, *imB, imB->getRenumbering(), false);
+  mesh = ALE::Generator<MeshT>::generateMeshV(imB, options->interpolate);
+  if (options->refine > 0.0) {
+    mesh = ALE::Generator<MeshT>::refineMeshV(mesh, options->refine, options->interpolate);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DistributeMesh"
+template<typename MeshT>
+PetscErrorCode DistributeMesh(Obj<MeshT>& mesh, Obj<MeshT>& newMesh, const Options *options)
+{
+  typedef typename ALE::DistributionNew<MeshT>      DistributionType;
+  typedef typename MeshT::point_type                point_type;
+  typedef typename DistributionType::partition_type partition_type;
+
+  PetscFunctionBegin;
+  const Obj<typename MeshT::sieve_type>        newSieve        = new typename MeshT::sieve_type(mesh->comm(), mesh->debug());
+  const Obj<typename MeshT::send_overlap_type> sendMeshOverlap = new typename MeshT::send_overlap_type(mesh->comm(), mesh->debug());
+  const Obj<typename MeshT::recv_overlap_type> recvMeshOverlap = new typename MeshT::recv_overlap_type(mesh->comm(), mesh->debug());
+
+  newMesh = new MeshT(mesh->comm(), mesh->getDimension(), mesh->debug());
+  newMesh->setSieve(newSieve);
+  typename MeshT::renumbering_type&            renumbering     = newMesh->getRenumbering();
+  // Distribute the mesh
+  Obj<partition_type> partition = DistributionType::distributeMeshV(mesh, newMesh, renumbering, sendMeshOverlap, recvMeshOverlap);
+#if 0
+  if (mesh->debug()) {
+    std::cout << "["<<mesh->commRank()<<"]: Mesh Renumbering:" << std::endl;
+    for(typename MeshT::renumbering_type::const_iterator r_iter = renumbering.begin(); r_iter != renumbering.end(); ++r_iter) {
+      std::cout << "["<<mesh->commRank()<<"]:   global point " << r_iter->first << " --> " << " local point " << r_iter->second << std::endl;
+    }
+  }
+  // Check overlap
+  int localSendOverlapSize = 0, sendOverlapSize;
+  int localRecvOverlapSize = 0, recvOverlapSize;
+  for(int p = 0; p < sendMeshOverlap->commSize(); ++p) {
+    localSendOverlapSize += sendMeshOverlap->cone(p)->size();
+    localRecvOverlapSize += recvMeshOverlap->support(p)->size();
+  }
+  MPI_Allreduce(&localSendOverlapSize, &sendOverlapSize, 1, MPI_INT, MPI_SUM, sendMeshOverlap->comm());
+  MPI_Allreduce(&localRecvOverlapSize, &recvOverlapSize, 1, MPI_INT, MPI_SUM, recvMeshOverlap->comm());
+  if(sendOverlapSize != recvOverlapSize) {
+    std::cout <<"["<<sendMeshOverlap->commRank()<<"]: Size mismatch " << sendOverlapSize << " != " << recvOverlapSize << std::endl;
+    sendMeshOverlap->view("Send Overlap");
+    recvMeshOverlap->view("Recv Overlap");
+    throw ALE::Exception("Invalid Overlap");
+  }
+#endif
+
+  // Distribute the coordinates
+  const Obj<typename MeshT::real_section_type>& coordinates         = mesh->getRealSection("coordinates");
+  const Obj<typename MeshT::real_section_type>& parallelCoordinates = newMesh->getRealSection("coordinates");
+
+  newMesh->setupCoordinates(parallelCoordinates);
+  DistributionType::distributeSection(coordinates, partition, renumbering, sendMeshOverlap, recvMeshOverlap, parallelCoordinates);
+#if 0
+  // Distribute other sections
+  if (mesh->getRealSections()->size() > 1) {
+    Obj<std::set<std::string> > names = mesh->getRealSections();
+    int                         n     = 0;
+
+    for(std::set<std::string>::const_iterator n_iter = names->begin(); n_iter != names->end(); ++n_iter) {
+      if (*n_iter == "coordinates")   continue;
+      if (*n_iter == "replaced_cells") continue;
+      std::cout << "ERROR: Did not distribute real section " << *n_iter << std::endl;
+      ++n;
+    }
+    if (n) {throw ALE::Exception("Need to distribute more real sections");}
+  }
+  if (mesh->getIntSections()->size() > 0) {
+    Obj<std::set<std::string> > names = mesh->getIntSections();
+
+    for(std::set<std::string>::const_iterator n_iter = names->begin(); n_iter != names->end(); ++n_iter) {
+      const Obj<MeshT::int_section_type>& origSection = mesh->getIntSection(*n_iter);
+      const Obj<MeshT::int_section_type>& newSection  = (*newMesh)->getIntSection(*n_iter);
+
+      // We assume all integer sections are complete sections
+      newSection->setChart((*newMesh)->getSieve()->getChart());
+      DistributionType::distributeSection(origSection, partition, renumbering, sendMeshOverlap, recvMeshOverlap, newSection);
+    }
+  }
+  if (mesh->getArrowSections()->size() > 1) {
+    throw ALE::Exception("Need to distribute more arrow sections");
+  }
+  // Distribute labels
+  const MeshT::labels_type& labels = mesh->getLabels();
+
+  for(MeshT::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+    if ((*newMesh)->hasLabel(l_iter->first)) continue;
+    const Obj<MeshT::label_type>& origLabel = l_iter->second;
+    const Obj<MeshT::label_type>& newLabel  = (*newMesh)->createLabel(l_iter->first);
+    // Get remote labels
+    ALE::New::Completion<Mesh,MeshT::point_type>::scatterCones(origLabel, newLabel, sendMeshOverlap, recvMeshOverlap, renumbering);
+    // Create local label
+    newLabel->add(origLabel, (*newMesh)->getSieve(), renumbering);
+  }
+#endif
+  // Create the parallel overlap
+  Obj<typename MeshT::send_overlap_type> sendParallelMeshOverlap = newMesh->getSendOverlap();
+  Obj<typename MeshT::recv_overlap_type> recvParallelMeshOverlap = newMesh->getRecvOverlap();
+  //   Can I figure this out in a nicer way?
+  ALE::SetFromMap<std::map<point_type,point_type> > globalPoints(renumbering);
+
+  ALE::OverlapBuilder<>::constructOverlap(globalPoints, renumbering, sendParallelMeshOverlap, recvParallelMeshOverlap);
+  newMesh->setCalculatedOverlap(true);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "OutputOverlap"
+template<typename MeshT>
+PetscErrorCode OutputOverlap(Obj<MeshT>& mesh, const Options *options)
+{
+  const Obj<typename MeshT::real_section_type> coordinates = mesh->getRealSection("coordinates");
+  PetscViewer    viewer;
+  ostringstream  sendName;
+  ostringstream  recvName;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  sendName << "sendOverlap_" << options->rank << ".py";
+  ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, sendName.str().c_str(), &viewer);CHKERRQ(ierr);
+  const Obj<typename MeshT::send_overlap_type::traits::capSequence>      sPoints = mesh->getSendOverlap()->cap();
+  const typename MeshT::send_overlap_type::traits::capSequence::iterator sBegin  = sPoints->begin();
+  const typename MeshT::send_overlap_type::traits::capSequence::iterator sEnd    = sPoints->end();
+
+  ierr = PetscViewerASCIIPrintf(viewer, "sendOverlap = {\n");CHKERRQ(ierr);
+  for(typename MeshT::send_overlap_type::traits::capSequence::iterator p_iter = sBegin; p_iter != sEnd; ++p_iter) {
+    const typename MeshT::point_type&                                  localPoint = *p_iter;
+    const Obj<typename MeshT::send_overlap_type::supportSequence>&     targets    = mesh->getSendOverlap()->support(localPoint);
+    const typename MeshT::send_overlap_type::supportSequence::iterator tBegin     = targets->begin();
+    const typename MeshT::send_overlap_type::supportSequence::iterator tEnd       = targets->end();
+
+    if (p_iter != sBegin) {ierr = PetscViewerASCIIPrintf(viewer, ",\n");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer, "  %d: [", localPoint);CHKERRQ(ierr);
+    for(typename MeshT::send_overlap_type::supportSequence::iterator r_iter = tBegin; r_iter != tEnd; ++r_iter) {
+      const int                            rank        = *r_iter;
+      const typename MeshT::point_type& remotePoint = r_iter.color();
+
+      if (r_iter != tBegin) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "(%d, %d)", rank, remotePoint);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "]");CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer, "\n}\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "coordinates = {\n");CHKERRQ(ierr);
+  for(typename MeshT::send_overlap_type::traits::capSequence::iterator p_iter = sBegin; p_iter != sEnd; ++p_iter) {
+    const typename MeshT::point_type&                    localPoint = *p_iter;
+    const int                                            dim        = coordinates->getFiberDimension(localPoint);
+    const typename MeshT::real_section_type::value_type *coords     = coordinates->restrictPoint(localPoint);
+
+    if (p_iter != sBegin) {ierr = PetscViewerASCIIPrintf(viewer, ",\n");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer, "  %d: [", localPoint);CHKERRQ(ierr);
+    for(int d = 0; d < dim; ++d) {
+      if (d > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "%g", coords[d]);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "]");CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer, "\n}\n");CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+
+  recvName << "recvOverlap_" << options->rank << ".py";
+  ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, recvName.str().c_str(), &viewer);CHKERRQ(ierr);
+  const Obj<typename MeshT::recv_overlap_type::traits::baseSequence>      rPoints = mesh->getRecvOverlap()->base();
+  const typename MeshT::recv_overlap_type::traits::baseSequence::iterator rBegin  = rPoints->begin();
+  const typename MeshT::recv_overlap_type::traits::baseSequence::iterator rEnd    = rPoints->end();
+
+  ierr = PetscViewerASCIIPrintf(viewer, "recvOverlap = {\n");CHKERRQ(ierr);
+  for(typename MeshT::recv_overlap_type::traits::baseSequence::iterator p_iter = rBegin; p_iter != rEnd; ++p_iter) {
+    const typename MeshT::point_type&                               localPoint = *p_iter;
+    const Obj<typename MeshT::recv_overlap_type::coneSequence>&     sources    = mesh->getRecvOverlap()->cone(localPoint);
+    const typename MeshT::recv_overlap_type::coneSequence::iterator sBegin     = sources->begin();
+    const typename MeshT::recv_overlap_type::coneSequence::iterator sEnd       = sources->end();
+
+    if (p_iter != rBegin) {ierr = PetscViewerASCIIPrintf(viewer, ",\n");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer, "  %d: [", localPoint);CHKERRQ(ierr);
+    for(typename MeshT::recv_overlap_type::coneSequence::iterator r_iter = sBegin; r_iter != sEnd; ++r_iter) {
+      const int                            rank        = *r_iter;
+      const typename MeshT::point_type& remotePoint = r_iter.color();
+
+      if (r_iter != sBegin) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "(%d, %d)", rank, remotePoint);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "]");CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer, "\n}\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer, "coordinates = {\n");CHKERRQ(ierr);
+  for(typename MeshT::recv_overlap_type::traits::baseSequence::iterator p_iter = rBegin; p_iter != rEnd; ++p_iter) {
+    const typename MeshT::point_type&                    localPoint = *p_iter;
+    const int                                            dim        = coordinates->getFiberDimension(localPoint);
+    const typename MeshT::real_section_type::value_type *coords     = coordinates->restrictPoint(localPoint);
+
+    if (p_iter != rBegin) {ierr = PetscViewerASCIIPrintf(viewer, ",\n");CHKERRQ(ierr);}
+    ierr = PetscViewerASCIIPrintf(viewer, "  %d: [", localPoint);CHKERRQ(ierr);
+    for(int d = 0; d < dim; ++d) {
+      if (d > 0) {ierr = PetscViewerASCIIPrintf(viewer, ", ");CHKERRQ(ierr);}
+      ierr = PetscViewerASCIIPrintf(viewer, "%g", coords[d]);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "]");CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIPrintf(viewer, "\n}\n");CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "OverlapTests"
+PetscErrorCode OverlapTests(const Options *options)
+{
+  Obj<ALE::IMesh> mesh;
+  Obj<ALE::IMesh> newMesh;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = CreateSquareMesh(mesh, options);CHKERRQ(ierr);
+  ierr = DistributeMesh(mesh, newMesh, options);CHKERRQ(ierr);
+  ierr = OutputOverlap(newMesh, options);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RunUnitTests"
+PetscErrorCode RunUnitTests(const Options *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (options->overlap) {ierr = OverlapTests(options);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc, char *argv[])
+{
+  Options        options;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  ierr = ProcessOptions(PETSC_COMM_WORLD, &options);CHKERRQ(ierr);
+  ierr = RunUnitTests(&options);CHKERRQ(ierr);
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
