@@ -706,6 +706,8 @@ class Configure(config.base.Configure):
             self.logPrint('Found full library spec: '+arg, 4, 'compilers')
             flibs.append(arg)
           continue
+        # prevent false positives for include with pathscalr
+        if re.match(r'^-INTERNAL.*$', arg): continue
         # Check for special include argument
         # AIX does this for MPI and perhaps other things
         m = re.match(r'^-I.*$', arg)
