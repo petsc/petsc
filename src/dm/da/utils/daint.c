@@ -14,9 +14,9 @@
 PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
 {
   PetscErrorCode         ierr;
-  PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*I,N,c = 0;
+  PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
   PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal,gl[26];
-  Mat                    P, Xint, Xsurf,Xint_tmp;
+  Mat                    Xint, Xsurf,Xint_tmp;
   IS                     isint,issurf,is,row,col;
   ISLocalToGlobalMapping ltg;
   MPI_Comm               comm;
