@@ -14,7 +14,7 @@
 PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
 {
   PetscErrorCode         ierr;
-  PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*I,N,c = 0;
+  PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
   PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal;
   Mat                    P, Xint, Xsurf,Xint_tmp;
   IS                     isint,issurf,is,row,col;
@@ -86,7 +86,7 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
     for (j=0; j<26; j++) {
       tmp += xsurf[i+j*Nsurf];
     }
-    if (PetscAbs(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,tmp);
+    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xsurf interpolation at i %D value %G",i,PetscAbsScalar(tmp));
   }
 #endif
   ierr = MatRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
@@ -98,11 +98,11 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
             (in the local natural ordering on the local grid)
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
-  ierr = PetscMalloc3(N,PetscInt,&I,Nint,PetscInt,&Iint,Nsurf,PetscInt,&Isurf);CHKERRQ(ierr);
+  ierr = PetscMalloc3(N,PetscInt,&II,Nint,PetscInt,&Iint,Nsurf,PetscInt,&Isurf);CHKERRQ(ierr);
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {
-        I[c++] = i + j*mwidth + k*mwidth*nwidth; 
+        II[c++] = i + j*mwidth + k*mwidth*nwidth; 
 
         if (!Endpoint(i,istart,m) && !Endpoint(j,jstart,n) && !Endpoint(k,kstart,p)) {
           Iint[cint++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
@@ -116,12 +116,12 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
   if (cint != Nint) SETERRQ(PETSC_ERR_PLIB,"cint != Nint");
   if (csurf != Nsurf) SETERRQ(PETSC_ERR_PLIB,"csurf != Nsurf");
   ierr = DAGetISLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingApply(ltg,N,I,I);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(ltg,N,II,II);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(comm,N,I,&is);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,N,II,&is);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,&isint);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,Nsurf,Isurf,&issurf);CHKERRQ(ierr);
-  ierr = PetscFree3(I,Iint,Isurf);CHKERRQ(ierr);
+  ierr = PetscFree3(II,Iint,Isurf);CHKERRQ(ierr);
 
   ierr = MatGetSubMatrices(Aglobal,1,&is,&is,MAT_INITIAL_MATRIX,&Aholder);CHKERRQ(ierr);
   A    = *Aholder;
@@ -155,7 +155,7 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
     for (j=0; j<26; j++) {
       tmp += xint[i+j*Nint];
     }
-    if (PetscAbs(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,tmp);  
+    if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,PetscAbsScalar(tmp));
   }
   ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
 #endif
