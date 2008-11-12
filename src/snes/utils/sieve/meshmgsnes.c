@@ -84,6 +84,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   ierr = SectionRealToVec(sectionB, mesh, SCATTER_REVERSE, B);CHKERRQ(ierr);
   ierr = SectionRealGetSection(sectionB, sB);CHKERRQ(ierr);
   ierr = SectionRealCreate(PETSC_COMM_SELF, &cellX);CHKERRQ(ierr);
+  //const ALE::Obj<PETSC_MESH_TYPE::sieve_type>&     sieve   = m->getSieve();
+  //const ALE::Obj<PETSC_MESH_TYPE::label_sequence>& cells   = m->heightStratum(0);
+  //const int                                  depth   = m->depth();
+  //const ALE::Obj<PETSC_MESH_TYPE::label_type>&     marker  = m->getLabel("marker");
+  //const int                                  cellDof = m->sizeWithBC(sX, *cells->begin());
 
 #ifdef PETSC_OPT_SIEVE
   SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
