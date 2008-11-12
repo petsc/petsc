@@ -85,8 +85,8 @@ EXTERN void fortranmaxpy3_(void*,void*,void*,void*,void*,void*,void*,PetscInt*);
 EXTERN void fortranmaxpy2_(void*,void*,void*,void*,void*,PetscInt*);
 EXTERN_C_END
 
-#define APXY(U,a1,p1,n)  {PetscBLASInt one=1;\
-  BLASaxpy_(&n,&a1,p1,&one,U,&one);}
+#define APXY(U,a1,p1,n)  {PetscBLASInt one=1; PetscBlasInt nn = (PetscBlasInt) n; \
+  BLASaxpy_(&nn,&a1,p1,&one,U,&one);}
 #define APXY2(U,a1,a2,p1,p2,n) { \
   fortranmaxpy2_(U,&a1,&a2,p1,p2,&n);}
 #define APXY3(U,a1,a2,a3,p1,p2,p3,n) { \
@@ -144,8 +144,8 @@ EXTERN_C_END
 
 #elif defined(PETSC_USE_BLAS_KERNELS)
 
-#define APXY(U,a1,p1,n)  {PetscBLASInt one=1;\
-  BLASaxpy_(&n,&a1,p1,&one,U,&one);}
+#define APXY(U,a1,p1,n)  {PetscBLASInt one=1; PetscBlasInt nn = (PetscBlasInt) n;\
+  BLASaxpy_(&nn,&a1,p1,&one,U,&one);}
 #define APXY2(U,a1,a2,p1,p2,n){APXY(U,a1,p1,n);\
   APXY(U,a2,p2,n);}
 #define APXY3(U,a1,a2,a3,p1,p2,p3,n){APXY2(U,a1,a2,p1,p2,n);\
