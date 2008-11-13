@@ -9,6 +9,7 @@
 #define SEQAIJHEADER(datatype)	\
   PetscTruth        roworiented;      /* if true, row-oriented input, default */\
   PetscInt          nonew;            /* 1 don't add new nonzeros, -1 generate error on new */\
+  PetscInt          nounused;         /* -1 generate error on unused space */\
   PetscTruth        singlemalloc;     /* if true a, i, and j have been obtained with one big malloc */\
   PetscInt          maxnz;            /* allocated nonzeros */\
   PetscInt          *imax;            /* maximum space allocated for each row */\

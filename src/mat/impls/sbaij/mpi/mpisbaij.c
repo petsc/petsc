@@ -1165,6 +1165,7 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscTruth flg)
   switch (op) {
   case MAT_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
+  case MAT_UNUSED_NONZERO_LOCATION_ERR:
   case MAT_KEEP_ZEROED_ROWS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);

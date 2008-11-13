@@ -379,7 +379,8 @@ typedef enum {MAT_ROW_ORIENTED,MAT_NEW_NONZERO_LOCATIONS,
               MAT_SYMMETRY_ETERNAL,
               MAT_USE_COMPRESSEDROW,
               MAT_IGNORE_LOWER_TRIANGULAR,MAT_ERROR_LOWER_TRIANGULAR,
-              MAT_GETROW_UPPERTRIANGULAR} MatOption;
+              MAT_GETROW_UPPERTRIANGULAR,MAT_UNUSED_NONZERO_LOCATION_ERR,
+              NUM_MAT_OPTIONS} MatOption;
 extern const char *MatOptions[];
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat,MatOption,PetscTruth);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat,const MatType*);

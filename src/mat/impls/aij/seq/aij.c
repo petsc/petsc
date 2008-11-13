@@ -667,6 +667,9 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
     ailen[i] = imax[i] = ai[i+1] - ai[i];
   }
   a->nz = ai[m]; 
+  if (fshift && a->nounused == -1) {
+    SETERRQ3(PETSC_ERR_PLIB, "Unused space detected in matrix: %D X %D, %D unneeded", m, A->cmap->n, fshift);
+  }
 
   ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   ierr = PetscInfo4(A,"Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->cmap->n,fshift,a->nz);CHKERRQ(ierr);
@@ -803,6 +806,9 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
       break;
     case MAT_NEW_NONZERO_ALLOCATION_ERR:
       a->nonew             = (flg ? -2 : 0);
+      break;
+    case MAT_UNUSED_NONZERO_LOCATION_ERR:
+      a->nounused          = (flg ? -1 : 0);
       break;
     case MAT_IGNORE_ZERO_ENTRIES:
       a->ignorezeroentries = flg;
