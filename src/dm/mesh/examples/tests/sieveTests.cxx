@@ -9,10 +9,11 @@ typedef struct {
   PetscInt   rank;
   PetscInt   size;
   // Classes
-  PetscTruth overlap;     // Run the Overlap tests
+  PetscTruth overlap;       // Run the Overlap tests
+  PetscTruth preallocation; // Run the Preallocation tests
   // Mesh flags
-  PetscTruth interpolate; // Interpolate the mesh
-  PetscReal  refine;      // The refinement limit
+  PetscTruth interpolate;   // Interpolate the mesh
+  PetscReal  refine;        // The refinement limit
 } Options;
 
 #undef __FUNCT__
@@ -22,14 +23,16 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  options->debug       = 0;
-  options->overlap     = PETSC_FALSE;
-  options->interpolate = PETSC_FALSE;
-  options->refine      = 0.0;
+  options->debug         = 0;
+  options->overlap       = PETSC_FALSE;
+  options->preallocation = PETSC_FALSE;
+  options->interpolate   = PETSC_FALSE;
+  options->refine        = 0.0;
 
   ierr = PetscOptionsBegin(comm, "", "Options for the Sieve package tests", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "Debugging flag", "sieveTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-overlap", "Run Overlap tests", "sieveTests", options->overlap, &options->overlap, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-preallocation", "Run Preallocation tests", "sieveTests", options->preallocation, &options->preallocation, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "sieveTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refine", "The refinement limit", "sieveTests", options->refine, &options->refine, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -264,6 +267,36 @@ PetscErrorCode OutputOverlap(Obj<MeshT>& mesh, const Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CheckPreallocation"
+template<typename MeshT>
+PetscErrorCode CheckPreallocation(Obj<MeshT>& mesh, Mat A, const Options *options)
+{
+  typedef typename MeshT::real_section_type                                                           real_section_type;
+  typedef ALE::ISieveVisitor::IndicesVisitor<real_section_type, typename MeshT::order_type, PetscInt> visitor_type;
+  const Obj<typename MeshT::sieve_type>&         sieve       = mesh->getSieve();
+  const Obj<real_section_type>&                  coordinates = mesh->getRealSection("coordinates");
+  const Obj<typename MeshT::order_type>&         globalOrder = mesh->getFactory()->getGlobalOrder(mesh, "default", coordinates);
+  const Obj<typename MeshT::label_sequence>&     cells       = mesh->heightStratum(0);
+  const typename MeshT::label_sequence::iterator cEnd        = cells->end();
+  const PetscInt                                 dim         = mesh->getDimension();
+  PetscScalar                                   *elemMatrix  = new PetscScalar[PetscSqr((dim+1)*dim)];
+  PetscErrorCode                                 ierr;
+  visitor_type iV(*coordinates, *globalOrder, (int) pow(sieve->getMaxConeSize(), mesh->depth())*dim);
+
+  // The easiest way to check preallocation is to fill up the entire matrix
+  PetscFunctionBegin;
+  for(PetscInt i = 0; i < PetscSqr((dim+1)*dim); ++i) {elemMatrix[i] = 1.0;}
+  for(typename MeshT::label_sequence::iterator c_iter = cells->begin(); c_iter != cEnd; ++c_iter) {
+    ierr = updateOperator(A, *sieve, iV, *c_iter, elemMatrix, ADD_VALUES);CHKERRQ(ierr);
+    iV.clear();
+  }
+  delete [] elemMatrix;
+  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "OverlapTests"
 PetscErrorCode OverlapTests(const Options *options)
 {
@@ -279,14 +312,48 @@ PetscErrorCode OverlapTests(const Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PreallocationTests"
+PetscErrorCode PreallocationTests(const Options *options)
+{
+  Obj<ALE::IMesh> mesh;
+  Obj<ALE::IMesh> newMesh;
+  Mat             A;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = CreateSquareMesh(mesh, options);CHKERRQ(ierr);
+  ierr = DistributeMesh(mesh, newMesh, options);CHKERRQ(ierr);
+  const Obj<ALE::IMesh::real_section_type>& coordinates = newMesh->getRealSection("coordinates");
+  const Obj<ALE::IMesh::order_type>&        globalOrder = newMesh->getFactory()->getGlobalOrder(newMesh, "default", coordinates);
+  const PetscInt n   = globalOrder->getLocalSize();
+  const PetscInt N   = globalOrder->getGlobalSize();
+  const PetscInt bs  = newMesh->getDimension();
+  PetscInt      *dnz = new PetscInt[n/bs];
+  PetscInt      *onz = new PetscInt[n/bs];
+
+  ierr = MatCreate(newMesh->comm(), &A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A, n, n, N, N);CHKERRQ(ierr);
+  ierr = MatSetType(A, MATBAIJ);CHKERRQ(ierr);
+  ierr = preallocateOperatorNew(newMesh, bs, coordinates->getAtlas(), globalOrder, dnz, onz, A);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_UNUSED_NONZERO_LOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+  ierr = CheckPreallocation(newMesh, A, options);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  delete [] dnz;
+  delete [] onz;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "RunUnitTests"
 PetscErrorCode RunUnitTests(const Options *options)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (options->overlap) {ierr = OverlapTests(options);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
+  if (options->overlap)       {ierr = OverlapTests(options);CHKERRQ(ierr);}
+  if (options->preallocation) {ierr = PreallocationTests(options);CHKERRQ(ierr);} 
+ PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
