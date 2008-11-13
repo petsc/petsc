@@ -1280,10 +1280,17 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->clearCone(target, color, true); this->addCone(sources, target, color);
     };
     template<class targetInputSequence> 
-    void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence >& targets);
-    // Unimplemented
+    void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence >& targets) {
+      this->addSupport(source, targets, typename traits::color_type());
+    };
     template<class targetInputSequence> 
-    void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color);
+    void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color) {
+      const typename targetInputSequence::iterator end = targets->end();
+
+      for(typename targetInputSequence::iterator iter = targets->begin(); iter != end; ++iter) {
+        this->addArrow(source, *iter, color);
+      }
+    };
     template<typename Sifter_>
     void add(const Obj<Sifter_>& cbg, bool noNewPoints = false) {
       typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename Sifter_::traits::arrowInd>(cbg->_arrows.set);

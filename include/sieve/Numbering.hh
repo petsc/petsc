@@ -471,8 +471,6 @@ namespace ALE {
 
       ///std::cout << "["<<order->commRank()<<"] Completing ordering" << std::endl;
       completion::completeSection(sendOverlap, recvOverlap, order->getAtlas(), order, sendSection, recvSection);
-      sendSection->view("Order send section");
-      recvSection->view("Order recv section");
       Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
       for(typename recv_overlap_type::traits::baseSequence::iterator p_iter = recvPoints->begin(); p_iter != recvPoints->end(); ++p_iter) {
@@ -492,7 +490,7 @@ namespace ALE {
           const typename recv_section_type::value_type        *values      = section->restrictPoint(remotePoint);
 
           if (section->getFiberDimension(remotePoint) == 0) continue;
-          std::cout << "["<<order->commRank()<<"]     local point " << localPoint << " remote point " << remotePoint<<"("<<rank<<")" << " offset " << values[0].prefix << " and size " << values[0].index << std::endl;
+          ///std::cout << "["<<order->commRank()<<"]     local point " << localPoint << " remote point " << remotePoint<<"("<<rank<<")" << " offset " << values[0].prefix << " and size " << values[0].index << std::endl;
           if (values[0].index == 0) continue;
           if (values[0].prefix >= 0) {
             if (order->isLocal(localPoint)) {
