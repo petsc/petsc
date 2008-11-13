@@ -180,7 +180,10 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
   { gl[cnt++] = mwidth*nwidth*(p-kstart-1) + mwidth;   { gl[cnt++] = mwidth*nwidth*(p-kstart-1) + mwidth+1;} gl[cnt++] = mwidth*nwidth*(p-kstart-1)+mwidth+m-istart-1;}
   gl[cnt++] = mwidth*nwidth*(p-kstart-1) +  mwidth*(n-jstart-1);  { gl[cnt++] = mwidth*nwidth*(p-kstart-1)+ mwidth*(n-jstart-1)+1;} gl[cnt++] = mwidth*nwidth*(p-kstart-1) + mwidth*(n-jstart-1) + m-istart-1;
 
-  PetscIntView(26,gl,0);
+  PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD);
+  ierr = ISLocalToGlobalMappingApply(ltg,26,gl,gl);CHKERRQ(ierr);
+
+  PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD);
 
   ierr = MatDestroy(Aii);CHKERRQ(ierr);
   ierr = MatDestroy(Ais);CHKERRQ(ierr);
