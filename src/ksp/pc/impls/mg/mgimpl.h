@@ -39,6 +39,10 @@ typedef struct
   PetscLogEvent eventsmoothsolve;  
   PetscLogEvent eventresidual;
   PetscLogEvent eventinterprestrict;    
+
+  PetscErrorCode (*setup)(PC,void*);          /* optional object that builds interpolation/coarse grid etc on the fly */
+  PetscErrorCode (*setupdestroy)(PC,void*);
+  void           *setupctx;
 }  PC_MG;
 
 

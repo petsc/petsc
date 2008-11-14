@@ -63,6 +63,7 @@ E*/
 #define PCML              "ml"
 #define PCPROMETHEUS      "prometheus"
 #define PCGALERKIN        "galerkin"
+#define PCWB              "wb"
 #define PCOPENMP          "openmp"
 #define PCSUPPORTGRAPH    "supportgraph"
 #define PCASA             "asa"

@@ -650,14 +650,14 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   MPI_Comm       comm;
   MatScalar      **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i,*vworkA,*vworkB;
   MatScalar      *a_a=a->a,*b_a=b->a;
-  PetscTruth     flag;
+  PetscTruth     flag,sorted;
   PetscMPIInt    *onodes1,*olengths1;
 
 #if defined (PETSC_USE_CTABLE)
   PetscInt tt;
   PetscTable  *rowmaps,*colmaps,lrow1_grow1,lcol1_gcol1;
 #else
-  PetscInt         **cmap,*cmap_i,*rtable,*rmap_i,**rmap, Mbs = c->Mbs;
+  PetscInt    **cmap,*cmap_i,*rtable,*rmap_i,**rmap, Mbs = c->Mbs;
 #endif
 
   PetscFunctionBegin;
@@ -673,8 +673,8 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
 
   /* Check if the col indices are sorted */
   for (i=0; i<ismax; i++) {
-    ierr = ISSorted(iscol[i],(PetscTruth*)&j);CHKERRQ(ierr);
-    if (!j) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
+    ierr = ISSorted(iscol[i],&sorted);CHKERRQ(ierr);
+    if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
   }
 
   len    = (2*ismax+1)*(sizeof(PetscInt*)+ sizeof(PetscInt));
