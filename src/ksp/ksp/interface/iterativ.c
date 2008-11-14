@@ -628,7 +628,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
           ierr = VecNorm(z,NORM_2,&snorm);CHKERRQ(ierr);                 /*    dp <- b'*B'*B*b */
         } else if (ksp->normtype == KSP_NORM_NATURAL) {
           PetscScalar norm;
-          ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing natural norm of RHS\n");CHKERRQ(ierr);
+           ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing natural norm of RHS\n");CHKERRQ(ierr);
           ierr  = VecDot(ksp->vec_rhs,z,&norm);
           snorm = sqrt(PetscAbsScalar(norm));                            /*    dp <- b'*B*b */
         }

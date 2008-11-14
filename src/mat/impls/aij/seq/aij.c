@@ -1703,13 +1703,13 @@ PetscErrorCode MatGetSubMatrix_SeqAIJ(Mat A,IS isrow,IS iscol,PetscInt csize,Mat
   PetscInt       *starts,*j_new,*i_new,*aj = a->j,*ai = a->i,ii,*ailen = a->ilen;
   MatScalar      *a_new,*mat_a;
   Mat            C;
-  PetscTruth     stride;
+  PetscTruth     stride,sorted;
 
   PetscFunctionBegin;
-  ierr = ISSorted(isrow,(PetscTruth*)&i);CHKERRQ(ierr);
-  if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
-  ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
-  if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
+  ierr = ISSorted(isrow,&sorted);CHKERRQ(ierr);
+  if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"ISrow is not sorted");
+  ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
+  if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetLocalSize(isrow,&nrows);CHKERRQ(ierr);

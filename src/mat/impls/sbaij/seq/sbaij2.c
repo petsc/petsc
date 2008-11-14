@@ -103,12 +103,12 @@ PetscErrorCode MatGetSubMatrix_SeqSBAIJ_Private(Mat A,IS isrow,IS iscol,PetscInt
   const PetscInt *irow,*aj = a->j,*ai = a->i;
   MatScalar      *mat_a;
   Mat            C;
-  PetscTruth     flag;
+  PetscTruth     flag,sorted;
 
   PetscFunctionBegin;
   if (isrow != iscol) SETERRQ(PETSC_ERR_ARG_INCOMP,"For symmetric format, iscol must equal isro"); 
-  ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
-  if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
+  ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
+  if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetSize(isrow,&nrows);CHKERRQ(ierr);

@@ -23,6 +23,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Galerkin(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_WB(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_CP(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_BFBt(PC);
@@ -95,6 +96,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCMAT          ,path,"PCCreate_Mat",PCCreate_Mat);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCFIELDSPLIT   ,path,"PCCreate_FieldSplit",PCCreate_FieldSplit);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCGALERKIN     ,path,"PCCreate_Galerkin",PCCreate_Galerkin);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCWB           ,path,"PCCreate_WB",PCCreate_WB);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCOPENMP       ,path,"PCCreate_OpenMP",PCCreate_OpenMP);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCASA          ,path,"PCCreate_ASA",PCCreate_ASA);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCCP           ,path,"PCCreate_CP",PCCreate_CP);CHKERRQ(ierr);

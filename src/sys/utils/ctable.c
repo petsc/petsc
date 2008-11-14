@@ -301,6 +301,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableAddCount(PetscTable ta,const PetscInt k
   } else {
     PetscInt *oldtab = ta->table,*oldkt = ta->keytable,newk,ndata;
 
+    /* before making the table larger check if key is already in table */
+    while (ii++ < ta->tablesize){
+      if (ta->keytable[hash] == key) PetscFunctionReturn(0); 
+      hash = (hash == (ta->tablesize-1)) ? 0 : hash+1; 
+    }  
+
     /* alloc new (bigger) table */
     if (ta->tablesize == INT_MAX/4) SETERRQ(PETSC_ERR_COR,"ta->tablesize < 0");
     ta->tablesize = 2*tsize; 

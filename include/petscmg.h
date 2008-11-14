@@ -68,6 +68,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetX(PC,PetscInt,Vec);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetR(PC,PetscInt,Vec);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRestriction(PC,PetscInt,Mat);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetSetup(PC,PetscErrorCode (*)(PC,void*),PetscErrorCode (*)(PC,void*),void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolation(PC,PetscInt,Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat,Vec,Vec,Vec);
