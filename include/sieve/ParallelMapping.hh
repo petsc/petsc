@@ -21,6 +21,17 @@ namespace ALE {
     const _Tp& operator()(const _Tp& x) const {return x;}
   };
 
+  template<class _Tp>
+  struct IsEqual : public std::unary_function<_Tp, bool>, public std::binary_function<_Tp, _Tp, bool>
+  {
+    const _Tp& x;
+    IsEqual(const _Tp& x) : x(x) {};
+    bool operator()(_Tp& y) const {return x == y;}
+    const bool operator()(const _Tp& y) const {return x == y;}
+    bool operator()(_Tp& y, _Tp& dummy) const {return x == y;}
+    const bool operator()(const _Tp& y, const _Tp& dummy) const {return x == y;}
+  };
+
   // Creates new global point names and renames local points globally
   template<typename Point>
   class PointFactory : ALE::ParallelObject {

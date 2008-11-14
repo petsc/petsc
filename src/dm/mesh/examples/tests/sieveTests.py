@@ -20,9 +20,9 @@ class SieveTests(script.Script):
     import nargs
 
     script.Script.setupHelp(self, help)
-    help.addArgument('SieveTests', '-tests', nargs.Arg(None, ['overlap'], 'Tests to run', isTemporary = 1))
+    help.addArgument('SieveTests', '-tests', nargs.Arg(None, ['overlap', 'preallocation'], 'Tests to run', isTemporary = 1))
     help.addArgument('SieveTests', '-procs', nargs.Arg(None, [1], 'Communicator sizes to test', isTemporary = 1))
-    help.addArgument('MemoryTests', '-iters', nargs.Arg(None, [1], 'Iterations to test', isTemporary = 1))
+    help.addArgument('SieveTests', '-iters', nargs.Arg(None, [1], 'Iterations to test', isTemporary = 1))
     return help
 
   def createCmdLine(self, test, numProcs, num):
@@ -37,9 +37,9 @@ class SieveTests(script.Script):
   def checkOverlapOutput(self, numProcs):
     # Assuming symmetric pattern
     sendMod = []
-    [sendMod.append(__import__('sendOverlap_%d' % p)) for p in range(numProcs)]
+    [sendMod.append(__import__('sendOverlap_%d_%d' % (p, numProcs))) for p in range(numProcs)]
     recvMod = []
-    [recvMod.append(__import__('recvOverlap_%d' % p)) for p in range(numProcs)]
+    [recvMod.append(__import__('recvOverlap_%d_%d' % (p, numProcs))) for p in range(numProcs)]
     # Check for symmetry
     for p in range(numProcs):
       if len(sendMod[p].sendOverlap) != len(recvMod[p].recvOverlap):
@@ -58,11 +58,13 @@ class SieveTests(script.Script):
         for (rank, remotePoint) in recvMod[p].recvOverlap[localPoint]:
           if recvMod[p].coordinates[localPoint] != sendMod[rank].coordinates[remotePoint]:
             raise CheckError('Mismatch in receive overlap')
+    # Cleanup
+    for p in range(numProcs):
+      os.remove('sendOverlap_%d_%d.py' % (p, numProcs))
+      os.remove('recvOverlap_%d_%d.py' % (p, numProcs))
     return
 
-  def checkOutput(self, test, numProcs):
-    if test == 'overlap':
-      self.checkOverlapOutput(numProcs)
+  def checkPreallocationOutput(self, numProcs):
     return
 
   def run(self):
@@ -77,7 +79,7 @@ class SieveTests(script.Script):
             if error:
               raise RuntimeError(error)
             if output: print output
-            self.checkOutput(test, numProcs)
+            getattr(self, 'check'+test.capitalize()+'Output')(numProcs)
           except RuntimeError, e:
             print 'ERROR running',cmdLine
             self.logPrint(str(e), 4)

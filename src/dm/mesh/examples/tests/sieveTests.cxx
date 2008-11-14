@@ -180,7 +180,7 @@ PetscErrorCode OutputOverlap(Obj<MeshT>& mesh, const Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  sendName << "sendOverlap_" << options->rank << ".py";
+  sendName << "sendOverlap_" << options->rank << "_" << options->size << ".py";
   ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, sendName.str().c_str(), &viewer);CHKERRQ(ierr);
   const Obj<typename MeshT::send_overlap_type::traits::capSequence>      sPoints = mesh->getSendOverlap()->cap();
   const typename MeshT::send_overlap_type::traits::capSequence::iterator sBegin  = sPoints->begin();
@@ -222,7 +222,7 @@ PetscErrorCode OutputOverlap(Obj<MeshT>& mesh, const Options *options)
   ierr = PetscViewerASCIIPrintf(viewer, "\n}\n");CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 
-  recvName << "recvOverlap_" << options->rank << ".py";
+  recvName << "recvOverlap_" << options->rank << "_" << options->size << ".py";
   ierr = PetscViewerASCIIOpen(PETSC_COMM_SELF, recvName.str().c_str(), &viewer);CHKERRQ(ierr);
   const Obj<typename MeshT::recv_overlap_type::traits::baseSequence>      rPoints = mesh->getRecvOverlap()->base();
   const typename MeshT::recv_overlap_type::traits::baseSequence::iterator rBegin  = rPoints->begin();
@@ -292,7 +292,10 @@ PetscErrorCode CheckPreallocation(Obj<MeshT>& mesh, Mat A, const Options *option
   }
   delete [] elemMatrix;
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscExceptionTry1(MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY), PETSC_ERR_PLIB);
+  if (PetscExceptionCaught(ierr, PETSC_ERR_PLIB)) {
+    ierr = PetscPrintf(mesh->comm(), "SieveTests: Preallocated too much memory on %d processes\n", options->size);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -327,6 +330,7 @@ PetscErrorCode PreallocationTests(const Options *options)
   const Obj<ALE::IMesh::order_type>&        globalOrder = newMesh->getFactory()->getGlobalOrder(newMesh, "default", coordinates);
   const PetscInt n   = globalOrder->getLocalSize();
   const PetscInt N   = globalOrder->getGlobalSize();
+  const PetscInt fR  = globalOrder->getGlobalOffsets()[mesh->commRank()];
   const PetscInt bs  = newMesh->getDimension();
   PetscInt      *dnz = new PetscInt[n/bs];
   PetscInt      *onz = new PetscInt[n/bs];
@@ -337,6 +341,14 @@ PetscErrorCode PreallocationTests(const Options *options)
   ierr = preallocateOperatorNew(newMesh, bs, coordinates->getAtlas(), globalOrder, dnz, onz, A);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_UNUSED_NONZERO_LOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
+  if (options->debug) {
+    for(PetscInt r = 0; r < n/bs; ++r) {
+      for(PetscInt b = 0; b < bs; ++b) {
+        ierr = PetscSynchronizedPrintf(mesh->comm(), "dnz[%d]: %d  onz[%d]: %d\n", r*bs+b+fR, dnz[r], r*bs+b+fR, onz[r]);CHKERRQ(ierr);
+      }
+    }
+  }
+  ierr = PetscSynchronizedFlush(mesh->comm());CHKERRQ(ierr);
   ierr = CheckPreallocation(newMesh, A, options);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
   delete [] dnz;
