@@ -124,7 +124,10 @@ ex29: ex29.o  chkopts
 	${RM} ex29.o
 ex30: ex30.o  chkopts
 	-${CLINKER} -o ex30 ex30.o  ${PETSC_KSP_LIB}
-	${RM} ex30.o
+	${RM} ex30.o 
+ex31: ex31.o  chkopts
+	-${CLINKER} -o ex31 ex31.o  ${PETSC_KSP_LIB}
+	${RM} ex31.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -n 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
@@ -389,10 +392,17 @@ runex29_2:
 	if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
 	   else echo "Possible problem with ex29_2, diffs above"; fi; \
 	   ${RM} -f ex29_2.tmp
+runex31:
+	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -displayIS > ex31.tmp 2>&1; \
+	if (${DIFF} output/ex31.out ex31.tmp) then true; \
+	   else echo "Possible problem with ex31, diffs above"; fi; \
+	   ${RM} -f ex31.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
-                                 ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm
+                                 ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
+                                 ex31.PETSc runex31 ex31.rm
 TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm
