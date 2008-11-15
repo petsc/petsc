@@ -917,6 +917,12 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
           }
           adjGraph->addArrow(newPoint,   localPoint);
           adjGraph->addArrow(localPoint, newPoint);
+        } else {
+          // Might provide an unknown link for already known point
+          const point_type oldPoint = *sendOverlap->cone(rank, values[i])->begin();
+
+          adjGraph->addArrow(oldPoint,   localPoint);
+          adjGraph->addArrow(localPoint, oldPoint);
         }
       }
     }
