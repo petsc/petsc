@@ -5,17 +5,16 @@
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "DAGetWireBasket"
+#define __FUNCT__ "DAGetWireBasketInterpolation"
 /*
-      DAGetWireBasket - Gets the interpolation and coarse matrix for the classical wirebasket coarse
-                  grid problem; for structured grids.
+      DAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
 */
-PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
+PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,Mat *P)
 {
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
-  PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal,gl[26];
+  PetscInt               mwidth,nwidth,pwidth,cnt,mp,np,pp,Ntotal,gl[26],*globals,Ng,*IIint,*IIsurf;
   Mat                    Xint, Xsurf,Xint_tmp;
   IS                     isint,issurf,is,row,col;
   ISLocalToGlobalMapping ltg;
@@ -26,6 +25,7 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
 #if defined(PETSC_USE_DEBUG)
   PetscScalar            tmp;
 #endif
+  PetscTable             ht;
 
   PetscFunctionBegin;
   ierr = DAGetInfo(da,&dim,0,0,0,&mp,&np,&pp,&dof,0,0,0);CHKERRQ(ierr);
@@ -90,23 +90,29 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
   }
 #endif
   ierr = MatRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  /* ierr = MatView(Xsurf,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);*/
 
 
   /* 
        I are the indices for all the needed vertices (in global numbering)
        Iint are the indices for the interior values, I surf for the surface values
-            (in the local natural ordering on the local grid)
+            (This is just for the part of the global matrix obtained with MatGetSubMatrix(), it 
+             is NOT the local DA ordering.)
+       IIint and IIsurf are the same as the Iint, Isurf except they are in the global numbering
   */
 #define Endpoint(a,start,b) (a == 0 || a == (b-1-start))
   ierr = PetscMalloc3(N,PetscInt,&II,Nint,PetscInt,&Iint,Nsurf,PetscInt,&Isurf);CHKERRQ(ierr);
+  ierr = PetscMalloc2(Nint,PetscInt,&IIint,Nsurf,PetscInt,&IIsurf);CHKERRQ(ierr);
   for (k=0; k<p-kstart; k++) {
     for (j=0; j<n-jstart; j++) {
       for (i=0; i<m-istart; i++) {
         II[c++] = i + j*mwidth + k*mwidth*nwidth; 
 
         if (!Endpoint(i,istart,m) && !Endpoint(j,jstart,n) && !Endpoint(k,kstart,p)) {
+          IIint[cint]  = i + j*mwidth + k*mwidth*nwidth; 
           Iint[cint++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
         } else {
+          IIsurf[csurf]  = i + j*mwidth + k*mwidth*nwidth; 
           Isurf[csurf++] = i + j*(m-istart) + k*(m-istart)*(n-jstart);
         } 
       }
@@ -117,6 +123,8 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
   if (csurf != Nsurf) SETERRQ(PETSC_ERR_PLIB,"csurf != Nsurf");
   ierr = DAGetISLocalToGlobalMapping(da,&ltg);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApply(ltg,N,II,II);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(ltg,Nint,IIint,IIint);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingApply(ltg,Nsurf,IIsurf,IIsurf);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
   ierr = ISCreateGeneral(comm,N,II,&is);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,Nint,Iint,&isint);CHKERRQ(ierr);
@@ -158,6 +166,7 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
     if (PetscAbsScalar(tmp-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong Xint interpolation at i %D value %G",i,PetscAbsScalar(tmp));
   }
   ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
+  /* ierr =MatView(Xint,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
 #endif
 
 
@@ -180,11 +189,60 @@ PetscErrorCode DAGetWireBasket(DA da,Mat Aglobal)
   { gl[cnt++] = mwidth*nwidth*(p-kstart-1) + mwidth;   { gl[cnt++] = mwidth*nwidth*(p-kstart-1) + mwidth+1;} gl[cnt++] = mwidth*nwidth*(p-kstart-1)+mwidth+m-istart-1;}
   gl[cnt++] = mwidth*nwidth*(p-kstart-1) +  mwidth*(n-jstart-1);  { gl[cnt++] = mwidth*nwidth*(p-kstart-1)+ mwidth*(n-jstart-1)+1;} gl[cnt++] = mwidth*nwidth*(p-kstart-1) + mwidth*(n-jstart-1) + m-istart-1;
 
-  PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD);
+  /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
+  /* convert that to global numbering and get them on all processes */
   ierr = ISLocalToGlobalMappingApply(ltg,26,gl,gl);CHKERRQ(ierr);
+  /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
+  ierr = PetscMalloc(26*mp*np*pp*sizeof(PetscInt),&globals);CHKERRQ(ierr);
+  ierr = MPI_Allgather(gl,26,MPIU_INT,globals,26,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
 
-  PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD);
+  /* Number the coarse grid points from 0 to Ntotal */
+  ierr = PetscTableCreate(Ntotal/3,&ht);CHKERRQ(ierr); 
+  for (i=0; i<26*mp*np*pp; i++){
+    ierr = PetscTableAddCount(ht,globals[i]+1);CHKERRQ(ierr);
+  }
+  ierr = PetscTableGetCount(ht,&cnt);CHKERRQ(ierr);
+  if (cnt != Ntotal) SETERRQ2(PETSC_ERR_PLIB,"Hash table size %D not equal to total number coarse grid points %D",cnt,Ntotal);
+  ierr = PetscFree(globals);CHKERRQ(ierr);
+  for (i=0; i<26; i++) {
+    ierr = PetscTableFind(ht,gl[i]+1,&gl[i]);CHKERRQ(ierr);
+    gl[i]--;
+  }
+  ierr = PetscTableDestroy(ht);CHKERRQ(ierr);
+  /* PetscIntView(26,gl,PETSC_VIEWER_STDOUT_WORLD); */
 
+  /* construct global interpolation matrix */
+  ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatCreateMPIAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,52,PETSC_NULL,10,PETSC_NULL,P);CHKERRQ(ierr);
+  ierr = MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatSetValues(*P,Nint,IIint,26,gl,xint,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatRestoreArray(Xint,&xint);CHKERRQ(ierr);
+  ierr = MatGetArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatSetValues(*P,Nsurf,IIsurf,26,gl,xsurf,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatRestoreArray(Xsurf,&xsurf);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = PetscFree2(IIint,IIsurf);CHKERRQ(ierr);
+
+#if defined(PETSC_USE_DEBUG)
+  {
+    Vec         x,y;
+    PetscScalar *yy;
+    ierr = VecCreateMPI(((PetscObject)da)->comm,Ng,PETSC_DETERMINE,&y);CHKERRQ(ierr);
+    ierr = VecCreateMPI(((PetscObject)da)->comm,PETSC_DETERMINE,Ntotal,&x);CHKERRQ(ierr);
+    ierr = VecSet(x,1.0);CHKERRQ(ierr);
+    ierr = MatMult(*P,x,y);CHKERRQ(ierr);
+    ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+    for (i=0; i<Ng; i++) {
+      if (PetscAbsScalar(yy[i]-1.0) > 1.e-10) SETERRQ2(PETSC_ERR_PLIB,"Wrong p interpolation at i %D value %G",i,PetscAbsScalar(yy[i]));
+    }
+    ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = VecDestroy(y);CHKERRQ(ierr);
+  }
+#endif
+    
   ierr = MatDestroy(Aii);CHKERRQ(ierr);
   ierr = MatDestroy(Ais);CHKERRQ(ierr);
   ierr = MatDestroy(Asi);CHKERRQ(ierr);

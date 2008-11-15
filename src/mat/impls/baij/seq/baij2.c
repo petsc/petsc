@@ -85,11 +85,11 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,PetscInt 
   PetscInt       *aj = a->j,*ai = a->i;
   MatScalar      *mat_a;
   Mat            C;
-  PetscTruth     flag;
+  PetscTruth     flag,sorted;
 
   PetscFunctionBegin;
-  ierr = ISSorted(iscol,(PetscTruth*)&i);CHKERRQ(ierr);
-  if (!i) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
+  ierr = ISSorted(iscol,&sorted);CHKERRQ(ierr);
+  if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
 
   ierr = ISGetIndices(isrow,&irow);CHKERRQ(ierr);
   ierr = ISGetIndices(iscol,&icol);CHKERRQ(ierr);
