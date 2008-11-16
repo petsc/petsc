@@ -63,6 +63,7 @@ namespace ALE {
   template<typename Mesh, typename Partitioner = ALE::Partitioner<> >
   class DistributionNew {
   public:
+    typedef Partitioner                                   partitioner_type;
     typedef typename Mesh::point_type                     point_type;
     typedef OrientedPoint<point_type>                     oriented_point_type;
     typedef typename Partitioner::part_type               rank_type;
@@ -340,10 +341,22 @@ namespace ALE {
         if (newMesh->hasLabel(l_iter->first)) continue;
         const Obj<typename Mesh::label_type>& origLabel = l_iter->second;
         const Obj<typename Mesh::label_type>& newLabel  = newMesh->createLabel(l_iter->first);
+
+#ifdef IMESH_NEW_LABELS
+        newLabel->setChart(newMesh->getSieve()->getChart());
+        // Size the local mesh
+        Partitioner::sizeLocalSieveV(origLabel, partition, renumbering, newLabel);
+        // Create the remote meshes
+        completeConesV(origLabel, newLabel, renumbering, sendMeshOverlap, recvMeshOverlap);
+        // Create the local mesh
+        Partitioner::createLocalSieveV(origLabel, partition, renumbering, newLabel);
+        newLabel->symmetrize();
+#else
         // Get remote labels
         ALE::New::Completion<Mesh,point_type>::scatterCones(origLabel, newLabel, sendMeshOverlap, recvMeshOverlap, renumbering);
         // Create local label
         newLabel->add(origLabel, newMesh->getSieve(), renumbering);
+#endif
       }
       // Create the parallel overlap
       Obj<typename Mesh::send_overlap_type> sendParallelMeshOverlap = newMesh->getSendOverlap();
