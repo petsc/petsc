@@ -291,6 +291,31 @@ namespace ALE {
         const Obj<typename Mesh::label_type>& newMarkers = mesh->createLabel("marker");
 
         if (mesh->commRank() == 0) {
+#ifdef IMESH_NEW_LABELS
+          int size = 0;
+
+          newMarkers->setChart(mesh->getSieve()->getChart());
+          for(int v = 0; v < out.numberofpoints; v++) {
+            if (out.pointmarkerlist[v]) {
+              newMarkers->setConeSize(v+out.numberoftriangles, 1);
+              size++;
+            }
+          }
+          if (interpolate) {
+            for(int e = 0; e < out.numberofedges; e++) {
+              if (out.edgemarkerlist[e]) {
+                const typename Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
+                const typename Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
+                const Obj<typename Mesh::sieve_type::supportSet> edge = newS->nJoin(vertexA, vertexB, 1);
+
+                newMarkers->setConeSize(*edge->begin(), 1);
+                size++;
+              }
+            }
+          }
+          newMarkers->setSupportSize(0, size);
+          newMarkers->allocate();
+#endif
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
               mesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
@@ -307,6 +332,9 @@ namespace ALE {
               }
             }
           }
+#ifdef IMESH_NEW_LABELS
+          newMarkers->recalculateLabel();
+#endif
         }
         mesh->copyHoles(boundary);
         finiOutput(&out);

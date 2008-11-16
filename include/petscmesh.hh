@@ -41,7 +41,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
       }
     }
     ierr = PetscMalloc2(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz);CHKERRQ(ierr);
-    ierr = preallocateOperator(mesh, bs, section->getAtlas(), order, dnz, onz, *J);CHKERRQ(ierr);
+    ierr = preallocateOperatorNew(mesh, bs, section->getAtlas(), order, dnz, onz, *J);CHKERRQ(ierr);
     ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
