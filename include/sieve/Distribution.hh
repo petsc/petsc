@@ -83,6 +83,17 @@ namespace ALE {
       ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
       return overlapCones;
     };
+    template<typename Sieve, typename NewSieve, typename SendOverlap, typename RecvOverlap>
+    static Obj<oriented_cones_type> completeConesV(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
+      typedef ALE::OrientedConeSectionV<Sieve> oriented_cones_wrapper_type;
+      Obj<oriented_cones_wrapper_type> cones        = new oriented_cones_wrapper_type(sieve);
+      Obj<oriented_cones_type>         overlapCones = new oriented_cones_type(sieve->comm(), sieve->debug());
+
+      ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
+      if (sieve->debug()) {overlapCones->view("Overlap Cones");}
+      ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, newSieve);
+      return overlapCones;
+    };
     template<typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap>
     static Obj<oriented_cones_type> completeConesV(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, Renumbering& renumbering, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
       typedef ALE::OrientedConeSectionV<Sieve> oriented_cones_wrapper_type;

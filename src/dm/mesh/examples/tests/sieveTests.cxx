@@ -11,6 +11,7 @@ typedef struct {
   // Classes
   PetscTruth overlap;       // Run the Overlap tests
   PetscTruth preallocation; // Run the Preallocation tests
+  PetscTruth label;         // Run the Label tests
   // Mesh flags
   PetscTruth interpolate;   // Interpolate the mesh
   PetscReal  refine;        // The refinement limit
@@ -26,6 +27,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->debug         = 0;
   options->overlap       = PETSC_FALSE;
   options->preallocation = PETSC_FALSE;
+  options->label         = PETSC_FALSE;
   options->interpolate   = PETSC_FALSE;
   options->refine        = 0.0;
 
@@ -33,6 +35,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsInt("-debug", "Debugging flag", "sieveTests", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-overlap", "Run Overlap tests", "sieveTests", options->overlap, &options->overlap, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-preallocation", "Run Preallocation tests", "sieveTests", options->preallocation, &options->preallocation, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-label", "Run Label tests", "sieveTests", options->label, &options->label, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "sieveTests", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refine", "The refinement limit", "sieveTests", options->refine, &options->refine, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -71,9 +74,10 @@ PetscErrorCode CreateSquareMesh(Obj<MeshT>& mesh, const Options *options)
 template<typename MeshT>
 PetscErrorCode DistributeMesh(Obj<MeshT>& mesh, Obj<MeshT>& newMesh, const Options *options)
 {
-  typedef typename ALE::DistributionNew<MeshT>      DistributionType;
-  typedef typename MeshT::point_type                point_type;
-  typedef typename DistributionType::partition_type partition_type;
+  typedef typename ALE::DistributionNew<MeshT>        DistributionType;
+  typedef typename DistributionType::partitioner_type PartitionerType;
+  typedef typename MeshT::point_type                  point_type;
+  typedef typename DistributionType::partition_type   partition_type;
 
   PetscFunctionBegin;
   const Obj<typename MeshT::sieve_type>        newSieve        = new typename MeshT::sieve_type(mesh->comm(), mesh->debug());
@@ -144,19 +148,24 @@ PetscErrorCode DistributeMesh(Obj<MeshT>& mesh, Obj<MeshT>& newMesh, const Optio
   if (mesh->getArrowSections()->size() > 1) {
     throw ALE::Exception("Need to distribute more arrow sections");
   }
-  // Distribute labels
-  const MeshT::labels_type& labels = mesh->getLabels();
-
-  for(MeshT::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
-    if ((*newMesh)->hasLabel(l_iter->first)) continue;
-    const Obj<MeshT::label_type>& origLabel = l_iter->second;
-    const Obj<MeshT::label_type>& newLabel  = (*newMesh)->createLabel(l_iter->first);
-    // Get remote labels
-    ALE::New::Completion<Mesh,MeshT::point_type>::scatterCones(origLabel, newLabel, sendMeshOverlap, recvMeshOverlap, renumbering);
-    // Create local label
-    newLabel->add(origLabel, (*newMesh)->getSieve(), renumbering);
-  }
 #endif
+  // Distribute labels
+  const typename MeshT::labels_type& labels = mesh->getLabels();
+
+  for(typename MeshT::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+    if (newMesh->hasLabel(l_iter->first)) continue;
+    const Obj<typename MeshT::label_type>& origLabel = l_iter->second;
+    const Obj<typename MeshT::label_type>& newLabel  = newMesh->createLabel(l_iter->first);
+
+    newLabel->setChart(newMesh->getSieve()->getChart());
+    // Size the local mesh
+    PartitionerType::sizeLocalSieveV(origLabel, partition, renumbering, newLabel);
+    // Create the remote meshes
+    DistributionType::completeConesV(origLabel, newLabel, sendMeshOverlap, recvMeshOverlap);
+    // Create the local mesh
+    PartitionerType::createLocalLabelV(origLabel, partition, renumbering, newLabel);
+    newLabel->symmetrize();
+  }
   // Create the parallel overlap
   Obj<typename MeshT::send_overlap_type> sendParallelMeshOverlap = newMesh->getSendOverlap();
   Obj<typename MeshT::recv_overlap_type> recvParallelMeshOverlap = newMesh->getRecvOverlap();
@@ -357,6 +366,63 @@ PetscErrorCode PreallocationTests(const Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "LabelTests"
+PetscErrorCode LabelTests(const Options *options)
+{
+  Obj<ALE::IMesh> mesh;
+  Obj<ALE::IMesh> newMesh;
+  PetscErrorCode  ierr;
+
+  PetscFunctionBegin;
+  ierr = CreateSquareMesh(mesh, options);CHKERRQ(ierr);
+  const Obj<ALE::IMesh::label_type>&        testLabel   = mesh->createLabel("test");
+  const Obj<ALE::IMesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+  const Obj<ALE::IMesh::label_sequence>&    vertices    = mesh->depthStratum(0);
+  int                                       base        = vertices->size();
+
+  ierr = MPI_Bcast(&base, 1, MPI_INT, 0, mesh->comm());CHKERRQ(ierr);
+  testLabel->setChart(mesh->getSieve()->getChart());
+  for(ALE::IMesh::label_sequence::const_iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    testLabel->setConeSize(*v_iter, 1);
+  }
+  if (vertices->size()) {testLabel->setSupportSize(0, vertices->size());}
+  testLabel->allocate();
+  for(ALE::IMesh::label_sequence::const_iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    const ALE::IMesh::real_section_type::value_type *coords = coordinates->restrictPoint(*v_iter);
+    double                                           value  = 0.0;
+    int                                              label;
+
+    for(int d = 0; d < mesh->getDimension(); ++d) {
+      value += coords[d]*pow(10, d);
+    }
+    label = ((int) value)%base;
+    mesh->setValue(testLabel, *v_iter, label);
+  }
+  testLabel->recalculateLabel();
+  testLabel->view("Test Label");
+  ierr = DistributeMesh(mesh, newMesh, options);CHKERRQ(ierr);
+  const Obj<ALE::IMesh::label_type>&        newTestLabel   = newMesh->getLabel("test");
+  const Obj<ALE::IMesh::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
+  const Obj<ALE::IMesh::label_sequence>&    newVertices    = newMesh->depthStratum(0);
+
+  newTestLabel->view("New Test Label");
+  for(ALE::IMesh::label_sequence::const_iterator v_iter = newVertices->begin(); v_iter != newVertices->end(); ++v_iter) {
+    const ALE::IMesh::real_section_type::value_type *coords = newCoordinates->restrictPoint(*v_iter);
+    double                                           value  = 0.0;
+    int                                              label;
+
+    for(int d = 0; d < newMesh->getDimension(); ++d) {
+      value += coords[d]*pow(10, d);
+    }
+    label = ((int) value)%base;
+    if (label != newMesh->getValue(newTestLabel, *v_iter)) {
+      SETERRQ3(PETSC_ERR_ARG_WRONG, "SieveTests: Invalid label value for vertex %d: %d should be %d", *v_iter, newMesh->getValue(newTestLabel, *v_iter), label);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "RunUnitTests"
 PetscErrorCode RunUnitTests(const Options *options)
 {
@@ -365,7 +431,8 @@ PetscErrorCode RunUnitTests(const Options *options)
   PetscFunctionBegin;
   if (options->overlap)       {ierr = OverlapTests(options);CHKERRQ(ierr);}
   if (options->preallocation) {ierr = PreallocationTests(options);CHKERRQ(ierr);} 
- PetscFunctionReturn(0);
+  if (options->label)         {ierr = LabelTests(options);CHKERRQ(ierr);} 
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -378,7 +445,11 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   ierr = ProcessOptions(PETSC_COMM_WORLD, &options);CHKERRQ(ierr);
-  ierr = RunUnitTests(&options);CHKERRQ(ierr);
+  try {
+    ierr = RunUnitTests(&options);CHKERRQ(ierr);
+  } catch (ALE::Exception e) {
+    SETERRQ(PETSC_ERR_PLIB, e.message());
+  }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
