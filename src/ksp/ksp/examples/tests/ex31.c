@@ -1,7 +1,8 @@
 
 static char help[] = "Test partition. Reads a PETSc matrix and vector from a file and solves a linear system.\n\
 This   Input parameters include\n\
-  -f <input_file> : file to load \n\\n";
+  -f <input_file> : file to load \n\
+  -partition -mat_partitioning_view \n\\n";
 
 /*T
    Concepts: KSP^solving a linear system
@@ -20,7 +21,7 @@ int main(int argc,char **args)
   Vec            x,b,u;           /* approx solution, RHS, exact solution */
   PetscViewer    fd;              /* viewer */
   char           file[PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscTruth     flg,partition=PETSC_TRUE,displayIS=PETSC_TRUE,displayMat=PETSC_FALSE;
+  PetscTruth     flg,partition=PETSC_FALSE,displayIS=PETSC_FALSE,displayMat=PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       its,m,n;
   PetscReal      norm;
@@ -31,6 +32,7 @@ int main(int argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   
+  ierr = PetscOptionsHasName(PETSC_NULL,"-partition",&partition);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-displayIS",&displayIS);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-displayMat",&displayMat);CHKERRQ(ierr);
 
@@ -124,7 +126,7 @@ int main(int argc,char **args)
     ierr = MatDestroy(A);CHKERRQ(ierr);
     A    = BB;
   }
- 
+
   /* Create linear solver; set operators; set runtime options.*/
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
