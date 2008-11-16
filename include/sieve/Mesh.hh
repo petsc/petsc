@@ -1186,7 +1186,11 @@ namespace ALE {
     typedef IBundle<Sieve_,RealSection_,IntSection_,ArrowSection_>    this_type;
     typedef typename sieve_type::point_type                           point_type;
     typedef malloc_allocator<point_type>                              alloc_type;
+#ifdef IMESH_NEW_LABELS
+    typedef typename ALE::IFSieve<point_type>                         label_type;
+#else
     typedef typename ALE::LabelSifter<int, point_type>                label_type;
+#endif
     typedef typename std::map<const std::string, Obj<label_type> >    labels_type;
     typedef typename label_type::supportSequence                      label_sequence;
     typedef std::map<std::string, Obj<arrow_section_type> >           arrow_sections_type;
@@ -1477,6 +1481,13 @@ namespace ALE {
       const Obj<label_type>& label = this->createLabel(std::string("height"));
       HeightVisitor          h(*this->_sieve, *label);
 
+#ifdef IMESH_NEW_LABELS
+      label->setChart(this->getSieve()->getChart());
+      for(point_type p = label->getChart().min(); p < label->getChart().max(); ++p) {label->setConeSize(p, 1);}
+      if (label->getChart().size()) {label->setSupportSize(0, label->getChart().size());}
+      label->allocate();
+      for(point_type p = label->getChart().min(); p < label->getChart().max(); ++p) {label->setCone(-1, p);}
+#endif
       this->_sieve->leaves(h);
       while(h.isModified()) {
         // FIX: Avoid the copy here somehow by fixing the traversal
@@ -1485,6 +1496,10 @@ namespace ALE {
         h.clear();
         this->_sieve->cone(modifiedPoints, h);
       }
+#ifdef IMESH_NEW_LABELS
+      // Recalculate supportOffsets and populate support
+      label->recalculateLabel();
+#endif
       this->_maxHeight = h.getMaxHeight();
     };
     virtual int height() const {return this->_maxHeight;};
@@ -1502,6 +1517,13 @@ namespace ALE {
       const Obj<label_type>& label = this->createLabel(std::string("depth"));
       DepthVisitor           d(*this->_sieve, *label);
 
+#ifdef IMESH_NEW_LABELS
+      label->setChart(this->getSieve()->getChart());
+      for(point_type p = label->getChart().min(); p < label->getChart().max(); ++p) {label->setConeSize(p, 1);}
+      if (label->getChart().size()) {label->setSupportSize(0, label->getChart().size());}
+      label->allocate();
+      for(point_type p = label->getChart().min(); p < label->getChart().max(); ++p) {label->setCone(-1, p);}
+#endif
       this->_sieve->roots(d);
       while(d.isModified()) {
         // FIX: Avoid the copy here somehow by fixing the traversal
@@ -1510,6 +1532,10 @@ namespace ALE {
         d.clear();
         this->_sieve->support(modifiedPoints, d);
       }
+#ifdef IMESH_NEW_LABELS
+      // Recalculate supportOffsets and populate support
+      label->recalculateLabel();
+#endif
       this->_maxDepth = d.getMaxDepth();
     };
     virtual int depth() const {return this->_maxDepth;};

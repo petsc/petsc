@@ -5,6 +5,8 @@
 #include <ALE.hh>
 #endif
 
+#define IMESH_NEW_LABELS
+
 namespace ALE {
   template<typename Point>
   class OrientedPoint : public std::pair<Point, int> {
@@ -936,6 +938,52 @@ namespace ALE {
     };
   };
 
+  namespace IFSieveDef {
+    template<typename PointType_>
+    class Sequence {
+    public:
+      typedef PointType_ point_type;
+      class const_iterator {
+      public:
+        // Standard iterator typedefs
+        typedef std::input_iterator_tag iterator_category;
+        typedef PointType_              value_type;
+        typedef int                     difference_type;
+        typedef value_type*             pointer;
+        typedef value_type&             reference;
+      protected:
+        const point_type *_data;
+        int               _pos;
+      public:
+        const_iterator(const point_type data[], const int pos) : _data(data), _pos(pos) {};
+        ~const_iterator() {};
+      public:
+        virtual bool              operator==(const const_iterator& iter) const {return this->_pos == iter._pos;};
+        virtual bool              operator!=(const const_iterator& iter) const {return this->_pos != iter._pos;};
+        virtual const value_type  operator*() const {return this->_data[this->_pos];};
+        virtual const_iterator&   operator++() {++this->_pos; return *this;};
+        virtual const_iterator    operator++(int n) {
+          const_iterator tmp(*this);
+          ++this->_pos;
+          return tmp;
+        };
+      };
+      typedef const_iterator iterator;
+    protected:
+      const point_type *_data;
+      int               _begin;
+      int               _end;
+    public:
+      Sequence(const point_type data[], const int begin, const int end) : _data(data), _begin(begin), _end(end) {};
+      ~Sequence() {};
+    public:
+      virtual iterator begin() const {return iterator(_data, _begin);};
+      virtual iterator end()   const {return iterator(_data, _end);};
+      size_t size() const {return(_end - _begin);}
+      void reset(const point_type data[], const int begin, const int end) {_data = data; _begin = begin; _end = end;};
+    };
+  }
+
   // Interval Final Sieve
   // This is just two CSR matrices that give cones and supports
   //   It is completely static and cannot be resized
@@ -958,6 +1006,9 @@ namespace ALE {
     typedef Interval<point_type, point_allocator_type> chart_type;
     // Dynamic structure
     typedef std::map<point_type, std::vector<point_type> > newpoints_type;
+    // Iterator interface
+    typedef typename IFSieveDef::Sequence<point_type> coneSequence;
+    typedef typename IFSieveDef::Sequence<point_type> supportSequence;
     // Compatibility types for SieveAlgorithms (until we rewrite for visitors)
     typedef std::set<point_type>   pointSet;
     typedef ALE::array<point_type> pointArray;
@@ -992,6 +1043,9 @@ namespace ALE {
     point_allocator_type pointAlloc;
     newpoints_type       newCones;
     newpoints_type       newSupports;
+    // Sequences
+    Obj<coneSequence>    coneSeq;
+    Obj<supportSequence> supportSeq;
   protected: // Memory Management
     void createIndices() {
       this->coneOffsets = indexAlloc.allocate(this->chart.size()+1);
@@ -1076,9 +1130,14 @@ namespace ALE {
       }
     };
   public:
-    IFSieve(const MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), indexAllocated(false), coneOffsets(NULL), supportOffsets(NULL), pointAllocated(false), maxConeSize(-1), maxSupportSize(-1), baseSize(-1), capSize(-1), cones(NULL), supports(NULL), orientCones(true), coneOrientations(NULL) {};
+    IFSieve(const MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), indexAllocated(false), coneOffsets(NULL), supportOffsets(NULL), pointAllocated(false), maxConeSize(-1), maxSupportSize(-1), baseSize(-1), capSize(-1), cones(NULL), supports(NULL), orientCones(true), coneOrientations(NULL) {
+      this->coneSeq    = new coneSequence(NULL, 0, 0);
+      this->supportSeq = new supportSequence(NULL, 0, 0);
+    };
     IFSieve(const MPI_Comm comm, const point_type& min, const point_type& max, const int debug = 0) : ParallelObject(comm, debug), indexAllocated(false), coneOffsets(NULL), supportOffsets(NULL), pointAllocated(false), maxConeSize(-1), maxSupportSize(-1), baseSize(-1), capSize(-1), cones(NULL), supports(NULL), orientCones(true), coneOrientations(NULL) {
       this->setChart(chart_type(min, max));
+      this->coneSeq    = new coneSequence(NULL, 0, 0);
+      this->supportSeq = new supportSequence(NULL, 0, 0);
     };
     ~IFSieve() {
       this->destroyPoints();
@@ -1261,6 +1320,27 @@ namespace ALE {
       this->destroyPoints(oldChart, oldConeOffsets, &oldCones, oldSupportOffsets, &oldSupports, &oldConeOrientations);
       this->destroyIndices(oldChart, &oldConeOffsets, &oldSupportOffsets);
     };
+    // Recalculate the support offsets and fill the supports
+    //   This is used when an IFSieve is being used as a label
+    void recalculateLabel() {
+      ISieveVisitor::PointRetriever<IFSieve> v(1);
+
+      for(point_type p = this->getChart().min(); p < this->getChart().max(); ++p) {
+        this->supportOffsets[p+1] = 0;
+      }
+      this->maxSupportSize = 0;
+      for(point_type p = this->getChart().min(); p < this->getChart().max(); ++p) {
+        this->cone(p, v);
+        if (v.getSize()) {
+          this->supportOffsets[v.getPoints()[0]+1]++;
+          this->maxSupportSize = std::max(this->maxSupportSize, this->supportOffsets[v.getPoints()[0]+1]);
+        }
+        v.clear();
+      }
+      this->prefixSum(this->supportOffsets);
+      this->calculateBaseAndCapSize();
+      this->symmetrize();
+    };
     void setCone(const point_type cone[], const point_type& p) {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
       this->chart.checkPoint(p);
@@ -1270,6 +1350,15 @@ namespace ALE {
       for(index_type c = start, i = 0; c < end; ++c, ++i) {
         this->cones[c] = cone[i];
       }
+    };
+    void setCone(const point_type cone, const point_type& p) {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      this->chart.checkPoint(p);
+      const index_type start = this->coneOffsets[p];
+      const index_type end   = this->coneOffsets[p+1];
+
+      if (end - start != 1) {throw ALE::Exception("IFSieve setCone() called with too few points.");}
+      this->cones[start] = cone;
     };
 #if 0
     template<typename PointSequence>
@@ -1452,6 +1541,15 @@ namespace ALE {
         v.visitPoint(this->cones[c]);
       }
     };
+    const Obj<coneSequence>& cone(const point_type& p) const {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      if (!this->chart.hasPoint(p)) {
+        this->coneSeq->reset(this->cones, 0, 0);
+      } else {
+        this->coneSeq->reset(this->cones, this->coneOffsets[p], this->coneOffsets[p+1]);
+      }
+      return this->coneSeq;
+    };
     template<typename PointSequence, typename Visitor>
     void support(const PointSequence& points, Visitor& v) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1478,6 +1576,15 @@ namespace ALE {
         v.visitArrow(arrow_type(p, this->supports[s]));
         v.visitPoint(this->supports[s]);
       }
+    };
+    const Obj<supportSequence>& support(const point_type& p) const {
+      if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
+      if (!this->chart.hasPoint(p)) {
+        this->supportSeq->reset(this->supports, 0, 0);
+      } else {
+        this->supportSeq->reset(this->supports, this->supportOffsets[p], this->supportOffsets[p+1]);
+      }
+      return this->supportSeq;
     };
     template<typename Visitor>
     void orientedCone(const point_type& p, Visitor& v) const {
@@ -1638,7 +1745,9 @@ namespace ALE {
           min = std::min(min, *c_iter);
           max = std::max(max, *c_iter);
         }
-        ++max;
+        if (base->size() || cap->size()) {
+          ++max;
+        }
         for(typename ISieve::point_type p = min; p < max; ++p) {
           renumbering[p] = p;
         }
@@ -1722,6 +1831,30 @@ namespace ALE {
         icoordinates.updatePoint(*p_iter, coordinates.restrictPoint(*p_iter));
       }
     };
+    template<typename IMesh, typename Label>
+    static void convertLabel(IMesh& imesh, const std::string& name, const Obj<Label>& oldLabel) {
+      const Obj<typename IMesh::label_type>&        label = imesh.createLabel(name);
+      const typename IMesh::sieve_type::chart_type& chart = imesh.getSieve()->getChart();
+      int                                           size  = 0;
+
+      label->setChart(chart);
+      for(typename IMesh::point_type p = chart.min(); p < chart.max(); ++p) {
+        const int coneSize = oldLabel->cone(p)->size();
+
+        label->setConeSize(p, coneSize);
+        size += coneSize;
+      }
+      if (size) {label->setSupportSize(0, size);}
+      label->allocate();
+      for(typename IMesh::point_type p = chart.min(); p < chart.max(); ++p) {
+        const Obj<typename Label::coneSequence>& cone = oldLabel->cone(p);
+
+        if (cone->size()) {
+          label->setCone(*cone->begin(), p);
+        }
+      }
+      label->recalculateLabel();
+    };
     template<typename Mesh, typename IMesh, typename Renumbering>
     static void convertMesh(Mesh& mesh, IMesh& imesh, Renumbering& renumbering, bool renumber = true) {
       convertSieve(*mesh.getSieve(), *imesh.getSieve(), renumbering, renumber);
@@ -1729,9 +1862,17 @@ namespace ALE {
       convertOrientation(*mesh.getSieve(), *imesh.getSieve(), renumbering, mesh.getArrowSection("orientation").ptr());
       convertCoordinates(*mesh.getRealSection("coordinates"), *imesh.getRealSection("coordinates"), renumbering);
       const typename Mesh::labels_type& labels = mesh.getLabels();
+      std::string heightName("height");
+      std::string depthName("depth");
 
       for(typename Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+#ifdef IMESH_NEW_LABELS
+        if ((l_iter->first != heightName) && (l_iter->first != depthName)) {
+          convertLabel(imesh, l_iter->first, l_iter->second);
+        }
+#else
         imesh.setLabel(l_iter->first, l_iter->second);
+#endif
       }
     };
   };
