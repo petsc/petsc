@@ -45,7 +45,7 @@ int main(int argc,char **args)
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
   char           file[4][PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE,initialguess = PETSC_FALSE;
+  PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscTruth     outputSoln=PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       its,num_numfac,m,n,M;
@@ -59,7 +59,6 @@ int main(int argc,char **args)
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-trans",&trans);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-partition",&partition);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-initialguess",&initialguess);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-output_solution",&outputSoln);CHKERRQ(ierr);
 
@@ -270,41 +269,7 @@ int main(int argc,char **args)
 
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-
-    if (partition) {
-      MatPartitioning mpart;
-      IS              mis,nis,isn,is;
-      PetscInt        *count;
-      PetscMPIInt     size;
-      Mat             BB;
-      ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
-      ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-      ierr = PetscMalloc(size*sizeof(PetscInt),&count);CHKERRQ(ierr);
-      ierr = MatPartitioningCreate(PETSC_COMM_WORLD, &mpart);CHKERRQ(ierr);
-      ierr = MatPartitioningSetAdjacency(mpart, A);CHKERRQ(ierr);
-      /* ierr = MatPartitioningSetVertexWeights(mpart, weight);CHKERRQ(ierr); */
-      ierr = MatPartitioningSetFromOptions(mpart);CHKERRQ(ierr);
-      ierr = MatPartitioningApply(mpart, &mis);CHKERRQ(ierr);
-      ierr = MatPartitioningDestroy(mpart);CHKERRQ(ierr);
-      ierr = ISPartitioningToNumbering(mis,&nis);CHKERRQ(ierr);
-      ierr = ISPartitioningCount(mis,size,count);CHKERRQ(ierr);
-      ierr = ISDestroy(mis);CHKERRQ(ierr);
-      ierr = ISInvertPermutation(nis, count[rank], &is);CHKERRQ(ierr);
-      ierr = PetscFree(count);CHKERRQ(ierr);
-      ierr = ISDestroy(nis);CHKERRQ(ierr);
-      ierr = ISSort(is);CHKERRQ(ierr);
-      ierr = ISAllGather(is,&isn);CHKERRQ(ierr);
-      ierr = MatGetSubMatrix(A,is,isn,PETSC_DECIDE,MAT_INITIAL_MATRIX,&BB);CHKERRQ(ierr);
-
-      /* need to move the vector also */
-      ierr = ISDestroy(is);CHKERRQ(ierr);
-      ierr = ISDestroy(isn);CHKERRQ(ierr);
-      ierr = MatDestroy(A);CHKERRQ(ierr);
-      A    = BB;
-    }
- 
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
     /*
        Conclude profiling last stage; begin profiling next stage.
     */

@@ -393,7 +393,7 @@ runex29_2:
 	   else echo "Possible problem with ex29_2, diffs above"; fi; \
 	   ${RM} -f ex29_2.tmp
 runex31:
-	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -displayIS > ex31.tmp 2>&1; \
+	-@${MPIEXEC} -n 3 ./ex31 -f ${DATAFILESPATH}/matrices/small -partition > ex31.tmp 2>&1; \
 	if (${DIFF} output/ex31.out ex31.tmp) then true; \
 	   else echo "Possible problem with ex31, diffs above"; fi; \
 	   ${RM} -f ex31.tmp
