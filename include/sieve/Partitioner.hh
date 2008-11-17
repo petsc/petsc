@@ -1025,6 +1025,38 @@ namespace ALE {
       sizeLocalSieveV(sieve, partition, renumbering, localSieve, height);
     };
     template<typename Sieve, typename Section, typename Renumbering>
+    static void createLocalLabelV(const Obj<Sieve>& sieve, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sieve>& localSieve, const int height = 0) {
+      typedef std::set<typename Sieve::point_type> pointSet;
+      typedef ISieveVisitor::FilteredPointRetriever<Sieve,pointSet,Renumbering> visitor_type;
+      const typename Section::value_type *points    = partition->restrictPoint(sieve->commRank());
+      const int                           numPoints = partition->getFiberDimension(sieve->commRank());
+      int                                 maxSize   = std::max(0, std::max(sieve->getMaxConeSize(), sieve->getMaxSupportSize()));
+      typename Sieve::point_type         *oPoints   = new typename Sieve::point_type[std::max(1, sieve->getMaxConeSize())];
+      int                                *oOrients  = new int[std::max(1, sieve->getMaxConeSize())];
+      const pointSet                      pSet(points, &points[numPoints]);
+      visitor_type fV(pSet, renumbering, maxSize);
+
+      for(int p = 0; p < numPoints; ++p) {
+        fV.useRenumbering(false);
+        sieve->orientedCone(points[p], fV);
+        const typename visitor_type::oriented_point_type *q = fV.getOrientedPoints();
+        const int                                         n = fV.getOrientedSize();
+        for(int i = 0; i < n; ++i) {
+          oPoints[i]  = q[i].first;
+          oOrients[i] = q[i].second;
+        }
+        localSieve->setCone(oPoints, renumbering[points[p]]);
+        localSieve->setConeOrientation(oOrients, renumbering[points[p]]);
+        fV.clear();
+        fV.useRenumbering(true);
+        sieve->support(points[p], fV);
+        if (fV.getSize()) {localSieve->setSupport(points[p], fV.getPoints());}
+        fV.clear();
+      }
+      delete [] oPoints;
+      delete [] oOrients;
+    };
+    template<typename Sieve, typename Section, typename Renumbering>
     static void createLocalSieveV(const Obj<Sieve>& sieve, const Obj<Section>& partition, Renumbering& renumbering, const Obj<Sieve>& localSieve, const int height = 0) {
       typedef std::set<typename Sieve::point_type> pointSet;
       typedef ISieveVisitor::FilteredPointRetriever<Sieve,pointSet,Renumbering> visitor_type;

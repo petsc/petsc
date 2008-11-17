@@ -21,6 +21,17 @@ namespace ALE {
     const _Tp& operator()(const _Tp& x) const {return x;}
   };
 
+  template<class _Tp>
+  struct IsEqual : public std::unary_function<_Tp, bool>, public std::binary_function<_Tp, _Tp, bool>
+  {
+    const _Tp& x;
+    IsEqual(const _Tp& x) : x(x) {};
+    bool operator()(_Tp& y) const {return x == y;}
+    const bool operator()(const _Tp& y) const {return x == y;}
+    bool operator()(_Tp& y, _Tp& dummy) const {return x == y;}
+    const bool operator()(const _Tp& y, const _Tp& dummy) const {return x == y;}
+  };
+
   // Creates new global point names and renames local points globally
   template<typename Point>
   class PointFactory : ALE::ParallelObject {
@@ -1257,6 +1268,48 @@ namespace ALE {
         delete [] localValues;
         delete [] localOrientation;
       };
+      template<typename OverlapSection, typename RecvOverlap, typename Point>
+      static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<IFSieve<Point> >& sieve) {
+        typedef typename OverlapSection::point_type overlap_point_type;
+        const Obj<typename RecvOverlap::traits::baseSequence>      rPoints = recvOverlap->base();
+        const typename RecvOverlap::traits::baseSequence::iterator rEnd    = rPoints->end();
+        int                                                        maxSize = 0;
+
+        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+          const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
+          const Point&                                   localPoint  = *p_iter;
+          const int                                      rank        = *points->begin();
+          const Point&                                   remotePoint = points->begin().color();
+          const int                                      size        = overlapSection->getFiberDimension(overlap_point_type(rank, remotePoint));
+          const typename OverlapSection::value_type     *values      = overlapSection->restrictPoint(overlap_point_type(rank, remotePoint));
+
+          sieve->setConeSize(localPoint, size);
+          for(int i = 0; i < size; ++i) {sieve->addSupportSize(values[i].first, 1);}
+          maxSize = std::max(maxSize, size);
+        }
+        sieve->allocate();
+        typename OverlapSection::value_type::first_type  *localValues      = new typename OverlapSection::value_type::first_type[maxSize];
+        typename OverlapSection::value_type::second_type *localOrientation = new typename OverlapSection::value_type::second_type[maxSize];
+
+        for(typename RecvOverlap::traits::baseSequence::iterator p_iter = rPoints->begin(); p_iter != rEnd; ++p_iter) {
+          const Obj<typename RecvOverlap::coneSequence>& points      = recvOverlap->cone(*p_iter);
+          const Point&                                   localPoint  = *p_iter;
+          const int                                      rank        = *points->begin();
+          const Point&                                   remotePoint = points->begin().color();
+          const int                                      size        = overlapSection->getFiberDimension(overlap_point_type(rank, remotePoint));
+          const typename OverlapSection::value_type     *values      = overlapSection->restrictPoint(overlap_point_type(rank, remotePoint));
+
+          for(int i = 0; i < size; ++i) {
+            localValues[i]      = values[i].first;
+            localOrientation[i] = values[i].second;
+          }
+          sieve->setCone(localValues, localPoint);
+          sieve->setConeOrientation(localOrientation, localPoint);
+        }
+        delete [] localValues;
+        delete [] localOrientation;
+      };
+      // Generic
       template<typename OverlapSection, typename RecvOverlap, typename Section, typename Bundle>
       static void fuse(const Obj<OverlapSection>& overlapSection, const Obj<RecvOverlap>& recvOverlap, const Obj<Section>& section, const Obj<Bundle>& bundle) {
         typedef typename OverlapSection::point_type overlap_point_type;

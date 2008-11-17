@@ -41,7 +41,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<Mesh>& mesh, const O
       }
     }
     ierr = PetscMalloc2(localSize/bs, PetscInt, &dnz, localSize/bs, PetscInt, &onz);CHKERRQ(ierr);
-    ierr = preallocateOperator(mesh, bs, section->getAtlas(), order, dnz, onz, *J);CHKERRQ(ierr);
+    ierr = preallocateOperatorNew(mesh, bs, section->getAtlas(), order, dnz, onz, *J);CHKERRQ(ierr);
     ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -814,14 +814,15 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
   const ALE::Obj<ALE::Mesh::sieve_type> adjGraph     = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
   PetscInt                              numLocalRows = globalOrder->getLocalSize();
   PetscInt                              firstRow     = globalOrder->getGlobalOffsets()[mesh->commRank()];
+  const PetscInt                        debug        = 0;
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
   // Create local adjacency graph
-  ///mesh->view("Input Mesh");
-  ///globalOrder->view("Initial Global Order");
+  if (debug) mesh->view("Input Mesh");
+  if (debug) globalOrder->view("Initial Global Order");
   ierr = createLocalAdjacencyGraph(mesh, atlas, adjGraph);CHKERRQ(ierr);
-  ///adjGraph->view("Adjacency Graph");
+  if (debug) adjGraph->view("Adjacency Graph");
   // Complete adjacency graph
   typedef ALE::ConeSection<ALE::Mesh::sieve_type>              cones_wrapper_type;
   typedef ALE::Section<ALE::Pair<int, point_type>, point_type> cones_type;
@@ -833,7 +834,7 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
   const Obj<recv_overlap_type>  nbrRecvOverlap = new recv_overlap_type(mesh->comm(), mesh->debug());
 
   ALE::Pullback::SimpleCopy::copy(sendOverlap, recvOverlap, cones, overlapCones);
-  ///overlapCones->view("Overlap Cones");
+  if (debug) overlapCones->view("Overlap Cones");
   // Now overlapCones has the neighbors for any point in the overlap, in the remote numbering
   // Copy overlaps
   {
@@ -860,30 +861,31 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
       }
     }
   }
-  ///nbrSendOverlap->view("Initial Send Overlap");
-  ///nbrRecvOverlap->view("Initial Recv Overlap");
+  if (debug) nbrSendOverlap->view("Initial Send Overlap");
+  if (debug) nbrRecvOverlap->view("Initial Recv Overlap");
   // Update neighbor send overlap from local adjacency
+  typedef typename send_overlap_type::target_type rank_type;
   const Obj<typename send_overlap_type::traits::capSequence>      sPoints = sendOverlap->cap();
   const typename send_overlap_type::traits::capSequence::iterator sEnd    = sPoints->end();
 
   for(typename send_overlap_type::traits::capSequence::iterator p_iter = sPoints->begin(); p_iter != sEnd; ++p_iter) {
-    const point_type&                                        localPoint = *p_iter;
-    const Obj<typename ALE::Mesh::sieve_type::coneSequence>& adj        = adjGraph->cone(localPoint);
-    typename ALE::Mesh::sieve_type::coneSequence::iterator   adjEnd     = adj->end();
+    const point_type&                                           localPoint = *p_iter;
+    const Obj<typename send_overlap_type::supportSequence>&     ranks      = sendOverlap->support(localPoint);
+    const typename send_overlap_type::supportSequence::iterator rEnd       = ranks->end();
 
-    for(typename ALE::Mesh::sieve_type::coneSequence::iterator c_iter = adj->begin(); c_iter != adjEnd; ++c_iter) {
-      // Check for interior points
-      if (!sendOverlap->support(*c_iter)->size()) {
-        const Obj<typename send_overlap_type::supportSequence>&     ranks = sendOverlap->support(localPoint);
-        const typename send_overlap_type::supportSequence::iterator rEnd  = ranks->end();
+    for(typename send_overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != rEnd; ++r_iter) {
+      const Obj<typename ALE::Mesh::sieve_type::coneSequence>& adj    = adjGraph->cone(localPoint);
+      typename ALE::Mesh::sieve_type::coneSequence::iterator   adjEnd = adj->end();
 
-        for(typename send_overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != rEnd; ++r_iter) {
+      for(typename ALE::Mesh::sieve_type::coneSequence::iterator c_iter = adj->begin(); c_iter != adjEnd; ++c_iter) {
+        // Check for interior points
+        if (!recvOverlap->coneContains(*c_iter, ALE::IsEqual<rank_type>(*r_iter))) {
           nbrSendOverlap->addArrow(*c_iter, *r_iter, -1);
         }
       }
     }
   }
-  ///nbrSendOverlap->view("Modified Send Overlap");
+  if (debug) nbrSendOverlap->view("Modified Send Overlap");
   // Update neighbor recv overlap and local adjacency
   const Obj<typename recv_overlap_type::traits::baseSequence>      rPoints = recvOverlap->base();
   const typename recv_overlap_type::traits::baseSequence::iterator rEnd    = rPoints->end();
@@ -915,14 +917,20 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
           }
           adjGraph->addArrow(newPoint,   localPoint);
           adjGraph->addArrow(localPoint, newPoint);
+        } else {
+          // Might provide an unknown link for already known point
+          const point_type oldPoint = *sendOverlap->cone(rank, values[i])->begin();
+
+          adjGraph->addArrow(oldPoint,   localPoint);
+          adjGraph->addArrow(localPoint, oldPoint);
         }
       }
     }
   }
-  ///nbrRecvOverlap->view("Modified Recv Overlap");
-  ///adjGraph->view("Modified Adjacency Graph");
+  if (debug) nbrRecvOverlap->view("Modified Recv Overlap");
+  if (debug) adjGraph->view("Modified Adjacency Graph");
   mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap);
-  ///globalOrder->view("Modified Global Order");
+  if (debug) globalOrder->view("Modified Global Order");
   // Read out adjacency graph
   const typename Atlas::chart_type& chart = atlas->getChart();
 

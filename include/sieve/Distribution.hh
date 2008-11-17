@@ -63,6 +63,7 @@ namespace ALE {
   template<typename Mesh, typename Partitioner = ALE::Partitioner<> >
   class DistributionNew {
   public:
+    typedef Partitioner                                   partitioner_type;
     typedef typename Mesh::point_type                     point_type;
     typedef OrientedPoint<point_type>                     oriented_point_type;
     typedef typename Partitioner::part_type               rank_type;
@@ -80,6 +81,17 @@ namespace ALE {
       if (sieve->debug()) {overlapCones->view("Overlap Cones");}
       // Inserts cones into parallelMesh (must renumber here)
       ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, renumbering, newSieve);
+      return overlapCones;
+    };
+    template<typename Sieve, typename NewSieve, typename SendOverlap, typename RecvOverlap>
+    static Obj<oriented_cones_type> completeConesV(const Obj<Sieve>& sieve, const Obj<NewSieve>& newSieve, const Obj<SendOverlap>& sendMeshOverlap, const Obj<RecvOverlap>& recvMeshOverlap) {
+      typedef ALE::OrientedConeSectionV<Sieve> oriented_cones_wrapper_type;
+      Obj<oriented_cones_wrapper_type> cones        = new oriented_cones_wrapper_type(sieve);
+      Obj<oriented_cones_type>         overlapCones = new oriented_cones_type(sieve->comm(), sieve->debug());
+
+      ALE::Pullback::SimpleCopy::copy(sendMeshOverlap, recvMeshOverlap, cones, overlapCones);
+      if (sieve->debug()) {overlapCones->view("Overlap Cones");}
+      ALE::Pullback::InsertionBinaryFusion::fuse(overlapCones, recvMeshOverlap, newSieve);
       return overlapCones;
     };
     template<typename Sieve, typename NewSieve, typename Renumbering, typename SendOverlap, typename RecvOverlap>
@@ -340,10 +352,22 @@ namespace ALE {
         if (newMesh->hasLabel(l_iter->first)) continue;
         const Obj<typename Mesh::label_type>& origLabel = l_iter->second;
         const Obj<typename Mesh::label_type>& newLabel  = newMesh->createLabel(l_iter->first);
+
+#ifdef IMESH_NEW_LABELS
+        newLabel->setChart(newMesh->getSieve()->getChart());
+        // Size the local mesh
+        Partitioner::sizeLocalSieveV(origLabel, partition, renumbering, newLabel);
+        // Create the remote meshes
+        completeConesV(origLabel, newLabel, renumbering, sendMeshOverlap, recvMeshOverlap);
+        // Create the local mesh
+        Partitioner::createLocalSieveV(origLabel, partition, renumbering, newLabel);
+        newLabel->symmetrize();
+#else
         // Get remote labels
         ALE::New::Completion<Mesh,point_type>::scatterCones(origLabel, newLabel, sendMeshOverlap, recvMeshOverlap, renumbering);
         // Create local label
         newLabel->add(origLabel, newMesh->getSieve(), renumbering);
+#endif
       }
       // Create the parallel overlap
       Obj<typename Mesh::send_overlap_type> sendParallelMeshOverlap = newMesh->getSendOverlap();

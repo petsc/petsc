@@ -459,7 +459,7 @@ namespace ALE {
 #endif
     };
     // Communicate (size,offset)s in the overlap
-    void completeOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false, bool updates = true) {
+    void completeOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false) {
       typedef Field<send_overlap_type, int, Section<point_type, oValue_type, oValue_alloc_type> > send_section_type;
       typedef Field<recv_overlap_type, int, Section<point_type, oValue_type, oValue_alloc_type> > recv_section_type;
       typedef ConstantSection<point_type, int, alloc_type>                          constant_sizer;
@@ -501,7 +501,6 @@ namespace ALE {
               }
               continue;
             }
-            if (!updates && order->restrictPoint(localPoint)[0].prefix < 0) continue;
             const oValue_type val(-(values[0].prefix+1), values[0].index);
             order->updatePoint(localPoint, &val);
           } else {
