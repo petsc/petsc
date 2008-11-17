@@ -129,7 +129,8 @@ namespace ALE {
 #endif
   public:
     pointer address(reference x) const {return &x;}
-    const_pointer address(const_reference x) const {return x;}
+    // For some reason the goddamn MS compiler does not like this function
+    //const_pointer address(const_reference x) const {return &x;}
 
     pointer allocate(size_type n, const_pointer = 0) {
 #ifdef ALE_MEM_LOGGING

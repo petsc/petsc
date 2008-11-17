@@ -115,7 +115,7 @@ class VTKViewer {
         for(int e = 0; e < numLocalElementsAndFiberDim[0]; e++) {
           if (verify) {ierr = PetscViewerASCIIPrintf(viewer, "%d ", (int) remoteValues[e*numLocalElementsAndFiberDim[1]+0]);CHKERRQ(ierr);}
           for(int d = verify; d < numLocalElementsAndFiberDim[1]; d++) {
-            if (d > verify) {
+            if (d > (int) verify) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
             }
             if (mpiType == MPI_INT) {
