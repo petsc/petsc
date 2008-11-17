@@ -6,7 +6,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDComputeJacobian"
-/*@
+/*@C
    MatMFFDComputeJacobian - Tells the matrix-free Jacobian object the new location at which
        Jacobian matrix vector products will be computed at, i.e. J(x) * a. The x is obtained
        from the SNES object (using SNESGetSolution()).
@@ -31,7 +31,10 @@
    Notes:
      This can be passed into SNESSetJacobian() when using a completely matrix-free solver,
      that is the B matrix is also the same matrix operator. This is used when you select
-     -snes_mf but rarely used directly by users.
+     -snes_mf but rarely used directly by users. (All this routine does is call MatAssemblyBegin/End() on
+     the Mat jac.
+
+     This is not callable or usable in Fortran
 
 .seealso: MatMFFDGetH(), MatCreateSNESMF(), MatCreateMFFD(), MATMFFD,
           MatMFFDSetHHistory(),

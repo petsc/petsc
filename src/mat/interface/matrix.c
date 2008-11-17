@@ -6693,7 +6693,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetInertia(Mat mat,PetscInt *nneg,PetscInt 
 /* ----------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolves"
-/*@
+/*@C
    MatSolves - Solves A x = b, given a factored matrix, for a collection of vectors
 
    Collective on Mat and Vecs

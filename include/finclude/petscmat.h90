@@ -1,6 +1,6 @@
 !
 !
-!  Additional Mat include file for use of PETSc with Fortran 90/HPF
+!  Additional Mat include file for use of PETSc with Fortran 90
 !
 
 #if !defined (PETSC_AVOID_DECLARATIONS)

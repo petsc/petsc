@@ -476,7 +476,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDAADSetSNES"
-/*@
+/*@C
    MatDAADSetSNES - Tells the matrix what SNES it is using for the base U.
 
    Collective on Mat and SNES
@@ -486,6 +486,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA(Mat A,DA da)
 -  snes - the SNES
 
    Level: intermediate
+
+   Notes: this is currently turned off for Fortran usage
 
 .seealso: MatCreate(), DASetLocalAdicMFFunction(), MatCreateDAAD(), MatDAADSetDA()
 
@@ -535,7 +537,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat A,void *ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateDAAD"
-/*@
+/*@C
    MatCreateDAAD - Creates a matrix that can do matrix-vector products using a local 
    function that is differentiated with ADIFOR or ADIC.
 
@@ -548,6 +550,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat A,void *ctx)
 .  A - the matrix 
 
    Level: intermediate
+
+   Notes: this is currently turned off for Fortran
 
 .seealso: MatCreate(), DASetLocalAdicMFFunction()
 
