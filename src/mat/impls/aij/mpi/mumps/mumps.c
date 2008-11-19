@@ -345,7 +345,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     }
 
     icntl=-1;
-    lu->id.ICNTL(4) = 1;  /* level of printing; overwrite mumps default ICNTL(4)=2 */
+    lu->id.ICNTL(4) = 0;  /* level of printing; overwrite mumps default ICNTL(4)=2 */
     ierr = PetscOptionsInt("-mat_mumps_icntl_4","ICNTL(4): level of printing (0 to 4)","None",lu->id.ICNTL(4),&icntl,&flg);CHKERRQ(ierr);
     if ((flg && icntl > 0) || PetscLogPrintInfo) {
       lu->id.ICNTL(4)=icntl; /* and use mumps default icntl(i), i=1,2,3 */
@@ -367,19 +367,24 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat F,Mat A,const MatFactorInfo *info)
     ierr = PetscOptionsInt("-mat_mumps_icntl_8","ICNTL(8): scaling strategy (-2 to 7 or 77)","None",lu->id.ICNTL(8),&lu->id.ICNTL(8),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_9","ICNTL(9): A or A^T x=b to be solved. 1: A; otherwise: A^T","None",lu->id.ICNTL(9),&lu->id.ICNTL(9),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_10","ICNTL(10): max num of refinements","None",lu->id.ICNTL(10),&lu->id.ICNTL(10),PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): statistics related to the linear system solved (by -ksp_view)","None",lu->id.ICNTL(11),&lu->id.ICNTL(11),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mumps_icntl_11","ICNTL(11): statistics related to the linear system solved (via -ksp_view)","None",lu->id.ICNTL(11),&lu->id.ICNTL(11),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_12","ICNTL(12): efficiency control: defines the ordering strategy with scaling constraints (0 to 3","None",lu->id.ICNTL(12),&lu->id.ICNTL(12),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_13","ICNTL(13): efficiency control: with or without ScaLAPACK","None",lu->id.ICNTL(13),&lu->id.ICNTL(13),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_14","ICNTL(14): percentage of estimated workspace increase","None",lu->id.ICNTL(14),&lu->id.ICNTL(14),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_mumps_icntl_19","ICNTL(19): Schur complement","None",lu->id.ICNTL(19),&lu->id.ICNTL(19),PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsInt("-mat_mumps_icntl_22","ICNTL(22): ","None",lu->id.ICNTL(22),&lu->id.ICNTL(22),PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-mat_mumps_icntl_23","ICNTL(23): ","None",lu->id.ICNTL(23),&lu->id.ICNTL(23),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mumps_icntl_22","ICNTL(22): in-core/out-of-core facility (0 or 1)","None",lu->id.ICNTL(22),&lu->id.ICNTL(22),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mumps_icntl_23","ICNTL(23): max size of the working memory (MB) that can allocate per processor","None",lu->id.ICNTL(23),&lu->id.ICNTL(23),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mumps_icntl_24","ICNTL(24): detection of null pivot rows (0 or 1)","None",lu->id.ICNTL(24),&lu->id.ICNTL(24),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mumps_icntl_25","ICNTL(25): computation of a null space basis","None",lu->id.ICNTL(25),&lu->id.ICNTL(25),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mumps_icntl_26","ICNTL(26): Schur options for right-hand side or solution vector","None",lu->id.ICNTL(26),&lu->id.ICNTL(26),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_mumps_icntl_27","ICNTL(27): experimental parameter","None",lu->id.ICNTL(27),&lu->id.ICNTL(27),PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",lu->id.CNTL(1),&lu->id.CNTL(1),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",lu->id.CNTL(2),&lu->id.CNTL(2),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_mumps_cntl_3","CNTL(3): absolute pivoting threshold","None",lu->id.CNTL(3),&lu->id.CNTL(3),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_mumps_cntl_4","CNTL(4): value for static pivoting","None",lu->id.CNTL(4),&lu->id.CNTL(4),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-mat_mumps_cntl_5","CNTL(5): fixation for null pivots","None",lu->id.CNTL(5),&lu->id.CNTL(5),PETSC_NULL);CHKERRQ(ierr);
     PetscOptionsEnd();
   }
 
@@ -607,11 +612,19 @@ PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer) {
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(19) (Shur complement info):                       %d \n",lu->id.ICNTL(19));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(20) (rhs sparse pattern):                         %d \n",lu->id.ICNTL(20));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(21) (solution struct):                            %d \n",lu->id.ICNTL(21));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(22) (in-core/out-of-core facility):               %d \n",lu->id.ICNTL(22));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(23) (max size of memory can be allocated locally):%d \n",lu->id.ICNTL(23));CHKERRQ(ierr);
+
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(24) (detection of null pivot rows):               %d \n",lu->id.ICNTL(24));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(25) (computation of a null space basis):          %d \n",lu->id.ICNTL(25));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(26) (Schur options for rhs or solution):          %d \n",lu->id.ICNTL(26));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ICNTL(27) (experimental parameter):                     %d \n",lu->id.ICNTL(27));CHKERRQ(ierr);
 
   ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(1) (relative pivoting threshold):      %g \n",lu->id.CNTL(1));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(2) (stopping criterion of refinement): %g \n",lu->id.CNTL(2));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(3) (absolute pivoting threshold):      %g \n",lu->id.CNTL(3));CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(4) (value of static pivoting):         %g \n",lu->id.CNTL(4));CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  CNTL(5) (fixation for null pivots):         %g \n",lu->id.CNTL(5));CHKERRQ(ierr);
 
   /* infomation local to each processor */
   if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);}
@@ -623,11 +636,6 @@ PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer) {
   if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);}
   ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
   ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
-  /*
-  if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      INFO(2) (info about error or warning ): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(2));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
-  */
 
   if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): \n");CHKERRQ(ierr);}
   ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(15));CHKERRQ(ierr);
