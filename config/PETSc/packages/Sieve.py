@@ -53,6 +53,6 @@ class Configure(PETSc.package.Package):
         self.addDefine('MESH_TYPE', 'ALE::IMesh')
       else:
         self.addDefine('MESH_TYPE', 'ALE::Mesh')
-      if '-with-sieve-memory-logging' in self.argDB and self.argDB['-with-sieve-memory-logging']:
+      if 'with-sieve-memory-logging' in self.argDB and self.argDB['with-sieve-memory-logging']:
         self.framework.addDefine('ALE_MEM_LOGGING', 1)
     return PETSc.package.Package.configure(self)
