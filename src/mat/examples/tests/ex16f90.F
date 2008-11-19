@@ -25,10 +25,10 @@
 
       Mat A
       PetscErrorCode ierr
-      PetscInt i,j,m,n
+      PetscInt i,j,m,n,iar(1),jar(1)
       PetscInt rstart,rend
       PetscInt one
-      PetscScalar  v
+      PetscScalar  v(1)
       PetscScalar, pointer :: array(:,:)
 
 
@@ -47,9 +47,11 @@
 !     Set values into the matrix. All processors set all values.
 !
       do 10, i=0,m-1
+        iar(1) = i
         do 20, j=0,n-1
-          v = 9.d0/(i+j+1)
-          call MatSetValues(A,one,i,one,j,v,INSERT_VALUES,ierr)
+          jar(1) = j
+          v(1)   = 9.d0/(i+j+1)
+          call MatSetValues(A,one,iar,one,jar,v,INSERT_VALUES,ierr)
  20     continue
  10   continue
 

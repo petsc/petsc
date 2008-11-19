@@ -64,6 +64,7 @@
 #define PetscCookie PetscFortranInt
 #define PetscLogEvent PetscFortranInt
 #define PetscLogStage PetscFortranInt
+#define PetscVoid PetscFortranAddr
 !
 #if defined(PETSC_FORTRAN_PETSCTRUTH_INT)
 #undef PetscTruth
