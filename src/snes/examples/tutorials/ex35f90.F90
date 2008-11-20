@@ -1,5 +1,4 @@
-#define PETSC_AVOID_DECLARATIONS
-#include "finclude/petscall.h"
+#include "finclude/petscalldef.h"
 
 !  Error handler that aborts when error is detected
 !

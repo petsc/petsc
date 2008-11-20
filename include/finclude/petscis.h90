@@ -2,9 +2,5 @@
 !
 !  Include files for IS used from Fortran 90
 !
-#if !defined (PETSC_AVOID_DECLARATIONS)
 #include "finclude/ftn-custom/petscis.h90"
-!      interface
-!#include "finclude/ftn-auto/petscis.h90"
-!      end interface
-#endif
+

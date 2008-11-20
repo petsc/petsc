@@ -3,6 +3,4 @@
 !  Additional Mat include file for use of PETSc with Fortran 90
 !
 
-#if !defined (PETSC_AVOID_DECLARATIONS)
 #include "finclude/ftn-custom/petscmat.h90"
-#endif

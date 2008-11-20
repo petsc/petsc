@@ -6,9 +6,12 @@ CFLAGS    =
 FFLAGS    =
 SOURCEC   =
 SOURCEF   =
-SOURCEH   = petsc.h petscdef.h petsclog.h petscvec.h petscsnes.h petscda.h petscdraw.h petscmat.h \
+SOURCEH   = petsc.h petsclog.h petscvec.h petscsnes.h petscda.h petscdraw.h petscmat.h \
 	    petscksp.h petscpc.h petscviewer.h petscis.h petscao.h petscmg.h \
-	    petscsys.h petscts.h petscis.h90 petscvec.h90 petscmat.h90 petscda.h90
+	    petscsys.h petscts.h petscis.h90 petscvec.h90 petscmat.h90 petscda.h90 \
+            petscdef.h  petsclogdef.h petscvecdef.h petscsnesdef.h petscdadef.h petscdrawdef.h petscmatdef.h \
+	    petsckspdef.h petscpcdef.h petscviewerdef.h petscisdef.h petscaodef.h petscmgdef.h \
+	    petscsysdef.h petsctsdef.h 
 OBJSC     =
 OBJSF     =
 LIBBASE   = libpetscvec

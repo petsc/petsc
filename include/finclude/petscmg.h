@@ -1,14 +1,8 @@
 !
 !  Include file for Fortran use of the MG preconditioner in PETSc
 !
-#if !defined (__PETSCMG_H)
-#define __PETSCMG_H
+#include "finclude/petscmgdef.h"
 
-#define PCMGType PetscEnum
-
-#endif
-
-#if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !
       PetscEnum PC_MG_MULTIPLICATIVE
@@ -34,4 +28,3 @@
 !
 !     End of Fortran include file for the  MG include file in PETSc
 
-#endif

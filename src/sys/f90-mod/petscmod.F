@@ -1,8 +1,6 @@
 #define PETSC_USE_FORTRAN_MODULES
 
-#define PETSC_AVOID_DECLARATIONS
-#include "finclude/petscall.h"
-#undef PETSC_AVOID_DECLARATIONS
+#include "finclude/petscalldef.h"
 
         module petscdef
 #if defined(PETSC_HAVE_MPI_F90MODULE)

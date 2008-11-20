@@ -1,35 +1,7 @@
 !
 !  Include file for Fortran use of the SNES package in PETSc
 !
-#if !defined (__PETSCSNES_H)
-#define __PETSCSNES_H
-
-#if defined(PETSC_USE_FORTRAN_MODULES)
-#define SNES_HIDE type(SNES)
-#else
-#define SNES_HIDE SNES
-
-#define SNES PetscFortranAddr
-#endif
-#define SNESType character*(80)
-#define SNESConvergedReason PetscEnum
-#define MatMFFD PetscFortranAddr
-#define MatMFFDType PetscFortranAddr
-!
-!  SNESType
-!
-#define SNESLS 'ls'
-#define SNESTR 'tr'
-#define SNESTEST 'test'
-!
-! MatSNESMF
-! 
-#define MATMFFD_DEFAULT 'ds'
-#define MATMFFD_WP 'wp'
-
-#endif
-
-#if !defined (PETSC_AVOID_DECLARATIONS)
+#include "finclude/petscsnesdef.h"
 
 #if defined(PETSC_USE_FORTRAN_MODULES)
       type SNES
@@ -110,4 +82,3 @@
 !
 !  End of Fortran include file for the SNES package in PETSc
 
-#endif

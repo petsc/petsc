@@ -4,14 +4,12 @@
 !
 #include "petscconf.h"
 #include "petscversion.h"
+#include "finclude/petscdef.h"
 
-#if !defined(PETSC_AVOID_MPIF_H) && !defined(PETSC_AVOID_DECLARATIONS)
+#if !defined(PETSC_AVOID_MPIF_H)
 #include "mpif.h"
 #endif
 
-#include "finclude/petscdef.h"
-
-#if !defined (PETSC_AVOID_DECLARATIONS)
 ! ------------------------------------------------------------------------
 !     Non Common block Stuff declared first
 !    
@@ -142,6 +140,22 @@
 #endif
 !
 ! ----------------------------------------------------------------------------
+!    BEGIN PETSc aliases for MPI_ constants
+!
+      integer MPIU_SCALAR 
+#if defined(PETSC_USE_COMPLEX)
+      parameter(MPIU_SCALAR = MPI_DOUBLE_COMPLEX)
+#else
+#if defined (PETSC_USE_SINGLE)
+      parameter (MPIU_SCALAR = MPI_REAL)
+#elif defined(PETSC_USE_LONG_DOUBLE)
+      parameter(MPIU_SCALAR = MPI_2DOUBLE_PRECISION)
+#else
+      parameter(MPIU_SCALAR = MPI_DOUBLE_PRECISION)
+#endif
+#endif
+!
+! ----------------------------------------------------------------------------
 !    BEGIN COMMON-BLOCK VARIABLES
 !
 !
@@ -193,9 +207,9 @@
       external PetscIsInfOrNanReal
       PetscTruth PetscIsInfOrNanScalar
       PetscTruth PetscIsInfOrNanReal
+
   
 !    END COMMON-BLOCK VARIABLES
 ! ----------------------------------------------------------------------------
 !
-       
-#endif
+

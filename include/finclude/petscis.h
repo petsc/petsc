@@ -2,32 +2,8 @@
 !
 !  Include file for Fortran use of the IS (index set) package in PETSc
 !
-#if !defined (__PETSCIS_H)
-#define __PETSCIS_H
+#include "finclude/petscisdef.h"
 
-#if defined(PETSC_USE_FORTRAN_MODULES) 
-#define IS_HIDE type(IS)
-#define ISCOLORING_HIDE type(ISColoring)
-#define USE_IS_HIDE use petscisdef
-#else
-#define IS_HIDE IS
-#define ISCOLORING_HIDE ISColoring
-#define USE_IS_HIDE
-
-#define IS PetscFortranAddr
-#define ISColoring PetscFortranAddr
-#endif
-
-#define ISType PetscEnum
-#define ISLocalToGlobalMapping PetscFortranAddr
-#define ISGlobalToLocalMappingType PetscEnum
-#define ISColoringType PetscEnum
-
-
-#endif
-
-
-#if !defined (PETSC_AVOID_DECLARATIONS)
 
 #if defined(PETSC_USE_FORTRAN_MODULES) 
       type IS
@@ -54,4 +30,3 @@
 !
 !  End of Fortran include file for the IS package in PETSc
 
-#endif

@@ -9,6 +9,7 @@
 !
 #if !defined (__PETSCDEF_H)
 #define __PETSCDEF_H
+#include "petscconf.h"
 !
 ! The real*8,complex*16 notatiton is used so that the 
 ! PETSc double/complex variables are not affected by 
@@ -116,17 +117,13 @@
 #define PetscConj(a) dconjg(a)
 #define PetscImaginaryPart(a) daimg(a)
 #endif
-#define MPIU_SCALAR MPI_DOUBLE_COMPLEX
 #else
 #if defined (PETSC_USE_SINGLE)
 #define PetscScalar PetscFortranFloat
-#define MPIU_SCALAR MPI_REAL
 #elif defined(PETSC_USE_LONG_DOUBLE)
 #define PetscScalar PetscFortranLongDouble
-#define MPIU_SCALAR MPI_2DOUBLE_PRECISION
 #else
 #define PetscScalar PetscFortranDouble
-#define MPIU_SCALAR MPI_DOUBLE_PRECISION
 #endif
 #define PetscRealPart(a) a
 #define PetscConj(a) a

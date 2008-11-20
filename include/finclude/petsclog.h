@@ -1,5 +1,2 @@
 !
-
-#if !defined (PETSC_AVOID_DECLARATIONS)
-
-#endif
+#include "finclude/petsclogdef.h"
