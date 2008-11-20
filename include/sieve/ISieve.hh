@@ -5,7 +5,7 @@
 #include <ALE.hh>
 #endif
 
-#define IMESH_NEW_LABELS
+// #define IMESH_NEW_LABELS
 
 namespace ALE {
   template<typename Point>
