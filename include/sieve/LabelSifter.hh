@@ -744,6 +744,15 @@ namespace ALE {
       }
       return base.size();
     };
+  public: // Compatibility with fixed storage variants
+    typedef Interval<target_type> chart_type;
+    chart_type& getChart() {static chart_type chart(0, 0); return chart;};
+    template<typename chart_type>
+    void setChart(const chart_type& chart) {};
+    void setConeSize(target_type p, int s) {};
+    void setSupportSize(source_type p, int s) {};
+    void allocate() {};
+    void recalculateLabel() {};
   }; // class LabelSifter
 } // namespace ALE
 

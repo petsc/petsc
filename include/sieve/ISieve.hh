@@ -5,7 +5,7 @@
 #include <ALE.hh>
 #endif
 
-#define IMESH_NEW_LABELS
+//#define IMESH_NEW_LABELS
 
 namespace ALE {
   template<typename Point>
@@ -1449,6 +1449,7 @@ namespace ALE {
         for(index_type c = start; c < end; ++c) {
           const point_type q = this->cones[c];
 
+          this->chart.checkPoint(q);
           this->supports[this->supportOffsets[q]+offsets[q]] = p;
           ++offsets[q];
         }

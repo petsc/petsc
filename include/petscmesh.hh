@@ -552,7 +552,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<Mesh>& mesh, const int bs, con
     if (debug > 1) adjGraph->view("Localized adjacency graph");
     /* Distribute indices for new points */
     ALE::Distribution<ALE::Mesh>::updateOverlap(vertexSendOverlap, vertexRecvOverlap, sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
-    mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, true, false);
+    mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, true);
     if (debug > 1) globalOrder->view("Completed global order");
     ierr = renumberLocalAdjacencyGraph(mesh, adjGraph, vertexSendOverlap, globalOrder);
     if (debug > 1) adjGraph->view("Renumbered adjacency graph");
@@ -975,7 +975,7 @@ PetscErrorCode preallocateOperatorNew(const ALE::Obj<Mesh>& mesh, const int bs, 
 #undef __FUNCT__
 #define __FUNCT__ "updateOperator"
 template<typename Sieve, typename Visitor>
-PetscErrorCode updateOperator(Mat A, const Sieve& sieve, Visitor& iV, const ALE::IMesh::point_type& e, PetscScalar array[], InsertMode mode)
+PetscErrorCode updateOperator(Mat A, const Sieve& sieve, Visitor& iV, const ALE::IMesh<>::point_type& e, PetscScalar array[], InsertMode mode)
 {
   PetscFunctionBegin;
   ALE::ISieveTraversal<Sieve>::orientedClosure(sieve, e, iV);

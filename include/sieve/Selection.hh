@@ -635,7 +635,8 @@ namespace ALE {
       }
       return submesh(mesh, submeshFaces, mesh->getDimension()-1);
     };
-    static Obj<mesh_type> submeshV_uninterpolated(const Obj<mesh_type>& mesh, const Obj<int_section_type>& label, const int dimension = -1, const bool boundaryFaces = true) {
+    template<typename output_mesh_type>
+    static Obj<output_mesh_type> submeshV_uninterpolated(const Obj<mesh_type>& mesh, const Obj<int_section_type>& label, const int dimension = -1, const bool boundaryFaces = true) {
       typedef typename mesh_type::label_type        label_type;
       typedef typename int_section_type::chart_type chart_type;
       const int                           dim        = (dimension > 0) ? dimension : mesh->getDimension()-1;
@@ -738,12 +739,13 @@ namespace ALE {
       }
       delete [] indices;
       submesh->setSieve(subSieve);
+      submesh->view("Submesh before stratify");
       submesh->stratify();
       if (debug) submesh->view("Submesh");
 
-      Obj<mesh_type> isubmesh = new mesh_type(submesh->comm(), submesh->getDimension(), submesh->debug());
-      Obj<typename mesh_type::sieve_type> isieve = new typename mesh_type::sieve_type(submesh->comm(), submesh->debug());
-      std::map<typename mesh_type::point_type,typename mesh_type::point_type> renumbering;
+      Obj<output_mesh_type> isubmesh = new output_mesh_type(submesh->comm(), submesh->getDimension(), submesh->debug());
+      Obj<typename output_mesh_type::sieve_type> isieve = new typename output_mesh_type::sieve_type(submesh->comm(), submesh->debug());
+      std::map<typename output_mesh_type::point_type,typename output_mesh_type::point_type> renumbering;
       isubmesh->setSieve(isieve);
       ALE::ISieveConverter::convertMesh(*submesh, *isubmesh, renumbering, false);
       return isubmesh;
@@ -762,7 +764,8 @@ namespace ALE {
       }
       throw ALE::Exception("Cannot handle partially interpolated meshes");
     };
-    static Obj<mesh_type> submeshV(const Obj<mesh_type>& mesh, const Obj<int_section_type>& label, const int dimension = -1) {
+    template<typename output_mesh_type>
+    static Obj<output_mesh_type> submeshV(const Obj<mesh_type>& mesh, const Obj<int_section_type>& label, const int dimension = -1) {
       const int dim   = mesh->getDimension();
       const int depth = mesh->depth();
 
@@ -771,11 +774,11 @@ namespace ALE {
         //return submesh_interpolated(mesh, label, dimension, false);
         throw ALE::Exception("Cannot handle interpolated meshes");
       } else if (depth == 1) {
-        return submeshV_uninterpolated(mesh, label, dimension);
+        return submeshV_uninterpolated<output_mesh_type>(mesh, label, dimension);
       }
 #else
       if (depth == 1) {
-        return submeshV_uninterpolated(mesh, label, dimension);
+        return submeshV_uninterpolated<output_mesh_type>(mesh, label, dimension);
       } else if (dim == depth) {
         //return submesh_interpolated(mesh, label, dimension, false);
         throw ALE::Exception("Cannot handle interpolated meshes");
