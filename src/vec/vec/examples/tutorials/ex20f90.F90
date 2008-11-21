@@ -18,7 +18,6 @@
 !   see the manual page UsingFortran
 !
 #define PETSC_USE_FORTRAN_MODULES
-#define PETSC_USE_FORTRAN_DATATYPES
 #include "finclude/petscdef.h"
 #include "finclude/petscvecdef.h"
 #if defined(PETSC_USE_FORTRAN_MODULES)

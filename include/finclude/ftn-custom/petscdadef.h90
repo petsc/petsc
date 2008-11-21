@@ -9,6 +9,12 @@
       type DA
         PetscFortranAddr:: v
       end type DA
+      type ADDA
+        PetscFortranAddr:: v
+      end type ADDA
+      type SDA
+        PetscFortranAddr:: v
+      end type SDA
 #endif
 
 #endif

@@ -8,6 +8,8 @@
 #if !defined(PETSC_USE_FORTRAN_TYPES)
 #define DA PetscFortranAddr
 #define DM PetscFortranAddr
+#define ADDA PetscFortranAddr
+#define SDA PetscFortranAddr
 #endif
 #define DAPeriodicType PetscEnum
 #define DAStencilType PetscEnum

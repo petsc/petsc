@@ -5,5 +5,6 @@
 #define __PETSCMGDEF_H
 
 #define PCMGType PetscEnum
+#define PCMGCycleType PetscEnum
 
 #endif

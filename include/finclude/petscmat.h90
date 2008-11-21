@@ -4,3 +4,9 @@
 !
 
 #include "finclude/ftn-custom/petscmat.h90"
+#if defined(PETSC_USE_FORTRAN_INTERFACES)
+      interface
+#include "finclude/ftn-auto/petscmat.h90"
+      end interface
+#endif
+

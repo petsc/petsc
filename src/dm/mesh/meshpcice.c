@@ -2,7 +2,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCICERenumberBoundary"
-/*@
+/*@C
   PCICERenumberBoundary - Change global element names into offsets
 
   Collective on Mesh

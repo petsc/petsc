@@ -4795,7 +4795,8 @@ for programmers who wish to employ Fortran for the core numerical
 routines within their applications.  In particular, one can
 effectively write PETSc driver routines in C/C++, thereby preserving
 flexibility within the program, and still use Fortran when desired for
-underlying numerical computations.
+underlying numerical computations. With Fortran 90 compilers we now
+can provide some type checking from Fortran.
 
 \section{Differences between PETSc Interfaces for C and Fortran}
 
@@ -4838,6 +4839,14 @@ preprocessor is not needed for writing PETSc Fortran code; one can simply
 begin by copying a PETSc Fortran example and its corresponding
 makefile.)  
 
+For some of the Fortran 90 functionality of PETSc and type checking
+of PETSc function calls you can use
+\begin{tabbing}
+    \#include "finclude/includefile.h
+    \#include "finclude/includefile.h90"
+\end{tabbing}
+See the manual page UsingFortran for how you can use PETSc Fortran
+module files in your code.
 
 \subsection{Error Checking}
 \label{sec_fortran_errors}

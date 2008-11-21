@@ -453,7 +453,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshDestroy"
-/*@
+/*@C
     MeshDestroy - Destroys a mesh.
 
     Collective on Mesh
@@ -599,7 +599,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterAll(const char path[])
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshRegisterDestroy"
-/*@
+/*@C
   MeshRegisterDestroy - Frees the list of Mesh types that were
   registered by MeshRegister().
 
@@ -874,7 +874,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal se
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshGetMaximumDegree"
-/*@
+/*@C
   MeshGetMaximumDegree - Return the maximum degree of any mesh vertex
 
   Collective on mesh

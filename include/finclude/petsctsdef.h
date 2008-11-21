@@ -10,7 +10,8 @@
 #define TSType character*(80)
 #define TSSundialsType PetscEnum
 #define TSProblemType PetscEnum 
-#define TSSundialsGramSchmitdType PetscEnum
+#define TSSundialsGramSchmidtType PetscEnum
+#define TSSundialsLmmType PetscEnum
 
 #define TS_EULER 'euler'
 #define TS_BEULER 'beuler'

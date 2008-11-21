@@ -316,7 +316,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGetGlobalIndices(Sliced slice,PetscInt *i
 
 #undef __FUNCT__  
 #define __FUNCT__ "SlicedGlobalToLocalBegin"
-/*@
+/*@C
    SlicedGlobalToLocalBegin - Begins the communication from a global sliced vector to a local one
 
    Collective on DA
@@ -356,7 +356,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGlobalToLocalBegin(Sliced sliced,Vec g,In
 
 #undef __FUNCT__  
 #define __FUNCT__ "SlicedGlobalToLocalEnd"
-/*@
+/*@C
    SlicedGlobalToLocalEnd - Ends the communication from a global sliced vector to a local one
 
    Collective on DA
