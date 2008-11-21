@@ -1,0 +1,10 @@
+
+#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#include "finclude/ftn-custom/petsctsdef.h90"
+#endif
+
+#if defined(PETSC_USE_FORTRAN_TYPES) && !defined(TS_HIDE)
+#define TS_HIDE type(TS)
+#elif !defined(TS_HIDE)
+#define TS_HIDE TS
+#endif

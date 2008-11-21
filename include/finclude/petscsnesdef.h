@@ -4,11 +4,7 @@
 #if !defined (__PETSCSNESDEF_H)
 #define __PETSCSNESDEF_H
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-#define SNES_HIDE type(SNES)
-#else
-#define SNES_HIDE SNES
-
+#if !defined(PETSC_USE_FORTRAN_TYPES)
 #define SNES PetscFortranAddr
 #endif
 #define SNESType character*(80)

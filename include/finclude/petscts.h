@@ -3,11 +3,6 @@
 !
 #include "finclude/petsctsdef.h"
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-      type TS
-        PetscFortranAddr:: v
-      end type TS
-#endif
 !
 !  TSProblemType
 !

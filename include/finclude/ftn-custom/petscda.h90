@@ -1,4 +1,18 @@
 
+#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#include "finclude/ftn-custom/petscdadef.h90"
+#endif
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(DM_HIDE)
+#define DM_HIDE type(DM)
+#define DA_HIDE type(DA)
+#define USE_DA_HIDE use petscdadef
+#elif !defined(DM_HIDE)
+#define DM_HIDE DM
+#define DA_HIDE DA
+#define USE_DA_HIDE
+#endif
+
       Interface 
         Subroutine DAGetGlobalIndicesF90(v,n,array,ierr)
           USE_DA_HIDE

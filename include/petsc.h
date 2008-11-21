@@ -1793,19 +1793,44 @@ extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype
 
 /*MC
 
-    FortranModules - it is possible to use PETSc from Fortran using Fortran 90 modules instead of C style include macros.
+    UsingFortran - Fortran can be used with PETSc in four distinct approaches
 
-$   Objects are named type(XXXX)  instead of XXXX, for example
-$      use petscvec 
-$      type(Vec) v instead of
+$    1) classic Fortran 77 style
+$#include "petscXXX.h" to work with material from the XXX component of PETSc
+$       XXX variablename
+$      You cannot use this approach if you wish to use the Fortran 90 specific PETSc routines
+$      which end in F90; such as VecGetArrayF90()
 $
-$#include "finclude/petsc.h"
-$#include "finclude/petscvec.h"
-$      Vec v
+$    2) classic Fortran 90 style
+$#include "petscXXX.h" 
+$#include "petscXXX.h90" to work with material from the XXX component of PETSc
+$       XXX variablename
+$
+$    3) Using Fortran modules
+$#include "petscXXXdef.h" 
+$         use petscXXXX
+$       XXX variablename
+$
+$    4) Use Fortran modules and Fortran data types for PETSc types
+$#include "petscXXXdef.h" 
+$         use petscXXXX
+$       type(XXX) variablename
+$      To use this approach you must config/configure.py PETSc with the additional
+$      option --with-fortran-datatypes You cannot use the type(XXX) declaration approach without using Fortran modules
 
-    The PETSc macros, PetscInt, PetscErrorCode etc are not available, you should use integer for these
+    Finally if you absolutely do not want to use any #include you can use either 
 
-    See the example src/vec/vec/examples/tutorials/ex20f90.F90
+$    3a) skip the #include BUT you cannot use any PETSc data type names like Vec, Mat, PetscInt, PetscErrorCode etc
+$        and you must declare the variables as integer, for example 
+$        integer variablename
+$
+$    4a) skip the #include, you use the object types like type(Vec) type(Mat) but cannot use the data type
+$        names like PetscErrorCode, PetscInt etc. again for those you must use integer
+
+   We recommend either 2 or 3. Approaches 2 and 3 provide type checking for most PETSc function calls; 4 has type checking 
+for only a few PETSc functions.
+
+    See the example src/vec/vec/examples/tutorials/ex20f90.F90 for an example that can use all four approaches
 
     Level: beginner
 

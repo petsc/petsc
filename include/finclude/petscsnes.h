@@ -3,11 +3,6 @@
 !
 #include "finclude/petscsnesdef.h"
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-      type SNES
-        PetscFortranAddr:: v
-      end type SNES
-#endif
 !
 !  Convergence flags
 !

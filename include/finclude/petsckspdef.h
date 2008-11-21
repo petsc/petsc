@@ -5,11 +5,8 @@
 #if !defined (__PETSCKSPDEF_H)
 #define __PETSCKSPDEF_H
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-#define KSP_HIDE type(KSP)
-#else
-#define KSP_HIDE KSP
 
+#if !defined(PETSC_USE_FORTRAN_TYPES)
 #define KSP PetscFortranAddr
 #define KSPFischerGuess PetscFortranAddr
 #endif

@@ -4,11 +4,7 @@
 #if !defined (__PETSCTSDEF_H)
 #define __PETSCTSDEF_H
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-#define TS_HIDE type(TS)
-#else
-#define TS_HIDE TS
-
+#if !defined(PETSC_USE_FORTRAN_TYPES)
 #define TS PetscFortranAddr
 #endif
 #define TSType character*(80)

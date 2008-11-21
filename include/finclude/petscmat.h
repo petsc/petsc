@@ -4,11 +4,6 @@
 !
 #include "finclude/petscmatdef.h"
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-      type Mat
-        PetscFortranAddr:: v
-      end type Mat
-#endif
 !
 !  Flag for matrix assembly
 !

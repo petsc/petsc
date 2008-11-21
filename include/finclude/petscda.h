@@ -4,14 +4,7 @@
 !
 #include "finclude/petscdadef.h"
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-      type DM
-        PetscFortranAddr:: v
-      end type DM
-      type DA
-        PetscFortranAddr:: v
-      end type DA
-#endif
+
 !
 !  Types of stencils
 !

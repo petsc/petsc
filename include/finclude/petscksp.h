@@ -4,11 +4,6 @@
 !
 #include "finclude/petsckspdef.h"
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-      type KSP
-        PetscFortranAddr:: v
-      end type KSP
-#endif
 !
 !  CG Types
 !

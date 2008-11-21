@@ -5,15 +5,8 @@
 #if !defined (__PETSCISDEF_H)
 #define __PETSCISDEF_H
 
-#if defined(PETSC_USE_FORTRAN_MODULES) 
-#define IS_HIDE type(IS)
-#define ISCOLORING_HIDE type(ISColoring)
-#define USE_IS_HIDE use petscisdef
-#else
-#define IS_HIDE IS
-#define ISCOLORING_HIDE ISColoring
-#define USE_IS_HIDE
 
+#if !defined(PETSC_USE_FORTRAN_TYPES) 
 #define IS PetscFortranAddr
 #define ISColoring PetscFortranAddr
 #endif

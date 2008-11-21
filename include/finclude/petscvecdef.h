@@ -5,15 +5,8 @@
 #if !defined (__PETSCVECDEF_H)
 #define __PETSCVECDEF_H
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-#define VEC_HIDE type(Vec)
-#define VECSCATTER_HIDE type(VecScatter)
-#define USE_VEC_HIDE use petscvecdef
-#else
-#define VEC_HIDE Vec
-#define VECSCATTER_HIDE VecScatter
-#define USE_VEC_HIDE
 
+#if !defined(PETSC_USE_FORTRAN_TYPES)
 #define Vec PetscFortranAddr
 #define VecScatter PetscFortranAddr
 #endif

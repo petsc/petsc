@@ -5,15 +5,7 @@
 #if !defined (__PETSCDADEF_H)
 #define __PETSCDADEF_H
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-#define DM_HIDE type(DM)
-#define DA_HIDE type(DA)
-#define USE_DA_HIDE use petscdadef
-#else
-#define DM_HIDE DM
-#define DA_HIDE DA
-#define USE_DA_HIDE
-
+#if !defined(PETSC_USE_FORTRAN_TYPES)
 #define DA PetscFortranAddr
 #define DM PetscFortranAddr
 #endif

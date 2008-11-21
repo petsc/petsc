@@ -4,14 +4,7 @@
 #if !defined (__PETSCVIEWERDEF_H)
 #define __PETSCVIEWERDEF_H
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-#define PETSCVIEWER_HIDE type(PetscViewer)
-#define USE_PETSC_HIDE use petscdef
-#else
-#define PETSCVIEWER_HIDE PetscViewer
-#define USE_PETSC_HIDE
-
-
+#if !defined(PETSC_USE_FORTRAN_TYPES)
 #define PetscViewer PetscFortranAddr
 #endif
 

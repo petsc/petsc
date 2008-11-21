@@ -3,11 +3,7 @@
 !
 #include "finclude/petscviewerdef.h"
 
-#if defined(PETSC_USE_FORTRAN_MODULES) 
-      type PetscViewer
-        PetscFortranAddr:: v
-      end type PetscViewer
-#else
+#if !defined(PETSC_USE_FORTRAN_DATATYPES) 
       PetscViewer PETSC_VIEWER_STDOUT_
       external PETSC_VIEWER_STDOUT_
 #endif

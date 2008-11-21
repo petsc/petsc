@@ -15,10 +15,22 @@
 !
 !
 !     This examples uses Fortran 90 MODULES instead of include files
-!   see the manual page FortranModules
+!   see the manual page UsingFortran
 !
+#define PETSC_USE_FORTRAN_MODULES
+#define PETSC_USE_FORTRAN_DATATYPES
+#include "finclude/petscdef.h"
+#include "finclude/petscvecdef.h"
+#if defined(PETSC_USE_FORTRAN_MODULES)
       use petscvec
+#endif
       implicit none
+#if !defined(PETSC_USE_FORTRAN_MODULES)
+#include "finclude/petsc.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscvec.h90"
+
+#endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
@@ -28,8 +40,13 @@
 !     x, y, w - vectors
 !     z       - array of vectors
 !
-      type(Vec)              x,y,w
+#if defined(PETSC_USE_FORTRAN_DATATYPES)
+      type(Vec)       x,y,w
       type(Vec), pointer :: z(:)
+#else
+      Vec              x,y,w
+      Vec, pointer :: z(:)
+#endif
       double precision norm,v,v1,v2
       integer         n,ithree
       integer   ierr

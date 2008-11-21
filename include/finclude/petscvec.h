@@ -3,15 +3,6 @@
 !  Include file for Fortran use of the Vec package in PETSc
 !
 #include "finclude/petscvecdef.h"
-
-#if defined(PETSC_USE_FORTRAN_MODULES)
-      type Vec
-        PetscFortranAddr:: v
-      end type Vec
-      type VecScatter
-        PetscFortranAddr:: v
-      end type VecScatter
-#endif
 !
 !
 !  Types of vector and matrix norms

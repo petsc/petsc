@@ -3,12 +3,6 @@
 !  Include file for Fortran use of the PC (preconditioner) package in PETSc
 !
 #include "finclude/petscpcdef.h"
-
-#if defined(PETSC_USE_FORTRAN_MODULES)
-      type PC
-        PetscFortranAddr:: v
-      end type PC
-#endif
 !
 !  PCSide
 !

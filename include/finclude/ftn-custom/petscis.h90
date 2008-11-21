@@ -2,6 +2,19 @@
 !  These are Fortran interfaces that are custom hand coded because
 !  they cannot currently be generated automatically
 !
+#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#include "finclude/ftn-custom/petscisdef.h90"
+#endif
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(IS_HIDE)
+#define IS_HIDE type(IS)
+#define ISCOLORING_HIDE type(ISColoring)
+#define USE_IS_HIDE use petscisdef
+#elif !defined(IS_HIDE)
+#define IS_HIDE IS
+#define ISCOLORING_HIDE ISColoring
+#define USE_IS_HIDE
+#endif
 
       Interface 
         Subroutine ISGetIndicesF90(i,array,ierr)

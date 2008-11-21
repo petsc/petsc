@@ -5,15 +5,6 @@
 #include "finclude/petscisdef.h"
 
 
-#if defined(PETSC_USE_FORTRAN_MODULES) 
-      type IS
-        PetscFortranAddr:: v
-      end type IS
-      type ISColoring
-        PetscFortranAddr:: v
-      end type ISColoring
-#endif
-
       PetscEnum IS_COLORING_GLOBAL
       PetscEnum IS_COLORING_GHOSTED
       parameter (IS_COLORING_GLOBAL = 0,IS_COLORING_GHOSTED = 1)

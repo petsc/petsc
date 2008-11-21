@@ -5,17 +5,8 @@
 #if !defined (__PETSCMATDEF_H)
 #define __PETSCMATDEF_H
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-#define MAT_HIDE type(Mat)
-#define MATFDCOLORING_HIDE type(MatFDColoring)
-#define MATNULLSPACE_HIDE type(MatNullSpace)
-#define USE_MAT_HIDE use petscmatdef
-#else
-#define MAT_HIDE Mat
-#define MATFDCOLORING_HIDE MatFDColoring
-#define MATNULLSPACE_HIDE MatNullSpace
-#define USE_MAT_HIDE
 
+#if !defined(PETSC_USE_FORTRAN_TYPES)
 #define Mat PetscFortranAddr
 #define MatNullSpace PetscFortranAddr
 #define MatFDColoring PetscFortranAddr
