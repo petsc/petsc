@@ -7,7 +7,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download         = ['ftp://ftp.mcs.anl.gov/pub/petsc/tmp/sowing.tar.gz']
+    self.download         = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/sowing-1.1.11-a.tar.gz']
     self.complex          = 1
     self.double           = 0;
     self.requires32bitint = 0;
@@ -83,6 +83,15 @@ class Configure(PETSc.package.Package):
 
   def configure(self):
     '''Determine whether the Sowing exist or not'''
+
+    # If download option is specified always build sowing
+    if self.framework.argDB['download-sowing'] == 'ifneeded':
+      self.framework.argDB['download-sowing'] = 0
+
+    if self.framework.argDB['download-sowing']:
+      PETSc.package.Package.configure(self)
+      return
+
     if self.petscdir.isClone:
       self.framework.logPrint('PETSc clone, checking for Sowing or if it is needed\n')
 #      if self.framework.argDB.has_key('with-sowing') and not self.framework.argDB['with-sowing']:
@@ -102,7 +111,7 @@ class Configure(PETSc.package.Package):
         self.framework.logPrint('Found bfort, not installing sowing')
       else:
         self.framework.logPrint('Installing bfort')
-        if not self.framework.argDB.has_key('download-sowing') or not self.framework.argDB['download-sowing']: self.framework.argDB['download-sowing'] = 1
+        self.framework.argDB['download-sowing'] = 1
         PETSc.package.Package.configure(self)
       self.buildFortranStubs()
     else:
