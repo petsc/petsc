@@ -5,6 +5,10 @@
 #if !defined (__PETSCDADEF_H)
 #define __PETSCDADEF_H
 
+#include "finclude/petscisdef.h"
+#include "finclude/petscvecdef.h"
+#include "finclude/petscmatdef.h"
+
 #if !defined(PETSC_USE_FORTRAN_TYPES)
 #define DA PetscFortranAddr
 #define DM PetscFortranAddr

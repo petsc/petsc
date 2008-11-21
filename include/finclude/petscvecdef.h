@@ -5,6 +5,7 @@
 #if !defined (__PETSCVECDEF_H)
 #define __PETSCVECDEF_H
 
+#include "finclude/petscisdef.h"
 
 #if !defined(PETSC_USE_FORTRAN_TYPES)
 #define Vec PetscFortranAddr

@@ -5,6 +5,8 @@
 #if !defined (__PETSCBAGDEF_H)
 #define __PETSCBAGDEF_H
 
+#include "finclude/petscdef.h"
+
 #define PetscBag PetscFortranAddr
 
 !

@@ -5,6 +5,7 @@
 #if !defined (__PETSCKSPDEF_H)
 #define __PETSCKSPDEF_H
 
+#include "finclude/petscpcdef.h"
 
 #if !defined(PETSC_USE_FORTRAN_TYPES)
 #define KSP PetscFortranAddr

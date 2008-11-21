@@ -5,6 +5,7 @@
 #if !defined (__PETSCMATDEF_H)
 #define __PETSCMATDEF_H
 
+#include "finclude/petscvecdef.h"
 
 #if !defined(PETSC_USE_FORTRAN_TYPES)
 #define Mat PetscFortranAddr

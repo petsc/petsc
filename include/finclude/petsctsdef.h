@@ -4,6 +4,8 @@
 #if !defined (__PETSCTSDEF_H)
 #define __PETSCTSDEF_H
 
+#include "finclude/petscsnesdef.h"
+
 #if !defined(PETSC_USE_FORTRAN_TYPES)
 #define TS PetscFortranAddr
 #endif
