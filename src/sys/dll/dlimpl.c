@@ -19,10 +19,13 @@
 
 #if defined(PETSC_HAVE_WINDOWS_H)
 typedef HMODULE dlhandle_t;
+typedef FARPROC dlsymbol_t;
 #elif defined(PETSC_HAVE_DLFCN_H)
 typedef void* dlhandle_t;
+typedef void* dlsymbol_t;
 #else
 typedef void* dlhandle_t;
+typedef void* dlsymbol_t;
 #endif
 
 #undef __FUNCT__  
@@ -188,14 +191,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLClose(PetscDLHandle *handle)
 PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol[],void **value)
 {
   dlhandle_t dlhandle;
-  void       *dlvalue;
+  dlsymbol_t dlsymbol;
 
   PetscFunctionBegin;
   PetscValidCharPointer(symbol,2);
   PetscValidPointer(value,3);
 
   dlhandle = (dlhandle_t) 0;
-  dlvalue  = (void *) 0;
+  dlsymbol = (dlsymbol_t) 0;
+
   *value   = (void *) 0;
 
   /* 
@@ -207,7 +211,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol
     dlhandle = (dlhandle_t) handle;
   else
     dlhandle = (dlhandle_t) GetCurrentProcess();
-  dlvalue = GetProcAddress(dlhandle,symbol);
+  dlsymbol = (dlsymbol_t) GetProcAddress(dlhandle,symbol);
 #if defined(PETSC_HAVE_SETLASTERROR)
   SetLastError((DWORD)0); /* clear any previous error */
 #endif
@@ -225,7 +229,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol
 #if defined(PETSC_HAVE_DLERROR)
   dlerror(); /* clear any previous error */
 #endif
-  dlvalue = dlsym(dlhandle,symbol);
+  dlsymbol = (dlsymbol_t) dlsym(dlhandle,symbol);
 #if defined(PETSC_HAVE_DLERROR)
   dlerror(); /* clear any previous error */
 #endif
@@ -238,7 +242,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLSym(PetscDLHandle handle,const char symbol
   SETERRQ(PETSC_ERR_SUP_SYS, "Cannot use dynamic libraries on this platform");
 #endif
 
-  *value = dlvalue;
+  *value = *((void**)&dlsymbol);
 
   PetscFunctionReturn(0);
 }
