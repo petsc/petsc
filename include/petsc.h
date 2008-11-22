@@ -1846,6 +1846,26 @@ $      call MatSetValues(mat,1,row,1,col,val,INSERT_VALUES,ierr)
 
     See the example src/vec/vec/examples/tutorials/ex20f90.F90 for an example that can use all four approaches
 
+    Developer Notes: The finclude/petscXXXdef.h contain all the #defines (would be typedefs in C code) these
+     automatically include their predecessors; for example finclude/petscvecdef.h includes finclude/petscisdef.h
+
+     The finclude/petscXXXX.h contain all the parameter statements for that package. These automatically include
+     their finclude/petscXXXdef.h file but DO NOT automatically include their predecessors;  for example 
+     finclude/petscvec.h does NOT automatically include finclude/petscis.h
+
+     The finclude/ftn-custom/petscXXXdef.h90 are not intended to be used directly in code, they define the
+     Fortran data type type(XXX) (for example type(Vec)) when PETSc is config/configure.py with the --with-fortran-datatypes option.
+
+     The finclude/ftn-custom/petscXXX.h90 (not included directly by code) contain interface definitions for
+     the PETSc Fortran stubs that have different bindings then their C version (for example VecGetArrayF90).
+
+     The finclude/ftn-auto/petscXXX.h90 (not included directly by code) contain interface definitions generated
+     automatically by "make allfortranstubs".
+
+     The finclude/petscXXX.h90 includes the custom finclude/ftn-custom/petscXXX.h90 and if config/configure.py 
+     was run with --with-fortran-interfaces it also includes the finclude/ftn-auto/petscXXX.h90 These DO NOT automatically
+     include their predecessors
+
     Level: beginner
 
 M*/
