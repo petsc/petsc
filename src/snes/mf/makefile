@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = snesmfj.o
 OBJSF    =
 LIBBASE  = libpetscsnes
-MANSEC   = Mat
+MANSEC   = SNES
 DIRS     = 
 LOCDIR   = src/snes/mf/
 
