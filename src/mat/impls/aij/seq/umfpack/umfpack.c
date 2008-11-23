@@ -118,21 +118,24 @@ PetscErrorCode MatDestroy_UMFPACK(Mat A)
 #define __FUNCT__ "MatSolve_UMFPACK"
 PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
 {
-  Mat_UMFPACK *lu = (Mat_UMFPACK*)A->spptr;
-  PetscScalar *av=lu->av,*ba,*xa;
+  Mat_UMFPACK    *lu = (Mat_UMFPACK*)A->spptr;
+  PetscScalar    *av=lu->av,*ba,*xa;
   PetscErrorCode ierr;
-  PetscInt     *ai=lu->ai,*aj=lu->aj,status;
+  PetscInt       *ai=lu->ai,*aj=lu->aj,status;
   
   PetscFunctionBegin;
   /* solve Ax = b by umfpack_*_wsolve */
   /* ----------------------------------*/
-
   ierr = VecConjugate(b);
 
   ierr = VecGetArray(b,&ba);
   ierr = VecGetArray(x,&xa);
-
-  status = umfpack_UMF_wsolve(UMFPACK_At,ai,aj,av,xa,ba,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);  
+#if defined(PETSC_USE_COMPLEX)
+  status = umfpack_UMF_wsolve(UMFPACK_At,ai,aj,(PetscReal*)av,NULL,(PetscReal*)xa,NULL,(PetscReal*)ba,NULL,
+                              lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
+#else  
+  status = umfpack_UMF_wsolve(UMFPACK_At,ai,aj,av,xa,ba,lu->Numeric,lu->Control,lu->Info,lu->Wi,lu->W);
+#endif
   umfpack_UMF_report_info(lu->Control, lu->Info); 
   if (status < 0){
     umfpack_UMF_report_status(lu->Control, status);
@@ -144,7 +147,6 @@ PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
 
   ierr = VecConjugate(b);
   ierr = VecConjugate(x);
-
   PetscFunctionReturn(0);
 }
 
@@ -224,13 +226,14 @@ PetscErrorCode MatLUFactorSymbolic_UMFPACK(Mat F,Mat A,IS r,IS c,const MatFactor
 #if !defined(PETSC_USE_COMPLEX)
     status = umfpack_UMF_qsymbolic(n,m,lu->ai,lu->aj,av,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info);
 #else
-    status = umfpack_UMF_qsymbolic(n,m,lu->ai,lu->aj,av,NULL,lu->perm_c,&lu->Symbolic,lu->Control,lu->Info);
+    status = umfpack_UMF_qsymbolic(n,m,lu->ai,lu->aj,NULL,NULL,
+                                   lu->perm_c,&lu->Symbolic,lu->Control,lu->Info);
 #endif
   } else { /* use Umfpack col ordering */
 #if !defined(PETSC_USE_COMPLEX)
     status = umfpack_UMF_symbolic(n,m,lu->ai,lu->aj,av,&lu->Symbolic,lu->Control,lu->Info);
 #else
-    status = umfpack_UMF_symbolic(n,m,lu->ai,lu->aj,av,NULL,&lu->Symbolic,lu->Control,lu->Info);
+    status = umfpack_UMF_symbolic(n,m,lu->ai,lu->aj,NULL,NULL,&lu->Symbolic,lu->Control,lu->Info);
 #endif
   }
   if (status < 0){
