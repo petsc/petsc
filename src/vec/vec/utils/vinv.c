@@ -692,7 +692,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec v,PetscInt idex[],PetscRea
 PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec s[],InsertMode addv)
 {
   PetscErrorCode ierr;
-  PetscInt       i,n,bs,j,k,*bss = PETSC_NULL,nv,jj,nvc;
+  PetscInt       i,n,n2,bs,j,k,*bss = PETSC_NULL,nv,jj,nvc;
   PetscScalar    *x,**y;
 
   PetscFunctionBegin;
@@ -700,9 +700,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec s[],InsertMode ad
   PetscValidPointer(s,2);
   PetscValidHeaderSpecific(*s,VEC_COOKIE,2);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(s[0],&n2);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->map->bs;
   if (bs < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
+  if (n != n2*bs) SETERRQ2(PETSC_ERR_ARG_WRONG,"Block vector does not match split vectors: %d != %d", n, n2*bs);
   ierr = PetscMalloc2(bs,PetscReal*,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
   nv   = 0;
   nvc  = 0;
