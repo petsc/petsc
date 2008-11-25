@@ -274,6 +274,8 @@ typedef enum {PC_ASM_BASIC = 3,PC_ASM_RESTRICT = 1,PC_ASM_INTERPOLATE = 2,PC_ASM
 extern const char *PCASMTypes[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetType(PC,PCASMType);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains(Mat,PetscInt,IS*[]);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMDestroySubdomains(PetscInt,IS[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMCreateSubdomains2D(PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt *,IS **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetUseInPlace(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetLocalSubdomains(PC,PetscInt*,IS*[]);
