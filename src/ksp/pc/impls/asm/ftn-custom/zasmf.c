@@ -7,15 +7,41 @@
 #define pcasmsetglobalsubdomains_  PCASMSETGLOBALSUBDOMAINS
 #define pcasmgetlocalsubmatrices_  PCASMGETLOCALSUBMATRICES
 #define pcasmgetlocalsubdomains_   PCASMGETLOCALSUBDOMAINS
+#define pcasmcreatesubdomains_     PCASMCREATESUBDOMAINS
+#define pcasmdestroysubdomains_    PCASMDESTROYSUBDOMAINS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define pcasmgetsubksp_            pcasmgetsubksp
 #define pcasmsetlocalsubdomains_   pcasmsetlocalsubdomains
 #define pcasmsetglobalsubdomains_  pcasmsetglobalsubdomains
 #define pcasmgetlocalsubmatrices_  pcasmgetlocalsubmatrices
 #define pcasmgetlocalsubdomains_   pcasmgetlocalsubdomains
+#define pcasmcreatesubdomains_     pcasmcreatesubdomains
+#define pcasmdestroysubdomains_    pcasmdestroysubdomains
 #endif
 
 EXTERN_C_BEGIN
+void PETSC_STDCALL pcasmcreatesubdomains_(Mat *mat,PetscInt *n,IS *subs,PetscErrorCode *ierr)
+{
+  PetscInt i;
+  IS       *insubs;
+
+  *ierr = PCASMCreateSubdomains(*mat,*n,&insubs);if (*ierr) return;
+  for (i=0; i<*n; i++) {
+    subs[i] = insubs[i];
+  }
+  *ierr = PetscFree(insubs); 
+}
+
+
+void PETSC_STDCALL pcasmdestroysubdomains_(Mat *mat,PetscInt *n,IS *subs,PetscErrorCode *ierr)
+{
+  PetscInt i;
+
+  for (i=0; i<*n; i++) {
+    *ierr = ISDestroy(subs[i]);if (*ierr) return;
+  }
+}
+
 void PETSC_STDCALL pcasmgetsubksp_(PC *pc,PetscInt *n_local,PetscInt *first_local,KSP *ksp,PetscErrorCode *ierr)
 {
   KSP *tksp;
