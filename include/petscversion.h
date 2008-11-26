@@ -8,6 +8,13 @@
 #define PETSC_VERSION_PATCH      15
 #define PETSC_VERSION_DATE       "May, 23, 2007"
 #define PETSC_VERSION_PATCH_DATE "unknown"
+
+#if !defined (PETSC_VERSION_HG)
 #define PETSC_VERSION_HG         "unknown"
+#endif
+
+#if !defined(PETSC_VERSION_DATE_HG)
+#define PETSC_VERSION_DATE_HG    "unknown"
+#endif
 
 #endif
