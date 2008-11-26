@@ -76,8 +76,7 @@ cdef class KSP(Object):
 
     def __call__(self, b, x=None):
         if x is None: # XXX do this better
-            A = self.getOperators()[0]
-            x = A.getVecLeft()
+            x = self.getOperators()[0].getVecLeft()
         self.solve(b, x)
         return x
 
