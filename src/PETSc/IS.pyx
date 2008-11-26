@@ -72,7 +72,7 @@ cdef class IS(Object):
         return self
 
     def getType(self):
-        cdef PetscISType istype
+        cdef PetscISType istype = IS_GENERAL
         CHKERR( ISGetType(self.iset, &istype) )
         return istype
 

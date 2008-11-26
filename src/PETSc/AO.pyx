@@ -65,7 +65,7 @@ cdef class AO(Object):
         return self
 
     def getType(self):
-        cdef PetscAOType aotype
+        cdef PetscAOType aotype = AO_BASIC
         CHKERR( AOGetType(self.ao, &aotype) )
         return aotype
 

@@ -137,9 +137,9 @@ MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
 		PetscInt M, PetscInt N,
 		Mat *A)
 {
-  Mat            mat;
-  MatType        mtype;
-  PetscMPIInt    size;
+  Mat            mat = PETSC_NULL;
+  MatType        mtype = PETSC_NULL;
+  PetscMPIInt    size = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -172,7 +172,7 @@ MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
 			  PetscInt d_nz,const PetscInt d_nnz[],
 			  PetscInt o_nz,const PetscInt o_nnz[])
 {
-  PetscTruth     flag;
+  PetscTruth     flag = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -203,7 +203,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
 			     const PetscInt Jj[], const PetscScalar V[])
 {
-  PetscTruth     flag;
+  PetscTruth     flag = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -238,9 +238,9 @@ MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
 		  PetscInt M, PetscInt N,
 		  Mat *A)
 {
-  Mat            mat;
-  MatType        mtype;
-  PetscMPIInt    size;
+  Mat            mat = PETSC_NULL;
+  MatType        mtype = PETSC_NULL;
+  PetscMPIInt    size = 0;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -272,7 +272,7 @@ MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
 PETSC_STATIC_INLINE PetscErrorCode
 MatAnyDenseSetPreallocation(Mat mat,PetscInt bs, PetscScalar *data) 
 {
-  PetscTruth     flag;
+  PetscTruth     flag = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -472,7 +472,7 @@ MatFDColoringSetOptionsPrefix(MatFDColoring fdc, const char prefix[]) {
 static PetscErrorCode
 SNESGetUseMFFD(SNES snes,PetscTruth *flag)
 {
-  Mat            J;
+  Mat            J = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -488,14 +488,14 @@ SNESGetUseMFFD(SNES snes,PetscTruth *flag)
 PETSC_STATIC_INLINE PetscErrorCode
 SNESSetUseMFFD(SNES snes,PetscTruth flag)
 {
-  const char*    prefix;
-  PetscTruth     flg;
-  Vec            r;
-  Mat            A,B,J;
-  KSP            ksp;
-  PC             pc;
-  void*          funP;
-  void*          jacP;
+  const char*    prefix = PETSC_NULL;
+  PetscTruth     flg = PETSC_FALSE;
+  Vec            r = PETSC_NULL;
+  Mat            A = PETSC_NULL,B = PETSC_NULL,J = PETSC_NULL;
+  KSP            ksp = PETSC_NULL;
+  PC             pc = PETSC_NULL;
+  void*          funP = PETSC_NULL;
+  void*          jacP = PETSC_NULL;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -541,7 +541,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 SNESGetUseFDColoring(SNES snes,PetscTruth *flag)
 {
   PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
-  MatFDColoring  fdcoloring;
+  MatFDColoring  fdcoloring = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -557,16 +557,16 @@ SNESGetUseFDColoring(SNES snes,PetscTruth *flag)
 PETSC_STATIC_INLINE PetscErrorCode
 SNESSetUseFDColoring(SNES snes,PetscTruth flag) 
 {
-  const char*    prefix;
-  PetscTruth     flg;
-  Vec            f;
+  const char*    prefix = PETSC_NULL;
+  PetscTruth     flg = PETSC_FALSE;
+  Vec            f = PETSC_NULL;
   PetscErrorCode (*fun)(SNES,Vec,Vec,void*) = PETSC_NULL;
-  void*          funP;
-  Mat            A,B,J;
+  void*          funP = PETSC_NULL;
+  Mat            A = PETSC_NULL,B = PETSC_NULL,J = PETSC_NULL;
   PetscErrorCode (*jac)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
-  void*          jacP;
-  ISColoring     iscoloring;
-  MatFDColoring  fdcoloring;
+  void*          jacP = PETSC_NULL;
+  ISColoring     iscoloring = PETSC_NULL;
+  MatFDColoring  fdcoloring = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -659,7 +659,7 @@ PETSC_STATIC_INLINE PetscErrorCode
 TSGetUseFDColoring(TS ts,PetscTruth *flag)
 {
   PetscErrorCode (*jac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
-  MatFDColoring  fdcoloring;
+  MatFDColoring  fdcoloring = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -675,16 +675,16 @@ TSGetUseFDColoring(TS ts,PetscTruth *flag)
 PETSC_STATIC_INLINE PetscErrorCode
 TSSetUseFDColoring(TS ts,PetscTruth flag)
 {
-  const char*    prefix;
-  PetscTruth     flg;
-  Vec            f;
+  const char*    prefix = PETSC_NULL;
+  PetscTruth     flg = PETSC_FALSE;
+  Vec            f = PETSC_NULL;
   PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*) = PETSC_NULL;
   void*          funP = PETSC_NULL;
-  Mat            A,B,J;
+  Mat            A = PETSC_NULL,B = PETSC_NULL,J = PETSC_NULL;
   PetscErrorCode (*jac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*) = PETSC_NULL;
   void*          jacP  = PETSC_NULL;
-  ISColoring     iscoloring;
-  MatFDColoring  matfdcoloring;
+  ISColoring     iscoloring = PETSC_NULL;
+  MatFDColoring  matfdcoloring = PETSC_NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
