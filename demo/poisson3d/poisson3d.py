@@ -37,8 +37,14 @@ ksp.solve(b, x)
 # account for grid spacing
 x.scale(h**2)
 
-
-from matplotlib import pylab
-sol = x[...].reshape(n,n,n)
-pylab.contour(sol[:,:,n/2-2])
+try:
+    from matplotlib import pylab
+except ImportError:
+    raise SystemExit("matplotlib not available")
+from numpy import mgrid
+X, Y =  mgrid[0:1:1j*n,0:1:1j*n]
+Z = x[...].reshape(n,n,n)[:,:,n/2-2]
+pylab.contourf(X, Y, Z)
+pylab.axis('equal')
+pylab.colorbar()
 pylab.show()

@@ -22,18 +22,15 @@ b.set(1)
 ksp.solve(b,x)
 print ksp.its, ksp.rnorm
 
-#u = x[...].reshape(m,n)
-#pylab.figure()
-#pylab.contourf(u)
-
-
 x.set(0)
 b.set(1)
 its, rnorm = cg(A,b,x,100,1e-5)
 print its, rnorm
 
-
-from matplotlib import pylab
+try:
+    from matplotlib import pylab
+except ImportError:
+    raise SystemExit("matplotlib not available")
 from numpy import mgrid
 X, Y =  mgrid[0:1:1j*m,0:1:1j*n]
 Z = x[...].reshape(m,n)

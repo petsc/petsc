@@ -13,4 +13,4 @@ ${MODULE}.so: ${MODULE}.f90
 	${F2PY} ${F2PY_FLAGS} -c $< -m ${MODULE}
 
 clean:
-	${RM} ${MODULE}.so
+	${RM} ${MODULE}.so *.py[co]

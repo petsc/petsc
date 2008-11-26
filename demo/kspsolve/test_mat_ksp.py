@@ -6,7 +6,10 @@ from petsc4py import PETSc
 execfile('petsc-mat.py')
 execfile('petsc-ksp.py')
 
-from matplotlib import pylab
+try:
+    from matplotlib import pylab
+except ImportError:
+    raise SystemExit("matplotlib not available")
 from numpy import mgrid
 X, Y =  mgrid[0:1:1j*m,0:1:1j*n]
 Z = x[...].reshape(m,n)

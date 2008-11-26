@@ -64,10 +64,9 @@ snes.solve(b, x)
 
 try:
     from matplotlib import pylab
-    from numpy import mgrid
 except ImportError:
     raise SystemExit("matplotlib not available")
-
+from numpy import mgrid
 X, Y =  mgrid[0:1:1j*nx,0:1:1j*ny]
 Z = x[...].reshape(nx,ny)
 pylab.figure()

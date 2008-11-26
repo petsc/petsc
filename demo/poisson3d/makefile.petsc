@@ -1,19 +1,12 @@
 # -*- makefile -*-
 
-
-PETSC_PREFIX = /usr/local
-PETSC_VERSION = 2.3.3
-PETSC_DIR=$(PETSC_PREFIX)/petsc/$(PETSC_VERSION)
-PETSC_ARCH=linux-gnu
-#PETSC_ARCH=linux-gnu-O
-
 CFLAGS	 = -O3
 CPPFLAGS = 
-F90FLAGS =-Wall -fno-second-underscore -O3 -funroll-loops -march=pentium4 -msse2 -fomit-frame-pointer
+F90FLAGS =-Wall -O3 -funroll-loops -march=pentium4 -msse2 -fomit-frame-pointer
 LOCDIR   = 
 
 
-all: poisson3d
+ALL: poisson3d
 
 poisson3d: poisson3d.o
 	mpif90 ${F90FLAGS} -c -o del2lib.o del2lib.f90
@@ -23,4 +16,7 @@ poisson3d: poisson3d.o
 lclean:
 	${RM} poisson3d solvesys
 
-include ${PETSC_DIR}/bmake/common/base
+
+## PETSC_DIR=/usr/local/petsc/2.4.0
+## PETSC_ARCH=linux-gnu
+include ${PETSC_DIR}/conf/base

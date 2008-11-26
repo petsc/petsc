@@ -1,4 +1,4 @@
-# create linear solver,
+# create linear solver
 ksp = PETSc.KSP()
 ksp.create(PETSc.COMM_WORLD)
 # use conjugate gradients

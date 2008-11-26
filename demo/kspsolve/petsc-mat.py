@@ -19,7 +19,7 @@ offdy = -1.0/hy**2
 
 # loop over owned block of rows on this
 # processor and insert entry values
-Istart, Iend = A.getOwnershipRange()
+Istart, Iend = A.getOwnershipRangeRow()
 for I in xrange(Istart, Iend) :
     A[I,I] = diagv
     i = I//n    # map row number to
