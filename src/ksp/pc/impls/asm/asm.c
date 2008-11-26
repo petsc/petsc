@@ -980,6 +980,11 @@ EXTERN_C_END
 
    Level: advanced
 
+   Note: this generates nonoverlapping subdomains; the PCASM will generate the overlap
+    from these if you use PCASMSetLocalSubdomains()
+
+    In the Fortran version you must provide the array outis[] already allocated of length n.
+
 .keywords: PC, ASM, additive Schwarz, create, subdomains, unstructured grid
 
 .seealso: PCASMSetLocalSubdomains(), PCASMDestroySubdomains()

@@ -5505,6 +5505,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat mat,PetscInt n,const IS 
    Level: advanced
 
     Notes: Frees not only the matrices, but also the array that contains the matrices
+           In Fortran will not free the array.
 
 .seealso: MatGetSubMatrices()
 @*/
