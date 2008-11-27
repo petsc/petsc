@@ -170,20 +170,16 @@ class MyKSP(object):
         ksp.setResidualNorm(rnorm)
         ksp.logConvergenceHistory(its, rnorm)
         ksp.callMonitor(its, rnorm)
-        reason =  ksp.callConvergenceTest(its, rnorm)
-        if reason:
-            ksp.setConvergedReason(reason)
-        else:
+        reason = ksp.callConvergenceTest(its, rnorm)
+        if not reason:
             ksp.setIterationNumber(its+1)
         return reason
 
 class MyRichardson(MyKSP):
 
-    def solve(self, ksp):
+    def solve(self, ksp, b, x):
         A, B, flag = ksp.getOperators()
         P = ksp.getPC()
-        x = ksp.getSolution()
-        b = ksp.getRhs()
         r, z = self.work
         #
         A.mult(x, r)
@@ -204,11 +200,9 @@ class MyCG(MyKSP):
         q = d.duplicate()
         self.work += [d, q]
 
-    def solve(self, ksp):
+    def solve(self, ksp, b, x):
         A, B, flag = ksp.getOperators()
         P = ksp.getPC()
-        x = ksp.getSolution()
-        b = ksp.getRhs()
         r, z, d, q = self.work
         #
         A.mult(x, r)

@@ -160,33 +160,48 @@ static PetscErrorCode KSPSetUp_Python(KSP ksp)
 #define __FUNCT__ "KSPSolve_Python"
 static PetscErrorCode KSPSolve_Python(KSP ksp)
 {
+  const char *solveMeth = 0;
   PetscFunctionBegin;
+  if (!ksp->transpose_solve)
+    solveMeth = "solve";
+  else                       
+    solveMeth = "solveTranspose";
   ksp->its    = 0;
   ksp->rnorm  = 0;
   ksp->rnorm0 = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
-  if (!ksp->transpose_solve) {
-    KSP_PYTHON_CALL_MAYBE(ksp, "solve",
-			 ("O&", PyPetscKSP_New, ksp),
-			  notimplemented1);
-  } else {
-    KSP_PYTHON_CALL_MAYBE(ksp, "solveTranspose",
-			  ("O&", PyPetscKSP_New, ksp),
-			  notimplemented2);
-  }
-  if (!ksp->reason) ksp->reason = KSP_CONVERGED_ITS;
+  KSP_PYTHON_CALL_MAYBE(ksp, solveMeth, ("O&O&O&", 
+					 PyPetscKSP_New, ksp,
+					 PyPetscVec_New, ksp->vec_rhs,
+					 PyPetscVec_New, ksp->vec_sol),
+			notimplemented);
   PetscFunctionReturn(0);
- notimplemented1:
-  KSP_PYTHON_SETERRSUP(ksp, "solve");
- notimplemented2:
-  KSP_PYTHON_SETERRSUP(ksp, "solveTranspose");
+ notimplemented:
+  KSP_PYTHON_SETERRSUP(ksp, solveMeth);
 }
 
 #undef  __FUNCT__  
 #define __FUNCT__ "KSPBuildSolution_Python"
 static PetscErrorCode KSPBuildSolution_Python(KSP ksp, Vec v, Vec *V)
 {
+  const char     *key = "__petsc4py_KSP_python_work_vec_sol";
+  Vec            x    = v;
   PetscErrorCode ierr;
+  if (!x) {
+    ierr = PetscObjectQuery((PetscObject)ksp,key,(PetscObject*)&x);CHKERRQ(ierr);
+    if (!x) {
+      ierr = VecDuplicate(ksp->vec_sol,&x);CHKERRQ(ierr);
+      ierr = PetscObjectCompose((PetscObject)ksp,key,(PetscObject)x);CHKERRQ(ierr);
+      ierr = PetscObjectDereference((PetscObject)x);CHKERRQ(ierr);
+    }
+  }
+  KSP_PYTHON_CALL_MAYBE(ksp, "buildSolution", ("O&O&", 
+					       PyPetscKSP_New, ksp,
+					       PyPetscVec_New, x),
+			notimplemented);
+  if (V) { *V = x; }
+  PetscFunctionReturn(0);
+ notimplemented:
   ierr = KSPDefaultBuildSolution(ksp, v, V);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -196,6 +211,14 @@ static PetscErrorCode KSPBuildSolution_Python(KSP ksp, Vec v, Vec *V)
 static PetscErrorCode KSPBuildResidual_Python(KSP ksp, Vec t, Vec v, Vec *V)
 {
   PetscErrorCode ierr;
+  KSP_PYTHON_CALL_MAYBE(ksp, "buildResidual", ("O&O&O&", 
+					       PyPetscKSP_New, ksp,
+					       PyPetscVec_New, t,
+					       PyPetscVec_New, v),
+			notimplemented);
+  if (V) { *V = v; }
+  PetscFunctionReturn(0);
+ notimplemented:
   ierr = KSPDefaultBuildResidual(ksp, t, v, V);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
