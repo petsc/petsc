@@ -154,7 +154,7 @@ static PetscErrorCode PCView_Python(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
     const char* pyname  = py->pyname ? py->pyname  : "no yet set";
-    ierr = PetscViewerASCIIPrintf(viewer,"  Python:  %s\n",pyname);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Python: %s\n",pyname);CHKERRQ(ierr);
   }
   if (isstring) {
     const char* pyname  = py->pyname ? py->pyname  : "<unknown>";
