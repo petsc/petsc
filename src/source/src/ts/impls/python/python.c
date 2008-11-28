@@ -63,15 +63,14 @@ struct _TSPyOps {
 typedef struct {
   /**/
   PyObject   *self;
-  char       *module;
-  char       *factory;
-  TSPyOps    ops;
+  char       *pyname;
   /**/
   PetscReal  utime;     /* time level t^{n+1} */
   Vec        update;    /* work vector where new solution x^{n+1} is formed */
   Vec        vec_func;  /* work vector where F(t^{n+1},x^{n+1}) is stored */
   Vec        vec_rhs;   /* work vector where G(t^{n-k},x^{n-k}) is stored */
   /**/
+  TSPyOps ops;
   struct _TSPyOps _ops;
 } TS_Py;
 
@@ -106,19 +105,34 @@ typedef struct {
   TS_PYTHON_CALL_TAIL(ts, PyMethod)			\
 /**/
 
+#define TS_PYTHON_CALL_MAYBE(ts, PyMethod, ARGS, LABEL) \
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);		    \
+  TS_PYTHON_CALL_JUMP(ts, LABEL);			    \
+  TS_PYTHON_CALL_BODY(ts, ARGS);			    \
+  TS_PYTHON_CALL_TAIL(ts, PyMethod)			    \
+/**/
+
+#define TS_PYTHON_CALL_MAYBE_RET(ts, PyMethod, ARGS, LABEL, Obj2Val, ValP) \
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);				\
+  TS_PYTHON_CALL_JUMP(ts, LABEL);					\
+  TS_PYTHON_CALL_BODY(ts, ARGS);					\
+  _retv = Obj2Val(_retv, ValP);						\
+  TS_PYTHON_CALL_TAIL(ts, PyMethod)					\
+/**/
+
 
 /* -------------------------------------------------------------------------- */
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "TSPythonInit_PYTHON"
-PetscErrorCode PETSCTS_DLLEXPORT TSPythonInit_PYTHON(TS ts,const char fullname[])
+PetscErrorCode PETSCTS_DLLEXPORT TSPythonInit_PYTHON(TS ts,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* create the Python object from module/class/function  */
-  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
+  ierr = PetscCreatePythonObject(pyname,&self);CHKERRQ(ierr);
   /* set the created Python object in TS context */
   ierr = TSPythonSetContext(ts,self);Py_DecRef(self);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -141,8 +155,7 @@ static PetscErrorCode TSDestroy_Python(TS ts)
   if (py->update)   {ierr = VecDestroy(py->update);CHKERRQ(ierr);}
   if (py->vec_func) {ierr = VecDestroy(py->vec_func);CHKERRQ(ierr);}
   if (py->vec_rhs)  {ierr = VecDestroy(py->vec_rhs);CHKERRQ(ierr);}
-  ierr = PetscStrfree(py->module);CHKERRQ(ierr);
-  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
+  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ts->data = PETSC_NULL;
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPythonInit_C",
@@ -154,15 +167,19 @@ static PetscErrorCode TSDestroy_Python(TS ts)
 #define __FUNCT__ "TSSetFromOptions_Python"
 static PetscErrorCode TSSetFromOptions_Python(TS ts)
 {
-  char           fullname[2*PETSC_MAX_PATH_LEN];
+  TS_Py          *py = (TS_Py *)ts->data;
+  char           pyname[2*PETSC_MAX_PATH_LEN+3];
   PetscTruth     flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("TS Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-ts_python","Python package.module[.{class|function}]",
-			    "TSCreatePython",0,fullname,sizeof(fullname),&flg);CHKERRQ(ierr);
+			    "TSCreatePython",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg && fullname[0]) { ierr = TSPythonInit_PYTHON(ts,fullname);CHKERRQ(ierr); }
+  if (flg && pyname[0]) { 
+    ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
+    if (!flg) { ierr = TSPythonInit_PYTHON(ts,pyname);CHKERRQ(ierr); }
+  }
   TS_PYTHON_CALL_TSARG(ts, "setFromOptions");
   PetscFunctionReturn(0);
 }
@@ -179,17 +196,16 @@ static PetscErrorCode TSView_Python(TS ts,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    const char* module  = py->module  ? py->module  : "no yet set";
-    const char* factory = py->factory ? py->factory : (py->module?"":"no yet set");
-    ierr = PetscViewerASCIIPrintf(viewer,"  module:  %s\n",module);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  class:   %s\n",factory);CHKERRQ(ierr);
-  } 
-  if (isstring) {
-    const char* module  = py->module  ? py->module  : "<module>";
-    const char* factory = py->factory ? py->factory : "<class>";
-    ierr = PetscViewerStringSPrintf(viewer,"%s.%s",module,factory);CHKERRQ(ierr);
+    const char* pyname  = py->pyname ? py->pyname  : "no yet set";
+    ierr = PetscViewerASCIIPrintf(viewer,"  Python: %s\n",pyname);CHKERRQ(ierr);
   }
-  TS_PYTHON_CALL_TSARG(ts, "view");
+  if (isstring) {
+    const char* pyname  = py->pyname ? py->pyname  : "<unknown>";
+    ierr = PetscViewerStringSPrintf(viewer,"%s",pyname);CHKERRQ(ierr);
+  }
+  TS_PYTHON_CALL(ts, "view", ("O&O&",
+			      PyPetscTS_New,      ts,
+			      PyPetscViewer_New,  viewer));
   PetscFunctionReturn(0);
 }
 
@@ -499,9 +515,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
 
   /* Python */
   py->self    = NULL;
-  py->module  = NULL;
-  py->factory = NULL;
-  py->ops = &py->_ops;
+  py->pyname  = NULL;
+  py->ops     = &py->_ops;
 
   py->ops->presolve  = TSPreSolve_Python;
   py->ops->postsolve = TSPostSolve_Python;
@@ -619,9 +634,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS ts,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the TS object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
-  ierr = PetscStrfree(py->module);CHKERRQ(ierr); 
-  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
-  ierr = PetscPythonGetModuleAndClass(py->self,&py->module,&py->factory);CHKERRQ(ierr);
+  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   TS_PYTHON_CALL_TSARG(ts, "create");
   if (ts->setupcalled) ts->setupcalled = 0;
   PetscFunctionReturn(0);
@@ -636,7 +650,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS ts,void *ctx)
 
    Input Parameters:
 +  comm - MPI communicator 
--  fullname - full dotted name package.module.function/class
+-  pyname - full dotted name package.module.function/class
 
    Output Parameter:
 .  ts - location to put the timestepper solver context
@@ -648,17 +662,17 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS ts,void *ctx)
 .seealso: TS, TSCreate(), TSSetType(), TSPYTHON
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSCreatePython(MPI_Comm comm,
-						const char fullname[],
+						const char pyname[],
 						TS *ts)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  if (fullname) PetscValidCharPointer(fullname,2);
+  if (pyname) PetscValidCharPointer(pyname,2);
   /* create the TS context and set its type */
   ierr = TSCreate(comm,ts);CHKERRQ(ierr);
   ierr = TSSetType(*ts,TSPYTHON);CHKERRQ(ierr);
-  if (fullname) { ierr = TSPythonInit_PYTHON(*ts,fullname);CHKERRQ(ierr); }
+  if (pyname) { ierr = TSPythonInit_PYTHON(*ts,pyname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
