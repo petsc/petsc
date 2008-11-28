@@ -285,10 +285,10 @@ class TestSNESBase(object):
         self.assertAlmostEqual(abs(x[0]), 1.0)
         self.assertAlmostEqual(abs(x[1]), 2.0)
 
-        
+
 if PETSc.Sys.getVersion() < (2,3,3):
     del TestSNESBase.testFDColor
-        
+
 
 # --------------------------------------------------------------------
 
@@ -312,7 +312,7 @@ class TestSNESTR(TestSNESBase, unittest.TestCase):
 ##         self.stdout.flush()
 ##         self.stdout.close()
 ##         self.stdout = None
-        
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':

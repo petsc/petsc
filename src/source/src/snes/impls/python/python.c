@@ -58,9 +58,8 @@ struct _SNESPyOps {
 };
 
 typedef struct {
-  PyObject   *self;
-  char       *module;
-  char       *factory;
+  PyObject *self;
+  char     *pyname;
   /* XXX get rid of this ? */
   SNESPyOps  ops;
   struct _SNESPyOps _ops;
@@ -97,6 +96,21 @@ typedef struct {
   SNES_PYTHON_CALL_HEAD(snes, PyMethod);			\
   SNES_PYTHON_CALL_BODY(snes, ("O&",PyPetscSNES_New,snes));	\
   SNES_PYTHON_CALL_TAIL(snes, PyMethod)				\
+/**/
+
+#define SNES_PYTHON_CALL_MAYBE(snes, PyMethod, ARGS, LABEL) \
+  SNES_PYTHON_CALL_HEAD(snes, PyMethod);		    \
+  SNES_PYTHON_CALL_JUMP(snes, LABEL);			    \
+  SNES_PYTHON_CALL_BODY(snes, ARGS);			    \
+  SNES_PYTHON_CALL_TAIL(snes, PyMethod)			    \
+/**/
+
+#define SNES_PYTHON_CALL_MAYBE_RET(snes, PyMethod, ARGS, LABEL, Obj2Val, ValP) \
+  SNES_PYTHON_CALL_HEAD(snes, PyMethod);				\
+  SNES_PYTHON_CALL_JUMP(snes, LABEL);					\
+  SNES_PYTHON_CALL_BODY(snes, ARGS);					\
+  _retv = Obj2Val(_retv, ValP);						\
+  SNES_PYTHON_CALL_TAIL(snes, PyMethod)					\
 /**/
 
 /* -------------------------------------------------------------------------- */
@@ -149,19 +163,17 @@ static PetscErrorCode SNESComputeFunction_Python(SNES snes, Vec x, Vec F)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   nfuncs = snes->nfuncs; /* backup function call counter */
-  SNES_PYTHON_CALL_HEAD(snes, "computeFunction");
-  SNES_PYTHON_CALL_JUMP(snes, computefunc);
-  SNES_PYTHON_CALL_BODY(snes, ("O&O&O&",
-			       PyPetscSNES_New, snes,
-			       PyPetscVec_New,  x,
-			       PyPetscVec_New,  F    ));
-  SNES_PYTHON_CALL_TAIL(snes, "computeFunction");
+  SNES_PYTHON_CALL_MAYBE(snes, "computeFunction", ("O&O&O&",
+						   PyPetscSNES_New, snes,
+						   PyPetscVec_New,  x,
+						   PyPetscVec_New,  F    ),
+			notimplemented);
   if (nfuncs == snes->nfuncs) { /* snes->ops->computefunction was not called */
     if (snes->vec_rhs) { ierr = VecAXPY(F,-1.0,snes->vec_rhs);CHKERRQ(ierr); }
     snes->nfuncs++; /* increment function call counter*/
   }
   PetscFunctionReturn(0);
- computefunc:
+notimplemented:
   ierr = SNESComputeFunction(snes,x,F);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -205,17 +217,15 @@ static PetscErrorCode SNESComputeJacobian_Python(SNES snes,Vec x,Mat *A,Mat *B,M
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  SNES_PYTHON_CALL_HEAD(snes, "computeJacobian");
-  SNES_PYTHON_CALL_JUMP(snes, computejac);
-  SNES_PYTHON_CALL_BODY(snes, ("O&O&O&O&",
-			       PyPetscSNES_New, snes,
-			       PyPetscVec_New,  x,
-			       PyPetscMat_New,  *A,
-			       PyPetscMat_New,  *B    ));
-  _retv = SNESPyObjToMatStructure(_retv, flg);
-  SNES_PYTHON_CALL_TAIL(snes, "computeJacobian");
+  SNES_PYTHON_CALL_MAYBE_RET(snes, "computeJacobian", ("O&O&O&O&",
+						       PyPetscSNES_New, snes,
+						       PyPetscVec_New,  x,
+						       PyPetscMat_New,  *A,
+						       PyPetscMat_New,  *B   ),
+			     notimplemented,
+			     SNESPyObjToMatStructure, flg);
   PetscFunctionReturn(0);
- computejac:
+ notimplemented:
   ierr = SNESComputeJacobian(snes,x,A,B,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -250,15 +260,12 @@ static PetscErrorCode SNESLinearSolve_Python(SNES snes,Vec b,Vec x,PetscTruth *s
   PetscErrorCode     ierr;
   PetscFunctionBegin;
   *succeed = PETSC_TRUE; *its=0;
-  SNES_PYTHON_CALL_HEAD(snes, "linearSolve");
-  SNES_PYTHON_CALL_JUMP(snes, linearsolve);
-  SNES_PYTHON_CALL_BODY(snes, ("O&O&O&",
-			       PyPetscSNES_New, snes ,
-			       PyPetscVec_New,  b    ,
-			       PyPetscVec_New,  x    ));
-  _retv = SNESPyObjToPetscTruth(_retv, succeed);
-  *its=0; /* XXX Fix this, try to get result */
-  SNES_PYTHON_CALL_TAIL(snes, "linearSolve");
+  SNES_PYTHON_CALL_MAYBE_RET(snes, "linearSolve", ("O&O&O&",
+						   PyPetscSNES_New, snes,
+						   PyPetscVec_New,  b,
+						   PyPetscVec_New,  x    ),
+			     notimplemented,
+			     SNESPyObjToPetscTruth, succeed);
  finally:
   if (!(*succeed)) {
     if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
@@ -268,7 +275,7 @@ static PetscErrorCode SNESLinearSolve_Python(SNES snes,Vec b,Vec x,PetscTruth *s
     } else *succeed = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
- linearsolve: /* default linear solve */
+notimplemented: /* default linear solve */
   *succeed = PETSC_TRUE; *its=0;
   ierr = SNES_KSPSolve(snes,snes->ksp,b,x);CHKERRQ(ierr);
   ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
@@ -284,15 +291,13 @@ static PetscErrorCode SNESLineSearch_Python(SNES snes,Vec x,Vec y, Vec F,PetscTr
   PetscErrorCode ierr;
   PetscFunctionBegin;
   *succeed = PETSC_TRUE;
-  SNES_PYTHON_CALL_HEAD(snes, "lineSearch");
-  SNES_PYTHON_CALL_JUMP(snes, linesearch);
-  SNES_PYTHON_CALL_BODY(snes, ("O&O&O&O&",
-			       PyPetscSNES_New, snes ,
-			       PyPetscVec_New,  x    ,
-			       PyPetscVec_New,  y    ,
-			       PyPetscVec_New,  F    ));
-  _retv = SNESPyObjToPetscTruth(_retv, succeed);
-  SNES_PYTHON_CALL_TAIL(snes, "lineSearch");
+  SNES_PYTHON_CALL_MAYBE_RET(snes, "lineSearch", ("O&O&O&O&",
+						  PyPetscSNES_New, snes,
+						  PyPetscVec_New,  x,
+						  PyPetscVec_New,  y,
+						  PyPetscVec_New,  F    ),
+			     notimplemented,
+			     SNESPyObjToPetscTruth, succeed);
  finally:
   if (!(*succeed)) {
     if (++snes->numFailures >= snes->maxFailures) {
@@ -302,7 +307,7 @@ static PetscErrorCode SNESLineSearch_Python(SNES snes,Vec x,Vec y, Vec F,PetscTr
     } else *succeed = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
- linesearch: /* default, no line search */
+ notimplemented: /* default, no line search */
   ierr = VecAXPY(x,-1.0,y);CHKERRQ(ierr);                     /* X <- X - Y       */
   ierr = SNESComputeFunction_Python(snes,x,F);CHKERRQ(ierr);  /* F <- function(X) */
   *succeed = PETSC_TRUE;
@@ -317,8 +322,8 @@ static PetscErrorCode SNESMonitor_Python(SNES snes, PetscInt its, PetscReal fnor
   PetscFunctionBegin;
   SNES_PYTHON_CALL(snes, "monitor", ("O&ld",
 				     PyPetscSNES_New, snes,
-				     (long)            its, 
-				     (double)          fnorm ));
+				     (long)           its, 
+				     (double)         fnorm ));
   /* call default monitors anyway */
   SNESMonitor(snes,its,fnorm);
   PetscFunctionReturn(0);
@@ -365,16 +370,16 @@ static PetscErrorCode SNESConverged_Python(SNES snes, PetscInt its,
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  SNES_PYTHON_CALL_HEAD(snes, "converged");
-  SNES_PYTHON_CALL_BODY(snes, ("O&lddd",
-			       PyPetscSNES_New,  snes,
-			       (long)             its,
-			       (double)           xnorm,
-			       (double)           ynorm,
-			       (double)           fnorm));
-  _retv = SNESPyObjToConvReason(_retv, reason);
-  SNES_PYTHON_CALL_TAIL(snes, "converged");
+  SNES_PYTHON_CALL_MAYBE_RET(snes, "converged", ("O&lddd",
+						 PyPetscSNES_New,  snes,
+						 (long)            its,
+						 (double)          xnorm,
+						 (double)          ynorm,
+						 (double)          fnorm  ),
+			     notimplemented,
+			     SNESPyObjToConvReason, reason);
   /* call default convergence test anyway if not converged */
+ notimplemented:
   if (!(*reason) && snes->ops->converged) {
     ierr = (*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,reason,snes->cnvP);CHKERRQ(ierr);
   }
@@ -403,9 +408,9 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
 
   PetscFunctionBegin;
 
-  snes->iter = 0;
-  snes->norm = 0;
-  snes->ttol  = 0;
+  snes->iter   = 0;
+  snes->norm   = 0;
+  snes->ttol   = 0;
   snes->reason = SNES_CONVERGED_ITERATING;
 
   /* Call user presolve routine */
@@ -512,13 +517,13 @@ static PetscErrorCode SNESSetUp_Python(SNES snes)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESPythonInit_PYTHON"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonInit_PYTHON(SNES snes,const char fullname[])
+PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonInit_PYTHON(SNES snes,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /* create the Python object from module/class/function  */
-  ierr = PetscCreatePythonObject(fullname,&self);CHKERRQ(ierr);
+  ierr = PetscCreatePythonObject(pyname,&self);CHKERRQ(ierr);
   /* set the created Python object in SNES context */
   ierr = SNESPythonSetContext(snes,self);Py_DecRef(self);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -546,15 +551,12 @@ static PetscErrorCode SNESView_Python(SNES snes,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    const char* module  = py->module  ? py->module  : "no yet set";
-    const char* factory = py->factory ? py->factory : (py->module?"":"no yet set");
-    ierr = PetscViewerASCIIPrintf(viewer,"  module:  %s\n",module);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  class:   %s\n",factory);CHKERRQ(ierr);
+    const char* pyname  = py->pyname ? py->pyname  : "no yet set";
+    ierr = PetscViewerASCIIPrintf(viewer,"  Python: %s\n",pyname);CHKERRQ(ierr);
   }
   if (isstring) {
-    const char* module  = py->module  ? py->module  : "<module>";
-    const char* factory = py->factory ? py->factory : "<class>";
-    ierr = PetscViewerStringSPrintf(viewer,"%s.%s",module,factory);CHKERRQ(ierr);
+    const char* pyname  = py->pyname ? py->pyname  : "<unknown>";
+    ierr = PetscViewerStringSPrintf(viewer,"%s",pyname);CHKERRQ(ierr);
   }
   SNES_PYTHON_CALL(snes, "view", ("O&O&", 
 				  PyPetscSNES_New,   snes,
@@ -574,15 +576,19 @@ static PetscErrorCode SNESView_Python(SNES snes,PetscViewer viewer)
 #define __FUNCT__ "SNESSetFromOptions_Python"
 static PetscErrorCode SNESSetFromOptions_Python(SNES snes)
 {
-  char           fullname[2*PETSC_MAX_PATH_LEN];
+  SNES_Py        *py = (SNES_Py *)snes->data;
+  char           pyname[2*PETSC_MAX_PATH_LEN+3];
   PetscTruth     flg;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-snes_python","Python package.module[.{class|function}]",
-			    "SNESCreatePython",0,fullname,sizeof(fullname),&flg);CHKERRQ(ierr);
+			    "SNESCreatePython",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg && fullname[0]) { ierr = SNESPythonInit_PYTHON(snes,fullname);CHKERRQ(ierr); }
+  if (flg && pyname[0]) { 
+    ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
+    if (!flg) { ierr = SNESPythonInit_PYTHON(snes,pyname);CHKERRQ(ierr); }
+  }
   SNES_PYTHON_CALL_SNESARG(snes, "setFromOptions");
   PetscFunctionReturn(0);
 }
@@ -612,8 +618,7 @@ static PetscErrorCode SNESDestroy_Python(SNES snes)
     ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
     snes->vec_sol_update = PETSC_NULL;
   }
-  ierr = PetscStrfree(py->module);CHKERRQ(ierr);
-  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
+  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   snes->data = PETSC_NULL;
   ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESPythonInit_C",
@@ -649,9 +654,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES snes)
 
   /* Python */
   py->self    = NULL;
-  py->module  = NULL;
-  py->factory = NULL;
-  py->ops = &py->_ops;
+  py->pyname  = NULL;
+  py->ops     = &py->_ops;
 
   py->ops->presolve          = SNESPreSolve_Python;
   py->ops->postsolve         = SNESPostSolve_Python;
@@ -759,9 +763,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the SNES object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
-  ierr = PetscStrfree(py->module);CHKERRQ(ierr);  
-  ierr = PetscStrfree(py->factory);CHKERRQ(ierr);
-  ierr = PetscPythonGetModuleAndClass(py->self,&py->module,&py->factory);CHKERRQ(ierr);
+  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
+  ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   SNES_PYTHON_CALL_SNESARG(snes, "create");
   if (snes->setupcalled) snes->setupcalled = PETSC_FALSE;
   PetscFunctionReturn(0);
@@ -776,7 +779,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
 
    Input Parameters:
 +  comm - MPI communicator 
--  fullname - full dotted name package.module.function/class
+-  pyname - full dotted name package.module.function/class
 
    Output Parameter:
 .  snes - location to put the nonlinear solver context
@@ -788,17 +791,17 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
 .seealso: SNES, SNESCreate(), SNESSetType(), SNESPYTHON
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESCreatePython(MPI_Comm comm,
-						    const char fullname[],
+						    const char pyname[],
 						    SNES *snes)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  if (fullname) PetscValidCharPointer(fullname,2);
+  if (pyname) PetscValidCharPointer(pyname,2);
   /* create the SNES context and set its type */
   ierr = SNESCreate(comm,snes);CHKERRQ(ierr);
   ierr = SNESSetType(*snes,SNESPYTHON);CHKERRQ(ierr);
-  if (fullname) { ierr = SNESPythonInit_PYTHON(*snes,fullname);CHKERRQ(ierr); }
+  if (pyname) { ierr = SNESPythonInit_PYTHON(*snes,pyname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

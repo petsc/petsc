@@ -18,9 +18,14 @@ int main(int argc,char *argv[])
   PetscErrorCode ierr;
   
   ierr = PetscInitialize(&argc,&argv,(char *)0,help);CHKERRQ(ierr);
-  Py_InitializeEx(0); PyRun_SimpleString("from petsc4py import PETSc\n");
+  Py_InitializeEx(0);
+  {
+    PyObject *mod = PyImport_ImportModule("petsc4py.PETSc");
+    if (!mod) SETERRQ(1,"could not import 'petsc4py.PETSc'");
+    Py_DecRef(mod);
+  }
 
-  ierr = PetscOptionsSetValue("-snes_python", "mysolver,MyNewton");CHKERRQ(ierr);
+  ierr = PetscOptionsSetValue("-snes_python", "mysolver.MyNewton");CHKERRQ(ierr);
 
   N = 10;
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);

@@ -5,7 +5,7 @@ petsc4py.init(sys.argv)
 from petsc4py import PETSc
 
 opts = PETSc.Options()
-opts['snes_python'] = 'mysolver,MyNewton'
+opts['snes_python'] = 'mysolver.MyNewton'
 
 N = 10
 J = PETSc.Mat().create(PETSc.COMM_SELF)
@@ -36,3 +36,4 @@ x.setRandom()
 snes.solve(None, x)
 
 del opts['snes_python']
+del snes

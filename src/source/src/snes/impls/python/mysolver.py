@@ -29,6 +29,9 @@ class MyNewton(object):
         for k, v in self.call_log.items():
             print '%-20s %2d' % (k, v)
 
+    def view(self, snes, viewer):
+        self._log('view', snes, viewer)
+
     def setFromOptions(self, snes):
         OptDB = PETSc.Options(snes)
         self.trace = OptDB.getTruth('trace',self.trace)
@@ -36,9 +39,6 @@ class MyNewton(object):
 
     def setUp(self, snes):
         self._log('setUp', snes)
-
-    def view(self, snes, viewer):
-        self._log('view', snes, viewer)
 
     def preSolve(self, snes):
         self._log('preSolve', snes)
