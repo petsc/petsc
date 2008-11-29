@@ -1,12 +1,13 @@
 import unittest
 from petsc4py import PETSc
+import numpy as N
 from sys import getrefcount
 
 # --------------------------------------------------------------------
 
 def allclose(seq1, seq2):
     for v1, v2 in zip(seq1, seq2):
-        if abs(v1-v2) > 1e-7:
+        if abs(v1-v2) > 1e-5:
             return False
     return True
         
@@ -36,6 +37,7 @@ class TestNullSpace(unittest.TestCase):
         
     def testRemove(self):
         v, w = self._remove()
+        tols = (0, 1e-5)
         self.assertTrue(allclose(v.array, [7,  8, 9]))
         self.assertTrue(allclose(w.array, [0,  0, 9]))
         del v, w

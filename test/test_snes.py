@@ -162,7 +162,8 @@ class TestSNESBase(object):
         self.assertEqual(len(ih), 0)
         self.assertAlmostEqual(abs(x[0]), 1.0)
         self.assertAlmostEqual(abs(x[1]), 2.0)
-        reason = self.snes.callConvergenceTest(0, 0, 0, 0)
+        # XXX this test should not be here !
+        reason = self.snes.callConvergenceTest(1, 0, 0, 0)
         self.assertTrue(reason > 0)
 
     def testSetMonitor(self):

@@ -40,7 +40,7 @@ class TestMatAnyAIJBase(object):
         #
         sdt = dtype=PETSc.ScalarType
         self.rows, self.xadj, self.adjy = mkgraph(COMM, GM, GN)
-        self.vals = N.arange(1, 1 + len(self.adjy)* BS**2)
+        self.vals = N.arange(1, 1 + len(self.adjy)* BS**2, dtype=sdt)
         self.vals.shape = (-1, BS, BS)
         #
         self.A = A = PETSc.Mat().create(comm=COMM)
