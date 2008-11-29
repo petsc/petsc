@@ -118,8 +118,8 @@ do {									\
   } while(0)								\
 /**/
 
-#define PETSC_PYTHON_CALL_JUMP(LABEL)			\
-  do { if (_call == NULL) goto LABEL; } while(0)	\
+#define PETSC_PYTHON_CALL_JUMP(LABEL)					\
+  do { if (_call == NULL) goto LABEL; } while(0)			\
 /**/
  
 #define PETSC_PYTHON_CALL_BODY(Py_BV_ARGS)				\
@@ -256,53 +256,6 @@ static PetscErrorCode PetscPythonGetFullName(PyObject *self, char *pyname[])
     ierr = PetscStrallocpy(ClsName,pyname);CHKERRQ(ierr);
   }
   /* --- */
-  if (cls)      Py_DecRef(cls);
-  if (omodname) Py_DecRef(omodname);
-  if (oclsname) Py_DecRef(oclsname);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PetscPythonGetModuleAndClass"
-static PetscErrorCode PetscPythonGetModuleAndClass(PyObject *self,
-						   char *modname[],
-						   char *clsname[])
-{
-  PyObject *cls=NULL, *omodname=NULL, *oclsname=NULL;
-  const char *ModName = 0;
-  const char *ClsName = 0;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  if (self) PetscValidPointer(self,1);
-  PetscValidPointer(modname,2);
-  PetscValidPointer(clsname,3);
-  if (self == NULL) {
-    *modname = *clsname = PETSC_NULL;
-    PetscFunctionReturn(0);
-  }
-  if (PyModule_Check(self)) {
-    omodname = PetscPyObjectGetAttrStr(self,"__name__");
-    if (omodname != NULL) {
-      if (PyString_Check(omodname))
-	ModName = PyString_AsString(omodname);
-    } else PyErr_Clear();
-  } else {
-    cls = PetscPyObjectGetAttrStr(self,"__class__");
-    if (cls != NULL) {
-      omodname = PetscPyObjectGetAttrStr(cls,"__module__");
-      if (omodname != NULL) {
-	if (PyString_Check(omodname))
-	  ModName = PyString_AsString(omodname);
-      } else PyErr_Clear();
-      oclsname = PetscPyObjectGetAttrStr(cls,"__name__"); 
-      if (oclsname != NULL) {
-	if (PyString_Check(oclsname))
-	  ClsName = PyString_AsString(oclsname);
-      } else PyErr_Clear();
-    } else PyErr_Clear();
-  }
-  ierr = PetscStrallocpy(ModName,modname);CHKERRQ(ierr);
-  ierr = PetscStrallocpy(ClsName,clsname);CHKERRQ(ierr);
   if (cls)      Py_DecRef(cls);
   if (omodname) Py_DecRef(omodname);
   if (oclsname) Py_DecRef(oclsname);
