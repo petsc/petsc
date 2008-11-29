@@ -304,7 +304,7 @@ static PetscErrorCode MatShift_Python(Mat mat,PetscScalar a)
   ca.imag = PetscImaginaryPart(a);
 #endif
 #if defined(PETSC_USE_COMPLEX)
-  MAT_PYTHON_CALL_MAYBE(mat, "shift", ("O&D",PetscInt
+  MAT_PYTHON_CALL_MAYBE(mat, "shift", ("O&D",
 				       PyPetscMat_New, mat,
 				       ca),
 			shift);
