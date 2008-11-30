@@ -242,17 +242,17 @@ cdef Vec vec_radd(Vec self, other):
     return vec_add(self, other)
 
 cdef Vec vec_rsub(Vec self, other):
-    self = <Vec> vec_sub(self, other)
-    CHKERR( VecScale(self.vec, -1) )
-    return self
+    cdef Vec vec = <Vec> vec_sub(self, other)
+    CHKERR( VecScale(vec.vec, -1) )
+    return vec
 
 cdef Vec vec_rmul(Vec self, other):
     return vec_mul(self, other)
 
 cdef Vec vec_rdiv(Vec self, other):
-    self = <Vec> vec_div(self, other)
-    CHKERR( VecReciprocal(self.vec) )
-    return self
+    cdef Vec vec = <Vec> vec_div(self, other)
+    CHKERR( VecReciprocal(vec.vec) )
+    return vec
 
 # --------------------------------------------------------------------
 

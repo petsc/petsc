@@ -316,6 +316,108 @@ cdef inline Mat ref_Mat(PetscMat mat):
 
 # --------------------------------------------------------------------
 
+# unary operations
+
+cdef inline Mat mat_pos(Mat self):
+    cdef Mat mat = type(self)()
+    CHKERR( MatDuplicate(self.mat, MAT_COPY_VALUES, &mat.mat) )
+    return mat
+
+cdef inline Mat mat_neg(Mat self):
+    cdef Mat mat = <Mat> mat_pos(self)
+    CHKERR( MatScale(mat.mat, -1) )
+    return mat
+
+# inplace binary operations
+
+cdef Mat mat_iadd(Mat self, other):
+    if isinstance(other, Mat):
+        self.axpy(1, other)
+    elif isinstance(other, (tuple, list)):
+        alpha, mat = other
+        self.axpy(alpha, other)
+    elif isinstance(other, Vec):
+        self.setDiagonal(other, PETSC_ADD_VALUES)
+    else:
+        self.shift(other)
+    return self
+
+cdef Mat mat_isub(Mat self, other):
+    if isinstance(other, Mat):
+        self.axpy(-1, other)
+    elif isinstance(other, (tuple, list)):
+        alpha, mat = other
+        self.axpy(-alpha, other)
+    elif isinstance(other, Vec):
+        diag = other.copy()
+        diag.scale(-1)
+        self.setDiagonal(diag, PETSC_ADD_VALUES)
+        diag.destroy()
+    else:
+        self.shift(other)
+    return self
+
+cdef Mat mat_imul(Mat self, other):
+    if isinstance(other, (tuple, list)):
+        L, R = other
+        self.diagonalScale(L, R)
+    else:
+        self.scale(other)
+    return self
+
+cdef Mat mat_idiv(Mat self, other):
+    if isinstance(other, (tuple, list)):
+        L, R = other
+        if isinstance(L, Vec):
+            L = L.copy()
+            L.reciprocal()
+        if isinstance(R, Vec):
+            R = R.copy()
+            R.reciprocal()
+        self.diagonalScale(L, R)
+    else:
+        self.scale(other)
+    return self
+
+# binary operations
+
+cdef Mat mat_add(Mat self, other):
+    return mat_iadd(mat_pos(self), other)
+
+cdef Mat mat_sub(Mat self, other):
+    return mat_isub(mat_pos(self), other)
+
+cdef Mat mat_mul(Mat self, other):
+    if isinstance(other, Mat):
+        raise NotImplementedError # XXX Implement !!!
+    elif isinstance(other, Vec):
+        res = self.getVecLeft()
+        self.mult(other, res)
+        return res
+    else:
+        return mat_imul(mat_pos(self), other)
+
+cdef Mat mat_div(Mat self, other):
+    return mat_idiv(mat_pos(self), other)
+
+# reflected binary operations
+
+cdef Mat mat_radd(Mat self, other):
+    return mat_add(self, other)
+
+cdef Mat mat_rsub(Mat self, other):
+    cdef Mat mat = <Mat> mat_sub(self, other)
+    mat.scale(-1)
+    return mat
+
+cdef Mat mat_rmul(Mat self, other):
+    return mat_mul(self, other)
+
+cdef Mat mat_rdiv(Mat self, other):
+    raise NotImplementedError
+
+# --------------------------------------------------------------------
+
 cdef inline PetscMatStructure matstructure(object structure) except <PetscMatStructure>(-1):
     if   structure is None:  return MAT_DIFFERENT_NONZERO_PATTERN
     elif structure is False: return MAT_DIFFERENT_NONZERO_PATTERN
@@ -327,7 +429,6 @@ cdef inline PetscMatAssemblyType assemblytype(object assembly) except <PetscMatA
     elif assembly is False: return MAT_FINAL_ASSEMBLY
     elif assembly is True:  return MAT_FLUSH_ASSEMBLY
     else:                   return assembly
-
 
 # --------------------------------------------------------------------
 

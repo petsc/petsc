@@ -108,11 +108,55 @@ cdef class Mat(Object):
         self.obj  = <PetscObject*> &self.mat
         self.mat = NULL
 
-    def __call__(self, x, y=None):
-        if y is None:
-            y = self.getVecLeft(self)
-        self.mult(x, y)
-        return y
+    # unary operations
+
+    def __pos__(self):
+        return mat_pos(self)
+
+    def __neg__(self):
+        return mat_neg(self)
+
+    # inplace binary operations
+    
+    def __iadd__(self, other):
+        return mat_iadd(self, other)
+    
+    def __isub__(self, other):
+        return mat_isub(self, other)
+    
+    def __imul__(self, other):
+        return mat_imul(self, other)
+    
+    def __idiv__(self, other):
+        return mat_idiv(self, other)
+
+    # binary operations
+    
+    def __add__(self, other):
+        if isinstance(self, Mat):
+            return mat_add(self, other)
+        else:
+            return mat_radd(other, self)
+
+    def __sub__(self, other):
+        if isinstance(self, Mat):
+            return mat_sub(self, other)
+        else:
+            return mat_rsub(other, self)
+
+    def __mul__(self, other):
+        if isinstance(self, Mat):
+            return mat_mul(self, other)
+        else:
+            return mat_rmul(other, self)
+
+    def __div__(self, other):
+        if isinstance(self, Mat):
+            return mat_div(self, other)
+        else:
+            return mat_rdiv(other, self)
+        
+    #
 
     def __getitem__(self, ij):
         return mat_getitem(self, ij)
@@ -120,6 +164,11 @@ cdef class Mat(Object):
     def __setitem__(self, ij, v):
         mat_setitem(self, ij, v)
 
+    def __call__(self, x, y=None):
+        if y is None:
+            y = self.getVecLeft()
+        self.mult(x, y)
+        return y
     #
 
     def view(self, Viewer viewer=None):

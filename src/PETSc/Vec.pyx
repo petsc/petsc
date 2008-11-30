@@ -24,6 +24,30 @@ cdef class Vec(Object):
         self.obj = <PetscObject*> &self.vec
         self.vec = NULL
 
+    # unary operations
+
+    def __pos__(self):
+        return vec_pos(self)
+
+    def __neg__(self):
+        return vec_neg(self)
+
+    # inplace binary operations
+    
+    def __iadd__(self, other):
+        return vec_iadd(self, other)
+    
+    def __isub__(self, other):
+        return vec_isub(self, other)
+    
+    def __imul__(self, other):
+        return vec_imul(self, other)
+    
+    def __idiv__(self, other):
+        return vec_idiv(self, other)
+
+    # binary operations
+    
     def __add__(self, other):
         if isinstance(self, Vec):
             return vec_add(self, other)
@@ -47,6 +71,8 @@ cdef class Vec(Object):
             return vec_div(self, other)
         else:
             return vec_rdiv(other, self)
+
+    #
 
     def __getitem__(self, i):
         return vec_getitem(self, i)
