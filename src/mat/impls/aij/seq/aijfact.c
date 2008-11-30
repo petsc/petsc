@@ -915,7 +915,7 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
   ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
   ierr = MatRestoreArray(B,&b);CHKERRQ(ierr); 
   ierr = MatRestoreArray(X,&x);CHKERRQ(ierr);
-  ierr = PetscLogFlops(n*(2*a->nz - n));CHKERRQ(ierr);
+  ierr = PetscLogFlops(B->cmap->n*(2*a->nz - n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
 

@@ -6,6 +6,7 @@
 #include "petscda.h"   /*I "petscda.h" I*/
 
 extern PetscErrorCode DAGetWireBasketInterpolation(DA,Mat,Mat*);
+extern PetscErrorCode DAGetFaceInterpolation(DA,Mat,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUp_WB"
@@ -17,7 +18,7 @@ PetscErrorCode PCSetUp_WB(PC pc,void *ida)
 
   PetscFunctionBegin;
   ierr = PCGetOperators(pc,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetWireBasketInterpolation(da,A,&P);CHKERRQ(ierr);
+  ierr = DAGetFaceInterpolation(da,A,&P);CHKERRQ(ierr);
   ierr = PCMGSetInterpolation(pc,1,P);CHKERRQ(ierr);
   ierr = MatDestroy(P);CHKERRQ(ierr);
   PetscFunctionReturn(0);
