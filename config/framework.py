@@ -805,6 +805,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.log.write('Starting Configure Run at '+time.ctime(time.time())+'\n')
     self.log.write('Configure Options: '+self.getOptionsString()+'\n')
     self.log.write('Working directory: '+os.getcwd()+'\n')
+    self.log.write('Machine uname:\n' + str(os.uname())+'\n')
     self.log.write('Python version:\n' + sys.version+'\n')
     self.log.write(('='*80)+'\n')
     return
