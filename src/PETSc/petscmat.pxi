@@ -178,6 +178,11 @@ cdef extern from "petscmat.h":
     int MatShift(PetscMat,PetscScalar)
     int MatAXPY(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
     int MatAYPX(PetscMat,PetscScalar,PetscMat,PetscMatStructure)
+    int MatMatMult(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    int MatMatMultTranspose(PetscMat,PetscMat,PetscMatReuse,PetscReal,PetscMat*)
+    int MatMatMultSymbolic(PetscMat,PetscMat,PetscReal,PetscMat*)
+    int MatMatMultNumeric(PetscMat,PetscMat,PetscMat)
+
     int MatInterpolate(PetscMat,PetscVec,PetscVec)
     int MatInterpolateAdd(PetscMat,PetscVec,PetscVec,PetscVec)
     int MatRestrict(PetscMat,PetscVec,PetscVec)

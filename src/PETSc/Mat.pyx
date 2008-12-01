@@ -117,21 +117,21 @@ cdef class Mat(Object):
         return mat_neg(self)
 
     # inplace binary operations
-    
+
     def __iadd__(self, other):
         return mat_iadd(self, other)
-    
+
     def __isub__(self, other):
         return mat_isub(self, other)
-    
+
     def __imul__(self, other):
         return mat_imul(self, other)
-    
+
     def __idiv__(self, other):
         return mat_idiv(self, other)
 
     # binary operations
-    
+
     def __add__(self, other):
         if isinstance(self, Mat):
             return mat_add(self, other)
@@ -155,7 +155,7 @@ cdef class Mat(Object):
             return mat_div(self, other)
         else:
             return mat_rdiv(other, self)
-        
+
     #
 
     def __getitem__(self, ij):
@@ -770,6 +770,45 @@ cdef class Mat(Object):
         cdef PetscScalar sval = alpha
         cdef PetscMatStructure flag = matstructure(structure)
         CHKERR( MatAYPX(self.mat, sval, X.mat, flag) )
+
+    # matrix-matrix product
+
+    def matMultSymbolic(self, Mat mat not None, fill=None):
+        cdef Mat result = Mat()
+        cdef PetscReal cfill = 2.0
+        if fill is not None: cfill = fill
+        CHKERR( MatMatMultSymbolic(self.mat, mat.mat, cfill, &result.mat) )
+        return result
+
+    def matMultNumeric(self, Mat mat not None, Mat result=None):
+        if result is None:
+            result = Mat()
+        if result.mat == NULL:
+            CHKERR( MatMatMultSymbolic(self.mat, mat.mat, 2.0, &result.mat) )
+        CHKERR( MatMatMultNumeric(self.mat, mat.mat, result.mat) )
+        return result
+
+    def matMult(self, Mat mat not None, Mat result=None, fill=None):
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        if result is None:
+            result = Mat()
+        elif result.mat != NULL:
+            reuse = MAT_REUSE_MATRIX
+        cdef PetscReal cfill = 2.0
+        if fill is not None: cfill = fill
+        CHKERR( MatMatMult(self.mat, mat.mat, reuse, cfill, &result.mat) )
+        return result
+
+    def matMultTranspose(self, Mat mat not None, Mat result=None, fill=None):
+        cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        if result is None:
+            result = Mat()
+        elif result.mat != NULL:
+            reuse = MAT_REUSE_MATRIX
+        cdef PetscReal cfill = 2.0
+        if fill is not None: cfill = fill
+        CHKERR( MatMatMultTranspose(self.mat, mat.mat, reuse, cfill, &result.mat) )
+        return result
 
     # XXX factorization
 
