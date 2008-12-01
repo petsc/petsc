@@ -654,7 +654,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsClear(void)
   PetscFunctionBegin;
   if (!options) PetscFunctionReturn(0);
   for (i=0; i<options->N; i++) {
-    if (options->names[i]) free(options->names[i]);
+    if (options->names[i])  free(options->names[i]);
     if (options->values[i]) free(options->values[i]);
   }
   for (i=0; i<options->Naliases; i++) {
@@ -767,16 +767,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
   }
   /* shift remaining values down 1 */
   for (i=N; i>n; i--) {
-    names[i]           = names[i-1];
+    options->names[i]  = options->names[i-1];
     options->values[i] = options->values[i-1];
     options->used[i]   = options->used[i-1];
   }
   /* insert new name and value */
   ierr = PetscStrlen(name,&len);CHKERRQ(ierr);
-  names[n] = (char*)malloc((len+1)*sizeof(char));
-  ierr = PetscStrcpy(names[n],name);CHKERRQ(ierr);
-  if (value) {
-    ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
+  options->names[n] = (char*)malloc((len+1)*sizeof(char));
+  ierr = PetscStrcpy(options->names[n],name);CHKERRQ(ierr);
+  ierr = PetscStrlen(value,&len);CHKERRQ(ierr);
+  if (len) {
     options->values[n] = (char*)malloc((len+1)*sizeof(char));
     ierr = PetscStrcpy(options->values[n],value);CHKERRQ(ierr);
   } else {options->values[n] = 0;}
@@ -823,6 +823,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearValue(const char iname[])
     ierr  = PetscStrcasecmp(names[i],name,&match);CHKERRQ(ierr);
     ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
+      if (options->names[i])  free(options->names[i]);
       if (options->values[i]) free(options->values[i]);
       PetscOptionsMonitor(name,"");
       break;
@@ -835,7 +836,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearValue(const char iname[])
 
   /* shift remaining values down 1 */
   for (i=n; i<N-1; i++) {
-    names[i]           = names[i+1];
+    options->names[i]  = options->names[i+1];
     options->values[i] = options->values[i+1];
     options->used[i]   = options->used[i+1];
   }
