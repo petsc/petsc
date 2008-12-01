@@ -16,10 +16,12 @@ static PetscErrorCode ISInitializePackage(char path[])
   PetscFunctionReturn(0);
 }
 #define PetscInitializePackage(path)       PetscInitializePackage((char*)path)
+#define PetscDrawInitializePackage(path)   0
 #define PetscViewerInitializePackage(path) 0
 #define PetscRandomInitializePackage(path) PetscRandomInitializePackage((char*)path)
 #define ISInitializePackage(path)          ISInitializePackage((char*)path)
 #define VecInitializePackage(path)         VecInitializePackage((char*)path)
+#define PFInitializePackage(path)          0
 #define MatInitializePackage(path)         MatInitializePackage((char*)path)
 #endif /* PETSC_VERSION_(2,3,2) */
 
@@ -54,10 +56,12 @@ static PetscErrorCode PetscInitializeAllPackages(const char path[])
   initialized = PETSC_TRUE;
   PetscFunctionBegin;
   ierr = PetscInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
   ierr = ISInitializePackage(path);CHKERRQ(ierr);
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
+  ierr = PFInitializePackage(path);CHKERRQ(ierr);
   ierr = MatInitializePackage(path);CHKERRQ(ierr);
   ierr = PCInitializePackage(path);CHKERRQ(ierr);
   ierr = KSPInitializePackage(path);CHKERRQ(ierr);
