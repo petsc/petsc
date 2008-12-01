@@ -35,7 +35,7 @@ class PetscConfig:
             raise DistutilsError("PETSc not found")
         elif not os.path.isdir(petsc_dir):
             raise DistutilsError("invalid PETSC_DIR: %s" % petsc_dir)
-        self.configdict = self._get_petsc_conf(petsc_dir,petsc_arch)
+        self.configdict = self._get_petsc_conf(petsc_dir, petsc_arch)
         self.PETSC_DIR  = self['PETSC_DIR']
         self.PETSC_ARCH = self['PETSC_ARCH']
         self.language = self._map_lang(self['PETSC_LANGUAGE'])
@@ -69,44 +69,41 @@ class PetscConfig:
         confstr  = 'PETSC_DIR = %s\n'  % petsc_dir
         confstr += 'PETSC_ARCH = %s\n' % petsc_arch
         confstr += contents
-        confstr += 'PACKAGES_INCLUDES = ${MPI_INCLUDE} ${X11_INCLUDE} ${BLASLAPACK_INCLUDE}\n'
-        confstr += 'PACKAGES_LIBS = ${MPI_LIB} ${X11_LIB} ${BLASLAPACK_LIB}\n'
+        ## confstr += 'PACKAGES_INCLUDES = ${MPI_INCLUDE} ${X11_INCLUDE} ${BLASLAPACK_INCLUDE}\n'
+        ## confstr += 'PACKAGES_LIBS = ${MPI_LIB} ${X11_LIB} ${BLASLAPACK_LIB}\n'
         confdct = cfgutils.makefile(StringIO(confstr))
         return confdct
 
     def _get_petsc_conf_new(self, petsc_dir, petsc_arch):
         PETSC_DIR  = petsc_dir
-        if not petsc_arch or petsc_arch == os.path.sep or \
-               not os.path.isdir(os.path.join(petsc_dir, petsc_arch)):
-            petsc_arch = ''
-            PETSC_ARCH = petsc_arch
+        if (not petsc_arch or petsc_arch == os.path.sep or
+            not os.path.isdir(os.path.join(petsc_dir, petsc_arch))):
+            PETSC_ARCH    = ''
             PETSC_INCLUDE = '-I${PETSC_DIR}/include'
             PETSC_LIB_DIR = '${PETSC_DIR}/lib'
         else:
-            PETSC_ARCH = petsc_arch
-            PETSC_INCLUDE = ' -I${PETSC_DIR}/include -I${PETSC_DIR}/${PETSC_ARCH}/include'
+            PETSC_ARCH    = petsc_arch
+            PETSC_INCLUDE = '-I${PETSC_DIR}/include -I${PETSC_DIR}/${PETSC_ARCH}/include'
             PETSC_LIB_DIR = '${PETSC_DIR}/${PETSC_ARCH}/lib'
         PETSC_INCLUDE += ' ${PACKAGES_INCLUDES} ${PETSC_BLASLAPACK_FLAGS}'
         #
-        variables = os.path.join(petsc_dir, 'conf', 'variables')
+        variables = os.path.join(PETSC_DIR, 'conf', 'variables')
         if not os.path.exists(variables):
-            variables = os.path.join(petsc_dir, petsc_arch, 'conf', 'variables')
-        petscconf = os.path.join(petsc_dir, petsc_arch, 'conf', 'petscvariables')
+            variables = os.path.join(PETSC_DIR, PETSC_ARCH, 'conf', 'variables')
+        petscvars = os.path.join(PETSC_DIR, PETSC_ARCH, 'conf', 'petscvariables')
         #
         variables = open(variables)
-        contents = variables.read()
+        contents  = variables.read()
         variables.close()
-        petscconf = open(petscconf)
-        contents += petscconf.read()
-        petscconf.close()
+        petscvars = open(petscvars)
+        contents += petscvars.read()
+        petscvars.close()
         #
         confstr  = 'PETSC_DIR  = %s\n' % PETSC_DIR
         confstr += 'PETSC_ARCH = %s\n' % PETSC_ARCH
         confstr += contents
         confstr += 'PETSC_INCLUDE = %s\n' % PETSC_INCLUDE
         confstr += 'PETSC_LIB_DIR = %s\n' % PETSC_LIB_DIR
-        confstr += 'PACKAGES_INCLUDES = ${MPI_INCLUDE} ${X11_INCLUDE} ${BLASLAPACK_INCLUDE}\n'
-        confstr += 'PACKAGES_LIBS = ${MPI_LIB} ${X11_LIB} ${BLASLAPACK_LIB}\n'
         confdict = cfgutils.makefile(StringIO(confstr))
         return confdict
 
