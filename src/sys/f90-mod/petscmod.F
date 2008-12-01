@@ -1,8 +1,6 @@
 #define PETSC_USE_FORTRAN_MODULES
 
-#define PETSC_AVOID_DECLARATIONS
-#include "finclude/petscall.h"
-#undef PETSC_AVOID_DECLARATIONS
+#include "finclude/petscalldef.h"
 
         module petscdef
 #if defined(PETSC_HAVE_MPI_F90MODULE)
@@ -11,6 +9,7 @@
 #endif
 #include "finclude/petsc.h"
 #include "finclude/petscviewer.h"
+#include "finclude/ftn-custom/petscviewerdef.h90"
 #include "finclude/petscdraw.h"
 #include "finclude/petsclog.h"
         end module
@@ -28,6 +27,7 @@
         module petscisdef
         use petsc
 #include "finclude/petscis.h"
+#include "finclude/ftn-custom/petscisdef.h90"
         end module
 
         module petscis
@@ -38,6 +38,7 @@
         module petscvecdef
         use petscis
 #include "finclude/petscvec.h"
+#include "finclude/ftn-custom/petscvecdef.h90"
         end module
 
         module petscvec
@@ -48,6 +49,7 @@
         module petscmatdef
         use petscvec
 #include "finclude/petscmat.h"
+#include "finclude/ftn-custom/petscmatdef.h90"
         end module
 
         module petscmat
@@ -60,24 +62,41 @@
 #include "finclude/petscao.h"
         end module
 
-        module petscpc
+        module petscpcdef
         use petscmat
 #include "finclude/petscpc.h"
+#include "finclude/ftn-custom/petscpcdef.h90"
+        end module
+
+        module petscpc
+        use petscpcdef
+#include "finclude/petscpc.h90"
+        end module
+
+        module petsckspdef
+        use petscpc
+#include "finclude/petscksp.h"
+#include "finclude/ftn-custom/petsckspdef.h90"
         end module
 
         module petscksp
-        use petscpc
-#include "finclude/petscksp.h"
+        use petsckspdef
+#include "finclude/petscksp.h90"
+        end module
+
+        module petscmgdef
+        use petscksp
+#include "finclude/petscmg.h"
         end module
 
         module petscmg
-        use petscksp
-#include "finclude/petscmg.h"
+        use petscmgdef
         end module
 
         module petscdadef
         use petscksp
 #include "finclude/petscda.h"
+#include "finclude/ftn-custom/petscdadef.h90"
         end module
 
         module petscda
@@ -86,12 +105,24 @@
         end module
 
 
-        module petscsnes
+        module petscsnesdef
         use petscksp
 #include "finclude/petscsnes.h"
+#include "finclude/ftn-custom/petscsnesdef.h90"
+        end module
+
+        module petscsnes
+        use petscsnesdef
+#include "finclude/petscsnes.h90"
+        end module
+
+        module petsctsdef
+        use petscsnes
+#include "finclude/petscts.h"
+#include "finclude/ftn-custom/petsctsdef.h90"
         end module
 
         module petscts
-        use petscsnes
-#include "finclude/petscts.h"
+        use petsctsdef
+#include "finclude/petscts.h90"
         end module

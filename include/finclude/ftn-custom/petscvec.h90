@@ -1,4 +1,18 @@
 !
+#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#include "finclude/ftn-custom/petscvecdef.h90"
+#endif
+
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(VEC_HIDE)
+#define VEC_HIDE type(Vec)
+#define VECSCATTER_HIDE type(VecScatter)
+#define USE_VEC_HIDE use petscvecdef
+#elif !defined(VEC_HIDE)
+#define VEC_HIDE Vec
+#define VECSCATTER_HIDE VecScatter
+#define USE_VEC_HIDE
+#endif
+
 
       Interface 
         Subroutine VecGetArrayF90(v,array,ierr)

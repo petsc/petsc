@@ -1,10 +1,8 @@
 
       module MyModule
-#define PETSC_AVOID_DECLARATIONS
-#include "finclude/petsc.h"
-#include "finclude/petscbag.h"
-#include "finclude/petscviewer.h"
-#undef PETSC_AVOID_DECLARATIONS
+#include "finclude/petscdef.h"
+#include "finclude/petscbagdef.h"
+#include "finclude/petscviewerdef.h"
 !   Data structure used to contain information about the problem
 !   You can add physical values etc here
 

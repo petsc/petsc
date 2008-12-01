@@ -2,48 +2,7 @@
 !
 !  Include file for Fortran use of the Vec package in PETSc
 !
-#if !defined (__PETSCVEC_H)
-#define __PETSCVEC_H
-
-#if defined(PETSC_USE_FORTRAN_MODULES)
-#define VEC_HIDE type(Vec)
-#define VECSCATTER_HIDE type(VecScatter)
-#define USE_VEC_HIDE use petscvecdef
-#else
-#define VEC_HIDE Vec
-#define VECSCATTER_HIDE VecScatter
-#define USE_VEC_HIDE
-
-#define Vec PetscFortranAddr
-#define VecScatter PetscFortranAddr
-#endif
-
-#define NormType PetscEnum
-#define InsertMode PetscEnum
-#define ScatterMode PetscEnum 
-#define VecOption PetscEnum
-#define VecType character*(80)
-#define VecOperation PetscEnum
-
-#define VECSEQ 'seq'
-#define VECMPI 'mpi'
-#define VECFETI 'feti'
-#define VECSHARED 'shared'
-#define VECESI 'esi'
-#define VECPETSCESI 'petscesi'
-
-#endif
-
-#if !defined (PETSC_AVOID_DECLARATIONS)
-
-#if defined(PETSC_USE_FORTRAN_MODULES)
-      type Vec
-        PetscFortranAddr:: v
-      end type Vec
-      type VecScatter
-        PetscFortranAddr:: v
-      end type VecScatter
-#endif
+#include "finclude/petscvecdef.h"
 !
 !
 !  Types of vector and matrix norms
@@ -102,4 +61,3 @@
 !
 !  End of Fortran include file for the Vec package in PETSc
 
-#endif

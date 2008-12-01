@@ -1,0 +1,12 @@
+!
+!
+!  Additional Vec include file for use of PETSc with Fortran 90/HPF
+!
+#include "finclude/ftn-custom/petscpc.h90"
+#if defined(PETSC_USE_FORTRAN_INTERFACES)
+      interface
+#include "finclude/petscmgdef.h"
+#include "finclude/ftn-auto/petscpc.h90"
+      end interface
+#endif
+

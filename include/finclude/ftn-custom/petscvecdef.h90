@@ -1,0 +1,11 @@
+
+
+#if defined(PETSC_USE_FORTRAN_TYPES)
+      type Vec
+        PetscFortranAddr:: v
+      end type Vec
+      type VecScatter
+        PetscFortranAddr:: v
+      end type VecScatter
+#endif
+

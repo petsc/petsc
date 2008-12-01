@@ -1,5 +1,4 @@
-#define PETSC_AVOID_DECLARATIONS
-#include "finclude/petscall.h"
+#include "finclude/petscalldef.h"
 !
 !   Notes:
 !     This uses Fortran 90 free-form, this means the lines can be up to 132 columns wide

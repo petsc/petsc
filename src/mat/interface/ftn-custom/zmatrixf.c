@@ -2,6 +2,7 @@
 #include "petscmat.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matdestroymatrices_              MATDESTROYMATRICES
 #define matgetfactor_                    MATGETFACTOR
 #define matfactorgetsolverpackage_       MATFACTORGETSOLVERPACKAGE
 #define matgetrowij_                     MATGETROWIJ
@@ -21,6 +22,7 @@
 #define matgetvecs_                      MATGETVECS
 #define matnullspaceremove_              MATNULLSPACEREMOVE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matdestroymatrices_              matdestroymatrices_
 #define matgetfactor_                    matgetfactor
 #define matfactorgetsolverpackage_       matfactorgetsolverpackage
 #define matgetvecs_                      matgetvecs
@@ -190,6 +192,20 @@ void PETSC_STDCALL matgetsubmatrices_(Mat *mat,PetscInt *n,IS *isrow,IS *iscol,M
     *ierr = PetscFree(lsmat); 
   } else {
     *ierr = MatGetSubMatrices(*mat,*n,isrow,iscol,*scall,&smat);
+  }
+}
+
+/*
+    MatDestroyMatrices() is slightly different from C since the 
+    Fortran provides the array to hold the submatrix objects,while in C that 
+    array is allocated by the MatGetSubmatrices()
+*/
+void PETSC_STDCALL matdestroymatrices_(Mat *mat,PetscInt *n,Mat *smat,PetscErrorCode *ierr)
+{
+  PetscInt i;
+
+  for (i=0; i<*n; i++) {
+    *ierr = MatDestroy(smat[i]);if (*ierr) return;
   }
 }
 

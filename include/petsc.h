@@ -45,13 +45,11 @@
 #if (PETSC_VERSION_RELEASE == 1)
 #define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG))
+                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE))
 #else
-#define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Development Version %d.%d.%d, Patch %d, ", \
-                                         PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG))
+#define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Development"), \
+                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG), \
+                                         PetscStrcat(version," HG Date: "),PetscStrcat(version,PETSC_VERSION_DATE_HG))
 #endif
 
 /*MC
@@ -1793,19 +1791,78 @@ extern PetscErrorCode MPIU_File_read_all(MPI_File,void*,PetscMPIInt,MPI_Datatype
 
 /*MC
 
-    FortranModules - it is possible to use PETSc from Fortran using Fortran 90 modules instead of C style include macros.
+    UsingFortran - Fortran can be used with PETSc in four distinct approaches
 
-$   Objects are named type(XXXX)  instead of XXXX, for example
-$      use petscvec 
-$      type(Vec) v instead of
+$    1) classic Fortran 77 style
+$#include "petscXXX.h" to work with material from the XXX component of PETSc
+$       XXX variablename
+$      You cannot use this approach if you wish to use the Fortran 90 specific PETSc routines
+$      which end in F90; such as VecGetArrayF90()
 $
-$#include "finclude/petsc.h"
-$#include "finclude/petscvec.h"
-$      Vec v
+$    2) classic Fortran 90 style
+$#include "petscXXX.h" 
+$#include "petscXXX.h90" to work with material from the XXX component of PETSc
+$       XXX variablename
+$
+$    3) Using Fortran modules
+$#include "petscXXXdef.h" 
+$         use petscXXXX
+$       XXX variablename
+$
+$    4) Use Fortran modules and Fortran data types for PETSc types
+$#include "petscXXXdef.h" 
+$         use petscXXXX
+$       type(XXX) variablename
+$      To use this approach you must config/configure.py PETSc with the additional
+$      option --with-fortran-datatypes You cannot use the type(XXX) declaration approach without using Fortran modules
 
-    The PETSc macros, PetscInt, PetscErrorCode etc are not available, you should use integer for these
+    Finally if you absolutely do not want to use any #include you can use either 
 
-    See the example src/vec/vec/examples/tutorials/ex20f90.F90
+$    3a) skip the #include BUT you cannot use any PETSc data type names like Vec, Mat, PetscInt, PetscErrorCode etc
+$        and you must declare the variables as integer, for example 
+$        integer variablename
+$
+$    4a) skip the #include, you use the object types like type(Vec) type(Mat) but cannot use the data type
+$        names like PetscErrorCode, PetscInt etc. again for those you must use integer
+
+   We recommend either 2 or 3. Approaches 2 and 3 provide type checking for most PETSc function calls; 4 has type checking 
+for only a few PETSc functions.
+
+   Fortran type checking with interfaces is strick, this means you cannot pass a scalar value when an array value
+is expected (even though it is legal Fortran). For example when setting a single value in a matrix with MatSetValues()
+you cannot have something like
+$      PetscInt row,col
+$      PetscScalar val
+$        ...
+$      call MatSetValues(mat,1,row,1,col,val,INSERT_VALUES,ierr)
+You must instead have 
+$      PetscInt row(1),col(1)
+$      PetscScalar val(1)
+$        ...
+$      call MatSetValues(mat,1,row,1,col,val,INSERT_VALUES,ierr)
+
+
+    See the example src/vec/vec/examples/tutorials/ex20f90.F90 for an example that can use all four approaches
+
+    Developer Notes: The finclude/petscXXXdef.h contain all the #defines (would be typedefs in C code) these
+     automatically include their predecessors; for example finclude/petscvecdef.h includes finclude/petscisdef.h
+
+     The finclude/petscXXXX.h contain all the parameter statements for that package. These automatically include
+     their finclude/petscXXXdef.h file but DO NOT automatically include their predecessors;  for example 
+     finclude/petscvec.h does NOT automatically include finclude/petscis.h
+
+     The finclude/ftn-custom/petscXXXdef.h90 are not intended to be used directly in code, they define the
+     Fortran data type type(XXX) (for example type(Vec)) when PETSc is config/configure.py with the --with-fortran-datatypes option.
+
+     The finclude/ftn-custom/petscXXX.h90 (not included directly by code) contain interface definitions for
+     the PETSc Fortran stubs that have different bindings then their C version (for example VecGetArrayF90).
+
+     The finclude/ftn-auto/petscXXX.h90 (not included directly by code) contain interface definitions generated
+     automatically by "make allfortranstubs".
+
+     The finclude/petscXXX.h90 includes the custom finclude/ftn-custom/petscXXX.h90 and if config/configure.py 
+     was run with --with-fortran-interfaces it also includes the finclude/ftn-auto/petscXXX.h90 These DO NOT automatically
+     include their predecessors
 
     Level: beginner
 

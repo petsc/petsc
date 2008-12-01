@@ -2,60 +2,8 @@
 !
 !  Include file for Fortran use of the KSP package in PETSc
 !
-#if !defined (__PETSCKSP_H)
-#define __PETSCKSP_H
+#include "finclude/petsckspdef.h"
 
-#if defined(PETSC_USE_FORTRAN_MODULES)
-#define KSP_HIDE type(KSP)
-#else
-#define KSP_HIDE KSP
-
-#define KSP PetscFortranAddr
-#define KSPFischerGuess PetscFortranAddr
-#endif
-
-#define KSPType character*(80)
-#define KSPCGType PetscEnum
-#define KSPConvergedReason PetscEnum 
-#define KSPNormType PetscEnum
-#define KSPGMRESCGSRefinementType PetscEnum
-!
-!  Various Krylov subspace methods
-!
-#define KSPRICHARDSON 'richardson'
-#define KSPCHEBYCHEV 'chebychev'
-#define KSPCG 'cg'
-#define KSPCGNE 'cgne'
-#define KSPNASH 'nash'
-#define KSPSTCG 'stcg'
-#define KSPGLTR 'gltr'
-#define KSPGMRES 'gmres'
-#define KSPFGMRES 'fgmres'
-#define KSPLGMRES 'lgmres'
-#define KSPTCQMR 'tcqmr'
-#define KSPBCGS 'bcgs'
-#define KSPIBCGS 'ibcgs'
-#define KSPBCGSL 'bcgsl'
-#define KSPCGS 'cgs'
-#define KSPTFQMR 'tfqmr'
-#define KSPCR 'cr'
-#define KSPLSQR 'lsqr'
-#define KSPPREONLY 'preonly'
-#define KSPQCG 'qcg'
-#define KSPBICG 'bicg'
-#define KSPMINRES 'minres'
-#define KSPSYMMLQ 'symmlq'
-#define KSPLCD 'lcd'
-#endif
-
-
-#if !defined (PETSC_AVOID_DECLARATIONS)
-
-#if defined(PETSC_USE_FORTRAN_MODULES)
-      type KSP
-        PetscFortranAddr:: v
-      end type KSP
-#endif
 !
 !  CG Types
 !
@@ -147,6 +95,4 @@
 !
 !  End of Fortran include file for the KSP package in PETSc
 !
-
-#endif
 

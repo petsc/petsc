@@ -1,0 +1,10 @@
+
+#if !defined(PETSC_USE_FORTRAN_MODULES) 
+#include "finclude/ftn-custom/petsckspdef.h90"
+#endif
+
+#if defined(PETSC_USE_FORTRAN_TYPES) && !defined(KSP_HIDE)
+#define KSP_HIDE type(KSP)
+#elif !defined(KSP_HIDE)
+#define KSP_HIDE KSP
+#endif

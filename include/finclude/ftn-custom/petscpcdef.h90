@@ -1,0 +1,11 @@
+
+#if !defined(__PETSCPCDEF_H90)
+#define __PETSCPCDEF_H90
+
+#if defined(PETSC_USE_FORTRAN_TYPES)
+      type PC
+        PetscFortranAddr:: v
+      end type PC
+#endif
+
+#endif

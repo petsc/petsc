@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreatePF"
-/*@
+/*@C
    DACreatePF - Creates an appropriately dimensioned PF mathematical function object
       from a DA.
 

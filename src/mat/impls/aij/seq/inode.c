@@ -1661,6 +1661,11 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   if (omega != 1.0) SETERRQ(PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
   if (fshift != 0.0) SETERRQ(PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
   if (flag & SOR_EISENSTAT) SETERRQ(PETSC_ERR_SUP,"No support for Eisenstat trick; use -mat_no_inode");
+  if (its > 1) {
+    /* switch to non-inode version */
+    ierr = MatRelax_SeqAIJ(A,bb,omega,flag,fshift,its,lits,xx);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
   if (!a->inode.ibdiagvalid) {
     if (!a->inode.ibdiag) {
@@ -2101,7 +2106,6 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
     }
     its--;
   }
-  if (its) SETERRQ(PETSC_ERR_SUP,"Currently no support for multiply SOR sweeps using inode version of AIJ matrix format;\n run with the option -mat_no_inode");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
   PetscFunctionReturn(0);

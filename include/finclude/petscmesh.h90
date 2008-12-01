@@ -2,8 +2,6 @@
 !
 !  Additional Mesh include file for use of PETSc with Fortran 90/HPF
 !
-#if !defined (PETSC_AVOID_DECLARATIONS)
-
       Interface 
         Subroutine MeshGetCoordinatesF90(m,array,ierr)
           PetscReal, pointer :: array(:,:)
@@ -89,4 +87,3 @@
         End Subroutine
       End Interface
 
-#endif

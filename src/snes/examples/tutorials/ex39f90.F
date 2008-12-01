@@ -35,11 +35,9 @@
 
       module f90module
       type userctx
-#define PETSC_AVOID_DECLARATIONS
-#include "finclude/petsc.h"
-#include "finclude/petscvec.h"
-#include "finclude/petscda.h"
-#undef PETSC_AVOID_DECLARATIONS
+#include "finclude/petscdef.h"
+#include "finclude/petscvecdef.h"
+#include "finclude/petscdadef.h"
         DA      da
         integer xs,xe,xm,gxs,gxe,gxm
         integer ys,ye,ym,gys,gye,gym

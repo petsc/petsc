@@ -792,7 +792,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetGhostCorners(ADDA adda, PetscInt **lcorn
 
 #undef __FUNCT__  
 #define __FUNCT__ "ADDAMatSetValues"
-/*@ 
+/*@C 
    ADDAMatSetValues - Inserts or adds a block of values into a matrix. The values
    are indexed geometrically with the help of the ADDA data structure.
    These values may be cached, so MatAssemblyBegin() and MatAssemblyEnd() 

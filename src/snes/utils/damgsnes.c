@@ -811,7 +811,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetFromOptions(DMMG *dmmg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocalFD"
-/*@
+/*@C
     DMMGSetSNESLocalFD - Sets the local user function that is used to approximately compute the Jacobian
         via finite differences.
 
@@ -840,7 +840,7 @@ PetscErrorCode DMMGSetSNESLocalFD(DMMG *dmmg,DALocalFunction1 function)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetSNESLocal_Private"
-/*@
+/*@C
   DMMGGetSNESLocal - Returns the local functions for residual and Jacobian evaluation.
 
   Collective on DMMG

@@ -2,17 +2,8 @@
 !
 !  Include file for Fortran use of the System package in PETSc
 !
-#if !defined (__PETSCSYS_H)
-#define __PETSCSYS_H
+#include "finclude/petscsysdef.h"
 
-#define PetscRandom PetscFortranAddr
-#define PetscRandomType character*(80)
-#define PetscBinarySeekType PetscEnum
-
-#endif
-
-
-#if !defined (PETSC_AVOID_DECLARATIONS)
 !
 !     Random numbers
 !
@@ -49,5 +40,3 @@
 
 !
 !     End of Fortran include file for the System  package in PETSc
-
-#endif

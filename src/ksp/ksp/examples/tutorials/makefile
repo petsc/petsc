@@ -275,6 +275,11 @@ runex2f:
 	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
 	   else echo "Possible problem with ex2f_1, diffs above"; fi; \
 	   ${RM} -f ex2f_1.tmp
+runex2_umfpack:
+	-@${MPIEXEC} -n 1 ./ex2 -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package umfpack > ex2_umfpack.tmp 2>&1; \
+           if (${DIFF} output/ex2_umfpack.out ex2_umfpack.tmp) then true; \
+           else echo "Possible problem with ex2_umfpack, diffs above"; fi; \
+           ${RM} -f ex2_umfpack.tmp
 runex5:
 	-@${MPIEXEC} -n 1 ./ex5 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
@@ -592,7 +597,11 @@ runex10_spooles_cholesky_2:
 	   if (${DIFF} output/ex10_mumps.out ex10_spooles_cholesky_2.tmp) then true; \
 	   else echo "Possible problem with ex10_spooles_cholesky_2, diffs above"; fi; \
 	   ${RM} -f ex10_spooles_cholesky_2.tmp
-
+runex10_umfpack:
+	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package umfpack -num_numfac 2 -num_rhs 2 > ex10_umfpack.tmp 2>&1; \
+	   if (${DIFF} output/ex10_umfpack.out ex10_umfpack.tmp) then true; \
+	   else echo "Possible problem with ex10_umfpack, diffs above"; fi; \
+	   ${RM} -f ex10_umfpack.tmp
 runex10_mumps_lu_1:
 	-@${MPIEXEC} -n 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type seqaij -pc_factor_mat_solver_package mumps -num_numfac 2 -num_rhs 2 > ex10_mumps_lu_1.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_mumps_lu_1.tmp) then true; \

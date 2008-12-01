@@ -1,0 +1,11 @@
+
+#if !defined(__PETSCMATDEF_H90)
+#define __PETSCMATDEF_H90
+
+#if defined(PETSC_USE_FORTRAN_TYPES)
+      type Mat
+        PetscFortranAddr:: v
+      end type Mat
+#endif
+
+#endif

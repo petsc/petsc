@@ -16,6 +16,8 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-with-fpp=<name>', nargs.Arg(None, None, 'Specify Fortran preprocessor (broken)'))
+    help.addArgument('PETSc', '-with-fortran-datatypes=<name>', nargs.ArgBool(None, 0, 'Declare PETSc objects in Fortran like type(Vec) instead of Vec'))
+    help.addArgument('PETSc', '-with-fortran-interfaces=<name>', nargs.ArgBool(None, 0, 'Generate Fortran interface definitions for PETSc functions'))
     return
 
   def setupDependencies(self, framework):
@@ -56,6 +58,13 @@ class Configure(config.base.Configure):
                                            '-${AR} ${AR_FLAGS} ${LIBNAME} $*.o',\
                                            '-${RM} $*.o'])
 
+      if self.framework.argDB['with-fortran-datatypes']:
+        self.addDefine('USE_FORTRAN_DATATYPES', '1')
+      if self.framework.argDB['with-fortran-interfaces']:
+        if self.framework.argDB['with-fortran-datatypes']:
+          raise RuntimeError('Cannot use generated fortran interface definitions with fortran datatypes')
+        self.addDefine('USE_FORTRAN_INTERFACES', '1')
+      
     else:
       self.addMakeRule('.F.o','',['-@echo "Your system was not configured for Fortran use"', \
                                   '-@echo "  Check configure.log under the checkFortranCompiler test for the specific failure"',\
