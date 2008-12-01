@@ -77,29 +77,6 @@ PETSC_EXTERN_C_END
 
 /* ---------------------------------------------------------------- */
 
-#if (PETSC_VERSION_MAJOR    == 2 && \
-     PETSC_VERSION_MINOR    == 3 && \
-     PETSC_VERSION_SUBMINOR == 2 && \
-     PETSC_VERSION_RELEASE  == 1)
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_ISX(Mat A);
-EXTERN_C_END
-#endif /* PETSC_232 */
-
-#define PCSCHUR "schur"
-
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Schur(PC);
-EXTERN_C_END
-
-#define TS_USER "user"
-
-EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_User(TS);
-EXTERN_C_END
-
-/* ---------------------------------------------------------------- */
-
 /* XXX Up to now, this is the way it works */
 
 #define MatRegisterStatic(a,b,c,d)  MatRegister(a,0,c,d)
@@ -124,15 +101,6 @@ static PetscErrorCode PetscPythonRegisterAll(const char path[])
   ierr = KSPRegisterStatic  ( KSPPYTHON,  path, "KSPCreate_Python",  KSPCreate_Python  ); CHKERRQ(ierr);
   ierr = SNESRegisterStatic ( SNESPYTHON, path, "SNESCreate_Python", SNESCreate_Python ); CHKERRQ(ierr);
   ierr = TSRegisterStatic   ( TS_PYTHON,  path, "TSCreate_Python",   TSCreate_Python   ); CHKERRQ(ierr);
-
-#if (PETSC_VERSION_MAJOR    == 2 && \
-     PETSC_VERSION_MINOR    == 3 && \
-     PETSC_VERSION_SUBMINOR == 2 && \
-     PETSC_VERSION_RELEASE  == 1)
-  ierr = MatRegisterStatic  ( MATIS,   path, "MatCreate_ISX",  MatCreate_ISX  ); CHKERRQ(ierr);
-#endif
-  ierr = PCRegisterStatic   ( PCSCHUR, path, "PCCreate_Schur", PCCreate_Schur ); CHKERRQ(ierr);
-  ierr = TSRegisterStatic   ( TS_USER, path, "TSCreate_User",  TSCreate_User  ); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

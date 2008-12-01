@@ -45,19 +45,3 @@
 #undef PETSCTS_DLL
 
 /* ---------------------------------------------------------------- */
-
-#if PETSC_VERSION_(2,3,2)
-#define PETSCMAT_DLL
-#include "src/mat/impls/is/matis.c"
-#undef  PETSCMAT_DLL
-#endif
-
-#define PETSCKSP_DLL
-#include "src/ksp/pc/impls/schur/schur.c"
-#undef PETSCKSP_DLL
-
-#define PETSCTS_DLL
-#include "src/ts/impls/implicit/user/user.c"
-#undef PETSCTS_DLL
-
-/* ---------------------------------------------------------------- */

@@ -33,13 +33,7 @@ class MyODE:
         P.setDiagonal(diag)
         P.assemble()
         if J != P: J.assemble()
-        return False # same_nz
-    def presolve(self, ts):
-        self.presolve_calls += 1
-    def update(self, ts, t, dt):
-        self.update_calls += 1
-    def postsolve(self, ts):
-        self.postsolve_calls += 1
+        return True # same_nz
     def monitor(self, ts, s, t, u):
         self.monitor_calls += 1
         dt = ts.time_step
@@ -54,7 +48,7 @@ class TestTSNonlinear(unittest.TestCase):
         self.ts = PETSc.TS().create(PETSc.COMM_SELF)
         ptype = PETSc.TS.ProblemType.NONLINEAR
         self.ts.setProblemType(ptype)
-        self.ts.setType('user')
+        self.ts.setType('python')
 
     def tearDown(self):
         self.ts = None
@@ -74,9 +68,6 @@ class TestTSNonlinear(unittest.TestCase):
         ts.setAppCtx(ode)
         ts.setFunction(ode.function, f)
         ts.setJacobian(ode.jacobian, J, J)
-        ## ts.setPreStep(ode.presolve)
-        ## ts.setUpdate(ode.update)
-        ## ts.setPostStep(ode.postsolve)
         ts.setMonitor(ode.monitor)
 
         ts.snes.ksp.pc.setType('none')
@@ -93,18 +84,10 @@ class TestTSNonlinear(unittest.TestCase):
         self.assertTrue(ode.function_calls > 0)
         self.assertTrue(ode.jacobian_calls > 0)
 
-        ## self.assertEqual(ode.presolve_calls,  1)
-        ## self.assertEqual(ode.update_calls,    nT)
-        ## self.assertEqual(ode.postsolve_calls, 1)
-        ## self.assertEqual(ode.monitor_calls,   nT+1)
-
         dct = self.ts.getDict()
         self.assertTrue('__appctx__' in dct)
         self.assertTrue('__function__' in dct)
         self.assertTrue('__jacobian__' in dct)
-        ## self.assertTrue('__prestep__' in dct)
-        ## self.assertTrue('__update__' in dct)
-        ## self.assertTrue('__poststep__' in dct)
         self.assertTrue('__monitor__' in dct)
 
     def testFDColor(self):
@@ -119,9 +102,6 @@ class TestTSNonlinear(unittest.TestCase):
         ts.setAppCtx(ode)
         ts.setFunction(ode.function, f)
         ts.setJacobian(ode.jacobian, J, J)
-        ## ts.setPreStep(ode.presolve)
-        ## ts.setUpdate(ode.update)
-        ## ts.setPostStep(ode.postsolve)
         ts.setMonitor(ode.monitor)
 
         T0, dT, nT = 0.00, 0.1, 10
