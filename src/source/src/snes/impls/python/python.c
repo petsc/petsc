@@ -7,10 +7,7 @@
 
 /* backward compatibility hacks */
 
-#if (PETSC_VERSION_MAJOR    == 2 &&	\
-     PETSC_VERSION_MINOR    == 3 &&	\
-     PETSC_VERSION_SUBMINOR == 2 &&	\
-     PETSC_VERSION_RELEASE  == 1)
+#if PETSC_VERSION_(2,3,2)
 #define SNES_KSPSolve(snes,ksp,b,x) KSPSolve(ksp,b,x)
 #define SNESDefaultConverged SNESConverged_LS
 #define SNES_CONVERGED_ITS   ((SNESConvergedReason)5)
@@ -18,10 +15,7 @@
 #define vec_rhs              afine
 #endif
 
-#if (PETSC_VERSION_MAJOR    == 2 &&	\
-     PETSC_VERSION_MINOR    == 3 &&	\
-     PETSC_VERSION_SUBMINOR == 3 &&	\
-     PETSC_VERSION_RELEASE  == 1)
+#if PETSC_VERSION_(2,3,3)
 #define vec_sol_update       vec_sol_update_always
 #define vec_rhs              afine
 #endif

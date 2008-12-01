@@ -7,21 +7,11 @@
 
 /* backward compatibility hacks */
 
-#if (PETSC_VERSION_MAJOR    == 2 &&	\
-     PETSC_VERSION_MINOR    == 3 &&	\
-     PETSC_VERSION_SUBMINOR == 2 &&	\
-     PETSC_VERSION_RELEASE  == 1)
+#if PETSC_VERSION_(2,3,2) || PETSC_VERSION_(2,3,3)
+#define MAT_PYTHON_FIX_SETFROMOPTIONS
+#else
 #define MAT_PYTHON_FIX_SETFROMOPTIONS
 #endif
-
-#if (PETSC_VERSION_MAJOR    == 2 &&	\
-     PETSC_VERSION_MINOR    == 3 &&	\
-     PETSC_VERSION_SUBMINOR == 3 &&	\
-     PETSC_VERSION_RELEASE  == 1)
-#define MAT_PYTHON_FIX_SETFROMOPTIONS
-#endif
-
-#define MAT_PYTHON_FIX_SETFROMOPTIONS
 
 /* -------------------------------------------------------------------------- */
 
@@ -209,11 +199,7 @@ static PetscErrorCode MatSetOption_Python(Mat mat,MatOption op,PetscTruth flag)
   PetscFunctionReturn(0);
 }
 
-#if (PETSC_VERSION_MAJOR    == 2 &&	\
-     PETSC_VERSION_MINOR    == 3 &&	\
-     (PETSC_VERSION_SUBMINOR == 2  ||	\
-      PETSC_VERSION_SUBMINOR == 3) &&	\
-     PETSC_VERSION_RELEASE  == 1)
+#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
 static PetscErrorCode MatSetOption_Python_old(Mat mat,MatOption op)
 { return MatSetOption_Python(mat,op,PETSC_TRUE); }
 #define MatSetOption_Python MatSetOption_Python_old

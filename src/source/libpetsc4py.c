@@ -4,6 +4,16 @@
 
 /* ---------------------------------------------------------------- */
 
+#if !defined(PETSC_VERSION_)
+#define PETSC_VERSION_(MAJOR,MINOR,SUBMINOR)   \
+       (PETSC_VERSION_MAJOR    == MAJOR    && \
+	PETSC_VERSION_MINOR    == MINOR    && \
+	PETSC_VERSION_SUBMINOR == SUBMINOR && \
+	PETSC_VERSION_RELEASE  == 1)
+#endif
+
+/* ---------------------------------------------------------------- */
+
 #if !defined(PETSC_EXTERN_C_BEGIN)
 #define PETSC_EXTERN_C_BEGIN EXTERN_C_BEGIN
 #endif
@@ -36,10 +46,7 @@
 
 /* ---------------------------------------------------------------- */
 
-#if (PETSC_VERSION_MAJOR    == 2 && \
-     PETSC_VERSION_MINOR    == 3 && \
-     PETSC_VERSION_SUBMINOR == 2 && \
-     PETSC_VERSION_RELEASE  == 1)
+#if PETSC_VERSION_(2,3,2)
 #define PETSCMAT_DLL
 #include "src/mat/impls/is/matis.c"
 #undef  PETSCMAT_DLL

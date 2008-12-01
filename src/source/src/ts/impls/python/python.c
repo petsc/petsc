@@ -18,17 +18,8 @@
 
 /* backward compatibility hacks */
 
-#if (PETSC_VERSION_MAJOR    == 2 &&	\
-     PETSC_VERSION_MINOR    == 3 &&	\
-     PETSC_VERSION_SUBMINOR == 2 &&	\
-     PETSC_VERSION_RELEASE  == 1)
+#if PETSC_VERSION_(2,3,2)
 #define SNESGetLinearSolveIterations SNESGetNumberLinearIterations
-#endif
-
-#if (PETSC_VERSION_MAJOR    == 2 &&	\
-     PETSC_VERSION_MINOR    == 3 &&	\
-     PETSC_VERSION_SUBMINOR == 3 &&	\
-     PETSC_VERSION_RELEASE  == 1)
 #endif
 
 /* -------------------------------------------------------------------------- */
@@ -314,11 +305,7 @@ static PetscErrorCode TSStep_Python(TS ts,PetscReal t,Vec u)
   goto finally;
  default_step:
   if (ts->problem_type == TS_NONLINEAR) {
-#if (PETSC_VERSION_MAJOR    == 2  && \
-     PETSC_VERSION_MINOR    == 3  && \
-    (PETSC_VERSION_SUBMINOR == 3  || \
-     PETSC_VERSION_SUBMINOR == 2) && \
-     PETSC_VERSION_RELEASE  == 1)
+#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
     if (!((PetscObject)ts->snes)->type_name) {
       ierr = SNESSetType(ts->snes,SNESLS);CHKERRQ(ierr);
     }

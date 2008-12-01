@@ -100,7 +100,7 @@ EXTERN_C_END
 
 /* ---------------------------------------------------------------- */
 
-/* XXX Up to now, this is the way it works :-( */
+/* XXX Up to now, this is the way it works */
 
 #define MatRegisterStatic(a,b,c,d)  MatRegister(a,0,c,d)
 #define PCRegisterStatic(a,b,c,d)   PCRegister(a,0,c,d)
@@ -124,6 +124,7 @@ static PetscErrorCode PetscPythonRegisterAll(const char path[])
   ierr = KSPRegisterStatic  ( KSPPYTHON,  path, "KSPCreate_Python",  KSPCreate_Python  ); CHKERRQ(ierr);
   ierr = SNESRegisterStatic ( SNESPYTHON, path, "SNESCreate_Python", SNESCreate_Python ); CHKERRQ(ierr);
   ierr = TSRegisterStatic   ( TS_PYTHON,  path, "TSCreate_Python",   TSCreate_Python   ); CHKERRQ(ierr);
+
 #if (PETSC_VERSION_MAJOR    == 2 && \
      PETSC_VERSION_MINOR    == 3 && \
      PETSC_VERSION_SUBMINOR == 2 && \

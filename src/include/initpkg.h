@@ -1,36 +1,31 @@
 /* ---------------------------------------------------------------- */
 
-#if (PETSC_VERSION_MAJOR    == 2 && \
-     PETSC_VERSION_MINOR    == 3 && \
-     PETSC_VERSION_SUBMINOR == 2 && \
-     PETSC_VERSION_RELEASE  == 1)
+#if PETSC_VERSION_(2,3,2)
+#undef  __FUNCT__  
+#define __FUNCT__ "ISInitializePackage"
+static PetscErrorCode ISInitializePackage(char path[])
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  PetscErrorCode ierr;
+  if (initialized) return 0;
+  initialized = PETSC_TRUE;
+  PetscFunctionBegin;
+  if (IS_LTOGM_COOKIE == -1) {
+    ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,"IS L to G Mapping");CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 #define PetscInitializePackage(path)       PetscInitializePackage((char*)path)
 #define PetscViewerInitializePackage(path) 0
 #define PetscRandomInitializePackage(path) PetscRandomInitializePackage((char*)path)
-#undef  __FUNCT__  
-#define __FUNCT__ "ISInitializePackage"
-static PetscErrorCode ISInitializePackage(const char path[])
-{
-  static PetscTruth initialized = PETSC_FALSE;
-  PetscErrorCode ierr;
-  if (initialized) return 0;
-  initialized = PETSC_TRUE;
-  PetscFunctionBegin;
-  if (IS_LTOGM_COOKIE == -1) {
-    ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,"IS L to G Mapping");CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
+#define ISInitializePackage(path)          ISInitializePackage((char*)path)
 #define VecInitializePackage(path)         VecInitializePackage((char*)path)
 #define MatInitializePackage(path)         MatInitializePackage((char*)path)
-#endif /* PETSC_232 */
+#endif /* PETSC_VERSION_(2,3,2) */
 
 /* ---------------------------------------------------------------- */
 
-#if (PETSC_VERSION_MAJOR    == 2 && \
-     PETSC_VERSION_MINOR    == 3 && \
-     PETSC_VERSION_SUBMINOR == 3 && \
-     PETSC_VERSION_RELEASE  == 1)
+#if PETSC_VERSION_(2,3,3)
 #undef  __FUNCT__  
 #define __FUNCT__ "ISInitializePackage"
 static PetscErrorCode ISInitializePackage(const char path[])
@@ -45,7 +40,7 @@ static PetscErrorCode ISInitializePackage(const char path[])
   }
   PetscFunctionReturn(0);
 }
-#endif /* PETSC_233 */
+#endif /* PETSC_VERSION_(2,3,3) */
 
 /* ---------------------------------------------------------------- */
 

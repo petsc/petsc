@@ -7,22 +7,6 @@
 
 /* -------------------------------------------------------------------------- */
 
-/* backward compatibility hacks */
-
-#if (PETSC_VERSION_MAJOR    == 2 &&	\
-     PETSC_VERSION_MINOR    == 3 &&	\
-     PETSC_VERSION_SUBMINOR == 2 &&	\
-     PETSC_VERSION_RELEASE  == 1)
-#endif
-
-#if (PETSC_VERSION_MAJOR    == 2 &&	\
-     PETSC_VERSION_MINOR    == 3 &&	\
-     PETSC_VERSION_SUBMINOR == 3 &&	\
-     PETSC_VERSION_RELEASE  == 1)
-#endif
-
-/* -------------------------------------------------------------------------- */
-
 #define PCPYTHON "python"
 
 PETSC_EXTERN_C_BEGIN
@@ -456,10 +440,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   PC_PYTHON_CALL_PCARG(pc, "create");
   if (pc->setupcalled) pc->setupcalled = 1;
-#if (PETSC_VERSION_MAJOR    == 2 && \
-     PETSC_VERSION_MINOR    == 3 && \
-     PETSC_VERSION_SUBMINOR == 2 && \
-     PETSC_VERSION_RELEASE  == 1)
+#if PETSC_VERSION_(2,3,2)
   ierr = PCPythonFillOperations(pc);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);

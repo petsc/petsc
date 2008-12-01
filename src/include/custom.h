@@ -8,10 +8,10 @@
 #include "private/snesimpl.h"
 #include "private/tsimpl.h"
 
-#if defined(PETSC_232)
+#if PETSC_VERSION_(2,3,2)
 #define PetscGetMap(o, m) (&(o)->m)
 #define PetscSetUpMap(o, m) PetscMapInitialize((o)->comm,&(o)->m)
-#elif defined(PETSC_233)
+#elif PETSC_VERSION_(2,3,3)
 #define PetscGetMap(o, m) (&(o)->m)
 #define PetscSetUpMap(o, m) PetscMapSetUp(&(o)->m)
 #else
@@ -315,7 +315,7 @@ MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
     info->shiftpd        = 0.0;
     info->zeropivot      = 1.e-12;
     info->pivotinblocks  = 1.0;
-#if !defined(PETSC_233) && !defined(PETSC_232)
+#if !PETSC_VERSION_(2,3,3) && !PETSC_VERSION_(2,3,2)
     info->shiftinblocks  = 1.e-12;
 #endif
   } else {
