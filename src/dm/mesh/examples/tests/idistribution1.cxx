@@ -22,7 +22,7 @@ class FunctionTestIDistribution : public CppUnit::TestFixture
 
   CPPUNIT_TEST_SUITE_END();
 public:
-  typedef ALE::IMesh                   mesh_type;
+  typedef ALE::IMesh<>                 mesh_type;
   typedef mesh_type::sieve_type        sieve_type;
   typedef mesh_type::point_type        point_type;
   typedef mesh_type::real_section_type real_section_type;

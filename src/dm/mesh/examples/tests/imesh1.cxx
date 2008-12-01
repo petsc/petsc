@@ -4,6 +4,7 @@
 #include <petscmesh_formats.hh>
 #include <Mesh.hh>
 #include <Generator.hh>
+#include <Selection.hh>
 #include "unitTests.hh"
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -14,10 +15,11 @@ class FunctionTestIMesh : public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE(FunctionTestIMesh);
 
   CPPUNIT_TEST(testStratify);
+  CPPUNIT_TEST(testStratifyLine);
 
   CPPUNIT_TEST_SUITE_END();
 public:
-  typedef ALE::IMesh            mesh_type;
+  typedef ALE::IMesh<>          mesh_type;
   typedef mesh_type::point_type point_type;
 protected:
   ALE::Obj<mesh_type> _mesh;
@@ -98,6 +100,44 @@ public:
       }
     }
   };
+
+  // Sieve mesh
+  // 2 ----- 3 ----- 4
+  //     0       1
+  void testStratifyLine() {
+    typedef ALE::IMesh<ALE::LabelSifter<int, mesh_type::point_type> > submesh_type;
+    ALE::Obj<mesh_type::sieve_type> sieve = new mesh_type::sieve_type(PETSC_COMM_WORLD, 0, 5, this->_debug);
+    this->_mesh = new mesh_type(PETSC_COMM_WORLD, 1, this->_debug);
+    double     coords[3] = {-1.0, 0.0, 1.0};
+    point_type cone[2];
+
+    this->_mesh->setSieve(sieve);
+    sieve->setConeSize(0, 2);
+    sieve->setConeSize(1, 2);
+    sieve->setSupportSize(2, 1);
+    sieve->setSupportSize(3, 2);
+    sieve->setSupportSize(4, 1);
+    sieve->allocate();
+    cone[0] = 2; cone[1] = 3;
+    sieve->setCone(cone, 0);
+    cone[0] = 3; cone[1] = 4;
+    sieve->setCone(cone, 1);
+    sieve->symmetrize();
+    this->_mesh->stratify();
+    ALE::SieveBuilder<mesh_type>::buildCoordinates(this->_mesh, 1, coords);
+
+    const Obj<mesh_type::int_section_type>& bcSection = this->_mesh->getIntSection("bc0");
+    int one = 1.0;
+
+    bcSection->setChart(sieve->getChart());
+    bcSection->setFiberDimension(2, 1);
+    bcSection->setFiberDimension(4, 1);
+    bcSection->allocatePoint();
+    bcSection->updatePoint(2, &one);
+    bcSection->updatePoint(4, &one);
+    Obj<submesh_type> boundaryMesh = ALE::Selection<mesh_type>::submeshV<submesh_type>(this->_mesh, bcSection);
+    boundaryMesh->view("Boundary Mesh");
+  };
 };
 
 #undef __FUNCT__
@@ -116,7 +156,7 @@ class MemoryTestIMesh : public CppUnit::TestFixture
 
   CPPUNIT_TEST_SUITE_END();
 public:
-  typedef ALE::IMesh            mesh_type;
+  typedef ALE::IMesh<>          mesh_type;
   typedef mesh_type::sieve_type sieve_type;
   typedef mesh_type::point_type point_type;
 protected:

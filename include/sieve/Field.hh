@@ -1815,6 +1815,14 @@ namespace ALE {
     const value_type *restrictPoint(const point_type& p) const {
       return &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
     };
+    void restrictPoint(const point_type& p, value_type values[], const int size) const {
+      assert(this->_atlas->restrictPoint(p)[0].prefix == size);
+      const value_type *v = &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
+
+      for(int i = 0; i < size; ++i) {
+        values[i] = v[i];
+      }
+    };
     // Update the free values on a point
     //   Takes a full array and ignores constrained values
     void updatePoint(const point_type& p, const value_type v[], const int orientation = 1) {
