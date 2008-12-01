@@ -1819,7 +1819,7 @@ namespace ALE {
       assert(this->_atlas->restrictPoint(p)[0].prefix == size);
       const value_type *v = &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
 
-      for(int i = 0; i < size ++i) {
+      for(int i = 0; i < size; ++i) {
         values[i] = v[i];
       }
     };
