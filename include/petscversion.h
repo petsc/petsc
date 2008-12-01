@@ -17,4 +17,10 @@
 #define PETSC_VERSION_DATE_HG    "unknown"
 #endif
 
+#define PETSC_VERSION_(MAJOR,MINOR,SUBMINOR) \
+  ((PETSC_VERSION_MAJOR == (MAJOR)) &&       \
+   (PETSC_VERSION_MINOR == (MINOR)) &&       \
+   (PETSC_VERSION_SUBMINOR == (SUBMINOR)) && \
+   (PETSC_VERSION_RELEASE  == 1))
+
 #endif
