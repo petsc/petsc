@@ -10,43 +10,14 @@ PetscPyObjDestroy(void* ptr) {
   PetscFunctionReturn(0);
 }
 
-#if (PETSC_VERSION_MAJOR    == 2 && \
-     PETSC_VERSION_MINOR    == 3 && \
-     PETSC_VERSION_SUBMINOR == 3 && \
-     PETSC_VERSION_RELEASE  == 0)
-
-/* Implementation for PETSc-Dev */
-
-PETSC_STATIC_INLINE PetscErrorCode
-PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
-{
-  PyObject      *pydict = NULL;
-  PetscFunctionBegin;
-  PetscValidHeader(obj, 1);
-  if (dict) PetscValidPointer(dict, 2);
-  if (dict) *dict = NULL;
-  if (obj->python_context != NULL) {
-    pydict = (PyObject *) obj->python_context;
-    if (!PyDict_CheckExact(pydict)) {
-      SETERRQ(PETSC_ERR_LIB, "internal Python object is not a Python dictionary");
-      PetscFunctionReturn(PETSC_ERR_LIB);
-    }
-  } else if (create) {
-    pydict = PyDict_New();
-    if (pydict == NULL) {
-      SETERRQ(PETSC_ERR_LIB, "failed to create internal Python dictionary");
-      PetscFunctionReturn(PETSC_ERR_LIB);
-    }
-    obj->python_context = (void *) pydict;
-    obj->python_destroy = PetscPyObjDestroy;
-  } else {
-    pydict = Py_None;
-  }
-  if (dict) *dict = (void *) pydict;
-  PetscFunctionReturn(0);
-}
-
-#else
+#if (PETSC_VERSION_MAJOR    == 2  && \
+     PETSC_VERSION_MINOR    == 3  && \
+     PETSC_VERSION_SUBMINOR == 3  && \
+     PETSC_VERSION_RELEASE  == 1) || \
+    (PETSC_VERSION_MAJOR    == 2  && \
+     PETSC_VERSION_MINOR    == 3  && \
+     PETSC_VERSION_SUBMINOR == 2  && \
+     PETSC_VERSION_RELEASE  == 1)
 
 /* Implementation for PETSc-2.3.3 and PETSc-2.3.2 */
 
@@ -87,6 +58,39 @@ PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
     pydict = Py_None;
   }
   if (dict) *dict = pydict;
+  PetscFunctionReturn(0);
+}
+
+#else
+
+/* Implementation for PETSc-2.4.0 and above */
+
+PETSC_STATIC_INLINE PetscErrorCode
+PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
+{
+  PyObject      *pydict = NULL;
+  PetscFunctionBegin;
+  PetscValidHeader(obj, 1);
+  if (dict) PetscValidPointer(dict, 2);
+  if (dict) *dict = NULL;
+  if (obj->python_context != NULL) {
+    pydict = (PyObject *) obj->python_context;
+    if (!PyDict_CheckExact(pydict)) {
+      SETERRQ(PETSC_ERR_LIB, "internal Python object is not a Python dictionary");
+      PetscFunctionReturn(PETSC_ERR_LIB);
+    }
+  } else if (create) {
+    pydict = PyDict_New();
+    if (pydict == NULL) {
+      SETERRQ(PETSC_ERR_LIB, "failed to create internal Python dictionary");
+      PetscFunctionReturn(PETSC_ERR_LIB);
+    }
+    obj->python_context = (void *) pydict;
+    obj->python_destroy = PetscPyObjDestroy;
+  } else {
+    pydict = Py_None;
+  }
+  if (dict) *dict = (void *) pydict;
   PetscFunctionReturn(0);
 }
 
