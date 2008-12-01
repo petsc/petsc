@@ -39,12 +39,13 @@ typedef struct
   PetscLogEvent eventsmoothsolve;  
   PetscLogEvent eventresidual;
   PetscLogEvent eventinterprestrict;    
-
-  PetscErrorCode (*setup)(PC,void*);          /* optional object that builds interpolation/coarse grid etc on the fly */
-  PetscErrorCode (*setupdestroy)(PC,void*);
-  void           *setupctx;
+  void           *innerctx;                   /* optional data for preconditioner, like PCEXOTIC that inherits off of PCMG */
 }  PC_MG;
 
+extern PetscErrorCode PCSetUp_MG(PC);
+extern PetscErrorCode PCDestroy_MG(PC);
+extern PetscErrorCode PCSetFromOptions_MG(PC);
+extern PetscErrorCode PCView_MG(PC,PetscViewer);
 
 #endif
 
