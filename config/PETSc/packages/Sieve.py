@@ -50,7 +50,7 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Sieve requires boost, and configure could not locate it. Suggest using --download-boost=1')
       if 'with-opt-sieve' in self.argDB and self.argDB['with-opt-sieve']:
         self.addDefine('OPT_SIEVE', 1)
-        self.addDefine('MESH_TYPE', 'ALE::IMesh')
+        self.addDefine('MESH_TYPE', 'ALE::IMesh<>')
       else:
         self.addDefine('MESH_TYPE', 'ALE::Mesh')
       if 'with-sieve-memory-logging' in self.argDB and self.argDB['with-sieve-memory-logging']:
