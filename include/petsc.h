@@ -45,13 +45,11 @@
 #if (PETSC_VERSION_RELEASE == 1)
 #define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Release Version %d.%d.%d, Patch %d, ", \
                                          PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG))
+                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE))
 #else
-#define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Development Version %d.%d.%d, Patch %d, ", \
-                                         PETSC_VERSION_MAJOR,PETSC_VERSION_MINOR, PETSC_VERSION_SUBMINOR, \
-                                         PETSC_VERSION_PATCH),PetscStrcat(version,PETSC_VERSION_PATCH_DATE), \
-                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG))
+#define PetscGetVersion(version,len) (PetscSNPrintf(version,len,"Petsc Development"), \
+                                         PetscStrcat(version," HG revision: "),PetscStrcat(version,PETSC_VERSION_HG), \
+                                         PetscStrcat(version," HG Date: "),PetscStrcat(version,PETSC_VERSION_DATE_HG))
 #endif
 
 /*MC

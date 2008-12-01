@@ -312,9 +312,10 @@ PetscErrorCode CheckPreallocation(Obj<MeshT>& mesh, Mat A, const Options *option
 #define __FUNCT__ "OverlapTests"
 PetscErrorCode OverlapTests(const Options *options)
 {
-  Obj<ALE::IMesh> mesh;
-  Obj<ALE::IMesh> newMesh;
-  PetscErrorCode  ierr;
+  typedef ALE::IMesh<> mesh_type;
+  Obj<mesh_type> mesh;
+  Obj<mesh_type> newMesh;
+  PetscErrorCode     ierr;
 
   PetscFunctionBegin;
   ierr = CreateSquareMesh(mesh, options);CHKERRQ(ierr);
@@ -327,16 +328,17 @@ PetscErrorCode OverlapTests(const Options *options)
 #define __FUNCT__ "PreallocationTests"
 PetscErrorCode PreallocationTests(const Options *options)
 {
-  Obj<ALE::IMesh> mesh;
-  Obj<ALE::IMesh> newMesh;
-  Mat             A;
-  PetscErrorCode  ierr;
+  typedef ALE::IMesh<> mesh_type;
+  Obj<mesh_type> mesh;
+  Obj<mesh_type> newMesh;
+  Mat            A;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = CreateSquareMesh(mesh, options);CHKERRQ(ierr);
   ierr = DistributeMesh(mesh, newMesh, options);CHKERRQ(ierr);
-  const Obj<ALE::IMesh::real_section_type>& coordinates = newMesh->getRealSection("coordinates");
-  const Obj<ALE::IMesh::order_type>&        globalOrder = newMesh->getFactory()->getGlobalOrder(newMesh, "default", coordinates);
+  const Obj<mesh_type::real_section_type>& coordinates = newMesh->getRealSection("coordinates");
+  const Obj<mesh_type::order_type>&        globalOrder = newMesh->getFactory()->getGlobalOrder(newMesh, "default", coordinates);
   const PetscInt n   = globalOrder->getLocalSize();
   const PetscInt N   = globalOrder->getGlobalSize();
   const PetscInt fR  = globalOrder->getGlobalOffsets()[mesh->commRank()];
@@ -369,28 +371,29 @@ PetscErrorCode PreallocationTests(const Options *options)
 #define __FUNCT__ "LabelTests"
 PetscErrorCode LabelTests(const Options *options)
 {
-  Obj<ALE::IMesh> mesh;
-  Obj<ALE::IMesh> newMesh;
+  typedef ALE::IMesh<> mesh_type;
+  Obj<mesh_type> mesh;
+  Obj<mesh_type> newMesh;
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   ierr = CreateSquareMesh(mesh, options);CHKERRQ(ierr);
-  const Obj<ALE::IMesh::label_type>&        testLabel   = mesh->createLabel("test");
-  const Obj<ALE::IMesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
-  const Obj<ALE::IMesh::label_sequence>&    vertices    = mesh->depthStratum(0);
-  int                                       base        = vertices->size();
+  const Obj<mesh_type::label_type>&        testLabel   = mesh->createLabel("test");
+  const Obj<mesh_type::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+  const Obj<mesh_type::label_sequence>&    vertices    = mesh->depthStratum(0);
+  int                                      base        = vertices->size();
 
   ierr = MPI_Bcast(&base, 1, MPI_INT, 0, mesh->comm());CHKERRQ(ierr);
   testLabel->setChart(mesh->getSieve()->getChart());
-  for(ALE::IMesh::label_sequence::const_iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+  for(mesh_type::label_sequence::const_iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     testLabel->setConeSize(*v_iter, 1);
   }
   if (vertices->size()) {testLabel->setSupportSize(0, vertices->size());}
   testLabel->allocate();
-  for(ALE::IMesh::label_sequence::const_iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-    const ALE::IMesh::real_section_type::value_type *coords = coordinates->restrictPoint(*v_iter);
-    double                                           value  = 0.0;
-    int                                              label;
+  for(mesh_type::label_sequence::const_iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    const mesh_type::real_section_type::value_type *coords = coordinates->restrictPoint(*v_iter);
+    double                                          value  = 0.0;
+    int                                             label;
 
     for(int d = 0; d < mesh->getDimension(); ++d) {
       value += coords[d]*pow(10, d);
@@ -401,15 +404,15 @@ PetscErrorCode LabelTests(const Options *options)
   testLabel->recalculateLabel();
   testLabel->view("Test Label");
   ierr = DistributeMesh(mesh, newMesh, options);CHKERRQ(ierr);
-  const Obj<ALE::IMesh::label_type>&        newTestLabel   = newMesh->getLabel("test");
-  const Obj<ALE::IMesh::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
-  const Obj<ALE::IMesh::label_sequence>&    newVertices    = newMesh->depthStratum(0);
+  const Obj<mesh_type::label_type>&        newTestLabel   = newMesh->getLabel("test");
+  const Obj<mesh_type::real_section_type>& newCoordinates = newMesh->getRealSection("coordinates");
+  const Obj<mesh_type::label_sequence>&    newVertices    = newMesh->depthStratum(0);
 
   newTestLabel->view("New Test Label");
-  for(ALE::IMesh::label_sequence::const_iterator v_iter = newVertices->begin(); v_iter != newVertices->end(); ++v_iter) {
-    const ALE::IMesh::real_section_type::value_type *coords = newCoordinates->restrictPoint(*v_iter);
-    double                                           value  = 0.0;
-    int                                              label;
+  for(mesh_type::label_sequence::const_iterator v_iter = newVertices->begin(); v_iter != newVertices->end(); ++v_iter) {
+    const mesh_type::real_section_type::value_type *coords = newCoordinates->restrictPoint(*v_iter);
+    double                                          value  = 0.0;
+    int                                             label;
 
     for(int d = 0; d < newMesh->getDimension(); ++d) {
       value += coords[d]*pow(10, d);

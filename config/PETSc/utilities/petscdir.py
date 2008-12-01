@@ -28,7 +28,10 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('PETSc', '-PETSC_DIR',                        nargs.Arg(None, None, 'The root directory of the PETSc installation'))
-    help.addArgument('PETSc', '-with-installation-method=<method>', nargs.Arg(None, 'tarball', 'Method of installation, e.g. tarball, clone, etc.'))
+    return
+
+  def setupDependencies(self, framework):
+    self.sourceControl = framework.require('config.sourceControl',self)
     return
 
   def configureDirectories(self):
@@ -114,18 +117,16 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
     if os.path.exists(os.path.join(self.dir, '.hg')):
       self.logPrint('This is a Mercurial clone')
       self.isClone = 1
-    elif os.path.exists(os.path.join(self.dir, 'BitKeeper')):
-      self.logPrint('This is a BitKeeper clone')
-      self.isClone = 1
-    elif os.path.exists(os.path.join(self.dir, 'BK')):
-      self.logPrint('This is a fake BitKeeper clone')
-      self.isClone = 1
-    elif os.path.exists(os.path.join(self.dir, '_darcs')):
-      self.logPrint('This is a DARCS clone')
-      self.isClone = 1
-    elif self.framework.argDB['with-installation-method'] == 'clone':
-      self.logPrint('This is a forced clone')
-      self.isClone = 1
+      if hasattr(self.sourceControl,'hg'):
+        self.addDefine('VERSION_HG','"'+os.popen(self.sourceControl.hg +" -R"+self.dir+" tip --template '{node}'").read()+'"')
+        self.addDefine('VERSION_DATE_HG','"'+os.popen(self.sourceControl.hg +" -R"+self.dir+" tip --template '{date|date}'").read()+'"')
+        # Check version & date for buildsystem aswell
+        bs_dir = os.path.join(self.dir,'config','BuildSystem')
+        if os.path.exists(os.path.join(bs_dir,'.hg')):
+          self.addDefine('VERSION_BS_HG','"'+os.popen(self.sourceControl.hg +" -R"+bs_dir+" tip --template '{node}'").read()+'"')
+          self.addDefine('VERSION_BS_DATE_HG','"'+os.popen(self.sourceControl.hg + " -R"+bs_dir+" tip --template '{date|date}'").read()+'"')
+      else:
+        self.logPrintBox('\n*****WARNING: PETSC_DIR appears to be a mercurial clone - but hg is not found in PATH********\n')
     else:
       self.logPrint('This is a tarball installation')
       self.isClone = 0

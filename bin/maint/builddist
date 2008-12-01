@@ -70,7 +70,8 @@ version_patch=`grep '^#define PETSC_VERSION_PATCH ' include/petscversion.h |tr -
 
 #generated a couple of more values
 version_patch_date=`date`
-version_hg=`hg tip --template '{node}\n'`
+version_hg=`hg tip --template '{node}'`
+version_date_hg=`hg tip --template '{date|date}'`
 if  [ ${version_release} = 0 ]; then
   version=-dev
 elif [ ${version_release} = 1 ]; then
@@ -120,7 +121,9 @@ echo Using PETSC_VERSION_HG: ${version_hg}
 /bin/mv include/petscversion.h include/petscversion.h.bak
 cat include/petscversion.h.bak | \
   sed -e "s/#define PETSC_VERSION_PATCH_DATE.*/#define PETSC_VERSION_PATCH_DATE \"${version_patch_date}\"/" | \
-  sed -e "s/#define PETSC_VERSION_HG.*/#define PETSC_VERSION_HG         \"${version_hg}\"/" > include/petscversion.h
+  sed -e "s/#define PETSC_VERSION_HG.*/#define PETSC_VERSION_HG         \"${version_hg}\"/" | \
+  sed -e "s/#define PETSC_VERSION_DATE_HG.*/#define PETSC_VERSION_DATE_HG         \"${version_date_hg}\"/" | \
+  > include/petscversion.h
 /bin/rm -f include/petscversion.h.bak
 
 # just to be sure
