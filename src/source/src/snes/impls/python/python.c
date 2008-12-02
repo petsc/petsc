@@ -345,7 +345,7 @@ static PyObject * SNESPyObjToConvReason(PyObject *value, SNESConvergedReason *ou
     }
   } else {
     PyErr_SetString(PyExc_TypeError,
-		    "convergence test must return None, Boolean, "
+		    "convergence test must return None, boolean, "
 		    "or a valid integer value for SNESConvergedReason");
     goto fail;
   }
@@ -395,6 +395,7 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
 {
   SNES_Py        *py = (SNES_Py *)snes->data;
   Vec            X,F,Y;
+  PetscTruth     succeed;
   PetscInt       i=0,lits=0;
   PetscReal      fnorm,ynorm=0,xnorm=0;
   MatStructure   flg = DIFFERENT_NONZERO_PATTERN;
@@ -431,8 +432,6 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
 
   for (i=0; !snes->reason && i<snes->max_its; i++) {
     
-    PetscTruth succeed;
-
     /* call user prestep routine */
     ierr = (*py->ops->prestep)(snes, i);CHKERRQ(ierr);
 
@@ -545,11 +544,11 @@ static PetscErrorCode SNESView_Python(SNES snes,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&isascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (isascii) {
-    const char* pyname  = py->pyname ? py->pyname  : "no yet set";
+    const char* pyname  = py->pyname ? py->pyname : "no yet set";
     ierr = PetscViewerASCIIPrintf(viewer,"  Python: %s\n",pyname);CHKERRQ(ierr);
   }
   if (isstring) {
-    const char* pyname  = py->pyname ? py->pyname  : "<unknown>";
+    const char* pyname  = py->pyname ? py->pyname : "<unknown>";
     ierr = PetscViewerStringSPrintf(viewer,"%s",pyname);CHKERRQ(ierr);
   }
   SNES_PYTHON_CALL(snes, "view", ("O&O&", 
