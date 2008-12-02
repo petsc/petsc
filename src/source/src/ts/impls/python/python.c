@@ -22,6 +22,10 @@
 #define SNESGetLinearSolveIterations SNESGetNumberLinearIterations
 #endif
 
+#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
+#define PetscObjectIncrementTabLevel(A,B,C) 0
+#endif
+
 /* -------------------------------------------------------------------------- */
 
 #define TS_PYTHON "python"
@@ -96,18 +100,26 @@ typedef struct {
   TS_PYTHON_CALL_TAIL(ts, PyMethod)			\
 /**/
 
-#define TS_PYTHON_CALL_MAYBE(ts, PyMethod, ARGS, LABEL) \
-  TS_PYTHON_CALL_HEAD(ts, PyMethod);		    \
-  TS_PYTHON_CALL_JUMP(ts, LABEL);			    \
-  TS_PYTHON_CALL_BODY(ts, ARGS);			    \
-  TS_PYTHON_CALL_TAIL(ts, PyMethod)			    \
+#define TS_PYTHON_CALL_MAYBE(ts, PyMethod, ARGS, LABEL)	\
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);			\
+  TS_PYTHON_CALL_JUMP(ts, LABEL);			\
+  TS_PYTHON_CALL_BODY(ts, ARGS);			\
+  TS_PYTHON_CALL_TAIL(ts, PyMethod)			\
 /**/
 
 #define TS_PYTHON_CALL_MAYBE_RET(ts, PyMethod, ARGS, LABEL, Obj2Val, ValP) \
-  TS_PYTHON_CALL_HEAD(ts, PyMethod);				\
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);					\
   TS_PYTHON_CALL_JUMP(ts, LABEL);					\
   TS_PYTHON_CALL_BODY(ts, ARGS);					\
   _retv = Obj2Val(_retv, ValP);						\
+  TS_PYTHON_CALL_TAIL(ts, PyMethod)					\
+/**/
+
+#define TS_PYTHON_CALL_MAYBE_RET2(ts, PyMethod, ARGS, LABEL, Obj2Val, V1, V2) \
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);					\
+  TS_PYTHON_CALL_JUMP(ts, LABEL);					\
+  TS_PYTHON_CALL_BODY(ts, ARGS);					\
+  _retv = Obj2Val(_retv, V1, V2);					\
   TS_PYTHON_CALL_TAIL(ts, PyMethod)					\
 /**/
 
@@ -281,9 +293,11 @@ static PetscErrorCode TSPostStep_Python(TS ts, PetscReal t, Vec x)
 #define __FUNCT__ "TSStartStep_Python"
 static PetscErrorCode TSStartStep_Python(TS ts,PetscReal t,Vec u)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = 0;CHKERRQ(ierr);
+  TS_PYTHON_CALL(ts, "startStep", ("O&dO&",
+				   PyPetscTS_New,  ts,
+				   (double)        t,
+				   PyPetscVec_New, u  ));
   PetscFunctionReturn(0);
 }
 
@@ -295,49 +309,100 @@ static PetscErrorCode TSStep_Python(TS ts,PetscReal t,Vec u)
   PetscInt       its=0,lits=0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  TS_PYTHON_CALL_HEAD(ts, "step");
-  TS_PYTHON_CALL_JUMP(ts, default_step);
-  TS_PYTHON_CALL_BODY(ts, ("O&dO&O&",
-			   PyPetscTS_New,  ts ,
-			   (double)        t  ,
-			   PyPetscVec_New, u  ));
-  TS_PYTHON_CALL_TAIL(ts, "step");
-  goto finally;
- default_step:
-  if (ts->problem_type == TS_NONLINEAR) {
 #if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
+  if (ts->problem_type == TS_NONLINEAR) {
     if (!((PetscObject)ts->snes)->type_name) {
       ierr = SNESSetType(ts->snes,SNESLS);CHKERRQ(ierr);
     }
-#endif
-    ierr = SNESSolve(ts->snes,py->vec_rhs,u);CHKERRQ(ierr);
-  } if (ts->problem_type == TS_LINEAR) {
-    MatStructure str = DIFFERENT_NONZERO_PATTERN;
-    SETERRQ(1, "not yet implemented"); PetscFunctionReturn(1);
-    ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,str);CHKERRQ(ierr);
-    ierr = KSPSolve(ts->ksp,py->vec_rhs,u);CHKERRQ(ierr);
   }
+#endif
+  TS_PYTHON_CALL_MAYBE(ts, "step", ("O&dO&",
+				    PyPetscTS_New,  ts,
+				    (double)        t,
+				    PyPetscVec_New, u),
+		       notimplemented);
  finally:
   if (ts->problem_type == TS_NONLINEAR) {
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
-  } 
-  if (ts->problem_type == TS_LINEAR) {
+  } else if (ts->problem_type == TS_LINEAR) {
     ierr = KSPGetIterationNumber(ts->ksp,&lits);CHKERRQ(ierr);
   }  
   ts->nonlinear_its += its; ts->linear_its += lits;
   PetscFunctionReturn(0);
+ notimplemented:
+  if (ts->problem_type == TS_NONLINEAR) {
+    ierr = SNESSetFunction(ts->snes,py->vec_func,TSPyFunction,ts);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSPyJacobian,ts);CHKERRQ(ierr);
+    ierr = SNESSolve(ts->snes,py->vec_rhs,u);CHKERRQ(ierr);
+  } if (ts->problem_type == TS_LINEAR) {
+    MatStructure flag = DIFFERENT_NONZERO_PATTERN;
+    SETERRQ(1, "not yet implemented"); PetscFunctionReturn(1);
+    ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,flag);CHKERRQ(ierr);
+    ierr = KSPSolve(ts->ksp,py->vec_rhs,u);CHKERRQ(ierr);
+  }
+  goto finally;
+}
+
+static PyObject * TSPyObjToVSArgs(PyObject *value,PetscTruth *ok,PetscReal *dt)
+{
+  PetscTruth tmpok = *ok;
+  PetscReal  tmpdt = *dt;
+  PyObject  *ook = NULL;
+  PyObject  *odt = NULL;
+  /**/
+  if (value == NULL)    return NULL;
+  if (value == Py_None) return value;
+  /**/
+  if (PyList_Check(value)) {
+    if (PyList_Size(value) != 2) goto fail;
+    ook = PyList_GET_ITEM(value, 0); 
+    odt = PyList_GET_ITEM(value, 1);
+  }
+  else if (PyTuple_Check(value)) {
+    if (PyTuple_Size(value) != 2) goto fail;
+    ook = PyTuple_GET_ITEM(value, 0); 
+    odt = PyTuple_GET_ITEM(value, 1);
+  } 
+  else if (PyBool_Check(value))   { ook = value; }
+  else if (PyNumber_Check(value)) { odt = value; }
+  else                            { goto fail;   }
+  /**/
+  if (ook && ook != Py_None) {
+    if      (ook == Py_False) tmpok = PETSC_FALSE;
+    else if (ook == Py_True)  tmpok = PETSC_TRUE;
+    else                      goto fail;
+  }
+  /**/
+  if (odt && odt != Py_None) {
+    tmpdt = (PetscReal) PyFloat_AsDouble(odt);
+    if ((tmpdt == ((PetscReal)-1)) && PyErr_Occurred()) goto fail;
+  }
+  /**/
+  *ok = tmpok;
+  *dt = tmpdt;
+  return value;
+ fail:
+  Py_DecRef(value);
+  PyErr_SetString(PyExc_TypeError,
+		  "verify step routine must return None, bool, float "
+		  "or a 2-tuple/list (bool, float)");
+  return NULL;
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSVerifyStep_Python"
 static PetscErrorCode TSVerifyStep_Python(TS ts,PetscReal t,Vec u,PetscTruth *ok,PetscReal *dt)
 {
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-  *ok = PETSC_TRUE;
-  *dt = ts->time_step;
-  ierr = 0;CHKERRQ(ierr);
+  *ok = PETSC_TRUE; *dt = ts->time_step;
+  TS_PYTHON_CALL_MAYBE_RET2(ts, "verifyStep", ("O&dO&",
+					       PyPetscTS_New,  ts,
+					       (double)        t,
+					       PyPetscVec_New, u  ),
+			    notimplemented,
+			    TSPyObjToVSArgs, ok, dt);
+ notimplemented:
   PetscFunctionReturn(0);
 }
 
@@ -419,7 +484,7 @@ static PetscErrorCode TSSolve_Python(TS ts,PetscInt *steps,PetscReal *ptime)
   
   PetscFunctionBegin;
 
-  ts->steps         = 0;
+  ts->steps         = 0; /* XXX */
   ts->nonlinear_its = 0;
   ts->linear_its    = 0;
 
@@ -452,7 +517,7 @@ static PetscErrorCode TSSolve_Python(TS ts,PetscInt *steps,PetscReal *ptime)
       /* verify step, it can be accepted/rejected, new time step is computed  */
       ierr = TSPyVerifyStep(ts,py->utime,py->update,&stepok,&nextdt);CHKERRQ(ierr);
       if (stepok) break;
-    } 
+    }
     /* XXX should generate error if step is not OK */
     /* call poststep routine */
     ts->time_step = py->utime - ts->ptime;
@@ -537,10 +602,13 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
   if (ts->problem_type == TS_NONLINEAR) {
     ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(ts,ts->snes);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->snes,(PetscObject)ts,1);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_LINEAR) {
     ierr = KSPCreate(((PetscObject)ts)->comm,&ts->ksp);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(ts,ts->ksp);CHKERRQ(ierr);
-  }
+    ierr = PetscObjectIncrementTabLevel((PetscObject)ts->ksp,(PetscObject)ts,1);CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ts->ksp,PETSC_TRUE);CHKERRQ(ierr);
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem type");
 
   PetscFunctionReturn(0);
 }

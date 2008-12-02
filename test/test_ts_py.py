@@ -66,6 +66,13 @@ class MyTS:
     def postStep(self, ts, *args):
         self._log('postStep', ts, args)
 
+    def startStep(self, ts, *args):
+        self._log('startStep', ts, args)
+
+    def verifyStep(self, ts, *args):
+        self._log('verifyStep', ts, args)
+        return (True, ts.getTimeStep())
+
     def monitor(self, ts, s, t, u):
         self._log('monitor', ts, s, t, u)
         dt = ts.time_step
@@ -121,9 +128,11 @@ class TestTSPython(unittest.TestCase):
         self.assertEqual(getrefcount(ctx), 3)
         self.assertTrue(ctx.log['preSolve']  ==  1)
         self.assertTrue(ctx.log['postSolve'] ==  1)
-        self.assertTrue(ctx.log['preStep']   >   1)
-        self.assertTrue(ctx.log['postStep']  >   1)
-        self.assertTrue(ctx.log['monitor']   >   1)
+        self.assertTrue(ctx.log['preStep']    >  1)
+        self.assertTrue(ctx.log['postStep']   >  1)
+        self.assertTrue(ctx.log['startStep']  >  1)
+        self.assertTrue(ctx.log['verifyStep'] >  1)
+        self.assertTrue(ctx.log['monitor']    >  1)
         del ctx
 
         dct = self.ts.getDict()
