@@ -187,6 +187,7 @@ int main(int argc,char **args)
       ierr = MatEqual(A, Atrans, &isSymmetric);
       if (isSymmetric) {
         PetscPrintf(PETSC_COMM_WORLD,"A is symmetric \n");CHKERRQ(ierr);
+        ierr = MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
       } else {
         PetscPrintf(PETSC_COMM_WORLD,"A is non-symmetric \n");CHKERRQ(ierr);
       }
