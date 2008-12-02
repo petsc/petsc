@@ -1332,6 +1332,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
     SETERRQ(PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
   }
   
+  if (!snes->ksp) {ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);}
+  
   if (snes->ops->setup) {
     ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);
   }
