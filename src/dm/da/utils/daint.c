@@ -274,7 +274,7 @@ PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,Mat *P)
   Mat                    A,Aii,Ais,Asi,*Aholder,iAii;
   MatFactorInfo          info;
   PetscScalar            *xsurf,*xint;
-#if defined(PETSC_USE_DEBUG)
+#if defined(PETSC_USE_DEBUG_foo)
   PetscScalar            tmp;
 #endif
   PetscTable             ht;
@@ -468,6 +468,7 @@ PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,Mat *P)
   ierr = MatAssemblyBegin(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*P,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree2(IIint,IIsurf);CHKERRQ(ierr);
+
 
 #if defined(PETSC_USE_DEBUG_foo)
   {
