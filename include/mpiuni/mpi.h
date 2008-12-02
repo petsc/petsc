@@ -191,6 +191,7 @@ typedef int MPI_Op;
 #define MPI_MAX_ERROR_STRING 2056
 #define MPI_STATUS_IGNORE (MPI_Status *)1
 #define MPI_ORDER_FORTRAN        57
+#define MPI_IN_PLACE      (void *) -1
 
 /*
   Prototypes of some functions which are implemented in mpi.c
