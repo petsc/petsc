@@ -123,7 +123,6 @@ MatIsPreallocated(Mat A,PetscTruth *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidType(A,1);
   PetscValidPointer(flag,2);
   *flag = A->preallocated;
   PetscFunctionReturn(0);
