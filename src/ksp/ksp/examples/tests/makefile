@@ -401,9 +401,9 @@ runex31:
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm \
-                                 ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm \
+                                 ex26.PETSc runex26 runex26_2 ex26.rm ex27.PETSc ex27.rm
+TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm \
                                  ex31.PETSc runex31 ex31.rm
-TESTEXAMPLES_C_X11	       = ex10.PETSc runex10 ex10.rm ex15.PETSc ex15.rm
 TESTEXAMPLES_FORTRAN	       = ex5f.PETSc runex5f ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex12f.PETSc ex12f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm

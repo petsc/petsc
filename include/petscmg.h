@@ -68,14 +68,25 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetX(PC,PetscInt,Vec);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetR(PC,PetscInt,Vec);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRestriction(PC,PetscInt,Mat);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetSetup(PC,PetscErrorCode (*)(PC,void*),PetscErrorCode (*)(PC,void*),void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolation(PC,PetscInt,Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 
 #include "petscda.h"
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDMMGSetDM(PC,DM);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCWBSetDA(PC,DA);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetDA(PC,DA);
+
+/*E
+    PCExoticType - Face based or wirebasket based coarse grid space
+
+   Level: beginner
+
+.seealso: PCExoticSetType(), PCEXOTIC
+
+E*/ 
+typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
+extern const char *PCExoticTypes[];
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetType(PC,PCExoticType);
 
 
 PETSC_EXTERN_CXX_END

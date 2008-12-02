@@ -133,53 +133,8 @@ static PetscErrorCode PCMGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCMGSetSetup"
-/*@
-  PCMGSetSetup - sets a function that is called for each new setup of the MG PC that allows the user
-     to provide a new interpolation/coarse matrix etc based on new solver matrix etc
-
-   Collective on PC
-
-   Input Parameters:
-+  pc - the preconditioner context
-.  setup - the function that is called each time PCSetUp() is called
-.  setupdestroy - optional function that destroys the setup context
--  setupctx - optional context passed into the setup function
-
-   Level: intermediate
-
-.keywords: PC, MG
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetSetup(PC pc,PetscErrorCode (*setup)(PC,void*),PetscErrorCode (*setupdestroy)(PC,void*),void *setupctx)
-{
-  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*setup)(PC,void*),PetscErrorCode (*setupdestroy)(PC,void*),void *setupctx);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCMGSetSetup_C",(void (**)(void))&f);CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(pc,setup,setupdestroy,setupctx);CHKERRQ(ierr);
-  } 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PCMGSetSetup_MG"
-PetscErrorCode PCMGSetSetup_MG(PC pc,PetscErrorCode (*setup)(PC,void*),PetscErrorCode (*setupdestroy)(PC,void*),void *setupctx)
-{
-  PC_MG          **mg = (PC_MG**)pc->data;
-
-  PetscFunctionBegin;
-  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
-  mg[0]->setup        = setup;
-  mg[0]->setupdestroy = setupdestroy;
-  mg[0]->setupctx     = setupctx;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PCDestroy_MG"
-static PetscErrorCode PCDestroy_MG(PC pc)
+PetscErrorCode PCDestroy_MG(PC pc)
 {
   PC_MG          **mg = (PC_MG**)pc->data;
   PetscErrorCode ierr;
@@ -187,10 +142,6 @@ static PetscErrorCode PCDestroy_MG(PC pc)
 
   PetscFunctionBegin;
   if (!mg) PetscFunctionReturn(0);
-
-  if (mg[0]->setupdestroy) {
-    ierr = (*mg[0]->setupdestroy)(pc,mg[0]->setupctx);CHKERRQ(ierr);
-  }
 
   n = mg[0]->levels;
   for (i=0; i<n-1; i++) {
@@ -373,7 +324,7 @@ const char *PCMGCycleTypes[] = {"invalid","v","w","PCMGCycleType","PC_MG_CYCLE",
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_MG"
-static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
+PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 {
   PC_MG          **mg = (PC_MG**)pc->data;
   PetscErrorCode ierr;
@@ -419,7 +370,7 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_MG"
-static PetscErrorCode PCSetUp_MG(PC pc)
+PetscErrorCode PCSetUp_MG(PC pc)
 {
   PC_MG                   **mg = (PC_MG**)pc->data;
   PetscErrorCode          ierr;
@@ -434,10 +385,6 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   Vec                     tvec;
 
   PetscFunctionBegin;
-
-  if (mg[0]->setup) {
-    ierr = (*mg[0]->setup)(pc,mg[0]->setupctx);CHKERRQ(ierr);
-  }
 
   /* If user did not provide fine grid operators OR operator was not updated since last global KSPSetOperators() */
   /* so use those from global PC */
@@ -1019,8 +966,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_MG"
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_MG(PC pc)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   pc->ops->apply          = PCApply_MG;
   pc->ops->setup          = PCSetUp_MG;
@@ -1028,8 +973,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_MG(PC pc)
   pc->ops->setfromoptions = PCSetFromOptions_MG;
   pc->ops->view           = PCView_MG;
 
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCMGSetSetup_C","PCMGSetSetup_MG",PCMGSetSetup_MG);CHKERRQ(ierr);
   pc->data                = (void*)0;
   PetscFunctionReturn(0);
 }

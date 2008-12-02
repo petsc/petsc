@@ -92,14 +92,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,const TSType type)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGetType(TS ts, const TSType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts, TS_COOKIE,1);
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   PetscValidPointer(type,2);
-  if (!TSRegisterAllCalled) {
-    ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
   *type = ((PetscObject)ts)->type_name;
   PetscFunctionReturn(0);
 }

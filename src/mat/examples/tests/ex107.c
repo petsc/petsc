@@ -30,7 +30,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(C,MATMPIDENSE);CHKERRQ(ierr); 
+  ierr = MatSetType(C,MATDENSE);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(C);CHKERRQ(ierr); 
 
   /* Create vectors */
@@ -160,7 +160,7 @@ int main(int argc,char **args)
   /* Create a symmetric Plapack dense matrix Csymm */
   ierr = MatCreate(PETSC_COMM_WORLD,&Csymm);CHKERRQ(ierr);
   ierr = MatSetSizes(Csymm,PETSC_DECIDE,PETSC_DECIDE,M,M);CHKERRQ(ierr);
-  ierr = MatSetType(Csymm,MATMPIDENSE);CHKERRQ(ierr); 
+  ierr = MatSetType(Csymm,MATDENSE);CHKERRQ(ierr); 
   ierr = MatSetFromOptions(Csymm);CHKERRQ(ierr);
   ierr = MatSetOption(Csymm,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatSetOption(Csymm,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);

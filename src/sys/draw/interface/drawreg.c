@@ -191,6 +191,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterDestroy(void)
 PetscErrorCode PETSC_DLLEXPORT PetscDrawGetType(PetscDraw draw,const PetscDrawType *type)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
+  PetscValidPointer(type,2);
   *type = ((PetscObject)draw)->type_name;
   PetscFunctionReturn(0);
 }

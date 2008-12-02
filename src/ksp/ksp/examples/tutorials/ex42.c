@@ -46,9 +46,7 @@ int main(int argc,char **argv)
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-  /*  ierr = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr); */
-  /* ierr = PCMGSetSetup(pc,ComputeInterpolation,0,da);CHKERRQ(ierr); */
-  ierr = PCWBSetDA(pc,da);CHKERRQ(ierr);
+  ierr = PCExoticSetDA(pc,da);CHKERRQ(ierr);
  
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
    

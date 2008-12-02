@@ -114,19 +114,22 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
     return
 
   def configureInstallationMethod(self):
-    if os.path.exists(os.path.join(self.dir, '.hg')):
+    if os.path.exists(os.path.join(self.dir,'bin/maint')):
       self.logPrint('This is a Mercurial clone')
       self.isClone = 1
-      if hasattr(self.sourceControl,'hg'):
-        self.addDefine('VERSION_HG','"'+os.popen(self.sourceControl.hg +" -R"+self.dir+" tip --template '{node}'").read()+'"')
-        self.addDefine('VERSION_DATE_HG','"'+os.popen(self.sourceControl.hg +" -R"+self.dir+" tip --template '{date|date}'").read()+'"')
-        # Check version & date for buildsystem aswell
-        bs_dir = os.path.join(self.dir,'config','BuildSystem')
-        if os.path.exists(os.path.join(bs_dir,'.hg')):
-          self.addDefine('VERSION_BS_HG','"'+os.popen(self.sourceControl.hg +" -R"+bs_dir+" tip --template '{node}'").read()+'"')
-          self.addDefine('VERSION_BS_DATE_HG','"'+os.popen(self.sourceControl.hg + " -R"+bs_dir+" tip --template '{date|date}'").read()+'"')
+      if os.path.exists(os.path.join(self.dir, '.hg')):
+        if hasattr(self.sourceControl,'hg'):
+          self.addDefine('VERSION_HG','"'+os.popen(self.sourceControl.hg +" -R"+self.dir+" tip --template '{node}'").read()+'"')
+          self.addDefine('VERSION_DATE_HG','"'+os.popen(self.sourceControl.hg +" -R"+self.dir+" tip --template '{date|date}'").read()+'"')
+          # Check version & date for buildsystem aswell
+          bs_dir = os.path.join(self.dir,'config','BuildSystem')
+          if os.path.exists(os.path.join(bs_dir,'.hg')):
+            self.addDefine('VERSION_BS_HG','"'+os.popen(self.sourceControl.hg +" -R"+bs_dir+" tip --template '{node}'").read()+'"')
+            self.addDefine('VERSION_BS_DATE_HG','"'+os.popen(self.sourceControl.hg + " -R"+bs_dir+" tip --template '{date|date}'").read()+'"')
+        else:
+          self.logPrintBox('\n*****WARNING: PETSC_DIR appears to be a mercurial clone - but hg is not found in PATH********\n')
       else:
-        self.logPrintBox('\n*****WARNING: PETSC_DIR appears to be a mercurial clone - but hg is not found in PATH********\n')
+        self.logPrint('This Mercurial clone is obtained as a tarball as .hg dir does not exist!')
     else:
       self.logPrint('This is a tarball installation')
       self.isClone = 0

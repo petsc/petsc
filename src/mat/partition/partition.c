@@ -157,6 +157,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void)
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningGetType(MatPartitioning partitioning,const MatPartitioningType *type)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(partitioning,MAT_PARTITIONING_COOKIE,1);
+  PetscValidPointer(type,2);
   *type = ((PetscObject)partitioning)->type_name;
   PetscFunctionReturn(0);
 }

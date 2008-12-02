@@ -101,6 +101,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister("MatFDColorFunc",   MAT_FDCOLORING_COOKIE,&MAT_FDColoringFunction);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatTranspose",     MAT_COOKIE,&MAT_Transpose);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMult",       MAT_COOKIE,&MAT_MatMult);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("MatMatSolve",      MAT_COOKIE,&MAT_MatSolve);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultSym",    MAT_COOKIE,&MAT_MatMultSymbolic);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMatMultNum",    MAT_COOKIE,&MAT_MatMultNumeric);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatPtAP",          MAT_COOKIE,&MAT_PtAP);CHKERRQ(ierr);
