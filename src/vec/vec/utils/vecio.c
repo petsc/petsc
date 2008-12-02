@@ -347,7 +347,11 @@ PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
 
   /* Create the dataset with default properties and close filespace */
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  dset_id = H5Dopen2(file_id, "Vec", H5P_DEFAULT);
+#else
   dset_id = H5Dopen(file_id, "Vec");
+#endif
 
   /* Retrieve the dataspace for the dataset */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
