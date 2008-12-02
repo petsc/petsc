@@ -55,7 +55,7 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
   PetscFList     ordlist;
   
   PetscFunctionBegin;
-  ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsHead("Cholesky options");CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_factor_in_place","Form Cholesky in the same memory as the matrix","PCFactorSetUseInPlace",&flg);CHKERRQ(ierr);
     if (flg) {

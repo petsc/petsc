@@ -113,7 +113,7 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
   PetscReal      tol;
 
   PetscFunctionBegin;
-  ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsHead("ILU Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)((PC_Factor*)ilu)->info.levels,&itmp,&flg);CHKERRQ(ierr);
     if (flg) ((PC_Factor*)ilu)->info.levels = itmp;

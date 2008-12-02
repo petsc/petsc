@@ -2,16 +2,20 @@
 from __future__ import generators
 import user
 import config.base
-
-import re
 import os
+import PETSc.package
 
-class Configure(config.base.Configure):
+class Configure(PETSc.package.Package):
   def __init__(self, framework):
-    config.base.Configure.__init__(self, framework)
-    self.headerPrefix  = ''
-    self.substPrefix   = ''
-    self.found         = 0
+    PETSc.package.Package.__init__(self, framework)
+    self.download     = ['http://gforge.inria.fr/frs/download.php/10715/scotch_5.1.2.tar.gz']
+    self.downloadname = self.name.lower()
+    self.liblist      = [['libscotch.a','libscotcherr.a'],
+                         ['libscotch.a','libscotcherr.a']]
+    self.functions    = ['SCOTCH_archBuild']
+    self.includes     = ['scotch.h']
+    self.complex      = 0
+    self.needsMath    = 1
     return
 
   def __str__(self):
@@ -32,159 +36,70 @@ class Configure(config.base.Configure):
     return
 
   def setupDependencies(self, framework):
-    config.base.Configure.setupDependencies(self, framework)
-    self.petscdir       = framework.require('PETSc.utilities.petscdir', self)
-    self.arch           = framework.require('PETSc.utilities.arch', self)
-    self.compilers      = framework.require('config.compilers', self)
-    self.headers        = framework.require('config.headers', self)
-    self.libraries      = framework.require('config.libraries', self)
-    self.mpi            = framework.require('config.packages.MPI', self)
+    PETSc.package.Package.setupDependencies(self, framework)
+    self.mpi            = framework.require('config.packages.MPI',self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    self.deps       = [self.mpi]
     return
 
-  def checkLib(self, libraries):
-    '''Check for SCOTCH_archBuild in libraries, which can be a list of libraries or a single library'''
-    if not isinstance(libraries, list): libraries = [libraries]
-    oldLibs = self.compilers.LIBS
-    found   = self.libraries.check(libraries, 'SCOTCH_archBuild', otherLibs = self.mpi.lib)
-    self.compilers.LIBS = oldLibs
-    return found
+  def Install(self):
 
-  def checkInclude(self, includeDir):
-    '''Check that scotch.h is present'''
-    oldFlags = self.compilers.CPPFLAGS
-    self.compilers.CPPFLAGS += ' '+self.headers.toString(includeDir+self.mpi.include)
-    found = self.checkPreprocess('#include <scotch.h>\n')
-    self.compilers.CPPFLAGS = oldFlags
-    return found
+    self.logPrintBox('Creating Scotch '+os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc')+'\n')
+    g = open(os.path.join(os.path.join(self.packageDir,'src'),'Makefile.inc'),'w')
 
-  def includeGuesses(self, path):
-    '''Return all include directories present in path or its ancestors'''
-    while path:
-      dir = os.path.join(path, 'include')
-      if os.path.isdir(dir):
-        yield [dir]
-      path = os.path.dirname(path)
-    return
+    g.write('EXE	=\n')
+    g.write('LIB	= .a\n')
+    g.write('OBJ	= .o\n')
+    g.write('\n')
+    g.write('MAKE	= make\n')
 
-  def libraryGuesses(self, root = None):
-    '''Return standard library name guesses for a given installation root'''
-    if root:
-      yield [os.path.join(root,'libscotch.a'), os.path.join(root, 'libscotcherr.a'), os.path.join(root, 'libscotcherrcom.a'), os.path.join(root,'libcommon.a'), ]
+    g.write('AR	        = '+self.setCompilers.AR+'\n')
+    g.write('ARFLAGS	= '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('CAT	= cat\n')   
+    self.setCompilers.pushLanguage('C')
+    g.write('CC	        = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CCP        = '+self.setCompilers.getCompiler()+'\n')
+   
+    # Building cflags
+    self.cflags = self.setCompilers.getCompilerFlags()
+    if self.libraries.add('-lz','gzwrite'): 
+      self.cflags = self.cflags + ' -DCOMMON_FILE_COMPRESS_GZ'
+    self.cflags = self.cflags + ' -DCOMMON_PTHREAD -DCOMMON_RANDOM_FIXED_SEED' 
+    self.cflags = self.cflags + ' -DSCOTCH_PTHREAD -DSCOTCH_RENAME '
+
+    if self.libraryOptions.integerSize == 64:
+      self.cflags = self.cflags + ' -DINTSIZE64'
     else:
-      yield ['']
-      yield ['scotch', 'scotcherr', 'scotcherrcom', 'common']
-    return
+      self.cflags = self.cflags + ' -DINTSIZE32'
+    g.write('CFLAGS	= '+self.cflags+'\n')
 
-  def generateGuesses(self):
-    if self.framework.argDB['download-scotch'] == 1:
-      (name, lib, include) = self.downloadScotch()
-      yield (name, lib, include) 
-      raise RuntimeError('Downloaded Scotch could not be used. Please check install in '+os.path.dirname(include[0][0])+'\n')
-    # Try specified installation root
-    if 'with-scotch-dir' in self.framework.argDB:  #~scotch_3.4
-      dir = self.framework.argDB['with-scotch-dir']
-      if not (len(dir) > 2 and dir[1] == ':'):
-        dir = os.path.abspath(dir)
-        dir = os.path.join(dir, 'bin/i586_pc_linux2')
-      yield ('User specified installation root', self.libraryGuesses(dir), [[dir]])
-      raise RuntimeError('You set a value for --with-scotch-dir, but '+self.framework.argDB['with-scotch-dir']+' cannot be used.\n')
-    # If necessary, download Scotch
-    if not self.found and self.framework.argDB['download-scotch'] == 2:
-      (name, lib, include) = self.downloadScotch()
-      yield (name, lib, include)
-      raise RuntimeError('Downloaded Scotch could not be used. Please check in install in '+os.path.dirname(include[0][0])+'\n')
-    return
+    self.setCompilers.popLanguage()
+    g.write('LDFLAGS	= -lz -lm -lrt\n')
+    g.write('CP	        = cp\n')
+    g.write('LEX	= flex\n')
+    g.write('LN	        = ln\n')
+    g.write('MKDIR	= mkdir\n')
+    g.write('MV	        = mv\n')
+    g.write('RANLIB	= ranlib\n')
+    g.write('YACC	= bison -y\n')
+    g.close()
 
-  def getDir(self):
-    '''Find the directory containing Scotch'''
-    packages = self.petscdir.externalPackagesDir 
-    scotchDir = None
-    for dir in os.listdir(packages):
-      if dir.startswith('scotch_3.4') and os.path.isdir(os.path.join(packages, dir)):
-        scotchDir = dir
-    if scotchDir is None:
-      self.framework.logPrint('Could not locate already downloaded Scotch')
-      raise RuntimeError('Could not locate already downloaded Scotch')
-    return os.path.join(packages, scotchDir)
-
-  def downloadScotch(self):
-    self.framework.logPrint('Downloading Scotch')
-    try:
-      scotchDir = self.getDir()
-      self.framework.logPrint('Scotch already downloaded, no need to ftp')
-    except RuntimeError:
-      import urllib
-
-      packages = self.petscdir.externalPackagesDir 
+    if self.installNeeded(os.path.join('src','Makefile.inc')):
       try:
-        self.logPrintBox('Retrieving Scotch; this may take several minutes')
-        urllib.urlretrieve('http://www.labri.fr/Perso/~pelegrin/scotch/distrib/scotch_3.4.1A_i586_pc_linux2.tar.gz', os.path.join(packages, 'scotch_3.4.1A_i586_pc_linux2.tar.gz'))
-      except Exception, e:
-        raise RuntimeError('Error downloading Scotch: '+str(e))
-      try:
-        config.base.Configure.executeShellCommand('cd '+packages+'; gunzip scotch_3.4.1A_i586_pc_linux2.tar.gz', log = self.framework.log)
+        self.logPrintBox('Compiling Scotch; this may take several minutes')
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+' && make clean scotch', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
-        raise RuntimeError('Error unzipping scotch_3.4.1A_i586_pc_linux2.tar.gz: '+str(e))
-      try:
-        config.base.Configure.executeShellCommand('cd '+packages+'; tar -xf scotch_3.4.1A_i586_pc_linux2.tar', log = self.framework.log)
-      except RuntimeError, e:
-        raise RuntimeError('Error doing tar -xf scotch_3.4.1A_i586_pc_linux2.tar: '+str(e))
-      os.unlink(os.path.join(packages, 'scotch_3.4.1A_i586_pc_linux2.tar'))
-    self.framework.actions.addArgument('Scotch', 'Download', 'Downloaded Scotch into '+self.getDir())
-    # Get the Scotch directories
-    scotchDir = self.getDir()  #~scotch_3.4
-    self.installDir = os.path.join(scotchDir, 'bin/i586_pc_linux2') #~scotch_3.4/bin/i586_pc_linux2
-    lib = self.libraryGuesses(self.installDir) 
-    include = [[self.installDir]]
-    return ('Downloaded Scotch', lib, include)
+        raise RuntimeError('Error running make on Scotch: '+str(e))
+#      try:
+#        output = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+'; ls libscotch; make scotch',timeout=2500, log = self.framework.log)[0]
+      libDir     = os.path.join(self.installDir, self.libdir)
+      includeDir = os.path.join(self.installDir, self.includedir)
+      output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; cp -f lib/*.a '+libDir+'/.; cp -f include/*.h '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
+#      except RuntimeError, e:
+#        raise RuntimeError('Error running make on Scotch: '+str(e))
+      self.checkInstall(output,os.path.join('src','Makefile.inc'))
+    return self.installDir
 
-  def configureVersion(self):
-    '''Determine the Scotch version, but there is no reliable way right now'''
-    return 'Unknown'
-
-  def configureLibrary(self):
-    '''Find all working Scotch installations and then choose one'''
-    functionalScotch = []
-    for (name, libraryGuesses, includeGuesses) in self.generateGuesses():
-      self.framework.logPrint('================================================================================')
-      self.framework.logPrint('Checking for a functional Scotch in '+name)
-      self.lib     = None
-      self.include = None
-      found        = 0
-      for libraries in libraryGuesses:
-        if self.checkLib(libraries):
-          self.lib = libraries
-          for includeDir in includeGuesses:
-            if self.checkInclude(includeDir):
-              self.include = includeDir
-              found = 1
-              break
-          if found:
-            break
-      if not found: continue
-      version = self.executeTest(self.configureVersion)
-      self.found = 1
-      functionalScotch.append((name, self.lib, self.include, version))
-      if not self.framework.argDB['with-alternatives']:
-        break
-    # User chooses one or take first (sort by version)
-    if self.found:
-      self.name, self.lib, self.include, self.version = functionalScotch[0]
-      self.framework.logPrint('Choose Scotch '+self.version+' in '+self.name)
-    else:
-      self.framework.logPrint('Could not locate any functional Scotch')
-    return
-
-  def configure(self):
-    if (self.framework.argDB['with-scotch'] or self.framework.argDB['download-scotch'] == 1):
-      if self.mpi.usingMPIUni:
-        raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
-      if self.libraryOptions.integerSize == 64:
-        raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')        
-      self.executeTest(self.configureLibrary)
-      self.framework.packages.append(self)
-    return
 
 if __name__ == '__main__':
   import config.framework

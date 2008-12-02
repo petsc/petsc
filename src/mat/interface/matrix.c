@@ -3392,7 +3392,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFactorGetSolverPackage(Mat mat, const MatSo
 
    Notes:
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
-     such as superlu, mumps, spooles etc. 
+     such as pastix, superlu, mumps, spooles etc. 
 
       PETSc must have been config/configure.py to use the external solver, using the option --download-package
 
@@ -3449,7 +3449,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor(Mat mat, const MatSolverPackage t
 
    Notes:
       Some PETSc matrix formats have alternative solvers available that are contained in alternative packages
-     such as superlu, mumps, spooles etc. 
+     such as pastix, superlu, mumps, spooles etc. 
 
       PETSc must have been config/configure.py to use the external solver, using the option --download-package
 

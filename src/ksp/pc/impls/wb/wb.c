@@ -243,7 +243,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Exotic(PC pc)
   ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
   ierr = PetscNew(PC_Exotic,&ex);CHKERRQ(ierr);
   ex->type = PC_EXOTIC_FACE;
-  mg = (void*)(PC_MG**)pc->data;
+  mg = (PC_MG**) pc->data;
   mg[0]->innerctx = ex;
 
 

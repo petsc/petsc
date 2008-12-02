@@ -1654,11 +1654,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   b->permute          = PETSC_FALSE;
 
   b->ignore_ltriangular = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_ignore_lower_triangular",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)B)->prefix,"-mat_ignore_lower_triangular",&flg);CHKERRQ(ierr);
   if (flg) b->ignore_ltriangular = PETSC_TRUE;
 
   b->getrow_utriangular = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_getrow_uppertriangular",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&flg);CHKERRQ(ierr);
   if (flg) b->getrow_utriangular = PETSC_TRUE;
 
 #if defined(PETSC_HAVE_SPOOLES)

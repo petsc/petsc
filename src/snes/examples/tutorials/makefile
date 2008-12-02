@@ -455,6 +455,17 @@ runex19_10:
 	   if (${DIFF} output/ex19_10.out ex19_10.tmp) then true; \
 	   else echo "Possible problem with ex19_10, diffs above"; fi; \
 	   ${RM} -f ex19_10.tmp
+runex19_11: #test pc_redundant
+	-@${MPIEXEC} -n 4 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type aij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 2 > ex19_11.tmp 2>&1; \
+	   if (${DIFF} output/ex19_11.out ex19_11.tmp) then true; \
+	   else echo "Possible problem with ex19_11, diffs above"; fi; \
+	   ${RM} -f ex19_11.tmp
+runex19_12: #test pc_redundant
+	-@${MPIEXEC} -n 12 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -pc_type redundant -mat_type aij -redundant_pc_factor_mat_solver_package pastix -pc_redundant_number 5 > ex19_12.tmp 2>&1; \
+	   if (${DIFF} output/ex19_12.out ex19_12.tmp) then true; \
+	   else echo "Possible problem with ex19_12, diffs above"; fi; \
+	   ${RM} -f ex19_12.tmp
+
 testex19: ex19.PETSc
 	-@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \
@@ -552,5 +563,6 @@ TESTEXAMPLES_MATLAB_ENGINE     = ex5.PETSc runex5_11 runex5_13 ex5.rm
 TESTEXAMPLES_AMS	       = 
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
 TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 ex19.rm 
+TESTEXAMPLES_PASTIX            = ex19.PETSc runex19_11 runex19_12 ex19.rm 
 
 include ${PETSC_DIR}/conf/test

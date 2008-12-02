@@ -19,6 +19,17 @@ EXTERN_C_BEGIN
 #include "scotch.h"
 EXTERN_C_END
 
+/*************************************
+ * 				     *
+ * Note:			     *
+ * 				     *
+ * To make scotch compile I 	     *
+ * modified all old mat->m/M into    *
+ * mat->rmap->n/N		     *
+ *				     *
+ * Hope I was right		     *
+ *				     *
+ *************************************/
 typedef struct {
     char arch[PETSC_MAX_PATH_LEN];
     int multilevel;
@@ -41,7 +52,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
     int  *parttab, *locals = PETSC_NULL, rank, i, size;
     size_t                 j;
     Mat                    mat = part->adj, matMPI, matSeq;
-    int                    nb_locals = mat->m;
+    int                    nb_locals = mat->rmap->n;
     Mat_MPIAdj             *adj = (Mat_MPIAdj *) mat->data;
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
     PetscTruth             flg;
@@ -88,21 +99,21 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
     {
         /* definition of Scotch library arguments */
-        SCOTCH_Strat stratptr;  /* scotch strategy */
-        SCOTCH_Graph grafptr;   /* scotch graph */
-        SCOTCH_Mapping mappptr; /* scotch mapping format */
-        int vertnbr = mat->M;   /* number of vertices in full graph */
-        int *verttab = adj->i;  /* start of edge list for each vertex */
-        int *edgetab = adj->j;  /* edge list data */
-        int edgenbr = adj->nz;  /* number of edges */
-        int *velotab = NULL;    /* not used by petsc interface */
+        SCOTCH_Strat stratptr;      /* scotch strategy */
+        SCOTCH_Graph grafptr;       /* scotch graph */
+        SCOTCH_Mapping mappptr;     /* scotch mapping format */
+        int vertnbr = mat->rmap->N; /* number of vertices in full graph */
+        int *verttab = adj->i;      /* start of edge list for each vertex */
+        int *edgetab = adj->j;      /* edge list data */
+        int edgenbr = adj->nz;      /* number of edges */
+        int *velotab = NULL;        /* not used by petsc interface */
         int *vlbltab = NULL;    
         int *edlotab = NULL;   
-        int baseval = 0;        /* 0 for C array indexing */
-        int flagval = 3;        /* (cf doc scotch no weight edge & vertices) */
+        int baseval = 0;            /* 0 for C array indexing */
+        int flagval = 3;            /* (cf doc scotch no weight edge & vertices) */
         char strategy[256];
 
-        ierr = PetscMalloc((mat->M) * sizeof(int), &parttab);CHKERRQ(ierr); 
+        ierr = PetscMalloc((mat->rmap->N) * sizeof(int), &parttab);CHKERRQ(ierr); 
 
         /* redirect output to buffer scotch -> mesg_log */
 #ifdef PETSC_HAVE_UNISTD_H
@@ -117,8 +128,16 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
         /* Construction of the scotch graph object */
         ierr = SCOTCH_graphInit(&grafptr);
-        ierr = SCOTCH_graphBuild(&grafptr, vertnbr, verttab, velotab,
-            vlbltab, edgenbr, edgetab, edlotab, baseval, flagval);CHKERRQ(ierr);
+        ierr = SCOTCH_graphBuild((SCOTCH_Graph *)   &grafptr, 
+				 (const SCOTCH_Num)  vertnbr, 
+				 (const SCOTCH_Num)  verttab, 
+				 (const SCOTCH_Num *)velotab,
+				 (const SCOTCH_Num *)vlbltab, 
+				 (const SCOTCH_Num *)edgenbr, 
+				 (const SCOTCH_Num *)edgetab, 
+				 (const SCOTCH_Num)  edlotab, 
+				 (const SCOTCH_Num *)baseval, 
+				 (const SCOTCH_Num *)flagval);CHKERRQ(ierr);
         ierr = SCOTCH_graphCheck(&grafptr);CHKERRQ(ierr);
 
         /* Construction of the strategy */
@@ -167,11 +186,32 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         PetscPrintf(((PetscObject)part)->comm, "strategy=[%s]\n", strategy);
 
         ierr = SCOTCH_stratInit(&stratptr);CHKERRQ(ierr);
-        ierr = SCOTCH_stratMap(&stratptr, strategy);CHKERRQ(ierr);
+	/*
 
+	  TODO: Correct this part
+
+	  Commented because this doesn't exists anymore 
+
+	  
+	  ierr = SCOTCH_stratMap(&stratptr, strategy);CHKERRQ(ierr);
+	*/
         /* check for option mapping */
         if (!scotch->map) {
-            ierr = SCOTCH_graphPart(&grafptr, &stratptr, part->n, parttab);CHKERRQ(ierr);
+	  /* ********************************************
+	   *						*
+	   *        TODO: Correct this part		*
+	   *						*
+	   * Won't work with this tmp SCOTCH_Strat...	*
+	   *						*
+	   * I just modified it to make scotch compile, *
+	   * to be able to use PaStiX...		*
+	   *						*
+	   **********************************************/
+	  SCOTCH_Strat tmp;
+	  ierr = SCOTCH_graphPart((const SCOTCH_Graph *)&grafptr, 
+				  (const SCOTCH_Num)    &stratptr, 
+				  (const SCOTCH_Strat *)&tmp,        /* The Argument changed from scotch 3.04 it was part->n, */ 
+				  (SCOTCH_Num *)        parttab);CHKERRQ(ierr);
             ierr = PetscPrintf(PETSC_COMM_SELF, "Partition simple without mapping\n");
         } else {
             SCOTCH_Graph grafarch;
@@ -232,29 +272,46 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
             if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
 
             ierr = SCOTCH_stratInit(&archstrat);CHKERRQ(ierr);
-            ierr = SCOTCH_stratBipart(&archstrat, "fx");CHKERRQ(ierr);
-
+	    /**************************************************************
+	     *								  *
+	     * TODO: Correct this part					  *
+	     * 								  *
+	     * Commented because this doesn't exists anymore 		  *
+	     * 								  *
+	     * ierr = SCOTCH_stratBipart(&archstrat, "fx");CHKERRQ(ierr); *
+	     **************************************************************/
             ierr = SCOTCH_archInit(&archptr);CHKERRQ(ierr);
             ierr = SCOTCH_archBuild(&archptr, &grafarch, listnbr, listtab,
                 &archstrat);CHKERRQ(ierr);
 
-            ierr = PetscMalloc((mat->M) * sizeof(int), &parttab_tmp);CHKERRQ(ierr);
-            ierr = SCOTCH_mapInit(&mappptr, &grafptr, &archptr, parttab_tmp);CHKERRQ(ierr);
-
-            ierr = SCOTCH_mapCompute(&mappptr, &stratptr);CHKERRQ(ierr);
-
-            ierr = SCOTCH_mapView(&mappptr, stdout);CHKERRQ(ierr);
-
+            ierr = PetscMalloc((mat->rmap->N) * sizeof(int), &parttab_tmp);CHKERRQ(ierr);
+	    /************************************************************************************
+	     *											*
+	     * TODO: Correct this part								*
+	     *											*
+	     * Commented because this doesn't exists anymore 					*
+	     *											*
+	     * ierr = SCOTCH_mapInit(&mappptr, &grafptr, &archptr, parttab_tmp);CHKERRQ(ierr);	*
+	     *											*
+	     * ierr = SCOTCH_mapCompute(&mappptr, &stratptr);CHKERRQ(ierr);			*
+	     * 											*
+	     * ierr = SCOTCH_mapView(&mappptr, stdout);CHKERRQ(ierr);				*
+	     ************************************************************************************/
             /* now we have to set in the real parttab at the good place */
             /* because the ranks order are different than position in */
             /* the arch graph */
-            for (i = 0; i < mat->M; i++) {
+            for (i = 0; i < mat->rmap->N; i++) {
                 parttab[i] = parttab_tmp[i];
             }
 
             ierr = PetscFree(listtab);CHKERRQ(ierr);
             SCOTCH_archExit(&archptr);
-            SCOTCH_mapExit(&mappptr);
+	    /*************************************************
+   	     * TODO: Correct this part			     *
+	     * 						     *
+	     * Commented because this doesn't exists anymore *
+	     * SCOTCH_mapExit(&mappptr);		     *
+	     *************************************************/
             SCOTCH_stratExit(&archstrat);
         }
 
@@ -285,13 +342,13 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
     ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(((PetscObject)part)->comm, &size);CHKERRQ(ierr);
-    nb_locals = mat->M / size;
+    nb_locals = mat->rmap->N / size;
     locals = parttab + rank * nb_locals;
-    if (rank < mat->M % size) {
+    if (rank < mat->rmap->N % size) {
         nb_locals++;
         locals += rank;
     } else
-        locals += mat->M % size;
+        locals += mat->rmap->N % size;
     ierr = ISCreateGeneral(((PetscObject)part)->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
 
     /* destroying old objects */
@@ -381,9 +438,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningScotchSetCoarseLevel(MatPartiti
     if (level < 0 || level > 1.0) {
         SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,
             "Scocth: level of coarsening out of range [0.0-1.0]");
-    } else
-        scotch->nbvtxcoarsed = (int)(part->adj->N * level);
-
+    } else {
+      /* ********************************************
+       *					    *
+       *        TODO: Correct this part		    *
+       *					    *
+       * Won't work with this nbvxtcoarsed          *
+       *					    *
+       * I just modified it to make scotch compile, *
+       * to be able to use PaStiX...		    *
+       *					    *
+       **********************************************/
+      scotch->nbvtxcoarsed = 0;
+      /* with scotch 3.0.4 it was : scotch->nbvtxcoarsed = (int)(part->adj->N * level); */
+    }
     if (scotch->nbvtxcoarsed < 20)
         scotch->nbvtxcoarsed = 20;
 
