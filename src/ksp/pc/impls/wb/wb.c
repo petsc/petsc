@@ -2,7 +2,7 @@
 
 
 #include "petscpc.h"   /*I "petscpc.h" I*/
-#include "petscmg.h"   /*I "petscpc.h" I*/
+#include "petscmg.h"   /*I "petscmg.h" I*/
 #include "petscda.h"   /*I "petscda.h" I*/
 #include "../src/ksp/pc/impls/mg/mgimpl.h"
 
