@@ -116,6 +116,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDestroy(void)
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetType(Mat mat,const MatType *type)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidPointer(type,2);
   *type = ((PetscObject)mat)->type_name;
   PetscFunctionReturn(0);
 }

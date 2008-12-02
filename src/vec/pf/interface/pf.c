@@ -377,7 +377,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[
 .  pf - the function context
 
    Output Parameter:
-.  name - name of function 
+.  type - name of function 
 
    Level: intermediate
 
@@ -386,10 +386,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[
 .seealso: PFSetType()
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,const PFType *meth)
+PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,const PFType *type)
 {
   PetscFunctionBegin;
-  *meth = (PFType) ((PetscObject)pf)->type_name;
+  PetscValidHeaderSpecific(pf,PF_COOKIE,1);
+  PetscValidPointer(type,2);
+  *type = ((PetscObject)pf)->type_name;
   PetscFunctionReturn(0);
 }
 

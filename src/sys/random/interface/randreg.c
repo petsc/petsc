@@ -73,14 +73,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom rnd, const PetscRa
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom rnd, const PetscRandomType *type)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd, PETSC_RANDOM_COOKIE,1);
-  PetscValidCharPointer(type,2);
-  if (!PetscRandomRegisterAllCalled) {
-    ierr = PetscRandomRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
+  PetscValidPointer(type,2);
   *type = ((PetscObject)rnd)->type_name;
   PetscFunctionReturn(0);
 }

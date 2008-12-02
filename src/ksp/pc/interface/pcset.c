@@ -118,7 +118,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
 .  pc - the preconditioner context
 
    Output Parameter:
-.  name - name of preconditioner 
+.  type - name of preconditioner method
 
    Level: intermediate
 
@@ -127,12 +127,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
 .seealso: PCSetType()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,const PCType *meth)
+PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,const PCType *type)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  PetscValidPointer(meth,2);
-  *meth = (PCType) ((PetscObject)pc)->type_name;
+  PetscValidPointer(type,2);
+  *type = ((PetscObject)pc)->type_name;
   PetscFunctionReturn(0);
 }
 

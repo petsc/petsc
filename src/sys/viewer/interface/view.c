@@ -123,7 +123,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer viewer,const Petsc
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
-  *type = (PetscViewerType) ((PetscObject)viewer)->type_name;
+  PetscValidPointer(type,2);
+  *type = ((PetscObject)viewer)->type_name;
   PetscFunctionReturn(0);
 }
 
