@@ -236,10 +236,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   if (mmat > mis) {ierr = MatInodeAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);}
   ierr = PetscLogEventEnd(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_ordering_draw",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_view_ordering_draw",&flg);CHKERRQ(ierr);
   if (flg) {
     Mat tmat;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_contour",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_view_contour",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
     }

@@ -4902,6 +4902,9 @@ EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_MUMPS)
 extern PetscErrorCode MatGetFactor_mpiaij_mumps(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_PASTIX)
+extern PetscErrorCode MatGetFactor_mpiaij_pastix(Mat,MatFactorType,Mat*);
+#endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
 extern PetscErrorCode MatGetFactor_mpiaij_superlu_dist(Mat,MatFactorType,Mat*);
 #endif
@@ -4969,6 +4972,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpiaij_mumps_C",
                                      "MatGetFactor_mpiaij_mumps",
                                      MatGetFactor_mpiaij_mumps);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_PASTIX)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpiaij_pastix_C",
+					   "MatGetFactor_mpiaij_pastix",
+					   MatGetFactor_mpiaij_pastix);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_SUPERLU_DIST)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_mpiaij_superlu_dist_C",

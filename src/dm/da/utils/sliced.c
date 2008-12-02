@@ -208,6 +208,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedDestroy(Sliced slice)
   if (!done) PetscFunctionReturn(0);
 
   if (slice->globalvector) {ierr = VecDestroy(slice->globalvector);CHKERRQ(ierr);}
+  ierr = PetscFree(slice->ghosts);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(slice);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

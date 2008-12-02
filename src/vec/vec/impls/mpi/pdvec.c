@@ -803,7 +803,11 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   filespace = H5Screate_simple(rank, dims, NULL); 
 
   /* Create the dataset with default properties and close filespace */
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  dset_id = H5Dcreate2(file_id, "Vec", H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+#else
   dset_id = H5Dcreate(file_id, "Vec", H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
+#endif
   status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
