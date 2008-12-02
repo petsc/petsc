@@ -212,3 +212,8 @@ Now run the testsuite to verify the install with the following:
 
 if __name__ == '__main__':
   Installer(sys.argv[1:]).run()
+  # temporary hack - delete log files created by BuildSystem - when 'sudo make install' is invoked
+  delfiles=['RDict.db','RDict.log','build.log','default.log','build.log.bkp','default.log.bkp']
+  for delfile in delfiles:
+    if os.path.exists(delfile) and (os.stat(delfile).st_uid==0):
+      os.remove(delfile)
