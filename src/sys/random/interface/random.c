@@ -212,9 +212,7 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
 #endif
   }
 
-  if (!PetscRandomRegisterAllCalled) {
-    ierr = PetscRandomRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
+  if (!PetscRandomRegisterAllCalled) {ierr = PetscRandomRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsList("-random_type","PetscRandom type","PetscRandomSetType",PetscRandomList,defaultType,typeName,256,&opt);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscRandomSetType(rnd, typeName);CHKERRQ(ierr);

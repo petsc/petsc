@@ -129,6 +129,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterDestroy(void)
 
   PetscFunctionBegin;
   ierr = PetscFListDestroy(&MatOrderingList);CHKERRQ(ierr);
+  MatOrderingRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -218,30 +219,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
     ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+  
+  ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
+  if (mmat != nmat) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
 
-  if (!MatOrderingRegisterAllCalled) {
-    ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
-
-  ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
+  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscFListFind(MatOrderingList,((PetscObject)mat)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
 
+  ierr = PetscLogEventBegin(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*r)(mat,type,rperm,cperm);CHKERRQ(ierr);
   ierr = ISSetPermutation(*rperm);CHKERRQ(ierr);
   ierr = ISSetPermutation(*cperm);CHKERRQ(ierr);
-
-  /*
-      Adjust for inode (reduced matrix ordering) only if row permutation
-    is smaller then matrix size
-  */
-  ierr = MatGetLocalSize(mat,&mmat,&nmat);CHKERRQ(ierr);
-  if (mmat != nmat) SETERRQ2(PETSC_ERR_ARG_WRONG,"Must be square matrix, rows %D columns %D",mmat,nmat);
+  /* Adjust for inode (reduced matrix ordering) only if row permutation is smaller the matrix size */
   ierr = ISGetLocalSize(*rperm,&mis);CHKERRQ(ierr);
-  if (mmat > mis) {  
-    ierr = MatInodeAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);
-  }
-
+  if (mmat > mis) {ierr = MatInodeAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);}
   ierr = PetscLogEventEnd(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_view_ordering_draw",&flg);CHKERRQ(ierr);

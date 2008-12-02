@@ -41,10 +41,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  /* Inialize subpackage */
   if (initialized) PetscFunctionReturn(0);
-  ierr = MatMFFDInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   initialized = PETSC_TRUE;
+  /* Inialize subpackage */
+  ierr = MatMFFDInitializePackage(path);CHKERRQ(ierr);
   /* Register Classes */
   ierr = PetscCookieRegister("Matrix",&MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscCookieRegister("Matrix FD Coloring",&MAT_FDCOLORING_COOKIE);CHKERRQ(ierr);
@@ -52,7 +52,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   ierr = PetscCookieRegister("Matrix Null Space",&MAT_NULLSPACE_COOKIE);CHKERRQ(ierr);
   /* Register Constructors */
   ierr = MatRegisterAll(path);CHKERRQ(ierr);
-  ierr = MatPartitioningRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatOrderingRegisterAll(path);CHKERRQ(ierr);
+  ierr = MatColoringRegisterAll(path);CHKERRQ(ierr);
+  ierr = MatPartitioningRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister("MatMult",          MAT_COOKIE,&MAT_Mult);CHKERRQ(ierr);
   ierr = PetscLogEventRegister("MatMults",         MAT_COOKIE,&MAT_Mults);CHKERRQ(ierr);

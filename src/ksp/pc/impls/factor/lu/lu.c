@@ -64,7 +64,7 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
   PetscReal       tol;
 
   PetscFunctionBegin;
-  ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsHead("LU options");CHKERRQ(ierr);
     ierr = PetscOptionsName("-pc_factor_in_place","Form LU in the same memory as the matrix","PCFactorSetUseInPlace",&flg);CHKERRQ(ierr);
     if (flg) {

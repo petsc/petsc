@@ -35,9 +35,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
     defaultType = TS_EULER;
   }
 
-  if (!TSRegisterAllCalled) {
-    ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
+  if (!TSRegisterAllCalled) {ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsList("-ts_type", "TS method"," TSSetType", TSList, defaultType, typeName, 256, &opt);CHKERRQ(ierr);
   if (opt) {
     ierr = TSSetType(ts, typeName);CHKERRQ(ierr);
