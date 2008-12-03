@@ -12,12 +12,12 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.2/downloads/openmpi-1.2.6.tar.gz']
-    self.download_mpich     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.7.tar.gz']
+    self.download_mpich     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.8.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
     self.includes           = ['mpi.h']
-    liblist_mpich         = [['fmpich2.lib','mpich2.lib'],['fmpich2.lib','mpi.lib'],
-                             ['libfmpich.a','libmpich.a', 'libpmpich.a'],
+    liblist_mpich         = [['fmpich2.lib','fmpich2g.lib','fmpich2s.lib','mpi.lib'],['fmpich2.lib','mpich2.lib'],
+                             ['libfmpich2g.a','libmpi.a'],['libfmpich.a','libmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
@@ -32,7 +32,7 @@ class Configure(config.package.Package):
                              ['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','liblam.a']]
     liblist_other         = [['libmpich.a','libpthread.a'],['libmpi++.a','libmpi.a']]
-    liblist_single        = [['libmpi.a'],['libmpich.a'],['mpich2.lib'],['mpich.lib'],
+    liblist_single        = [['libmpi.a'],['libmpich.a'],['mpi.lib'],['mpich2.lib'],['mpich.lib'],
                              [os.path.join('amd64','msmpi.lib')],[os.path.join('i386','msmpi.lib')]]
     self.liblist          = [[]] + liblist_mpich + liblist_lam + liblist_other + liblist_single
     # defaults to --with-mpi=yes

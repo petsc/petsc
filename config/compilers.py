@@ -706,6 +706,8 @@ class Configure(config.base.Configure):
             self.logPrint('Found full library spec: '+arg, 4, 'compilers')
             flibs.append(arg)
           continue
+        # prevent false positives for include with pathscalr
+        if re.match(r'^-INTERNAL.*$', arg): continue
         # Check for special include argument
         # AIX does this for MPI and perhaps other things
         m = re.match(r'^-I.*$', arg)
@@ -1043,8 +1045,8 @@ class Configure(config.base.Configure):
       self.logPrint('Invalid F90 source: '+str(sourcePath), 2, 'compilers')
       
     if hasattr(self, 'f90HeaderPath') and hasattr(self, 'f90SourcePath'):
-      self.addDefine('HAVE_F90_H', '"'+self.f90HeaderPath+'"')
-      self.addDefine('HAVE_F90_C', '"'+self.f90SourcePath+'"')
+      self.addDefine('HAVE_F90_H', '"'+os.path.join('..',self.f90HeaderPath)+'"')
+      self.addDefine('HAVE_F90_C', '"'+os.path.join('..',self.f90SourcePath)+'"')
     else:
       raise RuntimeError('Perhaps incorrect with-f90-interface specified. Could not confiure f90 interface for : '+self.f90Guess)      
     return
