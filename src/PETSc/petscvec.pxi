@@ -46,6 +46,8 @@ cdef extern from "petscvec.h":
     int VecRestoreArray(PetscVec,PetscScalar*[])
     int VecGetArrayC(PetscVec,PetscScalar*[])
     int VecRestoreArrayC(PetscVec,PetscScalar*[])
+    int VecPlaceArray(PetscVec,PetscScalar[])
+    int VecResetArray(PetscVec)
 
     int VecEqual(PetscVec,PetscVec,PetscTruth*)
     int VecLoad(PetscViewer,PetscVecType,PetscVec*)

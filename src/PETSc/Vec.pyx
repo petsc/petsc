@@ -253,6 +253,21 @@ cdef class Vec(Object):
     def setArray(self, array):
         asarray(self)[:] = asarray(array).ravel('a')
 
+    def placeArray(self, array):
+        cdef PetscInt nv=0
+        cdef PetscInt na=0
+        cdef PetscScalar *a = NULL
+        CHKERR( VecGetLocalSize(self.vec, &nv) )
+        array = oarray_s(array, &na, &a)
+        if (na != nv): raise ValueError(
+            "cannot place input array, invalid size")
+        CHKERR( VecPlaceArray(self.vec, a) )
+        self.set_attr("__placed_array__", array)
+        
+    def resetArray(self):
+        CHKERR( VecResetArray(self.vec) )
+        self.set_attr("__placed_array__", None)
+
     def duplicate(self):
         cdef Vec vec = type(self)()
         CHKERR( VecDuplicate(self.vec, &vec.vec) )
@@ -465,9 +480,8 @@ cdef class Vec(Object):
             values = empty_s(ni)
             values.shape = indices.shape
         values = oarray_s(values, &nv, &v)
-        if (ni != nv):
-            raise ValueError("incompatible array sizes: " \
-                             "ni=%d, nv=%d" % (ni, nv))
+        if (ni != nv): raise ValueError(
+            "incompatible array sizes: ni=%d, nv=%d" % (ni, nv))
         CHKERR( VecGetValues(self.vec, ni, i, v) )
         return values
 

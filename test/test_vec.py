@@ -150,7 +150,7 @@ class TestVecBase(object):
 
     def testPlaceArray(self):
         self.vec.set(1)
-        array = self.vec.getArray()
+        array = self.vec.getArray().copy()
         self.vec.placeArray(array)
         array[:] = 2
         self.assertAlmostEqual(abs(self.vec.sum()), 2*self.vec.getSize())
@@ -242,8 +242,6 @@ class TestVecWithArray(unittest.TestCase):
         a3 = v1.getDict()['__array__']; self.assertTrue(a is a2)
 
 # --------------------------------------------------------------------
-
-del TestVecBase.testPlaceArray # XXX
 
 del TestVecWithArray # XXX
 
