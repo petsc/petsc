@@ -2584,7 +2584,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
   }
   bs   = newbs;
 
-  B->rmap->bs = B->cmap->bs = bs;
+  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
 
@@ -2714,8 +2715,9 @@ PetscErrorCode MatSeqBAIJSetPreallocationCSR_SeqBAIJ(Mat B,PetscInt bs,const Pet
   PetscFunctionBegin;
 
   if (bs < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
-  B->rmap->bs = bs; 
-  B->cmap->bs = bs;
+
+  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
   m = B->rmap->n/bs;

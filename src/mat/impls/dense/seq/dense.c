@@ -2015,7 +2015,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
-  B->rmap->bs = B->cmap->bs = 1;
+  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
 

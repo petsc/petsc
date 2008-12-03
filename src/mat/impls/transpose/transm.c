@@ -113,9 +113,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateTranspose(Mat A,Mat *N)
   (*N)->ops->multtransposeadd = MatMultTransposeAdd_Transpose; 
   (*N)->assembled             = PETSC_TRUE;
 
-  (*N)->rmap->bs = (*N)->cmap->bs = A->rmap->bs;
+  ierr = PetscMapSetBlockSize((*N)->rmap,A->cmap->bs);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize((*N)->cmap,A->rmap->bs);CHKERRQ(ierr);
   ierr = PetscMapSetUp((*N)->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp((*N)->cmap);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
