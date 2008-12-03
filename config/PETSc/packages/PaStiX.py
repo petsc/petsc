@@ -11,7 +11,7 @@ class Configure(PETSc.package.Package):
     self.download     = ['http://gforge.inria.fr/frs/download.php/10140/pastix_release_1789.tar.bz2']
     self.downloadname = self.name.lower()
     self.liblist      = [['libpastix.a'],
-                         ['libpastix.a','libpthread.a','libscotch.a']]
+                         ['libpastix.a','libpthread.a','librt.a']]
     self.functions    = ['pastix']
     self.includes     = ['pastix.h']
     self.complex      = 0
