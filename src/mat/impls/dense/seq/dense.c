@@ -1516,7 +1516,6 @@ PetscErrorCode MatSetUpPreallocation_SeqDense(Mat A)
 PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,PetscInt N)
 {
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   /* this will not be called before lda, Mmax,  and Nmax have been set */
   m = PetscMax(m,M);
