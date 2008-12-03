@@ -55,7 +55,11 @@ class Configure(PETSc.package.Package):
     g.write('LIBEXT      = .a\n')
     self.setCompilers.pushLanguage('C')
     g.write('CCPROG      = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CCFOPT      = '+self.setCompilers.getCompilerFlags()+'\n')
+    # common.c tries to use some silly clock_gettime() routine that Mac doesn't have unless this is set
+    if self.setCompilers.isDarwin():    
+      cflags = ' -DX_ARCHi686_mac    '
+    else: cflags = ''
+    g.write('CCFOPT      = '+self.setCompilers.getCompilerFlags()+' '+cflags+'\n')
     self.setCompilers.popLanguage()
     if not self.compilers.fortranIsF90:
       raise RuntimeError('Installing PaStiX requires a F90 compiler') 
@@ -71,7 +75,11 @@ class Configure(PETSc.package.Package):
     g.write('MPCCPROG    = '+self.setCompilers.getCompiler()+'\n')
     g.write('ARFLAGS     = '+self.setCompilers.AR_FLAGS+'\n')
     g.write('ARPROG      = '+self.setCompilers.AR+'\n')
-    g.write('EXTRALIB    = -lgfortran -lm -lrt\n')
+    extralib = ''
+    if self.libraries.add('-lm','sin'): extralib += ' -lm'
+    if self.libraries.add('-lrt','timer_create'): extralib += ' -lrt'
+    
+    g.write('EXTRALIB    = '+extralib+' \n')
     g.write('\n')
     g.write('VERSIONMPI  = _mpi\n')
     g.write('VERSIONSMP  = _smp\n')
