@@ -5699,7 +5699,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
   PetscValidType(mat,1);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   if (mat->ops->setblocksize) {
-    mat->rmap->bs = bs;
+    /* XXX should check if (bs < 1) ??? */
+    ierr = PetscMapSetBlockSize(mat->rmap,bs);CHKERRQ(ierr);
+    ierr = PetscMapSetBlockSize(mat->cmap,bs);CHKERRQ(ierr);
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_ARG_INCOMP,"Cannot set the blocksize for matrix type %s",((PetscObject)mat)->type_name);
