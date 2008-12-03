@@ -277,7 +277,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvertFrom_MPIAdj(Mat A,const MatType type
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MatCreate(comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,N,PETSC_DETERMINE,N);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,PETSC_DETERMINE,PETSC_DETERMINE,N);CHKERRQ(ierr);
   ierr = MatSetType(B,type);CHKERRQ(ierr);
   ierr = MatMPIAdjSetPreallocation(B,ia,ja,a);CHKERRQ(ierr);
 
@@ -402,7 +402,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscIn
 #endif
 
   PetscFunctionBegin;
-  B->preallocated = PETSC_TRUE;
+  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
+
 #if defined(PETSC_USE_DEBUG)
   if (i[0] != 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"First i[] index must be zero, instead it is %D\n",i[0]);
   for (ii=1; ii<B->rmap->n; ii++) {
@@ -416,6 +420,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation_MPIAdj(Mat B,PetscIn
     }
   } 
 #endif
+  B->preallocated = PETSC_TRUE;
 
   b->j      = j;
   b->i      = i;
@@ -460,12 +465,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
   B->mapping          = 0;
   B->assembled        = PETSC_FALSE;
   
-  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
-  ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
-  if (B->cmap->n  < 0) B->cmap->n = B->cmap->N;
-  if (B->cmap->N  < 0) B->cmap->N = B->cmap->n;
-
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAdjSetPreallocation_C",
                                     "MatMPIAdjSetPreallocation_MPIAdj",
                                      MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);
@@ -516,7 +515,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation(Mat B,PetscInt *i,Pe
    Input Parameters:
 +  comm - MPI communicator
 .  m - number of local rows
-.  n - number of columns
+.  N - number of global columns
 .  i - the indices into j for the start of each row
 .  j - the column indices for each row (sorted for each row).
        The indices in i and j start with zero (NOT with one).
@@ -541,13 +540,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAdjSetPreallocation(Mat B,PetscInt *i,Pe
 
 .seealso: MatCreate(), MatConvert(), MatGetOrdering()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAdj(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt *i,PetscInt *j,PetscInt *values,Mat *A)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAdj(MPI_Comm comm,PetscInt m,PetscInt N,PetscInt *i,PetscInt *j,PetscInt *values,Mat *A)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
-  ierr = MatSetSizes(*A,m,n,PETSC_DETERMINE,n);CHKERRQ(ierr);
+  ierr = MatSetSizes(*A,m,PETSC_DETERMINE,PETSC_DETERMINE,N);CHKERRQ(ierr);
   ierr = MatSetType(*A,MATMPIADJ);CHKERRQ(ierr);
   ierr = MatMPIAdjSetPreallocation(*A,i,j,values);CHKERRQ(ierr);
   PetscFunctionReturn(0);
