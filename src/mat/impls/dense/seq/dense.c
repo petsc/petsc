@@ -1526,7 +1526,6 @@ PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,Petsc
   A->rmap->n = A->rmap->n = m;
   A->cmap->n = A->cmap->N = n;
   if (a->changelda) a->lda = m;
-  if (a->v) {ierr = PetscMemzero(a->v,m*n*sizeof(PetscScalar));CHKERRQ(ierr);} /* XXX Why ? */
   PetscFunctionReturn(0);
 }
 
