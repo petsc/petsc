@@ -19,8 +19,6 @@
 #define PetscSetUpMap(o, m) PetscMapSetUp((o)->m)
 #endif
 
-
-
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__  
@@ -97,13 +95,13 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 PETSC_STATIC_INLINE PetscErrorCode
 MatBlockSize_Check(Mat mat,PetscInt bs)
 {
-  PetscMap       *rmap;
-  PetscMap       *cmap;
+  PetscMap *rmap;
+  PetscMap *cmap;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   rmap = PetscGetMap(mat,rmap);
   cmap = PetscGetMap(mat,cmap);
-  if (bs < 1) 
+  if (bs < 1)
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
   if (rmap->n != -1 && rmap->n % bs)
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row length %D not divisible by block size %D",rmap->n,bs);
@@ -137,6 +135,8 @@ MatBlockSize_SetUp(Mat mat,PetscInt bs)
 PETSC_STATIC_INLINE PetscErrorCode
 MatSetBlockSize_Patch(Mat mat,PetscInt bs)
 {
+  PetscMap       *rmap = mat ? PetscGetMap(mat,rmap): 0;
+  PetscMap       *cmap = mat ? PetscGetMap(mat,cmap): 0;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -146,12 +146,12 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
 	     "Invalid block size specified, must be positive but it is %D",bs);
   if (mat->ops->setblocksize) {
     ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
-    if (mat->ops->setblocksize != MatSetBlockSize_Patch) {
-      ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
-    }
+    ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
     ierr = MatBlockSize_SetUp(mat,bs);CHKERRQ(ierr);
-  } else if (PetscGetMap(mat,rmap)->bs != bs || 
-	     PetscGetMap(mat,rmap)->bs != bs) {
+  } else if (rmap->bs == -1 && cmap->bs == -1) {
+    ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
+    ierr = MatBlockSize_SetUp(mat,bs);CHKERRQ(ierr);
+  } else if (rmap->bs != bs || cmap->bs != bs) {
     SETERRQ1(PETSC_ERR_ARG_INCOMP,
 	     "Cannot set/change the block size for matrix type %s",
 	     ((PetscObject)mat)->type_name);
@@ -306,8 +306,8 @@ MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
   if (data) PetscValidScalarPointer(data,3);
   ierr = MatIsPreallocated(mat, &flag);CHKERRQ(ierr);
   if (flag) { SETERRQ(PETSC_ERR_ORDER, "matrix is already preallocated"); }
-  ierr = MatSeqDenseSetPreallocation(mat, data);CHKERRQ(ierr);
-  ierr = MatMPIDenseSetPreallocation(mat, data);CHKERRQ(ierr);
+  ierr = MatSeqDenseSetPreallocation(mat,data);CHKERRQ(ierr);
+  ierr = MatMPIDenseSetPreallocation(mat,data);CHKERRQ(ierr);
   if (bs != PETSC_DECIDE) {
     ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
     ierr = MatBlockSize_SetUp(mat,bs);CHKERRQ(ierr);
@@ -453,7 +453,7 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  PetscValidPointer(reason,4);//SNESSetConvergenceTest SNESSolve_LS
+  PetscValidPointer(reason,4);
   if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   if (xnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"solution norm must be nonnegative");
   if (ynorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"step norm must be nonnegative");

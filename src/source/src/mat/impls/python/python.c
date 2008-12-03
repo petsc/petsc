@@ -5,16 +5,6 @@
 
 /* -------------------------------------------------------------------------- */
 
-/* backward compatibility hacks */
-
-#if PETSC_VERSION_(2,3,2) || PETSC_VERSION_(2,3,3)
-#define MAT_PYTHON_FIX_SETFROMOPTIONS
-#else
-#define MAT_PYTHON_FIX_SETFROMOPTIONS
-#endif
-
-/* -------------------------------------------------------------------------- */
-
 #define MATPYTHON "python"
 
 PETSC_EXTERN_C_BEGIN
@@ -155,7 +145,7 @@ static PetscErrorCode MatSetFromOptions_Python(Mat mat)
   ierr = PetscOptionsString("-mat_python","Python [package.]module[.{class|function}]",
 			    "MatCreatePython",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg && pyname[0]) { 
+  if (flg && pyname[0]) {
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
     if (!flg) { ierr = MatPythonInit_PYTHON(mat,pyname);CHKERRQ(ierr); }
   }
@@ -205,24 +195,60 @@ static PetscErrorCode MatSetOption_Python_old(Mat mat,MatOption op)
 #define MatSetOption_Python MatSetOption_Python_old
 #endif
 
+#if PETSC_VERSION_(2,3,2)
+#define PetscGetMap(o, m) (&(o)->m)
+#define PetscSetUpMap(o, m) PetscMapInitialize((o)->comm,&(o)->m)
+#elif PETSC_VERSION_(2,3,3)
+#define PetscGetMap(o, m) (&(o)->m)
+#define PetscSetUpMap(o, m) PetscMapSetUp(&(o)->m)
+#else
+#define PetscGetMap(o, m) ((o)->m)
+#define PetscSetUpMap(o, m) PetscMapSetUp((o)->m)
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ "MatSetOption_Python"
+static PetscErrorCode MatSetBlockSize_Python(Mat mat, PetscInt bs)
+{
+  PetscMap       *rmap = PetscGetMap(mat,rmap);
+  PetscMap       *cmap = PetscGetMap(mat,cmap);
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscMapSetBlockSize(rmap,bs);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(cmap,bs);CHKERRQ(ierr);
+  ierr = PetscSetUpMap(mat,rmap);CHKERRQ(ierr);
+  ierr = PetscSetUpMap(mat,cmap);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef  __FUNCT__
 #define __FUNCT__ "MatSetUpPreallocation_Python"
 static PetscErrorCode MatSetUpPreallocation_Python(Mat mat)
 {
+  Mat_Py         *py = (Mat_Py *) mat->data;
+  PetscMap       *rmap = PetscGetMap(mat,rmap);
+  PetscMap       *cmap = PetscGetMap(mat,cmap);
+  PetscErrorCode ierr;
   PetscFunctionBegin;
   /* MatDestroy() calls MatPreallocated() !!! */
   if (!Py_IsInitialized()) PetscFunctionReturn(0);
-#if defined(MAT_PYTHON_FIX_SETFROMOPTIONS)
-  { 
-    PetscErrorCode ierr;
-    PyObject *self = Mat_Py_Self(mat);
-    if (self == NULL || self == Py_None) {
-      ierr = MatSetFromOptions_Python(mat);CHKERRQ(ierr); 
-    }
+  /* setup row and columns maps */
+  if (rmap->bs == -1) rmap->bs = 1;
+  if (cmap->bs == -1) cmap->bs = 1;
+  ierr = PetscSetUpMap(mat,rmap);CHKERRQ(ierr);
+  ierr = PetscSetUpMap(mat,cmap);CHKERRQ(ierr);
+  /* try to load Python code if not yet done */
+  if (py->self == NULL || py->self == Py_None) {
+    char       pyname[2*PETSC_MAX_PATH_LEN+3];
+    PetscTruth flag = PETSC_FALSE;
+    ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_python",
+				 pyname,sizeof(pyname),&flag);CHKERRQ(ierr);
+    if (flag && pyname[0]==0) flag = PETSC_FALSE;
+    if (flag) { ierr = MatPythonInit_PYTHON(mat,pyname);CHKERRQ(ierr); }
   }
-#endif
-  mat->preallocated = PETSC_TRUE;
+  /* */
   MAT_PYTHON_CALL_MATARG(mat, "setUp");
+  mat->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -657,6 +683,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat mat)
   mat->ops->setfromoptions       = MatSetFromOptions_Python;
 
   mat->ops->setoption            = MatSetOption_Python;
+  mat->ops->setblocksize         = MatSetBlockSize_Python;
   mat->ops->setuppreallocation   = MatSetUpPreallocation_Python;
 
   mat->ops->zeroentries          = MatZeroEntries_Python;
