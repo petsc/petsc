@@ -11,7 +11,7 @@ class Configure(PETSc.package.Package):
     self.download     = ['http://gforge.inria.fr/frs/download.php/10715/scotch_5.1.2.tar.gz']
     self.downloadname = self.name.lower()
     self.liblist      = [['libscotch.a','libscotcherr.a'],
-                         ['libscotch.a','libscotcherr.a']]
+                         ['libscotch.a','libscotcherr.a','librt.a']]
     self.functions    = ['SCOTCH_archBuild']
     self.includes     = ['scotch.h']
     self.complex      = 0
