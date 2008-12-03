@@ -710,6 +710,13 @@ cdef inline int matsetvalues_ijv(PetscMat A,
             CHKERR( setvalues(A, 1, &irow, ncol, icol, sval, addv) )
     return 0
 
+cdef inline int matsetvalues_csr(PetscMat A,
+                                 object oi, object oj, object ov,
+                                 object oaddv,
+                                 int blocked, int local) except -1:
+    matsetvalues_ijv(A, oi, oj, ov, oaddv, None, blocked, local)
+    return 0
+
 # --------------------------------------------------------------------
 
 cdef extern from "custom.h":
