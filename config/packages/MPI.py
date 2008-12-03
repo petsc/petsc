@@ -56,7 +56,6 @@ class Configure(config.package.Package):
     help.addArgument('MPI', '-with-mpiexec=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, None, 'Try to use shared MPI libraries'))
-    help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
     help.addArgument('MPI', '-download-mpich-pm=gforker or mpd',  nargs.Arg(None, 'gforker', 'Launcher for MPI processes')) 
     help.addArgument('MPI', '-download-mpich-device=ch3:shm or see mpich2 docs', nargs.Arg(None, None, 'Communicator for MPI processes'))
     return
@@ -374,11 +373,6 @@ class Configure(config.package.Package):
           output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on OPENMPI/MPI libraries: '+str(e))
-      # start up OPENMPI demon; note openmpiboot does not close stdout, so call will ALWAYS timeout.
-      try:
-        output  = config.base.Configure.executeShellCommand('PATH=${PATH}:'+os.path.join(installDir,'bin')+' '+os.path.join(installDir,'bin','openmpiboot'), timeout=10, log = self.framework.log)[0]
-      except:
-        pass
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed OPENMPI/MPI into '+installDir)
 
     self.updateCompilers(installDir,'mpicc','mpic++','mpif77','mpif90')
@@ -501,14 +495,7 @@ class Configure(config.package.Package):
         else:
           self.logPrint('No HOME env var, so could not check for or create .mpd.conf')
 
-        # start up MPICH's demon
-        self.framework.logPrint('Starting up MPICH mpd demon needed for mpiexec')
-        try:
-          output = self.executeShellCommand('cd '+installDir+'; bin/mpdboot',timeout=25)
-          self.framework.logPrint('Output from trying to run mpdboot:'+str(output))
-          self.framework.logPrint('Started up MPICH mpd demon needed for mpiexec')
-        except RuntimeError, e:
-          self.framework.logPrint('Error trying to run mpdboot:'+str(e))
+        self.logPrintBox('You have requested the mpd version of MPICH to be installed \nYou must start the demon in order to run MPI jobs, run the following:\n'+os.path.join(installDir,'bin','mpdboot')+'--file=hostsfile\nhostsfile should contain a list of machines where you wish to run MPICH jobs\nRun with --help for more options')
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
 
     self.updateCompilers(installDir,'mpicc','mpicxx','mpif77','mpif90')
