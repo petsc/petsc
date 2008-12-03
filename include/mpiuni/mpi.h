@@ -577,7 +577,7 @@ extern int    MPI_Finalized(int*);
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (displs),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvtype),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)),\
+     (sendbuf != MPI_IN_PLACE) ?  MPIUNI_Memcpy((recvbuf),(sendbuf),(sendcount)* (sendtype)) : 0, \
      MPI_SUCCESS)
 #define MPI_Alltoall(sendbuf,sendcount, sendtype,\
      recvbuf,recvcount, recvtype,comm) \
