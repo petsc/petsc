@@ -246,8 +246,8 @@ cdef class Vec(Object):
         if out is None:
             out = array
         else:
-            out = asarray(out).ravel('a')
-            out[:] = array
+            out = asarray(out)
+            out.flat[:] = array
         return out
 
     def setArray(self, array):
