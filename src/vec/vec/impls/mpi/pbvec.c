@@ -69,8 +69,10 @@ PetscErrorCode VecPlaceArray_MPI(Vec vin,const PetscScalar *a)
 
   PetscFunctionBegin;
   if (v->unplacedarray) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
-  v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
-  v->array = (PetscScalar *)a;
+  if (a) {
+    v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
+    v->array = (PetscScalar *)a;
+  }
   if (v->localrep) {
     ierr = VecPlaceArray(v->localrep,a);CHKERRQ(ierr);
   }
@@ -85,8 +87,10 @@ PetscErrorCode VecResetArray_MPI(Vec vin)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  v->array         = v->unplacedarray;
-  v->unplacedarray = 0;
+  if (v->unplacedarray) {
+    v->array         = v->unplacedarray;
+    v->unplacedarray = 0;
+  }
   if (v->localrep) {
     ierr = VecResetArray(v->localrep);CHKERRQ(ierr);
   }
