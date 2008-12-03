@@ -1964,8 +1964,8 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   PetscFunctionBegin;
 
   if (bs < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive but it is %D",bs);
-  B->rmap->bs = bs;
-  B->cmap->bs = bs;
+  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
   m      = B->rmap->n/bs;
@@ -2078,8 +2078,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,Petsc
   if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
   if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
   
-  B->rmap->bs  = bs;
-  B->cmap->bs  = bs;
+  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
 

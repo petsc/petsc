@@ -2695,7 +2695,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscIn
   if (d_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"d_nz cannot be less than 0: value %D",d_nz);
   if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
 
-  B->rmap->bs = B->cmap->bs = 1;
+  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
   if (d_nnz) {
@@ -3128,7 +3129,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
   PetscFunctionBegin;
   if (Ii[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %D",Ii[0]);
 
-  B->rmap->bs = B->cmap->bs = 1;
+  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
   m      = B->rmap->n;
@@ -5086,7 +5088,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,P
   maij->donotstash     = PETSC_TRUE;
   (*mat)->preallocated = PETSC_TRUE;
 
-  (*mat)->rmap->bs = (*mat)->cmap->bs = 1;
+  ierr = PetscMapSetBlockSize((*mat)->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize((*mat)->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp((*mat)->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp((*mat)->cmap);CHKERRQ(ierr);
 

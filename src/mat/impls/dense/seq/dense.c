@@ -1516,7 +1516,6 @@ PetscErrorCode MatSetUpPreallocation_SeqDense(Mat A)
 PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,PetscInt N)
 {
   Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
-  PetscErrorCode ierr;
   PetscFunctionBegin;
   /* this will not be called before lda, Mmax,  and Nmax have been set */
   m = PetscMax(m,M);
@@ -1526,7 +1525,6 @@ PetscErrorCode MatSetSizes_SeqDense(Mat A,PetscInt m,PetscInt n,PetscInt M,Petsc
   A->rmap->n = A->rmap->n = m;
   A->cmap->n = A->cmap->N = n;
   if (a->changelda) a->lda = m;
-  ierr = PetscMemzero(a->v,m*n*sizeof(PetscScalar));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2015,7 +2013,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
-  B->rmap->bs = B->cmap->bs = 1;
+  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
 

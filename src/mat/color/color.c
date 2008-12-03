@@ -256,6 +256,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegisterDestroy(void)
 
   PetscFunctionBegin;
   ierr = PetscFListDestroy(&MatColoringList);CHKERRQ(ierr);
+  MatColoringRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -319,21 +320,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,const MatColoringType t
   PetscValidPointer(iscoloring,3);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
-  if (!MatColoringRegisterAllCalled) {
-    ierr = MatColoringRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
-  
-  /* look for type on command line */
-  ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
-  if (flag) {
-    type = tname;
-  }
 
-  ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
+  /* look for type on command line */
+  if (!MatColoringRegisterAllCalled) {ierr = MatColoringRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+  ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
+  if (flag) { type = tname; }
+
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr); 
   ierr = PetscFListFind(MatColoringList,comm, type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
 
+  ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (size == 1){
     ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);

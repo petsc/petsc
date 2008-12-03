@@ -191,6 +191,7 @@ typedef int MPI_Op;
 #define MPI_MAX_ERROR_STRING 2056
 #define MPI_STATUS_IGNORE (MPI_Status *)1
 #define MPI_ORDER_FORTRAN        57
+#define MPI_IN_PLACE      (void *) -1
 
 /*
   Prototypes of some functions which are implemented in mpi.c
@@ -576,7 +577,7 @@ extern int    MPI_Finalized(int*);
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (displs),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (recvtype),\
      MPIUNI_TMP = (void*)(MPIUNI_INTPTR) (comm),\
-     MPIUNI_Memcpy(recvbuf,sendbuf,(sendcount)* (sendtype)),\
+     (sendbuf != MPI_IN_PLACE) ?  MPIUNI_Memcpy((recvbuf),(sendbuf),(sendcount)* (sendtype)) : 0, \
      MPI_SUCCESS)
 #define MPI_Alltoall(sendbuf,sendcount, sendtype,\
      recvbuf,recvcount, recvtype,comm) \

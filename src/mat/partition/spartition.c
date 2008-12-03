@@ -42,6 +42,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterAll(const char path[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  MatPartitioningRegisterAllCalled = PETSC_TRUE;
   ierr = MatPartitioningRegisterDynamic(MAT_PARTITIONING_CURRENT,path,"MatPartitioningCreate_Current",MatPartitioningCreate_Current);CHKERRQ(ierr);
   ierr = MatPartitioningRegisterDynamic("square",path,"MatPartitioningCreate_Square",MatPartitioningCreate_Square);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PARMETIS)

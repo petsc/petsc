@@ -227,8 +227,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
 
+  if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(((PetscObject)snes)->comm,((PetscObject)snes)->prefix,"Nonlinear solver (SNES) options","SNES");CHKERRQ(ierr); 
-    if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
     if (((PetscObject)snes)->type_name) { deft = ((PetscObject)snes)->type_name; } 
     ierr = PetscOptionsList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -1331,6 +1331,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   if (snes->vec_func == snes->vec_sol) {
     SETERRQ(PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
   }
+  
+  if (!snes->ksp) {ierr = SNESGetKSP(snes, &snes->ksp);CHKERRQ(ierr);}
   
   if (snes->ops->setup) {
     ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);

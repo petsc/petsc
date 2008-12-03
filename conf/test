@@ -12,6 +12,7 @@ testexamples_Fortran: ${TESTEXAMPLES_FORTRAN} clean
 testexamples_C_X11_MPIUni: ${TESTEXAMPLES_C_X11_MPIUNI} clean
 testexamples_C_Complex: ${TESTEXAMPLES_C_COMPLEX} clean
 testexamples_C_NoComplex: ${TESTEXAMPLES_C_NOCOMPLEX} clean
+testexamples_DATAFILESPATH: ${TESTEXAMPLES_DATAFILESPATH} clean
 
 testexamples_Fortran_NoComplex: ${TESTEXAMPLES_FORTRAN_NOCOMPLEX} clean
 testexamples_Fortran_MPIUni: ${TESTEXAMPLES_FORTRAN_MPIUNI} clean
@@ -102,5 +103,8 @@ alltests:
 	-@for i in ${TEST_RUNS} ; do \
 	  make ACTION=${TESTMODE}_$$i tree ; \
 	done
+
+tests_DATAFILESPATH:
+	make ACTION=testexamples_DATAFILESPATH tree DATAFILESPATH=${DATAFILESPATH}
 
 

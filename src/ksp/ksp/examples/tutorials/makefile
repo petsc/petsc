@@ -312,18 +312,19 @@ runex5_dense_1:
 	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
 	   else echo "Possible problem with ex5_plapack_1, diffs above"; fi; \
 	   ${RM} -f ex5_plapack.tmp
-runex5_plapack_2:
-	-@${MPIEXEC} -n 3 ./ex5 -mat_type dense -ksp_type preonly -pc_type lu > ex5_plapack.tmp 2>&1; \
-	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
-	   else echo "Possible problem with ex5_plapack_2, diffs above"; fi; \
-	   ${RM} -f ex5_plapack.tmp
-runex5_plapack_3:
+runex5_dense_2:
 	-@${MPIEXEC} -n 1 ./ex5 -mat_type dense -ksp_type preonly -pc_type cholesky -pc_factor_mat_ordering_type natural > ex5_plapack.tmp 2>&1; \
 	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
 	   else echo "Possible problem with ex5_plapack_3, diffs above"; fi; \
 	   ${RM} -f ex5_plapack.tmp
-runex5_plapack_4:
-	-@${MPIEXEC} -n 3 ./ex5 -mat_type dense -ksp_type preonly -pc_type cholesky > ex5_plapack.tmp 2>&1; \
+runex5_plapack_lu:
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type dense -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package plapack> ex5_plapack.tmp 2>&1; \
+	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
+	   else echo "Possible problem with ex5_plapack_2, diffs above"; fi; \
+	   ${RM} -f ex5_plapack.tmp
+
+runex5_plapack_cholesky:
+	-@${MPIEXEC} -n 3 ./ex5 -mat_type dense -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package plapack > ex5_plapack.tmp 2>&1; \
 	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
 	   else echo "Possible problem with ex5_plapack_4, diffs above"; fi; \
 	   ${RM} -f ex5_plapack.tmp
@@ -624,12 +625,12 @@ runex10_mumps_cholesky_2:
 	   ${RM} -f ex10_mumps_cholesky_2.tmp
 
 runex10_plapack_lu:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type dense -num_numfac 2 -num_rhs 2 > ex10_plapack_lu_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package plapack -mat_type dense -num_numfac 2 -num_rhs 2 > ex10_plapack_lu_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_plapack_lu_2.tmp) then true; \
 	   else echo "Possible problem with ex10_plapack_lu_2, diffs above"; fi; \
 	   ${RM} -f ex10_plapack_lu_2.tmp
 runex10_plapack_cholesky:
-	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -mat_type dense -num_numfac 2 -num_rhs 2 -check_symmetry > ex10_plapack_cholesky_2.tmp 2>&1; \
+	-@${MPIEXEC} -n 2 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package plapack -mat_type dense -num_numfac 2 -num_rhs 2 -check_symmetry > ex10_plapack_cholesky_2.tmp 2>&1; \
 	   if (${DIFF} output/ex10_mumps.out ex10_plapack_cholesky_2.tmp) then true; \
 	   else echo "Possible problem with ex10_plapack_cholesky_2, diffs above"; fi; \
 	   ${RM} -f ex10_plapack_cholesky_2.tmp
@@ -830,7 +831,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.PETSc run
                                  ex23.PETSc runex23 runex23_2 ex23.rm  ex25.PETSc runex25 runex25_2 ex25.rm \
                                  ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex29.PETSc  ex29.rm \
                                  ex31.PETSc ex31.rm ex32.PETSc runex32 ex32.rm ex38.PETSc runex38 ex38.rm ex42.PETSc runex42 ex42.rm
-TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm ex10.PETSc runex10_ILU runex10_ILUBAIJ ex10.rm 
+TESTEXAMPLES_C_X11	       = ex2.PETSc runex2_5 ex2.rm ex5.PETSc runex5_5 ex5.rm ex8.PETSc ex8.rm  
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm ex2f.PETSc runex2f ex2f.rm ex6f.PETSc ex6f.rm \
                                  ex14f.PETSc runex14f ex14f.rm ex15f.PETSc runex15f ex15f.rm ex22f.PETSc runex22f \
                                  ex22f.rm ex21f.PETSc runex21f ex21f.rm
@@ -839,8 +840,8 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.P
                                  ex7.PETSc ex7.rm ex5.PETSc ex5.rm  ex9.PETSc runex9 ex9.rm \
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
-TESTEXAMPLES_C_NOCOMPLEX       = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
-                                 runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 runex10_24 runex10_25 ex10.rm
+TESTEXAMPLES_DATAFILESPATH     = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
+                                 runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 runex10_24 runex10_25  runex10_ILU runex10_ILUBAIJ ex10.rm 
 TESTEXAMPLES_BLOCKSOLVE95      = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples
@@ -858,6 +859,6 @@ TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_
 TESTEXAMPLES_SUPERLU           = ex10.PETSc runex10_superlu_lu_1 ex10.rm 
 TESTEXAMPLES_SUPERLU_DIST      = ex10.PETSc runex10_superlu_dist_lu_1 runex10_superlu_dist_lu_2 runex10_superlu_dist_redundant ex10.rm 
 TESTEXAMPLES_SPOOLES           = ex10.PETSc runex10_spooles_lu_1  runex10_spooles_lu_2 runex10_spooles_cholesky_1 runex10_spooles_cholesky_1sbaij  runex10_spooles_cholesky_2 ex10.rm 
-TESTEXAMPLES_PLAPACK           = ex5.PETSc runex5_dense_1 5_plapack_2 5_plapack_3 5_plapack_4 ex5.rm ex10.PETSc runex10_plapack_lu runex10_plapack_cholesky ex10.rm
+TESTEXAMPLES_PLAPACK           = ex5.PETSc runex5_plapack_lu runex5_plapack_cholesky ex5.rm ex10.PETSc runex10_plapack_lu runex10_plapack_cholesky ex10.rm
 
 include ${PETSC_DIR}/conf/test

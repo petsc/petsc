@@ -92,7 +92,7 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
   PetscFList     ordlist;
 
   PetscFunctionBegin;
-  ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);
+  if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsHead("ICC Options");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",((PC_Factor*)icc)->info.levels,&((PC_Factor*)icc)->info.levels,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_factor_fill","Expected fill in factorization","PCFactorSetFill",((PC_Factor*)icc)->info.fill,&((PC_Factor*)icc)->info.fill,&flg);CHKERRQ(ierr);

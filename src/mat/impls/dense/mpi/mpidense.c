@@ -1344,9 +1344,20 @@ PetscErrorCode MatLUFactorSymbolic_MPIDense(Mat F,Mat A,IS r,IS c,const MatFacto
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetFactor_mpidense_petsc"
-PetscErrorCode MatGetFactor_mpidense_petsc(Mat A,MatFactorType ftype,Mat *F)
+#define __FUNCT__ "MatFactorGetSolverPackage_mpidense_plapack"
+PetscErrorCode MatFactorGetSolverPackage_mpidense_plapack(Mat A,const MatSolverPackage *type)
+{
+  PetscFunctionBegin;
+  *type = MAT_SOLVER_PLAPACK;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetFactor_mpidense_plapack"
+PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
 {
   PetscErrorCode ierr;
   Mat_Plapack    *lu;
@@ -1394,6 +1405,7 @@ PetscErrorCode MatGetFactor_mpidense_petsc(Mat A,MatFactorType ftype,Mat *F)
     (*F)->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPIDense;
   } else SETERRQ(PETSC_ERR_SUP,"No incomplete factorizations for dense matrices");
   (*F)->factor = ftype;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)(*F),"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mpidense_plapack",MatFactorGetSolverPackage_mpidense_plapack);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -1569,7 +1581,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
   ierr = MPI_Comm_rank(((PetscObject)mat)->comm,&a->rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)mat)->comm,&a->size);CHKERRQ(ierr);
 
-  mat->rmap->bs = mat->cmap->bs = 1;
+  ierr = PetscMapSetBlockSize(mat->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(mat->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(mat->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(mat->cmap);CHKERRQ(ierr);
   a->nvec = mat->cmap->n;
@@ -1599,13 +1612,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
                                      "MatMatMultNumeric_MPIAIJ_MPIDense",
                                       MatMatMultNumeric_MPIAIJ_MPIDense);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_PLAPACK)
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetFactor_mpidense_petsc_C",
-                                     "MatGetFactor_mpidense_petsc",
-                                      MatGetFactor_mpidense_petsc);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_PLAPACK)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatGetFactor_mpidense_plapack_C",
+                                     "MatGetFactor_mpidense_plapack",
+                                      MatGetFactor_mpidense_plapack);CHKERRQ(ierr);
   ierr = PetscPLAPACKInitializePackage(((PetscObject)mat)->comm);CHKERRQ(ierr);
-#endif
-
 #endif
   ierr = PetscObjectChangeTypeName((PetscObject)mat,MATMPIDENSE);CHKERRQ(ierr);
 
