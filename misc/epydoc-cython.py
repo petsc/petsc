@@ -2,6 +2,26 @@
 
 # --------------------------------------------------------------------
 
+try:
+    from petsc4py import PETSc
+    from signal import signal, SIGPIPE, SIG_IGN
+    signal(SIGPIPE, SIG_IGN)
+except ImportError:
+    pass
+
+# --------------------------------------------------------------------
+
+try:
+    from docutils.nodes import NodeVisitor
+    def unknown_visit(self, node):
+        'Ignore all unknown nodes'
+    NodeVisitor.unknown_visit = lambda self, node: None
+    NodeVisitor.unknown_departure =  lambda self, node: None
+except ImportError:
+    pass
+
+# --------------------------------------------------------------------
+
 import re
 
 _SIGNATURE_RE = re.compile(
@@ -21,7 +41,7 @@ dsp._SIGNATURE_RE = _SIGNATURE_RE
 
 # --------------------------------------------------------------------
 
-from epydoc.cli import cli
-cli()
+import epydoc.cli
+epydoc.cli.cli()
 
 # --------------------------------------------------------------------
