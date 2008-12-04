@@ -36,7 +36,7 @@ def init(args=None, arch=None):
       - `arch`: specific configuration to use.
 
     .. note:: This function should be called only once, typically at
-      the very beginning of the bootstrap script of an application.
+       the very beginning of the bootstrap script of an application.
     """
     import petsc4py.lib
     PETSc = petsc4py.lib.ImportPETSc(arch)
