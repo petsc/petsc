@@ -1,4 +1,4 @@
-.PHONY: default config src build test install uninstall sdist clean distclean srcclean fullclean
+.PHONY: default config src build test install uninstall sdist clean distclean srcclean fullclean cython epydoc
 
 PYTHON = python
 
@@ -54,10 +54,7 @@ src/petsc4py_PETSc.c: ${CY_SRC_PXD} ${CY_SRC_PXI} ${CY_SRC_PYX}
 	${CYTHON} ${CYTHON_FLAGS} ${CYTHON_INCLUDE} -w src petsc4py.PETSc.pyx -o petsc4py_PETSc.c
 	mv src/petsc4py_PETSc_api.h src/petsc4py_PETSc.h src/include/petsc4py
 
-EPYDOC = ./misc/epydoc-cython.py
-EPYDOC_CONF = ./misc/epydoc.cfg
-EPYDOC_FLAGS =
-EPYDOC_CMD = ${EPYDOC} -v --config=${EPYDOC_CONF} ${EPYDOC_FLAGS}
-EPYDOC_OUT = /tmp/petsc4py-api-doc
+cython:
+	${PYTHON} ./conf/cythonize.py
 epydoc:
-	${EPYDOC_CMD} -o ${EPYDOC_OUT}
+	${PYTHON} ./conf/epydocify.py -o /tmp/petsc4py-api-doc

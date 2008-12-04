@@ -3,8 +3,8 @@ include *.py *.cfg *.txt
 
 recursive-include demo *.py *.txt
 recursive-include docs *.rst *.txt *.conf
-recursive-include conf *.py
-recursive-include src  *.py *.pyx *.px[di] *.h  *.c *.cpp *.cfg
+recursive-include conf *.py *.cfg
+recursive-include src  *.py *.pyx *.px[di] *.h *.c *.cpp *.cfg
 recursive-include test *.py *.txt
 
 include                [M,m]akefile

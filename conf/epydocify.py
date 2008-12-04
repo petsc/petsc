@@ -41,7 +41,16 @@ dsp._SIGNATURE_RE = _SIGNATURE_RE
 
 # --------------------------------------------------------------------
 
+import sys, os
 import epydoc.cli
-epydoc.cli.cli()
+
+def epydocify():
+    dirname = os.path.dirname(__file__)
+    config = os.path.join(dirname, 'epydoc.cfg')
+    sys.argv.append('--config=' + config)
+    epydoc.cli.cli()
+
+if __name__ == '__main__':
+    epydocify()
 
 # --------------------------------------------------------------------
