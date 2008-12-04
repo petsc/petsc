@@ -133,12 +133,35 @@ cdef class Vec(Object):
             CHKERR( VecSetBlockSize(self.vec, bs) )
         return self
 
-    def createGhost(self, ghosts, size, bsize=None, comm=None):
+    def createWithArray(self, array, size=None, bsize=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt na=0
+        cdef PetscScalar *sa=NULL
+        array = iarray_s(array, &na, &sa)
+        cdef PetscInt b = 1 if bsize is None else bsize
+        if size is None: size = (na, PETSC_DECIDE)
         cdef PetscInt bs=0, n=0, N=0
         CHKERR( Vec_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
+        if na < n: raise ValueError(
+            "array size %d and "
+            "vector local size %d block size %d" %(na, n, b))
+        cdef PetscVec newvec = NULL
+        if comm_size(ccomm) == 1:
+            CHKERR( VecCreateSeqWithArray(ccomm,n,sa,&newvec) )
+        else:
+            CHKERR( VecCreateMPIWithArray(ccomm,n,N,sa,&newvec) )
+        PetscCLEAR(self.obj); self.vec = newvec
+        if bs != PETSC_DECIDE:
+            CHKERR( VecSetBlockSize(self.vec, bs) )
+        self.set_attr('__array__', array)
+        return self
+
+    def createGhost(self, ghosts, size, bsize=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt ng=0, *ig=NULL
         ghosts = iarray_i(ghosts, &ng, &ig)
+        cdef PetscInt bs=0, n=0, N=0
+        CHKERR( Vec_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
         cdef PetscVec newvec = NULL
         if bs == PETSC_DECIDE:
             CHKERR( VecCreateGhost(ccomm,n,N,ng,ig,&newvec) )
@@ -147,26 +170,29 @@ cdef class Vec(Object):
         PetscCLEAR(self.obj); self.vec = newvec
         return self
 
-    ## def createWithArray(self, array, size, bsize=None, comm=None):
-    ##     cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
-    ##     cdef PetscInt bs=0, n=0, N=0
-    ##     CHKERR( Vec_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
-    ##     cdef PetscInt na=0
-    ##     cdef PetscScalar *sa=NULL
-    ##     array = iarray_s(array, &na, &sa)
-    ##     if n==PETSC_DECIDE and N==PETSC_DECIDE: n = na;
-    ##     if na < n: raise ValueError()
-    ##     cdef int cs = 1
-    ##     if ccomm != MPI_COMM_NULL: MPI_Comm_size(ccomm, &cs)
-    ##     cdef PetscVec newvec = NULL
-    ##     if cs==1:
-    ##        CHKERR( VecCreateSeqWithArray(ccomm,n,sa,&newvec) )
-    ##     else:
-    ##        CHKERR( VecCreateMPIWithArray(ccomm,n,N,sa,&newvec) )
-    ##     PetscCLEAR(self.obj); self.vec = newvec
-    ##     if bs != PETSC_DECIDE:
-    ##        CHKERR( VecSetBlockSize(self.vec, bs) )
-    ##     return self
+    def createGhostWithArray(self, ghosts, array,
+                             size=None, bsize=None, comm=None):
+        cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
+        cdef PetscInt ng=0, *ig=NULL
+        ghosts = iarray_i(ghosts, &ng, &ig)
+        cdef PetscInt na=0
+        cdef PetscScalar *sa=NULL
+        array = oarray_s(array, &na, &sa)
+        cdef PetscInt b = 1 if bsize is None else bsize
+        if size is None: size = ((na-ng*b), PETSC_DECIDE)
+        cdef PetscInt bs=0, n=0, N=0
+        CHKERR( Vec_SplitSizes(ccomm, size, bsize, &bs, &n, &N) )
+        if na < (n+ng*b): raise ValueError(
+            "ghosts size %d, array size %d, and "
+            "vector local size %d block size %d" %(ng, na, n, b))
+        cdef PetscVec newvec = NULL
+        if bs == PETSC_DECIDE:        
+            CHKERR( VecCreateGhostWithArray(ccomm,n,N,ng,ig,sa,&newvec) )
+        else:
+            CHKERR( VecCreateGhostBlockWithArray(ccomm,bs,n,N,ng,ig,sa,&newvec) )
+        PetscCLEAR(self.obj); self.vec = newvec
+        self.set_attr('__array__', array)
+        return self
 
     def createShared(self, size, bsize=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)

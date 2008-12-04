@@ -61,6 +61,13 @@ class TestVecBase(object):
         nni = self.vec.normEnd(PETSc.NormType.NORM_INFINITY)
         self.assertAlmostEqual(nni, ni)
 
+    def testNormalize(self):
+        from math import sqrt
+        self.vec.set(1)
+        n2 = self.vec.normalize()
+        self.assertAlmostEqual(n2, sqrt(self.vec.getSize()))
+        self.assertAlmostEqual(1, self.vec.norm())
+
     def testSumMinMax(self):
         self.vec.set(1)
         self.assertEqual(self.vec.sum(), self.vec.getSize())
@@ -68,13 +75,6 @@ class TestVecBase(object):
         self.assertEqual(self.vec.min()[1], -7)
         self.vec.set(10)
         self.assertEqual(self.vec.max()[1], 10)
-
-    def testNormalize(self):
-        from math import sqrt
-        self.vec.set(1)
-        n2 = self.vec.normalize()
-        self.assertAlmostEqual(n2, sqrt(self.vec.getSize()))
-        self.assertAlmostEqual(1, self.vec.norm())
 
     def testSwap(self):
         v1 = self.vec
@@ -227,23 +227,37 @@ class TestVecWithArray(unittest.TestCase):
 
     def testCreateSeq(self):
         import numpy
-        a = numpy.zeros(5, dtype=PETSc.Scalar)
+        a = numpy.zeros(5, dtype=PETSc.ScalarType)
 
-        v1 = PETSc.Vec().createWithArray(5, a, comm=PETSc.COMM_SELF)
-        v2 = PETSc.Vec().createWithArray(3, a, comm=PETSc.COMM_SELF)
-        v3 = PETSc.Vec().createWithArray(PETSc.DECIDE, a, comm=PETSc.COMM_SELF)
+        v1 = PETSc.Vec().createWithArray(a, comm=PETSc.COMM_SELF)
+        v2 = PETSc.Vec().createWithArray(a, size=5, comm=PETSc.COMM_SELF)
+        v3 = PETSc.Vec().createWithArray(a, size=3, comm=PETSc.COMM_SELF)
 
         self.assertTrue(v1.size == 5)
-        self.assertTrue(v2.size == 3)
-        self.assertTrue(v3.size == 5)
+        self.assertTrue(v2.size == 5)
+        self.assertTrue(v3.size == 3)
 
         a1 = v1.getDict()['__array__']; self.assertTrue(a is a1)
-        a2 = v1.getDict()['__array__']; self.assertTrue(a is a2)
-        a3 = v1.getDict()['__array__']; self.assertTrue(a is a2)
+        a2 = v2.getDict()['__array__']; self.assertTrue(a is a2)
+        a3 = v3.getDict()['__array__']; self.assertTrue(a is a2)
+
+    def testCreateMPI(self):
+        import numpy
+        a = numpy.zeros(5, dtype=PETSc.ScalarType)
+
+        v1 = PETSc.Vec().createWithArray(a, comm=PETSc.COMM_WORLD)
+        v2 = PETSc.Vec().createWithArray(a, size=(5,None), comm=PETSc.COMM_WORLD)
+        v3 = PETSc.Vec().createWithArray(a, size=(3,None), comm=PETSc.COMM_WORLD)
+
+        self.assertTrue(v1.local_size == 5)
+        self.assertTrue(v2.local_size == 5)
+        self.assertTrue(v3.local_size == 3)
+
+        a1 = v1.getDict()['__array__']; self.assertTrue(a is a1)
+        a2 = v2.getDict()['__array__']; self.assertTrue(a is a2)
+        a3 = v3.getDict()['__array__']; self.assertTrue(a is a2)
 
 # --------------------------------------------------------------------
-
-del TestVecWithArray # XXX
 
 if __name__ == '__main__':
     unittest.main()
