@@ -1341,7 +1341,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   }
   bs = newbs;
 
-  B->rmap->bs = B->cmap->bs = bs;
+  ierr = PetscMapSetBlockSize(B->rmap,bs);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,bs);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
 

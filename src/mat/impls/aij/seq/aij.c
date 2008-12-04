@@ -2948,7 +2948,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscIn
     nz             = 0;
   }
 
-  B->rmap->bs = B->cmap->bs = 1;
+  ierr = PetscMapSetBlockSize(B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(B->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(B->cmap);CHKERRQ(ierr);
 
@@ -3374,7 +3375,8 @@ PetscErrorCode MatDuplicateNoCreate_SeqAIJ(Mat C,Mat A,MatDuplicateOption cpvalu
 
   C->assembled      = PETSC_TRUE;
  
-  C->rmap->bs = C->cmap->bs = 1;
+  ierr = PetscMapSetBlockSize(C->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(C->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(C->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(C->cmap);CHKERRQ(ierr);
 

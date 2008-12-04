@@ -50,6 +50,10 @@ namespace PETSc {
       }
       return stream;
     };
+    Point& operator-() {
+      for(int d = 0; d < dim; ++d) {x[d] = -x[d];}
+      return *this;
+    };
     friend Point operator- (const Point& a, const Point &b) {
       double tmp[dim];
       for(int d = 0; d < dim; ++d) {tmp[d] = a.x[d] - b.x[d];}
