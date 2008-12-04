@@ -8,12 +8,13 @@
 
 const char *PCExoticTypes[] = {"face","wirebasket","PCExoticType","PC_Exotic",0};
 
-extern PetscErrorCode DAGetWireBasketInterpolation(DA,Mat,Mat*);
-extern PetscErrorCode DAGetFaceInterpolation(DA,Mat,Mat*);
+extern PetscErrorCode DAGetWireBasketInterpolation(DA,Mat,MatReuse,Mat*);
+extern PetscErrorCode DAGetFaceInterpolation(DA,Mat,MatReuse,Mat*);
 
 typedef struct {
   DA           da;
   PCExoticType type;
+  Mat          P;      /* the interpolation matrix */
 } PC_Exotic;
 
 #undef __FUNCT__  
@@ -62,20 +63,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetType_Exotic(PC pc,PCExoticType type
 PetscErrorCode PCSetUp_Exotic(PC pc)
 {
   PetscErrorCode ierr;
-  Mat            A,P;
+  Mat            A;
   PC_MG          **mg = (PC_MG**)pc->data;
   PC_Exotic      *ex = (PC_Exotic*) mg[0]->innerctx;
   DA             da = ex->da;
+  MatReuse       reuse = (ex->P) ? MAT_REUSE_MATRIX : MAT_INITIAL_MATRIX;
 
   PetscFunctionBegin;
   ierr = PCGetOperators(pc,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
   if (ex->type == PC_EXOTIC_FACE) {
-    ierr = DAGetFaceInterpolation(da,A,&P);CHKERRQ(ierr);
+    ierr = DAGetFaceInterpolation(da,A,reuse,&ex->P);CHKERRQ(ierr);
   } else if (ex->type == PC_EXOTIC_WIREBASKET) {
-    ierr = DAGetWireBasketInterpolation(da,A,&P);CHKERRQ(ierr);
+    ierr = DAGetWireBasketInterpolation(da,A,reuse,&ex->P);CHKERRQ(ierr);
   } else SETERRQ1(PETSC_ERR_PLIB,"Unknown exotic coarse space %d",ex->type);
-  ierr = PCMGSetInterpolation(pc,1,P);CHKERRQ(ierr);
-  ierr = MatDestroy(P);CHKERRQ(ierr);
+  ierr = PCMGSetInterpolation(pc,1,ex->P);CHKERRQ(ierr);
   ierr = PCSetUp_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -89,7 +90,8 @@ PetscErrorCode PCDestroy_Exotic(PC pc)
   PC_Exotic      *ctx = (PC_Exotic*) mg[0]->innerctx;
 
   PetscFunctionBegin;
-  ierr = DADestroy(ctx->da);CHKERRQ(ierr);
+  if (ctx->da) {ierr = DADestroy(ctx->da);CHKERRQ(ierr);}
+  if (ctx->P) {ierr = MatDestroy(ctx->P);CHKERRQ(ierr);}
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   ierr = PCDestroy_MG(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -241,7 +243,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Exotic(PC pc)
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
   ierr = PCMGSetLevels(pc,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
-  ierr = PetscNew(PC_Exotic,&ex);CHKERRQ(ierr);
+  ierr = PetscNew(PC_Exotic,&ex);CHKERRQ(ierr);\
   ex->type = PC_EXOTIC_FACE;
   mg = (PC_MG**) pc->data;
   mg[0]->innerctx = ex;
