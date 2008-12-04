@@ -449,7 +449,7 @@ cdef class Mat(Object):
         if mat is None: mat = self
         cdef PetscReal rval = tol
         cdef PetscTruth flag = PETSC_FALSE
-        CHKERR( MatIsTranspose(self.mat, (<Mat?>mat).mat, rval, &flag) )
+        CHKERR( MatIsTranspose(self.mat, mat.mat, rval, &flag) )
         return <bint>flag
 
     def isSymmetric(self, tol=0):
