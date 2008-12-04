@@ -957,10 +957,8 @@ PetscErrorCode VecResetArray_Seq(Vec vin)
   Vec_Seq *v = (Vec_Seq *)vin->data;
 
   PetscFunctionBegin;
-  if (v->unplacedarray) {
-    v->array         = v->unplacedarray;
-    v->unplacedarray = 0;
-  }
+  v->array         = v->unplacedarray;
+  v->unplacedarray = 0;
   PetscFunctionReturn(0);
 }
 
@@ -972,10 +970,8 @@ PetscErrorCode VecPlaceArray_Seq(Vec vin,const PetscScalar *a)
 
   PetscFunctionBegin;
   if (v->unplacedarray) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"VecPlaceArray() was already called on this vector, without a call to VecResetArray()");
-  if (a) {
-    v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
-    v->array = (PetscScalar *)a;
-  }
+  v->unplacedarray = v->array;  /* save previous array so reset can bring it back */
+  v->array = (PetscScalar *)a;
   PetscFunctionReturn(0);
 }
 
