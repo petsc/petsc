@@ -414,6 +414,11 @@ cdef class Mat(Object):
         CHKERR( MatCopy(self.mat, result.mat, flag) )
         return result
 
+    def equal(self, Mat mat not None):
+        cdef PetscTruth flag = PETSC_FALSE
+        CHKERR( MatEqual(self.mat, mat.mat, &flag) )
+        return <bint> mat
+
     def load(self, Viewer viewer not None, mat_type=None):
         cdef PetscMat newmat = NULL
         cdef PetscMatType mtype = NULL
