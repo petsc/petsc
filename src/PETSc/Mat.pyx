@@ -682,6 +682,15 @@ cdef class Mat(Object):
 
     #
 
+    def getColumnVector(self, column, Vec result=None):
+        cdef PetscInt col = column
+        if result is None:
+            result = Vec()
+        if result.vec == NULL:
+            CHKERR( MatGetVecs(self.mat, NULL, &result.vec) )
+        CHKERR( MatGetColumnVector(self.mat, result.vec, col) )
+        return result
+
     def getDiagonal(self, Vec diag=None):
         if diag is None: diag = self.getVecLeft()
         CHKERR( MatGetDiagonal(self.mat, diag.vec) )
