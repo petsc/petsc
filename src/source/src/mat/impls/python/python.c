@@ -206,6 +206,10 @@ static PetscErrorCode MatSetOption_Python_old(Mat mat,MatOption op)
 #define PetscSetUpMap(o, m) PetscMapSetUp((o)->m)
 #endif
 
+#if PETSC_VERSION_(2,3,2)
+#define PetscMapSetBlockSize(map,bs) ((map)->bs=(bs), 0)
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MatSetOption_Python"
 static PetscErrorCode MatSetBlockSize_Python(Mat mat, PetscInt bs)
