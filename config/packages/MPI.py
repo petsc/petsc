@@ -11,7 +11,7 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.2/downloads/openmpi-1.2.6.tar.gz']
+    self.download_openmpi   = ['http://www.open-mpi.org/software/ompi/v1.2/downloads/openmpi-1.2.8.tar.gz']
     self.download_mpich     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.8.tar.gz']
     self.download           = ['redefine']
     self.functions          = ['MPI_Init', 'MPI_Comm_create']
@@ -309,7 +309,12 @@ class Configure(config.package.Package):
     confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
     # Configure and Build OPENMPI
     self.framework.pushLanguage('C')
-    args = ['--prefix='+installDir, '--with-rsh=ssh','CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    flags = self.framework.getCompilerFlags()
+    if config.setCompilers.Configure.isDarwin():
+      # OpenMPI configure crashes on Apple if -g or -g3 flag is passed in here 
+      flags = flags.replace('-g3','')
+      flags = flags.replace('-g','')
+    args = ['--prefix='+installDir, '--with-rsh=ssh','CC="'+self.framework.getCompiler()+' '+flags+'"']
     if self.framework.argDB['with-shared']:
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
@@ -318,7 +323,10 @@ class Configure(config.package.Package):
     # c++ can't be disabled with OPENMPI
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      args.append('CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      flags = self.framework.getCompilerFlags()
+      flags = flags.replace('-g3','')
+      flags = flags.replace('-g','')
+      args.append('CXX="'+self.framework.getCompiler()+' '+flags+'"')
       self.framework.popLanguage()
     # no separate F90 options for OPENMPI
     if hasattr(self.compilers, 'FC'):
