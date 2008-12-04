@@ -186,7 +186,7 @@ cdef class Vec(Object):
             "ghosts size %d, array size %d, and "
             "vector local size %d block size %d" %(ng, na, n, b))
         cdef PetscVec newvec = NULL
-        if bs == PETSC_DECIDE:        
+        if bs == PETSC_DECIDE:
             CHKERR( VecCreateGhostWithArray(ccomm,n,N,ng,ig,sa,&newvec) )
         else:
             CHKERR( VecCreateGhostBlockWithArray(ccomm,bs,n,N,ng,ig,sa,&newvec) )
@@ -289,7 +289,7 @@ cdef class Vec(Object):
             "cannot place input array, invalid size")
         CHKERR( VecPlaceArray(self.vec, a) )
         self.set_attr("__placed_array__", array)
-        
+
     def resetArray(self):
         CHKERR( VecResetArray(self.vec) )
         self.set_attr("__placed_array__", None)
@@ -305,7 +305,7 @@ cdef class Vec(Object):
         return result
 
     def equal(self, Vec vec not None):
-        cdef PetscTruth flag
+        cdef PetscTruth flag = PETSC_FALSE
         CHKERR( VecEqual(self.vec, vec.vec, &flag) )
         return <bint> flag
 
