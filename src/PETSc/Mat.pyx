@@ -445,6 +445,14 @@ cdef class Mat(Object):
         CHKERR( MatTranspose(self.mat, reuse, &out.mat) )
         return out
 
+    def conjugate(self, Mat out=None):
+        if out is None:
+            out = self
+        elif out.mat == NULL:
+            CHKERR( MatDuplicate(self.mat, MAT_COPY_VALUES, &out.mat) )
+        CHKERR( MatConjugate(out.mat) )
+        return out
+
     def permute(self, IS row not None, IS col not None):
         cdef Mat mat = Mat()
         CHKERR( MatPermute(self.mat, row.iset, col.iset, &mat.mat) )
