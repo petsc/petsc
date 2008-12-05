@@ -13,8 +13,6 @@ Topic :: Software Development :: Libraries :: Python Modules
 keywords = """
 scientific computing
 parallel computing
-PETSc
-MPI
 """
 
 platforms = """

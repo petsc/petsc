@@ -23,6 +23,7 @@ from conf.metadata import metadata
 name     = 'petsc4py'
 version  = open('VERSION.txt').read().strip()
 descr    = __doc__.strip().split('\n'); del descr[1:3]
+keywords = ['PETSc','MPI']
 devstat  = ['Development Status :: 3 - Alpha']
 url      = 'http://%s.googlecode.com/' % name
 download = 'http://%s.googlecode.com/files/%s-%s.tar.gz'
@@ -32,6 +33,7 @@ metadata['name'] = name
 metadata['version'] = version
 metadata['description'] = descr.pop(0)
 metadata['long_description'] = '\n'.join(descr)
+metadata['keywords'] += keywords
 metadata['classifiers'] += devstat
 metadata['url'] = url
 metadata['download_url'] = download
