@@ -3,11 +3,10 @@ LICENSE: PETSc for Python
 =========================
 
 :Author:       Lisandro Dalcin
-:Organization: CIMEC
+:Organization: CIMEC <http://www.cimec.org.ar>
 :Address:      PTLC, 3000 Santa Fe, Argentina
 :Contact:      dalcinl@gmail.com
 :Web Site:     http://petsc4py.googlecode.com/
-:Date:         $Date$
 
 
 This package has been placed in the public domain.
