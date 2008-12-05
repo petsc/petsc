@@ -211,10 +211,7 @@ PetscErrorCode LGMREScycle(PetscInt *itcount,KSP ksp)
   /* scale VEC_VV (the initial residual) */
   tmp = 1.0/res_norm; ierr = VecScale(VEC_VV(0),tmp);CHKERRQ(ierr);
 
-  /* FYI: AMS calls are for memory snooper */
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm = res;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
 
   /* note: (lgmres->it) is always set one less than (loc_it) It is used in 

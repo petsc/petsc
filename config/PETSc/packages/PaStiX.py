@@ -47,6 +47,17 @@ class Configure(PETSc.package.Package):
   
   def Install(self):
     self.logPrintBox('Creating Pastix '+os.path.join(os.path.join(self.packageDir,'src'),'config.in')+'\n')
+    # Patching csc_utils for memcpy error
+    g = open(os.path.join(os.path.join(self.packageDir,'src'),'patch.memcpy'),'w')
+    g.write("284c284,285\n")
+    g.write("<       memcpy((*newa) , a , l * sizeof(FLOAT)); \n")
+    g.write("---\n")
+    g.write(">       if (a != NULL)\n")
+    g.write(">       memcpy((*newa) , a , l * sizeof(FLOAT)); \n")
+    g.close();
+
+    output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'src')+';patch sopalin/src/csc_utils.c < patch.memcpy', timeout=2500, log = self.framework.log)[0]
+    
     g = open(os.path.join(os.path.join(self.packageDir,'src'),'config.in'),'w')
 
     g.write('HOSTHARCH   = i686_pc_linux\n')
