@@ -1,6 +1,12 @@
 !
 !  Demonstrates use of DMMGSetSNESLocal() from Fortran
 !
+!    Note: the access to the entries of the local arrays below use the Fortran
+!   convention of starting at zero. However calls to MatSetValues()  start at 0.
+!   Also note that you will have to map the i,j,k coordinates to the local PETSc ordering
+!   before calling MatSetValuesLocal(). Often you will find that using PETSc's default
+!   code for computing the Jacobian works fine and you will not need to implement
+!   your own FormJacobianLocal().
 
       program ex40f90
       implicit none
