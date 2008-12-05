@@ -101,7 +101,6 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         /* definition of Scotch library arguments */
         SCOTCH_Strat stratptr;      /* scotch strategy */
         SCOTCH_Graph grafptr;       /* scotch graph */
-        SCOTCH_Mapping mappptr;     /* scotch mapping format */
         int vertnbr = mat->rmap->N; /* number of vertices in full graph */
         int *verttab = adj->i;      /* start of edge list for each vertex */
         int *edgetab = adj->j;      /* edge list data */
