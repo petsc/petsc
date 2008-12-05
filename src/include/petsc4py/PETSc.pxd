@@ -118,10 +118,10 @@ ctypedef public api class DA(Object) [type PyPetscDA_Type, object PyPetscDAObjec
 
 # --------------------------------------------------------------------
 
-cdef extern from "petsc.h":
-    ctypedef int PetscCookie
+cdef MPI_Comm GetComm(object, MPI_Comm) except *
+cdef MPI_Comm GetCommDefault()
 
-cdef int  RegisterPyType(PetscCookie, type) except -1
-cdef type CookieToPyType(PetscCookie)
+cdef int  TypeRegistryAdd(int, type) except -1
+cdef type TypeRegistryGet(int)
 
 # --------------------------------------------------------------------

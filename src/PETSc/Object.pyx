@@ -131,7 +131,7 @@ cdef class Object:
         if cobj == NULL: return None
         cdef PetscCookie cookie = 0
         CHKERR( PetscObjectGetCookie(cobj, &cookie) )
-        cdef type Class = CookieToPyType(cookie)
+        cdef type Class = TypeRegistryGet(cookie)
         cdef Object newobj = Class()
         PetscIncref(cobj); newobj.obj[0] = cobj
         return newobj
@@ -193,9 +193,9 @@ cdef class Object:
 
 cdef dict petsc2type = { 0 : None }
 
-_type_registry = petsc2type
+__type_registry__ = petsc2type
 
-cdef int RegisterPyType(PetscCookie cookie, type cls) except -1:
+cdef int TypeRegistryAdd(PetscCookie cookie, type cls) except -1:
     global petsc2type
     cdef object key = cookie
     cdef object value = cls
@@ -209,7 +209,7 @@ cdef int RegisterPyType(PetscCookie cookie, type cls) except -1:
                "already registered: %s" % (key, cls, value)
     return 0
 
-cdef type CookieToPyType(PetscCookie cookie):
+cdef type TypeRegistryGet(PetscCookie cookie):
     global petsc2type
     cdef object key = cookie
     cdef type cls = Object

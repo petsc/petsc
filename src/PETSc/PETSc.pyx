@@ -4,12 +4,6 @@ cdef extern from "Python.h":
     void incref"Py_INCREF"(object)
     void decref"Py_DECREF"(object)
 
-## cdef extern from "Python.h":
-##     ctypedef struct PyTypeObject
-##     int PyObject_TypeCheck(object, PyTypeObject*)
-## cdef inline int typecheck(object ob, object tp):
-##     return PyObject_TypeCheck(ob, <PyTypeObject*>tp)
-
 cdef extern from *:
     ctypedef char* char_p       "char*"
     ctypedef char* const_char_p "const char*"
@@ -287,21 +281,21 @@ cdef int register(char path[]) except -1:
     # register custom implementations
     CHKERR( PetscPythonRegisterAll(path) )
     # register Python types
-    RegisterPyType(PETSC_OBJECT_COOKIE,    Object)
-    RegisterPyType(PETSC_VIEWER_COOKIE,    Viewer)
-    RegisterPyType(PETSC_RANDOM_COOKIE,    Random)
-    RegisterPyType(PETSC_IS_COOKIE,        IS)
-    RegisterPyType(PETSC_LGMAP_COOKIE,     LGMap)
-    RegisterPyType(PETSC_VEC_COOKIE,       Vec)
-    RegisterPyType(PETSC_SCATTER_COOKIE,   Scatter)
-    RegisterPyType(PETSC_MAT_COOKIE,       Mat)
-    RegisterPyType(PETSC_NULLSPACE_COOKIE, NullSpace)
-    RegisterPyType(PETSC_PC_COOKIE,        PC)
-    RegisterPyType(PETSC_KSP_COOKIE,       KSP)
-    RegisterPyType(PETSC_SNES_COOKIE,      SNES)
-    RegisterPyType(PETSC_TS_COOKIE,        TS)
-    RegisterPyType(PETSC_AO_COOKIE,        AO)
-    RegisterPyType(PETSC_DA_COOKIE,        DA)
+    TypeRegistryAdd(PETSC_OBJECT_COOKIE,    Object)
+    TypeRegistryAdd(PETSC_VIEWER_COOKIE,    Viewer)
+    TypeRegistryAdd(PETSC_RANDOM_COOKIE,    Random)
+    TypeRegistryAdd(PETSC_IS_COOKIE,        IS)
+    TypeRegistryAdd(PETSC_LGMAP_COOKIE,     LGMap)
+    TypeRegistryAdd(PETSC_VEC_COOKIE,       Vec)
+    TypeRegistryAdd(PETSC_SCATTER_COOKIE,   Scatter)
+    TypeRegistryAdd(PETSC_MAT_COOKIE,       Mat)
+    TypeRegistryAdd(PETSC_NULLSPACE_COOKIE, NullSpace)
+    TypeRegistryAdd(PETSC_PC_COOKIE,        PC)
+    TypeRegistryAdd(PETSC_KSP_COOKIE,       KSP)
+    TypeRegistryAdd(PETSC_SNES_COOKIE,      SNES)
+    TypeRegistryAdd(PETSC_TS_COOKIE,        TS)
+    TypeRegistryAdd(PETSC_AO_COOKIE,        AO)
+    TypeRegistryAdd(PETSC_DA_COOKIE,        DA)
     return 0 # and we are done, enjoy !!
 
 # --------------------------------------------------------------------

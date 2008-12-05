@@ -52,8 +52,7 @@ cdef inline MPI_Comm mpi4py_Comm(object comm) except *:
     return ptr[0]
 
 
-cdef inline MPI_Comm def_Comm(object comm,
-                              MPI_Comm defv) except *:
+cdef inline MPI_Comm def_Comm(object comm, MPI_Comm defv) except *:
     cdef MPI_Comm retv = MPI_COMM_NULL
     if comm is None:
         retv = defv

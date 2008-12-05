@@ -2,6 +2,8 @@
 
 cdef extern from "petsc.h":
 
+    ctypedef int PetscCookie
+
     int PetscObjectView(PetscObject,PetscViewer)
     int PetscObjectDestroy(PetscObject)
     int PetscObjectGetReference(PetscObject,PetscInt*)

@@ -108,3 +108,13 @@ COMM_SELF  = Comm()
 COMM_WORLD = Comm()
 
 # --------------------------------------------------------------------
+
+cdef MPI_Comm PETSC_COMM_DEFAULT = MPI_COMM_NULL
+
+cdef MPI_Comm GetComm(object comm, MPI_Comm defv) except *:
+     return def_Comm(comm, defv)
+
+cdef MPI_Comm GetCommDefault():
+     return PETSC_COMM_DEFAULT
+
+# --------------------------------------------------------------------
