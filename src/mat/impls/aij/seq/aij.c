@@ -3189,6 +3189,9 @@ PetscErrorCode MatMatMult_SeqDense_SeqAIJ(Mat A,Mat B,MatReuse scall,PetscReal f
 M*/
 
 EXTERN_C_BEGIN
+#if defined(PETSC_HAVE_PASTIX)
+extern PetscErrorCode MatGetFactor_seqaij_pastix(Mat,MatFactorType,Mat*);
+#endif
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable_seqaij_petsc(Mat,MatFactorType,PetscTruth *);
@@ -3258,6 +3261,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   B->same_nonzero          = PETSC_FALSE;
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_PASTIX)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_pastix_C",
+					   "MatGetFactor_seqaij_pastix",
+					   MatGetFactor_seqaij_pastix);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_ESSL)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_essl_C",
                                      "MatGetFactor_seqaij_essl",

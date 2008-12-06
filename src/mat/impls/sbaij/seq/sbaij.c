@@ -1598,6 +1598,9 @@ extern PetscErrorCode MatGetFactor_seqsbaij_mumps(Mat,MatFactorType,Mat*);
 #if defined(PETSC_HAVE_SPOOLES)
 extern PetscErrorCode MatGetFactor_seqsbaij_spooles(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_PASTIX)
+extern PetscErrorCode MatGetFactor_seqsbaij_pastix(Mat,MatFactorType,Mat*);
+#endif
 EXTERN_C_END 
 
 /*MC
@@ -1662,6 +1665,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   ierr = PetscOptionsHasName(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&flg);CHKERRQ(ierr);
   if (flg) b->getrow_utriangular = PETSC_TRUE;
 
+#if defined(PETSC_HAVE_PASTIX)
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqsbaij_pastix_C",
+					   "MatGetFactor_seqsbaij_pastix",
+					   MatGetFactor_seqsbaij_pastix);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_SPOOLES)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqsbaij_spooles_C",
                                      "MatGetFactor_seqsbaij_spooles",

@@ -83,7 +83,7 @@ E*/
 #define MAT_SOLVER_ESSL         "essl"
 #define MAT_SOLVER_LUSOL        "lusol"
 #define MAT_SOLVER_MUMPS        "mumps"
-#define MAT_SOLVER_PASTIX        "pastix"
+#define MAT_SOLVER_PASTIX       "pastix"
 #define MAT_SOLVER_DSCPACK      "dscpack"
 #define MAT_SOLVER_MATLAB       "matlab"
 #define MAT_SOLVER_PETSC        "petsc"

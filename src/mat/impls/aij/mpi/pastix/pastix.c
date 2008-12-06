@@ -12,8 +12,6 @@ PetscErrorCode MatIsSymmetric_SeqAIJ(Mat,PetscReal,PetscTruth*);
 EXTERN_C_BEGIN 
 #include "mpi.h"
 #include "pastix.h"
-static int iter_print = 0;
-static int csr_iter_print = 0;
 EXTERN_C_END  
 
 typedef struct Mat_Pastix_ {
@@ -81,7 +79,7 @@ PetscErrorCode MatConvertToCSC(Mat           A,
   /* Allocate the CSC */
 
 
-  MatIsSymmetric_SeqAIJ(A,0.0,&isSym);
+  ierr = MatIsSymmetric_SeqAIJ(A,0.0,&isSym);CHKERRQ(ierr);
   *n = A->cmap->N;
   
   /* PaStiX only needs triangular matrix if matrix is symmetric 
@@ -223,9 +221,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
   Mat_Pastix     *lu=(Mat_Pastix*)A->spptr; 
   PetscScalar    *array;
   Vec             x_seq;
-  IS              is_iden,is_petsc;
   PetscErrorCode  ierr;
-  PetscInt        i,j;
 
   PetscFunctionBegin; 
   lu->rhsnbr = 1;
@@ -234,8 +230,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
     /* PaStiX only supports centralized rhs. Scatter b into a seqential rhs vector */
     ierr = VecScatterBegin(lu->scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecScatterEnd(lu->scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecGetArray(x_seq,&array);
-    CHKERRQ(ierr);
+    ierr = VecGetArray(x_seq,&array);CHKERRQ(ierr);
   }
   else {  /* size == 1 */
     ierr = VecCopy(b,x);CHKERRQ(ierr);
@@ -268,8 +263,7 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
 	 (double*)          lu->dparm);
   
   if (lu->iparm[IPARM_ERROR_NUMBER] < 0) {   
-    SETERRQ1(PETSC_ERR_LIB,"Error reported by PaStiX in solve phase: lu->iparm[IPARM_ERROR_NUMBER] = %d\n",
-	     lu->iparm[IPARM_ERROR_NUMBER] );
+    SETERRQ1(PETSC_ERR_LIB,"Error reported by PaStiX in solve phase: lu->iparm[IPARM_ERROR_NUMBER] = %d\n",lu->iparm[IPARM_ERROR_NUMBER] );
   }
 
   if (lu->commSize == 1){
@@ -306,10 +300,6 @@ PetscErrorCode MatSolve_PaStiX(Mat A,Vec b,Vec x)
 #define __FUNCT__ "MatGetInertia_SBAIJPASTIX"
 PetscErrorCode MatGetInertia_SBAIJPASTIX(Mat F,int *nneg,int *nzero,int *npos)
 {
-  Mat_Pastix    *lu =(Mat_Pastix*)F->spptr;
-  PetscErrorCode ierr;
-  PetscMPIInt    size;
-
   PetscFunctionBegin;
 /*   ierr = MPI_Comm_size(((PetscObject)F)->comm,&size);CHKERRQ(ierr); */
 /*   /\* PASTIX 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK *\/ */
@@ -339,15 +329,14 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   Mat_Pastix    *lu =(Mat_Pastix*)(F)->spptr; 
   Mat           *tseq,A_seq = PETSC_NULL;
   PetscErrorCode ierr = 0;
-  PetscInt       rnz,nnz,nz=0,i,*ai,*aj,icntl;
-  PetscInt       M=A->rmap->N,N=A->cmap->N;
+  PetscInt       icntl;
+  PetscInt       M=A->rmap->N;
   PetscTruth     valOnly,flg, isSym;
   Mat            F_diag; 
   IS             is_iden;
   Vec            b;
-  IS               isrow;
+  IS             isrow;
   PetscTruth     isSeqAIJ,isSeqSBAIJ;
-  Mat_SeqAIJ     *aa,*bb;
 
   PetscFunctionBegin; 	
   ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&isSeqAIJ);CHKERRQ(ierr);
@@ -383,7 +372,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
     ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"PaStiX Options","Mat");CHKERRQ(ierr);  
 
     icntl=-1;
-    lu->iparm[IPARM_VERBOSE] = API_VERBOSE_NO; 
+    lu->iparm[IPARM_VERBOSE] = 0; /*API_VERBOSE_NO; */
     ierr = PetscOptionsInt("-mat_pastix_verbose","iparm[IPARM_VERBOSE] : level of printing (0 to 2)","None",
 			   lu->iparm[IPARM_VERBOSE],&icntl,&flg);CHKERRQ(ierr);
     if ((flg && icntl > 0) || PetscLogPrintInfo) {
@@ -511,7 +500,6 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
 PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F,Mat A,IS r,IS c,const MatFactorInfo *info)
 {
   Mat_Pastix      *lu = (Mat_Pastix*)F->spptr;   
-  PetscErrorCode ierr = 0;
 
   PetscFunctionBegin;
   lu->iparm[IPARM_FACTORIZATION] = API_FACT_LU;
@@ -528,7 +516,6 @@ PetscErrorCode MatLUFactorSymbolic_AIJPASTIX(Mat F,Mat A,IS r,IS c,const MatFact
 PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F,Mat A,IS r,const MatFactorInfo *info) 
 {
   Mat_Pastix      *lu = (Mat_Pastix*)(F)->spptr;   
-  PetscErrorCode ierr = 0;
 
   PetscFunctionBegin;
   lu->iparm[IPARM_FACTORIZATION]  = API_FACT_LLT;
@@ -542,28 +529,6 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJPASTIX(Mat F,Mat A,IS r,const MatF
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatFactorInfo_PaStiX"
-PetscErrorCode MatFactorInfo_PaStiX(Mat A,PetscViewer viewer) {
-  Mat_Pastix      *lu=(Mat_Pastix*)A->spptr;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  /* check if matrix is pastix type */
-  if (A->ops->solve != MatSolve_PaStiX) PetscFunctionReturn(0);
-
-  ierr = PetscViewerASCIIPrintf(viewer,"PaStiX run parameters:\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Matrix type :                      %s \n",
-				((lu->iparm[IPARM_SYM] == API_SYM_YES)?"Symmetric":"Unsymmetric"));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Level of printing (0,1,2):         %d \n",
-				lu->iparm[IPARM_VERBOSE]);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Number of refinements iterations : %d \n",
-				lu->iparm[IPARM_NBITER]);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"  Error :                        %g \n",
-		     lu->dparm[DPARM_RELATIVE_ERROR]);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatView_PaStiX"
 PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 {
@@ -572,11 +537,17 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-    ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
     if (format == PETSC_VIEWER_ASCII_INFO){
-      ierr = MatFactorInfo_PaStiX(A,viewer);CHKERRQ(ierr);
+      Mat_Pastix      *lu=(Mat_Pastix*)A->spptr;
+
+      ierr = PetscViewerASCIIPrintf(viewer,"PaStiX run parameters:\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Matrix type :                      %s \n",((lu->iparm[IPARM_SYM] == API_SYM_YES)?"Symmetric":"Unsymmetric"));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Level of printing (0,1,2):         %d \n",lu->iparm[IPARM_VERBOSE]);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"  Number of refinements iterations : %d \n",lu->iparm[IPARM_NBITER]);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Error :                        %g \n",lu->dparm[DPARM_RELATIVE_ERROR]);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -584,33 +555,17 @@ PetscErrorCode MatView_PaStiX(Mat A,PetscViewer viewer)
 
 
 /*MC
-  MATAIJPASTIX - MATAIJPASTIX = "aijpastix" - A matrix type providing direct solvers (LU) for distributed
+     MAT_SOLVER_PASTIX  - A solver package providing direct solvers (LU) for distributed
   and sequential matrices via the external package PaStiX.
 
-  If PaStiX is installed (see the manual for instructions
-  on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes PaStiX solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJPASTIX), then 
-  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() etc DO NOT
-  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
-
-  If created with a single process communicator, this matrix type inherits from MATSEQAIJ.
-  Otherwise, this matrix type inherits from MATMPIAIJ.  Hence for single process communicators,
-  MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported 
-  for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.  One can also call MatConvert() for an inplace
-  conversion to or from the MATSEQAIJ or MATMPIAIJ type (depending on the communicator size)
-  without data copy AFTER the matrix values are set.
+  Use config/configure.py --download-pastix to have PETSc installed with PaStiX
 
   Options Database Keys:
-+ -mat_type sbaijpastix           - sets the matrix type to "sbaijpastix" during a call to MatSetFromOptions()
-. -mat_pastix_sym       <0,1>     - 0 the matrix is symmetric, 1 unsymmetric 
-. -mat_pastix_verbose   <0,1,2>   - print level
-. -mat_pastix_threadnbr <integer> - Set the thread number by MPI task.
++ -mat_pastix_verbose   <0,1,2>   - print level
+- -mat_pastix_threadnbr <integer> - Set the thread number by MPI task.
 
   Level: beginner
 
-.seealso: MATSBAIJPASTIX
 M*/
 
 
@@ -619,7 +574,6 @@ M*/
 PetscErrorCode MatGetInfo_PaStiX(Mat A,MatInfoType flag,MatInfo *info)
 {
     Mat_Pastix  *lu =(Mat_Pastix*)A->spptr;
-    PetscErrorCode ierr;
 
     PetscFunctionBegin;
     info->block_size        = 1.0;
@@ -635,42 +589,11 @@ PetscErrorCode MatGetInfo_PaStiX(Mat A,MatInfoType flag,MatInfo *info)
     PetscFunctionReturn(0);
 }
 
-/*MC
-  MATSBAIJPASTIX - MATSBAIJPASTIX = "sbaijpastix" - A symmetric matrix type providing direct solvers (Cholesky) for
-  distributed and sequential matrices via the external package PaStiX.
-
-  If PaStiX is installed (see the manual for instructions
-  on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes PaStiX solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJPASTIX), then 
-  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
-  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
-
-  If created with a single process communicator, this matrix type inherits from MATSEQSBAIJ.
-  Otherwise, this matrix type inherits from MATMPISBAIJ.  Hence for single process communicators,
-  MatSeqSBAIJSetPreallocation() is supported, and similarly MatMPISBAIJSetPreallocation() is supported 
-  for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.  One can also call MatConvert() for an inplace
-  conversion to or from the MATSEQSBAIJ or MATMPISBAIJ type (depending on the communicator size)
-  without data copy AFTER the matrix values have been set.
-
-  Options Database Keys:
-+ -mat_type aijpastix             - sets the matrix type to "aijpastix" during a call to MatSetFromOptions()
-. -mat_pastix_sym       <0,1>     - 0 the matrix is symmetric, 1 unsymmetric 
-. -mat_pastix_verbose   <0,1,2>   - print level
-. -mat_pastix_threadnbr <integer> - Set the thread number by MPI task.
-  Level: beginner
-
-.seealso: MATAIJPASTIX
-M*/
-
 EXTERN_C_BEGIN 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFactorGetSolverPackage_pastix"
 PetscErrorCode MatFactorGetSolverPackage_pastix(Mat A,const MatSolverPackage *type)
 {
-  PetscErrorCode ierr = 0;
-
   PetscFunctionBegin;
   *type = MAT_SOLVER_PASTIX;
   PetscFunctionReturn(0);
@@ -721,6 +644,7 @@ PetscErrorCode MatGetFactor_seqaij_pastix(Mat A,MatFactorType ftype,Mat *F)
   PetscFunctionReturn(0); 
 }
 EXTERN_C_END
+
 
 EXTERN_C_BEGIN 
 #undef __FUNCT__  

@@ -372,7 +372,7 @@ EXTERN_C_END
   
 
 /*MC
-  MAT_SOLVER_SUPERLU = "superlu" - A matrix type providing direct solvers (LU) for sequential matrices 
+  MAT_SOLVER_SUPERLU = "superlu" - A solver package roviding direct solvers (LU) for sequential matrices 
   via the external package SuperLU.
 
   Use config/configure.py --download-superlu to have PETSc installed with SuperLU
