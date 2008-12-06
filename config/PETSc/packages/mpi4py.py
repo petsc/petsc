@@ -35,6 +35,6 @@ class Configure(PETSc.package.Package):
     else:
       apple = ''
     self.logClearRemoveDirectory()
-    self.logPrintBox('After installing PETSc run:\n (csh/tcsh) setenv MPICC '+dd+'\n (sh/bash) set MPICC='+dd+';export MPICC \ncd '+os.path.join(self.petscdir.externalPackagesDir,'mpi4py-dev')+'\n python setup.py install --prefix='+self.installDir+'\n'+apple+'then add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) set PYTHONPATH=${PYTHONPATH}:'+pp+';export PYTHONPATH' )
+    self.logPrintBox('After installing PETSc run:\n (csh/tcsh) setenv MPICC '+dd+'\n (sh/bash) set MPICC='+dd+';export MPICC \ncd '+self.packageDir+'\n python setup.py install --prefix='+self.installDir+'\n'+apple+'then add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) set PYTHONPATH=${PYTHONPATH}:'+pp+';export PYTHONPATH' )
     self.logResetRemoveDirectory()
 

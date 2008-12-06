@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download          = ['svn://petsc4py.googlecode.com/svn/trunk/']
+    self.download          = ['ssh://petsc@petsc.cs.iit.edu//hg/petsc4py/petsc4py-dev']
     self.functions         = []
     self.includes          = []
     self.liblist           = []
@@ -32,6 +32,6 @@ class Configure(PETSc.package.Package):
     else:
       apple = ''
     self.logClearRemoveDirectory()
-    self.logPrintBox('After installing PETSc run:\ncd '+os.path.join(self.petscdir.externalPackagesDir,'petsc4py')+'\n python setup.py install --prefix='+self.installDir+'\n'+apple+'then add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) set PYTHONPATH=${PYTHONPATH}:'+pp+';export PYTHONPATH' )
+    self.logPrintBox('After installing PETSc run:\ncd '+self.packageDir+'\n python setup.py install --prefix='+self.installDir+'\n'+apple+'then add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) set PYTHONPATH=${PYTHONPATH}:'+pp+';export PYTHONPATH' )
     self.logResetRemoveDirectory()
 
