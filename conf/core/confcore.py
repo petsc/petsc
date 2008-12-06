@@ -444,7 +444,9 @@ class build_ext(_build_ext):
     def build_extension(self, ext):
         if not isinstance(ext, Extension):
             return _build_ext.build_extension(self, ext)
-        petsc_arch = [arch for arch in self.petsc_arch if arch]
+        petsc_arch = self.petsc_arch
+        if petsc_arch:
+            petsc_arch = [arch for arch in petsc_arch if arch]
         if not petsc_arch:
             petsc_arch = [ None ]
         for arch in petsc_arch:
