@@ -260,9 +260,11 @@ namespace ALE {
         if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Sending data (" << num << ") to " << rank << " tag " << this->_tag << std::endl;}
         MPI_Send_init(data, num, this->_datatype, rank, this->_tag, this->comm(), &request);
         this->_requests.push_back(request);
+#if defined(PETSC_USE_LOG)
         // PETSc logging
         isend_ct++;
         TypeSize(isend_len, num, this->_datatype);
+#endif
       }
       for(typename moves_type::const_iterator r_iter = this->_recvs.begin(); r_iter != this->_recvs.end(); ++r_iter) {
         const int   rank = r_iter->first;
@@ -273,9 +275,11 @@ namespace ALE {
         if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Receiving data (" << num << ") from " << rank << " tag " << this->_tag << std::endl;}
         MPI_Recv_init(data, num, this->_datatype, rank, this->_tag, this->comm(), &request);
         this->_requests.push_back(request);
+#if defined(PETSC_USE_LOG)
         // PETSc logging
         irecv_ct++;
         TypeSize(irecv_len, num, this->_datatype);
+#endif
       }
     };
   public:
