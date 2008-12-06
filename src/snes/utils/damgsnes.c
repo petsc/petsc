@@ -877,7 +877,7 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
   PetscFunctionReturn(0);
 }
 
-/*M
+/*MC
     DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
     that will use the grid hierarchy and (optionally) its derivative.
 
@@ -891,10 +891,8 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
 +   dmmg - the context
 .   function - the function that defines the nonlinear system
 .   jacobian - function defines the local part of the Jacobian
-.   ad_function - the name of the function with an ad_ prefix. This is ignored if ADIC is
-                  not installed
--   admf_function - the name of the function with an ad_ prefix. This is ignored if ADIC is
-                  not installed
+.   ad_function - the name of the function with an ad_ prefix. This is ignored currently
+-   admf_function - the name of the function with an ad_ prefix. This is ignored currently
 
     Options Database Keys:
 +    -dmmg_jacobian_fd
@@ -908,11 +906,7 @@ PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFu
     Level: intermediate
 
     Notes: 
-    If ADIC or ADIFOR have been installed, this routine can use ADIC or ADIFOR to compute
-    the derivative; however, that function cannot call other functions except those in
-    standard C math libraries.
-
-    If ADIC/ADIFOR have not been installed and the Jacobian is not provided, this routine
+    If the Jacobian is not provided, this routine
     uses finite differencing to approximate the Jacobian.
 
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES()
@@ -938,6 +932,8 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
   ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm,&cookie);CHKERRQ(ierr);
   if (cookie == DM_COOKIE) {
     PetscTruth flag;
+    /* it makes no sense to use an option to decide on ghost, it depends on whether the 
+       formfunctionlocal computes ghost values in F or not. */
     ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_form_function_ghost", &flag);CHKERRQ(ierr);
     if (flag) {
       ierr = DMMGSetSNES(dmmg,DMMGFormFunctionGhost,computejacobian);CHKERRQ(ierr);

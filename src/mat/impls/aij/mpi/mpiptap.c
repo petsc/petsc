@@ -491,7 +491,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscErrorCode       ierr;
   Mat_Merge_SeqsToMPI  *merge; 
   Mat_MatMatMultMPI    *ap;
-  PetscContainer cont_merge,cont_ptap;
+  PetscContainer       cont_merge,cont_ptap;
   Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data;
   Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ           *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data;

@@ -11,7 +11,7 @@
       DAGetWireBasketInterpolation - Gets the interpolation for a wirebasket based coarse space
 
 */
-PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,Mat *P)
+PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat *P)
 {
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
@@ -214,7 +214,11 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,Mat *P)
 
   /* construct global interpolation matrix */
   ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint+Nsurf,PETSC_NULL,P);CHKERRQ(ierr);
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatCreateMPIAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint+Nsurf,PETSC_NULL,P);CHKERRQ(ierr);
+  } else {
+    ierr = MatZeroEntries(*P);CHKERRQ(ierr);
+  }
   ierr = MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
   ierr = MatSetValues(*P,Nint,IIint,26,gl,xint,INSERT_VALUES);CHKERRQ(ierr);
@@ -262,7 +266,7 @@ PetscErrorCode DAGetWireBasketInterpolation(DA da,Mat Aglobal,Mat *P)
       DAGetFaceInterpolation - Gets the interpolation for a face based coarse space
 
 */
-PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,Mat *P)
+PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,MatReuse reuse,Mat *P)
 {
   PetscErrorCode         ierr;
   PetscInt               dim,i,j,k,m,n,p,dof,Nint,Nface,Nwire,Nsurf,*Iint,*Isurf,cint = 0,csurf = 0,istart,jstart,kstart,*II,N,c = 0;
@@ -457,7 +461,11 @@ PetscErrorCode DAGetFaceInterpolation(DA da,Mat Aglobal,Mat *P)
 
   /* construct global interpolation matrix */
   ierr = MatGetLocalSize(Aglobal,&Ng,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatCreateMPIAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint,PETSC_NULL,P);CHKERRQ(ierr);
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatCreateMPIAIJ(((PetscObject)da)->comm,Ng,PETSC_DECIDE,PETSC_DECIDE,Ntotal,Nint+Nsurf,PETSC_NULL,Nint,PETSC_NULL,P);CHKERRQ(ierr);
+  } else {
+    ierr = MatZeroEntries(*P);CHKERRQ(ierr);
+  }
   ierr = MatSetOption(*P,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatGetArray(Xint,&xint);CHKERRQ(ierr);
   ierr = MatSetValues(*P,Nint,IIint,6,gl,xint,INSERT_VALUES);CHKERRQ(ierr);

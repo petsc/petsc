@@ -190,10 +190,7 @@ PetscErrorCode FGMREScycle(PetscInt *itcount,KSP ksp)
      the initial residual norm */
   *RS(0) = res_norm;
 
-  /* FYI: AMS calls are for memory snooper */
-  ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
   ksp->rnorm = res_norm;
-  ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
   KSPLogResidualHistory(ksp,res_norm);
 
   /* check for the convergence - maybe the current guess is good enough */
