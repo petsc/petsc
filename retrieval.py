@@ -243,12 +243,8 @@ and if that succeeds then rerun config/configure.py
     return self.bkRetrieve(urlparse.urlunparse(('file', location, path, parameters, query, fragment)), root, canExist, force)
 
   def sshRetrieve(self, url, root, canExist = 0, force = 0):
-    self.debugPrint('Retrieving '+url+' --> '+root+' via ssh', 3, 'install')
-    (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
-    (dir, project) = os.path.split(path)
-    if not self.removeRoot(root,canExist,force): return root
-    command = 'ssh '+location+' "tar -C '+dir+' -zc '+project+'" | tar -C '+root+' -zx'
-    output  = self.executeShellCommand(command)
+    command = 'hg clone '+url+' '+os.path.join(root,os.path.basename(url))
+    output  = config.base.Configure.executeShellCommand(command)      
     return root
 
   def oldRetrieve(self, url, root = None, canExist = 0, force = 0):
