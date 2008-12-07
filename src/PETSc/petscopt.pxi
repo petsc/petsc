@@ -103,7 +103,7 @@ cdef getpair(prefix, name, char **pr, char **nm):
         p = &p[1]
     # --
     cdef char *n = str2cp(name)
-    if n[0] != c'-':
+    if n and n[0] != c'-':
         name = '-' + name
         n = str2cp(name)
     # --
