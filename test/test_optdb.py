@@ -35,6 +35,17 @@ class TestOptions(unittest.TestCase):
     def tearDown(self):
         self.opts = None
 
+    def testHasOpts(self):
+        self._putopts()
+        for k, v in self.OPTLIST:
+            if v:
+                self.assertTrue(self.opts.hasName(k))
+                self.assertTrue(k in self.opts)
+            else:
+                self.assertFalse(self.opts.hasName(k))
+                self.assertTrue(k not in self.opts)
+        self._delopts()
+        
     def testGetOpts(self):
         self._putopts()
         for k, v in self.OPTLIST:

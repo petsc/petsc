@@ -33,10 +33,10 @@ cdef class Options:
     #
 
     def hasName(self, name):
-        cdef char *pre = NULL, *nm = NULL
-        tmp = getpair(self.prefix, name, &pre, &nm)
+        cdef char *pr = NULL, *nm = NULL
+        tmp = getpair(self.prefix, name, &pr, &nm)
         cdef PetscTruth flag = PETSC_FALSE
-        CHKERR( PetscOptionsHasName(self.prefix, name, &flag) )
+        CHKERR( PetscOptionsHasName(pr, nm, &flag) )
         return <bint> flag
 
     def setValue(self, name, value):
