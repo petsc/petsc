@@ -32,7 +32,6 @@
 #define TSPYTHON  "python"
 
 PETSC_EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreatePython(MPI_Comm,const char[],TS*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS,void*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSPythonGetContext(TS,void**);
 PETSC_EXTERN_C_END
@@ -177,7 +176,7 @@ static PetscErrorCode TSSetFromOptions_Python(TS ts)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("TS Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-ts_python","Python package.module[.{class|function}]",
-			    "TSCreatePython",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
+			    "TSPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
@@ -693,41 +692,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetContext(TS ts,void *ctx)
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   TS_PYTHON_CALL_TSARG(ts, "create");
   if (ts->setupcalled) ts->setupcalled = 0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "TSCreatePython"
-/*@
-   TSCreatePython - Creates a Python timestepper solver context.
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - MPI communicator 
--  pyname - full dotted name package.module.function/class
-
-   Output Parameter:
-.  ts - location to put the timestepper solver context
-
-   Level: beginner
-
-.keywords: TS,  create
-
-.seealso: TS, TSCreate(), TSSetType(), TSPYTHON
-@*/
-PetscErrorCode PETSCTS_DLLEXPORT TSCreatePython(MPI_Comm comm,
-						const char pyname[],
-						TS *ts)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  if (pyname) PetscValidCharPointer(pyname,2);
-  /* create the TS context and set its type */
-  ierr = TSCreate(comm,ts);CHKERRQ(ierr);
-  ierr = TSSetType(*ts,TSPYTHON);CHKERRQ(ierr);
-  if (pyname) { ierr = TSPythonInit_PYTHON(*ts,pyname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

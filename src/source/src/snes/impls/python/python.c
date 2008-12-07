@@ -25,7 +25,6 @@
 #define SNESPYTHON "python"
 
 PETSC_EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreatePython(MPI_Comm,const char[],SNES*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES,void**);
 PETSC_EXTERN_C_END
@@ -576,7 +575,7 @@ static PetscErrorCode SNESSetFromOptions_Python(SNES snes)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-snes_python","Python package.module[.{class|function}]",
-			    "SNESCreatePython",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
+			    "SNESPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
@@ -760,41 +759,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   SNES_PYTHON_CALL_SNESARG(snes, "create");
   if (snes->setupcalled) snes->setupcalled = PETSC_FALSE;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESCreatePython"
-/*@
-   SNESCreatePython - Creates a Python nonlinear solver context.
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - MPI communicator 
--  pyname - full dotted name package.module.function/class
-
-   Output Parameter:
-.  snes - location to put the nonlinear solver context
-
-   Level: beginner
-
-.keywords: SNES,  create
-
-.seealso: SNES, SNESCreate(), SNESSetType(), SNESPYTHON
-@*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESCreatePython(MPI_Comm comm,
-						    const char pyname[],
-						    SNES *snes)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  if (pyname) PetscValidCharPointer(pyname,2);
-  /* create the SNES context and set its type */
-  ierr = SNESCreate(comm,snes);CHKERRQ(ierr);
-  ierr = SNESSetType(*snes,SNESPYTHON);CHKERRQ(ierr);
-  if (pyname) { ierr = SNESPythonInit_PYTHON(*snes,pyname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

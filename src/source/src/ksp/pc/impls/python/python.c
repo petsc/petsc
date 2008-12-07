@@ -10,7 +10,6 @@
 #define PCPYTHON "python"
 
 PETSC_EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreatePython(MPI_Comm,const char[],PC*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC,void**);
 PETSC_EXTERN_C_END
@@ -115,7 +114,7 @@ static PetscErrorCode PCSetFromOptions_Python(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PC Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-pc_python","Python package.module[.{class|function}]",
-			    "PCCreatePython",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
+			    "PCPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
@@ -443,41 +442,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
 #if PETSC_VERSION_(2,3,2)
   ierr = PCPythonFillOperations(pc);CHKERRQ(ierr);
 #endif
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "PCCreatePython"
-/*@
-   PCCreatePython - Creates a Python preconditioner context.
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - MPI communicator 
--  pyname - full dotted name package.module.function/class
-
-   Output Parameter:
-.  pc - location to put the preconditioner context
-
-   Level: beginner
-
-.keywords: PC, preconditioner, create
-
-.seealso: PC, PCCreate(), PCSetType(), PCPYTHON
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreatePython(MPI_Comm comm,
-						 const char pyname[],
-						 PC *pc)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (pyname) PetscValidCharPointer(pyname,2);
-  /* create the PC context and set its type */
-  ierr = PCCreate(comm,pc);CHKERRQ(ierr);
-  ierr = PCSetType(*pc,PCPYTHON);CHKERRQ(ierr);
-  if (pyname) { ierr = PCPythonInit_PYTHON(*pc, pyname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

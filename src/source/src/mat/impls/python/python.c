@@ -8,11 +8,6 @@
 #define MATPYTHON "python"
 
 PETSC_EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm comm,
-							 PetscInt,PetscInt,
-							 PetscInt,PetscInt,
-							 const char[],
-							 Mat *mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat,void*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonGetContext(Mat,void**);
 PETSC_EXTERN_C_END
@@ -143,7 +138,7 @@ static PetscErrorCode MatSetFromOptions_Python(Mat mat)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Mat Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-mat_python","Python [package.]module[.{class|function}]",
-			    "MatCreatePython",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
+			    "MatPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) {
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
@@ -805,48 +800,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
   ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   MAT_PYTHON_CALL_MATARG(mat, "create");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatCreatePython"
-/*@
-   MatCreatePython - Creates a Python matrix context.
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - MPI communicator 
-.  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
-.  n - number of local columns (or PETSC_DECIDE to have calculated if N is given)
-.  M - number of global rows (or PETSC_DECIDE to have calculated if m is given)
-.  N - number of global columns (or PETSC_DECIDE to have calculated if n is given)
--  pyname - full dotted name package.module.function/class
-
-   Output Parameter:
-.  mat - location to put the matrix context
-
-   Level: beginner
-
-.keywords: Mat,  create
-
-.seealso: Mat, MatCreate(), MatSetType(), MatPYTHON
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreatePython(MPI_Comm comm,
-						  PetscInt m,PetscInt n,
-						  PetscInt M,PetscInt N,
-						  const char pyname[],
-						  Mat *mat)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  if (pyname) PetscValidCharPointer(pyname,2);
-  /* create the Mat context and set its type */
-  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(*mat,MATPYTHON);CHKERRQ(ierr);
-  if (pyname) { ierr = MatPythonInit_PYTHON(*mat,pyname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

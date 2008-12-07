@@ -8,7 +8,6 @@
 #define KSPPYTHON "python"
 
 PETSC_EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreatePython(MPI_Comm,const char[],KSP*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonGetContext(KSP,void**);
 PETSC_EXTERN_C_END
@@ -112,7 +111,7 @@ static PetscErrorCode KSPSetFromOptions_Python(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-ksp_python","Python package.module[.{class|function}]",
-			    "KSPCreatePython",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
+			    "KSPPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
@@ -350,41 +349,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP ksp,void *ctx)
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   KSP_PYTHON_CALL_KSPARG(ksp, "create");
   if (ksp->setupcalled) ksp->setupcalled = 0;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPCreatePython"
-/*@
-   KSPCreatePython - Creates a Python linear solver context.
-
-   Collective on MPI_Comm
-
-   Input Parameters:
-+  comm - MPI communicator 
--  pyname - full dotted name package.module.function/class
-
-   Output Parameter:
-.  ksp - location to put the linear solver context
-
-   Level: beginner
-
-.keywords: KSP,  create
-
-.seealso: KSP, KSPCreate(), KSPSetType(), KSPPYTHON
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPCreatePython(MPI_Comm comm,
-						  const char pyname[],
-						  KSP *ksp)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (pyname) PetscValidCharPointer(pyname,2);
-  /* create the KSP context and set its type */
-  ierr = KSPCreate(comm,ksp);CHKERRQ(ierr);
-  ierr = KSPSetType(*ksp,KSPPYTHON);CHKERRQ(ierr);
-  if (pyname) { ierr = KSPPythonInit_PYTHON(*ksp, pyname);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 
