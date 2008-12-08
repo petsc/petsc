@@ -27,8 +27,8 @@
 #include "compat/petsc232.h"
 #elif PETSC_VERSION_(2,3,3)
 #include "compat/petsc233.h"
-#elif PETSC_VERSION_(2,4,0)
-#include "compat/petsc240.h"
+#elif PETSC_VERSION_(3,0,0)
+#include "compat/petsc300.h"
 #endif
 
 #endif /* !PETSC_COMPAT_H */

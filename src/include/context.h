@@ -63,7 +63,7 @@ PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
 
 #else
 
-/* Implementation for PETSc-2.4.0 and above */
+/* Implementation for PETSc-3.0.0 and above */
 
 PETSC_STATIC_INLINE PetscErrorCode
 PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
