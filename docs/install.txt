@@ -8,7 +8,7 @@ Requirements
 * Any MPI distribution [#]_ (e.g., MPICH_ or `Open MPI`_), 
   built with shared libraries.
 
-* PETSc_ 2.3.3 distribution, built with shared libraries.
+* PETSc_ 2.3.3/3.0.0 distribution, built with shared libraries.
 
 * Python_ 2.4/2.5/2.6 [#]_.
 

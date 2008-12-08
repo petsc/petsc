@@ -20,7 +20,7 @@ subject to change at any time.
 - To build and install this package, you must meet the following
   requirements.
 
-  + PETSc_ 2.3.2/2.3.3/dev, built with *shared libraries*.
+  + PETSc_ 2.3.2/2.3.3/3.0.0/dev, built with *shared libraries*.
 
   + Python_ 2.4/2.5/2.6.
 
