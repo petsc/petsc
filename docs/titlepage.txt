@@ -9,10 +9,9 @@ PETSc for Python
 :Organization: CIMEC_
 :Address:      PTLC, (3000) Santa Fe, Argentina
 :Contact:      dalcinl@gmail.com
-:Web Site:     http://www.cimec.org.ar/
 
-:Date:         $Date$
-:Revision:     $Revision$
+:Web Site:     http://petsc4py.googlecode.com/
+
 :Copyright:    This document has been placed in the public domain.
 
 :Abstract:
