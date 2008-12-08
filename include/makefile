@@ -7,7 +7,7 @@ SOURCEH  = petsc.h petscsys.h
 OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscvec
-DIRS     = finclude private
+DIRS     = finclude private sieve
 LOCDIR   = include/
 MANSEC   = Sys
 
