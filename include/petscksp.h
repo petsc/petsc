@@ -53,6 +53,7 @@ E*/
 #define KSPMINRES     "minres"
 #define KSPSYMMLQ     "symmlq"
 #define KSPLCD        "lcd"
+#define KSPPYTHON     "python"
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;
@@ -533,6 +534,8 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP,PetscReal *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP,PetscReal *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP,PetscReal *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP,PetscReal *);
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP,const char[]);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPreSolve(PC,KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC,KSP);

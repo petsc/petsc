@@ -34,6 +34,7 @@ E*/
 #define TS_CRANK_NICHOLSON "crank-nicholson"
 #define TS_SUNDIALS        "sundials"
 #define TS_RUNGE_KUTTA     "runge-kutta"
+#define TS_PYTHON          "python"
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -108,6 +109,8 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPseudoDefaultVerifyTimeStep(TS,Vec,vo
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPseudoVerifyTimeStep(TS,Vec,PetscReal*,PetscTruth*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPseudoSetTimeStepIncrement(TS,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPseudoIncrementDtFromInitialDt(TS);
+
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPythonSetType(TS,const char[]);
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
