@@ -12,7 +12,7 @@ PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG **mglevels,PCRichardsonConvergedRe
 {
   PC_MG          *mg = *mglevels,*mgc;
   PetscErrorCode ierr;
-  PetscInt       cycles = (PetscInt) mg->cycles;
+  PetscInt       cycles = (mg->level == 1) ? 1 : (PetscInt) mg->cycles;
 
   PetscFunctionBegin;
 
