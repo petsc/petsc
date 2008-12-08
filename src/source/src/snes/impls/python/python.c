@@ -508,8 +508,8 @@ static PetscErrorCode SNESSetUp_Python(SNES snes)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "SNESPythonInit_PYTHON"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonInit_PYTHON(SNES snes,const char pyname[])
+#define __FUNCT__ "SNESPythonSetType_PYTHON"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType_PYTHON(SNES snes,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
@@ -579,7 +579,7 @@ static PetscErrorCode SNESSetFromOptions_Python(SNES snes)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
-    if (!flg) { ierr = SNESPythonInit_PYTHON(snes,pyname);CHKERRQ(ierr); }
+    if (!flg) { ierr = SNESPythonSetType_PYTHON(snes,pyname);CHKERRQ(ierr); }
   }
   SNES_PYTHON_CALL_SNESARG(snes, "setFromOptions");
   PetscFunctionReturn(0);
@@ -613,7 +613,7 @@ static PetscErrorCode SNESDestroy_Python(SNES snes)
   ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   snes->data = PETSC_NULL;
-  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESPythonInit_C",
+  ierr = PetscObjectComposeFunction((PetscObject)snes,"SNESPythonSetType_C",
 				    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -635,10 +635,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES snes)
 {
   SNES_Py        *py;
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
 
-  ierr = PetscInitializePython();CHKERRQ(ierr);
+  ierr = Petsc4PyInitialize();CHKERRQ(ierr);
 
   ierr       = PetscNew(SNES_Py,&py);CHKERRQ(ierr);
   ierr       = PetscLogObjectMemory(snes, sizeof(SNES_Py));CHKERRQ(ierr);
@@ -676,8 +675,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES snes)
   snes->ops->solve	     = SNESSolve_Python;
 
   ierr = PetscObjectComposeFunction((PetscObject)snes,
-				    "SNESPythonInit_C","SNESPythonInit_PYTHON",
-				    (PetscVoidFunction)SNESPythonInit_PYTHON);CHKERRQ(ierr);
+				    "SNESPythonSetType_C","SNESPythonSetType_PYTHON",
+				    (PetscVoidFunction)SNESPythonSetType_PYTHON);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

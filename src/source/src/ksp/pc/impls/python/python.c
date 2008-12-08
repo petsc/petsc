@@ -69,8 +69,8 @@ typedef struct {
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCPythonInit_PYTHON"
-PetscErrorCode PETSCKSP_DLLEXPORT PCPythonInit_PYTHON(PC pc,const char pyname[])
+#define __FUNCT__ "PCPythonSetType_PYTHON"
+PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType_PYTHON(PC pc,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
@@ -98,7 +98,7 @@ static PetscErrorCode PCDestroy_Python(PC pc)
   ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   pc->data = PETSC_NULL;
-  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPythonInit_C",
+  ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPythonSetType_C",
 				    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -118,7 +118,7 @@ static PetscErrorCode PCSetFromOptions_Python(PC pc)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
-    if (!flg) { ierr = PCPythonInit_PYTHON(pc,pyname);CHKERRQ(ierr); }
+    if (!flg) { ierr = PCPythonSetType_PYTHON(pc,pyname);CHKERRQ(ierr); }
   }
   PC_PYTHON_CALL_PCARG(pc, "setFromOptions");
   PetscFunctionReturn(0);
@@ -328,11 +328,10 @@ PetscErrorCode PETSCTS_DLLEXPORT PCCreate_Python(PC pc)
 {
   PC_Py          *py;
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
 
-  ierr = PetscInitializePython();CHKERRQ(ierr);
-  
+  ierr = Petsc4PyInitialize();CHKERRQ(ierr);
+
   ierr = PetscNew(PC_Py,&py);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(pc,sizeof(PC_Py));CHKERRQ(ierr);
   pc->data = (void*)py;
@@ -356,8 +355,8 @@ PetscErrorCode PETSCTS_DLLEXPORT PCCreate_Python(PC pc)
   pc->ops->applyrichardson     = PETSC_NULL/*PCApplyRichardson_Python*/;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,
-				    "PCPythonInit_C","PCPythonInit_PYTHON",
-				    (PetscVoidFunction)PCPythonInit_PYTHON);CHKERRQ(ierr);
+				    "PCPythonSetType_C","PCPythonSetType_PYTHON",
+				    (PetscVoidFunction)PCPythonSetType_PYTHON);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

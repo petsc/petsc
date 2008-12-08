@@ -127,8 +127,8 @@ typedef struct {
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "TSPythonInit_PYTHON"
-PetscErrorCode PETSCTS_DLLEXPORT TSPythonInit_PYTHON(TS ts,const char pyname[])
+#define __FUNCT__ "TSPythonSetType_PYTHON"
+PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType_PYTHON(TS ts,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
@@ -160,7 +160,7 @@ static PetscErrorCode TSDestroy_Python(TS ts)
   ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ts->data = PETSC_NULL;
-  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPythonInit_C",
+  ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPythonSetType_C",
 				    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -180,7 +180,7 @@ static PetscErrorCode TSSetFromOptions_Python(TS ts)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
-    if (!flg) { ierr = TSPythonInit_PYTHON(ts,pyname);CHKERRQ(ierr); }
+    if (!flg) { ierr = TSPythonSetType_PYTHON(ts,pyname);CHKERRQ(ierr); }
   }
   TS_PYTHON_CALL_TSARG(ts, "setFromOptions");
   PetscFunctionReturn(0);
@@ -555,11 +555,10 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
 {
   TS_Py          *py;
   PetscErrorCode ierr;
-
   PetscFunctionBegin;
 
-  ierr = PetscInitializePython();CHKERRQ(ierr);
-  
+  ierr = Petsc4PyInitialize();CHKERRQ(ierr);
+
   ierr = PetscNew(TS_Py,&py);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ts,sizeof(TS_Py));CHKERRQ(ierr);
   ts->data = (void*)py;
@@ -593,8 +592,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
   py->vec_rhs  = PETSC_NULL;
   
   ierr = PetscObjectComposeFunction((PetscObject)ts,
-				    "TSPythonInit_C","TSPythonInit_PYTHON",
-				    (PetscVoidFunction)TSPythonInit_PYTHON);CHKERRQ(ierr);
+				    "TSPythonSetType_C","TSPythonSetType_PYTHON",
+				    (PetscVoidFunction)TSPythonSetType_PYTHON);CHKERRQ(ierr);
   
   ts->problem_type = TS_NONLINEAR;
 

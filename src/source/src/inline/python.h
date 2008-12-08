@@ -79,14 +79,13 @@ static const char * PetscHandlePythonError(void)
 /* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
-#define __FUNCT__ "PetscInitializePython"
-static PetscErrorCode PetscInitializePython(void)
+#define __FUNCT__ "Petsc4PyInitialize"
+static PetscErrorCode Petsc4PyInitialize(void)
 {
   static PetscTruth initialized = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);
-  if (!Py_IsInitialized()) Py_InitializeEx(0);
   if (import_petsc4py() < 0) goto fail;
   initialized = PETSC_TRUE;
   PetscFunctionReturn(0);

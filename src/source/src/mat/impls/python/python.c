@@ -93,8 +93,8 @@ static PetscErrorCode MatPythonFillOperations(Mat mat)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatPythonInit_PYTHON"
-PetscErrorCode PETSCMAT_DLLEXPORT MatPythonInit_PYTHON(Mat mat,const char pyname[])
+#define __FUNCT__ "MatPythonSetType_PYTHON"
+PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType_PYTHON(Mat mat,const char pyname[])
 {
   PyObject       *self = NULL;
   PetscErrorCode ierr;
@@ -122,7 +122,7 @@ static PetscErrorCode MatDestroy_Python(Mat mat)
   ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatPythonInit_C",
+  ierr = PetscObjectComposeFunction((PetscObject)mat,"MatPythonSetType_C",
 				    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -142,7 +142,7 @@ static PetscErrorCode MatSetFromOptions_Python(Mat mat)
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) {
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
-    if (!flg) { ierr = MatPythonInit_PYTHON(mat,pyname);CHKERRQ(ierr); }
+    if (!flg) { ierr = MatPythonSetType_PYTHON(mat,pyname);CHKERRQ(ierr); }
   }
   MAT_PYTHON_CALL_MATARG(mat, "setFromOptions");
   PetscFunctionReturn(0);
@@ -243,7 +243,7 @@ static PetscErrorCode MatSetUpPreallocation_Python(Mat mat)
     ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_python",
 				 pyname,sizeof(pyname),&flag);CHKERRQ(ierr);
     if (flag && pyname[0]==0) flag = PETSC_FALSE;
-    if (flag) { ierr = MatPythonInit_PYTHON(mat,pyname);CHKERRQ(ierr); }
+    if (flag) { ierr = MatPythonSetType_PYTHON(mat,pyname);CHKERRQ(ierr); }
   }
   /* */
   MAT_PYTHON_CALL_MATARG(mat, "setUp");
@@ -662,7 +662,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat mat)
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
-  ierr = PetscInitializePython();CHKERRQ(ierr);
+  ierr = Petsc4PyInitialize();CHKERRQ(ierr);
 
   ierr = PetscNew(Mat_Py,&py);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(mat,sizeof(Mat_Py));CHKERRQ(ierr);
@@ -715,8 +715,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat mat)
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,MATPYTHON);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,
-				    "MatPythonInit_C","MatPythonInit_PYTHON",
-				    (PetscVoidFunction)MatPythonInit_PYTHON);CHKERRQ(ierr);
+				    "MatPythonSetType_C","MatPythonSetType_PYTHON",
+				    (PetscVoidFunction)MatPythonSetType_PYTHON);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
