@@ -1,8 +1,8 @@
 # -*- makefile -*-
 
-CFLAGS	 = -O3
+CFLAGS	 =
 CPPFLAGS = 
-F90FLAGS =-Wall -O3 -funroll-loops -march=pentium4 -msse2 -fomit-frame-pointer
+F90FLAGS =
 LOCDIR   = 
 
 
@@ -17,6 +17,4 @@ lclean:
 	${RM} poisson3d solvesys
 
 
-## PETSC_DIR=/usr/local/petsc/2.4.0
-## PETSC_ARCH=linux-gnu
 include ${PETSC_DIR}/conf/base
