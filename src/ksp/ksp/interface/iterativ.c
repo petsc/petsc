@@ -921,6 +921,8 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 
    Notes: Can only be called after the call the KSPSolve() is complete.
 
+   Level: intermediate
+ 
 .keywords: KSP, nonlinear, set, convergence, test
 
 .seealso: KSPSetConvergenceTest(), KSPDefaultConverged(), KSPSetTolerances(), KSPConvergedReason

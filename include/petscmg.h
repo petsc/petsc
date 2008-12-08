@@ -82,7 +82,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCExoticSetDA(PC,DA);
    Level: beginner
 
 .seealso: PCExoticSetType(), PCEXOTIC
-
 E*/ 
 typedef enum { PC_EXOTIC_FACE,PC_EXOTIC_WIREBASKET } PCExoticType;
 extern const char *PCExoticTypes[];

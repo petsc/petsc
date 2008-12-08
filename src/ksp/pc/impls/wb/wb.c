@@ -226,8 +226,9 @@ PetscErrorCode PCSetFromOptions_Exotic(PC pc)
    Options Database: The usual PCMG options are supported, such as -mg_levels_pc_type <type> -mg_coarse_pc_type <type>
       -pc_mg_type <type>
 
-.seealso:  PCMG, PCExoticSetDA(), PCExoticType, PCExoticSetType()
+   Level: advanced
 
+.seealso:  PCMG, PCExoticSetDA(), PCExoticType, PCExoticSetType()
 M*/
 
 EXTERN_C_BEGIN
