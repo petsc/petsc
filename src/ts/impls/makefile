@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = explicit implicit pseudo
+DIRS     = explicit implicit pseudo python
 LOCDIR   = src/ts/impls/
 MANSEC   = TS
 

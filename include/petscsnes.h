@@ -27,9 +27,10 @@ typedef struct _p_SNES* SNES;
 .seealso: SNESSetType(), SNES
 E*/
 #define SNESType char*
-#define SNESLS   "ls"
-#define SNESTR   "tr"
-#define SNESTEST "test"
+#define SNESLS     "ls"
+#define SNESTR     "tr"
+#define SNESPYTHON "python"
+#define SNESTEST   "test"
 
 /* Logging support */
 extern PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE;
@@ -167,6 +168,8 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGRangeDestroy(PetscDrawLG)
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetApplicationContext(SNES,void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetApplicationContext(SNES,void **);
+
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES,const char[]);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunctionDomainError(SNES);
 /*E
