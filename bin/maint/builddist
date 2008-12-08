@@ -122,7 +122,7 @@ echo Using PETSC_VERSION_HG: ${version_hg}
 cat include/petscversion.h.bak | \
   sed -e "s/#define PETSC_VERSION_PATCH_DATE.*/#define PETSC_VERSION_PATCH_DATE \"${version_patch_date}\"/" | \
   sed -e "s/#define PETSC_VERSION_HG.*/#define PETSC_VERSION_HG         \"${version_hg}\"/" | \
-  sed -e "s/#define PETSC_VERSION_DATE_HG.*/#define PETSC_VERSION_DATE_HG         \"${version_date_hg}\"/" | \
+  sed -e "s/#define PETSC_VERSION_DATE_HG.*/#define PETSC_VERSION_DATE_HG         \"${version_date_hg}\"/" \
   > include/petscversion.h
 /bin/rm -f include/petscversion.h.bak
 
