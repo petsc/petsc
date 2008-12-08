@@ -592,7 +592,6 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatRe
     ierr  = MPI_Allgatherv(MPI_IN_PLACE,0,MPI_DATATYPE_NULL,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
 #else
     ierr  = MPI_Allgatherv(lens+A->rmap->rstart,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
-
 #endif
     /* ---------------------------------------------------------------
          Create the sequential matrix of the same type as the local block diagonal

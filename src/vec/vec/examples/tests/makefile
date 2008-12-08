@@ -5,7 +5,7 @@ CPPFLAGS        =
 FPPFLAGS        = 
 LOCDIR          = src/vec/vec/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
-		  ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
+		  ex11.c ex12.c  ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
 		  ex23.c ex24.c ex25.c ex28.c ex29.c ex31.c ex33.c ex34.c ex35.c ex36.c
 EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F
 MANSEC          = Vec
@@ -350,7 +350,7 @@ runex36:
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
                               ex4.PETSc runex4 ex4.rm ex5.PETSc ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc \
                               runex7 ex7.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex11.PETSc runex11 \
-                              ex11.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 \
+                              ex11.rm ex12.PETSc runex12 ex12.rm  ex14.PETSc runex14 \
                               ex14.rm ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 \
                               ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm ex29.PETSc \
                               runex29 ex29.rm ex34.PETSc runex34 ex34.rm ex36.PETSc runex36 ex36.rm
