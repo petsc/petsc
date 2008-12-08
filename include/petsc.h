@@ -1223,6 +1223,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm,PetscErrorCode (*)
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm,PetscInt,void**);
 
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPythonInitialize(const char[],const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPythonFinalize();
+
 /*
      These are so that in extern C code we can caste function pointers to non-extern C
    function pointers. Since the regular C++ code expects its function pointers to be 

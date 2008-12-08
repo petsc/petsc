@@ -69,6 +69,7 @@ E*/
 #define PCASA             "asa"
 #define PCCP              "cp"
 #define PCBFBT            "bfbt"
+#define PCPYTHON          "python"
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT PC_COOKIE;
@@ -338,6 +339,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetInterpolation(PC,Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC,PetscInt,PetscReal*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSASetVectors(PC,PetscInt,PetscReal *);
 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType(PC,const char[]);
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCPC_H */

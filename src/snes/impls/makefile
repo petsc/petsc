@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = ls tr test picard
+DIRS     = ls tr test picard python
 LOCDIR   = src/snes/impls/
 
 include ${PETSC_DIR}/conf/base
