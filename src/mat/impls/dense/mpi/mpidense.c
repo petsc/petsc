@@ -1177,7 +1177,7 @@ PetscErrorCode MatSolve_MPIDense(Mat A,Vec b,Vec x)
 
     /* Solve U x = y (=b), overwriting b with x */
     PLA_Trsv( PLA_UPPER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla );
-  } else { /*MAT_FACTOR_CHOLESKY */
+  } else { /* MAT_FACTOR_CHOLESKY */
     PLA_Trsv( PLA_LOWER_TRIANGULAR,PLA_NO_TRANSPOSE,PLA_NONUNIT_DIAG,lu->A,v_pla);
     PLA_Trsv( PLA_LOWER_TRIANGULAR,(lu->datatype == MPI_DOUBLE ? PLA_TRANSPOSE : PLA_CONJUGATE_TRANSPOSE),
                                     PLA_NONUNIT_DIAG,lu->A,v_pla);
