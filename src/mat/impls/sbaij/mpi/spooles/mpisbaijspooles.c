@@ -161,6 +161,6 @@ EXTERN_C_END
 
    Level: beginner
 
-.seealso: MAT_SOLVER_SUPERLU, MAT_SOLVER_MUMPS, MAT_SOLVER_SUPERLU_DIST 
+.seealso: MAT_SOLVER_SUPERLU, MAT_SOLVER_MUMPS, MAT_SOLVER_SUPERLU_DIST, PCFactorSetMatSolverPackage(), MatSolverPackage 
 M*/
 

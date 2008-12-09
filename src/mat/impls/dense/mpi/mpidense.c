@@ -1541,16 +1541,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIDenseSetPreallocation_MPIDense(Mat mat,P
 EXTERN_C_END
 
 /*MC
-   MATMPIDENSE - MATMPIDENSE = "mpidense" - A matrix type to be used for distributed dense matrices.
+   MAT_SOLVER_PLAPACK = "mpidense" - Parallel LU and Cholesky factorization for MATMPIDENSE matrices
 
-   Options Database Keys:
-. -mat_type mpidense - sets the matrix type to "mpidense" during a call to MatSetFromOptions()
-
-  Level: beginner
-
-  MATMPIDENSE matrices may use direct solvers (LU, Cholesky, and QR) 
-  for parallel dense matrices via the external package PLAPACK, if PLAPACK is installed 
-  (run config/configure.py with the option --download-plapack)
+  run config/configure.py with the option --download-plapack
 
 
   Options Database Keys:
@@ -1560,7 +1553,8 @@ EXTERN_C_END
 . -mat_plapack_nb_alg <n> - algorithmic block size
 - -mat_plapack_ckerror <n> - error checking flag
 
-.seealso: MatCreateMPIDense(), MATDENSE, MATSEQDENSE
+.seealso: MatCreateMPIDense(), MATDENSE, MATSEQDENSE, PCFactorSetSolverPackage(), MatSolverPackage
+
 M*/
 
 EXTERN_C_BEGIN

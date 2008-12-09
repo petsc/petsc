@@ -623,25 +623,12 @@ PetscErrorCode MatView_DSCPACK(Mat A,PetscViewer viewer)
 
 
 /*MC
-  MATDSCPACK - MATDSCPACK = "dscpack" - A matrix type providing direct solvers (Cholesky) for sequential 
+  MAT_SOLVER_DSCPACK -  "dscpack" - Provides direct solvers (Cholesky) for sequential 
   or distributed matrices via the external package DSCPACK.
 
-  If DSCPACK is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes DSCPACK solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATDSCPACK).
-  This matrix type is only supported for double precision real.
-
-  This matrix inherits from MATSEQBAIJ if constructed with a single process communicator,
-  and from MATMPIBAIJ otherwise.  As a result, for sequential matrices, MatSeqBAIJSetPreallocation is 
-  supported, and similarly MatMPIBAIJSetPreallocation is supported for distributed matrices.  It is 
-  recommended that you call both of the above preallocation routines for simplicity.  Also,
-  MatConvert can be called to perform inplace conversion to and from MATSEQBAIJ or MATMPIBAIJ
-  for sequential or distributed matrices respectively.
 
   Options Database Keys:
-+ -mat_type dscpack - sets the matrix type to dscpack during a call to MatSetFromOptions()
-. -mat_dscpack_order <1,2,3> - DSCPACK ordering, 1:ND, 2:Hybrid with Minimum Degree, 3:Hybrid with Minimum Deficiency
++ -mat_dscpack_order <1,2,3> - DSCPACK ordering, 1:ND, 2:Hybrid with Minimum Degree, 3:Hybrid with Minimum Deficiency
 . -mat_dscpack_scheme <1,2> - factorization scheme, 1:standard factorization,  2: factorization with selective inversion
 . -mat_dscpack_factor <LLT,LDLT> - the type of factorization to be performed.
 . -mat_dscpack_MaxMemAllowed <n> - the maximum memory to be used during factorization
@@ -651,5 +638,6 @@ PetscErrorCode MatView_DSCPACK(Mat A,PetscViewer viewer)
 
    Level: beginner
 
-.seealso: PCCHOLESKY
+.seealso: PCCHOLESKY, PCFactorSetMatSolverPackage(), MatSolverPackage
+
 M*/

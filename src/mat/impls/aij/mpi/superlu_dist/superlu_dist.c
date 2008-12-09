@@ -649,29 +649,12 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 
 
 /*MC
-  MATSUPERLU_DIST - MATSUPERLU_DIST = "superlu_dist" - A matrix type providing direct solvers (LU) for parallel matrices 
-  via the external package SuperLU_DIST.
+  MAT_SOLVER_SUPERLU_DIST - Parallel direct solver package for LU factorization
 
-  If SuperLU_DIST is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes SuperLU_DIST solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU_DIST) then 
-  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() DO NOT
-  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
-
-  This matrix inherits from MATSEQAIJ when constructed with a single process communicator,
-  and from MATMPIAIJ otherwise.  As a result, for single process communicators, 
-  MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported 
-  for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.  One can also call MatConvert() for an inplace
-  conversion to or from the MATSEQAIJ or MATMPIAIJ type (depending on the communicator size)
-  without data copy; but this MUST be called AFTER the matrix values are set. 
-
-  
+   Works with AIJ matrices  
 
   Options Database Keys:
-+ -mat_type superlu_dist - sets the matrix type to "superlu_dist" during a call to MatSetFromOptions()
-. -mat_superlu_dist_r <n> - number of rows in processor partition
++ -mat_superlu_dist_r <n> - number of rows in processor partition
 . -mat_superlu_dist_c <n> - number of columns in processor partition
 . -mat_superlu_dist_matinput <0,1> - matrix input mode; 0=global, 1=distributed
 . -mat_superlu_dist_equil - equilibrate the matrix
@@ -685,5 +668,8 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
    Level: beginner
 
 .seealso: PCLU
+
+.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage
+
 M*/
 

@@ -353,7 +353,7 @@ EXTERN_C_END
 
    Level: beginner
 
-.seealso: PCLU, MAT_SOLVER_SUPERLU, MAT_SOLVER_MUMPS, MAT_SOLVER_SPOOLES
+.seealso: PCLU, MAT_SOLVER_SUPERLU, MAT_SOLVER_MUMPS, MAT_SOLVER_SPOOLES, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  

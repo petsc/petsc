@@ -142,25 +142,17 @@ PetscErrorCode MatFactorGetSolverPackage_essl(Mat A,const MatSolverPackage *type
 EXTERN_C_END
 
 /*MC
-  MATESSL - MATESSL = "essl" - A matrix type providing direct solvers (LU) for sequential matrices 
-  via the external package ESSL.
+  MAT_SOLVER_ESSL - "essl" - Provides direct solvers (LU) for sequential matrices 
+                              via the external package ESSL.
 
   If ESSL is installed (see the manual for
   instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes ESSL solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATESSL).
-  This matrix type is only supported for double precision real.
 
-  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSEQAIJ type without data copy.
-
-  Options Database Keys:
-. -mat_type essl - sets the matrix type to "essl" during a call to MatSetFromOptions()
+  Works with MATSEQAIJ matrices
 
    Level: beginner
 
-.seealso: PCLU
+.seealso: PCLU, PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 
 #undef __FUNCT__  

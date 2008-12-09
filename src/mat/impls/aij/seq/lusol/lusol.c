@@ -471,23 +471,16 @@ PetscErrorCode MatGetFactor_seqaij_lusol(Mat A,MatFactorType ftype,Mat *F)
 }
 
 /*MC
-  MATLUSOL - MATLUSOL = "lusol" - A matrix type providing direct solvers (LU) for sequential matrices 
-  via the external package LUSOL.
+  MAT_SOLVER_LUSOL - "lusol" - Provides direct solvers (LU) for sequential matrices 
+                         via the external package LUSOL.
 
   If LUSOL is installed (see the manual for
   instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes LUSOL solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATLUSOL).
-  This matrix type is only supported for double precision real.
 
-  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
-  supported for this matrix type.  MatConvert can be called for a fast inplace conversion
-  to and from the MATSEQAIJ matrix type.
-
-  Options Database Keys:
-. -mat_type lusol - sets the matrix type to "lusol" during a call to MatSetFromOptions()
+  Works with MATSEQAIJ matrices
 
    Level: beginner
 
-.seealso: PCLU
+.seealso: PCLU, PCFactorSetMatSolverPackage(), MatSolverPackage
+
 M*/

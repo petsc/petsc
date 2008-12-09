@@ -222,25 +222,20 @@ PetscErrorCode MatView_Matlab(Mat A,PetscViewer viewer)
 
 
 /*MC
-  MATMATLAB - MATMATLAB = "matlab" - A matrix type providing direct solvers (LU and QR) and drop tolerance
+  MAT_SOLVER_MATLAB - "matlab" - Providing direct solvers (LU and QR) and drop tolerance
   based ILU factorization (ILUDT) for sequential matrices via the external package Matlab.
 
-  If Matlab is instaled (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes Matlab solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATMATLAB).
-  This matrix type is only supported for double precision real.
 
-  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSEQAIJ type without data copy.
+  Works with MATSEQAIJ matrices.
 
   Options Database Keys:
-+ -mat_type matlab - sets the matrix type to "matlab" during a call to MatSetFromOptions()
-- -mat_matlab_qr   - sets the direct solver to be QR instead of LU
+. -pc_factor_mat_solver_type matlab - selects Matlab to do the sparse factorization
+
 
   Level: beginner
 
 .seealso: PCLU
+
+.seealso: PCFactorSetMatSolverPackage(), MatSolverPackage
 M*/
 

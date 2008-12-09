@@ -3205,21 +3205,21 @@ For eg: \trl{-mat_type superlu_dist} \trl{-ksp_type preonly} \trl{-pc_type lu}
 \begin{table}[H]
 \begin{center}
 \begin{tabular}{lllll}
-{\bf Package}    &{\bf Base Class}  & {\bf PCType} & {\bf MatType} & {\bf Runtime Options}\\
+{\bf Package}    &{\bf MatType}  & {\bf PCType} & {\bf MatSolverPackage} & {\bf Runtime Options}\\
 \hline
-DSCPACK          & baij         & cholesky     &  MATDSCPACK         & \trl{-mat_type dscpack}\\
-ESSL             & seqaij       & lu           &  MATESSL            & \trl{-mat_type essl}\\
-LUSOL            & seqaij       & lu           &  MATLUSOL           & \trl{-mat_type lusol}\\
-MATLAB           & seqaij       & lu           &  MATMATLAB          & \trl{-mat_type matlab}\\
-MUMPS            & aij          & lu           &  MATAIJMUMPS        & \trl{-mat_type aijmumps}\\
-                 & sbaij        & cholesky     &  MATSBAIJMUMPS      & \trl{-mat_type sbaijmumps}\\
-PLAPACK          & plapack      & lu           &  MATPLAPACK         & \trl{-mat_type plapack}\\
-                 & plapack      & cholesky     &  MATPLAPACK         & \trl{-mat_type plapack}\\
-SPOOLES          & aij          & lu           &  MATAIJSPOOLES      & \trl{-mat_type aijspooles}\\                
-                 & sbaij        & cholesky     &  MATSBAIJSPOOLES    & \trl{-mat_type sbaijspooles}\\
-SUPERLU          & seqaij       & lu           &  MATSUPERLU         & \trl{-mat_type superlu} \\
-SUPERLU\_DIST    & aij          & lu           &  MATSUPERLU\_DIST   & \trl{-mat_type superlu_dist}\\
-UMFPACK          & seqaij       & lu           &  MATUMFPACK         & \trl{-mat_type umfpack}\\
+DSCPACK          & baij         & cholesky     &  \trl{MAT_SOLVER_DSCPACK}         & \trl{-pc_factor_mat_solver_package dscpack}\\
+ESSL             & seqaij       & lu           &  \trl{MAT_SOLVER_ESSL}            & \trl{-pc_factor_mat_solver_package essl}\\
+LUSOL            & seqaij       & lu           &  \trl{MAT_SOLVER_LUSOL}           & \trl{-pc_factor_mat_solver_package lusol}\\
+MATLAB           & seqaij       & lu           &  \trl{MAT_SOLVER_MATLAB}          & \trl{-pc_factor_mat_solver_package matlab}\\
+MUMPS            & aij          & lu           &  \trl{MAT_SOLVER_MUMPS}        & \trl{-pc_factor_mat_solver_package aijmumps}\\
+                 & sbaij        & cholesky     & \\
+PLAPACK          & plapack      & lu           &  \trl{MAT_SOVLER_PLAPACK}         & \trl{-pc_factor_mat_solver_package plapack}\\
+                 & plapack      & cholesky     &  \\
+SPOOLES          & aij          & lu           &  \trl{MAT_SOLVER_SPOOLES}      & \trl{-pc_factor_mat_solver_package aijspooles}\\                
+                 & sbaij        & cholesky     &  \\
+SUPERLU          & seqaij       & lu           &  \trl{MAT_SOVLER_SUPERLU}         & \trl{-pc_factor_mat_solver_package superlu} \\
+SUPERLU\_DIST    & aij          & lu           &  \trl{MAT_SOLVER_SUPERLU_DIST}   & \trl{-pc_factor_mat_solver_package superlu_dist}\\
+UMFPACK          & seqaij       & lu           &  \trl{MAT_SOLVER_UMFPACK}         & \trl{-pc_factor_mat_solver_package umfpack}\\
 
 
 \hline
