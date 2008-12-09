@@ -183,12 +183,12 @@ MPICH implementation of MPI \cite{mpich-web-page} and many others, the following
 command initiates a program that uses eight processors:
 \findex{mpiexec} \sindex{running PETSc programs} 
 \begin{tabbing}
-   mpiexec -n 8 ./petsc\_program\_name petsc\_options
+   mpiexec -np 8 ./petsc\_program\_name petsc\_options
 \end{tabbing}
 
 PETSc also comes with a script 
 \begin{tabbing}
-   \${PETSC\_DIR}/bin/petscmpiexec -n 8 ./petsc\_program\_name petsc\_options
+   \${PETSC\_DIR}/bin/petscmpiexec -np 8 ./petsc\_program\_name petsc\_options
 \end{tabbing}
 that uses the information set in \trl{${PETSC_DIR}/${PETSC_ARCH}/conf/petscvariables} to 
 automatically use the correct \trl{mpiexec} for your configuration.
@@ -213,6 +213,7 @@ running any PETSc program with the option \trl{-help}.
      - start all processes in debugger \findex{-start_in_debugger} \sindex{debugger}
 \item \trl{-on_error_attach_debugger}  \trl{[noxterm,gdb,dbx,xxgdb]}
       \trl{[-display name]} - \findex{-on_error_attach_debugger}start debugger only on encountering an error
+\item \trl{-info} - print a great deal of information about what the programming is doing as it runs
 \end{itemize}
 See Section \ref{sec_debugging} for more information on debugging PETSc programs.
 
@@ -392,6 +393,12 @@ has \trl{M} global rows and \trl{N} global columns, with the routines
 where the matrix format can be specified at runtime.  The user could
 alternatively specify each processes' number of local rows and columns
 using \trl{m} and \trl{n}.
+Generally one then sets the "type" of the matrix, \findex{MatSetType()} with, for example,
+\begin{tabbing}
+  MatSetType(Mat A,MATAIJ);
+\end{tabbing}
+This causes the matrix to used the compressed sparse row storage format to store the
+matrix entries. See MatType for a list of all matrix types.
 Values can then be set with the command
 \begin{tabbing}
   MatSetValues(Mat A,int m,int *im,int n,int *in,PetscScalar *values,INSERT\_VALUES);
@@ -562,10 +569,10 @@ given in the file \href{troubleshooting.html}{\${PETSC\_DIR}/docs/troubleshootin
       /usr/lib/debug/malloc.o /usr/lib/debug/mallocmap.o  \\
       /usr/lang/SC1.0.1/libF77.a -lm /usr/lang/SC1.0.1/libm.a -lm\\
    rm -f ex1.o\\
-   eagle: mpiexec -n 1 ./ex2\\
+   eagle: mpiexec -np 1 ./ex2\\
    Norm of error 3.6618e-05 iterations 7\\
    eagle:\\
-   eagle: mpiexec -n 2 ./ex2\\
+   eagle: mpiexec -np 2 ./ex2\\
    Norm of error 5.34462e-05 iterations 9
 \end{tabbing}
 }
@@ -686,14 +693,14 @@ When referencing PETSc in a publication please cite the following:
    Author = "Satish Balay and William D. Gropp and Lois C. McInnes and Barry F. Smith",\\
    Title  = "PETSc home page",\\
    Note   = "http://www.mcs.anl.gov/petsc",\\
-   Year   = "2001"\}\\
+   Year   = "2008"\}\\
 
 @TechReport\{petsc-manual,\\
    Author      = "Satish Balay and William D. Gropp and Lois C. McInnes and Barry F. Smith",\\
    Title       = "PETSc Users Manual",\\
-   Number      = "ANL-95/11 - Revision 2.1.5",\\
+   Number      = "ANL-95/11 - Revision 3.0",\\
    Institution = "Argonne National Laboratory",\\
-   Year        = "2003"\}\\
+   Year        = "2008"\}\\
 
 @InProceedings\{petsc-efficient,\\
    Author    = "Satish Balay and William D. Gropp and Lois C. McInnes and Barry F. Smith",\\
@@ -725,8 +732,7 @@ The root directory of PETSc contains the following directories:
  \item \trl{petscmpiexec} (utility for setting running MPI jobs),
  \end{itemize}
 
-\item \trl{bmake} - Base PETSc makefile directory.  Includes subdirectories
-                    for various configurations.
+\item \trl{conf} - Base PETSc makefile that defines the standard make variables and rules used by PETSc
 \item \trl{include} - All include files for PETSc that are visible to the user.
 \item \trl{include/finclude}    - PETSc include files for Fortran programmers using 
                                   the .F suffix (recommended).
