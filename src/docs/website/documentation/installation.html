@@ -170,16 +170,16 @@ cygwin shell.</li>
         <li>Sugest downloading and installing PETSc as a <span style="font-weight: bold;">regular/non-root user,</span> perhaps in <span style="font-weight: bold;">/home/username/soft</span></li>
 
         <li><a href="../download/index.html">Download</a> latest PETSc
-release tarball: petsc-2.3.3.tar.gz<br>
+release tarball: petsc-3.0.tar.gz<br>
 
         </li>
 
         <li><font color="#ff0000">cd /home/username/soft</font></li>
 
-        <li><font color="#ff0000">gunzip -c petsc-2.3.3.tar.gz
+        <li><font color="#ff0000">gunzip -c petsc-3.0.tar.gz
 | tar -xof -</font></li>
 
-        <li><font color="#ff0000">cd petsc-2.3.3-p0</font></li>
+        <li><font color="#ff0000">cd petsc-3.0</font></li>
 
         <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=$PWD;
 export PETSC_DIR</font><br>
@@ -270,7 +270,7 @@ install BLAS, LAPACK, MPICH if they are not already installed on the
 system) :<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.3-p0<br>
+PETSC_DIR=/home/petsc/petsc-3.0-p0<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
@@ -290,7 +290,7 @@ make test</font></li>
 c++ compiler]:<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.3-p0<br>
+PETSC_DIR=/home/petsc/petsc-3.0-p0<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
@@ -312,7 +312,7 @@ LAPACK, MPICH software are installed at the specified locations, and
 use MPI compilers <span style="font-weight: bold;">mpicc/mpif77</span>:<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.3-p0<br>
+PETSC_DIR=/home/petsc/petsc-3.0-p0<br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
@@ -1261,9 +1261,9 @@ user</span>]. i.e<br>
         <li><span style="color: rgb(255, 0, 0);">cd </span><span style="color: rgb(255, 0, 0);"></span><span style="color: rgb(255, 0, 0);">/opt/petsc</span></li>
 
         <li><span style="color: rgb(255, 0, 0);">tar -xzf
-petsc-2.3.3.tar.gz</span></li>
+petsc-3.0.tar.gz</span></li>
 
-        <li><span style="color: rgb(255, 0, 0);">cd petsc-2.3.3</span></li>
+        <li><span style="color: rgb(255, 0, 0);">cd petsc-3.0</span></li>
 
         <li><span style="color: rgb(255, 0, 0);">./config/configure.py</span></li>
 
@@ -1291,7 +1291,7 @@ non-root regular location - say /home/username]</span></li>
           </span></li>
 
         <li><span style="color: rgb(255, 0, 0);">./config/configure.py
---prefix=/opt/petsc/petsc-2.3.3&nbsp; [other configure options]<br>
+--prefix=/opt/petsc/petsc-3.0&nbsp; [other configure options]<br>
 
           </span></li>
 
@@ -1305,7 +1305,7 @@ PETSC_DIR=$PWD<br>
       
       </ul>
 
-After the install is done, one has to switch to using <span style="color: rgb(255, 0, 0);">PETSC_DIR=/opt/petsc/petsc-2.3.3</span>.
+After the install is done, one has to switch to using <span style="color: rgb(255, 0, 0);">PETSC_DIR=/opt/petsc/petsc-3.0</span>.
 &nbsp;If you've installed PETSc with the --prefix option then you DO
 NOT use a PETSC_ARCH variable. You should install different
 configurations using different --prefix names.<br>
@@ -1363,7 +1363,7 @@ on IBM Blue Gene:</font></a></h3>
       
       <p>IBM Blue Gene [as of now] requires modified compiler
 script
-wrappers to compile PETSc-2.3.3. Please download <a href="ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz">ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz</a>
+wrappers to compile PETSc-3.0. Please download <a href="ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz">ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz</a>
 and follow instructions provided in the <span style="font-weight: bold;">README</span> file.<br>
 
       </p>
