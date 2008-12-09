@@ -47,8 +47,21 @@ def test_cases():
         test_list.append(test)
     return test_list
 
+
+PETSc.COMM_WORLD.barrier()
+sys.stderr.flush()
+sys.stderr.write("petsc4py imported from '%s'\n" % petsc4py.__path__[0])
+sys.stderr.flush()
+PETSc.COMM_WORLD.barrier()
+
 for test in test_cases():
     try:
+        if PETSc.COMM_WORLD.getRank() == 0:
+            sys.stderr.flush()
+            sys.stderr.write("\nrunning %s\n" % test.__name__)
+            sys.stderr.flush()
+        PETSc.COMM_WORLD.barrier()
         unittest.main(test)
+        PETSc.COMM_WORLD.barrier()
     except SystemExit:
         pass
