@@ -172,7 +172,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   }
 
   /*
-         Create the special MPI reduction operation that may be used by VecNorm/DotBegin()
+    Create the special MPI reduction operation that may be used by VecNorm/DotBegin()
   */
   ierr = MPI_Op_create(PetscSplitReduction_Local,1,&PetscSplitReduction_Op);CHKERRQ(ierr);
   ierr = MPI_Op_create(VecMax_Local,2,&VecMax_Local_Op);CHKERRQ(ierr);
@@ -182,6 +182,29 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   for (i=0; i<4; i++) {
     ierr = PetscObjectComposedDataRegister(NormIds+i);CHKERRQ(ierr);
   }
+  
+  /* Register finalization routine */
+  ierr = PetscRegisterFinalize(VecFinalizePackage);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecFinalizePackage"
+/*@C
+  VecFinalizePackage - This function finalizes everything in the Vec package. It is called
+  from PetscFinalize().
+
+  Level: developer
+
+.keywords: Vec, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecFinalizePackage(void) {
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = MPI_Op_free(&PetscSplitReduction_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&VecMax_Local_Op);CHKERRQ(ierr);
+  ierr = MPI_Op_free(&VecMin_Local_Op);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
