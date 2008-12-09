@@ -117,7 +117,7 @@ class Configure(config.base.Configure):
     self.setCompilers.pushLanguage(self.languages.clanguage)
     pcc_linker = self.setCompilers.getLinker()
     self.addMakeMacro('PCC_LINKER',pcc_linker)
-    self.addMakeMacro('PCC_LINKER_FLAGS',self.libraries.toStringNoDupes(self.setCompilers.getLinkerFlags().split(' ')))
+    self.addMakeMacro('PCC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
     self.setCompilers.popLanguage()
     # '' for Unix, .exe for Windows
     self.addMakeMacro('CC_LINKER_SUFFIX','')
