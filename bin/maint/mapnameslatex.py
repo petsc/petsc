@@ -236,7 +236,7 @@ if __name__ == "__main__":
             if bracket == 0:
 		value = token.value
 		if mappedstring.has_key(value):
-		    value = '\\href{'+'http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mappedstring[value]+'}'
+		    value = '\\href{'+'http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-'+version+'/docs/'+mappedlink[value]+'}{'+mappedstring[value]+'}'
             else:
 		value = token.value
 	    if token.value[0] == '}':

@@ -300,27 +300,27 @@ dist:
 # also copy the file over to ftp site.
 web-snapshot:
 	@if [ ! -f "${HOME}/petsc-dev.tar.gz" ]; then \
-	    echo "~/petsc-dev.tar.gz missing! cannot update petsc-dev snapshot on www-unix"; \
+	    echo "~/petsc-dev.tar.gz missing! cannot update petsc-dev snapshot on mcs-web-site"; \
 	  else \
-            echo "updating petsc-dev snapshot on www-unix"; \
+            echo "updating petsc-dev snapshot on mcs-web-site"; \
 	    tmpdir=`mktemp -d -t petsc-doc.XXXXXXXX`; \
 	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-dev.tar.gz; \
 	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-dev/ \
-              petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as/snapshots/petsc-dev ;\
+              petsc@harley.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/snapshots/petsc-dev ;\
 	    /bin/cp -f /home/petsc/petsc-dev.tar.gz /nfs/ftp/pub/petsc/petsc-dev.tar.gz;\
 	    ${RM} -rf $${tmpdir} ;\
 	  fi
 
-# build the tarfile - and then update petsc-dev snapshot on www-unix
+# build the tarfile - and then update petsc-dev snapshot on mcs-web-site
 update-web-snapshot: dist web-snapshot
 
 # This target updates website main pages
 update-web:
 	@cd ${PETSC_DIR}/src/docs; make PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} bib2html; \
 	/usr/bin/rsync -az -C --exclude=BitKeeper --exclude=documentation/installation.html \
-	  ${PETSC_DIR}/src/docs/website/ petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as
+	  ${PETSC_DIR}/src/docs/website/ petsc@harley.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as
 	@cd ${PETSC_DIR}/src/docs/tex/manual; make developers.pdf PETSC_DIR=${PETSC_DIR} PETSC_ARCH=${PETSC_ARCH} LOC=${PETSC_DIR}; \
-	/usr/bin/rsync -az developers.pdf petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as/developers/
+	/usr/bin/rsync -az developers.pdf petsc@harley.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/developers/
 
 #
 #  builds a single list of files for each PETSc library so they may all be built in parallel
