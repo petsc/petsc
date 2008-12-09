@@ -39,8 +39,8 @@
 \ANLTitle{PETSc Developers Manual}{\em The PETSc Team \\
 http://www.mcs.anl.gov/petsc
 \vspace{0.5in} \\
-{\rm This document is intended for use with PETSc 2.3.1}}
-{\Large This is not yet an official ANL document}{2006}
+{\rm This document is intended for use with PETSc 3.0}}
+{}{2006}
 
 \newpage
 
@@ -48,6 +48,7 @@ http://www.mcs.anl.gov/petsc
 
 \vspace{1in}
 \date{\today}
+
 
 % Blank page makes double sided printout look bettter.
 \newpage
@@ -73,7 +74,7 @@ objects are implemented.
 
 This manual discusses the PETSc library design and describes
 how to develop new library codes that are compatible with other PETSc components 
-including PETSc 2.3.1.
+including PETSc 3.0.
 The idea is not to develop one massive library that everyone shoves code 
 into; rather, to develop an architecture that allows many people
 to (as painlessly as possible) contribute (and maintain) their own libraries,
@@ -87,9 +88,7 @@ manual, and have access to PETSc source code and documentation
 
 \vspace{1cm}
 
-This is the first draft of the PETSc developers manual;
-therefore, it is very sketchy and incomplete. Please
-direct all comments and questions regarding PETSc design and
+Please direct all comments and questions regarding PETSc design and
 development to \trl{petsc-dev@mcs.anl.gov}.  Note that all {\em
 bug reports and questions regarding the use of PETSc} should continue
 to be directed to \trl{petsc-maint@mcs.anl.gov}.
@@ -284,6 +283,7 @@ stderr with the command line options \trl{-error\_output\_stderr}.
 
 \subsection{Exception} 
 I have begun to add support for treating errors as exceptions, see PetscExceptionTry1()
+This code may be deprecated.
 
 % -----------------------------------------------------------------------------------
 \section{Implementation of Profiling}
@@ -401,14 +401,10 @@ Each class has
 \item Its own, application public, include file \trl{include/petsc$<$class$>$.h} 
 \item Its own directory, \trl{src/$<$class$>$}
 \item A data structure defined in  the file
-      \trl{src/$<$class$>$/$<$class$>$impl.h}.
+      \trl{include/private/$<$class$>$impl.h}.
       This data structure is shared by all the different PETSc implementations of the 
       class. For example, for matrices it is shared by dense,
       sparse, parallel, and sequential formats.
-      Two of the classes Vec and PC have their
-      private include files in \trl{include/private}, along
-      with \trl{petscimpl.h} so that other classes can have direct access to 
-      certain parts of the private structure for efficiency reasons.
 \item An abstract interface that defines the application callable 
       functions for the class. These are defined in the directory
       \trl{src/$<$class$>$/interface}.
@@ -450,7 +446,7 @@ conventions are used to simplify code maintenance.
 \section{Common Object Header}
 
 All PETSc/PETSc objects have the following common header structures
-(in \trl{private/petscimpl.h})
+(in \trl{include/private/petscimpl.h})
 
 \begin{tabbing}
 \\
@@ -471,7 +467,7 @@ typedef struct \{ \\
 struct \_p\_$<$class$>$ \{\\
   PetscCookie      cookie;                                  \\
   PetscOps         *bops;                                   \\
-  $<$class$>$Ops       *ops;                                    \\
+  $<$class$>$Ops   *ops;                                    \\
   MPI\_Comm         comm;                                    \\
   PetscLogDouble  flops,time,mem;                          \\
   int              id;                                      \\
@@ -571,7 +567,7 @@ For example,
   ierr = PetscCookieRegister(''index set'',\&IS\_COOKIE);CHKERRQ(ierr);
 \end{tabbing}
 {\bf Question: Why is a fundamental part of PETSc objects defined in PetscLog when PETSc Log
-is something that can be "turned off"} On can verify that an object is valid of a particular
+is something that can be "turned off"} One can verify that an object is valid of a particular
 class with 
 \begin{tabbing}
   PetscValidHeaderSpecific(x,VEC\_COOKIE,1);
@@ -857,10 +853,10 @@ so that the code is uniform and easily maintainable:
 \item Each additional level of loops, if statements, etc. is indented
       two more characters.
 \item Wrapping lines should be avoided whenever possible.
-\item Source code lines should not be more than 120 characters wide.
+\item Source code lines do not have a hard length limit, generally we like then less than 150 characters wide.
 \item The macros SETERRQ() and CHKERRQ() should be on the 
       same line as the routine to be checked unless this violates the 
-      120 character width rule. Try to make error messages short, but 
+      150 character width rule. Try to make error messages short, but 
       informative.
 \item The local variable declarations should be aligned. For example,
       use the style
@@ -966,7 +962,10 @@ For example, the option name for the basic convergence tolerance for
 the KSP package is \trl{-ksp\_atol}. In addition, operations in different 
 packages of a similar nature have a similar name.  For example, the option
 name for the basic convergence tolerance for the SNES package is 
-\trl{-snes\_atol}.
+\trl{-snes\_atol}. 
+
+When a \trl{Set} is included in a function name, it is dropped in the options key.
+For example \trl{KSPGMRESSetRestart()} becomes \trl{-ksp_gmres_restart}.
 
 % -----------------------------------------------------------------------------------
 \chapter{The Various Matrix Classes}
