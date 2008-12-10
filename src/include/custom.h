@@ -430,6 +430,43 @@ KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 /* ---------------------------------------------------------------- */
 
 #undef __FUNCT__  
+#define __FUNCT__ "SNESSetIterationNumber"
+PETSC_STATIC_INLINE PetscErrorCode
+SNESSetIterationNumber(SNES snes, PetscInt its)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (its < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
+  snes->iter = its;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetFunctionNorm"
+PETSC_STATIC_INLINE PetscErrorCode
+SNESSetFunctionNorm(SNES snes, PetscReal fnorm)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (fnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
+  snes->norm = fnorm;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESLogResidualHistoryCall"
+PETSC_STATIC_INLINE PetscErrorCode
+SNESLogConvergenceHistory(SNES snes, PetscInt its, PetscReal fnorm, PetscInt lits)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
+  if (fnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
+  SNESLogConvHistory(snes,fnorm,its);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorCall"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESMonitorCall(SNES snes, PetscInt its, PetscReal rnorm)
@@ -457,8 +494,18 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
   if (xnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"solution norm must be nonnegative");
   if (ynorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"step norm must be nonnegative");
   if (fnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"function norm must be nonnegative");
-  ierr = (*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-  *reason = snes->reason;
+  ierr = (*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,reason,snes->cnvP);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetConvergedReason"
+PETSC_STATIC_INLINE PetscErrorCode
+SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  snes->reason = reason;
   PetscFunctionReturn(0);
 }
 

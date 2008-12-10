@@ -48,6 +48,51 @@ class TestSNESBase(object):
         tolvals = [getattr(self.snes, t) for t in  tnames]
         self.assertEqual(tuple(tols), tuple(tolvals))
 
+    def testProperties(self):
+        snes = self.snes
+        #
+        snes.appctx = (1,2,3)
+        self.assertEqual(snes.appctx, (1,2,3))
+        snes.appctx = None
+        self.assertEqual(snes.appctx, None)
+        #
+        snes.its = 1
+        self.assertEqual(snes.its, 1)
+        snes.its = 0
+        self.assertEqual(snes.its, 0)
+        #
+        snes.norm = 1
+        self.assertEqual(snes.norm, 1)
+        snes.norm = 0
+        self.assertEqual(snes.norm, 0)
+        #
+        rh, ih = snes.history
+        self.assertTrue(len(rh)==0)
+        self.assertTrue(len(ih)==0)
+        #
+        reason = PETSc.SNES.ConvergedReason.CONVERGED_ITS
+        snes.reason = reason
+        self.assertEqual(snes.reason, reason)
+        self.assertTrue(snes.converged)
+        self.assertFalse(snes.diverged)
+        self.assertFalse(snes.iterating)
+        reason = PETSc.SNES.ConvergedReason.DIVERGED_MAX_IT
+        snes.reason = reason
+        self.assertEqual(snes.reason, reason)
+        self.assertFalse(snes.converged)
+        self.assertTrue(snes.diverged)
+        self.assertFalse(snes.iterating)
+        reason = PETSc.SNES.ConvergedReason.CONVERGED_ITERATING
+        snes.reason = reason
+        self.assertEqual(snes.reason, reason)
+        self.assertFalse(snes.converged)
+        self.assertFalse(snes.diverged)
+        self.assertTrue(snes.iterating)
+        #
+        self.assertFalse(snes.use_ew)
+        self.assertFalse(snes.use_mf)
+        self.assertFalse(snes.use_fd)
+
     def testGetSetFunc(self):
         r, func = self.snes.getFunction()
         self.assertFalse(r)
@@ -391,12 +436,6 @@ class MySNES(object):
         ## return False # not succedd
         return True # succedd
 
-    def monitor(self, snes, its, fnorm):
-        self._log('monitor', snes, its, fnorm)
-
-    def converged(self, snes, its, *args):
-        self._log('converged', snes, its, *args)
-        return False
 
 class TestSNESPython(TestSNESBase, unittest.TestCase):
     SNES_TYPE = PETSc.SNES.Type.PYTHON
@@ -404,7 +443,7 @@ class TestSNESPython(TestSNESBase, unittest.TestCase):
     def setUp(self):
         super(TestSNESPython, self).setUp()
         self.snes.setPythonContext(MySNES())
-        
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':

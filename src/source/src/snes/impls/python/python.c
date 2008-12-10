@@ -8,16 +8,35 @@
 /* backward compatibility hacks */
 
 #if PETSC_VERSION_(2,3,2)
+#define vec_sol_update vec_sol_update_always
+#define vec_rhs        afine
 #define SNES_KSPSolve(snes,ksp,b,x) KSPSolve(ksp,b,x)
+#define SNES_CONVERGED_ITS   ((SNESConvergedReason)1)
 #define SNESDefaultConverged SNESConverged_LS
-#define SNES_CONVERGED_ITS   ((SNESConvergedReason)5)
-#define vec_sol_update       vec_sol_update_always
-#define vec_rhs              afine
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSkipConverged"
+static PetscErrorCode SNESSkipConverged(SNES snes,PetscInt it,
+					PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,
+					SNESConvergedReason *reason,void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(reason,6);
+  *reason = SNES_CONVERGED_ITERATING;
+  if (fnorm != fnorm) {
+    ierr = PetscInfo(snes,"Failed to converge, function norm is NaN\n");CHKERRQ(ierr);
+    *reason = SNES_DIVERGED_FNORM_NAN;
+  } else if(it == snes->max_its) {
+    *reason = SNES_CONVERGED_ITS;
+  }
+  PetscFunctionReturn(0);
+}
 #endif
 
 #if PETSC_VERSION_(2,3,3)
-#define vec_sol_update       vec_sol_update_always
-#define vec_rhs              afine
+#define vec_sol_update vec_sol_update_always
+#define vec_rhs        afine
 #endif
 
 /*  -------------------------------------------------------------------- */
@@ -43,11 +62,6 @@ struct _SNESPyOps {
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*);
   PetscErrorCode (*linearsolve)(SNES,Vec,Vec,PetscTruth*,PetscInt*);
   PetscErrorCode (*linesearch)(SNES,Vec,Vec,Vec,PetscTruth*);
-
-  PetscErrorCode (*monitor)(SNES,PetscInt,PetscReal);
-  PetscErrorCode (*converged)(SNES,PetscInt,
-			      PetscReal,PetscReal,PetscReal,
-			      SNESConvergedReason*);
 };
 
 typedef struct {
@@ -307,78 +321,6 @@ static PetscErrorCode SNESLineSearch_Python(SNES snes,Vec x,Vec y, Vec F,PetscTr
   goto finally;
 }
 
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESMonitor_Python"
-static PetscErrorCode SNESMonitor_Python(SNES snes, PetscInt its, PetscReal fnorm)
-{
-  PetscFunctionBegin;
-  SNES_PYTHON_CALL(snes, "monitor", ("O&ld",
-				     PyPetscSNES_New, snes,
-				     (long)           its, 
-				     (double)         fnorm ));
-  /* call default monitors anyway */
-  SNESMonitor(snes,its,fnorm);
-  PetscFunctionReturn(0);
-}
-
-static PyObject * SNESPyObjToConvReason(PyObject *value, SNESConvergedReason *outreason)
-{
-  SNESConvergedReason reason = SNES_CONVERGED_ITERATING;
-  if (value == NULL) 
-    return NULL;
-  if (value == Py_None) {
-    reason = SNES_CONVERGED_ITERATING;
-  } else if (value == Py_False) {
-    reason = SNES_CONVERGED_ITERATING;
-  } else if (value == Py_True) {
-    reason = SNES_CONVERGED_ITS;
-  } else if (PyInt_Check(value)) {
-    reason = (SNESConvergedReason) PyInt_AsLong(value);
-    if (reason < SNES_DIVERGED_LOCAL_MIN ||
-	reason > SNES_CONVERGED_TR_DELTA) {
-      PyErr_SetString(PyExc_ValueError,
-		      "convergence test returned an out of range "
-		      "integer value for SNESConvergedReason"); 
-      goto fail;
-    }
-  } else {
-    PyErr_SetString(PyExc_TypeError,
-		    "convergence test must return None, boolean, "
-		    "or a valid integer value for SNESConvergedReason");
-    goto fail;
-  }
-  *outreason = reason;
-  return value;
- fail:
-  Py_DecRef(value);
-  return NULL;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "SNESConverged_Python"
-static PetscErrorCode SNESConverged_Python(SNES snes, PetscInt its,
-					   PetscReal xnorm, PetscReal ynorm, PetscReal fnorm,
-					   SNESConvergedReason *reason)
-{
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  SNES_PYTHON_CALL_MAYBE_RET(snes, "converged", ("O&lddd",
-						 PyPetscSNES_New,  snes,
-						 (long)            its,
-						 (double)          xnorm,
-						 (double)          ynorm,
-						 (double)          fnorm  ),
-			     notimplemented,
-			     SNESPyObjToConvReason, reason);
-  /* call default convergence test anyway if not converged */
- notimplemented:
-  if (!(*reason) && snes->ops->converged) {
-    ierr = (*snes->ops->converged)(snes,its,xnorm,ynorm,fnorm,reason,snes->cnvP);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 /* -------------------------------------------------------------------------- */
 /*
    SNESSolve_Python - Solves a nonlinear system
@@ -407,6 +349,8 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
   snes->ttol   = 0;
   snes->reason = SNES_CONVERGED_ITERATING;
 
+  if (!snes->ops->converged) { snes->ops->converged = SNESSkipConverged; }
+
   /* Call user presolve routine */
   ierr = (*py->ops->presolve)(snes);CHKERRQ(ierr);
 
@@ -415,7 +359,7 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
   Y = snes->vec_sol_update; /* update vector */
 
   ierr = (*py->ops->computefunction)(snes,X,F);CHKERRQ(ierr); /* F <- function(X) */
-  ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);               /* fnorm <- ||F||   */
+  ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);              /* fnorm <- ||F||   */
   /* Check function norm */
   if (fnorm != fnorm) SETERRQ(PETSC_ERR_FP,"User provided compute function generated a Not-a-Number");
   snes->norm = fnorm;
@@ -423,11 +367,11 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
   snes->ttol = fnorm*snes->rtol;
 
   /* Monitor convergence */
-  ierr = (*py->ops->monitor)(snes,snes->iter,snes->norm);CHKERRQ(ierr);
+  SNESMonitor(snes,0,fnorm);
   SNESLogConvHistory(snes,fnorm,0);
 
   /* Test for convergence */
-  ierr = (*py->ops->converged)(snes,0,0.0,0.0,fnorm,&snes->reason);CHKERRQ(ierr);
+  ierr = (*snes->ops->converged)(snes,0,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
 
   for (i=0; !snes->reason && i<snes->max_its; i++) {
     
@@ -458,10 +402,10 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
     ierr = (*py->ops->poststep)(snes, i);CHKERRQ(ierr);
 
     /* Test for convergence */
-    ierr = (*py->ops->converged)(snes,i+1,xnorm,ynorm,fnorm,&snes->reason);CHKERRQ(ierr);
+    ierr = (*snes->ops->converged)(snes,i+1,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
 
     /* Monitor convergence */
-    ierr = (*py->ops->monitor)(snes,i+1,fnorm);CHKERRQ(ierr);
+    SNESMonitor(snes,i+1,fnorm);
     SNESLogConvHistory(snes,fnorm,lits);
 
     snes->iter = i+1;
@@ -658,9 +602,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES snes)
   py->ops->linearsolve       = SNESLinearSolve_Python;
   py->ops->linesearch        = SNESLineSearch_Python;
 
-  py->ops->monitor           = SNESMonitor_Python;
-  py->ops->converged         = SNESConverged_Python;
-  
   /* PETSc */
   snes->vec_sol_update = PETSC_NULL;
 

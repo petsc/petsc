@@ -37,7 +37,7 @@ PetscErrorCode SNESSolve_232(SNES snes,Vec b,Vec x)
 }
 #define SNESSolve SNESSolve_232
 
-#define SNES_CONVERGED_ITS 5
+#define SNES_CONVERGED_ITS ((SNESConvergedReason)1)
 
 #define SNESDefaultConverged   SNESConverged_LS
 

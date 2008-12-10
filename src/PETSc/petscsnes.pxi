@@ -92,6 +92,7 @@ cdef extern from "petscsnes.h":
                           PetscSNESConvergedReason*,void*) except PETSC_ERR_PYTHON
     int SNESSetConvergenceHistory(PetscSNES,PetscReal[],PetscInt[],PetscInt,PetscTruth)
     int SNESGetConvergenceHistory(PetscSNES,PetscReal*[],PetscInt*[],PetscInt*)
+    int SNESLogConvergenceHistory(PetscSNES,PetscInt,PetscReal,PetscInt)
 
     int SNESMonitorSet(PetscSNES,PetscSNESMonitor*,void*,PetscSNESCtxDel*)
     int SNESMonitorCancel(PetscSNES)
@@ -99,8 +100,11 @@ cdef extern from "petscsnes.h":
     int SNESSetUp(PetscSNES)
     int SNESSolve(PetscSNES,PetscVec,PetscVec)
 
+    int SNESSetConvergedReason(PetscSNES,PetscSNESConvergedReason)
     int SNESGetConvergedReason(PetscSNES,PetscSNESConvergedReason*)
+    int SNESSetIterationNumber(PetscSNES,PetscInt)
     int SNESGetIterationNumber(PetscSNES,PetscInt*)
+    int SNESSetFunctionNorm(PetscSNES,PetscScalar)
     int SNESGetFunctionNorm(PetscSNES,PetscScalar*)
     int SNESGetLinearSolveIterations(PetscSNES,PetscInt*)
 

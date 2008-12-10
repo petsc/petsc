@@ -175,26 +175,32 @@ cdef class SNES(Object):
         return reason
 
     def setConvergenceHistory(self, length=None, reset=False):
-        cdef PetscInt  *idata = NULL
         cdef PetscReal *rdata = NULL
-        cdef PetscInt   size = 100
+        cdef PetscInt  *idata = NULL
+        cdef PetscInt   size = 1000
         cdef PetscTruth flag = PETSC_FALSE
         if length is not None: size = length
-        if size < 0: size = 100
+        if size < 0: size = 1000
         if reset: flag = PETSC_TRUE
-        cdef ndarray ihist = oarray_i(empty_i(size), NULL, &idata)
         cdef ndarray rhist = oarray_r(empty_r(size), NULL, &rdata)
-        Object_setAttr(<PetscObject>self.snes, "__history__", (ihist, rhist))
+        cdef ndarray ihist = oarray_i(empty_i(size), NULL, &idata)
+        Object_setAttr(<PetscObject>self.snes, "__history__", (rhist, ihist))
         CHKERR( SNESSetConvergenceHistory(self.snes, rdata, idata, size, flag) )
 
     def getConvergenceHistory(self):
-        cdef PetscInt  *idata = NULL
         cdef PetscReal *rdata = NULL
+        cdef PetscInt  *idata = NULL
         cdef PetscInt   size = 0
         CHKERR( SNESGetConvergenceHistory(self.snes, &rdata, &idata, &size) )
-        cdef ndarray ihist = array_i(size, idata)
         cdef ndarray rhist = array_r(size, rdata)
-        return (ihist, rhist)
+        cdef ndarray ihist = array_i(size, idata)
+        return (rhist, ihist)
+
+    def logConvergenceHistory(self, its, norm, linear_its=0):
+        cdef PetscInt  ival1 = its
+        cdef PetscReal rval  = norm
+        cdef PetscInt  ival2 = linear_its
+        CHKERR( SNESLogConvergenceHistory(self.snes, ival1, rval, ival2) )
 
     def setMonitor(self, monitor, *args, **kargs):
         if monitor is None: SNES_setMon(self.snes, None)
@@ -265,16 +271,27 @@ cdef class SNES(Object):
         if b is not None: rhs = (<Vec?>b).vec
         CHKERR( SNESSolve(self.snes, rhs, x.vec) )
 
+    def setConvergedReason(self, reason):
+        cdef PetscSNESConvergedReason eval = reason
+        CHKERR( SNESSetConvergedReason(self.snes, eval) )
+
     def getConvergedReason(self):
-        cdef PetscSNESConvergedReason reason
-        reason = SNES_CONVERGED_ITERATING
+        cdef PetscSNESConvergedReason reason = SNES_CONVERGED_ITERATING
         CHKERR( SNESGetConvergedReason(self.snes, &reason) )
         return reason
+
+    def setIterationNumber(self, its):
+        cdef PetscInt ival = its
+        CHKERR( SNESSetIterationNumber(self.snes, ival) )
 
     def getIterationNumber(self):
         cdef PetscInt ival = 0
         CHKERR( SNESGetIterationNumber(self.snes, &ival) )
         return ival
+
+    def setFunctionNorm(self, norm):
+        cdef PetscReal rval = norm
+        CHKERR( SNESSetFunctionNorm(self.snes, rval) )
 
     def getFunctionNorm(self):
         cdef PetscReal rval = 0
@@ -459,11 +476,31 @@ cdef class SNES(Object):
         def __set__(self, value):
             self.setMaxFunctionEvaluations(value)
 
-    # --- convergence test ---
+    # --- iteration ---
+
+    property its:
+        def __get__(self):
+            return self.getIterationNumber()
+        def __set__(self, value):
+            self.setIterationNumber(value)
+
+    property norm:
+        def __get__(self):
+            return self.getFunctionNorm()
+        def __set__(self, value):
+            self.setFunctionNorm(value)
+
+    property history:
+        def __get__(self):
+            return self.getConvergenceHistory()
+
+    # --- convergence ---
 
     property reason:
         def __get__(self):
             return self.getConvergedReason()
+        def __set__(self, value):
+            self.setConvergedReason(value)
 
     property iterating:
         def __get__(self):
