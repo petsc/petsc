@@ -376,9 +376,9 @@ KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPLogResidualHistoryCall"
+#define __FUNCT__ "KSPLogConvergenceHistory"
 PETSC_STATIC_INLINE PetscErrorCode
-KSPLogResidualHistoryCall(KSP ksp, PetscInt its, PetscReal rnorm)
+KSPLogConvergenceHistory(KSP ksp, PetscInt its, PetscReal rnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);

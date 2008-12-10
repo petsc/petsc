@@ -36,6 +36,67 @@ class TestKSPBase(object):
         tolvals = [getattr(self.ksp, t) for t in  tnames]
         self.assertEqual(tuple(tols), tuple(tolvals))
 
+    def testProperties(self):
+        ksp = self.ksp
+        #
+        ksp.appctx = (1,2,3)
+        self.assertEqual(ksp.appctx, (1,2,3))
+        ksp.appctx = None
+        self.assertEqual(ksp.appctx, None)
+        #
+        side_orig = ksp.pc_side
+        for ps_name in ('LEFT',
+                        'RIGHT',
+                        'SYMMETRIC'):
+            ps_value = getattr(PETSc.PC.Side, ps_name)
+            ksp.pc_side = ps_value
+            self.assertEqual(ksp.pc_side, ps_value)
+        ksp.pc_side = side_orig
+        self.assertEqual(ksp.pc_side, side_orig)
+        #
+        nt_orig = ksp.norm_type
+        for nt_name in ('NONE',
+                        'PRECONDITIONED',
+                        'UNPRECONDITIONED',
+                        'NATURAL'):
+            nt_value = getattr(PETSc.KSP.NormType, nt_name)
+            ksp.norm_type = nt_value
+            self.assertEqual(ksp.norm_type, nt_value)
+        ksp.norm_type = nt_orig
+        self.assertEqual(ksp.norm_type, nt_orig)
+        #
+        ksp.its = 1
+        self.assertEqual(ksp.its, 1)
+        ksp.its = 0
+        self.assertEqual(ksp.its, 0)
+        #
+        ksp.norm = 1
+        self.assertEqual(ksp.norm, 1)
+        ksp.norm = 0
+        self.assertEqual(ksp.norm, 0)
+        #
+        rh = ksp.history
+        self.assertTrue(len(rh)==0)
+        #
+        reason = PETSc.KSP.ConvergedReason.CONVERGED_ITS
+        ksp.reason = reason
+        self.assertEqual(ksp.reason, reason)
+        self.assertTrue(ksp.converged)
+        self.assertFalse(ksp.diverged)
+        self.assertFalse(ksp.iterating)
+        reason = PETSc.KSP.ConvergedReason.DIVERGED_MAX_IT
+        ksp.reason = reason
+        self.assertEqual(ksp.reason, reason)
+        self.assertFalse(ksp.converged)
+        self.assertTrue(ksp.diverged)
+        self.assertFalse(ksp.iterating)
+        reason = PETSc.KSP.ConvergedReason.CONVERGED_ITERATING
+        ksp.reason = reason
+        self.assertEqual(ksp.reason, reason)
+        self.assertFalse(ksp.converged)
+        self.assertFalse(ksp.diverged)
+        self.assertTrue(ksp.iterating)
+
     def testGetSetPC(self):
         oldpc = self.ksp.getPC()
         self.assertEqual(oldpc.getRefCount(), 2)

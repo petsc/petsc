@@ -139,7 +139,7 @@ cdef extern from "petscksp.h":
 cdef extern from "custom.h":
     int KSPSetIterationNumber(PetscKSP,PetscInt)
     int KSPSetResidualNorm(PetscKSP,PetscReal)
-    int KSPLogResidualHistoryCall(PetscKSP,PetscInt,PetscReal)
+    int KSPLogConvergenceHistory(PetscKSP,PetscInt,PetscReal)
     int KSPMonitorCall(PetscKSP,PetscInt,PetscReal)
     int KSPConvergenceTestCall(PetscKSP,PetscInt,PetscReal,PetscKSPConvergedReason*)
     int KSPSetConvergedReason(PetscKSP,PetscKSPConvergedReason)

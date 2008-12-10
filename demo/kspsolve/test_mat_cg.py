@@ -20,12 +20,12 @@ ksp.atol = 0
 x.set(0)
 b.set(1)
 ksp.solve(b,x)
-print ksp.its, ksp.rnorm
+print ksp.its, ksp.norm
 
 x.set(0)
 b.set(1)
-its, rnorm = cg(A,b,x,100,1e-5)
-print its, rnorm
+its, norm = cg(A,b,x,100,1e-5)
+print its, norm
 
 try:
     from matplotlib import pylab

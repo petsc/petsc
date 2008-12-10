@@ -267,7 +267,7 @@ cdef class KSP(Object):
     def logConvergenceHistory(self, its, rnorm):
         cdef PetscInt  ival = its
         cdef PetscReal rval = rnorm
-        CHKERR( KSPLogResidualHistoryCall(self.ksp, its, rval) )
+        CHKERR( KSPLogConvergenceHistory(self.ksp, its, rval) )
 
     def setMonitor(self, monitor, *args, **kargs):
         if monitor is None: return
@@ -467,7 +467,7 @@ cdef class KSP(Object):
         def __set__(self, value):
             self.setIterationNumber(value)
 
-    property rnorm:
+    property norm:
         def __get__(self):
             return self.getResidualNorm()
         def __set__(self, value):
