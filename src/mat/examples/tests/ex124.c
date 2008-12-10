@@ -1,0 +1,60 @@
+static char help[] = "Check the difference of the two matrices \n\
+Reads PETSc matrix A and B, then check B=A-B \n\
+Input parameters include\n\
+  -fA <input_file> -fB <input_file> \n\n";
+
+#include "petscmat.h"
+
+#undef WRITEFILE
+#undef __FUNCT__
+#define __FUNCT__ "main"
+PetscInt main(PetscInt argc,char **args)
+{
+  Mat            A,B;    
+  PetscViewer    fd;               
+  char           file[2][PETSC_MAX_PATH_LEN];     
+  PetscTruth     flg; 
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  PetscInt       ma,na,mb,nb;
+
+  PetscInitialize(&argc,&args,(char *)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
+
+  /* read the two matrices, A and B */
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fA",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_USER,"Must indicate binary file with the -fA options");
+  ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[1],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(PETSC_ERR_USER,"Must indicate binary file with the -fP options");
+   
+  /* Load matrices */
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  ierr  = MatLoad(fd,MATAIJ,&A);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
+  printf("\n A:\n");
+  printf("----------------------\n");
+  ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatGetSize(A,&ma,&na);CHKERRQ(ierr);
+  
+    
+  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[1],FILE_MODE_READ,&fd);CHKERRQ(ierr);
+  ierr = MatLoad(fd,MATAIJ,&B);CHKERRQ(ierr);
+  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
+  printf("\n B:\n");
+  printf("----------------------\n");
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  ierr = MatGetSize(B,&mb,&nb);CHKERRQ(ierr);
+   
+  /* Compute B = -A + B */
+  if (ma != mb || na != nb) SETERRQ(PETSC_ERR_ARG_SIZ,"nonconforming matrix size");
+  ierr = MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  printf("\n B - A:\n");
+  printf("----------------------\n");
+  ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+  ierr = MatDestroy(B);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  return 0;
+}
