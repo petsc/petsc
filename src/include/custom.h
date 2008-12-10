@@ -412,8 +412,7 @@ KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReaso
   PetscValidPointer(reason,4);
   if (its   < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"iteration number must be nonnegative");
   if (rnorm < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"residual norm must be nonnegative");
-  ierr = (*ksp->converged)(ksp,its,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
-  *reason = ksp->reason;
+  ierr = (*ksp->converged)(ksp,its,rnorm,reason,ksp->cnvP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

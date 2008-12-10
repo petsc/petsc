@@ -174,6 +174,7 @@ static PetscErrorCode KSPSolve_Python(KSP ksp)
 					 PyPetscVec_New, ksp->vec_rhs,
 					 PyPetscVec_New, ksp->vec_sol),
 			notimplemented);
+  if (!ksp->reason) ksp->reason = KSP_CONVERGED_ITS;
   PetscFunctionReturn(0);
  notimplemented:
   KSP_PYTHON_SETERRSUP(ksp, solveMeth);

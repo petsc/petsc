@@ -173,6 +173,8 @@ class MyKSP(object):
         reason = ksp.callConvergenceTest(its, rnorm)
         if not reason:
             ksp.setIterationNumber(its+1)
+        else:
+            ksp.setConvergedReason(reason)
         return reason
 
 class MyRichardson(MyKSP):
