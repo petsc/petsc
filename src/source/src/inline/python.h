@@ -62,18 +62,31 @@
 
 /* -------------------------------------------------------------------------- */
 
-static const char * PetscHandlePythonError(void)
+static const char * PetscPythonHandleError(void)
 {
-  PyObject *excType = PyErr_Occurred();
-  if (excType && PetscPyExceptionClassCheck(excType)) {
-    const char *className = PetscPyExceptionClassName(excType);
-    if (className != NULL) {
-      char *dot = strrchr(className, '.');
-      if (dot != NULL) className = dot+1;
-      return className;
+  static char ExcName[256];
+  PyObject*   ExcType = PyErr_Occurred();
+  PyOS_snprintf(ExcName, sizeof(ExcName), "%s", "<unknown>");
+  if (ExcType){
+    if (PetscPyExceptionClassCheck(ExcType)) {
+      const char *name = PetscPyExceptionClassName(ExcType);
+      if (name != NULL) {
+	const char *dot = strrchr(name, '.');
+	if (dot != NULL) name = dot+1;
+	PyOS_snprintf(ExcName, sizeof(ExcName), "%s", name);
+      }
+    }
+    {
+      PyObject *exc,*val,*tb;
+      PyErr_Fetch(&exc,&val,&tb);
+      PyErr_NormalizeException(&exc, &val, &tb);
+      PyErr_Display(exc ? exc : Py_None,
+		    val ? val : Py_None,
+		    tb  ? tb  : Py_None);
+      PyErr_Restore(exc,val,tb);
     }
   }
-  return "<unknown>";
+  return ExcName;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -90,7 +103,7 @@ static PetscErrorCode Petsc4PyInitialize(void)
   initialized = PETSC_TRUE;
   PetscFunctionReturn(0);
  fail:
-  PetscHandlePythonError();
+  PetscPythonHandleError();
   SETERRQ(PETSC_ERR_PYTHON,"could not import Python package 'petsc4py.PETSc'");
   PetscFunctionReturn(ierr);
 }
@@ -140,7 +153,7 @@ do {									\
 
 #define PETSC_PYTHON_CALL_TAIL()					\
     if (_retv == NULL) {						\
-      const char *_exc = PetscHandlePythonError();			\
+      const char *_exc = PetscPythonHandleError();			\
       SETERRQ2(PETSC_ERR_PYTHON,"calling Python, "			\
 	       "method %s(), exception '%s'", _meth, _exc);		\
       PetscFunctionReturn(PETSC_ERR_PYTHON);				\
@@ -172,7 +185,7 @@ static PetscErrorCode PetscCreatePythonObject(const char fullname[],
   /* import the Python package/module */
   self = mod = PetscPyImportModule(modname);
   if (mod == NULL) {
-    const char *excname = PetscHandlePythonError();
+    const char *excname = PetscPythonHandleError();
     SETERRQ2(PETSC_ERR_PYTHON,"Python: error importing "
 	     "module '%s', exception '%s'",modname,excname);
     PetscFunctionReturn(PETSC_ERR_PYTHON);
@@ -182,7 +195,7 @@ static PetscErrorCode PetscCreatePythonObject(const char fullname[],
   self = cls = PetscPyObjectGetAttrStr(mod,clsname);
   Py_DecRef(mod);
   if (cls == NULL) {
-    const char *excname = PetscHandlePythonError();
+    const char *excname = PetscPythonHandleError();
     SETERRQ3(PETSC_ERR_PYTHON,"Python: error getting "
 	     "function/class '%s' from module '%s', exception '%s'",
 	     clsname,modname,excname);
@@ -193,7 +206,7 @@ static PetscErrorCode PetscCreatePythonObject(const char fullname[],
   self = inst = PyObject_CallFunction(cls, NULL);
   Py_DecRef(cls);
   if (inst == NULL) {
-    const char *excname = PetscHandlePythonError();
+    const char *excname = PetscPythonHandleError();
     SETERRQ3(PETSC_ERR_PYTHON,"Python: error calling "
 	     "function/class '%s' from module '%s', exception '%s'",
 	     clsname,modname,excname);
