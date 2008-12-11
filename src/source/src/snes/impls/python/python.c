@@ -344,12 +344,18 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
 
   PetscFunctionBegin;
 
+  if (!snes->vec_sol_update) { 
+    ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr); 
+    ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
+  }
+  if (!snes->ops->converged) { 
+    snes->ops->converged = SNESSkipConverged; 
+  }
+
   snes->iter   = 0;
   snes->norm   = 0;
   snes->ttol   = 0;
   snes->reason = SNES_CONVERGED_ITERATING;
-
-  if (!snes->ops->converged) { snes->ops->converged = SNESSkipConverged; }
 
   /* Call user presolve routine */
   ierr = (*py->ops->presolve)(snes);CHKERRQ(ierr);
@@ -380,7 +386,7 @@ static PetscErrorCode SNESSolve_Python(SNES snes)
 
     /* Solve J Y = F, where J <- jacobian(X) is the Jacobian matrix,  */
     ierr = (*py->ops->computejacobian)(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
-    ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
+    if (snes->jacobian) { ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr); }
     ierr = (*py->ops->linearsolve)(snes,F,Y,&succeed,&lits);CHKERRQ(ierr);
     if (!succeed) { ierr = PetscInfo(snes,"linear solve failure, stopping solve\n");CHKERRQ(ierr); break; }
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",i,lits);CHKERRQ(ierr);
@@ -440,10 +446,12 @@ static PetscErrorCode SNESSetUp_Python(SNES snes)
   if (!snes->vec_sol_update) {
     if (snes->vec_sol) {
       ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
-    } else {
+    } else if (snes->jacobian) {
       ierr = MatGetVecs(snes->jacobian,&snes->vec_sol_update,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
+    if (snes->vec_sol_update) {
+      ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
+    }
   }
   SNES_PYTHON_CALL_SNESARG(snes, "setUp");
   PetscFunctionReturn(0);
