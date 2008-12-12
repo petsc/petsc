@@ -114,7 +114,7 @@ PetscErrorCode ComputeMatrix(DA da,Mat B)
   return 0;
 }
 
-extern PetscErrorCode DAGetWireBasketInterpolation(DA,Mat,Mat*);
+extern PetscErrorCode DAGetWireBasketInterpolation(DA,Mat,MatReuse,Mat*);
 
 #undef __FUNCT__
 #define __FUNCT__ "ComputeInterpolation"
@@ -126,7 +126,7 @@ PetscErrorCode ComputeInterpolation(PC pc,void *ida)
 
   PetscFunctionBegin;
   ierr = PCGetOperators(pc,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGetWireBasketInterpolation(da,A,&P);CHKERRQ(ierr);
+  ierr = DAGetWireBasketInterpolation(da,A,MAT_INITIAL_MATRIX,&P);CHKERRQ(ierr);
   ierr = PCMGSetInterpolation(pc,1,P);CHKERRQ(ierr);
   ierr = MatDestroy(P);CHKERRQ(ierr);
 
