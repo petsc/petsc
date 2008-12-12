@@ -92,12 +92,12 @@ else
 endif
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH  `date` " > examples.log
-$NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  alltests TESTMODE=$TESTMODE DATAFILESPATH=$DATAFILESPATH |& grep -v 'up to date' >>& examples.log
+make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  alltests TESTMODE=$TESTMODE |& grep -v 'up to date' >>& examples.log
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
 
 set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/bmake/$PETSC_ARCH/petscconf.h`
 if ( "${GCOV}" != "" ) then
-  $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allgcov  >>& examples.log
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allgcov  >>& examples.log
   tar -cfz gcov.tar.gz /tmp/gcov
 endif
 
