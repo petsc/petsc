@@ -304,7 +304,10 @@ cdef class Vec(Object):
         return vec
 
     def copy(self, Vec result=None):
-        if result is None: result = self.duplicate()
+        if result is None:
+            result = type(self)()
+        if result.vec == NULL:
+            CHKERR( VecDuplicate(self.vec, &result.vec) )
         CHKERR( VecCopy(self.vec, result.vec) )
         return result
 
