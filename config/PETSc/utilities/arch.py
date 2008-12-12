@@ -66,6 +66,8 @@ Warning: Using from command-line: %s, ignoring environment: %s''' % (str(self.fr
     self.hostOsBase = re.sub(r'^(\w+)[-_]?.*$', r'\1', self.framework.host_os)
     self.addDefine('ARCH', self.hostOsBase)
     self.addDefine('ARCH_NAME', '"'+self.arch+'"')
+    # SLEPc configure need this info
+    self.addMakeMacro('PETSC_ARCH_NAME',self.arch)
     self.addSubstitution('ARCH', self.arch)
     return
 
