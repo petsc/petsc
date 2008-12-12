@@ -63,7 +63,7 @@ PetscErrorCode DMMGFormFunctionFortran(SNES snes,Vec X,Vec F,void *ptr)
   ierr = VecGetArray(localX,&xx);CHKERRQ(ierr);
   ierr = VecGetArray(F,&ff);CHKERRQ(ierr);
   CHKMEMQ;
-  (*(void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,PetscInt*))(da->lf))(&info,xx,ff,dmmg->user,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(DALocalInfo*,void*,void*,void*,PetscErrorCode*))(da->lf))(&info,xx,ff,dmmg->user,&ierr);CHKERRQ(ierr);
   CHKMEMQ;
   ierr = VecRestoreArray(localX,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(F,&ff);CHKERRQ(ierr);
@@ -89,7 +89,7 @@ PetscErrorCode DMMGComputeJacobianFortran(SNES snes,Vec X,Mat *J,Mat *B,MatStruc
   ierr = VecGetArray(localX,&xx);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
   CHKMEMQ;
-  (*(void (PETSC_STDCALL *)(DALocalInfo*,void*,Mat*,void*,PetscInt*))(da->lj))(&info,xx,B,dmmg->user,&ierr);CHKERRQ(ierr);
+  (*(void (PETSC_STDCALL *)(DALocalInfo*,void*,Mat*,void*,PetscErrorCode*))(da->lj))(&info,xx,B,dmmg->user,&ierr);CHKERRQ(ierr);
   CHKMEMQ;
   ierr = VecRestoreArray(localX,&xx);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
