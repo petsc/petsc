@@ -290,9 +290,12 @@ cdef class Vec(Object):
         CHKERR( VecPlaceArray(self.vec, a) )
         self.set_attr("__placed_array__", array)
 
-    def resetArray(self):
+    def resetArray(self, force=False):
+        cdef object array = self.get_attr("__placed_array__")
+        if array is None and not force: return None
         CHKERR( VecResetArray(self.vec) )
         self.set_attr("__placed_array__", None)
+        return array
 
     def duplicate(self):
         cdef Vec vec = type(self)()
