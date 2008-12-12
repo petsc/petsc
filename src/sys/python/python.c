@@ -90,6 +90,13 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
     if (found) PetscFunctionReturn(0);
   }
   
+  /* test for $prefix/Python Apple */
+  ierr = PetscStrcpy(pythonlib,prefix);CHKERRQ(ierr);
+  ierr = PetscStrcat(pythonlib,sep);CHKERRQ(ierr);
+  ierr = PetscStrcat(pythonlib,"Python");CHKERRQ(ierr);
+  ierr = PetscDLLibraryRetrieve(PETSC_COMM_SELF,pythonlib,path,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
+  if (found) PetscFunctionReturn(0);
+
   /* nothing good found */
   ierr = PetscMemzero(pythonlib,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscInfo(0,"Python dynamic library not found\n");CHKERRQ(ierr);
