@@ -169,8 +169,10 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
       - Since this is such a small problem, we set all entries for
         the matrix at once.
   */
-  A[0] = 2.0 + 1200.0*xx[0]*xx[0] - 400.0*xx[1]; A[1] = -400*xx[0];
-  A[2] = -400*xx[0]; A[3] = 200;
+  A[0] = 2.0 + 1200.0*xx[0]*xx[0] - 400.0*xx[1];
+  A[1] = -400.0*xx[0];
+  A[2] = -400.0*xx[0];
+  A[3] = 200;
   ierr = MatSetValues(*B,2,idx,2,idx,A,INSERT_VALUES);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
 
