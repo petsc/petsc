@@ -297,9 +297,10 @@ cdef class Vec(Object):
         self.set_attr("__placed_array__", None)
         return array
 
-    def duplicate(self):
+    def duplicate(self, copy=False):
         cdef Vec vec = type(self)()
         CHKERR( VecDuplicate(self.vec, &vec.vec) )
+        if copy: CHKERR( VecCopy(self.vec, vec.vec) )
         return vec
 
     def copy(self, Vec result=None):
