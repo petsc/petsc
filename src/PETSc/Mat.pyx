@@ -704,10 +704,13 @@ cdef class Mat(Object):
         CHKERR( MatGetColumnVector(self.mat, result.vec, col) )
         return result
 
-    def getDiagonal(self, Vec diag=None):
-        if diag is None: diag = self.getVecLeft()
-        CHKERR( MatGetDiagonal(self.mat, diag.vec) )
-        return diag
+    def getDiagonal(self, Vec result=None):
+        if result is None:
+            result = Vec()
+        if result.vec == NULL:
+            CHKERR( MatGetVecs(self.mat, NULL, &result.vec) )
+        CHKERR( MatGetDiagonal(self.mat, result.vec) )
+        return result
 
     def setDiagonal(self, Vec diag not None, addv=None):
         cdef PetscInsertMode caddv = insertmode(addv)
