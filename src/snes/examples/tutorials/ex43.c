@@ -203,15 +203,15 @@ PetscErrorCode FormJacobian1(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure *flag,
         the matrix at once.
   */
   ierr = MatSetValue(*B,0,0, 2.0 + 1200.0*xx[0]*xx[0] - 400.0*xx[1],ADD_VALUES);CHKERRQ(ierr);
-  ierr = MatSetValue(*B,0,1,-400*xx[0] ,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(*B,0,1,-400.0*xx[0] ,ADD_VALUES);CHKERRQ(ierr);
 
   for (i=1; i<ctx->p+1; i++) {
-    ierr = MatSetValue(*B,i,i-1, -400*xx[i-1] ,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,i-1, -400.0*xx[i-1] ,ADD_VALUES);CHKERRQ(ierr);
     ierr = MatSetValue(*B,i,i, 2.0 + 1200.0*xx[i]*xx[i] - 400.0*xx[i+1] + 200.0,ADD_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValue(*B,i,i+1,-400*xx[i] ,ADD_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValue(*B,i,i+1,-400.0*xx[i] ,ADD_VALUES);CHKERRQ(ierr);
   }
 
-  ierr = MatSetValue(*B,ctx->p+1,ctx->p, -400*xx[ctx->p] ,ADD_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValue(*B,ctx->p+1,ctx->p, -400.0*xx[ctx->p] ,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatSetValue(*B,ctx->p+1,ctx->p+1,200 ,ADD_VALUES);CHKERRQ(ierr);
 
   *flag = SAME_NONZERO_PATTERN;
