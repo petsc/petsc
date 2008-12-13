@@ -13,7 +13,7 @@ PetscErrorCode FormInitialGuessLocal2(DALocalInfo *info,Field2 **x,AppCtx *user)
   dx  = 1.0/(info->mx-1);
   for (j=info->ys; j<info->ys+info->ym; j++) {
     for (i=info->xs; i<info->xs+info->xm; i++) {
-      x[j][i].temp  = .1 + (user->grashof>0)*i*dx;  
+      x[j][i].temp  = .1 + ((PetscReal)(user->grashof>0))*i*dx;  
     }
   }
   return 0;
