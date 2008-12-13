@@ -9,12 +9,12 @@ OPT3='--with-scalar-type=complex --with-clanguage=cxx --with-pic=0 --with-log=0'
 DATAFILESPATH=/home/petsc/datafiles
 
 PACKAGES='--download-mpich=1 --download-plapack=1
---download-parmetis=1 --download-umfpack=1 --download-triangle=1
+--download-parmetis=1 --download-triangle=1
 --download-spooles=1 --download-superlu=1 --download-superlu_dist=1
 --download-blacs=1 --download-scalapack=1 --download-mumps=1
 --download-mpe=1 --download-fftw'
 
-PKG1='--download-spai=1 --download-chaco=1 --download-sundials=1
+PKG1='--download-spai=1 --download-chaco=1 --download-sundials=1 --download-umfpack=1
 --download-hypre=1 --download-prometheus=1 --download-hdf5=1 --download-blopex=1'
 
 PKG2='--download-boost=1  --download-tetgen=1'
