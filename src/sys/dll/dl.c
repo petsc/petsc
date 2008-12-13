@@ -87,10 +87,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
   ierr = PetscStrcat(suffix,PETSC_SLSUFFIX);CHKERRQ(ierr);
   ierr = PetscStrrstr(par2,suffix,&so);CHKERRQ(ierr);
   /* and attach the suffix if it is not there */
-  if (!so) { /* terrible hack, on Apple the Python dynamic library is called Python with no .dylib */
-    ierr = PetscStrrstr(par2,"/Python",&so);CHKERRQ(ierr);
-    if (!so) { ierr = PetscStrcat(par2,suffix);CHKERRQ(ierr); }
-  }
+  if (!so) { ierr = PetscStrcat(par2,suffix);CHKERRQ(ierr); }
 
   /* restore the .gz suffix if it was there */
   if (gz) { ierr = PetscStrcat(par2,".gz");CHKERRQ(ierr); }
