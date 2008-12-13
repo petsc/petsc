@@ -20,51 +20,36 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.setupDependencies(self, framework)
     self.mpi  = framework.require('config.packages.MPI',self)
     self.deps = [self.mpi]
+    self.libraries = framework.require('config.libraries',self)
     return
           
   def Install(self):
 
+    args = ['--prefix='+self.installDir]
+
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
-    args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+'"']
+    args.append('CC="'+self.framework.getCompiler()+'"')
+    args.append('MPICC="'+self.framework.getCompiler()+'"')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('CXX="'+self.framework.getCompiler()+'"')
-      args.append('--with-cppflags="'+self.framework.getCompilerFlags()+'"')
+      args.append('CXXFLAGS="'+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
+     # else error?
+    if hasattr(self.compilers, 'FC'):
+      self.framework.pushLanguage('FC')
+      args.append('F77="'+self.framework.getCompiler()+'"')
+      args.append('FFLAGS="'+self.framework.getCompilerFlags()+'"')
+      self.framework.popLanguage()
+     #else error?
 
+    # MPI args need fixing
     args.append('--enable-mpi')
-    # Below are copied from sundials.py
-    # use --with-mpi-root if we know it works
-    if self.mpi.directory and (os.path.realpath(ccompiler)).find(os.path.realpath(self.mpi.directory)) >=0:
-      self.framework.log.write('Sundials configure: using --with-mpi-root='+self.mpi.directory+'\n')
-      args.append('--with-mpi-root="'+self.mpi.directory+'"')
-    # else provide everything!
-    else:
-      #print a message if the previous check failed
-      if self.mpi.directory:
-        self.framework.log.write('Sundials configure: --with-mpi-dir specified - but could not use it\n')
-        self.framework.log.write(str(os.path.realpath(ccompiler))+' '+str(os.path.realpath(self.mpi.directory))+'\n')
-        
-      args.append('--without-mpicc')  
-      if self.mpi.include:
-        args.append('--with-mpi-incdir="'+self.mpi.include[0]+'"')
-      else: 
-        args.append('--with-mpi-incdir="/usr/include"')  # dummy case
-
-      if self.mpi.lib:
-        args.append('--with-mpi-libdir="'+os.path.dirname(self.mpi.lib[0])+'"')
-        libs = []
-        for l in self.mpi.lib:
-          ll = os.path.basename(l)
-          libs.append(ll[3:-2])
-        libs = '-l' + ' -l'.join(libs)
-        args.append('--with-mpi-libs="'+libs+'"')
-      else:
-        args.append('--with-mpi-libdir="/usr/lib"')  # dummy case
-        args.append('--with-mpi-libs="-lc"')
+    if self.mpi.lib:
+      args.append('LIBS="'+self.libraries.toStringNoDupes(self.mpi.lib)+'"')
 
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'fftw'), 'w')
