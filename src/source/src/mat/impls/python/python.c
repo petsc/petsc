@@ -643,6 +643,10 @@ static PetscErrorCode MatConjugate_Python(Mat mat)
 
 /* -------------------------------------------------------------------------- */
 
+#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
+#define MAT_FACTOR_NONE 0
+#endif
+
 /*MC
    MATPYTHON - .
 
@@ -709,7 +713,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat mat)
   mat->ops->imaginarypart        = MatImaginaryPart_Python;
   mat->ops->conjugate            = MatConjugate_Python;
 
-  mat->factor       = 0;
+  mat->factor       = MAT_FACTOR_NONE;
   mat->assembled    = PETSC_TRUE;
   mat->preallocated = PETSC_FALSE;
 
