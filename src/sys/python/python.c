@@ -39,6 +39,11 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
   PetscErrorCode ierr;
   PetscFunctionBegin;
 
+#if defined(PETSC_PYTHON_LIB)
+  ierr = PetscStrcpy(pythonlib,PETSC_PYTHON_LIB);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#endif
+  
   /* call Python to find out the name of the Python dynamic library */
   ierr = PetscStrncpy(command,pythonexe,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscStrcat(command," ");CHKERRQ(ierr);
@@ -81,11 +86,6 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
     if (found) PetscFunctionReturn(0);
   }
 
-#if defined(PETSC_PYTHON_LIB)
-  ierr = PetscStrcpy(pythonlib,PETSC_PYTHON_LIB);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-#endif
-  
   /* nothing good found */
   ierr = PetscMemzero(pythonlib,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscInfo(0,"Python dynamic library not found\n");CHKERRQ(ierr);
