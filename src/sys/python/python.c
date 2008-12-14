@@ -9,10 +9,6 @@
 #define PETSC_PYTHON_EXE "python"
 #endif
 
-#if !defined(PETSC_PYTHON_LIB)
-
-#endif
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscPythonFindExecutable"
 static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LEN])
@@ -32,7 +28,7 @@ static PetscErrorCode PetscPythonFindExecutable(char pythonexe[PETSC_MAX_PATH_LE
 #undef __FUNCT__
 #define __FUNCT__ "PetscPythonFindLibrary"
 static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN], 
-				      char pythonlib[PETSC_MAX_PATH_LEN])
+					     char pythonlib[PETSC_MAX_PATH_LEN])
 {
   const char cmdline[] = "-c 'import sys; print(sys.exec_prefix); print(sys.version[:3])'";
   char command[PETSC_MAX_PATH_LEN+1+sizeof(cmdline)+1];
@@ -42,11 +38,6 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
   PetscTruth found = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-
-#if defined(PETSC_PYTHON_LIB)
-  ierr = PetscStrcpy(pythonlib,PETSC_PYTHON_LIB);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-#endif
 
   /* call Python to find out the name of the Python dynamic library */
   ierr = PetscStrncpy(command,pythonexe,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
@@ -89,6 +80,11 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
     ierr = PetscDLLibraryRetrieve(PETSC_COMM_SELF,pythonlib,path,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
     if (found) PetscFunctionReturn(0);
   }
+
+#if defined(PETSC_PYTHON_LIB)
+  ierr = PetscStrcpy(pythonlib,PETSC_PYTHON_LIB);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+#endif
   
   /* nothing good found */
   ierr = PetscMemzero(pythonlib,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
