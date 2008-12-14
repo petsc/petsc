@@ -44,9 +44,9 @@ class PetscConfig:
         return self.configdict[item]
 
     def configure(self, extension, compiler=None):
-        self._configure_extension(extension)
+        self.configure_extension(extension)
         if compiler is not None:
-            self._configure_compiler(compiler)
+            self.configure_compiler(compiler)
 
     def _get_petsc_conf(self, petsc_dir, petsc_arch):
         bmake_dir = os.path.join(petsc_dir, 'bmake')
@@ -111,7 +111,7 @@ class PetscConfig:
         langmap = {'CONLY':'c', 'CXXONLY':'c++'}
         return langmap[lang]
 
-    def _configure_extension(self, extension):
+    def configure_extension(self, extension):
         # define macros
         macros = [('PETSC_DIR',  self['PETSC_DIR'])]
         extension.define_macros.extend(macros)
@@ -153,7 +153,7 @@ class PetscConfig:
                         else:
                             extdict[key].append(value)
 
-    def _configure_compiler(self, compiler):
+    def configure_compiler(self, compiler):
         from distutils.sysconfig import get_config_vars
         if compiler.compiler_type == 'unix':
             (cc, cxx, cflags, ccshared, ldshared, so_ext) = \
@@ -455,6 +455,8 @@ class build_ext(_build_ext):
             config.log_info()
             pkgpath, newext = self._copy_ext(ext)
             config.configure(newext, self.compiler)
+            if ext.language == 'c++' and hasattr(self,'_cxx_compiler'):
+                config.configure_compiler(self._cxx_compiler)
             name =  self.distribution.get_name()
             version = self.distribution.get_version()
             distdir = '\'\"%s-%s/\"\'' % (name, version)
