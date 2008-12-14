@@ -123,14 +123,14 @@ class TestVecBase(object):
 
     def testGetSetArray(self):
         self.vec.set(1)
-        arr0 = self.vec.getArray()
+        arr0 = self.vec.getArray().copy()
         self.assertEqual(arr0.sum(), self.vec.getLocalSize())
         self.vec.getArray(arr0)
         self.vec.setRandom()
-        arr1 = self.vec.getArray()
+        arr1 = self.vec.getArray().copy()
         self.vec.setArray(arr1)
         self.vec.getArray(arr1)
-        arr2 = self.vec.getArray()
+        arr2 = self.vec.getArray().copy()
         self.assertTrue((arr1 == arr2).all())
         import numpy
         refs = self.vec.getRefCount()
