@@ -48,20 +48,45 @@ def test_cases():
     return test_list
 
 
-PETSc.COMM_WORLD.barrier()
-sys.stderr.flush()
-sys.stderr.write("petsc4py imported from '%s'\n" % petsc4py.__path__[0])
-sys.stderr.flush()
-PETSc.COMM_WORLD.barrier()
+def runtests(*args, **kargs):
+    PETSc.COMM_WORLD.barrier()
+    sys.stderr.flush()
+    sys.stderr.write("petsc4py imported from '%s'\n" % petsc4py.__path__[0])
+    sys.stderr.flush()
+    PETSc.COMM_WORLD.barrier()
 
-for test in test_cases():
-    try:
-        if PETSc.COMM_WORLD.getRank() == 0:
-            sys.stderr.flush()
-            sys.stderr.write("\nrunning %s\n" % test.__name__)
-            sys.stderr.flush()
-        PETSc.COMM_WORLD.barrier()
-        unittest.main(test)
-        PETSc.COMM_WORLD.barrier()
-    except SystemExit:
-        pass
+    for test in test_cases():
+        try:
+            if PETSc.COMM_WORLD.getRank() == 0:
+                sys.stderr.flush()
+                sys.stderr.write("\nrunning %s\n" % test.__name__)
+                sys.stderr.flush()
+            PETSc.COMM_WORLD.barrier()
+            unittest.main(test, *args, **kargs)
+            PETSc.COMM_WORLD.barrier()
+        except SystemExit:
+            pass
+
+def runtestsleak(repeats, *args, **kargs):
+    import gc
+    alltests = test_cases()
+    gc.collect()
+    for i in xrange(repeats):
+        gc.collect()
+        r1 = sys.gettotalrefcount()
+        for test in alltests:
+            try: unittest.main(test, *args, **kargs)
+            except SystemExit: pass
+        gc.collect()
+        r2 = sys.gettotalrefcount()
+        sys.stderr.flush()
+        sys.stderr.write('\nREF LEAKS -- before: %d, after: %d, diff: [%d]\n' % (r1, r2, r2-r1))
+        sys.stderr.flush()
+
+if __name__ == '__main__':
+    runtests()
+    if hasattr(sys, 'gettotalrefcount'):
+        def dummy_write(self,*args): pass
+        unittest._WritelnDecorator.write   = dummy_write
+        unittest._WritelnDecorator.writeln = dummy_write
+        runtestsleak(5)
