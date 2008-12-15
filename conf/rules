@@ -934,10 +934,14 @@ shared_cygwin:
 #   a) LIBNAME (the library basename)
 #   b) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
 # and both the archive and shared library reside in INSTALL_LIB_DIR.
-shared: 
+
+shared: shared_nomesg
 	-@if [ "${BUILDSHAREDLIB}" = "no" ]; then \
 	    echo "Shared libraries disabled"; \
-	  else \
+          fi
+
+shared_nomesg: 
+	-@if [ "${BUILDSHAREDLIB}" != "no" ]; then \
 	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
 	    mkdir ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
             cwd=`pwd`; \
