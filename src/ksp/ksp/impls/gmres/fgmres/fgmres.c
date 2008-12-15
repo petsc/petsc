@@ -4,8 +4,10 @@
     This file implements FGMRES (a Generalized Minimal Residual) method.  
     Reference:  Saad, 1993.
 
-    Preconditioning:  It the preconditioner is constant then this fgmres
+    Preconditioning:  If the preconditioner is constant then this fgmres
     code is equivalent to RIGHT-PRECONDITIONED GMRES.
+    FGMRES is a modification of gmres that allows the preconditioner to change
+    at each iteration.
 
     Restarts:  Restarts are basically solves with x0 not equal to zero.
  
