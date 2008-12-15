@@ -8,7 +8,7 @@ SOURCEH  =
 OBJSC    = python.o
 OBJSF    =
 LIBBASE  = libpetsc
-DIRS     = 
+DIRS     = ftn-custom
 LOCDIR   = src/sys/python/
 
 include ${PETSC_DIR}/conf/base

@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = python.o
 OBJSF    =
 LIBBASE  = libpetscmat
-DIRS     = 
+DIRS     = ftn-custom
 LOCDIR   = src/mat/impls/python/
 MANSEC   = Mat
 

@@ -9,7 +9,7 @@ SOURCEH  =
 OBJSC    = python.o
 OBJSF    =
 LIBBASE  = libpetscts
-DIRS     = 
+DIRS     = ftn-custom
 LOCDIR   = src/ts/impls/python/
 MANSEC   = TS
 
