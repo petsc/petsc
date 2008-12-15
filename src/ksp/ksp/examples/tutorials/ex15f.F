@@ -93,7 +93,7 @@
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
       call MatSetType(A, MATAIJ,ierr)
       call MatSetFromOptions(A,ierr)
-      call MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,
+      call MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,            &
      &                     PETSC_NULL_CHARACTER,ierr)
       call MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr)
 

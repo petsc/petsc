@@ -935,7 +935,7 @@ shared_cygwin:
 #   b) SHARED_LIBRARY_TMPDIR (where .o files should be manipulated)
 # and both the archive and shared library reside in INSTALL_LIB_DIR.
 shared: 
-	-@if [ "${BUILDSHAREDLIB}" = "no" ]; then \
+	-@if [ "${BUILDSHAREDLIB}" = "no" ]; Then \
 	    echo "Shared libraries disabled"; \
 	  else \
 	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
