@@ -304,7 +304,7 @@ static char **PetscGlobalArgs = 0;
 PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 {
   PetscFunctionBegin;
-  if (!PetscGlobalArgs) {
+  if (!PetscInitializeCalled && PetscFinalizeCalled) {
     SETERRQ(PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
   }
   *argc = PetscGlobalArgc;
@@ -339,9 +339,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***args)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!PetscGlobalArgs) {
+  if (!PetscInitializeCalled && PetscFinalizeCalled) {
     SETERRQ(PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
   }
+  if (!argc) {*args = 0; PetscFunctionReturn(0);}
   ierr = PetscMalloc(argc*sizeof(char*),args);CHKERRQ(ierr);
   for (i=0; i<argc-1; i++) {
     ierr = PetscStrallocpy(PetscGlobalArgs[i+1],&(*args)[i]);CHKERRQ(ierr);
@@ -373,6 +374,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!args) {PetscFunctionReturn(0);}
   while (args[i]) {
     ierr = PetscFree(args[i]);CHKERRQ(ierr);
     i++;

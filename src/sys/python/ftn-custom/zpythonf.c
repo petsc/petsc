@@ -22,9 +22,9 @@ void PETSC_STDCALL  petscpythoninitialize_(CHAR n1 PETSC_MIXED_LEN(l1),CHAR n2 P
   FREECHAR(n2,t2);
 }
 
-void PETSC_STDCALL  petscfinallize_(PetscErrorCode *ierr)
+void PETSC_STDCALL  petscpythonfinalize_(PetscErrorCode *ierr)
 {
-  *ierr = PetscFinalize();
+  *ierr = PetscPythonFinalize();
 }
 
 EXTERN_C_END
