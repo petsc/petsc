@@ -110,7 +110,7 @@ static PetscErrorCode KSPSetFromOptions_Python(KSP ksp)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP Python options");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-ksp_python","Python package.module[.{class|function}]",
+  ierr = PetscOptionsString("-ksp_python_type","Python package.module[.{class|function}]",
 			    "KSPPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 
@@ -150,7 +150,13 @@ static PetscErrorCode KSPView_Python(KSP ksp,PetscViewer viewer)
 #define __FUNCT__ "KSPSetUp_Python"
 static PetscErrorCode KSPSetUp_Python(KSP ksp)
 {
+  KSP_Py *py = (KSP_Py*)ksp->data;
   PetscFunctionBegin;
+  if (!py->self) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Python context not set, call one of \n"
+	    " * KSPPythonSetType(ksp,\"[package.]module.class\")\n"
+	    " * KSPSetFromOptions(ksp) and pass option -ksp_python_type [package.]module.class");
+  }
   KSP_PYTHON_CALL_KSPARG(ksp, "setUp");
   PetscFunctionReturn(0);
 }

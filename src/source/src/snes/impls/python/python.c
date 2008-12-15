@@ -526,7 +526,7 @@ static PetscErrorCode SNESSetFromOptions_Python(SNES snes)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SNES Python options");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-snes_python","Python package.module[.{class|function}]",
+  ierr = PetscOptionsString("-snes_python_type","Python package.module[.{class|function}]",
 			    "SNESPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 

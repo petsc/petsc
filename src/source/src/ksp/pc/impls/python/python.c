@@ -113,7 +113,7 @@ static PetscErrorCode PCSetFromOptions_Python(PC pc)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PC Python options");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-pc_python","Python package.module[.{class|function}]",
+  ierr = PetscOptionsString("-pc_python_type","Python package.module[.{class|function}]",
 			    "PCPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 
@@ -304,8 +304,14 @@ static PetscErrorCode PCPythonFillOperations(PC pc)
 #define __FUNCT__ "PCSetUp_Python"
 static PetscErrorCode PCSetUp_Python(PC pc)
 {
+  PC_Py          *py = (PC_Py *)pc->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  if (!py->self) { 
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Python context not set, call one of \n"
+	    " * PCPythonSetType(pc,\"[package.]module.class\")\n"
+	    " * PCSetFromOptions(pc) and pass option -pc_python_type [package.]module.class");
+  }
   PC_PYTHON_CALL_PCARG(pc, "setUp");
   ierr = PCPythonFillOperations(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

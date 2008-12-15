@@ -175,7 +175,7 @@ static PetscErrorCode TSSetFromOptions_Python(TS ts)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("TS Python options");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-ts_python","Python package.module[.{class|function}]",
+  ierr = PetscOptionsString("-ts_python_type","Python package.module[.{class|function}]",
 			    "TSPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) { 

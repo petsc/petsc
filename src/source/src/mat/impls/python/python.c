@@ -137,7 +137,7 @@ static PetscErrorCode MatSetFromOptions_Python(Mat mat)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Mat Python options");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-mat_python","Python [package.]module[.{class|function}]",
+  ierr = PetscOptionsString("-mat_python_type","Python [package.]module[.{class|function}]",
 			    "MatPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) {
@@ -240,10 +240,15 @@ static PetscErrorCode MatSetUpPreallocation_Python(Mat mat)
   if (py->self == NULL || py->self == Py_None) {
     char       pyname[2*PETSC_MAX_PATH_LEN+3];
     PetscTruth flag = PETSC_FALSE;
-    ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_python",
+    ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_python_type",
 				 pyname,sizeof(pyname),&flag);CHKERRQ(ierr);
     if (flag && pyname[0]==0) flag = PETSC_FALSE;
     if (flag) { ierr = MatPythonSetType_PYTHON(mat,pyname);CHKERRQ(ierr); }
+  }
+  if (!py->self) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Python context not set, call one of \n"
+	    " * MatPythonSetType(mat,\"[package.]module.class\")\n"
+	    " * MatSetFromOptions(mat) and pass option -mat_python_type [package.]module.class");
   }
   /* */
   MAT_PYTHON_CALL_MATARG(mat, "setUp");
