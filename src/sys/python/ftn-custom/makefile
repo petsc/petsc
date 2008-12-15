@@ -8,7 +8,7 @@ OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =
 DIRS     =
-LIBBASE  = libpetscksp
+LIBBASE  = libpetsc
 LOCDIR   = src/sys/python/ftn-custom/
 include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test
