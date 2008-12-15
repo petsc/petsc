@@ -611,6 +611,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
       ierr = PetscOpenMPMerge((PetscMPIInt) nodesize);CHKERRQ(ierr); 
     }
   }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-python",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = PetscPythonInitialize(PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
   PetscFunctionReturn(ierr);
 }
@@ -671,6 +673,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     PetscFunctionReturn(0);
   }
   ierr = PetscOpenMPFinalize();CHKERRQ(ierr); 
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-python",&flg1);CHKERRQ(ierr);
+  if (flg1) {ierr = PetscPythonFinalize();CHKERRQ(ierr);}
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_info",&flg2);CHKERRQ(ierr);

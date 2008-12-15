@@ -389,6 +389,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr)}
 
+
   /*
     Activates new sockets for zope if needed
   */
@@ -539,6 +540,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   if (f) {
     ierr = PetscInfoDeactivateClass(PETSC_NULL);CHKERRQ(ierr);
   }
+
 
   PetscFunctionReturn(0);
 }

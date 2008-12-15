@@ -2349,7 +2349,7 @@ PetscErrorCode MatGetRowMaxAbs_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   ierr = MatGetRowMaxAbs(a->A,v,idx);CHKERRQ(ierr); 
   ierr = VecGetArray(v,&va);CHKERRQ(ierr);
   if (idx) {
-    for (i=0; i<A->cmap->n; i++) {
+    for (i=0; i<A->rmap->n; i++) {
       if (PetscAbsScalar(va[i])) idx[i] += A->cmap->rstart;
     }
   }
