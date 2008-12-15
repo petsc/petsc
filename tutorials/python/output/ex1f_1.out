@@ -1,0 +1,65 @@
+  0 KSP Residual norm 0.000510152 
+  1 KSP Residual norm 0.00357106 
+  2 KSP Residual norm 0.00349891 
+  3 KSP Residual norm 0.00342676 
+  4 KSP Residual norm 0.00335461 
+  5 KSP Residual norm 0.00328246 
+  6 KSP Residual norm 0.00321031 
+  7 KSP Residual norm 0.00313816 
+  8 KSP Residual norm 0.00306601 
+  9 KSP Residual norm 0.00299386 
+ 10 KSP Residual norm 0.00292171 
+ 11 KSP Residual norm 0.00284955 
+ 12 KSP Residual norm 0.0027774 
+ 13 KSP Residual norm 0.00270525 
+ 14 KSP Residual norm 0.0026331 
+ 15 KSP Residual norm 0.00256094 
+ 16 KSP Residual norm 0.00248879 
+ 17 KSP Residual norm 0.00241663 
+ 18 KSP Residual norm 0.00234448 
+ 19 KSP Residual norm 0.00227233 
+ 20 KSP Residual norm 0.00220017 
+ 21 KSP Residual norm 0.00212801 
+ 22 KSP Residual norm 0.00205586 
+ 23 KSP Residual norm 0.0019837 
+ 24 KSP Residual norm 0.00191154 
+ 25 KSP Residual norm 0.00183938 
+ 26 KSP Residual norm 0.00176722 
+ 27 KSP Residual norm 0.00169506 
+ 28 KSP Residual norm 0.00162289 
+ 29 KSP Residual norm 0.00155073 
+ 30 KSP Residual norm 0.00147856 
+ 31 KSP Residual norm 0.00140639 
+ 32 KSP Residual norm 0.00133422 
+ 33 KSP Residual norm 0.00126205 
+ 34 KSP Residual norm 0.00118987 
+ 35 KSP Residual norm 0.00111769 
+ 36 KSP Residual norm 0.0010455 
+ 37 KSP Residual norm 0.000973308 
+ 38 KSP Residual norm 0.000901108 
+ 39 KSP Residual norm 0.000828899 
+ 40 KSP Residual norm 0.000756678 
+ 41 KSP Residual norm 0.000684441 
+ 42 KSP Residual norm 0.000612182 
+ 43 KSP Residual norm 0.000539894 
+ 44 KSP Residual norm 0.000467562 
+ 45 KSP Residual norm 0.000395162 
+ 46 KSP Residual norm 0.000322648 
+ 47 KSP Residual norm 0.000249922 
+ 48 KSP Residual norm 0.000176722 
+ 49 KSP Residual norm 0.00010203 
+ 50 KSP Residual norm < 1.e-11
+KSP Object:
+  type: python
+    Python: example1.ConjGrad
+  maximum iterations=10000, initial guess is zero
+  tolerances:  relative=1e-05, absolute=1e-50, divergence=10000
+  left preconditioning
+PC Object:
+  type: python
+    Python: example1.Jacobi
+  linear system matrix = precond matrix:
+  Matrix Object:
+    type=python, rows=100, cols=100
+        Python: example1.Laplace1D
+ error norm =   6.83138198246195374E-013
