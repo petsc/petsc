@@ -3180,8 +3180,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
   PetscValidHeaderSpecific(B,MAT_COOKIE,2);
   PetscValidType(A,1);
   PetscValidType(B,2);
-  MatPreallocated(B);
   PetscCheckSameComm(A,1,B,2);
+  ierr = MatPreallocated(B);CHKERRQ(ierr);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (A->rmap->N != B->rmap->N || A->cmap->N != B->cmap->N) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim (%D,%D) (%D,%D)",A->rmap->N,B->rmap->N,A->cmap->N,B->cmap->N);
@@ -4114,9 +4114,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatEqual(Mat A,Mat B,PetscTruth *flg)
   PetscValidHeaderSpecific(B,MAT_COOKIE,2);
   PetscValidType(A,1);
   PetscValidType(B,2);
-  MatPreallocated(B);
   PetscValidIntPointer(flg,3);
   PetscCheckSameComm(A,1,B,2);
+  ierr = MatPreallocated(B);CHKERRQ(ierr);
   if (!A->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (A->rmap->N != B->rmap->N || A->cmap->N != B->cmap->N) SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat A,Mat B: global dim %D %D %D %D",A->rmap->N,B->rmap->N,A->cmap->N,B->cmap->N);
@@ -7109,7 +7109,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAP(Mat A,Mat P,MatReuse scall,PetscReal f
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidHeaderSpecific(P,MAT_COOKIE,2);
   PetscValidType(P,2);
-  MatPreallocated(P);
+  ierr = MatPreallocated(P);CHKERRQ(ierr);
   if (!P->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (P->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
@@ -7160,12 +7160,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPNumeric(Mat A,Mat P,Mat C)
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidHeaderSpecific(P,MAT_COOKIE,2);
   PetscValidType(P,2);
-  MatPreallocated(P);
+  ierr = MatPreallocated(P);CHKERRQ(ierr);
   if (!P->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (P->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidHeaderSpecific(C,MAT_COOKIE,3);
   PetscValidType(C,3);
-  MatPreallocated(C);
+  ierr = MatPreallocated(C);CHKERRQ(ierr);
   if (C->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   if (P->cmap->N!=C->rmap->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->cmap->N,C->rmap->N);
   if (P->rmap->N!=A->cmap->N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",P->rmap->N,A->cmap->N);
@@ -7216,7 +7216,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPtAPSymbolic(Mat A,Mat P,PetscReal fill,Mat
   if (fill <1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
   PetscValidHeaderSpecific(P,MAT_COOKIE,2);
   PetscValidType(P,2);
-  MatPreallocated(P);
+  ierr = MatPreallocated(P);CHKERRQ(ierr);
   if (!P->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (P->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
@@ -7281,7 +7281,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidHeaderSpecific(B,MAT_COOKIE,2);
   PetscValidType(B,2);
-  MatPreallocated(B);
+  ierr = MatPreallocated(B);CHKERRQ(ierr);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
@@ -7363,7 +7363,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultSymbolic(Mat A,Mat B,PetscReal fill,
 
   PetscValidHeaderSpecific(B,MAT_COOKIE,2);
   PetscValidType(B,2);
-  MatPreallocated(B);
+  ierr = MatPreallocated(B);CHKERRQ(ierr);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
@@ -7436,13 +7436,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultNumeric(Mat A,Mat B,Mat C)
 
   PetscValidHeaderSpecific(B,MAT_COOKIE,2);
   PetscValidType(B,2);
-  MatPreallocated(B);
+  ierr = MatPreallocated(B);CHKERRQ(ierr);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
   PetscValidHeaderSpecific(C,MAT_COOKIE,3);
   PetscValidType(C,3);
-  MatPreallocated(C);
+  ierr = MatPreallocated(C);CHKERRQ(ierr);
   if (!C->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (C->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
 
@@ -7517,7 +7517,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTranspose(Mat A,Mat B,MatReuse scall
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidHeaderSpecific(B,MAT_COOKIE,2);
   PetscValidType(B,2);
-  MatPreallocated(B);
+  ierr = MatPreallocated(B);CHKERRQ(ierr);
   if (!B->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);

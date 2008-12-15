@@ -3774,7 +3774,7 @@ void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],
   PetscTruth     roworiented = a->roworiented;
 
   PetscFunctionBegin;  
-  MatPreallocated(A);
+  ierr = MatPreallocated(A);CHKERRQ(ierr);
   imax = a->imax;
   ai = a->i;
   ailen = a->ilen;

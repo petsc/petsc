@@ -5135,7 +5135,7 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
   PetscScalar     value;
   PetscErrorCode  ierr;
 
-  MatPreallocated(mat);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
   if (mat->insertmode == NOT_SET_VALUES) {
     mat->insertmode = addv;
   }
