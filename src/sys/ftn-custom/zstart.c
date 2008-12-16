@@ -124,6 +124,10 @@ EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscInitialize_DynamicLibraries(void);
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PETSC_DLL_IMPORT PetscLogBegin_Private(void);
 #endif
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMallocAlign(size_t,int,const char[],const char[],const char[],void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeAlign(void*,int,const char[],const char[],const char[]);
+extern int PetscGlobalArgc;
+extern char **PetscGlobalArgs;
 
 /*
     Reads in Fortran command line argments and sends them to 
@@ -153,7 +157,8 @@ PetscErrorCode PETScParseFortranArgs_Private(int *argc,char ***argv)
   }
   ierr = MPI_Bcast(argc,1,MPI_INT,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  ierr = PetscMalloc((*argc+1)*(warg*sizeof(char)+sizeof(char*)),argv);CHKERRQ(ierr);
+  /* PetscTrMalloc() not yet set, so don't use PetscMalloc() */
+  ierr = PetscMallocAlign((*argc+1)*(warg*sizeof(char)+sizeof(char*)),0,0,0,0,(void**)argv);CHKERRQ(ierr);
   (*argv)[0] = (char*)(*argv + *argc + 1);
 
   if (!rank) {
@@ -216,9 +221,9 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
   int         j;
 #endif
 #endif
-  int         flag,argc = 0;
+  int         flag;
   PetscMPIInt size;
-  char        **args = 0,*t1,name[256],hostname[64];
+  char        *t1,name[256],hostname[64];
   PetscMPIInt f_petsc_comm_world;
 
   *ierr = PetscMemzero(name,256); if (*ierr) return;
@@ -337,13 +342,11 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
      below.
   */
   PetscInitializeFortran();
-  PETScParseFortranArgs_Private(&argc,&args);
+  PETScParseFortranArgs_Private(&PetscGlobalArgc,&PetscGlobalArgs);
   FIXCHAR(filename,len,t1);
-  *ierr = PetscOptionsInsert(&argc,&args,t1); 
+  *ierr = PetscOptionsInsert(&PetscGlobalArgc,&PetscGlobalArgs,t1); 
   FREECHAR(filename,t1);
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Creating options database");return;}
-  *ierr = PetscFree(args);
-  if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Freeing args");return;}
   *ierr = PetscOptionsCheckInitial_Private(); 
   if (*ierr) {(*PetscErrorPrintf)("PetscInitialize:Checking initial options");return;}
 #if defined (PETSC_USE_LOG)
@@ -374,6 +377,8 @@ void PETSC_STDCALL petscfinalize_(PetscErrorCode *ierr)
   extern void standard_arithmetic();
   standard_arithmetic();
 #endif
+  /* was malloced with PetscMallocAlign() so free the same way */
+  *ierr = PetscFreeAlign(PetscGlobalArgs,0,0,0,0);if (*ierr) {(*PetscErrorPrintf)("PetscFinalize:Freeing args");return;}
 
   *ierr = PetscFinalize();
 }

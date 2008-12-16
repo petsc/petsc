@@ -275,8 +275,8 @@ EXTERN_C_END
 #endif
 #endif
 
-static int  PetscGlobalArgc   = 0;
-static char **PetscGlobalArgs = 0;
+int  PetscGlobalArgc   = 0;
+char **PetscGlobalArgs = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGetArgs"
