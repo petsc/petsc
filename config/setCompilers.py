@@ -962,7 +962,7 @@ class Configure(config.base.Configure):
           except RuntimeError, e:
             self.logPrint(str(e))
             continue
-          self.LIBS = '-L. -lconf1'
+          self.LIBS = '-L. -lconf1 ' + oldLibs
           success =  self.checkLink('extern int foo(int);', '  int b = foo(1);  if (b);\n')
           os.rename('libconf1.a','libconf1.lib')
           if not success:
