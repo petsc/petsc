@@ -228,8 +228,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPythonInitialize(const char pyexe[],const ch
     ierr = PetscInfo(0,"Python: successfully imported  module 'petsc4py.PETSc'\n"); CHKERRQ(ierr);
     Py_DecRef(module); module = 0;
   } else {
-    ierr = PetscInfo(0,"Python: could not import module 'petsc4py.PETSc'\n"); CHKERRQ(ierr);
-    PyErr_Clear();
+    SETERRQ(PETSC_ERR_PLIB,"Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it\n"); 
   }
   PetscFunctionReturn(0);
 }
