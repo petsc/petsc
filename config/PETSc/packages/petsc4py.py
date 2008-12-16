@@ -19,6 +19,7 @@ class Configure(PETSc.package.Package):
     self.numpy      = framework.require('PETSc.packages.Numpy',self)
     self.petscdir   = framework.require('PETSc.utilities.petscdir',self)
     self.setCompilers  = framework.require('config.setCompilers',self)
+    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
     return
 
   def Install(self):
@@ -33,6 +34,8 @@ class Configure(PETSc.package.Package):
     return self.installDir
 
   def configureLibrary(self):
+    if not self.sharedLibraries.useShared:
+        raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared')      
     self.checkDownload(1)
     if self.setCompilers.isDarwin():
       # The name of the Python library on Apple is Python which does not end in the expected .dylib
