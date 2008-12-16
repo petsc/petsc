@@ -834,6 +834,7 @@ shared_osf5: shared_alpha
 shared_solaris2: shared_solaris
 shared_solaris2_gnu: shared_solaris_gnu
 
+shared_freebsd7: shared_freebsd
 shared_freebsd6: shared_freebsd
 shared_freebsd5: shared_freebsd
 shared_freebsd4: shared_freebsd
