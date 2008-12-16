@@ -8,10 +8,10 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spooles-2.2-June_2007.tar.gz']
+    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spooles-2.2-dec-2008.tar.gz']
     self.functions  = ['InpMtx_init']
     self.includes   = ['MPI/spoolesMPI.h']
-    self.liblist    = [['spoolesMPI.a','spooles.a']]
+    self.liblist    = [['libspooles.a']]
     self.complex    = 1
     return
 
@@ -38,8 +38,8 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('Make.inc'):
       try:
         self.logPrintBox('Compiling spooles; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; SPOOLES_INSTALL_DIR='+self.installDir+'; export SPOOLES_INSTALL_DIR; make clean; make lib', timeout=2500, log = self.framework.log)[0]
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; cp -f *.h '+self.installDir+'/include; HLISTS=`ls *.h`; for hlist in $HLISTS MPI.h; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir '+self.installDir+'/include/$dir; cp -f $dir/*.h '+self.installDir+'/include/$dir/.; done; mv -f *.a MPI/src/*.a '+self.installDir+'/lib', timeout=2500, log = self.framework.log)[0]        
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make lib', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; cp -f *.h '+self.installDir+'/include; HLISTS=`ls *.h|egrep -v \(SPOOLES\|cfiles\|timings\)`; for hlist in $HLISTS MPI.h; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir -p '+self.installDir+'/include/$dir; cp -f $dir/*.h '+self.installDir+'/include/$dir/.; done; cp -f libspooles.a '+self.installDir+'/lib', timeout=2500, log = self.framework.log)[0]        
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPOOLES: '+str(e))
       self.checkInstall(output,'Make.inc')
