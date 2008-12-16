@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download          = ['ssh://petsc@petsc.cs.iit.edu/petsc4py/petsc4py-dev']
+    self.download          = ['http://petsc.cs.iit.edu/petsc4py/petsc4py-dev/archive/tip.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = []
@@ -33,6 +33,7 @@ class Configure(PETSc.package.Package):
     return self.installDir
 
   def configureLibrary(self):
+    self.checkDownload(1)
     if self.setCompilers.isDarwin():
       # The name of the Python library on Apple is Python which does not end in the expected .dylib
       # Thus see if the python library in the standard location points to the Python version

@@ -19,6 +19,7 @@
 #define SNESLS 'ls'
 #define SNESTR 'tr'
 #define SNESTEST 'test'
+#define SNESPYTHON 'python'
 !
 ! MatSNESMF
 ! 

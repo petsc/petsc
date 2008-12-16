@@ -21,5 +21,5 @@
 #define TS_SUNDIALS 'sundials'
 #define TS_CRANK_NICHOLSON 'crank-nicholson'
 #define TS_RUNGE_KUTTA 'runge-kutta'
-
+#define TS_PYTHON 'python'
 #endif

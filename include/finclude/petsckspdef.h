@@ -44,4 +44,5 @@
 #define KSPMINRES 'minres'
 #define KSPSYMMLQ 'symmlq'
 #define KSPLCD 'lcd'
+#define KSPPYTHON 'python'
 #endif

@@ -94,6 +94,7 @@
 #define MATSEQFFTW         'seqfftw'
 #define MATTRANSPOSEMAT    'transpose'
 #define MATSCHURCOMPLEMENT 'schurcomplement'
+#define MATPYTHON          'python'
 !
 ! MatSolverPackages
 !
