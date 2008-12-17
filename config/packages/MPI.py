@@ -336,8 +336,7 @@ class Configure(config.package.Package):
       args.append('CXXFLAGS="'+flags+'"')
       self.framework.popLanguage()
     else:
-      args.append('--disable-mpi-cxx')
-      args.append('CXX=""')
+      raise RuntimeError('Error: OpenMPI requires C++ compiler. None specified')
     # no separate F90 options for OPENMPI
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
