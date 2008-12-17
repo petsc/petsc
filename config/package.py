@@ -59,6 +59,8 @@ class Package(config.base.Configure):
     self.libraries     = framework.require('config.libraries', self)
     self.programs      = framework.require('config.programs', self)
     self.sourceControl = framework.require('config.sourceControl',self)
+    self.mpi           = framework.require('config.packages.MPI',self)
+
     return
 
   def setupHelp(self,help):
