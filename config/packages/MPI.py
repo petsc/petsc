@@ -417,11 +417,13 @@ class Configure(config.package.Package):
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir]
     compiler = self.framework.getCompiler()
-    args.append('CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+    args.append('CC="'+self.framework.getCompiler()+'"')
+    args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
-      args.append('CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      args.append('CXX="'+self.framework.getCompiler()+'"')
+      args.append('CXXFLAGS="'+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     else:
       args.append('--disable-cxx')
@@ -438,10 +440,12 @@ class Configure(config.package.Package):
           fc = os.path.join(os.path.dirname(fc), 'xlf')
           self.framework.log.write('Using IBM f90 compiler, switching to xlf for compiling MPICH\n')
         # now set F90
-        args.append('F90="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
+        args.append('F90="'+fc+'"')
+        args.append('F90FLAGS="'+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       else:
         args.append('--disable-f90')
-      args.append('F77="'+fc+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
+      args.append('F77="'+fc+'"')
+      args.append('FFLAGS="'+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
       self.framework.popLanguage()
     else:
       args.append('--disable-f77')
