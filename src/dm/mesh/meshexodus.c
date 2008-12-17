@@ -16,13 +16,13 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
 {
   int   exoid;
   int   CPU_word_size = 0, IO_word_size = 0;
+  const PetscMPIInt rank = mesh->commRank();
   float version;
   char  title[MAX_LINE_LENGTH+1], elem_type[MAX_STR_LENGTH+1];
   int   num_dim, num_nodes, num_elem, num_elem_blk, num_node_sets, num_side_sets;
   int   ierr;
 
   PetscFunctionBegin;
-
   // Open EXODUS II file
   exoid = ex_open(filename, EX_READ, &CPU_word_size, &IO_word_size, &version);CHKERRQ(!exoid);
   // Read database parameters
@@ -96,9 +96,11 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
 
   // Build cell blocks
   const ALE::Obj<PETSC_MESH_TYPE::label_type>& cellBlocks = mesh->createLabel("CellBlocks");
-  for(int eb = 0, k = 0; eb < num_elem_blk; ++eb) {
-    for(int e = 0; e < num_elem_in_block[eb]; ++e, ++k) {
-      mesh->setValue(cellBlocks, k, eb);
+  if (rank == 0) {
+    for(int eb = 0, k = 0; eb < num_elem_blk; ++eb) {
+      for(int e = 0; e < num_elem_in_block[eb]; ++e, ++k) {
+        mesh->setValue(cellBlocks, k, eb);
+      }
     }
   }
   if (num_elem_blk > 0) {
@@ -118,11 +120,13 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
 
   // Build vertex sets
   const ALE::Obj<PETSC_MESH_TYPE::label_type>& vertexSets = mesh->createLabel("VertexSets");
-  for(int ns = 0; ns < num_node_sets; ++ns) {
-    for(int n = 0; n < num_nodes_in_set[ns]; ++n) {
-      mesh->setValue(vertexSets, node_list[ns][n]+num_elem, ns);
+  if (rank == 0) {
+    for(int ns = 0; ns < num_node_sets; ++ns) {
+      for(int n = 0; n < num_nodes_in_set[ns]; ++n) {
+        mesh->setValue(vertexSets, node_list[ns][n]+num_elem, ns);
+      }
+      ierr = PetscFree(node_list[ns]);CHKERRQ(ierr);
     }
-    ierr = PetscFree(node_list[ns]);CHKERRQ(ierr);
   }
   if (num_node_sets > 0) {
     ierr = PetscFree3(ns_ids,num_nodes_in_set,node_list);CHKERRQ(ierr);
