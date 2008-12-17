@@ -29,13 +29,13 @@ class Configure(PETSc.package.Package):
     else:
       apple = ''
     self.logClearRemoveDirectory()
-    self.logPrintBox('After installing PETSc run:\ncd '+self.packageDir+'\n python setup.py install --prefix='+self.installDir+'\n'+apple+'then add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) set PYTHONPATH=${PYTHONPATH}:'+pp+';export PYTHONPATH' )
+    self.logPrintBox('After installing PETSc run:\ncd '+self.packageDir+'\n python setup.py install --prefix='+self.installDir+'\n'+apple+'then add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) PYTHONPATH=${PYTHONPATH}:'+pp+'; export PYTHONPATH' )
     self.logResetRemoveDirectory()
     return self.installDir
 
   def configureLibrary(self):
     if not self.sharedLibraries.useShared:
-        raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared')      
+        raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared')
     self.checkDownload(1)
     if self.setCompilers.isDarwin():
       # The name of the Python library on Apple is Python which does not end in the expected .dylib
