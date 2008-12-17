@@ -76,7 +76,8 @@ class Package(config.base.Configure):
     self.petscdir      = self.framework.require('PETSc.utilities.petscdir',self)
     self.sourceControl = self.framework.require('config.sourceControl',self)
     # Need this for the with-64-bit-indices option
-    self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    self.libraryOptions = self.framework.require('PETSc.utilities.libraryOptions', self)
+    self.mpi           = self.framework.require('config.packages.MPI',self)
     return
 
   def getChecksum(self,source, chunkSize = 1024*1024):  
