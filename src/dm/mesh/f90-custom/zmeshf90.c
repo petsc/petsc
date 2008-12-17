@@ -15,7 +15,7 @@
 #define bcsectiongetarray1df90_    BCSECTIONGETARRAY1DF90
 #define bcsectionrealgetarrayf90_  BCSECTIONREALGETARRAYF90
 #define bcfuncgetarrayf90_         BCFUNCGETARRAYF90
-#define meshgetstratum_         MESHGETSTRATUM
+#define meshgetstratum_            MESHGETSTRATUM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define meshgetcoordinatesf90_     meshgetcoordinatesf90
 #define meshrestorecoordinatesf90_ meshrestorecoordinatesf90
@@ -29,7 +29,7 @@
 #define bcsectiongetarray1df90_    bcsectiongetarray1df90
 #define bcsectionrealgetarrayf90_  bcsectionrealgetarrayf90
 #define bcfuncgetarrayf90_         bcfuncgetarrayf90
-#define meshgetstratum_         meshgetstratum
+#define meshgetstratum_            meshgetstratum
 #endif
 
 EXTERN_C_BEGIN
@@ -52,8 +52,8 @@ void PETSC_STDCALL meshgetelementsf90_(Mesh *mesh,F90Array2d *ptr,int *__ierr PE
 {
   PetscInt   *v;
   PetscInt   n, c;
-  *__ierr = MeshGetElements(*mesh,PETSC_FALSE,&n,&c,&v); if (*__ierr) return;
-  *__ierr = F90Array2dCreate(v,PETSC_INT,1,c,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+  *__ierr = MeshGetElements(*mesh,PETSC_TRUE,&n,&c,&v); if (*__ierr) return;
+  *__ierr = F90Array2dCreate(v,PETSC_INT,1,n,1,c,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
 void PETSC_STDCALL meshrestoreelementsf90_(Mesh *x,F90Array2d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {

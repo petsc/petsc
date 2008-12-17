@@ -42,6 +42,7 @@ extern void PetscRmPointer(void*);
 #define assemblevector_         ASSEMBLEVECTOR
 #define assemblematrix_         ASSEMBLEMATRIX
 #define writepcicerestart_      WRITEPCICERESTART
+#define meshexodusgetinfo_      MESHEXODUSGETINFO
 #define meshgetstratumsize_     MESHGETSTRATUMSIZE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define meshcreatepflotran_     meshcreatepflotran_
@@ -59,6 +60,7 @@ extern void PetscRmPointer(void*);
 #define assemblevector_         assemblevector
 #define assemblematrix_         assemblematrix
 #define writepcicerestart_      writepcicerestart
+#define meshexodusgetinfo_      meshexodusgetinfo
 #define meshgetstratumsize_     meshgetstratumsize
 #endif
 
@@ -160,6 +162,9 @@ void PETSC_STDCALL  assemblematrix_(Mat A,PetscInt *e,PetscScalar v[],InsertMode
 }
 void PETSC_STDCALL  writepcicerestart_(Mesh mesh, PetscViewer viewer, int *ierr){
   *ierr = WritePCICERestart((Mesh) PetscToPointer(mesh), (PetscViewer) PetscToPointer(viewer));
+}
+void PETSC_STDCALL  meshexodusgetinfo_(Mesh mesh, PetscInt *dim, PetscInt *numVertices, PetscInt *numCells, PetscInt *numCellBlocks, PetscInt *numVertexSets, int *ierr){
+  *ierr = MeshExodusGetInfo((Mesh) PetscToPointer(mesh), dim, numVertices, numCells, numCellBlocks, numVertexSets);
 }
 void PETSC_STDCALL  meshgetstratumsize_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
   char *pN;

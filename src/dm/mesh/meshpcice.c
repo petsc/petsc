@@ -332,10 +332,77 @@ namespace ALE {
       throw ALE::Exception("Not implemented for optimized sieves");
     };
     void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor) {
-      throw ALE::Exception("Not implemented for optimized sieves");
+      const Obj<Mesh::real_section_type>& coordSec = mesh->getRealSection("coordinates");
+      if (!coordSec->size()) {
+        *numVertices = 0;
+        *dim         = 0;
+        *coordinates = NULL;
+        return;
+      }
+      const Obj<Mesh::label_sequence>& vertices   = mesh->depthStratum(0);
+      const Obj<Mesh::numbering_type>& vNumbering = mesh->getFactory()->getLocalNumbering(mesh, 0);
+      int            size     = vertices->size();
+      int            embedDim = coordSec->getFiberDimension(*vertices->begin());
+      double        *coords;
+      PetscErrorCode ierr;
+
+      ierr = PetscMalloc(vertices->size()*embedDim * sizeof(double), &coords);
+      for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+        const Mesh::real_section_type::value_type *array = coordSec->restrictPoint(*v_iter);
+        const int                                  row   = vNumbering->getIndex(*v_iter);
+
+        if (columnMajor) {
+          for(int d = 0; d < embedDim; d++) {
+            coords[d*size + row] = array[d];
+          }
+        } else {
+          for(int d = 0; d < embedDim; d++) {
+            coords[row*embedDim + d] = array[d];
+          }
+        }
+      }
+      *numVertices = size;
+      *dim         = embedDim;
+      *coordinates = coords;
     };
     void Builder::outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], const bool columnMajor) {
-      throw ALE::Exception("Not implemented for optimized sieves");
+      if (!mesh->heightStratum(0)->size()) {
+        *numElements = 0;
+        *numCorners  = 0;
+        *vertices    = NULL;
+        return;
+      }
+      const Obj<Mesh::sieve_type>&     sieve      = mesh->getSieve();
+      const Obj<Mesh::label_sequence>& elements   = mesh->heightStratum(0);
+      const Obj<Mesh::numbering_type>& eNumbering = mesh->getFactory()->getLocalNumbering(mesh, mesh->depth());
+      const Obj<Mesh::numbering_type>& vNumbering = mesh->getFactory()->getLocalNumbering(mesh, 0);
+      int            size         = elements->size();
+      //int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
+      int            corners      = sieve->getConeSize(*elements->begin());
+      int           *v;
+      PetscErrorCode ierr;
+
+      ierr = PetscMalloc(size*corners * sizeof(int), &v);
+      for(Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        const Obj<Mesh::sieve_type::coneSequence>      cone  = sieve->cone(*e_iter);
+        Mesh::sieve_type::coneSequence::const_iterator begin = cone->begin();
+        Mesh::sieve_type::coneSequence::const_iterator end   = cone->end();
+
+        const int row = eNumbering->getIndex(*e_iter);
+        int       c   = -1;
+        if (columnMajor) {
+          for(Mesh::sieve_type::coneSequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
+            v[(++c)*size + row] = vNumbering->getIndex(*c_iter)+1;
+          }
+        } else {
+          for(Mesh::sieve_type::coneSequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
+            v[row*corners + ++c] = vNumbering->getIndex(*c_iter)+1;
+          }
+        }
+      }
+      *numElements = size;
+      *numCorners  = corners;
+      *vertices    = v;
     };
     PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
       throw ALE::Exception("Not implemented for optimized sieves");

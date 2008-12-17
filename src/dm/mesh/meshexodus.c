@@ -2,6 +2,11 @@
 
 #ifdef PETSC_HAVE_EXODUS
 
+// This is what I needed in my petscvariables:
+//
+// EXODUS_INCLUDE = -I/PETSc3/mesh/exodusii-4.71/cbind/include
+// EXODUS_LIB = -L/PETSc3/mesh/exodusii-4.71/forbind/src -lexoIIv2for -L/PETSc3/mesh/exodusii-4.71/cbind/src -lexoIIv2c -lnetcdf
+
 #include<netcdf.h>
 #include<exodusII.h>
 
