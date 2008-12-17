@@ -38,7 +38,8 @@ class PetscConfig:
         self.configdict = self._get_petsc_conf(petsc_dir, petsc_arch)
         self.PETSC_DIR  = self['PETSC_DIR']
         self.PETSC_ARCH = self['PETSC_ARCH']
-        self.language = self._map_lang(self['PETSC_LANGUAGE'])
+        language_map = {'CONLY':'c', 'CXXONLY':'c++'}
+        self.language = language_map[self['PETSC_LANGUAGE']]
 
     def __getitem__(self, item):
         return self.configdict[item]
@@ -107,9 +108,16 @@ class PetscConfig:
         confdict = cfgutils.makefile(StringIO(confstr))
         return confdict
 
-    def _map_lang(self, lang):
-        langmap = {'CONLY':'c', 'CXXONLY':'c++'}
-        return langmap[lang]
+    def _configure_ext(self, ext, dct, preppend=False):
+        extdict = ext.__dict__
+        for key, values in dct.items():
+            if key in extdict:
+                for value in values:
+                    if value not in extdict[key]:
+                        if preppend:
+                            extdict[key].insert(0, value)
+                        else:
+                            extdict[key].append(value)
 
     def configure_extension(self, extension):
         # define macros
@@ -141,17 +149,6 @@ class PetscConfig:
         extension.extra_compile_args.extend(ccflags)
         ldflags = self['PETSC_EXTERNAL_LIB_BASIC'].split()
         extension.extra_link_args.extend(ldflags)
-
-    def _configure_ext(self, ext, dct, preppend=False):
-        extdict = ext.__dict__
-        for key, values in dct.items():
-            if key in extdict:
-                for value in values:
-                    if value not in extdict[key]:
-                        if preppend:
-                            extdict[key].insert(0, value)
-                        else:
-                            extdict[key].append(value)
 
     def configure_compiler(self, compiler):
         from distutils.sysconfig import get_config_vars
