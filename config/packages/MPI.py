@@ -65,7 +65,6 @@ class Configure(config.package.Package):
     self.compilers = framework.require('config.compilers', self)
     self.compilerFlags = framework.require('config.compilerFlags', self)
     self.types = framework.require('config.types', self)
-    self.blasLapack = framework.require('config.packages.BlasLapack',self)
     return
 
   # search many obscure locations for MPI
@@ -556,7 +555,6 @@ class Configure(config.package.Package):
     self.compilers.headerPrefix = self.headerPrefix
     self.compilers.configure()
     self.compilerFlags.configure()
-    self.blasLapack.configure()
     return
 
   def addExtraLibraries(self):
