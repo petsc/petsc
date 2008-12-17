@@ -44,6 +44,7 @@ extern void PetscRmPointer(void*);
 #define writepcicerestart_      WRITEPCICERESTART
 #define meshexodusgetinfo_      MESHEXODUSGETINFO
 #define meshgetstratumsize_     MESHGETSTRATUMSIZE
+#define meshgetmatrix_          MESHGETMATRIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define meshcreatepflotran_     meshcreatepflotran_
 #define meshcreatepcice_        meshcreatepcice
@@ -62,6 +63,7 @@ extern void PetscRmPointer(void*);
 #define writepcicerestart_      writepcicerestart
 #define meshexodusgetinfo_      meshexodusgetinfo
 #define meshgetstratumsize_     meshgetstratumsize
+#define meshgetmatrix_          meshgetmatrix
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -171,6 +173,13 @@ void PETSC_STDCALL  meshgetstratumsize_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len
   FIXCHAR(name,lenN,pN);
   *ierr = MeshGetStratumSize((Mesh) PetscToPointer(mesh),pN, *value, size);
   FREECHAR(name,pN);
+}
+
+void PETSC_STDCALL  meshgetmatrix_(Mesh mesh, CHAR mattype PETSC_MIXED_LEN(lenN), Mat *J, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(mattype,lenN,pN);
+  *ierr = MeshGetMatrix((Mesh) PetscToPointer(mesh), pN, J);
+  FREECHAR(mattype,pN);
 }
 
 EXTERN_C_END
