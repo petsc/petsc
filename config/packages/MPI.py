@@ -310,6 +310,7 @@ class Configure(config.package.Package):
     # Get the OPENMPI directories
     installDir = os.path.join(self.defaultInstallDir,self.arch)
     confDir = os.path.join(self.defaultInstallDir,self.arch,'conf')
+    args = ['--prefix='+installDir,'--with-rsh=ssh']
     # Configure and Build OPENMPI
     self.framework.pushLanguage('C')
     flags = self.framework.getCompilerFlags()
@@ -317,7 +318,8 @@ class Configure(config.package.Package):
       # OpenMPI configure crashes on Apple if -g or -g3 flag is passed in here 
       flags = flags.replace('-g3','')
       flags = flags.replace('-g','')
-    args = ['--prefix='+installDir, '--with-rsh=ssh','CC="'+self.framework.getCompiler()+' '+flags+'"']
+    args.append('CC="'+self.framework.getCompiler()+'"')
+    args.append('CFLAGS="'+flags+'"')
     if self.framework.argDB['with-shared']:
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
@@ -327,17 +329,32 @@ class Configure(config.package.Package):
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       flags = self.framework.getCompilerFlags()
-      flags = flags.replace('-g3','')
-      flags = flags.replace('-g','')
-      args.append('CXX="'+self.framework.getCompiler()+' '+flags+'"')
+      if config.setCompilers.Configure.isDarwin():
+        flags = flags.replace('-g3','')
+        flags = flags.replace('-g','')
+      args.append('CXX="'+self.framework.getCompiler()+'"')
+      args.append('CXXFLAGS="'+flags+'"')
       self.framework.popLanguage()
+    else:
+      args.append('--disable-mpi-cxx')
+      args.append('CXX=""')
     # no separate F90 options for OPENMPI
     if hasattr(self.compilers, 'FC'):
       self.framework.pushLanguage('FC')
-      args.append('FC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      args.append('F77="'+self.framework.getCompiler()+'"')
+      args.append('FFLAGS="'+self.framework.getCompilerFlags()+'"')
+      if self.compilers.fortranIsF90:
+        args.append('FC="'+self.framework.getCompiler()+'"')
+        args.append('FCFLAGS="'+self.framework.getCompilerFlags()+'"')
+      else:
+        args.append('--disable-mpi-f90')
+        args.append('FC=""')
       self.framework.popLanguage()
     else:
-      args.append('--without-fc')
+      args.append('--disable-mpi-f77')
+      args.append('--disable-mpi-f90')
+      args.append('F77=""')
+      args.append('FC=""')
     if not self.framework.argDB['with-shared']:
       args.append('--enable-shared=no')
       args.append('--enable-static=yes')
@@ -354,13 +371,13 @@ class Configure(config.package.Package):
       self.framework.log.write('Have to rebuild OPENMPI oldargs = '+oldargs+'\n new args = '+args+'\n')
       try:
         self.logPrintBox('Configuring OPENMPI/MPI; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+';CXX='';export CXX; ./configure '+args, timeout=1500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+';./configure '+args, timeout=1500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on OPENMPI/MPI: '+str(e))
       try:
         self.logPrintBox('Compiling OPENMPI/MPI; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+';OPENMPI_INSTALL_DIR='+installDir+';export OPENMPI_INSTALL_DIR; make install', timeout=6000, log = self.framework.log)[0]
-        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+';OPENMPI_INSTALL_DIR='+installDir+';export OPENMPI_INSTALL_DIR; make clean', timeout=200, log = self.framework.log)[0]        
+        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+'; make install', timeout=6000, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+openmpiDir+'; make clean', timeout=200, log = self.framework.log)[0]        
       except RuntimeError, e:
         raise RuntimeError('Error running make on OPENMPI/MPI: '+str(e))
       if not os.path.isdir(os.path.join(installDir,'lib')):
