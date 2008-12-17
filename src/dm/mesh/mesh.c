@@ -137,6 +137,8 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<PETSC_MESH_TYPE>& mesh, Petsc
     ierr = PetscStrcat(coordFilename, ".nodes");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
     ierr = ALE::PCICE::Viewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
+  } else if (format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
+    mesh->view("");
   } else {
     int dim = mesh->getDimension();
 
@@ -453,7 +455,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshDestroy"
-/*@C
+/*@
     MeshDestroy - Destroys a mesh.
 
     Collective on Mesh
