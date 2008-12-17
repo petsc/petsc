@@ -94,7 +94,7 @@
       call MatSetType(A, MATAIJ,ierr)
       call MatSetFromOptions(A,ierr)
       call MatMPIAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,five,            &
-     &                     PETSC_NULL_CHARACTER,ierr)
+     &                     PETSC_NULL_INTEGER,ierr)
       call MatSeqAIJSetPreallocation(A,five,PETSC_NULL_INTEGER,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
