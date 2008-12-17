@@ -126,9 +126,9 @@ class TestPCPYTHON(unittest.TestCase):
         self.pc.prefix = self.PC_PREFIX
         OptDB = PETSc.Options(self.pc)
         assert OptDB.prefix == self.pc.prefix
-        OptDB['pc_python'] = '%s.%s' % (module, factory)
+        OptDB['pc_python_type'] = '%s.%s' % (module, factory)
         self.pc.setFromOptions()
-        del OptDB['pc_python']
+        del OptDB['pc_python_type']
         assert PC_PYTHON.log['create'] == 1
         assert PC_PYTHON.log['setFromOptions'] == 1
     def tearDown(self):
