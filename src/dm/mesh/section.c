@@ -723,7 +723,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAXPY(SectionReal section, Mesh mesh,
 
   Input Parameters:
 + mesh - The Mesh object
-- fiberDim - The section name
+- fiberDim - The number of degrees of freedom per vertex
 
   Output Parameter:
 . section - The section
