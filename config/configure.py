@@ -5,6 +5,7 @@ import commands
 # to load ~/.pythonrc.py before inserting correct BuildSystem to path
 import user
 extraLogs = []
+petsc_arch = ''
 
 if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.version_info[0] >= 2:
   print '**** You must have Python version 2.2 or higher to run config/configure.py ******'
@@ -18,16 +19,19 @@ if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.v
   
 def check_petsc_arch(opts):
   # If PETSC_ARCH not specified - use script name (if not configure.py)
+  global petsc_arch
   found = 0
   for name in opts:
     if name.find('PETSC_ARCH=') >= 0:
+      petsc_arch=name.split('=')[1]
       found = 1
       break
   # If not yet specified - use the filename of script
   if not found:
       filename = os.path.basename(sys.argv[0])
       if not filename.startswith('configure') and not filename.startswith('reconfigure'):
-        useName = 'PETSC_ARCH='+os.path.splitext(os.path.basename(sys.argv[0]))[0]
+        petsc_arch=os.path.splitext(os.path.basename(sys.argv[0]))[0]
+        useName = 'PETSC_ARCH='+petsc_arch
         opts.append(useName)
   return 0
 
@@ -83,12 +87,23 @@ def chkrhl9():
 
 def move_configure_log(framework):
   '''Move configure.log to PETSC_ARCH/conf - and update configure.log.bkp in both locations appropriately'''
-  if hasattr(framework, 'arch'):
+  global petsc_arch
+
+  if hasattr(framework,'arch'): petsc_arch = framework.arch
+  if hasattr(framework,'logName'): curr_file = framework.logName
+  else: curr_file = 'configure.log'
+
+  if petsc_arch:
     import shutil
     import os
-    curr_file = framework.logName
+
+    # Just in case - confdir is not created
+    conf_dir = os.path.join(petsc_arch,'conf')
+    if not os.path.isdir(petsc_arch): os.mkdir(petsc_arch)
+    if not os.path.isdir(conf_dir): os.mkdir(conf_dir)
+
     curr_bkp  = curr_file + '.bkp'
-    new_file  = os.path.join(framework.arch,'conf',curr_file)
+    new_file  = os.path.join(conf_dir,curr_file)
     new_bkp   = new_file + '.bkp'
 
     # Keep backup in $PETSC_ARCH/conf location
