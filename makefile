@@ -19,6 +19,7 @@ include ${PETSC_DIR}/conf/test
 all: 
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
 	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/conf/make.log
+	-@if [ -L make.log ]; then ${RM} make.log; fi; ln -s ${PETSC_ARCH}/conf/make.log make.log
 	-@egrep -i "( error | error:)" ${PETSC_ARCH}/conf/make.log > /dev/null; if [ "$$?" = "0" ]; then \
            echo "********************************************************************"; \
            echo "  Error during compile, check ${PETSC_ARCH}/conf/make.log"; \
@@ -26,7 +27,7 @@ all:
            echo "********************************************************************"; \
            exit 1; fi
 
-all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared_nomesg
+all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared_nomesg petsc4pyinstall
 #
 # Prints information about the system and version of PETSc being compiled
 #

@@ -16,6 +16,7 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
+    self.petscconfigure   = framework.require('PETSc.Configure',self)
     self.numpy      = framework.require('PETSc.packages.Numpy',self)
     self.petscdir   = framework.require('PETSc.utilities.petscdir',self)
     self.setCompilers  = framework.require('config.setCompilers',self)
@@ -25,12 +26,13 @@ class Configure(PETSc.package.Package):
   def Install(self):
     pp = os.path.join(self.installDir,'lib','python*','site-packages')
     if self.setCompilers.isDarwin():
-      apple = 'You may first need to (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) set  MACOSX_DEPLOYMENT_TARGET=10.X;export MACOSX_DEPLOYMENT_TARGET\n'
+      apple = 'You may need to (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) set  MACOSX_DEPLOYMENT_TARGET=10.X;export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
     else:
       apple = ''
     self.logClearRemoveDirectory()
-    self.logPrintBox('After installing PETSc run:\ncd '+self.packageDir+'\n python setup.py install --prefix='+self.installDir+'\n'+apple+'then add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) PYTHONPATH=${PYTHONPATH}:'+pp+'; export PYTHONPATH' )
     self.logResetRemoveDirectory()
+    self.addMakeRule('petsc4pyinstall','',['@cd '+self.packageDir+'; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),'@echo Add '+os.path.join(self.petscconfigure.installdir,'lib')+' to your PYTHONPATH to use petsc4py'])
+    
     return self.installDir
 
   def configureLibrary(self):
@@ -53,3 +55,5 @@ class Configure(PETSc.package.Package):
       else:
         raise RuntimeError('Unable to find Python dynamic library at prefix '+prefix)
 
+  def alternateConfigureLibrary(self):
+    self.addMakeRule('petsc4pyinstall','')   

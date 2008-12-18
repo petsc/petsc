@@ -944,7 +944,6 @@ shared: shared_nomesg
 shared_nomesg: 
 	-@if [ "${BUILDSHAREDLIB}" != "no" ]; then \
 	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \
-	    mkdir ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
             cwd=`pwd`; \
 	    for LIBNAME in ${SHLIBS}; \
 	    do \
@@ -967,9 +966,8 @@ shared_nomesg:
 	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib shared_arch; \
 	        fi; \
 	      fi; \
-	      ${RM} -rf ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
+              ${RM} -rf ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
 	    done; \
-	    ${RM} -rf ${INSTALL_LIB_DIR}/tmp-petsc-shlib; \
 	  fi
 
 include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscrules

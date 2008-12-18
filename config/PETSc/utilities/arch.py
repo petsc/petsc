@@ -73,4 +73,6 @@ Warning: Using from command-line: %s, ignoring environment: %s''' % (str(self.fr
 
   def configure(self):
     self.executeTest(self.configureArchitecture)
+    # required by top-level configure.py
+    self.framework.arch = self.arch
     return
