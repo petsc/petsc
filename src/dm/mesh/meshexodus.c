@@ -230,6 +230,73 @@ PetscErrorCode MeshExodusGetInfo(Mesh mesh, PetscInt *dim, PetscInt *numVertices
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MeshGetLabelSize"
+/*@C
+  MeshGetLabelSize - Get the number of different integer ids in a Label
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+- name - The label name
+
+  Output Parameter:
+. size - The label size (number of different integer ids)
+
+  Level: beginner
+
+.keywords: mesh, ExodusII
+.seealso: MeshCreateExodus()
+@*/
+PetscErrorCode MeshGetLabelSize(Mesh mesh, const char name[], PetscInt *size)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  *size = m->getLabel(name)->getCapSize();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshGetLabelIds"
+/*@C
+  MeshGetLabelIds - Get the integer ids in a label
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+. name - The label name
+- ids - The id storage array
+
+  Output Parameter:
+. ids - The integer ids
+
+  Level: beginner
+
+.keywords: mesh, ExodusII
+.seealso: MeshCreateExodus()
+@*/
+PetscErrorCode MeshGetLabelIds(Mesh mesh, const char name[], PetscInt *ids)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::label_type::capSequence>&      labelIds = m->getLabel(name)->cap();
+  const PETSC_MESH_TYPE::label_type::capSequence::const_iterator iEnd     = labelIds->end();
+  PetscInt                                                       i        = 0;
+
+  for(PETSC_MESH_TYPE::label_type::capSequence::const_iterator i_iter = labelIds->begin(); i_iter != iEnd; ++i_iter, ++i) {
+    ids[i] = *i_iter;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MeshGetStratumSize"
 /*@C
   MeshGetStratumSize - Get the number of points in a label stratum

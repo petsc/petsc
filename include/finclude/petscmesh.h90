@@ -88,6 +88,15 @@
       End Interface
 
       Interface 
+        Subroutine MeshGetLabelIds(m,name,array,ierr)
+          PetscErrorCode ierr
+          PetscInt, pointer :: array(:)
+          CHARACTER*80 name
+          Mesh m
+        End Subroutine
+      End Interface
+
+      Interface 
         Subroutine MeshGetStratum(m,name,value,array,ierr)
           PetscErrorCode ierr
           PetscInt, pointer :: array(:)

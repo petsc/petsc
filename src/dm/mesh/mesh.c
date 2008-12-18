@@ -750,6 +750,23 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateGlobalScatter"
+/*@
+  MeshCreateGlobalScatter - Create a VecScatter which maps from local, overlapping
+  storage in the Section to a global Vec
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - the mesh object
+- section - The Scetion which determines data layout
+
+  Output Parameter:
+. scatter - the VecScatter
+ 
+  Level: advanced
+
+.seealso MeshDestroy(), MeshCreateGlobalVector(), MeshCreate()
+@*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal section, VecScatter *scatter)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;

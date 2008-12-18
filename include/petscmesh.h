@@ -286,6 +286,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElements(Mesh, SectionReal, P
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithVerticesLocal(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElementsLocal(Mesh, SectionReal, PetscViewer);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetLabelIds(Mesh, const char[], PetscInt *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetLabelSize(Mesh, const char[], PetscInt *);
+
 typedef struct {
   int           numQuadPoints, numBasisFuncs;
   const double *quadPoints, *quadWeights, *basis, *basisDer;

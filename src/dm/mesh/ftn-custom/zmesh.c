@@ -43,6 +43,7 @@ extern void PetscRmPointer(void*);
 #define assemblematrix_         ASSEMBLEMATRIX
 #define writepcicerestart_      WRITEPCICERESTART
 #define meshexodusgetinfo_      MESHEXODUSGETINFO
+#define meshgetlabelsize_       MESHGETLABELSIZE
 #define meshgetstratumsize_     MESHGETSTRATUMSIZE
 #define meshgetsectionreal_     MESHGETSECTIONREAL
 #define meshgetmatrix_          MESHGETMATRIX
@@ -64,6 +65,7 @@ extern void PetscRmPointer(void*);
 #define assemblematrix_         assemblematrix
 #define writepcicerestart_      writepcicerestart
 #define meshexodusgetinfo_      meshexodusgetinfo
+#define meshgetlabelsize_       meshgetlabelsize
 #define meshgetstratumsize_     meshgetstratumsize
 #define meshgetsectionreal_     meshgetsectionreal
 #define meshgetmatrix_          meshgetmatrix
@@ -171,6 +173,12 @@ void PETSC_STDCALL  writepcicerestart_(Mesh mesh, PetscViewer viewer, int *ierr)
 }
 void PETSC_STDCALL  meshexodusgetinfo_(Mesh mesh, PetscInt *dim, PetscInt *numVertices, PetscInt *numCells, PetscInt *numCellBlocks, PetscInt *numVertexSets, int *ierr){
   *ierr = MeshExodusGetInfo((Mesh) PetscToPointer(mesh), dim, numVertices, numCells, numCellBlocks, numVertexSets);
+}
+void PETSC_STDCALL  meshgetlabelsize_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetLabelSize((Mesh) PetscToPointer(mesh),pN, size);
+  FREECHAR(name,pN);
 }
 void PETSC_STDCALL  meshgetstratumsize_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *value, PetscInt *size, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
