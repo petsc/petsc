@@ -1,7 +1,7 @@
 include MANIFEST.in
 include *.py *.cfg *.txt
 
-recursive-include demo *.py *.txt
+recursive-include demo *.txt *.tex *.py *.h *.c *.f90 makefile*
 recursive-include docs *.rst *.txt *.conf
 recursive-include conf *.py *.cfg
 recursive-include src  *.py *.pyx *.px[di] *.h *.c *.cpp *.cfg
