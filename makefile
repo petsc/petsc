@@ -26,7 +26,7 @@ all:
            echo "********************************************************************"; \
            exit 1; fi
 
-all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared_nomesg
+all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared_nomesg petsc4pyinstall
 #
 # Prints information about the system and version of PETSc being compiled
 #
