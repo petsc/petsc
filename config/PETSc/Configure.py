@@ -357,8 +357,10 @@ class Configure(config.base.Configure):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
       self.installdir = self.framework.argDB['prefix']
+      self.addMakeRule('shared_nomesg_noinstall','')      
     else:
       self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
+      self.addMakeRule('shared_nomesg_noinstall','shared_nomesg')            
     return
 
   def configureGCOV(self):
