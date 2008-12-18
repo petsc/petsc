@@ -383,7 +383,6 @@ class Configure(config.base.Configure):
     self.framework.cHeader         = self.arch.arch+'/include/petscfix.h'
     self.framework.makeMacroHeader = self.arch.arch+'/conf/petscvariables'
     self.framework.makeRuleHeader  = self.arch.arch+'/conf/petscrules'
-    self.framework.arch            = self.arch.arch
     if self.libraries.math is None:
       raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
     if self.languages.clanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):

@@ -5,6 +5,7 @@ import commands
 # to load ~/.pythonrc.py before inserting correct BuildSystem to path
 import user
 extraLogs = []
+petsc_arch = ''
 
 if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.version_info[0] >= 2:
   print '**** You must have Python version 2.2 or higher to run config/configure.py ******'
@@ -18,16 +19,19 @@ if not hasattr(sys, 'version_info') or not sys.version_info[1] >= 2 or not sys.v
   
 def check_petsc_arch(opts):
   # If PETSC_ARCH not specified - use script name (if not configure.py)
+  global petsc_arch
   found = 0
   for name in opts:
     if name.find('PETSC_ARCH=') >= 0:
+      petsc_arch=name.split('=')[1]
       found = 1
       break
   # If not yet specified - use the filename of script
   if not found:
       filename = os.path.basename(sys.argv[0])
       if not filename.startswith('configure') and not filename.startswith('reconfigure'):
-        useName = 'PETSC_ARCH='+os.path.splitext(os.path.basename(sys.argv[0]))[0]
+        petsc_arch=os.path.splitext(os.path.basename(sys.argv[0]))[0]
+        useName = 'PETSC_ARCH='+petsc_arch
         opts.append(useName)
   return 0
 
@@ -81,6 +85,45 @@ def chkrhl9():
 ================================================================================''')
   return 0
 
+def check_broken_configure_log_links():
+  '''Sometime symlinks can get broken if the original files are deleted. Delete such broken links'''
+  import os
+  for logfile in ['configure.log','configure.log.bkp']:
+    if os.path.islink(logfile) and not os.path.isfile(logfile): os.remove(logfile)
+  return
+
+def move_configure_log(framework):
+  '''Move configure.log to PETSC_ARCH/conf - and update configure.log.bkp in both locations appropriately'''
+  global petsc_arch
+
+  if hasattr(framework,'arch'): petsc_arch = framework.arch
+  if hasattr(framework,'logName'): curr_file = framework.logName
+  else: curr_file = 'configure.log'
+
+  if petsc_arch:
+    import shutil
+    import os
+
+    # Just in case - confdir is not created
+    conf_dir = os.path.join(petsc_arch,'conf')
+    if not os.path.isdir(petsc_arch): os.mkdir(petsc_arch)
+    if not os.path.isdir(conf_dir): os.mkdir(conf_dir)
+
+    curr_bkp  = curr_file + '.bkp'
+    new_file  = os.path.join(conf_dir,curr_file)
+    new_bkp   = new_file + '.bkp'
+
+    # Keep backup in $PETSC_ARCH/conf location
+    if os.path.isfile(new_bkp): os.remove(new_bkp)
+    if os.path.isfile(new_file): os.rename(new_file,new_bkp)
+    if os.path.isfile(curr_file): shutil.move(curr_file,new_file)
+    if os.path.isfile(new_file): os.symlink(new_file,curr_file)
+    # If the old bkp is using the same PETSC_ARCH/conf - then update bkp link
+    if os.path.realpath(curr_bkp) == os.path.realpath(new_file):
+      if os.path.isfile(curr_bkp): os.remove(curr_bkp)
+      if os.path.isfile(new_bkp): os.symlink(new_bkp,curr_bkp)
+  return
+
 def petsc_configure(configure_options): 
   print '================================================================================='
   print '             Configuring PETSc to compile on your system                         '
@@ -90,6 +133,7 @@ def petsc_configure(configure_options):
   sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
   # check PETSC_ARCH
   check_petsc_arch(sys.argv)
+  check_broken_configure_log_links()
 
   # support a few standard configure option types
   for l in range(0,len(sys.argv)):
@@ -179,9 +223,7 @@ def petsc_configure(configure_options):
         i.postProcess()
     framework.logClear()
     framework.closeLog()
-    if hasattr(framework, 'arch'):
-      import shutil
-      shutil.move(framework.logName,os.path.join(framework.arch,'conf',framework.logName))
+    move_configure_log(framework)
     return 0
   except (RuntimeError, config.base.ConfigureSetupError), e:
     emsg = str(e)
@@ -235,11 +277,13 @@ def petsc_configure(configure_options):
       import traceback
       framework.log.write(msg+se)
       traceback.print_tb(sys.exc_info()[2], file = framework.log)
+      move_configure_log(framework)
       sys.exit(1)
   else:
     print se
     import traceback
     traceback.print_tb(sys.exc_info()[2])
+  move_configure_log(framework)
 
 if __name__ == '__main__':
   petsc_configure([])

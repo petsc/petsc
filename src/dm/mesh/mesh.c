@@ -329,6 +329,29 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<PETSC_MES
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
+/*@C
+  MeshCreateMatrix - Creates a matrix with the correct parallel layout required for 
+    computing the Jacobian on a function defined using the information in the Section.
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh    - the mesh object
+. section - the section which determines data layout
+- mtype   - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ,
+            or any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
+
+  Output Parameter:
+. J  - matrix with the correct nonzero preallocation
+       (obviously without the correct Jacobian values)
+
+  Level: advanced
+
+  Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
+       do not need to do it yourself.
+
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
+@*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, SectionReal section, MatType mtype, Mat *J)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
@@ -361,16 +384,16 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
 #define __FUNCT__ "MeshGetMatrix" 
 /*@C
     MeshGetMatrix - Creates a matrix with the correct parallel layout required for 
-      computing the Jacobian on a function defined using the informatin in Mesh.
+      computing the Jacobian on a function defined using the information in Mesh.
 
     Collective on Mesh
 
-    Input Parameter:
+    Input Parameters:
 +   mesh - the mesh object
 -   mtype - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ,
             or any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
 
-    Output Parameters:
+    Output Parameter:
 .   J  - matrix with the correct nonzero preallocation
         (obviously without the correct Jacobian values)
 

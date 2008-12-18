@@ -14,7 +14,6 @@
       PETSC_COMM_WORLD    = c1
       PETSC_COMM_SELF     = c2
 
-      print*,PETSC_NULL_CHARACTER
       call PetscSetFortranBasePointers(PETSC_NULL_CHARACTER,            &
      &     PETSC_NULL_INTEGER,PETSC_NULL,PETSC_NULL_SCALAR,             &
      &     PETSC_NULL_DOUBLE,PETSC_NULL_REAL,PETSC_NULL_OBJECT,         &

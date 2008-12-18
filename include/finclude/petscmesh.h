@@ -10,4 +10,7 @@
 
 #define MESHSIEVE 'sieve'
 
+#define SectionReal PetscFortranAddr
+#define SectionInt  PetscFortranAddr
+
 #endif
