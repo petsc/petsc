@@ -3,8 +3,8 @@
 __all__ = ['PetscConfig',
            'setup', 'Extension',
            'log', 'config',
-           'build', 'build_py', 'build_ext',
-           'build_src', 'sdist',
+           'build', 'build_src', 'build_ext',
+           'sdist',
            ]
 
 # --------------------------------------------------------------------
@@ -17,7 +17,6 @@ from numpy.distutils.core import Extension as _Extension
 from numpy.distutils.command.config    import config     as _config
 from numpy.distutils.command.build     import build      as _build
 from numpy.distutils.command.build_src import build_src  as _build_src
-from numpy.distutils.command.build_py  import build_py   as _build_py
 from numpy.distutils.command.build_ext import build_ext  as _build_ext
 from numpy.distutils.command.sdist     import sdist      as _sdist
 from numpy.distutils import log
@@ -69,6 +68,7 @@ class PetscConfig:
         #
         confstr  = 'PETSC_DIR = %s\n'  % petsc_dir
         confstr += 'PETSC_ARCH = %s\n' % petsc_arch
+        confstr += 'PETSC_ARCH_NAME = %s\n' % petsc_arch
         confstr += contents
         ## confstr += 'PACKAGES_INCLUDES = ${MPI_INCLUDE} ${X11_INCLUDE} ${BLASLAPACK_INCLUDE}\n'
         ## confstr += 'PACKAGES_LIBS = ${MPI_LIB} ${X11_LIB} ${BLASLAPACK_LIB}\n'
@@ -179,7 +179,8 @@ class PetscConfig:
 
     def log_info(self):
         log.info('PETSC_DIR:   %s' % self['PETSC_DIR'])
-        log.info('PETSC_ARCH:  %s' % (self['PETSC_ARCH'] or '<default>'))
+        log.info('PETSC_ARCH:  %s' % (self['PETSC_ARCH'] or
+                                      self['PETSC_ARCH_NAME']))
         language    = self['PETSC_LANGUAGE']
         scalar_type = self['PETSC_SCALAR']
         precision   = self['PETSC_PRECISION']
@@ -226,17 +227,19 @@ class config(_config):
             arch_list = [ None ]
         for arch in arch_list:
             conf = PetscConfig(petsc_dir, arch)
-            archname    = conf.PETSC_ARCH or '<default>'
+            archname    = conf.PETSC_ARCH or conf['PETSC_ARCH_NAME']
             language    = conf['PETSC_LANGUAGE']
             compiler    = conf['PCC']
+            linker      = conf['PCC_LINKER']
             scalar_type = conf['PETSC_SCALAR']
             precision   = conf['PETSC_PRECISION']
             log.info('-'*70)
             log.info('PETSC_ARCH:  %s' % archname)
-            log.info('language:    %s' % language)
-            log.info('compiler:    %s' % compiler)
-            log.info('scalar-type: %s' % scalar_type)
-            log.info('precision:   %s' % precision)
+            log.info(' * compiler:    %s' % compiler)
+            log.info(' * linker:      %s' % linker)
+            log.info(' * language:    %s' % language)
+            log.info(' * scalar-type: %s' % scalar_type)
+            log.info(' * precision:   %s' % precision)
         log.info('-' * 70)
 
     @staticmethod
@@ -314,61 +317,6 @@ class build(_build):
         self.petsc_dir  = config.get_petsc_dir(self.petsc_dir)
         self.petsc_arch = config.get_petsc_arch(self.petsc_dir,
                                                 self.petsc_arch)
-
-
-class build_py(_build_py):
-
-    config_file = 'petsc.cfg'
-
-    def initialize_options(self):
-        _build_py.initialize_options(self)
-        self.petsc_dir  = None
-        self.petsc_arch = None
-
-    def finalize_options(self):
-        _build_py.finalize_options(self)
-        self.set_undefined_options('build',
-                                   ('petsc_dir',  'petsc_dir'),
-                                   ('petsc_arch', 'petsc_arch'))
-
-    def build_package_data (self):
-        _build_py.build_package_data(self)
-        for package, src_dir, build_dir, filenames in self.data_files:
-            for filename in filenames:
-                if filename == self.config_file:
-                    target = os.path.join(build_dir, filename)
-                    if os.path.exists(target):
-                        self._config(target)
-                        break
-
-    def _config(self, py_file):
-        PETSC_DIR  = '$PETSC_DIR'
-        PETSC_ARCH = '$PETSC_ARCH'
-        config_py = open(py_file, 'r')
-        config_data = config_py.read()
-        config_py.close()
-        #
-        petsc_dir  = self.petsc_dir
-        petsc_arch = self.petsc_arch
-        pathsep    = os.path.pathsep
-        #
-        if '%(PETSC_DIR)s' not in config_data:
-            return # already configured
-        if not petsc_dir:
-            return # nothing known to put
-        #
-        bmake_dir = os.path.join(petsc_dir, 'bmake')
-        have_bmake = os.path.isdir(bmake_dir)
-        #
-        PETSC_DIR  = petsc_dir
-        if petsc_arch:
-            PETSC_ARCH = pathsep.join(petsc_arch)
-        elif not have_bmake:
-            PETSC_ARCH = 'default'
-        log.info('writing %s' % py_file)
-        config_py = open(py_file, 'w')
-        config_py.write(config_data % vars())
-        config_py.close()
 
 
 class build_src(_build_src):
@@ -458,7 +406,40 @@ class build_ext(_build_ext):
             version = self.distribution.get_version()
             distdir = '\'\"%s-%s/\"\'' % (name, version)
             newext.define_macros.append(('__SDIR__', distdir))
-            self._build_ext_arch(newext, pkgpath, arch or 'default')
+            ARCH = arch or config['PETSC_ARCH_NAME']
+            self.PETSC_ARCH_LIST.append(ARCH)
+            self._build_ext_arch(newext, pkgpath, ARCH)
+
+    def build_extensions(self, *args, **kargs):
+        self.PETSC_ARCH_LIST = []
+        _build_ext.build_extensions(self, *args,**kargs)
+        if not self.PETSC_ARCH_LIST: return
+        self.build_configuration(self.PETSC_ARCH_LIST)
+
+
+    def build_configuration(self, arch_list):
+        #
+        template, variables = self.get_config_data(arch_list)
+        config_data = template % variables
+        #
+        build_lib   = self.build_lib
+        dist_name   = self.distribution.get_name()
+        config_file = os.path.join(build_lib, dist_name, 'lib',
+                                   dist_name.replace('4py', '') + '.cfg')
+        #
+        log.info('writing %s' % config_file)
+        fh = open(config_file, 'w')
+        try: fh.write(config_data)
+        finally: fh.close()
+
+    def get_config_data(self, arch_list):
+        template = """\
+PETSC_DIR  = %(PETSC_DIR)s
+PETSC_ARCH = %(PETSC_ARCH)s
+"""
+        variables = {'PETSC_DIR'  : self.petsc_dir,
+                     'PETSC_ARCH' : os.path.pathsep.join(arch_list)}
+        return template, variables
 
     def get_outputs(self):
         self.check_extensions_list(self.extensions)
