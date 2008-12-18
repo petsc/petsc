@@ -81,6 +81,27 @@ def chkrhl9():
 ================================================================================''')
   return 0
 
+def move_configure_log(framework):
+  '''Move configure.log to PETSC_ARCH/conf - and update configure.log.bkp in both locations appropriately'''
+  if hasattr(framework, 'arch'):
+    import shutil
+    import os
+    curr_file = framework.logName
+    curr_bkp  = curr_file + '.bkp'
+    new_file  = os.path.join(framework.arch,'conf',curr_file)
+    new_bkp   = new_file + '.bkp'
+
+    # Keep backup in $PETSC_ARCH/conf location
+    if os.path.isfile(new_bkp): os.remove(new_bkp)
+    if os.path.isfile(new_file): os.rename(new_file,new_bkp)
+    shutil.move(curr_file,new_file)
+    os.symlink(new_file,curr_file)
+    # If the old bkp is using the same PETSC_ARCH/conf - then update bkp link
+    if os.path.realpath(curr_bkp) == os.path.realpath(new_file):
+      os.remove(curr_bkp)
+      os.symlink(new_bkp,curr_bkp)
+  return
+
 def petsc_configure(configure_options): 
   print '================================================================================='
   print '             Configuring PETSc to compile on your system                         '
@@ -179,9 +200,7 @@ def petsc_configure(configure_options):
         i.postProcess()
     framework.logClear()
     framework.closeLog()
-    if hasattr(framework, 'arch'):
-      import shutil
-      shutil.move(framework.logName,os.path.join(framework.arch,'conf',framework.logName))
+    move_configure_log(framework)
     return 0
   except (RuntimeError, config.base.ConfigureSetupError), e:
     emsg = str(e)
@@ -235,11 +254,13 @@ def petsc_configure(configure_options):
       import traceback
       framework.log.write(msg+se)
       traceback.print_tb(sys.exc_info()[2], file = framework.log)
+      move_configure_log(framework)
       sys.exit(1)
   else:
     print se
     import traceback
     traceback.print_tb(sys.exc_info()[2])
+  move_configure_log(framework)
 
 if __name__ == '__main__':
   petsc_configure([])
