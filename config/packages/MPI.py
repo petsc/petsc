@@ -277,6 +277,9 @@ class Configure(config.package.Package):
     if self.framework.argDB['download-mpich'] and self.framework.argDB['download-openmpi']:
       raise RuntimeError('Cannot install more than one of OpenMPI or  MPICH-2 for a single configuration.')
 
+    if self.framework.argDB['download-openmpi'] and self.framework.argDB['prefix']:
+      raise RuntimeError('Currently --download-openmpi option does not work with --prefix install.\nSuggest installing OpenMPI separately, and then configuring PETSc with --with-mpi-dir option.')
+
     # Check for MPICH
     if self.framework.argDB['download-mpich']:
       if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
