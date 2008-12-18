@@ -1682,9 +1682,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterView(VecScatter ctx,PetscViewer view
     ierr = PetscViewerASCIIGetStdout(((PetscObject)ctx)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
-  if (!ctx->view) SETERRQ(PETSC_ERR_SUP,"Cannot view this type of scatter context yet");
-
-  ierr = (*ctx->view)(ctx,viewer);CHKERRQ(ierr);
+  if (ctx->view) {
+    ierr = (*ctx->view)(ctx,viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
