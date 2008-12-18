@@ -329,6 +329,29 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<PETSC_MES
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
+/*@C
+  MeshCreateMatrix - Creates a matrix with the correct parallel layout required for 
+    computing the Jacobian on a function defined using the information in the Section.
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh    - the mesh object
+. section - the section which determines data layout
+- mtype   - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ,
+            or any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
+
+  Output Parameter:
+. J  - matrix with the correct nonzero preallocation
+       (obviously without the correct Jacobian values)
+
+  Level: advanced
+
+  Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
+       do not need to do it yourself.
+
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
+@*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, SectionReal section, MatType mtype, Mat *J)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
@@ -393,45 +416,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, const MatType mtype, M
   if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshCreateMatrix(m, m->getRealSection("default"), mtype, J);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetGeneralMatrix" 
-/*@C
-  MeshGetGeneralMatrix - Creates a matrix with the correct parallel layout required for 
-    computing the Jacobian on a function defined using the information in the Section.
-
-  Collective on Mesh
-
-  Input Parameters:
-+ mesh    - the mesh object
-. section - the section which determines data layout
-- mtype   - Supported types are MATSEQAIJ, MATMPIAIJ, MATSEQBAIJ, MATMPIBAIJ, MATSEQSBAIJ, MATMPISBAIJ,
-            or any type which inherits from one of these (such as MATAIJ, MATLUSOL, etc.).
-
-  Output Parameter:
-. J  - matrix with the correct nonzero preallocation
-       (obviously without the correct Jacobian values)
-
-  Level: advanced
-
-  Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
-       do not need to do it yourself.
-
-.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetGeneralMatrix(Mesh mesh, SectionReal section, const MatType mtype, Mat *J)
-{
-  ALE::Obj<PETSC_MESH_TYPE> m;
-  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = MeshCreateMatrix(m, s, mtype, J);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

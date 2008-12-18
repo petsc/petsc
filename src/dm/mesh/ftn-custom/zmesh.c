@@ -46,7 +46,7 @@ extern void PetscRmPointer(void*);
 #define meshgetstratumsize_     MESHGETSTRATUMSIZE
 #define meshgetsectionreal_     MESHGETSECTIONREAL
 #define meshgetmatrix_          MESHGETMATRIX
-#define meshgetgeneralmatrix_   MESHGETGENERALMATRIX
+#define meshcreatematrix_       MESHCREATEMATRIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define meshcreatepflotran_     meshcreatepflotran_
 #define meshcreatepcice_        meshcreatepcice
@@ -67,7 +67,7 @@ extern void PetscRmPointer(void*);
 #define meshgetstratumsize_     meshgetstratumsize
 #define meshgetsectionreal_     meshgetsectionreal
 #define meshgetmatrix_          meshgetmatrix
-#define meshgetgeneralmatrix_   meshgetgeneralmatrix
+#define meshcreatematrix_       meshcreatematrix
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -193,10 +193,10 @@ void PETSC_STDCALL  meshgetmatrix_(Mesh mesh, CHAR mattype PETSC_MIXED_LEN(lenN)
   FREECHAR(mattype,pN);
 }
 
-void PETSC_STDCALL  meshgetgeneralmatrix_(Mesh mesh, SectionReal section, CHAR mattype PETSC_MIXED_LEN(lenN), Mat *J, int *ierr PETSC_END_LEN(lenN)){
+void PETSC_STDCALL  meshcreatematrix_(Mesh mesh, SectionReal section, CHAR mattype PETSC_MIXED_LEN(lenN), Mat *J, int *ierr PETSC_END_LEN(lenN)){
   char *pN;
   FIXCHAR(mattype,lenN,pN);
-  *ierr = MeshGetMatrix((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section), pN, J);
+  *ierr = MeshCreateMatrix((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section), pN, J);
   FREECHAR(mattype,pN);
 }
 
