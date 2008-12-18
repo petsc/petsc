@@ -911,7 +911,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGlobalMax"
-/*@C
+/*@
       PetscGlobalMax - Computes the maximum value over several processors
 
      Collective on MPI_Comm
@@ -938,7 +938,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGlobalMax(PetscReal* local,PetscReal* result
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGlobalMin"
-/*@C
+/*@
       PetscGlobalMin - Computes the minimum value over several processors
 
      Collective on MPI_Comm
@@ -965,7 +965,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscGlobalMin(PetscReal* local,PetscReal* result
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscGlobalSum"
-/*@C
+/*@
       PetscGlobalSum - Computes the sum over sever processors
 
      Collective on MPI_Comm

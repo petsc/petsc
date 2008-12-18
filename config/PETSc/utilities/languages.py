@@ -28,7 +28,7 @@ class Configure(config.base.Configure):
     return
 
   def packagesHaveCxx(self):
-    packages = ['prometheus','hypre','ml']
+    packages = ['prometheus','hypre','ml','openmpi']
     options = []
     for package in packages:
       options.append('download-'+package)
