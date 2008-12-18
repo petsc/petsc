@@ -1280,8 +1280,28 @@ if (dlclose(handle)) {
     self.usedMPICompilers=1
     return
 
+  def checkMPICompilerOverride(self):
+    '''Check if --with-mpi-dir is used along with CC CXX or FC compiler options.
+    This usually prevents mpi compilers from being used - so issue a warning'''
+    
+    opts = ['with-cc','with-fc','with-cxx','CC','FC','CXX']
+    optsMatch = []
+    if 'with-mpi-dir' in self.argDB:
+      for opt in opts:
+        if (opt in self.argDB  and self.argDB[opt] != '0'):
+          optsMatch.append(opt)
+    if optsMatch:
+      mesg = '''\
+Warning: [with-mpi-dir] option is used along with options: ''' + str(optsMatch) + '''
+This prevents configure from picking up MPI compilers from specified mpi-dir.
+
+Sugest using *only* [with-mpi-dir] option - and no other compiler option.
+This way - mpi compilers from '''+self.argDB['with-mpi-dir']+ ''' are used.'''
+      self.logPrintBox(mesg)
+    return
 
   def configure(self):
+    self.executeTest(self.checkMPICompilerOverride)
     self.executeTest(self.checkVendor)
     self.executeTest(self.checkInitialFlags)
     self.executeTest(self.checkCCompiler)
