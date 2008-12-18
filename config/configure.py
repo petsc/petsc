@@ -85,6 +85,13 @@ def chkrhl9():
 ================================================================================''')
   return 0
 
+def check_broken_configure_log_links():
+  '''Sometime symlinks can get broken if the original files are deleted. Delete such broken links'''
+  import os
+  for logfile in ['configure.log','configure.log.bkp']:
+    if os.path.islink(logfile) and not os.path.isfile(logfile): os.remove(logfile)
+  return
+
 def move_configure_log(framework):
   '''Move configure.log to PETSC_ARCH/conf - and update configure.log.bkp in both locations appropriately'''
   global petsc_arch
@@ -109,12 +116,12 @@ def move_configure_log(framework):
     # Keep backup in $PETSC_ARCH/conf location
     if os.path.isfile(new_bkp): os.remove(new_bkp)
     if os.path.isfile(new_file): os.rename(new_file,new_bkp)
-    shutil.move(curr_file,new_file)
-    os.symlink(new_file,curr_file)
+    if os.path.isfile(curr_file): shutil.move(curr_file,new_file)
+    if os.path.isfile(new_file): os.symlink(new_file,curr_file)
     # If the old bkp is using the same PETSC_ARCH/conf - then update bkp link
     if os.path.realpath(curr_bkp) == os.path.realpath(new_file):
-      os.remove(curr_bkp)
-      os.symlink(new_bkp,curr_bkp)
+      if os.path.isfile(curr_bkp): os.remove(curr_bkp)
+      if os.path.isfile(new_bkp): os.symlink(new_bkp,curr_bkp)
   return
 
 def petsc_configure(configure_options): 
@@ -126,6 +133,7 @@ def petsc_configure(configure_options):
   sys.argv = sys.argv[:1] + configure_options + sys.argv[1:]
   # check PETSC_ARCH
   check_petsc_arch(sys.argv)
+  check_broken_configure_log_links()
 
   # support a few standard configure option types
   for l in range(0,len(sys.argv)):
