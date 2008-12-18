@@ -132,9 +132,8 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
     ierr = PetscFree3(ns_ids,num_nodes_in_set,node_list);CHKERRQ(ierr);
   }
 
-  mesh->view("Mesh");
-  cellBlocks->view("Cell Blocks");
-  vertexSets->view("Vertex Sets");
+  //cellBlocks->view("Cell Blocks");
+  //vertexSets->view("Vertex Sets");
 
   // Get coords and print in F90
   // Get connectivity and print in F90
