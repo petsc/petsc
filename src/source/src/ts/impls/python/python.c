@@ -223,22 +223,71 @@ static PetscErrorCode TSPyFunction(SNES snes,Vec x,Vec f,void *ctx)
   TS_Py          *py  = (TS_Py*) ts->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  /* apply user-provided function */
+  TS_PYTHON_CALL_MAYBE(ts, "computeFunction", ("O&dO&O&",
+					       PyPetscTS_New,  ts,
+					       (double)        py->utime,
+					       PyPetscVec_New, x,
+					       PyPetscVec_New, f),
+		       notimplemented);
+  PetscFunctionReturn(0);
+ notimplemented:
   ierr = TSComputeRHSFunction(ts,py->utime,x,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+static PyObject * TSPyObjToMatStructure(PyObject *value, MatStructure *outflag)
+{
+  MatStructure flag = DIFFERENT_NONZERO_PATTERN;
+  if (value == NULL) 
+    return NULL;
+  if (value == Py_None) {
+    flag = SAME_NONZERO_PATTERN;
+  } else if (value == Py_False) {
+    flag = SAME_NONZERO_PATTERN;
+  } else if (value == Py_True) {
+    flag = DIFFERENT_NONZERO_PATTERN;
+  } else if (PyInt_Check(value)) {
+    flag = (MatStructure) PyInt_AsLong(value);
+    if (flag < SAME_NONZERO_PATTERN ||
+	flag > SUBSET_NONZERO_PATTERN) {
+      PyErr_SetString(PyExc_ValueError,
+		      "Jacobian routine returned an out of range "
+		      "integer value for MatStructure"); 
+      goto fail;
+    }
+  } else {
+    PyErr_SetString(PyExc_TypeError,
+		    "Jacobian routine must return None, Boolean, "
+		    "or a valid integer value for MatStructure");
+    goto fail;
+  }
+  *outflag = flag;
+  return value;
+ fail:
+  Py_DecRef(value);
+  return NULL;
 }
 
 /*  The Jacobian needed for SNES */
 #undef __FUNCT__  
 #define __FUNCT__ "TSPyJacobian"
-static PetscErrorCode TSPyJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+static PetscErrorCode TSPyJacobian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flg,void *ctx)
 {
   TS             ts   = (TS) ctx;
   TS_Py          *py  = (TS_Py*) ts->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  /* apply user-provided Jacobian */
-  ierr = TSComputeRHSJacobian(ts,py->utime,x,AA,BB,str);CHKERRQ(ierr);
+  TS_PYTHON_CALL_MAYBE_RET(ts, "computeJacobian", ("O&dO&O&O&",
+						   PyPetscTS_New,   ts,
+						   (double)         py->utime,
+						   PyPetscVec_New,  x,
+						   PyPetscMat_New,  *A,
+						   PyPetscMat_New,  *B),
+			   notimplemented,
+			   TSPyObjToMatStructure, flg);
+  PetscFunctionReturn(0);
+ notimplemented:
+  ierr = TSComputeRHSJacobian(ts,py->utime,x,A,B,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

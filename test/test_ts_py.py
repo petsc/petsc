@@ -54,6 +54,14 @@ class MyTS:
     def setUp(self, ts, *args):
         self._log('setUp', ts, *args)
 
+    def computeFunction(self, ts, *args):
+        self._log('computeFunction', ts, *args)
+        return ts.computeFunction(*args)
+
+    def computeJacobian(self, ts, *args):
+        self._log('computeJacobian', *args)
+        return ts.computeJacobian(*args)
+
     def preSolve(self, ts, *args):
         self._log('preSolve', ts, args)
 
