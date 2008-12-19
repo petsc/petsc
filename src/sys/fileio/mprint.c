@@ -184,6 +184,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
     vfprintf(PETSC_ZOPEFD,newformat,s);
     fflush(PETSC_ZOPEFD);
 #endif
+#endif
   }
 
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
@@ -196,7 +197,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
     if (PetscFree(newformat)) {};
   }
   return 0;
-#endif
 }
 
 #undef __FUNCT__  
