@@ -16,9 +16,7 @@ class Configure(config.base.Configure):
                               
   def setupHelp(self, help):
     import nargs
-
     help.addArgument('PETSc', '-prefix=<path>',            nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
-    help.addArgument('PETSc', '-with-default-arch=<bool>', nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     return
 
   def setupDependencies(self, framework):
