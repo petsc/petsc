@@ -127,7 +127,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   for (ksp->its = 1; ksp->its<ksp->max_it+1; ksp->its++) {
     rhon   = phin_1 - omegan_1*sigman_2 + omegan_1*alphan_1*pin_1;
-    //    if (rhon == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"rhon is zero, iteration %D",n);
+    /*    if (rhon == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"rhon is zero, iteration %D",n); */
     if (ksp->its == 1) deltan = rhon;
     else deltan = rhon/taun_1;
     betan  = deltan/omegan_1;
