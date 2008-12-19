@@ -144,8 +144,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCFUNCGetArray(Mesh, PetscInt *, PetscIn
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePCICERestart(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRestrictClosure(Mesh, const char [], PetscInt, PetscInt*, const PetscScalar *[]);
-
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianGetMesh(Mesh,ALE::Obj<ALE::CartesianMesh>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianSetMesh(Mesh,const ALE::Obj<ALE::CartesianMesh>&);
 
@@ -184,6 +182,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal, Mesh, VecS
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal, Mesh, NormType, PetscReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealAXPY(SectionReal, Mesh, PetscScalar, SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealComplete(SectionReal);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSet(SectionReal, PetscReal);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSectionReal(Mesh, PetscInt, SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSectionReal(Mesh, PetscInt, SectionReal *);
@@ -192,6 +191,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSectionReal(Mesh, const char [], 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSectionReal(Mesh, SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh, SectionReal, MatType, Mat *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh, SectionReal, Vec *);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRestrictClosure(Mesh, SectionReal, PetscInt, PetscInt, PetscScalar []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshUpdateClosure(Mesh, SectionReal, PetscInt, PetscScalar []);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalRealVector(Mesh, SectionReal, Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh,VecScatter *);
