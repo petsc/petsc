@@ -99,7 +99,7 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecGetArray(w, &a2);CHKERRQ(ierr);
     ierr = VecGetArray(z2, &a3);CHKERRQ(ierr);
     for(i = 0; i < N; ++i) {
-      PetscInt checkInd = (i > N/2-1)? i-N/2: i+N/2;
+      /* PetscInt checkInd = (i > N/2-1)? i-N/2: i+N/2;*/
 
       //if (!(i%100)) PetscPrintf(PETSC_COMM_WORLD, "Finished convolution row %d\n", i);
       a3[i] = 0.0;
