@@ -1020,13 +1020,13 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   if (e_valu[0] < 0.0) {
     cg->lambda = pert - e_valu[0];
   }
+#endif
 
   while(1) {
     for (i = 0; i < t_size; ++i) {
       t_diag[i] = cg->diag[i] + cg->lambda;
       t_offd[i] = cg->offd[i];
     }
-#endif
 
 #if defined(PETSC_MISSING_LAPACK_PTTRF)
     SETERRQ(PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
