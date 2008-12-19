@@ -44,7 +44,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,N;
-  PetscReal      rnorm,rnormin;
+  PetscReal      rnorm,rnormin = 0.0;
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX)
   /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem 
      on the same number of processes  with different runs) we support computing the inner products using Intel's 80 bit arithematic
@@ -127,7 +127,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 
   for (ksp->its = 1; ksp->its<ksp->max_it+1; ksp->its++) {
     rhon   = phin_1 - omegan_1*sigman_2 + omegan_1*alphan_1*pin_1;
-    //    if (rhon == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"rhon is zero, iteration %D",n);
+    /*    if (rhon == 0.0) SETERRQ1(PETSC_ERR_CONV_FAILED,"rhon is zero, iteration %D",n); */
     if (ksp->its == 1) deltan = rhon;
     else deltan = rhon/taun_1;
     betan  = deltan/omegan_1;

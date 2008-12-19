@@ -127,17 +127,19 @@ extern PetscErrorCode DataDestroy(GridData *);
 int main(int argc,char **args)
 {
   PetscErrorCode ierr;
+#if defined(PETSC_USE_LOG)
   PetscLogEvent  READ_EVENT,PARTITION_ELEMENT_EVENT,MOVE_ELEMENT_EVENT;
   PetscLogEvent  PARTITION_VERTEX_EVENT,MOVE_VERTEX_EVENT;
+#endif
   GridData       gdata;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 
-  PetscLogEventRegister("Read Data",0,&READ_EVENT);
-  PetscLogEventRegister("Partition elemen",0,&PARTITION_ELEMENT_EVENT);
-  PetscLogEventRegister("Move elements",0,&MOVE_ELEMENT_EVENT);
-  PetscLogEventRegister("Partition vertic",0,&PARTITION_VERTEX_EVENT);
-  PetscLogEventRegister("Move vertices",0,&MOVE_VERTEX_EVENT);
+  ierr = PetscLogEventRegister("Read Data",0,&READ_EVENT);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Partition elemen",0,&PARTITION_ELEMENT_EVENT);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Move elements",0,&MOVE_ELEMENT_EVENT);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Partition vertic",0,&PARTITION_VERTEX_EVENT);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister("Move vertices",0,&MOVE_VERTEX_EVENT);CHKERRQ(ierr);
 
   ierr = PetscLogEventBegin(READ_EVENT,0,0,0,0);CHKERRQ(ierr);
   ierr = DataRead(&gdata);CHKERRQ(ierr);

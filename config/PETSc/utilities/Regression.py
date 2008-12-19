@@ -61,7 +61,7 @@ class Configure(config.base.Configure):
           rjobs.append('C_NoComplex')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       for i in self.framework.packages:
-        if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI']:
+        if not i.name.upper() in ['SOWING','C2HTML','BLASLAPACK','MPI','SCALAPACK','BLACS']:
           ejobs.append(i.name.upper())
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))

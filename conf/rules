@@ -7,9 +7,10 @@ chkpetsc_dir:
         newpwd=`echo $${mypwd} | sed "s+$${true_PETSC_DIR}+DUMMY+g"`;\
         haspetsc=`echo $${mypwd} | sed "s+petsc-+DUMMY+g"`;\
         if [ $${mypwd} = $${newpwd} -a $${haspetsc} != $${mypwd} ]; then \
-          echo "*********************Warning*************************" ; \
+          echo "*********************W-a-r-n-i-n-g*************************" ; \
           echo "Your PETSC_DIR may not match the directory you are in";\
           echo "PETSC_DIR " $${true_PETSC_DIR} "Current directory" $${mypwd};\
+          echo "Ignore this if you are running make test";\
           echo "******************************************************" ; \
         fi
 

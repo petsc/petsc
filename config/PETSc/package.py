@@ -77,7 +77,8 @@ class Package(config.base.Configure):
     self.sourceControl = self.framework.require('config.sourceControl',self)
     # Need this for the with-64-bit-indices option
     self.libraryOptions = self.framework.require('PETSc.utilities.libraryOptions', self)
-    self.mpi           = self.framework.require('config.packages.MPI',self)
+    if self.framework.argDB['with-mpi']:
+      self.mpi           = self.framework.require('config.packages.MPI',self)
     return
 
   def getChecksum(self,source, chunkSize = 1024*1024):  

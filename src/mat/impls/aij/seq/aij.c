@@ -3192,6 +3192,9 @@ EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_PASTIX)
 extern PetscErrorCode MatGetFactor_seqaij_pastix(Mat,MatFactorType,Mat*);
 #endif
+#if defined(PETSC_HAVE_ESSL)
+extern PetscErrorCode MatGetFactor_seqaij_essl(Mat,MatFactorType,Mat *);
+#endif
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactor_seqaij_petsc(Mat,MatFactorType,Mat*);
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatGetFactorAvailable_seqaij_petsc(Mat,MatFactorType,PetscTruth *);

@@ -815,7 +815,7 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscFree(a)   ((a) ? ((*PetscTrFree)((a),__LINE__,__FUNCT__,__FILE__,__SDIR__) || ((a = 0),0)) : 0)
+#define PetscFree(a)   ((a) ? ((*PetscTrFree)((void*)(a),__LINE__,__FUNCT__,__FILE__,__SDIR__) || ((a = 0),0)) : 0)
 
 /*MC
    PetscFreeVoid - Frees memory
@@ -1513,8 +1513,11 @@ EXTERN PetscErrorCode  PetscErrorPrintfDefault(const char [],...);
 EXTERN PetscErrorCode  PetscErrorPrintfNone(const char [],...);
 EXTERN PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 
+#if defined(PETSC_HAVE_POPEN)
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPClose(MPI_Comm,FILE*);
+#endif
+
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSynchronizedPrintf(MPI_Comm,const char[],...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSynchronizedFPrintf(MPI_Comm,FILE*,const char[],...) PETSC_PRINTF_FORMAT_CHECK(3,4);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSynchronizedFlush(MPI_Comm);

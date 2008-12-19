@@ -130,7 +130,7 @@ PetscErrorCode DAView_VTK(DA da, PetscViewer viewer)
   ierr = DAGetInfo(da, &dim, &M, &N, &P, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   if (dim != 3) {SETERRQ(PETSC_ERR_SUP, "VTK output only works for three dimensional DAs.");}
   if (!da->coordinates) {SETERRQ(PETSC_ERR_SUP, "VTK output requires DA coordinates.");}
-  // Write Header
+  /* Write Header */
   ierr = PetscViewerASCIIPrintf(viewer,"# vtk DataFile Version 2.0\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"Structured Mesh Example\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"ASCII\n");CHKERRQ(ierr);

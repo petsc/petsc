@@ -32,11 +32,21 @@ testexamples_FFTW: ${TESTEXAMPLES_FFTW} clean
 testexamples_MATLAB: ${TESTEXAMPLES_MATLAB} clean
 testexamples_MUMPS: ${TESTEXAMPLES_MUMPS} clean
 testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU} clean
+testexamples_SUNDIALS: ${TESTEXAMPLES_SUNDIALS} clean
+testexamples_PLAPACK: ${TESTEXAMPLES_PLAPACK} clean
 testexamples_SPOOLES: ${TESTEXAMPLES_SPOOLES} clean
 testexamples_UMFPACK: ${TESTEXAMPLES_UMFPACK} clean
 testexamples_SUPERLU_DIST: ${TESTEXAMPLES_SUPERLU_DIST} clean
 testexamples_BLOCKSOLVE95: ${TESTEXAMPLES_BLOCKSOLVE95} clean
 testexamples_HYPRE: ${TESTEXAMPLES_HYPRE} clean
+testexamples_HDF5: ${TESTEXAMPLES_HDF5} clean
+testexamples_BLOPEX: ${TESTEXAMPLES_BLOPEX} clean
+testexamples_PROMETHEUS: ${TESTEXAMPLES_PROMETHEUS} clean
+testexamples_CHACO: ${TESTEXAMPLES_CHACO} clean
+testexamples_TRIANGLE: ${TESTEXAMPLES_TRIANGLE} clean
+testexamples_SIEVE: ${TESTEXAMPLES_SIEVE} clean
+testexamples_BOOST: ${TESTEXAMPLES_BOOST} clean
+testexamples_TETGEN: ${TESTEXAMPLES_TETGEN} clean
 testexamples_X11:
 testexamples_MPE:
 testexamples_ESSL:

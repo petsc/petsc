@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download          = ['http://petsc.cs.iit.edu/petsc4py/petsc4py-dev/archive/tip.tar.gz']
+    self.download          = ['http://petsc4py.googlecode.com/files/petsc4py-1.0.1.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = []
@@ -21,6 +21,7 @@ class Configure(PETSc.package.Package):
     self.petscdir   = framework.require('PETSc.utilities.petscdir',self)
     self.setCompilers  = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
+    self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
   def Install(self):
@@ -31,7 +32,13 @@ class Configure(PETSc.package.Package):
       apple = ''
     self.logClearRemoveDirectory()
     self.logResetRemoveDirectory()
-    self.addMakeRule('petsc4pyinstall','',['@cd '+self.packageDir+'; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),'@echo Add '+os.path.join(self.petscconfigure.installdir,'lib')+' to your PYTHONPATH to use petsc4py'])
+    if self.framework.argDB['prefix']:
+      arch = ''
+      self.addMakeRule('petsc4py_noinstall','')
+    else:
+      arch = self.arch.arch
+      self.addMakeRule('petsc4py_noinstall','petsc4py')      
+    self.addMakeRule('petsc4py','',['@cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),'@echo Add '+os.path.join(self.petscconfigure.installdir,'lib')+' to your PYTHONPATH to use petsc4py'])
     
     return self.installDir
 
@@ -56,4 +63,6 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Unable to find Python dynamic library at prefix '+prefix)
 
   def alternateConfigureLibrary(self):
-    self.addMakeRule('petsc4pyinstall','')   
+    self.addMakeRule('petsc4py','')   
+    self.addMakeRule('petsc4py_noinstall','')
+      

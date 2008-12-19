@@ -16,9 +16,7 @@ class Configure(config.base.Configure):
                               
   def setupHelp(self, help):
     import nargs
-
     help.addArgument('PETSc', '-prefix=<path>',            nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
-    help.addArgument('PETSc', '-with-default-arch=<bool>', nargs.ArgBool(None, 1, 'Allow using the last configured arch without setting PETSC_ARCH'))
     return
 
   def setupDependencies(self, framework):
@@ -357,9 +355,13 @@ class Configure(config.base.Configure):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
       self.installdir = self.framework.argDB['prefix']
+      self.addMakeRule('shared_nomesg_noinstall','')
+      self.addMakeRule('shared_install','',['-@echo "Now to install the libraries do: make install"'])
     else:
       self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
-    return
+      self.addMakeRule('shared_nomesg_noinstall','shared_nomesg')            
+      self.addMakeRule('shared_install','',['-@echo "Now to check if the libraries are working do: make test"'])
+      return
 
   def configureGCOV(self):
     if self.framework.argDB['with-gcov']:

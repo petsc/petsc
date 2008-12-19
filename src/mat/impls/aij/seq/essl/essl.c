@@ -139,7 +139,6 @@ PetscErrorCode MatFactorGetSolverPackage_essl(Mat A,const MatSolverPackage *type
   *type = MAT_SOLVER_ESSL;
   PetscFunctionReturn(0);
 }
-EXTERN_C_END
 
 /*MC
   MAT_SOLVER_ESSL - "essl" - Provides direct solvers (LU) for sequential matrices 
@@ -178,3 +177,4 @@ PetscErrorCode MatGetFactor_seqaij_essl(Mat A,MatFactorType ftype,Mat *F)
   *F                       = B;
   PetscFunctionReturn(0);
 }
+EXTERN_C_END

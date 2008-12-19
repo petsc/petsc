@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
       desc.append('  **  ** PETSC_DIR='+str(cdir)+'; export PETSC_DIR (sh/bash)\n  **')
     else:
       desc.append('  PETSC_DIR: '+str(self.dir))
-    desc.append('  **\n  ** Now build and test the libraries with "make all test"\n  **')
+    desc.append('  **\n  ** Now build the libraries with "make all"\n  **')
     return '\n'.join(desc)+'\n'
 
   def setupHelp(self, help):
