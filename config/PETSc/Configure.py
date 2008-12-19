@@ -357,11 +357,13 @@ class Configure(config.base.Configure):
     '''Setup the directories for installation'''
     if self.framework.argDB['prefix']:
       self.installdir = self.framework.argDB['prefix']
-      self.addMakeRule('shared_nomesg_noinstall','')      
+      self.addMakeRule('shared_nomesg_noinstall','')
+      self.addMakeRule('shared_install','',['-echo Now do make install to installed the libraries'])            
     else:
       self.installdir = os.path.join(self.petscdir.dir,self.arch.arch)
       self.addMakeRule('shared_nomesg_noinstall','shared_nomesg')            
-    return
+      self.addMakeRule('shared_install','',['-echo Now run make test to insure the libraries are working'])
+      return
 
   def configureGCOV(self):
     if self.framework.argDB['with-gcov']:
