@@ -21,7 +21,7 @@ class Configure(PETSc.package.Package):
     self.petscdir   = framework.require('PETSc.utilities.petscdir',self)
     self.setCompilers  = framework.require('config.setCompilers',self)
     self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
-    self.arch.arch = framework.require('PETSc.utilities.arch', self)
+    self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
   def Install(self):
