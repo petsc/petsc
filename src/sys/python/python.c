@@ -48,12 +48,16 @@ static PetscErrorCode PetscPythonFindLibrary(char pythonexe[PETSC_MAX_PATH_LEN],
   ierr = PetscStrncpy(command,pythonexe,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
   ierr = PetscStrcat(command," ");CHKERRQ(ierr);
   ierr = PetscStrcat(command,cmdline);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_POPEN)
   ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,command,"r",&fp);CHKERRQ(ierr);
   if (!fgets(prefix,sizeof(prefix),fp))
     { SETERRQ1(PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe); }
   if (!fgets(version,sizeof(version),fp))
     { SETERRQ1(PETSC_ERR_PLIB,"Python: bad output from executable: %s",pythonexe); }
   ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
+#else
+  SETERRQ(1,"Python: Aborted due to missing popen()");
+#endif
   /* remove newlines */
   ierr = PetscStrchr(prefix,'\n',&eol);CHKERRQ(ierr);
   if (eol) eol[0] = 0;
