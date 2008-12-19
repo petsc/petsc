@@ -69,6 +69,14 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on FFTW: '+str(e))
       self.checkInstall(output,'fftw')
     return self.installDir
+
+  def configureLibrary(self):
+    '''Calls the regular package configureLibrary and then does an additional test needed by FFTW'''
+    '''Normally you do not need to provide this method'''
+    # FFTW requires complex precision
+    if not self.scalartypes.scalartype.lower() == 'complex':
+      raise RuntimeError('FFTW requires the complex precision, run config/configure.py --with-scalar-type=complex')
+    return
   
 if __name__ == '__main__':
   import config.framework
