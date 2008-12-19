@@ -107,9 +107,12 @@ void PETSC_STDCALL  meshdistribute_(Mesh serialMesh, CHAR partitioner PETSC_MIXE
   *ierr = MeshDistribute((Mesh) PetscToPointer(serialMesh),pF,parallelMesh);
   FREECHAR(partitioner,pF);
 }
-void PETSC_STDCALL  meshview_(Mesh mesh, PetscViewer viewer, PetscErrorCode *ierr)
+void PETSC_STDCALL  meshview_(Mesh mesh, PetscViewer *vin, PetscErrorCode *ierr)
 {
-  *ierr = MeshView((Mesh) PetscToPointer(mesh),(PetscViewer) PetscToPointer(viewer));
+  PetscViewer v;
+
+  PetscPatchDefaultViewers_Fortran(vin,v);
+  *ierr = MeshView((Mesh) PetscToPointer(mesh),v);
 }
 void PETSC_STDCALL  meshgetvertexsectionreal_(Mesh mesh, PetscInt *fiberDim, SectionReal *section, int *ierr){
   *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, section);

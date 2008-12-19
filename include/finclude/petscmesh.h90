@@ -106,3 +106,23 @@
         End Subroutine
       End Interface
 
+      Interface 
+        Subroutine MeshRestrictClosure(m,section,e,n,values,ierr)
+          PetscErrorCode ierr
+          PetscScalar, pointer :: values(:)
+          PetscInt n, e
+          SectionReal section
+          Mesh m
+        End Subroutine
+      End Interface
+
+      Interface 
+        Subroutine MeshUpdateClosure(m,section,e,values,ierr)
+          PetscErrorCode ierr
+          PetscScalar, pointer :: values(:)
+          PetscInt e
+          SectionReal section
+          Mesh m
+        End Subroutine
+      End Interface
+

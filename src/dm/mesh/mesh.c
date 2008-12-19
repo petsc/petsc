@@ -2489,7 +2489,7 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MeshRestrictClosure"
 /*@C
   MeshRestrictClosure - Returns an array with the values in a given closure
@@ -2497,29 +2497,64 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   Not Collective
 
   Input Parameters:
-+ mesh  - The Mesh object
-. name  - The section name
-- point - The sieve point
++ mesh    - The Mesh object
+. section - The section
+. point   - The sieve point
+. n       - The array size
+- array   - The array to fill up
 
-  Output Parameters:
-+ n     - The number of values
-- array - The array
+  Output Parameter:
+. array - The array full of values in the closure
 
   Level: intermediate
 
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshRestrictClosure(Mesh mesh, const char name[], PetscInt point, PetscInt *n, const PetscScalar *values[])
+PetscErrorCode MeshRestrictClosure(Mesh mesh, SectionReal section, PetscInt point, PetscInt n, PetscScalar values[])
 {
   ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
   PetscErrorCode            ierr;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& section = m->getRealSection(name);
 
   PetscFunctionBegin;
-  *n      = m->sizeWithBC(section, point);
-  *values = m->restrictClosure(section, point, section->getRawArray(*n), *n);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  m->restrictClosure(s, point, values, n);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshUpdateClosure"
+/*@C
+  MeshUpdateClosure - Updates the values in a given closure from the array
+
+  Not Collective
+
+  Input Parameters:
++ mesh    - The Mesh object
+. section - The section
+. point   - The sieve point
+- array   - The array to fill up
+
+  Output Parameter:
+. array - The array full of values in the closure
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshUpdateClosure(Mesh mesh, SectionReal section, PetscInt point, PetscScalar values[])
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  m->update(s, point, values);
   PetscFunctionReturn(0);
 }
 

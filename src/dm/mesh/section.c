@@ -581,7 +581,24 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, Mesh mesh
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, Mesh mesh, VecScatter scatter, ScatterMode mode, Vec vec)
+#undef __FUNCT__  
+#define __FUNCT__ "SectionRealToVec"
+/*@
+  SectionRealToVec - Map between unassembled local Section storage and a globally assembled Vec
+
+  Collective on VecScatter
+
+  Input Parameters:
++ section - the Section
+. scatter - the scatter from the Section to the Vec
+. mode - the mode, SCATTER_FORWARD (Section to Vec) or SCATTER_REVERSE (Vec to Section)
+- vec - the Vec
+
+  Level: advanced
+
+.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, VecScatter scatter, ScatterMode mode, Vec vec)
 {
   Vec            localVec;
   PetscErrorCode ierr;
@@ -619,6 +636,32 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal section)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   section->s->clear();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionRealSet"
+/*@
+  SectionRealSet - Sets all the values to the given value
+
+  Not collective
+
+  Input Parameters:
++ section - the real Section
+- val - the value
+
+  Level: intermediate
+
+.seealso VecNorm(), SectionRealCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealSet(SectionReal section, PetscReal val)
+{
+  Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  s->set(val);
   PetscFunctionReturn(0);
 }
 

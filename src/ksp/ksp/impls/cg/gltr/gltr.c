@@ -997,7 +997,6 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol,
                cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu, 
                e_iblk, e_splt, e_rwrk, e_iwrk, &info);
-#endif
 
   if ((0 != info) || (1 != e_valus)) {
     /*************************************************************************/
@@ -1021,6 +1020,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   if (e_valu[0] < 0.0) {
     cg->lambda = pert - e_valu[0];
   }
+#endif
 
   while(1) {
     for (i = 0; i < t_size; ++i) {
@@ -1032,7 +1032,6 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     SETERRQ(PETSC_ERR_SUP,"PTTRF - Lapack routine is unavailable.");
 #else
     LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info);
-#endif
 
     if (0 == info) {
       break;
@@ -1040,6 +1039,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     pert += pert;
     cg->lambda = cg->lambda * (1.0 + pert) + pert;
+#endif
   }
 
   /***************************************************************************/

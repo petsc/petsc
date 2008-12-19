@@ -3,8 +3,8 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zmesh.c
-OBJSC    = zmesh.o
+SOURCEC  = zmesh.c zsection.c
+OBJSC    = zmesh.o zsection.o
 SOURCEF  =
 SOURCEH  =
 DIRS     =
