@@ -44,7 +44,7 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i,N;
-  PetscReal      rnorm,rnormin;
+  PetscReal      rnorm,rnormin = 0.0;
 #if defined(PETSC_HAVE_MPI_LONG_DOUBLE) && !defined(PETSC_USE_COMPLEX)
   /* Because of possible instabilities in the algorithm (as indicated by different residual histories for the same problem 
      on the same number of processes  with different runs) we support computing the inner products using Intel's 80 bit arithematic
