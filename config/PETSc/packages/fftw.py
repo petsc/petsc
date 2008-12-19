@@ -73,6 +73,7 @@ class Configure(PETSc.package.Package):
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by FFTW'''
     '''Normally you do not need to provide this method'''
+    PETSc.package.Package.configureLibrary(self)
     # FFTW requires complex precision
     if not self.scalartypes.scalartype.lower() == 'complex':
       raise RuntimeError('FFTW requires the complex precision, run config/configure.py --with-scalar-type=complex')
