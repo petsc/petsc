@@ -142,7 +142,9 @@ class PetscConfig:
         self._configure_ext(extension, petsc_inc, preppend=True)
         self._configure_ext(extension, petsc_lib)
         # extra compiler and linker configuration
-        ccflags = self['PCC_FLAGS'].split()
+        ccflags = self['PCC_FLAGS']
+        ccflags = ccflags.replace('-Wwrite-strings','') # XXX Waiting Cython fixes
+        ccflags = ccflags.split()
         if sys.version_info[:2] < (2, 5):
             try: ccflags.remove('-Wwrite-strings')
             except ValueError: pass
