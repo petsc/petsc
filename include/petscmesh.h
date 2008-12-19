@@ -191,6 +191,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshHasSectionReal(Mesh, const char [], 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSectionReal(Mesh, const char [], SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSectionReal(Mesh, SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh, SectionReal, MatType, Mat *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh, SectionReal, Vec *);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalRealVector(Mesh, SectionReal, Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh,VecScatter *);
@@ -285,6 +286,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithVertices(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElements(Mesh, SectionReal, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithVerticesLocal(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElementsLocal(Mesh, SectionReal, PetscViewer);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetLabelIds(Mesh, const char[], PetscInt *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetLabelSize(Mesh, const char[], PetscInt *);
 
 typedef struct {
   int           numQuadPoints, numBasisFuncs;

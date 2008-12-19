@@ -685,6 +685,42 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshCreateVector"
+/*@
+  MeshCreateVector - Creates a global vector matching the input section
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - the Mesh
+- section - the Section
+
+  Output Parameter:
+. vec - the global vector
+
+  Level: advanced
+
+  Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
+.seealso MeshDestroy(), MeshCreate(), MeshGetGlobalIndices()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh mesh, SectionReal section, Vec *vec)
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  const ALE::Obj<PETSC_MESH_TYPE::order_type>& order = m->getFactory()->getGlobalOrder(m, s->getName(), s);
+
+  ierr = VecCreate(m->comm(), vec);CHKERRQ(ierr);
+  ierr = VecSetSizes(*vec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = VecSetFromOptions(*vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshCreateLocalVector"
 /*@C
     MeshCreateLocalVector - Creates a vector of the correct size for local computation.
@@ -750,6 +786,23 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateGlobalScatter"
+/*@
+  MeshCreateGlobalScatter - Create a VecScatter which maps from local, overlapping
+  storage in the Section to a global Vec
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - the mesh object
+- section - The Scetion which determines data layout
+
+  Output Parameter:
+. scatter - the VecScatter
+ 
+  Level: advanced
+
+.seealso MeshDestroy(), MeshCreateGlobalVector(), MeshCreate()
+@*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal section, VecScatter *scatter)
 {
   ALE::Obj<PETSC_MESH_TYPE> m;

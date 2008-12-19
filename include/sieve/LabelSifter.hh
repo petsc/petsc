@@ -390,6 +390,7 @@ namespace ALE {
     typedef typename traits::target_type     target_type;
     typedef typename traits::coneSequence    coneSequence;
     typedef typename traits::supportSequence supportSequence;
+    typedef std::set<int>                    capSequence;
   public:
     // Debug level
     int _debug;
@@ -736,6 +737,13 @@ namespace ALE {
         cap.insert(a_iter->source);
       }
       return cap.size();
+    };
+    capSequence cap() const {
+      std::set<source_type> cap;
+      for(typename traits::arrow_container_type::set_type::iterator a_iter = _arrows.set.begin(); a_iter != _arrows.set.end(); ++a_iter) {
+        cap.insert(a_iter->source);
+      }
+      return cap;
     };
     int getBaseSize() const {
       std::set<target_type> base;
