@@ -126,7 +126,10 @@ class Installer(script.Script):
 
   def installConf(self):
     self.copies.extend(self.copytree(self.rootConfDir, self.installConfDir, copyFunc = self.copyConf))
-    self.copies.extend(self.copytree(self.archConfDir, self.installConfDir, copyFunc = self.copyConf))
+    self.copies.extend(self.copytree(self.archConfDir, self.installConfDir))
+    # Just copyConf() a couple of files manually [as the rest of the files should not be modified]
+    for file in ['petscrules', 'petscvariables']:
+      self.copyConf(os.path.join(self.archConfDir,file),os.path.join(self.installConfDir,file))
     return
 
   def installBin(self):
