@@ -167,6 +167,7 @@ for src, dst in copies:
 
   def outputHelp(self):
     print '''
+====================================
 If using sh/bash, do the following:
   PETSC_DIR=%s; export PETSC_DIR
   unset PETSC_ARCH
@@ -175,6 +176,7 @@ If using csh/tcsh, do the following:
   unsetenv PETSC_ARCH
 Run the following to verify the install (remain in current directory for the tests):
   make test
+====================================
 ''' % (self.installDir, self.installDir)
     return
 
@@ -186,7 +188,7 @@ Run the following to verify the install (remain in current directory for the tes
       print 'Install directory is current directory; nothing needs to be done'
       print '********************************************************************'
       return
-    print 'Installing PETSc at',self.installDir
+    print '*** Installing PETSc at',self.installDir, ' ***'
     if not os.path.exists(self.installDir):
       try:
         os.makedirs(self.installDir)
@@ -209,7 +211,8 @@ Run the following to verify the install (remain in current directory for the tes
     self.installConf()
     self.installBin()
     self.installLib()
-    self.executeShellCommand(self.make+' PETSC_ARCH=""'+' PETSC_DIR='+self.installDir+' shared petsc4py')
+    output = self.executeShellCommand(self.make+' PETSC_ARCH=""'+' PETSC_DIR='+self.installDir+' shared petsc4py')[0]
+    print output
     self.createUninstaller()
     self.outputHelp()
     return

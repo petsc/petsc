@@ -21,17 +21,20 @@ all:
 	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/conf/make.log
 	-@if [ -L make.log ]; then ${RM} make.log; fi; ln -s ${PETSC_ARCH}/conf/make.log make.log
 	-@egrep -i "( error | error:)" ${PETSC_ARCH}/conf/make.log > /dev/null; if [ "$$?" = "0" ]; then \
-           echo "********************************************************************"; \
-           echo "  Error during compile, check ${PETSC_ARCH}/conf/make.log"; \
-           echo "  Send it and ${PETSC_ARCH}/conf/configure.log to petsc-maint@mcs.anl.gov";\
-           echo "********************************************************************"; \
-           exit 1; fi
+           echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
+           echo "  Error during compile, check ${PETSC_ARCH}/conf/make.log" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
+           echo "  Send it and ${PETSC_ARCH}/conf/configure.log to petsc-maint@mcs.anl.gov" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log;\
+           echo "********************************************************************" 2>&1 | tee -a ${PETSC_ARCH}/conf/make.log; \
+           exit 1; \
+	 else \
+	  ${OMAKE} shared_install  2>&1 | tee -a ${PETSC_ARCH}/conf/make.log ;\
+	 fi
 
 #
 #  Notes: the shared_nomesg and petsc4py should NOT be built if --prefix was used
 #  the rules for shared_nomesg_noinstall petsc4py_noinstall are generated automatically 
 #  by config/PETSc/Configure.py and config/PETSc/packages/petsc4py.py based on the existance 
-all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared_nomesg_noinstall petsc4py_noinstall shared_install
+all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared_nomesg_noinstall petsc4py_noinstall
 #
 # Prints information about the system and version of PETSc being compiled
 #

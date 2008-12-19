@@ -38,7 +38,11 @@ class Configure(PETSc.package.Package):
     else:
       arch = self.arch.arch
       self.addMakeRule('petsc4py_noinstall','petsc4py')      
-    self.addMakeRule('petsc4py','',['@cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),'@echo Add '+os.path.join(self.petscconfigure.installdir,'lib')+' to your PYTHONPATH to use petsc4py'])
+    self.addMakeRule('petsc4py','', \
+                       ['@cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),\
+                          '@echo "====================================="',\
+                          '@echo "To use petsc4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
+                          '@echo "====================================="'])
     
     return self.installDir
 

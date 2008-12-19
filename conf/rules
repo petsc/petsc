@@ -969,6 +969,7 @@ shared_nomesg:
 	      fi; \
               ${RM} -rf ${INSTALL_LIB_DIR}/$$LIBNAME.tmp-petsc-shlib; \
 	    done; \
+	    echo "========================================="; \
 	  fi
 
 include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscrules
