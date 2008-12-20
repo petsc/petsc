@@ -60,6 +60,20 @@
 #define PetscPyObjectGetAttrStr(ob,attr) PyObject_GetAttrString((ob),(attr))
 #endif
 
+#if PY_VERSION_HEX < 0x02050000
+static PyObject* PetscPythonBuildValue(const char *format, ...)
+{
+  va_list va;
+  PyObject* retval;
+  va_start(va, format);
+  retval = Py_VaBuildValue((char *)format, va);
+  va_end(va);
+  return retval;
+}
+#else
+#define PetscPythonBuildValue Py_BuildValue
+#endif
+
 /* -------------------------------------------------------------------------- */
 
 static const char * PetscPythonHandleError(void)
@@ -137,7 +151,7 @@ do {									\
 #define PETSC_PYTHON_CALL_BODY(Py_BV_ARGS)				\
   if (_call != NULL) {							\
     do {								\
-      _args = Py_BuildValue Py_BV_ARGS;					\
+      _args = PetscPythonBuildValue Py_BV_ARGS;				\
       if (_args != NULL) {						\
 	if (_args == Py_None)						\
 	  _retv = PyObject_CallObject(_call, NULL);			\
