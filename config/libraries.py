@@ -75,7 +75,7 @@ class Configure(config.base.Configure):
   getLibName = staticmethod(getLibName)
 
   def getDefineName(self, library):
-    return 'HAVE_LIB'+self.getLibName(library).upper().replace('-','_').replace('=','_').replace('+','_').replace('.', '_')
+    return 'HAVE_LIB'+self.getLibName(library).upper().replace('-','_').replace('=','_').replace('+','_').replace('.', '_').replace('/','_')
 
   def haveLib(self, library):
     return self.getDefineName(library) in self.defines
