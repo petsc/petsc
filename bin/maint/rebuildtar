@@ -5,7 +5,7 @@ export LANG=en_US
 export LC=C
 export LC_ALL=C
 
-RELEASE=2.3.3
+RELEASE=3.0.0
 PETSC_DIR=/home/balay/hg-repo/petsc-release-${RELEASE}
 
 #automatically crankup the patchlevel
@@ -36,6 +36,7 @@ scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@harley.mcs.anl.gov:/
 # M include/petscversion.h
 # M bin/maint/createpatch
 # M maint/rebuildtar
+# M maint/update-docs.py
 # M src/docs/tex/manual/intro.tex
 # M src/docs/tex/manual/manual.tex
 # M src/docs/website/documentation/changes/dev.html
@@ -44,5 +45,6 @@ scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@harley.mcs.anl.gov:/
 # M src/docs/website/index.html
 # M src/docs/website/documentation/installation.html
 # A src/docs/website/documentation/changes/232.html
+
 # ? bin/win32fe/win32fe.exe
 # ? bin/win32fe/win32feutils.dll

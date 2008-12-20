@@ -1,5 +1,8 @@
 petsc-dist/.hg
+petsc-dist/docs/exampleconcepts
+petsc-dist/docs/manconcepts
 petsc-dist/config/BuildSystem/.hg
+petsc-dist/src/java
 petsc-dist/src/tops/images
 petsc-dist/src/tops/slides.ppt
 petsc-dist/src/tops/twopager.ppt
@@ -15,6 +18,7 @@ petsc-dist/Rdict.db
 petsc-dist/build.log
 petsc-dist/build.log.bkp
 petsc-dist/default.log
+petsc-dist/default.log.bkp
 petsc-dist/confdefs.h
 petsc-dist/conffix.h
 petsc-dist/conftest.c
