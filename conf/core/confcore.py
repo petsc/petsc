@@ -167,6 +167,7 @@ class PetscConfig:
                 cc_cmd = cc
                 ld_cmd = ldshared
             elif self.language == 'c++':
+                cflags = cflags.replace('-Wstrict-prototypes','')
                 cc_cmd = cxx
                 ld_cmd = ldshared
             ccflags = '%s %s %s' % (extra_flags(cc_cmd), cflags, ccshared,)
