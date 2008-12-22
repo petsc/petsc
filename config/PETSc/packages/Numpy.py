@@ -38,7 +38,7 @@ class Configure(PETSc.package.Package):
       if dir.startswith('python') and os.path.isdir(os.path.join(installDir,'lib', dir)):
         pp = os.path.join(installDir,'lib',dir,'site-packages')
         self.logClearRemoveDirectory()
-        self.logPrintBox('To use numpy add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) set PYTHONPATH=${PYTHONPATH}:'+pp+';export PYTHONPATH')
+        self.logPrintBox('To use numpy add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) PYTHONPATH=${PYTHONPATH}:'+pp+'; export PYTHONPATH')
         self.logResetRemoveDirectory()
     return self.installDir
 
