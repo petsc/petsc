@@ -8,5 +8,6 @@
 
 #define PCMGType PetscEnum
 #define PCMGCycleType PetscEnum
+#define PCExoticType PetscEnum
 
 #endif
