@@ -46,6 +46,7 @@ class Configure(config.package.Package):
     # local state
     self.commf2c          = 0
     self.commc2f          = 0
+    self.needBatchMPI     = 1
     return
 
   def setupHelp(self, help):
@@ -230,6 +231,10 @@ class Configure(config.package.Package):
             self.addDefine('HAVE_'+datatype, 1)
           self.popLanguage()
         else:
+          if self.needBatchMPI:
+            self.framework.addBatchSetup('if (MPI_Init(&argc, &argv));')
+            self.framework.addBatchCleanup('if (MPI_Finalize());')
+            self.needBatchMPI = 0
           self.framework.addBatchInclude(['#include <stdlib.h>', '#include <mpi.h>'])
           self.framework.addBatchBody('''
 {
