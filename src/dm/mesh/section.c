@@ -516,7 +516,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal section)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealCreateLocalVector"
-/*@C
+/*@
   SectionRealCreateLocalVector - Creates a vector with the local piece of the Section
 
   Collective on Mesh
