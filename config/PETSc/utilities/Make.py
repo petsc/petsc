@@ -23,6 +23,7 @@ class Configure(config.base.Configure):
     self.getExecutable(self.framework.argDB['with-make'], getFullPath = 1,resultName = 'make')
 
     if not hasattr(self,'make'):
+      import os
       if os.path.exists('/usr/bin/cygcheck.exe') and not os.path.exists('/usr/bin/make'):
         raise RuntimeError('''\
 *** Incomplete cygwin install detected . /usr/bin/make is missing. **************
