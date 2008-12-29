@@ -238,8 +238,11 @@ class Configure(config.package.Package):
           self.framework.addBatchInclude(['#include <stdlib.h>', '#include <mpi.h>'])
           self.framework.addBatchBody('''
 {
-  MPI_Aint size;
-  int ierr = MPI_Type_extent(%s, &size);
+  MPI_Aint size=0;
+  int ierr=0;
+  if (MPI_LONG_DOUBLE != MPI_DATATYPE_NULL) {
+    ierr = MPI_Type_extent(%s, &size);
+  }
   if(!ierr && (size != 0)) {
     fprintf(output, "  \'--have-mpi-%s=1\',\\n");
   } else {
