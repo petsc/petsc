@@ -141,8 +141,7 @@ class Configure(config.base.Configure):
         self.addMakeMacro('FC_LINKER',pcc_linker)
       else:
         self.addMakeMacro('FC_LINKER',fc_linker)
-      #Currently unused variables - so commented to keep petscvariables clean
-      #self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
+      self.addMakeMacro('FC_LINKER_FLAGS',self.setCompilers.getLinkerFlags())
       # '' for Unix, .exe for Windows
       #self.addMakeMacro('FC_LINKER_SUFFIX','')
       #FC_LINKER_LIBS is currently unused
