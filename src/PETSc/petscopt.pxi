@@ -124,10 +124,8 @@ cdef getopt(PetscOptType otype, prefix, name, deft):
 # simple minded options parser
 
 cdef gettok(tokens):
-    try:
-        return tokens.pop(0)
-    except IndexError:
-        return None
+    if not tokens: return None
+    else: return tokens.pop(0)
 
 cdef getkey(key, prefix):
     if not key or key[0] != '-' :
