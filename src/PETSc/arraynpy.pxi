@@ -51,7 +51,6 @@ cdef inline ndarray asarray(object ob):
 
 cdef inline ndarray arange(start, stop, stride):
     cdef dtype descr = <dtype> PyArray_DescrFromType(NPY_PETSC_INT)
-    incref(descr)
     return PyArray_ArangeObj(start, stop, stride, descr)
 
 # --------------------------------------------------------------------

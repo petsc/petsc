@@ -97,8 +97,8 @@ class TestVecBase(object):
         self.vec[end-1]   = -7
         self.assertEqual(self.vec[start], -7)
         self.assertEqual(self.vec[end-1], -7)
-        self.vec[start:end] = xrange(start, end)
-        values = list(self.vec[start:end])
+        for i in range(start, end): self.vec[i] = i
+        values = [self.vec[i] for i in range(start, end)]
         self.assertEqual(values, range(start, end))
         sz = self.vec.getSize()
         self.assertEqual(self.vec.sum(), (sz-1)/2.0*sz)
@@ -182,7 +182,7 @@ class TestVecBase(object):
         #
         s, e = v.getOwnershipRange()
         v.setRandom()
-        w[s:e] = v.getArray()
+        w[s:e] = v.getArray().copy()
         self.assertTrue(w.equal(v))
         w1, v1 = w[s],   v[s]
         w2, v2 = w[e-1], v[e-1]
@@ -214,12 +214,6 @@ class TestVecShared(TestVecBase, unittest.TestCase):
 #class TestVecGhost(TestVecBase, unittest.TestCase):
 #    CLASS = PETSc.VecGhost
 #    TARGS = ([],)
-
-import sys
-if hasattr(sys, 'gettotalrefcount'):
-    #del TestVecBase.testGetSetVals
-    pass
-del sys
 
 # --------------------------------------------------------------------
 

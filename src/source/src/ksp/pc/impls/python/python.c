@@ -270,7 +270,7 @@ static int PCPythonHasOperation(PC pc, const char operation[])
   attr = PetscPyObjectGetAttrStr(py->self, operation);
   if      (attr == NULL)    { PyErr_Clear();   return 0; }
   else if (attr == Py_None) { Py_DecRef(attr); return 0; }
-  return 1;
+  else                      { Py_DecRef(attr); return 1; }
 }
 
 #undef __FUNCT__  

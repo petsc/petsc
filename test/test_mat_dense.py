@@ -8,9 +8,10 @@ def mkdata(comm, m, N, bs):
     end   = start + m
     idt = PETSc.IntType
     sdt = PETSc.ScalarType
-    rows = np.arange(start, end, dtype=idt)
-    cols = np.arange(0, N, dtype=idt)
-    vals = np.arange(0, m*N*bs*bs, dtype=sdt)
+    rows = np.array(range(start, end), dtype=idt)
+    cols = np.array(range(0, N), dtype=idt)
+    vals = np.array(range(0, m*N*bs*bs), dtype=sdt)
+    vals.shape = (-1, bs, bs)
     return rows, cols, vals
 
 
@@ -20,15 +21,11 @@ class TestMatAnyDenseBase(object):
     GRID  = 0, 0
     BSIZE = None
     TYPE  = PETSc.Mat.Type.DENSE
-    
+
     def setUp(self):
         COMM   = self.COMM
         GM, GN = self.GRID
         BS     = self.BSIZE or 1
-        #
-        sdt = dtype=PETSc.ScalarType
-        self.rows, self.cols, self.vals = mkdata(COMM, GM, GN, BS)
-        self.vals.shape = (-1, BS, BS)
         #
         self.A = PETSc.Mat().create(comm=COMM)
         bs = BS; m, N = GM, GN;
@@ -36,8 +33,9 @@ class TestMatAnyDenseBase(object):
         colsz = (None, N*bs)
         self.A.setSizes([rowsz, colsz], bs)
         self.A.setType(self.TYPE)
-        
+
     def tearDown(self):
+        self.A.destroy()
         self.A = None
 
     def testSetValues(self):
@@ -53,7 +51,10 @@ class TestMatAnyDenseBase(object):
         self.A.setPreallocationDense(None)
 
     def _set_values(self):
-        rows, cols, vals = self.rows, self.cols, self.vals
+        COMM   = self.COMM
+        GM, GN = self.GRID
+        BS     = self.BSIZE or 1
+        rows, cols, vals = mkdata(COMM, GM, GN, BS)
         if not self.BSIZE:
             setvalues = self.A.setValues
         else:
@@ -109,15 +110,6 @@ class TestMatDense_B_Base(TestMatAnyDenseBase, unittest.TestCase):
     COMM  = PETSc.COMM_WORLD
     GRID  = 0, 0
     BSIZE = 1
-
-    def testSetValues(self):
-        self._preallocate()
-        r, c, v = self._set_values()
-        self.A.assemble()
-        self._chk_array(self.A, r, c, v)
-        r, c, v = self._set_values()
-        self.A.assemble()
-        self._chk_array(self.A, r, c, v)
     def _preallocate(self):
         self.A.setPreallocationDense(None, self.BSIZE)
         self.A.setBlockSize(self.BSIZE)

@@ -1,9 +1,5 @@
 # --------------------------------------------------------------------
 
-cdef extern from "Python.h":
-    void incref"Py_INCREF"(object)
-    void decref"Py_DECREF"(object)
-
 cdef extern from *:
     ctypedef char* char_p       "char*"
     ctypedef char* const_char_p "const char*"

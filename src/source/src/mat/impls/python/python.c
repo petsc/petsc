@@ -76,6 +76,7 @@ static int MatPythonHasOperation(Mat mat, const char operation[])
   attr = PyObject_GetAttrString(py->self, operation);
   if      (attr == NULL)    { PyErr_Clear();   return 0; }
   else if (attr == Py_None) { Py_DecRef(attr); return 0; }
+  else                      { Py_DecRef(attr); return 1; }
   return 1;
 }
 

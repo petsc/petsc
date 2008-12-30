@@ -38,13 +38,9 @@ class MyPCJacobi(MyPCBase):
         y.sqrt()
         y.pointwiseMult(y, x)
 
-PC_PYTHON = None
-
 class PC_PYTHON_CLASS(object):
 
     def __init__(self):
-        global PC_PYTHON
-        PC_PYTHON = self
         self.impl = None
         self.log = {}
     def _log(self, method, *args):
@@ -129,14 +125,17 @@ class TestPCPYTHON(unittest.TestCase):
         OptDB['pc_python_type'] = '%s.%s' % (module, factory)
         self.pc.setFromOptions()
         del OptDB['pc_python_type']
-        assert PC_PYTHON.log['create'] == 1
-        assert PC_PYTHON.log['setFromOptions'] == 1
+        assert self._getCtx().log['create'] == 1
+        assert self._getCtx().log['setFromOptions'] == 1
+        ctx = self._getCtx()
+        self.assertEqual(getrefcount(ctx), 3)
+
     def tearDown(self):
+        ctx = self._getCtx()
         self.pc.destroy() # XXX
         self.pc = None
-        global PC_PYTHON
-        assert PC_PYTHON.log['destroy'] == 1
-        PC_PYTHON = None
+        assert ctx.log['destroy'] == 1
+        self.assertEqual(getrefcount(ctx), 2)
 
     def _prepare(self):
         A = PETSc.Mat().createAIJ([3,3], comm=PETSc.COMM_SELF)
@@ -149,12 +148,15 @@ class TestPCPYTHON(unittest.TestCase):
         assert (A,A) == self.pc.getOperators()[:2]
         return A, x, y
 
+    def _getCtx(self):
+        return self.pc.getPythonContext()
+
     def _applyMeth(self, meth):
         A, x, y = self._prepare()
         getattr(self.pc, meth)(x,y)
-        assert PC_PYTHON.log['setUp'] == 1
-        assert PC_PYTHON.log[meth] == 1
-        if isinstance(PC_PYTHON.impl, MyPCNone):
+        assert self._getCtx().log['setUp'] == 1
+        assert self._getCtx().log[meth] == 1
+        if isinstance(self._getCtx().impl, MyPCNone):
             self.assertTrue(y.equal(x))
     def testApply(self):
         self._applyMeth('apply')
@@ -169,8 +171,8 @@ class TestPCPYTHON(unittest.TestCase):
     ##     w = x.duplicate()
     ##     tols = 0,0,0,0
     ##     self.pc.applyRichardson(x,y,w,tols)
-    ##     assert PC_PYTHON.log['setUp'] == 1
-    ##     assert PC_PYTHON.log['applyRichardson'] == 1
+    ##     assert self._getCtx().log['setUp'] == 1
+    ##     assert self._getCtx().log['applyRichardson'] == 1
 
     ## def testView(self):
     ##     vw = PETSc.ViewerString(100, self.pc.comm)
@@ -178,7 +180,7 @@ class TestPCPYTHON(unittest.TestCase):
     ##     s = vw.getString()
     ##     assert 'python' in s
     ##     module = __name__
-    ##     factory = 'PC_PYTHON'
+    ##     factory = 'self._getCtx()'
     ##     assert '.'.join([module, factory]) in s
 
     def testKSPSolve(self):
@@ -190,28 +192,29 @@ class TestPCPYTHON(unittest.TestCase):
         assert self.pc.getRefCount() == 2
         # normal ksp solve, twice
         ksp.solve(x,y)
-        assert PC_PYTHON.log['setUp'    ] == 1
-        assert PC_PYTHON.log['apply'    ] == 1
-        assert PC_PYTHON.log['preSolve' ] == 1
-        assert PC_PYTHON.log['postSolve'] == 1
+        assert self._getCtx().log['setUp'    ] == 1
+        assert self._getCtx().log['apply'    ] == 1
+        assert self._getCtx().log['preSolve' ] == 1
+        assert self._getCtx().log['postSolve'] == 1
         ksp.solve(x,y)
-        assert PC_PYTHON.log['setUp'    ] == 1
-        assert PC_PYTHON.log['apply'    ] == 2
-        assert PC_PYTHON.log['preSolve' ] == 2
-        assert PC_PYTHON.log['postSolve'] == 2
+        assert self._getCtx().log['setUp'    ] == 1
+        assert self._getCtx().log['apply'    ] == 2
+        assert self._getCtx().log['preSolve' ] == 2
+        assert self._getCtx().log['postSolve'] == 2
         # transpose ksp solve, twice
         ksp.solveTranspose(x,y)
-        assert PC_PYTHON.log['setUp'         ] == 1
-        assert PC_PYTHON.log['applyTranspose'] == 1
+        assert self._getCtx().log['setUp'         ] == 1
+        assert self._getCtx().log['applyTranspose'] == 1
         ksp.solveTranspose(x,y)
-        assert PC_PYTHON.log['setUp'         ] == 1
-        assert PC_PYTHON.log['applyTranspose'] == 2
+        assert self._getCtx().log['setUp'         ] == 1
+        assert self._getCtx().log['applyTranspose'] == 2
         del ksp # ksp.destroy()
         assert self.pc.getRefCount() == 1
 
     def testGetSetContext(self):
         ctx = self.pc.getPythonContext()
         self.pc.setPythonContext(ctx)
+        self.assertEqual(getrefcount(ctx), 3)
         del ctx
 
 
@@ -220,7 +223,7 @@ class TestPCPYTHON2(TestPCPYTHON):
         OptDB = PETSc.Options(self.PC_PREFIX)
         OptDB['impl'] = 'MyPCJacobi'
         super(TestPCPYTHON2, self).setUp()
-        clsname = type(PC_PYTHON.impl).__name__
+        clsname = type(self._getCtx().impl).__name__
         assert clsname == OptDB['impl']
         del OptDB['impl']
 
@@ -231,15 +234,15 @@ class TestPCPYTHON3(TestPCPYTHON):
         pc.createPython(ctx, comm=PETSc.COMM_SELF)
         self.pc.prefix = self.PC_PREFIX
         self.pc.setFromOptions()
-        assert PC_PYTHON.log['create'] == 1
-        assert PC_PYTHON.log['setFromOptions'] == 1
+        assert self._getCtx().log['create'] == 1
+        assert self._getCtx().log['setFromOptions'] == 1
 
 class TestPCPYTHON4(TestPCPYTHON3):
     def setUp(self):
         OptDB = PETSc.Options(self.PC_PREFIX)
         OptDB['impl'] = 'MyPCJacobi'
         super(TestPCPYTHON4, self).setUp()
-        clsname = type(PC_PYTHON.impl).__name__
+        clsname = type(self._getCtx().impl).__name__
         assert clsname == OptDB['impl']
         del OptDB['impl']
 

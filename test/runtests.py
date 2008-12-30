@@ -9,6 +9,8 @@ except ImportError:
     os.path.split(__file__)[0]
     path = os.path.join(os.path.split(__file__)[0], os.path.pardir,
                         'build', 'lib' + plat_specifier)
+    if not os.path.exists(path) and os.path.exists(path+'-pydebug'):
+        path += '-pydebug'
     sys.path.append(path)
     import petsc4py
 

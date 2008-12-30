@@ -17,8 +17,8 @@ def mkgraph(comm, m, n):
         adj.append(I)
         if j< n-1: J = I+1; adj.append(J)
         if i< m-1: J = I+n; adj.append(J)
-    nods = N.arange(start, end, dtype=idt)
-    xadj = N.empty(len(rows)+1, dtype=idt)
+    nods = N.array(range(start, end), dtype=idt)
+    xadj = N.array([0]*(len(rows)+1), dtype=idt)
     xadj[0] = 0
     xadj[1:] = N.cumsum([len(r) for r in rows], dtype=idt)
     if not rows: adjy = N.array([],dtype=idt)
@@ -40,7 +40,7 @@ class TestMatAnyAIJBase(object):
         #
         sdt = dtype=PETSc.ScalarType
         self.rows, self.xadj, self.adjy = mkgraph(COMM, GM, GN)
-        self.vals = N.arange(1, 1 + len(self.adjy)* BS**2, dtype=sdt)
+        self.vals = N.array(range(1, 1 + len(self.adjy)* BS**2), dtype=sdt)
         self.vals.shape = (-1, BS, BS)
         #
         self.A = A = PETSc.Mat().create(comm=COMM)
@@ -148,7 +148,11 @@ class TestMatAnyAIJBase(object):
         self.A.setPreallocationNNZ([5, 2], self.BSIZE)
 
     def _set_values(self):
-        row, ai, aj, av = self._get_aijv()
+        import sys
+        if hasattr(sys, 'gettotalrefcount'):
+            return self._set_values_ijv()
+        # XXX Why the code below leak refs as a beast ???
+        row, ai, aj, av =self._get_aijv()
         if not self.BSIZE:
             setvalues = self.A.setValues
         else:
