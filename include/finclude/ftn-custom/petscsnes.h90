@@ -3,7 +3,7 @@
 #include "finclude/ftn-custom/petscsnesdef.h90"
 #endif
 
-#if defined(PETSC_USE_FORTRAN_TYPES) && !defined(SNES_HIDE)
+#if defined(PETSC_USE_FORTRAN_DATATYPES) && !defined(SNES_HIDE)
 #define SNES_HIDE type(SNES)
 #elif !defined(SNES_HIDE)
 #define SNES_HIDE SNES

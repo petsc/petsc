@@ -7,7 +7,7 @@
 
 #include "finclude/petscvecdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_TYPES)
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define Mat PetscFortranAddr
 #define MatNullSpace PetscFortranAddr
 #define MatFDColoring PetscFortranAddr

@@ -1,6 +1,6 @@
 
 
-#if defined(PETSC_USE_FORTRAN_TYPES)
+#if defined(PETSC_USE_FORTRAN_DATATYPES)
       type Vec
         PetscFortranAddr:: v
       end type Vec
