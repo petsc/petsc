@@ -9,7 +9,7 @@
 #include "finclude/petscvecdef.h"
 #include "finclude/petscmatdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_TYPES)
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define DA PetscFortranAddr
 #define DM PetscFortranAddr
 #define ADDA PetscFortranAddr
