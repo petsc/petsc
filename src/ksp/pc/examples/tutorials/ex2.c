@@ -87,7 +87,7 @@ int main(int argc,char **argv)
    */
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCICC);CHKERRQ(ierr);
-  /*  ierr = PCICCSetShift(pc,PETSC_TRUE);CHKERRQ(ierr); */
+  /*  ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr); */
 
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
