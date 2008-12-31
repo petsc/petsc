@@ -1410,6 +1410,18 @@ PetscErrorCode MatGetFactor_mpidense_plapack(Mat A,MatFactorType ftype,Mat *F)
 }
 #endif
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatAXPY_MPIDense"
+PetscErrorCode MatAXPY_MPIDense(Mat Y,PetscScalar alpha,Mat X,MatStructure str)
+{
+  PetscErrorCode ierr;
+  Mat_MPIDense   *A = (Mat_MPIDense*)Y->data, *B = (Mat_MPIDense*)X->data;
+
+  PetscFunctionBegin;
+  ierr = MatAXPY(A->A,alpha,B->A,str);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        MatGetRow_MPIDense,
@@ -1451,7 +1463,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIDense,
        0,
        0,
        0,
-/*40*/ 0,
+/*40*/ MatAXPY_MPIDense,
        MatGetSubMatrices_MPIDense,
        0,
        MatGetValues_MPIDense,
