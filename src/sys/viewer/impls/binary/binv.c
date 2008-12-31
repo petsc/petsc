@@ -892,7 +892,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
     } else if (type == FILE_MODE_APPEND) {
-      if ((vbinary->fdes = open(fname,O_WRONLY|O_BINARY,0)) == -1) {
+      if ((vbinary->fdes = open(fname,O_WRONLY|O_APPEND|O_BINARY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }
     } else if (fname) {
