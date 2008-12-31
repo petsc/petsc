@@ -46,6 +46,7 @@ class Configure(config.package.Package):
     # local state
     self.commf2c          = 0
     self.commc2f          = 0
+    self.needBatchMPI     = 1
     return
 
   def setupHelp(self, help):
@@ -218,7 +219,8 @@ class Configure(config.package.Package):
     oldLibs  = self.compilers.LIBS
     self.compilers.CPPFLAGS += ' '+self.headers.toString(self.include)
     self.compilers.LIBS = self.libraries.toString(self.lib)+' '+self.compilers.LIBS
-    for datatype, name in [('MPI_LONG_DOUBLE', 'long-double'), ('MPI_ENORMOUS_DOUBLE', 'enormous-double'), ('MPI_UNBELIEVABLE_DOUBLE', 'unbelievable-double')]:
+    #for datatype, name in [('MPI_LONG_DOUBLE', 'long-double'), ('MPI_ENORMOUS_DOUBLE', 'enormous-double'), ('MPI_UNBELIEVABLE_DOUBLE', 'unbelievable-double')]:
+    for datatype, name in [('MPI_LONG_DOUBLE', 'long-double')]:
       if self.checkCompile('#ifdef PETSC_HAVE_STDLIB_H\n  #include <stdlib.h>\n#endif\n#include <mpi.h>\n', 'MPI_Aint size;\nint ierr = MPI_Type_extent('+datatype+', &size);\nif(ierr || (size == 0)) exit(1);\n'):
         if 'have-mpi-'+name in self.argDB:
           if int(self.argDB['have-mpi-'+name]):
@@ -229,11 +231,18 @@ class Configure(config.package.Package):
             self.addDefine('HAVE_'+datatype, 1)
           self.popLanguage()
         else:
+          if self.needBatchMPI:
+            self.framework.addBatchSetup('if (MPI_Init(&argc, &argv));')
+            self.framework.addBatchCleanup('if (MPI_Finalize());')
+            self.needBatchMPI = 0
           self.framework.addBatchInclude(['#include <stdlib.h>', '#include <mpi.h>'])
           self.framework.addBatchBody('''
 {
-  MPI_Aint size;
-  int ierr = MPI_Type_extent(%s, &size);
+  MPI_Aint size=0;
+  int ierr=0;
+  if (MPI_LONG_DOUBLE != MPI_DATATYPE_NULL) {
+    ierr = MPI_Type_extent(%s, &size);
+  }
   if(!ierr && (size != 0)) {
     fprintf(output, "  \'--have-mpi-%s=1\',\\n");
   } else {

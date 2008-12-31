@@ -83,8 +83,10 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.argDB['CPPFLAGS']  = ''
     if not 'LDFLAGS' in self.argDB:
       self.argDB['LDFLAGS'] = ''
+    self.batchSetup         = []
     self.batchIncludes      = []
     self.batchBodies        = []
+    self.batchCleanup       = []
     self.batchIncludeDirs   = []
     self.dependencies       = {}
     self.configureParent    = None
@@ -817,6 +819,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.externalPackagesDir = None
     return
 
+  def addBatchSetup(self, setup):
+    '''Add code to be run before batch tests execute'''
+    if not isinstance(setup, list):
+      setup = [setup]
+    self.batchSetup.extend(setup)
+    return
+
   def addBatchInclude(self, includes):
     '''Add an include or a list of includes to the batch run'''
     if not isinstance(includes, list):
@@ -831,6 +840,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     self.batchBodies.extend(statements)
     return
 
+  def addBatchCleanup(self, cleanup):
+    '''Add code to be run after batch tests execute'''
+    if not isinstance(cleanup, list):
+      cleanup = [cleanup]
+    self.batchCleanup.extend(cleanup)
+    return
+
   def configureBatch(self):
     '''F'''
     if self.batchBodies:
@@ -841,7 +857,9 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       body = ['FILE *output = fopen("reconfigure.py","w");']
       body.append('fprintf(output, "#!'+sys.executable+'\\n");')
       body.append('fprintf(output, "\\nconfigure_options = [\\n");')
+      body.extend(self.batchSetup)
       body.extend(self.batchBodies)
+      body.extend(self.batchCleanup)
       body.append('fprintf(output, "  '+repr(args)[1:-1]+'\\n]");')
       driver = ['fprintf(output, "\\nif __name__ == \'__main__\':',
                 '  import os',
@@ -856,7 +874,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       oldFlags = self.compilers.CPPFLAGS
       self.compilers.CPPFLAGS += ' '.join(self.batchIncludeDirs)
       self.batchIncludes.insert(0, '#include <stdio.h>\n#include <sys/types.h>\n#include <sys/stat.h>')
-      if not self.checkLink('\n'.join(self.batchIncludes)+'\n', '\n'.join(body), cleanup = 0):
+      if not self.checkLink('\n'.join(self.batchIncludes)+'\n', '\n'.join(body), cleanup = 0, codeBegin = '\nint main(int argc, char **argv) {\n'):
         sys.exit('Unable to generate test file for cross-compilers/batch-system\n')
       self.compilers.CPPFLAGS = oldFlags
       self.logClear()
