@@ -7,7 +7,7 @@
 
 #include "finclude/petscpcdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_TYPES)
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define KSP PetscFortranAddr
 #define KSPFischerGuess PetscFortranAddr
 #endif

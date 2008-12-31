@@ -6,7 +6,7 @@
 
 #include "finclude/petscsnesdef.h"
 
-#if !defined(PETSC_USE_FORTRAN_TYPES)
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define TS PetscFortranAddr
 #endif
 #define TSType character*(80)
