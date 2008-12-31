@@ -1097,7 +1097,7 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress']:
+      for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress', '-Wl,-commons,use_dylibs']:
         if self.checkLinkerFlag(testFlag):
           self.executableFlags.append(testFlag)
       self.popLanguage()
