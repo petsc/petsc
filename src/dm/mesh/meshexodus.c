@@ -99,7 +99,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
   if (rank == 0) {
     for(int eb = 0, k = 0; eb < num_elem_blk; ++eb) {
       for(int e = 0; e < num_elem_in_block[eb]; ++e, ++k) {
-        mesh->setValue(cellBlocks, k, eb);
+        mesh->setValue(cellBlocks, k, eb_ids[eb]);
       }
     }
   }
@@ -123,7 +123,7 @@ PetscErrorCode PetscReadExodusII(MPI_Comm comm, const char filename[], ALE::Obj<
   if (rank == 0) {
     for(int ns = 0; ns < num_node_sets; ++ns) {
       for(int n = 0; n < num_nodes_in_set[ns]; ++n) {
-        mesh->setValue(vertexSets, node_list[ns][n]+num_elem, ns);
+        mesh->setValue(vertexSets, node_list[ns][n]+num_elem, ns_ids[ns]);
       }
       ierr = PetscFree(node_list[ns]);CHKERRQ(ierr);
     }
