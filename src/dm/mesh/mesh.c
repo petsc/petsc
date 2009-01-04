@@ -361,7 +361,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, SectionReal section
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = MeshCreateMatrix(m, s, mtype, J);CHKERRQ(ierr);
+  try {
+    ierr = MeshCreateMatrix(m, s, mtype, J);CHKERRQ(ierr);
+  } catch(ALE::Exception e) {
+    SETERRQ(PETSC_ERR_LIB, e.message());
+  }
   ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
