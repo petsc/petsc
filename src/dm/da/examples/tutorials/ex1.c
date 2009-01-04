@@ -1,6 +1,35 @@
 
 static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
 
+/* 
+  MATLAB must be installed to configure PETSc to have MATLAB engine.
+Unless you have specific important reasons for using the Matlab engine, we do not
+recommend it. If you want to use Matlab for visualization and maybe a little post processing
+then you can use the socket viewer and send the data to Matlab via that.
+
+  VecView() on DA vectors first puts the Vec elements into global natural ordering before printing (or plotting)
+them. In 2d 5 by 2 DA this means the numbering is
+
+     5  6   7   8   9
+     0  1   2   3   4
+
+Now the default split across 2 processors with the DA  is (by rank)
+
+    0  0   0  1   1
+    0  0   0  1   1
+
+So the global PETSc ordering is
+
+    3  4  5   8  9
+    0  1  2   6  7
+
+Use the options
+     -da_grid_x <nx> - number of grid points in x direction, if M < 0
+     -da_grid_y <ny> - number of grid points in y direction, if N < 0
+     -da_processors_x <MX> number of processors in x directio
+     -da_processors_y <MY> number of processors in x direction
+*/
+
 #include "petscda.h"
 #include "petscsys.h"
 
@@ -30,13 +59,7 @@ int main(int argc,char **argv)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-star_stencil",&flg);CHKERRQ(ierr);
   if (flg) stype = DA_STENCIL_STAR;
-
-  /* Use the options
-     -da_grid_x <nx> - number of grid points in x direction, if M < 0
-     -da_grid_y <ny> - number of grid points in y direction, if N < 0
-     -da_processors_x <MX> number of processors in x directio
-     -da_processors_y <MY> number of processors in x direction
-  */       
+      
   /* Create distributed array and get vectors */
   ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
