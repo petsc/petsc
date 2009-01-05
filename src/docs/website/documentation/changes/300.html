@@ -85,7 +85,7 @@ in the PETSc 3.0.0</font></p>
       </p>
       <ul>
         <li>Changed the Matlab engine portion of the Matlab configure
-code to require a seperate flag --with-matlab-engine</li>
+code to require a separate flag --with-matlab-engine</li>
         <li>Changed the Socket viewer to be the same as the binary
 viewer except for its creation </li>
         <li>Changed the Matlab Socket code to work the same as the
@@ -118,7 +118,7 @@ and returns the cookie in the final argument, not the first</li>
       </b></u>
       <ul>
         <li>Changed location of base makefiles to conf from bmake/common</li>
-        <li>Changed location of generated base maekfiles to
+        <li>Changed location of generated base makefiles to
 $PETSC_ARCH/conf instead of bmake/$PETSC_ARCH</li>
         <li>Changed location of generated include files to
 $PETSC_ARCH/include&nbsp;</li>
@@ -264,7 +264,7 @@ SNESGetLagJacobian()</li>
 conjunction with DMMGSetSNES(). You should call this sometime after
 DMMGSetSNES() is called, otherwise the SNES/KSPSetFromOptions() does
 not get called.</li>
-        <li>Removed -dmmg_snes_monitor since now -snes_monitor[_short)
+        <li>Removed -dmmg_snes_monitor since now -snes_monitor and -snes_monitor_short
 will now do the proper indenting so this is no longer needed</li>
         <li>Removed -dmmg_ksp_monitor since now -ksp_monitor[_short)
 and -mg_levels_ksp_monitor[_short) etc will handle the proper indenting.</li>
