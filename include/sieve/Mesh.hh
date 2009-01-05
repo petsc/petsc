@@ -1446,6 +1446,9 @@ namespace ALE {
     void setValue(const Obj<label_type>& label, const point_type& point, const int value) {
       label->setCone(value, point);
     };
+    void addValue(const Obj<label_type>& label, const point_type& point, const int value) {
+      label->addCone(value, point);
+    };
     template<typename InputPoints>
     int getMaxValue (const Obj<label_type>& label, const Obj<InputPoints>& points, const int defValue = 0) {
       int maxValue = defValue;
