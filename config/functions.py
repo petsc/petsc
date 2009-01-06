@@ -129,6 +129,20 @@ choke me
       self.addDefine('HAVE_VPRINTF_CHAR', 1)
     return
 
+  def checkVFPrintf(self):
+    self.check('vfprintf')
+    '''Checks whether vfprintf requires a char * last argument, and if it does defines HAVE_VFPRINTF_CHAR'''
+    if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvfprintf(stdout, "%d", Argp );\n'):
+      self.addDefine('HAVE_VFPRINTF_CHAR', 1)
+    return
+
+  def checkVSNPrintf(self):
+    self.check('vsnprintf')
+    '''Checks whether vsnprintf requires a char * last argument, and if it does defines HAVE_VSNPRINTF_CHAR'''
+    if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;char str[6];\nvsnprintf(str,5, "%d", Argp );\n'):
+      self.addDefine('HAVE_VSNPRINTF_CHAR', 1)
+    return
+
   def checkSignalHandlerType(self):
     '''Checks the type of C++ signals handlers, and defines SIGNAL_CAST to the correct value'''
     self.pushLanguage('C++')
@@ -157,6 +171,8 @@ choke me
     self.executeTest(self.checkMemcmp)
     self.executeTest(self.checkSysinfo)
     self.executeTest(self.checkVPrintf)
+    self.executeTest(self.checkVFPrintf)
+    self.executeTest(self.checkVSNPrintf)        
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkSignalHandlerType)
     self.executeTest(self.checkFreeReturnType)
