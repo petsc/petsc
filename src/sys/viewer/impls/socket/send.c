@@ -87,13 +87,13 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 
 /*--------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSocketOpen"
+#define __FUNCT__ "PetscOpenSocket"
 /*
     PetscSocketOpen - handles connected to an open port where someone is waiting.
 
 .seealso:   SOCKAnswer_Private()
 */
-PetscErrorCode PETSC_DLLEXPORT PetscSocketOpen(char *hostname,int portnum,int *t)
+PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char *hostname,int portnum,int *t)
 {
   struct sockaddr_in sa;
   struct hostent     *hp;
@@ -412,7 +412,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,cons
       ierr = SOCKAnswer_Private((int)port,&vmatlab->port);CHKERRQ(ierr);
     } else {
       ierr = PetscInfo2(v,"Connecting to socket process on port %D machine %s\n",port,mach);CHKERRQ(ierr);
-      ierr = PetscSocketOpen(mach,(int)port,&vmatlab->port);CHKERRQ(ierr);
+      ierr = PetscOpenSocket(mach,(int)port,&vmatlab->port);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
