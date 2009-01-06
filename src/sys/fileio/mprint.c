@@ -98,7 +98,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *f
     newformat[len] = '\0';
   }
 #endif
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VSNPRINTF_CHAR)
   *fullLength = vsnprintf(str,len,newformat,(char *)Argp);
 #elif defined(PETSC_HAVE_VSNPRINTF)
   *fullLength = vsnprintf(str,len,newformat,Argp);
@@ -131,12 +131,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp){
   PetscStrlen(newformat, &formatlen);
   PetscMemcpy(&(log[len]), newformat, formatlen);
   if(PETSC_ZOPEFD != NULL){
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VFPRINTF_CHAR)
   vfprintf(PETSC_ZOPEFD,log,(char *)Argp);
 #else
   vfprintf(PETSC_ZOPEFD,log,Argp);
-  fflush(PETSC_ZOPEFD);
 #endif
+  fflush(PETSC_ZOPEFD);
 }
   return 0;
 }
@@ -178,21 +178,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
 #endif
 
 #if defined(PETSC_HAVE_VA_COPY) || defined(PETSC_HAVE___VA_COPY)
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VFPRINTF_CHAR)
     vfprintf(PETSC_ZOPEFD,newformat,(char *)s);
 #else
     vfprintf(PETSC_ZOPEFD,newformat,s);
-    fflush(PETSC_ZOPEFD);
 #endif
+    fflush(PETSC_ZOPEFD);
 #endif
   }
 
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VFPRINTF_CHAR)
   vfprintf(fd,newformat,(char *)Argp);
 #else
   vfprintf(fd,newformat,Argp);
-  fflush(fd);
 #endif
+  fflush(fd);
   if (oldLength >= 8*1024) {
     if (PetscFree(newformat)) {};
   }
