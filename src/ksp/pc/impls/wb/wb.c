@@ -28,6 +28,19 @@ typedef struct {
 +  pc - the preconditioner context
 -  type - either PC_EXOTIC_FACE or PC_EXOTIC_WIREBASKET (defaults to face)
 
+   Notes: The face based interpolation has 1 degree of freedom per face and ignores the 
+     edge and vertex values completely in the coarse problem. For any seven point
+     stencil the interpolation of a constant on all faces into the interior is that constant.
+
+     The wirebasket interpolation has 1 degree of freedom per vertex, per edge and 
+     per face. A constant on the subdomain boundary is interpolated as that constant
+     in the interior of the domain. 
+
+     The coarse grid matrix is obtained via the Galerkin computation A_c = R A R^T, hence 
+     if A is nonsingular A_c is also nonsingular.
+
+     Both interpolations are suitable for only scalar problems.
+
    Level: intermediate
 
 
