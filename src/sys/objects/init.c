@@ -16,7 +16,6 @@
 #include <malloc.h>
 #endif
 #include "petscfix.h"
-#include "zope.h"
 /* ------------------------Nasty global variables -------------------------------*/
 /*
      Indicates if PETSc started up MPI, or it was 
@@ -389,7 +388,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr)}
 
-
+#if defined(PETSC_USE_SOCKET_VIEWER)
   /*
     Activates new sockets for zope if needed
   */
@@ -416,6 +415,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
       fprintf(PETSC_ZOPEFD, "<<<user>>> %s\n",username);
       fprintf(PETSC_ZOPEFD, "<<<start>>>");
     }}
+#endif
 
   /*
         Setup profiling and logging
