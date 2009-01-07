@@ -1409,7 +1409,7 @@ static PetscErrorCode MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,PetscInt 
     ierr = MatGetSize(*B,&n_rows,&n_cols);CHKERRQ(ierr);
     if (n_rows != nrows || n_cols != ncols) {
       /* resize the result result matrix to match number of requested rows/columns */
-      ierr = MatSetSizes(*B,nrows,nrows,nrows,nrows);CHKERRQ(ierr);
+      ierr = MatSetSizes(*B,nrows,ncols,nrows,ncols);CHKERRQ(ierr);
     }
     newmat = *B;
   } else {
