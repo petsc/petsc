@@ -98,7 +98,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *f
     newformat[len] = '\0';
   }
 #endif
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VSNPRINTF_CHAR)
   *fullLength = vsnprintf(str,len,newformat,(char *)Argp);
 #elif defined(PETSC_HAVE_VSNPRINTF)
   *fullLength = vsnprintf(str,len,newformat,Argp);
@@ -131,12 +131,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp){
   PetscStrlen(newformat, &formatlen);
   PetscMemcpy(&(log[len]), newformat, formatlen);
   if(PETSC_ZOPEFD != NULL){
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VFPRINTF_CHAR)
   vfprintf(PETSC_ZOPEFD,log,(char *)Argp);
 #else
   vfprintf(PETSC_ZOPEFD,log,Argp);
-  fflush(PETSC_ZOPEFD);
 #endif
+  fflush(PETSC_ZOPEFD);
 }
   return 0;
 }
@@ -178,21 +178,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
 #endif
 
 #if defined(PETSC_HAVE_VA_COPY) || defined(PETSC_HAVE___VA_COPY)
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VFPRINTF_CHAR)
     vfprintf(PETSC_ZOPEFD,newformat,(char *)s);
 #else
     vfprintf(PETSC_ZOPEFD,newformat,s);
-    fflush(PETSC_ZOPEFD);
 #endif
+    fflush(PETSC_ZOPEFD);
 #endif
   }
 
-#if defined(PETSC_HAVE_VPRINTF_CHAR)
+#if defined(PETSC_HAVE_VFPRINTF_CHAR)
   vfprintf(fd,newformat,(char *)Argp);
 #else
   vfprintf(fd,newformat,Argp);
-  fflush(fd);
 #endif
+  fflush(fd);
   if (oldLength >= 8*1024) {
     if (PetscFree(newformat)) {};
   }
@@ -254,7 +254,7 @@ FILE        *queuefile  = PETSC_NULL;
     from all the processors to be printed.
 
     Fortran Note:
-    The call sequence is PetscSynchronizedPrintf(PetscViewer, character(*), PetscErrorCode ierr) from Fortran. 
+    The call sequence is PetscSynchronizedPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran. 
     That is, you can only pass a single character string from Fortran.
 
 .seealso: PetscSynchronizedFlush(), PetscSynchronizedFPrintf(), PetscFPrintf(), 
@@ -497,7 +497,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char fo
    Level: intermediate
 
     Fortran Note:
-    The call sequence is PetscPrintf(PetscViewer, character(*), PetscErrorCode ierr) from Fortran. 
+    The call sequence is PetscPrintf(MPI_Comm, character(*), PetscErrorCode ierr) from Fortran. 
     That is, you can only pass a single character string from Fortran.
 
    Notes: %A is replace with %g unless the value is < 1.e-12 when it is 
