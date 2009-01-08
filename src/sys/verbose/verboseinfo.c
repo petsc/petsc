@@ -142,25 +142,30 @@ extern FILE *petsc_history;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInfo"
-/*@C
+/*MC
     PetscInfo - Logs informative data, which is printed to standard output
     or a file when the option -info <file> is specified.
 
     Collective over PetscObject argument
 
    Synopsis:
-       PetscErrorCode PetscInfo(void *vobj, const char message[], ...))  
+       PetscErrorCode PetscInfo(void *vobj, const char message[])
+       PetscErrorCode PetscInfo1(void *vobj, const char formatmessage[],arg1)
+       PetscErrorCode PetscInfo2(void *vobj, const char formatmessage[],arg1,arg2)
+       etc
 
     Input Parameter:
 +   vobj - object most closely associated with the logging statement or PETSC_NULL
--   message - logging message, using standard "printf" format
+.   message - logging message
+-   formatmessage - logging message using standard "printf" format
 
     Options Database Key:
 $    -info : activates printing of PetscInfo() messages 
 
     Level: intermediate
 
-    Fortran Note: This function does not take the vobj argument
+    Fortran Note: This function does not take the vobj argument, there is only the PetscInfo()
+     version, not PetscInfo1() etc.
 
     Example of Usage:
 $
@@ -172,7 +177,7 @@ $
    Concepts: runtime information
 
 .seealso: PetscInfoAllow()
-@*/
+M*/
 PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, const char message[], ...)  
 {
   va_list        Argp;
