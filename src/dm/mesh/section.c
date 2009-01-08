@@ -529,6 +529,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal section)
 
   Level: advanced
 
+  Notes: The vector can safely be destroyed using VecDestroy().
 .seealso MeshDestroy(), MeshCreate()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
