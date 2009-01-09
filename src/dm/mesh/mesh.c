@@ -704,7 +704,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 
   Level: advanced
 
-  Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
+  Notes: The vector can safely be destroyed using VecDestroy().
 .seealso MeshDestroy(), MeshCreate(), MeshGetGlobalIndices()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(Mesh mesh, SectionReal section, Vec *vec)
