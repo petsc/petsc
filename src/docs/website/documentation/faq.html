@@ -1684,6 +1684,8 @@ extensions.&nbsp; What's the deal with these?</a></li>
 
       <li><a href="faq.html#slowerparallel">Why is my parallel <span style="font-weight: bold;">solver slower </span>than the sequential solver?<span style="font-weight: bold;"></span></a></li>
 
+      <li><a href="faq.html#singleprecision">When using PETSc in single precision mode (--with-precision=single when running config/configure.py) are the operations done in single or double precision?</a></li>
+
 
 
 
@@ -7707,22 +7709,29 @@ unknowns per process, better is 20,000 or more.</li>
 more processes, this is particularly true for block Jaccobi, the
 default parallel preconditioner, you can try -pc_type asm (<a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCASM.html">PCASM</a>) its iterations scale a bit better for more processes. You may also consider multigrid preconditioners like <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCMG.html">PCMG</a> or BoomerAMG in <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/docs/manualpages/PC/PCHYPRE.html">PCHYPRE</a>.</li>
 
+   </ul>
+
+      
+     <p><font><strong><a name="singleprecision"><font color="#ff0000">When using PETSc in single precision mode (--with-precision=single when running config/configure.py) are the operations done in single or double precision? </font></a></strong></font>
 
 
+</p>
+
+PETSc does NOT do any explicit conversion of single precision to double before performing computations;
+this it depends on the hardware and compiler what happens. For example, the compiler could
+choose to put the single precision numbers into the usual double precision registers and then use
+the usual double precision floating point unit. Or it could use SSE2 instructions that work directly
+on the single precision numbers. It is a bit of a mystery what decisions get made sometimes.
+There may be compiler flags in some circumstances that can affect this.
       
       
       
-      </ul>
-
-
-
-
-
-      <strong></strong>
-
       
-      
-      
+      </p>
+
+
+
+
       
       
       

@@ -2,6 +2,75 @@ static char help[] = "This example reads in a FVM mesh for PFLOTRAN.\n\n";
 
 #include <petscmesh.hh>
 
+/*
+Barry and Matt,
+
+Attached is a sample hdf5 file for reading into Sieve.  The file
+contains sufficient data to read in either by explicit (duals) or
+implicit (cells with shared vertices) connection.  The grid size is
+nx=5, ny=4, nz=3 with grid spacing:
+
+ PetscReal dx[5] = {10.,11.,12.,13.,14.};
+ PetscReal dy[4] = {13.,12.,11.,10.};
+ PetscReal dz[3] = {15.,20.,25.};
+
+Anyone interested in perusing the file and commenting on potential
+changes can do so between now and the telecon tomorrow using the hdf5
+viewer:
+
+http://hdf.ncsa.uiuc.edu/hdf-java-html/hdfview/
+
+It runs with java and is cake to install.
+
+I will try to provide something with inactive cells and local grid
+refinement in the future in order to provide a bit more complexity, but
+this should due for a start.
+
+Note that all data sets are stored in 1D.  Doing so enables very fast
+reads on large problems.
+
+--------------------------------------------
+Explanation of file contents:
+
+Cells - group containing all cell-based data sets
+ Natural IDs - zero-based natural id of each cell
+(** see attached pdf for layout of vertices in HEX)
+ Vertex IDs 0 - first vertex in standard hex 
+                element/cell layout
+ Vertex IDs 1 - second vertex in standard hex 
+                element/cell layout
+ ... 
+ Vertex IDs 7 - last vertex in standard hex 
+                element/cell layout
+ Volumes - volumes of grid cells
+ X-Coordinates - cell x-coords
+ Y-Coordinates - cell y-coords
+ Z-Coordinates - cell z-coords
+
+Connections - group containing all connection-based 
+             data sets
+ Area - connection interfacial areas
+ Upwind Cell IDs - zero-based ids of upwind cells 
+                   for each connection
+ Upwind Distance X - x-compoonent of distance vector
+                     between upwidn cell center and
+                     center of interface between cells
+ Upwind Distance Y - y-compoonent of distance vector
+                     between upwidn cell center and
+                     center of interface between cells
+ Upwind Distance Z - z-compoonent of distance vector
+                     between upwidn cell center and
+                     center of interface between cells
+ All the same for downwind data sets
+
+Vertices - cell containing all vertex-based (cell corners) data sets
+ Natural IDs - zero-based natural id of each vertex
+ X-Coordinates - vertex x-coords
+ Y-Coordinates - vertex y-coords
+ Z-Coordinates - vertex z-coords
+--------------------------------------------*/
+
+
 using ALE::Obj;
 
 typedef struct {
