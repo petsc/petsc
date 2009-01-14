@@ -630,7 +630,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,const MatTy
   B->ops->multadd     = MatMultAdd_SeqCSRPERM;
 
   /* If A has already been assembled, compute the permutation. */
-  if (A->assembled == PETSC_TRUE) {
+  if (A->assembled) {
     ierr = SeqCSRPERM_create_perm(B);CHKERRQ(ierr);
   }
  

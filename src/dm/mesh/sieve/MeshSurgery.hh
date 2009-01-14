@@ -1720,7 +1720,7 @@ a, b, c, and d are on the boundary in question
          
   	//PetscPrintf(m->comm(), "flip: 3-1\n");      
         Surgery_2D_31Flip_Setup(m, vertex, cells, vertices);
-        if (Surgery_2D_31Flip_Possible(m, cells, vertices) == PETSC_TRUE) {
+        if (Surgery_2D_31Flip_Possible(m, cells, vertices)) {
         Surgery_2D_31Flip(m, cells, vertices, maxIndex);
         }
 	/*
@@ -1748,7 +1748,7 @@ a, b, c, and d are on the boundary in question
             //2->2 flip
             //PetscPrintf(m->comm(), "2-2 attempt\n");
             Surgery_2D_22Flip_Setup(m, vertex, *n_iter, cells, vertices, order); 
-            if (Surgery_2D_22Flip_Possible(m, cells, vertices, order) == PETSC_TRUE) {
+            if (Surgery_2D_22Flip_Possible(m, cells, vertices, order)) {
               Surgery_2D_22Flip(m, cells, vertices, order, maxIndex);  //in 2D there are no cases where we have to take the maxIndex into account
               changed_neighbors = true;
             }
@@ -1760,7 +1760,7 @@ a, b, c, and d are on the boundary in question
       /*
       if (n_iter == n_iter_end && neighbor_size == 4 && !on_boundary) { //this is the ONLY safe time to use this
         Surgery_2D_LineContract_Direction(m, vertex, cells, vertices);
-        if (Surgery_2D_LineContract_Possible(m, cells, vertices) == PETSC_TRUE) {
+        if (Surgery_2D_LineContract_Possible(m, cells, vertices)) {
           Surgery_2D_LineContract(m, cells, vertices, maxIndex);
         }
       }
@@ -1776,7 +1776,7 @@ a, b, c, and d are on the boundary in question
           bn_iter++;
         }
         Surgery_2D_LineContract_Setup(m, vertex, other_line_end, cells, vertices);
-        if (Surgery_2D_LineContract_Possible(m, cells, vertices) == PETSC_TRUE) {
+        if (Surgery_2D_LineContract_Possible(m, cells, vertices)) {
           Surgery_2D_LineContract(m, cells, vertices, maxIndex);
         }
       } //last-ditch boundary contract: find another vertex on the boundary in the neighbor set and contract to it.  NO GUARANTEES
@@ -1850,7 +1850,7 @@ a, b, c, and d are on the boundary in question
   	    //        PetscPrintf(m->comm(), "Processing the link line: %d, %d\n", cur_link_vertex, cur_link_neighbor_vertex);        
             //do 2-3 flips until you can't anymore.
             Surgery_3D_23Flip_Setup(m, vertex, cur_link_vertex, cur_link_neighbor_vertex, cells, vertices);
-            if (Surgery_3D_23Flip_Possible(m, cells, vertices) == PETSC_TRUE) {
+            if (Surgery_3D_23Flip_Possible(m, cells, vertices)) {
   	    //          PetscPrintf(m->comm(), "Flipping.\n");
               cur_maxIndex = Surgery_3D_23Flip(m, cells, vertices, cur_maxIndex);
               //reget the neighbors
@@ -1868,7 +1868,7 @@ a, b, c, and d are on the boundary in question
         lens_vertices = s->cone(lens);
         if (lens_vertices->size() == 5) {
           Surgery_3D_32Flip_Setup(m, vertex, cur_link_vertex, cells, vertices);
-          if (Surgery_3D_32Flip_Possible(m, cells, vertices) == PETSC_TRUE) {
+          if (Surgery_3D_32Flip_Possible(m, cells, vertices)) {
   	  //          PetscPrintf(m->comm(), "Flipping.\n");
             cur_maxIndex = Surgery_3D_32Flip(m, cells, vertices, cur_maxIndex);
             neighbors = s->cone(s->support(vertex));
@@ -1884,7 +1884,7 @@ a, b, c, and d are on the boundary in question
     PetscPrintf(m->comm(), "Done with link decimation; # surrounding cells: %d\n", neighbor_cells->size());
     if (neighbor_cells->size() == 4) {
       Surgery_3D_41Flip_Setup(m, vertex, cells, vertices);
-      if (Surgery_3D_41Flip_Possible(m, cells, vertices) == PETSC_TRUE) {
+      if (Surgery_3D_41Flip_Possible(m, cells, vertices)) {
         cur_maxIndex = Surgery_3D_41Flip(m, cells, vertices, cur_maxIndex);
       }
     }

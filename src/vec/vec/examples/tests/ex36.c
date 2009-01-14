@@ -53,7 +53,7 @@ int main(int argc,char **argv)
 
   for (i=istart; i<iend; i++) {
     values[i - istart]  = (rank + 1) * i * 2;
-    if (set_values_negidx == PETSC_TRUE) {
+    if (set_values_negidx) {
         indices[i - istart] = (-1 + 2*(i % 2)) * i;
     }
     else {

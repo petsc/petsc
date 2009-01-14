@@ -528,7 +528,7 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 
   PetscFunctionBegin;
   for (i=0; i<ni; i++) {
-    if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
+    if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
     if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
     if (ix[i] >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D to large maximum allowed %D",ix[i],xin->map->n);
@@ -549,7 +549,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   PetscFunctionBegin;
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
-      if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
+      if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
       if (ix[i] >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->n);
@@ -558,7 +558,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     }
   } else {
     for (i=0; i<ni; i++) {
-      if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
+      if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
       if (ix[i] >= xin->map->n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map->n);

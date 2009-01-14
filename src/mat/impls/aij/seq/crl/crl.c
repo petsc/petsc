@@ -211,7 +211,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat A,const MatType t
   B->ops->mult        = MatMult_CRL;
 
   /* If A has already been assembled, compute the permutation. */
-  if (A->assembled == PETSC_TRUE) {
+  if (A->assembled) {
     ierr = SeqCRL_create_crl(B);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQCRL);CHKERRQ(ierr);

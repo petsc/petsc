@@ -167,7 +167,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat A,const MatType t
   B->ops->mult        = MatMult_CRL;
 
   /* If A has already been assembled, compute the permutation. */
-  if (A->assembled == PETSC_TRUE) {
+  if (A->assembled) {
     ierr = MPICRL_create_crl(B);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPICRL);CHKERRQ(ierr);

@@ -1376,7 +1376,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 	  bool outer_located = false;
 	  while (f_iter != f_iter_end && !outer_located) {
 	    PetscMemcpy(fcoords, f_m->restrictClosure(f_coordinates, *f_iter), sizeof(double)*dim*(dim+1));
-	    if (Hierarchy_BBoxesCollide(dim, coords, fcoords) == PETSC_TRUE) {
+	    if (Hierarchy_BBoxesCollide(dim, coords, fcoords)) {
 	      outer_located = true;
 	      c_cell_list.push_front(*c_iter);
 	      f_cell_guesses.push_front(*f_iter);
@@ -1403,7 +1403,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 	      ALE::Mesh::point_type f_current_cell = f_cell_list.front();
 	      f_cell_list.pop_front();
 	      PetscMemcpy(fcoords, f_m->restrictClosure(f_coordinates, f_current_cell), sizeof(double)*dim*(dim+1));
-	      bool bbox_collide = (Hierarchy_BBoxesCollide(dim, coords, fcoords) == PETSC_TRUE);
+	      bool bbox_collide = (Hierarchy_BBoxesCollide(dim, coords, fcoords));
 	      //if we have yet to find the box, then we have an unrestricted search; if we have found the box, then we only search within the box
 	      if (bbox_collide || !found_the_boundbox) {
 		if (bbox_collide) {
@@ -1418,7 +1418,7 @@ void Hierarchy_qualityInfo(ALE::Obj<ALE::Mesh> * meshes, int nLevels) {
 		}
 		//test to see if this fine cell ACTUALLY collides with the coarse one 
 		if (bbox_collide) {
-		  if (Hierarchy_CellsCollide(dim, coords, fcoords) == PETSC_TRUE) nCollisions++;
+		  if (Hierarchy_CellsCollide(dim, coords, fcoords)) nCollisions++;
 		}
 		ALE::Obj<ALE::Mesh::sieve_type::coneSet> fine_neighbors = f_s->support(f_s->cone(f_current_cell));
 		ALE::Mesh::sieve_type::coneSet::iterator fn_iter = fine_neighbors->begin();
