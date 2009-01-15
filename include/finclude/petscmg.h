@@ -14,12 +14,10 @@
       parameter (PC_MG_FULL=2,PC_MG_KASKADE=3)
       parameter (PC_MG_CASCADE=3)
 
-!
-!  Other defines
-!
-      PetscEnum PC_MG_V_CYCLE
-      PetscEnum PC_MG_W_CYCLE
-      parameter (PC_MG_V_CYCLE=1,PC_MG_W_CYCLE=2)
+! PCMGCycleType
+      PetscEnum PC_MG_CYCLE_V
+      PetscEnum PC_MG_CYCLE_W
+      parameter (PC_MG_CYCLE_V = 1,PC_MG_CYCLE_W = 2)
 
       PetscEnum PC_EXOTIC_FACE
       PetscEnum PC_EXOTIC_WIREBASKET

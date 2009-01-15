@@ -12,6 +12,7 @@
       PetscEnum SNES_CONVERGED_ITS
       PetscEnum SNES_CONVERGED_TR_DELTA
 
+      PetscEnum SNES_DIVERGED_FUNCTION_DOMAIN
       PetscEnum SNES_DIVERGED_FUNCTION_COUNT
       PetscEnum SNES_DIVERGED_LINEAR_SOLVE
       PetscEnum SNES_DIVERGED_FNORM_NAN
@@ -26,6 +27,7 @@
       parameter (SNES_CONVERGED_ITS               =  5)
       parameter (SNES_CONVERGED_TR_DELTA          =  7)
 
+      parameter (SNES_DIVERGED_FUNCTION_DOMAIN    = -1)
       parameter (SNES_DIVERGED_FUNCTION_COUNT     = -2)  
       parameter (SNES_DIVERGED_LINEAR_SOLVE       = -3)  
       parameter (SNES_DIVERGED_FNORM_NAN          = -4) 
