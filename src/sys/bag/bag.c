@@ -334,6 +334,7 @@ PetscErrorCode PetscBagRegisterTruth(PetscBag bag,void *addr,PetscTruth mdefault
   PetscTruth     printhelp;
 
   PetscFunctionBegin;
+  /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
   if (mdefault != PETSC_FALSE && mdefault != PETSC_TRUE) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Boolean %s %s must be boolean; integer value %d",name,help,(int)mdefault);
   if (!PetscBagInLoad) {
     nname[0] = '-';
@@ -509,6 +510,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
         PetscTruth value = *(PetscTruth*)(((char*)bag) + nitem->offset);
         /* some Fortran compilers use -1 as boolean */
         if (((int) value) == -1) value = PETSC_TRUE;
+        /* the checks here with != PETSC_FALSE and PETSC_TRUE is a special case; here we truly demand that the value be 0 or 1 */
         if (value != PETSC_FALSE && value != PETSC_TRUE) SETERRQ3(PETSC_ERR_PLIB,"Boolean value for %s %s is corrupt; integer value %d",nitem->name,nitem->help,value);
         ierr = PetscViewerASCIIPrintf(view,"  %s = %s; %s\n",nitem->name,PetscTruths[value],nitem->help);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_ENUM) {
