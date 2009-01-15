@@ -29,6 +29,20 @@
       parameter (DA_XYPERIODIC = 3,DA_XYZPERIODIC = 4)
       parameter (DA_XZPERIODIC = 5,DA_YZPERIODIC = 6,DA_ZPERIODIC = 7)
       parameter (DA_XYZGHOSTED = 8)
+
+!
+! DAInterpolationType
+!
+      PetscEnum DA_Q0
+      PetscEnum DA_Q1
+      parameter (DA_Q0=0,DA_Q1=1)
+
+!
+!     DAElementType
+!
+      PetscEnum DA_ELEMENT_P1
+      PetscEnum DA_ELEMENT_Q1
+      parameter(DA_ELEMENT_P1=0,DA_ELEMENT_Q1=1)
 !
 ! DA Directions
 !

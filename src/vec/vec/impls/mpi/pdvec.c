@@ -939,7 +939,7 @@ PetscErrorCode VecGetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 
   PetscFunctionBegin;
   for (i=0; i<ni; i++) {
-    if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
+    if (xin->stash.ignorenegidx && ix[i] < 0) continue;
     tmp = ix[i] - start;
 #if defined(PETSC_USE_DEBUG)
     if (tmp < 0 || tmp >= xin->map->n) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Can only get local values, trying %D",ix[i]);
@@ -972,7 +972,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 
   if (addv == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
-      if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
+      if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (ix[i] < 0) {
         SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
@@ -989,7 +989,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     }
   } else {
     for (i=0; i<ni; i++) {
-      if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
+      if (xin->stash.ignorenegidx && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (ix[i] < 0) {
         SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
