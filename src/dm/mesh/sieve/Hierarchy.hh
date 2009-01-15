@@ -1015,7 +1015,7 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
     //ALE::Obj<PETSC_MESH_TYPE::label_sequence> new_candidate_options = m->getLabelStratum("candidates", 1);
     PETSC_MESH_TYPE::point_type new_candidate_point = *coarsen_candidates.begin();
     coarsen_candidates.pop_front();
-    while (coarsen_sieve->hasPoint(new_candidate_point) != PETSC_TRUE && coarsen_candidates.size() > 0) {
+    while (!coarsen_sieve->hasPoint(new_candidate_point) && coarsen_candidates.size() > 0) {
       new_candidate_point = *coarsen_candidates.begin();
       coarsen_candidates.pop_front();
     }

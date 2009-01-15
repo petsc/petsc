@@ -5720,7 +5720,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
 +   mat - the matrix
 .   shift -  0 or 1 indicating we want the indices starting at 0 or 1
 .   symmetric - PETSC_TRUE or PETSC_FALSE indicating the matrix data structure should be
-                symmetrized.
+                symmetrized
 -   blockcompressed - PETSC_TRUE or PETSC_FALSE  indicating if the nonzero structure of the
                  blockcompressed matrix is desired or not [inode, baij have blockcompressed 
                  nonzero structure which is different than the full nonzero structure]
