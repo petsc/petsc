@@ -1215,7 +1215,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 	break; /* go to step 5 */
       }
 
-      if (skip_steps_f_i == PETSC_FALSE) {
+      if (!skip_steps_f_i) {
 	/* (f) Set x_{l+1} = B_{l+1}, we just compute it again */
         ierr = SafeVecDestroy(&(asa_next_lev->x));CHKERRQ(ierr);
 	ierr = MatGetVecs(asa_lev->P, &(asa_next_lev->x), 0);CHKERRQ(ierr);

@@ -285,7 +285,7 @@ PetscErrorCode PCSetUp_BFBt(PC pc)
   if (ctx->G == PETSC_NULL) {SETERRQ(PETSC_ERR_SUP, "bfbt: G matrix not set");}
 
   /* Check for existence of objects and trash any which exist */
-  if (ctx->form_GtG == PETSC_TRUE && ctx->GtG != PETSC_NULL) {
+  if (ctx->form_GtG && ctx->GtG != PETSC_NULL) {
     ierr = MatDestroy(ctx->GtG);CHKERRQ(ierr);
     ctx->GtG = PETSC_NULL;
   }
@@ -335,7 +335,7 @@ PetscErrorCode PCDestroy_BFBt(PC pc)
 
   PetscFunctionBegin;
   if (ctx == PETSC_NULL) {PetscFunctionReturn(0);}
-  if (ctx->form_GtG == PETSC_TRUE && ctx->GtG != PETSC_NULL) {
+  if (ctx->form_GtG && ctx->GtG != PETSC_NULL) {
     ierr = MatDestroy(ctx->GtG);CHKERRQ(ierr);
   }
   if (ctx->ksp        != PETSC_NULL) {ierr = KSPDestroy(ctx->ksp);CHKERRQ(ierr);}

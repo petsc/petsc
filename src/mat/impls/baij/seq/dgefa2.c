@@ -170,7 +170,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_9(MatScalar *a,PetscReal shift)
         k4  = k3 + k;
 /*        find l = pivot index */
 
-	i__2 = 9 - k;
+	i__2 = 10 - k;
         aa = &a[k4];
         max = PetscAbsScalar(aa[0]);
         l = 1;

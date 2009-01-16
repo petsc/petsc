@@ -57,7 +57,7 @@ int main(int argc,char **argv)
     Check if this is really a block index set
   */
   ierr = ISBlock(set,&isblock);CHKERRQ(ierr);
-  if (isblock != PETSC_TRUE) SETERRQ(1,"Index set is not blocked!");
+  if (!isblock) SETERRQ(1,"Index set is not blocked!");
 
   /*
     Determine the block size of the index set

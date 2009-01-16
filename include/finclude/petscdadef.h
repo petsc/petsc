@@ -55,7 +55,5 @@
 #define Z_RANGE in(DA_LOCAL_INFO_ZS)+1:in(DA_LOCAL_INFO_ZS)+in(DA_LOCAL_INFO_ZM)
 
 #define DAInterpolationType PetscEnum
-#define DA_Q0 0
-#define DA_Q1 1
-
+#define DAElementType PetscEnum
 #endif

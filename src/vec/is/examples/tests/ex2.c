@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   if (start != 0) SETERRQ(1,"ISStrideGetInfo");
   if (stride != 2) SETERRQ(1,"ISStrideGetInfo");
   ierr = ISStride(is,&flg);CHKERRQ(ierr);
-  if (flg != PETSC_TRUE) SETERRQ(1,"ISStride");
+  if (!flg) SETERRQ(1,"ISStride");
   ierr = ISGetIndices(is,&ii);CHKERRQ(ierr);
   ierr = ISRestoreIndices(is,&ii);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);

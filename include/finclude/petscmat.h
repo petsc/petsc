@@ -23,6 +23,11 @@
       parameter(MAT_FACTOR_NONE=0,MAT_FACTOR_LU=1)
       parameter(MAT_FACTOR_CHOLESKY=2,MAT_FACTOR_ILU=3)
       parameter(MAT_FACTOR_ICC=4)
+
+! MatGetSubMatrixOption
+      PetscEnum MAT_DO_NOT_GET_VALUES
+      PetscEnum MAT_GET_VALUES
+      parameter(MAT_DO_NOT_GET_VALUES=0,MAT_GET_VALUES=1)
  
 !
 !  Matrix options; must match those in include/petscmat.h
@@ -46,6 +51,7 @@
       PetscEnum MAT_ERROR_LOWER_TRIANGULAR
       PetscEnum MAT_GETROW_UPPERTRIANGULAR
       PetscEnum MAT_UNUSED_NONZERO_LOCATION_ERR
+      PetscEnum NUM_MAT_OPTIONS
 
       parameter (MAT_ROW_ORIENTED=0)
       parameter (MAT_NEW_NONZERO_LOCATIONS=1)
@@ -65,7 +71,7 @@
       parameter (MAT_ERROR_LOWER_TRIANGULAR=16)
       parameter (MAT_GETROW_UPPERTRIANGULAR=17)
       parameter (MAT_UNUSED_NONZERO_LOCATION_ERR=18)
-
+      parameter (NUM_MAT_OPTIONS=19)
  
 !
 !  MatDuplicateOption
@@ -79,9 +85,10 @@
       PetscEnum SAME_NONZERO_PATTERN
       PetscEnum DIFFERENT_NONZERO_PATTERN
       PetscEnum SAME_PRECONDITIONER
+      PetscEnum SUBSET_NONZERO_PATTERN
 
       parameter (SAME_NONZERO_PATTERN = 0,DIFFERENT_NONZERO_PATTERN = 1)
-      parameter (SAME_PRECONDITIONER = 2)
+      parameter (SAME_PRECONDITIONER = 2,SUBSET_NONZERO_PATTERN=3)
 
 !
 !  Note: MAT_INFO_SIZE must equal # elements in MatInfo structure
@@ -431,6 +438,45 @@
 !
       PetscEnum MATRIX_BINARY_FORMAT_DENSE
       parameter (MATRIX_BINARY_FORMAT_DENSE=-1)
+!
+! MPChacoGlobalType
+      PetscEnum MP_CHACO_MULTILEVEL_KL
+      PetscEnum MP_CHACO_SPECTRAL
+      PetscEnum MP_CHACO_LINEAR
+      PetscEnum MP_CHACO_RANDOM
+      PetscEnum MP_CHACO_SCATTERED
+      parameter (MP_CHACO_MULTILEVEL_KL=0,MP_CHACO_SPECTRAL=1)
+      parameter (MP_CHACO_LINEAR=2,MP_CHACO_RANDOM=3)
+      parameter (MP_CHACO_SCATTERED=4)
+!
+! MPChacoLocalType
+      PetscEnum MP_CHACO_KERNIGHAN_LIN
+      PetscEnum MP_CHACO_NONE
+      parameter (MP_CHACO_KERNIGHAN_LIN=0, MP_CHACO_NONE=1)
+!
+! MPChacoEigenType
+      PetscEnum MP_CHACO_LANCZOS
+      PetscEnum MP_CHACO_RQI_SYMMLQ
+      parameter (MP_CHACO_LANCZOS=0, MP_CHACO_RQI_SYMMLQ=1)
+!
+! MPScotchGlobalType
+      PetscEnum MP_SCOTCH_GREEDY
+      PetscEnum MP_SCOTCH_GPS
+      PetscEnum MP_SCOTCH_GR_GPS
+      parameter (MP_SCOTCH_GREEDY=0,MP_SCOTCH_GPS=1,MP_SCOTCH_GR_GPS=2)
+
+! MPScotchLocalType
+      PetscEnum MP_SCOTCH_KERNIGHAN_LIN
+      PetscEnum MP_SCOTCH_NONE
+      parameter (MP_SCOTCH_KERNIGHAN_LIN=0, MP_SCOTCH_NONE=1)
+
+! PetscScalarPrecision
+      PetscEnum PETSC_SCALAR_DOUBLE
+      PetscEnum PETSC_SCALAR_SINGLE
+      PetscEnum PETSC_SCALAR_LONG_DOUBLE
+      parameter (PETSC_SCALAR_DOUBLE=0,PETSC_SCALAR_SINGLE=1)
+      parameter (PETSC_SCALAR_LONG_DOUBLE=2)
+
 !
 !  End of Fortran include file for the Mat package in PETSc
 !

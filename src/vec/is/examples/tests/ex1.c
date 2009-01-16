@@ -50,26 +50,26 @@ int main(int argc,char **argv)
   ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
   if (flg) SETERRQ(1,"ISPermutation");
   ierr = ISIdentity(is,&flg);CHKERRQ(ierr);
-  if (flg != PETSC_TRUE) SETERRQ(1,"ISIdentity");
+  if (!flg) SETERRQ(1,"ISIdentity");
   ierr = ISSetPermutation(is);CHKERRQ(ierr);
   ierr = ISSetIdentity(is);CHKERRQ(ierr);
   ierr = ISPermutation(is,&flg);CHKERRQ(ierr);
-  if (flg != PETSC_TRUE) SETERRQ(1,"ISPermutation");
+  if (!flg) SETERRQ(1,"ISPermutation");
   ierr = ISIdentity(is,&flg);CHKERRQ(ierr);
-  if (flg != PETSC_TRUE) SETERRQ(1,"ISIdentity");
+  if (!flg) SETERRQ(1,"ISIdentity");
 
   /*
      Check equality of index sets 
   */
   ierr = ISEqual(is,is,&flg);CHKERRQ(ierr);
-  if (flg != PETSC_TRUE) SETERRQ(1,"ISEqual");
+  if (!flg) SETERRQ(1,"ISEqual");
 
   /*
      Sorting 
   */
   ierr = ISSort(is);CHKERRQ(ierr);
   ierr = ISSorted(is,&flg);CHKERRQ(ierr);
-  if (flg != PETSC_TRUE) SETERRQ(1,"ISSort");
+  if (!flg) SETERRQ(1,"ISSort");
 
   /*
      Thinks it is a different type?
