@@ -1,0 +1,11 @@
+#if defined(PETSC_USE_FORTRAN_DATATYPES)
+      type Mesh
+        PetscFortranAddr:: v
+      end type Mesh
+      type SectionReal
+        PetscFortranAddr:: v
+      end type SectionReal
+      type SectionInt
+        PetscFortranAddr:: v
+      end type SectionInt
+#endif
