@@ -277,7 +277,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreate(MPI_Comm comm, SectionReal *s
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealDestroy"
-/*@C
+/*@
   SectionRealDestroy - Destroys a section.
 
   Collective on Section
@@ -1102,7 +1102,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntCreate(MPI_Comm comm, SectionInt *sec
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionIntDestroy"
-/*@C
+/*@
   SectionIntDestroy - Destroys a section.
 
   Collective on Section

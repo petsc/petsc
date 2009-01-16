@@ -7,12 +7,14 @@
 
 #include "finclude/petscdadef.h"
 
+#if !defined(PETSC_USE_FORTRAN_DATATYPES)
 #define Mesh PetscFortranAddr
+#define SectionReal PetscFortranAddr
+#define SectionInt  PetscFortranAddr
+#endif
+
 #define MeshType character*(80)
 
 #define MESHSIEVE 'sieve'
-
-#define SectionReal PetscFortranAddr
-#define SectionInt  PetscFortranAddr
 
 #endif

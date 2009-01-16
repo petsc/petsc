@@ -126,3 +126,13 @@
         use petsctsdef
 #include "finclude/petscts.h90"
         end module
+
+        module petscmeshdef
+#include "finclude/petscmesh.h"
+#include "finclude/ftn-custom/petscmeshdef.h90"
+        end module
+
+        module petscmesh
+        use petscmeshdef
+#include "finclude/petscmesh.h90"
+        end module

@@ -508,4 +508,5 @@ petscts : petscsnes petscts.f90.h
 petsc : petsc.f90.h
 petscvec : petscis petscvec.f90.h
 petscviewer : petsc petscviewer.f90.h
-modules : petscao petscda petscdraw petscis petscksp petsclog petscmat petscmg petscpc petscsnes petscsys petscts petsc petscvec petscviewer
+petscmesh : petsc petscmesh.f90.h
+modules : petscao petscda petscdraw petscis petscksp petsclog petscmat petscmg petscpc petscsnes petscsys petscts petsc petscvec petscviewer petscmesh

@@ -12,3 +12,4 @@
 #include "finclude/petscksp.h"
 #include "finclude/petscsnes.h"
 #include "finclude/petscda.h"
+#include "finclude/petscmesh.h"
