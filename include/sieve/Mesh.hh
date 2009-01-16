@@ -2015,13 +2015,13 @@ namespace ALE {
       // Process constraints
       f = 0;
       for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
-        const Obj<typename ALE::Discretization>&    disc        = this->getDiscretization(*f_iter);
-        const Obj<std::set<std::string> >           bcs         = disc->getBoundaryConditions();
-        std::string                                 excludeName = "exclude-"+*f_iter;
+        const Obj<ALE::Discretization>&   disc        = this->getDiscretization(*f_iter);
+        const Obj<std::set<std::string> > bcs         = disc->getBoundaryConditions();
+        std::string                       excludeName = "exclude-"+*f_iter;
 
         for(std::set<std::string>::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter) {
-          const Obj<typename ALE::BoundaryCondition>& bc       = disc->getBoundaryCondition(*bc_iter);
-          const Obj<label_sequence>&                  boundary = this->getLabelStratum(bc->getLabelName(), bc->getMarker());
+          const Obj<ALE::BoundaryCondition>& bc       = disc->getBoundaryCondition(*bc_iter);
+          const Obj<label_sequence>&         boundary = this->getLabelStratum(bc->getLabelName(), bc->getMarker());
 
           bcLabels.insert(bc->getLabelName());
           if (this->hasLabel(excludeName)) {
@@ -2254,8 +2254,8 @@ namespace ALE {
                 int                             b       = 0;
 
                 for(typename names_type::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter, ++b) {
-                  const Obj<typename ALE::BoundaryCondition>& bc    = disc->getBoundaryCondition(*bc_iter);
-                  const int                                   value = this->getValue(this->getLabel(bc->getLabelName()), oPoints[cl]);
+                  const Obj<ALE::BoundaryCondition>& bc    = disc->getBoundaryCondition(*bc_iter);
+                  const int                          value = this->getValue(this->getLabel(bc->getLabelName()), oPoints[cl]);
 
                   if (b > 0) v[f] -= fDim;
                   if (value == bc->getMarker()) {
