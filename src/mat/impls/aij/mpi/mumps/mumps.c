@@ -701,49 +701,6 @@ PetscErrorCode MatView_MUMPS(Mat A,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-
-/*MC
-  MATAIJMUMPS - MATAIJMUMPS = "aijmumps" - A matrix type providing direct solvers (LU) for distributed
-  and sequential matrices via the external package MUMPS.
-
-  If MUMPS is installed (see the manual for instructions
-  on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes MUMPS solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJMUMPS), then 
-  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() etc DO NOT
-  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
-
-  If created with a single process communicator, this matrix type inherits from MATSEQAIJ.
-  Otherwise, this matrix type inherits from MATMPIAIJ.  Hence for single process communicators,
-  MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported 
-  for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.  One can also call MatConvert() for an inplace
-  conversion to or from the MATSEQAIJ or MATMPIAIJ type (depending on the communicator size)
-  without data copy AFTER the matrix values are set.
-
-  Options Database Keys:
-+ -mat_type aijmumps - sets the matrix type to "aijmumps" during a call to MatSetFromOptions()
-. -mat_mumps_sym <0,1,2> - 0 the matrix is unsymmetric, 1 symmetric positive definite, 2 symmetric
-. -mat_mumps_icntl_4 <0,1,2,3,4> - print level
-. -mat_mumps_icntl_6 <0,...,7> - matrix prescaling options (see MUMPS User's Guide)
-. -mat_mumps_icntl_7 <0,...,7> - matrix orderings (see MUMPS User's Guide)
-. -mat_mumps_icntl_9 <1,2> - A or A^T x=b to be solved: 1 denotes A, 2 denotes A^T
-. -mat_mumps_icntl_10 <n> - maximum number of iterative refinements
-. -mat_mumps_icntl_11 <n> - error analysis, a positive value returns statistics during -ksp_view
-. -mat_mumps_icntl_12 <n> - efficiency control (see MUMPS User's Guide)
-. -mat_mumps_icntl_13 <n> - efficiency control (see MUMPS User's Guide)
-. -mat_mumps_icntl_14 <n> - efficiency control (see MUMPS User's Guide)
-. -mat_mumps_icntl_15 <n> - efficiency control (see MUMPS User's Guide)
-. -mat_mumps_cntl_1 <delta> - relative pivoting threshold
-. -mat_mumps_cntl_2 <tol> - stopping criterion for refinement
-- -mat_mumps_cntl_3 <adelta> - absolute pivoting threshold
-
-  Level: beginner
-
-.seealso: MATSBAIJMUMPS
-M*/
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo_MUMPS"
 PetscErrorCode MatGetInfo_MUMPS(Mat A,MatInfoType flag,MatInfo *info)

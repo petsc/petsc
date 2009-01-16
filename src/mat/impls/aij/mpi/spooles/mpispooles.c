@@ -627,43 +627,4 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,const MatFactorInfo *info
   PetscFunctionReturn(0);
 }
 
-/*MC
-  MATMPIAIJSPOOLES - MATMPIAIJSPOOLES = "mpiaijspooles" - A matrix type providing direct solvers (LU) for distributed matrices 
-  via the external package Spooles.
-
-  If MPIAIJSPOOLES is installed (see the manual for
-  instructions on how to declare the existence of external packages),
-  a matrix type can be constructed which invokes SPOOLES solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATMPIAIJSPOOLES), then 
-  optionally call MatMPIAIJSetPreallocation() etc DO NOT
-  call MatCreateMPIAIJ() directly or the preallocation information will be LOST!
-
-  This matrix inherits from MATMPIAIJ.  As a result, MatMPIAIJSetPreallocation() is 
-  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
-  the MATMPIAIJ type without data copy AFTER the matrix values have been set.
-
-  Consult Spooles documentation for more information about the options database keys below.
-
-  Options Database Keys:
-+ -mat_type mpiaijspooles - sets the matrix type to "mpiaijspooles" during a call to MatSetFromOptions()
-. -mat_spooles_tau <tau> - upper bound on the magnitude of the largest element in L or U
-. -mat_spooles_seed <seed> - random number seed used for ordering
-. -mat_spooles_msglvl <msglvl> - message output level
-. -mat_spooles_ordering <BestOfNDandMS,MMD,MS,ND> - ordering used
-. -mat_spooles_maxdomainsize <n> - maximum subgraph size used by Spooles orderings
-. -mat_spooles_maxzeros <n> - maximum number of zeros inside a supernode
-. -mat_spooles_maxsize <n> - maximum size of a supernode
-. -mat_spooles_FrontMtxInfo <true,fase> - print Spooles information about the computed factorization
-. -mat_spooles_symmetryflag <0,1,2> - 0: SPOOLES_SYMMETRIC, 1: SPOOLES_HERMITIAN, 2: SPOOLES_NONSYMMETRIC
-. -mat_spooles_patchAndGoFlag <0,1,2> - 0: no patch, 1: use PatchAndGo strategy 1, 2: use PatchAndGo strategy 2
-. -mat_spooles_toosmall <dt> - drop tolerance for PatchAndGo strategy 1
-. -mat_spooles_storeids <bool integer> - if nonzero, stores row and col numbers where patches were applied in an IV object
-. -mat_spooles_fudge <delta> - fudge factor for rescaling diagonals with PatchAndGo strategy 2
-- -mat_spooles_storevalues <bool integer> - if nonzero and PatchAndGo strategy 2 is used, store change in diagonal value in a DV object
-
-   Level: beginner
-
-.seealso: PCLU
-M*/
-
 
