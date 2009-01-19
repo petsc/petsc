@@ -19,13 +19,13 @@ namespace PETSc {
     Exception& operator<<(const Input& in) {
       this->_txt << in;
       return *this;
-    };
+    }
     /* Printing */
     template<typename Stream>
     friend Stream& operator<<(Stream& os, const Exception& e) {
       os << e.message() << std::endl;
       return os;
-    };
+    }
   };
 
   template<int dim>
@@ -41,7 +41,7 @@ namespace PETSc {
     template<int d>
     static bool lessThan(const Point& a, const Point &b) {
       return a.x[d] < b.x[d];
-    };
+    }
     double operator[](const int i) const {return this->x[i];};
     friend std::ostream& operator<<(std::ostream& stream, const Point& p) {
       for(int d = 0; d < dim; ++d) {
