@@ -1244,13 +1244,15 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& row
 
 #undef __FUNCT__
 #define __FUNCT__ "assembleMatrix"
-/*@C
+/*@
   assembleMatrix - Insert values into a matrix
 
   Collective on A
 
   Input Parameters:
 + A - the matrix
+. mesh - Mesh needed for orderings
+. section - A Section which describes the layout
 . e - The element number
 . v - The values
 - mode - either ADD_VALUES or INSERT_VALUES, where
@@ -1261,24 +1263,20 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& row
 
 .seealso: MatSetOption()
 @*/
-PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
+PetscErrorCode assembleMatrix(Mat A, Mesh mesh, SectionReal section, PetscInt e, PetscScalar v[], InsertMode mode)
 {
-#ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
-#else
-  Mesh           mesh;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
   try {
     Obj<PETSC_MESH_TYPE> m;
+    Obj<PETSC_MESH_TYPE::real_section_type> s;
 
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-    const ALE::Obj<PETSC_MESH_TYPE::numbering_type>&    cNumbering  = m->getFactory()->getLocalNumbering(m, m->depth());
-    const ALE::Obj<PETSC_MESH_TYPE::real_section_type>& s           = m->getRealSection("default");
-    const ALE::Obj<PETSC_MESH_TYPE::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
+    ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+    const ALE::Obj<PETSC_MESH_TYPE::numbering_type>& cNumbering  = m->getFactory()->getLocalNumbering(m, m->depth());
+    const ALE::Obj<PETSC_MESH_TYPE::order_type>&     globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
 
     if (m->debug()) {
       std::cout << "Assembling matrix for element number " << e << " --> point " << cNumbering->getPoint(e) << std::endl;
@@ -1288,7 +1286,6 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
     std::cout << e.msg() << std::endl;
   }
   ierr = PetscLogEventEnd(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
