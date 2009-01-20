@@ -40,7 +40,6 @@ extern void PetscRmPointer(void*);
 #define restrictvector_         RESTRICTVECTOR
 #define assemblevectorcomplete_ ASSEMBLEVECTORCOMPLETE
 #define assemblevector_         ASSEMBLEVECTOR
-#define assemblematrix_         ASSEMBLEMATRIX
 #define writepcicerestart_      WRITEPCICERESTART
 #define meshexodusgetinfo_      MESHEXODUSGETINFO
 #define meshgetlabelsize_       MESHGETLABELSIZE
@@ -62,7 +61,6 @@ extern void PetscRmPointer(void*);
 #define restrictvector_         restrictvector
 #define assemblevectorcomplete_ assemblevectorcomplete
 #define assemblevector_         assemblevector
-#define assemblematrix_         assemblematrix
 #define writepcicerestart_      writepcicerestart
 #define meshexodusgetinfo_      meshexodusgetinfo
 #define meshgetlabelsize_       meshgetlabelsize
@@ -166,10 +164,6 @@ void PETSC_STDCALL  assemblevectorcomplete_(Vec g,Vec l,InsertMode *mode, int *_
 void PETSC_STDCALL  assemblevector_(Vec b,PetscInt *e,PetscScalar v[],InsertMode *mode, int *__ierr ){
 *__ierr = assembleVector(
 	(Vec)PetscToPointer((b) ),*e,v,*mode);
-}
-void PETSC_STDCALL  assemblematrix_(Mat A,PetscInt *e,PetscScalar v[],InsertMode *mode, int *__ierr ){
-*__ierr = assembleMatrix(
-	(Mat)PetscToPointer((A) ),*e,v,*mode);
 }
 void PETSC_STDCALL  writepcicerestart_(Mesh mesh, PetscViewer viewer, int *ierr){
   *ierr = WritePCICERestart((Mesh) PetscToPointer(mesh), (PetscViewer) PetscToPointer(viewer));
