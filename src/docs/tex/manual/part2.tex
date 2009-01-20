@@ -408,7 +408,7 @@ An alternative routine to create the application ordering, AO, is
   AOCreateBasicIS(IS apordering,IS petscordering,AO *ao);
 \end{tabbing}
 \findex{AOCreateBasicIS()}
-where index sets (see \ref{sec_indexset} are used instead of integer arrays. 
+where index sets (see \ref{sec_indexset}) are used instead of integer arrays. 
 
 The 
 mapping routines 
@@ -449,7 +449,7 @@ required for local computation. \sindex{ghost points} \sindex{global representat
 PETSc provides routines to help map indices from a local numbering scheme to 
 the PETSc global numbering scheme. This is done via the following routines
 \begin{tabbing}
-  ISLocalToGlobalMappingCreate(int N,int* globalnum,ISLocalToGlobalMapping* ctx);\\
+  ISLocalToGlobalMappingCreate(MPI_Comm comm,int N,int* globalnum,ISLocalToGlobalMapping* ctx);\\
   ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);\\
   ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);\\
   ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);
@@ -793,8 +793,8 @@ added using the local numbering. This is done by first calling
 \end{tabbing}
 followed by 
 \begin{tabbing}
-  VecSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping map);\\
-  MatSetLocalToGlobalMapping(Vec x,ISLocalToGlobalMapping map);
+  VecSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping map);\\
+  MatSetLocalToGlobalMapping(Mat A,ISLocalToGlobalMapping map);
 \end{tabbing}
 Now entries may be added to the vector and matrix using the local numbering
 and VecSetValuesLocal() and MatSetValuesLocal().
