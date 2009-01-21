@@ -57,14 +57,14 @@ void PETSC_STDCALL kspgetfischerguess_(KSP *ksp,KSPFischerGuess *guess, PetscErr
   *ierr = KSPGetFischerGuess(*ksp,guess);
 }
 
-void PETSC_STDCALL kspsetusefischerguess_(KSP *ksp,PetscInt model,PetscInt size, PetscErrorCode *ierr)
+void PETSC_STDCALL kspsetusefischerguess_(KSP *ksp,PetscInt *model,PetscInt *size, PetscErrorCode *ierr)
 {
-  *ierr = KSPSetUseFischerGuess(*ksp,model,size);
+  *ierr = KSPSetUseFischerGuess(*ksp,*model,*size);
 }
 
-void PETSC_STDCALL kspfischerguesscreate_(KSP *ksp,PetscInt model,PetscInt size, KSPFischerGuess *guess,PetscErrorCode *ierr)
+void PETSC_STDCALL kspfischerguesscreate_(KSP *ksp,PetscInt *model,PetscInt *size, KSPFischerGuess *guess,PetscErrorCode *ierr)
 {
-  *ierr = KSPFischerGuessCreate(*ksp,model,size,guess);
+  *ierr = KSPFischerGuessCreate(*ksp,*model,*size,guess);
 }
 
 void PETSC_STDCALL kspfischerguessdestroy_(KSPFischerGuess *guess,PetscErrorCode *ierr)

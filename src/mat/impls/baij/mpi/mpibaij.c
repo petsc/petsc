@@ -2403,8 +2403,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,P
 -   -mat_use_hash_table <fact>
 
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
-   MatXXXXSetPreallocation() paradgm instead of this routine directly. This is definitely
-   true if you plan to use the external direct solvers such as SuperLU, MUMPS or Spooles.
+   MatXXXXSetPreallocation() paradgm instead of this routine directly. 
    [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
 
    Notes:

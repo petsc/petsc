@@ -33,7 +33,6 @@ int main(int argc,char **args)
   ierr = MatCreate(PETSC_COMM_SELF,&sA);CHKERRQ(ierr);
   ierr = MatSetSizes(sA,n,n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(sA,MATSEQSBAIJ);CHKERRQ(ierr);
-  /* -mat_type <seqsbaij_derived type>, e.g., seqsbaijspooles, sbaijmumps */
   ierr = MatSetFromOptions(sA);CHKERRQ(ierr); 
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)sA,MATSEQSBAIJ,&doIcc);CHKERRQ(ierr);
