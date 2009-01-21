@@ -3146,7 +3146,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat fact,Mat A,IS isrow,IS iscol,con
 
       /* copy prow into linked list */
       nzf        = nz  = ai[r[prow]+1] - ai[r[prow]];
-      if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
+      if (!nz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[prow],prow);
       xi         = aj + ai[r[prow]];
       fill[n]    = n;
       fill[prow] = -1; /* marker for diagonal entry */
