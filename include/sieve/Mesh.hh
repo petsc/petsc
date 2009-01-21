@@ -4286,6 +4286,8 @@ namespace ALE {
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
     };
+    // This method takes a tetrahedral mesh and performs a 1 --> 8 refinement of each cell
+    //   It does this by adding a new vertex at the midpoint of each edge
     template<typename MeshType, typename MapType>
     static void refineTetrahedra(MeshType& mesh, MeshType& newMesh, MapType& edge2vertex) {
       typedef typename MeshType::sieve_type sieve_type;
@@ -4305,6 +4307,7 @@ namespace ALE {
       const Obj<sieve_type>&                         newSieve = newMesh.getSieve();
       ALE::ISieveVisitor::PointRetriever<sieve_type> cV(std::max(1, sieve->getMaxConeSize()));
 
+      // First compute map from edges to new vertices
       for(int c = 0; c < numCells; ++c) {
         sieve->cone(c, cV);
         assert(cV.getSize() == 4);
@@ -4325,7 +4328,9 @@ namespace ALE {
         }
         cV.clear();
       }
+      // Reallocate the sieve chart
       newSieve->setChart(typename sieve_type::chart_type(0, curNewVertex));
+      // Create new sieve with correct sizes for refined cells
       for(int c = 0; c < numCells; ++c) {
         sieve->cone(c, cV);
         assert(cV.getSize() == 4);
@@ -4370,6 +4375,7 @@ namespace ALE {
       const int   numNewVertices = curNewVertex - numNewCells;
       point_type *vertex2edge    = new point_type[numNewVertices*2];
 
+      // Create refined cells in new sieve
       for(int c = 0; c < numCells; ++c) {
         sieve->cone(c, cV);
         assert(cV.getSize() == 4);
