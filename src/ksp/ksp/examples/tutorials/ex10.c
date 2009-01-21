@@ -12,13 +12,12 @@ users manual for a discussion of preloading.  Input parameters include\n\
 /*
   This code can be used to test PETSc interface to other packages.\n\
   Examples of command line options:       \n\
-   ex10 -f0 <datafile> -ksp_type preonly  \n\
+   ./ex10 -f0 <datafile> -ksp_type preonly  \n\
         -help -ksp_view                  \n\
         -num_numfac <num_numfac> -num_rhs <num_rhs> \n\
-        -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package  spooles or superlu or superlu_dist or mumps \n\
-        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package spooles or dscpack or mumps \n\
-        -f0 <A> -fB <B> -pc_factor_mat_solver_package mumps -ksp_type preonly -pc_type cholesky -test_inertia -mat_sigma <sigma> \n\
-   mpiexec -n <np> ex10 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
+        -ksp_type preonly -pc_type lu -pc_factor_mat_solver_package spooles or superlu or superlu_dist or mumps \n\
+        -ksp_type preonly -pc_type cholesky -pc_factor_mat_solver_package spooles or dscpack or mumps \n\   
+   mpiexec -n <np> ./ex10 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
  \n\n";
 */
 /*T
@@ -51,9 +50,8 @@ int main(int argc,char **args)
   PetscInt       its,num_numfac,m,n,M;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
-  PetscTruth     preload=PETSC_TRUE,diagonalscale,isSymmetric,cknorm=PETSC_FALSE,Test_MatDuplicate=PETSC_FALSE;
+  PetscTruth     preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE;
   PetscMPIInt    rank;
-  PetscScalar    sigma;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -130,31 +128,6 @@ int main(int argc,char **args)
       ierr = VecSet(b,one);CHKERRQ(ierr);
     } else CHKERRQ(ierr); 
     ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
-
-    /* Test MatDuplicate() */
-    if (Test_MatDuplicate){
-      ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-      ierr = MatEqual(A,B,&flg);CHKERRQ(ierr);
-      if (!flg){
-        PetscPrintf(PETSC_COMM_WORLD,"  A != B \n");CHKERRQ(ierr);
-      } 
-      ierr = MatDestroy(B);CHKERRQ(ierr); 
-    }
-
-    /* Add a shift to A */
-    ierr = PetscOptionsGetScalar(PETSC_NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[2],PETSC_MAX_PATH_LEN-1,&flgB);CHKERRQ(ierr);
-      if (flgB){
-        /* load B to get A = A + sigma*B */
-        ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[2],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-        ierr  = MatLoad(fd,MATAIJ,&B);CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
-        ierr = MatAXPY(A,sigma,B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); /* A <- sigma*B + A */  
-      } else {
-        ierr = MatShift(A,sigma);CHKERRQ(ierr); 
-      }
-    }
 
     /* Make A singular for testing zero-pivot of ilu factorization        */
     /* Example: ./ex10 -f0 <datafile> -test_zeropivot -set_row_zero -pc_factor_shift_nonzero */
@@ -289,7 +262,6 @@ int main(int argc,char **args)
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
     while ( num_numfac-- ){
      
-
       ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
@@ -303,47 +275,6 @@ int main(int argc,char **args)
       ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
       ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
       tsetup = tsetup2 - tsetup1;
-
-      /*
-      Test MatGetInertia()
-      Usage:
-      ex10 -f0 <mat_binaryfile> -ksp_type preonly -pc_type cholesky -mat_type seqsbaij -test_inertia -mat_sigma <sigma>
-      */
-      ierr = PetscOptionsHasName(PETSC_NULL,"-test_inertia",&flg);CHKERRQ(ierr);
-      if (flg){
-        PC        pc;
-        PetscInt  nneg, nzero, npos;
-        Mat       F;
-      
-        ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-        ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
-        ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);
-      }
-
-      /*
-       Tests "diagonal-scaling of preconditioned residual norm" as used 
-       by many ODE integrator codes including SUNDIALS. Note this is different
-       than diagonally scaling the matrix before computing the preconditioner
-      */
-      ierr = PetscOptionsHasName(PETSC_NULL,"-diagonal_scale",&diagonalscale);CHKERRQ(ierr);
-      if (diagonalscale) {
-        PC       pc;
-        PetscInt j,start,end,n;
-        Vec      scale;
-      
-        ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-        ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-        ierr = VecDuplicate(x,&scale);CHKERRQ(ierr);
-        ierr = VecGetOwnershipRange(scale,&start,&end);CHKERRQ(ierr);
-        for (j=start; j<end; j++) {
-          ierr = VecSetValue(scale,j,((PetscReal)(j+1))/((PetscReal)n),INSERT_VALUES);CHKERRQ(ierr);
-        }
-        ierr = VecAssemblyBegin(scale);CHKERRQ(ierr);
-        ierr = VecAssemblyEnd(scale);CHKERRQ(ierr);
-        ierr = PCDiagonalScaleSet(pc,scale);CHKERRQ(ierr);
-        ierr = VecDestroy(scale);CHKERRQ(ierr);
-      }
 
       /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Solve system
