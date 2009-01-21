@@ -1,11 +1,7 @@
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
-This version first preloads and solves a small system, then loads \n\
-another (larger) system and solves it as well.  This example illustrates\n\
-preloading of instructions with the smaller system so that more accurate\n\
-performance monitoring can be done with the larger one (that actually\n\
-is the system of interest).  See the 'Performance Hints' chapter of the\n\
-users manual for a discussion of preloading.  Input parameters include\n\
+It is copied and intended to move dirty codes from ksp/examples/tutorials/ex10.c and simplify ex10.c.
+  Input parameters include\n\
   -f0 <input_file> : first file to load (small system)\n\
   -f1 <input_file> : second file to load (larger system)\n\n\
   -trans  : solve transpose system instead\n\n";
@@ -22,18 +18,10 @@ users manual for a discussion of preloading.  Input parameters include\n\
  \n\n";
 */
 /*T
-   Concepts: KSP^solving a linear system
+   Concepts: KSP solving a linear system
    Processors: n
 T*/
 
-/* 
-  Include "petscksp.h" so that we can use KSP solvers.  Note that this file
-  automatically includes:
-     petsc.h       - base PETSc routines   petscvec.h - vectors
-     petscsys.h    - system routines       petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-*/
 #include "petscksp.h"
 
 #undef __FUNCT__
@@ -48,7 +36,7 @@ int main(int argc,char **args)
   PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscTruth     outputSoln=PETSC_FALSE;
   PetscErrorCode ierr;
-  PetscInt       its,num_numfac,m,n,M;
+  PetscInt       its,num_numfac,n,M;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscTruth     preload=PETSC_TRUE,diagonalscale,isSymmetric,cknorm=PETSC_FALSE,Test_MatDuplicate=PETSC_FALSE;
@@ -228,7 +216,6 @@ int main(int argc,char **args)
     /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                       Setup solve for system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
 
     if (partition) {
       MatPartitioning mpart;
