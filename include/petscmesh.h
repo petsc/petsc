@@ -114,6 +114,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRefine(Mesh, double, PetscTruth, Mes
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshUnify(Mesh, Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMaximumDegree(Mesh, PetscInt *);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetMaxDof(Mesh, PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT restrictVector(Vec, Vec, InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVectorComplete(Vec, Vec, InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVector(Vec, PetscInt, PetscScalar [], InsertMode);

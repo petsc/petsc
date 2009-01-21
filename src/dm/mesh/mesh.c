@@ -1243,6 +1243,40 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<PETSC_MESH_TYPE>& row
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MeshSetMaxDof"
+/*@
+  MeshSetMaxDof - Sets the maximum number of degrees of freedom on any sieve point
+
+  Collective on A
+
+  Input Parameters:
++ A - the matrix
+. mesh - Mesh needed for orderings
+. section - A Section which describes the layout
+. e - The element number
+. v - The values
+- mode - either ADD_VALUES or INSERT_VALUES, where
+   ADD_VALUES adds values to any existing entries, and
+   INSERT_VALUES replaces existing entries with new values
+
+   Notes: This is used by routines like updateOperator() to bound buffer sizes
+
+   Level: developer
+
+.seealso: updateOperator(), assembleMatrix()
+@*/
+PetscErrorCode MeshSetMaxDof(Mesh mesh, PetscInt maxDof)
+{
+  Obj<PETSC_MESH_TYPE> m;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  m->setMaxDof(maxDof);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "assembleMatrix"
 /*@
   assembleMatrix - Insert values into a matrix
