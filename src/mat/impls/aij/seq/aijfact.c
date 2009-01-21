@@ -348,7 +348,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
     /* copy previous fill into linked list */
     nzi = 0;
     nnz = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
+    if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     ajtmp = aj + ai[r[i]]; 
     ierr = PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
     nzi += nlnk;
@@ -1284,7 +1284,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
     nzi = 0;
     /* copy current row into linked list */
     nnz  = ai[r[i]+1] - ai[r[i]];
-    if (!nnz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
+    if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     cols = aj + ai[r[i]];
     lnk[i] = -1; /* marker to indicate if diagonal exists */
     ierr = PetscIncompleteLLInit(nnz,cols,n,ic,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
@@ -1620,7 +1620,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const MatFacto
       /* initialize lnk by the column indices of row rip[k] of A */
       nzk   = 0;
       ncols = ai[rip[k]+1] - ai[rip[k]]; 
-      if (!ncols) SETERRQ(PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix");
+      if (!ncols) SETERRQ2(PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",rip[k],k);
       ncols_upper = 0;
       for (j=0; j<ncols; j++){
         i = *(aj + ai[rip[k]] + j); /* unpermuted column index */
@@ -1798,7 +1798,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS perm,const Mat
     /* initialize lnk by the column indices of row rip[k] of A */
     nzk   = 0;
     ncols = ai[rip[k]+1] - ai[rip[k]]; 
-    if (!ncols) SETERRQ(PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix");
+    if (!ncols) SETERRQ2(PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",rip[k],k);
     ncols_upper = 0;
     for (j=0; j<ncols; j++){
       i = riip[*(aj + ai[rip[k]] + j)];  

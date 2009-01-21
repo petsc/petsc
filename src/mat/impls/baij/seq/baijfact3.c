@@ -148,7 +148,7 @@ PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat B,Mat A,IS isrow,IS iscol,const M
   for (i=0; i<n; i++) {
     /* first copy previous fill into linked list */
     nnz     = nz    = ai[r[i]+1] - ai[r[i]];
-    if (!nz) SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix");
+    if (!nz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
     ajtmp   = aj + ai[r[i]];
     fill[n] = n;
     while (nz--) {

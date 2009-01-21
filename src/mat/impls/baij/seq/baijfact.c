@@ -240,7 +240,7 @@ PetscErrorCode MatLUFactorNumeric_SeqBAIJ_1(Mat C,Mat A,const MatFactorInfo *inf
     diag = diag_offset[i] - bi[i];
     /* check pivot entry for current row */
     if (pv[diag] == 0.0) {
-      SETERRQ(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot");
+      SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot: row in original ordering %D in permuted ordering %D",r[i],i);
     }
     pv[diag] = 1.0/pv[diag];
   }
