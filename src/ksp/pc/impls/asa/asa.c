@@ -34,7 +34,7 @@
      - numerous other stuff
 
      Example runs in parallel would be with parameters like
-     mpiexec ./program -pc_asa_coarse_mat_type aijmumps -pc_asa_direct_solver 200
+     mpiexec ./program -pc_asa_coarse_pc_factor_mat_solver_package mumps -pc_asa_direct_solver 200
      -pc_asa_max_cand_vecs 4 -pc_asa_mu_initial 50 -pc_asa_richardson_scale 1.0
      -pc_asa_rq_improve 0.9 -asa_smoother_pc_type asm -asa_smoother_sub_pc_type sor
 

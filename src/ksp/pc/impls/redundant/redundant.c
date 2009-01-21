@@ -70,29 +70,31 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   Vec            vec;
   PetscMPIInt    subsize,subrank;
   const char     *prefix;
-  KSP            subksp;
 
   PetscFunctionBegin;
   ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
   ierr = VecGetSize(vec,&m);CHKERRQ(ierr);
 
   if (!pc->setupcalled) {
-    ierr = PetscSubcommCreate(comm,red->nsubcomm,&red->psubcomm);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
+    if (!red->psubcomm) {
+      ierr = PetscSubcommCreate(comm,red->nsubcomm,&red->psubcomm);CHKERRQ(ierr);
+      ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
-    /* create a new PC that processors in each subcomm have copy of */
-    subcomm = red->psubcomm->comm;
-    ierr = KSPCreate(subcomm,&subksp);CHKERRQ(ierr);
-    ierr = PetscObjectIncrementTabLevel((PetscObject)subksp,(PetscObject)pc,1);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(pc,subksp);CHKERRQ(ierr);
-    ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPGetPC(subksp,&red->pc);CHKERRQ(ierr);
-    ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
+      /* create a new PC that processors in each subcomm have copy of */
+      subcomm = red->psubcomm->comm;
+      ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
+      ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+      ierr = PetscLogObjectParent(pc,red->ksp);CHKERRQ(ierr);
+      ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
+      ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
+      ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
 
-    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(subksp,prefix);CHKERRQ(ierr); 
-    ierr = KSPAppendOptionsPrefix(subksp,"redundant_");CHKERRQ(ierr); 
-    red->ksp = subksp;
+      ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr); 
+      ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr); 
+    } else {
+       subcomm = red->psubcomm->comm;
+    }
 
     /* create working vectors xsub/ysub and xdup/ydup */
     ierr = VecGetLocalSize(vec,&mlocal);CHKERRQ(ierr);  
@@ -351,10 +353,32 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCRedundantGetPC_Redundant"
 PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetPC_Redundant(PC pc,PC *innerpc)
 {
-  PC_Redundant *red = (PC_Redundant*)pc->data;
+  PetscErrorCode ierr;
+  PC_Redundant   *red = (PC_Redundant*)pc->data;
+  MPI_Comm       comm,subcomm;
+  const char     *prefix;
 
   PetscFunctionBegin;
-  *innerpc = red->pc;
+  if (!red->psubcomm) {
+    ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
+    ierr = PetscSubcommCreate(comm,red->nsubcomm,&red->psubcomm);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
+
+    /* create a new PC that processors in each subcomm have copy of */
+    subcomm = red->psubcomm->comm;
+    ierr = KSPCreate(subcomm,&red->ksp);CHKERRQ(ierr);
+    ierr = PetscObjectIncrementTabLevel((PetscObject)red->ksp,(PetscObject)pc,1);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(pc,red->ksp);CHKERRQ(ierr);
+    ierr = KSPSetType(red->ksp,KSPPREONLY);CHKERRQ(ierr);
+    ierr = KSPGetPC(red->ksp,&red->pc);CHKERRQ(ierr);
+    ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
+
+    ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(red->ksp,prefix);CHKERRQ(ierr); 
+    ierr = KSPAppendOptionsPrefix(red->ksp,"redundant_");CHKERRQ(ierr); 
+  }
+
+  ierr = KSPGetPC(red->ksp,innerpc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -2819,8 +2819,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues(Mat mat)
 .  A - the matrix 
 
    It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
-   MatXXXXSetPreallocation() paradgm instead of this routine directly. This is definitely
-   true if you plan to use the external direct solvers such as SuperLU, MUMPS or Spooles.
+   MatXXXXSetPreallocation() paradgm instead of this routine directly.
    [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
 
    Notes:

@@ -62,6 +62,7 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 {
   PetscErrorCode   ierr;
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr; 
+  PetscTruth       flg;
     
   PetscFunctionBegin;
   if (lu->CleanUpSuperLU_Dist) {
@@ -88,7 +89,12 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
 
-  ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)A,MATSEQAIJ,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatDestroy_SeqAIJ(A);CHKERRQ(ierr);
+  } else {
+    ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -215,6 +221,12 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
       ierr = PetscFree(tseq);CHKERRQ(ierr);
       aa =  (Mat_SeqAIJ*)A_seq->data;
     } else {
+      PetscTruth flg;
+      ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
+      if (flg) {
+        Mat_MPIAIJ *At = (Mat_MPIAIJ*)A->data;
+        A = At->A;
+      }
       aa =  (Mat_SeqAIJ*)A->data;
     }
 
@@ -431,6 +443,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
 
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
   B->ops->view             = MatView_SuperLU_DIST;
+  B->ops->destroy          = MatDestroy_SuperLU_DIST;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_aij_superlu_dist",MatFactorGetSolverPackage_aij_superlu_dist);CHKERRQ(ierr);
   B->factor                = MAT_FACTOR_LU;  
 
