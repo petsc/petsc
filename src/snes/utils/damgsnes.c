@@ -653,15 +653,24 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       PC          pc;
       PetscMPIInt size;
       MPI_Comm    comm;
+      PetscTruth  flg1,flg2,flg3;
+      KSP         cksp;
 
       ierr = KSPGetPC(dmmg[i]->ksp,&pc);CHKERRQ(ierr);
-      ierr = KSPSetType(dmmg[i]->ksp,KSPPREONLY);CHKERRQ(ierr);
-      ierr = PetscObjectGetComm((PetscObject) pc,&comm);CHKERRQ(ierr);
-      ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-      if (size > 1) {
-        ierr = PCSetType(pc,PCREDUNDANT);CHKERRQ(ierr);
-      } else {
-        ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+      ierr = PCMGGetCoarseSolve(pc,&cksp);CHKERRQ(ierr);  
+      ierr = KSPGetPC(cksp,&pc);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)pc,PCILU,&flg1);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)pc,PCSOR,&flg2);CHKERRQ(ierr);
+      ierr = PetscTypeCompare((PetscObject)pc,PETSC_NULL,&flg3);CHKERRQ(ierr);
+      if (flg1 || flg2 || flg3) {
+        ierr = KSPSetType(dmmg[i]->ksp,KSPPREONLY);CHKERRQ(ierr);
+        ierr = PetscObjectGetComm((PetscObject) pc,&comm);CHKERRQ(ierr);
+        ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+        if (size > 1) {
+          ierr = PCSetType(pc,PCREDUNDANT);CHKERRQ(ierr);
+        } else {
+          ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
+        }
       }
     }
 
