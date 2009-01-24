@@ -1,6 +1,6 @@
 
 static char help[] = "Reads a PETSc matrix and vector from a file and solves a linear system.\n\
-It is copied and intended to move dirty codes from ksp/examples/tutorials/ex10.c and simplify ex10.c.
+It is copied and intended to move dirty codes from ksp/examples/tutorials/ex10.c and simplify ex10.c.\n\
   Input parameters include\n\
   -f0 <input_file> : first file to load (small system)\n\
   -f1 <input_file> : second file to load (larger system)\n\n\
@@ -248,11 +248,6 @@ int main(int argc,char **args)
       ierr = MatDestroy(A);CHKERRQ(ierr);
       A    = BB;
     }
- 
-    /*
-       Conclude profiling last stage; begin profiling next stage.
-    */
-    PreLoadStage("KSPSetUp");
 
     /*
        We also explicitly time this stage via PetscGetTime()
@@ -327,12 +322,6 @@ int main(int argc,char **args)
       /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
                            Solve system
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-      /*
-       Begin profiling next stage
-      */
-      PreLoadStage("KSPSolve");
-
       /*
        Solve linear system; we also explicitly time this stage.
       */
@@ -364,11 +353,6 @@ int main(int argc,char **args)
       } /* while ( num_rhs-- ) */
       ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
       tsolve = tsolve2 - tsolve1;
-
-      /* 
-       Conclude profiling this stage
-      */
-      PreLoadStage("Cleanup");
 
       /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
             Check error, print output, free data structures.
