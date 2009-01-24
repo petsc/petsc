@@ -206,7 +206,7 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
       const mesh_type::recv_overlap_type::target_type&               localPoint = *p_iter;
 
       for(mesh_type::recv_overlap_type::traits::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
-        const int                                   rank         = *r_iter;
+        const int                                        rank         = *r_iter;
         const mesh_type::recv_overlap_type::target_type& remotePoint  = r_iter.color();
         const mesh_type::recv_overlap_type::target_type  remoteOffset = numNewCells[rank] - numCells[rank];
 
@@ -227,16 +227,16 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
       const point_type left  = e_iter->first.first;
       const point_type right = e_iter->first.second;
 
-      if (newSendOverlap->capContains(left) && newSendOverlap->capContains(right)) {
-        const Obj<mesh_type::send_overlap_type::traits::supportSequence>& leftRanksSeq = newSendOverlap->support(left);
+      if (sendOverlap->capContains(left) && sendOverlap->capContains(right)) {
+        const Obj<mesh_type::send_overlap_type::traits::supportSequence>& leftRanksSeq = sendOverlap->support(left);
         std::list<int> leftRanks(leftRanksSeq->begin(), leftRanksSeq->end());
-        const Obj<mesh_type::send_overlap_type::traits::supportSequence>& rightRanks   = newSendOverlap->support(right);
+        const Obj<mesh_type::send_overlap_type::traits::supportSequence>& rightRanks   = sendOverlap->support(right);
         std::list<int> ranks;
         std::set_intersection(leftRanks.begin(), leftRanks.end(), rightRanks->begin(), rightRanks->end(),
                               std::insert_iterator<std::list<int> >(ranks, ranks.begin()));
 
         if(ranks.size()) {
-          newVertices->addFiberDimension(std::min(e_iter->first.first, e_iter->first.second), 1);
+          newVertices->addFiberDimension(std::min(e_iter->first.first, e_iter->first.second)+localOffset, 1);
           for(std::list<int>::const_iterator r_iter = ranks.begin(); r_iter != ranks.end(); ++r_iter) {
             bdedge2rank[e_iter->first].push_back(*r_iter);
           }
@@ -254,8 +254,8 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
       value_type      *values = new value_type[dim];
 
       for(std::map<edge_type, std::vector<int> >::const_iterator e_iter = bdedge2rank.begin(); e_iter != bdedge2rank.end() && v < dim; ++e_iter) {
-        if (std::min(e_iter->first.first, e_iter->first.second) == p) {
-          values[v] = edge_type(std::max(e_iter->first.first, e_iter->first.second), edge2vertex[e_iter->first]);
+        if (std::min(e_iter->first.first, e_iter->first.second)+localOffset == p) {
+          values[v++] = edge_type(std::max(e_iter->first.first, e_iter->first.second)+localOffset, edge2vertex[e_iter->first]);
         }
       }
       newVertices->updatePoint(p, values);
@@ -276,14 +276,14 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
         point_type remoteLeft = -1, remoteRight = -1;
         const int  rank       = *r_iter;
 
-        const Obj<mesh_type::send_overlap_type::traits::supportSequence>& leftRanks = newSendOverlap->support(e_iter->first.first);
+        const Obj<mesh_type::send_overlap_type::traits::supportSequence>& leftRanks = newSendOverlap->support(e_iter->first.first+localOffset);
         for(mesh_type::send_overlap_type::traits::supportSequence::iterator lr_iter = leftRanks->begin(); lr_iter != leftRanks->end(); ++lr_iter) {
           if (rank == *lr_iter) {
             remoteLeft = lr_iter.color();
             break;
           }
         }
-        const Obj<mesh_type::send_overlap_type::traits::supportSequence>& rightRanks = newSendOverlap->support(e_iter->first.second);
+        const Obj<mesh_type::send_overlap_type::traits::supportSequence>& rightRanks = newSendOverlap->support(e_iter->first.second+localOffset);
         for(mesh_type::send_overlap_type::traits::supportSequence::iterator rr_iter = rightRanks->begin(); rr_iter != rightRanks->end(); ++rr_iter) {
           if (rank == *rr_iter) {
             remoteRight = rr_iter.color();
