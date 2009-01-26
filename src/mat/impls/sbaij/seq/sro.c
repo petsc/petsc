@@ -59,8 +59,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderingSeqSBAIJ(Mat A,IS perm)
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
 
   if (!a->inew){ 
-    len  = (mbs+1 + 2*(a->i[mbs]))*sizeof(PetscInt);
-    ierr = PetscMalloc(len,&ai);CHKERRQ(ierr);
+    ierr = PetscMalloc((mbs+1 + 2*(a->i[mbs]))*sizeof(PetscInt),&ai);CHKERRQ(ierr);
     aj   = ai + mbs+1;    
   } else {
     ai = a->inew; aj = a->jnew;

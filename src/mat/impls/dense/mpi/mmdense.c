@@ -88,7 +88,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   PetscInt       **sbuf1,m,j,k,l,ct1,**rbuf1,row,proc;
   PetscInt       nrqs,msz,**ptr,*ctr,*pa,*tmp,bsz,nrqr;
   PetscInt       is_no,jmax,**rmap,*rmap_i;
-  PetscInt       len,ctr_j,*sbuf1_j,*rbuf1_i;
+  PetscInt       ctr_j,*sbuf1_j,*rbuf1_i;
   MPI_Request    *s_waits1,*r_waits1,*s_waits2,*r_waits2;
   MPI_Status     *r_status1,*r_status2,*s_status1,*s_status2;
   MPI_Comm       comm;
@@ -113,8 +113,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
     if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted");
   }
 
-  len    =  2*ismax*(sizeof(PetscInt*)+sizeof(PetscInt)) + (m+1)*sizeof(PetscInt);
-  ierr   = PetscMalloc(len,&irow);CHKERRQ(ierr);
+  ierr   = PetscMalloc(2*ismax*(sizeof(PetscInt*)+sizeof(PetscInt)) + (m+1)*sizeof(PetscInt),&irow);CHKERRQ(ierr);
   icol   = irow + ismax;
   nrow   = (PetscInt*)(icol + ismax);
   ncol   = nrow + ismax;
@@ -177,8 +176,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   ierr = PetscMaxSum(comm,w1,&bsz,&nrqr);CHKERRQ(ierr);
 
   /* Allocate memory for recv buffers . Prob none if nrqr = 0 ???? */ 
-  len      = (nrqr+1)*sizeof(PetscInt*) + nrqr*bsz*sizeof(PetscInt);
-  ierr     = PetscMalloc(len,&rbuf1);CHKERRQ(ierr);
+  ierr     = PetscMalloc((nrqr+1)*sizeof(PetscInt*) + nrqr*bsz*sizeof(PetscInt),&rbuf1);CHKERRQ(ierr);
   rbuf1[0] = (PetscInt*)(rbuf1 + nrqr);
   for (i=1; i<nrqr; ++i) rbuf1[i] = rbuf1[i-1] + bsz;
   
@@ -189,8 +187,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   }
 
   /* Allocate Memory for outgoing messages */
-  len   = 2*size*sizeof(PetscInt*) + 2*msz*sizeof(PetscInt)+ size*sizeof(PetscInt);
-  ierr  = PetscMalloc(len,&sbuf1);CHKERRQ(ierr);
+  ierr  = PetscMalloc(2*size*sizeof(PetscInt*) + 2*msz*sizeof(PetscInt)+ size*sizeof(PetscInt),&sbuf1);CHKERRQ(ierr);
   ptr   = sbuf1 + size;   /* Pointers to the data in outgoing buffers */
   ierr  = PetscMemzero(sbuf1,2*size*sizeof(PetscInt*));CHKERRQ(ierr);
   /* allocate memory for outgoing data + buf to receive the first reply */
@@ -348,8 +345,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
 
   /* Create row map-> This maps c->row to submat->row for each submat*/
   /* this is a very expensive operation wrt memory usage */
-  len     = (1+ismax)*sizeof(PetscInt*)+ ismax*C->rmap->N*sizeof(PetscInt);
-  ierr    = PetscMalloc(len,&rmap);CHKERRQ(ierr);
+  ierr    = PetscMalloc((1+ismax)*sizeof(PetscInt*)+ ismax*C->rmap->N*sizeof(PetscInt),&rmap);CHKERRQ(ierr);
   rmap[0] = (PetscInt*)(rmap + ismax);
   ierr    = PetscMemzero(rmap[0],ismax*C->rmap->N*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + C->rmap->N;}
