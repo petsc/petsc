@@ -366,6 +366,7 @@ int main(int argc,char **args)
         ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
         ierr = PetscOptionsHasName(PETSC_NULL,"-cknorm",&cknorm);CHKERRQ(ierr);
         while ( num_rhs-- ) {
+	  if (num_rhs == 1) VecSet(x,0.0);
           ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
           ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
           ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
