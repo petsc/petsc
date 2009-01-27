@@ -90,8 +90,7 @@ static PetscErrorCode MatIncreaseOverlap_MPISBAIJ_Once(Mat C,PetscInt is_max,IS 
      step 3: table[i] - mark indices of is[i] when whose=MINE     
              table[0] - mark incideces of is[] when whose=OTHER */
   len = PetscMax(is_max, size);CHKERRQ(ierr);
-  len_max = len*sizeof(PetscBT) + (Mbs/PETSC_BITS_PER_BYTE+1)*len*sizeof(char) + 1;
-  ierr = PetscMalloc(len_max,&table);CHKERRQ(ierr);
+  ierr = PetscMalloc(len*sizeof(PetscBT) + (Mbs/PETSC_BITS_PER_BYTE+1)*len*sizeof(char),&table);CHKERRQ(ierr);
   t_p  = (char *)(table + len);
   for (i=0; i<len; i++) {
     table[i]  = t_p  + (Mbs/PETSC_BITS_PER_BYTE+1)*i; 

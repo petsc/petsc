@@ -238,8 +238,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscGatherMessageLengths2(MPI_Comm comm,PetscMPI
 PetscErrorCode PETSC_DLLEXPORT PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecvs,const PetscMPIInt onodes[],const PetscMPIInt olengths[],PetscInt ***rbuf,MPI_Request **r_waits)
 {
   PetscErrorCode ierr;
-  PetscInt       len=0,**rbuf_t,i;
+  PetscInt       **rbuf_t,i;
   MPI_Request    *r_waits_t;
+  size_t         len = 0;
 
   PetscFunctionBegin;
 
@@ -269,10 +270,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscPostIrecvInt(MPI_Comm comm,PetscMPIInt tag,P
 PetscErrorCode PETSC_DLLEXPORT PetscPostIrecvScalar(MPI_Comm comm,PetscMPIInt tag,PetscMPIInt nrecvs,const PetscMPIInt onodes[],const PetscMPIInt olengths[],PetscScalar ***rbuf,MPI_Request **r_waits)
 {
   PetscErrorCode ierr;
-  PetscMPIInt    len=0,i;
+  PetscMPIInt    i;
   PetscScalar    **rbuf_t;
   MPI_Request    *r_waits_t;
-
+  size_t         len = 0;
   PetscFunctionBegin;
 
   /* compute memory required for recv buffers */

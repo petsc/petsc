@@ -26,14 +26,12 @@ static PetscErrorCode MatFreeRowbs_Private(Mat A,int n,int *i,PetscScalar *v)
 static PetscErrorCode MatMallocRowbs_Private(Mat A,int n,int **i,PetscScalar **v)
 {
   PetscErrorCode ierr;
-  int len;
 
   PetscFunctionBegin;
   if (!n) {
     *i = 0; *v = 0;
   } else {
-    len = n*(sizeof(int) + sizeof(PetscScalar));
-    ierr = PetscMalloc(len,v);CHKERRQ(ierr);
+    ierr = PetscMalloc(n*(sizeof(int) + sizeof(PetscScalar)),v);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(A,len);CHKERRQ(ierr);
     *i = (int*)(*v + n);
   }
@@ -96,8 +94,7 @@ static PetscErrorCode MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
   bsmat = bsif->A;
   BSset_mat_icc_storage(bsmat,PETSC_FALSE);
   BSset_mat_symmetric(bsmat,PETSC_FALSE);
-  len                    = m*(sizeof(BSsprow*)+ sizeof(BSsprow)) + 1;
-  ierr                   = PetscMalloc(len,&bsmat->rows);CHKERRQ(ierr);
+  ierr                   = PetscMalloc(m*(sizeof(BSsprow*)+ sizeof(BSsprow)),&bsmat->rows);CHKERRQ(ierr);
   bsmat->num_rows        = m;
   bsmat->global_num_rows = A->rmap->N;
   bsmat->map             = bsif->bsmap;
@@ -714,8 +711,7 @@ static PetscErrorCode MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   ierr = PetscMaxSum(comm,w1,&bsz,&nrqr);CHKERRQ(ierr);
 
   /* Allocate memory for recv buffers . Prob none if nrqr = 0 ???? */
-  len      = (nrqr+1)*sizeof(int*) + nrqr*bsz*sizeof(int);
-  ierr     = PetscMalloc(len,&rbuf1);CHKERRQ(ierr);
+  ierr     = PetscMalloc((nrqr+1)*sizeof(int*) + nrqr*bsz*sizeof(int),&rbuf1);CHKERRQ(ierr);
   rbuf1[0] = (int*)(rbuf1 + nrqr);
   for (i=1; i<nrqr; ++i) rbuf1[i] = rbuf1[i-1] + bsz;
 
@@ -726,8 +722,7 @@ static PetscErrorCode MatAssemblyEnd_MPIRowbs_MakeSymmetric(Mat mat)
   }
   
   /* Allocate Memory for outgoing messages */
-  len   = 2*size*sizeof(int*) + (size+msz)*sizeof(int);
-  ierr  = PetscMalloc(len,&sbuf1);CHKERRQ(ierr);
+  ierr  = PetscMalloc(2*size*sizeof(int*) + (size+msz)*sizeof(int),&sbuf1);CHKERRQ(ierr);
   ptr   = sbuf1 + size;     /* Pointers to the data in outgoing buffers */
   ierr  = PetscMemzero(sbuf1,2*size*sizeof(int*));CHKERRQ(ierr);
   tmp   = (int*)(sbuf1 + 2*size);
@@ -2206,8 +2201,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
     /*    if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IScol is not sorted"); */
   }
 
-  len    = (2*ismax+1)*(sizeof(int*)+ sizeof(int)) + (m+1)*sizeof(int);
-  ierr   = PetscMalloc(len,&irow);CHKERRQ(ierr);
+  ierr   = PetscMalloc((2*ismax+1)*(sizeof(int*)+ sizeof(int)) + (m+1)*sizeof(int),&irow);CHKERRQ(ierr);
   icol   = irow + ismax;
   nrow   = (int*)(icol + ismax);
   ncol   = nrow + ismax;
@@ -2279,8 +2273,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   ierr = PetscFree(olengths1);CHKERRQ(ierr);
   
   /* Allocate Memory for outgoing messages */
-  len      = 2*size*sizeof(int*) + 2*msz*sizeof(int) + size*sizeof(int);
-  ierr     = PetscMalloc(len,&sbuf1);CHKERRQ(ierr);
+  ierr     = PetscMalloc(2*size*sizeof(int*) + 2*msz*sizeof(int) + size*sizeof(int),&sbuf1);CHKERRQ(ierr);
   ptr      = sbuf1 + size;   /* Pointers to the data in outgoing buffers */
   ierr     = PetscMemzero(sbuf1,2*size*sizeof(int*));CHKERRQ(ierr);
   /* allocate memory for outgoing data + buf to receive the first reply */
@@ -2356,8 +2349,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   /* Receive messages*/
   ierr        = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits2);CHKERRQ(ierr);
   ierr        = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&r_status1);CHKERRQ(ierr);
-  len         = 2*nrqr*sizeof(int) + (nrqr+1)*sizeof(int*);
-  ierr        = PetscMalloc(len,&sbuf2);CHKERRQ(ierr);
+  ierr        = PetscMalloc(2*nrqr*sizeof(int) + (nrqr+1)*sizeof(int*),&sbuf2);CHKERRQ(ierr);
   req_size    = (int*)(sbuf2 + nrqr);
   req_source  = req_size + nrqr;
  
@@ -2498,8 +2490,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   {
     int *icol_i;
     
-    len     = (1+ismax)*sizeof(int*)+ ismax*C->cmap->N*sizeof(int);
-    ierr    = PetscMalloc(len,&cmap);CHKERRQ(ierr);
+    ierr    = PetscMalloc((1+ismax)*sizeof(int*)+ ismax*C->cmap->N*sizeof(int),&cmap);CHKERRQ(ierr);
     cmap[0] = (int*)(cmap + ismax);
     ierr    = PetscMemzero(cmap[0],(1+ismax*C->cmap->N)*sizeof(int));CHKERRQ(ierr);
     for (i=1; i<ismax; i++) { cmap[i] = cmap[i-1] + C->cmap->N; }
@@ -2515,8 +2506,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
 
   /* Create lens which is required for MatCreate... */
   for (i=0,j=0; i<ismax; i++) { j += nrow[i]; }
-  len     = (1+ismax)*sizeof(int*)+ j*sizeof(int);
-  ierr    = PetscMalloc(len,&lens);CHKERRQ(ierr);
+  ierr    = PetscMalloc((1+ismax)*sizeof(int*)+ j*sizeof(int),&lens);CHKERRQ(ierr);
   lens[0] = (int*)(lens + ismax);
   ierr    = PetscMemzero(lens[0],j*sizeof(int));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) { lens[i] = lens[i-1] + nrow[i-1]; }
@@ -2544,8 +2534,7 @@ PetscErrorCode MatGetSubMatrices_MPIRowbs_Local(Mat C,int ismax,const IS isrow[]
   }
   
   /* Create row map*/
-  len     = (1+ismax)*sizeof(int*)+ ismax*C->rmap->N*sizeof(int);
-  ierr    = PetscMalloc(len,&rmap);CHKERRQ(ierr);
+  ierr    = PetscMalloc((1+ismax)*sizeof(int*)+ ismax*C->rmap->N*sizeof(int),&rmap);CHKERRQ(ierr);
   rmap[0] = (int*)(rmap + ismax);
   ierr    = PetscMemzero(rmap[0],ismax*C->rmap->N*sizeof(int));CHKERRQ(ierr);
   for (i=1; i<ismax; i++) { rmap[i] = rmap[i-1] + C->rmap->N;}
@@ -2845,8 +2834,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   if (!iscol) SETERRQ(PETSC_ERR_ARG_SIZ,"Empty IScol");
   
   
-  len    = (C->rmap->N+1)*sizeof(int);
-  ierr   = PetscMalloc(len,&rtable);CHKERRQ(ierr);
+  ierr   = PetscMalloc((C->rmap->N+1)*sizeof(int),&rtable);CHKERRQ(ierr);
   /* Create hash table for the mapping :row -> proc*/
   for (i=0,j=0; i<size; i++) {
     jmax = C->rmap->range[i+1];
@@ -2893,8 +2881,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   
 { int **ptr,*iptr,*tmp;
   /* Allocate Memory for outgoing messages */
-  len      = 2*size*sizeof(int*) + msz*sizeof(int);
-  ierr     = PetscMalloc(len,&sbuf1);CHKERRQ(ierr);
+  ierr     = PetscMalloc(2*size*sizeof(int*) + msz*sizeof(int),&sbuf1);CHKERRQ(ierr);
   ptr      = sbuf1 + size;   /* Pointers to the data in outgoing buffers */
   ierr     = PetscMemzero(sbuf1,2*size*sizeof(int*));CHKERRQ(ierr);
   /* allocate memory for outgoing data + buf to receive the first reply */
@@ -2955,8 +2942,7 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   /* Receive messages*/
   ierr        = PetscMalloc((nrqr+1)*sizeof(MPI_Request),&s_waits2);CHKERRQ(ierr);
   ierr        = PetscMalloc((nrqr+1)*sizeof(MPI_Status),&r_status1);CHKERRQ(ierr);
-  len         = 2*nrqr*sizeof(int) + (nrqr+1)*sizeof(int*);
-  ierr        = PetscMalloc(len,&sbuf2);CHKERRQ(ierr);
+  ierr        = PetscMalloc(2*nrqr*sizeof(int) + (nrqr+1)*sizeof(int*),&sbuf2);CHKERRQ(ierr);
   req_size    = (int*)(sbuf2 + nrqr);
   req_source  = req_size + nrqr;
  
@@ -3090,16 +3076,14 @@ PetscErrorCode MatGetSubMatrix_MPIRowbs(Mat C,IS isrow,IS iscol,int csize,MatReu
   /* Form the matrix */
 
   /* create col map */
-  len     = C->cmap->N*sizeof(int)+1;
-  ierr    = PetscMalloc(len,&cmap);CHKERRQ(ierr);
+  ierr    = PetscMalloc(C->cmap->N*sizeof(int),&cmap);CHKERRQ(ierr);
   ierr    = PetscMemzero(cmap,C->cmap->N*sizeof(int));CHKERRQ(ierr);
   for (j=0; j<ncol; j++) { 
       cmap[icol[j]] = j+1; 
   }
   
   /* Create row map / maybe I will need global rowmap but here is local rowmap*/
-  len     = C->rmap->N*sizeof(int)+1;
-  ierr    = PetscMalloc(len,&rmap);CHKERRQ(ierr);
+  ierr    = PetscMalloc(C->rmap->N*sizeof(int),&rmap);CHKERRQ(ierr);
   ierr    = PetscMemzero(rmap,C->rmap->N*sizeof(int));CHKERRQ(ierr);
   for (j=0; j<nrow; j++) { 
     rmap[irow[j]] = j; 

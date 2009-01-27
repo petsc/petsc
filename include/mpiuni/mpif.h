@@ -56,6 +56,8 @@
        integer MPI_COMPLEX, MPI_CHARACTER
        integer MPI_2INTEGER
        integer MPI_DOUBLE_COMPLEX
+       integer MPI_INTEGER4
+       integer MPI_INTEGER8
 
        parameter (MPI_INTEGER=0)
        parameter (MPI_LOGICAL=0)
@@ -65,6 +67,8 @@
        parameter (MPI_CHARACTER=4)
        parameter (MPI_2INTEGER=5)
        parameter (MPI_DOUBLE_COMPLEX=6)
+       parameter (MPI_INTEGER4=7)
+       parameter (MPI_INTEGER8=8)
 
        integer MPI_MAXLOC
        parameter (MPI_MAXLOC=5)
