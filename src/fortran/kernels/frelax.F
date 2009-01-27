@@ -9,7 +9,8 @@
       PetscScalar x(0:*),aa(0:*)
       PetscScalar b(0:*),idiag(0:*)
       PetscReal   omega
-      PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscInt    n,ai(0:*)
+      PetscInt    aj(0:*),adiag(0:*)
 
       PetscInt    i,j,jstart,jend
       PetscScalar sum
@@ -38,7 +39,8 @@
       PetscScalar x(0:*),aa(0:*)
       PetscScalar b(0:*),idiag(0:*)
       PetscReal   omega
-      PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscInt    aj(0:*),adiag(0:*)
+      PetscInt    n,ai(0:*)
 
       PetscInt    i,j,jstart,jend
       PetscScalar sum
@@ -63,7 +65,8 @@
       implicit none
       PetscScalar x(0:*),aa(0:*),b(0:*)
       PetscReal   omega
-      PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscInt    n,ai(0:*)
+      PetscInt    aj(0:*),adiag(0:*)
 
       PetscInt    i,j,jstart,jend
       PetscScalar sum
@@ -90,7 +93,8 @@
       implicit none
       PetscScalar x(0:*),aa(0:*),b(0:*)
       PetscReal   omega
-      PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscInt    n,ai(0:*)
+      PetscInt    aj(0:*),adiag(0:*)
 
       PetscInt    i,j,jstart,jend
       PetscScalar sum
