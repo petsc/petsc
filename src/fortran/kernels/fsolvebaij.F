@@ -11,7 +11,8 @@
       implicit none
       MatScalar   a(0:*)
       PetscScalar x(0:*),b(0:*)
-      PetscInt    n,ai(0:*),aj(0:*),adiag(0:*)
+      PetscInt    n,ai(0:*)
+      PetscInt    aj(0:*),adiag(0:*)
 
       PetscInt    i,j,jstart,jend,idx,ax,jdx
       PetscScalar s1,s2,s3,s4
