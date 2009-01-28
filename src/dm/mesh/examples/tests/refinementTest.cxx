@@ -113,6 +113,7 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
   typedef mesh_type::sieve_type sieve_type;
   typedef mesh_type::point_type point_type;
   typedef Edge<point_type>      edge_type;
+  const int      debug = options->debug;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -159,7 +160,7 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
 
   mesh->setSieve(sieve);
   ALE::DistributionNew<mesh_type>::distributeMeshAndSectionsV(serialMesh, mesh);
-  mesh->view("Parallel Mesh");
+  if (debug) {mesh->view("Parallel Mesh");}
   for(int c = 0; c < (int) mesh->heightStratum(0)->size(); ++c) {
     mesh->computeElementGeometry(mesh->getRealSection("coordinates"), c, v0, J, invJ, detJ);
     if (detJ <= 0.0) {SETERRQ1(PETSC_ERR_LIB, "Inverted element, detJ %g", detJ);}
@@ -171,7 +172,7 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
 
     newMesh->setSieve(newSieve);
     ALE::MeshBuilder<mesh_type>::refineTetrahedra(*mesh, *newMesh, edge2vertex);
-    newMesh->view("Refined Parallel Mesh");
+    if (debug) {newMesh->view("Refined Parallel Mesh");}
     // Create the parallel overlap
     size_t  nCells      = mesh->heightStratum(0)->size();
     size_t  nNewCells   = newMesh->heightStratum(0)->size();
@@ -216,8 +217,10 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
     newMesh->setCalculatedOverlap(true);
     delete [] numCells;
     delete [] numNewCells;
-    newSendOverlap->view("Refined Send Overlap");
-    newRecvOverlap->view("Refined Recv Overlap");
+    if (debug) {
+      newSendOverlap->view("Refined Send Overlap");
+      newRecvOverlap->view("Refined Recv Overlap");
+    }
     // Check edges in edge2vertex for both endpoints sent to same process
     //   Put it in section with point being the lowest numbered vertex and value (other endpoint, new vertex)
     Obj<ALE::Section<point_type, edge_type> > newVertices = new ALE::Section<point_type, edge_type>(mesh->comm());
@@ -261,13 +264,13 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
       newVertices->updatePoint(p, values);
       delete [] values;
     }
-    newVertices->view("New vertices");
+    if (debug) {newVertices->view("New vertices");}
     // Copy across overlap
     typedef ALE::Pair<int, point_type> overlap_point_type;
     Obj<ALE::Section<overlap_point_type, edge_type> > overlapVertices = new ALE::Section<overlap_point_type, edge_type>(mesh->comm());
 
     ALE::Pullback::SimpleCopy::copy(newSendOverlap, newRecvOverlap, newVertices, overlapVertices);
-    overlapVertices->view("Overlap vertices");
+    if (debug) {overlapVertices->view("Overlap vertices");}
     // Merge by translating edge to local points, finding edge in edge2vertex, and adding (local new vetex, remote new vertex) to overlap
     for(std::map<edge_type, std::vector<int> >::const_iterator e_iter = bdedge2rank.begin(); e_iter != bdedge2rank.end(); ++e_iter) {
       const point_type localPoint = edge2vertex[e_iter->first];
@@ -306,8 +309,10 @@ PetscErrorCode ParallelTetrahedronTest(const Options *options)
         newRecvOverlap->addArrow(rank, localPoint, remotePoint);
       }
     }
-    newSendOverlap->view("Augmented Refined Send Overlap");
-    newRecvOverlap->view("Augmented Refined Recv Overlap");
+    if (debug) {
+      newSendOverlap->view("Augmented Refined Send Overlap");
+      newRecvOverlap->view("Augmented Refined Recv Overlap");
+    }
     edge2vertex.clear();
     if (options->debug) {
       PetscViewer viewer;
