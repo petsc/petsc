@@ -1287,7 +1287,7 @@ PetscErrorCode MeshSetMaxDof(Mesh mesh, PetscInt maxDof)
 + A - the matrix
 . mesh - Mesh needed for orderings
 . section - A Section which describes the layout
-. e - The element number
+. e - The element
 . v - The values
 - mode - either ADD_VALUES or INSERT_VALUES, where
    ADD_VALUES adds values to any existing entries, and
@@ -1309,13 +1309,12 @@ PetscErrorCode assembleMatrix(Mat A, Mesh mesh, SectionReal section, PetscInt e,
 
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-    const ALE::Obj<PETSC_MESH_TYPE::numbering_type>& cNumbering  = m->getFactory()->getLocalNumbering(m, m->depth());
-    const ALE::Obj<PETSC_MESH_TYPE::order_type>&     globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
+    const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
 
     if (m->debug()) {
       std::cout << "Assembling matrix for element number " << e << " --> point " << cNumbering->getPoint(e) << std::endl;
     }
-    ierr = updateOperator(A, m, s, globalOrder, cNumbering->getPoint(e), v, mode);CHKERRQ(ierr);
+    ierr = updateOperator(A, m, s, globalOrder, e, v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
