@@ -1312,7 +1312,7 @@ PetscErrorCode assembleMatrix(Mat A, Mesh mesh, SectionReal section, PetscInt e,
     const ALE::Obj<PETSC_MESH_TYPE::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
 
     if (m->debug()) {
-      std::cout << "Assembling matrix for element number " << e << " --> point " << cNumbering->getPoint(e) << std::endl;
+      std::cout << "Assembling matrix for element number " << e << " --> point " << e << std::endl;
     }
     ierr = updateOperator(A, m, s, globalOrder, e, v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
