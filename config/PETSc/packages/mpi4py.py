@@ -19,22 +19,38 @@ class Configure(PETSc.package.Package):
     self.numpy      = framework.require('PETSc.packages.Numpy',self)
     self.petscdir   = framework.require('PETSc.utilities.petscdir',self)
     self.setCompilers  = framework.require('config.setCompilers',self)
+    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)    
+    self.petscconfigure   = framework.require('PETSc.Configure',self)
+    self.arch = framework.require('PETSc.utilities.arch', self)
     return
 
   def Install(self):
+    pp = os.path.join(self.installDir,'lib','python*','site-packages')
+    if self.setCompilers.isDarwin():
+      apple = 'You may need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\nbefore running make on PETSc'
+    else:
+      apple = ''
+    self.logClearRemoveDirectory()
+    self.logResetRemoveDirectory()
+    if self.framework.argDB['prefix']:
+      arch = ''
+      self.addMakeRule('mpi4py_noinstall','')
+    else:
+      arch = self.arch.arch
+      self.addMakeRule('mpi4py_noinstall','mpi4py')      
+    self.addMakeRule('mpi4py','', \
+                       ['@MPICC=${PCC}; export MPICC; cd '+self.packageDir+';python setup.py clean --all; python setup.py install --install-lib='+os.path.join(self.petscconfigure.installdir,'lib'),\
+                          '@echo "====================================="',\
+                          '@echo "To use mpi4py, add '+os.path.join(self.petscconfigure.installdir,'lib')+' to PYTHONPATH"',\
+                          '@echo "====================================="'])
+    
     return self.installDir
 
   def configureLibrary(self):
     self.checkDownload(1)
-    pp = os.path.join(self.installDir,'lib','python*','site-packages')
-    self.setCompilers.pushLanguage('C')    
-    dd = self.setCompilers.getCompiler()
-    self.setCompilers.popLanguage()    
-    if self.setCompilers.isDarwin():
-      apple = 'You may first need to\n (csh/tcsh) setenv MACOSX_DEPLOYMENT_TARGET 10.X\n (sh/bash) MACOSX_DEPLOYMENT_TARGET=10.X; export MACOSX_DEPLOYMENT_TARGET\n'
-    else:
-      apple = ''
-    self.logClearRemoveDirectory()
-    self.logPrintBox('After installing PETSc run:\n (csh/tcsh) setenv MPICC '+dd+'\n (sh/bash) MPICC='+dd+'; export MPICC \ncd '+self.packageDir+'\n python setup.py install --prefix='+self.installDir+'\n'+apple+'then add the following to your shell startup file (.cshrc, .bashrc etc)\n (csh/tcsh) setenv PYTHONPATH ${PYTHONPATH}:'+pp+'\n (sh/bash) set PYTHONPATH=${PYTHONPATH}:'+pp+'; export PYTHONPATH' )
-    self.logResetRemoveDirectory()
+    if not self.sharedLibraries.useShared:
+        raise RuntimeError('mpi4py requires PETSc be built with shared libraries; rerun with --with-shared')
 
+  def alternateConfigureLibrary(self):
+    self.addMakeRule('mpi4py','')   
+    self.addMakeRule('mpi4py_noinstall','')
