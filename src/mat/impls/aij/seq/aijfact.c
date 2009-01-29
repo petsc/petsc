@@ -1216,7 +1216,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   const PetscInt     *r,*ic;
   PetscInt           n=A->rmap->n,*ai=a->i,*aj=a->j,d;
   PetscInt           *bi,*cols,nnz,*cols_lvl;
-  PetscInt           *bdiag,prow,fm,nzbd,len, reallocs=0,dcount=0;
+  PetscInt           *bdiag,prow,fm,nzbd,reallocs=0,dcount=0;
   PetscInt           i,levels,diagonal_fill;
   PetscTruth         col_identity,row_identity;
   PetscReal          f;
@@ -1373,8 +1373,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat fact,Mat A,IS isrow,IS iscol,cons
   b->free_a       = PETSC_TRUE;
   b->free_ij      = PETSC_TRUE;
   b->singlemalloc = PETSC_FALSE;
-  len = (bi[n] )*sizeof(PetscScalar);
-  ierr = PetscMalloc(len+1,&b->a);CHKERRQ(ierr);
+  ierr = PetscMalloc( (bi[n] )*sizeof(PetscScalar),&b->a);CHKERRQ(ierr);
   b->j          = bj;
   b->i          = bi;
   for (i=0; i<n; i++) bdiag[i] += bi[i];

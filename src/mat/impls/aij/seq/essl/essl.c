@@ -104,7 +104,6 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
-  int            len;
   Mat_Essl       *essl;
   PetscReal      f = 1.0;
 
@@ -118,14 +117,13 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat B,Mat A,IS r,IS c,const MatFactorInf
   essl->naux = 100 + 10*A->rmap->n;
 
   /* since malloc is slow on IBM we try a single malloc */
-  len               = essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar);
-  ierr              = PetscMalloc(len,&essl->a);CHKERRQ(ierr);
+  ierr              = PetscMalloc(essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar),&essl->a);CHKERRQ(ierr);
   essl->aux         = essl->a + essl->lna;
   essl->ia          = (int*)(essl->aux + essl->naux);
   essl->ja          = essl->ia + essl->lna;
   essl->CleanUpESSL = PETSC_TRUE;
 
-  ierr = PetscLogObjectMemory(B,len);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(B,essl->lna*(2*sizeof(int)+sizeof(PetscScalar)) + essl->naux*sizeof(PetscScalar));CHKERRQ(ierr);
   B->ops->lufactornumeric  = MatLUFactorNumeric_Essl;
   PetscFunctionReturn(0);
 }

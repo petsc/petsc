@@ -112,6 +112,9 @@ class Installer(script.Script):
       if line.find(os.path.join('externalpackages','petsc4py')) == -1:
         line = re.sub(re.escape(self.rootDir), self.installDir, line)
         line = re.sub(re.escape(os.path.realpath(self.rootDir)), self.installDir, line)
+      if line.find(os.path.join('externalpackages','mpi4py')) == -1:
+        line = re.sub(re.escape(self.rootDir), self.installDir, line)
+        line = re.sub(re.escape(os.path.realpath(self.rootDir)), self.installDir, line)
       # remove PETSC_DIR/PETSC_ARCH variables from conf-makefiles. They are no longer necessary
       line = re.sub('\$\{PETSC_DIR\}/\$\{PETSC_ARCH\}', self.installDir, line)
       line = re.sub('PETSC_ARCH=\$\{PETSC_ARCH\}', '', line)
@@ -211,7 +214,7 @@ Run the following to verify the install (remain in current directory for the tes
     self.installConf()
     self.installBin()
     self.installLib()
-    output = self.executeShellCommand(self.make+' PETSC_ARCH=""'+' PETSC_DIR='+self.installDir+' shared petsc4py')[0]
+    output = self.executeShellCommand(self.make+' PETSC_ARCH=""'+' PETSC_DIR='+self.installDir+' shared mpi4py petsc4py')[0]
     print output
     self.createUninstaller()
     self.outputHelp()
