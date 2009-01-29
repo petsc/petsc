@@ -458,8 +458,8 @@ typedef struct {
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
-          KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedDestroy()
+.seealso: KSPDefaultConverged(), KSPDefaultConvergedDestroy(), KSPSetConvergenceTest(), KSPSetTolerances(),
+          KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedCreate(void **ctx)
 {
@@ -561,7 +561,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP ksp)
 +  ksp   - iterative context
 .  n     - iteration number
 .  rnorm - 2-norm residual value (may be estimated)
--  dummy - unused convergence context 
+-  ctx - convergence context which must be created by KSPDefaultConvergedCreate()
 
    reason is set to:
 +   positive - if the iteration has converged;
@@ -594,10 +594,10 @@ $      rnorm > dtol * rnorm_0,
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
           KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedCreate(), KSPDefaultConvergedDestroy()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   PetscErrorCode         ierr;
-  KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) dummy;
+  KSPDefaultConvergedCtx *cctx = (KSPDefaultConvergedCtx*) ctx;
   KSPNormType            normtype;
 
   PetscFunctionBegin;
@@ -608,20 +608,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
   ierr = KSPGetNormType(ksp,&normtype);CHKERRQ(ierr);
   if (normtype == KSP_NORM_NO) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Use KSPSkipConverged() with KSPNormType of KSP_NORM_NO");
 
-  if (!ctx) SETERRQ(PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPDefaultConvergedCreate()");
+  if (!cctx) SETERRQ(PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPDefaultConvergedCreate()");
   if (!n) {
     /* if user gives initial guess need to compute norm of b */
-    if (!ksp->guess_zero && !ctx->initialrtol) {
+    if (!ksp->guess_zero && !cctx->initialrtol) {
       PetscReal      snorm;
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->pc_side == PC_RIGHT) {
         ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing 2-norm of RHS\n");CHKERRQ(ierr);
         ierr = VecNorm(ksp->vec_rhs,NORM_2,&snorm);CHKERRQ(ierr);        /*     <- b'*b */
       } else {
         Vec z;
-        if (!ctx->work) {
-          ierr = VecDuplicate(ksp->vec_rhs,&ctx->work);CHKERRQ(ierr);
+        if (!cctx->work) {
+          ierr = VecDuplicate(ksp->vec_rhs,&cctx->work);CHKERRQ(ierr);
         }
-        z = ctx->work;
+        z = cctx->work;
         ierr = KSP_PCApply(ksp,ksp->vec_rhs,z);CHKERRQ(ierr);
         if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
           ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing 2-norm of preconditioned RHS\n");CHKERRQ(ierr);
@@ -638,7 +638,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
         ierr = PetscInfo(ksp,"Special case, user has provided nonzero initial guess and zero RHS\n");CHKERRQ(ierr);
         snorm = rnorm;
       }
-      if (ctx->mininitialrtol) {
+      if (cctx->mininitialrtol) {
         ksp->rnorm0 = PetscMin(snorm,rnorm);
       } else {
         ksp->rnorm0 = snorm;
@@ -659,7 +659,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
       ierr = PetscInfo3(ksp,"Linear solver has converged. Residual norm %G is less than absolute tolerance %G at iteration %D\n",rnorm,ksp->abstol,n);CHKERRQ(ierr);
       *reason = KSP_CONVERGED_ATOL;
     } else {
-      if (ctx->initialrtol) {
+      if (cctx->initialrtol) {
         ierr = PetscInfo4(ksp,"Linear solver has converged. Residual norm %G is less than relative tolerance %G times initial residual norm %G at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);CHKERRQ(ierr);
       } else {
         ierr = PetscInfo4(ksp,"Linear solver has converged. Residual norm %G is less than relative tolerance %G times initial right hand side norm %G at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);CHKERRQ(ierr);
@@ -687,8 +687,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
-          KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm(), KSPDefaultConvergedCreate()
+.seealso: KSPDefaultConverged(), KSPDefaultConvergedCreate(), KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(),
+          KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedDestroy(void *ctx)
 {
