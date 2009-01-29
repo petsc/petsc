@@ -2592,6 +2592,41 @@ PetscErrorCode MeshUpdateClosure(Mesh mesh, SectionReal section, PetscInt point,
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MeshRestrictClosureInt"
+/*@C
+  MeshRestrictClosureInt - Returns an array with the values in a given closure
+
+  Not Collective
+
+  Input Parameters:
++ mesh    - The Mesh object
+. section - The section
+. point   - The sieve point
+. n       - The array size
+- array   - The array to fill up
+
+  Output Parameter:
+. array - The array full of values in the closure
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate(), MeshRestrictClosure()
+@*/
+PetscErrorCode MeshRestrictClosureInt(Mesh mesh, SectionInt section, PetscInt point, PetscInt n, PetscInt values[])
+{
+  ALE::Obj<PETSC_MESH_TYPE> m;
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> s;
+  PetscErrorCode            ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+  m->restrictClosure(s, point, values, n);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "WritePyLithVertices"
 PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)

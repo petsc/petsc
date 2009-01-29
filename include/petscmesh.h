@@ -236,6 +236,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt, PetscInt, c
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdateAdd(SectionInt, PetscInt, const PetscInt []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntComplete(SectionInt);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRestrictClosureInt(Mesh, SectionInt, PetscInt, PetscInt, PetscInt []);
+
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSectionInt(Mesh, PetscInt, SectionInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSectionInt(Mesh, PetscInt, SectionInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshHasSectionInt(Mesh, const char [], PetscTruth *);
