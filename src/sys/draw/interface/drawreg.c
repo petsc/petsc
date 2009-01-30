@@ -243,7 +243,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetFromOptions(PetscDraw draw)
   PetscTruth flg,nox;
   char       vtype[256];
   const char *def;
-#if !defined(PETSC_HAVE_WINDOWS_H) && !defined(PETSC_HAVE_X11)
+#if !defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X11)
   PetscTruth warn;
 #endif
 
@@ -259,7 +259,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetFromOptions(PetscDraw draw)
   } else {
     ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&nox);CHKERRQ(ierr);
     def  = PETSC_DRAW_NULL;
-#if defined(PETSC_HAVE_WINDOWS_H) && !defined(PETSC_HAVE_X11)
+#if defined(PETSC_USE_WINDOWS_GRAPHICS) && !defined(PETSC_HAVE_X11)
     if (!nox) def = PETSC_DRAW_WIN32;
 #elif defined(PETSC_HAVE_X11)
     if (!nox) def = PETSC_DRAW_X;

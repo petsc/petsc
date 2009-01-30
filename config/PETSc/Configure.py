@@ -16,7 +16,9 @@ class Configure(config.base.Configure):
                               
   def setupHelp(self, help):
     import nargs
-    help.addArgument('PETSc', '-prefix=<path>',            nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
+    help.addArgument('PETSc',  '-prefix=<path>',                  nargs.Arg(None, '', 'Specifiy location to install PETSc (eg. /usr/local)'))
+    help.addArgument('Windows','-with-windows-graphics=<bool>',   nargs.ArgBool(None, 1,   'Enable check for Windows Graphics'))
+
     return
 
   def setupDependencies(self, framework):
@@ -268,6 +270,8 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_GETCOMPUTERNAME',1)
       kernel32=1
     if kernel32:
+      if self.framework.argDB['with-windows-graphics']:
+        self.addDefine('USE_WINDOWS_GRAPHICS',1)
       if self.checkLink('#include <Windows.h>','LoadLibrary(0)'):
         self.addDefine('HAVE_LOADLIBRARY',1)
       if self.checkLink('#include <Windows.h>','GetProcAddress(0,0)'):
