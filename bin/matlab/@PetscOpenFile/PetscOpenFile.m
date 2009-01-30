@@ -7,7 +7,7 @@ function O = PetscOpenFile(filename,rw)
 %  files or sockets
 %
 if nargin == 1
-  rw = 'r'
+  rw = 'r';
 end
 S = struct('fd', fopen(filename,rw,'ieee-be'));
 O = class(S,'PetscOpenFile');
