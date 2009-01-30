@@ -81,7 +81,7 @@ class Configure(config.base.Configure):
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
                  'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','strcasecmp','bzero',
                  'dlopen', 'dlsym', 'dlclose', 'dlerror',
-                 '_intel_fast_memcpy','_intel_fast_memset','isinf','isnan','_finite','_isnan','vsnprintf','_vsnprintf']
+                 '_intel_fast_memcpy','_intel_fast_memset','isinf','isnan','_finite','_isnan']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.headers.headers.extend(headersC)
     self.functions.functions.extend(functions)
