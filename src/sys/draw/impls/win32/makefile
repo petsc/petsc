@@ -1,5 +1,5 @@
 
-#requirespackage 'PETSC_HAVE_WINDOWS_H'
+#requirespackage 'PETSC_USE_WINDOWS_GRAPHICS'
 
 ALL: lib 
 

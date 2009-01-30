@@ -8,7 +8,9 @@ EXTERN_C_BEGIN
 EXTERN PetscErrorCode PetscDrawCreate_X(PetscDraw);
 EXTERN PetscErrorCode PetscDrawCreate_PS(PetscDraw);
 EXTERN PetscErrorCode PetscDrawCreate_Null(PetscDraw);
+#if defined(PETSC_USE_WINDOWS_GRAPHICS)
 EXTERN PetscErrorCode PetscDrawCreate_Win32(PetscDraw);
+#endif
 EXTERN_C_END
   
 #undef __FUNCT__  
@@ -30,7 +32,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterAll(const char *path)
   
 #if defined(PETSC_HAVE_X11)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_X,     path,"PetscDrawCreate_X",     PetscDrawCreate_X);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_WINDOWS_H)
+#elif defined(PETSC_USE_WINDOWS_GRAPHICS)
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_WIN32, path,"PetscDrawCreate_Win32", PetscDrawCreate_Win32);CHKERRQ(ierr);
 #endif
   ierr = PetscDrawRegisterDynamic(PETSC_DRAW_NULL,  path,"PetscDrawCreate_Null",  PetscDrawCreate_Null);CHKERRQ(ierr);
