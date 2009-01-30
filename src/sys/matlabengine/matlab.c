@@ -109,15 +109,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine mengi
   va_list           Argp;
   char              buffer[1024];
   PetscErrorCode ierr;
-  int               flops, fullLength;
+  int               fullLength;
   size_t            len;
 
   PetscFunctionBegin;  
-  ierr = PetscStrcpy(buffer,"flops(0);");
   va_start(Argp,string);
-  ierr = PetscVSNPrintf(buffer+9,1024-9-5,string,&fullLength,Argp);CHKERRQ(ierr);
+  ierr = PetscVSNPrintf(buffer,1024-9-5,string,&fullLength,Argp);CHKERRQ(ierr);
   va_end(Argp);
-  ierr = PetscStrcat(buffer,",flops");
 
   ierr = PetscInfo1(0,"Evaluating Matlab string: %s\n",buffer);CHKERRQ(ierr);
   engEvalString(mengine->ep, buffer);
@@ -125,28 +123,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineEvaluate(PetscMatlabEngine mengi
   /* 
      Check for error in Matlab: indicated by ? as first character in engine->buffer
   */
-
   if (mengine->buffer[4] == '?') {
     SETERRQ2(PETSC_ERR_LIB,"Error in evaluating Matlab command:%s\n%s",string,mengine->buffer);
   }
-
-  /*
-     Get flop number back from Matlab output
-  */
-  ierr = PetscStrlen(mengine->buffer,&len);CHKERRQ(ierr);
-  len -= 2;
-  while (len > 0) {
-    len--;
-    if (mengine->buffer[len] == ' ') break;
-    if (mengine->buffer[len] == '\n') break;
-    if (mengine->buffer[len] == '\t') break;
-  }
-  sscanf(mengine->buffer+len," %d\n",&flops);
-  ierr = PetscLogFlops(flops);CHKERRQ(ierr);
-  /* strip out of engine->buffer the end part about flops */
-  if (len < 14) SETERRQ1(PETSC_ERR_LIB,"Error from Matlab %s",mengine->buffer);
-  len -= 14;
-  mengine->buffer[len] = 0;
 
   ierr = PetscInfo1(0,"Done evaluating Matlab string: %s\n",buffer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
