@@ -137,6 +137,7 @@ choke me
     return
 
   def checkVSNPrintf(self):
+    if self.check('_vsnprintf'): return
     self.check('vsnprintf')
     '''Checks whether vsnprintf requires a char * last argument, and if it does defines HAVE_VSNPRINTF_CHAR'''
     if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;char str[6];\nvsnprintf(str,5, "%d", Argp );\n'):
