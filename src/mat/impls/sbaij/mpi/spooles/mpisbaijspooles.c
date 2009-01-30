@@ -19,9 +19,9 @@
 #define __FUNCT__ "MatGetInertia_MPISBAIJSpooles"
 PetscErrorCode MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npos)
 { 
-  Mat_Spooles *lu = (Mat_Spooles*)F->spptr; 
+  Mat_Spooles    *lu = (Mat_Spooles*)F->spptr; 
   PetscErrorCode ierr;
-  int neg,zero,pos,sbuf[3],rbuf[3];
+  int            neg,zero,pos,sbuf[3],rbuf[3];
 
   PetscFunctionBegin;
   FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos);
@@ -37,18 +37,7 @@ PetscErrorCode MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npo
 #define __FUNCT__ "MatCholeskyFactorSymbolic_MPISBAIJSpooles"
 PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat B,Mat A,IS r,const MatFactorInfo *info)
 {
-  Mat_Spooles   *lu;   
-  PetscErrorCode ierr;
-  
   PetscFunctionBegin;	
-
-  lu                       = (Mat_Spooles*)(B->spptr);
-  lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
-  lu->flg                  = DIFFERENT_NONZERO_PATTERN;
-  lu->options.useQR        = PETSC_FALSE;
-  lu->options.symflag      = SPOOLES_SYMMETRIC;  /* default */
-
-  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
   (B)->ops->choleskyfactornumeric  = MatFactorNumeric_MPISpooles;
   PetscFunctionReturn(0); 
 }
@@ -82,7 +71,6 @@ PetscErrorCode MatDestroy_MPISBAIJSpooles(Mat A)
     }
   }
   ierr = MatDestroy_MPISBAIJ(A);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -107,7 +95,6 @@ PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;	
-
   /* Create the factorization matrix F */  
   ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap->n,A->cmap->n,A->rmap->N,A->cmap->N);CHKERRQ(ierr);
@@ -121,17 +108,16 @@ PetscErrorCode MatGetFactor_mpisbaij_spooles(Mat A,MatFactorType ftype,Mat *F)
 
   if (ftype == MAT_FACTOR_CHOLESKY) {
     B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;
-    B->ops->destroy         = MatDestroy_MPISBAIJSpooles;  
+    B->ops->view                   = MatView_Spooles;
+    B->ops->destroy                = MatDestroy_MPISBAIJSpooles;  
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatFactorGetSolverPackage_C","MatFactorGetSolverPackage_mpisbaij_spooles",MatFactorGetSolverPackage_mpisbaij_spooles);CHKERRQ(ierr);
 
-    lu->options.symflag      = SPOOLES_NONSYMMETRIC;
-    lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
     lu->options.symflag      = SPOOLES_SYMMETRIC;
-  } else SETERRQ(PETSC_ERR_SUP,"Only Cholesky for SBAIJ matrices");
+    lu->options.pivotingflag = SPOOLES_NO_PIVOTING; 
+  } else SETERRQ(PETSC_ERR_SUP,"Only Cholesky for SBAIJ matrices, use AIJ for LU");
+
   B->factor = ftype;
-
   ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
-
   *F = B;
   PetscFunctionReturn(0); 
 }
