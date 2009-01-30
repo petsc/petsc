@@ -223,7 +223,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *f
   PetscFunctionReturn(n);
 }
 
-#ifdef PETSC_CLANGUAGE_CXX
+#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTraceBackErrorHandlerCxx"
 /*@C
