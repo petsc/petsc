@@ -478,7 +478,7 @@ M*/
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int,const char*[],char **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
-#ifdef PETSC_CLANGUAGE_CXX
+#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
 #include <sstream>
 EXTERN void           PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(int,const char *,const char *,const char *,PetscErrorCode,int, std::ostringstream&);
 #endif

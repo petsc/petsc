@@ -15,7 +15,7 @@ function Set = PetscReadBinaryMatlab(filename)
    end
    fid=fopen(filename,'r');
    if (fid == -1)
-      error(sprintf('PetscReadMatlabDA: cannot load file %s',filename))
+      error(sprintf('PetscReadBinaryMatlab: cannot load file %s',filename))
    end
    str=fgets(fid);
    while (ischar(str))
@@ -27,7 +27,7 @@ function Set = PetscReadBinaryMatlab(filename)
 
       	 % check for old-style file open/close commands
 	 if strfind(str,'fopen(Set.filename')
-	    str = 'fd = freader(Set.filename);';
+	    str = 'fd = PetscOpenFile(Set.filename);';
 	 elseif strfind(str,'if (fd < 0) error'); % ignore this line
 	    str = '%';
 	 elseif strfind(str,'fclose(fd)');

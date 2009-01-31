@@ -496,7 +496,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscError(int line,const char *func,const char* 
   PetscFunctionReturn(ierr);
 }
 
-#ifdef PETSC_CLANGUAGE_CXX
+#if defined(PETSC_CLANGUAGE_CXX) && !defined(PETSC_USE_EXTERN_CXX)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorCxx" 
 /*@C

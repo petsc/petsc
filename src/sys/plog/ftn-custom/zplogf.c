@@ -4,7 +4,7 @@
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petsclogprintsummary_     PETSCLOGPRINTSUMMARY
-#define petsclogprintDetailed_     PETSCLOGPRINTDETAILED
+#define petsclogprintDetailed_    PETSCLOGPRINTDETAILED
 #define petsclogallbegin_         PETSCLOGALLBEGIN
 #define petsclogdestroy_          PETSCLOGDESTROY
 #define petsclogbegin_            PETSCLOGBEGIN
@@ -12,12 +12,13 @@
 #define petsclogeventregister_    PETSCLOGEVENTREGISTER
 #define petsclogstagepop_         PETSCLOGSTAGEPOP
 #define petsclogstageregister_    PETSCLOGSTAGEREGISTER
-#define petsccookieregister_    PETSCCOOKIEREGISTER
+#define petsccookieregister_      PETSCCOOKIEREGISTER
 #define petsclogstagepush_        PETSCLOGSTAGEPUSH
 #define petscgetflops_            PETSCGETFLOPS
+#define petsclogstagegetid_       PETSCLOGSTAGEGETID
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petsclogprintsummary_     petsclogprintsummary
-#define petsclogprintDetailed_     petsclogprintDetailed
+#define petsclogprintDetailed_    petsclogprintDetailed
 #define petsclogallbegin_         petsclogallbegin
 #define petsclogdestroy_          petsclogdestroy
 #define petsclogbegin_            petsclogbegin
@@ -25,9 +26,10 @@
 #define petsclogdump_             petsclogdump
 #define petsclogstagepop_         petsclogstagepop  
 #define petsclogstageregister_    petsclogstageregister
-#define petsccookieregister_    petsccookieregister
+#define petsccookieregister_      petsccookieregister
 #define petsclogstagepush_        petsclogstagepush
 #define petscgetflops_            petscgetflops 
+#define petsclogstagegetid_       petsclogstagegetid
 #endif
 
 EXTERN_C_BEGIN
@@ -133,5 +135,14 @@ void PETSC_STDCALL petscgetflops_(PetscLogDouble *d,PetscErrorCode *ierr)
 #endif
 }
 
+void PETSC_STDCALL   petsclogstagegetid_(CHAR sname PETSC_MIXED_LEN(len),PetscLogStage *stage, int *ierr PETSC_END_LEN(len))
+{
+#if defined(PETSC_USE_LOG)
+  char *t;
+  FIXCHAR(sname,len,t);
+  *ierr = PetscLogStageGetId(t,stage);
+  FREECHAR(sname,t);
+#endif
+}
 
 EXTERN_C_END
