@@ -303,7 +303,7 @@ class Configure(config.package.Package):
     flag = '-O0'
     if self.setCompilers.checkCompilerFlag(flag):
       return flag
-    return
+    return ''
 
   def downLoadBlasLapack(self, f2c, l):
     self.framework.log.write('Downloading '+self.downloaddirname+'\n')
