@@ -143,7 +143,40 @@
       End Interface
 
       Interface
+        Subroutine MeshRestrictClosureInt(m,section,e,n,values,ierr)
+          USE_MESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: values(:)
+          PetscInt n, e
+          SECTIONINT_HIDE section
+          MESH_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
         Subroutine MeshUpdateClosure(m,section,e,values,ierr)
+          USE_MESH_HIDE
+          PetscErrorCode ierr
+          PetscScalar, pointer :: values(:)
+          PetscInt e
+          SECTIONREAL_HIDE section
+          MESH_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine MeshUpdateClosureInt(m,section,e,values,ierr)
+          USE_MESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: values(:)
+          PetscInt e
+          SECTIONINT_HIDE section
+          MESH_HIDE m
+        End Subroutine
+      End Interface
+
+      Interface
+        Subroutine MeshUpdateAddClosure(m,section,e,values,ierr)
           USE_MESH_HIDE
           PetscErrorCode ierr
           PetscScalar, pointer :: values(:)

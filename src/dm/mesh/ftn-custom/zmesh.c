@@ -32,7 +32,10 @@ extern void PetscRmPointer(void*);
 #define meshcreateexodus_       MESHCREATEEXODUS
 #define meshdistribute_         MESHDISTRIBUTE
 #define meshview_               MESHVIEW
-#define meshgetvertexsectionreal_   MESHGETVERTEXSECTIONREAL
+#define meshgetvertexsectionreal_ MESHGETVERTEXSECTIONREAL
+#define meshgetcellsectionreal_   MESHGETCELLSECTIONREAL
+#define meshgetvertexsectionint_  MESHGETVERTEXSECTIONINT
+#define meshgetcellsectionint_    MESHGETCELLSECTIONINT
 #define vertexsectionrealcreate_ VERTEXSECTIONREALCREATE
 #define vertexsectionintcreate_  VERTEXSECTIONINTCREATE
 #define cellsectionrealcreate_   CELLSECTIONREALCREATE
@@ -53,7 +56,10 @@ extern void PetscRmPointer(void*);
 #define meshcreateexodus_       meshcreateexodus
 #define meshdistribute_         meshdistribute
 #define meshview_               meshview
-#define meshgetvertexsectionreal_   meshgetvertexsectionreal
+#define meshgetvertexsectionreal_  meshgetvertexsectionreal
+#define meshgetcellsectionreal_    meshgetcellsectionreal
+#define meshgetvertexsectionint_   meshgetvertexsectionint
+#define meshgetcellsectionint_     meshgetcellsectionint
 #define vertexsectionrealcreate_ vertexsectionrealcreate
 #define vertexsectionintcreate_  vertexsectionintcreate
 #define cellsectionrealcreate_   cellsectionrealcreate
@@ -114,6 +120,15 @@ void PETSC_STDCALL  meshview_(Mesh mesh, PetscViewer *vin, PetscErrorCode *ierr)
 }
 void PETSC_STDCALL  meshgetvertexsectionreal_(Mesh mesh, PetscInt *fiberDim, SectionReal *section, int *ierr){
   *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, section);
+}
+void PETSC_STDCALL  meshgetcellsectionreal_(Mesh mesh, PetscInt *fiberDim, SectionReal *section, int *ierr){
+  *ierr = MeshGetCellSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, section);
+}
+void PETSC_STDCALL  meshgetvertexsectionint_(Mesh mesh, PetscInt *fiberDim, SectionInt *section, int *ierr){
+  *ierr = MeshGetVertexSectionInt((Mesh) PetscToPointer(mesh), *fiberDim, section);
+}
+void PETSC_STDCALL  meshgetcellsectionint_(Mesh mesh, PetscInt *fiberDim, SectionInt *section, int *ierr){
+  *ierr = MeshGetCellSectionInt((Mesh) PetscToPointer(mesh), *fiberDim, section);
 }
 void PETSC_STDCALL  vertexsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
   SectionReal section;

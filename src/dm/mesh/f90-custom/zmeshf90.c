@@ -26,9 +26,10 @@ extern void PetscRmPointer(void*);
 #define meshgetelementsf90_        MESHGETELEMENTSF90
 #define meshrestoreelementsf90_    MESHRESTOREELEMENTSF90
 #define meshrestrictclosure_       MESHRESTRICTCLOSURE
-#define meshupdateclosure_         MESHUPDATECLOSURE
-#define meshupdateaddclosure_      MESHUPDATEADDCLOSURE
 #define meshrestrictclosureint_    MESHRESTRICTCLOSUREINT
+#define meshupdateclosure_         MESHUPDATECLOSURE
+#define meshupdateclosureint_      MESHUPDATECLOSUREINT
+#define meshupdateaddclosure_      MESHUPDATEADDCLOSURE
 #define sectiongetarrayf90_        SECTIONGETARRAYF90
 #define sectiongetarray1df90_      SECTIONGETARRAY1DF90
 #define bcsectiongetarrayf90_      BCSECTIONGETARRAYF90
@@ -45,6 +46,7 @@ extern void PetscRmPointer(void*);
 #define meshrestrictclosure_       meshrestrictclosure
 #define meshrestrictclosureint_    meshrestrictclosureint
 #define meshupdateclosure_         meshupdateclosure
+#define meshupdateclosureint_      meshupdateclosureint
 #define meshupdateaddclosure_      meshupdateaddclosure
 #define sectiongetarrayf90_        sectiongetarrayf90
 #define sectiongetarray1df90_      sectiongetarray1df90
@@ -96,20 +98,6 @@ void PETSC_STDCALL meshrestrictclosure_(Mesh mesh, SectionReal section, int *poi
   *ierr = MeshRestrictClosure((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section),*point,*size,c); if (*ierr) return;
   // *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-void PETSC_STDCALL meshupdateclosure_(Mesh mesh, SectionReal section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscScalar *c;
-
-  *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = MeshUpdateClosure((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section),*point,c); if (*ierr) return;
-}
-void PETSC_STDCALL meshupdateaddclosure_(Mesh mesh, SectionReal section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
-{
-  PetscScalar *c;
-
-  *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
-  *ierr = MeshUpdateAddClosure((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section),*point,c); if (*ierr) return;
-}
 void PETSC_STDCALL meshrestrictclosureint_(Mesh mesh, SectionInt section, int *point,int *size,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt *c;
@@ -118,6 +106,27 @@ void PETSC_STDCALL meshrestrictclosureint_(Mesh mesh, SectionInt section, int *p
   *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = MeshRestrictClosureInt((Mesh) PetscToPointer(mesh), (SectionInt) PetscToPointer(section),*point,*size,c); if (*ierr) return;
   // *ierr = F90Array1dCreate(const_cast<PetscScalar *>(c),PETSC_SCALAR,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
+}
+void PETSC_STDCALL meshupdateclosure_(Mesh mesh, SectionReal section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *c;
+
+  *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = MeshUpdateClosure((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section),*point,c); if (*ierr) return;
+}
+void PETSC_STDCALL meshupdateclosureint_(Mesh mesh, SectionInt section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscInt *c;
+
+  *ierr = F90Array1dAccess(ptr, PETSC_INT, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = MeshUpdateClosureInt((Mesh) PetscToPointer(mesh), (SectionInt) PetscToPointer(section),*point,c); if (*ierr) return;
+}
+void PETSC_STDCALL meshupdateaddclosure_(Mesh mesh, SectionReal section, int *point,F90Array1d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+{
+  PetscScalar *c;
+
+  *ierr = F90Array1dAccess(ptr, PETSC_SCALAR, (void**) &c PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = MeshUpdateAddClosure((Mesh) PetscToPointer(mesh), (SectionReal) PetscToPointer(section),*point,c); if (*ierr) return;
 }
 #if 0
 void PETSC_STDCALL meshrestoreclosuref90_(Mesh mesh,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
