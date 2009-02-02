@@ -247,11 +247,17 @@ cdef class IS(Object):
         def __get__(self):
             return self.isSorted()
 
-    # Array Interface V3
+    # --- array interface ---
 
     property __array_struct__:
         def __get__(self):
             return PetscIS_array_struct(self, self.iset)
+
+    def __array__(self, dtype=None):
+        indices = self.getIndices()
+        if dtype is not None:
+            indices = indices.astype(dtype)
+        return indices
 
     property array:
         def __get__(self):
