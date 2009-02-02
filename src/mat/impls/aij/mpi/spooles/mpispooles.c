@@ -456,10 +456,9 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,const MatFactorInfo *info
     lu->frontmtx = FrontMtx_new();
 
   } else { /* new num factorization using previously computed symbolic factor */
-    if (lu->options.pivotingflag) {                  /* different FrontMtx is required */
-      FrontMtx_free(lu->frontmtx);   
-      lu->frontmtx   = FrontMtx_new();
-    }
+    /* different FrontMtx is required */ 
+    FrontMtx_free(lu->frontmtx);   
+    lu->frontmtx   = FrontMtx_new();
 
     SubMtxManager_free(lu->mtxmanager);  
     lu->mtxmanager = SubMtxManager_new();
@@ -495,25 +494,21 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,const MatFactorInfo *info
               FRONTMTX_DENSE_FRONTS, lu->options.pivotingflag, NO_LOCK, rank,
               lu->ownersIV, lu->mtxmanager, lu->options.msglvl, lu->options.msgFile);
 
-    if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
-    if ( lu->options.patchAndGoFlag == 1 ) {
+  if ( lu->options.symflag == SPOOLES_SYMMETRIC ) {
+    if (lu->options.patchAndGoFlag == 1 || lu->options.patchAndGoFlag == 2 ){
+      if (lu->frontmtx->patchinfo) PatchAndGoInfo_free(lu->frontmtx->patchinfo);
       lu->frontmtx->patchinfo = PatchAndGoInfo_new();
-      PatchAndGoInfo_init(lu->frontmtx->patchinfo, 1, lu->options.toosmall, lu->options.fudge,
+      PatchAndGoInfo_init(lu->frontmtx->patchinfo, lu->options.patchAndGoFlag, lu->options.toosmall, lu->options.fudge,
                        lu->options.storeids, lu->options.storevalues);
-    } else if ( lu->options.patchAndGoFlag == 2 ) {
-      lu->frontmtx->patchinfo = PatchAndGoInfo_new();
-      PatchAndGoInfo_init(lu->frontmtx->patchinfo, 2, lu->options.toosmall, lu->options.fudge,
-                       lu->options.storeids, lu->options.storevalues);
-    }   
+    }
   }
 
   /* numerical factorization */
-  chvmanager = ChvManager_new();
+  chvmanager = ChvManager_new();  
   ChvManager_init(chvmanager, NO_LOCK, 0);  
 
   tagbound = maxTagMPI(lu->comm_spooles);
   lasttag  = lu->firsttag + 3*lu->frontETree->nfront + 2;
-  /* if(!rank) PetscPrintf(PETSC_COMM_SELF,"\n firsttag: %d, nfront: %d\n",lu->firsttag, lu->frontETree->nfront);*/
   if ( lasttag > tagbound ) {
       SETERRQ3(PETSC_ERR_LIB,"fatal error in FrontMtx_MPI_factorInpMtx(), tag range is [%d,%d], tag_bound = %d",\
                lu->firsttag, lasttag, tagbound); 
@@ -575,6 +570,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,const MatFactorInfo *info
   }
   
   /* create the solve map object */
+  if (lu->solvemap) SolveMap_free(lu->solvemap);
   lu->solvemap = SolveMap_new();
   SolveMap_ddMap(lu->solvemap, lu->frontmtx->symmetryflag, 
                FrontMtx_upperBlockIVL(lu->frontmtx),
@@ -619,9 +615,9 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat F,Mat A,const MatFactorInfo *info
     ierr = ISDestroy(lu->is_petsc);CHKERRQ(ierr);
     ierr = VecScatterDestroy(lu->scat);CHKERRQ(ierr);
   }
-  lu->scat = PETSC_NULL;  
-  lu->flg = SAME_NONZERO_PATTERN;
-  F->ops->solve            = MatSolve_MPISpooles;
+  lu->scat      = PETSC_NULL;  
+  lu->flg       = SAME_NONZERO_PATTERN;
+  F->ops->solve = MatSolve_MPISpooles;
 
   lu->CleanUpSpooles = PETSC_TRUE;
   PetscFunctionReturn(0);

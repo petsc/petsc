@@ -166,7 +166,7 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
     /* Symmetrize MZa */
     for(i = 0; i <= bcgsl->ell; ++i) {
       for(j = i+1; j <= bcgsl->ell; ++j) {
-        MZa[i*ldMZ+j] = MZa[j*ldMZ+i];
+        MZa[i*ldMZ+j] = MZa[j*ldMZ+i] = PetscConj(MZa[j*ldMZ+i]);
       }
     }
     /* Copy MZa to MZb */
