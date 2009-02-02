@@ -17,6 +17,7 @@ class Configure(config.base.Configure):
      
   def setupHelp(self, help):
     import nargs
+    help.addArgument('PETSc', '-with-proc-filesystem=<yes or no>', nargs.ArgBool(None, 1, 'Use the /proc filesystem for system statistics'))    
     return
 
   def setupDependencies(self, framework):
@@ -37,18 +38,19 @@ class Configure(config.base.Configure):
       return
     
     # /proc is used on Linux systems
-    if os.path.isfile(os.path.join('/proc',str(os.getpid()),'statm')):
-      self.addDefine('USE_PROC_FOR_SIZE', 1)
-      try:
-        fd = open(os.path.join('/proc',str(os.getpid()),'statm'))
-        l  = fd.readline().split(' ')
-        # make sure we can access the rss field
-        if not l[1].isdigit():
-          raise RuntimeError("/proc stat file has wrong format rss not integer:"+l[1])
-        self.framework.logPrint("Using /proc for PetscMemoryGetCurrentUsage()")
-        return
-      except:
-        pass
+    if self.argDB['with-proc-filesystem']:
+      if os.path.isfile(os.path.join('/proc',str(os.getpid()),'statm')):
+        self.addDefine('USE_PROC_FOR_SIZE', 1)
+        try:
+          fd = open(os.path.join('/proc',str(os.getpid()),'statm'))
+          l  = fd.readline().split(' ')
+          # make sure we can access the rss field
+          if not l[1].isdigit():
+            raise RuntimeError("/proc stat file has wrong format rss not integer:"+l[1])
+          self.framework.logPrint("Using /proc for PetscMemoryGetCurrentUsage()")
+          return
+        except:
+          pass
       
     # task_info() is  used on Mach and darwin (MacOS X) systems
     if self.functions.haveFunction('task_info') and not self.framework.argDB['with-batch']:

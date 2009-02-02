@@ -1211,8 +1211,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec s,Vec t,PetscScalar *dp, Petsc
   ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
 
   for (i = 0; i<n; i++) {
-    dpx += sx[i]*tx[i];
-    nmx += tx[i]*tx[i];
+    dpx += sx[i]*PetscConj(tx[i]);
+    nmx += tx[i]*PetscConj(tx[i]);
   }
   work[0] = dpx;
   work[1] = nmx;
