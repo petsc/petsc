@@ -707,120 +707,58 @@ PetscErrorCode VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 }
 #endif
 
-#if defined(PETSC_HAVE_HDF4)
-#undef __FUNCT__  
-#define __FUNCT__ "VecView_MPI_HDF4_Ex"
-PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, int d, int *dims)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag;
-  int            len, i, j, k, cur, bs, n, N;
-  MPI_Status     status;
-  PetscScalar    *x;
-  float          *xlf, *xf;
-
-  PetscFunctionBegin;
-
-  bs = X->map->bs > 0 ? X->map->bs : 1;
-  N  = X->map->N / bs;
-  n  = X->map->n / bs;
-
-  /* For now, always convert to float */
-  ierr = PetscMalloc(N * sizeof(float), &xf);CHKERRQ(ierr);
-  ierr = PetscMalloc(n * sizeof(float), &xlf);CHKERRQ(ierr);
-
-  ierr = MPI_Comm_rank(((PetscObject)X)->comm, &rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(((PetscObject)X)->comm, &size);CHKERRQ(ierr);
-
-  ierr = VecGetArray(X, &x);CHKERRQ(ierr);
-
-  for (k = 0; k < bs; k++) {
-    for (i = 0; i < n; i++) {
-      xlf[i] = (float) x[i*bs + k];
-    }
-    if (!rank) {
-      cur = 0;
-      ierr = PetscMemcpy(xf + cur, xlf, n * sizeof(float));CHKERRQ(ierr);
-      cur += n;
-      for (j = 1; j < size; j++) {
-        ierr = MPI_Recv(xf + cur, N - cur, MPI_FLOAT, j, tag, ((PetscObject)X)->comm,&status);CHKERRQ(ierr);
-        ierr = MPI_Get_count(&status, MPI_FLOAT, &len);CHKERRQ(ierr);cur += len;
-      }
-      if (cur != N) {
-        SETERRQ2(PETSC_ERR_PLIB, "? %D %D", cur, N);
-      }
-      ierr = PetscViewerHDF4WriteSDS(viewer, xf, 2, dims, bs);CHKERRQ(ierr); 
-    } else {
-      ierr = MPI_Send(xlf, n, MPI_FLOAT, 0, tag, ((PetscObject)X)->comm);CHKERRQ(ierr);
-    }
-  }
-  ierr = VecRestoreArray(X, &x);CHKERRQ(ierr);
-  ierr = PetscFree(xlf);CHKERRQ(ierr);
-  ierr = PetscFree(xf);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
-#if defined(PETSC_HAVE_HDF4)
-#undef __FUNCT__  
-#define __FUNCT__ "VecView_MPI_HDF4"
-PetscErrorCode VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-  PetscErrorCode  bs, dims[1];
-
-  bs = xin->map->bs > 0 ? xin->map->bs : 1;
-  dims[0] = xin->map->N / bs;
-  ierr = VecView_MPI_HDF4_Ex(xin, viewer, 1, dims);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
-
 #if defined(PETSC_HAVE_HDF5)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_HDF5"
 PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 {
-  hid_t  filespace; /* file dataspace identifier */
-  hid_t	 plist_id;  /* property list identifier */
-  hid_t  dset_id;   /* dataset identifier */
-  hid_t  memspace;  /* memory dataspace identifier */
-  hid_t  file_id;
-  herr_t status;
+  hid_t         filespace; /* file dataspace identifier */
+  hid_t	        plist_id;  /* property list identifier */
+  hid_t         dset_id;   /* dataset identifier */
+  hid_t         memspace;  /* memory dataspace identifier */
+  hid_t         file_id;
+  herr_t        status;
   /* PetscInt       bs        = xin->map->bs > 0 ? xin->map->bs : 1; */
   int            rank      = 1; /* Could have rank 2 for blocked vectors */
   hsize_t        dims[1]   = {xin->map->N};
   hsize_t        count[1]  = {xin->map->n};
   hsize_t        offset[1];
   PetscInt       low;
-  PetscScalar   *x;
+  PetscScalar    *x;
   PetscErrorCode ierr;
+  const char     *vecname;
 
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
 
   /* Create the dataspace for the dataset */
   filespace = H5Screate_simple(rank, dims, NULL); 
+  if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
   /* Create the dataset with default properties and close filespace */
+  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  dset_id = H5Dcreate2(file_id, "Vec", H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+  dset_id = H5Dcreate2(file_id, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 #else
-  dset_id = H5Dcreate(file_id, "Vec", H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
+  dset_id = H5Dcreate(file_id, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
 #endif
+  if (dset_id == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Dcreate2()");
   status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
   memspace = H5Screate_simple(rank, count, NULL);
+  if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
   offset[0] = low;
   filespace = H5Dget_space(dset_id);
+  if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Dget_space()");
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
 
   /* Create property list for collective dataset write */
   plist_id = H5Pcreate(H5P_DATASET_XFER);
+  if (plist_id == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Pcreate()");
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
   status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
 #endif
@@ -852,9 +790,6 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_NETCDF)
   PetscTruth     isnetcdf;
 #endif
-#if defined(PETSC_HAVE_HDF4)
-  PetscTruth     ishdf4;
-#endif
 #if defined(PETSC_HAVE_HDF5)
   PetscTruth     ishdf5;
 #endif
@@ -871,9 +806,6 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #endif
 #if defined(PETSC_HAVE_NETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_HDF4)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
@@ -901,10 +833,6 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_NETCDF)
   } else if (isnetcdf) {
     ierr = VecView_MPI_Netcdf(xin,viewer);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_HDF4)
-  } else if (ishdf4) {
-    ierr = VecView_MPI_HDF4(xin,viewer);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_HDF5)
   } else if (ishdf5) {

@@ -256,30 +256,31 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode VecView_MPI_HDF4_Ex(Vec X, PetscViewer viewer, PetscInt d, PetscInt *dims);
 
-#if defined(PETSC_HAVE_HDF4)
+#if defined(PETSC_HAVE_HDF5)
 #undef __FUNCT__  
-#define __FUNCT__ "VecView_MPI_HDF4_DA2d"
-PetscErrorCode VecView_MPI_HDF4_DA2d(Vec xin,PetscViewer viewer)
+#define __FUNCT__ "VecView_MPI_HDF5_DA"
+PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscInt       dims[2];
   DA             da;
   Vec            natural;
+  const char     *prefix;
 
   PetscFunctionBegin;
 
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
-  dims[0] = da->M;
-  dims[1] = da->N;
-
+  /* call viewer on natural ordering */
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
   ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
   ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
   ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
-  ierr = VecView_MPI_HDF4_Ex(natural, viewer, 2, dims);CHKERRQ(ierr);
+  ierr = PetscObjectName((PetscObject)xin);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
+  ierr = VecView(natural,viewer);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -428,8 +429,8 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
   PetscInt       dim;
   Vec            natural;
   PetscTruth     isdraw;
-#if defined(PETSC_HAVE_HDF4)
-  PetscTruth     ishdf4;
+#if defined(PETSC_HAVE_HDF5)
+  PetscTruth     ishdf5;
 #endif
 #if defined(PETSC_HAVE_PNETCDF)
   PetscTruth     isnetcdf;
@@ -440,8 +441,8 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_HDF4)
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
@@ -455,16 +456,9 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
     } else {
       SETERRQ1(PETSC_ERR_SUP,"Cannot graphically view vector associated with this dimensional DA %D",dim);
     }
-#if defined(PETSC_HAVE_HDF4)
-  } else if (ishdf4) {
-    ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
-    switch (dim) {
-    case 2:
-      ierr = VecView_MPI_HDF4_DA2d(xin,viewer);CHKERRQ(ierr);
-      break;
-    default:
-      SETERRQ1(PETSC_ERR_SUP,"Cannot view HDF4 vector associated with this dimensional DA %D",dim);
-    }
+#if defined(PETSC_HAVE_HDF5)
+  } else if (ishdf5) {
+    ierr = VecView_MPI_HDF5_DA(xin,viewer);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PNETCDF)
   } else if (isnetcdf) {
@@ -499,6 +493,34 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoadIntoVector_HDF5_DA"
+PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Vec xin)
+{
+  DA             da;
+  PetscErrorCode ierr;
+  Vec            natural;
+  const char     *prefix;
+
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
+  if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+
+  ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
+  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
+  ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
+  ierr = VecLoadIntoVector(viewer,natural);CHKERRQ(ierr);
+  ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
+  ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
+  ierr = VecDestroy(natural);CHKERRQ(ierr);
+  ierr = PetscInfo(xin,"Loading vector from natural ordering into DA\n");CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -510,7 +532,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
   Vec            natural;
   const char     *prefix;
   PetscInt       bs;
-  PetscTruth     flag;
+  PetscTruth     flag,ishdf5;
 #if defined(PETSC_HAVE_MPIIO)
   PetscTruth     isMPIIO;
 #endif
@@ -518,6 +540,12 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
+  if (ishdf5) {
+    ierr = VecLoadIntoVector_HDF5_DA(viewer,xin);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
@@ -529,6 +557,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
 
   ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
   ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
   ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
   ierr = VecLoadIntoVector(viewer,natural);CHKERRQ(ierr);
   ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);

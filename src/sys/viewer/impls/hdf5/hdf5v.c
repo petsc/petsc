@@ -167,3 +167,30 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5GetFileId(PetscViewer viewer, hid_
   if (file_id) *file_id = hdf5->file_id;
   PetscFunctionReturn(0);
 }
+
+
+#if defined(oldhdf4stuff)
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerHDF5WriteSDS" 
+PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5WriteSDS(PetscViewer viewer, float *xf, int d, int *dims,int bs)
+{
+ int                   i;
+ PetscViewer_HDF5      *vhdf5 = (PetscViewer_HDF5*)viewer->data;
+ int32                 sds_id,zero32[3],dims32[3];
+
+ PetscFunctionBegin;
+
+ for (i = 0; i < d; i++) {
+   zero32[i] = 0;
+   dims32[i] = dims[i];
+ }
+ sds_id = SDcreate(vhdf5->sd_id, "Vec", DFNT_FLOAT32, d, dims32);
+ if (sds_id < 0) {
+   SETERRQ(PETSC_ERR_LIB,"SDcreate failed");
+ }
+ SDwritedata(sds_id, zero32, 0, dims32, xf);
+ SDendaccess(sds_id);
+ PetscFunctionReturn(0);
+}
+
+#endif

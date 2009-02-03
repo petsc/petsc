@@ -11,17 +11,6 @@
 #include <petscviewer.h>
 #include <petscda.h>
 
-/* ---------------------------------------------------------------------
- *  PetscViewerBinaryMatlabOpen
- *	
- *		Input
- *		------------------------------
- *		comm	| mpi communicator
- *		fname	| filename
- *		viewer	| petsc viewer object
- *		
- * ----------------------------------------------------------------------*/
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOpen"
 /*@C
@@ -41,8 +30,11 @@
 
   Level: beginner
 
+   Question: Why do the following methods exist? Why can you not just do VecView() and PetscBagView() with this viewer
+   (that is, why is polymorphism used to implement these things).
+
 .seealso: PetscViewerBinaryMatlabDestroy(), PetscViewerBinaryMatlabOutputVec(),
-          PetscViewerBinaryMatlabOutputVecDA(), PetscViewerBinaryMatlabOutputBag()
+          PetscViewerBinaryMatlabOutputVecDA(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryOpen()
 @*/
 PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], PetscViewer *viewer)
 {
