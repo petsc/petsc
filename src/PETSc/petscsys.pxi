@@ -11,9 +11,15 @@ cdef extern from "petscsys.h":
 
     int PetscInitialize(int*,char***,char[],char[])
     int PetscInitializeNoArguments()
-    int PetscFinalize()
+    int PetscFinalize() nogil
     PetscTruth PetscInitializeCalled
     PetscTruth PetscFinalizeCalled
+
+    int PetscErrorMessage(int,char*[],char**)
+    ctypedef int PetscTBF(int,char*,char*,char*,int,int,char*,void*)
+    PetscTBF PetscTBEH "PetscTraceBackErrorHandler"
+    int PetscPushErrorHandler(PetscTBF*,void*)
+    int PetscPopErrorHandler() nogil
 
     int PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*)
     int PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*)

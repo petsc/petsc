@@ -122,16 +122,6 @@ include "CAPI.pyx"
 cdef extern from "Python.h":
     int Py_IsInitialized()
 
-cdef extern from "petsc.h":
-    int PetscErrorMessage(int,char*[],char**)
-    ctypedef int PetscTBF(int,char*,char*,char*,int,int,char*,void*)
-    PetscTBF PetscTBEH "PetscTraceBackErrorHandler"
-    int PetscPushErrorHandler(PetscTBF*,void*)
-    int PetscPopErrorHandler()
-    ctypedef double PetscLogDouble
-    int PetscMallocGetCurrentUsage(PetscLogDouble*)
-    int PetscMemoryGetCurrentUsage(PetscLogDouble*)
-
 cdef object tracebacklist = []
 
 cdef int traceback(int line,
@@ -140,7 +130,7 @@ cdef int traceback(int line,
                    const_char_p cdir,
                    int n, int p,
                    const_char_p mess,
-                   void *ctx):
+                   void *ctx) with gil:
     cdef PetscLogDouble mem=0
     cdef PetscLogDouble rss=0
     cdef const_char_p text=NULL
@@ -178,6 +168,11 @@ cdef extern from "Python.h":
     int Py_AtExit(void (*)())
     void PySys_WriteStderr(char*,...)
 
+cdef extern from "stdio.h":
+    ctypedef struct FILE
+    FILE *stderr
+    int fprintf(FILE *, char *, ...) nogil
+
 cdef extern from "initpkg.h":
     int PetscInitializeAllPackages(char[])
 
@@ -186,16 +181,6 @@ cdef extern from "libpetsc4py.h":
 
 cdef int    PyPetsc_Argc = 0
 cdef char** PyPetsc_Argv = NULL
-
-cdef void delinitargs(int *argc, char **argv[]):
-    # dallocate command line arguments
-    cdef int i, c = argc[0]
-    cdef char** v = argv[0]
-    argc[0] = 0; argv[0] = NULL;
-    if c >= 0 and v != NULL:
-        for i in range(c):
-            if  v[i] != NULL: free(v[i])
-        free(v)
 
 cdef int getinitargs(object args, int *argc, char **argv[]) except -1:
     # allocate command line arguments
@@ -208,7 +193,7 @@ cdef int getinitargs(object args, int *argc, char **argv[]) except -1:
     if v == NULL: raise MemoryError
     else: memset(v, 0, (c+1)*sizeof(char*))
     try:
-        for i in range(c):
+        for 0 <= i < c:
             v[i] = strdup(str2cp(args[i]))
             if v[i] == NULL: raise MemoryError
     except:
@@ -216,7 +201,17 @@ cdef int getinitargs(object args, int *argc, char **argv[]) except -1:
     argc[0] = c; argv[0] = v
     return 0
 
-cdef void finalize():
+cdef void delinitargs(int *argc, char **argv[]) nogil:
+    # dallocate command line arguments
+    cdef int i, c = argc[0]
+    cdef char** v = argv[0]
+    argc[0] = 0; argv[0] = NULL;
+    if c >= 0 and v != NULL:
+        for 0 <= i < c:
+            if  v[i] != NULL: free(v[i])
+        free(v)
+
+cdef void finalize() nogil:
     cdef int ierr = 0
     # deallocate command line arguments
     global PyPetsc_Argc; global PyPetsc_Argv;
@@ -227,13 +222,13 @@ cdef void finalize():
     # deinstall custom error handler
     ierr = PetscPopErrorHandler()
     if ierr != 0:
-        PySys_WriteStderr("PetscPopErrorHandler() failed "
-                          "[error code: %d]\n", ierr)
+        fprintf(stderr, "PetscPopErrorHandler() failed "
+                "[error code: %d]\n", ierr)
     # finalize PETSc
     ierr = PetscFinalize()
     if ierr != 0:
-        PySys_WriteStderr("PetscFinalize() failed "
-                          "[error code: %d]\n", ierr)
+        fprintf(stderr, "PetscFinalize() failed "
+                "[error code: %d]\n", ierr)
     # and we are done, see you later !!
 
 cdef int initialize(object args) except -1:

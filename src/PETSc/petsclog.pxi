@@ -7,3 +7,6 @@ cdef extern from "petsc.h":
 
     int PetscGetTime(PetscLogDouble*)
     int PetscGetCPUTime(PetscLogDouble*)
+
+    int PetscMallocGetCurrentUsage(PetscLogDouble*)
+    int PetscMemoryGetCurrentUsage(PetscLogDouble*)
