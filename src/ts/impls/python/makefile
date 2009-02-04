@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = python.c
+SOURCEC  = pythonts.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = python.o
+OBJSC    = pythonts.o
 OBJSF    =
 LIBBASE  = libpetscts
 DIRS     = ftn-custom

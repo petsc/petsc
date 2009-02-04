@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = python.c
+SOURCEC  = pythonsnes.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = python.o
+OBJSC    = pythonsnes.o
 OBJSF    =
 LIBBASE  = libpetscsnes
 DIRS     = ftn-custom
