@@ -62,8 +62,11 @@ int main(int argc,char **args)
 
   /* Test LU Factorization */
   ierr = MatGetOrdering(C1,MATORDERING_NATURAL,&perm,&iperm);CHKERRQ(ierr);
-  ierr = MatGetFactor(C1,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
-
+  if (nproc == 1){
+    ierr = MatGetFactor(C1,MAT_SOLVER_PETSC,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetFactor(C1,MAT_SOLVER_PLAPACK,MAT_FACTOR_LU,&F);CHKERRQ(ierr);
+  }
   ierr = MatLUFactorSymbolic(F,C1,perm,iperm,&info);CHKERRQ(ierr);
 
   for (nfact = 0; nfact < 2; nfact++){
@@ -104,8 +107,12 @@ int main(int argc,char **args)
   
   ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr); 
-
-  ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+  
+  if (nproc == 1){
+    ierr = MatGetFactor(C,MAT_SOLVER_PETSC,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetFactor(C,MAT_SOLVER_PLAPACK,MAT_FACTOR_CHOLESKY,&F);CHKERRQ(ierr);
+  }
   ierr = MatCholeskyFactorSymbolic(F,C,perm,&info);CHKERRQ(ierr);
   for (nfact = 0; nfact < 2; nfact++){
     if (!rank) printf(" Cholesky nfact %d\n",nfact);
