@@ -68,8 +68,8 @@
       call VecAXPY(u,none,b,ierr)
       call VecNorm(u,NORM_2,norm,ierr)
       call KSPGetIterationNumber(ksp,its,ierr)
-      print*, 'Number of iterations = ',its
-      print*, 'Residual norm = ',norm
+      write(6,101) norm,its
+ 101  format('Residual norm ',e10.4,' iterations ',i5)
 
 ! Cleanup
       call KSPDestroy(ksp,ierr)
