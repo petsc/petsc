@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   = 
 FFLAGS   =
-SOURCEC  = python.c
+SOURCEC  = pythonmat.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = python.o
+OBJSC    = pythonmat.o
 OBJSF    =
 LIBBASE  = libpetscmat
 DIRS     = ftn-custom

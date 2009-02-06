@@ -496,6 +496,17 @@ runex2_2:
 	      ${RM} -f ex2_2.tmp; \
 	  done; \
 	done;
+runex2_3:
+	-@${MPIEXEC} -n 2 ./ex2 -mat_type mpiaij -rectA > ex2_3.tmp 2>&1;   \
+	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
+	   else echo "Possible problem with ex2_3, diffs above"; fi; \
+	   ${RM} -f ex2_3.tmp
+runex2_4:
+	-@${MPIEXEC} -n 2 ./ex2 -mat_type mpidense -rectA > ex2_3.tmp 2>&1;   \
+	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
+	   else echo "Possible problem with ex2_4, diffs above"; fi; \
+	   ${RM} -f ex2_3.tmp
+
 runex3:
 	-@${MPIEXEC} -n 1 ./ex3 > ex3_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \

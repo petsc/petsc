@@ -222,7 +222,7 @@ static PetscErrorCode MatGetSubMatrix_MPIDense(Mat A,IS isrow,IS iscol,PetscInt 
   bv      = ((Mat_SeqDense *)newmatd->A->data)->v;
   
   for (i=0; i<ncols; i++) {
-    av = v + ((Mat_SeqDense *)newmatd->A->data)->lda*icol[i];
+    av = v + ((Mat_SeqDense *)mat->A->data)->lda*icol[i];
     for (j=0; j<nrows; j++) {
       *bv++ = av[irow[j] - rstart];
     }
