@@ -1097,7 +1097,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecExp(Vec v)
 #undef __FUNCT__
 #define __FUNCT__ "VecLog"
 /*@
-  VecLog - Replaces each component of a vector by log(e^x_i)
+  VecLog - Replaces each component of a vector by log(x_i)
 
   Not collective
 
