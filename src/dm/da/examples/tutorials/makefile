@@ -47,7 +47,7 @@ ex8: ex8.o   chkopts
 	${RM} -f ex8.o
 #-----------------------------------------------------------------
 runex1:
-	-@${MPIEXEC} -n 2 ./ex1
+	-@${MPIEXEC} -n 2 ./ex1 -nox
 runex2:
 	-@${MPIEXEC} -n 3 ./ex2
 runex3:

@@ -74,7 +74,11 @@ int main(int argc,char **argv)
   value = rank+1;
   ierr = VecScale(local,value);CHKERRQ(ierr);
   ierr = DALocalToGlobal(da,local,ADD_VALUES,global);CHKERRQ(ierr);
-
+  
+  ierr = PetscOptionsHasName(PETSC_NULL, "-view_global", &flg);CHKERRQ(ierr);
+  if (flg) { /* view global vector in natural ordering */
+    ierr = VecView(global,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  }
   ierr = DAView(da,viewer);CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
