@@ -90,7 +90,7 @@ namespace ALE {
       }
 #endif
       return id_name;
-    };
+    }
     static void restoreClassName(const char *className) {};
   };
 
@@ -264,7 +264,7 @@ namespace ALE {
     polymorphic_allocator()                                    {};    
     polymorphic_allocator(const polymorphic_allocator& a)      {};
     template <class TT> 
-    polymorphic_allocator(const polymorphic_allocator<TT>& aa){};
+    polymorphic_allocator(const polymorphic_allocator<TT>& aa){}
     ~polymorphic_allocator() {};
 
     // Reproducing the standard allocator interface
@@ -349,7 +349,7 @@ namespace ALE {
     logged_allocator()                                   : polymorphic_allocator<T>()  {__log_initialize(); __alloc_initialize();};    
     logged_allocator(const logged_allocator& a)          : polymorphic_allocator<T>(a) {__log_initialize(); __alloc_initialize();};
     template <class TT> 
-    logged_allocator(const logged_allocator<TT>& aa)    : polymorphic_allocator<T>(aa){__log_initialize(); __alloc_initialize();};
+    logged_allocator(const logged_allocator<TT>& aa)    : polymorphic_allocator<T>(aa){__log_initialize(); __alloc_initialize();}
     ~logged_allocator() {__alloc_finalize();};
     // conversion typedef
     template <class TT>

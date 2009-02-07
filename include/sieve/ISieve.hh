@@ -59,13 +59,13 @@ namespace ALE {
     Interval(Iterator& iterator) {
       this->_min = *std::min_element(iterator.begin(), iterator.end());
       this->_max = (*std::max_element(iterator.begin(), iterator.end()))+1;
-    };
+    }
   public:
-    Interval& operator=(const Interval& interval) {_min = interval.min(); _max = interval.max(); return *this;};
+    Interval& operator=(const Interval& interval) {_min = interval.min(); _max = interval.max(); return *this;}
     friend std::ostream& operator<<(std::ostream& stream, const Interval& interval) {
       stream << "(" << interval.min() << ", " << interval.max() << ")";
       return stream;
-    };
+    }
   public:
     const_iterator begin() const {return const_iterator(this->_min);};
     const_iterator end() const {return const_iterator(this->_max);};
@@ -128,9 +128,9 @@ namespace ALE {
       template<typename Arrow>
       void visitArrow(const Arrow& arrow) const {
         this->os << "["<<this->rank<<"]: " << arrow << std::endl;
-      };
+      }
       template<typename Point>
-      void visitPoint(const Point&) const {};
+      void visitPoint(const Point&) const {}
     };
     class ReversePrintVisitor : public PrintVisitor {
     public:
@@ -138,15 +138,15 @@ namespace ALE {
       template<typename Arrow>
       void visitArrow(const Arrow& arrow) const {
         this->os << "["<<this->rank<<"]: " << arrow.target << "<----" << arrow.source << std::endl;
-      };
+      }
       template<typename Arrow>
       void visitArrow(const Arrow& arrow, const int orientation) const {
         this->os << "["<<this->rank<<"]: " << arrow.target << "<----" << arrow.source << ": " << orientation << std::endl;
-      };
+      }
       template<typename Point>
-      void visitPoint(const Point&) const {};
+      void visitPoint(const Point&) const {}
       template<typename Point>
-      void visitPoint(const Point&, const int) const {};
+      void visitPoint(const Point&, const int) const {}
     };
     template<typename Sieve, typename Visitor = NullVisitor<Sieve> >
     class PointRetriever {
@@ -166,7 +166,7 @@ namespace ALE {
       inline virtual bool accept(const point_type& point) {return true;};
     public:
       PointRetriever() : unique(false), i(0), o(0), skip(0), limit(0) {
-        this->size    = -1;
+        this->size    = 0;
         this->points  = NULL;
         this->oPoints = NULL;
       };
@@ -230,11 +230,11 @@ namespace ALE {
         }
       };
     public:
-      const size_t               getSize() const {return this->i;};
-      const point_type          *getPoints() const {return this->points;};
-      const size_t               getOrientedSize() const {return this->o;};
-      const oriented_point_type *getOrientedPoints() const {return this->oPoints;};
-      void clear() {this->i = this->o = 0;};
+      size_t                     getSize() const {return this->i;}
+      const point_type          *getPoints() const {return this->points;}
+      size_t                     getOrientedSize() const {return this->o;}
+      const oriented_point_type *getOrientedPoints() const {return this->oPoints;}
+      void clear() {this->i = this->o = 0;}
       void setSize(const size_t s) {
         if (this->points) {
           delete [] this->points;
@@ -243,7 +243,7 @@ namespace ALE {
         this->size    = s;
         this->points  = new point_type[this->size];
         this->oPoints = new oriented_point_type[this->size];
-      };
+      }
       void setSkip(size_t s) {this->skip = s;};
       void setLimit(size_t l) {this->limit = l;};
     };
@@ -335,12 +335,12 @@ namespace ALE {
         }
       };
     public:
-      const size_t      getSize() const {return this->i;};
-      const point_type *getPoints() const {return this->points;};
-      const size_t      getOrientedSize() const {return this->o;};
-      const oriented_point_type *getOrientedPoints() const {return this->oPoints;};
-      void clear() {this->i = 0; this->o = 0;};
-      void useRenumbering(const bool renumber) {this->renumber = renumber;};
+      size_t            getSize() const {return this->i;}
+      const point_type *getPoints() const {return this->points;}
+      size_t            getOrientedSize() const {return this->o;}
+      const oriented_point_type *getOrientedPoints() const {return this->oPoints;}
+      void clear() {this->i = 0; this->o = 0;}
+      void useRenumbering(const bool renumber) {this->renumber = renumber;}
     };
     template<typename Sieve, int size, typename Visitor = NullVisitor<Sieve> >
     class ArrowRetriever {
@@ -376,11 +376,11 @@ namespace ALE {
         this->visitor->visitPoint(point, orientation);
       };
     public:
-      const size_t               getSize() const {return this->i;};
-      const point_type          *getArrows() const {return this->arrows;};
-      const size_t               getOrientedSize() const {return this->o;};
-      const oriented_arrow_type *getOrientedArrows() const {return this->oArrows;};
-      void clear() {this->i = this->o = 0;};
+      size_t                     getSize() const {return this->i;}
+      const point_type          *getArrows() const {return this->arrows;}
+      size_t                     getOrientedSize() const {return this->o;}
+      const oriented_arrow_type *getOrientedArrows() const {return this->oArrows;}
+      void clear() {this->i = this->o = 0;}
     };
     template<typename Sieve, typename Visitor>
     class ConeVisitor {
@@ -533,9 +533,9 @@ namespace ALE {
             this->values[i] = v[d];
           }
         }
-      };
+      }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) {};
+      void visitArrow(const Arrow& arrow, const int orientation) {}
     public:
       const value_type *getValues() const {return this->values;};
       int  getSize() const {return this->i;};
@@ -566,9 +566,9 @@ namespace ALE {
         const int dim = section.getFiberDimension(point);
         this->section.updatePoint(point, &this->values[this->i], orientation);
         this->i += dim;
-      };
+      }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) {};
+      void visitArrow(const Arrow& arrow, const int orientation) {}
     };
     template<typename Section>
     class UpdateAllVisitor {
@@ -585,9 +585,9 @@ namespace ALE {
         const int dim = section.getFiberDimension(point);
         this->section.updatePointAll(point, &this->values[this->i], orientation);
         this->i += dim;
-      };
+      }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) {};
+      void visitArrow(const Arrow& arrow, const int orientation) {}
     };
     template<typename Section>
     class UpdateAddVisitor {
@@ -604,9 +604,9 @@ namespace ALE {
         const int dim = section.getFiberDimension(point);
         this->section.updateAddPoint(point, &this->values[this->i], orientation);
         this->i += dim;
-      };
+      }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) {};
+      void visitArrow(const Arrow& arrow, const int orientation) {}
     };
     template<typename Section, typename Order, typename Value>
     class IndicesVisitor {
@@ -749,9 +749,9 @@ namespace ALE {
         } else {
           this->getConstrainedIndices(point, orientation);
         }
-      };
+      }
       template<typename Arrow>
-      void visitArrow(const Arrow& arrow, const int orientation) {};
+      void visitArrow(const Arrow& arrow, const int orientation) {}
     public:
       const value_type *getValues() const {return this->values;};
       int  getSize() const {return this->i;};
@@ -946,7 +946,7 @@ namespace ALE {
         }
       }
 #endif
-    };
+    }
   };
 
   namespace IFSieveDef {
@@ -1218,12 +1218,12 @@ namespace ALE {
       this->prefixSum(this->supportOffsets);
       this->createPoints();
       this->calculateBaseAndCapSize();
-    };
+    }
     // Purely for backwards compatibility
     template<typename Color>
     void addArrow(const point_type& p, const point_type& q, const Color c) {
       this->addArrow(p, q);
-    };
+    }
     void addArrow(const point_type& p, const point_type& q) {
       if (!this->chart.hasPoint(q)) {
         if (!this->newCones[q].size() && this->chart.hasPoint(q)) {
@@ -1456,20 +1456,20 @@ namespace ALE {
       }
       for(index_type i = this->chart.min(); i <= this->chart.max(); ++i) {indexAlloc.destroy(offsets+i);}
       indexAlloc.deallocate(offsets, this->chart.size()+1);
-    };
+    }
     index_type getBaseSize() const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
       return this->baseSize;
-    };
+    }
     index_type getCapSize() const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
       return this->capSize;
-    };
+    }
   public: // Traversals
     template<typename Visitor>
     void roots(const Visitor& v) const {
       this->roots(const_cast<Visitor&>(v));
-    };
+    }
     template<typename Visitor>
     void roots(Visitor& v) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1481,11 +1481,11 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     template<typename Visitor>
     void leaves(const Visitor& v) const {
       this->leaves(const_cast<Visitor&>(v));
-    };
+    }
     template<typename Visitor>
     void leaves(Visitor& v) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1497,11 +1497,11 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     template<typename Visitor>
     void base(const Visitor& v) const {
       this->base(const_cast<Visitor&>(v));
-    };
+    }
     template<typename Visitor>
     void base(Visitor& v) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1511,11 +1511,11 @@ namespace ALE {
           v.visitPoint(p);
         }
       }
-    };
+    }
     template<typename Visitor>
     void cap(const Visitor& v) const {
       this->cap(const_cast<Visitor&>(v));
-    };
+    }
     template<typename Visitor>
     void cap(Visitor& v) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1525,7 +1525,7 @@ namespace ALE {
           v.visitPoint(p);
         }
       }
-    };
+    }
     template<typename PointSequence, typename Visitor>
     void cone(const PointSequence& points, Visitor& v) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1540,7 +1540,7 @@ namespace ALE {
           v.visitPoint(this->cones[c]);
         }
       }
-    };
+    }
     template<typename Visitor>
     void cone(const point_type& p, Visitor& v) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1552,7 +1552,7 @@ namespace ALE {
         v.visitArrow(arrow_type(this->cones[c], p));
         v.visitPoint(this->cones[c]);
       }
-    };
+    }
     const Obj<coneSequence>& cone(const point_type& p) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
       if (!this->chart.hasPoint(p)) {
@@ -1561,7 +1561,7 @@ namespace ALE {
         this->coneSeq->reset(this->cones, this->coneOffsets[p], this->coneOffsets[p+1]);
       }
       return this->coneSeq;
-    };
+    }
     template<typename PointSequence, typename Visitor>
     void support(const PointSequence& points, Visitor& v) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1576,7 +1576,7 @@ namespace ALE {
           v.visitPoint(this->supports[s]);
         }
       }
-    };
+    }
     template<typename Visitor>
     void support(const point_type& p, Visitor& v) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
@@ -1588,7 +1588,7 @@ namespace ALE {
         v.visitArrow(arrow_type(p, this->supports[s]));
         v.visitPoint(this->supports[s]);
       }
-    };
+    }
     const Obj<supportSequence>& support(const point_type& p) const {
       if (!this->pointAllocated) {throw ALE::Exception("IFSieve points have not been allocated.");}
       if (!this->chart.hasPoint(p)) {
@@ -1597,7 +1597,7 @@ namespace ALE {
         this->supportSeq->reset(this->supports, this->supportOffsets[p], this->supportOffsets[p+1]);
       }
       return this->supportSeq;
-    };
+    }
     template<typename Visitor>
     void orientedCone(const point_type& p, Visitor& v) const {
       if (!this->orientCones) {throw ALE::Exception("IFSieve cones have not been oriented.");}
@@ -1610,7 +1610,7 @@ namespace ALE {
         v.visitArrow(arrow_type(this->cones[c], p), this->coneOrientations[c]);
         v.visitPoint(this->cones[c], this->coneOrientations[c]);
       }
-    };
+    }
     template<typename Visitor>
     void orientedReverseCone(const point_type& p, Visitor& v) const {
       if (!this->orientCones) {throw ALE::Exception("IFSieve cones have not been oriented.");}
@@ -1623,7 +1623,7 @@ namespace ALE {
         v.visitArrow(arrow_type(this->cones[c], p), this->coneOrientations[c]);
         v.visitPoint(this->cones[c], this->coneOrientations[c] ? -(this->coneOrientations[c]+1): 0);
       }
-    };
+    }
     // Currently does only 1 level
     //   Does not check for uniqueness
     template<typename Visitor>
@@ -1644,7 +1644,7 @@ namespace ALE {
         }
         if (this->coneOffsets[c1+1] > this->coneOffsets[c1]) {throw ALE::Exception("Cannot handle multiple level meet()");}
       }
-    };
+    }
     // Currently does only 1 level
     template<typename Sequence, typename Visitor>
     void join(const Sequence& points, Visitor& v) const {
@@ -1671,7 +1671,7 @@ namespace ALE {
       for(typename pointSet::const_iterator p_iter = intersect[c].begin(); p_iter != intersect[c].end(); ++p_iter) {
         v.visitPoint(*p_iter);
       }
-    };
+    }
   public: // Viewing
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
       ostringstream txt;
@@ -1804,7 +1804,7 @@ namespace ALE {
         isieve.setSupport(renumbering[*c_iter], points);
       }
       delete [] points;
-    };
+    }
     template<typename Sieve, typename ISieve, typename Renumbering, typename ArrowSection>
     static void convertOrientation(Sieve& sieve, ISieve& isieve, Renumbering& renumbering, ArrowSection *orientation) {
       if (isieve.getMaxConeSize() < 0) return;
@@ -1823,7 +1823,7 @@ namespace ALE {
         isieve.setConeOrientation(orientations, renumbering[*b_iter]);
       }
       delete [] orientations;
-    };
+    }
     template<typename Section, typename ISection, typename Renumbering>
     static void convertCoordinates(Section& coordinates, ISection& icoordinates, Renumbering& renumbering) {
       const typename Section::chart_type& chart = coordinates.getChart();
@@ -1842,7 +1842,7 @@ namespace ALE {
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         icoordinates.updatePoint(*p_iter, coordinates.restrictPoint(*p_iter));
       }
-    };
+    }
     template<typename IMesh, typename Label>
     static void convertLabel(IMesh& imesh, const std::string& name, const Obj<Label>& oldLabel) {
       const Obj<typename IMesh::label_type>&        label = imesh.createLabel(name);
@@ -1866,7 +1866,7 @@ namespace ALE {
         }
       }
       label->recalculateLabel();
-    };
+    }
     template<typename Mesh, typename IMesh, typename Renumbering>
     static void convertMesh(Mesh& mesh, IMesh& imesh, Renumbering& renumbering, bool renumber = true) {
       convertSieve(*mesh.getSieve(), *imesh.getSieve(), renumbering, renumber);
@@ -1886,7 +1886,7 @@ namespace ALE {
         imesh.setLabel(l_iter->first, l_iter->second);
 #endif
       }
-    };
+    }
   };
 }
 

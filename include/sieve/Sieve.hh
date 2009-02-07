@@ -157,7 +157,7 @@ namespace ALE {
          virtual const int& height()  const {return this->_itor->height;};
        };
        
-       ValueSequence(const PointSequence& seq)           : _index(seq._index), _value(seq._value) {};
+       ValueSequence(const ValueSequence& seq) : _index(seq._index), _value(seq._value) {};
        ValueSequence(typename traits::index_type& index, const value_type& value) : _index(index), _value(value) {};
        virtual ~ValueSequence(){};
        
@@ -193,7 +193,7 @@ namespace ALE {
          virtual const int& marker()  const {return this->_itor->marker;};
        };
        
-       TwoValueSequence(const PointSequence& seq)           : _index(seq._index), _valueA(seq._valueA), _valueB(seq._valueB), _useTwoValues(seq._useTwoValues) {};
+       TwoValueSequence(const TwoValueSequence& seq) : _index(seq._index), _valueA(seq._valueA), _valueB(seq._valueB), _useTwoValues(seq._useTwoValues) {};
        TwoValueSequence(typename traits::index_type& index, const value_type& valueA) : _index(index), _valueA(valueA), _valueB(value_type()), _useTwoValues(false) {};
        TwoValueSequence(typename traits::index_type& index, const value_type& valueA, const value_type& valueB) : _index(index), _valueA(valueA), _valueB(valueB), _useTwoValues(true) {};
        virtual ~TwoValueSequence(){};

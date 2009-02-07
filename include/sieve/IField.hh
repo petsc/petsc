@@ -63,13 +63,13 @@ namespace ALE {
       for(typename Points::const_iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->checkPoint(*p_iter);
       }
-    };
+    }
     template<typename Points>
     void addPoint(const Points& points) {
       for(typename Points::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         this->checkPoint(*p_iter);
       }
-    };
+    }
     value_type getDefaultValue() {return this->_value[1];};
     void setDefaultValue(const value_type value) {this->_value[1] = value;};
     void copy(const Obj<IConstantSection>& section) {
@@ -78,23 +78,23 @@ namespace ALE {
       this->_chart = chart;
       this->_value[0] = section->restrictPoint(*chart.begin())[0];
       this->_value[1] = section->restrictPoint(*chart.begin())[1];
-    };
+    }
   public: // Sizes
     ///void clear() {};
     int getFiberDimension(const point_type& p) const {
       if (this->hasPoint(p)) return 1;
       return 0;
-    };
+    }
     void setFiberDimension(const point_type& p, int dim) {
       this->checkDimension(dim);
       this->addPoint(p);
-    };
+    }
     template<typename Sequence>
     void setFiberDimension(const Obj<Sequence>& points, int dim) {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
-    };
+    }
     void addFiberDimension(const point_type& p, int dim) {
       if (this->hasPoint(p)) {
         ostringstream msg;
@@ -103,8 +103,8 @@ namespace ALE {
       } else {
         this->setFiberDimension(p, dim);
       }
-    };
-    int size(const point_type& p) {return this->getFiberDimension(p);};
+    }
+    int size(const point_type& p) {return this->getFiberDimension(p);}
   public: // Restriction
     void clear() {};
     const value_type *restrictSpace() const {
@@ -254,7 +254,7 @@ namespace ALE {
       for(typename Points::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, fiberDim);
       }
-    };
+    }
     void copy(const Obj<IUniformSection>& section) {
       this->getAtlas()->copy(section->getAtlas());
       const chart_type& chart = section->getChart();
@@ -262,27 +262,27 @@ namespace ALE {
       for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         this->updatePoint(*c_iter, section->restrictPoint(*c_iter));
       }
-    };
-    const value_type *getDefault() const {return this->_emptyValue;};
-    void setDefault(const value_type v[]) {for(int i = 0; i < fiberDim; ++i) {this->_emptyValue.v[i] = v[i];}};
+    }
+    const value_type *getDefault() const {return this->_emptyValue;}
+    void setDefault(const value_type v[]) {for(int i = 0; i < fiberDim; ++i) {this->_emptyValue.v[i] = v[i];}}
   public: // Sizes
     void clear() {
       this->_atlas->clear(); 
-    };
+    }
     int getFiberDimension(const point_type& p) const {
       return this->_atlas->restrictPoint(p)[0];
-    };
+    }
     void setFiberDimension(const point_type& p, int dim) {
       this->checkDimension(dim);
       this->_atlas->addPoint(p);
       this->_atlas->updatePoint(p, &dim);
-    };
+    }
     template<typename Sequence>
     void setFiberDimension(const Obj<Sequence>& points, int dim) {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
-    };
+    }
     void setFiberDimension(const std::set<point_type>& points, int dim) {
       for(typename std::set<point_type>::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
@@ -338,7 +338,7 @@ namespace ALE {
         max = std::max(extractor(*p_iter), max);
       }
       return reallocatePoint(chart_type(min, max+1));
-    };
+    }
   public: // Restriction
     // Return a pointer to the entire contiguous storage array
     const values_type& restrictSpace() const {
@@ -465,6 +465,7 @@ namespace ALE {
       oldAtlasArray += oldChart.min();
       atlas_alloc_type(this->_allocator).deallocate(oldAtlasArray, oldAtlasSize);
       ///std::cout << "In ISection, Freed IUniformSection data" << std::endl;
+      return true;
     };
   public:
     // Return the free values on a point

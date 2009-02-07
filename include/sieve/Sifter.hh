@@ -212,7 +212,7 @@ namespace ALE {
         if (i != index.end()) { // Point exists
           i = index.erase(i);
         }*/
-        this->erase(p);
+        this->set.erase(p);
       };
       //
       void adjustDegree(const typename traits::rec_type::point_type& p, int delta) {
@@ -422,7 +422,7 @@ namespace ALE {
             os  << ")";
           }
           os << " ]" << std::endl;
-        };
+        }
       };// class ArrowSequence    
     };// class ArrowContainerTraits
   
@@ -748,12 +748,12 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     Obj<typename traits::coneSet> 
     cone(const Obj<InputSequence>& points) {
       return this->cone(points, typename traits::color_type(), false);
-    };
+    }
 #ifdef SLOW
     Obj<typename traits::coneSequence> 
     cone(const typename traits::target_type& p, const typename traits::color_type& color) {
       return typename traits::coneSequence(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p, color);
-    };
+    }
 #else
     const Obj<typename traits::coneSequence>&
     cone(const typename traits::target_type& p, const typename traits::color_type& color) {
@@ -777,7 +777,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         cone->insert(pCone->begin(), pCone->end());
       }
       return cone;
-    };
+    }
     template<typename PointCheck>
     bool coneContains(const typename traits::target_type& p, const PointCheck& checker) {
       typename traits::coneSequence cone(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p);
@@ -786,7 +786,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         if (checker(*c_iter, p)) return true;
       }
       return false;
-    };
+    }
     template<typename PointProcess>
     void coneApply(const typename traits::target_type& p, PointProcess& processor) {
       typename traits::coneSequence cone(*this, ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set), p);
@@ -794,7 +794,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       for(typename traits::coneSequence::iterator c_iter = cone.begin(); c_iter != cone.end(); ++c_iter) {
         processor(*c_iter, p);
       }
-    };
+    }
     int getConeSize(const typename traits::target_type& p) {
       return this->cone(p)->size();
     }
@@ -802,7 +802,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     Obj<typename traits::supportSequence> 
     support(const typename traits::source_type& p) {
       return typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p);
-    };
+    }
 #else
     const Obj<typename traits::supportSequence>&
     support(const typename traits::source_type& p) {
@@ -829,7 +829,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     Obj<typename traits::supportSet>      
     support(const Obj<InputSequence>& sources) {
       return this->support(sources, typename traits::color_type(), false);
-    };
+    }
     template<class InputSequence>
     Obj<typename traits::supportSet>      
     support(const Obj<InputSequence>& points, const typename traits::color_type& color, bool useColor = true){
@@ -844,7 +844,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         supp->insert(pSupport->begin(), pSupport->end());
       }
       return supp;
-    };
+    }
     template<typename PointCheck>
     bool supportContains(const typename traits::source_type& p, const PointCheck& checker) {
       typename traits::supportSequence support(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p);
@@ -853,7 +853,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         if (checker(*s_iter, p)) return true;
       }
       return false;
-    };
+    }
     template<typename PointProcess>
     void supportApply(const typename traits::source_type& p, PointProcess& processor) {
       typename traits::supportSequence support(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p);
@@ -861,7 +861,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       for(typename traits::supportSequence::iterator s_iter = support.begin(); s_iter != support.end(); ++s_iter) {
         processor(*s_iter, p);
       }
-    };
+    }
     int getSupportSize(const typename traits::source_type& p) {
       return this->support(p)->size();
     }
@@ -924,7 +924,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           os << cp << std::endl;
         }
       }
-    };
+    }
     // A parallel viewer
     PetscErrorCode view(const char* label = NULL, bool raw = false){
       PetscErrorCode ierr;
@@ -1130,14 +1130,14 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 
     void addCone(const typename traits::source_type& source, const typename traits::target_type& target){
       this->addArrow(source, target);
-    };
+    }
     template<class sourceInputSequence> 
     void addCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target) {
       this->addCone(sources, target, typename traits::color_type());
-    };
+    }
     void addCone(const typename traits::source_type& source, const typename traits::target_type& target, const typename traits::color_type& color) {
       this->addArrow(source, target, color);
-    };
+    }
     template<class sourceInputSequence> 
     void 
     addCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target, const typename traits::color_type& color){
@@ -1146,7 +1146,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         if (this->_debug > 1) {std::cout << "Adding arrow from " << *iter << " to " << target << "(" << color << ")" << std::endl;}
         this->addArrow(*iter, target, color);
       }
-    };
+    }
     void clearCone(const typename traits::target_type& t) {
       clearCone(t, typename traits::color_type(), false);
     };
@@ -1213,7 +1213,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       for(typename std::set<typename traits::target_type>::iterator r_iter = remove.begin(); r_iter != remove.end(); ++r_iter) {
         this->removeBasePoint(*r_iter);
       }
-    };
+    }
 
     template<class InputSequence>
     void
@@ -1221,7 +1221,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       for(typename InputSequence::iterator pi = points->begin(); pi != points->end(); pi++) {
         this->removeBasePoint(*pi);
       }
-    };
+    }
 
     template<class InputSequence>
     void
@@ -1233,7 +1233,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           this->removeCapPoint(*ci);
         }
       }
-    };
+    }
 
     template<class InputSequence>
     void
@@ -1241,7 +1241,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       for(typename InputSequence::iterator pi = points->begin(); pi != points->end(); pi++) {
         this->removeCapPoint(*pi);
       }
-    };
+    }
 
     void clearSupport(const typename traits::source_type& s) {
       clearSupport(s, typename traits::color_type(), false);
@@ -1264,25 +1264,25 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
            this->_base.adjustDegree(j->target, -1); */
       }
       suppIndex.erase(i,ii);
-    };
+    }
     void setCone(const typename traits::source_type& source, const typename traits::target_type& target){
       this->clearCone(target, typename traits::color_type(), false); this->addCone(source, target);
-    };
+    }
     template<class sourceInputSequence> 
     void setCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target) {
       this->clearCone(target, typename traits::color_type(), false); this->addCone(sources, target, typename traits::color_type());
-    };
+    }
     void setCone(const typename traits::source_type& source, const typename traits::target_type& target, const typename traits::color_type& color) {
       this->clearCone(target, color, true); this->addCone(source, target, color);
-    };
+    }
     template<class sourceInputSequence> 
     void setCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target, const typename traits::color_type& color){
       this->clearCone(target, color, true); this->addCone(sources, target, color);
-    };
+    }
     template<class targetInputSequence> 
     void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence >& targets) {
       this->addSupport(source, targets, typename traits::color_type());
-    };
+    }
     template<class targetInputSequence> 
     void addSupport(const typename traits::source_type& source, const Obj<targetInputSequence>& targets, const typename traits::color_type& color) {
       const typename targetInputSequence::iterator end = targets->end();
@@ -1290,7 +1290,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       for(typename targetInputSequence::iterator iter = targets->begin(); iter != end; ++iter) {
         this->addArrow(source, *iter, color);
       }
-    };
+    }
     template<typename Sifter_>
     void add(const Obj<Sifter_>& cbg, bool noNewPoints = false) {
       typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename Sifter_::traits::arrowInd>(cbg->_arrows.set);
@@ -1310,7 +1310,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           this->addCapPoint(*c_iter);
         }
       }
-    };
+    }
   }; // class ASifter
 
   // A UniSifter aka Sifter
@@ -1383,7 +1383,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         changeColor(a);
         this->addArrow(a);
       }
-    };
+    }
 
     struct ColorSetter {
       ColorSetter(const typename traits::color_type& color) : _color(color) {}; 
