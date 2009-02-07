@@ -264,24 +264,81 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   DA             da;
-  Vec            natural;
-  const char     *prefix;
+  hsize_t        dim,dims[4];
+  hsize_t        count[4];
+  hsize_t        offset[4];
+  PetscInt       cnt = 0;
+  PetscScalar    *x;
+  const char     *vecname;
+  hid_t          filespace; /* file dataspace identifier */
+  hid_t	         plist_id;  /* property list identifier */
+  hid_t          dset_id;   /* dataset identifier */
+  hid_t          memspace;  /* memory dataspace identifier */
+  hid_t          file_id;
+  herr_t         status;
 
   PetscFunctionBegin;
-
+  ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
-  /* call viewer on natural ordering */
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
-  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
-  ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
-  ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
-  ierr = PetscObjectName((PetscObject)xin);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
-  ierr = VecView(natural,viewer);CHKERRQ(ierr);
-  ierr = VecDestroy(natural);CHKERRQ(ierr);
+  /* Create the dataspace for the dataset */
+  dim       = da->dim + ((da->w == 1) ? 0 : 1);
+  if (da->w > 1) dims[cnt++] = da->w;
+  dims[cnt++]   = da->M;
+  dims[cnt++]   = da->N;
+  dims[cnt]     = da->P;
+  filespace = H5Screate_simple(dim, dims, NULL); 
+  if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+
+  /* Create the dataset with default properties and close filespace */
+  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  dset_id = H5Dcreate2(file_id, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+#else
+  dset_id = H5Dcreate(file_id, vecname, H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
+#endif
+  if (dset_id == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Dcreate2()");
+  status = H5Sclose(filespace);CHKERRQ(status);
+
+  /* Each process defines a dataset and writes it to the hyperslab in the file */
+  cnt = 0; 
+  if (da->w > 1) offset[cnt++] = 0;
+  offset[cnt++] = da->xs/da->w;
+  offset[cnt++] = da->ys;
+  offset[cnt++] = da->zs;
+  cnt = 0; 
+  if (da->w > 1) count[cnt++] = da->w;
+  count[cnt++] = (da->xe - da->xs)/da->w;
+  count[cnt++] = da->ye - da->ys;
+  count[cnt++] = da->ze - da->zs;
+  memspace = H5Screate_simple(dim, count, NULL);
+  if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+
+
+  filespace = H5Dget_space(dset_id);
+  if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Dget_space()");
+  status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
+
+  /* Create property list for collective dataset write */
+  plist_id = H5Pcreate(H5P_DATASET_XFER);
+  if (plist_id == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Pcreate()");
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
+  status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
+#endif
+  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
+
+  ierr = VecGetArray(xin, &x);CHKERRQ(ierr);
+  status = H5Dwrite(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, x);CHKERRQ(status);
+  status = H5Fflush(file_id, H5F_SCOPE_GLOBAL);CHKERRQ(status);
+  ierr = VecRestoreArray(xin, &x);CHKERRQ(ierr);
+
+  /* Close/release resources */
+  status = H5Pclose(plist_id);CHKERRQ(status);
+  status = H5Sclose(filespace);CHKERRQ(status)
+  status = H5Sclose(memspace);CHKERRQ(status);
+  status = H5Dclose(dset_id);CHKERRQ(status);
+  ierr = PetscInfo1(xin,"Wrote Vec object with name %s\n",vecname);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 #endif
@@ -500,23 +557,74 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Ve
 {
   DA             da;
   PetscErrorCode ierr;
-  Vec            natural;
-  const char     *prefix;
-
+  hsize_t        dim,dims[4];
+  hsize_t        count[4];
+  hsize_t        offset[4];
+  PetscInt       cnt = 0;
+  PetscScalar    *x;
+  const char     *vecname;
+  hid_t          filespace; /* file dataspace identifier */
+  hid_t	         plist_id;  /* property list identifier */
+  hid_t          dset_id;   /* dataset identifier */
+  hid_t          memspace;  /* memory dataspace identifier */
+  hid_t          file_id;
+  herr_t         status;
 
   PetscFunctionBegin;
+  ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
-  ierr = PetscObjectGetOptionsPrefix((PetscObject)xin,&prefix);CHKERRQ(ierr);
-  ierr = DACreateNaturalVector(da,&natural);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
-  ierr = PetscObjectSetOptionsPrefix((PetscObject)natural,prefix);CHKERRQ(ierr);
-  ierr = VecLoadIntoVector(viewer,natural);CHKERRQ(ierr);
-  ierr = DANaturalToGlobalBegin(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
-  ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
-  ierr = VecDestroy(natural);CHKERRQ(ierr);
-  ierr = PetscInfo(xin,"Loading vector from natural ordering into DA\n");CHKERRQ(ierr);
+  /* Create the dataspace for the dataset */
+  dim       = da->dim + ((da->w == 1) ? 0 : 1);
+  if (da->w > 1) dims[cnt++] = da->w;
+  dims[cnt++]   = da->M;
+  dims[cnt++]   = da->N;
+  dims[cnt]     = da->P;
+
+  /* Create the dataset with default properties and close filespace */
+  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  dset_id = H5Dopen2(file_id, vecname, H5P_DEFAULT);
+#else
+  dset_id = H5Dopen(file_id, vecname);
+#endif
+  if (dset_id == -1) SETERRQ1(PETSC_ERR_LIB,"Cannot H5Dopen2() with Vec named %s",vecname);
+  filespace = H5Dget_space(dset_id);
+
+  /* Each process defines a dataset and reads it from the hyperslab in the file */
+  cnt = 0; 
+  if (da->w > 1) offset[cnt++] = 0;
+  offset[cnt++] = da->xs/da->w;
+  offset[cnt++] = da->ys;
+  offset[cnt++] = da->zs;
+  cnt = 0; 
+  if (da->w > 1) count[cnt++] = da->w;
+  count[cnt++] = (da->xe - da->xs)/da->w;
+  count[cnt++] = da->ye - da->ys;
+  count[cnt++] = da->ze - da->zs;
+  memspace = H5Screate_simple(dim, count, NULL);
+  if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
+
+  status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
+
+  /* Create property list for collective dataset write */
+  plist_id = H5Pcreate(H5P_DATASET_XFER);
+  if (plist_id == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Pcreate()");
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
+  status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
+#endif
+  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
+
+  ierr = VecGetArray(xin, &x);CHKERRQ(ierr);
+  status = H5Dread(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, x);CHKERRQ(status);
+  ierr = VecRestoreArray(xin, &x);CHKERRQ(ierr);
+
+  /* Close/release resources */
+  status = H5Pclose(plist_id);CHKERRQ(status);
+  status = H5Sclose(filespace);CHKERRQ(status);
+  status = H5Sclose(memspace);CHKERRQ(status);
+  status = H5Dclose(dset_id);CHKERRQ(status);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

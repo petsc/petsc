@@ -136,6 +136,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP ksp,const char pref
 .  model - use model 1, model 2 or 0 to turn it off
 -  size - size of subspace used to generate initial guess
 
+    Options Database:
+.   -ksp_fischer_guess <model,size> - uses the Fischer initial guess generator for repeated linear solves
+
    Level: advanced
 
 .keywords: KSP, set, options, prefix, database

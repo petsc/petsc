@@ -6256,6 +6256,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrixRaw(Mat mat,PetscInt nrows,cons
    Concepts: stash^setting matrix size
    Concepts: matrices^stash
 
+.seealso: MatAssemblyBegin(), MatAssemblyEnd(), Mat, MatStashGetInfo()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatStashSetInitialSize(Mat mat,PetscInt size, PetscInt bsize)
 {

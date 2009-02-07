@@ -239,14 +239,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryGetDescriptor(PetscViewer viewer
     Not Collective
 
     Input Paramter:
-.   viewer - PetscViewer context, obtained from PetscViewerBinaryOpen()
+.   viewer - PetscViewer context, obtained from PetscViewerCreate()
 
     Options Database Key:
 .   -viewer_binary_skip_info
 
     Level: advanced
 
-    Notes: This must be called after PetscViewerSetType() but before PetscViewerFileSetName()
+    Notes: This must be called after PetscViewerSetType() but before PetscViewerFileSetName(). If you use PetscViewerBinaryOpen() then 
+    you can only skip the info file with the -viewer_binary_skip_info flag. To use the function you must open the
+    viewer with PetscViewerCreate(), PetscViewerSetType(), PetscViewerFileSetName().
+
+    The .info contains meta information about the data in the binary file, for example the block size if it was
+    set for a vector or matrix.
 
    Concepts: PetscViewerBinary^accessing info file
 

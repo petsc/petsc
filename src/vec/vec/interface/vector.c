@@ -659,6 +659,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
 -    PETSC_VIEWER_ASCII_COMMON - prints vector contents, using a 
          format common among all vector types
 
+   Notes for HDF5 Viewer: the name of the Vec (given with PetscObjectSetName() is the name that is used
+   for the object in the HDF5 file. If you wish to store the same vector to the HDF5 viewer (with different values,
+   obviously) several times, you must change its name each time before calling the VecView(). The name you use
+   here should equal the name that you use in the Vec object that you use with VecLoadIntoVector().
+
    See the manual page for VecLoad() on the exact format the binary viewer stores
    the values in the file.
 
@@ -953,7 +958,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector"
 /*@C 
-  VecLoadIntoVector - Loads a vector that has been stored in binary format
+  VecLoadIntoVector - Loads a vector that has been stored in binary (or HDF5) format 
   with VecView().
 
   Collective on PetscViewer 
@@ -970,6 +975,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
 
   Use VecLoad() to create the vector as the values are read in
 
+  If using HDF5, you must assign the Vec the same name as was used in the Vec that was stored
+  in the file using PetscObjectSetName(). Otherwise you will get the error message:
+  "Cannot H5Dopen2() with Vec named NAMEOFOBJECT"
+
   Notes for advanced users:
   Most users should not need to know the details of the binary storage
   format, since VecLoad() and VecView() completely hide these details.
@@ -980,13 +989,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecResetArray(Vec vec)
      int    number of rows
      PetscScalar *values of all nonzeros
 .ve
-
-   Note for Cray users, the int's stored in the binary file are 32 bit
-integers; not 64 as they are represented in the memory, so if you
-write your own routines to read/write these binary files from the Cray
-you need to adjust the integer sizes that you read in, see
-PetscBinaryRead() and PetscBinaryWrite() to see how this may be
-done.
 
    In addition, PETSc automatically does the byte swapping for
 machines that store the bytes reversed, e.g.  DEC alpha, freebsd,

@@ -162,6 +162,7 @@ PetscErrorCode VecLoad_HDF5(PetscViewer viewer,Vec *newvec)
   MPI_Comm       comm;
 
   PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoadIntoVector() after setting name of Vec with PetscObjectSetName()");
   ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
@@ -438,7 +439,7 @@ PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
 #else
   dset_id = H5Dopen(file_id, vecname);
 #endif
-  if (dset_id == -1) SETERRQ(PETSC_ERR_LIB,"Could not H5Dopen()");
+  if (dset_id == -1) SETERRQ1(PETSC_ERR_LIB,"Could not H5Dopen() with Vec named %s",vecname);
 
   /* Retrieve the dataspace for the dataset */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
