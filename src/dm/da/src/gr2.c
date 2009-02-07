@@ -550,6 +550,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
 }
 EXTERN_C_END
 
+#if defined(PETSC_HAVE_HDF5)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "VecLoadIntoVector_HDF5_DA"
@@ -628,6 +629,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Ve
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+#endif
 
 
 EXTERN_C_BEGIN
@@ -640,7 +642,10 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
   Vec            natural;
   const char     *prefix;
   PetscInt       bs;
-  PetscTruth     flag,ishdf5;
+  PetscTruth     flag;
+#if defined(PETSC_HAVE_HDF5)
+  PetscTruth     ishdf5;
+#endif
 #if defined(PETSC_HAVE_MPIIO)
   PetscTruth     isMPIIO;
 #endif
@@ -649,11 +654,13 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
   ierr = PetscObjectQuery((PetscObject)xin,"DA",(PetscObject*)&da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
+#if defined(PETSC_HAVE_HDF5)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
   if (ishdf5) {
     ierr = VecLoadIntoVector_HDF5_DA(viewer,xin);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
+#endif
 
 #if defined(PETSC_HAVE_MPIIO)
   ierr = PetscViewerBinaryGetMPIIO(viewer,&isMPIIO);CHKERRQ(ierr);
