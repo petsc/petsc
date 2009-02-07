@@ -216,13 +216,22 @@ int main(int argc, char *args[])
   ierr = VecSetBlockSize(cellCenters,3);CHKERRQ(ierr);
   ierr = VecGetArray(cellCenters,&cc);CHKERRQ(ierr);
   for (i=0; i<data.numCells; i++) {
-    cc[3*i] = data.cellX[i];
+    cc[3*i]   = data.cellX[i];
     cc[3*i+1] = data.cellY[i];
     cc[3*i+2] = data.cellZ[i];
   }
   ierr = VecRestoreArray(cellCenters,&cc);CHKERRQ(ierr);
-  ierr = PetscFree5(data.cellIds, data.cellVols, data.cellX, data.cellY, data.cellZ);CHKERRQ(ierr);
   ierr = VecView(cellCenters,binaryviewer);CHKERRQ(ierr);
+
+  ierr = VecGetArray(cellCenters,&cc);CHKERRQ(ierr);
+  for (i=0; i<data.numCells; i++) {
+    cc[3*i]   = data.cellIds[i];
+    cc[3*i+1] = data.cellVols[i];
+    cc[3*i+2] = 0.0;
+  }
+  ierr = VecRestoreArray(cellCenters,&cc);CHKERRQ(ierr);
+  ierr = VecView(cellCenters,binaryviewer);CHKERRQ(ierr);
+  ierr = PetscFree5(data.cellIds, data.cellVols, data.cellX, data.cellY, data.cellZ);CHKERRQ(ierr);
   ierr = VecDestroy(cellCenters);
   ierr = PetscViewerDestroy(binaryviewer);CHKERRQ(ierr);
 
