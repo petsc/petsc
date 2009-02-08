@@ -50,8 +50,9 @@ int main(int argc,char **args)
   PetscInt       its,num_numfac,m,n,M;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
-  PetscTruth     preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE;
+  PetscTruth     preload=PETSC_TRUE,isSymmetric,cknorm=PETSC_FALSE,initialguessfile = PETSC_FALSE;
   PetscMPIInt    rank;
+  char           initialguessfilename[PETSC_MAX_PATH_LEN];
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -59,6 +60,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-trans",&trans);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-initialguess",&initialguess);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-output_solution",&outputSoln);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(PETSC_NULL,"-initialguessfilename",initialguessfilename,PETSC_MAX_PATH_LEN-1,&initialguessfile);CHKERRQ(ierr);
 
   /* 
      Determine files from which we read the two linear systems
@@ -200,7 +202,15 @@ int main(int argc,char **args)
     }
     ierr = VecDuplicate(b,&x);CHKERRQ(ierr);
     ierr = VecDuplicate(b,&u);CHKERRQ(ierr);
-    ierr = VecSet(x,0.0);CHKERRQ(ierr);
+    if (initialguessfile) {
+      PetscViewer viewer2;
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,initialguessfilename,FILE_MODE_READ,&viewer2);CHKERRQ(ierr);
+      ierr = VecLoadIntoVector(viewer2,x);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);
+      initialguess = PETSC_TRUE;
+    } else {
+      ierr = VecSet(x,0.0);CHKERRQ(ierr);
+    }
 
 
     /* Check scaling in A */

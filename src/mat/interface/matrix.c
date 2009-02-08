@@ -1279,7 +1279,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetStencil(Mat mat,PetscInt dim,const Petsc
    The values in idxm would be 1 2; that is the first index for each block divided by 
    the block size.
 
-   By default the values, v, are row-oriented and unsorted. So the layout of 
+   By default the values, v, are row-oriented. So the layout of 
    v is the same as for MatSetValues(). See MatSetOption() for other options.
 
    Calls to MatSetValuesBlocked() with the INSERT_VALUES and ADD_VALUES 

@@ -34,18 +34,23 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   int                      *locals,size,rank;
   int                      *vtxdist,*xadj,*adjncy,itmp = 0;
   int                      wgtflag=0, numflag=0, ncon=1, nparts=part->n, options[3],  i,j;
-  Mat                      mat = part->adj,newmat;
+  Mat                      mat = part->adj;
   Mat_MPIAdj               *adj = (Mat_MPIAdj *)mat->data;
   PetscTruth               flg;
   float                    *tpwgts,*ubvec;
+  PetscInt                 bs = 1,nold;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)mat,MATMPIADJ,&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = MatConvert(mat,MATMPIADJ,MAT_INITIAL_MATRIX,&newmat);CHKERRQ(ierr);
-    adj  = (Mat_MPIAdj *)newmat->data;
+    /* bs indicates if the converted matrix is "reduced" from the original and hence the 
+       resulting partition results need to be stretched to match the original matrix */
+    nold = mat->rmap->n;
+    ierr = MatConvert(mat,MATMPIADJ,MAT_INITIAL_MATRIX,&mat);CHKERRQ(ierr);
+    bs   = nold/mat->rmap->n;
+    adj  = (Mat_MPIAdj *)mat->data;
   }
 
   vtxdist = mat->rmap->range;
@@ -89,17 +94,28 @@ static PetscErrorCode MatPartitioningApply_Parmetis(MatPartitioning part,IS *par
   }
   options[0] = 0;
   /* ParMETIS has no error conditions ??? */
-  ParMETIS_V3_PartKway(vtxdist,xadj,adjncy,part->vertex_weights,adj->values,&wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,
-                       options,&parmetis->cuts,locals,&parmetis->comm_pmetis);
+  ParMETIS_V3_PartKway(vtxdist,xadj,adjncy,part->vertex_weights,adj->values,&wgtflag,&numflag,&ncon,&nparts,tpwgts,ubvec,options,&parmetis->cuts,locals,&parmetis->comm_pmetis);
   ierr = PetscFree(tpwgts);CHKERRQ(ierr);
   ierr = PetscFree(ubvec);CHKERRQ(ierr);
   if (PetscLogPrintInfo) {parmetis->printout = itmp;}
 
-  ierr = ISCreateGeneral(((PetscObject)part)->comm,mat->rmap->n,locals,partitioning);CHKERRQ(ierr);
+  if (bs > 1) {
+    PetscInt *newlocals;
+    ierr = PetscMalloc(bs*mat->rmap->n*sizeof(PetscInt),&newlocals);CHKERRQ(ierr);
+    for (i=0; i<mat->rmap->n; i++) {
+      for (j=0; j<bs; j++) {
+        newlocals[bs*i + j] = locals[i];
+      }
+    }
+    ierr = ISCreateGeneral(((PetscObject)part)->comm,bs*mat->rmap->n,newlocals,partitioning);CHKERRQ(ierr);
+    ierr = PetscFree(newlocals);CHKERRQ(ierr);
+  } else {
+    ierr = ISCreateGeneral(((PetscObject)part)->comm,mat->rmap->n,locals,partitioning);CHKERRQ(ierr);
+  }
   ierr = PetscFree(locals);CHKERRQ(ierr);
 
   if (!flg) {
-    ierr = MatDestroy(newmat);CHKERRQ(ierr);
+    ierr = MatDestroy(mat);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

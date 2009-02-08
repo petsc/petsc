@@ -1822,6 +1822,200 @@ PetscErrorCode MatImaginaryPart_MPIBAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSubMatrix_MPIBAIJ"
+/*
+    Not great since it makes two copies of the submatrix, first an SeqBAIJ 
+  in local and then by concatenating the local matrices the end result.
+  Writing it directly would be much like MatGetSubMatrices_MPIBAIJ()
+*/
+PetscErrorCode MatGetSubMatrix_MPIBAIJ(Mat mat,IS isrow,IS iscol,PetscInt csize,MatReuse call,Mat *newmat)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    rank,size;
+  PetscInt       i,m,n,rstart,row,rend,nz,*cwork,j,bs;
+  PetscInt       *ii,*jj,nlocal,*dlens,*olens,dlen,olen,jend,mglobal;
+  Mat            *local,M,Mreuse;
+  MatScalar      *vwork,*aa;
+  MPI_Comm       comm = ((PetscObject)mat)->comm;
+  Mat_SeqBAIJ    *aij;
+
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+
+  if (call ==  MAT_REUSE_MATRIX) {
+    ierr = PetscObjectQuery((PetscObject)*newmat,"SubMatrix",(PetscObject *)&Mreuse);CHKERRQ(ierr);
+    if (!Mreuse) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Submatrix passed in was not used before, cannot reuse");
+    local = &Mreuse;
+    ierr  = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_REUSE_MATRIX,&local);CHKERRQ(ierr);
+  } else {
+    ierr   = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&local);CHKERRQ(ierr);
+    Mreuse = *local;
+    ierr   = PetscFree(local);CHKERRQ(ierr);
+  }
+
+  /* 
+      m - number of local rows
+      n - number of columns (same on all processors)
+      rstart - first row in new global matrix generated
+  */
+  ierr = MatGetBlockSize(mat,&bs);CHKERRQ(ierr);
+  ierr = MatGetSize(Mreuse,&m,&n);CHKERRQ(ierr);
+  m    = m/bs;
+  n    = n/bs;
+  
+  if (call == MAT_INITIAL_MATRIX) {
+    aij = (Mat_SeqBAIJ*)(Mreuse)->data;
+    ii  = aij->i;
+    jj  = aij->j;
+
+    /*
+        Determine the number of non-zeros in the diagonal and off-diagonal 
+        portions of the matrix in order to do correct preallocation
+    */
+
+    /* first get start and end of "diagonal" columns */
+    if (csize == PETSC_DECIDE) {
+      ierr = ISGetSize(isrow,&mglobal);CHKERRQ(ierr);
+      if (mglobal == n*bs) { /* square matrix */
+	nlocal = m;
+      } else {
+        nlocal = n/size + ((n % size) > rank);
+      }
+    } else {
+      nlocal = csize/bs;
+    }
+    ierr   = MPI_Scan(&nlocal,&rend,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
+    rstart = rend - nlocal;
+    if (rank == size - 1 && rend != n) {
+      SETERRQ2(PETSC_ERR_ARG_SIZ,"Local column sizes %D do not add up to total number of columns %D",rend,n);
+    }
+
+    /* next, compute all the lengths */
+    ierr  = PetscMalloc((2*m+1)*sizeof(PetscInt),&dlens);CHKERRQ(ierr);
+    olens = dlens + m;
+    for (i=0; i<m; i++) {
+      jend = ii[i+1] - ii[i];
+      olen = 0;
+      dlen = 0;
+      for (j=0; j<jend; j++) {
+        if (*jj < rstart || *jj >= rend) olen++;
+        else dlen++;
+        jj++;
+      }
+      olens[i] = olen;
+      dlens[i] = dlen;
+    }
+    ierr = MatCreate(comm,&M);CHKERRQ(ierr);
+    ierr = MatSetSizes(M,bs*m,bs*nlocal,PETSC_DECIDE,bs*n);CHKERRQ(ierr);
+    ierr = MatSetType(M,((PetscObject)mat)->type_name);CHKERRQ(ierr);
+    ierr = MatMPIBAIJSetPreallocation(M,bs,0,dlens,0,olens);CHKERRQ(ierr);
+    ierr = PetscFree(dlens);CHKERRQ(ierr);
+  } else {
+    PetscInt ml,nl;
+
+    M = *newmat;
+    ierr = MatGetLocalSize(M,&ml,&nl);CHKERRQ(ierr);
+    if (ml != m) SETERRQ(PETSC_ERR_ARG_SIZ,"Previous matrix must be same size/layout as request");
+    ierr = MatZeroEntries(M);CHKERRQ(ierr);
+    /*
+         The next two lines are needed so we may call MatSetValues_MPIAIJ() below directly,
+       rather than the slower MatSetValues().
+    */
+    M->was_assembled = PETSC_TRUE; 
+    M->assembled     = PETSC_FALSE;
+  }
+  ierr = MatSetOption(M,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(M,&rstart,&rend);CHKERRQ(ierr);
+  aij = (Mat_SeqBAIJ*)(Mreuse)->data;
+  ii  = aij->i;
+  jj  = aij->j;
+  aa  = aij->a;
+  for (i=0; i<m; i++) {
+    row   = rstart/bs + i;
+    nz    = ii[i+1] - ii[i];
+    cwork = jj;     jj += nz;
+    vwork = aa;     aa += nz;
+    ierr = MatSetValuesBlocked_MPIBAIJ(M,1,&row,nz,cwork,vwork,INSERT_VALUES);CHKERRQ(ierr);
+  }
+
+  ierr = MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *newmat = M;
+
+  /* save submatrix used in processor for next request */
+  if (call ==  MAT_INITIAL_MATRIX) {
+    ierr = PetscObjectCompose((PetscObject)M,"SubMatrix",(PetscObject)Mreuse);CHKERRQ(ierr);
+    ierr = PetscObjectDereference((PetscObject)Mreuse);CHKERRQ(ierr);
+  }
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPermute_MPIBAIJ"
+PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
+{
+  MPI_Comm       comm,pcomm;
+  PetscInt       first,local_size,nrows;
+  const PetscInt *rows;
+  int            ntids;
+  IS             crowp,growp,irowp,lrowp,lcolp,icolp;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject)A,&comm); CHKERRQ(ierr);
+  /* make a collective version of 'rowp' */
+  ierr = PetscObjectGetComm((PetscObject)rowp,&pcomm); CHKERRQ(ierr);
+  if (pcomm==comm) {
+    crowp = rowp;
+  } else {
+    ierr = ISGetSize(rowp,&nrows); CHKERRQ(ierr);
+    ierr = ISGetIndices(rowp,&rows); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,nrows,rows,&crowp); CHKERRQ(ierr);
+    ierr = ISRestoreIndices(rowp,&rows); CHKERRQ(ierr);
+  }
+  /* collect the global row permutation and invert it */
+  ierr = ISAllGather(crowp,&growp); CHKERRQ(ierr);
+  ierr = ISSetPermutation(growp); CHKERRQ(ierr);
+  if (pcomm!=comm) {
+    ierr = ISDestroy(crowp); CHKERRQ(ierr);
+  }
+  ierr = ISInvertPermutation(growp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
+  /* get the local target indices */
+  ierr = MatGetOwnershipRange(A,&first,PETSC_NULL); CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&local_size,PETSC_NULL); CHKERRQ(ierr);
+  ierr = ISGetIndices(irowp,&rows); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,local_size,rows+first,&lrowp); CHKERRQ(ierr);
+  ierr = ISRestoreIndices(irowp,&rows); CHKERRQ(ierr);
+  ierr = ISDestroy(irowp); CHKERRQ(ierr);
+  /* the column permutation is so much easier;
+     make a local version of 'colp' and invert it */
+  ierr = PetscObjectGetComm((PetscObject)colp,&pcomm); CHKERRQ(ierr);
+  ierr = MPI_Comm_size(pcomm,&ntids); CHKERRQ(ierr);
+  if (ntids==1) {
+    lcolp = colp;
+  } else {
+    ierr = ISGetSize(colp,&nrows); CHKERRQ(ierr);
+    ierr = ISGetIndices(colp,&rows); CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,nrows,rows,&lcolp); CHKERRQ(ierr);
+  }
+  ierr = ISInvertPermutation(lcolp,PETSC_DECIDE,&icolp); CHKERRQ(ierr);
+  ierr = ISSetPermutation(lcolp); CHKERRQ(ierr);
+  if (ntids>1) {
+    ierr = ISRestoreIndices(colp,&rows); CHKERRQ(ierr);
+    ierr = ISDestroy(lcolp); CHKERRQ(ierr);
+  }
+  /* now we just get the submatrix */
+  ierr = MatGetSubMatrix(A,lrowp,icolp,local_size,MAT_INITIAL_MATRIX,B); CHKERRQ(ierr);
+  /* clean up */
+  ierr = ISDestroy(lrowp); CHKERRQ(ierr);
+  ierr = ISDestroy(icolp); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {
        MatSetValues_MPIBAIJ,
@@ -1882,9 +2076,9 @@ static struct _MatOps MatOps_Values = {
 /*55*/ 0,
        0,
        MatSetUnfactored_MPIBAIJ,
-       0,
+       MatPermute_MPIBAIJ,
        MatSetValuesBlocked_MPIBAIJ,
-/*60*/ 0,
+/*60*/ MatGetSubMatrix_MPIBAIJ,
        MatDestroy_MPIBAIJ,
        MatView_MPIBAIJ,
        0,
@@ -2131,6 +2325,59 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal_MPIBAIJ(Mat,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetHashTableFactor_MPIBAIJ(Mat,PetscReal);
 EXTERN_C_END
 
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvert_MPIBAIJ_MPIAdj"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPIAdj(Mat B, const MatType newtype,MatReuse reuse,Mat *adj)
+{
+  Mat_MPIBAIJ    *b = (Mat_MPIBAIJ*)B->data;
+  PetscErrorCode ierr;
+  Mat_SeqBAIJ    *d = (Mat_SeqBAIJ*) b->A->data,*o = (Mat_SeqBAIJ*) b->B->data;
+  PetscInt       M = B->rmap->n/B->rmap->bs,i,*ii,*jj,cnt,j,k,rstart = B->rmap->rstart/B->rmap->bs;
+  const PetscInt *id = d->i, *jd = d->j, *io = o->i, *jo = o->j, *garray = b->garray;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc((M+1)*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+  ii[0] = 0;
+  CHKMEMQ;
+  for (i=0; i<M; i++) {
+    if ((id[i+1] - id[i]) < 0) SETERRQ3(PETSC_ERR_PLIB,"Indices wrong %D %D %D",i,id[i],id[i+1]);
+    if ((io[i+1] - io[i]) < 0) SETERRQ3(PETSC_ERR_PLIB,"Indices wrong %D %D %D",i,io[i],io[i+1]);
+    ii[i+1] = ii[i] + id[i+1] - id[i] + io[i+1] - io[i];
+    /* remove one from count of matrix has diagonal */
+    for (j=id[i]; j<id[i+1]; j++) {   
+      if (jd[j] == i) {ii[i+1]--;break;}
+    }
+  CHKMEMQ;
+  }
+  PetscIntView(M+1,id,0);
+  PetscIntView(M+1,io,0);
+  PetscIntView(M+1,ii,0);
+  ierr = PetscMalloc(ii[M]*sizeof(PetscInt),&jj);CHKERRQ(ierr);
+  cnt = 0;
+  for (i=0; i<M; i++) {
+    for (j=io[i]; j<io[i+1]; j++) {
+      if (garray[jo[j]] > rstart) break;
+      jj[cnt++] = garray[jo[j]];
+  CHKMEMQ;
+    }
+    for (k=id[i]; k<id[i+1]; k++) {
+      if (jd[k] != i) {
+        jj[cnt++] = rstart + jd[k];
+  CHKMEMQ;
+      }
+    }
+    for (;j<io[i+1]; j++) {
+      jj[cnt++] = garray[jo[j]];
+  CHKMEMQ;
+    }
+  }
+  ierr = MatCreateMPIAdj(((PetscObject)B)->comm,M,B->cmap->N/B->rmap->bs,ii,jj,PETSC_NULL,adj);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+
 /*MC
    MATMPIBAIJ - MATMPIBAIJ = "mpibaij" - A matrix type to be used for distributed block sparse matrices.
 
@@ -2209,6 +2456,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_mpiadj_C",
+                                     "MatConvert_MPIBAIJ_MPIAdj",
+                                      MatConvert_MPIBAIJ_MPIAdj);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIBAIJ",
                                      MatStoreValues_MPIBAIJ);CHKERRQ(ierr);
