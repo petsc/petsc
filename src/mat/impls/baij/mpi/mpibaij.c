@@ -2376,6 +2376,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIBAIJ_MPIAdj(Mat B, const MatType
   ierr = MatCreateMPIAdj(((PetscObject)B)->comm,M,B->cmap->N/B->rmap->bs,ii,jj,PETSC_NULL,adj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+EXTERN_C_END
 
 
 /*MC

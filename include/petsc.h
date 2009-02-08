@@ -1549,9 +1549,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscContainerSetUserDestroy(PetscContaine
 extern PETSC_DLLEXPORT PetscMPIInt PetscGlobalRank;
 extern PETSC_DLLEXPORT PetscMPIInt PetscGlobalSize;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt,PetscInt[],PetscViewer);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt,PetscReal[],PetscViewer);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,PetscScalar[],PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt,const PetscInt[],PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt,const PetscReal[],PetscViewer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt,const PetscScalar[],PetscViewer);
 
 /*
     Allows accessing Matlab Engine
