@@ -231,8 +231,8 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   ierr = PetscObjectGetComm((PetscObject) x, &comm);CHKERRQ(ierr);
   ierr = PetscViewerASCIIOpen(comm, filename, &viewer);CHKERRQ(ierr);
 
-  ierr = VecGetSize(x, &N); CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x, &n); CHKERRQ(ierr);
+  ierr = VecGetSize(x, &N);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(x, &n);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) x, "DA", (PetscObject *) &da);CHKERRQ(ierr);
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 

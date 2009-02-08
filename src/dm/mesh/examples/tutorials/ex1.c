@@ -136,7 +136,7 @@ PetscErrorCode OutputMesh(Mesh mesh, Options *options)
         } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
           ierr = 0;
         } 
-        CHKERRQ(ierr);
+       CHKERRQ(ierr);
       } else {
         ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
         ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
@@ -146,7 +146,7 @@ PetscErrorCode OutputMesh(Mesh mesh, Options *options)
         } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
           ierr = 0;
         } 
-        CHKERRQ(ierr);
+       CHKERRQ(ierr);
       }
     }
     ierr = MeshView(mesh, viewer);CHKERRQ(ierr);

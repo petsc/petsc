@@ -2141,9 +2141,9 @@ int FetiLoadMatSeq(char const * const prefix, char const * const name, char cons
     strcat(fname,name);
     strcat(fname,postfix);
 
-    ierr=PetscViewerBinaryOpen(PETSC_COMM_SELF, fname,PETSC_BINARY_RDONLY,&viewer); CHKERRQ(ierr);
+    ierr=PetscViewerBinaryOpen(PETSC_COMM_SELF, fname,PETSC_BINARY_RDONLY,&viewer);CHKERRQ(ierr);
          /* needs comm */
-    ierr=MatLoad(viewer,MATSEQAIJ,A); CHKERRQ(ierr);  
+    ierr=MatLoad(viewer,MATSEQAIJ,A);CHKERRQ(ierr);  
     /* MATSEQAIJ must get a communicator with one processor only; so PETSC_COMM_SELF */
     PetscViewerDestroy(viewer);
 

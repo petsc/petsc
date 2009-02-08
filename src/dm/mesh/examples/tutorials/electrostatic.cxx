@@ -1632,7 +1632,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
-    ierr = CreateParticleLabel(mesh, options); CHKERRQ(ierr);
+    ierr = CreateParticleLabel(mesh, options);CHKERRQ(ierr);
     radius  = options->particleRadius;
     epsilon = options->particleEpsilon;
 #if 0

@@ -36,9 +36,9 @@ PetscErrorCode MatApply_USFFT_Private(Mat_USFFT *usfft, fftw_plan *plan, int dir
   if (!*plan){ /* create a plan then execute it*/
     if(usfft->dof == 1) {
 #ifdef PETSC_DEBUG_USFFT
-      ierr = PetscPrintf(PETSC_COMM_WORLD, "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim); CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD, "direction = %d, usfft->ndim = %d\n", direction, usfft->ndim);CHKERRQ(ierr);
       for(int ii = 0; ii < usfft->ndim; ++ii) {
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "usfft->outdim[%d] = %d\n", ii, usfft->outdim[ii]);CHKERRQ(ierr);
       }
 #endif 
 #if 0
@@ -87,7 +87,7 @@ PetscErrorCode MatMult_SeqUSFFT(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin;
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
-  ierr = MatApply_USFFT_Private(usfft, &usfft->p_forward, FFTW_FORWARD, x,y); CHKERRQ(ierr);
+  ierr = MatApply_USFFT_Private(usfft, &usfft->p_forward, FFTW_FORWARD, x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -99,7 +99,7 @@ PetscErrorCode MatMultTranspose_SeqUSFFT(Mat A,Vec x,Vec y)
   Mat_USFFT       *usfft = (Mat_USFFT*)A->data;
   PetscFunctionBegin;
   /* NB: for now we use outdim for both x and y; this will change once a full USFFT is implemented */
-  ierr = MatApply_USFFT_Private(usfft, &usfft->p_backward, FFTW_BACKWARD, x,y); CHKERRQ(ierr);
+  ierr = MatApply_USFFT_Private(usfft, &usfft->p_backward, FFTW_BACKWARD, x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -155,11 +155,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(DA inda, DA outda, Mat* A)
   PetscInt       size;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)inda, &comm); CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)inda, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_USER, "Parallel DA (in) not yet supported by USFFT"); 
-  ierr = PetscObjectGetComm((PetscObject)outda, &comm); CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm, &size); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)outda, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_USER, "Parallel DA (out) not yet supported by USFFT"); 
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   ierr = PetscNewLog(*A,Mat_USFFT,&usfft);CHKERRQ(ierr);
@@ -167,7 +167,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(DA inda, DA outda, Mat* A)
   usfft->inda = inda;
   usfft->outda = outda;
   /* inda */
-  ierr = DAGetInfo(usfft->inda, &ndim, dim+0, dim+1, dim+2, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetInfo(usfft->inda, &ndim, dim+0, dim+1, dim+2, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   if (ndim <= 0) SETERRQ1(PETSC_ERR_USER,"ndim %d must be > 0",ndim);
   if (dof <= 0) SETERRQ1(PETSC_ERR_USER,"dof %d must be > 0",dof);
   usfft->ndim = ndim;
@@ -180,7 +180,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqUSFFT(DA inda, DA outda, Mat* A)
     usfft->indim[usfft->ndim-i] = dim[i-1];
   }
   /* outda */
-  ierr = DAGetInfo(usfft->outda, &ndim, dim+0, dim+1, dim+2, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL); CHKERRQ(ierr);
+  ierr = DAGetInfo(usfft->outda, &ndim, dim+0, dim+1, dim+2, PETSC_NULL, PETSC_NULL, PETSC_NULL, &dof, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   if (ndim != usfft->ndim) SETERRQ2(PETSC_ERR_USER,"in and out DA dimensions must match: %d != %d",usfft->ndim, ndim);
   if (dof != usfft->dof) SETERRQ2(PETSC_ERR_USER,"in and out DA dof must match: %d != %d",usfft->dof, dof);
   /* Store output dimensions */

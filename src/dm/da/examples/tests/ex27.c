@@ -52,11 +52,10 @@ PetscInt main(PetscInt argc,char **args)
                     PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE, 
                     dof, stencil,
                     PETSC_NULL, PETSC_NULL, PETSC_NULL,
-                    &da); 
-  CHKERRQ(ierr);
+                    &da);CHKERRQ(ierr);
   // Coordinates
   ierr = DAGetCoordinateDA(da, &coordsda);
-  ierr = DAGetGlobalVector(coordsda, &coords); CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(coordsda, &coords);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) coords, "Grid coordinates");CHKERRQ(ierr);  
   for(i = 0, N = 1; i < 3; i++) {
     h[i] = 1.0/dim[i];
@@ -74,19 +73,19 @@ PetscInt main(PetscInt argc,char **args)
     ierr = VecRestoreArray(coords, &a);CHKERRQ(ierr);
 
   }
-  ierr = DASetCoordinates(da, coords); CHKERRQ(ierr);
+  ierr = DASetCoordinates(da, coords);CHKERRQ(ierr);
   // Work vectors
-  ierr = DAGetGlobalVector(da, &x); CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(da, &x);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) x, "Real space vector");CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &xx); CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(da, &xx);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) xx, "Real space vector");CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &y); CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(da, &y);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) y, "USFFT frequency space vector");CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &yy); CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(da, &yy);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) yy, "FFTW frequency space vector");CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &z); CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(da, &z);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) z, "USFFT reconstructed vector");CHKERRQ(ierr);
-  ierr = DAGetGlobalVector(da, &zz); CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(da, &zz);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) zz, "FFTW reconstructed vector");CHKERRQ(ierr);
 
   ierr = PetscPrintf(PETSC_COMM_SELF, "%3-D: USFFT on vector of ");CHKERRQ(ierr);
@@ -121,7 +120,7 @@ PetscInt main(PetscInt argc,char **args)
   if(view_x) {
     ierr = VecView(x, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-  ierr = VecCopy(x,xx); CHKERRQ(ierr);
+  ierr = VecCopy(x,xx);CHKERRQ(ierr);
 
   ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_SELF, "|x|_2 = %g\n",norm);CHKERRQ(ierr);
@@ -143,17 +142,17 @@ PetscInt main(PetscInt argc,char **args)
   }
 
   if(view_y) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "y = \n"); CHKERRQ(ierr);
-    ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "yy = \n"); CHKERRQ(ierr);
-    ierr = VecView(yy, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "y = \n");CHKERRQ(ierr);
+    ierr = VecView(y, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "yy = \n");CHKERRQ(ierr);
+    ierr = VecView(yy, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   
   if(view_z) {
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "z = \n"); CHKERRQ(ierr);
-    ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "zz = \n"); CHKERRQ(ierr);
-    ierr = VecView(zz, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "z = \n");CHKERRQ(ierr);
+    ierr = VecView(z, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "zz = \n");CHKERRQ(ierr);
+    ierr = VecView(zz, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
   
   /* compare x and z. USFFT computes an unnormalized DFT, thus z = N*x */

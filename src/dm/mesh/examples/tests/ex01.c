@@ -40,7 +40,7 @@ PetscErrorCode CreateSieve(MPI_Comm comm, int debug)
   PetscFunctionBegin;
   ALE::Obj<sieve_type> sieve = sieve_type(comm, debug);
   ierr = PetscPrintf(comm, "Creating a 'Hat' Sieve of global size %d: 3 base nodes and 1 cap node per process\n", 
-                     3*sieve->commSize()+1); CHKERRQ(ierr);
+                     3*sieve->commSize()+1);CHKERRQ(ierr);
   for(int i = 0; i < 3; i++) {
     sieve_type::point_type p(sieve->commRank(), 0), b(-1,2*sieve->commRank()+i);
     sieve->addArrow(p,b);
@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
   try {

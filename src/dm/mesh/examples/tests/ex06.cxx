@@ -31,10 +31,10 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
-  ierr = testHatFlip(); CHKERRQ(ierr);
+  ierr = testHatFlip();CHKERRQ(ierr);
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -51,8 +51,8 @@ PetscErrorCode testHatFlip() {
   PetscFunctionBegin;
 
   debug = 0;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag); CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "%s: using debug value of %d\n", __FUNCT__, debug);CHKERRQ(ierr);
 
   // Construct an empty hat bigraph
   ALE::Obj<PointBiGraph> hat = PointBiGraph(comm, debug);

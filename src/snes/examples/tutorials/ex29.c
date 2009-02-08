@@ -450,12 +450,9 @@ PetscErrorCode Initialize(DMMG *dmmg)
   /*
      Restore vector
   */
-  ierr = DAVecRestoreArray(da,dmmg[param->mglevels-1]->x,&x);
-  CHKERRQ(ierr);
-  ierr = DAVecRestoreArray(da,localX,&localx);
-  CHKERRQ(ierr);
-  ierr = DARestoreLocalVector(da,&localX);
-  CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,dmmg[param->mglevels-1]->x,&x);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localX,&localx);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 } 
@@ -476,8 +473,7 @@ PetscErrorCode ComputeMaxima(DA da, Vec X, PetscReal t)
 
   ierr = DAGetInfo(da,0,&mx,&my,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);
-  CHKERRQ(ierr);
+  ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
   xints = xs; xinte = xs+xm; yints = ys; yinte = ys+ym;
 
@@ -744,8 +740,7 @@ PetscErrorCode Update(DMMG *dmmg)
           ierr = DAVecHDFOutput(DMMGGetDA(dmmg), DMMGGetx(dmmg), fname);CHKERRQ(ierr);
 #else
 /*
-          ierr = Gnuplot(DMMGGetDA(dmmg), DMMGGetx(dmmg), tsCtx->t);
-          CHKERRQ(ierr);
+          ierr = Gnuplot(DMMGGetDA(dmmg), DMMGGetx(dmmg), tsCtx->t);CHKERRQ(ierr);
 */
 #endif
 	  ic_out = 1;

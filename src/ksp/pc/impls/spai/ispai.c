@@ -104,7 +104,7 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
 		   ispai->maxnew,
 		   ispai->block_size,
 		   ispai->cache_size,
-	       ispai->verbose); CHKERRQ(ierr);
+	       ispai->verbose);CHKERRQ(ierr);
 
   ierr = ConvertMatrixToMat(((PetscObject)pc)->comm,ispai->M,&ispai->PM);CHKERRQ(ierr);
 

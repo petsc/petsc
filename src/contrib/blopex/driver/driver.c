@@ -133,9 +133,9 @@ int main(int argc,char **args)
 	
    PetscInitialize(&argc,&args,(char *)0,help);
    ierr = PetscOptionsGetInt(PETSC_NULL,"-n_eigs",&n_eigs,PETSC_NULL);CHKERRQ(ierr);
-   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol", &tol,PETSC_NULL); CHKERRQ(ierr);
-   ierr = PetscOptionsHasName(PETSC_NULL,"-freepart",&freepart); CHKERRQ(ierr);
-   ierr = PetscOptionsHasName(PETSC_NULL,"-full_out",&full_output); CHKERRQ(ierr);
+   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol", &tol,PETSC_NULL);CHKERRQ(ierr);
+   ierr = PetscOptionsHasName(PETSC_NULL,"-freepart",&freepart);CHKERRQ(ierr);
+   ierr = PetscOptionsHasName(PETSC_NULL,"-full_out",&full_output);CHKERRQ(ierr);
    ierr = PetscOptionsGetInt(PETSC_NULL,"-seed",&seed,PETSC_NULL);CHKERRQ(ierr);
    ierr = PetscOptionsGetInt(PETSC_NULL,"-itr",&maxIt,PETSC_NULL);CHKERRQ(ierr);
    
@@ -153,7 +153,7 @@ int main(int argc,char **args)
   {
       /* small problem */
       ierr=DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,10,10,10,
-            1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
+            1,PETSC_DECIDE,1,1,1,0,0,0,&da);CHKERRQ(ierr);
   }
   else
   {
@@ -161,27 +161,27 @@ int main(int argc,char **args)
       if (freepart)     /* petsc determines partitioning */
       {
         ierr=DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-10,-10,-10,
-            PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da); CHKERRQ(ierr);
+            PETSC_DECIDE,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,0,&da);CHKERRQ(ierr);
       }
       else             /* (1,NP,1) partitioning */
       {
         ierr=DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-10,-10,-10,
-            1,PETSC_DECIDE,1,1,1,0,0,0,&da); CHKERRQ(ierr);
+            1,PETSC_DECIDE,1,1,1,0,0,0,&da);CHKERRQ(ierr);
       }
 
       /* now we print what partitioning is chosen */
       ierr=DAGetInfo(da,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL,&m,
-                      &n,&p,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL); CHKERRQ(ierr);
+                      &n,&p,PETSC_NULL,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       PetscPrintf(PETSC_COMM_WORLD,"Partitioning: %u %u %u\n",m,n,p);  
   }
 
   /* create matrix, whose nonzero structure and probably partitioning corresponds to
   grid and stencil structure */
-  ierr=DAGetMatrix(da,MATMPIAIJ,&A); CHKERRQ(ierr);
+  ierr=DAGetMatrix(da,MATMPIAIJ,&A);CHKERRQ(ierr);
     
   /* fill the matrix with values. I intend to build 7-pt Laplas */ 
   /* this procedure includes matrix assembly */
-  ierr=FillMatrix(da,A); CHKERRQ(ierr);
+  ierr=FillMatrix(da,A);CHKERRQ(ierr);
 
   /*
   PetscViewerBinaryOpen(PETSC_COMM_WORLD,"matrix.dat",PETSC_FILE_CREATE,&viewer);
@@ -194,7 +194,7 @@ int main(int argc,char **args)
       - We form 1 vector from scratch and then duplicate as needed.
   */
   
-  ierr = DACreateGlobalVector(da,&u); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da,&u);CHKERRQ(ierr);
   /* ierr = VecSetFromOptions(u);CHKERRQ(ierr); */
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -237,16 +237,16 @@ int main(int argc,char **args)
     PetscPrintf(PETSC_COMM_WORLD,"Preconditioner setup, seconds: %f\n",elapsed_time);
 
    /* request memory for eig-vals */
-   ierr = PetscMalloc(sizeof(double)*n_eigs,&eigs); CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(double)*n_eigs,&eigs);CHKERRQ(ierr);
    
    /* request memory for eig-vals history */
-   ierr = PetscMalloc(sizeof(double)*n_eigs*(maxIt+1),&eigs_hist); CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(double)*n_eigs*(maxIt+1),&eigs_hist);CHKERRQ(ierr);
    
    /* request memory for resid. norms */
-   ierr = PetscMalloc(sizeof(double)*n_eigs,&resid); CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(double)*n_eigs,&resid);CHKERRQ(ierr);
    
    /* request memory for resid. norms hist. */
-   ierr = PetscMalloc(sizeof(double)*n_eigs*(maxIt+1),&resid_hist); CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(double)*n_eigs*(maxIt+1),&resid_hist);CHKERRQ(ierr);
    
    LOBPCG_InitRandomContext();
    
@@ -333,22 +333,19 @@ int main(int argc,char **args)
       for (j=0; j<iterations+1; j++)
          for (i=0;i<n_eigs;i++)
          {
-            ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",*(eigs_hist+j*n_eigs+i));
-            CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",*(eigs_hist+j*n_eigs+i));CHKERRQ(ierr);
 	 }
       PetscPrintf(PETSC_COMM_WORLD,"Output from LOBPCG, residual norms:\n");
       for (i=0;i<n_eigs;i++)
 	{
-		ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",resid[i]);
-		CHKERRQ(ierr);
+		ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",resid[i]);CHKERRQ(ierr);
 	}
 
       PetscPrintf(PETSC_COMM_WORLD,"Output from LOBPCG, residual norms history:\n");
       for (j=0; j<iterations+1; j++)
          for (i=0;i<n_eigs;i++)
          {
-            ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",*(resid_hist+j*n_eigs+i));
-            CHKERRQ(ierr);
+            ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",*(resid_hist+j*n_eigs+i));CHKERRQ(ierr);
 	 }
    }	
   /*
@@ -358,16 +355,16 @@ int main(int argc,char **args)
    ierr = VecDestroy(u);CHKERRQ(ierr); 
    ierr = MatDestroy(A);CHKERRQ(ierr);
    ierr = KSPDestroy(ksp);CHKERRQ(ierr);
-   ierr = DADestroy(da); CHKERRQ(ierr);
+   ierr = DADestroy(da);CHKERRQ(ierr);
 	
    LOBPCG_DestroyRandomContext();
    mv_MultiVectorDestroy(eigenvectors);
 
    /* free memory used for eig-vals */
-   ierr = PetscFree(eigs); CHKERRQ(ierr);
-   ierr = PetscFree(eigs_hist); CHKERRQ(ierr);
-   ierr = PetscFree(resid); CHKERRQ(ierr);
-   ierr = PetscFree(resid_hist); CHKERRQ(ierr);
+   ierr = PetscFree(eigs);CHKERRQ(ierr);
+   ierr = PetscFree(eigs_hist);CHKERRQ(ierr);
+   ierr = PetscFree(resid);CHKERRQ(ierr);
+   ierr = PetscFree(resid_hist);CHKERRQ(ierr);
 	
   /*
      Always call PetscFinalize() before exiting a program.  This routine

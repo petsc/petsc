@@ -97,21 +97,21 @@ int main( int argc, char **argv )
   user.beta   = 2.5; 
   user.bm1    = 1.5; 
   user.coef   = 1.25;
-  ierr = OptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-tleft",&user.tleft,PETSC_NULL);CHKERRA(ierr);
   ierr = OptionsGetDouble(PETSC_NULL,"-tright",&user.tright,PETSC_NULL);CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-beta",&user.beta,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-bm1",&user.bm1,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetDouble(PETSC_NULL,"-coef",&user.coef,PETSC_NULL);CHKERRA(ierr);
 
   /* set number of levels and grid size on coarsest level */
   user.ratio      = 2;
   user.nlevels    = 2;
   user.grid[0].mx = 5; 
   user.grid[0].my = 5; 
-  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&user.nlevels,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.grid[0].mx,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.grid[0].my,&flag); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-ratio",&user.ratio,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-nlevels",&user.nlevels,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-mx",&user.grid[0].mx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-my",&user.grid[0].my,&flag);CHKERRA(ierr);
   if (!flag) { user.grid[0].my = user.grid[0].mx;}
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Coarse grid size %d by %d\n",user.grid[0].mx,user.grid[0].my);CHKERRA(ierr);
 
@@ -123,21 +123,21 @@ int main( int argc, char **argv )
   }
 
   /* set partitioning of domains accross processors */
-  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Nx",&Nx,PETSC_NULL);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-Ny",&Ny,PETSC_NULL);CHKERRA(ierr);
 
   /* Set up distributed array for  each level */
   for (i=0; i<user.nlevels; i++) {
     ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,user.grid[i].mx,
-                      user.grid[i].my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.grid[i].da); CHKERRA(ierr);
-    ierr = DACreateGlobalVector(user.grid[i].da,&user.grid[i].x); CHKERRA(ierr);
-    ierr = VecDuplicate(user.grid[i].x,&user.grid[i].r); CHKERRA(ierr);
-    ierr = VecDuplicate(user.grid[i].x,&user.grid[i].b); CHKERRA(ierr);
-    ierr = DACreateLocalVector(user.grid[i].da,&user.grid[i].localX); CHKERRA(ierr);
-    ierr = VecDuplicate(user.grid[i].localX,&user.grid[i].localF); CHKERRA(ierr);
+                      user.grid[i].my,Nx,Ny,1,1,PETSC_NULL,PETSC_NULL,&user.grid[i].da);CHKERRA(ierr);
+    ierr = DACreateGlobalVector(user.grid[i].da,&user.grid[i].x);CHKERRA(ierr);
+    ierr = VecDuplicate(user.grid[i].x,&user.grid[i].r);CHKERRA(ierr);
+    ierr = VecDuplicate(user.grid[i].x,&user.grid[i].b);CHKERRA(ierr);
+    ierr = DACreateLocalVector(user.grid[i].da,&user.grid[i].localX);CHKERRA(ierr);
+    ierr = VecDuplicate(user.grid[i].localX,&user.grid[i].localF);CHKERRA(ierr);
     ierr = VecGetLocalSize(user.grid[i].x,&nlocal);CHKERRA(ierr);
     ierr = VecGetSize(user.grid[i].x,&n);CHKERRA(ierr);
-    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.grid[i].J); CHKERRA(ierr);
+    ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&user.grid[i].J);CHKERRA(ierr);
   }
 
   /* Create nonlinear solver */
@@ -145,25 +145,25 @@ int main( int argc, char **argv )
 
   /* provide user function and Jacobian */
   finegrid = &user.grid[user.nlevels-1];
-  ierr = SNESSetFunction(snes,finegrid->b,FormFunction,&user); CHKERRA(ierr);
+  ierr = SNESSetFunction(snes,finegrid->b,FormFunction,&user);CHKERRA(ierr);
   ierr = SNESSetJacobian(snes,finegrid->J,finegrid->J,FormJacobian,&user);CHKERRA(ierr);
 
   /* set two level additive Schwarz preconditioner */
   ierr = SNESGetSLES(snes,&sles);CHKERRA(ierr);
-  ierr = SLESGetPC(sles,&pc); CHKERRA(ierr);
-  ierr = PCSetType(pc,PCMG); CHKERRA(ierr);
-  ierr = PCMGSetLevels(pc,user.nlevels); CHKERRA(ierr);
-  ierr = PCMGSetType(pc,PC_MG_ADDITIVE); CHKERRA(ierr);
+  ierr = SLESGetPC(sles,&pc);CHKERRA(ierr);
+  ierr = PCSetType(pc,PCMG);CHKERRA(ierr);
+  ierr = PCMGSetLevels(pc,user.nlevels);CHKERRA(ierr);
+  ierr = PCMGSetType(pc,PC_MG_ADDITIVE);CHKERRA(ierr);
 
   /* set the work vectors and SLES options for all the levels */
   for (i=0; i<user.nlevels; i++) {
-    ierr = PCMGGetSmoother(pc,i,&user.grid[i].sles); CHKERRA(ierr);
-    ierr = SLESSetFromOptions(user.grid[i].sles); CHKERRA(ierr);
+    ierr = PCMGGetSmoother(pc,i,&user.grid[i].sles);CHKERRA(ierr);
+    ierr = SLESSetFromOptions(user.grid[i].sles);CHKERRA(ierr);
     ierr = SLESSetOperators(user.grid[i].sles,user.grid[i].J,user.grid[i].J,DIFFERENT_NONZERO_PATTERN);CHKERRA(ierr);
     ierr = PCMGSetX(pc,i,user.grid[i].x);CHKERRA(ierr); 
     ierr = PCMGSetRhs(pc,i,user.grid[i].b);CHKERRA(ierr); 
     ierr = PCMGSetR(pc,i,user.grid[i].r);CHKERRA(ierr); 
-    ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,user.grid[i].J); CHKERRA(ierr);
+    ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,user.grid[i].J);CHKERRA(ierr);
   }
 
   /* Create interpolation between the levels */
@@ -174,26 +174,26 @@ int main( int argc, char **argv )
   }
 
   /* Solve 1 Newton iteration of nonlinear system (to load all arrays) */
-  ierr = SNESSetFromOptions(snes); CHKERRA(ierr);
-  ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf); CHKERRA(ierr);
-  ierr = SNESSetTolerances(snes,atol,rtol,stol,1,maxf); CHKERRA(ierr);
-  ierr = FormInitialGuess1(&user,finegrid->x); CHKERRA(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,finegrid->x); CHKERRA(ierr);
-  ierr = SNESGetIterationNumber(snes, &its); CHKERRA(ierr);
+  ierr = SNESSetFromOptions(snes);CHKERRA(ierr);
+  ierr = SNESGetTolerances(snes,&atol,&rtol,&stol,&maxit,&maxf);CHKERRA(ierr);
+  ierr = SNESSetTolerances(snes,atol,rtol,stol,1,maxf);CHKERRA(ierr);
+  ierr = FormInitialGuess1(&user,finegrid->x);CHKERRA(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,finegrid->x);CHKERRA(ierr);
+  ierr = SNESGetIterationNumber(snes, &its);CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Pre-load Newton iterations = %d\n", its );CHKERRA(ierr);
 
   /* Reset options, start timer, then solve nonlinear system */
-  ierr = SNESSetTolerances(snes,atol,rtol,stol,maxit,maxf); CHKERRA(ierr);
-  ierr = FormInitialGuess1(&user,finegrid->x); CHKERRA(ierr);
+  ierr = SNESSetTolerances(snes,atol,rtol,stol,maxit,maxf);CHKERRA(ierr);
+  ierr = FormInitialGuess1(&user,finegrid->x);CHKERRA(ierr);
   ierr = PLogStagePush(1);CHKERRA(ierr);
-  ierr = PetscGetTime(&v1); CHKERRA(ierr);
-  ierr = SNESSolve(snes,PETSC_NULL,finegrid->x); CHKERRA(ierr);
-  ierr = SNESGetIterationNumber(snes, &its); CHKERRA(ierr);
+  ierr = PetscGetTime(&v1);CHKERRA(ierr);
+  ierr = SNESSolve(snes,PETSC_NULL,finegrid->x);CHKERRA(ierr);
+  ierr = SNESGetIterationNumber(snes, &its);CHKERRA(ierr);
   ierr = SNESView(snes,VIEWER_STDOUT_WORLD);CHKERRA(ierr);
-  ierr = PetscGetTime(&v2); CHKERRA(ierr);
+  ierr = PetscGetTime(&v2);CHKERRA(ierr);
   ierr = PLogStagePop();CHKERRA(ierr);
   elapsed = v2 - v1;
-  ierr = SNESGetLinearSolveIterations(snes,&lits); CHKERRA(ierr);
+  ierr = SNESGetLinearSolveIterations(snes,&lits);CHKERRA(ierr);
   litspit = ((double)lits)/((double)its);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Elapsed Time = %e\n", elapsed );CHKERRA(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %d\n", its );CHKERRA(ierr);
@@ -202,13 +202,13 @@ int main( int argc, char **argv )
 
   /* Free data structures on the levels */
   for (i=0; i<user.nlevels; i++) {
-    ierr = MatDestroy(user.grid[i].J); CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].x); CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].r); CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].b); CHKERRA(ierr);
-    ierr = DADestroy(user.grid[i].da); CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].localX); CHKERRA(ierr);
-    ierr = VecDestroy(user.grid[i].localF); CHKERRA(ierr);
+    ierr = MatDestroy(user.grid[i].J);CHKERRA(ierr);
+    ierr = VecDestroy(user.grid[i].x);CHKERRA(ierr);
+    ierr = VecDestroy(user.grid[i].r);CHKERRA(ierr);
+    ierr = VecDestroy(user.grid[i].b);CHKERRA(ierr);
+    ierr = DADestroy(user.grid[i].da);CHKERRA(ierr);
+    ierr = VecDestroy(user.grid[i].localX);CHKERRA(ierr);
+    ierr = VecDestroy(user.grid[i].localF);CHKERRA(ierr);
   }
 
   /* Free interpolations between levels */
@@ -218,7 +218,7 @@ int main( int argc, char **argv )
   }
 
   /* free nonlinear solver object */
-  ierr = SNESDestroy(snes); CHKERRA(ierr);
+  ierr = SNESDestroy(snes);CHKERRA(ierr);
   PetscFinalize();
 
 
@@ -242,9 +242,9 @@ int FormInitialGuess1(AppCtx *user,Vec X)
   tleft = user->tleft;      tright = user->tright;
 
   /* Get ghost points */
-  ierr = DAGetCorners(finegrid->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(finegrid->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
+  ierr = DAGetCorners(finegrid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(finegrid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   /* Compute initial guess */
   for (j=ys; j<ys+ym; j++) {
@@ -253,10 +253,10 @@ int FormInitialGuess1(AppCtx *user,Vec X)
       x[row] = tleft;
     }
   }
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(finegrid->da,localX,INSERT_VALUES,X); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(finegrid->da,localX,INSERT_VALUES,X);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* --------------------  Evaluate Function F(x) --------------------- */
@@ -284,12 +284,12 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
   beta = user->beta;
  
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(finegrid->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(finegrid->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGetCorners(finegrid->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(finegrid->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecGetArray(localF,&f); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(finegrid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(finegrid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGetCorners(finegrid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(finegrid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecGetArray(localF,&f);CHKERRQ(ierr);
 
   /* Evaluate function */
   for (j=ys; j<ys+ym; j++) {
@@ -430,11 +430,11 @@ int FormFunction(SNES snes,Vec X,Vec F,void *ptr)
 
     }
   }
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localF,&f); CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localF,&f);CHKERRQ(ierr);
 
   /* Insert values into global vector */
-  ierr = DALocalToGlobal(finegrid->da,localF,INSERT_VALUES,F); CHKERRQ(ierr);
+  ierr = DALocalToGlobal(finegrid->da,localF,INSERT_VALUES,F);CHKERRQ(ierr);
   PLogFlops((22 + 4*POWFLOP)*ym*xm);
   PetscFunctionReturn(0);
 } 
@@ -464,12 +464,12 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
   beta = user->beta;	    bm1 = user->bm1;		coef = user->coef;
 
   /* Get ghost points */
-  ierr = DAGlobalToLocalBegin(grid->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(grid->da,X,INSERT_VALUES,localX); CHKERRQ(ierr);
-  ierr = DAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0); CHKERRQ(ierr);
-  ierr = DAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0); CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog); CHKERRQ(ierr);
-  ierr = VecGetArray(localX,&x); CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(grid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(grid->da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGetCorners(grid->da,&xs,&ys,0,&xm,&ym,0);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(grid->da,&Xs,&Ys,0,&Xm,&Ym,0);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(grid->da,&nloc,&ltog);CHKERRQ(ierr);
+  ierr = VecGetArray(localX,&x);CHKERRQ(ierr);
 
   /* Evaluate Jacobian of function */
   for (j=ys; j<ys+ym; j++) {
@@ -521,7 +521,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         v[3] = - hydhx*(de + ge); 
 	col[4] = ltog[row + Xm];
         v[4] = - hxdhy*(dn + gn); 
-        ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(jac,1,&grow,5,col,v,INSERT_VALUES);CHKERRQ(ierr);
 
       } else if (i == 0) {
 
@@ -556,7 +556,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           v[1] = - hydhx*(de + ge); 
           col[2] = ltog[row + Xm];
           v[2] = - hxdhy*(dn + gn); 
-          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES); CHKERRQ(ierr);
+          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
  
 	/* left-hand interior boundary */
 	} else if (j < my-1) {
@@ -583,7 +583,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           v[2] = - hydhx*(de + ge);  
           col[3] = ltog[row + Xm]; 
           v[3] = - hxdhy*(dn + gn);  
-          ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES); CHKERRQ(ierr);  
+          ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);  
 	/* left-hand top boundary */
 	} else {
 
@@ -600,7 +600,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           v[1] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  
           col[2] = ltog[row + 1];  
           v[2] = - hydhx*(de + ge); 
-          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES); CHKERRQ(ierr); 
+          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr); 
 	}
 
       } else if (i == mx-1) {
@@ -636,7 +636,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           v[1] = hxdhy*(dn - gn) + hydhx*(dw + de + gw - ge); 
           col[2] = ltog[row + Xm];
           v[2] = - hxdhy*(dn + gn); 
-          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES); CHKERRQ(ierr);
+          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr);
  
 	/* right-hand interior boundary */
 	} else if (j < my-1) {
@@ -663,7 +663,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           v[2] = hxdhy*(ds + dn + gs - gn) + hydhx*(dw + de + gw - ge);  
           col[3] = ltog[row + Xm]; 
           v[3] = - hxdhy*(dn + gn);  
-          ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES); CHKERRQ(ierr);  
+          ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);  
 	/* right-hand top boundary */
 	} else {
 
@@ -680,7 +680,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
           v[1] = - hydhx*(dw - gw); 
           col[2] = grow; 
           v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);  
-          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES); CHKERRQ(ierr); 
+          ierr = MatSetValues(jac,1,&grow,3,col,v,INSERT_VALUES);CHKERRQ(ierr); 
 	}
 
       /* bottom boundary, and i <> 0 or mx-1 */
@@ -715,7 +715,7 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         v[2] = - hydhx*(de + ge);
         col[3] = ltog[row + Xm];
         v[3] = - hxdhy*(dn + gn);
-        ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
  
       /* top boundary, and i <> 0 or mx-1 */
       } else if (j == my-1) {
@@ -749,14 +749,14 @@ int FormJacobian_Grid(AppCtx *user,GridCtx *grid,Vec X, Mat *J,Mat *B)
         v[2] = hxdhy*(ds + gs) + hydhx*(dw + de + gw - ge);
         col[3] = ltog[row + 1];
         v[3] = - hydhx*(de + ge);
-        ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES); CHKERRQ(ierr);
+        ierr = MatSetValues(jac,1,&grow,4,col,v,INSERT_VALUES);CHKERRQ(ierr);
  
       }
     }
   }
-  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = VecRestoreArray(localX,&x); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = VecRestoreArray(localX,&x);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   PLogFlops((41 + 8*POWFLOP)*xm*ym);
   PetscFunctionReturn(0);
@@ -778,7 +778,7 @@ int FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,void *ptr)
 
   PetscFunctionBegin;
   *flag = SAME_NONZERO_PATTERN;
-  ierr = FormJacobian_Grid(user,finegrid,X,J,B); CHKERRQ(ierr);
+  ierr = FormJacobian_Grid(user,finegrid,X,J,B);CHKERRQ(ierr);
 
   /* create coarse grid jacobian for preconditioner */
   ierr = SNESGetSLES(snes,&sles);CHKERRQ(ierr);
@@ -824,11 +824,11 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
   PetscFunctionBegin;
   ierr = DAGetCorners(g_f->da,&i_start,&j_start,0,&m,&n,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(g_f->da,&i_start_ghost,&j_start_ghost,0,&m_ghost,&n_ghost,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(g_f->da,PETSC_NULL,&idx); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(g_f->da,PETSC_NULL,&idx);CHKERRQ(ierr);
 
   ierr = DAGetCorners(g_c->da,&i_start_c,&j_start_c,0,&m_c,&n_c,0);CHKERRQ(ierr);
   ierr = DAGetGhostCorners(g_c->da,&i_start_ghost_c,&j_start_ghost_c,0,&m_ghost_c,&n_ghost_c,0);CHKERRQ(ierr);
-  ierr = DAGetGlobalIndices(g_c->da,PETSC_NULL,&idx_c); CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(g_c->da,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
   ierr = VecGetLocalSize(g_f->x,&m_f_local);CHKERRQ(ierr);
@@ -881,11 +881,11 @@ int FormInterpolation(AppCtx *user,GridCtx *g_f,GridCtx *g_c)
         cols[nc] = idx_c[col+m_ghost_c+1];
         v[nc++]  = x*y;
       }
-      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES); CHKERRQ(ierr); 
+      ierr = MatSetValues(mat,1,&row,nc,cols,v,INSERT_VALUES);CHKERRQ(ierr); 
     }
   }
-  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   ierr = VecDuplicate(g_c->x,&Rscale);CHKERRQ(ierr);
   ierr = VecSet(g_f->x,one);CHKERRQ(ierr);

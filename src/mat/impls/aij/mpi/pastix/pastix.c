@@ -205,11 +205,11 @@ PetscErrorCode MatDestroy_Pastix(Mat A)
 	                      lu->dparm);
 
     ierr = PetscFree(lu->colptr);CHKERRQ(ierr);
-    ierr = PetscFree(lu->row);   CHKERRQ(ierr);    
-    ierr = PetscFree(lu->val);   CHKERRQ(ierr);
-    ierr = PetscFree(lu->perm);  CHKERRQ(ierr);
-    ierr = PetscFree(lu->invp);  CHKERRQ(ierr); 
-/*     ierr = PetscFree(lu->rhs);   CHKERRQ(ierr); */
+    ierr = PetscFree(lu->row);  CHKERRQ(ierr);    
+    ierr = PetscFree(lu->val);  CHKERRQ(ierr);
+    ierr = PetscFree(lu->perm); CHKERRQ(ierr);
+    ierr = PetscFree(lu->invp); CHKERRQ(ierr); 
+/*     ierr = PetscFree(lu->rhs);  CHKERRQ(ierr); */
     ierr = MPI_Comm_free(&(lu->pastix_comm));CHKERRQ(ierr);
   }
   ierr = (lu->MatDestroy)(A);CHKERRQ(ierr);
@@ -353,8 +353,8 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
 
     /* Initialize a PASTIX instance */
     ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->pastix_comm));CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(lu->pastix_comm, &lu->commRank);          CHKERRQ(ierr);
-    ierr = MPI_Comm_size(lu->pastix_comm, &lu->commSize);          CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(lu->pastix_comm, &lu->commRank);         CHKERRQ(ierr);
+    ierr = MPI_Comm_size(lu->pastix_comm, &lu->commSize);         CHKERRQ(ierr);
 
     /* Set pastix options */
     lu->iparm[IPARM_MODIFY_PARAMETER] = API_NO;
@@ -402,7 +402,7 @@ PetscErrorCode MatFactorNumeric_PaStiX(Mat F,Mat A,const MatFactorInfo *info)
   ierr = MatGetSubMatrices(A,1,&isrow,&isrow,MAT_INITIAL_MATRIX,&tseq);CHKERRQ(ierr);
   ierr = ISDestroy(isrow);CHKERRQ(ierr);
 
-  ierr = MatConvertToCSC(*tseq,valOnly, &lu->n, &lu->colptr, &lu->row, &lu->val); CHKERRQ(ierr);
+  ierr = MatConvertToCSC(*tseq,valOnly, &lu->n, &lu->colptr, &lu->row, &lu->val);CHKERRQ(ierr);
   ierr = MatIsSymmetric(*tseq,0.0,&isSym);CHKERRQ(ierr);
   ierr = MatDestroyMatrices(1,&tseq);CHKERRQ(ierr);
 

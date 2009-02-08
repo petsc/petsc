@@ -236,7 +236,7 @@ int main(int argc,char **argv)
     }
 
     ierr = DMMGSetKSP(dmmg,ComputeRHS,ComputeMatrix);CHKERRQ(ierr);
-    ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection); CHKERRQ(ierr);
+    ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection);CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
@@ -870,7 +870,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
       numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
-    ierr = PetscMalloc2(numBoundaryIndices,PetscInt,&boundaryIndices,numBoundaryIndices,PetscScalar,&boundaryValues); CHKERRQ(ierr);
+    ierr = PetscMalloc2(numBoundaryIndices,PetscInt,&boundaryIndices,numBoundaryIndices,PetscScalar,&boundaryValues);CHKERRQ(ierr);
     for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
       const ALE::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
       const double *data = boundary->restrict(groundPatch, *p);
@@ -994,7 +994,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J, Mat jac)
     for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = voltageCone->begin(); p != voltageCone->end(); ++p) {
       numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
-    ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
+    ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices);CHKERRQ(ierr);
     for(ALE::Mesh::field_type::order_type::coneSequence::iterator p = groundCone->begin(); p != groundCone->end(); ++p) {
       const ALE::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
 
@@ -1269,7 +1269,7 @@ PetscErrorCode CreateEnergyDensity(ALE::Obj<ALE::Mesh> mesh, ALE::Obj<ALE::Mesh:
 
   VecScatter injection;
   ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getDimension()), energy);CHKERRQ(ierr);
-  ierr = MeshGetGlobalScatter(mesh, "energy", *energy, &injection); CHKERRQ(ierr);
+  ierr = MeshGetGlobalScatter(mesh, "energy", *energy, &injection);CHKERRQ(ierr);
 
   Vec locEnergy;
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, e2->getSize(patch), e2->restrict(patch), &locEnergy);CHKERRQ(ierr);

@@ -339,7 +339,7 @@ namespace ALE {
       //
       Sec(const Obj<atlas_type> atlas, const (data_type*)& data) {this->setAtlas(atlas, false); this->_data = data;};
       Sec(const Obj<atlas_type> atlas = Obj<atlas_type>()) {this->_data = NULL; this->setAtlas(atlas);};
-     ~Sec(){if((this->_data != NULL)&&(this->_allocated)) {ierr = PetscFree(this->_data); CHKERROR(ierr, "Error in PetscFree");}};
+     ~Sec(){if((this->_data != NULL)&&(this->_allocated)) {ierr = PetscFree(this->_data);CHKERROR(ierr, "Error in PetscFree");}};
       //
       // Extended interface
       //
@@ -356,7 +356,7 @@ namespace ALE {
             this->_allocated = allocate;
             if(allocate) {
               // Allocate data
-              ierr = PetscMalloc(this->_atlas->size()*sizeof(data_type), &this->_data); CHKERROR(ierr, "Error in PetscMalloc");
+              ierr = PetscMalloc(this->_atlas->size()*sizeof(data_type), &this->_data);CHKERROR(ierr, "Error in PetscMalloc");
             }
           }
         }
@@ -392,7 +392,7 @@ namespace ALE {
       //
       ArraySec(const Obj<atlas_type> atlas, const (data_type*)& data) {this->setAtlas(atlas, false); this->_data = data;};
       ArraySec(const Obj<atlas_type> atlas = Obj<atlas_type>()) {this->_data = NULL; this->setAtlas(atlas);};
-     ~ArraySec(){if((this->_data != NULL)&&(this->_allocated)) {ierr = PetscFree(this->_data); CHKERROR(ierr, "Error in PetscFree");}};
+     ~ArraySec(){if((this->_data != NULL)&&(this->_allocated)) {ierr = PetscFree(this->_data);CHKERROR(ierr, "Error in PetscFree");}};
       //
       // Extended interface
       // 
@@ -734,9 +734,9 @@ namespace ALE {
 
         // First tell sellers which points we want to buy
         //   SellSizes, Buyers, and SellPoints are output
-        ierr = PetscObjectGetNewTag(petscObj, &tag1); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag1);CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         commCycle(comm, tag1, msgSize, BuyCountA, BuySizesA, SellersA, BuyPointsA, SellCountA, SellSizesA, BuyersA, &SellPointsA);
-        ierr = PetscObjectGetNewTag(petscObj, &tag2); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag2);CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         commCycle(comm, tag2, msgSize, BuyCountB, BuySizesB, SellersB, BuyPointsB, SellCountB, SellSizesB, BuyersB, &SellPointsB);
 
         if (debug) {
@@ -749,7 +749,7 @@ namespace ALE {
           for(int p = 0; p < SellCountB*MaxSellSizeB; p++) {
             txt << "["<<rank<<"]: SellPointsB["<<p<<"]: ("<<SellPointsB[p*msgSize]<<", "<<SellPointsB[p*msgSize+1]<<") coneSize "<<SellPointsB[p*msgSize+2]<<std::endl;
           }
-          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
           ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
         }
 
@@ -786,7 +786,7 @@ namespace ALE {
           for(int p = 0; p < SellSizeB; p++) {
             txt << "["<<rank<<"]: SellPointsB["<<p<<"]: ("<<SellPointsB[p*msgSize]<<", "<<SellPointsB[p*msgSize+1]<<") coneSize "<<SellPointsB[p*msgSize+2]<<std::endl;
           }
-          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
           ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
         }
 
@@ -856,9 +856,9 @@ namespace ALE {
 
         // Tell A buyers how many B buyers there were (contained in BuyPointsA)
         // Tell B buyers how many A buyers there were (contained in BuyPointsB)
-        ierr = PetscObjectGetNewTag(petscObj, &tag3); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag3);CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         commCycle(comm, tag3, msgSize, SellCountA, SellSizesA, BuyersA, SellPointsA, BuyCountA, BuySizesA, SellersA, &BuyPointsA);
-        ierr = PetscObjectGetNewTag(petscObj, &tag4); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag4);CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         commCycle(comm, tag4, msgSize, SellCountB, SellSizesB, BuyersB, SellPointsB, BuyCountB, BuySizesB, SellersB, &BuyPointsB);
 
         if (debug) {
@@ -880,7 +880,7 @@ namespace ALE {
           for(int p = 0; p < BuySizeB; p++) {
             txt << "["<<rank<<"]: BuyPointsB["<<p<<"]: ("<<BuyPointsB[p*msgSize]<<", "<<BuyPointsB[p*msgSize+1]<<") A buyers "<<BuyPointsB[p*msgSize+2]<<std::endl;
           }
-          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
+          ierr = PetscSynchronizedPrintf(comm, txt.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
           ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
         }
 
@@ -972,9 +972,9 @@ namespace ALE {
         }
 
         // Then send A buyers a (rank, cone size) for all B buyers of the same points
-        ierr = PetscObjectGetNewTag(petscObj, &tag5); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag5);CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         commCycle(comm, tag5, cMsgSize, SellCountA, SellConesSizesA, BuyersA, SellConesA, BuyCountA, BuyConesSizesA, SellersA, &overlapInfoA);
-        ierr = PetscObjectGetNewTag(petscObj, &tag6); CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
+        ierr = PetscObjectGetNewTag(petscObj, &tag6);CHKERROR(ierr, "Failed on PetscObjectGetNewTag");
         commCycle(comm, tag6, cMsgSize, SellCountB, SellConesSizesB, BuyersB, SellConesB, BuyCountB, BuyConesSizesB, SellersB, &overlapInfoB);
 
         // Finally build the A-->B overlap sifter
@@ -1062,8 +1062,8 @@ namespace ALE {
       void __init(MPI_Comm comm) {    
         PetscErrorCode ierr;
         this->_comm = comm;
-        ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
-        ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+        ierr = MPI_Comm_rank(this->_comm, &this->_commRank);CHKERROR(ierr, "Error in MPI_Comm_rank");
+        ierr = MPI_Comm_size(this->_comm, &this->_commSize);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
       };
     public:
       //

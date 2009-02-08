@@ -121,17 +121,14 @@ int main(int argc,char **args)
    
    /* read command-line parameters */
    ierr = PetscOptionsGetInt(PETSC_NULL,"-n_eigs",&n_eigs,PETSC_NULL);CHKERRQ(ierr);
-   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol", &tol,PETSC_NULL); CHKERRQ(ierr);
-   ierr = PetscOptionsGetString(PETSC_NULL,"-matrix",filename,PETSC_MAX_PATH_LEN-1,
-           &matrix_present);
-   CHKERRQ(ierr);
+   ierr = PetscOptionsGetReal(PETSC_NULL,"-tol", &tol,PETSC_NULL);CHKERRQ(ierr);
+   ierr = PetscOptionsGetString(PETSC_NULL,"-matrix",filename,PETSC_MAX_PATH_LEN-1,&matrix_present);CHKERRQ(ierr);
    if (!matrix_present) 
     SETERRQ(1,"Must indicate binary file to read matrix from with the "
             "'-matrix' option");
    ierr = PetscOptionsGetString(PETSC_NULL,"-mass_matrix",mass_filename,
-           PETSC_MAX_PATH_LEN-1,&mass_matrix_present);
-   CHKERRQ(ierr);
-   ierr = PetscOptionsHasName(PETSC_NULL,"-full_out",&full_output); CHKERRQ(ierr);
+           PETSC_MAX_PATH_LEN-1,&mass_matrix_present);CHKERRQ(ierr);
+   ierr = PetscOptionsHasName(PETSC_NULL,"-full_out",&full_output);CHKERRQ(ierr);
    ierr = PetscOptionsGetInt(PETSC_NULL,"-seed",&seed,PETSC_NULL);CHKERRQ(ierr);
    if (seed<1)
     seed=1;
@@ -142,15 +139,13 @@ int main(int argc,char **args)
            
            
    /* load matrices */
-   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);
-   CHKERRQ(ierr);
+   ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&fd);CHKERRQ(ierr);
    ierr = MatLoad(fd,MATMPIAIJ,&A);CHKERRQ(ierr);
    ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
    
    if (mass_matrix_present)
    {
-       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,mass_filename,FILE_MODE_READ,&fd);
-       CHKERRQ(ierr);
+       ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,mass_filename,FILE_MODE_READ,&fd);CHKERRQ(ierr);
        ierr = MatLoad(fd,MATMPIAIJ,&B);CHKERRQ(ierr);
        ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
    }
@@ -160,13 +155,11 @@ int main(int argc,char **args)
    {
       if (mass_matrix_present)
       {
-        ierr = MatAXPY(A,shift,B,SUBSET_NONZERO_PATTERN);
-        CHKERRQ(ierr);
+        ierr = MatAXPY(A,shift,B,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
       }
       else
       {
-        ierr = MatShift(A,shift);
-        CHKERRQ(ierr);
+        ierr = MatShift(A,shift);CHKERRQ(ierr);
       }
    }
         
@@ -215,16 +208,16 @@ int main(int argc,char **args)
    PetscPrintf(PETSC_COMM_WORLD,"Preconditioner setup, seconds: %f\n",elapsed_time);
 
    /* request memory for eig-vals */
-   ierr = PetscMalloc(sizeof(double)*n_eigs,&eigs); CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(double)*n_eigs,&eigs);CHKERRQ(ierr);
 
    /* request memory for eig-vals history */
-   ierr = PetscMalloc(sizeof(double)*n_eigs*(maxIt+1),&eigs_hist); CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(double)*n_eigs*(maxIt+1),&eigs_hist);CHKERRQ(ierr);
 
    /* request memory for resid. norms */
-   ierr = PetscMalloc(sizeof(double)*n_eigs,&resid); CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(double)*n_eigs,&resid);CHKERRQ(ierr);
 
    /* request memory for resid. norms hist. */
-   ierr = PetscMalloc(sizeof(double)*n_eigs*(maxIt+1),&resid_hist); CHKERRQ(ierr);
+   ierr = PetscMalloc(sizeof(double)*n_eigs*(maxIt+1),&resid_hist);CHKERRQ(ierr);
 
    LOBPCG_InitRandomContext();
 
@@ -237,7 +230,7 @@ int main(int argc,char **args)
    constraints= mv_MultiVectorCreateFromSampleVector(&ii, 1,u);
    raw_constraints = (mv_TempMultiVector*)mv_MultiVectorGetData (constraints);
    tmp_vec = (Vec)(raw_constraints->vector)[0];
-   ierr = VecSet(tmp_vec,1.0); CHKERRQ(ierr); 
+   ierr = VecSet(tmp_vec,1.0);CHKERRQ(ierr); 
 
    for (i=0; i<seed; i++) /* this cycle is to imitate changing random seed */
       mv_MultiVectorSetRandom (eigenvectors, 1234);
@@ -289,35 +282,31 @@ int main(int argc,char **args)
    for (i=0; i<n_eigs; i++)
       eigs[i]-=shift;
       
-   PetscPrintf(PETSC_COMM_WORLD,"Final eigenvalues:\n");     
+   ierr = PetscPrintf(PETSC_COMM_WORLD,"Final eigenvalues:\n");CHKERRQ(ierr);
    for (i=0;i<n_eigs;i++)
 	 {
-		 ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",eigs[i]);
-		 CHKERRQ(ierr);
+		 ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",eigs[i]);CHKERRQ(ierr);
 	 }
    
    if (full_output)
    {
-     PetscPrintf(PETSC_COMM_WORLD,"Output from LOBPCG, eigenvalues history:\n");
+     ierr = PetscPrintf(PETSC_COMM_WORLD,"Output from LOBPCG, eigenvalues history:\n");CHKERRQ(ierr);
      for (j=0; j<iterations+1; j++)
        for (i=0;i<n_eigs;i++)
        {
-         ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",*(eigs_hist+j*n_eigs+i));
-         CHKERRQ(ierr);
+         ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",*(eigs_hist+j*n_eigs+i));CHKERRQ(ierr);
 	     }
-     PetscPrintf(PETSC_COMM_WORLD,"Output from LOBPCG, residual norms:\n");
+     ierr = PetscPrintf(PETSC_COMM_WORLD,"Output from LOBPCG, residual norms:\n");CHKERRQ(ierr);
      for (i=0;i<n_eigs;i++)
 	   {
-		   ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",resid[i]);
-		   CHKERRQ(ierr);
+		   ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",resid[i]);CHKERRQ(ierr);
 	   }
 
-     PetscPrintf(PETSC_COMM_WORLD,"Output from LOBPCG, residual norms history:\n");
+     ierr = PetscPrintf(PETSC_COMM_WORLD,"Output from LOBPCG, residual norms history:\n");CHKERRQ(ierr);
      for (j=0; j<iterations+1; j++)
        for (i=0;i<n_eigs;i++)
        {
-         ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",*(resid_hist+j*n_eigs+i));
-         CHKERRQ(ierr);
+         ierr = PetscPrintf(PETSC_COMM_WORLD,"%e\n",*(resid_hist+j*n_eigs+i));CHKERRQ(ierr);
        }
    }	
 
@@ -332,7 +321,7 @@ int main(int argc,char **args)
         sprintf( tmp_str, "%s_%d.petsc", output_filename, i );
         PetscViewerBinaryOpen(PETSC_COMM_WORLD, tmp_str, FILE_MODE_WRITE, &fd);
         /* PetscViewerSetFormat(fd,PETSC_VIEWER_ASCII_MATLAB); */
-        ierr = VecView((Vec)(raw_eigenvectors->vector)[i],fd); CHKERRQ(ierr); 
+        ierr = VecView((Vec)(raw_eigenvectors->vector)[i],fd);CHKERRQ(ierr); 
         ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
       }
   
@@ -353,14 +342,10 @@ int main(int argc,char **args)
    mv_MultiVectorDestroy(constraints);
 
    /* free memory used for eig-vals */
-   ierr = PetscFree(eigs); 
-   CHKERRQ(ierr);
-   ierr = PetscFree(eigs_hist); 
-   CHKERRQ(ierr);
-   ierr = PetscFree(resid); 
-   CHKERRQ(ierr);
-   ierr = PetscFree(resid_hist); 
-   CHKERRQ(ierr);
+   ierr = PetscFree(eigs);CHKERRQ(ierr);
+   ierr = PetscFree(eigs_hist);CHKERRQ(ierr);
+   ierr = PetscFree(resid);CHKERRQ(ierr);
+   ierr = PetscFree(resid_hist);CHKERRQ(ierr);
 
    ierr = PetscFinalize();CHKERRQ(ierr);
    return 0;

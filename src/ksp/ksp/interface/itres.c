@@ -57,7 +57,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,V
     ierr = (ksp->pc_side == PC_RIGHT)?(VecCopy(vt2,vres)):(KSP_PCApply(ksp,vt2,vres));CHKERRQ(ierr);
     ierr = PCDiagonalScaleLeft(ksp->pc,vres,vres);CHKERRQ(ierr);
   } else {
-    ierr = VecCopy(vb,vt2); CHKERRQ(ierr);
+    ierr = VecCopy(vb,vt2);CHKERRQ(ierr);
     if (ksp->pc_side == PC_RIGHT) {
       ierr = PCDiagonalScaleLeft(ksp->pc,vb,vres);CHKERRQ(ierr);
     } else if (ksp->pc_side == PC_LEFT) {

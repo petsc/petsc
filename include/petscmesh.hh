@@ -69,8 +69,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<Mesh>& m
   ierr = VecSetSizes(globalVec, globalOrder->getLocalSize(), PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(globalVec);CHKERRQ(ierr);
   // Loop over all local points
-  ierr = PetscMalloc(localSize*sizeof(int), &localIndices); CHKERRQ(ierr);
-  ierr = PetscMalloc(localSize*sizeof(int), &globalIndices); CHKERRQ(ierr);
+  ierr = PetscMalloc(localSize*sizeof(int), &localIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc(localSize*sizeof(int), &globalIndices);CHKERRQ(ierr);
   for(typename Mesh::real_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
     // Map local indices to global indices
     s->getIndices(*p_iter, localIndices, &localIndx, 0, true, true);

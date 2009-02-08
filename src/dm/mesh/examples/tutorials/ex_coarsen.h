@@ -119,7 +119,7 @@ PetscErrorCode OutputMesh(const Obj<ALE::Mesh>& mesh)
         } else if (PetscExceptionCaught(ierr, PETSC_ERR_FILE_OPEN)) {
           ierr = 0;
         } 
-        CHKERRQ(ierr);
+       CHKERRQ(ierr);
     ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);

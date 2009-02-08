@@ -159,7 +159,7 @@ int main(int argc,char **argv)
     if (user.bcType == NEUMANN) {
       ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection); CHKERRQ(ierr);
+    ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection);CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
@@ -1162,7 +1162,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J, Mat jac)
   ALE::Obj<ALE::Two::Mesh::field_type> field = m->getField("u");
   ALE::Obj<ALE::Two::Mesh::sieve_type::traits::heightSequence> elements = m->getTopology()->heightStratum(0);
   for(ALE::Two::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); e_itor++) {
-    CHKMEMQ;
+   CHKMEMQ;
     ierr = ElementGeometry(m, *e_itor, v0, Jac, Jinv, &detJ);CHKERRQ(ierr);
     /* Element integral */
     ierr = PetscMemzero(elementMat, NUM_BASIS_FUNCTIONS*NUM_BASIS_FUNCTIONS*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1217,7 +1217,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J, Mat jac)
         }
       }
     }
-    ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
+    ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices);CHKERRQ(ierr);
     for(ALE::Two::Mesh::sieve_type::traits::depthSequence::iterator p = vertices->begin(); p != vertices->end(); ++p) {
       if (boundary->getIndex(patch, *p).index > 0) {
         const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);

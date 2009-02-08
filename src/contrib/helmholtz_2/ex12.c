@@ -429,11 +429,11 @@ int UserDetermineMatrixNonzeros(Atassi *user,MatType mtype,int **nz_d,int **nz_o
 
   nnz_o = PETSC_NULL; nnz_d = PETSC_NULL;
   if (mtype == MATSEQAIJ) {
-    nnz_d = (int *) PetscMalloc(m_ldim * sizeof(int)); CHKPTRQ(nnz_d);
+    nnz_d = (int *) PetscMalloc(m_ldim * sizeof(int));CHKPTRQ(nnz_d);
     PetscMemzero(nnz_d,m_ldim * sizeof(int));
     istart = 0; iend = m_ldim;
   } else if (mtype == MATMPIAIJ) {
-    nnz_d = (int *) PetscMalloc(2*m_ldim * sizeof(int)); CHKPTRQ(nnz_d);
+    nnz_d = (int *) PetscMalloc(2*m_ldim * sizeof(int));CHKPTRQ(nnz_d);
     PetscMemzero(nnz_d,2*m_ldim * sizeof(int));
     nnz_o = nnz_d + m_ldim;
     /* Note: vector and matrix distribution is identical */

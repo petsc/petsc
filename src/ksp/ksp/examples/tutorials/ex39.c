@@ -47,7 +47,7 @@ int main(int Argc,char **Args)
   /* Geometry info */
   ierr = DACreate2d(PETSC_COMM_WORLD, DA_XYPERIODIC, DA_STENCIL_STAR, n, n,
 		    PETSC_DECIDE, PETSC_DECIDE, 2 /* this is the # of dof's */,
-		    1, PETSC_NULL, PETSC_NULL, &da); CHKERRQ(ierr);
+		    1, PETSC_NULL, PETSC_NULL, &da);CHKERRQ(ierr);
   
   /* Random numbers */
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
@@ -58,9 +58,9 @@ int main(int Argc,char **Args)
 
   /* construct matrix */
   if( comm_size == 1 ) {
-    ierr = DAGetMatrix(da, MATSEQAIJ, &H); CHKERRQ(ierr);
+    ierr = DAGetMatrix(da, MATSEQAIJ, &H);CHKERRQ(ierr);
   } else {
-    ierr = DAGetMatrix(da, MATMPIAIJ, &H); CHKERRQ(ierr);
+    ierr = DAGetMatrix(da, MATMPIAIJ, &H);CHKERRQ(ierr);
   }
 
   /* get local corners for this processor */
@@ -74,9 +74,9 @@ int main(int Argc,char **Args)
 	 In this way we can use only local random number creation. That means
 	 we also have to set the corresponding backward pointing entries. */
       /* Compute some normally distributed random numbers via Box-Muller */
-      ierr = PetscRandomGetValueReal(rctx, &r1); CHKERRQ(ierr);
+      ierr = PetscRandomGetValueReal(rctx, &r1);CHKERRQ(ierr);
       r1 = 1.-r1; /* to change from [0,1) to (0,1], which we need for the log */
-      ierr = PetscRandomGetValueReal(rctx, &r2); CHKERRQ(ierr);
+      ierr = PetscRandomGetValueReal(rctx, &r2);CHKERRQ(ierr);
       PetscReal R = sqrt(-2.*log(r1));
       PetscReal c = cos(2.*PETSC_PI*r2);
       PetscReal s = sin(2.*PETSC_PI*r2);
@@ -89,94 +89,94 @@ int main(int Argc,char **Args)
 
       /* center action */
       sxy.c = 0; /* spin 0, 0 */
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy, &rho, ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy, &rho, ADD_VALUES);CHKERRQ(ierr);
       sxy.c = 1; /* spin 1, 1 */
       val = -rho;
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy, &val, ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
       
       sxy_m.i = x+1; sxy_m.j = y; /* right action */
       sxy.c = 0; sxy_m.c = 0; /* spin 0, 0 */
       val = -uxy1; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES); CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.c = 0; sxy_m.c = 1; /* spin 0, 1 */
       val = -uxy1; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES); CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.c = 1; sxy_m.c = 0; /* spin 1, 0 */
       val = uxy1; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES); CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.c = 1; sxy_m.c = 1; /* spin 1, 1 */
       val = uxy1; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES); CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
 
       sxy_m.i = x; sxy_m.j = y+1; /* down action */
       sxy.c = 0; sxy_m.c = 0; /* spin 0, 0 */
       val = -uxy2; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES); CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.c = 0; sxy_m.c = 1; /* spin 0, 1 */
       val = -PETSC_i*uxy2; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES); CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.c = 1; sxy_m.c = 0; /* spin 1, 0 */
       val = -PETSC_i*uxy2; valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES); CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
       sxy.c = 1; sxy_m.c = 1; /* spin 1, 1 */
       val = PetscConj(uxy2); valconj = PetscConj(val);
-      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES); CHKERRQ(ierr);
-      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES); CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy_m, 1, &sxy, &val, ADD_VALUES);CHKERRQ(ierr);
+      ierr = MatSetValuesStencil(H, 1, &sxy, 1, &sxy_m, &valconj, ADD_VALUES);CHKERRQ(ierr);
     }
   }
   
-  ierr = MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(H, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(H, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* scale H */
-  ierr = MatScale(H, 1./(2.*h)); CHKERRQ(ierr);
+  ierr = MatScale(H, 1./(2.*h));CHKERRQ(ierr);
 
   /* it looks like H is Hermetian */
   /* construct normal equations */
-  ierr = MatMatMult(H, H, MAT_INITIAL_MATRIX, 1., &HtH); CHKERRQ(ierr);
+  ierr = MatMatMult(H, H, MAT_INITIAL_MATRIX, 1., &HtH);CHKERRQ(ierr);
 
   /* permutation matrix to check whether H and HtH are identical to the ones in the paper */
 /*   Mat perm; */
-/*   ierr = DAGetMatrix(da, MATSEQAIJ, &perm); CHKERRQ(ierr); */
+/*   ierr = DAGetMatrix(da, MATSEQAIJ, &perm);CHKERRQ(ierr); */
 /*   PetscInt row, col; */
 /*   PetscScalar one = 1.0; */
 /*   for(PetscInt i=0; i<n; i++) { */
 /*     for(PetscInt j=0; j<n; j++) { */
 /*       row = (i*n+j)*2; col = i*n+j; */
-/*       ierr = MatSetValues(perm, 1, &row, 1, &col, &one, INSERT_VALUES); CHKERRQ(ierr); */
+/*       ierr = MatSetValues(perm, 1, &row, 1, &col, &one, INSERT_VALUES);CHKERRQ(ierr); */
 /*       row = (i*n+j)*2+1; col = i*n+j + n*n; */
-/*       ierr = MatSetValues(perm, 1, &row, 1, &col, &one, INSERT_VALUES); CHKERRQ(ierr); */
+/*       ierr = MatSetValues(perm, 1, &row, 1, &col, &one, INSERT_VALUES);CHKERRQ(ierr); */
 /*     } */
 /*   } */
-/*   ierr = MatAssemblyBegin(perm, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr); */
-/*   ierr = MatAssemblyEnd(perm, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr); */
+/*   ierr = MatAssemblyBegin(perm, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); */
+/*   ierr = MatAssemblyEnd(perm, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); */
 
 /*   Mat Hperm; */
-/*   ierr = MatPtAP(H, perm, MAT_INITIAL_MATRIX, 1.0, &Hperm); CHKERRQ(ierr); */
-/*   ierr = PetscPrintf(PETSC_COMM_WORLD, "Matrix H after construction\n"); CHKERRQ(ierr); */
-/*   ierr = MatView(Hperm, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)); CHKERRQ(ierr); */
+/*   ierr = MatPtAP(H, perm, MAT_INITIAL_MATRIX, 1.0, &Hperm);CHKERRQ(ierr); */
+/*   ierr = PetscPrintf(PETSC_COMM_WORLD, "Matrix H after construction\n");CHKERRQ(ierr); */
+/*   ierr = MatView(Hperm, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr); */
 
 /*   Mat HtHperm; */
-/*   ierr = MatPtAP(HtH, perm, MAT_INITIAL_MATRIX, 1.0, &HtHperm); CHKERRQ(ierr); */
-/*   ierr = PetscPrintf(PETSC_COMM_WORLD, "Matrix HtH:\n"); CHKERRQ(ierr); */
-/*   ierr = MatView(HtHperm, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)); CHKERRQ(ierr); */
+/*   ierr = MatPtAP(HtH, perm, MAT_INITIAL_MATRIX, 1.0, &HtHperm);CHKERRQ(ierr); */
+/*   ierr = PetscPrintf(PETSC_COMM_WORLD, "Matrix HtH:\n");CHKERRQ(ierr); */
+/*   ierr = MatView(HtHperm, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr); */
 
   /* right hand side */
-  ierr = DACreateGlobalVector(da, &b); CHKERRQ(ierr);
-  ierr = VecSet(b,0.0); CHKERRQ(ierr);
-  ierr = VecSetValues(b, 1, ix, vals, INSERT_VALUES); CHKERRQ(ierr);
-  ierr = VecAssemblyBegin(b); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(b); CHKERRQ(ierr);
-/*   ierr = VecSetRandom(b, rctx); CHKERRQ(ierr); */
-  ierr = VecDuplicate(b, &Htb); CHKERRQ(ierr);
-  ierr = MatMultTranspose(H, b, Htb); CHKERRQ(ierr);
+  ierr = DACreateGlobalVector(da, &b);CHKERRQ(ierr);
+  ierr = VecSet(b,0.0);CHKERRQ(ierr);
+  ierr = VecSetValues(b, 1, ix, vals, INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
+/*   ierr = VecSetRandom(b, rctx);CHKERRQ(ierr); */
+  ierr = VecDuplicate(b, &Htb);CHKERRQ(ierr);
+  ierr = MatMultTranspose(H, b, Htb);CHKERRQ(ierr);
 
   /* construct solver */
   ierr = KSPCreate(PETSC_COMM_WORLD,&kspmg);CHKERRQ(ierr);
@@ -190,13 +190,13 @@ int main(int Argc,char **Args)
 
   ierr = KSPSetOperators(kspmg, HtH, HtH, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = DASetRefinementFactor(da, 3, 3, 3); CHKERRQ(ierr);
-  ierr = PCASASetDM(pcmg, (DM) da); CHKERRQ(ierr);
+  ierr = DASetRefinementFactor(da, 3, 3, 3);CHKERRQ(ierr);
+  ierr = PCASASetDM(pcmg, (DM) da);CHKERRQ(ierr);
 
   ierr = PCASASetTolerances(pcmg, 1.e-6, 1.e-10,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
-  ierr = VecDuplicate(b, &xvec); CHKERRQ(ierr);
-  ierr = VecSet(xvec, 0.0); CHKERRQ(ierr);
+  ierr = VecDuplicate(b, &xvec);CHKERRQ(ierr);
+  ierr = VecSet(xvec, 0.0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
                       Solve the linear system
@@ -204,7 +204,7 @@ int main(int Argc,char **Args)
 
   ierr = KSPSolve(kspmg, Htb, xvec);CHKERRQ(ierr);
 
-/*   ierr = VecView(xvec, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)); CHKERRQ(ierr); */
+/*   ierr = VecView(xvec, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD));CHKERRQ(ierr); */
 
   ierr = KSPDestroy(kspmg);CHKERRQ(ierr);
   ierr = VecDestroy(xvec);CHKERRQ(ierr);
@@ -234,24 +234,24 @@ PetscErrorCode computeMaxEigVal(Mat A, PetscInt its, PetscScalar *eig) {
   PetscFunctionBegin;
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
-  ierr = MatGetVecs(A, &x_1, &x); CHKERRQ(ierr);
-  ierr = VecSetRandom(x, rctx); CHKERRQ(ierr);
-  ierr = VecDuplicate(x, &x0); CHKERRQ(ierr);
-  ierr = VecCopy(x, x0); CHKERRQ(ierr);
+  ierr = MatGetVecs(A, &x_1, &x);CHKERRQ(ierr);
+  ierr = VecSetRandom(x, rctx);CHKERRQ(ierr);
+  ierr = VecDuplicate(x, &x0);CHKERRQ(ierr);
+  ierr = VecCopy(x, x0);CHKERRQ(ierr);
 
-  ierr = MatMult(A, x, x_1); CHKERRQ(ierr);
+  ierr = MatMult(A, x, x_1);CHKERRQ(ierr);
   for(i=0; i<its; i++) {
     tmp = x; x = x_1; x_1 = tmp;
-    ierr = MatMult(A, x, x_1); CHKERRQ(ierr);
+    ierr = MatMult(A, x, x_1);CHKERRQ(ierr);
   }
-  ierr = VecDot(x0, x, &lambda_its); CHKERRQ(ierr);
-  ierr = VecDot(x0, x_1, &lambda_its_1); CHKERRQ(ierr);
+  ierr = VecDot(x0, x, &lambda_its);CHKERRQ(ierr);
+  ierr = VecDot(x0, x_1, &lambda_its_1);CHKERRQ(ierr);
 
   *eig = lambda_its_1/lambda_its;
 
-  ierr = VecDestroy(x0); CHKERRQ(ierr);
-  ierr = VecDestroy(x); CHKERRQ(ierr);
-  ierr = VecDestroy(x_1); CHKERRQ(ierr);
+  ierr = VecDestroy(x0);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(x_1);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

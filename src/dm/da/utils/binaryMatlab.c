@@ -193,7 +193,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char
   if (dim == 3) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d,%d,%d);\n",dof,ni,nj,nk);CHKERRQ(ierr); }
 
   for(n=0; n<dof; n++) {
-    ierr = DAGetFieldName(da,n,&fieldname); CHKERRQ(ierr);
+    ierr = DAGetFieldName(da,n,&fieldname);CHKERRQ(ierr);
     ierr = PetscStrcmp(fieldname,"",&flg);CHKERRQ(ierr);
     if (!flg) {
       if (dim == 1) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = squeeze(tmp(%d,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }

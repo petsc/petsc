@@ -44,7 +44,7 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   PetscInt       dim, numValues;
   PetscErrorCode ierr;
 
-  ierr = DAGetInfo(c->velocityDA, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0); CHKERRQ(ierr);
+  ierr = DAGetInfo(c->velocityDA, &dim, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);CHKERRQ(ierr);
   if (c->structured) {
     c->numIds = dim;
   } else {
@@ -58,24 +58,24 @@ PetscErrorCode CharacteristicSetUp_DA(Characteristic c)
   /* Create new MPI datatype for communication of characteristic point structs */
   blockLen[0] = 1+c->numIds; indices[0] = 0;                              oldtypes[0] = MPIU_INT;
   blockLen[1] = numValues;   indices[1] = (1+c->numIds)*sizeof(PetscInt); oldtypes[1] = MPIU_SCALAR;
-  ierr = MPI_Type_struct(2, blockLen, indices, oldtypes, &c->itemType); CHKERRQ(ierr);
-  ierr = MPI_Type_commit(&c->itemType); CHKERRQ(ierr);
+  ierr = MPI_Type_struct(2, blockLen, indices, oldtypes, &c->itemType);CHKERRQ(ierr);
+  ierr = MPI_Type_commit(&c->itemType);CHKERRQ(ierr);
 
   /* Initialize the local queue for char foot values */
-  ierr = VecGetLocalSize(c->velocity, &c->queueMax); CHKERRQ(ierr);
-  ierr = PetscMalloc(c->queueMax * sizeof(CharacteristicPointDA2D), &c->queue); CHKERRQ(ierr);
+  ierr = VecGetLocalSize(c->velocity, &c->queueMax);CHKERRQ(ierr);
+  ierr = PetscMalloc(c->queueMax * sizeof(CharacteristicPointDA2D), &c->queue);CHKERRQ(ierr);
   c->queueSize = 0;
 
   /* Allocate communication structures */
   if (c->numNeighbors <= 0) {
     SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "Invalid number of neighbors %d. Call CharactersiticSetNeighbors() before setup.", c->numNeighbors);
   }
-  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->needCount); CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->localOffsets); CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->fillCount); CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->remoteOffsets); CHKERRQ(ierr);
-  ierr = PetscMalloc((c->numNeighbors-1) * sizeof(MPI_Request), &c->request); CHKERRQ(ierr);
-  ierr = PetscMalloc((c->numNeighbors-1) * sizeof(MPI_Status),  &c->status); CHKERRQ(ierr);
+  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->needCount);CHKERRQ(ierr);
+  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->localOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->fillCount);CHKERRQ(ierr);
+  ierr = PetscMalloc(c->numNeighbors * sizeof(PetscInt), &c->remoteOffsets);CHKERRQ(ierr);
+  ierr = PetscMalloc((c->numNeighbors-1) * sizeof(MPI_Request), &c->request);CHKERRQ(ierr);
+  ierr = PetscMalloc((c->numNeighbors-1) * sizeof(MPI_Status),  &c->status);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

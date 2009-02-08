@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the problem parameters.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
-  ierr = PetscMalloc(sizeof(AppCtx),&user); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(AppCtx),&user);CHKERRQ(ierr);
   ierr = PetscBagCreate(comm,sizeof(Parameter),&(user->bag));CHKERRQ(ierr);
   ierr = SetParams(user);CHKERRQ(ierr);
   ierr = ReportParams(user);CHKERRQ(ierr);
@@ -111,21 +111,21 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */   
-  ierr = DAGetGlobalVector(da, &(user->Xold)); CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = Initialize(dmmg); CHKERRQ(ierr);
-  ierr = DoSolve(dmmg); CHKERRQ(ierr);
+  ierr = Initialize(dmmg);CHKERRQ(ierr);
+  ierr = DoSolve(dmmg);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space. 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DARestoreGlobalVector(da, &(user->Xold)); CHKERRQ(ierr);
+  ierr = DARestoreGlobalVector(da, &(user->Xold));CHKERRQ(ierr);
   ierr = PetscBagDestroy(user->bag);CHKERRQ(ierr); 
-  ierr = PetscFree(user); CHKERRQ(ierr);
-  ierr = DMMGDestroy(dmmg); CHKERRQ(ierr);
+  ierr = PetscFree(user);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return result;
 }
@@ -253,7 +253,7 @@ int Initialize(DMMG *dmmg)
   
   /* restore the grid to it's vector */
   ierr = DAVecRestoreArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
-  ierr = VecCopy(user->Xold, DMMGGetx(dmmg)); CHKERRQ(ierr);
+  ierr = VecCopy(user->Xold, DMMGGetx(dmmg));CHKERRQ(ierr);
   return 0;
 }
 
@@ -286,7 +286,7 @@ int DoSolve(DMMG *dmmg)
 
   /* output initial data */
   PetscPrintf(PETSC_COMM_WORLD," Initialization, Time: %5.4g\n", param->t);
-  ierr = DoOutput(dmmg,n_plot); CHKERRQ(ierr); 
+  ierr = DoOutput(dmmg,n_plot);CHKERRQ(ierr); 
   t_output += param->t_output_interval; n_plot++;
 
   /* timestep loop */
@@ -300,16 +300,16 @@ int DoSolve(DMMG *dmmg)
        Solve at time t & copy solution into solution vector.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /* Copy in the velocities to Xstar */
-    ierr = VecCopy(DMMGGetx(dmmg), Xstar); CHKERRQ(ierr);
+    ierr = VecCopy(DMMGGetx(dmmg), Xstar);CHKERRQ(ierr);
     /* Put \phi_* into Xstar */
-    ierr = CharacteristicSolve(c, param->dt, Xstar); CHKERRQ(ierr);
+    ierr = CharacteristicSolve(c, param->dt, Xstar);CHKERRQ(ierr);
     /* Copy the advected field into the solution \phi_t = \phi_* */
-    ierr = VecCopy(Xstar, DMMGGetx(dmmg)); CHKERRQ(ierr);
+    ierr = VecCopy(Xstar, DMMGGetx(dmmg));CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Copy new solution to old solution in prep for the next timestep.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = VecCopy(DMMGGetx(dmmg), user->Xold); CHKERRQ(ierr);
+    ierr = VecCopy(DMMGGetx(dmmg), user->Xold);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Timestep complete, report and update counter.
@@ -321,12 +321,12 @@ int DoSolve(DMMG *dmmg)
        Make output.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     if (param->t >= t_output) {
-      ierr = DoOutput(dmmg,n_plot); CHKERRQ(ierr); 
+      ierr = DoOutput(dmmg,n_plot);CHKERRQ(ierr); 
       t_output += param->t_output_interval; n_plot++;
     }
   }
   ierr = DARestoreGlobalVector(da, &Xstar);CHKERRQ(ierr);
-  ierr = CharacteristicDestroy(c); CHKERRQ(ierr);
+  ierr = CharacteristicDestroy(c);CHKERRQ(ierr);
   return 0; 
 }
 

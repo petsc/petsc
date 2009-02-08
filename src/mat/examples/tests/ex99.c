@@ -138,11 +138,11 @@ PetscInt main(PetscInt argc,char **args)
     }
 
     /* Convert aij matrix to MatSeqDense for LAPACK */
-    ierr = PetscTypeCompare((PetscObject)A,MATSEQDENSE,&flg); CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)A,MATSEQDENSE,&flg);CHKERRQ(ierr);
     if (!flg) {
       ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr); 
     }
-    ierr = PetscTypeCompare((PetscObject)B,MATSEQDENSE,&flg); CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)B,MATSEQDENSE,&flg);CHKERRQ(ierr);
     if (!flg) {ierr = MatConvert(B,MATSEQDENSE,MAT_INITIAL_MATRIX,&B_dense);CHKERRQ(ierr);}
 
     /* Solve eigenvalue problem: A*x = lambda*B*x */

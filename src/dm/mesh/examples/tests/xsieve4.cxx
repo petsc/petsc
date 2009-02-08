@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help); CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   {
     ALE::ArgDB argDB(ALE::Test::XSieveTester().argDB, argc, argv);
 #ifdef ALE_USE_DEBUGGING
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 #endif
     //
     ALE::Obj<xsieve_type> xsieveTree = ALE::Test::XSieveTester::createTreeXSieve(PETSC_COMM_SELF, argDB);
-    ierr = ALE::Test::XSieveTester::BoundaryTest<xsieve_type>(xsieveTree, argDB, "Tree"); CHKERRQ(ierr);
+    ierr = ALE::Test::XSieveTester::BoundaryTest<xsieve_type>(xsieveTree, argDB, "Tree");CHKERRQ(ierr);
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

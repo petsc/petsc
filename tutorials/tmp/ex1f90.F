@@ -31,6 +31,7 @@
       MatPartitioning mp
       IS partitioning,newnumbering
       IS oldnumbering,all_oldnumbering
+      IS allnewnumbering
       PetscInt nlocals(100) ! need to allocate correct size
       PetscMPIInt size,rank
 
@@ -39,7 +40,7 @@
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'mesh.petsc',                &
      &                           FILE_MODE_READ,petscviewer,ierr)
 
-      call MatLoad(petscviewer,MATMPIBAIJ,Adj,ierr)
+      call MatLoad(petscviewer,MATMPIAIJ,Adj,ierr)
 
       call MatPartitioningCreate(PETSC_COMM_WORLD,mp,ierr)
       call MatPartitioningSetAdjacency(mp,Adj,ierr)
@@ -52,7 +53,8 @@
       call ISPartitioningToNumbering(partitioning,newnumbering,ierr)
       call ISDestroy(partitioning,ierr)
 
-      call MatPermute(Adj,newnumbering,newnumbering,Adjnew,ierr)
+      call ISAllGather(newnumbering,allnewnumbering,ierr)
+      call MatPermute(Adj,newnumbering,allnewnumbering,Adjnew,ierr)
 
       call ISView(newnumbering,PETSC_VIEWER_STDOUT_WORLD,ierr)
 

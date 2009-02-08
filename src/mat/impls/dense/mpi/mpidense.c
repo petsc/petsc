@@ -1322,7 +1322,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPIDense(Mat F,Mat A,IS perm,const MatF
   PetscTruth     issymmetric,set;
 
   PetscFunctionBegin;
-  ierr = MatIsSymmetricKnown(A,&set,&issymmetric); CHKERRQ(ierr);
+  ierr = MatIsSymmetricKnown(A,&set,&issymmetric);CHKERRQ(ierr);
   if (!set || !issymmetric) SETERRQ(PETSC_ERR_USER,"Matrix must be set as MAT_SYMMETRIC for CholeskyFactor()");
   F->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_MPIDense;
   PetscFunctionReturn(0);

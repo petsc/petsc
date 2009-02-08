@@ -3949,7 +3949,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianTranspose(Mat A,Mat B,PetscReal 
 +  mat - the matrix to permute
 .  row - row permutation, each processor supplies only the permutation for its rows
 -  col - column permutation, each processor needs the entire column permutation, that is
-         this is the same size as the total number of columns in the matrix
+         this is the same size as the total number of columns in the matrix. It can often
+         be obtained with ISAllGather() on the row permutation
 
    Output Parameters:
 .  B - the permuted matrix
@@ -3958,7 +3959,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianTranspose(Mat A,Mat B,PetscReal 
 
    Concepts: matrices^permuting
 
-.seealso: MatGetOrdering()
+.seealso: MatGetOrdering(), ISAllGather()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatPermute(Mat mat,IS row,IS col,Mat *B)
 {

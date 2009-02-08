@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help); CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   {
     ALE::ArgDB argDB(ALE::Test::XSieveTester().argDB, argc, argv);
 #ifdef ALE_USE_DEBUGGING
@@ -23,9 +23,9 @@ int main(int argc, char *argv[])
     ALE::Xcodebug = argDB["codebug"];
 #endif
     ALE::Obj<xsieve_type> xsieveFork = ALE::Test::XSieveTester::createForkXSieve(PETSC_COMM_SELF, argDB);
-    ierr = ALE::Test::XSieveTester::SliceBasicTest<xsieve_type>(xsieveFork, argDB, "Fork XSieve"); CHKERRQ(ierr);
+    ierr = ALE::Test::XSieveTester::SliceBasicTest<xsieve_type>(xsieveFork, argDB, "Fork XSieve");CHKERRQ(ierr);
     ALE::Obj<xsieve_type> xsieveHat = ALE::Test::XSieveTester::createHatXSieve(PETSC_COMM_SELF, argDB);
-    ierr = ALE::Test::XSieveTester::SliceBasicTest<xsieve_type>(xsieveHat, argDB, "Hat XSieve"); CHKERRQ(ierr);
+    ierr = ALE::Test::XSieveTester::SliceBasicTest<xsieve_type>(xsieveHat, argDB, "Hat XSieve");CHKERRQ(ierr);
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -33,11 +33,11 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(c, 1, viewer, 2);
 
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii); CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
   } else {
     if (c->ops->view) {
-      ierr = (*c->ops->view)(c, viewer); CHKERRQ(ierr);
+      ierr = (*c->ops->view)(c, viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -54,19 +54,19 @@ PetscErrorCode CharacteristicDestroy(Characteristic c)
   if (--((PetscObject)c)->refct > 0) PetscFunctionReturn(0);
 
   if (c->ops->destroy) {
-    ierr = (*c->ops->destroy)(c); CHKERRQ(ierr);
+    ierr = (*c->ops->destroy)(c);CHKERRQ(ierr);
   }
-  ierr = MPI_Type_free(&c->itemType); CHKERRQ(ierr);
-  if (c->queue)         {ierr = PetscFree(c->queue); CHKERRQ(ierr);}
-  if (c->queueLocal)    {ierr = PetscFree(c->queueLocal); CHKERRQ(ierr);}
-  if (c->queueRemote)   {ierr = PetscFree(c->queueRemote); CHKERRQ(ierr);}
-  if (c->neighbors)     {ierr = PetscFree(c->neighbors); CHKERRQ(ierr);}
-  if (c->needCount)     {ierr = PetscFree(c->needCount); CHKERRQ(ierr);}
-  if (c->localOffsets)  {ierr = PetscFree(c->localOffsets); CHKERRQ(ierr);}
-  if (c->fillCount)     {ierr = PetscFree(c->fillCount); CHKERRQ(ierr);}
-  if (c->remoteOffsets) {ierr = PetscFree(c->remoteOffsets); CHKERRQ(ierr);}
-  if (c->request)       {ierr = PetscFree(c->request); CHKERRQ(ierr);}
-  if (c->status)        {ierr = PetscFree(c->status); CHKERRQ(ierr);}
+  ierr = MPI_Type_free(&c->itemType);CHKERRQ(ierr);
+  if (c->queue)         {ierr = PetscFree(c->queue);CHKERRQ(ierr);}
+  if (c->queueLocal)    {ierr = PetscFree(c->queueLocal);CHKERRQ(ierr);}
+  if (c->queueRemote)   {ierr = PetscFree(c->queueRemote);CHKERRQ(ierr);}
+  if (c->neighbors)     {ierr = PetscFree(c->neighbors);CHKERRQ(ierr);}
+  if (c->needCount)     {ierr = PetscFree(c->needCount);CHKERRQ(ierr);}
+  if (c->localOffsets)  {ierr = PetscFree(c->localOffsets);CHKERRQ(ierr);}
+  if (c->fillCount)     {ierr = PetscFree(c->fillCount);CHKERRQ(ierr);}
+  if (c->remoteOffsets) {ierr = PetscFree(c->remoteOffsets);CHKERRQ(ierr);}
+  if (c->request)       {ierr = PetscFree(c->request);CHKERRQ(ierr);}
+  if (c->status)        {ierr = PetscFree(c->status);CHKERRQ(ierr);}
   ierr = PetscLogObjectDestroy(c);CHKERRQ(ierr);
   PetscHeaderDestroy(c);
   PetscFunctionReturn(0);
@@ -83,7 +83,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   PetscValidPointer(c, 2);
   *c = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = CharacteristicInitializePackage(PETSC_NULL); CHKERRQ(ierr);
+  ierr = CharacteristicInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_COOKIE, -1, "Characteristic", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
@@ -344,40 +344,40 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
 
   PetscFunctionBegin;
   c->queueSize = 0;
-  ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank); CHKERRQ(ierr);
-  ierr = DAGetNeighborsRank(da, neighbors); CHKERRQ(ierr);
-  ierr = CharacteristicSetNeighbors(c, 9, neighbors); CHKERRQ(ierr);
-  ierr = CharacteristicSetUp(c); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank);CHKERRQ(ierr);
+  ierr = DAGetNeighborsRank(da, neighbors);CHKERRQ(ierr);
+  ierr = CharacteristicSetNeighbors(c, 9, neighbors);CHKERRQ(ierr);
+  ierr = CharacteristicSetUp(c);CHKERRQ(ierr);
   /* global and local grid info */
-  ierr = DAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &periodic_type, 0); CHKERRQ(ierr);
-  ierr = DAGetLocalInfo(da, &info); CHKERRQ(ierr);
+  ierr = DAGetInfo(da, &dim, &gx, &gy, 0, 0, 0, 0, 0, 0, &periodic_type, 0);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da, &info);CHKERRQ(ierr);
   ni   = info.mx;          nj   = info.my;
   is   = info.xs;          ie   = info.xs+info.xm; 
   js   = info.ys;          je   = info.ys+info.ym;
   qs   = info.xm*info.ym;
   /* Allocation */
-  ierr = PetscMalloc(dim*sizeof(PetscScalar),                &interpIndices); CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numVelocityComp*sizeof(PetscScalar), &velocityValues); CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numVelocityComp*sizeof(PetscScalar), &velocityValuesOld); CHKERRQ(ierr);
-  ierr = PetscMalloc(c->numFieldComp*sizeof(PetscScalar),    &fieldValues); CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(CHARACTERISTIC_Solve,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscMalloc(dim*sizeof(PetscScalar),                &interpIndices);CHKERRQ(ierr);
+  ierr = PetscMalloc(c->numVelocityComp*sizeof(PetscScalar), &velocityValues);CHKERRQ(ierr);
+  ierr = PetscMalloc(c->numVelocityComp*sizeof(PetscScalar), &velocityValuesOld);CHKERRQ(ierr);
+  ierr = PetscMalloc(c->numFieldComp*sizeof(PetscScalar),    &fieldValues);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_Solve,0,0,0,0);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------------------
      PART 1, AT t-dt/2 
      -----------------------------------------------------------------------*/
-  ierr = PetscLogEventBegin(CHARACTERISTIC_QueueSetup,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_QueueSetup,0,0,0,0);CHKERRQ(ierr);
   /* GET POSITION AT HALF TIME IN THE PAST */
   if (c->velocityInterpLocal) {
-    ierr = DAGetLocalVector(c->velocityDA, &velocityLocal); CHKERRQ(ierr);
-    ierr = DAGetLocalVector(c->velocityDA, &velocityLocalOld); CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(c->velocityDA, c->velocity, INSERT_VALUES, velocityLocal); CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(c->velocityDA, c->velocity, INSERT_VALUES, velocityLocal); CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(c->velocityDA, c->velocityOld, INSERT_VALUES, velocityLocalOld); CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(c->velocityDA, c->velocityOld, INSERT_VALUES, velocityLocalOld); CHKERRQ(ierr);
-    ierr = DAVecGetArray(c->velocityDA, velocityLocal,    &velocityArray);    CHKERRQ(ierr);
-    ierr = DAVecGetArray(c->velocityDA, velocityLocalOld, &velocityArrayOld); CHKERRQ(ierr);
+    ierr = DAGetLocalVector(c->velocityDA, &velocityLocal);CHKERRQ(ierr);
+    ierr = DAGetLocalVector(c->velocityDA, &velocityLocalOld);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(c->velocityDA, c->velocity, INSERT_VALUES, velocityLocal);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(c->velocityDA, c->velocity, INSERT_VALUES, velocityLocal);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(c->velocityDA, c->velocityOld, INSERT_VALUES, velocityLocalOld);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(c->velocityDA, c->velocityOld, INSERT_VALUES, velocityLocalOld);CHKERRQ(ierr);
+    ierr = DAVecGetArray(c->velocityDA, velocityLocal,    &velocityArray);   CHKERRQ(ierr);
+    ierr = DAVecGetArray(c->velocityDA, velocityLocalOld, &velocityArrayOld);CHKERRQ(ierr);
   }
-  ierr = PetscInfo(PETSC_NULL, "Calculating position at t_{n - 1/2}\n"); CHKERRQ(ierr);
+  ierr = PetscInfo(PETSC_NULL, "Calculating position at t_{n - 1/2}\n");CHKERRQ(ierr);
   for(Qi.j = js; Qi.j < je; Qi.j++) { 
     for(Qi.i = is; Qi.i < ie; Qi.i++) {
       interpIndices[0] = Qi.i;
@@ -399,18 +399,18 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       if (Qi.proc && verbose) {
         printf("[%d]Remote point (%d) at n+1/2 to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, (int)c->queueSize+1, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);
       }
-      ierr = CharacteristicAddPoint(c, &Qi); CHKERRQ(ierr);
+      ierr = CharacteristicAddPoint(c, &Qi);CHKERRQ(ierr);
     }
   }
-  ierr = PetscLogEventEnd(CHARACTERISTIC_QueueSetup,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_QueueSetup,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeExchange,0,0,0,0); CHKERRQ(ierr);
-  ierr = CharacteristicSendCoordinatesBegin(c); CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeExchange,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeExchange,0,0,0,0);CHKERRQ(ierr);
+  ierr = CharacteristicSendCoordinatesBegin(c);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeExchange,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeLocal,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeLocal,0,0,0,0);CHKERRQ(ierr);
   /* Calculate velocity at t_n+1/2 (local values) */
-  ierr = PetscInfo(PETSC_NULL, "Calculating local velocities at t_{n - 1/2}\n"); CHKERRQ(ierr);
+  ierr = PetscInfo(PETSC_NULL, "Calculating local velocities at t_{n - 1/2}\n");CHKERRQ(ierr);
   for(n = 0; n < c->queueSize; n++) {
     Qi = c->queue[n];
     if (c->neighbors[Qi.proc] == rank) {
@@ -428,16 +428,16 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     }
     c->queue[n] = Qi;
   }
-  ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeLocal,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeLocal,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeExchange,0,0,0,0); CHKERRQ(ierr);
-  ierr = CharacteristicSendCoordinatesEnd(c); CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeExchange,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeExchange,0,0,0,0);CHKERRQ(ierr);
+  ierr = CharacteristicSendCoordinatesEnd(c);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeExchange,0,0,0,0);CHKERRQ(ierr);
 
 
   /* Calculate velocity at t_n+1/2 (fill remote requests) */
-  ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeRemote,0,0,0,0); CHKERRQ(ierr);
-  ierr = PetscInfo1(PETSC_NULL, "Calculating %d remote velocities at t_{n - 1/2}\n", c->queueRemoteSize); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeRemote,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscInfo1(PETSC_NULL, "Calculating %d remote velocities at t_{n - 1/2}\n", c->queueRemoteSize);CHKERRQ(ierr);
   for(n = 0; n < c->queueRemoteSize; n++) {
     Qi = c->queueRemote[n];
     interpIndices[0] = Qi.x;
@@ -453,25 +453,25 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     Qi.y = 0.5*(velocityValues[1] + velocityValuesOld[1]);
     c->queueRemote[n] = Qi;
   }
-  ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeRemote,0,0,0,0); CHKERRQ(ierr);
-  ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeExchange,0,0,0,0); CHKERRQ(ierr);
-  ierr = CharacteristicGetValuesBegin(c); CHKERRQ(ierr);
-  ierr = CharacteristicGetValuesEnd(c); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeRemote,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_HalfTimeExchange,0,0,0,0);CHKERRQ(ierr);
+  ierr = CharacteristicGetValuesBegin(c);CHKERRQ(ierr);
+  ierr = CharacteristicGetValuesEnd(c);CHKERRQ(ierr);
   if (c->velocityInterpLocal) {
-    ierr = DAVecRestoreArray(c->velocityDA, velocityLocal,    &velocityArray);    CHKERRQ(ierr);
-    ierr = DAVecRestoreArray(c->velocityDA, velocityLocalOld, &velocityArrayOld); CHKERRQ(ierr);
-    ierr = DARestoreLocalVector(c->velocityDA, &velocityLocal); CHKERRQ(ierr);
-    ierr = DARestoreLocalVector(c->velocityDA, &velocityLocalOld); CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(c->velocityDA, velocityLocal,    &velocityArray);   CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(c->velocityDA, velocityLocalOld, &velocityArrayOld);CHKERRQ(ierr);
+    ierr = DARestoreLocalVector(c->velocityDA, &velocityLocal);CHKERRQ(ierr);
+    ierr = DARestoreLocalVector(c->velocityDA, &velocityLocalOld);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeExchange,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_HalfTimeExchange,0,0,0,0);CHKERRQ(ierr);
 
   /* -----------------------------------------------------------------------
      PART 2, AT t-dt 
      -----------------------------------------------------------------------*/
 
   /* GET POSITION AT t_n (local values) */
-  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeLocal,0,0,0,0); CHKERRQ(ierr);
-  ierr = PetscInfo(PETSC_NULL, "Calculating position at t_{n}\n"); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeLocal,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscInfo(PETSC_NULL, "Calculating position at t_{n}\n");CHKERRQ(ierr);
   for(n = 0; n < c->queueSize; n++) {
     Qi = c->queue[n];
     Qi.x = Qi.i - Qi.x*dt;
@@ -488,21 +488,21 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     }
     c->queue[n] = Qi;
   }
-  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeLocal,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeLocal,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeExchange,0,0,0,0); CHKERRQ(ierr);
-  ierr = CharacteristicSendCoordinatesBegin(c); CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeExchange,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeExchange,0,0,0,0);CHKERRQ(ierr);
+  ierr = CharacteristicSendCoordinatesBegin(c);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeExchange,0,0,0,0);CHKERRQ(ierr);
 
   /* GET VALUE AT FULL TIME IN THE PAST (LOCAL REQUESTS) */
-  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeLocal,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeLocal,0,0,0,0);CHKERRQ(ierr);
   if (c->fieldInterpLocal) {
-    ierr = DAGetLocalVector(c->fieldDA, &fieldLocal); CHKERRQ(ierr);
-    ierr = DAGlobalToLocalBegin(c->fieldDA, c->field, INSERT_VALUES, fieldLocal); CHKERRQ(ierr);
-    ierr = DAGlobalToLocalEnd(c->fieldDA, c->field, INSERT_VALUES, fieldLocal); CHKERRQ(ierr);
-    ierr = DAVecGetArray(c->fieldDA, fieldLocal, &fieldArray); CHKERRQ(ierr);
+    ierr = DAGetLocalVector(c->fieldDA, &fieldLocal);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalBegin(c->fieldDA, c->field, INSERT_VALUES, fieldLocal);CHKERRQ(ierr);
+    ierr = DAGlobalToLocalEnd(c->fieldDA, c->field, INSERT_VALUES, fieldLocal);CHKERRQ(ierr);
+    ierr = DAVecGetArray(c->fieldDA, fieldLocal, &fieldArray);CHKERRQ(ierr);
   }
-  ierr = PetscInfo(PETSC_NULL, "Calculating local field at t_{n}\n"); CHKERRQ(ierr);
+  ierr = PetscInfo(PETSC_NULL, "Calculating local field at t_{n}\n");CHKERRQ(ierr);
   for(n = 0; n < c->queueSize; n++) {
     if (c->neighbors[c->queue[n].proc] == rank) {
       interpIndices[0] = c->queue[n].x;
@@ -517,15 +517,15 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       }
     }
   }
-  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeLocal,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeLocal,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeExchange,0,0,0,0); CHKERRQ(ierr);
-  ierr = CharacteristicSendCoordinatesEnd(c); CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeExchange,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeExchange,0,0,0,0);CHKERRQ(ierr);
+  ierr = CharacteristicSendCoordinatesEnd(c);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeExchange,0,0,0,0);CHKERRQ(ierr);
 
   /* GET VALUE AT FULL TIME IN THE PAST (REMOTE REQUESTS) */
-  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeRemote,0,0,0,0); CHKERRQ(ierr);
-  ierr = PetscInfo1(PETSC_NULL, "Calculating %d remote field points at t_{n}\n", c->queueRemoteSize); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeRemote,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscInfo1(PETSC_NULL, "Calculating %d remote field points at t_{n}\n", c->queueRemoteSize);CHKERRQ(ierr);
   for(n = 0; n < c->queueRemoteSize; n++) {
     if (verbose) printf("[%d]Remote point: (i:%d, j:%d) (c0:%g, c1:%g)\n", rank, c->queueRemote[n].i, c->queueRemote[n].j, c->queueRemote[n].x, c->queueRemote[n].y);
     interpIndices[0] = c->queueRemote[n].x;
@@ -550,36 +550,36 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       c->queueRemote[n].field[comp] = fieldValues[comp];
     }
   }
-  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeRemote,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeRemote,0,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeExchange,0,0,0,0); CHKERRQ(ierr);
-  ierr = CharacteristicGetValuesBegin(c); CHKERRQ(ierr);
-  ierr = CharacteristicGetValuesEnd(c); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_FullTimeExchange,0,0,0,0);CHKERRQ(ierr);
+  ierr = CharacteristicGetValuesBegin(c);CHKERRQ(ierr);
+  ierr = CharacteristicGetValuesEnd(c);CHKERRQ(ierr);
   if (c->fieldInterpLocal) {
-    ierr = DAVecRestoreArray(c->fieldDA, fieldLocal, &fieldArray); CHKERRQ(ierr);
-    ierr = DARestoreLocalVector(c->fieldDA, &fieldLocal); CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(c->fieldDA, fieldLocal, &fieldArray);CHKERRQ(ierr);
+    ierr = DARestoreLocalVector(c->fieldDA, &fieldLocal);CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeExchange,0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_FullTimeExchange,0,0,0,0);CHKERRQ(ierr);
 
   /* Return field of characteristics at t_n-1 */
-  ierr = PetscLogEventBegin(CHARACTERISTIC_DAUpdate,0,0,0,0); CHKERRQ(ierr);
-  ierr = DAGetInfo(c->fieldDA, 0, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0); CHKERRQ(ierr);
-  ierr = DAVecGetArray(c->fieldDA, solution, &solArray); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(CHARACTERISTIC_DAUpdate,0,0,0,0);CHKERRQ(ierr);
+  ierr = DAGetInfo(c->fieldDA, 0, 0, 0, 0, 0, 0, 0, &dof, 0, 0, 0);CHKERRQ(ierr);
+  ierr = DAVecGetArray(c->fieldDA, solution, &solArray);CHKERRQ(ierr);
   for(n = 0; n < c->queueSize; n++) {
     Qi = c->queue[n];
     for(comp = 0; comp < c->numFieldComp; comp++) {
       solArray[Qi.j][Qi.i*dof+c->fieldComp[comp]] = Qi.field[comp];
     }
   }
-  ierr = DAVecRestoreArray(c->fieldDA, solution, &solArray); CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(CHARACTERISTIC_DAUpdate,0,0,0,0); CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(CHARACTERISTIC_Solve,0,0,0,0); CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(c->fieldDA, solution, &solArray);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_DAUpdate,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(CHARACTERISTIC_Solve,0,0,0,0);CHKERRQ(ierr);
 
   /* Cleanup */
-  ierr = PetscFree(interpIndices); CHKERRQ(ierr);
-  ierr = PetscFree(velocityValues); CHKERRQ(ierr);
-  ierr = PetscFree(velocityValuesOld); CHKERRQ(ierr);
-  ierr = PetscFree(fieldValues); CHKERRQ(ierr);
+  ierr = PetscFree(interpIndices);CHKERRQ(ierr);
+  ierr = PetscFree(velocityValues);CHKERRQ(ierr);
+  ierr = PetscFree(velocityValuesOld);CHKERRQ(ierr);
+  ierr = PetscFree(fieldValues);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -591,8 +591,8 @@ PetscErrorCode CharacteristicSetNeighbors(Characteristic c, PetscInt numNeighbor
 
   PetscFunctionBegin;
   c->numNeighbors = numNeighbors;
-  ierr = PetscMalloc(numNeighbors * sizeof(PetscMPIInt), &c->neighbors); CHKERRQ(ierr);
-  ierr = PetscMemcpy(c->neighbors, neighbors, numNeighbors * sizeof(PetscMPIInt)); CHKERRQ(ierr);
+  ierr = PetscMalloc(numNeighbors * sizeof(PetscMPIInt), &c->neighbors);CHKERRQ(ierr);
+  ierr = PetscMemcpy(c->neighbors, neighbors, numNeighbors * sizeof(PetscMPIInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -617,20 +617,20 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank); CHKERRQ(ierr);
-  ierr = HeapSort(c, c->queue, c->queueSize); CHKERRQ(ierr);
-  ierr = PetscMemzero(c->needCount, c->numNeighbors * sizeof(PetscInt)); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank);CHKERRQ(ierr);
+  ierr = HeapSort(c, c->queue, c->queueSize);CHKERRQ(ierr);
+  ierr = PetscMemzero(c->needCount, c->numNeighbors * sizeof(PetscInt));CHKERRQ(ierr);
   for(i = 0;  i < c->queueSize; i++) {
     c->needCount[c->queue[i].proc]++;
   }
   c->fillCount[0] = 0;
   for(n = 1; n < c->numNeighbors; n++) {
-    ierr = MPI_Irecv(&(c->fillCount[n]), 1, MPIU_INT, c->neighbors[n], tag, ((PetscObject)c)->comm, &(c->request[n-1])); CHKERRQ(ierr);
+    ierr = MPI_Irecv(&(c->fillCount[n]), 1, MPIU_INT, c->neighbors[n], tag, ((PetscObject)c)->comm, &(c->request[n-1]));CHKERRQ(ierr);
   }
   for(n = 1; n < c->numNeighbors; n++) {
-    ierr = MPI_Send(&(c->needCount[n]), 1, MPIU_INT, c->neighbors[n], tag, ((PetscObject)c)->comm); CHKERRQ(ierr);
+    ierr = MPI_Send(&(c->needCount[n]), 1, MPIU_INT, c->neighbors[n], tag, ((PetscObject)c)->comm);CHKERRQ(ierr);
   }
-  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status); CHKERRQ(ierr);
+  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRQ(ierr);
   /* Initialize the remote queue */
   c->queueLocalMax  = c->localOffsets[0]  = 0;
   c->queueRemoteMax = c->remoteOffsets[0] = 0; 
@@ -647,7 +647,7 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
   c->needCount[0] = 0;
   /* HACK END */
   if (c->queueRemoteMax) {
-    ierr = PetscMalloc(sizeof(CharacteristicPointDA2D) * c->queueRemoteMax, &c->queueRemote); CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(CharacteristicPointDA2D) * c->queueRemoteMax, &c->queueRemote);CHKERRQ(ierr);
   } else {
     c->queueRemote = PETSC_NULL;
   }
@@ -655,12 +655,12 @@ int CharacteristicSendCoordinatesBegin(Characteristic c)
 
   /* Send and Receive requests for values at t_n+1/2, giving the coordinates for interpolation */
   for(n = 1; n < c->numNeighbors; n++) {
-    ierr = PetscInfo2(PETSC_NULL, "Receiving %d requests for values from proc %d\n", c->fillCount[n], c->neighbors[n]); CHKERRQ(ierr);
-    ierr = MPI_Irecv(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm, &(c->request[n-1])); CHKERRQ(ierr);
+    ierr = PetscInfo2(PETSC_NULL, "Receiving %d requests for values from proc %d\n", c->fillCount[n], c->neighbors[n]);CHKERRQ(ierr);
+    ierr = MPI_Irecv(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm, &(c->request[n-1]));CHKERRQ(ierr);
   }
   for(n = 1; n < c->numNeighbors; n++) {
-    ierr = PetscInfo2(PETSC_NULL, "Sending %d requests for values from proc %d\n", c->needCount[n], c->neighbors[n]); CHKERRQ(ierr);
-    ierr = MPI_Send(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm); CHKERRQ(ierr);
+    ierr = PetscInfo2(PETSC_NULL, "Sending %d requests for values from proc %d\n", c->needCount[n], c->neighbors[n]);CHKERRQ(ierr);
+    ierr = MPI_Send(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -676,9 +676,9 @@ PetscErrorCode CharacteristicSendCoordinatesEnd(Characteristic c)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status); CHKERRQ(ierr);
+  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRQ(ierr);
 #if 0
-  ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank); CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)c)->comm, &rank);CHKERRQ(ierr);
   for(n = 0; n < c->queueRemoteSize; n++) {
     if (c->neighbors[c->queueRemote[n].proc] == rank) {
       SETERRQ2(PETSC_ERR_PLIB, "This is fucked up, n = %d proc = %d", n, c->queueRemote[n].proc);
@@ -699,10 +699,10 @@ PetscErrorCode CharacteristicGetValuesBegin(Characteristic c)
   PetscFunctionBegin;
   /* SEND AND RECIEVE FILLED REQUESTS for velocities at t_n+1/2 */
   for(n = 1; n < c->numNeighbors; n++) {
-    ierr = MPI_Irecv(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm, &(c->request[n-1])); CHKERRQ(ierr);
+    ierr = MPI_Irecv(&(c->queue[c->localOffsets[n]]), c->needCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm, &(c->request[n-1]));CHKERRQ(ierr);
   }
   for(n = 1; n < c->numNeighbors; n++) {
-    ierr = MPI_Send(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm); CHKERRQ(ierr);
+    ierr = MPI_Send(&(c->queueRemote[c->remoteOffsets[n]]), c->fillCount[n], c->itemType, c->neighbors[n], tag, ((PetscObject)c)->comm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -714,10 +714,10 @@ PetscErrorCode CharacteristicGetValuesEnd(Characteristic c)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status); CHKERRQ(ierr);
+  ierr = MPI_Waitall(c->numNeighbors-1, c->request, c->status);CHKERRQ(ierr);
   /* Free queue of requests from other procs */
   if (c->queueRemote) {
-    ierr = PetscFree(c->queueRemote); CHKERRQ(ierr);
+    ierr = PetscFree(c->queueRemote);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -802,8 +802,8 @@ PetscErrorCode DAGetNeighborsRank(DA da, PetscMPIInt neighbors[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) da, &comm); CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm, &rank); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) da, &comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   ierr = DAGetInfo(da, 0, 0, 0, 0, &PI,&PJ, 0, 0, 0, &periodic_type, 0);
 
   if (periodic_type==DA_XPERIODIC || periodic_type==DA_XYPERIODIC) {
@@ -815,9 +815,9 @@ PetscErrorCode DAGetNeighborsRank(DA da, PetscMPIInt neighbors[])
 
   neighbors[0] = rank;
   rank = 0;
-  ierr = PetscMalloc(sizeof(int*)*PJ,&procs); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(int*)*PJ,&procs);CHKERRQ(ierr);
   for (pj=0;pj<PJ;pj++) {
-    ierr = PetscMalloc(sizeof(int)*PI,&(procs[pj])); CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(int)*PI,&(procs[pj]));CHKERRQ(ierr);
     for (pi=0;pi<PI;pi++) {
       procs[pj][pi] = rank;
       rank++;

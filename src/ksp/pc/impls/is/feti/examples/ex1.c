@@ -66,9 +66,9 @@ int main(int argc, char ** argv)
     }
     PetscOptionsHasName(PETSC_NULL,"-ksp_compute_condition",&flag);
 
-    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank); CHKERRQ(ierr); 
+    ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr); 
 
-    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size); CHKERRQ(ierr);
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
     if(N%size)
 	sprintf(str,"-%d",N/size+1);
