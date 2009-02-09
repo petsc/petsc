@@ -647,7 +647,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,const PetscInt idx[],Pets
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerBinaryWrite(viewer,idx,N,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,(void *) idx,N,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     }
   } else {
     const char *tname;
@@ -733,7 +733,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,const PetscReal idx[],Pe
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerBinaryWrite(viewer,idx,N,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,(void *) idx,N,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
     }
   } else {
     const char *tname;
@@ -831,7 +831,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,const PetscScalar idx[
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerBinaryWrite(viewer,idx,N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,(void *) idx,N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
     }
   } else {
     const char *tname;
