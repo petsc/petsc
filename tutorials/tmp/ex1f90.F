@@ -52,16 +52,15 @@
 !
       call ISPartitioningToNumbering(partitioning,newnumbering,ierr)
       call ISDestroy(partitioning,ierr)
+      call ISView(newnumbering,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
       call ISAllGather(newnumbering,allnewnumbering,ierr)
       call MatPermute(Adj,newnumbering,allnewnumbering,Adjnew,ierr)
-
-      call ISView(newnumbering,PETSC_VIEWER_STDOUT_WORLD,ierr)
-
-      call MatDestroy(Adjnew,ierr)
-      call ISDestroy(newnumbering,ierr)
+      call ISDestroy(allnewnumbering,ierr)
 
       call MatDestroy(Adj,ierr) 
+      call MatDestroy(Adjnew,ierr)
+      call ISDestroy(newnumbering,ierr)
       call PetscFinalize(ierr)
       end
 
