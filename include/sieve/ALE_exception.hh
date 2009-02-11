@@ -24,7 +24,7 @@ namespace ALE {
     friend Stream_& operator<<(Stream_& os, const Exception& e) {
       os << "ERROR: " << e.message() << std::endl;
       return os;
-    };
+    }
   };
 
   class XException {
@@ -44,13 +44,13 @@ namespace ALE {
     XException& operator<<(const Input_& in) {
       this->_txt << in;
       return *this;
-    };
+    }
     // Printing
     template <typename Stream_>
     friend Stream_& operator<<(Stream_& os, const XException& e) {
       os << "ERROR: " << e.message() << std::endl;
       return os;
-    };
+    }
   };// class XException
 
 

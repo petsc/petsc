@@ -590,7 +590,7 @@ void PETSC_DLLEXPORT PetscErrorCxx(int line,const char *func,const char* file,co
 
 .seealso: PetscRealView() 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,const PetscInt idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/20,p = N % 20;
@@ -647,7 +647,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerBinaryWrite(viewer,idx,N,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,(void *) idx,N,PETSC_INT,PETSC_FALSE);CHKERRQ(ierr);
     }
   } else {
     const char *tname;
@@ -675,7 +675,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIntView(PetscInt N,PetscInt idx[],PetscViewe
 
 .seealso: PetscIntView() 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,const PetscReal idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/5,p = N % 5;
@@ -733,7 +733,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscVie
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerBinaryWrite(viewer,idx,N,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,(void *) idx,N,PETSC_REAL,PETSC_FALSE);CHKERRQ(ierr);
     }
   } else {
     const char *tname;
@@ -761,7 +761,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRealView(PetscInt N,PetscReal idx[],PetscVie
 
 .seealso: PetscIntView(), PetscRealView()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,PetscScalar idx[],PetscViewer viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,const PetscScalar idx[],PetscViewer viewer)
 {
   PetscErrorCode ierr;
   PetscInt       j,i,n = N/3,p = N % 3;
@@ -831,7 +831,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscScalarView(PetscInt N,PetscScalar idx[],Pets
         ierr = PetscFree(array);CHKERRQ(ierr);
       }
     } else {
-      ierr = PetscViewerBinaryWrite(viewer,idx,N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryWrite(viewer,(void *) idx,N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
     }
   } else {
     const char *tname;

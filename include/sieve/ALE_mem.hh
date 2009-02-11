@@ -90,8 +90,8 @@ namespace ALE {
       }
 #endif
       return id_name;
-    };
-    static void restoreClassName(const char *className) {};
+    }
+    static void restoreClassName(const char */*className*/) {};
   };
 
   template<class T>
@@ -142,12 +142,16 @@ namespace ALE {
       return static_cast<pointer>(p);
     }
 
-    void deallocate(pointer p, size_type n) {
 #ifdef ALE_MEM_LOGGING
+    void deallocate(pointer p, size_type n) {
       ALE::MemoryLogger::singleton().logDeallocation(className, n * sizeof(T));
-#endif
       std::free(p);
     }
+#else
+    void deallocate(pointer p, size_type) {
+      std::free(p);
+    }
+#endif
 
     size_type max_size() const {return static_cast<size_type>(-1) / sizeof(T);}
 
@@ -218,18 +222,21 @@ namespace ALE {
       return id_name;
   };
   template <class T>
-  static const char *getClassName(const T *obj) {
+  static const char *getClassName(const T */*obj*/) {
     return getClassName<T>();
   };
+#ifdef ALE_HAVE_CXX_ABI
   template<class T>
   static void restoreClassName(const char *id_name) {
-#ifdef ALE_HAVE_CXX_ABI
     // Free the name malloc'ed by __cxa_demangle
     free((char *) id_name);
-#endif
   };
+#else
   template<class T>
-  static void restoreClassName(const T *obj, const char *id_name) {restoreClassName<T>(id_name);};
+  static void restoreClassName(const char *) {};
+#endif
+  template<class T>
+  static void restoreClassName(const T */*obj*/, const char *id_name) {restoreClassName<T>(id_name);};
 
   // This UNIVERSAL allocator class is static and provides allocation/deallocation services to all allocators defined below.
   class universal_allocator {
@@ -264,7 +271,7 @@ namespace ALE {
     polymorphic_allocator()                                    {};    
     polymorphic_allocator(const polymorphic_allocator& a)      {};
     template <class TT> 
-    polymorphic_allocator(const polymorphic_allocator<TT>& aa){};
+    polymorphic_allocator(const polymorphic_allocator<TT>& aa){}
     ~polymorphic_allocator() {};
 
     // Reproducing the standard allocator interface
@@ -349,7 +356,7 @@ namespace ALE {
     logged_allocator()                                   : polymorphic_allocator<T>()  {__log_initialize(); __alloc_initialize();};    
     logged_allocator(const logged_allocator& a)          : polymorphic_allocator<T>(a) {__log_initialize(); __alloc_initialize();};
     template <class TT> 
-    logged_allocator(const logged_allocator<TT>& aa)    : polymorphic_allocator<T>(aa){__log_initialize(); __alloc_initialize();};
+    logged_allocator(const logged_allocator<TT>& aa)    : polymorphic_allocator<T>(aa){__log_initialize(); __alloc_initialize();}
     ~logged_allocator() {__alloc_finalize();};
     // conversion typedef
     template <class TT>

@@ -74,54 +74,54 @@ namespace ALE {
     DiscreteSieve(const Obj<Input>& points) {
       this->_init();
       this->_points->insert(points->begin(), points->end());
-    };
+    }
     virtual ~DiscreteSieve() {};
   public:
     void addPoint(const point_type& point) {
       this->_points->insert(point);
-    };
+    }
     template<typename Input>
     void addPoints(const Obj<Input>& points) {
       this->_points->insert(points->begin(), points->end());
-    };
-    const Obj<coneSequence>& cone(const point_type& p) {return this->_empty;};
+    }
+    const Obj<coneSequence>& cone(const point_type& p) {return this->_empty;}
     template<typename Input>
-    const Obj<coneSequence>& cone(const Input& p) {return this->_empty;};
+    const Obj<coneSequence>& cone(const Input& p) {return this->_empty;}
     const Obj<coneSet>& nCone(const point_type& p, const int level) {
       if (level == 0) {
         return this->closure(p);
       } else {
         return this->_empty;
       }
-    };
+    }
     const Obj<coneArray>& closure(const point_type& p) {
       this->_return->clear();
       this->_return->push_back(p);
       return this->_return;
-    };
-    const Obj<supportSequence>& support(const point_type& p) {return this->_empty;};
+    }
+    const Obj<supportSequence>& support(const point_type& p) {return this->_empty;}
     template<typename Input>
-    const Obj<supportSequence>& support(const Input& p) {return this->_empty;};
+    const Obj<supportSequence>& support(const Input& p) {return this->_empty;}
     const Obj<supportSet>& nSupport(const point_type& p, const int level) {
       if (level == 0) {
         return this->star(p);
       } else {
         return this->_empty;
       }
-    };
+    }
     const Obj<supportArray>& star(const point_type& p) {
       this->_return->clear();
       this->_return->push_back(p);
       return this->_return;
-    };
-    const Obj<capSequence>& roots() {return this->_points;};
-    const Obj<capSequence>& cap() {return this->_points;};
-    const Obj<baseSequence>& leaves() {return this->_points;};
-    const Obj<baseSequence>& base() {return this->_points;};
+    }
+    const Obj<capSequence>& roots() {return this->_points;}
+    const Obj<capSequence>& cap() {return this->_points;}
+    const Obj<baseSequence>& leaves() {return this->_points;}
+    const Obj<baseSequence>& base() {return this->_points;}
     template<typename Color>
     void addArrow(const point_type& p, const point_type& q, const Color& color) {
       throw ALE::Exception("Cannot add an arrow to a DiscreteSieve");
-    };
+    }
     void stratify() {};
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
       ostringstream txt;
@@ -201,11 +201,11 @@ namespace ALE {
     template<typename Points>
     void addPoint(const Obj<Points>& points) {
       this->_chart.insert(points->begin(), points->end());
-    };
+    }
     template<typename Points>
     void addPoint(const Points& points) {
       this->_chart.insert(points.begin(), points.end());
-    };
+    }
 //     void addPoint(const std::set<point_type>& points) {
 //       this->_chart.insert(points.begin(), points.end());
 //     };
@@ -235,7 +235,7 @@ namespace ALE {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
-    };
+    }
     void addFiberDimension(const point_type& p, int dim) {
       if (this->_chart.find(p) != this->_chart.end()) {
         ostringstream msg;
@@ -244,7 +244,7 @@ namespace ALE {
       } else {
         this->setFiberDimension(p, dim);
       }
-    };
+    }
     int size(const point_type& p) {return this->getFiberDimension(p);};
     void allocatePoint() {};
   public: // Restriction
@@ -378,7 +378,7 @@ namespace ALE {
       for(typename Points::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, fiberDim);
       }
-    };
+    }
     void copy(const Obj<UniformSection>& section) {
       this->getAtlas()->copy(section->getAtlas());
       const chart_type& chart = section->getChart();
@@ -386,27 +386,27 @@ namespace ALE {
       for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         this->updatePoint(*c_iter, section->restrictPoint(*c_iter));
       }
-    };
+    }
   public: // Sizes
     void clear() {
       this->_atlas->clear(); 
       this->_array.clear();
-    };
+    }
     int getFiberDimension(const point_type& p) const {
       return this->_atlas->restrictPoint(p)[0];
-    };
+    }
     void setFiberDimension(const point_type& p, int dim) {
       this->update();
       this->checkDimension(dim);
       this->_atlas->addPoint(p);
       this->_atlas->updatePoint(p, &dim);
-    };
+    }
     template<typename Sequence>
     void setFiberDimension(const Obj<Sequence>& points, int dim) {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
-    };
+    }
     void setFiberDimension(const std::set<point_type>& points, int dim) {
       for(typename std::set<point_type>::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
@@ -568,16 +568,16 @@ namespace ALE {
     };
   public: // Accessors
     void addPoint(const point_type& point) {
-    };
+    }
     template<typename Points>
     void addPoint(const Obj<Points>& points) {
-    };
+    }
     template<typename Points>
     void addPoint(const Points& points) {
-    };
+    }
     void copy(const Obj<FauxConstantSection>& section) {
       this->_value = section->restrictPoint(point_type())[0];
-    };
+    }
   public: // Sizes
     void clear() {
     };
@@ -593,11 +593,11 @@ namespace ALE {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
-    };
+    }
     void addFiberDimension(const point_type& p, int dim) {
       this->setFiberDimension(p, dim);
-    };
-    int size(const point_type& p) {return this->getFiberDimension(p);};
+    }
+    int size(const point_type& p) {return this->getFiberDimension(p);}
   public: // Restriction
     const value_type *restrictPoint(const point_type& p) const {
       return &this->_value;
@@ -648,7 +648,7 @@ namespace ALE {
       const_iterator(const typename Map::const_iterator& iter): _iter(iter) {};
       ~const_iterator() {};
     public:
-      const_iterator& operator=(const const_iterator& iter) {this->_iter = iter._iter;};
+      const_iterator& operator=(const const_iterator& iter) {this->_iter = iter._iter; return this->_iter;};
       bool operator==(const const_iterator& iter) const {return this->_iter == iter._iter;};
       bool operator!=(const const_iterator& iter) const {return this->_iter != iter._iter;};
       const_iterator& operator++() {++this->_iter; return *this;}
@@ -744,7 +744,7 @@ namespace ALE {
     };
   public: // Verifiers
     bool hasPoint(const point_type& point) {
-      return (this->_values.find(point) != this->_values.end());
+      return (this->_array.find(point) != this->_array.end());
       ///return this->_atlas->hasPoint(point);
     };
     void checkDimension(const int& dim) {
@@ -755,18 +755,18 @@ namespace ALE {
       }
     };
   public: // Accessors
-    const chart_type& getChart() {return this->_chart;};
-    const Obj<atlas_type>& getAtlas() {return this->_atlas;};
-    void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
+    const chart_type& getChart() {return this->_chart;}
+    const Obj<atlas_type>& getAtlas() {return this->_atlas;}
+    void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;}
     void addPoint(const point_type& point) {
       this->setFiberDimension(point, fiberDim);
-    };
+    }
     template<typename Points>
     void addPoint(const Obj<Points>& points) {
       for(typename Points::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, fiberDim);
       }
-    };
+    }
     void copy(const Obj<NewUniformSection>& section) {
       this->getAtlas()->copy(section->getAtlas());
       const chart_type& chart = section->getChart();
@@ -774,7 +774,7 @@ namespace ALE {
       for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         this->updatePoint(*c_iter, section->restrictPoint(*c_iter));
       }
-    };
+    }
   public: // Sizes
     void clear() {
       this->_atlas->clear(); 
@@ -795,7 +795,7 @@ namespace ALE {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
-    };
+    }
     void setFiberDimension(const std::set<point_type>& points, int dim) {
       for(typename std::set<point_type>::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
@@ -810,7 +810,7 @@ namespace ALE {
         this->setFiberDimension(p, dim);
       }
     };
-    int size() const {
+    int size() {
       const chart_type& points = this->getChart();
       int               size   = 0;
 
@@ -819,7 +819,7 @@ namespace ALE {
       }
       return size;
     };
-    int sizeWithBC() const {
+    int sizeWithBC() {
       return this->size();
     };
     void allocatePoint() {};
@@ -1008,9 +1008,9 @@ namespace ALE {
     const chart_type& getChart() const {return this->_atlas->getChart();};
   public: // BC
     // Returns the number of constraints on a point
-    const int getConstraintDimension(const point_type& p) const {
+    int getConstraintDimension(const point_type& p) const {
       return std::max(0, -this->_atlas->restrictPoint(p)->prefix);
-    };
+    }
     // Set the number of constraints on a point
     //   We only allow the entire point to be constrained, so these will be the
     //   only dofs on the point
@@ -1058,7 +1058,7 @@ namespace ALE {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
-    };
+    }
     void addFiberDimension(const point_type& p, int dim) {
       if (this->_atlas->hasPoint(p)) {
         const index_type values(dim, 0);
@@ -1066,7 +1066,7 @@ namespace ALE {
       } else {
         this->setFiberDimension(p, dim);
       }
-    };
+    }
     // Return the number of constrained dofs on this point
     //   If constrained, this is equal to the fiber dimension
     //   Otherwise, 0
@@ -1109,7 +1109,7 @@ namespace ALE {
     template<typename Order_>
     void getIndices(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
       this->getIndices(p, order->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
-    };
+    }
     void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
       const int& dim   = this->getFiberDimension(p);
       const int& cDim  = this->getConstraintDimension(p);
@@ -1167,7 +1167,7 @@ namespace ALE {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->addPoint(*p_iter, dim);
       }
-    };
+    }
     void orderPoints(const Obj<atlas_type>& atlas){
       const chart_type& chart    = this->getChart();
       int               offset   = 0;
@@ -1335,10 +1335,10 @@ namespace ALE {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim, space);
       }
-    };
+    }
     void setConstraintDimension(const point_type& p, const int numConstraints, const int space) {
       this->setConstraintDimension(p, numConstraints);
-    };
+    }
   };
   // GeneralSection will support BC on a subset of unknowns on a point
   //   We make a separate constraint Atlas to mark constrained dofs on a point
@@ -1394,7 +1394,7 @@ namespace ALE {
     };
     GeneralSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL), _sharedStorage(false), _sharedStorageSize(0) {
       bc_ptr pBC = bc_alloc_type(this->_allocator).allocate(1);
-      bc_alloc_type(this->_allocator).construct(pBC, bc_type(comm, debug));
+      bc_alloc_type(this->_allocator).construct(pBC, bc_type(this->comm(), this->debug()));
       this->_bc  = Obj<bc_type>(pBC, sizeof(bc_type));
     };
     ~GeneralSection() {
@@ -1461,26 +1461,26 @@ namespace ALE {
     void setChart(const chart_type& chart) {throw ALE::Exception("setChart() for GeneralSection is invalid");};
   public: // BC
     // Returns the number of constraints on a point
-    const int getConstraintDimension(const point_type& p) const {
+    int getConstraintDimension(const point_type& p) const {
       if (!this->_bc->hasPoint(p)) return 0;
       return this->_bc->getFiberDimension(p);
-    };
+    }
     // Set the number of constraints on a point
     void setConstraintDimension(const point_type& p, const int numConstraints) {
       this->_bc->setFiberDimension(p, numConstraints);
-    };
+    }
     // Increment the number of constraints on a point
     void addConstraintDimension(const point_type& p, const int numConstraints) {
       this->_bc->addFiberDimension(p, numConstraints);
-    };
+    }
     // Return the local dofs which are constrained on a point
     const int *getConstraintDof(const point_type& p) const {
       return this->_bc->restrictPoint(p);
-    };
+    }
     // Set the local dofs which are constrained on a point
     void setConstraintDof(const point_type& p, const int dofs[]) {
       this->_bc->updatePoint(p, dofs);
-    };
+    }
     template<typename OtherSection>
     void copyBC(const Obj<OtherSection>& section) {
       this->setBC(section->getBC());
@@ -1492,7 +1492,7 @@ namespace ALE {
         }
       }
       this->copyFibration(section);
-    };
+    }
     void defaultConstraintDof() {
       const chart_type& chart = this->getChart();
       int size = 0;
@@ -1544,7 +1544,7 @@ namespace ALE {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
-    };
+    }
     void addFiberDimension(const point_type& p, int dim) {
       if (this->_atlas->hasPoint(p)) {
         const index_type values(dim, 0);
@@ -1591,7 +1591,7 @@ namespace ALE {
     template<typename Order_>
     void getIndices(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
       this->getIndices(p, order->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
-    };
+    }
     void getIndicesRaw(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation) {
       if (orientation >= 0) {
         const int& dim = this->getFiberDimension(p);
@@ -1806,15 +1806,15 @@ namespace ALE {
           }
         }
       }
-    };
+    }
     // Return the free values on a point
     const value_type *restrictSpace() const {
       return this->_array;
-    };
+    }
     // Return the free values on a point
     const value_type *restrictPoint(const point_type& p) const {
       return &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
-    };
+    }
     void restrictPoint(const point_type& p, value_type values[], const int size) const {
       assert(this->_atlas->restrictPoint(p)[0].prefix == size);
       const value_type *v = &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
@@ -2210,17 +2210,17 @@ namespace ALE {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim, space);
       }
-    };
-    const int getConstraintDimension(const point_type& p, const int space) const {
+    }
+    int getConstraintDimension(const point_type& p, const int space) const {
       if (!this->_bcs[space]->hasPoint(p)) return 0;
       return this->_bcs[space]->getFiberDimension(p);
-    };
+    }
     void setConstraintDimension(const point_type& p, const int numConstraints, const int space) {
       this->_bcs[space]->setFiberDimension(p, numConstraints);
-    };
+    }
     int getConstrainedFiberDimension(const point_type& p, const int space) const {
       return this->getFiberDimension(p, space) - this->getConstraintDimension(p, space);
-    };
+    }
     template<typename OtherSection>
     void copyFibration(const Obj<OtherSection>& section) {
       const std::vector<Obj<atlas_type> >& spaces = section->getSpaces();
@@ -2234,7 +2234,7 @@ namespace ALE {
       for(typename std::vector<Obj<bc_type> >::const_iterator b_iter = bcs.begin(); b_iter != bcs.end(); ++b_iter) {
         this->_bcs.push_back(*b_iter);
       }
-    };
+    }
     Obj<GeneralSection> getFibration(const int space) const {
       Obj<GeneralSection> field = new GeneralSection(this->comm(), this->debug());
 //     Obj<atlas_type> _atlas;
@@ -2414,10 +2414,10 @@ namespace ALE {
     };
     FEMSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _array(NULL), _sharedStorage(false), _sharedStorageSize(0) {
       bc_atlas_ptr pBCAtlas = bc_atlas_alloc_type(this->_allocator).allocate(1);
-      bc_atlas_alloc_type(this->_allocator).construct(pBCAtlas, bc_atlas_type(comm, debug));
+      bc_atlas_alloc_type(this->_allocator).construct(pBCAtlas, bc_atlas_type(this->comm(), this->debug()));
       this->_bc_atlas       = Obj<bc_atlas_type>(pBCAtlas, sizeof(bc_atlas_type));
       bc_ptr pBC            = bc_alloc_type(this->_allocator).allocate(1);
-      bc_alloc_type(this->_allocator).construct(pBC, bc_type(comm, debug));
+      bc_alloc_type(this->_allocator).construct(pBC, bc_type(this->comm(), this->debug()));
       this->_bc             = Obj<bc_type>(pBC, sizeof(bc_type));
     };
     ~FEMSection() {
@@ -2466,7 +2466,7 @@ namespace ALE {
     void setBC(const Obj<bc_type>& bc) {this->_bc = bc;};
   public: // BC
     // Returns the number of constraints on a point
-    const int getConstraintDimension(const point_type& p) const {
+    int getConstraintDimension(const point_type& p) const {
       if (!this->_bc_atlas->hasPoint(p)) return 0;
       return this->_bc_atlas->restrictPoint(p)[0];
     };
@@ -2478,6 +2478,9 @@ namespace ALE {
     void addConstraintDimension(const point_type& p, const int numConstraints) {
       this->_bc_atlas->updatePointAdd(p, &numConstraints);
     };
+    const int *getConstraintDof(const point_type& p) const {
+      return this->_bc->restrictPoint(p);
+    }
   public: // Sizes
     void clear() {
       this->_atlas->clear(); 
@@ -2509,7 +2512,7 @@ namespace ALE {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim);
       }
-    };
+    }
     void addFiberDimension(const point_type& p, int dim) {
       if (this->_atlas->hasPoint(p)) {
         const index_type values(dim, 0);
@@ -3048,8 +3051,8 @@ namespace ALE {
       for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
         this->setFiberDimension(*p_iter, dim, space);
       }
-    };
-    const int getConstraintDimension(const point_type& p, const int space) const {
+    }
+    int getConstraintDimension(const point_type& p, const int space) const {
       if (!this->_bcs[space]->hasPoint(p)) return 0;
       return this->_bcs[space]->getFiberDimension(p);
     };
@@ -3297,12 +3300,12 @@ namespace ALE {
           section->setFiberDimension(*b_iter, 1);
         }
       }
-    };
+    }
     void allocate() {
       for(typename sheaf_type::const_iterator p_iter = this->_sheaf.begin(); p_iter != this->_sheaf.end(); ++p_iter) {
         p_iter->second->allocatePoint();
       }
-    };
+    }
   public: // Communication
     void construct(const int size) {
       const sheaf_type& patches = this->getPatches();
@@ -3330,7 +3333,7 @@ namespace ALE {
           section->setFiberDimension(*c_iter, *(sizer->getSection(rank)->restrictPoint(*c_iter)));
         }
       }
-    };
+    }
     void constructCommunication(const request_type& requestType) {
       const sheaf_type& patches = this->getPatches();
 

@@ -602,6 +602,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP ksp,Vec b,Vec x)
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,0.0);CHKERRQ(ierr);}
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  if (!ksp->reason) {
+    SETERRQ(PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+  }
+  if (ksp->printreason) {
+    if (ksp->reason > 0) {
+      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+    } else {
+      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+    }
+  }
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);

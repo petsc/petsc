@@ -219,7 +219,7 @@ namespace ALE {
       }
       os << " ]" << std::endl;
       
-    };
+    }
   };
 
 
@@ -241,7 +241,7 @@ namespace ALE {
     set(const element_type& e) : super() {insert(e);}
     //
     template<typename ElementSequence_>
-    set(const ElementSequence_& eseq) : super(eseq.begin(), eseq.end()){};
+    set(const ElementSequence_& eseq) : super(eseq.begin(), eseq.end()){}
     // 
     // Standard interface
     // 
@@ -256,7 +256,7 @@ namespace ALE {
     //
     template <class InputIterator>
     void 
-    inline insert(InputIterator b, InputIterator e) { return super::insert(b,e);};
+    inline insert(InputIterator b, InputIterator e) { return super::insert(b,e);}
     // 
     // Extended interface
     //
@@ -313,7 +313,7 @@ namespace ALE {
         os << e;
       }
       os << " ]" << std::endl;
-    };
+    }
   };
 
   template <typename X>
@@ -453,11 +453,11 @@ namespace ALE {
         os << "Viewing " << label << " sequence:" << std::endl;
       } 
       os << "[";
-      for(iterator<> i = this->begin(); i != this->end(); i++) {
+      for(iterator<> i = this->_index.begin(); i != this->_index.end(); i++) {
         os << " "<< *i;
       }
       os << " ]" << std::endl;
-    };
+    }
   };// class IndexSequence    
 
 } // namespace ALE

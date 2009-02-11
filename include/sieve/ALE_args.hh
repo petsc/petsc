@@ -69,12 +69,12 @@ namespace ALE {
     template<typename T>
     operator const T&() {
       return super::as<T>();
-    };
+    }
     //
     template<typename T>
     operator T& () {
       return super::as<T>();
-    };
+    }
   };// struct ArgValue
   
     //

@@ -1110,7 +1110,14 @@ PetscErrorCode MatView_MPIAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
     PetscInt    M = mat->rmap->N,N = mat->cmap->N,m,*ai,*aj,row,*cols,i,*ct;
     MatScalar   *a;
 
-    if (mat->rmap->N > 1024) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"ASCII matrix output not allowed for matrices with more than 512 rows, use binary format instead");
+    if (mat->rmap->N > 1024) {
+      PetscTruth flg;
+
+      ierr = PetscOptionsHasName(((PetscObject) mat)->prefix, "-mat_ascii_output_large", &flg);CHKERRQ(ierr);
+      if (!flg) {
+        SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"ASCII matrix output not allowed for matrices with more than 512 rows, use binary format instead.\nYou can override this restriction using -mat_ascii_output_large.");
+      }
+    }
 
     ierr = MatCreate(((PetscObject)mat)->comm,&A);CHKERRQ(ierr);
     if (!rank) {
