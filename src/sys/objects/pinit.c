@@ -400,8 +400,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
           code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
 -  help - [optional] Help message to print, use PETSC_NULL for no message
 
-   If you wish PETSc to run on a subcommunicator of MPI_COMM_WORLD, create that
-   communicator first and assign it to PETSC_COMM_WORLD BEFORE calling PetscInitialize()
+   If you wish PETSc code to run ONLY on a subcommunicator of MPI_COMM_WORLD, create that
+   communicator first and assign it to PETSC_COMM_WORLD BEFORE calling PetscInitialize(). Thus if you are running a 
+   four process job and two processes will run PETSc and have PetscInitialize() and PetscFinalize() and two process will not,
+   then do this. If ALL processes in the job are using PetscInitialize() and PetscFinalize() then you don't need to do this, even
+   if different subcommunicators of the job are doing different things with PETSc.
 
    Options Database Keys:
 +  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger

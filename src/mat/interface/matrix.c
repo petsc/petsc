@@ -3174,6 +3174,7 @@ PetscErrorCode MatCopy_Basic(Mat A,Mat B,MatStructure str)
 PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
@@ -3201,6 +3202,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
     if (B->bmapping) {ierr = ISLocalToGlobalMappingDestroy(B->bmapping);CHKERRQ(ierr);B->bmapping = 0;}
     ierr = MatSetLocalToGlobalMappingBlock(B,A->mapping);CHKERRQ(ierr);
   }
+
+  B->stencil.dim = A->stencil.dim;
+  B->stencil.noc = A->stencil.noc;
+  for (i=0; i<=A->stencil.dim; i++) {
+    B->stencil.dims[i]   = A->stencil.dims[i];
+    B->stencil.starts[i] = A->stencil.starts[i];
+  }
+
   ierr = PetscLogEventEnd(MAT_Copy,A,B,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -3510,6 +3519,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
 {
   PetscErrorCode ierr;
   Mat            B;
+  PetscInt       i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -3535,6 +3545,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
   ierr = PetscMapCopy(((PetscObject)mat)->comm,mat->rmap,B->rmap);CHKERRQ(ierr);
   ierr = PetscMapCopy(((PetscObject)mat)->comm,mat->cmap,B->cmap);CHKERRQ(ierr);
   
+  B->stencil.dim = mat->stencil.dim;
+  B->stencil.noc = mat->stencil.noc;
+  for (i=0; i<=mat->stencil.dim; i++) {
+    B->stencil.dims[i]   = mat->stencil.dims[i];
+    B->stencil.starts[i] = mat->stencil.starts[i];
+  }
+
   ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -6257,6 +6274,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrixRaw(Mat mat,PetscInt nrows,cons
 
    Concepts: stash^setting matrix size
    Concepts: matrices^stash
+
+.seealso: MatAssemblyBegin(), MatAssemblyEnd(), Mat, MatStashGetInfo()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatStashSetInitialSize(Mat mat,PetscInt size, PetscInt bsize)

@@ -88,8 +88,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetShiftNonzero(PC pc,PetscReal shift)
 -  shifting - PETSC_TRUE to set shift else PETSC_FALSE
 
    Options Database Key:
-.  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
-   is optional with PETSC_TRUE being the default
+.  -pc_factor_shift_positive_definite true or false - Activate/Deactivate PCFactorSetShiftPd(); the value
+   is optional with false being the default
 
    Level: intermediate
 

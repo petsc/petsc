@@ -19,7 +19,7 @@
 #define PETSC_VIEWER_STRING 'string'
 #define PETSC_VIEWER_DRAW 'draw'
 #define PETSC_VIEWER_AMS 'ams'
-#define PETSC_VIEWER_HDF4 'hdf4'
+#define PETSC_VIEWER_HDF5 'hdf5'
 #define PETSC_VIEWER_NETCDF 'netcdf'
 #define PETSC_VIEWER_MATLAB 'matlab'
 

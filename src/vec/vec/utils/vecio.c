@@ -16,6 +16,7 @@ EXTERN_C_END
 #endif
 EXTERN PetscErrorCode VecLoad_Binary(PetscViewer, const VecType, Vec*);
 EXTERN PetscErrorCode VecLoad_Netcdf(PetscViewer, Vec*);
+EXTERN PetscErrorCode VecLoad_HDF5(PetscViewer, Vec*);
 EXTERN PetscErrorCode VecLoadIntoVector_Binary(PetscViewer, Vec);
 EXTERN PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer, Vec);
 
@@ -80,16 +81,19 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
 #if defined(PETSC_HAVE_PNETCDF)
   PetscTruth     isnetcdf;
 #endif
+#if defined(PETSC_HAVE_HDF5)
+  PetscTruth     ishdf5;
+#endif
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidPointer(newvec,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_HDF5)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
+#endif
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
-  if ((!isbinary) && (!isnetcdf)) SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary or NetCDF viewer");
-#else
-  if (!isbinary)  SETERRQ(PETSC_ERR_ARG_WRONG,"Must be binary viewer");
 #endif
 
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
@@ -101,6 +105,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
   if (isnetcdf) {
     ierr = VecLoad_Netcdf(viewer,newvec);CHKERRQ(ierr);
   } else
+#endif
+#if defined(PETSC_HAVE_HDF5)
+  if (ishdf5) {
+    ierr = VecLoad_HDF5(viewer,newvec);CHKERRQ(ierr);
+  } else 
 #endif
   {
     Vec            factory;
@@ -134,6 +143,82 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer viewer, const VecType outt
   ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#if defined(PETSC_HAVE_HDF5)
+#undef __FUNCT__  
+#define __FUNCT__ "VecLoad_HDF5"
+PetscErrorCode VecLoad_HDF5(PetscViewer viewer,Vec *newvec)
+{
+  PetscErrorCode ierr;
+  int            rank = 1; /* Could have rank 2 for blocked vectors */
+  PetscInt       n, N, bs, start;
+  PetscScalar   *x;
+  PetscTruth     flag;
+  hid_t          file_id, dset_id, filespace, memspace, plist_id;
+  hsize_t        dims[1];
+  hsize_t        count[1];
+  hsize_t        offset[1];
+  herr_t         status;
+  MPI_Comm       comm;
+
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"Since HDF5 format gives ASCII name for each object in file; must use VecLoadIntoVector() after setting name of Vec with PetscObjectSetName()");
+  ierr = PetscLogEventBegin(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
+  ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
+
+  /* Create the dataset with default properties and close filespace */
+#if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
+  dset_id = H5Dopen2(file_id, "Vec", H5P_DEFAULT);
+#else
+  dset_id = H5Dopen(file_id, "Vec");
+#endif
+
+  /* Retrieve the dataspace for the dataset */
+  filespace = H5Dget_space(dset_id);
+  H5Sget_simple_extent_dims(filespace, dims, PETSC_NULL);
+  N = dims[0];
+  ierr = VecCreate(comm,newvec);CHKERRQ(ierr);
+  ierr = VecSetSizes(*newvec,PETSC_DECIDE,N);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+  if (flag) {
+    ierr = VecSetBlockSize(*newvec,bs);CHKERRQ(ierr);
+  }
+  ierr = VecSetFromOptions(*newvec);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(*newvec,&n);CHKERRQ(ierr);
+  ierr = VecGetOwnershipRange(*newvec,&start,PETSC_NULL);CHKERRQ(ierr);
+
+  /* Each process defines a dataset and reads it from the hyperslab in the file */
+  count[0] = n;
+  memspace = H5Screate_simple(rank, count, NULL);
+
+  /* Select hyperslab in the file */
+  offset[0] = start;
+  status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
+
+  /* Create property list for collective dataset read */
+  plist_id = H5Pcreate(H5P_DATASET_XFER);
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
+  status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
+  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
+#endif
+
+  ierr = VecGetArray(*newvec, &x);CHKERRQ(ierr);
+  status = H5Dread(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, x);CHKERRQ(status);
+  ierr = VecRestoreArray(*newvec, &x);CHKERRQ(ierr);
+
+  /* Close/release resources */
+  status = H5Pclose(plist_id);CHKERRQ(status);
+  status = H5Sclose(filespace);CHKERRQ(status);
+  status = H5Sclose(memspace);CHKERRQ(status);
+  status = H5Dclose(dset_id);CHKERRQ(status);
+
+  ierr = VecAssemblyBegin(*newvec);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(*newvec);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(VEC_Load,viewer,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
 
 #if defined(PETSC_HAVE_PNETCDF)
 #undef __FUNCT__  
@@ -325,7 +410,7 @@ PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 #define __FUNCT__ "VecLoadIntoVector_HDF5"
 PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
 {
-  int            rank = 1; /* Could have rank 2 for blocked vectors */
+  int            rdim,rank = 1; /* Could have rank 2 for blocked vectors */
   PetscInt       n, N, bs, low;
   PetscScalar   *x;
   PetscTruth     flag;
@@ -335,6 +420,7 @@ PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
   hsize_t        offset[1];
   herr_t         status;
   PetscErrorCode ierr;
+  const char     *vecname;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(VEC_Load,viewer,xin,0,0);CHKERRQ(ierr);
@@ -347,22 +433,27 @@ PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
 
   /* Create the dataset with default properties and close filespace */
+  ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
 #if (H5_VERS_MAJOR * 10000 + H5_VERS_MINOR * 100 + H5_VERS_RELEASE >= 10800)
-  dset_id = H5Dopen2(file_id, "Vec", H5P_DEFAULT);
+  dset_id = H5Dopen2(file_id, vecname, H5P_DEFAULT);
 #else
-  dset_id = H5Dopen(file_id, "Vec");
+  dset_id = H5Dopen(file_id, vecname);
 #endif
+  if (dset_id == -1) SETERRQ1(PETSC_ERR_LIB,"Could not H5Dopen() with Vec named %s",vecname);
 
   /* Retrieve the dataspace for the dataset */
   ierr = VecGetSize(xin, &N);CHKERRQ(ierr);
   filespace = H5Dget_space(dset_id);
-  H5Sget_simple_extent_dims(filespace, dims, PETSC_NULL);
+  if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Could not H5Dget_space()");
+  rdim = H5Sget_simple_extent_dims(filespace, dims, PETSC_NULL);
+  if (rdim != 1) SETERRQ1(PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not 1 as expected",rdim);
   if (N != (int) dims[0]) SETERRQ(PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length then input vector");
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
   ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
   count[0] = n;
   memspace = H5Screate_simple(rank, count, NULL);
+  if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Could not H5Screate_simple()");
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
@@ -371,6 +462,7 @@ PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
 
   /* Create property list for collective dataset read */
   plist_id = H5Pcreate(H5P_DATASET_XFER);
+  if (plist_id == -1) SETERRQ(PETSC_ERR_LIB,"Could not H5Pcreate()");
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
   status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
