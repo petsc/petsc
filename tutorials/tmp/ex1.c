@@ -96,7 +96,7 @@ int main(int argc, char *args[])
 {
   PFLOTRANMesh    data;
   Mat             Adj;       /* The adjacency matrix of the mesh */
-  PetscInt        bs = 1;
+  PetscInt        bs = 3;
   PetscScalar     values[9],*cc;
   PetscMPIInt     size;
   PetscInt        i;
@@ -168,10 +168,10 @@ int main(int argc, char *args[])
   ierr = MatCreate(PETSC_COMM_WORLD, &Adj);CHKERRQ(ierr);
   ierr = MatSetSizes(Adj, data.numCells*bs, data.numCells*bs, PETSC_DECIDE, PETSC_DECIDE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(Adj);CHKERRQ(ierr);
-  //  ierr = MatSetType(Adj,MATSEQBAIJ);CHKERRQ(ierr);
-  //ierr = MatSeqBAIJSetPreallocation(Adj, bs, 6,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSetType(Adj,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(Adj, 6,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSetType(Adj,MATSEQBAIJ);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(Adj, bs, 6,PETSC_NULL);CHKERRQ(ierr);
+  //ierr = MatSetType(Adj,MATSEQAIJ);CHKERRQ(ierr);
+  //ierr = MatSeqAIJSetPreallocation(Adj, 6,PETSC_NULL);CHKERRQ(ierr);
   for(i = 0; i < data.numFaces; ++i) {
     values[0] = data.faceAreas[i];
     values[1] = data.downCells[i];
@@ -182,11 +182,10 @@ int main(int argc, char *args[])
     values[6] = data.upX[i];
     values[7] = data.upY[i];
     values[8] = data.upZ[i];
-    // ierr = MatSetValuesBlocked(Adj, 1, &data.downCells[i], 1, &data.upCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
-    //ierr = MatSetValuesBlocked(Adj, 1, &data.upCells[i], 1, &data.downCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD,"%d %d\n",data.downCells[i], data.upCells[i]);
-    ierr = MatSetValues(Adj, 1, &data.downCells[i], 1, &data.upCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValues(Adj, 1, &data.upCells[i], 1, &data.downCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(Adj, 1, &data.downCells[i], 1, &data.upCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValuesBlocked(Adj, 1, &data.upCells[i], 1, &data.downCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
+    //ierr = MatSetValues(Adj, 1, &data.downCells[i], 1, &data.upCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
+    //ierr = MatSetValues(Adj, 1, &data.upCells[i], 1, &data.downCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(Adj, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Adj, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

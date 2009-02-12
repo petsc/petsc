@@ -571,8 +571,8 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
 
   ierr = PetscMalloc(2*(ismax+1)*sizeof(IS),&isrow_new);CHKERRQ(ierr);
   iscol_new = isrow_new + ismax;
-  ierr = ISCompressIndicesSorted(N,bs,ismax,isrow,isrow_new);CHKERRQ(ierr);
-  ierr = ISCompressIndicesSorted(N,bs,ismax,iscol,iscol_new);CHKERRQ(ierr);
+  ierr = ISCompressIndicesGeneral(N,bs,ismax,isrow,isrow_new);CHKERRQ(ierr);
+  ierr = ISCompressIndicesGeneral(N,bs,ismax,iscol,iscol_new);CHKERRQ(ierr);
 
   /* Allocate memory to hold all the submatrices */
   if (scall != MAT_REUSE_MATRIX) {
@@ -648,7 +648,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   MPI_Comm       comm;
   MatScalar      **rbuf4,**sbuf_aa,*vals,*mat_a,*sbuf_aa_i,*vworkA,*vworkB;
   MatScalar      *a_a=a->a,*b_a=b->a;
-  PetscTruth     flag,sorted;
+  PetscTruth     flag;
   PetscMPIInt    *onodes1,*olengths1;
 
 #if defined (PETSC_USE_CTABLE)
@@ -668,12 +668,6 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag1);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag2);CHKERRQ(ierr);
   ierr = PetscObjectGetNewTag((PetscObject)C,&tag3);CHKERRQ(ierr);
-
-  /* Check if the col indices are sorted */
-  for (i=0; i<ismax; i++) {
-    ierr = ISSorted(iscol[i],&sorted);CHKERRQ(ierr);
-    if (!sorted) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"IS is not sorted");
-  }
 
 #if defined(PETSC_USE_CTABLE)
   ierr = PetscMalloc((2*ismax+1)*(sizeof(PetscInt*)+ sizeof(PetscInt)),&irow);CHKERRQ(ierr);
