@@ -31,11 +31,15 @@
       PetscViewer hdf5viewer
       MatPartitioning mp
       IS partitioning,newnumbering
-      IS oldnumbering,all_oldnumbering
+      IS oldnumbering
+      IS all_oldnumbering
       IS allnewnumbering
-      PetscInt nlocal,bs
+      IS newnumberingsmall
+      PetscInt nlocal,nlocalnew,bs
+      PetscInt ntotal
       PetscMPIInt size,rank
-      Vec volumes
+      Vec volumes,volumesnew
+      VecScatter vs
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       bs = 3
@@ -56,10 +60,10 @@
 !
       call ISPartitioningToNumbering(partitioning,newnumbering,ierr)
       call ISDestroy(partitioning,ierr)
-      call ISView(newnumbering,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
       call ISAllGather(newnumbering,allnewnumbering,ierr)
       call MatPermute(Adj,newnumbering,allnewnumbering,Adjnew,ierr)
+      call MatGetLocalSize(Adjnew,nlocalnew,nlocalnew,ierr)
       call ISDestroy(allnewnumbering,ierr)
 
       call PetscViewerHDF5Open(PETSC_COMM_WORLD,'mesh.h5',                &
@@ -68,6 +72,18 @@
      &                  volumes,ierr)
       call PetscObjectSetName(volumes,'/Cells/Volumes',ierr)
       call VecLoadIntoVector(hdf5viewer,volumes,ierr)
+      call VecCreateMPI(PETSC_COMM_WORLD,nlocalnew/bs,PETSC_DETERMINE,       &
+     &                  volumesnew,ierr)
+      call MatGetSize(Adjnew,ntotal,ntotal,ierr)
+      call ISCompressIndicesGeneral(ntotal,bs,1, newnumbering,
+     &                              newnumberingsmall,ierr)
+      call VecScatterCreate(volumes,newnumberingsmall,volumesnew,          &
+     &                      PETSC_NULL_OBJECT,vs,ierr)
+      call VecScatterBegin(vs,volumes,volumesnew,INSERT_VALUES,           &
+     &                     SCATTER_FORWARD,ierr)
+      call VecScatterEnd(vs,volumes,volumesnew,INSERT_VALUES,           &
+     &                     SCATTER_FORWARD,ierr)
+
       call PetscViewerDestroy(hdf5viewer,ierr)
 
       call VecDestroy(volumes,ierr)
