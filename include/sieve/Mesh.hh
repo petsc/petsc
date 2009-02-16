@@ -1753,6 +1753,15 @@ namespace ALE {
         ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, pV);
       }
     };
+    // Augment the values for the closure of this point
+    template<typename Visitor>
+    void updateAdd(const point_type& p, Visitor& v) {
+      if (this->depth() == 1) {
+        closure1(*this->getSieve(), p, v);
+      } else {
+        ISieveTraversal<sieve_type>::orientedClosure(*this->getSieve(), p, v);
+      }
+    };
   public: // Overlap
     void constructOverlap() {
       if (!this->_calculatedOverlap && (this->commSize() > 1)) {throw ALE::Exception("Must calculate overlap during distribution");}
