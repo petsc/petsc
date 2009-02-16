@@ -94,7 +94,7 @@ PetscErrorCode PCCreate_Prometheus(PC pc)
   
   PetscFunctionBegin;
 
-  ierr = PCCreate_Prometheus_private( pc ); CHKERRQ(ierr);
+  ierr = PCCreate_Prometheus_private( pc );CHKERRQ(ierr);
   
   /*
     Set the pointers for the functions that are provided above.

@@ -28,18 +28,23 @@
       Mat Adj, Adjnew
       PetscErrorCode ierr
       PetscViewer petscviewer
+      PetscViewer hdf5viewer
       MatPartitioning mp
       IS partitioning,newnumbering
       IS oldnumbering,all_oldnumbering
-      PetscInt nlocals(100) ! need to allocate correct size
+      IS allnewnumbering
+      PetscInt nlocal,bs
       PetscMPIInt size,rank
+      Vec volumes
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-
+      bs = 3
       call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'mesh.petsc',                &
      &                           FILE_MODE_READ,petscviewer,ierr)
 
       call MatLoad(petscviewer,MATMPIBAIJ,Adj,ierr)
+      call MatGetLocalSize(Adj,nlocal,nlocal,ierr)
+      call PetscViewerDestroy(petscviewer,ierr)
 
       call MatPartitioningCreate(PETSC_COMM_WORLD,mp,ierr)
       call MatPartitioningSetAdjacency(mp,Adj,ierr)
@@ -51,15 +56,24 @@
 !
       call ISPartitioningToNumbering(partitioning,newnumbering,ierr)
       call ISDestroy(partitioning,ierr)
-
-      call MatPermute(Adj,newnumbering,newnumbering,Adjnew,ierr)
-
       call ISView(newnumbering,PETSC_VIEWER_STDOUT_WORLD,ierr)
 
+      call ISAllGather(newnumbering,allnewnumbering,ierr)
+      call MatPermute(Adj,newnumbering,allnewnumbering,Adjnew,ierr)
+      call ISDestroy(allnewnumbering,ierr)
+
+      call PetscViewerHDF5Open(PETSC_COMM_WORLD,'mesh.h5',                &
+     &                           FILE_MODE_READ,hdf5viewer,ierr)
+      call VecCreateMPI(PETSC_COMM_WORLD,nlocal/bs,PETSC_DETERMINE,       &
+     &                  volumes,ierr)
+      call PetscObjectSetName(volumes,'/Cells/Volumes',ierr)
+      call VecLoadIntoVector(hdf5viewer,volumes,ierr)
+      call PetscViewerDestroy(hdf5viewer,ierr)
+
+      call VecDestroy(volumes,ierr)
+      call MatDestroy(Adj,ierr) 
       call MatDestroy(Adjnew,ierr)
       call ISDestroy(newnumbering,ierr)
-
-      call MatDestroy(Adj,ierr) 
       call PetscFinalize(ierr)
       end
 

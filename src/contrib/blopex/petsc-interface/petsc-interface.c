@@ -74,7 +74,7 @@ PETSC_DestroyVector( void *vvector )
 {
    PetscErrorCode ierr;
    
-   ierr=VecDestroy((Vec) vvector); CHKERRQ(ierr);
+   ierr=VecDestroy((Vec) vvector);CHKERRQ(ierr);
    return(0);
 }
 
@@ -94,7 +94,7 @@ PETSC_CopyVector( void *x, void *y )
 {
 	PetscErrorCode	ierr;
 	
-	ierr = VecCopy( (Vec)x, (Vec)y ); CHKERRQ(ierr);
+	ierr = VecCopy( (Vec)x, (Vec)y );CHKERRQ(ierr);
 	return(0);
 }
 
@@ -103,7 +103,7 @@ PETSC_ClearVector( void *x )
 {
 	PetscErrorCode	ierr;	
 		
-	ierr = VecSet((Vec)x, 0.0); CHKERRQ(ierr);
+	ierr = VecSet((Vec)x, 0.0);CHKERRQ(ierr);
 	return(0);
 }
  
@@ -115,7 +115,7 @@ PETSC_SetRandomValues( void* v,PetscInt seed )
 /* note: without previous call to LOBPCG_InitRandomContext LOBPCG_RandomContext will be null,
 	and VecSetRandom will use internal petsc random context */
 	
-        ierr = VecSetRandom((Vec)v, LOBPCG_RandomContext); CHKERRQ(ierr);
+        ierr = VecSetRandom((Vec)v, LOBPCG_RandomContext);CHKERRQ(ierr);
 
 	return(0);
 }
@@ -125,7 +125,7 @@ PETSC_ScaleVector( double alpha, void *x)
 {
 	PetscErrorCode ierr;
 	
-	ierr = VecScale ((Vec)x, alpha); CHKERRQ(ierr);
+	ierr = VecScale ((Vec)x, alpha);CHKERRQ(ierr);
 	return(0);
 }
 
@@ -136,7 +136,7 @@ PETSC_Axpy( double alpha,
 {
 	PetscErrorCode ierr;
 	
-	ierr = VecAXPY( (Vec)y, alpha, (Vec)x ); CHKERRQ(ierr);
+	ierr = VecAXPY( (Vec)y, alpha, (Vec)x );CHKERRQ(ierr);
 	return(0);
 }
 

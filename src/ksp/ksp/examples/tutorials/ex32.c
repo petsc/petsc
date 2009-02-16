@@ -63,7 +63,7 @@ int main(int argc,char **argv)
   
   ierr = DMMGCreate(PETSC_COMM_WORLD,3,PETSC_NULL,&dmmg);CHKERRQ(ierr);
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,3,3,PETSC_DECIDE,PETSC_DECIDE,1,1,0,0,&da);CHKERRQ(ierr);  
-  ierr = DASetInterpolationType(da, DA_Q0); CHKERRQ(ierr);  
+  ierr = DASetInterpolationType(da, DA_Q0);CHKERRQ(ierr);  
   
   ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
@@ -164,8 +164,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J,Mat jac)
 		{
 		  SETERRQ(PETSC_ERR_SUP,"Dirichlet boundary conditions not supported !\n");
 		  v[0] = 2.0*(HxdHy + HydHx);
-		  ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);
-		  CHKERRQ(ierr);
+		  ierr = MatSetValuesStencil(jac,1,&row,1,&row,v,INSERT_VALUES);CHKERRQ(ierr);
 		} 
 	      else if (user->bcType == NEUMANN) 
 		{

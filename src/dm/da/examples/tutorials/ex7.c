@@ -66,12 +66,12 @@ int main(int argc,char **argv)
      NOTE: the output generated with this viewer can be loaded into
      matlab using bin/matlab/PetscBinaryReadMatlab.m 
   */
-  ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,params->filename,&viewer); CHKERRQ(ierr);
-  ierr = PetscViewerBinaryMatlabOutputBag(viewer,"params",bag); CHKERRQ(ierr);
+  ierr = PetscViewerBinaryMatlabOpen(PETSC_COMM_WORLD,params->filename,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryMatlabOutputBag(viewer,"params",bag);CHKERRQ(ierr);
   ierr = DASetFieldName(da,0,"field1");CHKERRQ(ierr);
   ierr = DASetFieldName(da,1,"field2");CHKERRQ(ierr);
-  ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"da1",global,da); CHKERRQ(ierr);
-  ierr = PetscViewerBinaryMatlabDestroy(viewer); CHKERRQ(ierr);
+  ierr = PetscViewerBinaryMatlabOutputVecDA(viewer,"da1",global,da);CHKERRQ(ierr);
+  ierr = PetscViewerBinaryMatlabDestroy(viewer);CHKERRQ(ierr);
   
   /* clean up and exit */
   ierr = PetscBagDestroy(bag);CHKERRQ(ierr);

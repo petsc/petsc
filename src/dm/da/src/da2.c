@@ -1529,7 +1529,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunction(DA da,PetscErrorCode (*lf)(void)
     PetscErrorCode pierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(pierr);
     pierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(pierr);
   }
-  CHKERRQ(ierr);
+ CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da,vu,&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vfu,&fu);CHKERRQ(ierr);
@@ -1581,13 +1581,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionLocal(DA da, DALocalFunction1 fun
     PetscErrorCode pierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
     pierr = DAVecRestoreArray(da,F,&fu);CHKERRQ(pierr);
   }
-  CHKERRQ(ierr);
+ CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,F,&fu);CHKERRQ(ierr);
   if (PetscExceptionValue(ierr)) {
     PetscErrorCode pierr = DARestoreLocalVector(da,&localX);CHKERRQ(pierr);
   }
-  CHKERRQ(ierr);
+ CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 }

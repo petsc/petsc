@@ -1266,58 +1266,59 @@ PetscErrorCode MatPermute_MPIAIJ(Mat A,IS rowp,IS colp,Mat *B)
   MPI_Comm       comm,pcomm;
   PetscInt       first,local_size,nrows;
   const PetscInt *rows;
-  int            ntids;
+  PetscMPIInt    size;
   IS             crowp,growp,irowp,lrowp,lcolp,icolp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)A,&comm); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   /* make a collective version of 'rowp' */
-  ierr = PetscObjectGetComm((PetscObject)rowp,&pcomm); CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)rowp,&pcomm);CHKERRQ(ierr);
   if (pcomm==comm) {
     crowp = rowp;
   } else {
-    ierr = ISGetSize(rowp,&nrows); CHKERRQ(ierr);
-    ierr = ISGetIndices(rowp,&rows); CHKERRQ(ierr);
-    ierr = ISCreateGeneral(comm,nrows,rows,&crowp); CHKERRQ(ierr);
-    ierr = ISRestoreIndices(rowp,&rows); CHKERRQ(ierr);
+    ierr = ISGetSize(rowp,&nrows);CHKERRQ(ierr);
+    ierr = ISGetIndices(rowp,&rows);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(comm,nrows,rows,&crowp);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(rowp,&rows);CHKERRQ(ierr);
   }
   /* collect the global row permutation and invert it */
-  ierr = ISAllGather(crowp,&growp); CHKERRQ(ierr);
-  ierr = ISSetPermutation(growp); CHKERRQ(ierr);
+  ierr = ISAllGather(crowp,&growp);CHKERRQ(ierr);
+  ierr = ISSetPermutation(growp);CHKERRQ(ierr);
   if (pcomm!=comm) {
-    ierr = ISDestroy(crowp); CHKERRQ(ierr);
+    ierr = ISDestroy(crowp);CHKERRQ(ierr);
   }
   ierr = ISInvertPermutation(growp,PETSC_DECIDE,&irowp);CHKERRQ(ierr);
   /* get the local target indices */
-  ierr = MatGetOwnershipRange(A,&first,PETSC_NULL); CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&local_size,PETSC_NULL); CHKERRQ(ierr);
-  ierr = ISGetIndices(irowp,&rows); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(MPI_COMM_SELF,local_size,rows+first,&lrowp); CHKERRQ(ierr);
-  ierr = ISRestoreIndices(irowp,&rows); CHKERRQ(ierr);
-  ierr = ISDestroy(irowp); CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&first,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&local_size,PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISGetIndices(irowp,&rows);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(MPI_COMM_SELF,local_size,rows+first,&lrowp);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(irowp,&rows);CHKERRQ(ierr);
+  ierr = ISDestroy(irowp);CHKERRQ(ierr);
   /* the column permutation is so much easier;
      make a local version of 'colp' and invert it */
-  ierr = PetscObjectGetComm((PetscObject)colp,&pcomm); CHKERRQ(ierr);
-  ierr = MPI_Comm_size(pcomm,&ntids); CHKERRQ(ierr);
-  if (ntids==1) {
+  ierr = PetscObjectGetComm((PetscObject)colp,&pcomm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(pcomm,&size);CHKERRQ(ierr);
+  if (size==1) {
     lcolp = colp;
   } else {
-    ierr = ISGetSize(colp,&nrows); CHKERRQ(ierr);
-    ierr = ISGetIndices(colp,&rows); CHKERRQ(ierr);
-    ierr = ISCreateGeneral(MPI_COMM_SELF,nrows,rows,&lcolp); CHKERRQ(ierr);
+    ierr = ISGetSize(colp,&nrows);CHKERRQ(ierr);
+    ierr = ISGetIndices(colp,&rows);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(MPI_COMM_SELF,nrows,rows,&lcolp);CHKERRQ(ierr);
   }
-  ierr = ISInvertPermutation(lcolp,PETSC_DECIDE,&icolp); CHKERRQ(ierr);
-  ierr = ISSetPermutation(lcolp); CHKERRQ(ierr);
-  if (ntids>1) {
-    ierr = ISRestoreIndices(colp,&rows); CHKERRQ(ierr);
-    ierr = ISDestroy(lcolp); CHKERRQ(ierr);
+  ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(lcolp,PETSC_DECIDE,&icolp);CHKERRQ(ierr);
+  ierr = ISSetPermutation(lcolp);CHKERRQ(ierr);
+  if (size>1) {
+    ierr = ISRestoreIndices(colp,&rows);CHKERRQ(ierr);
+    ierr = ISDestroy(lcolp);CHKERRQ(ierr);
   }
   /* now we just get the submatrix */
-  ierr = MatGetSubMatrix(A,lrowp,icolp,local_size,MAT_INITIAL_MATRIX,B); CHKERRQ(ierr);
+  ierr = MatGetSubMatrix(A,lrowp,icolp,local_size,MAT_INITIAL_MATRIX,B);CHKERRQ(ierr);
   /* clean up */
-  ierr = ISDestroy(lrowp); CHKERRQ(ierr);
-  ierr = ISDestroy(icolp); CHKERRQ(ierr);
+  ierr = ISDestroy(lrowp);CHKERRQ(ierr);
+  ierr = ISDestroy(icolp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1940,7 +1941,7 @@ PetscErrorCode MatSolve_MPIAIJ(Mat A, Vec b, Vec x)
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject) A, "graph", (PetscObject *) &c);CHKERRQ(ierr);
   ierr = PetscContainerGetPointer(c, (void **) &lgraph_p);CHKERRQ(ierr);
-  ierr = VecCopy(b, x); CHKERRQ(ierr);
+  ierr = VecCopy(b, x);CHKERRQ(ierr);
 
   PetscScalar* array_x;
   ierr = VecGetArray(x, &array_x);CHKERRQ(ierr);

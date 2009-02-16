@@ -661,8 +661,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         ierr = PetscCookieRegister(id_name,&sifterType);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
       }
       this->_comm = comm;
-      ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
-      ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+      ierr = MPI_Comm_rank(this->_comm, &this->_commRank);CHKERROR(ierr, "Error in MPI_Comm_rank");
+      ierr = MPI_Comm_size(this->_comm, &this->_commSize);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
 #ifdef USE_PETSC_OBJ
       ierr = PetscObjectCreateGeneric(this->_comm, sifterType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
 #endif
@@ -684,7 +684,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 #ifdef USE_PETSC_OBJ
       if (this->_petscObj) {
         PetscErrorCode ierr;
-        ierr = PetscObjectDestroy(this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectDestroy");
+        ierr = PetscObjectDestroy(this->_petscObj);CHKERROR(ierr, "Failed in PetscObjectDestroy");
         this->_petscObj = NULL;
       }
 #endif
@@ -955,8 +955,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           }
         }
         //
-        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
 #if 0
         //
         ostringstream txt1;
@@ -971,8 +971,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         }
         txt1 << " ]" << std::endl;
         //
-        ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         //
         ostringstream txt2;
         if(this->commRank() == 0) {
@@ -986,8 +986,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         }
         txt2 << " ]" << std::endl;
         //
-        ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
 #endif
       }
       else { // if(raw)
@@ -1000,8 +1000,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           typename traits::arrow_type arr = *ai;
           txt << "[" << this->commRank() << "]: " << arr << std::endl;
         }
-        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         //
         ostringstream txt1;
         if(this->commRank() == 0) {
@@ -1012,8 +1012,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           typename traits::base_container_type::traits::rec_type bp = *bi;
           txt1 << "[" << this->commRank() << "]: " << bp << std::endl;
         }
-        ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         //
         ostringstream txt2;
         if(this->commRank() == 0) {
@@ -1024,8 +1024,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           typename traits::cap_container_type::traits::rec_type cp = *ci;
           txt2 << "[" << this->commRank() << "]: " << cp << std::endl;
         }
-        ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       }// if(raw)
       
       PetscFunctionReturn(0);

@@ -131,7 +131,7 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
 
   /* open the Python dynamic library */
   ierr = PetscDLPyLibOpen(pythonlib);CHKERRQ(ierr);
-  ierr = PetscInfo1(0,"Python: loaded dynamic library %s\n", pythonlib); CHKERRQ(ierr);
+  ierr = PetscInfo1(0,"Python: loaded dynamic library %s\n", pythonlib);CHKERRQ(ierr);
   /* look required symbols from the Python C-API */
   ierr = PetscDLPyLibSym("Py_IsInitialized"      , &Py_IsInitialized      );CHKERRQ(ierr);
   ierr = PetscDLPyLibSym("Py_InitializeEx"       , &Py_InitializeEx       );CHKERRQ(ierr);
@@ -146,7 +146,7 @@ static PetscErrorCode PetscPythonLoadLibrary(const char pythonlib[])
   if (!Py_IsInitialized) {SETERRQ(1,"Python: failed to load symbols from dynamic library");}
   if (!Py_InitializeEx)  {SETERRQ(1,"Python: failed to load symbols from dynamic library");}
   if (!Py_Finalize)      {SETERRQ(1,"Python: failed to load symbols from dynamic library");}
-  ierr = PetscInfo(0,"Python: all required symbols loaded from Python dynamic library\n"); CHKERRQ(ierr);
+  ierr = PetscInfo(0,"Python: all required symbols loaded from Python dynamic library\n");CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -229,7 +229,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscPythonInitialize(const char pyexe[],const ch
   /* import 'petsc4py.PETSc' module */
   module = PyImport_ImportModule("petsc4py.PETSc");
   if (module) {
-    ierr = PetscInfo(0,"Python: successfully imported  module 'petsc4py.PETSc'\n"); CHKERRQ(ierr);
+    ierr = PetscInfo(0,"Python: successfully imported  module 'petsc4py.PETSc'\n");CHKERRQ(ierr);
     Py_DecRef(module); module = 0;
   } else {
     SETERRQ(PETSC_ERR_PLIB,"Python: could not import module 'petsc4py.PETSc', perhaps your PYTHONPATH does not contain it\n"); 

@@ -35,8 +35,8 @@ int MatReleaseValuesMemory_SeqAIJ(Mat mat)
   */
   } else {
     int *new_i, *new_j;
-    new_i = (int *) PetscMalloc( (aij->m+1)*sizeof(int) ); CHKPTRQ(new_i);
-    new_j = (int *) PetscMalloc( (aij->nz+1)*sizeof(int) ); CHKPTRQ(new_j);
+    new_i = (int *) PetscMalloc( (aij->m+1)*sizeof(int) );CHKPTRQ(new_i);
+    new_j = (int *) PetscMalloc( (aij->nz+1)*sizeof(int) );CHKPTRQ(new_j);
     PetscMemcpy(new_i,aij->i,(aij->m+1)*sizeof(int));
     PetscMemcpy(new_j,aij->j,(aij->nz)*sizeof(int));
     aij->i = new_i;
@@ -67,8 +67,8 @@ int MatReleaseValuesMemory(Mat mat)
 
   if (mat->type != MATMPIAIJ) SETERRQ(1,1,"Wrong matrix type");
 
-  ierr = MatReleaseValuesMemory_SeqAIJ(aij->A); CHKERRQ(ierr);
-  ierr = MatReleaseValuesMemory_SeqAIJ(aij->B); CHKERRQ(ierr);
+  ierr = MatReleaseValuesMemory_SeqAIJ(aij->A);CHKERRQ(ierr);
+  ierr = MatReleaseValuesMemory_SeqAIJ(aij->B);CHKERRQ(ierr);
 
   return 0;
 }
@@ -91,7 +91,7 @@ int MatRestoreValuesMemory_SeqAIJ(Mat mat)
 
   if (mat->type != MATSEQAIJ) SETERRQ(1,1,"Wrong matrix type");
 
-  aij->a = (Scalar *) PetscMalloc( (aij->nz+1)*sizeof(Scalar) ); CHKPTRQ(aij->a);
+  aij->a = (Scalar *) PetscMalloc( (aij->nz+1)*sizeof(Scalar) );CHKPTRQ(aij->a);
 
   return 0;
 }
@@ -113,8 +113,8 @@ int MatRestoreValuesMemory(Mat mat)
 
   if (mat->type != MATMPIAIJ) SETERRQ(1,1,"Wrong matrix type");
 
-  ierr = MatRestoreValuesMemory_SeqAIJ(aij->A); CHKERRQ(ierr);
-  ierr = MatRestoreValuesMemory_SeqAIJ(aij->B); CHKERRQ(ierr);
+  ierr = MatRestoreValuesMemory_SeqAIJ(aij->A);CHKERRQ(ierr);
+  ierr = MatRestoreValuesMemory_SeqAIJ(aij->B);CHKERRQ(ierr);
 
   return 0;
 }

@@ -36,9 +36,9 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  ierr = testPointConeArraySequence();                                    CHKERRQ(ierr);
+  ierr = testPointConeArraySequence();                                   CHKERRQ(ierr);
 
 
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -53,7 +53,7 @@ PetscErrorCode testPointConeArraySequence() {
 
   // Allocate a raw array of n PointConeArrows 
   int n = 10;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-sequenceSize", &n, &flag); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-sequenceSize", &n, &flag);CHKERRQ(ierr);
   if(n < 0) {
     SETERRQ1(1, "Invalid PointConeArraySequence size: %d", n);
   }
@@ -68,7 +68,7 @@ PetscErrorCode testPointConeArraySequence() {
   PointConeArraySequence aas(aa,n,Point(0,0));
 
   // View the sequence
-  ierr = viewPointConeArraySequence(aas, "'Manual'"); CHKERRQ(ierr);
+  ierr = viewPointConeArraySequence(aas, "'Manual'");CHKERRQ(ierr);
 
   // Fill in the array using the 'PointConeArrow::place' method
   for(int i = 0; i < n; i++) {
@@ -79,7 +79,7 @@ PetscErrorCode testPointConeArraySequence() {
   aas = PointConeArraySequence(aa,n,Point(0,0));
 
   // View the sequence
-  ierr = viewPointConeArraySequence(aas, "'Auto'"); CHKERRQ(ierr);
+  ierr = viewPointConeArraySequence(aas, "'Auto'");CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }/* testPointConeArraySequence() */

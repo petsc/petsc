@@ -146,9 +146,9 @@ PetscErrorCode MatDuplicate_SeqCSRPERM(Mat A, MatDuplicateOption op, Mat *M)
    * necessary.  But at this point, we know how large they need to be, and 
    * allocate only the necessary amount of memory.  So the duplicated matrix 
    * may actually use slightly less storage than the original! */
-  ierr = PetscMalloc(A->rmap->n*sizeof(PetscInt), csrperm_dest->iperm); CHKERRQ(ierr);
-  ierr = PetscMalloc((csrperm->ngroup+1)*sizeof(PetscInt), csrperm_dest->xgroup); CHKERRQ(ierr);
-  ierr = PetscMalloc((csrperm->ngroup)*sizeof(PetscInt), csrperm_dest->nzgroup); CHKERRQ(ierr);
+  ierr = PetscMalloc(A->rmap->n*sizeof(PetscInt), csrperm_dest->iperm);CHKERRQ(ierr);
+  ierr = PetscMalloc((csrperm->ngroup+1)*sizeof(PetscInt), csrperm_dest->xgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc((csrperm->ngroup)*sizeof(PetscInt), csrperm_dest->nzgroup);CHKERRQ(ierr);
   ierr = PetscMemcpy(csrperm_dest->iperm,csrperm->iperm,sizeof(PetscInt)*A->rmap->n);CHKERRQ(ierr);
   ierr = PetscMemcpy(csrperm_dest->xgroup,csrperm->xgroup,sizeof(PetscInt)*(csrperm->ngroup+1));CHKERRQ(ierr);
   ierr = PetscMemcpy(csrperm_dest->nzgroup,csrperm->nzgroup,sizeof(PetscInt)*csrperm->ngroup);CHKERRQ(ierr);
@@ -185,13 +185,13 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
   ia = a->i;
    
   /* Allocate the arrays that will hold the permutation vector. */
-  ierr = PetscMalloc(m*sizeof(PetscInt), &csrperm->iperm); CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt), &csrperm->iperm);CHKERRQ(ierr);
 
   /* Allocate some temporary work arrays that will be used in 
    * calculating the permuation vector and groupings. */
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt), &rows_in_bucket); CHKERRQ(ierr);
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt), &ipnz); CHKERRQ(ierr);
-  ierr = PetscMalloc(m*sizeof(PetscInt), &nz_in_row); CHKERRQ(ierr); 
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt), &rows_in_bucket);CHKERRQ(ierr);
+  ierr = PetscMalloc((m+1)*sizeof(PetscInt), &ipnz);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt), &nz_in_row);CHKERRQ(ierr); 
 
   /* Now actually figure out the permutation and grouping. */
 
@@ -220,8 +220,8 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
    * We allocate space for the maximum number of groups; 
    * that is potentially a little wasteful, but not too much so.  
    * Perhaps I should fix it later. */
-  ierr = PetscMalloc((maxnz+2)*sizeof(PetscInt), &csrperm->xgroup); CHKERRQ(ierr);
-  ierr = PetscMalloc((maxnz+1)*sizeof(PetscInt), &csrperm->nzgroup); CHKERRQ(ierr);
+  ierr = PetscMalloc((maxnz+2)*sizeof(PetscInt), &csrperm->xgroup);CHKERRQ(ierr);
+  ierr = PetscMalloc((maxnz+1)*sizeof(PetscInt), &csrperm->nzgroup);CHKERRQ(ierr);
 
   /* Second pass.  Look at what is in the buckets and create the groupings.
    * Note that it is OK to have a group of rows with no non-zero values. */
@@ -253,9 +253,9 @@ PetscErrorCode SeqCSRPERM_create_perm(Mat A)
   }
 
   /* Clean up temporary work arrays. */
-  ierr = PetscFree(rows_in_bucket); CHKERRQ(ierr);
-  ierr = PetscFree(ipnz); CHKERRQ(ierr);
-  ierr = PetscFree(nz_in_row); CHKERRQ(ierr);
+  ierr = PetscFree(rows_in_bucket);CHKERRQ(ierr);
+  ierr = PetscFree(ipnz);CHKERRQ(ierr);
+  ierr = PetscFree(nz_in_row);CHKERRQ(ierr);
 
   /* Since we've allocated some memory to hold permutation info, 
    * flip the CleanUpCSRPERM flag to true. */

@@ -109,8 +109,7 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
        cols[I] = I; 
 
    /*..Assemble the right-hand side vector for use within PETSc..*/
-   ierr = VecSetValues(b,numnodes,cols,(PetscScalar*)rhs,INSERT_VALUES); 
-          CHKERRQ(ierr);  
+   ierr = VecSetValues(b,numnodes,cols,(PetscScalar*)rhs,INSERT_VALUES);CHKERRQ(ierr);  
    ierr = VecAssemblyBegin(b);CHKERRQ(ierr);
    ierr = VecAssemblyEnd(b);CHKERRQ(ierr);
    if (debug){
@@ -121,8 +120,7 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
    ierr = VecNorm(b,NORM_2,&bnrm2);CHKERRQ(ierr);
 
    /*..Assemble the start solution vector for use within PETSc..*/
-   ierr = VecSetValues(x,numnodes,cols,(PetscScalar*)u_approx,INSERT_VALUES); 
-          CHKERRQ(ierr);  
+   ierr = VecSetValues(x,numnodes,cols,(PetscScalar*)u_approx,INSERT_VALUES);CHKERRQ(ierr);  
    ierr = VecAssemblyBegin(x);CHKERRQ(ierr);
    ierr = VecAssemblyEnd(x);CHKERRQ(ierr);
 
@@ -151,8 +149,7 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
    ierr = SamgShellPCSetUp(samg_ctx,A);CHKERRQ(ierr); 
 
    /*..Give user defined preconditioner a name..*/ 
-   ierr = PCShellSetName(pc,"SAMG (Scalar mode)");
-          CHKERRQ(ierr); 
+   ierr = PCShellSetName(pc,"SAMG (Scalar mode)");CHKERRQ(ierr); 
 
    /*..Parse SAMG hierarchy to PETSc variables..*/  
    levels = samg_ctx->LEVELS; 
@@ -160,8 +157,7 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
    ierr = SamgGetGrid(levels, numnodes, numnonzero, grid, PETSC_NULL);
 
    /*..Print coarser grid and interpolation operators to file..*/ 
-   ierr = PetscOptionsHasName(PETSC_NULL,"-samg_print",&issamg_print); 
-	  CHKERRQ(ierr);
+   ierr = PetscOptionsHasName(PETSC_NULL,"-samg_print",&issamg_print);CHKERRQ(ierr);
    if (issamg_print){   
      for (k=2;k<=levels;k++){ 
 	 sprintf(pathfilename,"./"); 
@@ -175,15 +171,13 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
    }
     
    /*..Perform check on parsing..*/ 
-   ierr = PetscOptionsHasName(PETSC_NULL,"-samg_check",&issamg_print); 
-	  CHKERRQ(ierr);
+   ierr = PetscOptionsHasName(PETSC_NULL,"-samg_check",&issamg_print);CHKERRQ(ierr);
    if (issamg_print)
      ierr = SamgCheckGalerkin(levels, A, grid, PETSC_NULL); 
       
    /*..Set KSP solver type..*/ 
    ierr = KSPSetType(ksp,KSPRICHARDSON);CHKERRQ(ierr);  
-   ierr = KSPMonitorSet(ksp,KSPMonitorDefault,PETSC_NULL, PETSC_NULL); 
-          CHKERRQ(ierr); 
+   ierr = KSPMonitorSet(ksp,KSPMonitorDefault,PETSC_NULL, PETSC_NULL);CHKERRQ(ierr); 
    /*..Set MG preconditioner..*/
    ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);
    ierr = PCMGSetLevels(pc,levels, PETSC_NULL);CHKERRQ(ierr);
@@ -197,10 +191,8 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
    for (k=1;k<=levels;k++){ 
        petsc_level = levels - k; 
        /*....Get pre-smoothing KSP context....*/ 
-       ierr = PCMGGetSmootherDown(pc,petsc_level,&grid[k].ksp_pre); 
-              CHKERRQ(ierr); 
-       ierr = PCMGGetSmootherUp(pc,petsc_level,&grid[k].ksp_post); 
-	      CHKERRQ(ierr); 
+       ierr = PCMGGetSmootherDown(pc,petsc_level,&grid[k].ksp_pre);CHKERRQ(ierr); 
+       ierr = PCMGGetSmootherUp(pc,petsc_level,&grid[k].ksp_post);CHKERRQ(ierr); 
        if (k==1)
           FineLevelMatrix = A; 
           else

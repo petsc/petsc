@@ -33,12 +33,12 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   
   try {
-    ierr = testArrowFilters();                            CHKERRQ(ierr);
-    ierr = testCone();                                    CHKERRQ(ierr);
+    ierr = testArrowFilters();                           CHKERRQ(ierr);
+    ierr = testCone();                                   CHKERRQ(ierr);
   }
   catch(const ALE::FilterDef::FilterError& e) {
     std::cout << "FILTER ERROR: " << e.msg() << std::endl;
@@ -64,7 +64,7 @@ PetscErrorCode testCone()
 
   PetscFunctionBegin;
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
 
   std::cout <<  std::endl << ">>>>> testCone:" << std::endl;
 
@@ -135,7 +135,7 @@ PetscErrorCode testArrowFilters()
 
   PetscFunctionBegin;
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
 
   std::cout << std::endl << ">>>>> testArrowFilters:" << std::endl;
 

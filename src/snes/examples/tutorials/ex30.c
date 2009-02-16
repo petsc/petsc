@@ -178,7 +178,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */   
-  ierr = PetscMalloc(sizeof(AppCtx),&user); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(AppCtx),&user);CHKERRQ(ierr);
   user->param = &param;
   user->grid  = &grid;
 
@@ -194,7 +194,7 @@ int main(int argc,char **argv)
   ierr = DASetFieldName(DMMGGetDA(dmmg),1,"y-velocity");CHKERRQ(ierr);
   ierr = DASetFieldName(DMMGGetDA(dmmg),2,"pressure");CHKERRQ(ierr);
   ierr = DASetFieldName(DMMGGetDA(dmmg),3,"temperature");CHKERRQ(ierr);
-  ierr = VecDuplicate(dmmg[0]->x, &(user->Xguess)); CHKERRQ(ierr);
+  ierr = VecDuplicate(dmmg[0]->x, &(user->Xguess));CHKERRQ(ierr);
 #else
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
@@ -212,11 +212,11 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */   
-  ierr = PetscMalloc(sizeof(AppCtx),&user); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(AppCtx),&user);CHKERRQ(ierr);
   user->param   = &param;
   user->grid    = &grid;
   dmmg[0]->user = user; 
-  ierr = VecDuplicate(dmmg[0]->x, &(user->Xguess)); CHKERRQ(ierr);
+  ierr = VecDuplicate(dmmg[0]->x, &(user->Xguess));CHKERRQ(ierr);
 #endif
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -231,7 +231,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = Initialize(dmmg); CHKERRQ(ierr);
+  ierr = Initialize(dmmg);CHKERRQ(ierr);
   ierr = UpdateSolution(dmmg,user,&nits);CHKERRQ(ierr); 
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -242,9 +242,9 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space. 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = VecDestroy(user->Xguess); CHKERRQ(ierr);
-  ierr = PetscFree(user); CHKERRQ(ierr);
-  ierr = DMMGDestroy(dmmg); CHKERRQ(ierr);
+  ierr = VecDestroy(user->Xguess);CHKERRQ(ierr);
+  ierr = PetscFree(user);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
@@ -342,7 +342,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   AppCtx         *user = (AppCtx*)dmmg->user;
   PetscErrorCode ierr;
 
-  ierr = VecCopy(user->Xguess, X); CHKERRQ(ierr);
+  ierr = VecCopy(user->Xguess, X);CHKERRQ(ierr);
   return 0;
 } 
 

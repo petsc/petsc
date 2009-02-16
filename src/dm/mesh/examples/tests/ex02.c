@@ -43,19 +43,19 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   verbosity = 1;
-  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag); CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-verbosity", &verbosity, &flag);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
 
-  ierr = PetscPrintf(comm, "Creating a doublet Sieve bottom-up\n"); CHKERRQ(ierr);
-  ierr = createDoubletSieveBottomUp(comm, &doublet);                CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Creating a doublet Sieve bottom-up\n");CHKERRQ(ierr);
+  ierr = createDoubletSieveBottomUp(comm, &doublet);               CHKERRQ(ierr);
   doublet->view("Bottom-up Doublet");                       
-  ierr = viewStrata(doublet, "Bottom-up Doublet");                  CHKERRQ(ierr);
+  ierr = viewStrata(doublet, "Bottom-up Doublet");                 CHKERRQ(ierr);
   delete doublet;
 
-  ierr = PetscPrintf(comm, "Creating a doublet Sieve top-down\n");  CHKERRQ(ierr);
-  ierr = createDoubletSieveTopDown(comm, &doublet);                 CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Creating a doublet Sieve top-down\n"); CHKERRQ(ierr);
+  ierr = createDoubletSieveTopDown(comm, &doublet);                CHKERRQ(ierr);
   doublet->view("Top-down Doublet");                       
-  ierr = viewStrata(doublet, "Top-down Doublet");                   CHKERRQ(ierr);
+  ierr = viewStrata(doublet, "Top-down Doublet");                  CHKERRQ(ierr);
   delete doublet;
 
   ierr = PetscFinalize();CHKERRQ(ierr);
@@ -117,16 +117,16 @@ PetscErrorCode viewStrata(ALE::Sieve *sieve, const char *name) {
     txt << " " << name;
   }
   txt << " sieve of diameter " << sieve->diameter() << "\n";
-  ierr = PetscPrintf(sieve->getComm(), txt.str().c_str()); CHKERRQ(ierr);
+  ierr = PetscPrintf(sieve->getComm(), txt.str().c_str());CHKERRQ(ierr);
 
   for(int d = 0; d <= sieve->diameter(); d++) {
     ALE::Point_set stratum = sieve->depthStratum(d);
-    ierr = PetscPrintf(sieve->getComm(), "Depth stratum %d:\n", d); CHKERRQ(ierr);
+    ierr = PetscPrintf(sieve->getComm(), "Depth stratum %d:\n", d);CHKERRQ(ierr);
     stratum.view();
   }
   for(int d = 0; d <= sieve->diameter(); d++) {
     ALE::Point_set stratum = sieve->heightStratum(d);
-    ierr = PetscPrintf(sieve->getComm(), "Height stratum %d:\n", d); CHKERRQ(ierr);
+    ierr = PetscPrintf(sieve->getComm(), "Height stratum %d:\n", d);CHKERRQ(ierr);
     stratum.view();
   }
   

@@ -392,8 +392,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   /*
     Activates new sockets for zope if needed
   */
-  ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz); CHKERRQ(ierr);
-  ierr=PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout); CHKERRQ(ierr);
+  ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz);CHKERRQ(ierr);
+  ierr=PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout);CHKERRQ(ierr);
   if(flgz){
     extern FILE* PETSC_ZOPEFD;
     int sockfd; 
@@ -402,7 +402,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     int remoteport = 9999;
     ierr=PetscOptionsGetString(PETSC_NULL, "-zope", hostname, 256, &flgz);CHKERRQ(ierr);
     if(!hostname[0]){
-      ierr=PetscGetHostName(hostname,256); CHKERRQ(ierr);}
+      ierr=PetscGetHostName(hostname,256);CHKERRQ(ierr);}
     ierr=PetscOpenSocket(hostname, remoteport, &sockfd);CHKERRQ(ierr);
     ierr = PetscGetUserName(username, 256);
     PETSC_ZOPEFD = fdopen(sockfd, "w");

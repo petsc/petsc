@@ -60,7 +60,6 @@ E*/
 #define PETSC_VIEWER_MATHEMATICA  "mathematica"
 #define PETSC_VIEWER_SILO         "silo"
 #define PETSC_VIEWER_NETCDF       "netcdf"
-#define PETSC_VIEWER_HDF4         "hdf4"
 #define PETSC_VIEWER_HDF5         "hdf5"
 #define PETSC_VIEWER_MATLAB       "matlab"
 
@@ -275,8 +274,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloClearMeshName(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfOpen(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfGetID(PetscViewer, int *);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4Open(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4WriteSDS(PetscViewer,float *,int,int *,int);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5WriteSDS(PetscViewer,float *,int,int *,int);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5Open(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
 #ifdef PETSC_HAVE_HDF5

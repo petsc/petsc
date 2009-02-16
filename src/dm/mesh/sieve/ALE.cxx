@@ -95,7 +95,7 @@ namespace ALE {
   LogCookie LogCookieRegister(const char *name){
     LogCookie cookie;
     PetscErrorCode ierr = PetscCookieRegister(name, &cookie);
-    CHKERROR(ierr, "PetscCookieRegister failed");
+   CHKERROR(ierr, "PetscCookieRegister failed");
     return cookie;
   }
 
@@ -106,7 +106,7 @@ namespace ALE {
     std::string stage_name(name);
     if(_log_stage.find(stage_name) == _log_stage.end()) {    
       // stage by that name not yet registered, so we register it and store its registration number.
-      PetscErrorCode ierr = PetscLogStageRegister(name, &stage); CHKERROR(ierr, "PetscLogStageRegister failed");
+      PetscErrorCode ierr = PetscLogStageRegister(name, &stage);CHKERROR(ierr, "PetscLogStageRegister failed");
       _log_stage[stage_name] = stage;                   
     }                                                        
     else {                                                   
@@ -120,7 +120,7 @@ namespace ALE {
   #define __FUNCT__ "LogStagePush"
   void LogStagePush(int s){
     PetscErrorCode ierr;
-    ierr = PetscLogStagePush(s); CHKERROR(ierr, "PetscLogStagePush failed");
+    ierr = PetscLogStagePush(s);CHKERROR(ierr, "PetscLogStagePush failed");
   }//LogStagePush()
 
   #undef  __FUNCT__
@@ -128,7 +128,7 @@ namespace ALE {
   void LogStagePop(int s){
     // A future implementation may use 's' to check for the correct order of stage push/pop events.
     PetscErrorCode ierr;
-    ierr = PetscLogStagePop(); CHKERROR(ierr, "PetscLogStagePop failed");
+    ierr = PetscLogStagePop();CHKERROR(ierr, "PetscLogStagePop failed");
   }//LogStagePop()
 
   static std::map<std::string, LogEvent> _log_event;  // a map from event names to event numbers
@@ -165,14 +165,14 @@ namespace ALE {
   #define __FUNCT__ "LogEventBegin"
   void LogEventBegin(LogEvent e){
     PetscErrorCode ierr;
-    ierr = PetscLogEventBegin(e, 0, 0, 0, 0); CHKERROR(ierr, "PetscLogEventBegin failed");
+    ierr = PetscLogEventBegin(e, 0, 0, 0, 0);CHKERROR(ierr, "PetscLogEventBegin failed");
   }//LogEventBegin()
 
   #undef  __FUNCT__
   #define __FUNCT__ "LogEventEnd"
   void LogEventEnd(LogEvent e){
     PetscErrorCode ierr;
-    ierr = PetscLogEventEnd(e, 0, 0, 0, 0); CHKERROR(ierr, "PetscLogEventEnd failed");
+    ierr = PetscLogEventEnd(e, 0, 0, 0, 0);CHKERROR(ierr, "PetscLogEventEnd failed");
   }//LogEventEnd()
 
 }

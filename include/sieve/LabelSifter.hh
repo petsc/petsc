@@ -411,8 +411,8 @@ namespace ALE {
         ierr = PetscCookieRegister(id_name,&sifterType);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
       }
       this->_comm = comm;
-      ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
-      ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+      ierr = MPI_Comm_rank(this->_comm, &this->_commRank);CHKERROR(ierr, "Error in MPI_Comm_rank");
+      ierr = MPI_Comm_size(this->_comm, &this->_commSize);CHKERROR(ierr, "Error in MPI_Comm_rank"); 
 #ifdef USE_PETSC_OBJ
       ierr = PetscObjectCreateGeneric(this->_comm, sifterType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
 #endif
@@ -434,7 +434,7 @@ namespace ALE {
 #ifdef USE_PETSC_OBJ
       if (this->_petscObj) {
         PetscErrorCode ierr;
-        ierr = PetscObjectDestroy(this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectDestroy");
+        ierr = PetscObjectDestroy(this->_petscObj);CHKERROR(ierr, "Failed in PetscObjectDestroy");
         this->_petscObj = NULL;
       }
 #endif
@@ -581,8 +581,8 @@ namespace ALE {
         for(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++) {
           txt << "[" << this->commRank() << "]: " << ai->source << "---->" << ai->target << std::endl;
         }
-        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       }
       else { // if(raw)
         ostringstream txt;
@@ -594,8 +594,8 @@ namespace ALE {
           typename traits::arrow_type arr = *ai;
           txt << "[" << this->commRank() << "]: " << arr << std::endl;
         }
-        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str());CHKERROR(ierr, "Error in PetscSynchronizedFlush");
+        ierr = PetscSynchronizedFlush(this->comm()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       }// if(raw)
       
       PetscFunctionReturn(0);

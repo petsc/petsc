@@ -392,7 +392,7 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
   PetscTruth     assembled;
 
   PetscFunctionBegin;
-  ierr = MatAssembled(*B,&assembled); CHKERRQ(ierr);
+  ierr = MatAssembled(*B,&assembled);CHKERRQ(ierr);
   if (assembled) {
     ierr = MatZeroEntries(*B);CHKERRQ(ierr);
   }

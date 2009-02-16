@@ -110,7 +110,7 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set up the problem parameters.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */ 
-  ierr = PetscMalloc(sizeof(AppCtx),&user); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(AppCtx),&user);CHKERRQ(ierr);
   ierr = PetscBagCreate(comm,sizeof(Parameter),&(user->bag));CHKERRQ(ierr);
   user->grid = &grid;
   ierr = SetParams(user);CHKERRQ(ierr);
@@ -134,21 +134,21 @@ int main(int argc,char **argv)
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Create user context, set problem data, create vector data structures.
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */   
-  ierr = DAGetGlobalVector(DMMGGetDA(user->dmmg), &(user->Xold)); CHKERRQ(ierr);
+  ierr = DAGetGlobalVector(DMMGGetDA(user->dmmg), &(user->Xold));CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize and solve the nonlinear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = Initialize(user->dmmg); CHKERRQ(ierr);
-  ierr = DoSolve(user->dmmg); CHKERRQ(ierr);
+  ierr = Initialize(user->dmmg);CHKERRQ(ierr);
+  ierr = DoSolve(user->dmmg);CHKERRQ(ierr);
   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space. 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DARestoreGlobalVector(DMMGGetDA(user->dmmg), &(user->Xold)); CHKERRQ(ierr);
+  ierr = DARestoreGlobalVector(DMMGGetDA(user->dmmg), &(user->Xold));CHKERRQ(ierr);
   ierr = PetscBagDestroy(user->bag);CHKERRQ(ierr); 
-  ierr = DMMGDestroy(user->dmmg); CHKERRQ(ierr);
-  ierr = PetscFree(user); CHKERRQ(ierr);
+  ierr = DMMGDestroy(user->dmmg);CHKERRQ(ierr);
+  ierr = PetscFree(user);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
@@ -242,7 +242,7 @@ int ReportParams(AppCtx *user)
   ierr = PetscPrintf(PETSC_COMM_WORLD,"  [ni,nj] = %d, %d   [dx,dz] = %5.4g, %5.4g\n",grid->ni,grid->nj,grid->dx,grid->dz);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD,"  t_max = %g, cfl = %g, dt = %5.4g,",param->t_max,param->cfl,param->dt);CHKERRQ(ierr);
   ierr = PetscPrintf(PETSC_COMM_WORLD," t_output = %g\n",param->t_output_interval);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD," dt_advection= %g, dt_diffusion= %g\n",param->dtAdvection,param->dtDiffusion); CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD," dt_advection= %g, dt_diffusion= %g\n",param->dtAdvection,param->dtDiffusion);CHKERRQ(ierr);
   if (param->output_to_file) {
     PetscPrintf(PETSC_COMM_WORLD,"Output File:       Binary file \"%s\"\n",param->output_filename);
   }
@@ -285,7 +285,7 @@ int Initialize(DMMG *dmmg)
   
   /* restore the grid to it's vector */
   ierr = DAVecRestoreArray(da,user->Xold,(void**)&x);CHKERRQ(ierr);
-  ierr = VecCopy(user->Xold, DMMGGetx(dmmg)); CHKERRQ(ierr);
+  ierr = VecCopy(user->Xold, DMMGGetx(dmmg));CHKERRQ(ierr);
 
   return 0;
 }
@@ -319,7 +319,7 @@ int DoSolve(DMMG *dmmg)
 
   /* output initial data */
   PetscPrintf(PETSC_COMM_WORLD," Initialization, Time: %5.4g\n", param->t);
-  ierr = DoOutput(dmmg,n_plot); CHKERRQ(ierr); 
+  ierr = DoOutput(dmmg,n_plot);CHKERRQ(ierr); 
   t_output += param->t_output_interval; n_plot++;
 
   /* timestep loop */
@@ -333,13 +333,13 @@ int DoSolve(DMMG *dmmg)
        Solve at time t & copy solution into solution vector.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     /* Evaluate operator (I + \Delta t/2 L) u^-  = X^- */
-    ierr = DAFormFunctionLocal(da, (DALocalFunction1) FormOldTimeFunctionLocal, DMMGGetx(dmmg), user->Xold, user); CHKERRQ(ierr);
+    ierr = DAFormFunctionLocal(da, (DALocalFunction1) FormOldTimeFunctionLocal, DMMGGetx(dmmg), user->Xold, user);CHKERRQ(ierr);
     /* Advect Xold into Xstar */
-    ierr = CharacteristicSolve(c, param->dt, Xstar); CHKERRQ(ierr);
+    ierr = CharacteristicSolve(c, param->dt, Xstar);CHKERRQ(ierr);
     /* Xstar -> Xold */
-    ierr = VecCopy(Xstar, user->Xold); CHKERRQ(ierr);
+    ierr = VecCopy(Xstar, user->Xold);CHKERRQ(ierr);
     /* Solve u^+ = (I - \Delta t/2 L)^-1 Xstar which could be F(u^+) = Xstar */
-    ierr = DMMGSolve(dmmg); CHKERRQ(ierr);
+    ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        report step and update counter.
@@ -351,12 +351,12 @@ int DoSolve(DMMG *dmmg)
        Output variables.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     if (param->t >= t_output) {
-      ierr = DoOutput(dmmg,n_plot); CHKERRQ(ierr); 
+      ierr = DoOutput(dmmg,n_plot);CHKERRQ(ierr); 
       t_output += param->t_output_interval; n_plot++;
     }
   }
   ierr = DARestoreGlobalVector(da, &Xstar);CHKERRQ(ierr);
-  ierr = CharacteristicDestroy(c); CHKERRQ(ierr);
+  ierr = CharacteristicDestroy(c);CHKERRQ(ierr);
   return 0; 
 }
 
@@ -403,7 +403,7 @@ PetscErrorCode InterpFields2D(void *f, PetscReal ij_real[], PetscInt numComp,
 
   /* map back to periodic domain if out of bounds */
   if ( ir < 0 || ir > ni-1 || jr < 0 || jr> nj-1 ) { 
-    ierr = DAMapCoordsToPeriodicDomain(DMMGGetDA(user->dmmg), &ir, &jr); CHKERRQ(ierr);
+    ierr = DAMapCoordsToPeriodicDomain(DMMGGetDA(user->dmmg), &ir, &jr);CHKERRQ(ierr);
   } 
   field[0] = BiCubicInterp(x, ir, jr);
   return 0;

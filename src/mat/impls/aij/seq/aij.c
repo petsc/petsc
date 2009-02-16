@@ -1856,10 +1856,10 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,const MatFactorInfo *in
   outA          = inA; 
   inA->factor   = MAT_FACTOR_LU;
   ierr = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
-  if (a->row) { ierr = ISDestroy(a->row); CHKERRQ(ierr);}
+  if (a->row) { ierr = ISDestroy(a->row);CHKERRQ(ierr);}
   a->row = row;
   ierr = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
-  if (a->col) { ierr = ISDestroy(a->col); CHKERRQ(ierr);}
+  if (a->col) { ierr = ISDestroy(a->col);CHKERRQ(ierr);}
   a->col = col;
 
   /* Create the inverse permutation so that it can be used in MatLUFactorNumeric() */

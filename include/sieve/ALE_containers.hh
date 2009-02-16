@@ -36,8 +36,8 @@ namespace ALE {
       PetscErrorCode ierr;
 
       this->_comm = comm;
-      ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
-      ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_size");
+      ierr = MPI_Comm_rank(this->_comm, &this->_commRank);CHKERROR(ierr, "Error in MPI_Comm_rank");
+      ierr = MPI_Comm_size(this->_comm, &this->_commSize);CHKERROR(ierr, "Error in MPI_Comm_size");
       const char *class_name = ALE::getClassName(this);
       this->_className = class_name;
       ALE::restoreClassName(this, class_name);

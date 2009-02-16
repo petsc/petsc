@@ -2209,7 +2209,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
   snes->vec_rhs = b;
   
   if (!snes->vec_func && snes->vec_rhs) {
-    ierr = VecDuplicate(b, &snes->vec_func); CHKERRQ(ierr);
+    ierr = VecDuplicate(b, &snes->vec_func);CHKERRQ(ierr);
   }
 
   ierr = SNESSetUp(snes);CHKERRQ(ierr);

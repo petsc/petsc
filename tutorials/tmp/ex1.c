@@ -130,7 +130,7 @@ int main(int argc, char *args[])
   status = H5Sget_simple_extent_dims(dataspace_id, &data.numFaces, NULL);if (status < 0) SETERRQ(PETSC_ERR_LIB,"Bad dimension");
   status = H5Sclose(dataspace_id);CHKERRQ(status);
   status = H5Dclose(dataset_id);CHKERRQ(status);
-  ierr = PetscPrintf(PETSC_COMM_SELF, "Number of cells %D Number of faces %D \n",data.numCells,data.numFaces);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF, "Number of cells %D Number of faces %D \n",(PetscInt)data.numCells,(PetscInt)data.numFaces);CHKERRQ(ierr);
 
   /* read face data */
   ierr = PetscMalloc5(data.numFaces,double,&data.faceAreas,data.numFaces,int,&data.downCells,data.numFaces,double,&data.downX,data.numFaces,double,&data.downY,data.numFaces,double,&data.downZ);CHKERRQ(ierr);
@@ -170,6 +170,8 @@ int main(int argc, char *args[])
   ierr = MatSetFromOptions(Adj);CHKERRQ(ierr);
   ierr = MatSetType(Adj,MATSEQBAIJ);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(Adj, bs, 6,PETSC_NULL);CHKERRQ(ierr);
+  //ierr = MatSetType(Adj,MATSEQAIJ);CHKERRQ(ierr);
+  //ierr = MatSeqAIJSetPreallocation(Adj, 6,PETSC_NULL);CHKERRQ(ierr);
   for(i = 0; i < data.numFaces; ++i) {
     values[0] = data.faceAreas[i];
     values[1] = data.downCells[i];
@@ -182,6 +184,8 @@ int main(int argc, char *args[])
     values[8] = data.upZ[i];
     ierr = MatSetValuesBlocked(Adj, 1, &data.downCells[i], 1, &data.upCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatSetValuesBlocked(Adj, 1, &data.upCells[i], 1, &data.downCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
+    //ierr = MatSetValues(Adj, 1, &data.downCells[i], 1, &data.upCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
+    //ierr = MatSetValues(Adj, 1, &data.upCells[i], 1, &data.downCells[i], values, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(Adj, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(Adj, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

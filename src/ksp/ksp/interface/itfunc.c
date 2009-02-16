@@ -333,9 +333,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
 
-  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view",view,10,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view",view,10,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscStrcmp(view,"before",&viewed); CHKERRQ(ierr);
+    ierr = PetscStrcmp(view,"before",&viewed);CHKERRQ(ierr);
     if (viewed){
       PetscViewer viewer;
       ierr = PetscViewerASCIIGetStdout(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);

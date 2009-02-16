@@ -197,7 +197,7 @@ int main(int argc,char **argv)
     if (user.bcType == NEUMANN) {
       ierr = DMMGSetNullSpace(dmmg,PETSC_TRUE,0,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection); CHKERRQ(ierr);
+    ierr = MeshGetGlobalScatter(mesh, "u", DMMGGetx(dmmg), &user.injection);CHKERRQ(ierr);
 
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
 
@@ -1399,7 +1399,7 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
       numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
-    ierr = PetscMalloc2(numBoundaryIndices,PetscInt,&boundaryIndices,numBoundaryIndices,PetscScalar,&boundaryValues); CHKERRQ(ierr);
+    ierr = PetscMalloc2(numBoundaryIndices,PetscInt,&boundaryIndices,numBoundaryIndices,PetscScalar,&boundaryValues);CHKERRQ(ierr);
     for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
       const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
       const double *data = boundary->restrict(bdPatch, *p);
@@ -1505,7 +1505,7 @@ PetscErrorCode ComputeMatrix(DMMG dmmg, Mat J, Mat jac)
     for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
       numBoundaryIndices += field->getGlobalOrder()->getIndex(patch, *p).index;
     }
-    ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices); CHKERRQ(ierr);
+    ierr = PetscMalloc(numBoundaryIndices * sizeof(PetscInt), &boundaryIndices);CHKERRQ(ierr);
     for(ALE::Two::Mesh::field_type::order_type::coneSequence::iterator p = cone->begin(); p != cone->end(); ++p) {
       const ALE::Two::Mesh::field_type::index_type& idx = field->getGlobalOrder()->getIndex(patch, *p);
 

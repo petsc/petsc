@@ -8,7 +8,7 @@ static char help[] = "Basic ArgDB functionality test.\n\n";
 int main(int argc, char** argv){
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help); CHKERRQ(ierr);
+  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
 
   // Basic usage of ArgDB/Arg<T>:
   // (1) declare db

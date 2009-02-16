@@ -25,8 +25,8 @@ int main(int argc,char **args)
 
   MPI_Comm_rank(PETSC_COMM_WORLD,&rank);
 
-  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg); CHKERRA(ierr);
-  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg); CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-m",&m,&flg);CHKERRA(ierr);
+  ierr = OptionsGetInt(PETSC_NULL,"-n",&n,&flg);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
@@ -38,15 +38,14 @@ int main(int argc,char **args)
      runtime. Also, the parallel partioning of the matrix is
      determined by PETSc at runtime.
   */
-  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,5,0,2,0,&A); 
-    CHKERRA(ierr);
+  ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,5,0,2,0,&A);CHKERRA(ierr);
 
   /* 
      Currently, all PETSc parallel matrix formats are partitioned by
      contiguous chunks of rows across the processors.  Determine which
      rows of the matrix are locally owned. 
   */
-  ierr = MatGetOwnershipRange(A,&Istart,&Iend); CHKERRA(ierr);
+  ierr = MatGetOwnershipRange(A,&Istart,&Iend);CHKERRA(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                 Create the linear solver and set various options
@@ -55,7 +54,7 @@ int main(int argc,char **args)
   /* 
      Create linear solver context
   */
-  ierr = SLESCreate(PETSC_COMM_WORLD,&sles); CHKERRA(ierr);
+  ierr = SLESCreate(PETSC_COMM_WORLD,&sles);CHKERRA(ierr);
 
     /* 
        Create parallel vectors.
@@ -63,10 +62,10 @@ int main(int argc,char **args)
           dimension; the parallel partitioning is determined at runtime. 
         - Note: We form 1 vector from scratch and then duplicate as needed.
     */
-    ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u); CHKERRA(ierr);
+    ierr = VecCreate(PETSC_COMM_WORLD,PETSC_DECIDE,m*n,&u);CHKERRA(ierr);
     ierr = VecSetFromOptions(u);CHKERRA(ierr); /* this sets the vector type seq or mpi */
-    ierr = VecDuplicate(u,&b); CHKERRA(ierr); 
-    ierr = VecDuplicate(b,&x); CHKERRA(ierr);
+    ierr = VecDuplicate(u,&b);CHKERRA(ierr); 
+    ierr = VecDuplicate(b,&x);CHKERRA(ierr);
 
   /*
         Loop 20 times assembling the matrix and solving, reusing the
@@ -96,22 +95,22 @@ int main(int argc,char **args)
        Computations can be done while messages are in transition,
        by placing code between these two statements.
     */
-    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
-    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY); CHKERRA(ierr);
+    ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
+    ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRA(ierr);
 
 
     /* 
        Set exact solution; then compute right-hand-side vector.
     */
-    ierr = VecSet(u,one); CHKERRA(ierr);
-    ierr = MatMult(A,u,b); CHKERRA(ierr);
+    ierr = VecSet(u,one);CHKERRA(ierr);
+    ierr = MatMult(A,u,b);CHKERRA(ierr);
 
 
     /* 
        Set operators. Here the matrix that defines the linear system
        also serves as the preconditioning matrix.
     */
-    ierr = SLESSetOperators(sles,A,A,SAME_NONZERO_PATTERN); CHKERRA(ierr);
+    ierr = SLESSetOperators(sles,A,A,SAME_NONZERO_PATTERN);CHKERRA(ierr);
 
 
     /* 
@@ -121,13 +120,13 @@ int main(int argc,char **args)
       SLESSetFromOptions() is called _after_ any other customization
       routines.
     */
-    ierr = SLESSetFromOptions(sles); CHKERRA(ierr);
+    ierr = SLESSetFromOptions(sles);CHKERRA(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    ierr = SLESSolve(sles,b,x,&its); CHKERRA(ierr);
+    ierr = SLESSolve(sles,b,x,&its);CHKERRA(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
                       Check solution and clean up
@@ -136,8 +135,8 @@ int main(int argc,char **args)
     /* 
       Check the error
     */
-    ierr = VecAXPY(x,none,u); CHKERRA(ierr);
-    ierr = VecNorm(x,NORM_2,&norm); CHKERRA(ierr);
+    ierr = VecAXPY(x,none,u);CHKERRA(ierr);
+    ierr = VecNorm(x,NORM_2,&norm);CHKERRA(ierr);
     if (norm > 1.e-12)
       PetscPrintf(PETSC_COMM_WORLD,"Norm of error %g iterations %d\n",norm,its);
     else 
@@ -147,14 +146,14 @@ int main(int argc,char **args)
     PetscMallocGetMaximumUsage(&mem);
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] Before release: memory usage %g high water %g\n",rank,mem,memmax);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
-    ierr = MatReleaseValuesMemory(A); CHKERRQ(ierr);
+    ierr = MatReleaseValuesMemory(A);CHKERRQ(ierr);
 
     PetscMallocGetCurrentUsage(&mem);
     PetscMallocGetMaximumUsage(&mem);
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] After release: memory usage %g high water %g\n",rank,mem,memmax);
     PetscSynchronizedFlush(PETSC_COMM_WORLD);
 
-    ierr = MatRestoreValuesMemory(A); CHKERRQ(ierr);
+    ierr = MatRestoreValuesMemory(A);CHKERRQ(ierr);
 
     PetscMallocGetCurrentUsage(&mem);
     PetscMallocGetMaximumUsage(&mem);
@@ -167,9 +166,9 @@ int main(int argc,char **args)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
   */
-  ierr = SLESDestroy(sles); CHKERRA(ierr);
-  ierr = VecDestroy(u); CHKERRA(ierr);  ierr = VecDestroy(x); CHKERRA(ierr);
-  ierr = VecDestroy(b); CHKERRA(ierr);  ierr = MatDestroy(A); CHKERRA(ierr);
+  ierr = SLESDestroy(sles);CHKERRA(ierr);
+  ierr = VecDestroy(u);CHKERRA(ierr);  ierr = VecDestroy(x);CHKERRA(ierr);
+  ierr = VecDestroy(b);CHKERRA(ierr);  ierr = MatDestroy(A);CHKERRA(ierr);
   PetscFinalize();
   return 0;
 }

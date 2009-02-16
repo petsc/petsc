@@ -42,9 +42,9 @@ int main(int Argc,char **Args)
 
   ierr = KSPSetOperators(kspmg,cmat,cmat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
-  ierr = DACreate1d(PETSC_COMM_WORLD, DA_NONPERIODIC, n, 1, 1, 0, &da); CHKERRQ(ierr);
-  ierr = DASetRefinementFactor(da, 3, 3, 3); CHKERRQ(ierr);
-  ierr = PCASASetDM(pcmg, (DM) da); CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD, DA_NONPERIODIC, n, 1, 1, 0, &da);CHKERRQ(ierr);
+  ierr = DASetRefinementFactor(da, 3, 3, 3);CHKERRQ(ierr);
+  ierr = PCASASetDM(pcmg, (DM) da);CHKERRQ(ierr);
 
   ierr = PCASASetTolerances(pcmg, 1.e-10, 1.e-10, PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
 
@@ -102,8 +102,8 @@ PetscErrorCode CalculateRhs(Vec u)
   for (i=loc_start; i<loc_end; i++) {
     ierr = VecSetValues(u,1,&i,&uu,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(u); CHKERRQ(ierr);
-  ierr = VecAssemblyEnd(u); CHKERRQ(ierr);
+  ierr = VecAssemblyBegin(u);CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(u);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

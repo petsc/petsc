@@ -1390,7 +1390,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
     ierr = PetscPrintf(PETSC_COMM_WORLD,"size=%g\n",fabs(gnorm/(beta*ynorm)));CHKERRQ(ierr);
 
     // update the direction: Y= G + beta * Y 
-    ierr = VecAXPBY(Y,1.0,beta,G); CHKERRQ(ierr);
+    ierr = VecAXPBY(Y,1.0,beta,G);CHKERRQ(ierr);
     ierr = VecCopy(G,Gradold);CHKERRQ(ierr);
     //ierr =VecCopy(G,Y);
     snes->iter = i+1;
@@ -1635,7 +1635,7 @@ PetscErrorCode DMMGSolveFAS_NGMRES(DMMG *dmmg, PetscInt level)
       ierr = VecCopy(F,res[j]);CHKERRQ(ierr);
       ierr = VecCopy(X,u[j]);CHKERRQ(ierr);
       for(i=0;i<l;i++){
-  	ierr= VecDot(F,res[i],&q[j][i]); CHKERRQ(ierr);
+  	ierr= VecDot(F,res[i],&q[j][i]);CHKERRQ(ierr);
 	q[i][j]=q[j][i];
       } 
       if(l<subm)
@@ -1829,7 +1829,7 @@ for(k=0; k<maxits; k++){
      l--;
    }
      ierr= VecCopy(s0,w[l]);CHKERRQ(ierr);
-     ierr= VecCopy(s0,Y);   CHKERRQ(ierr);
+     ierr= VecCopy(s0,Y);  CHKERRQ(ierr);
      ierr= VecCopy(s1,v[l]);CHKERRQ(ierr);
      ierr= VecAXPY(Y,-1.0,s1);CHKERRQ(ierr); 
      ierr= VecDot(w[l],Y,&gnorm);CHKERRQ(ierr);

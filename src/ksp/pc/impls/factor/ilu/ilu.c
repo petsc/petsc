@@ -378,8 +378,8 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
                              stability of the ILU factorization
 .  -pc_factor_shift_in_blocks - adds a small diagonal to any block if it is singular during ILU factorization
 .  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
--  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
-   is optional with PETSC_TRUE being the default
+-  -pc_factor_shift_positive_definite true or false - Activate/Deactivate PCFactorSetShiftPd(); the value
+   is optional with true being the default
 
    Level: beginner
 

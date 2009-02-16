@@ -289,6 +289,8 @@ static PetscErrorCode  KSPSolve_IBCGS(KSP ksp)
           For maximum reduction in the number of global reduction operations, this solver should be used with 
           KSPSetLagNorm().
 
+          This is not supported for complex numbers.
+
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBICG, KSPBCGSL, KSPIBCGS, KSPSetLagNorm()
 M*/
 EXTERN_C_BEGIN
@@ -306,6 +308,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_IBCGS(KSP ksp)
   ksp->ops->buildresidual   = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions  = 0;
   ksp->ops->view            = 0;
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(PETSC_ERR_SUP,"This is not supported for complex numbers");
+#endif
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

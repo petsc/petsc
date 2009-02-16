@@ -332,8 +332,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseOrdering(PC pc,PetscTruth flag
 .  -pc_factor_in_place - Activates in-place factorization
 .  -pc_factor_mat_ordering_type <nd,rcm,...> - Sets ordering routine
 .  -pc_factor_shift_nonzero <shift> - Sets shift amount or PETSC_DECIDE for the default
--  -pc_factor_shift_positive_definite [PETSC_TRUE/PETSC_FALSE] - Activate/Deactivate PCFactorSetShiftPd(); the value
-   is optional with PETSC_TRUE being the default
+-  -pc_factor_shift_positive_definite true or false - Activate/Deactivate PCFactorSetShiftPd(); the value
+   is optional with true being the default
 
    Notes: Not all options work for all matrix formats
 

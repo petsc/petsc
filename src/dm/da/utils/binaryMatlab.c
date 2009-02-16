@@ -11,17 +11,6 @@
 #include <petscviewer.h>
 #include <petscda.h>
 
-/* ---------------------------------------------------------------------
- *  PetscViewerBinaryMatlabOpen
- *	
- *		Input
- *		------------------------------
- *		comm	| mpi communicator
- *		fname	| filename
- *		viewer	| petsc viewer object
- *		
- * ----------------------------------------------------------------------*/
-
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOpen"
 /*@C
@@ -41,8 +30,11 @@
 
   Level: beginner
 
+   Question: Why do the following methods exist? Why can you not just do VecView() and PetscBagView() with this viewer
+   (that is, why is polymorphism used to implement these things).
+
 .seealso: PetscViewerBinaryMatlabDestroy(), PetscViewerBinaryMatlabOutputVec(),
-          PetscViewerBinaryMatlabOutputVecDA(), PetscViewerBinaryMatlabOutputBag()
+          PetscViewerBinaryMatlabOutputVecDA(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryOpen()
 @*/
 PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], PetscViewer *viewer)
 {
@@ -193,7 +185,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char
   if (dim == 3) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d,%d,%d);\n",dof,ni,nj,nk);CHKERRQ(ierr); }
 
   for(n=0; n<dof; n++) {
-    ierr = DAGetFieldName(da,n,&fieldname); CHKERRQ(ierr);
+    ierr = DAGetFieldName(da,n,&fieldname);CHKERRQ(ierr);
     ierr = PetscStrcmp(fieldname,"",&flg);CHKERRQ(ierr);
     if (!flg) {
       if (dim == 1) { ierr = PetscFPrintf(comm,info,"%%$$ Set.%s.%s = squeeze(tmp(%d,:))';\n",name,fieldname,n+1);CHKERRQ(ierr); }

@@ -1109,12 +1109,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
 
   /* create the matrix that will contain the restriction operator */
   ierr = MatCreateMPIAIJ( ((PetscObject)daf)->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
-			  max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL, rest); CHKERRQ(ierr);
+			  max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL, rest);CHKERRQ(ierr);
 
   /* store nodes in the fine grid here */
-  ierr = PetscMalloc(sizeof(PetscInt)*max_agg_size, &fine_nodes); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt)*max_agg_size, &fine_nodes);CHKERRQ(ierr);
   /* these are the values to set to, a collection of 1's */
-  ierr = PetscMalloc(sizeof(PetscScalar)*max_agg_size, &one_vec); CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*max_agg_size, &one_vec);CHKERRQ(ierr);
   for(i=0; i<max_agg_size; i++) one_vec[i] = 1.0;  
   
   /* loop over all coarse nodes */
@@ -1139,17 +1139,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
 	    }
 	  }
 	  /* add all these points to one aggregate */
-	  ierr = MatSetValues(*rest, 1, &a, fn_idx, fine_nodes, one_vec, INSERT_VALUES); CHKERRQ(ierr);
+	  ierr = MatSetValues(*rest, 1, &a, fn_idx, fine_nodes, one_vec, INSERT_VALUES);CHKERRQ(ierr);
 	}
       }
     }
   }
 
-  ierr = PetscFree(fine_nodes); CHKERRQ(ierr);
-  ierr = PetscFree(one_vec); CHKERRQ(ierr);
+  ierr = PetscFree(fine_nodes);CHKERRQ(ierr);
+  ierr = PetscFree(one_vec);CHKERRQ(ierr);
 
-  ierr = MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
   PetscFunctionReturn(0);
 } 

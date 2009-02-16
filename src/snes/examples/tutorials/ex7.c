@@ -147,7 +147,7 @@ int main(int argc,char **argv)
   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,-3,-3,PETSC_DECIDE,PETSC_DECIDE,
                     3,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = DASetFieldName(da, 0, "ooblek"); CHKERRQ(ierr);
+  ierr = DASetFieldName(da, 0, "ooblek");CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg, (DM) da);CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 

@@ -447,7 +447,7 @@ PetscErrorCode  FormJacobian2(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,v
   hxhy2  = hx2*hy2;
   rey    = user->param;
 
-  ierr = MatAssembled(*J,&assembled); CHKERRQ(ierr);
+  ierr = MatAssembled(*J,&assembled);CHKERRQ(ierr);
   if (assembled) {
     ierr = MatZeroEntries(*J);CHKERRQ(ierr);
   }
