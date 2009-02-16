@@ -116,10 +116,10 @@ namespace ALE {
       }
       return &this->_value[1];
     };
-    void updatePoint(const point_type& p, const value_type v[]) {
+    void updatePoint(const point_type&, const value_type v[]) {
       this->_value[0] = v[0];
     };
-    void updateAddPoint(const point_type& p, const value_type v[]) {
+    void updateAddPoint(const point_type&, const value_type v[]) {
       this->_value[0] += v[0];
     };
   public:
