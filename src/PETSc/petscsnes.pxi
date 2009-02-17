@@ -1,4 +1,4 @@
-cdef extern from "petscsnes.h":
+cdef extern from "petscsnes.h" nogil:
 
     ctypedef char* PetscSNESType "const char*"
     PetscSNESType SNESLS
@@ -123,7 +123,7 @@ cdef extern from "petscsnes.h":
     int SNESKSPGetParametersEW(PetscSNES,PetscInt*,PetscReal*,PetscReal*,
                                PetscReal*,PetscReal*,PetscReal*,PetscReal*)
 
-cdef extern from "custom.h":
+cdef extern from "custom.h" nogil:
     int SNESSetUseMFFD(PetscSNES,PetscTruth)
     int SNESGetUseMFFD(PetscSNES,PetscTruth*)
 
@@ -151,7 +151,7 @@ cdef inline object SNES_getFun(PetscSNES snes):
 cdef int SNES_Function(PetscSNES snes,
                        PetscVec  x,
                        PetscVec  f,
-                       void* ctx) except PETSC_ERR_PYTHON:
+                       void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     cdef Vec  Xvec = ref_Vec(x)
     cdef Vec  Fvec = ref_Vec(f)
@@ -170,7 +170,7 @@ cdef inline object SNES_getUpd(PetscSNES snes):
     return Object_getAttr(<PetscObject>snes, "__update__")
 
 cdef int SNES_Update(PetscSNES snes,
-                     PetscInt its) except PETSC_ERR_PYTHON:
+                     PetscInt its) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     (update, args, kargs) = SNES_getUpd(snes)
     update(Snes, its, *args, **kargs)
@@ -192,7 +192,7 @@ cdef int SNES_Jacobian(PetscSNES snes,
                        PetscMat  *J,
                        PetscMat  *P,
                        PetscMatStructure* s,
-                       void* ctx) except PETSC_ERR_PYTHON:
+                       void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     cdef Vec  Xvec = ref_Vec(x)
     cdef Mat  Jmat = ref_Mat(J[0])
@@ -223,7 +223,7 @@ cdef int SNES_Converged(PetscSNES  snes,
                         PetscReal  gn,
                         PetscReal  fn,
                         PetscSNESConvergedReason *r,
-                        void* ctx) except PETSC_ERR_PYTHON:
+                        void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     (converged, args, kargs) = SNES_getCnv(snes)
     reason = converged(Snes, its, (xn, gn, fn), *args, **kargs)
@@ -248,7 +248,7 @@ cdef inline object SNES_getMon(PetscSNES snes):
 cdef int SNES_Monitor(PetscSNES  snes,
                       PetscInt   iters,
                       PetscReal  rnorm,
-                      void* ctx) except PETSC_ERR_PYTHON:
+                      void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef object monitorlist = SNES_getMon(snes)
     if monitorlist is None: return 0
     cdef SNES Snes = ref_SNES(snes)

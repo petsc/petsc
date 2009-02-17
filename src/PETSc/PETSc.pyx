@@ -172,10 +172,10 @@ cdef extern from "Python.h":
     int Py_AtExit(void (*)())
     void PySys_WriteStderr(char*,...)
 
-cdef extern from "stdio.h":
+cdef extern from "stdio.h" nogil:
     ctypedef struct FILE
     FILE *stderr
-    int fprintf(FILE *, char *, ...) nogil
+    int fprintf(FILE *, char *, ...)
 
 cdef extern from "initpkg.h":
     int PetscInitializeAllPackages(char[])

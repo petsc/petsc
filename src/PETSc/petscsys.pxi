@@ -1,4 +1,4 @@
-cdef extern from "petscsys.h":
+cdef extern from "petscsys.h" nogil:
 
     enum: PETSC_VERSION_MAJOR
     enum: PETSC_VERSION_MINOR
@@ -11,7 +11,7 @@ cdef extern from "petscsys.h":
 
     int PetscInitialize(int*,char***,char[],char[])
     int PetscInitializeNoArguments()
-    int PetscFinalize() nogil
+    int PetscFinalize()
     PetscTruth PetscInitializeCalled
     PetscTruth PetscFinalizeCalled
 
@@ -19,7 +19,7 @@ cdef extern from "petscsys.h":
     ctypedef int PetscTBF(int,char*,char*,char*,int,int,char*,void*)
     PetscTBF PetscTBEH "PetscTraceBackErrorHandler"
     int PetscPushErrorHandler(PetscTBF*,void*)
-    int PetscPopErrorHandler() nogil
+    int PetscPopErrorHandler()
 
     int PetscSplitOwnership(MPI_Comm,PetscInt*,PetscInt*)
     int PetscSplitOwnershipBlock(MPI_Comm,PetscInt,PetscInt*,PetscInt*)

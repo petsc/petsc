@@ -1,14 +1,14 @@
 #---------------------------------------------------------------------
 
-cdef extern from "stdlib.h":
-    void* malloc(size_t) nogil
-    void* realloc (void*,size_t) nogil
-    void free(void*) nogil
+cdef extern from "stdlib.h" nogil:
+    void* malloc(size_t)
+    void* realloc (void*,size_t)
+    void free(void*)
 
-cdef extern from "string.h":
-    void* memset(void*,int,size_t) nogil
-    void* memcpy(void*,void*,size_t) nogil
-    char* strdup(char*) nogil
+cdef extern from "string.h"  nogil:
+    void* memset(void*,int,size_t)
+    void* memcpy(void*,void*,size_t)
+    char* strdup(char*)
 
 cdef extern from "Python.h":
     object PyCObject_FromVoidPtr(void *, void (*)(void*))

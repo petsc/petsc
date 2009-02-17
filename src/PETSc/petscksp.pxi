@@ -1,4 +1,4 @@
-cdef extern from "petscksp.h":
+cdef extern from "petscksp.h" nogil:
 
     ctypedef char* PetscKSPType "const char*"
     PetscKSPType KSPRICHARDSON
@@ -136,7 +136,7 @@ cdef extern from "petscksp.h":
 
     int KSPGetVecs(PetscKSP,PetscInt,PetscVec**,PetscInt,PetscVec**)
 
-cdef extern from "custom.h":
+cdef extern from "custom.h" nogil:
     int KSPSetIterationNumber(PetscKSP,PetscInt)
     int KSPSetResidualNorm(PetscKSP,PetscReal)
     int KSPLogConvergenceHistory(PetscKSP,PetscInt,PetscReal)
@@ -161,7 +161,7 @@ cdef int KSP_Converged(PetscKSP  ksp,
                        PetscInt   its,
                        PetscReal  rn,
                        PetscKSPConvergedReason *r,
-                        void* ctx) except PETSC_ERR_PYTHON:
+                        void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef KSP Ksp = ref_KSP(ksp)
     (converged, args, kargs) = KSP_getCnv(ksp)
     reason = converged(Ksp, its, rn, *args, **kargs)
@@ -201,7 +201,7 @@ cdef inline object KSP_getMon(PetscKSP ksp):
 cdef int KSP_Monitor(PetscKSP  ksp,
                      PetscInt   its,
                      PetscReal  rnorm,
-                     void* ctx) except PETSC_ERR_PYTHON:
+                     void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef object monitorlist = KSP_getMon(ksp)
     if monitorlist is None: return 0
     cdef KSP Ksp = ref_KSP(ksp)

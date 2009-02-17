@@ -1,4 +1,4 @@
-cdef extern from "petscpc.h":
+cdef extern from "petscpc.h" nogil:
 
     ctypedef char* PetscPCType "const char*"
     PetscPCType PCNONE

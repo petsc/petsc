@@ -1,4 +1,4 @@
-cdef extern from "petscao.h":
+cdef extern from "petscao.h" nogil:
 
     ctypedef enum PetscAOType "AOType":
         AO_BASIC

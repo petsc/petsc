@@ -1,4 +1,4 @@
-cdef extern from "petscis.h":
+cdef extern from "petscis.h" nogil:
 
     ctypedef enum PetscISType "ISType":
         IS_GENERAL
@@ -46,7 +46,7 @@ cdef extern from "petscis.h":
     int ISStrideToGeneral(PetscIS)
 
 
-cdef extern from "petscis.h":
+cdef extern from "petscis.h" nogil:
 
     ctypedef enum PetscGLMapType "ISGlobalToLocalMappingType":
         IS_GTOLM_MASK

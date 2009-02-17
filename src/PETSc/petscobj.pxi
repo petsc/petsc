@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-cdef extern from "petsc.h":
+cdef extern from "petsc.h" nogil:
 
     ctypedef int PetscCookie
 

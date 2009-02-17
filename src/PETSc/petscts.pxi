@@ -1,4 +1,4 @@
-cdef extern from "petscts.h":
+cdef extern from "petscts.h" nogil:
 
     ctypedef char* PetscTSType "const char*"
     PetscTSType TS_EULER
@@ -77,7 +77,7 @@ cdef extern from "petscts.h":
     int TSStep(PetscTS,PetscInt*,PetscReal*)
     int TSSolve(PetscTS,PetscVec)
 
-cdef extern from "custom.h":
+cdef extern from "custom.h" nogil:
     int TSSetUseFDColoring(PetscTS,PetscTruth)
     int TSGetUseFDColoring(PetscTS,PetscTruth*)
 
@@ -98,7 +98,7 @@ cdef int TS_Function(PetscTS ts,
                      PetscReal t,
                      PetscVec  x,
                      PetscVec  f,
-                     void* ctx) except PETSC_ERR_PYTHON:
+                     void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TS  Ts   = ref_TS(ts)
     cdef Vec Xvec = ref_Vec(x)
     cdef Vec Fvec = ref_Vec(f)
@@ -122,7 +122,7 @@ cdef int TS_Jacobian(PetscTS ts,
                      PetscMat  *J,
                      PetscMat  *P,
                      PetscMatStructure* s,
-                     void* ctx) except PETSC_ERR_PYTHON:
+                     void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef TS   Ts   = ref_TS(ts)
     cdef Vec  Xvec = ref_Vec(x)
     cdef Mat  Jmat = ref_Mat(J[0])
@@ -151,7 +151,7 @@ cdef int TS_Monitor(PetscTS    ts,
                     PetscInt   step,
                     PetscReal  time,
                     PetscVec   u,
-                    void* ctx) except PETSC_ERR_PYTHON:
+                    void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef object monitorlist = TS_getMon(ts)
     if monitorlist is None: return 0
     cdef TS  Ts = ref_TS(ts)

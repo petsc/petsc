@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-cdef extern from "petscmat.h":
+cdef extern from "petscmat.h" nogil:
 
     ctypedef char* PetscMatType "const char*"
     PetscMatType MATSAME
@@ -254,7 +254,7 @@ cdef extern from "petscmat.h":
     int MatUnScaleSystem(PetscMat,PetscVec,PetscVec)
 
 
-cdef extern from "custom.h":
+cdef extern from "custom.h" nogil:
     enum: MAT_SKIP_ALLOCATION
     int MatCreateAnyAIJ(MPI_Comm,PetscInt,
                         PetscInt,PetscInt,
@@ -265,8 +265,6 @@ cdef extern from "custom.h":
                                   PetscInt,PetscInt[])
     int MatAnyAIJSetPreallocationCSR(PetscMat,PetscInt,PetscInt[],
                                      PetscInt[],PetscScalar[])
-
-cdef extern from "custom.h":
     int MatCreateAnyDense(MPI_Comm,PetscInt,
                           PetscInt,PetscInt,
                           PetscInt,PetscInt,
@@ -275,7 +273,7 @@ cdef extern from "custom.h":
 
 # --------------------------------------------------------------------
 
-cdef extern from "petscmat.h":
+cdef extern from "petscmat.h" nogil:
 
     ctypedef int PetscNullSpaceFunction(PetscVec,void*) except PETSC_ERR_PYTHON
 
@@ -296,7 +294,7 @@ cdef inline object NullSpace_getFun(PetscNullSpace nsp):
     return Object_getAttr(<PetscObject>nsp, "__function__")
 
 cdef int NullSpace_Function(PetscVec v,
-                            void*    ctx) except PETSC_ERR_PYTHON:
+                            void*    ctx) except PETSC_ERR_PYTHON with gil:
     cdef PetscNullSpace nsp = <PetscNullSpace> ctx
     cdef Vec vec = ref_Vec(v)
     (function, args, kargs) = NullSpace_getFun(nsp)
@@ -559,11 +557,6 @@ cdef inline int Mat_AllocDense_ARRAY(PetscMat A, PetscInt bs,
     return 0
 
 # --------------------------------------------------------------------
-
-cdef extern from "petsc.h":
-    ctypedef PetscInt    const_PetscInt    "const PetscInt"
-    ctypedef PetscReal   const_PetscReal   "const PetscReal"
-    ctypedef PetscScalar const_PetscScalar "const PetscScalar"
 
 ctypedef int MatSetValuesFcn(PetscMat,PetscInt,const_PetscInt[],
                              PetscInt,const_PetscInt[],
