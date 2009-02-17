@@ -569,6 +569,7 @@ namespace ALE {
       }
       template<typename Arrow>
       void visitArrow(const Arrow& arrow, const int orientation) {}
+      void clear() {this->i = 0;};
     };
     template<typename Section>
     class UpdateAllVisitor {
@@ -588,6 +589,7 @@ namespace ALE {
       }
       template<typename Arrow>
       void visitArrow(const Arrow& arrow, const int orientation) {}
+      void clear() {this->i = 0;};
     };
     template<typename Section>
     class UpdateAddVisitor {
@@ -607,6 +609,7 @@ namespace ALE {
       }
       template<typename Arrow>
       void visitArrow(const Arrow& arrow, const int orientation) {}
+      void clear() {this->i = 0;};
     };
     template<typename Section, typename Order, typename Value>
     class IndicesVisitor {
