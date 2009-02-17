@@ -76,7 +76,7 @@ cdef getopt_Scalar(char *pre, char *name, object deft):
     cdef PetscScalar value = 0
     cdef PetscTruth flag = PETSC_FALSE
     CHKERR( PetscOptionsGetScalar(pre, name, &value, &flag) )
-    if flag==PETSC_TRUE: return value
+    if flag==PETSC_TRUE: return toScalar(value)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 

@@ -1,7 +1,6 @@
 #---------------------------------------------------------------------
 
 cdef extern from "stdlib.h":
-    ctypedef unsigned long size_t
     void* malloc(size_t) nogil
     void* realloc (void*,size_t) nogil
     void free(void*) nogil

@@ -303,5 +303,14 @@ class TestKSPPYTHON_CG(TestKSPPYTHONBase, unittest.TestCase):
 
 # --------------------------------------------------------------------
 
+try:
+    import numpy
+    if issubclass(PETSc.ScalarType, numpy.complexfloating):
+        del TestKSPSTCG
+except:
+    pass
+
+# --------------------------------------------------------------------
+
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,4 @@
 cdef extern from "petsc.h":
-    ctypedef unsigned long size_t
     int PetscMalloc(size_t,void*)
     int PetscFree(void*)
     int PetscMemcpy(void*,void*,size_t)

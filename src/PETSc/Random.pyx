@@ -46,9 +46,9 @@ cdef class Random(Object):
         CHKERR( PetscRandomSetFromOptions(self.rnd) )
 
     def getValue(self):
-        cdef PetscScalar sval
+        cdef PetscScalar sval = 0
         CHKERR( PetscRandomGetValue(self.rnd, &sval) )
-        return sval
+        return toScalar(sval)
 
     def getValueReal(self):
         cdef PetscReal rval = 0
@@ -58,7 +58,7 @@ cdef class Random(Object):
     def getValueImaginary(self):
         cdef PetscScalar sval = 0
         CHKERR( PetscRandomGetValueImaginary(self.rnd, &sval) )
-        return sval
+        return toScalar(sval)
 
     def getSeed(self):
         cdef unsigned long seed = 0
@@ -71,14 +71,18 @@ cdef class Random(Object):
         CHKERR( PetscRandomSeed(self.rnd) )
 
     def getInterval(self):
-        cdef PetscScalar low = 0, high = 1
-        CHKERR( PetscRandomGetInterval(self.rnd, &low, &high) )
-        return (low, high)
+        cdef PetscScalar sval1 = 0
+        cdef PetscScalar sval2 = 1
+        CHKERR( PetscRandomGetInterval(self.rnd, &sval1, &sval2) )
+        return (toScalar(sval1), toScalar(sval2))
 
     def setInterval(self, interval):
-        cdef PetscScalar low = 0, high = 1
+        cdef PetscScalar sval1 = 0
+        cdef PetscScalar sval2 = 1
         low, high = interval
-        CHKERR( PetscRandomSetInterval(self.rnd, low, high) )
+        sval1 = asScalar(low)
+        sval2 = asScalar(high)
+        CHKERR( PetscRandomSetInterval(self.rnd, sval1, sval2) )
 
     #
 

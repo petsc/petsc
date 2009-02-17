@@ -472,6 +472,7 @@ static PetscErrorCode MatMultTransposeAdd_Python(Mat mat,Vec x,Vec v,Vec y)
 static PetscErrorCode MatSolve_Python(Mat mat,Vec b,Vec x)
 {
   Mat_Py         *py = (Mat_Py *) mat->data;
+  PetscScalar    one = 1;
   PetscErrorCode ierr;
   PetscFunctionBegin;
   /*  shift */
@@ -482,7 +483,7 @@ static PetscErrorCode MatSolve_Python(Mat mat,Vec b,Vec x)
 				       PyPetscVec_New, x),
 			notimplemented);
   /*  scale */
-  if (py->scale) { ierr = VecScale(x,1/py->vscale);CHKERRQ(ierr); }
+  if (py->scale) { ierr = VecScale(x,one/py->vscale);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
  notimplemented: /* MatSolve */
   MAT_PYTHON_SETERRSUP(mat, "solve");
@@ -514,6 +515,7 @@ static PetscErrorCode MatSolveAdd_Python(Mat mat,Vec b,Vec v,Vec x)
 static PetscErrorCode MatSolveTranspose_Python(Mat mat,Vec b, Vec x)
 {
   Mat_Py         *py = (Mat_Py *) mat->data;
+  PetscScalar    one = 1;
   PetscTruth     symmset,symmknown;
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -525,7 +527,7 @@ static PetscErrorCode MatSolveTranspose_Python(Mat mat,Vec b, Vec x)
 						PyPetscVec_New, x),
 			solve);
   /* scale */
-  if (py->scale) { ierr = VecScale(x,1/py->vscale);CHKERRQ(ierr); }
+  if (py->scale) { ierr = VecScale(x,one/py->vscale);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
  solve:
   ierr = MatIsSymmetricKnown(mat,&symmset,&symmknown);CHKERRQ(ierr);

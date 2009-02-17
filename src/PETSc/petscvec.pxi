@@ -181,10 +181,11 @@ cdef Vec vec_iadd(Vec self, other):
         alpha = 1; vec = other
         CHKERR( VecAXPY(self.vec, alpha, vec.vec) )
     elif isinstance(other, tuple) or isinstance(other, list):
-        alpha, vec = other
+        other, vec = other
+        alpha = asScalar(other)
         CHKERR( VecAXPY(self.vec, alpha, vec.vec) )
     else:
-        alpha = other
+        alpha = asScalar(other)
         CHKERR( VecShift(self.vec, alpha) )
     return self
 
@@ -195,10 +196,11 @@ cdef vec_isub(Vec self, other):
         alpha = 1; vec = other
         CHKERR( VecAXPY(self.vec, -alpha, vec.vec) )
     elif isinstance(other, tuple) or isinstance(other, list):
-        alpha, vec = other
+        other, vec = other
+        alpha = asScalar(other)
         CHKERR( VecAXPY(self.vec, -alpha, vec.vec) )
     else:
-        alpha = other
+        alpha = asScalar(other)
         CHKERR( VecShift(self.vec, -alpha) )
     return self
 
@@ -209,7 +211,7 @@ cdef vec_imul(Vec self, other):
         vec = other
         CHKERR( VecPointwiseMult(self.vec, self.vec, vec.vec) )
     else:
-        alpha = other
+        alpha = asScalar(other)
         CHKERR( VecScale(self.vec, alpha) )
     return self
 
@@ -220,7 +222,7 @@ cdef vec_idiv(Vec self, other):
         vec = other
         CHKERR( VecPointwiseDivide(self.vec, self.vec, vec.vec) )
     else:
-        alpha = other
+        alpha = asScalar(other)
         CHKERR( VecScale(self.vec, 1.0/alpha) )
     return self
 

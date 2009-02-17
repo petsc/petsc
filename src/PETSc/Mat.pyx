@@ -502,7 +502,7 @@ cdef class Mat(Object):
         cdef PetscInt icol = col
         cdef PetscScalar sval = 0
         CHKERR( MatGetValues(self.mat, 1, &irow, 1, &icol, &sval) )
-        return sval
+        return toScalar(sval)
 
     def getValues(self, rows, cols, values=None):
         cdef PetscInt ni=0, nj=0, nv=0
@@ -559,7 +559,7 @@ cdef class Mat(Object):
     def setValue(self, row, col, value, addv=None):
         cdef PetscInt irow = row
         cdef PetscInt icol = col
-        cdef PetscScalar sval = value
+        cdef PetscScalar sval = asScalar(value)
         cdef PetscInsertMode caddv = insertmode(addv)
         CHKERR( MatSetValues(self.mat, 1, &irow, 1, &icol, &sval, caddv) )
 
@@ -591,9 +591,9 @@ cdef class Mat(Object):
         CHKERR( MatSetLocalToGlobalMapping(self.mat, lgmap.lgm) )
 
     def setValueLocal(self, row, col, value, addv=None):
-        cdef PetscInt irow = row
-        cdef PetscInt icol = col
-        cdef PetscScalar sval = value
+        cdef PetscInt    irow = row
+        cdef PetscInt    icol = col
+        cdef PetscScalar sval = asScalar(value)
         cdef PetscInsertMode caddv = insertmode(addv)
         CHKERR( MatSetValuesLocal(self.mat, 1, &irow, 1, &icol, &sval, caddv) )
 
@@ -625,7 +625,7 @@ cdef class Mat(Object):
         matsetvalues_csr(self.mat, I, J, V, addv, 1, 1)
 
     def zeroRows(self, rows, diag=1):
-        cdef PetscScalar sval = diag
+        cdef PetscScalar sval = asScalar(diag)
         cdef PetscInt ni=0, *i=NULL
         if isinstance(rows, IS):
             CHKERR( MatZeroRowsIS(self.mat, (<IS>rows).iset, sval) )
@@ -634,8 +634,8 @@ cdef class Mat(Object):
             CHKERR( MatZeroRows(self.mat, ni, i, sval) )
 
     def zeroRowsLocal(self, rows, diag=1):
-        cdef PetscScalar sval = diag
         cdef PetscInt ni=0, *i=NULL
+        cdef PetscScalar sval = asScalar(diag)
         if isinstance(rows, IS):
             CHKERR( MatZeroRowsLocalIS(self.mat, (<IS>rows).iset, sval) )
         else:
@@ -767,20 +767,20 @@ cdef class Mat(Object):
         else: return (norm[0], norm[1])
 
     def scale(self, alpha):
-        cdef PetscScalar sval = alpha
+        cdef PetscScalar sval = asScalar(alpha)
         CHKERR( MatScale(self.mat, sval) )
 
     def shift(self, alpha):
-        cdef PetscScalar sval = alpha
+        cdef PetscScalar sval = asScalar(alpha)
         CHKERR( MatShift(self.mat, sval) )
 
     def axpy(self, alpha, Mat X not None, structure=None):
-        cdef PetscScalar sval = alpha
+        cdef PetscScalar sval = asScalar(alpha)
         cdef PetscMatStructure flag = matstructure(structure)
         CHKERR( MatAXPY(self.mat, sval, X.mat, flag) )
 
     def aypx(self, alpha, Mat X not None, structure=None):
-        cdef PetscScalar sval = alpha
+        cdef PetscScalar sval = asScalar(alpha)
         cdef PetscMatStructure flag = matstructure(structure)
         CHKERR( MatAYPX(self.mat, sval, X.mat, flag) )
 

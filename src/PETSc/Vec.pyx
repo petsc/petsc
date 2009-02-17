@@ -326,32 +326,32 @@ cdef class Vec(Object):
         return self
 
     def dot(self, Vec vec not None):
-        cdef PetscScalar val = 0
-        CHKERR( VecDot(self.vec, vec.vec, &val) )
-        return val
+        cdef PetscScalar sval = 0
+        CHKERR( VecDot(self.vec, vec.vec, &sval) )
+        return toScalar(sval)
 
     def dotBegin(self, Vec vec not None):
-        cdef PetscScalar val = 0
-        CHKERR( VecDotBegin(self.vec, vec.vec, &val) )
+        cdef PetscScalar sval = 0
+        CHKERR( VecDotBegin(self.vec, vec.vec, &sval) )
 
     def dotEnd(self, Vec vec not None):
-        cdef PetscScalar val = 0
-        CHKERR( VecDotEnd(self.vec, vec.vec, &val) )
-        return val
+        cdef PetscScalar sval = 0
+        CHKERR( VecDotEnd(self.vec, vec.vec, &sval) )
+        return toScalar(sval)
 
     def tDot(self, Vec vec not None):
-        cdef PetscScalar val = 0
-        CHKERR( VecTDot(self.vec, vec.vec, &val) )
-        return val
+        cdef PetscScalar sval = 0
+        CHKERR( VecTDot(self.vec, vec.vec, &sval) )
+        return toScalar(sval)
 
     def tDotBegin(self, Vec vec not None):
-        cdef PetscScalar val = 0
-        CHKERR( VecTDotBegin(self.vec, vec.vec, &val) )
+        cdef PetscScalar sval = 0
+        CHKERR( VecTDotBegin(self.vec, vec.vec, &sval) )
 
     def tDotEnd(self, Vec vec not None):
-        cdef PetscScalar val = 0
-        CHKERR( VecTDotEnd(self.vec, vec.vec, &val) )
-        return val
+        cdef PetscScalar sval = 0
+        CHKERR( VecTDotEnd(self.vec, vec.vec, &sval) )
+        return toScalar(sval)
 
     def mDot(self, vecs, out=None):
         raise NotImplementedError
@@ -396,21 +396,21 @@ cdef class Vec(Object):
         else: return (norm[0], norm[1])
 
     def sum(self):
-        cdef PetscScalar val = 0
-        CHKERR( VecSum(self.vec, &val) )
-        return val
+        cdef PetscScalar sval = 0
+        CHKERR( VecSum(self.vec, &sval) )
+        return toScalar(sval)
 
     def min(self):
-        cdef PetscInt  loc = 0
-        cdef PetscReal val = 0
-        CHKERR( VecMin(self.vec, &loc, &val) )
-        return (loc, val)
+        cdef PetscInt  ival = 0
+        cdef PetscReal rval = 0
+        CHKERR( VecMin(self.vec, &ival, &rval) )
+        return (ival, rval)
 
     def max(self):
-        cdef PetscInt  loc = 0
-        cdef PetscReal val = 0
-        CHKERR( VecMax(self.vec, &loc, &val) )
-        return (loc, val)
+        cdef PetscInt  ival = 0
+        cdef PetscReal rval = 0
+        CHKERR( VecMax(self.vec, &ival, &rval) )
+        return (ival, rval)
 
     def normalize(self):
         cdef PetscReal norm = 0
@@ -443,28 +443,36 @@ cdef class Vec(Object):
         CHKERR( VecZeroEntries(self.vec) )
 
     def set(self, alpha):
-        CHKERR( VecSet(self.vec, alpha) )
+        cdef PetscScalar sval = asScalar(alpha)
+        CHKERR( VecSet(self.vec, sval) )
 
     def scale(self, alpha):
-        CHKERR( VecScale(self.vec, alpha) )
+        cdef PetscScalar sval = asScalar(alpha)
+        CHKERR( VecScale(self.vec, sval) )
 
     def shift(self, alpha):
-        CHKERR( VecShift(self.vec, alpha) )
+        cdef PetscScalar sval = asScalar(alpha)
+        CHKERR( VecShift(self.vec, sval) )
 
     def swap(self, Vec vec not None):
         CHKERR( VecSwap(self.vec, vec.vec) )
 
     def axpy(self, alpha, Vec x not None):
-        CHKERR( VecAXPY(self.vec, alpha, x.vec) )
+        cdef PetscScalar sval = asScalar(alpha)
+        CHKERR( VecAXPY(self.vec, sval, x.vec) )
 
     def aypx(self, alpha, Vec x not None):
-        CHKERR( VecAYPX(self.vec, alpha, x.vec) )
+        cdef PetscScalar sval = asScalar(alpha)
+        CHKERR( VecAYPX(self.vec, sval, x.vec) )
 
     def axpby(self, alpha, beta, Vec y not None):
-        CHKERR( VecAXPBY(self.vec, alpha, beta, y.vec) )
+        cdef PetscScalar sval1 = asScalar(alpha)
+        cdef PetscScalar sval2 = asScalar(beta)
+        CHKERR( VecAXPBY(self.vec, sval1, sval2, y.vec) )
 
     def waxpy(self, alpha, Vec x not None, Vec y not None):
-        CHKERR( VecWAXPY(self.vec, alpha, x.vec, y.vec) )
+        cdef PetscScalar sval = asScalar(alpha)
+        CHKERR( VecWAXPY(self.vec, sval, x.vec, y.vec) )
 
     def maxpy(self, alphas, vecs):
         cdef PetscInt i = 0, n = 0
@@ -494,15 +502,15 @@ cdef class Vec(Object):
         CHKERR( VecPointwiseMaxAbs(self.vec, x.vec, y.vec) )
 
     def maxPointwiseDivide(self, Vec vec not None):
-        cdef PetscReal val = 0
-        CHKERR( VecMaxPointwiseDivide(self.vec, vec.vec, &val) )
-        return val
+        cdef PetscReal rval = 0
+        CHKERR( VecMaxPointwiseDivide(self.vec, vec.vec, &rval) )
+        return rval
 
     def getValue(self, index):
-        cdef PetscInt ival = index
+        cdef PetscInt    ival = index
         cdef PetscScalar sval = 0
         CHKERR( VecGetValues(self.vec, 1, &ival, &sval) )
-        return sval
+        return toScalar(sval)
 
     def getValues(self, indices, values=None):
         cdef PetscInt ni = 0, nv = 0
@@ -520,7 +528,7 @@ cdef class Vec(Object):
 
     def setValue(self, index, value, addv=None):
         cdef PetscInt ival = index
-        cdef PetscScalar sval = value
+        cdef PetscScalar sval = asScalar(value)
         cdef PetscInsertMode caddv = insertmode(addv)
         CHKERR( VecSetValues(self.vec, 1, &ival, &sval, caddv) )
 
@@ -535,7 +543,7 @@ cdef class Vec(Object):
 
     def setValueLocal(self, index, value, addv=None):
         cdef PetscInt ival = index
-        cdef PetscScalar sval = value
+        cdef PetscScalar sval = asScalar(value)
         cdef PetscInsertMode caddv = insertmode(addv)
         CHKERR( VecSetValuesLocal(self.vec, 1, &ival, &sval, caddv) )
 
@@ -561,23 +569,23 @@ cdef class Vec(Object):
     # --- methods for strided vectors ---
 
     def strideScale(self, field, alpha):
-        cdef PetscInt ival = field
-        cdef PetscScalar sval = alpha
+        cdef PetscInt    ival = field
+        cdef PetscScalar sval = asScalar(alpha)
         CHKERR( VecStrideScale(self.vec, ival, sval) )
 
     def strideMin(self, field):
-        cdef PetscInt ival = field
-        cdef PetscInt iloc = 0
-        cdef PetscReal rval = 0
-        CHKERR( VecStrideMin(self.vec, ival, &iloc, &rval) )
-        return (iloc, rval)
+        cdef PetscInt  ival1 = field
+        cdef PetscInt  ival2 = 0
+        cdef PetscReal rval  = 0
+        CHKERR( VecStrideMin(self.vec, ival1, &ival2, &rval) )
+        return (ival2, rval)
 
     def strideMax(self, field):
-        cdef PetscInt ival = field
-        cdef PetscInt iloc = 0
-        cdef PetscReal rval = 0
-        CHKERR( VecStrideMax(self.vec, ival, &iloc, &rval) )
-        return (iloc, rval)
+        cdef PetscInt  ival1 = field
+        cdef PetscInt  ival2 = 0
+        cdef PetscReal rval  = 0
+        CHKERR( VecStrideMax(self.vec, ival1, &ival2, &rval) )
+        return (ival2, rval)
 
     def strideNorm(self, field, norm_type=None):
         cdef PetscInt ival = field

@@ -39,12 +39,6 @@ cdef inline int CHKERR(int ierr) except -1:
 # PETSc support
 # -------------
 
-cdef extern from "compat.h":
-    pass
-
-cdef extern from "custom.h":
-    pass
-
 cdef extern from "petsc.h":
     ctypedef long   PetscInt
     ctypedef double PetscReal
@@ -52,6 +46,16 @@ cdef extern from "petsc.h":
     ctypedef PetscInt    const_PetscInt    "const PetscInt"
     ctypedef PetscReal   const_PetscReal   "const PetscReal"
     ctypedef PetscScalar const_PetscScalar "const PetscScalar"
+
+cdef extern from "compat.h":
+    pass
+
+cdef extern from "custom.h":
+    pass
+
+cdef extern from "scalar.h":
+    object      toScalar "PyPetscScalar_FromPetscScalar" (PetscScalar)
+    PetscScalar asScalar "PyPetscScalar_AsPetscScalar"   (object) except*
 
 # --------------------------------------------------------------------
 
