@@ -1,6 +1,7 @@
 cdef extern from "petsc.h":
 
     enum: PETSC_DECIDE
+    enum: PETSC_IGNORE
     enum: PETSC_DEFAULT
     enum: PETSC_DETERMINE
 
