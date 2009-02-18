@@ -156,18 +156,18 @@ cdef inline Vec ref_Vec(PetscVec vec):
 
 # unary operations
 
-cdef inline Vec vec_pos(Vec self):
+cdef Vec vec_pos(Vec self):
     cdef Vec vec = type(self)()
     CHKERR( VecDuplicate(self.vec, &vec.vec) )
     CHKERR( VecCopy(self.vec, vec.vec) )
     return vec
 
-cdef inline Vec vec_neg(Vec self):
+cdef Vec vec_neg(Vec self):
     cdef Vec vec = <Vec> vec_pos(self)
     CHKERR( VecScale(vec.vec, -1) )
     return vec
 
-cdef inline Vec vec_abs(Vec self):
+cdef Vec vec_abs(Vec self):
     cdef Vec vec = <Vec> vec_pos(self)
     CHKERR( VecAbs(vec.vec) )
     return vec
@@ -189,7 +189,7 @@ cdef Vec vec_iadd(Vec self, other):
         CHKERR( VecShift(self.vec, alpha) )
     return self
 
-cdef vec_isub(Vec self, other):
+cdef Vec vec_isub(Vec self, other):
     cdef PetscScalar alpha = 1
     cdef Vec vec
     if isinstance(other, Vec):
@@ -204,7 +204,7 @@ cdef vec_isub(Vec self, other):
         CHKERR( VecShift(self.vec, -alpha) )
     return self
 
-cdef vec_imul(Vec self, other):
+cdef Vec vec_imul(Vec self, other):
     cdef PetscScalar alpha = 1
     cdef Vec vec
     if isinstance(other, Vec):
@@ -215,7 +215,8 @@ cdef vec_imul(Vec self, other):
         CHKERR( VecScale(self.vec, alpha) )
     return self
 
-cdef vec_idiv(Vec self, other):
+cdef Vec vec_idiv(Vec self, other):
+    cdef PetscScalar one = 1
     cdef PetscScalar alpha = 1
     cdef Vec vec
     if isinstance(other, Vec):
@@ -223,7 +224,7 @@ cdef vec_idiv(Vec self, other):
         CHKERR( VecPointwiseDivide(self.vec, self.vec, vec.vec) )
     else:
         alpha = asScalar(other)
-        CHKERR( VecScale(self.vec, 1.0/alpha) )
+        CHKERR( VecScale(self.vec, one/alpha) )
     return self
 
 # binary operations

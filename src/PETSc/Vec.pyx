@@ -32,6 +32,9 @@ cdef class Vec(Object):
     def __neg__(self):
         return vec_neg(self)
 
+    def __abs__(self):
+        return vec_abs(self)
+
     # inplace binary operations
 
     def __iadd__(self, other):

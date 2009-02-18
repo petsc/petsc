@@ -320,12 +320,12 @@ cdef inline Mat ref_Mat(PetscMat mat):
 
 # unary operations
 
-cdef inline Mat mat_pos(Mat self):
+cdef Mat mat_pos(Mat self):
     cdef Mat mat = type(self)()
     CHKERR( MatDuplicate(self.mat, MAT_COPY_VALUES, &mat.mat) )
     return mat
 
-cdef inline Mat mat_neg(Mat self):
+cdef Mat mat_neg(Mat self):
     cdef Mat mat = <Mat> mat_pos(self)
     CHKERR( MatScale(mat.mat, -1) )
     return mat
