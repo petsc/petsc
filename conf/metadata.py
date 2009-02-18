@@ -15,17 +15,11 @@ scientific computing
 parallel computing
 """
 
-platforms = """
-Linux
-Unix
-"""
-
 metadata = {
     'author'           : 'Lisandro Dalcin',
     'author_email'     : 'dalcinl@gmail.com',
     'classifiers'      : [c for c in classifiers.split('\n') if c],
     'keywords'         : [k for k in keywords.split('\n')    if k],
-    'platforms'        : [p for p in platforms.split('\n')   if p],
     'license'          : 'Public Domain',
     'platforms'        : ['POSIX'],
     'maintainer'       : 'Lisandro Dalcin',
