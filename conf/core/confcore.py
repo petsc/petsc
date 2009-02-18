@@ -142,9 +142,7 @@ class PetscConfig:
         self._configure_ext(extension, petsc_inc, preppend=True)
         self._configure_ext(extension, petsc_lib)
         # extra compiler and linker configuration
-        ccflags = self['PCC_FLAGS']
-        ccflags = ccflags.replace('-Wwrite-strings','') # XXX Waiting Cython fixes
-        ccflags = ccflags.split()
+        ccflags = self['PCC_FLAGS'].split()
         if sys.version_info[:2] < (2, 5):
             try: ccflags.remove('-Wwrite-strings')
             except ValueError: pass
@@ -184,12 +182,16 @@ class PetscConfig:
         log.info('PETSC_DIR:   %s' % self['PETSC_DIR'])
         log.info('PETSC_ARCH:  %s' % (self['PETSC_ARCH'] or
                                       self['PETSC_ARCH_NAME']))
-        language    = self['PETSC_LANGUAGE']
         scalar_type = self['PETSC_SCALAR']
         precision   = self['PETSC_PRECISION']
-        log.info('language:    %s' % language)
+        language    = self['PETSC_LANGUAGE']
+        compiler    = self['PCC']
+        linker      = self['PCC_LINKER']
         log.info('scalar-type: %s' % scalar_type)
         log.info('precision:   %s' % precision)
+        log.info('language:    %s' % language)
+        log.info('compiler:    %s' % compiler)
+        log.info('linker:      %s' % linker)
 
 
 # --------------------------------------------------------------------
@@ -231,18 +233,18 @@ class config(_config):
         for arch in arch_list:
             conf = PetscConfig(petsc_dir, arch)
             archname    = conf.PETSC_ARCH or conf['PETSC_ARCH_NAME']
+            scalar_type = conf['PETSC_SCALAR']
+            precision   = conf['PETSC_PRECISION']
             language    = conf['PETSC_LANGUAGE']
             compiler    = conf['PCC']
             linker      = conf['PCC_LINKER']
-            scalar_type = conf['PETSC_SCALAR']
-            precision   = conf['PETSC_PRECISION']
             log.info('-'*70)
             log.info('PETSC_ARCH:  %s' % archname)
-            log.info(' * compiler:    %s' % compiler)
-            log.info(' * linker:      %s' % linker)
-            log.info(' * language:    %s' % language)
             log.info(' * scalar-type: %s' % scalar_type)
             log.info(' * precision:   %s' % precision)
+            log.info(' * language:    %s' % language)
+            log.info(' * compiler:    %s' % compiler)
+            log.info(' * linker:      %s' % linker)
         log.info('-' * 70)
 
     @staticmethod
@@ -399,6 +401,9 @@ class build_ext(_build_ext):
             petsc_arch = [ None ]
         for arch in petsc_arch:
             config = self._get_config(self.petsc_dir, arch)
+            ARCH = arch or config['PETSC_ARCH_NAME']
+            if ARCH not in self.PETSC_ARCH_LIST:
+                self.PETSC_ARCH_LIST.append(ARCH)
             if ext.language != config.language: continue
             config.log_info()
             pkgpath, newext = self._copy_ext(ext)
@@ -409,8 +414,6 @@ class build_ext(_build_ext):
             version = self.distribution.get_version()
             distdir = '\'\"%s-%s/\"\'' % (name, version)
             newext.define_macros.append(('__SDIR__', distdir))
-            ARCH = arch or config['PETSC_ARCH_NAME']
-            self.PETSC_ARCH_LIST.append(ARCH)
             self._build_ext_arch(newext, pkgpath, ARCH)
 
     def build_extensions(self, *args, **kargs):
