@@ -340,6 +340,10 @@ namespace ALE {
       return reallocatePoint(chart_type(min, max+1));
     }
   public: // Restriction
+    // Zero entries
+    void zero() {
+      memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
+    };
     // Return a pointer to the entire contiguous storage array
     const values_type& restrictSpace() const {
       return this->_array;
