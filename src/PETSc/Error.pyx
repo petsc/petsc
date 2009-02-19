@@ -12,10 +12,6 @@ class Error(RuntimeError):
         cdef int ierr = self.ierr
         return ierr != 0
 
-    def __bool__(self):
-        cdef int ierr = self.ierr
-        return ierr != 0
-
     def __repr__(self):
         return 'PETSc.Error(%d)' % self.ierr
 
