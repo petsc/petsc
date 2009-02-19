@@ -1262,7 +1262,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES,Vec,
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscTruth     mf, mfOp, mfOp2;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -1272,12 +1272,17 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
     ierr = SNESSetType(snes,SNESLS);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_mf_operator",&flg);CHKERRQ(ierr); 
+  ierr = PetscOptionsBegin(((PetscObject)snes)->comm,((PetscObject)snes)->prefix,"Nonlinear solver (SNES) auxiliary options","SNES_EX");CHKERRQ(ierr); 
+    ierr = PetscOptionsName("-snes_mf","Use a Matrix-Free Jacobian with no preconditioner matrix","MatCreateSNESMF",&mf);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-snes_mf_operator","Use a Matrix-Free Jacobian with user-provided preconditioner matrix","MatCreateSNESMF",&mfOp);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-snes_mf_operator2","Use a Matrix-Free (version 2) Jacobian with user-provided preconditioner matrix","MatCreateSNESMF",&mfOp2);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   /*
       This version replaces the user provided Jacobian matrix with a
       matrix-free version but still employs the user-provided preconditioner matrix
   */
-  if (flg) {
+  if (mfOp) {
     Mat J;
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
     ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
@@ -1287,8 +1292,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   }
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
-  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_mf_operator2",&flg);CHKERRQ(ierr); 
-  if (flg) {
+  if (mfOp2) {
     Mat J;
     ierr = SNESDefaultMatrixFreeCreate2(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default matrix-free operator routines (version 2)\n");CHKERRQ(ierr);
@@ -1297,15 +1301,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   }
 #endif
 
-  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_mf",&flg);CHKERRQ(ierr); 
   /*
       This version replaces both the user-provided Jacobian and the user-
       provided preconditioner matrix with the default matrix free version.
    */
-  if (flg) {
+  if (mf) {
     Mat  J;
     KSP ksp;
     PC   pc;
+    PetscTruth flg;
     /* create and set matrix-free operator */
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
     ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
