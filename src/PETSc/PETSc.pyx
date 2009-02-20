@@ -1,6 +1,11 @@
 # --------------------------------------------------------------------
 
 cdef extern from *:
+   ctypedef unsigned long int size_t
+
+# --------------------------------------------------------------------
+
+cdef extern from *:
     ctypedef char* char_p       "char*"
     ctypedef char* const_char_p "const char*"
 
