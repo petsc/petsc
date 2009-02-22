@@ -5,6 +5,13 @@ function [varargout] = PetscBinaryRead(inarg,comp,cnt)
 %  Reads in PETSc binary file matrices or vectors
 %  emits as Matlab sparse matrice or vectors.
 %
+%  [,comp[,cnt]] indicates the comp and cnt are optional arguments
+%  There are no [] in the arguments
+%
+%  Examples: A = PetscBinaryRead('myfile'); read from file 
+%            b = PetscBinaryRead(1024);   read from socket
+%            c = PetscBinaryRead();       read from default socket PETSc uses
+%
 %  Argument may be file name (string), socket number (integer)
 %  or any Matlab class that provides the read() and close() methods
 %  [We provide PetscOpenFile() and PetscOpenSocket() for binary files and sockets]
