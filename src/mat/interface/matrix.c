@@ -32,6 +32,44 @@ PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Column = 0;
 PetscScalar PETSCMAT_DLLEXPORT MatSetValue_Value = 0.0;
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetDiagonalBlock"
+/*@
+   MatGetDiagonalBlock - Returns the part of the matrix associated with the on-process coupling
+
+   Not Collective
+
+   Input Parameters:
++  mat - the matrix
+-  reuse - indicates you are passing in the a matrix and want it reused
+
+   Output Parameters:
++   iscopy - indicates a copy of the diagonal matrix was created and you should use MatDestroy() on it
+-   a - the diagonal part (which is a SEQUENTIAL matrix)
+
+   Notes: see the manual page for MatCreateMPIAIJ() for more information on the "diagonal part" of the matrix
+
+   Level: advanced
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock(Mat A,PetscTruth *iscopy,MatReuse reuse,Mat *a)
+{
+  PetscErrorCode ierr,(*f)(Mat,PetscTruth*,MatReuse,Mat*);
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(A,iscopy,reuse,a);CHKERRQ(ierr);
+  } else if (size == 1) {
+    *a = A;
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"Cannot get diagonal part for this matrix");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatRealPart"
 /*@
    MatRealPart - Zeros out the imaginary part of the matrix
@@ -46,7 +84,6 @@ PetscScalar PETSCMAT_DLLEXPORT MatSetValue_Value = 0.0;
 
 .seealso: MatImaginaryPart()
 @*/
-
 PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat mat)
 {
   PetscErrorCode ierr;
@@ -78,7 +115,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat mat)
 
 .seealso: MatRealPart()
 @*/
-
 PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat mat)
 {
   PetscErrorCode ierr;
@@ -113,7 +149,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat mat)
 
 .seealso: MatRealPart()
 @*/
-
 PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat mat,PetscTruth *missing,PetscInt *dd)
 {
   PetscErrorCode ierr;
@@ -191,7 +226,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat mat,PetscTruth *missing
 
 .seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubMatrices(), MatGetDiagonal()
 @*/
-
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *cols[],const PetscScalar *vals[])
 {
   PetscErrorCode ierr;
@@ -305,7 +339,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRow(Mat mat,PetscInt row,PetscInt *n
 
 .seealso: MatRestoreRowRowUpperTriangular()
 @*/
-
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowUpperTriangular(Mat mat)
 {
   PetscErrorCode ierr;
