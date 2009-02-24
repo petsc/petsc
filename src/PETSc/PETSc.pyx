@@ -29,14 +29,25 @@ cdef extern from *:
 cdef extern from *:
     void pyx_raise"__Pyx_Raise"(object, object, void*)
 
+cdef extern from *:
+    void *PyExc_RuntimeError
+
+cdef object PetscError = <object>PyExc_RuntimeError
+
 cdef inline int SETERR(int ierr):
-    pyx_raise(Error, ierr, NULL)
+    if (<void*>PetscError):
+        pyx_raise(PetscError, ierr, NULL)
+    else:
+        pyx_raise(<object>PyExc_RuntimeError, ierr, NULL)
     return ierr
 
 cdef inline int CHKERR(int ierr) except -1:
     if ierr == 0: return 0                 # no error
     if ierr == PETSC_ERR_PYTHON: return -1 # error in Python call
-    pyx_raise(Error, ierr, NULL)           # error in PETSc call
+    if (<void*>PetscError):
+        pyx_raise(PetscError, ierr, NULL)
+    else:
+        pyx_raise(<object>PyExc_RuntimeError, ierr, NULL)
     return -1
 
 # --------------------------------------------------------------------
@@ -304,6 +315,8 @@ def _initialize(args=None):
     if args is None: args = ()
     global tracebacklist
     Error._traceback_ = tracebacklist
+    global PetscError
+    PetscError = Error
     #
     global __file__
     cdef char* path = str2cp(__file__)
