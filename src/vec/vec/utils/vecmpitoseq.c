@@ -43,23 +43,30 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
   PetscErrorCode ierr;
   PetscInt       N;
   IS             is;
+  Vec            tmp;
+  Vec           *tmpv;
   PetscTruth     tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
   PetscValidType(vin,1);
   PetscValidPointer(ctx,2);
-  if (vout) {PetscValidPointer(vout,3);}
-  else tmpvout = PETSC_TRUE;
+  if (vout) {
+    PetscValidPointer(vout,3);
+    tmpv = vout;
+  } else {
+    tmpvout = PETSC_TRUE;
+    tmpv = &tmp;
+  }
 
   /* Create seq vec on each proc, with the same size of the original mpi vec */
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,vout);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,tmpv);CHKERRQ(ierr);
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vin,is,*vout,is,ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  if (tmpvout) {ierr = VecDestroy(*vout);CHKERRQ(ierr);}
+  if (tmpvout) {ierr = VecDestroy(*tmpv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -106,25 +113,32 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx
   PetscInt       N;
   PetscMPIInt    rank;
   IS             is;
+  Vec            tmp;
+  Vec           *tmpv;
   PetscTruth     tmpvout = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vin,VEC_COOKIE,1);
   PetscValidType(vin,1);
   PetscValidPointer(ctx,2);
-  if (vout) {PetscValidPointer(vout,3);}
-  else tmpvout = PETSC_TRUE;
+  if (vout) {
+    PetscValidPointer(vout,3);
+    tmpv = vout;
+  } else {
+    tmpvout = PETSC_TRUE;
+    tmpv = &tmp;
+  }
 
   /* Create vec on each proc, with the same size of the original mpi vec (all on process 0)*/
   ierr = VecGetSize(vin,&N);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(((PetscObject)vin)->comm,&rank);CHKERRQ(ierr);
   if (rank) N = 0;
-  ierr = VecCreateSeq(PETSC_COMM_SELF,N,vout);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,N,tmpv);CHKERRQ(ierr);
   /* Create the VecScatter ctx with the communication info */
   ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&is);CHKERRQ(ierr);
-  ierr = VecScatterCreate(vin,is,*vout,is,ctx);CHKERRQ(ierr);
+  ierr = VecScatterCreate(vin,is,*tmpv,is,ctx);CHKERRQ(ierr);
   ierr = ISDestroy(is);CHKERRQ(ierr);
-  if (tmpvout) {ierr = VecDestroy(*vout);CHKERRQ(ierr);}
+  if (tmpvout) {ierr = VecDestroy(*tmpv);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
