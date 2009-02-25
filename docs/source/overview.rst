@@ -1,0 +1,83 @@
+Overview
+========
+
+PETSc_ is a suite of data structures and routines for the
+scalable (parallel) solution of scientific applications modeled by
+partial differential equations. It employs the MPI_ standard for all
+message-passing communication.
+
+PETSc is intended for use in large-scale application projects
+[petsc-efficient]_, and several ongoing computational science projects
+are built around the PETSc libraries. With strict attention to
+component interoperability, PETSc facilitates the integration of
+independently developed application modules, which often most
+naturally employ different coding styles and data structures.
+
+PETSc is easy to use for beginners [petsc-user-ref]_. Moreover, its
+careful design allows advanced users to have detailed control over the
+solution process. PETSc includes an expanding suite of parallel linear
+and nonlinear equation solvers that are easily used in application
+codes written in C, C++, and Fortran. PETSc provides many of the
+mechanisms needed within parallel application codes, such as simple
+parallel matrix and vector assembly routines that allow the overlap of
+communication and computation. In addition, PETSc includes growing
+support for distributed arrays.
+
+.. [petsc-user-ref] Satish Balay, Kris Buschelman, Victor Eijkhout,
+   William D. Gropp, Dinesh Kaushik, Matthew G. Knepley, Lois Curfman
+   McInnes, Barry F. Smith and Hong Zhang. PETSc Users
+   Manual. ANL-95/11 - Revision 2.1.5. Argonne National
+   Laboratory. 2004
+
+.. [petsc-efficient] Satish Balay, Victor Eijkhout, William D. Gropp,
+   Lois Curfman McInnes and Barry F. Smith. Efficient Management of
+   Parallelism in Object Oriented Numerical Software Libraries. Modern
+   Software Tools in Scientific Computing. E. Arge, A. M. Bruaset and
+   H. P. Langtangen, editors. 163--202. Birkhauser Press. 1997.
+
+.. include:: links.txt
+
+
+Features
+--------
+
+XXX To be written ...
+
+
+Components
+----------
+
+PETSc components provide the functionality required for many parallel
+solutions of PDE's.
+
+:Vec:  Provides the vector operations required for setting up and
+       solving large-scale linear and nonlinear problems. Includes
+       easy-to-use parallel scatter and gather operations, as well as
+       special-purpose code for handling ghost points for regular data
+       structures.
+
+:Mat:  A large suite of data structures and code for the manipulation
+       of parallel sparse matrices. Includes four different parallel
+       matrix data structures, each appropriate for a different class
+       of problems.
+
+:PC:   A collection of sequential and parallel preconditioners,
+       including (sequential) ILU(k), LU, and (both sequential and
+       parallel) block Jacobi, overlapping additive Schwarz methods
+       and (through BlockSolve95) ILU(0) and ICC(0).
+
+:KSP:  Parallel implementations of many popular Krylov subspace
+       iterative methods, including GMRES, CG, CGS, Bi-CG-Stab, two
+       variants of TFQMR, CR, and LSQR. All are coded so that they are
+       immediately usable with any preconditioners and any matrix data
+       structures, including matrix-free methods.
+
+:SNES: Data-structure-neutral implementations of Newton-like methods
+       for nonlinear systems. Includes both line search and trust
+       region techniques with a single interface. Employs by default
+       the above data structures and linear solvers. Users can set
+       custom monitoring routines, convergence criteria, etc.
+
+:TS:   Code for the time evolution of solutions of PDEs. In addition,
+       provides pseudo-transient continuation techniques for computing
+       steady-state solutions.

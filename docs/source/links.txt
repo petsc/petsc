@@ -1,0 +1,25 @@
+.. _MPI:          http://www.mpi-forum.org
+
+.. _MPICH:        http://www-unix.mcs.anl.gov/mpi/mpich/
+
+.. _Open MPI:     http://www.open-mpi.org
+
+.. _PETSc:        http://www.mcs.anl.gov/petsc
+
+.. _SLEPc:        http://www.grycap.upv.es/slepc/
+
+.. _TAO:          http://www.mcs.anl.gov/tao
+
+.. _Python:       http://www.python.org/
+
+.. _NumPy:        http://numpy.scipy.org
+
+.. _mpi4py:       http://mpi4py.googlecode.com
+
+.. _petsc4py:     http://petsc4py.googlecode.com
+
+.. _slepc4py:     http://slepc4py.googlecode.com
+
+.. _tao4py:       http://tao4py.googlecode.com
+
+.. _CIMEC:        http://www.cimec.org.ar/

@@ -3,6 +3,7 @@
 # --------------------------------------------------------------------
 
 from petsc4py import PETSc
+
 try:
     from signal import signal, SIGPIPE, SIG_IGN
     signal(SIGPIPE, SIG_IGN)
@@ -13,12 +14,35 @@ except ImportError:
 
 try:
     from docutils.nodes import NodeVisitor
-    def unknown_visit(self, node):
-        'Ignore all unknown nodes'
     NodeVisitor.unknown_visit = lambda self, node: None
     NodeVisitor.unknown_departure =  lambda self, node: None
 except ImportError:
     pass
+
+# --------------------------------------------------------------------
+
+from epydoc.docwriter import dotgraph
+
+DotGraph_to_html = dotgraph.DotGraph.to_html
+DotGraph_run_dot = dotgraph.DotGraph._run_dot
+
+def to_html(self, image_file, image_url, center=True):
+    if image_file[-4:] == '.gif':
+        image_file = image_file[:-4] + '.png'
+    if image_url[-4:] == '.gif':
+        image_url = image_url[:-4] +  '.png'
+    return DotGraph_to_html(self, image_file, image_url)
+
+def _run_dot(self, *options):
+    if '-Tgif' in options:
+        opts = list(options)
+        for i, o in enumerate(opts):
+            if o == '-Tgif': opts[i] = '-Tpng'
+        options = type(options)(opts)
+    return DotGraph_run_dot(self, *options)
+
+dotgraph.DotGraph.to_html = to_html
+dotgraph.DotGraph._run_dot = _run_dot
 
 # --------------------------------------------------------------------
 

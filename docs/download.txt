@@ -1,6 +1,0 @@
-Availability
-============
-
-PETSc for Python source distribution is available for download at the
-project home page generously hosted by Google Code:
-http://petsc4py.googlecode.com/.

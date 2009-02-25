@@ -1,7 +1,9 @@
-.PHONY: default src \
+.PHONY: default \
+	src cython \
 	config build test install \
-	clean distclean srcclean fullclean uninstall \
-	cython epydoc sdist
+	docs sphinx epydoc \
+	sdist \
+	clean distclean srcclean docsclean fullclean uninstall
 
 PYTHON = python
 
@@ -21,13 +23,13 @@ test:
 install: build
 	${PYTHON} setup.py install ${INSTALLOPT} --home=${HOME}
 
+docs: sphinx epydoc
+
 clean:
 	${PYTHON} setup.py clean --all
-	-${RM} _configtest.* *.py[co]
-	-${MAKE} -C docs clean
 
 distclean: clean 
-	-${RM} -r build  *.py[co]
+	-${RM} -r build  _configtest.* *.py[co]
 	-${RM} -r MANIFEST dist petsc4py.egg-info
 	-${RM} `find . -name '*~'`
 	-${RM} `find . -name '*.py[co]'`
@@ -37,7 +39,10 @@ srcclean:
 	-${RM} src/include/petsc4py/petsc4py_PETSc.h
 	-${RM} src/include/petsc4py/petsc4py_PETSc_api.h
 
-fullclean: distclean srcclean
+docsclean:
+	-${RM} -r docs/html
+
+fullclean: distclean srcclean docsclean
 
 uninstall:
 	-${RM} -r ${HOME}/lib/python/petsc4py
@@ -53,8 +58,20 @@ src/petsc4py_PETSc.c: ${CY_SRC_PXD} ${CY_SRC_PXI} ${CY_SRC_PYX}
 cython:
 	${PYTHON} ./conf/cythonize.py
 
-epydoc:
-	${PYTHON} ./conf/epydocify.py -o /tmp/petsc4py-api-doc
+SPHINXBUILD = sphinx-build
+SPHINXOPTS  =
+sphinx:
+	mkdir -p build/doctrees docs/html/man
+	${SPHINXBUILD} -d build/doctrees ${SPHINXOPTS} \
+	docs/source docs/html/man
 
-sdist:
+EPYDOCBUILD = ${PYTHON} ./conf/epydocify.py
+EPYDOCOPTS  =
+epydoc: clean build
+	mkdir -p docs/html/api
+	PYTHONPATH=`ls -d build/lib.*`:$$PYTHONPATH \
+	${EPYDOCBUILD} ${EPYDOCOPTS} -o docs/html/api 
+
+
+sdist: src docs
 	${PYTHON} setup.py sdist ${SDISTOPT}
