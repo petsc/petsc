@@ -45,11 +45,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *sc
   ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
-  ierr = ISCreateStride(((PetscObject)da)->comm,da->Nlocal,0,1,&to);CHKERRQ(ierr);
-  ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
-  ierr = ISCreateStride(((PetscObject)da)->comm,da->Nlocal,da->base,1,&from);CHKERRQ(ierr);
   ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
   ierr = VecGetSize(global,&N);CHKERRQ(ierr);
+  ierr = ISCreateStride(((PetscObject)da)->comm,N,0,1,&to);CHKERRQ(ierr);
+  ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
+  ierr = ISCreateStride(((PetscObject)da)->comm,N,0,1,&from);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,N,0,&tmplocal);CHKERRQ(ierr);
   ierr = VecSetBlockSize(tmplocal,da->w);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,da->w);CHKERRQ(ierr);

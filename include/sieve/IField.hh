@@ -116,10 +116,10 @@ namespace ALE {
       }
       return &this->_value[1];
     };
-    void updatePoint(const point_type& p, const value_type v[]) {
+    void updatePoint(const point_type&, const value_type v[]) {
       this->_value[0] = v[0];
     };
-    void updateAddPoint(const point_type& p, const value_type v[]) {
+    void updateAddPoint(const point_type&, const value_type v[]) {
       this->_value[0] += v[0];
     };
   public:
@@ -340,6 +340,10 @@ namespace ALE {
       return reallocatePoint(chart_type(min, max+1));
     }
   public: // Restriction
+    // Zero entries
+    void zero() {
+      memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
+    };
     // Return a pointer to the entire contiguous storage array
     const values_type& restrictSpace() const {
       return this->_array;

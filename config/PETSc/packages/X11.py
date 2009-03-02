@@ -229,7 +229,13 @@ acfindx:
     return
 
   def configure(self):
-    if self.framework.argDB['with-x'] and self.libraryOptions.integerSize == 32 and self.scalarTypes.precision == 'double':
+    if self.framework.argDB['with-x']:
+      if not self.libraryOptions.integerSize == 32:
+        self.logPrintBox('Turning off X11 because integers are not 32 bit', debugSection = None)
+        return
+      if not self.scalarTypes.precision == 'double':
+        self.logPrintBox('Turning off X11 because scalars are not doubles', debugSection = None)
+        return
       self.executeTest(self.configureLibrary)
     return
 
