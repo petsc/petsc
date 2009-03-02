@@ -157,6 +157,14 @@ class PetscConfig:
             get_config_vars('CC', 'CXX', 'CFLAGS',
                             'CCSHARED', 'LDSHARED', 'SO')
             #
+            if self.language == 'c++':
+                CXX = self['PCC']
+            else:
+                try:
+                    CXX = self['CXX']
+                except KeyError:
+                    CXX = cxx
+            #
             def extra_flags(cmd):
                 cmd  = cmd.split(' ', 1)
                 try: return cmd[1]
@@ -172,9 +180,13 @@ class PetscConfig:
             ldflags = '%s'       % (extra_flags(ld_cmd),)
             CC_SHARED  = self['PCC']        + ' ' + ccflags
             LD_SHARED  = self['PCC_LINKER'] + ' ' + ldflags
+            #
             compiler.set_executables(
-                compiler_so = CC_SHARED,
-                linker_so   = LD_SHARED,
+                compiler     = self['PCC'],
+                compiler_cxx = CXX,
+                compiler_so  = CC_SHARED,
+                linker_so    = LD_SHARED,
+                linker_exe   = self['PCC_LINKER'],
                 )
             compiler.shared_lib_extension = so_ext
 
