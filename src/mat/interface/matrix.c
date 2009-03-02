@@ -62,6 +62,43 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat mat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetGhosts"
+/*@C
+   MatGetGhosts - Get the global index of all ghost nodes defined by the sparse matrix
+
+   Collective on Mat
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameters:
++   nghosts - number of ghosts (note for BAIJ matrices there is one ghost for each block)
+-   ghosts - the global indices of the ghost points
+
+   Notes: the nghosts and ghosts are suitable to pass into VecCreateGhost()
+
+   Level: advanced
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetGhosts(Mat mat,PetscInt *nghosts,const PetscInt *ghosts[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->getghosts) {
+    if (nghosts) *nghosts = 0;
+    if (ghosts) *ghosts = 0;
+  } else {
+    ierr = (*mat->ops->getghosts)(mat,nghosts,ghosts);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatImaginaryPart"
@@ -1006,8 +1043,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesRow(Mat mat,PetscInt row,const Pet
    INSERT_VALUES replaces existing entries with new values
 
    Notes:
-   By default the values, v, are row-oriented and unsorted.
-   See MatSetOption() for other options.
+   By default the values, v, are row-oriented.  See MatSetOption() for other options.
 
    Calls to MatSetValuesStencil() with the INSERT_VALUES and ADD_VALUES 
    options cannot be mixed without intervening calls to the assembly

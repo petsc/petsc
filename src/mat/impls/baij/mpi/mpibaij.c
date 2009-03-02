@@ -2017,6 +2017,20 @@ PetscErrorCode MatPermute_MPIBAIJ(Mat A,IS rowp,IS colp,Mat *B)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetGhosts_MPIBAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetGhosts_MPIBAIJ(Mat mat,PetscInt *nghosts,const PetscInt *ghosts[])
+{
+  Mat_MPIBAIJ    *baij = (Mat_MPIBAIJ*) mat->data;
+  Mat_SeqBAIJ    *B = (Mat_SeqBAIJ*)baij->B->data;
+
+  PetscFunctionBegin;
+  if (nghosts) { *nghosts = B->nbs;}
+  if (ghosts) {*ghosts = baij->garray;}
+  PetscFunctionReturn(0);
+}
+
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {
        MatSetValues_MPIBAIJ,
@@ -2126,7 +2140,18 @@ static struct _MatOps MatOps_Values = {
        0,
 /*105*/0,
        MatRealPart_MPIBAIJ,
-       MatImaginaryPart_MPIBAIJ};
+       MatImaginaryPart_MPIBAIJ,
+       0,
+       0,
+/* 110 */ 0,
+       0,
+       0,
+       0,
+       0,
+/*115*/0,
+       0,
+       MatGetGhosts_MPIBAIJ
+};
 
 
 EXTERN_C_BEGIN

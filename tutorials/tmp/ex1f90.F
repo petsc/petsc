@@ -3,7 +3,13 @@
 !    Reads in data prepared by ex1.c in parallel, does a suitable partitioning of the 
 !    data and arranges it in a format suitable for Pflotran.
 !
-
+!
+!    volumes_orig - vector in the "natural" order read from the data file
+!    volumes - vector in the "permuted" PETSc ordering for parallel computing
+!    vs - scatter from the natural ordering vector to the  PETSc ordering vector
+!    volumesghosted - ghosted version of PETSc vector 
+!    vslocal - scatter from PETSc order vector to ghosted PETSc order vector
+!
       program main
       implicit none
 
@@ -25,6 +31,24 @@
 #include "finclude/petscmat.h"
 #include "finclude/petscviewer.h"
 
+      PetscErrorCode ierr
+
+      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
+      call Loader('mesh')
+      call PetscFinalize(ierr)
+      end
+
+      subroutine Loader(filename)
+      implicit none
+
+#include "finclude/petsc.h"
+#include "finclude/petscis.h"
+#include "finclude/petscvec.h"
+#include "finclude/petscmat.h"
+#include "finclude/petscmat.h90"
+#include "finclude/petscviewer.h"
+
+      character(*) filename
       Mat Adj, Adjnew
       PetscErrorCode ierr
       PetscViewer petscviewer
@@ -38,12 +62,13 @@
       PetscInt nlocal,nlocalnew,bs
       PetscInt ntotal
       PetscMPIInt size,rank
-      Vec volumes,volumesnew
+      Vec volumes_orig,volumes
       VecScatter vs
+      PetscInt, pointer :: ghosts(:)
+      PetscInt nghost,i
 
-      call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       bs = 3
-      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,'mesh.petsc',                &
+      call PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename//'.petsc',                &
      &                           FILE_MODE_READ,petscviewer,ierr)
 
       call MatLoad(petscviewer,MATMPIBAIJ,Adj,ierr)
@@ -66,30 +91,34 @@
       call MatGetLocalSize(Adjnew,nlocalnew,nlocalnew,ierr)
       call ISDestroy(allnewnumbering,ierr)
 
-      call PetscViewerHDF5Open(PETSC_COMM_WORLD,'mesh.h5',                &
+      call PetscViewerHDF5Open(PETSC_COMM_WORLD,filename//'.h5',                &
      &                           FILE_MODE_READ,hdf5viewer,ierr)
       call VecCreateMPI(PETSC_COMM_WORLD,nlocal/bs,PETSC_DETERMINE,       &
-     &                  volumes,ierr)
-      call PetscObjectSetName(volumes,'/Cells/Volumes',ierr)
-      call VecLoadIntoVector(hdf5viewer,volumes,ierr)
+     &                  volumes_orig,ierr)
+      call PetscObjectSetName(volumes_orig,'/Cells/Volumes',ierr)
+      call VecLoadIntoVector(hdf5viewer,volumes_orig,ierr)
       call VecCreateMPI(PETSC_COMM_WORLD,nlocalnew/bs,PETSC_DETERMINE,       &
-     &                  volumesnew,ierr)
+     &                  volumes,ierr)
       call MatGetSize(Adjnew,ntotal,ntotal,ierr)
       call ISCompressIndicesGeneral(ntotal,bs,1, newnumbering,
      &                              newnumberingsmall,ierr)
-      call VecScatterCreate(volumes,newnumberingsmall,volumesnew,          &
+      call VecScatterCreate(volumes_orig,newnumberingsmall,volumes,          &
      &                      PETSC_NULL_OBJECT,vs,ierr)
-      call VecScatterBegin(vs,volumes,volumesnew,INSERT_VALUES,           &
+      call VecScatterBegin(vs,volumes_orig,volumes,INSERT_VALUES,           &
      &                     SCATTER_FORWARD,ierr)
-      call VecScatterEnd(vs,volumes,volumesnew,INSERT_VALUES,           &
+      call VecScatterEnd(vs,volumes_orig,volumes,INSERT_VALUES,           &
      &                     SCATTER_FORWARD,ierr)
 
       call PetscViewerDestroy(hdf5viewer,ierr)
 
-      call VecDestroy(volumes,ierr)
+      call MatGetGhostsF90(Adjnew,ghosts,ierr)
+      print*, ghosts
+
+
+      call VecDestroy(volumes_orig,ierr)
       call MatDestroy(Adj,ierr) 
       call MatDestroy(Adjnew,ierr)
       call ISDestroy(newnumbering,ierr)
-      call PetscFinalize(ierr)
+      return
       end
 

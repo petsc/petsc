@@ -254,11 +254,13 @@ problem.<br>
 &nbsp;on the Apple do "man libgmalloc" to see how to detect memory corruption.</span></font></p>
 
 
-mpiexec -n <np> valgrind -q --tool=memcheck --num-callers=20 petscprogram petscoptions
+mpiexec -n <np> valgrind -q --tool=memcheck --num-callers=20 petscprogram petscoptions</p>
+
+You can also run in the debugger and the argument -start_in_debugger, when it crashes type where and look at the variables to see why it crashed.
 
   </np></li>
 
-  <li><font color="#ff0000"><span style="color: rgb(0, 0, 0);"><span style="font-weight: bold;"></span></span></font><font color="#ff0000"><strong><a name="signal"></a>Symptom</strong></font><font color="#ff0000"><span style="color: rgb(0, 0, 0);">: Caught signal</span></font><font face="Terminal">: </font>
+  <li><font color="#ff0000"><span style="color: rgb(0, 0, 0);"><span style="font-weight: bold;"></span></span></font><font color="#ff0000"><strong><a name="signal"></a>Symptom</strong></font><font color="#ff0000"><span style="color: rgb(0, 0, 0);">: Caught signal or SEQV or segmentation violation or bus error</span></font><font face="Terminal">: </font>
     
     <p><font color="#ff0000"><strong>Problem:&nbsp;</strong></font><font color="#ff0000"><span style="color: rgb(0, 0, 0);">this is most likely due to memory corruption, see <a href="#corrupt">Corrupt Argument</a></span></font><font color="#ff0000"><strong><span style="color: rgb(0, 0, 0);"></span><br>
 

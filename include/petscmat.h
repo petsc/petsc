@@ -557,6 +557,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat, Vec *, 
 #else
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat, Vec *, PetscInt *[], VecScatter *);
 #endif
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetGhosts(Mat, PetscInt *,const PetscInt *[]);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIncreaseOverlap(Mat,PetscInt,IS[],PetscInt);
 
