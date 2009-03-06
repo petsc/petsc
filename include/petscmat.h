@@ -321,6 +321,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonalBlock(Mat,PetscTruth*,MatReuse,Mat*);
 
 /* ------------------------------------------------------------*/
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetValues(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);

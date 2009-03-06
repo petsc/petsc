@@ -51,18 +51,28 @@ hyperbaseurl
 \def\shortintro{false}
 
 \begin{document}
+\pagestyle{empty}
+\begin{figure*}[hbt]
+\centerline{\includegraphics{titlepage1}}
+\end{figure*}
+\begin{figure*}[hbt]
+\centerline{\includegraphics{titlepage2}}
+\end{figure*}
 
-\ANLTitle{PETSc Users Manual}{\em Satish Balay\\Kris Buschelman\\
-Victor Eijkhout\\William Gropp\\Dinesh Kaushik\\Matt Knepley\\Lois Curfman McInnes\\
-Barry Smith\\Hong Zhang\\
-\hspace{0.3in}\\
-Mathematics and Computer Science Division \\
-http://www.mcs.anl.gov/petsc
-\vspace{0.5in} \\
-{\rm This manual is intended for use with PETSc 3.0.0}}
-{95/11 - Revision 3.0.0}{December 2008}
+%  ANL changed the style of its title pages, rather than reproduce the style in latex
+%  we just stick in their pages
+%\ANLTitle{PETSc Users Manual}{\em Satish Balay\\Kris Buschelman\\
+%Victor Eijkhout\\William Gropp\\Dinesh Kaushik\\Matt Knepley\\Lois Curfman McInnes\\
+%Barry Smith\\Hong Zhang\\
+%\hspace{0.3in}\\
+%Mathematics and Computer Science Division \\
+%http://www.mcs.anl.gov/petsc
+%\vspace{0.5in} \\
+%{\rm This manual is intended for use with PETSc 3.0.0}}
+%{95/11 - Revision 3.0.0}{December 2008}
 
 \cleardoublepage
+\pagestyle{plain}
 
 \vspace{1in}
 \date{\today}
@@ -116,6 +126,11 @@ http://www.mcs.anl.gov/petsc
 \addcontentsline{toc}{chapter}{Bibliography}
 \label{sec:bib}
 \bibliography{../petsc,../petscapp}
+
+\pagestyle{empty}
+\begin{figure*}[hbt]
+\centerline{\includegraphics{endpage}}
+\end{figure*}
 
 \end{document}
 
