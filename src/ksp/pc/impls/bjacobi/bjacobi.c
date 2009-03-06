@@ -106,6 +106,7 @@ static PetscErrorCode PCSetUp_BJacobi(PC pc)
     ierr           = PetscMalloc(sizeof(PetscInt),&jac->l_lens);CHKERRQ(ierr);
     jac->l_lens[0] = M;
   }
+  if (jac->n_local < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Number of blocks is less than number of processors");
 
   ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   ierr = PetscObjectQueryFunction((PetscObject)pc->mat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
