@@ -65,7 +65,7 @@ patent must be licensed for everyone's free use or not licensed at all.
 
   The precise terms and conditions for copying, distribution and
 modification follow.
-
+
 		    GNU GENERAL PUBLIC LICENSE
    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
@@ -120,7 +120,7 @@ above, provided that you also meet all of these conditions:
     License.  (Exception: if the Program itself is interactive but
     does not normally print such an announcement, your work based on
     the Program is not required to print an announcement.)
-
+
 These requirements apply to the modified work as a whole.  If
 identifiable sections of that work are not derived from the Program,
 and can be reasonably considered independent and separate works in
@@ -178,7 +178,7 @@ access to copy from a designated place, then offering equivalent
 access to copy the source code from the same place counts as
 distribution of the source code, even though third parties are not
 compelled to copy the source along with the object code.
-
+
   4. You may not copy, modify, sublicense, or distribute the Program
 except as expressly provided under this License.  Any attempt
 otherwise to copy, modify, sublicense or distribute the Program is
@@ -235,7 +235,7 @@ impose that choice.
 
 This section is intended to make thoroughly clear what is believed to
 be a consequence of the rest of this License.
-
+
   8. If the distribution and/or use of the Program is restricted in
 certain countries either by patents or by copyrighted interfaces, the
 original copyright holder who places the Program under this License
@@ -288,7 +288,7 @@ PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGES.
 
 		     END OF TERMS AND CONDITIONS
-
+
 	Appendix: How to Apply These Terms to Your New Programs
 
   If you develop a new program, and you want it to be of the greatest
@@ -481,38 +481,22 @@ PetscErrorCode SPARSEKIT2ilutp(PetscInt *n,PetscScalar *a,PetscInt *ja,PetscInt 
 /*           DETAILS. */
 
 /* lfil    = integer. The fill-in parameter. Each row of L and each row */
-
 /*           of U will have a maximum of lfil elements (excluding the */
 /*           diagonal element). lfil must be .ge. 0. */
-/*           ** WARNING: THE MEANING OF LFIL HAS CHANGED WITH RESPECT TO 
-*/
+/*           ** WARNING: THE MEANING OF LFIL HAS CHANGED WITH RESPECT TO */
 /*           EARLIER VERSIONS. */
 
 /* droptol = real*8. Sets the threshold for dropping small terms in the */
-
 /*           factorization. See below for details on dropping strategy. */
 
-
-/* lfil    = integer. The fill-in parameter. Each row of L and */
-/*           each row of U will have a maximum of lfil elements. */
-/*           WARNING: THE MEANING OF LFIL HAS CHANGED WITH RESPECT TO */
-/*           EARLIER VERSIONS. */
-/*           lfil must be .ge. 0. */
-
-/* permtol = tolerance ratio used to  determne whether or not to permute 
-*/
+/* permtol = tolerance ratio used to  determne whether or not to permute */
 /*           two columns.  At step i columns i and j are permuted when */
-
 /*                     abs(a(i,j))*permtol .gt. abs(a(i,i)) */
-
 /*           [0 --> never permute; good values 0.1 to 0.01] */
 
 /* mbloc   = if desired, permuting can be done only within the diagonal */
-
 /*           blocks of size mbloc. Useful for PDE problems with several */
-
 /*           degrees of freedom.. If feature not wanted take mbloc=n. */
-
 
 /* iwk     = integer. The lengths of arrays alu and jlu. If the arrays */
 /*           are not big enough to store the ILU factorizations, ilut */
@@ -521,13 +505,10 @@ PetscErrorCode SPARSEKIT2ilutp(PetscInt *n,PetscScalar *a,PetscInt *ja,PetscInt 
 /* On return: */
 /* =========== */
 
-/* alu,jlu = matrix stored in Modified Sparse Row (MSR) format containing 
-*/
+/* alu,jlu = matrix stored in Modified Sparse Row (MSR) format containing */
 /*           the L and U factors together. The diagonal (stored in */
-/*           alu(1:n)) is inverted. Each i-th row of the alu,jlu matrix 
-*/
-/*           contains the i-th row of L (excluding the diagonal entry=1) 
-*/
+/*           alu(1:n)) is inverted. Each i-th row of the alu,jlu matrix */
+/*           contains the i-th row of L (excluding the diagonal entry=1) */
 /*           followed by the i-th row of U. */
 
 /* ju      = integer array of length n containing the pointers to */
@@ -539,8 +520,7 @@ PetscErrorCode SPARSEKIT2ilutp(PetscInt *n,PetscScalar *a,PetscInt *ja,PetscInt 
 
 /* ierr    = integer. Error message with the following meaning. */
 /*           ierr  = 0    --> successful return. */
-/*           ierr .gt. 0  --> zero pivot encountered at step number ierr. 
-*/
+/*           ierr .gt. 0  --> zero pivot encountered at step number ierr. */
 /*           ierr  = -1   --> Error. input matrix may be wrong. */
 /*                            (The elimination process has generated a */
 /*                            row in L or U whose length is .gt.  n.) */
@@ -774,7 +754,7 @@ ect */
 L160:
 
 /*     reset double-pointer to zero (U-part) */
-
+ 
 	i__2 = lenu;
 	for (k = 1; k <= i__2; ++k) {
 	    jw[*n + jw[ii + k - 1]] = 0;
@@ -792,7 +772,7 @@ L160:
 
 /*     store L-part -- in original coordinates .. */
 
-	i__2 = len;
+	i__2 = len; 
 	for (k = 1; k <= i__2; ++k) {
 	    if (ju0 > *iwk) {
 		goto L996;
