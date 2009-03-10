@@ -87,7 +87,7 @@ class Configure(config.base.Configure):
         if not hasattr(self.setCompilers, name):
           raise MissingProcessor(errors[name])
         return getattr(self.setCompilers, name)
-      if name in ['executableFlags', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
+      if name in ['CC_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
         return ' '.join(getattr(self.setCompilers, name))
     raise AttributeError('Configure attribute not found: '+name)
 

@@ -297,7 +297,13 @@ class Configure(config.package.Package):
   def getWindowsNonOptFlags(self,cflags):
     for flag in ['-MT','-threads']:
       if cflags.find(flag) >=0: return flag
-    return ''  
+    return ''
+
+  def checkNoOptFlag(self):
+    flag = '-O0'
+    if self.setCompilers.checkCompilerFlag(flag):
+      return flag
+    return ''
 
   def downLoadBlasLapack(self, f2c, l):
     self.framework.log.write('Downloading '+self.downloaddirname+'\n')
@@ -350,10 +356,11 @@ class Configure(config.package.Package):
           line += ' -DDOUBLE=_Quad -DLONG=""\n'
         else:
           line += ' -DDOUBLE=double -DLONG=""\n'
+        noopt = self.checkNoOptFlag()
         self.setCompilers.popLanguage()
       if line.startswith('CNOOPT'):
         self.setCompilers.pushLanguage('C')
-        line = 'CNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())
+        line = 'CNOOPT = '+noopt+ ' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())
         if self.defaultPrecision == 'int':
           line += ' -DDOUBLE=int -DLONG=""\n'
         elif self.defaultPrecision == 'longdouble':
@@ -377,10 +384,11 @@ class Configure(config.package.Package):
       if line.startswith('FOPTFLAGS '):
         self.setCompilers.pushLanguage('FC')
         line = 'FOPTFLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Mfree','')+'\n'
+        noopt = self.checkNoOptFlag()
         self.setCompilers.popLanguage()       
       if line.startswith('FNOOPT'):
         self.setCompilers.pushLanguage('FC')
-        line = 'FNOOPT = '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
+        line = 'FNOOPT = '+noopt+' '+self.getSharedFlag(self.setCompilers.getCompilerFlags())+' '+self.getPrecisionFlag(self.setCompilers.getCompilerFlags())+' '+self.getWindowsNonOptFlags(self.setCompilers.getCompilerFlags())+'\n'
         self.setCompilers.popLanguage()
       if line.startswith('AR  '):
         line = 'AR      = '+self.setCompilers.AR+'\n'

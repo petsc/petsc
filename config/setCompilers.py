@@ -74,7 +74,9 @@ class Configure(config.base.Configure):
 ##    help.addArgument('Compilers', '-FC_LD=<prog>',           nargs.Arg(None, None, 'Specify the linker for Fortran only'))
     help.addArgument('Compilers', '-LD_SHARED=<prog>',       nargs.Arg(None, None, 'Specify the shared linker'))
     help.addArgument('Compilers', '-LDFLAGS=<string>',       nargs.Arg(None, '',   'Specify the linker options'))
-    help.addArgument('Compilers', '-executableFlags',        nargs.Arg(None, [], 'Specify the executable linker flags'))
+    help.addArgument('Compilers', '-CC_LINKER_FLAGS',        nargs.Arg(None, [], 'Specify the C linker flags'))
+    help.addArgument('Compilers', '-CXX_LINKER_FLAGS',       nargs.Arg(None, [], 'Specify the Cxx linker flags'))
+    help.addArgument('Compilers', '-FC_LINKER_FLAGS',        nargs.Arg(None, [], 'Specify the FC linker flags'))
     help.addArgument('Compilers', '-with-ar',                nargs.Arg(None, None,   'Specify the archiver'))
     help.addArgument('Compilers', '-AR',                     nargs.Arg(None, None,   'Specify the archiver flags'))
     help.addArgument('Compilers', '-AR_FLAGS',               nargs.Arg(None, None,   'Specify the archiver flags'))
@@ -286,7 +288,7 @@ class Configure(config.base.Configure):
         setattr(self, flagsArg, self.argDB[flagsArg])
         self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
       self.popLanguage()
-    for flagsArg in ['CPPFLAGS', 'executableFlags', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
+    for flagsArg in ['CPPFLAGS', 'CC_LINKER_FLAGS', 'CXX_LINKER_FLAGS', 'FC_LINKER_FLAGS', 'sharedLibraryFlags', 'dynamicLibraryFlags']:
       setattr(self, flagsArg, self.argDB[flagsArg])
       self.framework.logPrint('Initialized '+flagsArg+' to '+str(getattr(self, flagsArg)))
     if 'LIBS' in self.argDB:
@@ -307,7 +309,7 @@ class Configure(config.base.Configure):
     if not self.framework.argDB['with-batch']:
       if not self.checkRun():
         self.popLanguage()
-        raise OSError('Cannot run executables created with '+language+'. It is likely that you will need to configure using --with-batch which allows configuration without interactive sessions.')
+        raise OSError('Cannot run executables created with '+language+'. If this machine uses a batch system \nto submit jobs you will need to configure using/configure.py with the additional option  --with-batch.\n Otherwise there is problem with the compilers. Can you compile and run code with your C/C++ (and maybe Fortran) compilers?\n')
     self.popLanguage()
     return
 
@@ -1090,6 +1092,7 @@ class Configure(config.base.Configure):
 
   def checkLinkerMac(self):
     '''Tests some Apple Mac specific linker flags'''
+    langMap = {'C':'CC','FC':'FC','Cxx':'CXX'}
     languages = ['C']
     if hasattr(self, 'CXX'):
       languages.append('Cxx')
@@ -1097,9 +1100,13 @@ class Configure(config.base.Configure):
       languages.append('FC')
     for language in languages:
       self.pushLanguage(language)
-      for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress']:
+      for testFlag in ['-Wl,-multiply_defined,suppress', '-Wl,-multiply_defined -Wl,suppress', '-Wl,-commons,use_dylibs', '-Wl,-search_paths_first']:
         if self.checkLinkerFlag(testFlag):
-          self.executableFlags.append(testFlag)
+          # expand to CC_LINKER_FLAGS or CXX_LINKER_FLAGS or FC_LINKER_FLAGS
+	  linker_flag_var = langMap[language]+'_LINKER_FLAGS'
+          val = getattr(self,linker_flag_var)
+	  val.append(testFlag)
+	  setattr(self,linker_flag_var,val)
       self.popLanguage()
     return
 

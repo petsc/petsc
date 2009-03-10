@@ -46,7 +46,7 @@ class Linker(config.compile.processor.Processor):
   def __init__(self, argDB):
     self.compiler        = Compiler(argDB)
     self.configLibraries = config.libraries.Configure(config.framework.Framework(clArgs = '', argDB = argDB))
-    config.compile.processor.Processor.__init__(self, argDB, ['CXX_LD', 'LD', self.compiler.name], 'LDFLAGS', '.o', '.a')
+    config.compile.processor.Processor.__init__(self, argDB, ['CXX_LD', 'LD', self.compiler.name], ['LDFLAGS', 'CXX_LINKER_FLAGS'], '.o', '.a')
     self.outputFlag = '-o'
     self.libraries  = sets.Set()
     return
