@@ -418,7 +418,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateAdd(SectionReal section, Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealComplete"
-/*@C
+/*@
   SectionRealComplete - Exchanges data across the mesh overlap.
 
   Not collective
@@ -445,7 +445,7 @@ PetscErrorCode SectionRealComplete(SectionReal section)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealZero"
-/*@C
+/*@
   SectionRealZero - Zero out the entries
 
   Not collective
@@ -470,7 +470,7 @@ PetscErrorCode SectionRealZero(SectionReal section)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealSetFiberDimension"
-/*@C
+/*@
   SectionRealSetFiberDimension - Set the size of the vector space attached to the point
 
   Not collective
@@ -494,7 +494,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal sectio
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealAllocate"
-/*@C
+/*@
   SectionRealAllocate - Allocate storage for this section
 
   Not collective
@@ -555,7 +555,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal sectio
 - mesh - The Mesh
 
   Output Parameter:
-. vec - the Vec 
+. vec - the Vec
 
   Level: intermediate
 
@@ -620,7 +620,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, VecScatte
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealClear"
-/*@C
+/*@
   SectionRealClear - Dellocate storage for this section
 
   Not collective
@@ -714,7 +714,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal section, Mesh mesh,
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionRealAXPY"
-/*@C
+/*@
   SectionRealAXPY - 
 
   Collective on Section
@@ -906,7 +906,7 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionIntView"
-/*@C
+/*@
    SectionIntView - Views a Section object. 
 
    Collective on Section
@@ -1246,7 +1246,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdateAdd(SectionInt section, PetscIn
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionIntComplete"
-/*@C
+/*@
   SectionIntComplete - Exchanges data across the mesh overlap.
 
   Not collective
@@ -1273,7 +1273,7 @@ PetscErrorCode SectionIntComplete(SectionInt section)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionIntSetFiberDimension"
-/*@C
+/*@
   SectionIntSetFiberDimension - Set the size of the vector space attached to the point
 
   Not collective
@@ -1297,7 +1297,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section,
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionIntAllocate"
-/*@C
+/*@
   SectionIntAllocate - Allocate storage for this section
 
   Not collective

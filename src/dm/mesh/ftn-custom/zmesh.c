@@ -48,6 +48,7 @@ extern void PetscRmPointer(void*);
 #define meshgetlabelsize_       MESHGETLABELSIZE
 #define meshgetstratumsize_     MESHGETSTRATUMSIZE
 #define meshgetsectionreal_     MESHGETSECTIONREAL
+#define meshgetsectionint_      MESHGETSECTIONINT
 #define meshgetmatrix_          MESHGETMATRIX
 #define meshcreatematrix_       MESHCREATEMATRIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
@@ -72,6 +73,7 @@ extern void PetscRmPointer(void*);
 #define meshgetlabelsize_       meshgetlabelsize
 #define meshgetstratumsize_     meshgetstratumsize
 #define meshgetsectionreal_     meshgetsectionreal
+#define meshgetsectionint_      meshgetsectionint
 #define meshgetmatrix_          meshgetmatrix
 #define meshcreatematrix_       meshcreatematrix
 #endif
@@ -203,6 +205,13 @@ void PETSC_STDCALL  meshgetsectionreal_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len
   char *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = MeshGetSectionReal((Mesh) PetscToPointer(mesh), pN, section);
+  FREECHAR(name,pN);
+}
+
+void PETSC_STDCALL  meshgetsectionint_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), SectionInt *section, int *ierr PETSC_END_LEN(lenN)){
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetSectionInt((Mesh) PetscToPointer(mesh), pN, section);
   FREECHAR(name,pN);
 }
 

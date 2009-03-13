@@ -183,6 +183,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal, Mesh, NormT
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealAXPY(SectionReal, Mesh, PetscScalar, SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealComplete(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSet(SectionReal, PetscReal);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal, PetscInt, const PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSectionReal(Mesh, PetscInt, SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSectionReal(Mesh, PetscInt, SectionReal *);
