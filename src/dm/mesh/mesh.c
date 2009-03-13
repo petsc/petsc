@@ -2330,6 +2330,9 @@ PetscErrorCode MeshGetSectionReal(Mesh mesh, const char name[], SectionReal *sec
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   ierr = SectionRealSetSection(*section, m->getRealSection(std::string(name)));CHKERRQ(ierr);
   ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
+#ifdef PETSC_OPT_SIEVE
+  m->getRealSection(std::string(name))->setChart(m->getSieve()->getChart());
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -2428,6 +2431,9 @@ PetscErrorCode MeshGetSectionInt(Mesh mesh, const char name[], SectionInt *secti
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   ierr = SectionIntSetSection(*section, m->getIntSection(std::string(name)));CHKERRQ(ierr);
   ierr = SectionIntSetBundle(*section, m);CHKERRQ(ierr);
+#ifdef PETSC_OPT_SIEVE
+  m->getIntSection(std::string(name))->setChart(m->getSieve()->getChart());
+#endif
   PetscFunctionReturn(0);
 }
 
