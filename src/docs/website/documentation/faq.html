@@ -1011,7 +1011,7 @@ and marvelous package as PETSc?</a></li>
 
       <li><a href="faq.html#different">How come when I run the same program on the same number of processes I get "different" answers"?</a></li>
       <li><a href="faq.html#differentiterations">How come when I run the same linear solver with different number of processes it takes a different number of iterations?</a></li>
-
+      <li><a href="faq.html#newremotebranches">How come I get an hg error indicating "new remote branches" might be created when I try to push?</a></li>
 
 
 
@@ -3172,7 +3172,26 @@ convergence.</p>
       <p></p>
 
 
+      <p><strong><a name="newremotebranches"><font color="#ff0000">How come I get an hg error indicating "new remote branches" might be created when I try to push?</font></a></strong><span style="font-weight: bold;"></span></p>
 
+      <p>Here is an example:</p>
+
+      [linux]% hg push<br>
+      pushing to https://petsc.cs.iit.edu/petsc/petsc-dev<br>
+      searching for changes<br>
+      abort: push creates new remote branches!<br>
+
+
+      <p>This is almost always an indication that you have done serious harm to your local repo. If you run
+              <strong>hg heads</strong> and there are more than 1 (which causes this), then you know its true.</p>
+
+      <p>Here is how it happens. You make some local changes, but do not commit. You pull down and it aborts part way
+              because you have "uncommitted local changes". However, you do not <strong>hg rollback</strong>. Instead
+              you just <strong>hg commit</strong>, which creates another head. This is supposed to be a feature. I
+              think it should have a user disable.</p>
+
+      <p>Fixing this is complicated. Basically, you clone the repo before you made head #2, then create the diff for
+              the bad changeset that made head #2. Apply it to the clone and checkin, then pull the master.</p>
 
 
 
