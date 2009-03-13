@@ -487,7 +487,7 @@ PetscErrorCode SectionRealZero(SectionReal section)
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal section, PetscInt point, const PetscInt size)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   section->s->setFiberDimension(point, size);
   PetscFunctionReturn(0);
 }
@@ -509,7 +509,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal sectio
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal section)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   section->b->allocate(section->s);
   PetscFunctionReturn(0);
 }
@@ -1290,7 +1290,7 @@ PetscErrorCode SectionIntComplete(SectionInt section)
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section, PetscInt point, const PetscInt size)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   section->s->setFiberDimension(point, size);
   PetscFunctionReturn(0);
 }
@@ -1312,7 +1312,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section,
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntAllocate(SectionInt section)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   section->b->allocate(section->s);
   PetscFunctionReturn(0);
 }
@@ -1334,7 +1334,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntAllocate(SectionInt section)
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntClear(SectionInt section)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   section->s->clear();
   PetscFunctionReturn(0);
 }
