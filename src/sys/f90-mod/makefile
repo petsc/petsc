@@ -26,7 +26,7 @@ include ${PETSC_DIR}/conf/test
 
 buildmod:
 	-@${OMAKE}  clean
-	@${OMAKE}  petscmod.o
+	@${OMAKE}  libf
 	@${OMAKE}  modcopy
 	@${OMAKE}  clean
 modcopy:

@@ -5,13 +5,20 @@
 #define islocaltoglobalmappingview_       ISLOCALTOGLOBALMAPPINGVIEW
 #define islocaltoglobalmpnggetinfosize_   ISLOCALTOGLOBALMPNGGETINFOSIZE
 #define islocaltoglobalmappinggetinfo_    ISLOCALTOGLOBALMAPPINGGETINFO
+#define iscompressindicesgeneral_         ISCOMPRESSINDICESGENERAL
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define islocaltoglobalmappingview_       islocaltoglobalmappingview
 #define islocaltoglobalmpnggetinfosize_   islocaltoglobalmpnggetinfosize
 #define islocaltoglobalmappinggetinfo_    islocaltoglobalmappinggetinfo
+#define iscompressindicesgeneral_         iscompressindicesgeneral
 #endif
 
 EXTERN_C_BEGIN
+
+void PETSC_STDCALL iscompressindicesgeneral_(PetscInt *n,PetscInt *bs,PetscInt *imax,IS *is_in,IS *is_out,PetscErrorCode *ierr)
+{
+  *ierr = ISCompressIndicesGeneral(*n,*bs,*imax,is_in,is_out);
+}
 
 void PETSC_STDCALL islocaltoglobalmappingview_(ISLocalToGlobalMapping *mapping,PetscViewer *viewer,PetscErrorCode *ierr)
 {

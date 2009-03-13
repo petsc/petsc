@@ -33,6 +33,8 @@ $        // destroy scatter context and local vector when no longer needed
 $        VecScatterDestroy(ctx);
 $        VecDestroy(vout);
 
+    Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
+  automatically (unless you pass PETSC_NULL in for that argument if you do not need it).
 
 .seealso VecScatterCreate(), VecScatterCreateToZero(), VecScatterBegin(), VecScatterEnd()
 
@@ -104,6 +106,9 @@ $        VecScatterDestroy(ctx);
 $        VecDestroy(vout);
 
 .seealso VecScatterCreate(), VecScatterCreateToAll(), VecScatterBegin(), VecScatterEnd()
+
+    Do NOT create a vector and then pass it in as the final argument vout! vout is created by this routine
+  automatically (unless you pass PETSC_NULL in for that argument if you do not need it).
 
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToZero(Vec vin,VecScatter *ctx,Vec *vout)

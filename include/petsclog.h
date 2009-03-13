@@ -154,17 +154,17 @@ struct _n_StageLog {
  */
 
 #if defined(PETSC_USE_COMPLEX)
-#define PETSC_FLOPS_PER_OP 4
+#define PETSC_FLOPS_PER_OP 4.0
 #else
-#define PETSC_FLOPS_PER_OP 1
+#define PETSC_FLOPS_PER_OP 1.0
 #endif
 
 #if defined(PETSC_USE_DEBUG)
-#define PetscLogFlops(n) (petsc_tmp_flops = (PETSC_FLOPS_PER_OP*(n)), ((petsc_tmp_flops < 0) ? PETSC_ERR_FLOP_COUNT : (_TotalFlops += petsc_tmp_flops,0)))
-#define PetscLogFlopsNoError(n) (_TotalFlops += PETSC_FLOPS_PER_OP*(n))
+#define PetscLogFlops(n) (petsc_tmp_flops = (PETSC_FLOPS_PER_OP*((PetscLogDouble)n)), ((petsc_tmp_flops < 0) ? PETSC_ERR_FLOP_COUNT : (_TotalFlops += petsc_tmp_flops,0)))
+#define PetscLogFlopsNoError(n) (_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n))
 #else
-#define PetscLogFlops(n) (_TotalFlops += PETSC_FLOPS_PER_OP*(n),0)
-#define PetscLogFlopsNoError(n) (_TotalFlops += PETSC_FLOPS_PER_OP*(n))
+#define PetscLogFlops(n) (_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n),0)
+#define PetscLogFlopsNoError(n) (_TotalFlops += PETSC_FLOPS_PER_OP*((PetscLogDouble)n))
 #endif
 
 #if defined (PETSC_HAVE_MPE)

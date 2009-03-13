@@ -699,7 +699,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES snes, Pets
 
 .keywords: SNES, nonlinear, get, number, linear, iterations
 
-.seealso:  SNESGetIterationNumber(), SNESGetFunctionNorm()S, NESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures()
+.seealso:  SNESGetIterationNumber(), SNESGetFunctionNorm(), SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveIterations(SNES snes,PetscInt* lits)
 {
@@ -1985,15 +1985,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergedReason(SNES snes,SNESConverge
 
    Input Parameters:
 +  snes - iterative context obtained from SNESCreate()
-.  a   - array to hold history
+.  a   - array to hold history, this array will contain the function norms computed at each step
 .  its - integer array holds the number of linear iterations for each solve.
 .  na  - size of a and its
 -  reset - PETSC_TRUE indicates each new nonlinear solve resets the history counter to zero,
            else it continues storing new values for new nonlinear solves after the old ones
-
-   Notes:
-   If set, this array will contain the function norms computed
-   at each step.
 
    This routine is useful, e.g., when running a code for purposes
    of accurate performance monitoring, when no I/O should be done
@@ -2633,6 +2629,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESTestLocalMin(SNES snes)
    Input Parameters:
 +  snes - SNES context
 -  flag - PETSC_TRUE or PETSC_FALSE
+
+    Options Database:
++  -snes_ksp_ew - use Eisenstat-Walker method for determining linear system convergence
+.  -snes_ksp_ew_version ver - version of  Eisenstat-Walker method
+.  -snes_ksp_ew_rtol0 <rtol0> - Sets rtol0
+.  -snes_ksp_ew_rtolmax <rtolmax> - Sets rtolmax
+.  -snes_ksp_ew_gamma <gamma> - Sets gamma
+.  -snes_ksp_ew_alpha <alpha> - Sets alpha
+.  -snes_ksp_ew_alpha2 <alpha2> - Sets alpha2 
+-  -snes_ksp_ew_threshold <threshold> - Sets threshold
 
    Notes:
    Currently, the default is to use a constant relative tolerance for 

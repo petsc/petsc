@@ -156,6 +156,7 @@ struct _MatOps {
   /*115*/
   PetscErrorCode (*getseqnonzerostructure)(Mat,Mat *[]);
   PetscErrorCode (*create)(Mat);  
+  PetscErrorCode (*getghosts)(Mat,PetscInt*,const PetscInt *[]);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -632,19 +633,21 @@ typedef struct {
 /*
   Add a SORTED index set into a sorted linked list used for LUFactorSymbolic()
   Same as PetscLLAddSorted() with an additional operation:
-       count the number of input indices that are no larger than 'diag'
+       count the number of input indices that are no larger than 'diag' 
   Input Parameters:
     indices   - sorted interger array 
-    idx_start - starting index of the list
+    idx_start - starting index of the list, index of pivot row
     lnk       - linked list(an integer array) that is created
     bt        - PetscBT (bitarray), bt[idx]=true marks idx is in lnk
     diag      - index of the active row in LUFactorSymbolic
     nzbd      - number of input indices with indices <= idx_start
+    im        - im[idx_start] is initialized as num of nonzero entries in row=idx_start
   output Parameters:
     nlnk      - number of newly added indices
     lnk       - the sorted(increasing order) linked list containing new and non-redundate entries from indices
     bt        - updated PetscBT (bitarray) 
-    im        - im[idx_start] =  num of entries with indices <= diag
+    im        - im[idx_start]: unchanged if diag is not an entry 
+                             : num of entries with indices <= diag if diag is an entry
 */
 #define PetscLLAddSortedLU(indices,idx_start,nlnk,lnk,bt,diag,nzbd,im) 0;\
 {\

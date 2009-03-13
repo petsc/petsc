@@ -449,7 +449,7 @@ required for local computation. \sindex{ghost points} \sindex{global representat
 PETSc provides routines to help map indices from a local numbering scheme to 
 the PETSc global numbering scheme. This is done via the following routines
 \begin{tabbing}
-  ISLocalToGlobalMappingCreate(MPI_Comm comm,int N,int* globalnum,ISLocalToGlobalMapping* ctx);\\
+  ISLocalToGlobalMappingCreate(MPI\_Comm comm,int N,int* globalnum,ISLocalToGlobalMapping* ctx);\\
   ISLocalToGlobalMappingApply(ISLocalToGlobalMapping ctx,int n,int *in,int *out);\\
   ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping ctx,IS isin,IS* isout);\\
   ISLocalToGlobalMappingDestroy(ISLocalToGlobalMapping ctx);

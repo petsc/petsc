@@ -18,12 +18,12 @@ ${PETSC_DIR}/bin/maint/builddist ${PETSC_DIR}
 #Now copy the generated tarfiles over to the website
 PATCH_VERSION=`grep '^#define PETSC_VERSION_PATCH ' ${PETSC_DIR}/include/petscversion.h |tr -s ' ' | cut -d ' ' -f 3`
 VERSION=${RELEASE}-p${PATCH_VERSION}
-scp ~/petsc-${VERSION}.tar.gz petsc@harley.mcs.anl.gov:/nfs/ftp/pub/petsc/release-snapshots/
-scp ~/petsc-lite-${VERSION}.tar.gz petsc@harley.mcs.anl.gov:/nfs/ftp/pub/petsc/release-snapshots/
+scp ~/petsc-${VERSION}.tar.gz petsc@harley.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
+scp ~/petsc-lite-${VERSION}.tar.gz petsc@harley.mcs.anl.gov:/mcs/ftp/pub/petsc/release-snapshots/
 
 # petsc.tar.gz/petsc-lite.tar.gz links are done manually
 ssh petsc@harley.mcs.anl.gov " \
-  cd /nfs/ftp/pub/petsc/release-snapshots; \
+  cd /mcs/ftp/pub/petsc/release-snapshots; \
   /bin/rm -f petsc-${RELEASE}.tar.gz petsc-lite-${RELEASE}.tar.gz ; \
   /bin/ln -s petsc-${VERSION}.tar.gz petsc-${RELEASE}.tar.gz; \
   /bin/ln -s petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"

@@ -27,12 +27,12 @@ class Configure(PETSc.package.Package):
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
     args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+'"']
-    args.append('--with-cflags="'+self.framework.getCompilerFlags()+'"')
+    args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('CXX="'+self.framework.getCompiler()+'"')
-      args.append('--with-cppflags="'+self.framework.getCompilerFlags()+'"')
+      args.append('CXXFLAGS="'+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     
     # use --with-mpi-root if we know it works
