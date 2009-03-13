@@ -906,7 +906,7 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionIntView"
-/*@
+/*@C
    SectionIntView - Views a Section object. 
 
    Collective on Section
