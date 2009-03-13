@@ -236,6 +236,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt, PetscInt,
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt, PetscInt, const PetscInt []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdateAdd(SectionInt, PetscInt, const PetscInt []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntComplete(SectionInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt, PetscInt, const PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntAllocate(SectionInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntClear(SectionInt);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRestrictClosureInt(Mesh, SectionInt, PetscInt, PetscInt, PetscInt []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshUpdateClosureInt(Mesh, SectionInt, PetscInt, PetscInt []);
