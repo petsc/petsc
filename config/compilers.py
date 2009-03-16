@@ -662,6 +662,14 @@ class Configure(config.base.Configure):
       self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in library list')
       output = output.replace(' -lpgf90rtl -lpgftnrtl',' -lpgftnrtl -lpgf90rtl -lpgftnrtl')
 
+    # PGI: kill anything enclosed in single quotes
+    if output.find('\'') >= 0:
+      if output.count('\'')%2: raise RuntimeError('Mismatched single quotes in Fortran library string')
+      while output.find('\'') >= 0:
+        start = output.index('\'')
+        end   = output.index('\'', start+1)+1
+        output = output.replace(output[start:end], '')
+
     # The easiest thing to do for xlf output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlf,
     # since doing that causes problems on other systems.
@@ -678,7 +686,7 @@ class Configure(config.base.Configure):
         ldRunPath = ['-R '+ldRunPath]
     else:
       ldRunPath = []
-      
+
     # Parse output
     argIter = iter(output.split())
     fincs   = []
