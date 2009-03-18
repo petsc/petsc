@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/PARTY_1.99.tar.gz']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/PARTY_1.99.tar.gz']
     self.functions    = ['party_lib']
     self.includes     = ['party_lib.h']
     self.liblist      = [['libparty.a']]

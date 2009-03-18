@@ -8,8 +8,8 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-#    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/expat-2.0.0.tar.gz']
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/expat-1.95.8.tar.gz']
+#    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/expat-2.0.0.tar.gz']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/expat-1.95.8.tar.gz']
     self.functions = ['XML_ExpatVersion']
     self.liblist   = [['libexpat.a']]
     self.includes  = ['expat.h']

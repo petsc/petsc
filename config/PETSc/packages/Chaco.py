@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/Chaco-2.2.tar.gz']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Chaco-2.2.tar.gz']
     self.functions    = ['interface']
     self.includes     = [] #Chaco does not have an include file
     self.needsMath    = 1

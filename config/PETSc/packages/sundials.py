@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-Nov_2006.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-Nov_2006.tar.gz']
     self.functions = ['CVSpgmr']
     self.includes  = ['sundials/sundials_nvector.h'] 
     self.liblist   = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
@@ -27,12 +27,12 @@ class Configure(PETSc.package.Package):
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
     args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+'"']
-    args.append('--with-cflags="'+self.framework.getCompilerFlags()+'"')
+    args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
       args.append('CXX="'+self.framework.getCompiler()+'"')
-      args.append('--with-cppflags="'+self.framework.getCompilerFlags()+'"')
+      args.append('CXXFLAGS="'+self.framework.getCompilerFlags()+'"')
       self.framework.popLanguage()
     
     # use --with-mpi-root if we know it works

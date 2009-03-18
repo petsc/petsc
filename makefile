@@ -34,7 +34,7 @@ all:
 #  Notes: the shared_nomesg and petsc4py should NOT be built if --prefix was used
 #  the rules for shared_nomesg_noinstall petsc4py_noinstall are generated automatically 
 #  by config/PETSc/Configure.py and config/PETSc/packages/petsc4py.py based on the existance 
-all_build: chk_petsc_dir chklib_dir info info_h deletelibs  build shared_nomesg_noinstall mpi4py_noinstall petsc4py_noinstall
+all_build: chk_petsc_dir chklib_dir info info_h deletelibs deletemods build shared_nomesg_noinstall mpi4py_noinstall petsc4py_noinstall
 #
 # Prints information about the system and version of PETSc being compiled
 #
@@ -191,11 +191,13 @@ ranlib:
 	${RANLIB} ${PETSC_LIB_DIR}/*.${AR_LIB_SUFFIX}
 
 # Deletes PETSc libraries
-deletelibs: 
+deletelibs:
 	-${RM} -f ${PETSC_LIB_DIR}/libpetsc*.*
+deletemods:
+	-${RM} -f ${PETSC_DIR}/${PETSC_ARCH}/include/petsc*.mod
 
 # Cleans up build
-allclean: deletelibs
+allclean: deletelibs deletemods
 	-@${OMAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ACTION=clean tree
 
 
@@ -314,7 +316,7 @@ web-snapshot:
 	    cd $${tmpdir}; tar -xzf ${HOME}/petsc-dev.tar.gz; \
 	    /usr/bin/rsync  -e ssh -az --delete $${tmpdir}/petsc-dev/ \
               petsc@harley.mcs.anl.gov:/mcs/web/research/projects/petsc/petsc-as/snapshots/petsc-dev ;\
-	    /bin/cp -f /home/petsc/petsc-dev.tar.gz /nfs/ftp/pub/petsc/petsc-dev.tar.gz;\
+	    /bin/cp -f /home/petsc/petsc-dev.tar.gz /mcs/ftp/pub/petsc/petsc-dev.tar.gz;\
 	    ${RM} -rf $${tmpdir} ;\
 	  fi
 

@@ -122,7 +122,7 @@ class Configure(config.base.Configure):
       packages = self.petscdir.externalPackagesDir 
       try:
         self.logPrintBox('Retrieving Jostle; this may take several minutes')
-        urllib.urlretrieve('ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/jostle.tar.gz', os.path.join(packages, 'jostle.tar.gz'))
+        urllib.urlretrieve('http://ftp.mcs.anl.gov/pub/petsc/externalpackages/jostle.tar.gz', os.path.join(packages, 'jostle.tar.gz'))
       except Exception, e:
         raise RuntimeError('Error downloading Jostle: '+str(e))
       try:
