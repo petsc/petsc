@@ -21,7 +21,7 @@ class Bootstrapper(script.Script):
 
     help = script.Script.setupHelp(self, help)
     help.addArgument('Bootstrapper', 'baseDirectory', nargs.ArgDir(None, os.getcwd(), 'The root directory for all repositories', isTemporary = 1))
-    help.addArgument('Bootstrapper', 'compilerRepository', nargs.Arg(None, 'ftp://ftp.mcs.anl.gov/pub/petsc/ase/Compiler.tgz', 'The repository containing the SIDL compiler', isTemporary = 1))
+    help.addArgument('Bootstrapper', 'compilerRepository', nargs.Arg(None, 'http://ftp.mcs.anl.gov/pub/petsc/ase/Compiler.tgz', 'The repository containing the SIDL compiler', isTemporary = 1))
     help.addArgument('Bootstrapper', 'download', nargs.ArgBool(None, 1, 'Download the base repositories', isTemporary = 1))
     return help
 
