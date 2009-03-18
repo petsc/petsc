@@ -4,7 +4,7 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zsysiof.c
+SOURCEC  = zbinvf90.c
 SOURCEF  = 
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}
