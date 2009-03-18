@@ -12,13 +12,13 @@ SPECIALFASTLIB = yes
 CFLAGS	   = 
 FFLAGS	   = 
 SOURCEC	   = 
-SOURCEF	   = petscmod.F
+SOURCEF	   = petscsnesmod.F
 SOURCEH	   = 
 OBJSC	   = 
-OBJSF	   = petscmod.o
-LIBBASE	   = libpetsc
-MANSEC	   = Sys
-LOCDIR	   = src/sys/f90-mod/
+OBJSF	   = petscsnesmod.o
+LIBBASE	   = libpetscsnes
+MANSEC	   = SNES
+LOCDIR	   = src/snes/f90-mod/
 CLEANFILES = *.mod
 
 include ${PETSC_DIR}/conf/base
