@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  = 
-DIRS     = pc ksp
+DIRS     = pc ksp f90-mod
 LOCDIR   = src/ksp/
 MANSEC   = KSP
 

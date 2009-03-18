@@ -12,13 +12,13 @@ SPECIALFASTLIB = yes
 CFLAGS	   = 
 FFLAGS	   = 
 SOURCEC	   = 
-SOURCEF	   = petscmod.F
+SOURCEF	   = petsctsmod.F
 SOURCEH	   = 
 OBJSC	   = 
-OBJSF	   = petscmod.o
-LIBBASE	   = libpetsc
-MANSEC	   = Sys
-LOCDIR	   = src/sys/f90-mod/
+OBJSF	   = petsctsmod.o
+LIBBASE	   = libpetscts
+MANSEC	   = TS
+LOCDIR	   = src/ts/f90-mod/
 CLEANFILES = *.mod
 
 include ${PETSC_DIR}/conf/base
