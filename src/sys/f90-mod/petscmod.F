@@ -22,14 +22,3 @@
         use petsc
 #include "finclude/petscsys.h"
         end module
-
-
-        module petscmeshdef
-#include "finclude/petscmesh.h"
-#include "finclude/ftn-custom/petscmeshdef.h90"
-        end module
-
-        module petscmesh
-        use petscmeshdef
-#include "finclude/petscmesh.h90"
-        end module
