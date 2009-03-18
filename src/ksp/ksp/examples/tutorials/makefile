@@ -439,7 +439,7 @@ runex10_10:
 	   else echo "Possible problem with ex10_10, diffs above"; fi; \
 	   ${RM} -f ex10_10.tmp
 runex10_11:
-	-@${MPIEXEC} -n 2 ./ex10 -options_left no -f0 ftp://info.mcs.anl.gov/pub/petsc/matrices/testmatrix.gz > ex10_11.tmp 2>&1;\
+	-@${MPIEXEC} -n 2 ./ex10 -options_left no -f0 http://ftp.mcs.anl.gov/pub/petsc/matrices/testmatrix.gz > ex10_11.tmp 2>&1;\
 	   if (${DIFF} output/ex10_11.out ex10_11.tmp) then true; \
 	   else echo "Possible problem with ex10_11, diffs above"; fi; \
 	   ${RM} -f ex10_11.tmp

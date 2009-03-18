@@ -6,7 +6,7 @@ import os
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download         = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/numpy-1.0.4.tar.gz']
+    self.download         = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/numpy-1.0.4.tar.gz']
     self.downloadname     = 'numpy'
     self.includes         = ['']
     self.includedir       = ''

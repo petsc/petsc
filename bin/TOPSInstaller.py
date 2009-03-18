@@ -1369,7 +1369,7 @@ can also install additional packages that are used by the TOPS packages."""
           # download PETSc
           import urllib
           try:
-            urllib.urlretrieve('ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz', os.path.join(reply,'petsc.tar.gz'))
+            urllib.urlretrieve('http://ftp.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz', os.path.join(reply,'petsc.tar.gz'))
           except Exception, e:
             raise RuntimeError('Unable to download PETSc')
           import commands

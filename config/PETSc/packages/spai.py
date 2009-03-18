@@ -10,7 +10,7 @@ import os
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai_3.0-mar-06.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/spai_3.0-mar-06.tar.gz']
     self.functions = ['bspai']
     self.includes  = ['spai.h']
     self.liblist   = [['libspai.a']]
