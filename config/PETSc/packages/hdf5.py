@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.6.6.tar.gz']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.6.6.tar.gz']
     self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
     self.liblist   = [['libhdf5.a']]

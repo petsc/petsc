@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/Generator.tar.gz']
+    self.download = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/Generator.tar.gz']
     self.complex  = 1
     return
 

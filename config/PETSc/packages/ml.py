@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2.tar.gz']
+    self.download     = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-6.2.tar.gz']
     self.functions = ['ML_Set_PrintLevel']
     self.includes  = ['ml_include.h']
     self.liblist   = [['libml.a']]

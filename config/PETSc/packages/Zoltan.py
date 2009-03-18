@@ -9,7 +9,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/zoltan_distrib.tar.gz']
+    self.download  = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/zoltan_distrib.tar.gz']
     self.functions = ['Zoltan_LB_Partition']
     self.includes  = ['zoltan.h'] 
     self.liblist   = [['libzoltan.a']] 
