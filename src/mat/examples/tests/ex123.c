@@ -1,4 +1,4 @@
-static char help[] = "Test MatMatMult() for MPIDense matrices.\n\n";
+static char help[] = "Test MatMatMult() for Dense matrices.\n\n";
 
 #include "petscmat.h"
 
@@ -19,7 +19,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,PETSC_DETERMINE,PETSC_DETERMINE,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
+  ierr = MatSetType(A,MATDENSE);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(A,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&r);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(r);CHKERRQ(ierr);
@@ -37,10 +37,9 @@ int main(int argc,char **argv)
   /* Test MatMatMult() */
   ierr = MatTranspose(A,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr); /* B = A^T */
   ierr = PetscViewerSetFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_MATLAB);
-    ierr = MatView(B,0);CHKERRQ(ierr);
-      ierr = MatView(A,0);CHKERRQ(ierr);
-      /*ierr = */ MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A = A^T*A */
-
+  ierr = MatView(B,0);CHKERRQ(ierr);
+  ierr = MatView(A,0);CHKERRQ(ierr);
+  ierr = MatMatMult(B,A,MAT_INITIAL_MATRIX,fill,&C);CHKERRQ(ierr); /* C = B*A = A^T*A */
   ierr = MatView(C,0);CHKERRQ(ierr);
 
   ierr = MatMatMultSymbolic(B,A,fill,&D);CHKERRQ(ierr); /* D = B*A = A^T*A */

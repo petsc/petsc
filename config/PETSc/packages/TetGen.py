@@ -112,7 +112,7 @@ class tetgenio {
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['hg://www.mcs.anl.gov/petsc/tetgen-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/TetGen.tar.gz']
+    self.download  = ['hg://www.mcs.anl.gov/petsc/tetgen-dev','http://ftp.mcs.anl.gov/pub/petsc/externalpackages/TetGen.tar.gz']
     self.functions = ['tetrahedralize']
     self.functionsCxx = [1, structDecl+'void tetrahedralize(char *switches, tetgenio *in, tetgenio *out);', 'tetrahedralize("", NULL, NULL)']
     self.includes  = ['tetgen.h']

@@ -57,7 +57,7 @@ def updatePatches():
   version=str(majorversion)+'.'+str(minorversion)+'.'+str(subminorversion)
     
   patches1   = 'patches1'
-  patchfile1 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/petsc_patch_all-'+version
+  patchfile1 =  'http://ftp.mcs.anl.gov/pub/petsc/patches/petsc_patch_all-'+version
   for i in range(1,len(sys.argv)):
     if sys.argv[i].startswith('--patch1='):
       patches1 = sys.argv[i][9:]
@@ -78,7 +78,7 @@ def updatePatches():
     log.write('Using '+patches1+' for PETSc patches\n')
 
   patches2   = 'patches2'
-  patchfile2 =  'ftp://ftp.mcs.anl.gov/pub/petsc/patches/buildsystem_patch_all-'+version
+  patchfile2 =  'http://ftp.mcs.anl.gov/pub/petsc/patches/buildsystem_patch_all-'+version
   for i in range(1,len(sys.argv)):
     if sys.argv[i].startswith('--patch2='):
       patches2 = sys.argv[i][9:]

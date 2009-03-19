@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spooles-2.2-dec-2008.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/spooles-2.2-dec-2008.tar.gz']
     self.functions  = ['InpMtx_init']
     self.includes   = ['MPI/spoolesMPI.h']
     self.liblist    = [['libspooles.a']]

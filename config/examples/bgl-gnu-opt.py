@@ -9,7 +9,7 @@
 # link with the corresponding compilers, and these additional
 # libraries. The following tarball has the modified compiler scripts
 #
-# ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz 
+# http://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz 
 #
 configure_options = [
   '-LIBS=-lc -lc -lnss_files -lnss_dns -lresolv',

@@ -91,6 +91,17 @@ libfast:  ${SOURCEC} ${SOURCEF}
 	    fi; \
 	fi
 
+# Build f90 .mod from .F source, and add .o to the corresponding library
+buildmod:
+	-@${OMAKE} clean
+	@${OMAKE}  libf
+	@${OMAKE}  modcopy
+	@${OMAKE}  clean
+
+# copy modules to the include dir
+modcopy:
+	${CP} -f *.mod ${PETSC_DIR}/${PETSC_ARCH}/include
+
 # Removes garbage files
 clean::
 	@-${RM} *.o *.lo *~ ex[0-9] ex[0-9][0-9] ex[0-9]f ex[0-9][0-9]f \

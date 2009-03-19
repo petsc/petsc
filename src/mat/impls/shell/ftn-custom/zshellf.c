@@ -4,9 +4,11 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define matshellsetoperation_            MATSHELLSETOPERATION
 #define matcreateshell_                  MATCREATESHELL
+#define matshellgetcontext_              MATSHELLGETCONTEXT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define matcreateshell_                  matcreateshell
 #define matshellsetoperation_            matshellsetoperation
+#define matshellgetcontext_              matshellgetcontext
 #endif
 
 EXTERN_C_BEGIN
@@ -81,5 +83,11 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCod
     *ierr = 1;
   }
 }
+
+void PETSC_STDCALL matshellgetcontext_(Mat *mat,void **ctx,PetscErrorCode *ierr)
+{
+  *ierr = MatShellGetContext(*mat,ctx);
+}
+
 
 EXTERN_C_END

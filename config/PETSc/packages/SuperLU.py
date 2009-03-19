@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_3.1-Aug_3_2008.tar.gz']
+    self.download   = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_3.1-Aug_3_2008.tar.gz']
     self.functions  = ['set_default_options']
     self.includes   = ['slu_ddefs.h']
     self.liblist    = [['libsuperlu_3.1.a']]

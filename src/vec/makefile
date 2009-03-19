@@ -2,7 +2,7 @@
 ALL: lib
 
 SOURCEH  = 
-DIRS     = vec is pf
+DIRS     = vec is pf f90-mod
 LOCDIR   = src/vec/
 MANSEC   = Vec
 

@@ -127,6 +127,8 @@ void PETSCVEC_DLLEXPORT MPIAPI VecMax_Local(void *in,void *out,PetscMPIInt *cnt,
   if (xin[0] > xout[0]) {
     xout[0] = xin[0];
     xout[1] = xin[1];
+  } else if (xin[0] == xout[0]) {
+    xout[1] = PetscMin(xin[1],xout[1]);
   }
   PetscFunctionReturnVoid(); /* cannot return a value */
 }
@@ -147,6 +149,8 @@ void PETSCVEC_DLLEXPORT MPIAPI VecMin_Local(void *in,void *out,PetscMPIInt *cnt,
   if (xin[0] < xout[0]) {
     xout[0] = xin[0];
     xout[1] = xin[1];
+  } else if (xin[0] == xout[0]) {
+    xout[1] = PetscMin(xin[1],xout[1]);
   }
   PetscFunctionReturnVoid();
 }

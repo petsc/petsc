@@ -23,11 +23,3 @@ CLEANFILES = *.mod
 
 include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test
-
-buildmod:
-	-@${OMAKE}  clean
-	@${OMAKE}  libf
-	@${OMAKE}  modcopy
-	@${OMAKE}  clean
-modcopy:
-	${CP} -f *.mod ${PETSC_DIR}/${PETSC_ARCH}/include
