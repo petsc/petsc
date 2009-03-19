@@ -1,5 +1,4 @@
 #define PETSC_USE_FORTRAN_MODULES
-#include "finclude/petscalldef.h"
 
         module petscmatdef
         use petscvec

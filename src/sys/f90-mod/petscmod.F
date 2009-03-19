@@ -1,5 +1,4 @@
 #define PETSC_USE_FORTRAN_MODULES
-#include "finclude/petscalldef.h"
 
         module petscdef
 #if defined(PETSC_HAVE_MPI_F90MODULE)
