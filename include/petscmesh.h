@@ -184,6 +184,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealAXPY(SectionReal, Mesh, Petsc
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealComplete(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSet(SectionReal, PetscReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal, PetscInt, const PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSize(SectionReal, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal);
 
@@ -238,13 +239,16 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntDistribute(SectionInt, Mesh, S
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt, PetscInt, PetscInt *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt, PetscInt, const PetscInt []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdateAdd(SectionInt, PetscInt, const PetscInt []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntZero(SectionInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntComplete(SectionInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt, PetscInt, const PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSize(SectionInt, PetscInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntAllocate(SectionInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntClear(SectionInt);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRestrictClosureInt(Mesh, SectionInt, PetscInt, PetscInt, PetscInt []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshUpdateClosureInt(Mesh, SectionInt, PetscInt, PetscInt []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshUpdateAddClosureInt(Mesh, SectionInt, PetscInt, PetscInt []);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSectionInt(Mesh, PetscInt, SectionInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSectionInt(Mesh, PetscInt, SectionInt *);

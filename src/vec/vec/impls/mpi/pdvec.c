@@ -720,9 +720,10 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hid_t         file_id;
   herr_t        status;
   /* PetscInt       bs        = xin->map->bs > 0 ? xin->map->bs : 1; */
+  PetscInt       mult      = sizeof(PetscScalar)/sizeof(PetscReal);
   int            rank      = 1; /* Could have rank 2 for blocked vectors */
-  hsize_t        dims[1]   = {xin->map->N};
-  hsize_t        count[1]  = {xin->map->n};
+  hsize_t        dims[1]   = {xin->map->N*mult};
+  hsize_t        count[1]  = {xin->map->n*mult};
   hsize_t        offset[1];
   PetscInt       low;
   PetscScalar    *x;
@@ -751,7 +752,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
-  offset[0] = low;
+  offset[0] = low*mult;
   filespace = H5Dget_space(dset_id);
   if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Dget_space()");
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);

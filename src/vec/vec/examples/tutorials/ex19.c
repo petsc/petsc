@@ -26,6 +26,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL, "-n", &n, PETSC_NULL);CHKERRQ(ierr);
 
   ierr = VecCreate(PETSC_COMM_WORLD, &x);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) x, "TestVec");CHKERRQ(ierr);
   ierr = VecSetSizes(x, PETSC_DECIDE, n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
@@ -44,6 +45,7 @@ int main(int argc,char **argv)
 
   ierr = PetscViewerHDF5Open(PETSC_COMM_WORLD, "ex19.h5", FILE_MODE_READ, &viewer);CHKERRQ(ierr);
   ierr = VecCreate(PETSC_COMM_WORLD, &y);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) y, "TestVec");CHKERRQ(ierr);
   ierr = VecSetSizes(y, PETSC_DECIDE, n);CHKERRQ(ierr);
   ierr = VecSetFromOptions(y);CHKERRQ(ierr);
   ierr = VecLoadIntoVector(viewer, y);CHKERRQ(ierr);

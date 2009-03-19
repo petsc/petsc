@@ -13,7 +13,8 @@ class Configure(PETSc.package.Package):
     self.includes  = ['hdf5.h']
     self.liblist   = [['libhdf5.a']]
     self.needsMath = 1
-    self.extraLib  = ['libz.a']    
+    self.extraLib  = ['libz.a']
+    self.complex   = 1
     return
 
   def setupDependencies(self, framework):
