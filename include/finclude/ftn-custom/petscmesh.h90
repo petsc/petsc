@@ -185,3 +185,14 @@
           MESH_HIDE m
         End Subroutine
       End Interface
+
+      Interface
+        Subroutine MeshUpdateAddClosureInt(m,section,e,values,ierr)
+          USE_MESH_HIDE
+          PetscErrorCode ierr
+          PetscInt, pointer :: values(:)
+          PetscInt e
+          SECTIONINT_HIDE section
+          MESH_HIDE m
+        End Subroutine
+      End Interface

@@ -331,7 +331,14 @@ PetscErrorCode SectionRealDistribute(SectionReal serialSection, Mesh parallelMes
   ierr = MeshGetMesh(parallelMesh, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(oldSection->comm(), parallelSection);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
+  ALE::Obj<PETSC_MESH_TYPE::real_section_type> newSection;
+
+  // We assume all integer sections are complete sections
+  newSection->setName(oldSection->getName());
+  newSection->setChart(m->getSieve()->getChart());
+  //distributeSection(oldSection, partition, m->getRenumbering(), m->getDistSendOverlap(), m->getDistRecvOverlap(), newSection);
+  ierr = SectionRealSetSection(*parallelSection, newSection);CHKERRQ(ierr);
+  SETERRQ(PETSC_ERR_SUP, "Not working because the partition is unavailable");
 #else
   ALE::Obj<PETSC_MESH_TYPE::real_section_type> newSection = ALE::Distribution<PETSC_MESH_TYPE>::distributeSection(oldSection, m, m->getDistSendOverlap(), m->getDistRecvOverlap());
   ierr = SectionRealSetSection(*parallelSection, newSection);CHKERRQ(ierr);
@@ -489,6 +496,35 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal sectio
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   section->s->setFiberDimension(point, size);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SectionRealGetSize"
+/*@
+  SectionRealGetSize - Gets the number of local dofs in this Section
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Output Parameter:
+. size - the section size
+
+  Level: advanced
+
+.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode SectionRealGetSize(SectionReal section, PetscInt *size)
+{
+  Obj<PETSC_MESH_TYPE::real_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(size,2);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  *size = s->size();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1159,7 +1195,14 @@ PetscErrorCode SectionIntDistribute(SectionInt serialSection, Mesh parallelMesh,
   ierr = MeshGetMesh(parallelMesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(oldSection->comm(), parallelSection);CHKERRQ(ierr);
 #ifdef PETSC_OPT_SIEVE
-  SETERRQ(PETSC_ERR_SUP, "I am being lazy, bug me.");
+  ALE::Obj<PETSC_MESH_TYPE::int_section_type> newSection;
+
+  // We assume all integer sections are complete sections
+  newSection->setName(oldSection->getName());
+  newSection->setChart(m->getSieve()->getChart());
+  //distributeSection(oldSection, partition, m->getRenumbering(), m->getDistSendOverlap(), m->getDistRecvOverlap(), newSection);
+  ierr = SectionIntSetSection(*parallelSection, newSection);CHKERRQ(ierr);
+  SETERRQ(PETSC_ERR_SUP, "Not working because the partition is unavailable");
 #else
   ALE::Obj<PETSC_MESH_TYPE::int_section_type> newSection = ALE::Distribution<PETSC_MESH_TYPE>::distributeSection(oldSection, m, m->getDistSendOverlap(), m->getDistRecvOverlap());
   ierr = SectionIntSetSection(*parallelSection, newSection);CHKERRQ(ierr);
@@ -1271,6 +1314,31 @@ PetscErrorCode SectionIntComplete(SectionInt section)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "SectionIntZero"
+/*@
+  SectionIntZero - Zero out the entries
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Level: advanced
+
+.seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
+@*/
+PetscErrorCode SectionIntZero(SectionInt section)
+{
+  Obj<PETSC_MESH_TYPE::int_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+  s->zero();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "SectionIntSetFiberDimension"
 /*@
@@ -1292,6 +1360,35 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section,
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   section->s->setFiberDimension(point, size);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "SectionIntGetSize"
+/*@
+  SectionIntGetSize - Gets the number of local dofs in this Section
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Output Parameter:
+. size - the section size
+
+  Level: advanced
+
+.seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
+@*/
+PetscErrorCode SectionIntGetSize(SectionInt section, PetscInt *size)
+{
+  Obj<PETSC_MESH_TYPE::int_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidIntPointer(size,2);
+  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+  *size = s->size();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
