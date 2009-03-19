@@ -151,6 +151,7 @@ PetscErrorCode VecLoad_HDF5(PetscViewer viewer,Vec *newvec)
 {
   PetscErrorCode ierr;
   int            rank = 1; /* Could have rank 2 for blocked vectors */
+  const PetscInt mult = sizeof(PetscScalar)/sizeof(PetscReal);
   PetscInt       n, N, bs, start;
   PetscScalar   *x;
   PetscTruth     flag;
@@ -177,7 +178,7 @@ PetscErrorCode VecLoad_HDF5(PetscViewer viewer,Vec *newvec)
   /* Retrieve the dataspace for the dataset */
   filespace = H5Dget_space(dset_id);
   H5Sget_simple_extent_dims(filespace, dims, PETSC_NULL);
-  N = dims[0];
+  N = dims[0]/mult;
   ierr = VecCreate(comm,newvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*newvec,PETSC_DECIDE,N);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
@@ -189,11 +190,11 @@ PetscErrorCode VecLoad_HDF5(PetscViewer viewer,Vec *newvec)
   ierr = VecGetOwnershipRange(*newvec,&start,PETSC_NULL);CHKERRQ(ierr);
 
   /* Each process defines a dataset and reads it from the hyperslab in the file */
-  count[0] = n;
+  count[0] = n*mult;
   memspace = H5Screate_simple(rank, count, NULL);
 
   /* Select hyperslab in the file */
-  offset[0] = start;
+  offset[0] = start*mult;
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
 
   /* Create property list for collective dataset read */
@@ -411,6 +412,7 @@ PetscErrorCode VecLoadIntoVector_Netcdf(PetscViewer viewer,Vec vec)
 PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
 {
   int            rdim,rank = 1; /* Could have rank 2 for blocked vectors */
+  const PetscInt mult = sizeof(PetscScalar)/sizeof(PetscReal);
   PetscInt       n, N, bs, low;
   PetscScalar   *x;
   PetscTruth     flag;
@@ -447,17 +449,17 @@ PetscErrorCode VecLoadIntoVector_HDF5(PetscViewer viewer, Vec xin)
   if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Could not H5Dget_space()");
   rdim = H5Sget_simple_extent_dims(filespace, dims, PETSC_NULL);
   if (rdim != 1) SETERRQ1(PETSC_ERR_FILE_UNEXPECTED, "Dimension of array in file %d not 1 as expected",rdim);
-  if (N != (int) dims[0]) SETERRQ(PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length then input vector");
+  if (N != (int) dims[0]/mult) SETERRQ2(PETSC_ERR_FILE_UNEXPECTED, "Vector in file different length (%d) then input vector (%d)", (int) dims[0]/mult, N);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
   ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
-  count[0] = n;
+  count[0] = n*mult;
   memspace = H5Screate_simple(rank, count, NULL);
   if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Could not H5Screate_simple()");
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
-  offset[0] = low;
+  offset[0] = low*mult;
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
 
   /* Create property list for collective dataset read */

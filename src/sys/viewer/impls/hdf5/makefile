@@ -1,5 +1,4 @@
 #requirespackage  'PETSC_HAVE_HDF5'
-#requiresscalar    real
 
 ALL: lib 
 
