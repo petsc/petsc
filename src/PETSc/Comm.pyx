@@ -103,9 +103,13 @@ cdef class Comm:
 
 # --------------------------------------------------------------------
 
-COMM_NULL  = Comm()
-COMM_SELF  = Comm()
-COMM_WORLD = Comm()
+cdef Comm __COMM_NULL__  = Comm()
+cdef Comm __COMM_SELF__  = Comm()
+cdef Comm __COMM_WORLD__ = Comm()
+
+COMM_NULL  = __COMM_NULL__
+COMM_SELF  = __COMM_SELF__
+COMM_WORLD = __COMM_WORLD__
 
 # --------------------------------------------------------------------
 

@@ -323,10 +323,9 @@ def _initialize(args=None):
     cdef int ready = initialize(args)
     if ready: register(path)
     #
-    global COMM_NULL, COMM_SELF, COMM_WORLD
-    (<Comm?>COMM_NULL).comm  = MPI_COMM_NULL
-    (<Comm?>COMM_SELF).comm  = PETSC_COMM_SELF
-    (<Comm?>COMM_WORLD).comm = PETSC_COMM_WORLD
+    global __COMM_SELF__, __COMM_WORLD__
+    __COMM_SELF__.comm  = PETSC_COMM_SELF
+    __COMM_WORLD__.comm = PETSC_COMM_WORLD
     #
     global PETSC_COMM_DEFAULT
     PETSC_COMM_DEFAULT = PETSC_COMM_WORLD
@@ -337,10 +336,9 @@ def _finalize():
     global petsc2type
     petsc2type.clear()
     #
-    global COMM_NULL, COMM_SELF, COMM_WORLD
-    (<Comm?>COMM_NULL).comm  = MPI_COMM_NULL
-    (<Comm?>COMM_SELF).comm  = MPI_COMM_NULL
-    (<Comm?>COMM_WORLD).comm = MPI_COMM_NULL
+    global __COMM_SELF__, __COMM_WORLD__
+    __COMM_SELF__.comm  = MPI_COMM_NULL
+    __COMM_WORLD__.comm = MPI_COMM_NULL
     #
     global PETSC_COMM_DEFAULT
     PETSC_COMM_DEFAULT = MPI_COMM_NULL
