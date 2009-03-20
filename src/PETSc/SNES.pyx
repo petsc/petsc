@@ -6,7 +6,7 @@ class SNESType(object):
     #
     PYTHON = SNESPYTHON
 
-class SNESConvergedReason:
+class SNESConvergedReason(object):
     # iterating
     CONVERGED_ITERATING      = SNES_CONVERGED_ITERATING
     ITERATING                = SNES_CONVERGED_ITERATING

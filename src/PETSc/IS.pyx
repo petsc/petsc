@@ -1,6 +1,6 @@
 # --------------------------------------------------------------------
 
-class ISType:
+class ISType(object):
     GENERAL = IS_GENERAL
     BLOCK   = IS_BLOCK
     STRIDE  = IS_STRIDE
@@ -266,7 +266,7 @@ cdef class IS(Object):
 # --------------------------------------------------------------------
 
 
-class GLMapType:
+class GLMapType(object):
     MASK = IS_GTOLM_MASK
     DROP = IS_GTOLM_DROP
 
