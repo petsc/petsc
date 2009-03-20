@@ -28,7 +28,7 @@ docs: sphinx epydoc
 clean:
 	${PYTHON} setup.py clean --all
 
-distclean: clean 
+distclean: clean docsclean
 	-${RM} -r build  _configtest.* *.py[co]
 	-${RM} -r MANIFEST dist petsc4py.egg-info
 	-${RM} `find . -name '*~'`
@@ -67,9 +67,8 @@ sphinx:
 
 EPYDOCBUILD = ${PYTHON} ./conf/epydocify.py
 EPYDOCOPTS  =
-epydoc: clean build
+epydoc:
 	mkdir -p docs/html/api
-	PYTHONPATH=`ls -d build/lib.*`:$$PYTHONPATH \
 	${EPYDOCBUILD} ${EPYDOCOPTS} -o docs/html/api 
 
 
