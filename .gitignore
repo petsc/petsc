@@ -1,5 +1,6 @@
 syntax: glob
 build
+docs/html
 dist
 MANIFEST
 *.pyc
