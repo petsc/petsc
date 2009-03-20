@@ -20,14 +20,21 @@ Python bindings for PETSc libraries.
 
 from conf.metadata import metadata
 
+def version():
+    import os, re
+    data = open(os.path.join('src', '__init__.py')).read()
+    m = re.search(r"__version__\s*=\s*'(.*)'", data)
+    return m.groups()[0]
+
 name     = 'petsc4py'
-version  = open('VERSION.txt').read().strip()
+version  = version()
+
+url      = 'http://%(name)s.googlecode.com/' % vars()
+download = url + 'files/%(name)s-%(version)s.tar.gz' % vars()
+
 descr    = __doc__.strip().split('\n'); del descr[1:3]
-keywords = ['PETSc','MPI']
 devstat  = ['Development Status :: 3 - Alpha']
-url      = 'http://%s.googlecode.com/' % name
-download = 'http://%s.googlecode.com/files/%s-%s.tar.gz'
-download = download % (name, name, version)
+keywords = ['PETSc','MPI']
 
 metadata['name'] = name
 metadata['version'] = version
