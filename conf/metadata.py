@@ -5,6 +5,7 @@ Intended Audience :: Developers
 Intended Audience :: Science/Research
 Programming Language :: C
 Programming Language :: C++
+Programming Language :: Cython
 Programming Language :: Python
 Topic :: Scientific/Engineering
 Topic :: Software Development :: Libraries :: Python Modules

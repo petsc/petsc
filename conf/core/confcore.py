@@ -3,8 +3,7 @@
 __all__ = ['PetscConfig',
            'setup', 'Extension',
            'log', 'config',
-           'build', 'build_src', 'build_ext',
-           'sdist',
+           'build', 'build_ext',
            ]
 
 # --------------------------------------------------------------------
@@ -12,14 +11,12 @@ __all__ = ['PetscConfig',
 import sys, os
 from cStringIO import StringIO
 
-from numpy.distutils.core import setup
-from numpy.distutils.core import Extension as _Extension
-from numpy.distutils.command.config    import config     as _config
-from numpy.distutils.command.build     import build      as _build
-from numpy.distutils.command.build_src import build_src  as _build_src
-from numpy.distutils.command.build_ext import build_ext  as _build_ext
-from numpy.distutils.command.sdist     import sdist      as _sdist
-from numpy.distutils import log
+from distutils.core import setup
+from distutils.core import Extension as _Extension
+from distutils.command.config    import config     as _config
+from distutils.command.build     import build      as _build
+from distutils.command.build_ext import build_ext  as _build_ext
+from distutils import log
 from distutils.errors import DistutilsError
 
 import confutils as cfgutils
@@ -336,15 +333,6 @@ class build(_build):
                                                 self.petsc_arch)
 
 
-class build_src(_build_src):
-
-    def initialize_options(self):
-        _build_src.initialize_options(self)
-
-    def finalize_options(self):
-        _build_src.finalize_options(self)
-
-
 class build_ext(_build_ext):
 
     def initialize_options(self):
@@ -416,15 +404,13 @@ class build_ext(_build_ext):
             ARCH = arch or config['PETSC_ARCH_NAME']
             if ARCH not in self.PETSC_ARCH_LIST:
                 self.PETSC_ARCH_LIST.append(ARCH)
-            if ext.language != config.language: continue
+            ext.language = config.language
             config.log_info()
             pkgpath, newext = self._copy_ext(ext)
             config.configure(newext, self.compiler)
-            if ext.language == 'c++' and hasattr(self,'_cxx_compiler'):
-                config.configure_compiler(self._cxx_compiler)
             name =  self.distribution.get_name()
             version = self.distribution.get_version()
-            distdir = '\'\"%s-%s/\"\'' % (name, version)
+            distdir = '"%s-%s/"' % (name, version)
             newext.define_macros.append(('__SDIR__', distdir))
             self._build_ext_arch(newext, pkgpath, ARCH)
 
@@ -476,13 +462,6 @@ PETSC_ARCH = %(PETSC_ARCH)s
                 outputs.append(outfile)
         outputs = list(set(outputs))
         return outputs
-
-
-class sdist(_sdist):
-
-    def run(self):
-        self.run_command('build_src')
-        _sdist.run(self)
 
 
 # --------------------------------------------------------------------

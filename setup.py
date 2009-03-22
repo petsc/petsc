@@ -34,7 +34,7 @@ download = url + 'files/%(name)s-%(version)s.tar.gz' % vars()
 
 descr    = __doc__.strip().split('\n'); del descr[1:3]
 devstat  = ['Development Status :: 3 - Alpha']
-keywords = ['PETSc','MPI']
+keywords = ['PETSc', 'MPI']
 
 metadata['name'] = name
 metadata['version'] = version
@@ -58,25 +58,26 @@ def get_ext_modules(Extension):
     for pth, dirs, files in walk(path.join('src', 'source')):
         depends += glob(path.join(pth, '*.h'))
         depends += glob(path.join(pth, '*.c'))
+    try:
+        import numpy
+        numpy_includes = [numpy.get_include()]
+    except ImportError:
+        numpy_includes = []
     return [Extension('petsc4py.lib.PETSc',
                       sources=['src/PETSc.c',
-                               'src/source/libpetsc4py.c',],
+                               'src/source/libpetsc4py.c',
+                               ],
                       include_dirs=['src/include',
-                                    'src/source',],
-                      depends=depends, language='c'),
-            Extension('petsc4py.lib.PETSc',
-                      sources=['src/PETSc.cpp',
-                               'src/source/libpetsc4py.cpp',],
-                      include_dirs=['src/include',
-                                    'src/source',],
-                      depends=depends, language='c++'),
-            ]
+                                    'src/source',
+                                    ] + numpy_includes,
+                      depends=depends)]
+
 # --------------------------------------------------------------------
 # Setup
 # --------------------------------------------------------------------
 
 from conf.petscconf import setup, Extension
-from conf.petscconf import config, build, build_src, build_ext
+from conf.petscconf import config, build, build_ext
 
 def main():
     setup(packages     = ['petsc4py',
@@ -92,7 +93,6 @@ def main():
           ext_modules  = get_ext_modules(Extension),
           cmdclass     = {'config'     : config,
                           'build'      : build,
-                          'build_src'  : build_src,
                           'build_ext'  : build_ext},
           **metadata)
 
