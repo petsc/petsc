@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download          = ['http://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpi4py-dev.tar.gz']
+    self.download          = ['http://mpi4py.googlecode.com/files/mpi4py-1.0.0.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = []
