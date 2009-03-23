@@ -86,9 +86,9 @@ cdef inline PetscReal asReal(object value) except? -1:
     return value
 
 # ---
-cdef inline object toScalar(PetscReal value):
+cdef inline object toScalar(PetscScalar value):
     return PyPetscScalar_FromPetscScalar(value)
-cdef inline PetscReal asScalar(object value) except*:
+cdef inline PetscScalar asScalar(object value) except*:
     return PyPetscScalar_AsPetscScalar(value)
 
 # --------------------------------------------------------------------
