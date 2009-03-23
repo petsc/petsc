@@ -219,9 +219,9 @@ cdef class KSP(Object):
     def setTolerances(self, rtol=None, atol=None, divtol=None, max_it=None):
         cdef PetscReal crtol, catol, cdivtol
         crtol = catol = cdivtol = PETSC_DEFAULT;
-        if rtol   is not None: crtol   = rtol
-        if atol   is not None: catol   = atol
-        if divtol is not None: cdivtol = divtol
+        if rtol   is not None: crtol   = asReal(rtol)
+        if atol   is not None: catol   = asReal(atol)
+        if divtol is not None: cdivtol = asReal(divtol)
         cdef PetscInt cmaxits = PETSC_DEFAULT
         if max_it is not None: cmaxits = max_it
         CHKERR( KSPSetTolerances(self.ksp, crtol, catol, cdivtol, cmaxits) )
@@ -230,7 +230,7 @@ cdef class KSP(Object):
         cdef PetscReal crtol, catol, cdivtol
         cdef PetscInt cmaxits
         CHKERR( KSPGetTolerances(self.ksp, &crtol, &catol, &cdivtol, &cmaxits) )
-        return (crtol, catol, cdivtol, cmaxits)
+        return (toReal(crtol), toReal(catol), toReal(cdivtol), cmaxits)
 
     def setConvergenceTest(self, converged, *args, **kargs):
         if converged is None: KSP_setCnv(self.ksp, None)
@@ -241,7 +241,7 @@ cdef class KSP(Object):
 
     def callConvergenceTest(self, its, rnorm):
         cdef PetscInt  ival = its
-        cdef PetscReal rval = rnorm
+        cdef PetscReal rval = asReal(rnorm)
         cdef PetscKSPConvergedReason reason = KSP_CONVERGED_ITERATING
         CHKERR( KSPConvergenceTestCall(self.ksp, ival, rval, &reason) )
         return reason
@@ -266,7 +266,7 @@ cdef class KSP(Object):
 
     def logConvergenceHistory(self, its, rnorm):
         cdef PetscInt  ival = its
-        cdef PetscReal rval = rnorm
+        cdef PetscReal rval = asReal(rnorm)
         CHKERR( KSPLogConvergenceHistory(self.ksp, its, rval) )
 
     def setMonitor(self, monitor, *args, **kargs):
@@ -278,7 +278,7 @@ cdef class KSP(Object):
 
     def callMonitor(self, its, rnorm):
         cdef PetscInt  ival = its
-        cdef PetscReal rval = rnorm
+        cdef PetscReal rval = asReal(rnorm)
         CHKERR( KSPMonitorCall(self.ksp, ival, rval) )
 
     def cancelMonitor(self):
@@ -330,13 +330,13 @@ cdef class KSP(Object):
         return ival
 
     def setResidualNorm(self, rnorm):
-        cdef PetscReal rval = rnorm
+        cdef PetscReal rval = asReal(rnorm)
         CHKERR( KSPSetResidualNorm(self.ksp, rval) )
 
     def getResidualNorm(self):
         cdef PetscReal rval = 0
         CHKERR( KSPGetResidualNorm(self.ksp, &rval) )
-        return rval
+        return toReal(rval)
 
     def setConvergedReason(self, reason):
         cdef PetscKSPConvergedReason val = reason

@@ -378,25 +378,25 @@ cdef class Vec(Object):
         cdef PetscNormType norm_1_2 = PETSC_NORM_1_AND_2
         cdef PetscNormType ntype = PETSC_NORM_2
         if norm_type is not None: ntype = norm_type
-        cdef PetscReal norm[2]
-        CHKERR( VecNorm(self.vec, ntype, norm) )
-        if ntype != norm_1_2: return norm[0]
-        else: return (norm[0], norm[1])
+        cdef PetscReal rval[2]
+        CHKERR( VecNorm(self.vec, ntype, rval) )
+        if ntype != norm_1_2: return toReal(rval[0])
+        else: return (toReal(rval[0]), toReal(rval[1]))
 
     def normBegin(self, norm_type=None):
         cdef PetscNormType ntype = PETSC_NORM_2
         if norm_type is not None: ntype = norm_type
-        cdef PetscReal norm[2]
-        CHKERR( VecNormBegin(self.vec, ntype, norm) )
+        cdef PetscReal dummy[2]
+        CHKERR( VecNormBegin(self.vec, ntype, dummy) )
 
     def normEnd(self, norm_type=None):
         cdef PetscNormType norm_1_2 = PETSC_NORM_1_AND_2
         cdef PetscNormType ntype = PETSC_NORM_2
         if norm_type is not None: ntype = norm_type
-        cdef PetscReal norm[2]
-        CHKERR( VecNormEnd(self.vec, ntype, norm) )
-        if ntype != norm_1_2: return norm[0]
-        else: return (norm[0], norm[1])
+        cdef PetscReal rval[2]
+        CHKERR( VecNormEnd(self.vec, ntype, rval) )
+        if ntype != norm_1_2: return toReal(rval[0])
+        else: return (toReal(rval[0]), toReal(rval[1]))
 
     def sum(self):
         cdef PetscScalar sval = 0
@@ -407,18 +407,18 @@ cdef class Vec(Object):
         cdef PetscInt  ival = 0
         cdef PetscReal rval = 0
         CHKERR( VecMin(self.vec, &ival, &rval) )
-        return (ival, rval)
+        return (ival, toReal(rval))
 
     def max(self):
         cdef PetscInt  ival = 0
         cdef PetscReal rval = 0
         CHKERR( VecMax(self.vec, &ival, &rval) )
-        return (ival, rval)
+        return (ival, toReal(rval))
 
     def normalize(self):
-        cdef PetscReal norm = 0
-        CHKERR( VecNormalize(self.vec, &norm) )
-        return norm
+        cdef PetscReal rval = 0
+        CHKERR( VecNormalize(self.vec, &rval) )
+        return toReal(rval)
 
     def reciprocal(self):
         CHKERR( VecReciprocal(self.vec) )
@@ -485,7 +485,7 @@ cdef class Vec(Object):
         cdef object tmp1 = allocate(n*sizeof(PetscScalar),<void**>&a)
         cdef object tmp2 = allocate(n*sizeof(PetscVec),<void**>&v)
         for i in range(n):
-            a[i] = alphas[i]
+            a[i] = asScalar(alphas[i])
             v[i] = (<Vec?>(vecs[i])).vec
         CHKERR( VecMAXPY(self.vec, n, a, v) )
 
@@ -507,7 +507,7 @@ cdef class Vec(Object):
     def maxPointwiseDivide(self, Vec vec not None):
         cdef PetscReal rval = 0
         CHKERR( VecMaxPointwiseDivide(self.vec, vec.vec, &rval) )
-        return rval
+        return toReal(rval)
 
     def getValue(self, index):
         cdef PetscInt    ival = index
@@ -581,24 +581,24 @@ cdef class Vec(Object):
         cdef PetscInt  ival2 = 0
         cdef PetscReal rval  = 0
         CHKERR( VecStrideMin(self.vec, ival1, &ival2, &rval) )
-        return (ival2, rval)
+        return (ival2, toReal(rval))
 
     def strideMax(self, field):
         cdef PetscInt  ival1 = field
         cdef PetscInt  ival2 = 0
         cdef PetscReal rval  = 0
         CHKERR( VecStrideMax(self.vec, ival1, &ival2, &rval) )
-        return (ival2, rval)
+        return (ival2, toReal(rval))
 
     def strideNorm(self, field, norm_type=None):
         cdef PetscInt ival = field
         cdef PetscNormType norm_1_2 = PETSC_NORM_1_AND_2
         cdef PetscNormType ntype = PETSC_NORM_2
         if norm_type is not None: ntype = norm_type
-        cdef PetscReal norm[2]
-        CHKERR( VecStrideNorm(self.vec, ival, ntype, norm) )
-        if ntype != norm_1_2: return norm[0]
-        else: return (norm[0], norm[1])
+        cdef PetscReal rval[2]
+        CHKERR( VecStrideNorm(self.vec, ival, ntype, rval) )
+        if ntype != norm_1_2: return toReal(rval[0])
+        else: return (toReal(rval[0]), toReal(rval[1]))
 
     def strideScatter(self, field, Vec vec not None, addv=None):
         cdef PetscInt ival = field

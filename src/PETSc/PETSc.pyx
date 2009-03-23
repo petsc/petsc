@@ -70,8 +70,26 @@ cdef extern from "custom.h":
     pass
 
 cdef extern from "scalar.h":
-    object      toScalar "PyPetscScalar_FromPetscScalar" (PetscScalar)
-    PetscScalar asScalar "PyPetscScalar_AsPetscScalar"   (object) except*
+    object      PyPetscScalar_FromPetscScalar(PetscScalar)
+    PetscScalar PyPetscScalar_AsPetscScalar(object) except*
+
+# ---
+cdef inline object toInt(PetscInt value):
+    return value
+cdef inline PetscInt asInt(object value) except? -1:
+    return value
+
+# ---
+cdef inline object toReal(PetscReal value):
+    return value
+cdef inline PetscReal asReal(object value) except? -1:
+    return value
+
+# ---
+cdef inline object toScalar(PetscReal value):
+    return PyPetscScalar_FromPetscScalar(value)
+cdef inline PetscReal asScalar(object value) except*:
+    return PyPetscScalar_AsPetscScalar(value)
 
 # --------------------------------------------------------------------
 

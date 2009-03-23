@@ -460,13 +460,13 @@ cdef class Mat(Object):
 
     def isTranspose(self, Mat mat=None, tol=0):
         if mat is None: mat = self
-        cdef PetscReal rval = tol
+        cdef PetscReal rval = asReal(tol)
         cdef PetscTruth flag = PETSC_FALSE
         CHKERR( MatIsTranspose(self.mat, mat.mat, rval, &flag) )
         return <bint>flag
 
     def isSymmetric(self, tol=0):
-        cdef PetscReal rval = tol
+        cdef PetscReal rval = asReal(tol)
         cdef PetscTruth flag = PETSC_FALSE
         CHKERR( MatIsSymmetric(self.mat, rval, &flag) )
         return <bint>flag
@@ -478,7 +478,7 @@ cdef class Mat(Object):
         return (<bint>flag1, <bint>flag2)
 
     def isHermitian(self, tol=0):
-        cdef PetscReal rval = tol
+        cdef PetscReal rval = asReal(tol)
         cdef PetscTruth flag = PETSC_FALSE
         CHKERR( MatIsHermitian(self.mat, rval, &flag) )
         return <bint>flag
@@ -761,10 +761,10 @@ cdef class Mat(Object):
         cdef PetscNormType norm_1_2 = PETSC_NORM_1_AND_2
         cdef PetscNormType ntype = PETSC_NORM_FROBENIUS
         if norm_type is not None: ntype = norm_type
-        cdef PetscReal norm[2]
-        CHKERR( MatNorm(self.mat, ntype, norm) )
-        if ntype != norm_1_2: return norm[0]
-        else: return (norm[0], norm[1])
+        cdef PetscReal rval[2]
+        CHKERR( MatNorm(self.mat, ntype, rval) )
+        if ntype != norm_1_2: return toReal(rval[0])
+        else: return (toReal(rval[0]), toReal(rval[1]))
 
     def scale(self, alpha):
         cdef PetscScalar sval = asScalar(alpha)
@@ -788,9 +788,9 @@ cdef class Mat(Object):
 
     def matMultSymbolic(self, Mat mat not None, fill=None):
         cdef Mat result = Mat()
-        cdef PetscReal cfill = 2.0
-        if fill is not None: cfill = fill
-        CHKERR( MatMatMultSymbolic(self.mat, mat.mat, cfill, &result.mat) )
+        cdef PetscReal rval = 2
+        if fill is not None: rval = asReal(fill)
+        CHKERR( MatMatMultSymbolic(self.mat, mat.mat, rval, &result.mat) )
         return result
 
     def matMultNumeric(self, Mat mat not None, Mat result=None):
@@ -803,24 +803,24 @@ cdef class Mat(Object):
 
     def matMult(self, Mat mat not None, Mat result=None, fill=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        cdef PetscReal rval = 2
         if result is None:
             result = Mat()
         elif result.mat != NULL:
             reuse = MAT_REUSE_MATRIX
-        cdef PetscReal cfill = 2.0
-        if fill is not None: cfill = fill
-        CHKERR( MatMatMult(self.mat, mat.mat, reuse, cfill, &result.mat) )
+        if fill is not None: rval = asReal(fill)
+        CHKERR( MatMatMult(self.mat, mat.mat, reuse, rval, &result.mat) )
         return result
 
     def matMultTranspose(self, Mat mat not None, Mat result=None, fill=None):
         cdef PetscMatReuse reuse = MAT_INITIAL_MATRIX
+        cdef PetscReal rval = 2
         if result is None:
             result = Mat()
         elif result.mat != NULL:
             reuse = MAT_REUSE_MATRIX
-        cdef PetscReal cfill = 2.0
-        if fill is not None: cfill = fill
-        CHKERR( MatMatMultTranspose(self.mat, mat.mat, reuse, cfill, &result.mat) )
+        if fill is not None: rval = asReal(fill)
+        CHKERR( MatMatMultTranspose(self.mat, mat.mat, reuse, rval, &result.mat) )
         return result
 
     # XXX factorization
@@ -832,7 +832,7 @@ cdef class Mat(Object):
         return (rp, cp)
 
     def reorderForNonzeroDiagonal(self, IS isrow not None, IS iscol not None, atol=0):
-        cdef PetscReal rval = atol
+        cdef PetscReal rval = asReal(atol)
         cdef PetscIS rp = isrow.iset, cp = iscol.iset
         CHKERR( MatReorderForNonzeroDiagonal(self.mat, rval, rp, cp) )
 

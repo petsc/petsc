@@ -68,7 +68,7 @@ cdef getopt_Real(char *pre, char *name, object deft):
     cdef PetscReal value = 0
     cdef PetscTruth flag = PETSC_FALSE
     CHKERR( PetscOptionsGetReal(pre, name, &value, &flag) )
-    if flag==PETSC_TRUE: return value
+    if flag==PETSC_TRUE: return toReal(value)
     if deft is not None: return deft
     raise KeyError(opt2str(pre, name))
 

@@ -115,11 +115,11 @@ cdef class TS(Object):
         return (J, P, jac)
 
     def computeFunction(self, t, Vec x not None, Vec f not None):
-        cdef PetscReal time = t
+        cdef PetscReal time = asReal(t)
         CHKERR( TSComputeRHSFunction(self.ts, time, x.vec, f.vec) )
 
     def computeJacobian(self, t, Vec x not None, Mat J not None, Mat P=None):
-        cdef PetscReal time = t
+        cdef PetscReal time = asReal(t)
         cdef PetscMat *jmat = &J.mat, *pmat = &J.mat
         if P is not None: pmat = &P.mat
         cdef PetscMatStructure flag = MAT_DIFFERENT_NONZERO_PATTERN
@@ -149,27 +149,28 @@ cdef class TS(Object):
 
     # --- xxx ---
 
-    def setTime(self, time):
-        cdef PetscReal ttime=time
-        CHKERR( TSSetTime(self.ts, ttime) )
+    def setTime(self, t):
+        cdef PetscReal time = asReal(t)
+        CHKERR( TSSetTime(self.ts, time) )
 
     def getTime(self):
-        cdef PetscReal ttime = 0
-        CHKERR( TSGetTime(self.ts, &ttime) )
-        return ttime
+        cdef PetscReal time = 0
+        CHKERR( TSGetTime(self.ts, &time) )
+        return toReal(time)
 
     def setInitialTimeStep(self, initial_time, initial_time_step):
-        cdef PetscReal itime=initial_time, itstep=initial_time_step
-        CHKERR( TSSetInitialTimeStep(self.ts, itime, itstep) )
+        cdef PetscReal time  = asReal(initial_time)
+        cdef PetscReal tstep = asReal(initial_time_step)
+        CHKERR( TSSetInitialTimeStep(self.ts, time, tstep) )
 
     def setTimeStep(self, time_step):
-        cdef PetscReal tstep=time_step
+        cdef PetscReal tstep = asReal(time_step)
         CHKERR( TSSetTimeStep(self.ts, tstep) )
 
     def getTimeStep(self):
         cdef PetscReal tstep = 0
         CHKERR( TSGetTimeStep(self.ts, &tstep) )
-        return tstep
+        return toReal(tstep)
 
     def setStepNumber(self, step_number):
         cdef PetscInt nstep=step_number
@@ -181,19 +182,19 @@ cdef class TS(Object):
         return nstep
 
     def setMaxTime(self, max_time):
-        cdef PetscInt  mstep=0
-        cdef PetscReal mtime=max_time
+        cdef PetscInt  mstep = 0
+        cdef PetscReal mtime = asReal(max_time)
         CHKERR( TSGetDuration(self.ts, &mstep, NULL) )
         CHKERR( TSSetDuration(self.ts, mstep, mtime) )
 
     def getMaxTime(self):
-        cdef PetscReal mtime=0
+        cdef PetscReal mtime = 0
         CHKERR( TSGetDuration(self.ts, NULL, &mtime) )
-        return mtime
+        return toReal(mtime)
 
     def setMaxSteps(self, max_steps):
-        cdef PetscInt  mstep=max_steps
-        cdef PetscReal mtime=0
+        cdef PetscInt  mstep = max_steps
+        cdef PetscReal mtime = 0
         CHKERR( TSGetDuration(self.ts, NULL, &mtime) )
         CHKERR( TSSetDuration(self.ts, mstep, mtime) )
 
@@ -203,18 +204,18 @@ cdef class TS(Object):
         return mstep
 
     def setDuration(self, max_time, max_steps=None):
-        cdef PetscInt  mstep=0
-        cdef PetscReal mtime=0
+        cdef PetscInt  mstep = 0
+        cdef PetscReal mtime = 0
         CHKERR( TSGetDuration(self.ts, &mstep, &mtime) )
         if max_steps is None: mstep = max_steps
-        if max_time  is None: mtime = max_time
+        if max_time  is None: mtime = asReal(max_time)
         CHKERR( TSSetDuration(self.ts, mstep, mtime) )
 
     def getDuration(self):
-        cdef PetscInt  mstep=0
-        cdef PetscReal mtime=0
+        cdef PetscInt  mstep = 0
+        cdef PetscReal mtime = 0
         CHKERR( TSGetDuration(self.ts, &mstep, &mtime) )
-        return (mtime, mstep)
+        return (toReal(mtime), mstep)
 
     #
 

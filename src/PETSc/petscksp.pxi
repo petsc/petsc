@@ -158,13 +158,13 @@ cdef inline object KSP_getCnv(PetscKSP ksp):
     return Object_getAttr(<PetscObject>ksp, "__converged__")
 
 cdef int KSP_Converged(PetscKSP  ksp,
-                       PetscInt   its,
-                       PetscReal  rn,
+                       PetscInt  its,
+                       PetscReal rn,
                        PetscKSPConvergedReason *r,
                         void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef KSP Ksp = ref_KSP(ksp)
     (converged, args, kargs) = KSP_getCnv(ksp)
-    reason = converged(Ksp, its, rn, *args, **kargs)
+    reason = converged(Ksp, its, toReal(rn), *args, **kargs)
     if   reason is None:  r[0] = KSP_CONVERGED_ITERATING
     elif reason is False: r[0] = KSP_CONVERGED_ITERATING
     elif reason is True:  r[0] = KSP_CONVERGED_ITS # XXX ?
@@ -206,7 +206,7 @@ cdef int KSP_Monitor(PetscKSP  ksp,
     if monitorlist is None: return 0
     cdef KSP Ksp = ref_KSP(ksp)
     for (monitor, args, kargs) in monitorlist:
-        monitor(Ksp, its, rnorm, *args, **kargs)
+        monitor(Ksp, its, toReal(rnorm), *args, **kargs)
     return 0
 
 cdef inline int KSP_setMon(PetscKSP ksp, object mon) except -1:

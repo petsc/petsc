@@ -53,7 +53,7 @@ cdef class Random(Object):
     def getValueReal(self):
         cdef PetscReal rval = 0
         CHKERR( PetscRandomGetValueReal(self.rnd, &rval) )
-        return rval
+        return toReal(rval)
 
     def getValueImaginary(self):
         cdef PetscScalar sval = 0

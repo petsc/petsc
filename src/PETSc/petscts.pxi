@@ -103,7 +103,7 @@ cdef int TS_Function(PetscTS ts,
     cdef Vec Xvec = ref_Vec(x)
     cdef Vec Fvec = ref_Vec(f)
     (function, args, kargs) = TS_getFun(ts)
-    function(Ts, t, Xvec, Fvec, *args, **kargs)
+    function(Ts, toReal(t), Xvec, Fvec, *args, **kargs)
     return 0
 
 cdef inline int TS_setFun(PetscTS ts, PetscVec f, object fun) except -1:
@@ -128,7 +128,7 @@ cdef int TS_Jacobian(PetscTS ts,
     cdef Mat  Jmat = ref_Mat(J[0])
     cdef Mat  Pmat = ref_Mat(P[0])
     (jacobian, args, kargs) = TS_getJac(ts)
-    retv = jacobian(Ts, t, Xvec, Jmat, Pmat, *args, **kargs)
+    retv = jacobian(Ts, toReal(t), Xvec, Jmat, Pmat, *args, **kargs)
     s[0] = matstructure(retv)
     cdef PetscMat Jtmp = NULL, Ptmp = NULL
     Jtmp = J[0]; J[0] = Jmat.mat; Jmat.mat = Jtmp
@@ -157,7 +157,7 @@ cdef int TS_Monitor(PetscTS    ts,
     cdef TS  Ts = ref_TS(ts)
     cdef Vec Vu = ref_Vec(u)
     for (monitor, args, kargs) in monitorlist:
-        monitor(Ts, step, time, Vu, *args, **kargs)
+        monitor(Ts, step, toReal(time), Vu, *args, **kargs)
     return 0
 
 cdef inline int TS_setMon(PetscTS ts, object mon) except -1:

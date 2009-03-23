@@ -143,9 +143,9 @@ cdef class SNES(Object):
         cdef PetscReal crtol, catol, cstol
         crtol = catol = cstol = PETSC_DEFAULT
         cdef PetscInt cmaxit = PETSC_DEFAULT
-        if rtol   is not None: crtol = rtol
-        if atol   is not None: catol = atol
-        if stol   is not None: cstol = stol
+        if rtol   is not None: crtol = asReal(rtol)
+        if atol   is not None: catol = asReal(atol)
+        if stol   is not None: cstol = asReal(stol)
         if max_it is not None: cmaxit = max_it
         CHKERR( SNESSetTolerances(self.snes, catol, crtol, cstol,
                                   cmaxit, PETSC_DEFAULT) )
@@ -155,7 +155,7 @@ cdef class SNES(Object):
         cdef PetscInt cmaxit=0
         CHKERR( SNESGetTolerances(self.snes, &catol, &crtol, &cstol,
                                   &cmaxit, NULL) )
-        return (crtol, catol, cstol, cmaxit)
+        return (toReal(crtol), toReal(catol), toReal(cstol), cmaxit)
 
     def setConvergenceTest(self, converged, *args, **kargs):
         if converged is None: SNES_setCnv(self.snes, None)
@@ -166,9 +166,9 @@ cdef class SNES(Object):
 
     def callConvergenceTest(self, its, xnorm, ynorm, fnorm):
         cdef PetscInt  ival  = its
-        cdef PetscReal rval1 = xnorm
-        cdef PetscReal rval2 = ynorm
-        cdef PetscReal rval3 = fnorm
+        cdef PetscReal rval1 = asReal(xnorm)
+        cdef PetscReal rval2 = asReal(ynorm)
+        cdef PetscReal rval3 = asReal(fnorm)
         cdef PetscSNESConvergedReason reason = SNES_CONVERGED_ITERATING
         CHKERR( SNESConvergenceTestCall(self.snes, ival,
                                         rval1, rval2, rval3, &reason) )
@@ -198,7 +198,7 @@ cdef class SNES(Object):
 
     def logConvergenceHistory(self, its, norm, linear_its=0):
         cdef PetscInt  ival1 = its
-        cdef PetscReal rval  = norm
+        cdef PetscReal rval  = asReal(norm)
         cdef PetscInt  ival2 = linear_its
         CHKERR( SNESLogConvergenceHistory(self.snes, ival1, rval, ival2) )
 
@@ -211,7 +211,7 @@ cdef class SNES(Object):
 
     def callMonitor(self, its, rnorm):
         cdef PetscInt  ival = its
-        cdef PetscReal rval = rnorm
+        cdef PetscReal rval = asReal(rnorm)
         CHKERR( SNESMonitorCall(self.snes, ival, rval) )
 
     def cancelMonitor(self):
@@ -290,13 +290,13 @@ cdef class SNES(Object):
         return ival
 
     def setFunctionNorm(self, norm):
-        cdef PetscReal rval = norm
+        cdef PetscReal rval = asReal(norm)
         CHKERR( SNESSetFunctionNorm(self.snes, rval) )
 
     def getFunctionNorm(self):
         cdef PetscReal rval = 0
         CHKERR( SNESGetFunctionNorm(self.snes, &rval) )
-        return rval
+        return toReal(rval)
 
     def getLinearSolveIterations(self):
         cdef PetscInt ival = 0
@@ -344,12 +344,12 @@ cdef class SNES(Object):
         cdef PetscReal calpha2    = PETSC_DEFAULT
         cdef PetscReal cthreshold = PETSC_DEFAULT
         if version   is not None: cversion   = version
-        if rtol_0    is not None: crtol_0    = rtol_0
-        if rtol_max  is not None: crtol_max  = rtol_max
-        if gamma     is not None: cgamma     = gamma
-        if alpha     is not None: calpha     = alpha
-        if alpha2    is not None: calpha2    = alpha2
-        if threshold is not None: cthreshold = threshold
+        if rtol_0    is not None: crtol_0    = asReal(rtol_0)
+        if rtol_max  is not None: crtol_max  = asReal(rtol_max)
+        if gamma     is not None: cgamma     = asReal(gamma)
+        if alpha     is not None: calpha     = asReal(alpha)
+        if alpha2    is not None: calpha2    = asReal(alpha2)
+        if threshold is not None: cthreshold = asReal(threshold)
         CHKERR( SNESKSPSetParametersEW(
             self.snes, cversion, crtol_0, crtol_max,
             cgamma, calpha, calpha2, cthreshold) )
@@ -362,13 +362,13 @@ cdef class SNES(Object):
         CHKERR( SNESKSPGetParametersEW(
             self.snes, &version, &rtol_0, &rtol_max,
             &gamma, &alpha, &alpha2, &threshold) )
-        return {'version'   : version,
-                'rtol_0'    : rtol_0,
-                'rtol_max'  : rtol_max,
-                'gamma'     : gamma,
-                'alpha'     : alpha,
-                'alpha2'    : alpha2,
-                'threshold' : threshold,}
+        return {'version'   : toReal(version),
+                'rtol_0'    : toReal(rtol_0),
+                'rtol_max'  : toReal(rtol_max),
+                'gamma'     : toReal(gamma),
+                'alpha'     : toReal(alpha),
+                'alpha2'    : toReal(alpha2),
+                'threshold' : toReal(threshold),}
 
     def setUseMF(self, flag):
         CHKERR( SNESSetUseMFFD(self.snes, flag) )

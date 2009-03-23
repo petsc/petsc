@@ -218,15 +218,19 @@ cdef inline object SNES_getCnv(PetscSNES snes):
     return Object_getAttr(<PetscObject>snes, "__converged__")
 
 cdef int SNES_Converged(PetscSNES  snes,
-                        PetscInt   its,
-                        PetscReal  xn,
-                        PetscReal  gn,
-                        PetscReal  fn,
+                        PetscInt   iters,
+                        PetscReal  xnorm,
+                        PetscReal  gnorm,
+                        PetscReal  fnorm,
                         PetscSNESConvergedReason *r,
                         void* ctx) except PETSC_ERR_PYTHON with gil:
     cdef SNES Snes = ref_SNES(snes)
     (converged, args, kargs) = SNES_getCnv(snes)
-    reason = converged(Snes, its, (xn, gn, fn), *args, **kargs)
+    cdef object it = iters
+    cdef object xn = toReal(xnorm)
+    cdef object gn = toReal(gnorm)
+    cdef object fn = toReal(fnorm)
+    reason = converged(Snes, it, (xn, gn, fn), *args, **kargs)
     if   reason is None:  r[0] = SNES_CONVERGED_ITERATING
     elif reason is False: r[0] = SNES_CONVERGED_ITERATING
     elif reason is True:  r[0] = SNES_CONVERGED_ITS # XXX ?
@@ -252,7 +256,8 @@ cdef int SNES_Monitor(PetscSNES  snes,
     cdef object monitorlist = SNES_getMon(snes)
     if monitorlist is None: return 0
     cdef SNES Snes = ref_SNES(snes)
-    cdef object it = iters, rn = rnorm
+    cdef object it = iters
+    cdef object rn = toReal(rnorm)
     for (monitor, args, kargs) in monitorlist:
         monitor(Snes, it, rn, *args, **kargs)
     return 0
