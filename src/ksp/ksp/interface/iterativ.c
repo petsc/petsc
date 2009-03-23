@@ -910,7 +910,7 @@ PetscErrorCode KSPDefaultDestroy(KSP ksp)
 .  KSP_CONVERGED_STEP_LENGTH
 .  KSP_DIVERGED_ITS  (required more than its to reach convergence)
 .  KSP_DIVERGED_DTOL (residual norm increased by a factor of divtol)
-.  KSP_DIVERGED_NAN (residual norm became Not-a-number likely do to 0/0)
+.  KSP_DIVERGED_NAN (residual norm became Not-a-number likely due to 0/0)
 .  KSP_DIVERGED_BREAKDOWN (generic breakdown in method)
 -  KSP_DIVERGED_BREAKDOWN_BICG (Initial residual is orthogonal to preconditioned initial
                                 residual. Try a different preconditioner, or a different initial Level.)

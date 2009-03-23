@@ -24,7 +24,7 @@ EXTERN_C_BEGIN
 EXTERN_C_END 
 
 typedef enum {GLOBAL,DISTRIBUTED} SuperLU_MatInputMode;
-const char *SuperLU_MatInputModes[]    = {"GLOBAL","DISTRIBUTED","SuperLU_MatInputMode","PETSC_",0};
+const char *SuperLU_MatInputModes[] = {"GLOBAL","DISTRIBUTED","SuperLU_MatInputMode","PETSC_",0};
 
 typedef struct {
   int_t                   nprow,npcol,*row,*col;
@@ -43,9 +43,8 @@ typedef struct {
 #else
   double                  *val;
 #endif
-
-  /* Flag to clean up (non-global) SuperLU objects during Destroy */
-  PetscTruth CleanUpSuperLU_Dist;
+  PetscTruth              matsolve_iscalled,matmatsolve_iscalled;
+  PetscTruth CleanUpSuperLU_Dist; /* Flag to clean up (non-global) SuperLU objects during Destroy */
 } Mat_SuperLU_DIST;
 
 extern PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat,PetscViewer);
@@ -105,7 +104,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr;
   PetscErrorCode   ierr;
   PetscMPIInt      size;
-  PetscInt         m=A->rmap->N, N=A->cmap->N; 
+  PetscInt         m=A->rmap->n,M=A->rmap->N,N=A->cmap->N; 
   SuperLUStat_t    stat;  
   double           berr[1];
   PetscScalar      *bptr;  
@@ -117,23 +116,28 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
-  if (size > 1) {  
-    if (lu->MatInputMode == GLOBAL) { /* global mat input, convert b to x_seq */
-      ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);CHKERRQ(ierr);
-      ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iden);CHKERRQ(ierr);
-      ierr = VecScatterCreate(b_mpi,iden,x_seq,iden,&scat);CHKERRQ(ierr);
-      ierr = ISDestroy(iden);CHKERRQ(ierr);
+  if (size > 1 && lu->MatInputMode == GLOBAL) {  
+    /* global mat input, convert b to x_seq */
+    ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iden);CHKERRQ(ierr);
+    ierr = VecScatterCreate(b_mpi,iden,x_seq,iden,&scat);CHKERRQ(ierr);
+    ierr = ISDestroy(iden);CHKERRQ(ierr);
 
-      ierr = VecScatterBegin(scat,b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(scat,b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecGetArray(x_seq,&bptr);CHKERRQ(ierr); 
-    } else { /* distributed mat input */
-      ierr = VecCopy(b_mpi,x);CHKERRQ(ierr);
-      ierr = VecGetArray(x,&bptr);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scat,b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat,b_mpi,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecGetArray(x_seq,&bptr);CHKERRQ(ierr); 
+  } else { /* size==1 || distributed mat input */
+    if (lu->options.SolveInitialized && !lu->matsolve_iscalled){
+      /* see comments in MatMatSolve() */
+#if defined(PETSC_USE_COMPLEX)
+      zSolveFinalize(&lu->options, &lu->SOLVEstruct);
+#else
+      dSolveFinalize(&lu->options, &lu->SOLVEstruct);
+#endif
+      lu->options.SolveInitialized = NO; 
     }
-  } else { /* size == 1 */
     ierr = VecCopy(b_mpi,x);CHKERRQ(ierr);
-    ierr = VecGetArray(x,&bptr);CHKERRQ(ierr); 
+    ierr = VecGetArray(x,&bptr);CHKERRQ(ierr);
   }
  
   if (lu->options.Fact != FACTORED) SETERRQ(PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
@@ -141,43 +145,111 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   PStatInit(&stat);        /* Initialize the statistics variables. */
   if (lu->MatInputMode == GLOBAL) { 
 #if defined(PETSC_USE_COMPLEX)
-    pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,(doublecomplex*)bptr, m, nrhs, 
-                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+    pzgssvx_ABglobal(&lu->options,&lu->A_sup,&lu->ScalePermstruct,(doublecomplex*)bptr,M,nrhs, 
+                   &lu->grid,&lu->LUstruct,berr,&stat,&info);
 #else
-    pdgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,bptr, m, nrhs, 
-                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+    pdgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,bptr,M,nrhs, 
+                   &lu->grid,&lu->LUstruct,berr,&stat,&info);
 #endif 
   } else { /* distributed mat input */
 #if defined(PETSC_USE_COMPLEX)
-    pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, (doublecomplex*)bptr, A->rmap->N, nrhs, &lu->grid,
-	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",info);
+    pzgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,(doublecomplex*)bptr,m,nrhs,&lu->grid,
+	    &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
 #else
-    pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, bptr, A->rmap->N, nrhs, &lu->grid,
-	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &info);
-    if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
+    pdgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,bptr,m,nrhs,&lu->grid,
+	    &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
 #endif
   }
+  if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
+
   if (lu->options.PrintStat) {
      PStatPrint(&lu->options, &stat, &lu->grid);     /* Print the statistics. */
   }
   PStatFree(&stat);
  
-  if (size > 1) {    
-    if (lu->MatInputMode == GLOBAL){ /* convert seq x to mpi x */
-      ierr = VecRestoreArray(x_seq,&bptr);CHKERRQ(ierr);
-      ierr = VecScatterBegin(scat,x_seq,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterEnd(scat,x_seq,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-      ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
-      ierr = VecDestroy(x_seq);CHKERRQ(ierr);
-    } else {
-      ierr = VecRestoreArray(x,&bptr);CHKERRQ(ierr);
-    }
+  if (size > 1 && lu->MatInputMode == GLOBAL) {    
+    /* convert seq x to mpi x */
+    ierr = VecRestoreArray(x_seq,&bptr);CHKERRQ(ierr);
+    ierr = VecScatterBegin(scat,x_seq,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scat,x_seq,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterDestroy(scat);CHKERRQ(ierr);
+    ierr = VecDestroy(x_seq);CHKERRQ(ierr);
   } else {
-    ierr = VecRestoreArray(x,&bptr);CHKERRQ(ierr); 
+    ierr = VecRestoreArray(x,&bptr);CHKERRQ(ierr);
+    lu->matsolve_iscalled    = PETSC_TRUE;
+    lu->matmatsolve_iscalled = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMatSolve_SuperLU_DIST"
+PetscErrorCode MatMatSolve_SuperLU_DIST(Mat A,Mat B_mpi,Mat X)
+{
+  Mat_SuperLU_DIST *lu = (Mat_SuperLU_DIST*)A->spptr;
+  PetscErrorCode   ierr;
+  PetscMPIInt      size;
+  PetscInt         M=A->rmap->N,m=A->rmap->n,nrhs; 
+  SuperLUStat_t    stat;  
+  double           berr[1];
+  PetscScalar      *bptr;  
+  int              info; /* SuperLU_Dist info code is ALWAYS an int, even with long long indices */
+
+  PetscFunctionBegin;
+  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
+  
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  if (size > 1 && lu->MatInputMode == GLOBAL) {  
+    SETERRQ1(PETSC_ERR_SUP,"MatInputMode=GLOBAL for nproc %d>1 is not supported",size);
+  } 
+  /* size==1 or distributed mat input */
+  if (lu->options.SolveInitialized && !lu->matmatsolve_iscalled){
+    /* communication pattern of SOLVEstruct is unlikely created for matmatsolve, 
+       thus destroy it and create a new SOLVEstruct.
+       Otherwise it may result in memory corruption or incorrect solution 
+       See src/mat/examples/tests/ex125.c */
+#if defined(PETSC_USE_COMPLEX)
+    zSolveFinalize(&lu->options, &lu->SOLVEstruct);
+#else
+    dSolveFinalize(&lu->options, &lu->SOLVEstruct);
+#endif
+    lu->options.SolveInitialized  = NO; 
+  }
+  ierr = MatCopy(B_mpi,X,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+
+  ierr = MatGetSize(B_mpi,PETSC_NULL,&nrhs);CHKERRQ(ierr);
+  
+  PStatInit(&stat);        /* Initialize the statistics variables. */
+  ierr = MatGetArray(X,&bptr);CHKERRQ(ierr);
+  if (lu->MatInputMode == GLOBAL) { /* size == 1 */
+#if defined(PETSC_USE_COMPLEX)
+    pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,(doublecomplex*)bptr, M, nrhs, 
+                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+#else
+    pdgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct,bptr, M, nrhs, 
+                   &lu->grid, &lu->LUstruct, berr, &stat, &info);
+#endif 
+  } else { /* distributed mat input */
+#if defined(PETSC_USE_COMPLEX)
+    pzgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,(doublecomplex*)bptr,m,nrhs,&lu->grid,
+	    &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
+#else
+    pdgssvx(&lu->options,&lu->A_sup,&lu->ScalePermstruct,bptr,m,nrhs,&lu->grid,
+	    &lu->LUstruct,&lu->SOLVEstruct,berr,&stat,&info);
+#endif
+  }
+  if (info) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",info);
+  ierr = MatRestoreArray(X,&bptr);CHKERRQ(ierr);
+
+  if (lu->options.PrintStat) {
+     PStatPrint(&lu->options, &stat, &lu->grid); /* Print the statistics. */
+  }
+  PStatFree(&stat);
+  lu->matsolve_iscalled    = PETSC_FALSE;
+  lu->matmatsolve_iscalled = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__   
 #define __FUNCT__ "MatLUFactorNumeric_SuperLU_DIST"
@@ -337,7 +409,6 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 
   /* Factor the matrix. */
   PStatInit(&stat);   /* Initialize the statistics variables. */
-  CHKMEMQ;
   if (lu->MatInputMode == GLOBAL) { /* global mat input */
 #if defined(PETSC_USE_COMPLEX)
     pzgssvx_ABglobal(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, 
@@ -348,11 +419,11 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
 #endif 
   } else { /* distributed mat input */
 #if defined(PETSC_USE_COMPLEX)
-    pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, &lu->grid,
+    pzgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, m, 0, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &sinfo);
     if (sinfo) SETERRQ1(PETSC_ERR_LIB,"pzgssvx fails, info: %d\n",sinfo);
 #else
-    pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, M, 0, &lu->grid,
+    pdgssvx(&lu->options, &lu->A_sup, &lu->ScalePermstruct, 0, m, 0, &lu->grid,
 	    &lu->LUstruct, &lu->SOLVEstruct, berr, &stat, &sinfo);
     if (sinfo) SETERRQ1(PETSC_ERR_LIB,"pdgssvx fails, info: %d\n",sinfo);
 #endif
@@ -383,7 +454,7 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat F,Mat A,const MatFactorInfo *
   }
   (F)->assembled    = PETSC_TRUE;
   (F)->preallocated = PETSC_TRUE;
-  lu->options.Fact = FACTORED; /* The factored form of A is supplied. Local option used by this func. only */
+  lu->options.Fact  = FACTORED; /* The factored form of A is supplied. Local option used by this func. only */
   PetscFunctionReturn(0);
 }
 
@@ -402,8 +473,9 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat F,Mat A,IS r,IS c,const MatF
   /* Initialize ScalePermstruct and LUstruct. */
   ScalePermstructInit(M, N, &lu->ScalePermstruct);
   LUstructInit(M, N, &lu->LUstruct); 
-  (F)->ops->lufactornumeric  = MatLUFactorNumeric_SuperLU_DIST;
-  (F)->ops->solve            = MatSolve_SuperLU_DIST;
+  (F)->ops->lufactornumeric = MatLUFactorNumeric_SuperLU_DIST;
+  (F)->ops->solve           = MatSolve_SuperLU_DIST;
+  (F)->ops->matsolve        = MatMatSolve_SuperLU_DIST;
   PetscFunctionReturn(0); 
 }
 
@@ -459,7 +531,7 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
      options.ReplaceTinyPivot  = YES;
      options.IterRefine        = DOUBLE;
      options.Trans             = NOTRANS;
-     options.SolveInitialized  = NO;
+     options.SolveInitialized  = NO; -hold the communication pattern used MatSolve() and MatMatSolve()
      options.RefineInitialized = NO;
      options.PrintStat         = YES;
   */
@@ -568,6 +640,8 @@ PetscErrorCode MatGetFactor_aij_superlu_dist(Mat A,MatFactorType ftype,Mat *F)
   lu->options             = options; 
   lu->options.Fact        = DOFACT;
   lu->CleanUpSuperLU_Dist = PETSC_TRUE;
+  lu->matsolve_iscalled    = PETSC_FALSE;
+  lu->matmatsolve_iscalled = PETSC_FALSE;
   *F = B;
   PetscFunctionReturn(0); 
 }

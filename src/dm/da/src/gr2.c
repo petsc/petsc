@@ -283,11 +283,11 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
   /* Create the dataspace for the dataset */
-  dim       = da->dim + ((da->w == 1) ? 0 : 1);
-  if (da->w > 1) dims[cnt++] = da->w;
-  dims[cnt++]   = da->M;
-  dims[cnt++]   = da->N;
-  dims[cnt]     = da->P;
+  dim       = PetscHDF5IntCast(da->dim + ((da->w == 1) ? 0 : 1));
+  if (da->w > 1) dims[cnt++] = PetscHDF5IntCast(da->w);
+  dims[cnt++]   = PetscHDF5IntCast(da->M);
+  dims[cnt++]   = PetscHDF5IntCast(da->N);
+  dims[cnt]     = PetscHDF5IntCast(da->P);
   filespace = H5Screate_simple(dim, dims, NULL); 
   if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
@@ -304,14 +304,14 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   /* Each process defines a dataset and writes it to the hyperslab in the file */
   cnt = 0; 
   if (da->w > 1) offset[cnt++] = 0;
-  offset[cnt++] = da->xs/da->w;
-  offset[cnt++] = da->ys;
-  offset[cnt++] = da->zs;
+  offset[cnt++] = PetscHDF5IntCast(da->xs/da->w);
+  offset[cnt++] = PetscHDF5IntCast(da->ys);
+  offset[cnt++] = PetscHDF5IntCast(da->zs);
   cnt = 0; 
-  if (da->w > 1) count[cnt++] = da->w;
-  count[cnt++] = (da->xe - da->xs)/da->w;
-  count[cnt++] = da->ye - da->ys;
-  count[cnt++] = da->ze - da->zs;
+  if (da->w > 1) count[cnt++] = PetscHDF5IntCast(da->w);
+  count[cnt++] = PetscHDF5IntCast((da->xe - da->xs)/da->w);
+  count[cnt++] = PetscHDF5IntCast(da->ye - da->ys);
+  count[cnt++] = PetscHDF5IntCast(da->ze - da->zs);
   memspace = H5Screate_simple(dim, count, NULL);
   if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
@@ -577,11 +577,11 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Ve
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DA");
 
   /* Create the dataspace for the dataset */
-  dim       = da->dim + ((da->w == 1) ? 0 : 1);
-  if (da->w > 1) dims[cnt++] = da->w;
-  dims[cnt++]   = da->M;
-  dims[cnt++]   = da->N;
-  dims[cnt]     = da->P;
+  dim       = PetscHDF5IntCast(da->dim + ((da->w == 1) ? 0 : 1));
+  if (da->w > 1) PetscHDF5IntCast(dims[cnt++] = da->w);
+  dims[cnt++]   = PetscHDF5IntCast(da->M);
+  dims[cnt++]   = PetscHDF5IntCast(da->N);
+  dims[cnt]     = PetscHDF5IntCast(da->P);
 
   /* Create the dataset with default properties and close filespace */
   ierr = PetscObjectGetName((PetscObject)xin,&vecname);CHKERRQ(ierr);
@@ -596,14 +596,14 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_HDF5_DA(PetscViewer viewer,Ve
   /* Each process defines a dataset and reads it from the hyperslab in the file */
   cnt = 0; 
   if (da->w > 1) offset[cnt++] = 0;
-  offset[cnt++] = da->xs/da->w;
-  offset[cnt++] = da->ys;
-  offset[cnt++] = da->zs;
+  offset[cnt++] = PetscHDF5IntCast(da->xs/da->w);
+  offset[cnt++] = PetscHDF5IntCast(da->ys);
+  offset[cnt++] = PetscHDF5IntCast(da->zs);
   cnt = 0; 
-  if (da->w > 1) count[cnt++] = da->w;
-  count[cnt++] = (da->xe - da->xs)/da->w;
-  count[cnt++] = da->ye - da->ys;
-  count[cnt++] = da->ze - da->zs;
+  if (da->w > 1) count[cnt++] = PetscHDF5IntCast(da->w);
+  count[cnt++] = PetscHDF5IntCast((da->xe - da->xs)/da->w);
+  count[cnt++] = PetscHDF5IntCast(da->ye - da->ys);
+  count[cnt++] = PetscHDF5IntCast(da->ze - da->zs);
   memspace = H5Screate_simple(dim, count, NULL);
   if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 

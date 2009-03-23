@@ -1,5 +1,4 @@
 #define PETSC_USE_FORTRAN_MODULES
-#include "finclude/petscalldef.h"
 
         module petscao
         use petscmat
@@ -7,7 +6,7 @@
         end module
 
         module petscdadef
-        use petscksp
+        use petscmat
 #include "finclude/petscda.h"
 #include "finclude/ftn-custom/petscdadef.h90"
         end module
