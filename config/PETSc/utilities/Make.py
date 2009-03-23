@@ -32,19 +32,21 @@ class Configure(config.base.Configure):
         raise RuntimeError('Could not locate the make utility on your system, make sure\n it is in your path or use --with-make=/fullpathnameofmake\n and run config/configure.py again')    
     # Check for GNU make
     haveGNUMake = 0
-    try:
-      (output, error, status) = config.base.Configure.executeShellCommand('strings '+self.make, log = self.framework.log)
-      if not status and output.find('GNU Make') >= 0:
-        haveGNUMake = 1
-    except RuntimeError, e:
-      self.framework.log.write('Make check failed: '+str(e)+'\n')
-    if not haveGNUMake:
+    self.getExecutable('strings', getFullPath = 1)
+    if hasattr(self, 'strings'):
       try:
-        (output, error, status) = config.base.Configure.executeShellCommand('strings '+self.make+'.exe', log = self.framework.log)
+        (output, error, status) = config.base.Configure.executeShellCommand(self.strings+' '+self.make, log = self.framework.log)
         if not status and output.find('GNU Make') >= 0:
           haveGNUMake = 1
       except RuntimeError, e:
         self.framework.log.write('Make check failed: '+str(e)+'\n')
+      if not haveGNUMake:
+        try:
+          (output, error, status) = config.base.Configure.executeShellCommand(self.strings+' '+self.make+'.exe', log = self.framework.log)
+          if not status and output.find('GNU Make') >= 0:
+            haveGNUMake = 1
+        except RuntimeError, e:
+          self.framework.log.write('Make check failed: '+str(e)+'\n')
     # mac has fat binaries where 'string' check fails
     if not haveGNUMake:
       try:

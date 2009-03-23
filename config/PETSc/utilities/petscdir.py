@@ -32,6 +32,7 @@ class Configure(config.base.Configure):
 
   def setupDependencies(self, framework):
     self.sourceControl = framework.require('config.sourceControl',self)
+    self.programs      = framework.require('config.programs',self)
     return
 
   def configureDirectories(self):
@@ -86,8 +87,8 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
     configGuess = os.path.join(auxDir, 'config.guess')
     
     try:
-      host   = config.base.Configure.executeShellCommand(self.shell+' '+configGuess, log = self.framework.log)[0]
-      output = config.base.Configure.executeShellCommand(self.shell+' '+configSub+' '+host, log = self.framework.log)[0]
+      host   = config.base.Configure.executeShellCommand(self.programs.SHELL+' '+configGuess, log = self.framework.log)[0]
+      output = config.base.Configure.executeShellCommand(self.programs.SHELL+' '+configSub+' '+host, log = self.framework.log)[0]
     except RuntimeError, e:
       fd = open(configGuess)
       data = fd.read()
