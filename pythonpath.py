@@ -8,7 +8,7 @@ import sys
 
 def getPythonPath():
   if 'PYTHONPATH' in os.environ:
-    PYTHONPATH = filter(lambda p: len(p), os.environ['PYTHONPATH'].split(':'))
+    PYTHONPATH = filter(lambda p: len(p), os.environ['PYTHONPATH'].split(os.path.pathsep))
   else:  
     PYTHONPATH = [] 
   argsDB   = RDict.RDict(parentDirectory = os.path.abspath(os.path.dirname(sys.modules['RDict'].__file__)))
