@@ -153,6 +153,9 @@ cdef class PC(Object):
         if context == NULL: return None
         else: return <object> context
 
+    def setPythonType(self, py_type):
+        CHKERR( PCPythonSetType(self.pc, str2cp(py_type)) )
+
     #
 
 # --------------------------------------------------------------------

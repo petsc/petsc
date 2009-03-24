@@ -360,3 +360,46 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP ksp,void *ctx)
 }
 
 /* -------------------------------------------------------------------------- */
+
+#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
+
+PETSC_EXTERN_CXX_BEGIN
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP,const char[]);
+PETSC_EXTERN_CXX_END
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPPythonSetType"
+/*@C
+   KSPPythonSetType - Initalize a KSP object implemented in Python.
+
+   Collective on KSP
+
+   Input Parameter:
++  ksp - the linear solver (KSP) context.
+-  pyname - full dotted Python name [package].module[.{class|function}]
+
+   Options Database Key:
+.  -ksp_python_type <pyname>
+
+   Level: intermediate
+
+.keywords: KSP, Python
+
+.seealso: KSPCreate(), KSPSetType(), KSPPYTHON, PetscPythonInitialize()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType(KSP ksp,const char pyname[])
+{
+  PetscErrorCode (*f)(KSP, const char[]) = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidCharPointer(pyname,2);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp,"KSPPythonSetType_C",(PetscVoidFunction*)&f);CHKERRQ(ierr);
+  if (f) {ierr = (*f)(ksp,pyname);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#endif
+
+/* -------------------------------------------------------------------------- */

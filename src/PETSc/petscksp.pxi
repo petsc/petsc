@@ -229,5 +229,6 @@ cdef extern from "libpetsc4py.h":
     PetscKSPType KSPPYTHON
     int KSPPythonSetContext(PetscKSP,void*)
     int KSPPythonGetContext(PetscKSP,void**)
+    int KSPPythonSetType(PetscKSP,char[])
 
 # --------------------------------------------------------------------

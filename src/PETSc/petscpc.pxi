@@ -81,5 +81,6 @@ cdef extern from "libpetsc4py.h":
     PetscPCType PCPYTHON
     int PCPythonSetContext(PetscPC,void*)
     int PCPythonGetContext(PetscPC,void**)
+    int PCPythonSetType(PetscPC,char[])
 
 # --------------------------------------------------------------------

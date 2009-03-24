@@ -282,5 +282,6 @@ cdef extern from "libpetsc4py.h":
     PetscSNESType SNESPYTHON
     int SNESPythonSetContext(PetscSNES,void*)
     int SNESPythonGetContext(PetscSNES,void**)
+    int SNESPythonSetType(PetscSNES,char[])
 
 # --------------------------------------------------------------------

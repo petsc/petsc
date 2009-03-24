@@ -631,6 +631,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Python(SNES snes)
 }
 EXTERN_C_END
 
+#if defined(vec_sol_update)
+#undef vec_sol_update
+#endif
+
+#if defined(vec_rhs)
+#undef vec_rhs
+#endif
+
 /* -------------------------------------------------------------------------- */
 
 #undef __FUNCT__
@@ -712,12 +720,45 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES snes,void *ctx)
 
 /* -------------------------------------------------------------------------- */
 
-#if defined(vec_sol_update)
-#undef vec_sol_update
-#endif
+#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
 
-#if defined(vec_rhs)
-#undef vec_rhs
+PETSC_EXTERN_CXX_BEGIN
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES,const char[]);
+PETSC_EXTERN_CXX_END
+
+#undef __FUNCT__
+#define __FUNCT__ "SNESPythonSetType"
+/*@C
+   SNESPythonSetType - Initalize a SNES object implemented in Python.
+
+   Collective on SNES
+
+   Input Parameter:
++  snes - the nonlinear solver (SNES) context.
+-  pyname - full dotted Python name [package].module[.{class|function}]
+
+   Options Database Key:
+.  -snes_python_type <pyname>
+
+   Level: intermediate
+
+.keywords: SNES, Python
+
+.seealso: SNESCreate(), SNESSetType(), SNESPYTHON, PetscPythonInitialize()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetType(SNES snes,const char pyname[])
+{
+  PetscErrorCode (*f)(SNES, const char[]) = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidCharPointer(pyname,2);
+  ierr = PetscObjectQueryFunction((PetscObject)snes,"SNESPythonSetType_C",
+				  (PetscVoidFunction*)&f);CHKERRQ(ierr);
+  if (f) {ierr = (*f)(snes,pyname);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
 #endif
 
 /* -------------------------------------------------------------------------- */

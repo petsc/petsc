@@ -367,6 +367,9 @@ cdef class KSP(Object):
         if context == NULL: return None
         else: return <object> context
 
+    def setPythonType(self, py_type):
+        CHKERR( KSPPythonSetType(self.ksp, str2cp(py_type)) )
+
     # --- application context ---
 
     property appctx:

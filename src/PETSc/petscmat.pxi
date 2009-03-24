@@ -757,5 +757,6 @@ cdef extern from "libpetsc4py.h":
     PetscMatType MATPYTHON
     int MatPythonSetContext(PetscMat,void*)
     int MatPythonGetContext(PetscMat,void**)
+    int MatPythonSetType(PetscMat,char[])
 
 # --------------------------------------------------------------------

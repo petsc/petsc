@@ -406,6 +406,9 @@ cdef class SNES(Object):
         if context == NULL: return None
         else: return <object> context
 
+    def setPythonType(self, py_type):
+        CHKERR( SNESPythonSetType(self.snes, str2cp(py_type)) )
+
     # --- xxx ---
 
     property appctx:

@@ -264,6 +264,9 @@ cdef class TS(Object):
         if context == NULL: return None
         else: return <object> context
 
+    def setPythonType(self, py_type):
+        CHKERR( TSPythonSetType(self.ts, str2cp(py_type)) )
+
     # --- xxx ---
 
     property appctx:

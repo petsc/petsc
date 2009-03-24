@@ -816,3 +816,46 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetContext(Mat mat,void *ctx)
 }
 
 /* -------------------------------------------------------------------------- */
+
+#if PETSC_VERSION_(2,3,3) || PETSC_VERSION_(2,3,2)
+
+PETSC_EXTERN_CXX_BEGIN
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat,const char[]);
+PETSC_EXTERN_CXX_END
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPythonSetType"
+/*@C
+   MatPythonSetType - Initalize a Mat object implemented in Python.
+
+   Collective on Mat
+
+   Input Parameter:
++  mat - the matrix (Mat) object.
+-  pyname - full dotted Python name [package].module[.{class|function}]
+
+   Options Database Key:
+.  -mat_python_type <pyname>
+
+   Level: intermediate
+
+.keywords: Mat, Python
+
+.seealso: MATPYTHON, MatCreatePython(), PetscPythonInitialize()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat mat,const char pyname[])
+{
+  PetscErrorCode (*f)(Mat, const char[]) = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidCharPointer(pyname,2);
+  ierr = PetscObjectQueryFunction((PetscObject)mat,"MatPythonSetType_C",
+				  (PetscVoidFunction*)&f);CHKERRQ(ierr);
+  if (f) {ierr = (*f)(mat,pyname);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+}
+
+#endif
+
+/* -------------------------------------------------------------------------- */

@@ -180,5 +180,6 @@ cdef extern from "libpetsc4py.h":
     PetscTSType TS_PYTHON
     int TSPythonSetContext(PetscTS,void*)
     int TSPythonGetContext(PetscTS,void**)
+    int TSPythonSetType(PetscTS,char[])
 
 # --------------------------------------------------------------------

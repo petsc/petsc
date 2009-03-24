@@ -301,7 +301,7 @@ cdef class Mat(Object):
 
     #
 
-    def createPython(self, size, context, comm=None):
+    def createPython(self, size, context=None, comm=None):
         cdef MPI_Comm ccomm = def_Comm(comm, PETSC_COMM_DEFAULT)
         cdef PetscInt bs=0, m=0, n=0, M=0, N=0
         CHKERR( Mat_SplitSizes(ccomm, size, None, &bs, &m, &n, &M, &N) )
@@ -321,6 +321,9 @@ cdef class Mat(Object):
         CHKERR( MatPythonGetContext(self.mat, &context) )
         if context == NULL: return None
         else: return <object> context
+
+    def setPythonType(self, py_type):
+        CHKERR( MatPythonSetType(self.mat, str2cp(py_type)) )
 
     #
 
