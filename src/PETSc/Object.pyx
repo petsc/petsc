@@ -31,7 +31,7 @@ cdef class Object:
         if obj != NULL:
             CHKERR( PetscObjectReference(obj) )
             CHKERR( PetscObjectGetReference(obj, &refct) )
-        return refct
+        return (<long>refct)
 
 
     cdef long dec_ref(self) except -1:
@@ -42,7 +42,7 @@ cdef class Object:
             if refct == 1: self.obj[0] = NULL
             CHKERR( PetscObjectDereference(obj) )
             refct -= 1
-        return refct
+        return (<long>refct)
 
     # --- attribute management ---
 
