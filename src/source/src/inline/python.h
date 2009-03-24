@@ -26,18 +26,6 @@
 
 #include <petsc4py/petsc4py.h>
 
-#ifdef import_petsc
-#define import_petsc4py() \
-  (import_petsc(),(PyErr_Occurred()?-1:0))
-#define PyPetscViewer_New  PyPetscViewer->Arg
-#define PyPetscVec_New     PyPetscVec->Arg
-#define PyPetscMat_New     PyPetscMat->Arg
-#define PyPetscPC_New      PyPetscPC->Arg
-#define PyPetscKSP_New     PyPetscKSP->Arg
-#define PyPetscSNES_New    PyPetscSNES->Arg
-#define PyPetscTS_New      PyPetscTS->Arg
-#endif
-
 #ifndef PETSC_ERR_PYTHON
 #define PETSC_ERR_PYTHON (-1)
 #endif
