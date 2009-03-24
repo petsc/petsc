@@ -17,16 +17,6 @@
 
 /* ---------------------------------------------------------------- */
 
-#if !defined(PETSC_EXTERN_C_BEGIN)
-#define PETSC_EXTERN_C_BEGIN EXTERN_C_BEGIN
-#endif
-
-#if !defined(PETSC_EXTERN_C_END)
-#define PETSC_EXTERN_C_END EXTERN_C_END
-#endif
-
-/* ---------------------------------------------------------------- */
-
 #define PETSCMAT_DLL
 #include "src/mat/impls/python/python.c"
 #undef  PETSCMAT_DLL

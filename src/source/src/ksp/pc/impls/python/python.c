@@ -9,10 +9,10 @@
 
 #define PCPYTHON "python"
 
-PETSC_EXTERN_C_BEGIN
+PETSC_EXTERN_CXX_BEGIN
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPythonGetContext(PC,void**);
-PETSC_EXTERN_C_END
+PETSC_EXTERN_CXX_END
 
 /* -------------------------------------------------------------------------- */
 

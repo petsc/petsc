@@ -43,10 +43,10 @@ static PetscErrorCode SNESSkipConverged(SNES snes,PetscInt it,
 
 #define SNESPYTHON "python"
 
-PETSC_EXTERN_C_BEGIN
+PETSC_EXTERN_CXX_BEGIN
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonSetContext(SNES,void*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESPythonGetContext(SNES,void**);
-PETSC_EXTERN_C_END
+PETSC_EXTERN_CXX_END
 
 /*  -------------------------------------------------------------------- */
 
