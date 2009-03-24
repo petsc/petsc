@@ -304,3 +304,10 @@ cdef class DA(Object):
             return self.getGhostCorners()
 
 # --------------------------------------------------------------------
+
+del DAPeriodicType
+del DAStencilType
+del DAInterpolationType
+del DAElementType
+
+# --------------------------------------------------------------------

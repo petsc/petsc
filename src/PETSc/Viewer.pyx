@@ -244,3 +244,10 @@ cdef class Viewer(Object):
         CHKERR( PetscViewerDrawClear(self.vwr) )
 
 # --------------------------------------------------------------------
+
+del ViewerType
+del ViewerFormat
+del FileMode
+del DrawSize
+
+# --------------------------------------------------------------------

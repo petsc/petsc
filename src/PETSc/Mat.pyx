@@ -998,3 +998,11 @@ cdef class NullSpace(Object):
         if out is not None: CHKERR( VecCopy(v, out.vec) )
 
 # --------------------------------------------------------------------
+
+del MatType
+del MatOption
+del MatAssemblyType
+del MatStructure
+del MatOrderingType
+
+# --------------------------------------------------------------------

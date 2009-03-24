@@ -498,3 +498,9 @@ cdef class KSP(Object):
             return self.reason < 0
 
 # --------------------------------------------------------------------
+
+del KSPType
+del KSPNormType
+del KSPConvergedReason
+
+# --------------------------------------------------------------------
