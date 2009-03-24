@@ -54,6 +54,14 @@ def runtests(*args, **kargs):
     PETSc.COMM_WORLD.barrier()
     sys.stderr.flush()
     sys.stderr.write("petsc4py imported from '%s'\n" % petsc4py.__path__[0])
+    (major, minor, micro), patch = PETSc.Sys.getVersion(patch=True)
+    r = PETSc.Sys.getVersionInfo()['release']
+    if r: release = 'release'
+    else: release = 'development'
+    arch = PETSc.__arch__
+    sys.stderr.write(
+        "using PETSc %d.%d.%d-p%d %s (configuration: '%s')\n" % \
+        (major, minor, micro, patch, release, arch) )
     sys.stderr.flush()
     PETSc.COMM_WORLD.barrier()
 
