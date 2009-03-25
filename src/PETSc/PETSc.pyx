@@ -224,6 +224,7 @@ cdef int getinitargs(object args, int *argc, char **argv[]) except -1:
     # allocate command line arguments
     cdef int i, c = 0
     cdef char **v = NULL
+    if args is None: args = []
     args = [str(a) for a in args]
     args = [a for a in args if a]
     c = <int>    len(args)
@@ -330,7 +331,6 @@ cdef int register(char path[]) except -1:
 # --------------------------------------------------------------------
 
 def _initialize(args=None):
-    if args is None: args = ()
     global tracebacklist
     Error._traceback_ = tracebacklist
     global PetscError
