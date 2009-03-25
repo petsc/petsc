@@ -2899,8 +2899,7 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat
     mpicnt = PetscMPIIntCast(nz);CHKERRQ(ierr);
     ierr = MPI_Recv(mycols,mpicnt,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
     ierr = MPI_Get_count(&status,MPIU_INT,&mpimaxnz);CHKERRQ(ierr);
-    if (status.MPI_ERROR) {SETERRQ2(PETSC_ERR_LIB,"MPI_Get_count() status has error code %d, expected length %d",status.MPI_ERROR,mpicnt);}
-    else if (mpimaxnz == MPI_UNDEFINED) {SETERRQ1(PETSC_ERR_LIB,"MPI_Get_count() returned MPI_UNDEFINED, expected %d",mpicnt);}
+    if (mpimaxnz == MPI_UNDEFINED) {SETERRQ1(PETSC_ERR_LIB,"MPI_Get_count() returned MPI_UNDEFINED, expected %d",mpicnt);}
     else if (mpimaxnz < 0) {SETERRQ2(PETSC_ERR_LIB,"MPI_Get_count() returned impossible negative value %d, expected %d",mpimaxnz,mpicnt);}
     else if (mpimaxnz != mpicnt) {SETERRQ2(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file: expected %d received %d",mpicnt,mpimaxnz);}
   }
@@ -2973,8 +2972,7 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat
     mpicnt = PetscMPIIntCast(nz);
     ierr   = MPI_Recv(vals,mpicnt,MPIU_SCALAR,0,((PetscObject)A)->tag,comm,&status);CHKERRQ(ierr);
     ierr   = MPI_Get_count(&status,MPIU_SCALAR,&mpimaxnz);CHKERRQ(ierr);
-    if (status.MPI_ERROR) {SETERRQ2(PETSC_ERR_LIB,"MPI_Get_count() status has error code %d, expected length %d",status.MPI_ERROR,mpicnt);}
-    else if (mpimaxnz == MPI_UNDEFINED) {SETERRQ1(PETSC_ERR_LIB,"MPI_Get_count() returned MPI_UNDEFINED, expected %d",mpicnt);}
+    if (mpimaxnz == MPI_UNDEFINED) {SETERRQ1(PETSC_ERR_LIB,"MPI_Get_count() returned MPI_UNDEFINED, expected %d",mpicnt);}
     else if (mpimaxnz < 0) {SETERRQ2(PETSC_ERR_LIB,"MPI_Get_count() returned impossible negative value %d, expected %d",mpimaxnz,mpicnt);}
     else if (mpimaxnz != mpicnt) {SETERRQ2(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file: expected %d received %d",mpicnt,mpimaxnz);}
 
