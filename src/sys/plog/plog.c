@@ -26,8 +26,6 @@ PetscLogEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
 #include "petscconfiginfo.h"
 
 /* used in the MPI_XXX() count macros in petsclog.h */
-int PETSC_DLLEXPORT PETSC_DUMMY_SIZE = 0;
-int PETSC_DLLEXPORT PETSC_DUMMY_COUNT = 0; 
 
 /* Action and object logging variables */
 Action    *actions    = PETSC_NULL;
