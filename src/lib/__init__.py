@@ -1,6 +1,5 @@
 # Author:  Lisandro Dalcin
 # Contact: dalcinl@gmail.com
-# Id: $Id$
 
 # --------------------------------------------------------------------
 
@@ -26,21 +25,30 @@ def ImportPETSc(arch=None):
     """
     Import the PETSc extension module for a given configuration name.
     """
-    return Import('petsc4py', 'PETSc', __file__, arch,
-                  'PETSC_ARCH', 'petsc.cfg')
+    path, arch = getPathArchPETSc(arch)
+    return Import('petsc4py', 'PETSc', path, arch)
 
+def getPathArchPETSc(arch=None):
+    """
+    Undocumented.
+    """
+    import sys, os
+    path = os.path.dirname(__file__)
+    rcvar, rcfile  =  'PETSC_ARCH', 'petsc.cfg'
+    path, arch = getPathArch(path, arch, rcvar, rcfile)
+    return (path, arch)
 
-def Import(pkg, name, path, arch=None,
-           conf_var=None, conf_file=None):
+# --------------------------------------------------------------------
+
+def Import(pkg, name, path, arch):
     """
     Import helper for PETSc-based extension modules.
     """
     import sys, os, imp
-    # extension and full dotted module name
-    extname =  name
-    modname = '%s.%s' % (pkg, extname)
+    # full dotted module name
+    fullname = '%s.%s' % (pkg, name)
     # test if extension module was already imported
-    module  = sys.modules.get(modname)
+    module  = sys.modules.get(fullname)
     fname = getattr(module, '__file__', '')
     shext = imp.get_suffixes()[0][0]
     if os.path.splitext(fname)[-1] == shext:
@@ -50,40 +58,69 @@ def Import(pkg, name, path, arch=None,
         if arch is not None and arch != module.__arch__:
             raise ImportError("%s already imported" % module)
         return module
-    # determine base path for import
-    if os.path.isfile(path):
+    # import extension module from 'path/arch' directory
+    pathlist = [os.path.join(path, arch)]
+    fo, fn, stuff = imp.find_module(name, pathlist)
+    module = imp.load_module(fullname, fo, fn, stuff)
+    module.__arch__ = arch # save arch value
+    setattr(sys.modules[pkg], name, module)
+    return module
+
+def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
+    """
+    Undocumented.
+    """
+    import os, warnings
+    # path
+    if not path:
+        path = '.'
+    elif os.path.isfile(path):
         path = os.path.dirname(path)
     elif not os.path.isdir(path):
-        raise ImportError("invalid path '%s':" % path)
-    # determine PETSC_ARCH value
-    PETSC_ARCH = conf_var or 'PETSC_ARCH'
-    if arch is None:
-        arch_value = os.environ.get(PETSC_ARCH, '').strip()
-        if not arch_value and conf_file:
-            cfg = open(os.path.join(path, conf_file))
-            try:
-                lines = cfg.read().replace(' ', '').splitlines()
-            finally:
-                cfg.close()
-            cfg = dict([line.split('=') for line in lines])
-            arch_value = cfg[PETSC_ARCH]
-        arch_list = arch_value.split(os.path.pathsep)
-        arch = [a for a in arch_list if a][0]
-        mpath = os.path.join(path, arch)
-        if not os.path.isdir(mpath):
-            raise ImportError("invalid '%s': '%s'" % (PETSC_ARCH, arch))
-    else:
+        raise ValueError("invalid path: '%s'" % path)
+    # arch
+    if arch is not None:
         if not isinstance(arch, str):
-            raise TypeError("'arch' argument must be string")
-        mpath = os.path.join(path, arch)
-        if not os.path.isdir(mpath):
-            raise ImportError("invalid 'arch' value: '%s'" % arch)
-    # import extension module from 'path/arch' directory
-    extpath = [os.path.join(path, arch),]
-    fo, fn, stuff = imp.find_module(extname, extpath)
-    module = imp.load_module(modname, fo, fn, stuff)
-    module.__arch__ = arch # save arch value
-    setattr(sys.modules[pkg], extname, module)
-    return module
+            raise TypeError( "arch argument must be string")
+        if not os.path.isdir(os.path.join(path, arch)):
+            raise TypeError("invalid arch value: '%s'" % arch)
+        return (path, arch)
+    # helper function
+    def arch_list(arch):
+        arch = arch.strip().split(os.path.pathsep)
+        arch = [a.strip() for a in arch if a]
+        arch = [a for a in arch if a]
+        return arch
+    # try to get arch from the environment
+    arch_env = arch_list(os.environ.get(rcvar, ''))
+    for arch in arch_env:
+        if os.path.isdir(os.path.join(path, arch)):
+            return (path, arch)
+    # configuration file
+    if not os.path.isfile(rcfile):
+        rcfile = os.path.join(path, rcfile)
+        if not os.path.isfile(rcfile):
+            # now point to continue
+            return (path, '')
+    # helper function
+    def parse_rc(rcfile):
+        rcdata = open(rcfile).read()
+        lines = [ln.strip() for ln in rcdata.splitlines()]
+        lines = [ln for ln in lines if not ln.startswith('#')]
+        entries = [ln.split('=') for ln in lines if ln]
+        entries = [(k.strip(), v.strip()) for k, v in entries]
+        return dict(entries)
+    # try to get arch from data in config file
+    configrc = parse_rc(rcfile)
+    arch_cfg = arch_list(configrc.get(rcvar, ''))
+    for arch in arch_cfg:
+        if os.path.isdir(os.path.join(path, arch)):
+            if arch_env:
+                warnings.warn(
+                    "ignored arch: '%s', using: '%s'" % \
+                    (os.path.pathsep.join(arch_env), arch))
+            return (path, arch)
+    # nothing good found
+    return (path, '')
 
 # --------------------------------------------------------------------

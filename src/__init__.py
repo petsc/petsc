@@ -29,7 +29,7 @@ __credits__   = "PETSc Team <petsc-maint@mcs.anl.gov>"
 
 def init(args=None, arch=None):
     """
-    Initializes PETSc.
+    Initialize PETSc.
 
     :Parameters:
       - `args`: command-line arguments, usually the 'sys.argv' list.
@@ -39,7 +39,6 @@ def init(args=None, arch=None):
        the very beginning of the bootstrap script of an application.
     """
     import petsc4py.lib
-    PETSc = petsc4py.lib.ImportPETSc(arch)
     if args is None:
         args = []
     elif isinstance(args, str):
@@ -56,6 +55,7 @@ def init(args=None, arch=None):
         if not program_name:
             program_name = getattr(sys, 'executable', 'python')
         args.insert(0, program_name)
+    PETSc = petsc4py.lib.ImportPETSc(arch)
     PETSc._initialize(args)
 
 # --------------------------------------------------------------------
