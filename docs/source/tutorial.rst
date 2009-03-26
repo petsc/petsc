@@ -1,4 +1,4 @@
 Tutorial
 ========
 
-.. note:: Under construction, any help welcome...
+XXX To be written ... Any contribution welcome!

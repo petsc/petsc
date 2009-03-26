@@ -176,7 +176,7 @@ latex_paper_size = 'a4'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'petsc4py-man.tex', ur'PETSc for Python',
+  ('manual', 'petsc4py.tex', ur'PETSc for Python',
    ur'Lisandro Dalcín', 'howto'),
 ]
 
@@ -196,4 +196,11 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
-latex_use_modindex = False
+
+latex_additional_files = ['sphinxfix.sty']
+latex_elements = {
+    'printmodindex': '',
+    'printindex': '',
+    'preamble' : r'\usepackage{sphinxfix}',
+    }
+
