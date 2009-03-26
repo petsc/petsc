@@ -76,3 +76,72 @@ PetscErrorCode PETSC_DLLEXPORT PetscSortReal(PetscInt n,PetscReal v[])
   PetscFunctionReturn(0);
 }
 
+
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscSortSplit"
+/*@
+   PetscSortSplit - Quick-sort split of an array in place.
+                    Modified from SPARSEKIT2qsplit()
+
+   Not Collective
+
+   Input Parameters:
++  ncut  - splitig index
+.  n     - number of values to sort
+.  a     - array of values
+-  idx   - index for array a
+
+   Output Parameters:
++  a     - permuted array of values such that its elements satisfy:
+           abs(a[i]) >= abs(a[ncut-1]) for i < ncut and 
+           abs(a[i]) <= abs(a[ncut-1]) for i >= ncut 
+-  idx   - permuted index of array a
+
+   Level: intermediate
+
+   Concepts: sorting^doubles
+
+.seealso: PetscSortInt(), PetscSortRealWithPermutation()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscSortSplit(PetscInt ncut,PetscInt n,PetscScalar a[],PetscInt idx[])
+{
+  PetscInt    i,mid,last,itmp,j,first;
+  PetscScalar d,tmp;
+  PetscReal   abskey;
+
+  PetscFunctionBegin;
+  first = 0;
+  last  = n-1;
+  if (ncut < first || ncut > last) PetscFunctionReturn(0);
+
+  while (1){
+    mid = first;
+    abskey = (d = a[mid],PetscAbsScalar(d));
+    i = last;
+    for (j = first + 1; j <= i; ++j) {
+      if ((d = a[j],PetscAbsScalar(d)) >= abskey) {
+        ++mid;
+        /* interchange */
+        tmp = a[mid];  itmp = idx[mid];
+        a[mid] = a[j]; idx[mid] = idx[j];
+        a[j] = tmp;    idx[j] = itmp;
+      } 
+    }
+    
+    /* interchange */
+    tmp = a[mid];      itmp = idx[mid];
+    a[mid] = a[first]; idx[mid] = idx[first];
+    a[first] = tmp;    idx[first] = itmp;
+
+    /* test for while loop */
+    if (mid == ncut) {
+      break;
+    } else if (mid > ncut){
+      last = mid - 1;
+    } else {
+      first = mid + 1;
+    }
+  } 
+  PetscFunctionReturn(0);
+} 
