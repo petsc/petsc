@@ -26,24 +26,11 @@ subject to change at any time.
 
   + NumPy_ 1.0.1 and above.
 
-.. _PETSc:  http://www-unix.mcs.anl.gov/petsc/petsc-as/
+.. _PETSc:  http://www.mcs.anl.gov/petsc/
 .. _Python: http://www.python.org
 .. _NumPy:  http://numpy.scipy.org
 
 
 - This package uses standard `distutils`. For detailed instructions
   about requirements and the building/install process, read the file
-  ``docs/install.txt``.
-
-
-- The project documentation can be found in files ``docs/*.txt``.  It
-  is written reStructuredText_ format. You can use Docutils_ to get
-  HTML or LaTeX output. A basic ``Makefile`` is provided in ``docs/``
-  directory. 
-  
-  + Try ``make html`` to obtain HTML output in ``docs/petsc4py.html``.
-
-  + Try ``make pdf``  to obtain PDF output in ``docs/petsc4py.pdf``.
-
-.. _Docutils:         http://docutils.sourceforge.net
-.. _reStructuredText: http://docutils.sourceforge.net/rst.html
+  ``docs/srouce/install.rst``.
