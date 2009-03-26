@@ -306,7 +306,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 */
 PETSC_STATIC_INLINE PetscErrorCode TypeSize(PetscLogDouble *buff,PetscMPIInt count,MPI_Datatype type) 
 {
-  PetscMPIInt mysize; return  (MPI_Type_size(type,&mysize) || (*buff += (PetscLogDouble) (count*mysize)),0);
+  PetscMPIInt mysize; return (MPI_Type_size(type,&mysize) || (*buff += (PetscLogDouble) (count*mysize),0));
 }
 
 #define MPI_Irecv(buf,count,datatype,source,tag,comm,request) \
