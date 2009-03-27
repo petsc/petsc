@@ -249,8 +249,6 @@ extern PETSC_DLLEXPORT PetscLogDouble wait_ct;
 extern PETSC_DLLEXPORT PetscLogDouble wait_any_ct;
 extern PETSC_DLLEXPORT PetscLogDouble wait_all_ct;
 extern PETSC_DLLEXPORT PetscLogDouble sum_of_waits_ct;
-extern PETSC_DLLEXPORT int            PETSC_DUMMY_SIZE;
-extern PETSC_DLLEXPORT int            PETSC_DUMMY_COUNT;
 
 #define PetscLogEventBarrierBegin(e,o1,o2,o3,o4,cm) \
   (((_PetscLogPLB && _stageLog->stageInfo[_stageLog->curStage].perfInfo.active &&  _stageLog->stageInfo[_stageLog->curStage].eventLog->eventInfo[e].active) ? \
@@ -308,29 +306,31 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog, const cha
 /*
    Logging of MPI activities
 */
-#define TypeSize(buff,count,type) \
- (MPI_Type_size(type,&PETSC_DUMMY_SIZE) || (buff += (PetscLogDouble) ((count)*PETSC_DUMMY_SIZE),0))
+PETSC_STATIC_INLINE PetscErrorCode TypeSize(PetscLogDouble *buff,PetscMPIInt count,MPI_Datatype type) 
+{
+  PetscMPIInt mysize; return  (MPI_Type_size(type,&mysize) || ((*buff += (PetscLogDouble) (count*mysize)),0));
+}
 
 #define MPI_Irecv(buf,count,datatype,source,tag,comm,request) \
- ((PETSC_DUMMY_COUNT = count,irecv_ct++,0) || TypeSize(irecv_len,PETSC_DUMMY_COUNT,datatype) || MPI_Irecv(buf,PETSC_DUMMY_COUNT,datatype,source,tag,comm,request))
+ ((irecv_ct++,0) || TypeSize(&irecv_len,count,datatype) || MPI_Irecv(buf,count,datatype,source,tag,comm,request))
 
 #define MPI_Isend(buf,count,datatype,dest,tag,comm,request) \
- ((PETSC_DUMMY_COUNT = count,isend_ct++,0) || TypeSize(isend_len,PETSC_DUMMY_COUNT,datatype) || MPI_Isend(buf,PETSC_DUMMY_COUNT,datatype,dest,tag,comm,request))
+ ((isend_ct++,0) || TypeSize(&isend_len,count,datatype) || MPI_Isend(buf,count,datatype,dest,tag,comm,request))
 
 #define MPI_Startall_irecv(count,number,requests) \
- ((irecv_ct += (PetscLogDouble)(number),0) || TypeSize(irecv_len,count,MPIU_SCALAR) || MPI_Startall(number,requests))
+ ((irecv_ct += (PetscLogDouble)(number),0) || TypeSize(&irecv_len,count,MPIU_SCALAR) || MPI_Startall(number,requests))
 
 #define MPI_Startall_isend(count,number,requests) \
- ((isend_ct += (PetscLogDouble)(number),0) || TypeSize(isend_len,count,MPIU_SCALAR) || MPI_Startall(number,requests))
+ ((isend_ct += (PetscLogDouble)(number),0) || TypeSize(&isend_len,count,MPIU_SCALAR) || MPI_Startall(number,requests))
 
 #define MPI_Start_isend(count,requests) \
- ((isend_ct++,0) || TypeSize(isend_len,count,MPIU_SCALAR) || MPI_Start(requests))
+ ((isend_ct++,0) || TypeSize(&isend_len,count,MPIU_SCALAR) || MPI_Start(requests))
 
 #define MPI_Recv(buf,count,datatype,source,tag,comm,status) \
- ((PETSC_DUMMY_COUNT = count,recv_ct++,0) || TypeSize(recv_len,PETSC_DUMMY_COUNT,datatype) || MPI_Recv(buf,PETSC_DUMMY_COUNT,datatype,source,tag,comm,status))
+ ((recv_ct++,0) || TypeSize(&recv_len,count,datatype) || MPI_Recv(buf,count,datatype,source,tag,comm,status))
 
 #define MPI_Send(buf,count,datatype,dest,tag,comm) \
- ((PETSC_DUMMY_COUNT = count,send_ct++,0) || TypeSize(send_len,PETSC_DUMMY_COUNT,datatype) || MPI_Send(buf,PETSC_DUMMY_COUNT,datatype,dest,tag,comm))
+ ((send_ct++,0) || TypeSize(&send_len,count,datatype) || MPI_Send(buf,count,datatype,dest,tag,comm))
 
 #define MPI_Wait(request,status) \
  ((wait_ct++,sum_of_waits_ct++,0) || MPI_Wait(request,status))
@@ -339,7 +339,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog, const cha
  ((wait_any_ct++,sum_of_waits_ct++,0) || MPI_Waitany(a,b,c,d))
 
 #define MPI_Waitall(count,array_of_requests,array_of_statuses) \
- ((PETSC_DUMMY_COUNT = count,wait_all_ct++,sum_of_waits_ct += (PetscLogDouble) (PETSC_DUMMY_COUNT),0) || MPI_Waitall(PETSC_DUMMY_COUNT,array_of_requests,array_of_statuses))
+ ((wait_all_ct++,sum_of_waits_ct += (PetscLogDouble) (count),0) || MPI_Waitall(count,array_of_requests,array_of_statuses))
 
 #define MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm) \
  ((allreduce_ct++,0) || MPI_Allreduce(sendbuf,recvbuf,count,datatype,op,comm))
@@ -351,16 +351,16 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog, const cha
  ((gather_ct++,0) || MPI_Allgatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,comm))
 
 #define MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm) \
- ((PETSC_DUMMY_COUNT = sendcount,gather_ct++,0) || TypeSize(send_len,PETSC_DUMMY_COUNT,sendtype) || MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
+ ((gather_ct++,0) || TypeSize(&send_len,sendcount,sendtype) || MPI_Gather(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
 
 #define MPI_Gatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,root,comm) \
- ((PETSC_DUMMY_COUNT = sendcount,gather_ct++,0) || TypeSize(send_len,PETSC_DUMMY_COUNT,sendtype) || MPI_Gatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,root,comm))
+ ((gather_ct++,0) || TypeSize(&send_len,sendcount,sendtype) || MPI_Gatherv(sendbuf,sendcount,sendtype,recvbuf,recvcount,displs,recvtype,root,comm))
 
 #define MPI_Scatter(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm) \
-  ((PETSC_DUMMY_COUNT = recvcount,scatter_ct++,0) || TypeSize(recv_len,PETSC_DUMMY_COUNT,recvtype) || MPI_Scatter(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
+  ((scatter_ct++,0) || TypeSize(&recv_len,recvcount,recvtype) || MPI_Scatter(sendbuf,sendcount,sendtype,recvbuf,recvcount,recvtype,root,comm))
 
 #define MPI_Scatterv(sendbuf,sendcount,displs,sendtype,recvbuf,recvcount,recvtype,root,comm) \
-  ((PETSC_DUMMY_COUNT = recvcount,scatter_ct++,0) || TypeSize(recv_len,PETSC_DUMMY_COUNT,recvtype) || MPI_Scatterv(sendbuf,sendcount,displs,sendtype,recvbuf,recvcount,recvtype,root,comm))
+  ((scatter_ct++,0) || TypeSize(&recv_len,recvcount,recvtype) || MPI_Scatterv(sendbuf,sendcount,displs,sendtype,recvbuf,recvcount,recvtype,root,comm))
 
 #else
 

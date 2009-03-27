@@ -2803,8 +2803,8 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
   MPI_Status     status;
   PetscErrorCode ierr;
-  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,maxnz;
-  PetscInt       i,nz,j,rstart,rend,mmax;
+  PetscMPIInt    rank,size,tag = ((PetscObject)viewer)->tag,mpicnt,mpimaxnz;
+  PetscInt       i,nz,j,rstart,rend,mmax,maxnz;
   PetscInt       header[4],*rowlengths = 0,M,N,m,*cols;
   PetscInt       *ourlens = PETSC_NULL,*procsnz = PETSC_NULL,*offlens = PETSC_NULL,jj,*mycols,*smycols;
   PetscInt       cend,cstart,n,*rowners;
@@ -2857,11 +2857,13 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat
       for (j=0; j<rowners[i+1]-rowners[i]; j++) {
         procsnz[i] += rowlengths[j];
       }
-      ierr = MPI_Send(rowlengths,rowners[i+1]-rowners[i],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      mpicnt = PetscMPIIntCast(rowners[i+1]-rowners[i]);
+      ierr   = MPI_Send(rowlengths,mpicnt,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(rowlengths);CHKERRQ(ierr);
   } else {
-    ierr = MPI_Recv(ourlens,m,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+    mpicnt = PetscMPIIntCast(m);CHKERRQ(ierr);
+    ierr   = MPI_Recv(ourlens,mpicnt,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
   }
 
   if (!rank) {
@@ -2879,9 +2881,10 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat
 
     /* read in every one elses and ship off */
     for (i=1; i<size; i++) {
-      nz   = procsnz[i];
-      ierr = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
-      ierr = MPI_Send(cols,nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      nz     = procsnz[i];
+      ierr   = PetscBinaryRead(fd,cols,nz,PETSC_INT);CHKERRQ(ierr);
+      mpicnt = PetscMPIIntCast(nz);
+      ierr   = MPI_Send(cols,mpicnt,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(cols);CHKERRQ(ierr);
   } else {
@@ -2893,9 +2896,12 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat
     ierr = PetscMalloc(nz*sizeof(PetscInt),&mycols);CHKERRQ(ierr);
 
     /* receive message of column indices*/
-    ierr = MPI_Recv(mycols,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
-    ierr = MPI_Get_count(&status,MPIU_INT,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
+    mpicnt = PetscMPIIntCast(nz);CHKERRQ(ierr);
+    ierr = MPI_Recv(mycols,mpicnt,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+    ierr = MPI_Get_count(&status,MPIU_INT,&mpimaxnz);CHKERRQ(ierr);
+    if (mpimaxnz == MPI_UNDEFINED) {SETERRQ1(PETSC_ERR_LIB,"MPI_Get_count() returned MPI_UNDEFINED, expected %d",mpicnt);}
+    else if (mpimaxnz < 0) {SETERRQ2(PETSC_ERR_LIB,"MPI_Get_count() returned impossible negative value %d, expected %d",mpimaxnz,mpicnt);}
+    else if (mpimaxnz != mpicnt) {SETERRQ2(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file: expected %d received %d",mpicnt,mpimaxnz);}
   }
 
   /* determine column ownership if matrix is not square */
@@ -2952,9 +2958,10 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat
 
     /* read in other processors and ship out */
     for (i=1; i<size; i++) {
-      nz   = procsnz[i];
-      ierr = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
-      ierr = MPI_Send(vals,nz,MPIU_SCALAR,i,((PetscObject)A)->tag,comm);CHKERRQ(ierr);
+      nz     = procsnz[i];
+      ierr   = PetscBinaryRead(fd,vals,nz,PETSC_SCALAR);CHKERRQ(ierr);
+      mpicnt = PetscMPIIntCast(nz);
+      ierr   = MPI_Send(vals,mpicnt,MPIU_SCALAR,i,((PetscObject)A)->tag,comm);CHKERRQ(ierr);
     }
     ierr = PetscFree(procsnz);CHKERRQ(ierr);
   } else {
@@ -2962,9 +2969,12 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, const MatType type,Mat *newmat
     ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
 
     /* receive message of values*/
-    ierr = MPI_Recv(vals,nz,MPIU_SCALAR,0,((PetscObject)A)->tag,comm,&status);CHKERRQ(ierr);
-    ierr = MPI_Get_count(&status,MPIU_SCALAR,&maxnz);CHKERRQ(ierr);
-    if (maxnz != nz) SETERRQ(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file");
+    mpicnt = PetscMPIIntCast(nz);
+    ierr   = MPI_Recv(vals,mpicnt,MPIU_SCALAR,0,((PetscObject)A)->tag,comm,&status);CHKERRQ(ierr);
+    ierr   = MPI_Get_count(&status,MPIU_SCALAR,&mpimaxnz);CHKERRQ(ierr);
+    if (mpimaxnz == MPI_UNDEFINED) {SETERRQ1(PETSC_ERR_LIB,"MPI_Get_count() returned MPI_UNDEFINED, expected %d",mpicnt);}
+    else if (mpimaxnz < 0) {SETERRQ2(PETSC_ERR_LIB,"MPI_Get_count() returned impossible negative value %d, expected %d",mpimaxnz,mpicnt);}
+    else if (mpimaxnz != mpicnt) {SETERRQ2(PETSC_ERR_FILE_UNEXPECTED,"something is wrong with file: expected %d received %d",mpicnt,mpimaxnz);}
 
     /* insert into matrix */
     jj      = rstart;
