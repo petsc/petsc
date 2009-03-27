@@ -1003,6 +1003,34 @@ M*/
 .keywords: log, event, begin, barrier
 M*/
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogEventGetId"
+/*@C
+  PetscLogEventGetId - Returns the event id when given the event name.
+
+  Not Collective 
+
+  Input Parameter:
+. name  - The event name
+
+  Output Parameter:
+. event - The event
+
+  Level: intermediate
+
+.seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogStageGetId()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscLogEventGetId(const char name[], PetscLogEvent *event)
+{
+  StageLog       stageLog;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = EventRegLogGetEvent(stageLog->eventLog, name, event);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 /*------------------------------------------------ Output Functions -------------------------------------------------*/
 #undef __FUNCT__  
