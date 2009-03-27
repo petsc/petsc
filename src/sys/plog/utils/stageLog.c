@@ -540,7 +540,7 @@ PetscErrorCode PETSC_DLLEXPORT StageLogGetVisible(StageLog stageLog, int stage, 
 #undef __FUNCT__  
 #define __FUNCT__ "StageLogGetStage"
 /*@
-  StageLogGetStage - This function the stage id given the stage name.
+  StageLogGetStage - This function returns the stage id given the stage name.
 
   Not Collective
 
