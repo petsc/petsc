@@ -59,9 +59,10 @@ PETSC_EXTERN_CXX_END
 #define PetscContainerCreate          PetscObjectContainerCreate
 #define PetscContainerSetUserDestroy  PetscObjectContainerSetUserDestroy
 
+#define PetscLogStage                int
 #define PetscLogEvent                PetscEvent
-#define PetscLogEventRegister(n,c,e) PetscLogEventRegister(e,n,c)
 #define PetscLogStageRegister(n,s)   PetscLogStageRegister(s,n)
+#define PetscLogEventRegister(n,c,e) PetscLogEventRegister(e,n,c)
 #define PetscCookieRegister(n,c)     PetscCookieRegister(c)
 
 #endif /* _PETSC_COMPAT_H */

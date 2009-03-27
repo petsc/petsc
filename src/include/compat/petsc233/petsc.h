@@ -31,9 +31,10 @@ PetscErrorCode PetscOptionsInsertFile_233(MPI_Comm comm,const char file[],PetscT
 #define PetscOptionsInsertFile PetscOptionsInsertFile_233
 
 
+#define PetscLogStage                int
 #define PetscLogEvent                PetscEvent
-#define PetscLogEventRegister(n,c,e) PetscLogEventRegister(e,n,c)
 #define PetscLogStageRegister(n,s)   PetscLogStageRegister(s,n)
+#define PetscLogEventRegister(n,c,e) PetscLogEventRegister(e,n,c)
 #define PetscCookieRegister(n,c)     PetscCookieRegister(c)
 
 #endif /* _PETSC_COMPAT_H */
