@@ -12,7 +12,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   DA             da;
-  PetscTruth     flg,test_order;
+  PetscTruth     flg = PETSC_FALSE,test_order = PETSC_FALSE;
   ISColoring     coloring;
   Mat            mat;
   DAStencilType  stencil_type = DA_STENCIL_BOX;
@@ -30,10 +30,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); 
   if (flg) stencil_type =  DA_STENCIL_STAR;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-test_order",&test_order);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-test_order",&test_order,PETSC_NULL);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     if (m == PETSC_DECIDE) SETERRQ(1,"Must set -m option with -distribute option");
     ierr = PetscMalloc(m*sizeof(PetscInt),&lx);CHKERRQ(ierr);
@@ -50,8 +51,7 @@ int main(int argc,char **argv)
   }
 
   /* Create distributed array and get vectors */
-  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,
-                    lx,ly,lz,&da);CHKERRQ(ierr);
+  ierr = DACreate3d(PETSC_COMM_WORLD,DA_NONPERIODIC,stencil_type,M,N,P,m,n,p,w,s,lx,ly,lz,&da);CHKERRQ(ierr);
   if (lx) {
     ierr = PetscFree(lx);CHKERRQ(ierr);
     ierr = PetscFree(ly);CHKERRQ(ierr);

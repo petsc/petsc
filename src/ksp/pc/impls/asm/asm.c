@@ -166,7 +166,8 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
       ierr = PCASMCreateSubdomains(pc->pmat,osm->n_local_true,&osm->is);CHKERRQ(ierr);
     }
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(prefix,"-pc_asm_print_subdomains",&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(prefix,"-pc_asm_print_subdomains",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) { ierr = PCASMPrintSubdomains(pc);CHKERRQ(ierr); }
 
     /*  Extend the "overlapping" regions by a number of steps  */
@@ -424,16 +425,14 @@ static PetscErrorCode PCSetFromOptions_ASM(PC pc)
     if (symset && flg) { osm->type = PC_ASM_BASIC; }
   }
   ierr = PetscOptionsHead("Additive Schwarz options");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",
-			   osm->n,&blocks,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_asm_blocks","Number of subdomains","PCASMSetTotalSubdomains",osm->n,&blocks,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetTotalSubdomains(pc,blocks,PETSC_NULL);CHKERRQ(ierr); }
-    ierr = PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",
-			   osm->overlap,&ovl,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-pc_asm_overlap","Number of grid points overlap","PCASMSetOverlap",osm->overlap,&ovl,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetOverlap(pc,ovl);CHKERRQ(ierr); }
-    ierr = PetscOptionsName("-pc_asm_in_place","Perform matrix factorization inplace","PCASMSetUseInPlace",&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-pc_asm_in_place","Perform matrix factorization inplace","PCASMSetUseInPlace",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetUseInPlace(pc);CHKERRQ(ierr); }
-    ierr = PetscOptionsEnum("-pc_asm_type","Type of restriction/extension","PCASMSetType",
-			    PCASMTypes,(PetscEnum)osm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-pc_asm_type","Type of restriction/extension","PCASMSetType",PCASMTypes,(PetscEnum)osm->type,(PetscEnum*)&asmtype,&flg);CHKERRQ(ierr);
     if (flg) {ierr = PCASMSetType(pc,asmtype);CHKERRQ(ierr); }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);

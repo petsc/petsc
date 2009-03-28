@@ -21,7 +21,7 @@ int main(int argc,char **args)
   Mat            A;
   char           file[PETSC_MAX_PATH_LEN];
   PetscViewer    fd;
-  PetscTruth     table,flg;
+  PetscTruth     table = PETSC_FALSE,flg;
   KSP            ksp;
 #endif
 
@@ -30,7 +30,7 @@ int main(int argc,char **args)
 #if defined(PETSC_USE_COMPLEX)
   SETERRQ(1,"This example does not work with complex numbers");
 #else
-  ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-table",&table,PETSC_NULL);CHKERRQ(ierr);
 
 
   /* Read matrix and RHS */

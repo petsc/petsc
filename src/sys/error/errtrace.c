@@ -60,7 +60,7 @@ static char version[256];
 PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
 {
   PetscErrorCode ierr;
-  PetscTruth     use_stdout,use_none;
+  PetscTruth     use_stdout = PETSC_FALSE,use_none = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
@@ -70,11 +70,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
   ierr = PetscGetDate(date,64);CHKERRQ(ierr);
   ierr = PetscGetVersion(version,256);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stdout",&use_stdout);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-error_output_stdout",&use_stdout,PETSC_NULL);CHKERRQ(ierr);
   if (use_stdout) {
     PETSC_STDERR = PETSC_STDOUT;
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_none",&use_none);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-error_output_none",&use_none,PETSC_NULL);CHKERRQ(ierr);
   if (use_none) {
     PetscErrorPrintf = PetscErrorPrintfNone;
   }
@@ -168,7 +168,7 @@ $     SETERRQ(number,p,mess)
 PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *fun,const char* file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
 {
   PetscLogDouble    mem,rss;
-  PetscTruth        flg1,flg2;
+  PetscTruth        flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
 
   PetscFunctionBegin;
 
@@ -180,8 +180,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int line,const char *f
       (*PetscErrorPrintf)("destroying unneeded objects.\n");
       PetscMallocGetCurrentUsage(&mem);
       PetscMemoryGetCurrentUsage(&rss);
-      PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);
-      PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg2);
+      PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
+      PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
       if (flg2) {
         PetscMallocDumpLog(stdout);
       } else {
@@ -259,7 +259,7 @@ void PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(int line,const char *fun,cons
 {
   if (p == 1) {
     PetscLogDouble mem, rss;
-    PetscTruth     flg1, flg2;
+    PetscTruth     flg1 = PETSC_FALSE, flg2 = PETSC_FALSE;
 
     msg << "--------------------- Error Message ------------------------------------" << std::endl;
     if (n == PETSC_ERR_MEM) {
@@ -268,8 +268,8 @@ void PETSC_DLLEXPORT PetscTraceBackErrorHandlerCxx(int line,const char *fun,cons
       msg << "destroying unneeded objects." << std::endl;
       PetscMallocGetCurrentUsage(&mem);
       PetscMemoryGetCurrentUsage(&rss);
-      PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);
-      PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg2);
+      PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
+      PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
       if (flg2) {
         //PetscMallocDumpLog(stdout);
         msg << "Option -malloc_log does not work in C++." << std::endl;

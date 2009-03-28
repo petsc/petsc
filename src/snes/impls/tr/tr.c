@@ -95,7 +95,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   PetscScalar         cnorm;
   KSP                 ksp;
   SNESConvergedReason reason = SNES_CONVERGED_ITERATING;
-  PetscTruth          conv,breakout = PETSC_FALSE;
+  PetscTruth          conv = PETSC_FALSE,breakout = PETSC_FALSE;
 
   PetscFunctionBegin;
   maxits	= snes->max_its;	/* maximum number of iterations */
@@ -126,7 +126,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   if (snes->reason) PetscFunctionReturn(0);
 
   /* Set the stopping criteria to use the More' trick. */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_tr_ksp_regular_convergence_test",&conv);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_tr_ksp_regular_convergence_test",&conv,PETSC_NULL);CHKERRQ(ierr);
   if (!conv) {
     SNES_TR_KSPConverged_Ctx *ctx;
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);

@@ -179,7 +179,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawTensorContour(PetscDraw win,int m,int n,
   /* PetscDraw the scale window */
   if (popup) {ierr = PetscDrawScalePopup(popup,ctx.min,ctx.max);CHKERRQ(ierr);}
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-draw_contour_grid",&ctx.showgrid);CHKERRQ(ierr);
+  ctx.showgrid = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-draw_contour_grid",&ctx.showgrid,PETSC_NULL);CHKERRQ(ierr);
 
   /* fill up x and y coordinates */
   if (!xi) {

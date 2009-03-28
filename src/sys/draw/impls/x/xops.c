@@ -629,7 +629,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate_X(PetscDraw draw)
   PetscInt       xywh[4],osize = 4;
   int            x = draw->x,y = draw->y,w = draw->w,h = draw->h;
   static int     xavailable = 0,yavailable = 0,xmax = 0,ymax = 0,ybottom = 0;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (!draw->display) {
@@ -751,7 +751,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate_X(PetscDraw draw)
   ierr = PetscDrawClear(draw);CHKERRQ(ierr);
   ierr = PetscDrawSynchronizedFlush(draw);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-draw_double_buffer",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-draw_double_buffer",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
      ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);
   } 

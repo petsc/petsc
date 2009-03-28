@@ -46,7 +46,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
   PetscErrorCode ierr;
   PetscInt       i;
   DMMG           *p;
-  PetscTruth     galerkin,ftype;
+  PetscTruth     galerkin = PETSC_FALSE,ftype;
   char           mtype[256];
 
   PetscFunctionBegin;
@@ -55,7 +55,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
   } else {
     ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(0,"-dmmg_galerkin",&galerkin);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(0,"-dmmg_galerkin",&galerkin,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nlevels*sizeof(DMMG),&p);CHKERRQ(ierr);
   for (i=0; i<nlevels; i++) {
@@ -258,7 +258,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
 
   /* Create DM data structure for all the levels */
   ierr = PetscOptionsGetTruth(PETSC_NULL, "-dmmg_refine", &doRefine, PETSC_IGNORE);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_hierarchy", &doHierarchy);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL, "-dmmg_hierarchy", &doHierarchy,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
   if (doRefine) {
     dmmg[0]->dm = dm;
@@ -339,11 +339,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels = dmmg[0]->nlevels;
-  PetscTruth     gridseq,vecmonitor,flg;
+  PetscTruth     gridseq = PETSC_FALSE,vecmonitor = PETSC_FALSE,flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(0,"-dmmg_grid_sequence",&gridseq);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(0,"-dmmg_monitor_solution",&vecmonitor);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(0,"-dmmg_grid_sequence",&gridseq,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(0,"-dmmg_monitor_solution",&vecmonitor,PETSC_NULL);CHKERRQ(ierr);
   if (gridseq) {
     if (dmmg[0]->initialguess) {
       ierr = (*dmmg[0]->initialguess)(dmmg[0],dmmg[0]->x);CHKERRQ(ierr);
@@ -374,13 +374,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
      ierr = VecView(dmmg[nlevels-1]->x,PETSC_VIEWER_DRAW_(dmmg[nlevels-1]->comm));CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_view",&flg);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(dmmg[0]->comm,&viewer);CHKERRQ(ierr);
     ierr = DMMGView(dmmg,viewer);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_view_binary",&flg);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-dmmg_view_binary",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
     ierr = DMMGView(dmmg,PETSC_VIEWER_BINARY_(dmmg[0]->comm));CHKERRQ(ierr);
   }

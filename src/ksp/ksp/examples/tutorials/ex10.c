@@ -56,10 +56,10 @@ int main(int argc,char **args)
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-trans",&trans);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-initialguess",&initialguess);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-output_solution",&outputSoln);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-table",&table,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-trans",&trans,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-initialguess",&initialguess,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-output_solution",&outputSoln,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetString(PETSC_NULL,"-initialguessfilename",initialguessfilename,PETSC_MAX_PATH_LEN-1,&initialguessfile);CHKERRQ(ierr);
 
   /* 
@@ -133,7 +133,8 @@ int main(int argc,char **args)
 
     /* Make A singular for testing zero-pivot of ilu factorization        */
     /* Example: ./ex10 -f0 <datafile> -test_zeropivot -set_row_zero -pc_factor_shift_nonzero */
-    ierr = PetscOptionsHasName(PETSC_NULL, "-test_zeropivot", &flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL, "-test_zeropivot", &flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscInt          row,ncols;
       const PetscInt    *cols;
@@ -144,7 +145,7 @@ int main(int argc,char **args)
       ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);     
       ierr = PetscMalloc(sizeof(PetscScalar)*(ncols+1),&zeros);
       ierr = PetscMemzero(zeros,(ncols+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-      ierr = PetscOptionsHasName(PETSC_NULL, "-set_row_zero", &flg1);CHKERRQ(ierr);
+      ierr = PetscOptionsGetTruth(PETSC_NULL, "-set_row_zero", &flg1,PETSC_NULL);CHKERRQ(ierr);
       if (flg1){ /* set entire row as zero */
         ierr = MatSetValues(A,1,&row,ncols,cols,zeros,INSERT_VALUES);CHKERRQ(ierr);
       } else { /* only set (row,row) entry as zero */
@@ -155,7 +156,8 @@ int main(int argc,char **args)
     }
 
     /* Check whether A is symmetric */
-    ierr = PetscOptionsHasName(PETSC_NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL, "-check_symmetry", &flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       Mat Atrans;
       ierr = MatTranspose(A, MAT_INITIAL_MATRIX,&Atrans);
@@ -214,7 +216,8 @@ int main(int argc,char **args)
 
 
     /* Check scaling in A */
-    ierr = PetscOptionsHasName(PETSC_NULL, "-check_scaling", &flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL, "-check_scaling", &flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       Vec         max, min;
       PetscInt    idx;
@@ -305,7 +308,8 @@ int main(int argc,char **args)
       } else {
         PetscInt  num_rhs=1;
         ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
-        ierr = PetscOptionsHasName(PETSC_NULL,"-cknorm",&cknorm);CHKERRQ(ierr);
+        cknorm = PETSC_FALSE;
+        ierr = PetscOptionsGetTruth(PETSC_NULL,"-cknorm",&cknorm,PETSC_NULL);CHKERRQ(ierr);
         while ( num_rhs-- ) {
 	  if (num_rhs == 1) VecSet(x,0.0);
           ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
@@ -397,7 +401,8 @@ int main(int argc,char **args)
         ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
       }
 
-      ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_reason", &flg);CHKERRQ(ierr);
+      flg  = PETSC_FALSE;
+      ierr = PetscOptionsGetTruth(PETSC_NULL, "-ksp_reason", &flg,PETSC_NULL);CHKERRQ(ierr);
       if (flg){
         KSPConvergedReason reason;
         ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);

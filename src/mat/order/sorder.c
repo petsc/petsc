@@ -180,7 +180,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   PetscErrorCode ierr;
   PetscInt       mmat,nmat,mis,m;
   PetscErrorCode (*r)(Mat,const MatOrderingType,IS*,IS*);
-  PetscTruth     flg,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij;
+  PetscTruth     flg = PETSC_FALSE,isseqdense,ismpidense,ismpiaij,ismpibaij,ismpisbaij;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -236,10 +236,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOrdering(Mat mat,const MatOrderingType t
   if (mmat > mis) {ierr = MatInodeAdjustForInodes(mat,rperm,cperm);CHKERRQ(ierr);}
   ierr = PetscLogEventEnd(MAT_GetOrdering,mat,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_view_ordering_draw",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)mat)->prefix,"-mat_view_ordering_draw",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     Mat tmat;
-    ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_view_contour",&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(((PetscObject)mat)->prefix,"-mat_view_contour",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerPushFormat(PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
     }

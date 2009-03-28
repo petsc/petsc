@@ -1091,7 +1091,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Binary(PetscViewer v)
                                     "PetscViewerBinarySetMPIIO_Binary",
                                      PetscViewerBinarySetMPIIO_Binary);CHKERRQ(ierr);
  
-  ierr = PetscOptionsHasName(PETSC_NULL,"-viewer_binary_mpiio",&useMPIIO);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-viewer_binary_mpiio",&useMPIIO,PETSC_NULL);CHKERRQ(ierr);
   if (useMPIIO) {
     ierr = PetscViewerBinarySetMPIIO(v);CHKERRQ(ierr);
   }

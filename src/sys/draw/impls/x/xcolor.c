@@ -78,7 +78,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
   unsigned char *red,*green,*blue;
   int            i,ncolors;
   PetscErrorCode ierr;
-  PetscTruth     fast;
+  PetscTruth     fast = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (colormap) {
@@ -99,7 +99,7 @@ PetscErrorCode PetscDrawSetUpColormap_Shared(Display *display,int screen,Visual 
   green   = red   + ncolors;
   blue    = green + ncolors;
   ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
-  ierr    = PetscOptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetTruth(PETSC_NULL,"-draw_fast",&fast,PETSC_NULL);CHKERRQ(ierr);
   if (!fast) {
     for (i=PETSC_DRAW_BASIC_COLORS; i<ncolors+PETSC_DRAW_BASIC_COLORS; i++) {
       colordef.red    = ((int)red[i-PETSC_DRAW_BASIC_COLORS]   * 65535) / 255;
@@ -132,7 +132,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   int           found,i,ncolors;
   XColor        colordef;
   unsigned char *red,*green,*blue;
-  PetscTruth    fast;
+  PetscTruth    fast = PETSC_FALSE;
 
   PetscFunctionBegin;
 
@@ -169,7 +169,7 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
   green   = red   + ncolors;
   blue    = green + ncolors;
   ierr    = PetscDrawUtilitySetCmapHue(red,green,blue,ncolors);CHKERRQ(ierr);
-  ierr    = PetscOptionsHasName(PETSC_NULL,"-draw_fast",&fast);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetTruth(PETSC_NULL,"-draw_fast",&fast,PETSC_NULL);CHKERRQ(ierr);
   if (!fast) {
     for (i=PETSC_DRAW_BASIC_COLORS; i<ncolors+PETSC_DRAW_BASIC_COLORS; i++) {
       colordef.red    = ((int)red[i-PETSC_DRAW_BASIC_COLORS]   * 65535) / 255;
@@ -201,8 +201,8 @@ PetscErrorCode PetscDrawSetUpColormap_Private(Display *display,int screen,Visual
 PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visual,Colormap colormap)
 {
   PetscErrorCode ierr;
-  PetscTruth  sharedcolormap;
-  XVisualInfo vinfo;
+  PetscTruth     sharedcolormap = PETSC_FALSE;
+  XVisualInfo    vinfo;
 
   PetscFunctionBegin;
 
@@ -211,7 +211,7 @@ PetscErrorCode PetscDrawSetUpColormap_X(Display *display,int screen,Visual *visu
   */
   gNumcolors = 1 << DefaultDepth(display,screen);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-draw_x_shared_colormap",&sharedcolormap);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-draw_x_shared_colormap",&sharedcolormap,PETSC_NULL);CHKERRQ(ierr);
   /*
         Need to determine if window supports allocating a private colormap,
     if not, set flag to 1

@@ -236,8 +236,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
   if (!ksp->pc) {ierr = KSPGetPC(ksp,&ksp->pc);CHKERRQ(ierr);}
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   if (ksp->nullsp) {
-    PetscTruth test;
-    ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test);CHKERRQ(ierr);
+    PetscTruth test = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test,PETSC_NULL);CHKERRQ(ierr);
     if (test) {
       Mat mat;
       ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -299,7 +299,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg,inXisinB=PETSC_FALSE;
+  PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg = PETSC_FALSE,inXisinB=PETSC_FALSE;
   char           view[10];
   char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
@@ -321,7 +321,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   ksp->vec_rhs = b;
   ksp->vec_sol = x;
 
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_binary",&flg);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_binary",&flg,PETSC_NULL);CHKERRQ(ierr); 
   if (flg) {
     Mat mat;
     ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -418,8 +418,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 
   ierr = MPI_Comm_rank(((PetscObject)ksp)->comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
+  flag1 = PETSC_FALSE;
+  flag2 = PETSC_FALSE;
+  ierr  = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",&flag1,PETSC_NULL);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",&flag2,PETSC_NULL);CHKERRQ(ierr);
   if (flag1 || flag2) {
     PetscInt   nits,n,i,neig;
     PetscReal *r,*c;
@@ -458,8 +460,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     }
   }
 
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2);CHKERRQ(ierr);
+  flag1 = PETSC_FALSE;
+  flag2 = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2,PETSC_NULL);CHKERRQ(ierr);
   if (flag1 || flag2) {
     PetscInt  n,i;
     PetscReal *r,*c;
@@ -491,7 +495,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = PetscFree(r);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_operator",&flag2);CHKERRQ(ierr);
+  flag2 = PETSC_FALSE;
+  ierr  = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_operator",&flag2,PETSC_NULL);CHKERRQ(ierr);
   if (flag2) {
     Mat         A,B;
     PetscViewer viewer;
@@ -504,7 +509,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_operator_binary",&flag2);CHKERRQ(ierr);
+  flag2 = PETSC_FALSE;
+  ierr  = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_operator_binary",&flag2,PETSC_NULL);CHKERRQ(ierr);
   if (flag2) {
     Mat A,B;
     ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -512,14 +518,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_binary",&flag2);CHKERRQ(ierr);
+  flag2 = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_binary",&flag2,PETSC_NULL);CHKERRQ(ierr);
   if (flag2) {
     Mat B;
     ierr = KSPComputeExplicitOperator(ksp,&B);CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_preconditioner_binary",&flag2);CHKERRQ(ierr);
+  flag2 = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_view_preconditioner_binary",&flag2,PETSC_NULL);CHKERRQ(ierr);
   if (flag2) {
     Mat B;
     ierr = PCComputeExplicitOperator(ksp->pc,&B);CHKERRQ(ierr);
@@ -534,7 +542,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
   }
-  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     Mat         A;
     Vec         t;

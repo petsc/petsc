@@ -1326,7 +1326,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   Mat_SeqSBAIJ   *b = (Mat_SeqSBAIJ*)B->data;
   PetscErrorCode ierr;
   PetscInt       i,mbs,bs2, newbs = PetscAbs(bs);
-  PetscTruth     skipallocation = PETSC_FALSE,flg;
+  PetscTruth     skipallocation = PETSC_FALSE,flg = PETSC_FALSE;
   
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
@@ -1371,7 +1371,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation_SeqSBAIJ(Mat B,Pet
   B->ops->multadd          = MatMultAdd_SeqSBAIJ_N;
   B->ops->multtranspose    = MatMult_SeqSBAIJ_N;
   B->ops->multtransposeadd = MatMultAdd_SeqSBAIJ_N;
-  ierr    = PetscOptionsHasName(((PetscObject)B)->prefix,"-mat_no_unroll",&flg);CHKERRQ(ierr);
+  ierr  = PetscOptionsGetTruth(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (!flg) {
     switch (bs) {
     case 1:
@@ -1483,11 +1483,11 @@ EXTERN_C_END
 PetscErrorCode MatSeqSBAIJSetNumericFactorization(Mat B,PetscTruth natural)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
   PetscInt       bs = B->rmap->bs;
 
   PetscFunctionBegin;
-  ierr    = PetscOptionsHasName(((PetscObject)B)->prefix,"-mat_no_unroll",&flg);CHKERRQ(ierr);
+  ierr    = PetscOptionsGetTruth(((PetscObject)B)->prefix,"-mat_no_unroll",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) bs = 8;
 
   if (!natural) {
@@ -1623,7 +1623,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscTruth     flg;
   
   PetscFunctionBegin;
   ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
@@ -1658,12 +1657,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   b->permute          = PETSC_FALSE;
 
   b->ignore_ltriangular = PETSC_FALSE;
-  ierr = PetscOptionsHasName(((PetscObject)B)->prefix,"-mat_ignore_lower_triangular",&flg);CHKERRQ(ierr);
-  if (flg) b->ignore_ltriangular = PETSC_TRUE;
+  ierr = PetscOptionsGetTruth(((PetscObject)B)->prefix,"-mat_ignore_lower_triangular",&b->ignore_ltriangular,PETSC_NULL);CHKERRQ(ierr);
 
   b->getrow_utriangular = PETSC_FALSE;
-  ierr = PetscOptionsHasName(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&flg);CHKERRQ(ierr);
-  if (flg) b->getrow_utriangular = PETSC_TRUE;
+  ierr = PetscOptionsGetTruth(((PetscObject)B)->prefix,"-mat_getrow_uppertriangular",&b->getrow_utriangular,PETSC_NULL);CHKERRQ(ierr);
 
 #if defined(PETSC_HAVE_PASTIX)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqsbaij_pastix_C",

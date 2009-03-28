@@ -316,8 +316,7 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
     ierr = PetscOptionsReal("-ts_sundials_rtol","Relative tolerance for convergence","TSSundialsSetTolerance",cvode->reltol,&cvode->reltol,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-ts_sundials_linear_tolerance","Convergence tolerance for linear solve","TSSundialsSetLinearTolerance",cvode->linear_tol,&cvode->linear_tol,&flag);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-ts_sundials_gmres_restart","Number of GMRES orthogonalization directions","TSSundialsSetGMRESRestart",cvode->restart,&cvode->restart,&flag);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-ts_sundials_exact_final_time","Allow SUNDIALS to stop near the final time, not exactly on it","TSSundialsSetExactFinalTime",&flag);CHKERRQ(ierr);
-    if (flag) cvode->exact_final_time = PETSC_TRUE;
+    ierr = PetscOptionsTruth("-ts_sundials_exact_final_time","Allow SUNDIALS to stop near the final time, not exactly on it","TSSundialsSetExactFinalTime",cvode->exact_final_time,&cvode->exact_final_time,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

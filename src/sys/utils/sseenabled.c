@@ -150,9 +150,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSSEIsEnabled(MPI_Comm comm,PetscTruth *lflag
   if (petsc_sse_local_is_untested && petsc_sse_global_is_untested) {
     disabled_option = PETSC_FALSE;
 
-    ierr = PetscOptionsName("-disable_sse",
+    ierr = PetscOptionsTruth("-disable_sse",
                             "Disable use of hand tuned Intel SSE implementations <true,false>.",
-                            "PetscSSEIsEnabled",&disabled_option);CHKERRQ(ierr);
+                            "PetscSSEIsEnabled",disabled_option,&disabled_option,PETSC_NULL);CHKERRQ(ierr);
     if (disabled_option) {
       petsc_sse_local_is_untested  = PETSC_FALSE;
       petsc_sse_enabled_local      = PETSC_FALSE;

@@ -4433,25 +4433,25 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssembled(Mat mat,PetscTruth *assembled)
 PetscErrorCode MatView_Private(Mat mat)
 {
   PetscErrorCode    ierr;
-  PetscTruth        flg1,flg2,flg3,flg4,flg6,flg7,flg8;
+  PetscTruth        flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flg6 = PETSC_FALSE,flg7 = PETSC_FALSE,flg8 = PETSC_FALSE;
   static PetscTruth incall = PETSC_FALSE;
 #if defined(PETSC_USE_SOCKET_VIEWER)
-  PetscTruth        flg5;
+  PetscTruth        flg5 = PETSC_FALSE;
 #endif
 
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
   ierr = PetscOptionsBegin(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,"Matrix Options","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view_info","Information on matrix size","MatView",&flg1);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view_info_detailed","Nonzeros in the matrix","MatView",&flg2);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view","Print matrix to stdout","MatView",&flg3);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view_matlab","Print matrix to stdout in a format Matlab can read","MatView",&flg4);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_info","Information on matrix size","MatView",flg1,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_info_detailed","Nonzeros in the matrix","MatView",flg2,&flg2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view","Print matrix to stdout","MatView",flg3,&flg3,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_matlab","Print matrix to stdout in a format Matlab can read","MatView",flg4,&flg4,PETSC_NULL);CHKERRQ(ierr);
 #if defined(PETSC_USE_SOCKET_VIEWER)
-    ierr = PetscOptionsName("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",&flg5);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",flg5,&flg5,PETSC_NULL);CHKERRQ(ierr);
 #endif
-    ierr = PetscOptionsName("-mat_view_binary","Save matrix to file in binary format","MatView",&flg6);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view_draw","Draw the matrix nonzero structure","MatView",&flg7);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_binary","Save matrix to file in binary format","MatView",flg6,&flg6,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_draw","Draw the matrix nonzero structure","MatView",flg7,&flg7,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (flg1) {
@@ -4495,7 +4495,7 @@ PetscErrorCode MatView_Private(Mat mat)
     ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(((PetscObject)mat)->comm));CHKERRQ(ierr);
   }
   if (flg7) {
-    ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_view_contour",&flg8);CHKERRQ(ierr);
+    ierr = PetscOptionsGetTruth(((PetscObject)mat)->prefix,"-mat_view_contour",&flg8,PETSC_NULL);CHKERRQ(ierr);
     if (flg8) {
       PetscViewerPushFormat(PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
     }
@@ -4550,7 +4550,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
   PetscErrorCode  ierr;
   static PetscInt inassm = 0;
-  PetscTruth      flg;
+  PetscTruth      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4584,7 +4584,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
     ierr = MatView_Private(mat);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetTruth(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscReal tol = 0.0;
       ierr = PetscOptionsGetReal(((PetscObject)mat)->prefix,"-mat_is_symmetric",&tol,PETSC_NULL);CHKERRQ(ierr);

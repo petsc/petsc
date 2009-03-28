@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   AppCtx         user;                /* user-defined work context */
   PetscInt       its;                 /* iterations for convergence */
   PetscInt       Nx,Ny;              /* number of preocessors in x- and y- directions */
-  PetscTruth     matrix_free;         /* flag - 1 indicates matrix-free version */
+  PetscTruth     matrix_free = PETSC_FALSE;         /* flag - 1 indicates matrix-free version */
   PetscMPIInt    size;                /* number of processors */
   PetscInt       m,N;
   PetscErrorCode ierr;
@@ -174,7 +174,7 @@ int main(int argc,char **argv)
      Jacobian.  See the users manual for a discussion of better techniques
      for preallocating matrix memory.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     if (size == 1) {
       ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);

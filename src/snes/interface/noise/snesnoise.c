@@ -95,7 +95,7 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
   PetscInt       fcount;
   MPI_Comm       comm = ((PetscObject)snes)->comm;
   FILE           *fp;
-  PetscTruth     noise_test;
+  PetscTruth     noise_test = PETSC_FALSE;
 
   PetscFunctionBegin;
   /* Call to SNESSetUp() just to set data structures in SNES context */
@@ -215,7 +215,7 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
   fcount = neP->function_count - fcount;
   ierr = PetscInfo5(snes,"fct_now = %D, fct_cum = %D, rerrf=%G, sqrt(noise)=%G, h_more=%G\n",fcount,neP->function_count,rerrf,sqrt(*fnoise),*hopt);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-noise_test",&noise_test);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-noise_test",&noise_test,PETSC_NULL);CHKERRQ(ierr);
   if (noise_test) {
     ierr = JacMatMultCompare(snes,x,p,*hopt);CHKERRQ(ierr); 
   }
@@ -237,7 +237,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   PetscReal      yy1n,yy2n,enorm;
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscTruth     printv;
+  PetscTruth     printv = PETSC_FALSE;
   char           filename[32];
   MPI_Comm       comm = ((PetscObject)snes)->comm;
 
@@ -258,7 +258,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   ierr = VecNorm(yy1,NORM_2,&yy1n);CHKERRQ(ierr);
 
   /* View product vector if desired */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-print_vecs",&printv);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-print_vecs",&printv,PETSC_NULL);CHKERRQ(ierr);
   if (printv) {
     ierr = PetscViewerASCIIOpen(comm,"y1.out",&view2);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(view2,PETSC_VIEWER_ASCII_COMMON);CHKERRQ(ierr);

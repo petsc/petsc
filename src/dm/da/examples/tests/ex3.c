@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   Vec            local,global,copy;
   PetscScalar    *localptr,*copyptr;
   PetscReal      a,h,k;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -28,7 +28,7 @@ int main(int argc,char **argv)
   /*
       Test putting two nodes on each processor, exact last processor gets the rest
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-distribute",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-distribute",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscMalloc(size*sizeof(PetscInt),&localnodes);CHKERRQ(ierr);
     for (i=0; i<size-1; i++) { localnodes[i] = 2;}

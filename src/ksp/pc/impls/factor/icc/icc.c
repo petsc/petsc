@@ -101,7 +101,8 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     if (flg) {
       ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }

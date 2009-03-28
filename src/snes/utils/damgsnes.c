@@ -760,7 +760,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       dmmg[i]->abstol       = fasAbstol;
     }
 
-    ierr = PetscOptionsHasName(0, "-dmmg_fas_view", &flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(0, "-dmmg_fas_view", &flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       for(i = 0; i < nlevels; i++) {
         if (i == 0) {
@@ -940,10 +941,10 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
   CHKMEMQ;
   ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm,&cookie);CHKERRQ(ierr);
   if (cookie == DM_COOKIE) {
-    PetscTruth flag;
+    PetscTruth flag = PETSC_FALSE;
     /* it makes no sense to use an option to decide on ghost, it depends on whether the 
        formfunctionlocal computes ghost values in F or not. */
-    ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_form_function_ghost", &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsGetTruth(PETSC_NULL, "-dmmg_form_function_ghost", &flag,PETSC_NULL);CHKERRQ(ierr);
     if (flag) {
       ierr = DMMGSetSNES(dmmg,DMMGFormFunctionGhost,computejacobian);CHKERRQ(ierr);
     } else {

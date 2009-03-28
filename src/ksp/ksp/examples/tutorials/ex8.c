@@ -54,7 +54,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscMPIInt    size;
   PetscTruth     flg;
-  PetscTruth     user_subdomains;         /* flag - 1 indicates user-defined subdomains */
+  PetscTruth     user_subdomains = PETSC_FALSE;     
   PetscScalar    v, one = 1.0;
 
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -64,7 +64,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-overlap",&overlap,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-user_set_subdomains",&user_subdomains);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-user_set_subdomains",&user_subdomains,PETSC_NULL);CHKERRQ(ierr);
 
   /* -------------------------------------------------------------------
          Compute the matrix and right-hand-side vector that define
@@ -184,7 +184,8 @@ int main(int argc,char **args)
        equivalent to the ASM method with zero overlap).
   */
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-user_set_subdomain_solvers",&flg);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-user_set_subdomain_solvers",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     KSP        *subksp;       /* array of KSP contexts for local subblocks */
     PetscInt   nlocal,first;  /* number of local subblocks, first local subblock */

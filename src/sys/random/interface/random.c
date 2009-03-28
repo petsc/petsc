@@ -332,7 +332,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer viewe
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char *title)
 {
-  PetscTruth     opt;
+  PetscTruth     opt = PETSC_FALSE;
   PetscViewer    viewer;
   char           typeName[1024];
   char           fileName[PETSC_MAX_PATH_LEN];
@@ -341,7 +341,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(((PetscObject)rnd)->prefix, "-random_view", &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)rnd)->prefix, "-random_view", &opt,PETSC_NULL);CHKERRQ(ierr);
   if (opt) {   
     ierr = PetscOptionsGetString(((PetscObject)rnd)->prefix, "-random_view", typeName, 1024, &opt);CHKERRQ(ierr);
     ierr = PetscStrlen(typeName, &len);CHKERRQ(ierr);

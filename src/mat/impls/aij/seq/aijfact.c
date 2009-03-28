@@ -459,10 +459,10 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
 PetscErrorCode MatFactorDumpMatrix(Mat A)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_factor_dump_on_error",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_factor_dump_on_error",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     char        filename[PETSC_MAX_PATH_LEN];

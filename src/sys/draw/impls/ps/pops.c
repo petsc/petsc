@@ -201,12 +201,12 @@ static PetscErrorCode PetscDrawDestroy_PS(PetscDraw draw)
 {
   PetscDraw_PS   *ps = (PetscDraw_PS*)draw->data;
   PetscErrorCode ierr;
-  PetscTruth     show;
+  PetscTruth     show = PETSC_FALSE;
   char           *filename,par[PETSC_MAX_PATH_LEN];
  
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"\nshowpage\n");CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(((PetscObject)draw)->prefix,"-draw_ps_show",&show);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)draw)->prefix,"-draw_ps_show",&show,PETSC_NULL);CHKERRQ(ierr);
   if (show) {
     ierr = PetscViewerFileGetName(ps->ps_file,&filename);CHKERRQ(ierr);    
     ierr = PetscStrcpy(par,"ghostview ");CHKERRQ(ierr);

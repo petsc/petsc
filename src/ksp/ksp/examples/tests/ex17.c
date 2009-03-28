@@ -42,7 +42,8 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&u);CHKERRQ(ierr);
 
   use_random = 1;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRQ(ierr);
+  flg        = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-norandom",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     use_random = 0;
     ierr = VecSet(u,pfive);CHKERRQ(ierr);
@@ -58,7 +59,8 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   ierr = FormTestMatrix(A,n,type);CHKERRQ(ierr);
   ierr = MatMult(A,u,b);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-printout",&flg);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-printout",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
     ierr = VecView(u,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

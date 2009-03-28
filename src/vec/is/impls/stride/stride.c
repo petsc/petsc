@@ -310,10 +310,10 @@ static struct _ISOps myops = { ISGetSize_Stride,
 PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscInt first,PetscInt step,IS *is)
 {
   PetscErrorCode ierr;
-  PetscInt        min,max;
-  IS         Nindex;
-  IS_Stride  *sub;
-  PetscTruth flg;
+  PetscInt       min,max;
+  IS             Nindex;
+  IS_Stride      *sub;
+  PetscTruth     flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidPointer(is,5);
@@ -342,7 +342,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscI
   } else {
     Nindex->isperm  = PETSC_FALSE;
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-is_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)Nindex)->comm,&viewer);CHKERRQ(ierr);

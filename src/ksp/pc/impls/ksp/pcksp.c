@@ -129,11 +129,11 @@ static PetscErrorCode PCView_KSP(PC pc,PetscViewer viewer)
 static PetscErrorCode PCSetFromOptions_KSP(PC pc)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP preconditioner options");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_ksp_true","Use true matrix to define inner linear system, not preconditioner matrix","PCKSPSetUseTrue",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_ksp_true","Use true matrix to define inner linear system, not preconditioner matrix","PCKSPSetUseTrue",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCKSPSetUseTrue(pc);CHKERRQ(ierr);
     }

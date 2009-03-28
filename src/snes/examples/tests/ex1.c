@@ -76,7 +76,7 @@ int main(int argc,char **argv)
   PetscMPIInt    size;
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.,history[50];
   MatFDColoring  fdcoloring;           
-  PetscTruth     matrix_free,flg,fd_coloring;
+  PetscTruth     matrix_free = PETSC_FALSE,flg,fd_coloring = PETSC_FALSE;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -128,7 +128,7 @@ int main(int argc,char **argv)
      for the Jacobian.  See the users manual for a discussion of better 
      techniques for preallocating matrix memory.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD,N,N,5,PETSC_NULL,&J);CHKERRQ(ierr);
   }
@@ -137,7 +137,7 @@ int main(int argc,char **argv)
      This option will cause the Jacobian to be computed via finite differences
     efficiently using a coloring of the columns of the matrix.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_fd_coloring",&fd_coloring);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_fd_coloring",&fd_coloring,PETSC_NULL);CHKERRQ(ierr);
 
   if (matrix_free && fd_coloring)  SETERRQ(1,"Use only one of -snes_mf, -snes_fd_coloring options!\n\
                                                 You can do -snes_mf_operator -snes_fd_coloring");

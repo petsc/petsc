@@ -81,8 +81,14 @@ Software</strong></a></li>
       <td valign="top" width="75%"><!--##begin-->
       <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
 in the PETSc Development Version</font></p>
-      <p><u><b>General:</b></u><br>
-      </p>
+      <p><u><b>General:</b></u></p>
+      <ul>
+        <li>PetscOptionsHasName() and PetscOptionsName() now return
+PETSC_TRUE if the options are set to any value, include false or 0. You
+may need to change some of your PetscOptionsXXName() to
+PetscOptionsXXTruth()<br>
+        </li>
+      </ul>
       <ul>
       </ul>
       <u><b>Logging:</b></u>

@@ -11,7 +11,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   const PetscInt *is;
   PetscInt       nis = iscoloring->n,*rowhit,*columnsforrow,l;
   IS             *isa;
-  PetscTruth     done,flg;
+  PetscTruth     done,flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (!mat->assembled) {
@@ -40,7 +40,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   /*
      Temporary option to allow for debugging/testing
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-matfdcoloring_slow",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-matfdcoloring_slow",&flg,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscMalloc((N+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
   ierr = PetscMalloc((N+1)*sizeof(PetscInt),&columnsforrow);CHKERRQ(ierr);

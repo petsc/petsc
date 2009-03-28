@@ -496,7 +496,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
   ierr = PetscOptionsReal("-mat_mffd_err","set sqrt relative error in function","MatMFFDSetFunctionError",mfctx->error_rel,&mfctx->error_rel,0);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-mat_mffd_period","how often h is recomputed","MatMFFDSetPeriod",mfctx->recomputeperiod,&mfctx->recomputeperiod,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsName("-mat_mffd_check_positivity","Insure that U + h*a is nonnegative","MatMFFDSetCheckh",&flg);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsTruth("-mat_mffd_check_positivity","Insure that U + h*a is nonnegative","MatMFFDSetCheckh",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatMFFDSetCheckh(mat,MatMFFDCheckPositivity,0);CHKERRQ(ierr);
   }

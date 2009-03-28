@@ -87,7 +87,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   const PetscInt     *lx,*ly;
   PetscReal          coors[4],ymin,ymax,xmin,xmax;
   PetscDraw          draw,popup;
-  PetscTruth         isnull,useports;
+  PetscTruth         isnull,useports = PETSC_FALSE;
   MPI_Comm           comm;
   Vec                xlocal,xcoor,xcoorl;
   DAPeriodicType     periodic;
@@ -97,6 +97,7 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   PetscViewerFormat  format;
 
   PetscFunctionBegin;
+  zctx.showgrid = PETSC_FALSE;
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
 
@@ -199,10 +200,10 @@ PetscErrorCode VecView_MPI_Draw_DA2d(Vec xin,PetscViewer viewer)
   ierr = DAGetGhostCorners(dac,&igstart,&jgstart,0,&zctx.m,&zctx.n,0);CHKERRQ(ierr);
   ierr = DAGetCorners(dac,&istart,0,0,&isize,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-draw_contour_grid",&zctx.showgrid,PETSC_NULL);CHKERRQ(ierr);
 
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-draw_ports",&useports);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-draw_ports",&useports,PETSC_NULL);CHKERRQ(ierr);
   if (useports || format == PETSC_VIEWER_DRAW_PORTS){
     ierr = PetscDrawSynchronizedClear(draw);CHKERRQ(ierr);
     ierr = PetscDrawViewPortsCreate(draw,zctx.step,&ports);CHKERRQ(ierr);

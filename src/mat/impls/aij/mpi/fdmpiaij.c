@@ -102,7 +102,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
        Mark all rows affect by these columns
     */
     /* Temporary option to allow for debugging/testing */
-    ierr = PetscOptionsHasName(PETSC_NULL,"-matfdcoloring_slow",&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-matfdcoloring_slow",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (!flg) {/*-----------------------------------------------------------------------------*/
       /* crude, fast version */
       ierr = PetscMemzero(rowhit,M*sizeof(PetscInt));CHKERRQ(ierr);

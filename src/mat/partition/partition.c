@@ -226,7 +226,7 @@ $    -mat_partitioning_view
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *partitioning)
 {
   PetscErrorCode ierr;
-  PetscTruth flag;
+  PetscTruth     flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matp,MAT_PARTITIONING_COOKIE,1);
@@ -238,7 +238,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *
   ierr = (*matp->ops->apply)(matp,partitioning);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Partitioning,matp,0,0,0);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_partitioning_view",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_partitioning_view",&flag,PETSC_NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)matp)->comm,&viewer);CHKERRQ(ierr);

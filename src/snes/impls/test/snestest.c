@@ -93,7 +93,7 @@ static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
   PetscFunctionBegin;
 
   ierr = PetscOptionsHead("Hand-coded Jacobian tester options");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-snes_test_display","Display difference between approximate and handcoded Jacobian","None",&ls->complete_print);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-snes_test_display","Display difference between approximate and handcoded Jacobian","None",ls->complete_print,&ls->complete_print,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

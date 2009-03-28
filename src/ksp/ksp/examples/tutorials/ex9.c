@@ -40,7 +40,7 @@ int main(int argc,char **args)
   PetscInt       ldim,low,high,iglobal,Istart,Iend,Istart2,Iend2;
   PetscInt       Ii,J,i,j,m = 3,n = 2,its,t;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
   PetscScalar    v;
   PetscMPIInt    rank,size;
 #if defined (PETSC_USE_LOG)
@@ -107,7 +107,7 @@ int main(int argc,char **args)
   /* 
      Set user-defined monitoring routine for first linear system.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-my_ksp_monitor",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-my_ksp_monitor",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {ierr = KSPMonitorSet(ksp1,MyKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);}
 
   /*

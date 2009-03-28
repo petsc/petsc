@@ -23,7 +23,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-stencil_width",&s,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-ratio",&ratio,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-periodic",(PetscTruth*)&pt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-periodic",(PetscTruth*)&pt,PETSC_NULL);CHKERRQ(ierr);
 
   if (pt != DA_NONPERIODIC) {
     if (dim == 1) pt = DA_XPERIODIC;

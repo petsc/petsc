@@ -86,7 +86,7 @@ int main(int argc,char **argv)
   PetscInt       m = PETSC_DECIDE,n = PETSC_DECIDE,p = PETSC_DECIDE,M = 3,N = 5,P=3,s=1;
   PetscInt       *lx = PETSC_NULL,*ly = PETSC_NULL,*lz = PETSC_NULL;
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
   DA             da;
   Vec            local,global,vslice;
   PetscScalar    value;
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-p",&p,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-star",&flg);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-star",&flg,PETSC_NULL);CHKERRQ(ierr); 
   if (flg) stencil_type =  DA_STENCIL_STAR;
 
   /* Create distributed array and get vectors */

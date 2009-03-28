@@ -65,7 +65,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DALoad(PetscViewer viewer,PetscInt M,PetscInt N
   /*
     Read in coordinate information if kept in file
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-daload_coordinates",&flag);CHKERRQ(ierr);
+  flag = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-daload_coordinates",&flag,PETSC_NULL);CHKERRQ(ierr);
   if (flag) {
     DA      dac;
     Vec     tmpglobal,global;

@@ -640,19 +640,22 @@ PetscErrorCode MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
     ierr = PetscOptionsEList("-mat_partitioning_scotch_global",
         "Global method to use", "MatPartitioningScotchSetGlobal", global, 3,
         global[0], &i, &flag);CHKERRQ(ierr);
-    if (flag)
-        ierr = MatPartitioningScotchSetGlobal(part, (MPScotchGlobalType)i);CHKERRQ(ierr);
+    if (flag) {
+      ierr = MatPartitioningScotchSetGlobal(part, (MPScotchGlobalType)i);CHKERRQ(ierr);
+    }
 
     ierr = PetscOptionsEList("-mat_partitioning_scotch_local",
         "Local method to use", "MatPartitioningScotchSetLocal", local, 2,
         local[0], &i, &flag);CHKERRQ(ierr);
-    if (flag)
-        ierr = MatPartitioningScotchSetLocal(part, (MPScotchLocalType)i);CHKERRQ(ierr);
+    if (flag) {
+      ierr = MatPartitioningScotchSetLocal(part, (MPScotchLocalType)i);CHKERRQ(ierr);
+    }
 
-    ierr = PetscOptionsName("-mat_partitioning_scotch_mapping", "Use mapping",
-        "MatPartitioningScotchSetMapping", &flag);CHKERRQ(ierr);
-    if (flag)
-        ierr = MatPartitioningScotchSetMapping(part);CHKERRQ(ierr);
+    flag = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-mat_partitioning_scotch_mapping", "Use mapping","MatPartitioningScotchSetMapping", flag,&flag,PETSC_NULL);CHKERRQ(ierr);
+    if (flag) {
+      ierr = MatPartitioningScotchSetMapping(part);CHKERRQ(ierr);
+    }
 
     ierr = PetscOptionsString("-mat_partitioning_scotch_arch",
         "architecture file in scotch format", "MatPartitioningScotchSetArch",
@@ -672,10 +675,11 @@ PetscErrorCode MatPartitioningSetFromOptions_Scotch(MatPartitioning part)
     if (flag)
         ierr = MatPartitioningScotchSetCoarseLevel(part, r);CHKERRQ(ierr);
 
-    ierr = PetscOptionsName("-mat_partitioning_scotch_mul", "Use coarse level",
-        "MatPartitioningScotchSetMultilevel", &flag);CHKERRQ(ierr);
-    if (flag)
-        ierr = MatPartitioningScotchSetMultilevel(part);CHKERRQ(ierr);
+    flag = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-mat_partitioning_scotch_mul", "Use coarse level","MatPartitioningScotchSetMultilevel", flag,&flag,PETSC_NULL);CHKERRQ(ierr);
+    if (flag) {
+      ierr = MatPartitioningScotchSetMultilevel(part);CHKERRQ(ierr);
+    }
 
     ierr = PetscOptionsString("-mat_partitioning_scotch_strategy",
         "Scotch strategy string",

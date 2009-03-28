@@ -509,7 +509,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsScalar(const char opt[],const char te
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsName"
 /*@C
-   PetscOptionsName - Determines if a particular option is in the database
+   PetscOptionsName - Determines if a particular option has been set in the database. This returns true whether the option is a number, string or boolean, even 
+                      its value is set to false.
 
    Collective on the communicator passed in PetscOptionsBegin()
 

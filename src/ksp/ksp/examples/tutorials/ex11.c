@@ -46,7 +46,7 @@ int main(int argc,char **args)
   PetscScalar    v,none = -1.0,sigma2,pfive = 0.5,*xa;
   PetscRandom    rctx;
   PetscReal      h2,sigma1 = 100.0;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
 
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_USE_COMPLEX)
@@ -86,7 +86,7 @@ int main(int argc,char **args)
       - Always specify global rows and columns of matrix entries.
   */
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-norandom",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-norandom",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) use_random = 0;
   else     use_random = 1;
   if (use_random) {
@@ -182,7 +182,8 @@ int main(int argc,char **args)
       Print the first 3 entries of x; this demonstrates extraction of the
       real and imaginary components of the complex vector, x.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-print_x3",&flg);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-print_x3",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = VecGetArray(x,&xa);CHKERRQ(ierr);
     ierr = PetscPrintf(PETSC_COMM_WORLD,"The first three entries of x are:\n");CHKERRQ(ierr);

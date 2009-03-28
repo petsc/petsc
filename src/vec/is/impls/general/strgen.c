@@ -45,7 +45,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   PetscErrorCode ierr;
   PetscInt       step;
   IS_General     *sub;
-  PetscTruth     stride,flg;
+  PetscTruth     stride,flg = PETSC_FALSE;
   const PetscInt *idx;
 
   PetscFunctionBegin;
@@ -71,7 +71,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   inis->data         = (void*)sub;
   inis->isperm       = PETSC_FALSE;
   ierr = PetscMemcpy(inis->ops,&myops,sizeof(myops));CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-is_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)inis)->comm,&viewer);CHKERRQ(ierr);
