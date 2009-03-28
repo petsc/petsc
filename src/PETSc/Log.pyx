@@ -4,59 +4,41 @@ cdef class Log:
 
     @classmethod
     def Stage(cls, name):
-        global stage_registry
         cdef char *cname = str2cp(name)
         cdef PetscLogStage stageid = 0
-        cdef LogStage stage = None
         if not name: raise ValueError("empty name")
+        cdef LogStage stage = get_LogStage(name)
+        if stage is not None: return stage
         try:
-            stage = stage_registry[name]
-        except KeyError:
-            try:
-                CHKERR( PetscLogStageGetId(cname, &stageid) )
-            except Error:
-                del tracebacklist[:] # XXX this is really ugly
-                CHKERR( PetscLogStageRegister(cname, &stageid) )
-            stage = LogStage()
-            stage.name = name
-            stage.id = stageid
-            stage_registry[name] = stage
+            CHKERR( PetscLogStageGetId(cname, &stageid) )
+        except Error:
+            del tracebacklist[:] # XXX this is really ugly
+            CHKERR( PetscLogStageRegister(cname, &stageid) )
+        stage = reg_LogStage(name, stageid)
         return stage
 
     @classmethod
     def Class(cls, name):
-        global event_registry
         cdef char *cname = str2cp(name)
         cdef PetscLogClass classid = 0
-        cdef LogClass klass = None
         if not name: raise ValueError("empty name")
-        try:
-            klass = class_registry[name]
-        except KeyError:
-            CHKERR( PetscLogClassRegister(cname, &classid) )
-            klass = LogClass()
-            klass.name = name
-            klass.id = classid
-            class_registry[name] = klass
+        cdef LogClass klass = get_LogClass(name)
+        if klass is not None: return klass
+        CHKERR( PetscLogClassRegister(cname, &classid) )
+        klass = reg_LogClass(name, classid)
         return klass
 
     @classmethod
     def Event(cls, name, klass=None):
-        global event_registry
         cdef char *cname = str2cp(name)
         cdef PetscLogClass classid = PETSC_OBJECT_COOKIE
         cdef PetscLogEvent eventid = 0
-        cdef LogEvent event = None
         if not name: raise ValueError("empty name")
         if klass is not None: classid = klass
-        try:
-            event = event_registry[name]
-        except KeyError:
-            CHKERR( PetscLogEventRegister(cname, classid, &eventid) )
-            event = LogEvent()
-            event.name = name
-            event.id = eventid
-            event_registry[name] = event
+        cdef LogEvent event = get_LogEvent(name)
+        if event is not None: return event
+        CHKERR( PetscLogEventRegister(cname, classid, &eventid) )
+        event = reg_LogEvent(name, eventid)
         return event
 
     @classmethod
@@ -159,8 +141,17 @@ cdef class LogStage:
             self.setVisible(value)
 
 
-cdef LogStage MainStage  = LogStage()
-cdef dict stage_registry = { MainStage.name : MainStage }
+cdef dict stage_registry = { }
+
+cdef LogStage get_LogStage(object name):
+    return stage_registry.get(name)
+
+cdef LogStage reg_LogStage(object name, PetscLogStage stageid):
+    cdef LogStage stage = LogStage()
+    stage.name = name
+    stage.id = stageid
+    stage_registry[name] = stage
+    return stage
 
 # --------------------------------------------------------------------
 
@@ -201,6 +192,16 @@ cdef class LogClass:
 
 
 cdef dict class_registry = { }
+
+cdef LogStage get_LogClass(object name):
+    return class_registry.get(name)
+
+cdef LogClass reg_LogClass(object name, PetscLogClass classid):
+    cdef LogClass klass = LogClass()
+    klass.name = name
+    klass.id = classid
+    class_registry[name] = klass
+    return klass
 
 # --------------------------------------------------------------------
 
@@ -281,6 +282,17 @@ cdef class LogEvent:
         def __set__(self, value):
             self.setActiveAll(value)
 
+
 cdef dict event_registry = { }
+
+cdef LogStage get_LogEvent(object name):
+    return event_registry.get(name)
+
+cdef LogEvent reg_LogEvent(object name, PetscLogEvent eventid):
+    cdef LogEvent event = LogEvent()
+    event.name = name
+    event.id = eventid
+    event_registry[name] = event
+    return event
 
 # --------------------------------------------------------------------
