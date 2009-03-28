@@ -193,7 +193,7 @@ cdef class LogClass:
 
 cdef dict class_registry = { }
 
-cdef LogStage get_LogClass(object name):
+cdef LogClass get_LogClass(object name):
     return class_registry.get(name)
 
 cdef LogClass reg_LogClass(object name, PetscLogClass classid):
@@ -285,7 +285,7 @@ cdef class LogEvent:
 
 cdef dict event_registry = { }
 
-cdef LogStage get_LogEvent(object name):
+cdef LogEvent get_LogEvent(object name):
     return event_registry.get(name)
 
 cdef LogEvent reg_LogEvent(object name, PetscLogEvent eventid):
