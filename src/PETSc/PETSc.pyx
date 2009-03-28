@@ -351,14 +351,21 @@ def _initialize(args=None):
 def _finalize():
     finalize()
     #
-    global petsc2type
-    petsc2type.clear()
-    #
-    global __COMM_SELF__, __COMM_WORLD__
+    global __COMM_SELF__
     __COMM_SELF__.comm  = MPI_COMM_NULL
+    global __COMM_WORLD__
     __COMM_WORLD__.comm = MPI_COMM_NULL
     #
     global PETSC_COMM_DEFAULT
     PETSC_COMM_DEFAULT = MPI_COMM_NULL
+    #
+    global type_registry
+    type_registry.clear()
+    global stage_registry
+    stage_registry.clear()
+    global class_registry
+    class_registry.clear()
+    global event_registry
+    event_registry.clear()
 
 # --------------------------------------------------------------------

@@ -191,30 +191,30 @@ cdef class Object:
 
 # --------------------------------------------------------------------
 
-cdef dict petsc2type = { 0 : None }
-
-__type_registry__ = petsc2type
+cdef dict type_registry = { 0 : None }
+__type_registry__ = type_registry
 
 cdef int TypeRegistryAdd(PetscCookie cookie, type cls) except -1:
-    global petsc2type
+    global type_registry
     cdef object key = cookie
     cdef object value = cls
-    if key not in petsc2type:
-        petsc2type[key] = cls
+    if key not in type_registry:
+        type_registry[key] = cls
+        reg_LogClass(cls.__name__, <PetscLogClass>cookie)
     else:
-        value = petsc2type[key]
-        assert cls is value, \
-               "key: %d, " \
-               "cannot register: %s, " \
-               "already registered: %s" % (key, cls, value)
+        value = type_registry[key]
+        if cls is not value:
+            raise ValueError(
+                "key: %d, cannot register: %s, " \
+                "already registered: %s" % (key, cls, value))
     return 0
 
 cdef type TypeRegistryGet(PetscCookie cookie):
-    global petsc2type
+    global type_registry
     cdef object key = cookie
     cdef type cls = Object
     try:
-        cls = petsc2type[key]
+        cls = type_registry[key]
     except KeyError:
         cls = Object
     return cls
