@@ -12,10 +12,10 @@ static void Petsc_array_struct_del(void* cptr, void* descr)
 {
   PyArrayInterface *inter = (PyArrayInterface *) cptr;
   PyObject *self = (PyObject *)descr;
-  Py_XDECREF(self);
+  Py_DecRef(self);
   if (inter != NULL) {
     PyMem_Del(inter->shape);
-    Py_XDECREF(inter->descr);
+    Py_DecRef(inter->descr);
     PyMem_Del(inter);
   }
 }
@@ -29,7 +29,7 @@ static PyObject* Petsc_array_struct_new(PyObject* self,
   PyArray_Descr    *descr = NULL;
   PyArrayInterface *inter = NULL;
   PyObject         *cobj  = NULL;
-  Py_INCREF(self);
+  Py_IncRef(self);
   inter = PyMem_New(PyArrayInterface, 1);
   if (inter == NULL) { PyErr_NoMemory(); goto fail; }
   shape = PyMem_New(npy_intp, 1);
@@ -61,7 +61,7 @@ static PyObject* Petsc_array_struct_new(PyObject* self,
  fail:
   PyMem_Del(inter);
   PyMem_Del(shape);
-  Py_DECREF(self);
+  Py_DecRef(self);
   return NULL;
 }
 
