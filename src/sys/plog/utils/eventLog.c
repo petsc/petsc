@@ -440,6 +440,44 @@ PetscErrorCode EventPerfLogDeactivateClass(EventPerfLog eventLog, EventRegLog ev
 }
 
 /*------------------------------------------------ Query Functions --------------------------------------------------*/
+#undef __FUNCT__
+#define __FUNCT__ "EventRegLogGetEvent"
+/*@
+  EventRegLogGetEvent - This function returns the event id given the event name.
+
+  Not Collective
+
+  Input Parameters:
++ eventLog - The EventRegLog
+- name     - The stage name
+
+  Output Parameter:
+. event    - The event id
+
+  Level: intermediate
+
+.keywords: log, stage
+.seealso: EventRegLogRegister()
+@*/
+PetscErrorCode PETSC_DLLEXPORT EventRegLogGetEvent(EventRegLog eventLog, const char name[], PetscLogEvent *event)
+{
+  PetscTruth match;
+  int        e;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidCharPointer(name,2);
+  PetscValidIntPointer(event,3);
+  *event = -1;
+  for(e = 0; e < eventLog->numEvents; e++) {
+    ierr = PetscStrcasecmp(eventLog->eventInfo[e].name, name, &match);CHKERRQ(ierr);
+    if (match) break;
+  }
+  if (e == eventLog->numEvents) SETERRQ1(PETSC_ERR_ARG_WRONG, "No event named %s", name);
+  *event = e;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "EventPerfLogSetVisible"
 /*@C

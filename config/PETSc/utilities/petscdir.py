@@ -72,7 +72,7 @@ The environmental variable PETSC_DIR is set incorrectly. Please use the followin
           versionInfo.append(line[:-1])
       f.close()
     else:
-      raise RuntimeError('Invalid PETSc directory '+str(self.dir)+' it may not exist?')
+      raise RuntimeError('Invalid PETSc directory '+str(self.dir)+'. Could not locate '+versionHeader)
     self.logPrint('Version Information:')
     for line in versionInfo:
       self.logPrint(line)
