@@ -4,6 +4,7 @@ cdef class Log:
 
     @classmethod
     def Stage(cls, name):
+        global stage_registry
         cdef char *cname = str2cp(name)
         cdef PetscLogStage stageid = 0
         cdef LogStage stage = None
@@ -23,17 +24,35 @@ cdef class Log:
         return stage
 
     @classmethod
-    def Event(cls, name, klass=None):
+    def Class(cls, name):
+        global event_registry
         cdef char *cname = str2cp(name)
-        cdef PetscCookie cookie = PETSC_OBJECT_COOKIE
+        cdef PetscLogClass classid = 0
+        cdef LogClass klass = None
+        if not name: raise ValueError("empty name")
+        try:
+            klass = class_registry[name]
+        except KeyError:
+            CHKERR( PetscLogClassRegister(cname, &classid) )
+            klass = LogClass()
+            klass.name = name
+            klass.id = classid
+            class_registry[name] = klass
+        return klass
+
+    @classmethod
+    def Event(cls, name, klass=None):
+        global event_registry
+        cdef char *cname = str2cp(name)
+        cdef PetscLogClass classid = PETSC_OBJECT_COOKIE
         cdef PetscLogEvent eventid = 0
         cdef LogEvent event = None
         if not name: raise ValueError("empty name")
-        if klass is not None: cookie = klass
+        if klass is not None: classid = klass
         try:
             event = event_registry[name]
         except KeyError:
-            CHKERR( PetscLogEventRegister(cname, cookie, &eventid) )
+            CHKERR( PetscLogEventRegister(cname, classid, &eventid) )
             event = LogEvent()
             event.name = name
             event.id = eventid
@@ -142,6 +161,46 @@ cdef class LogStage:
 
 cdef LogStage MainStage  = LogStage()
 cdef dict stage_registry = { MainStage.name : MainStage }
+
+# --------------------------------------------------------------------
+
+cdef class LogClass:
+
+    cdef readonly object        name
+    cdef readonly PetscLogClass id
+
+    def __cinit__(self):
+        self.name = cp2str("Object")
+        self.id   = PETSC_OBJECT_COOKIE
+
+    def __int__(self):
+        return <int> self.id
+
+    #
+
+    def activate(self):
+        CHKERR( PetscLogClassActivate(self.id) )
+
+    def deactivate(self):
+        CHKERR( PetscLogClassDeactivate(self.id) )
+
+    def getActive(self):
+        raise NotImplementedError
+
+    def setActive(self, flag):
+        if flag:
+            CHKERR( PetscLogClassActivate(self.id) )
+        else:
+            CHKERR( PetscLogClassDeactivate(self.id) )
+
+    property active:
+        def __get__(self):
+            return self.getActive()
+        def __set__(self, value):
+            self.setActive(value)
+
+
+cdef dict class_registry = { }
 
 # --------------------------------------------------------------------
 
