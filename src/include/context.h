@@ -1,12 +1,16 @@
 
 #undef  __FUNCT__
-#define __FUNCT__ "PetscPyDictDestroy"
+#define __FUNCT__ "PetscPyObjDestroy"
 static PetscErrorCode
 PetscPyObjDestroy(void* ptr) {
   PyObject *pyobj = 0;
   PetscFunctionBegin;
   pyobj = (PyObject*) ptr;
-  if (Py_IsInitialized()) { Py_XDECREF(pyobj); }
+  if (pyobj && Py_IsInitialized()) {
+    PyGILState_STATE _save = PyGILState_Ensure();
+    Py_DecRef(pyobj);
+    PyGILState_Release(_save);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -43,7 +47,7 @@ PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
     ierr = PetscContainerGetPointer(container,(void**)&pydict); CHKERRQ(ierr);
     if (pydict == NULL)
       SETERRQ(1, "object in container is NULL");
-    if (!PyDict_CheckExact(pydict)) 
+    if (!PyDict_CheckExact(pydict))
       SETERRQ(1, "object in container is not a Python dictionary");
   } else if (create) {
     pydict = PyDict_New();
@@ -120,14 +124,14 @@ PetscObjectSetPyObj(PetscObject obj, const char name[], void *op)
     ierr = PetscObjectGetPyDict(obj, PETSC_FALSE, (void**)&pydct);CHKERRQ(ierr);
     if (pydct != NULL && pydct != Py_None && PyDict_CheckExact(pydct)) {
       int ret = PyDict_DelItem(pydct, pykey);
-      Py_DECREF(pykey); pykey = NULL;
+      Py_DecRef(pykey); pykey = NULL;
       if (ret < 0) SETERRQ(1, "failed to remove object from internal Python dictionary");
     }
   } else {
     ierr = PetscObjectGetPyDict(obj, PETSC_TRUE, (void**)&pydct);CHKERRQ(ierr);
     if (pydct != NULL && pydct != Py_None && PyDict_CheckExact(pydct)) {
       int ret = PyDict_SetItem(pydct, pykey, pyobj);
-      Py_DECREF(pykey); pykey = NULL;
+      Py_DecRef(pykey); pykey = NULL;
       if (ret < 0) SETERRQ(1, "failed to set object in internal Python dictionary");
     }
   }
@@ -158,7 +162,7 @@ PetscObjectGetPyObj(PetscObject obj, const char name[], void **op)
 #endif
     if (pykey == NULL) { SETERRQ(1, "failed to create Python string"); }
     pyobj = PyDict_GetItem(pydct, pykey);
-    Py_DECREF(pykey); pykey = NULL;
+    Py_DecRef(pykey); pykey = NULL;
     if (pyobj == NULL) pyobj = Py_None;
     *op = pyobj;
   }

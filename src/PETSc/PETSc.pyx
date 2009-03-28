@@ -158,9 +158,21 @@ include "CAPI.pyx"
 # --------------------------------------------------------------------
 
 cdef extern from "Python.h":
-    int Py_IsInitialized()
+    int Py_IsInitialized() nogil
 
 cdef object tracebacklist = []
+
+cdef int tracebackfunc(int line,
+                   const_char_p cfun,
+                   const_char_p cfile,
+                   const_char_p cdir,
+                   int n, int p,
+                   const_char_p mess,
+                   void *ctx) nogil:
+    if Py_IsInitialized() and (<void*>tracebacklist) != NULL:
+        return traceback(line, cfun, cfile, cdir, n, p, mess, ctx)
+    else:
+        return PetscTBEH(line, cfun, cfile, cdir, n, p, mess, ctx)
 
 cdef int traceback(int line,
                    const_char_p cfun,
@@ -172,12 +184,6 @@ cdef int traceback(int line,
     cdef PetscLogDouble mem=0
     cdef PetscLogDouble rss=0
     cdef const_char_p text=NULL
-    #
-    if not Py_IsInitialized():
-        return PetscTBEH(line, cfun, cfile, cdir, n, p, mess, ctx)
-    if  (<void*>tracebacklist) == NULL:
-        return PetscTBEH(line, cfun, cfile, cdir, n, p, mess, ctx)
-    #
     cdef object tbl = tracebacklist
     fun = cp2str(cfun)
     fnm = cp2str(cfile)
@@ -281,7 +287,7 @@ cdef int initialize(object args) except -1:
     # initialize PETSc
     CHKERR( PetscInitialize(&PyPetsc_Argc, &PyPetsc_Argv, NULL, NULL) )
     # install custom error handler
-    CHKERR( PetscPushErrorHandler(traceback, <void*>tracebacklist) )
+    CHKERR( PetscPushErrorHandler(tracebackfunc, <void*>tracebacklist) )
     # register finalization function
     if Py_AtExit(finalize) < 0:
         PySys_WriteStderr("warning: could not register"
