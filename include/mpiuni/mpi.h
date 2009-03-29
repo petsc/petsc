@@ -134,6 +134,7 @@ extern void *MPIUNI_TMP;
 #define MPI_ERR_OTHER        1
 #define MPI_TAG_UB           0
 #define MPI_ERRORS_RETURN    0
+#define MPI_UNDEFINED      (-32766)
 
 /* External types */
 typedef int    MPI_Comm;
