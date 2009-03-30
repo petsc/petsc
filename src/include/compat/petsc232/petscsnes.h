@@ -81,7 +81,7 @@ PetscErrorCode SNESSetConvergenceTest_232(SNES snes,
 }
 #define SNESSetConvergenceTest SNESSetConvergenceTest_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetConvergenceHistory_232"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESSetConvergenceHistory_232(SNES snes, PetscReal a[],PetscInt its[],PetscInt na,PetscTruth reset)

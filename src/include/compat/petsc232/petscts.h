@@ -3,9 +3,9 @@
 
 #include "private/tsimpl.h"
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetType_232"
-static PETSC_UNUSED 
+static PETSC_UNUSED
 PetscErrorCode TSGetType_232(TS ts, const TSType *type)
 {
   PetscErrorCode ierr;
@@ -15,9 +15,9 @@ PetscErrorCode TSGetType_232(TS ts, const TSType *type)
 }
 #define TSGetType TSGetType_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetMatrices_232"
-static PETSC_UNUSED 
+static PETSC_UNUSED
 PetscErrorCode TSSetMatrices_232(TS ts,
 				 Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),
 				 Mat Alhs,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),
@@ -40,7 +40,7 @@ PetscErrorCode TSSetMatrices_232(TS ts,
 }
 #define TSSetMatrices TSSetMatrices_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSolve_232"
 static PETSC_UNUSED
 PetscErrorCode TSSolve_232(TS ts, Vec u)
@@ -60,10 +60,10 @@ PetscErrorCode TSSolve_232(TS ts, Vec u)
 }
 #define TSSolve TSSolve_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetTime_232"
 static PETSC_UNUSED
-PetscErrorCode TSSetTime_232(TS ts, PetscReal t) 
+PetscErrorCode TSSetTime_232(TS ts, PetscReal t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);

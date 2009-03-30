@@ -1,9 +1,9 @@
 #ifndef _PETSC_COMPAT_VEC_H
 #define _PETSC_COMPAT_VEC_H
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISGetIndices_232"
-PETSC_STATIC_INLINE PetscErrorCode 
+PETSC_STATIC_INLINE PetscErrorCode
 ISGetIndices_232(IS is, const PetscInt *ptr[])
 {
   PetscInt *idx = 0;
@@ -14,13 +14,13 @@ ISGetIndices_232(IS is, const PetscInt *ptr[])
   ierr = ISGetIndices(is,&idx);CHKERRQ(ierr);
   *ptr = idx;
   PetscFunctionReturn(0);
-  
+
 }
 #define ISGetIndices ISGetIndices_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISRestoreIndices_232"
-PETSC_STATIC_INLINE PetscErrorCode 
+PETSC_STATIC_INLINE PetscErrorCode
 ISRestoreIndices_232(IS is, const PetscInt *ptr[])
 {
   PetscInt *idx = 0;
@@ -35,9 +35,9 @@ ISRestoreIndices_232(IS is, const PetscInt *ptr[])
 }
 #define ISRestoreIndices ISRestoreIndices_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISBlockGetIndices_232"
-PETSC_STATIC_INLINE PetscErrorCode 
+PETSC_STATIC_INLINE PetscErrorCode
 ISBlockGetIndices_232(IS is, const PetscInt *ptr[])
 {
   PetscInt *idx = 0;
@@ -48,13 +48,13 @@ ISBlockGetIndices_232(IS is, const PetscInt *ptr[])
   ierr = ISBlockGetIndices(is,&idx);CHKERRQ(ierr);
   *ptr = idx;
   PetscFunctionReturn(0);
-  
+
 }
 #define ISBlockGetIndices ISBlockGetIndices_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISBlockRestoreIndices_232"
-PETSC_STATIC_INLINE PetscErrorCode 
+PETSC_STATIC_INLINE PetscErrorCode
 ISBlockRestoreIndices_232(IS is, const PetscInt *ptr[])
 {
   PetscInt *idx = 0;
@@ -69,9 +69,9 @@ ISBlockRestoreIndices_232(IS is, const PetscInt *ptr[])
 }
 #define ISBlockRestoreIndices ISBlockRestoreIndices_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISBlockGetSize_232"
-PETSC_STATIC_INLINE PetscErrorCode 
+PETSC_STATIC_INLINE PetscErrorCode
 ISBlockGetSize_232(IS is, PetscInt *size)
 {
   PetscInt N, bs=1;
@@ -86,9 +86,9 @@ ISBlockGetSize_232(IS is, PetscInt *size)
 }
 #define ISBlockGetSize ISBlockGetSize_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISBlockGetLocalSize_232"
-PETSC_STATIC_INLINE PetscErrorCode 
+PETSC_STATIC_INLINE PetscErrorCode
 ISBlockGetLocalSize_232(IS is, PetscInt *size)
 {
   PetscInt n, bs=1;
@@ -103,7 +103,7 @@ ISBlockGetLocalSize_232(IS is, PetscInt *size)
 }
 #define ISBlockGetLocalSize ISBlockGetLocalSize_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISSum_232"
 static PETSC_UNUSED
 PetscErrorCode ISSum_232(IS is1,IS is2,IS *is3) {
@@ -123,9 +123,9 @@ PetscErrorCode ISSum_232(IS is1,IS is2,IS *is3) {
 }
 #define ISSum ISSum_232
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISLocalToGlobalMappingApply_232"
-PETSC_STATIC_INLINE PetscErrorCode 
+PETSC_STATIC_INLINE PetscErrorCode
 ISLocalToGlobalMappingApply_232(ISLocalToGlobalMapping mapping,
 				PetscInt N,const PetscInt in[],PetscInt out[])
 {
@@ -148,13 +148,13 @@ ISLocalToGlobalMappingApply_232(ISLocalToGlobalMapping mapping,
 
 #define VEC_IGNORE_NEGATIVE_INDICES ((VecOption)1)
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "VecSetOption_232"
 static PETSC_UNUSED
 PetscErrorCode VecSetOption_232(Vec x,VecOption op,PetscTruth flag) {
-  if (op==VEC_IGNORE_OFF_PROC_ENTRIES && flag==PETSC_FALSE) 
+  if (op==VEC_IGNORE_OFF_PROC_ENTRIES && flag==PETSC_FALSE)
     op = VEC_TREAT_OFF_PROC_ENTRIES;
-  else 
+  else
     return 0;
   return VecSetOption(x,op);
 }
@@ -163,7 +163,7 @@ PetscErrorCode VecSetOption_232(Vec x,VecOption op,PetscTruth flag) {
 #undef __FUNCT__
 #define __FUNCT__ "VecGetOwnershipRanges_232"
 static PETSC_UNUSED
-PetscErrorCode VecGetOwnershipRanges_232(Vec vec,const PetscInt *ranges[]) 
+PetscErrorCode VecGetOwnershipRanges_232(Vec vec,const PetscInt *ranges[])
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

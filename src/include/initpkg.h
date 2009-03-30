@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------- */
 
 #if PETSC_VERSION_(2,3,2)
-#undef  __FUNCT__  
+#undef  __FUNCT__
 #define __FUNCT__ "ISInitializePackage"
 static PetscErrorCode ISInitializePackage(char path[])
 {
@@ -28,7 +28,7 @@ static PetscErrorCode ISInitializePackage(char path[])
 /* ---------------------------------------------------------------- */
 
 #if PETSC_VERSION_(2,3,3)
-#undef  __FUNCT__  
+#undef  __FUNCT__
 #define __FUNCT__ "ISInitializePackage"
 static PetscErrorCode ISInitializePackage(const char path[])
 {
@@ -46,7 +46,7 @@ static PetscErrorCode ISInitializePackage(const char path[])
 
 /* ---------------------------------------------------------------- */
 
-#undef  __FUNCT__  
+#undef  __FUNCT__
 #define __FUNCT__ "PetscInitializeAllPackages"
 static PetscErrorCode PetscInitializeAllPackages(const char path[])
 {

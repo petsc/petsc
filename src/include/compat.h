@@ -4,14 +4,14 @@
 #ifndef PETSC_UNUSED
 # if defined(__GNUC__)
 #   if !(defined(__cplusplus)) || (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4))
-#     define PETSC_UNUSED __attribute__ ((__unused__)) 
+#     define PETSC_UNUSED __attribute__ ((__unused__))
 #   else
 #     define PETSC_UNUSED
 #   endif
 # elif defined(__ICC)
-#   define PETSC_UNUSED __attribute__ ((__unused__)) 
+#   define PETSC_UNUSED __attribute__ ((__unused__))
 # else
-#   define PETSC_UNUSED 
+#   define PETSC_UNUSED
 # endif
 #endif
 

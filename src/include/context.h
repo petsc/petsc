@@ -69,6 +69,8 @@ PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
 
 /* Implementation for PETSc-3.0.0 and above */
 
+#undef  __FUNCT__
+#define __FUNCT__ "PetscObjectGetPyDict"
 PETSC_STATIC_INLINE PetscErrorCode
 PetscObjectGetPyDict(PetscObject obj, PetscTruth create, void **dict)
 {
@@ -152,7 +154,7 @@ PetscObjectGetPyObj(PetscObject obj, const char name[], void **op)
   PetscValidHeader(obj, 1);
   PetscValidCharPointer(name, 2);
   PetscValidPointer(op, 3);
-  *op = Py_None;
+  *op = (void*) Py_None;
   ierr = PetscObjectGetPyDict(obj, PETSC_FALSE, (void**)&pydct);CHKERRQ(ierr);
   if (pydct != NULL && pydct != Py_None && PyDict_CheckExact(pydct)) {
 #if PY_MAJOR_VERSION < 3
@@ -164,7 +166,7 @@ PetscObjectGetPyObj(PetscObject obj, const char name[], void **op)
     pyobj = PyDict_GetItem(pydct, pykey);
     Py_DecRef(pykey); pykey = NULL;
     if (pyobj == NULL) pyobj = Py_None;
-    *op = pyobj;
+    *op = (void*) pyobj;
   }
   PetscFunctionReturn(0);
 }
