@@ -75,9 +75,7 @@ class TestOptions(unittest.TestCase):
         self.opts.cancelMonitor()
         self.assertEqual(getrefcount(mon)-1, 1)
         self._delopts()
-        
-    
-        
+
 # --------------------------------------------------------------------
 
 del TestOptions.testMonitor # XXX

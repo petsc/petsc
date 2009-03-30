@@ -22,7 +22,7 @@ class Jacobian:
 
 # --------------------------------------------------------------------
 
-class TestSNESBase(object):
+class BaseTestSNES(object):
 
     SNES_TYPE = None
 
@@ -333,18 +333,18 @@ class TestSNESBase(object):
 
 
 if PETSc.Sys.getVersion() < (2,3,3):
-    del TestSNESBase.testFDColor
+    del BaseTestSNES.testFDColor
 
 
 # --------------------------------------------------------------------
 
-class TestSNESLS(TestSNESBase, unittest.TestCase):
+class TestSNESLS(BaseTestSNES, unittest.TestCase):
     SNES_TYPE = PETSc.SNES.Type.LS
 
-class TestSNESTR(TestSNESBase, unittest.TestCase):
+class TestSNESTR(BaseTestSNES, unittest.TestCase):
     SNES_TYPE = PETSc.SNES.Type.TR
 
-## class TestSNESTEST(TestSNESBase, unittest.TestCase):
+## class TestSNESTEST(BaseTestSNES, unittest.TestCase):
 ##     SNES_TYPE = PETSc.SNES.Type.TEST
 ##     def setUp(self):
 ##         super(TestSNESTEST, self).setUp()
@@ -437,7 +437,7 @@ class MySNES(object):
         return True # succedd
 
 
-class TestSNESPython(TestSNESBase, unittest.TestCase):
+class TestSNESPython(BaseTestSNES, unittest.TestCase):
     SNES_TYPE = PETSc.SNES.Type.PYTHON
 
     def setUp(self):

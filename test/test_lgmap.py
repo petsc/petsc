@@ -3,7 +3,7 @@ import unittest
 
 # --------------------------------------------------------------------
 
-class TestLGMapBase(object):
+class BaseTestLGMap(object):
 
     def _mk_idx(self, comm):
         comm_size = comm.getSize()
@@ -50,13 +50,13 @@ class TestLGMapBase(object):
 
 # --------------------------------------------------------------------
 
-class TestLGMap(TestLGMapBase, unittest.TestCase):
+class TestLGMap(BaseTestLGMap, unittest.TestCase):
 
     def setUp(self):
         self.idx   = self._mk_idx(PETSc.COMM_WORLD)
         self.lgmap = PETSc.LGMap().create(self.idx, comm=PETSc.COMM_WORLD)
 
-class TestLGMapIS(TestLGMapBase, unittest.TestCase):
+class TestLGMapIS(BaseTestLGMap, unittest.TestCase):
 
     def setUp(self):
         self.idx   = self._mk_idx(PETSc.COMM_WORLD)

@@ -26,7 +26,7 @@ def mkgraph(comm, m, n):
     return nods, xadj, adjy
 
 
-class TestMatAnyAIJBase(object):
+class BaseTestMatAnyAIJ(object):
 
     COMM  = PETSc.COMM_NULL
     TYPE  = None
@@ -193,7 +193,7 @@ class TestMatAnyAIJBase(object):
 
 # -- AIJ ---------------------
 
-class TestMatAIJBase(TestMatAnyAIJBase, unittest.TestCase):
+class BaseTestMatAIJ(BaseTestMatAnyAIJ, unittest.TestCase):
     COMM  = PETSc.COMM_WORLD
     TYPE  = PETSc.Mat.Type.AIJ
     GRID  = 0, 0
@@ -201,7 +201,7 @@ class TestMatAIJBase(TestMatAnyAIJBase, unittest.TestCase):
 
 # -- Seq AIJ --
 
-class TestMatSeqAIJ(TestMatAIJBase):
+class TestMatSeqAIJ(BaseTestMatAIJ):
     COMM = PETSc.COMM_SELF
     TYPE = PETSc.Mat.Type.SEQAIJ
 class TestMatSeqAIJ_G23(TestMatSeqAIJ):
@@ -213,7 +213,7 @@ class TestMatSeqAIJ_G89(TestMatSeqAIJ):
 
 # -- MPI AIJ --
 
-class TestMatMPIAIJ(TestMatAIJBase):
+class TestMatMPIAIJ(BaseTestMatAIJ):
     COMM = PETSc.COMM_WORLD
     TYPE = PETSc.Mat.Type.MPIAIJ
 class TestMatMPIAIJ_G23(TestMatMPIAIJ):
@@ -226,7 +226,7 @@ class TestMatMPIAIJ_G89(TestMatMPIAIJ):
 
 # -- Block AIJ ---------------
 
-class TestMatBAIJBase(TestMatAnyAIJBase, unittest.TestCase):
+class BaseTestMatBAIJ(BaseTestMatAnyAIJ, unittest.TestCase):
     COMM  = PETSc.COMM_WORLD
     TYPE  = PETSc.Mat.Type.BAIJ
     GRID  = 0, 0
@@ -234,7 +234,7 @@ class TestMatBAIJBase(TestMatAnyAIJBase, unittest.TestCase):
 
 # -- Seq Block AIJ --
 
-class TestMatSeqBAIJ(TestMatBAIJBase):
+class TestMatSeqBAIJ(BaseTestMatBAIJ):
     COMM = PETSc.COMM_SELF
     TYPE = PETSc.Mat.Type.SEQBAIJ
 # bs = 1
@@ -276,7 +276,7 @@ class TestMatSeqBAIJ_G89_B5(TestMatSeqBAIJ_G89):
 
 # -- MPI Block AIJ --
 
-class TestMatMPIBAIJ(TestMatBAIJBase):
+class TestMatMPIBAIJ(BaseTestMatBAIJ):
     COMM = PETSc.COMM_WORLD
     TYPE = PETSc.Mat.Type.MPIBAIJ
 # bs = 1
@@ -318,7 +318,7 @@ class TestMatMPIBAIJ_G89_B5(TestMatMPIBAIJ_G89):
 
 # -- AIJ + Block ---------------
 
-class TestMatAIJ_B_Base(TestMatAnyAIJBase, unittest.TestCase):
+class BaseTestMatAIJ_B(BaseTestMatAnyAIJ, unittest.TestCase):
     COMM  = PETSc.COMM_WORLD
     TYPE  = PETSc.Mat.Type.AIJ
     GRID  = 0, 0
@@ -371,7 +371,7 @@ class TestMatAIJ_B_Base(TestMatAnyAIJBase, unittest.TestCase):
 
 # -- Seq AIJ + Block --
 
-class TestMatSeqAIJ_B(TestMatAIJ_B_Base):
+class TestMatSeqAIJ_B(BaseTestMatAIJ_B):
     COMM = PETSc.COMM_SELF
     TYPE = PETSc.Mat.Type.SEQAIJ
 # bs = 1
@@ -413,7 +413,7 @@ class TestMatSeqAIJ_B_G89_B5(TestMatSeqAIJ_B_G89):
 
 # -- MPI AIJ + Block --
 
-class TestMatMPIAIJ_B(TestMatAIJ_B_Base):
+class TestMatMPIAIJ_B(BaseTestMatAIJ_B):
     COMM = PETSc.COMM_WORLD
     TYPE = PETSc.Mat.Type.MPIAIJ
 # bs = 1

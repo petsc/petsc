@@ -6,7 +6,7 @@ from sys import getrefcount
 
 # --------------------------------------------------------------------
 
-class TestKSPBase(object):
+class BaseTestKSP(object):
 
     KSP_TYPE = None
     PC_TYPE  = None
@@ -167,45 +167,45 @@ class TestKSPBase(object):
 
 # --------------------------------------------------------------------
 
-class TestKSPPREONLY(TestKSPBase, unittest.TestCase):
+class TestKSPPREONLY(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.PREONLY
     PC_TYPE = PETSc.PC.Type.LU
 
-class TestKSPRICHARDSON(TestKSPBase, unittest.TestCase):
+class TestKSPRICHARDSON(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.RICHARDSON
 
-class TestKSPCHEBYCHEV(TestKSPBase, unittest.TestCase):
+class TestKSPCHEBYCHEV(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.CHEBYCHEV
 
-class TestKSPCG(TestKSPBase, unittest.TestCase):
+class TestKSPCG(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.CG
 
-class TestKSPCGNE(TestKSPBase, unittest.TestCase):
+class TestKSPCGNE(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.CGNE
 
-class TestKSPSTCG(TestKSPBase, unittest.TestCase):
+class TestKSPSTCG(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.STCG
 
-class TestKSPBCGS(TestKSPBase, unittest.TestCase):
+class TestKSPBCGS(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.BCGS
 
-class TestKSPBCGSL(TestKSPBase, unittest.TestCase):
+class TestKSPBCGSL(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.BCGSL
 
-class TestKSPCGS(TestKSPBase, unittest.TestCase):
+class TestKSPCGS(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.CGS
 
-class TestKSPQCG(TestKSPBase, unittest.TestCase):
+class TestKSPQCG(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.QCG
     PC_TYPE  = PETSc.PC.Type.JACOBI
 
-class TestKSPBICG(TestKSPBase, unittest.TestCase):
+class TestKSPBICG(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.BICG
 
-class TestKSPGMRES(TestKSPBase, unittest.TestCase):
+class TestKSPGMRES(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.GMRES
 
-class TestKSPFGMRES(TestKSPBase, unittest.TestCase):
+class TestKSPFGMRES(BaseTestKSP, unittest.TestCase):
     KSP_TYPE = PETSc.KSP.Type.FGMRES
 
 # --------------------------------------------------------------------
@@ -283,21 +283,21 @@ class MyCG(MyKSP):
             beta = delta / delta_old
             d.aypx(beta, r)
 
-class TestKSPPYTHONBase(TestKSPBase):
+class BaseTestKSPPYTHON(BaseTestKSP):
 
     KSP_TYPE = PETSc.KSP.Type.PYTHON
     ContextClass = None
 
     def setUp(self):
-        super(TestKSPPYTHONBase, self).setUp()
+        super(BaseTestKSPPYTHON, self).setUp()
         ctx = self.ContextClass()
         self.ksp.setPythonContext(ctx)
 
-class TestKSPPYTHON_RICH(TestKSPPYTHONBase, unittest.TestCase):
+class TestKSPPYTHON_RICH(BaseTestKSPPYTHON, unittest.TestCase):
     PC_TYPE  = PETSc.PC.Type.JACOBI
     ContextClass = MyRichardson
 
-class TestKSPPYTHON_CG(TestKSPPYTHONBase, unittest.TestCase):
+class TestKSPPYTHON_CG(BaseTestKSPPYTHON, unittest.TestCase):
     PC_TYPE  = PETSc.PC.Type.NONE
     ContextClass = MyCG
 

@@ -30,7 +30,6 @@ from petsc4py import PETSc
 
 version = PETSc.Sys.getVersion()
 exclude = {'test_gc'       : True,
-           'test_log'      : (2,3,2),
            }
 
 def test_cases():

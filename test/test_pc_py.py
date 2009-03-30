@@ -6,7 +6,7 @@ from sys import getrefcount
 
 # --------------------------------------------------------------------
 
-class MyPCBase(object):
+class BaseMyPC(object):
     def setup(self, pc):
         pass
     def apply(self, pc, x, y):
@@ -22,11 +22,11 @@ class MyPCBase(object):
     def applyRich(self, pc, x, y, w, tols):
         self.apply(pc, x, y)
 
-class MyPCNone(MyPCBase):
+class MyPCNone(BaseMyPC):
     def apply(self, pc, x, y):
         x.copy(y)
 
-class MyPCJacobi(MyPCBase):
+class MyPCJacobi(BaseMyPC):
     def setup(self, pc):
         A, P, ms = pc.getOperators()
         self.diag = P.getDiagonal()

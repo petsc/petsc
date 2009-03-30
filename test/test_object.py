@@ -3,7 +3,7 @@ import unittest
 
 # --------------------------------------------------------------------
 
-class TestObjectBase(object):
+class BaseTestObject(object):
 
     CLASS, FACTORY = None, None
     TARGS, KARGS = (), {}
@@ -92,40 +92,40 @@ class TestObjectBase(object):
 
 # --------------------------------------------------------------------
 
-class TestObjectRandom(TestObjectBase, unittest.TestCase):
+class TestObjectRandom(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.Random
     FACTORY = 'create'
 
-class TestObjectViewer(TestObjectBase, unittest.TestCase):
+class TestObjectViewer(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.Viewer
     FACTORY = 'create'
 
-class TestObjectIS(TestObjectBase, unittest.TestCase):
+class TestObjectIS(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.IS
     FACTORY = 'createGeneral'
     TARGS = ([],)
 
-class TestObjectLGMap(TestObjectBase, unittest.TestCase):
+class TestObjectLGMap(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.LGMap
     FACTORY = 'create'
     TARGS = ([],)
 
-class TestObjectAO(TestObjectBase, unittest.TestCase):
+class TestObjectAO(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.AO
     FACTORY = 'createMapping'
     TARGS = ([], [])
 
-class TestObjectDA(TestObjectBase, unittest.TestCase):
+class TestObjectDA(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.DA
     FACTORY = 'create'
     TARGS = ([3,3,3],)
 
-class TestObjectVec(TestObjectBase, unittest.TestCase):
+class TestObjectVec(BaseTestObject, unittest.TestCase):
     CLASS   = PETSc.Vec
     FACTORY = 'createSeq'
     TARGS   = (0,)
 
-class TestObjectScatter(TestObjectBase, unittest.TestCase):
+class TestObjectScatter(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.Scatter
     FACTORY = 'create'
     def setUp(self):
@@ -134,31 +134,31 @@ class TestObjectScatter(TestObjectBase, unittest.TestCase):
         self.obj = PETSc.Scatter().create(v1, i1, v2, i2)
         del v1, v2, i1, i2
 
-class TestObjectMat(TestObjectBase, unittest.TestCase):
+class TestObjectMat(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.Mat
     FACTORY = 'createAIJ'
     TARGS = (0,)
     KARGS   = {'comm': PETSc.COMM_SELF}
 
 
-class TestObjectNullSpace(TestObjectBase, unittest.TestCase):
+class TestObjectNullSpace(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.NullSpace
     FACTORY = 'create'
     TARGS = (True, [])
 
-class TestObjectKSP(TestObjectBase, unittest.TestCase):
+class TestObjectKSP(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.KSP
     FACTORY = 'create'
 
-class TestObjectPC(TestObjectBase, unittest.TestCase):
+class TestObjectPC(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.PC
     FACTORY = 'create'
 
-class TestObjectSNES(TestObjectBase, unittest.TestCase):
+class TestObjectSNES(BaseTestObject, unittest.TestCase):
     CLASS = PETSc.SNES
     FACTORY = 'create'
 
-class TestObjectTS(TestObjectBase, unittest.TestCase):
+class TestObjectTS(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.TS
     FACTORY = 'create'
     def setUp(self):
@@ -166,12 +166,12 @@ class TestObjectTS(TestObjectBase, unittest.TestCase):
         self.obj.setProblemType(PETSc.TS.ProblemType.NONLINEAR)
         self.obj.setType(PETSc.TS.Type.BEULER)
 
-class TestObjectAOBasic(TestObjectBase, unittest.TestCase):
+class TestObjectAOBasic(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.AO
     FACTORY = 'createBasic'
     TARGS = ([], [])
 
-class TestObjectAOMapping(TestObjectBase, unittest.TestCase):
+class TestObjectAOMapping(BaseTestObject, unittest.TestCase):
     CLASS  = PETSc.AO
     FACTORY = 'createMapping'
     TARGS = ([], [])

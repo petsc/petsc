@@ -45,7 +45,7 @@ def mksys_poi2(n, mtype, opts):
     A.mult(x,b)
     return A, x, b
 
-class TestMatFactor(object):
+class BaseTestMatFactor(object):
 
     MKSYS = None
     MTYPE = None
@@ -63,7 +63,7 @@ class TestMatFactor(object):
         self.x.destroy(); self.x = None
         self.b.destroy(); self.b = None
 
-class TestMatFactorLU(TestMatFactor):
+class BaseTestMatFactorLU(BaseTestMatFactor):
 
     def testFactorLU(self):
         r, c = self.A.getOrdering("nd")
@@ -74,7 +74,7 @@ class TestMatFactorLU(TestMatFactor):
         x.axpy(-1, self.x)
         self.assertTrue(x.norm() < 1e-3)
 
-class TestMatFactorILU(TestMatFactor):
+class BaseTestMatFactorILU(BaseTestMatFactor):
 
     def testFactorILU(self):
         r, c = self.A.getOrdering("natural")
@@ -84,7 +84,7 @@ class TestMatFactorILU(TestMatFactor):
         x.axpy(-1, self.x)
         self.assertTrue(x.norm() < 1e-3)
 
-class TestMatFactorILUDT(TestMatFactor):
+class BaseTestMatFactorILUDT(BaseTestMatFactor):
 
     def testFactorILUDT(self):
         r, c = self.A.getOrdering("natural")
@@ -94,7 +94,7 @@ class TestMatFactorILUDT(TestMatFactor):
         x.axpy(-1, self.x)
         self.assertTrue(x.norm() < 1e-3)
 
-class TestMatFactorChol(TestMatFactor):
+class BaseTestMatFactorChol(BaseTestMatFactor):
 
     def testFactorChol(self):
         r, c = self.A.getOrdering("natural")
@@ -104,7 +104,7 @@ class TestMatFactorChol(TestMatFactor):
         x.axpy(-1, self.x)
         self.assertTrue(x.norm() < 1e-3)
 
-class TestMatFactorICC(TestMatFactor):
+class BaseTestMatFactorICC(BaseTestMatFactor):
 
     def testFactorICC(self):
         r, c = self.A.getOrdering("natural")
@@ -117,59 +117,59 @@ class TestMatFactorICC(TestMatFactor):
 
 # --------------------------------------------------------------------
 
-class TestMatFactorA1(TestMatFactorLU,
-                      TestMatFactorChol,
+class TestMatFactorA1(BaseTestMatFactorLU,
+                      BaseTestMatFactorChol,
                       unittest.TestCase):
     MKSYS = staticmethod(mksys_diag)
     MTYPE = PETSc.Mat.Type.SEQDENSE
 
-class TestMatFactorA2(TestMatFactorLU,
-                      TestMatFactorChol,
+class TestMatFactorA2(BaseTestMatFactorLU,
+                      BaseTestMatFactorChol,
                       unittest.TestCase):
     MKSYS = staticmethod(mksys_poi2)
     MTYPE = PETSc.Mat.Type.SEQDENSE
 
 # ---
 
-class TestMatFactorB1(TestMatFactorLU,
-                      TestMatFactorILU,
-                      TestMatFactorILUDT,
+class TestMatFactorB1(BaseTestMatFactorLU,
+                      BaseTestMatFactorILU,
+                      BaseTestMatFactorILUDT,
                       unittest.TestCase):
     MKSYS = staticmethod(mksys_diag)
     MTYPE = PETSc.Mat.Type.SEQAIJ
 
-class TestMatFactorB2(TestMatFactorLU,
-                      TestMatFactorILU,
-                      TestMatFactorILUDT,
+class TestMatFactorB2(BaseTestMatFactorLU,
+                      BaseTestMatFactorILU,
+                      BaseTestMatFactorILUDT,
                       unittest.TestCase):
     MKSYS = staticmethod(mksys_poi2)
     MTYPE = PETSc.Mat.Type.SEQAIJ
 
 # ---
 
-class TestMatFactorC1(TestMatFactorLU,
-                      TestMatFactorILU,
+class TestMatFactorC1(BaseTestMatFactorLU,
+                      BaseTestMatFactorILU,
                       unittest.TestCase):
     MKSYS = staticmethod(mksys_diag)
     MTYPE = PETSc.Mat.Type.SEQBAIJ
 
-class TestMatFactorC2(TestMatFactorLU,
-                      TestMatFactorILU,
+class TestMatFactorC2(BaseTestMatFactorLU,
+                      BaseTestMatFactorILU,
                       unittest.TestCase):
     MKSYS = staticmethod(mksys_poi2)
     MTYPE = PETSc.Mat.Type.SEQBAIJ
 
 # ---
 
-class TestMatFactorD1(TestMatFactorChol,
-                      TestMatFactorICC,
+class TestMatFactorD1(BaseTestMatFactorChol,
+                      BaseTestMatFactorICC,
                       unittest.TestCase):
     MKSYS = staticmethod(mksys_diag)
     MTYPE = PETSc.Mat.Type.SEQSBAIJ
     MOPTS = [PETSc.Mat.Option.IGNORE_LOWER_TRIANGULAR]
 
-class TestMatFactorD2(TestMatFactorChol,
-                      TestMatFactorICC,
+class TestMatFactorD2(BaseTestMatFactorChol,
+                      BaseTestMatFactorICC,
                       unittest.TestCase):
     MKSYS = staticmethod(mksys_poi2)
     MTYPE = PETSc.Mat.Type.SEQSBAIJ
@@ -178,6 +178,7 @@ class TestMatFactorD2(TestMatFactorChol,
 if PETSc.Sys.getVersion() == (2,3,2):
     del TestMatFactorD1
     del TestMatFactorD2
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':

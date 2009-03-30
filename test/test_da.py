@@ -3,7 +3,7 @@ import unittest
 
 # --------------------------------------------------------------------
 
-class TestDABase(object):
+class BaseTestDA(object):
 
     COMM = PETSc.COMM_WORLD
     SIZES = None
@@ -56,24 +56,24 @@ class TestDABase(object):
         ao = self.da.getAO()
 
 
-class TestDABase_1D(TestDABase):
+class BaseTestDA_1D(BaseTestDA):
     SIZES = [100]
 
-class TestDABase_2D(TestDABase):
+class BaseTestDA_2D(BaseTestDA):
     SIZES = [9,11]
 
-class TestDABase_3D(TestDABase):
+class BaseTestDA_3D(BaseTestDA):
     SIZES = [4,5,6]
 
 # --------------------------------------------------------------------
 
-class TestDA_1D(TestDABase_1D, unittest.TestCase):
+class TestDA_1D(BaseTestDA_1D, unittest.TestCase):
     pass
 
-class TestDA_2D(TestDABase_2D, unittest.TestCase):
+class TestDA_2D(BaseTestDA_2D, unittest.TestCase):
     pass
 
-class TestDA_3D(TestDABase_3D, unittest.TestCase):
+class TestDA_3D(BaseTestDA_3D, unittest.TestCase):
     pass
 
 # --------------------------------------------------------------------

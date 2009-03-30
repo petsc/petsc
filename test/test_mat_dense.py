@@ -15,7 +15,7 @@ def mkdata(comm, m, N, bs):
     return rows, cols, vals
 
 
-class TestMatAnyDenseBase(object):
+class BaseTestMatAnyDense(object):
 
     COMM  = PETSc.COMM_NULL
     GRID  = 0, 0
@@ -74,14 +74,14 @@ class TestMatAnyDenseBase(object):
 
 # -- Dense ---------------------
 
-class TestMatDenseBase(TestMatAnyDenseBase, unittest.TestCase):
+class BaseTestMatDense(BaseTestMatAnyDense, unittest.TestCase):
     COMM  = PETSc.COMM_WORLD
     GRID  = 0, 0
     BSIZE = None
 
 # -- Seq Dense --
 
-class TestMatSeqDense(TestMatDenseBase):
+class TestMatSeqDense(BaseTestMatDense):
     COMM = PETSc.COMM_SELF
     TYPE = PETSc.Mat.Type.SEQDENSE
 class TestMatSeqDense_G23(TestMatSeqDense):
@@ -93,7 +93,7 @@ class TestMatSeqDense_G89(TestMatSeqDense):
 
 # -- MPI Dense --
 
-class TestMatMPIDense(TestMatDenseBase):
+class TestMatMPIDense(BaseTestMatDense):
     COMM = PETSc.COMM_WORLD
     TYPE = PETSc.Mat.Type.MPIDENSE
 class TestMatMPIDense_G23(TestMatMPIDense):
@@ -106,7 +106,7 @@ class TestMatMPIDense_G89(TestMatMPIDense):
 
 # -- Dense + Block ---------------
 
-class TestMatDense_B_Base(TestMatAnyDenseBase, unittest.TestCase):
+class BaseTestMatDense_B(BaseTestMatAnyDense, unittest.TestCase):
     COMM  = PETSc.COMM_WORLD
     GRID  = 0, 0
     BSIZE = 1
@@ -117,7 +117,7 @@ class TestMatDense_B_Base(TestMatAnyDenseBase, unittest.TestCase):
 
 # -- Seq Dense + Block --
 
-class TestMatSeqDense_B(TestMatDense_B_Base):
+class TestMatSeqDense_B(BaseTestMatDense_B):
     COMM = PETSc.COMM_SELF
     TYPE = PETSc.Mat.Type.SEQDENSE
 # bs = 1
@@ -159,7 +159,7 @@ class TestMatSeqDense_B_G89_B5(TestMatSeqDense_B_G89):
 
 # -- MPI Dense + Block --
 
-class TestMatMPIDense_B(TestMatDense_B_Base):
+class TestMatMPIDense_B(BaseTestMatDense_B):
     COMM = PETSc.COMM_WORLD
     TYPE = PETSc.Mat.Type.MPIDENSE
 # bs = 1

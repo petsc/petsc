@@ -10,12 +10,12 @@ def allclose(seq1, seq2):
         if abs(v1-v2) > 1e-5:
             return False
     return True
-        
+
 
 class TestNullSpace(unittest.TestCase):
 
     def setUp(self):
-        u1 = PETSc.Vec().createSeq(3) 
+        u1 = PETSc.Vec().createSeq(3)
         u2 = PETSc.Vec().createSeq(3)
         u1[0], u1[1], u1[2] = [1,  2, 0]; u1.normalize()
         u2[0], u2[1], u2[2] = [2, -1, 0]; u2.normalize()
@@ -23,7 +23,7 @@ class TestNullSpace(unittest.TestCase):
         nullsp = PETSc.NullSpace().create(False, basis, comm=PETSc.COMM_SELF)
         self.basis = basis
         self.nullsp = nullsp
-        
+
     def tearDown(self):
         self.basis = None
         self.nullsp = None
@@ -34,7 +34,7 @@ class TestNullSpace(unittest.TestCase):
         w = v.duplicate()
         self.nullsp.remove(v, w)
         return (v, w)
-        
+
     def testRemove(self):
         v, w = self._remove()
         tols = (0, 1e-5)
@@ -74,7 +74,7 @@ class TestNullSpace(unittest.TestCase):
     ##     fun = dct.get('__function__')
     ##     self.assertEqual(getrefcount(rem)-1, 1)
     ##     self.assertTrue(fun is None)
-        
+
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':

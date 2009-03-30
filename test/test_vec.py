@@ -3,7 +3,7 @@ import unittest
 
 # --------------------------------------------------------------------
 
-class TestVecBase(object):
+class BaseTestVec(object):
 
     COMM = None
     TYPE = None
@@ -192,26 +192,26 @@ class TestVecBase(object):
 
 # --------------------------------------------------------------------
 
-class TestVecSeq(TestVecBase, unittest.TestCase):
+class TestVecSeq(BaseTestVec, unittest.TestCase):
     COMM = PETSc.COMM_SELF
     TYPE = PETSc.Vec.Type.SEQ
 
-class TestVecMPI(TestVecBase, unittest.TestCase):
+class TestVecMPI(BaseTestVec, unittest.TestCase):
     COMM  = PETSc.COMM_WORLD
     TYPE = PETSc.Vec.Type.MPI
 
-class TestVecShared(TestVecBase, unittest.TestCase):
+class TestVecShared(BaseTestVec, unittest.TestCase):
     if PETSc.COMM_WORLD.getSize() == 1:
         TYPE = PETSc.Vec.Type.SHARED
     else:
         TYPE = PETSc.Vec.Type.MPI
     COMM  = PETSc.COMM_WORLD
 
-#class TestVecSieve(TestVecBase, unittest.TestCase):
+#class TestVecSieve(BaseTestVec, unittest.TestCase):
 #    CLASS = PETSc.VecSieve
 #    TARGS = ([],)
 
-#class TestVecGhost(TestVecBase, unittest.TestCase):
+#class TestVecGhost(BaseTestVec, unittest.TestCase):
 #    CLASS = PETSc.VecGhost
 #    TARGS = ([],)
 

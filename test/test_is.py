@@ -4,7 +4,7 @@ import random
 
 # --------------------------------------------------------------------
 
-class TestISBase(object):
+class BaseTestIS(object):
 
     TYPE = None
 
@@ -64,7 +64,7 @@ class TestISBase(object):
 
 # --------------------------------------------------------------------
 
-class TestISGeneral(TestISBase, unittest.TestCase):
+class TestISGeneral(BaseTestIS, unittest.TestCase):
 
     TYPE = PETSc.IS.Type.GENERAL
 
@@ -78,7 +78,7 @@ class TestISGeneral(TestISBase, unittest.TestCase):
         self.assertEqual(self.idx, list(idx))
 
 
-class TestISStride(TestISBase, unittest.TestCase):
+class TestISStride(BaseTestIS, unittest.TestCase):
 
     TYPE = PETSc.IS.Type.STRIDE
 
@@ -94,7 +94,7 @@ class TestISStride(TestISBase, unittest.TestCase):
         self.assertEqual(self.iset.getType(), PETSc.IS.Type.GENERAL)
 
 
-class TestISBlock(TestISBase, unittest.TestCase):
+class TestISBlock(BaseTestIS, unittest.TestCase):
 
     TYPE = PETSc.IS.Type.BLOCK
 

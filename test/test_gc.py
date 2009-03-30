@@ -10,7 +10,7 @@ import gc, weakref
 
 # --------------------------------------------------------------------
 
-class TestGCBase(object):
+class BaseTestGC(object):
 
     def setUp(self):
         self.obj = self.CLASS().create(comm=PETSc.COMM_SELF)
@@ -21,7 +21,7 @@ class TestGCBase(object):
         self.obj = None
         gc.collect()
         self.assertTrue(wref() is None)
-        
+
     def testCycleInSelf(self):
         self.obj.getDict()['self'] = self.obj
 
@@ -38,25 +38,25 @@ class TestGCBase(object):
         self.testCycleInSelf()
         self.testCycleInMeth()
         self.testCycleInInst()
-        
+
 # --------------------------------------------------------------------
 
 
-class TestGCVec(TestGCBase, unittest.TestCase):
+class TestGCVec(BaseTestGC, unittest.TestCase):
     CLASS = type('_Vec', (PETSc.Vec,), {})
 
-class TestGCMat(TestGCBase, unittest.TestCase):
+class TestGCMat(BaseTestGC, unittest.TestCase):
     CLASS = type('_Mat', (PETSc.Mat,), {})
 
-class TestGCKSP(TestGCBase, unittest.TestCase):
+class TestGCKSP(BaseTestGC, unittest.TestCase):
     CLASS = type('_KSP', (PETSc.KSP,), {})
 
-class TestGCSNES(TestGCBase, unittest.TestCase):
+class TestGCSNES(BaseTestGC, unittest.TestCase):
     CLASS = type('_SNES', (PETSc.SNES,), {})
     #def testCycleInAppCtx(self):
     #    self.obj.setAppCtx(self.obj)
 
-class TestGCTS(TestGCBase, unittest.TestCase):
+class TestGCTS(BaseTestGC, unittest.TestCase):
     CLASS = type('_TS', (PETSc.TS,), {})
     #def testCycleInAppCtx(self):
     #    self.obj.setAppCtx(self.obj)
