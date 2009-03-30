@@ -10,6 +10,7 @@ class TestOptions(unittest.TestCase):
     OPTLIST = [('truth',  True),
                ('bool',   False),
                ('int',    7),
+               ('real',   5),
                ('scalar', 3),
                ('string', 'petsc4py'),
                ]
@@ -38,14 +39,13 @@ class TestOptions(unittest.TestCase):
     def testHasOpts(self):
         self._putopts()
         for k, v in self.OPTLIST:
-            if v:
-                self.assertTrue(self.opts.hasName(k))
-                self.assertTrue(k in self.opts)
-            else:
-                self.assertFalse(self.opts.hasName(k))
-                self.assertTrue(k not in self.opts)
+            self.assertTrue(self.opts.hasName(k))
+            self.assertTrue(k in self.opts)
+            missing = k+'-missing'
+            self.assertFalse(self.opts.hasName(missing))
+            self.assertFalse(missing in self.opts)
         self._delopts()
-        
+
     def testGetOpts(self):
         self._putopts()
         for k, v in self.OPTLIST:

@@ -15,6 +15,18 @@ PetscErrorCode PetscOptionsInsertFile_233(MPI_Comm comm,const char file[],PetscT
 }
 #define PetscOptionsInsertFile PetscOptionsInsertFile_233
 
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsHasName_233"
+static PETSC_UNUSED
+PetscErrorCode PetscOptionsHasName_233(const char pre[],const char name[],PetscTruth *flg)
+{
+  char dummy[2] = { 0, 0 };
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = PetscOptionsGetString(pre,name,dummy,1,flg);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#define PetscOptionsHasName PetscOptionsHasName_233
 
 #define PetscLogStage                int
 #define PetscLogEvent                PetscEvent
