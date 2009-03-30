@@ -851,6 +851,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP ksp,PetscReal rtol,PetscR
 +  ksp - iterative context obtained from KSPCreate()
 -  flg - PETSC_TRUE indicates the guess is non-zero, PETSC_FALSE indicates the guess is zero
 
+   Options database keys:
+.  -ksp_initial_guess_nonzero : use nonzero initial guess; this takes an optional truth value (0/1/no/yes/true/false)
+
    Level: beginner
 
    Notes:
