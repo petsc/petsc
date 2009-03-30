@@ -175,6 +175,9 @@ class TestMatFactorD2(TestMatFactorChol,
     MTYPE = PETSc.Mat.Type.SEQSBAIJ
     MOPTS = [PETSc.Mat.Option.IGNORE_LOWER_TRIANGULAR]
 
+if PETSc.Sys.getVersion() == (2,3,2):
+    del TestMatFactorD1
+    del TestMatFactorD2
 # --------------------------------------------------------------------
 
 if __name__ == '__main__':
