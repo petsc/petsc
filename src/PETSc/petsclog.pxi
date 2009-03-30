@@ -35,6 +35,14 @@ cdef extern from "petsc.h" nogil:
     int PetscLogEventDeactivate(PetscLogEvent)
     int PetscLogEventSetActiveAll(PetscLogEvent,PetscTruth)
 
+cdef extern from "custom.h" nogil:
+    int PetscLogStageFindId(char[],PetscLogStage*)
+    int PetscLogClassFindId(char[],PetscLogClass*)
+    int PetscLogEventFindId(char[],PetscLogEvent*)
+    int PetscLogStageFindName(PetscLogStage,const_char_p[])
+    int PetscLogClassFindName(PetscLogClass,const_char_p[])
+    int PetscLogEventFindName(PetscLogEvent,const_char_p[])
+
 
 cdef inline int event_args2objs(object args, PetscObject o[4]) except -1:
         o[0] = o[1] = o[2] = o[3] = NULL

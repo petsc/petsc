@@ -15,6 +15,9 @@ class TestLog(unittest.TestCase):
 
     def setUp(self):
         #PETSc.Log.begin()
+        # register stages
+        self.stage1 = PETSc.Log.Stage('Stage 1')
+        self.stage2 = PETSc.Log.Stage('Stage 2')
         # register classes
         self.klassA = PETSc.Log.Class('Class A')
         self.klassB = PETSc.Log.Class('Class B')
@@ -23,11 +26,18 @@ class TestLog(unittest.TestCase):
         self.event2 = PETSc.Log.Event('Event 2') # no class
         self.eventA = PETSc.Log.Event('Event A', self.klassA)
         self.eventB = PETSc.Log.Event('Event B', self.klassB)
-        # register stages
-        self.stage1 = PETSc.Log.Stage('Stage 1')
-        self.stage2 = PETSc.Log.Stage('Stage 2')
 
-    def testLoggin(self):
+    def testGetName(self):
+        self.assertEqual(self.klassA.name, 'Class A')
+        self.assertEqual(self.klassB.name, 'Class B')
+        self.assertEqual(self.event1.name, 'Event 1')
+        self.assertEqual(self.event2.name, 'Event 2')
+        self.assertEqual(self.eventA.name, 'Event A')
+        self.assertEqual(self.eventB.name, 'Event B')
+        self.assertEqual(self.stage1.name, 'Stage 1')
+        self.assertEqual(self.stage2.name, 'Stage 2')
+
+    def testLogBeginEnd(self):
         # -----
         self._run_events() # in main stage
         self._run_stages() # in user stages
@@ -71,6 +81,10 @@ class TestLog(unittest.TestCase):
         self._run_events()
         self._run_stages()
 
+    def testLogBarrierBeginEnd(self):
+        self._run_events_barrier() # in main stage
+        self._run_stages_barrier() # in user stages
+
 
     def _run_stages(self):
         for stage in self._get_stages():
@@ -101,6 +115,26 @@ class TestLog(unittest.TestCase):
     def _events_end(self):
         for event in reversed(self._get_events()):
             event.end()
+
+    def _run_stages_barrier(self):
+        for stage in self._get_stages():
+            self._run_events_barrier(stage)
+
+    def _run_events_barrier(self, stage=None):
+        if stage is not None:
+            stage.push()
+        self._events_begin_barrier()
+        self._events_end_barrier()
+        if stage is not None:
+            stage.pop()
+
+    def _events_begin_barrier(self):
+        for event in self._get_events():
+            event.barrierBegin()
+
+    def _events_end_barrier(self):
+        for event in reversed(self._get_events()):
+            event.barrierEnd()
 
 # --------------------------------------------------------------------
 

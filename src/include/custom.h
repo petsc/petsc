@@ -8,20 +8,142 @@
 #include "private/snesimpl.h"
 #include "private/tsimpl.h"
 
-#if PETSC_VERSION_(2,3,2)
-#define PetscGetMap(o, m) (&(o)->m)
-#define PetscSetUpMap(o, m) PetscMapInitialize((o)->comm,&(o)->m)
-#elif PETSC_VERSION_(2,3,3)
-#define PetscGetMap(o, m) (&(o)->m)
-#define PetscSetUpMap(o, m) PetscMapSetUp(&(o)->m)
-#else
-#define PetscGetMap(o, m) ((o)->m)
-#define PetscSetUpMap(o, m) PetscMapSetUp((o)->m)
-#endif
+/* ---------------------------------------------------------------- */
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogStageFindId"
+PETSC_STATIC_INLINE PetscErrorCode
+PetscLogStageFindId(const char name[], PetscLogStage *stageid)
+{
+  int            s;
+  StageLog       stageLog = 0;
+  PetscTruth     match = PETSC_FALSE;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidCharPointer(name,1);
+  PetscValidIntPointer(stageid,2);
+  *stageid = -1;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  for(s = 0; s < stageLog->numStages; s++) {
+    const char *sname = stageLog->stageInfo[s].name;
+    ierr = PetscStrcasecmp(sname, name, &match);CHKERRQ(ierr);
+    if (match) { *stageid = s; break; }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogClassFindId"
+PETSC_STATIC_INLINE PetscErrorCode
+PetscLogClassFindId(const char name[], PetscCookie *classid)
+{
+  int            c;
+  StageLog       stageLog = 0;
+  PetscTruth     match = PETSC_FALSE;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidCharPointer(name,1);
+  PetscValidIntPointer(classid,2);
+  *classid = -1;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  for(c = 0; c < stageLog->classLog->numClasses; c++) {
+    const char *cname = stageLog->classLog->classInfo[c].name;
+    PetscCookie cookie = stageLog->classLog->classInfo[c].cookie;
+    ierr = PetscStrcasecmp(cname, name, &match);CHKERRQ(ierr);
+    if (match) { *classid = cookie; break; }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogEventFindId"
+PETSC_STATIC_INLINE PetscErrorCode
+PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
+{
+  int            e;
+  StageLog       stageLog = 0;
+  PetscTruth     match = PETSC_FALSE;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidCharPointer(name,1);
+  PetscValidIntPointer(eventid,2);
+  *eventid = -1;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  for(e = 0; e < stageLog->eventLog->numEvents; e++) {
+    const char *ename = stageLog->eventLog->eventInfo[e].name;
+    ierr = PetscStrcasecmp(ename, name, &match);CHKERRQ(ierr);
+    if (match) { *eventid = e; break; }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogStageFindName"
+PETSC_STATIC_INLINE PetscErrorCode
+PetscLogStageFindName(PetscLogStage stageid,
+		      const char *name[])
+{
+  StageLog       stageLog = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidPointer(name,3);
+  *name = 0;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  if (stageid >=0 && stageid < stageLog->numStages) {
+    *name  = stageLog->stageInfo[stageid].name;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogClassFindName"
+PETSC_STATIC_INLINE PetscErrorCode
+PetscLogClassFindName(PetscCookie classid,
+		      const char *name[])
+{
+  int            c;
+  StageLog       stageLog = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidPointer(name,3);
+  *name = 0;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  for(c = 0; c < stageLog->classLog->numClasses; c++) {
+    if (classid == stageLog->classLog->classInfo[c].cookie) {
+      *name  = stageLog->classLog->classInfo[c].name;
+      break;
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscLogEventFindName"
+PETSC_STATIC_INLINE PetscErrorCode
+PetscLogEventFindName(PetscLogEvent eventid,
+		      const char *name[])
+{
+  StageLog       stageLog = 0;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidPointer(name,3);
+  *name = 0;
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  if (!stageLog) PetscFunctionReturn(0); /* logging is turned off ? */
+  if (eventid >=0 && eventid < stageLog->eventLog->numEvents) {
+    *name  = stageLog->eventLog->eventInfo[eventid].name;
+  }
+  PetscFunctionReturn(0);
+}
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PetscObjectGetClassName"
 PETSC_STATIC_INLINE PetscErrorCode
 PetscObjectGetClassName(PetscObject obj, const char *class_name[])
@@ -35,7 +157,7 @@ PetscObjectGetClassName(PetscObject obj, const char *class_name[])
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISValid"
 PETSC_STATIC_INLINE PetscErrorCode
 ISValid(IS is, PetscTruth *flg)
@@ -48,10 +170,10 @@ ISValid(IS is, PetscTruth *flg)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "ISGetType"
 PETSC_STATIC_INLINE PetscErrorCode
-ISGetType(IS is, ISType *istype) 
+ISGetType(IS is, ISType *istype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -90,6 +212,17 @@ VecRestoreArrayC(Vec v, PetscScalar *a[])
 
 /* ---------------------------------------------------------------- */
 
+#if PETSC_VERSION_(2,3,2)
+#define PetscGetMap(o, m) (&(o)->m)
+#define PetscSetUpMap(o, m) PetscMapInitialize((o)->comm,&(o)->m)
+#elif PETSC_VERSION_(2,3,3)
+#define PetscGetMap(o, m) (&(o)->m)
+#define PetscSetUpMap(o, m) PetscMapSetUp(&(o)->m)
+#else
+#define PetscGetMap(o, m) ((o)->m)
+#define PetscSetUpMap(o, m) PetscMapSetUp((o)->m)
+#endif
+
 #undef __FUNCT__
 #define __FUNCT__ "MatBlockSize_Check"
 PETSC_STATIC_INLINE PetscErrorCode
@@ -107,7 +240,7 @@ MatBlockSize_Check(Mat mat,PetscInt bs)
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row length %D not divisible by block size %D",rmap->n,bs);
   if (rmap->N != -1 && rmap->N % bs)
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Global row length %D not divisible by block size %D",rmap->N,bs);
-  if (cmap->n != -1 && cmap->n % bs) 
+  if (cmap->n != -1 && cmap->n % bs)
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local column length %D not divisible by block size %D",cmap->n,bs);
   if (cmap->N != -1 && cmap->N % bs)
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Global column length %D not divisible by block size %D",cmap->N,bs);
@@ -141,7 +274,7 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
-  if (bs < 1) 
+  if (bs < 1)
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,
 	     "Invalid block size specified, must be positive but it is %D",bs);
   if (mat->ops->setblocksize) {
@@ -161,7 +294,7 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
 #undef  MatSetBlockSize
 #define MatSetBlockSize MatSetBlockSize_Patch
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatAnyAIJSetPreallocation"
 PETSC_STATIC_INLINE PetscErrorCode
 MatIsPreallocated(Mat A,PetscTruth *flag)
@@ -173,11 +306,11 @@ MatIsPreallocated(Mat A,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateAnyAIJ"
 PETSC_STATIC_INLINE PetscErrorCode
-MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs, 
-		PetscInt m, PetscInt n, 
+MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
+		PetscInt m, PetscInt n,
 		PetscInt M, PetscInt N,
 		Mat *A)
 {
@@ -264,11 +397,11 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatCreateAnyDense"
 PETSC_STATIC_INLINE PetscErrorCode
 MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
-		  PetscInt m, PetscInt n, 
+		  PetscInt m, PetscInt n,
 		  PetscInt M, PetscInt N,
 		  Mat *A)
 {
@@ -296,7 +429,7 @@ MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
 #undef __FUNCT__
 #define __FUNCT__ "MatAnyDenseSetPreallocation"
 PETSC_STATIC_INLINE PetscErrorCode
-MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data) 
+MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
 {
   PetscTruth     flag = PETSC_FALSE;
   PetscErrorCode ierr;
@@ -317,7 +450,7 @@ MatAnyDenseSetPreallocation(Mat mat, PetscInt bs, PetscScalar *data)
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFactorInfoDefaults()"
 PETSC_STATIC_INLINE PetscErrorCode
 MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
@@ -351,7 +484,7 @@ MatFactorInfoDefaults(PetscTruth incomplete, MatFactorInfo *info)
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetIterationNumber"
 PETSC_STATIC_INLINE PetscErrorCode
 KSPSetIterationNumber(KSP ksp, PetscInt its)
@@ -363,7 +496,7 @@ KSPSetIterationNumber(KSP ksp, PetscInt its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetResidualNorm"
 PETSC_STATIC_INLINE PetscErrorCode
 KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
@@ -375,7 +508,7 @@ KSPSetResidualNorm(KSP ksp, PetscReal rnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPLogConvergenceHistory"
 PETSC_STATIC_INLINE PetscErrorCode
 KSPLogConvergenceHistory(KSP ksp, PetscInt its, PetscReal rnorm)
@@ -388,7 +521,7 @@ KSPLogConvergenceHistory(KSP ksp, PetscInt its, PetscReal rnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPMonitorCall"
 PETSC_STATIC_INLINE PetscErrorCode
 KSPMonitorCall(KSP ksp, PetscInt its, PetscReal rnorm)
@@ -401,7 +534,7 @@ KSPMonitorCall(KSP ksp, PetscInt its, PetscReal rnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPConvergenceTestCall"
 PETSC_STATIC_INLINE PetscErrorCode
 KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReason *reason)
@@ -416,7 +549,7 @@ KSPConvergenceTestCall(KSP ksp, PetscInt its, PetscReal rnorm, KSPConvergedReaso
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPSetConvergedReason"
 PETSC_STATIC_INLINE PetscErrorCode
 KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
@@ -429,7 +562,7 @@ KSPSetConvergedReason(KSP ksp, KSPConvergedReason reason)
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetIterationNumber"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESSetIterationNumber(SNES snes, PetscInt its)
@@ -441,7 +574,7 @@ SNESSetIterationNumber(SNES snes, PetscInt its)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetFunctionNorm"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESSetFunctionNorm(SNES snes, PetscReal fnorm)
@@ -453,7 +586,7 @@ SNESSetFunctionNorm(SNES snes, PetscReal fnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESLogResidualHistoryCall"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESLogConvergenceHistory(SNES snes, PetscInt its, PetscReal fnorm, PetscInt lits)
@@ -466,7 +599,7 @@ SNESLogConvergenceHistory(SNES snes, PetscInt its, PetscReal fnorm, PetscInt lit
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESMonitorCall"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESMonitorCall(SNES snes, PetscInt its, PetscReal rnorm)
@@ -479,7 +612,7 @@ SNESMonitorCall(SNES snes, PetscInt its, PetscReal rnorm)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESConvergenceTestCall"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESConvergenceTestCall(SNES snes, PetscInt its,
@@ -498,7 +631,7 @@ SNESConvergenceTestCall(SNES snes, PetscInt its,
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetConvergedReason"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
@@ -509,7 +642,7 @@ SNESSetConvergedReason(SNES snes, SNESConvergedReason reason)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatMFFDSetOptionsPrefix"
 PETSC_STATIC_INLINE PetscErrorCode
 MatMFFDSetOptionsPrefix(Mat mat, const char prefix[]) {
@@ -522,7 +655,7 @@ MatMFFDSetOptionsPrefix(Mat mat, const char prefix[]) {
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatFDColoringSetOptionsPrefix"
 PETSC_STATIC_INLINE PetscErrorCode
 MatFDColoringSetOptionsPrefix(MatFDColoring fdc, const char prefix[]) {
@@ -533,7 +666,7 @@ MatFDColoringSetOptionsPrefix(MatFDColoring fdc, const char prefix[]) {
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUseMFFD"
 static PetscErrorCode
 SNESGetUseMFFD(SNES snes,PetscTruth *flag)
@@ -549,7 +682,7 @@ SNESGetUseMFFD(SNES snes,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUseMFFD"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESSetUseMFFD(SNES snes,PetscTruth flag)
@@ -573,7 +706,7 @@ SNESSetUseMFFD(SNES snes,PetscTruth flag)
   if ( flg && !flag) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"cannot change matrix-free once it is set");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
-  } 
+  }
 
   ierr = SNESGetFunction(snes,&r,0,&funP);CHKERRQ(ierr);
   ierr = SNESGetJacobian(snes,&A,&B,0,&jacP);CHKERRQ(ierr);
@@ -595,13 +728,13 @@ SNESSetUseMFFD(SNES snes,PetscTruth flag)
   } else {
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
   }
-  
+
   ierr = MatDestroy(J);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESGetUseFDColoring"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESGetUseFDColoring(SNES snes,PetscTruth *flag)
@@ -618,10 +751,10 @@ SNESGetUseFDColoring(SNES snes,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "SNESSetUseFDColoring"
 PETSC_STATIC_INLINE PetscErrorCode
-SNESSetUseFDColoring(SNES snes,PetscTruth flag) 
+SNESSetUseFDColoring(SNES snes,PetscTruth flag)
 {
   const char*    prefix = PETSC_NULL;
   PetscTruth     flg = PETSC_FALSE;
@@ -643,7 +776,7 @@ SNESSetUseFDColoring(SNES snes,PetscTruth flag)
   if ( flg && !flag) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "cannot change colored finite diferences once it is set");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
-  } 
+  }
 
   ierr = SNESGetFunction(snes,&f,&fun,&funP);CHKERRQ(ierr);
   ierr = SNESGetJacobian(snes,&A,&B,&jac,&jacP);CHKERRQ(ierr);
@@ -666,7 +799,7 @@ SNESSetUseFDColoring(SNES snes,PetscTruth flag)
   ierr = SNESGetOptionsPrefix(snes,&prefix);CHKERRQ(ierr);
   ierr = MatFDColoringSetOptionsPrefix(fdcoloring,prefix);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(fdcoloring);CHKERRQ(ierr);
-  
+
   ierr = SNESSetJacobian(snes,A,B,SNESDefaultComputeJacobianColor,fdcoloring);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)snes,"fdcoloring",(PetscObject)fdcoloring);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(fdcoloring);CHKERRQ(ierr);
@@ -676,9 +809,9 @@ SNESSetUseFDColoring(SNES snes,PetscTruth flag)
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetRHSFunction_Ex"
-static PetscErrorCode 
+static PetscErrorCode
 TSSetRHSFunction_Ex(TS ts,Vec r,PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
   PetscErrorCode ierr;
@@ -689,7 +822,7 @@ TSSetRHSFunction_Ex(TS ts,Vec r,PetscErrorCode (*fun)(TS,PetscReal,Vec,Vec,void*
 }
 #define TSSetRHSFunction TSSetRHSFunction_Ex
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetRHSFunction_Ex"
 static PetscErrorCode
 TSGetRHSFunction_Ex(TS ts,Vec *f,PetscErrorCode (**fun)(TS,PetscReal,Vec,Vec,void*),void **ctx)
@@ -704,7 +837,7 @@ TSGetRHSFunction_Ex(TS ts,Vec *f,PetscErrorCode (**fun)(TS,PetscReal,Vec,Vec,voi
 }
 #define TSGetRHSFunction TSGetRHSFunction_Ex
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetRHSJacobian_Ex"
 PETSC_STATIC_INLINE PetscErrorCode
 TSGetRHSJacobian_Ex(TS ts,Mat *A,Mat *B,PetscErrorCode (**jac)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void **ctx)
@@ -719,7 +852,7 @@ TSGetRHSJacobian_Ex(TS ts,Mat *A,Mat *B,PetscErrorCode (**jac)(TS,PetscReal,Vec,
 #define TSGetRHSJacobian TSGetRHSJacobian_Ex
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSGetUseFDColoring"
 PETSC_STATIC_INLINE PetscErrorCode
 TSGetUseFDColoring(TS ts,PetscTruth *flag)
@@ -736,7 +869,7 @@ TSGetUseFDColoring(TS ts,PetscTruth *flag)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetUseFDColoring"
 PETSC_STATIC_INLINE PetscErrorCode
 TSSetUseFDColoring(TS ts,PetscTruth flag)
@@ -761,7 +894,7 @@ TSSetUseFDColoring(TS ts,PetscTruth flag)
   if ( flg && !flag) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"cannot change colored finite deferences once it is set");
     PetscFunctionReturn(PETSC_ERR_ARG_WRONGSTATE);
-  } 
+  }
   ierr = TSGetRHSFunction(ts,&f,&fun,&funP);CHKERRQ(ierr);
   ierr = TSGetRHSJacobian(ts,&A,&B,&jac,&jacP);CHKERRQ(ierr);
   if (fun == PETSC_NULL) {
@@ -782,7 +915,7 @@ TSSetUseFDColoring(TS ts,PetscTruth flag)
   ierr = TSGetOptionsPrefix(ts,&prefix);CHKERRQ(ierr);
   ierr = MatFDColoringSetOptionsPrefix(matfdcoloring,prefix);CHKERRQ(ierr);
   ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
-  
+
   ierr = TSSetRHSJacobian(ts,A,B,TSDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)ts,"matfdcoloring",(PetscObject)matfdcoloring);CHKERRQ(ierr);
   ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
@@ -792,7 +925,7 @@ TSSetUseFDColoring(TS ts,PetscTruth flag)
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetSolution_Patch"
 PETSC_STATIC_INLINE PetscErrorCode
 TSSetSolution_Patch(TS ts, Vec u)
@@ -808,7 +941,7 @@ TSSetSolution_Patch(TS ts, Vec u)
 #undef  TSSetSolution
 #define TSSetSolution TSSetSolution_Patch
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSolve_Patch"
 PETSC_STATIC_INLINE PetscErrorCode
 TSSolve_Patch(TS ts, Vec x)
@@ -823,7 +956,7 @@ TSSolve_Patch(TS ts, Vec x)
 #undef  TSSolve
 #define TSSolve TSSolve_Patch
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetTimeStepNumber"
 PETSC_STATIC_INLINE PetscErrorCode
 TSSetTimeStepNumber(TS ts, PetscInt step)
@@ -836,10 +969,10 @@ TSSetTimeStepNumber(TS ts, PetscInt step)
 
 /* ---------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "AOGetType"
 PETSC_STATIC_INLINE PetscErrorCode
-AOGetType(AO ao, AOType *aotype) 
+AOGetType(AO ao, AOType *aotype)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
