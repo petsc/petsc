@@ -16,6 +16,17 @@ class BaseTestObject(object):
     def tearDown(self):
         self.obj = None
 
+    def testTypeRegistry(self):
+        type_reg = PETSc.__type_registry__
+        cookie = self.obj.getCookie()
+        self.assertTrue(type_reg[cookie] is self.CLASS )
+
+    def testLogClass(self):
+        name = self.CLASS.__name__
+        logcls = PETSc.Log.Class(name)
+        cookie = self.obj.getCookie()
+        self.assertEqual(logcls.id, cookie)
+
     def testClass(self):
         self.assertTrue(isinstance(self.obj, self.CLASS))
         self.assertTrue(type(self.obj) is self.CLASS)
