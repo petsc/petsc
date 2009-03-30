@@ -26,49 +26,49 @@ typedef struct {
 
 #define PC_Py_Self(pc) (((PC_Py*)(pc)->data)->self)
 
-#define PC_PYTHON_CALL_HEAD(pc, PyMethod)		\
+#define PC_PYTHON_CALL_HEAD(pc, PyMethod)               \
   PETSC_PYTHON_CALL_HEAD(PC_Py_Self(pc), PyMethod)
-#define PC_PYTHON_CALL_JUMP(pc, LABEL)			\
+#define PC_PYTHON_CALL_JUMP(pc, LABEL)                  \
   PETSC_PYTHON_CALL_JUMP(LABEL)
-#define PC_PYTHON_CALL_BODY(pc, ARGS)			\
+#define PC_PYTHON_CALL_BODY(pc, ARGS)                   \
   PETSC_PYTHON_CALL_BODY(ARGS)
-#define PC_PYTHON_CALL_TAIL(pc, PyMethod)		\
+#define PC_PYTHON_CALL_TAIL(pc, PyMethod)               \
   PETSC_PYTHON_CALL_TAIL()
 
-#define PC_PYTHON_CALL(pc, PyMethod, ARGS)		\
-  PC_PYTHON_CALL_HEAD(pc, PyMethod);			\
-  PC_PYTHON_CALL_BODY(pc, ARGS);			\
-  PC_PYTHON_CALL_TAIL(pc, PyMethod)			\
-/**/  
-
-#define PC_PYTHON_CALL_NOARGS(pc, PyMethod)		\
-  PC_PYTHON_CALL_HEAD(pc, PyMethod);			\
-  PC_PYTHON_CALL_BODY(pc, ("", NULL));			\
-  PC_PYTHON_CALL_TAIL(pc, PyMethod)			\
+#define PC_PYTHON_CALL(pc, PyMethod, ARGS)              \
+  PC_PYTHON_CALL_HEAD(pc, PyMethod);                    \
+  PC_PYTHON_CALL_BODY(pc, ARGS);                        \
+  PC_PYTHON_CALL_TAIL(pc, PyMethod)                     \
 /**/
 
-#define PC_PYTHON_CALL_PCARG(pc, PyMethod)		\
-  PC_PYTHON_CALL_HEAD(pc, PyMethod);			\
-  PC_PYTHON_CALL_BODY(pc, ("O&",PyPetscPC_New,pc));	\
-  PC_PYTHON_CALL_TAIL(pc, PyMethod)			\
+#define PC_PYTHON_CALL_NOARGS(pc, PyMethod)             \
+  PC_PYTHON_CALL_HEAD(pc, PyMethod);                    \
+  PC_PYTHON_CALL_BODY(pc, ("", NULL));                  \
+  PC_PYTHON_CALL_TAIL(pc, PyMethod)                     \
 /**/
 
-#define PC_PYTHON_CALL_MAYBE(pc, PyMethod, ARGS, LABEL)	\
-  PC_PYTHON_CALL_HEAD(pc, PyMethod);				\
-  PC_PYTHON_CALL_JUMP(pc, LABEL);				\
-  PC_PYTHON_CALL_BODY(pc, ARGS);				\
-  PC_PYTHON_CALL_TAIL(pc, PyMethod)				\
+#define PC_PYTHON_CALL_PCARG(pc, PyMethod)              \
+  PC_PYTHON_CALL_HEAD(pc, PyMethod);                    \
+  PC_PYTHON_CALL_BODY(pc, ("O&",PyPetscPC_New,pc));     \
+  PC_PYTHON_CALL_TAIL(pc, PyMethod)                     \
 /**/
 
-#define PC_PYTHON_SETERRSUP(pc, PyMethod)				\
-  SETERRQ1(PETSC_ERR_SUP,"method %s() not implemented",PyMethod);	\
-  PetscFunctionReturn(PETSC_ERR_SUP)					\
+#define PC_PYTHON_CALL_MAYBE(pc, PyMethod, ARGS, LABEL) \
+  PC_PYTHON_CALL_HEAD(pc, PyMethod);                            \
+  PC_PYTHON_CALL_JUMP(pc, LABEL);                               \
+  PC_PYTHON_CALL_BODY(pc, ARGS);                                \
+  PC_PYTHON_CALL_TAIL(pc, PyMethod)                             \
+/**/
+
+#define PC_PYTHON_SETERRSUP(pc, PyMethod)                               \
+  SETERRQ1(PETSC_ERR_SUP,"method %s() not implemented",PyMethod);       \
+  PetscFunctionReturn(PETSC_ERR_SUP)                                    \
 /**/
 
 /* -------------------------------------------------------------------------- */
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPythonSetType_PYTHON"
 PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType_PYTHON(PC pc,const char pyname[])
 {
@@ -83,7 +83,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetType_PYTHON(PC pc,const char pyname
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCDestroy_Python"
 static PetscErrorCode PCDestroy_Python(PC pc)
 {
@@ -99,7 +99,7 @@ static PetscErrorCode PCDestroy_Python(PC pc)
   ierr = PetscFree(pc->data);CHKERRQ(ierr);
   pc->data = PETSC_NULL;
   ierr = PetscObjectComposeFunction((PetscObject)pc,"PCPythonSetType_C",
-				    "",PETSC_NULL);CHKERRQ(ierr);
+                                    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -114,9 +114,9 @@ static PetscErrorCode PCSetFromOptions_Python(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("PC Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-pc_python_type","Python package.module[.{class|function}]",
-			    "PCPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
+                            "PCPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg && pyname[0]) { 
+  if (flg && pyname[0]) {
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
     if (!flg) { ierr = PCPythonSetType_PYTHON(pc,pyname);CHKERRQ(ierr); }
   }
@@ -124,7 +124,7 @@ static PetscErrorCode PCSetFromOptions_Python(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCView_Python"
 static PetscErrorCode PCView_Python(PC pc,PetscViewer viewer)
 {
@@ -144,118 +144,118 @@ static PetscErrorCode PCView_Python(PC pc,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer,"%s",pyname);CHKERRQ(ierr);
   }
   PC_PYTHON_CALL(pc, "view", ("O&O&",
-			      PyPetscPC_New,     pc,
-			      PyPetscViewer_New, viewer));
+                              PyPetscPC_New,     pc,
+                              PyPetscViewer_New, viewer));
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPreSolve_Python"
 static PetscErrorCode PCPreSolve_Python(PC pc, KSP ksp, Vec b, Vec x)
 {
   PetscFunctionBegin;
   PC_PYTHON_CALL(pc, "preSolve", ("O&O&O&O&",
-				  PyPetscPC_New,  pc,
-				  PyPetscKSP_New, ksp,
-				  PyPetscVec_New, b,
-				  PyPetscVec_New, x   ));
+                                  PyPetscPC_New,  pc,
+                                  PyPetscKSP_New, ksp,
+                                  PyPetscVec_New, b,
+                                  PyPetscVec_New, x   ));
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPostSolve_Python"
 static PetscErrorCode PCPostSolve_Python(PC pc, KSP ksp, Vec b, Vec x)
 {
   PetscFunctionBegin;
   PC_PYTHON_CALL(pc, "postSolve", ("O&O&O&O&",
-				   PyPetscPC_New,  pc,
-				   PyPetscKSP_New, ksp,
-				   PyPetscVec_New, b,
-				   PyPetscVec_New, x   ));
+                                   PyPetscPC_New,  pc,
+                                   PyPetscKSP_New, ksp,
+                                   PyPetscVec_New, b,
+                                   PyPetscVec_New, x   ));
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApply_Python"
 static PetscErrorCode PCApply_Python(PC pc,Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PC_PYTHON_CALL_MAYBE(pc, "apply", 
-		       ("O&O&O&",
-			PyPetscPC_New,  pc,
-			PyPetscVec_New, x,
-			PyPetscVec_New, y  ),
-		       notimplemented);
+  PC_PYTHON_CALL_MAYBE(pc, "apply",
+                       ("O&O&O&",
+                        PyPetscPC_New,  pc,
+                        PyPetscVec_New, x,
+                        PyPetscVec_New, y  ),
+                       notimplemented);
   PetscFunctionReturn(0);
  notimplemented:
   PC_PYTHON_SETERRSUP(pc, "apply");
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplySymmetricLeft_Python"
 static PetscErrorCode PCApplySymmetricLeft_Python(PC pc,Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PC_PYTHON_CALL_MAYBE(pc, "applySymmetricLeft", 
-		       ("O&O&O&",
-			PyPetscPC_New,  pc,
-			PyPetscVec_New, x,
-			PyPetscVec_New, y  ),
-		       notimplemented);
+  PC_PYTHON_CALL_MAYBE(pc, "applySymmetricLeft",
+                       ("O&O&O&",
+                        PyPetscPC_New,  pc,
+                        PyPetscVec_New, x,
+                        PyPetscVec_New, y  ),
+                       notimplemented);
   PetscFunctionReturn(0);
  notimplemented:
   PC_PYTHON_SETERRSUP(pc, "applySymmetricLeft");
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplySymmetricRight_Python"
 static PetscErrorCode PCApplySymmetricRight_Python(PC pc,Vec x, Vec y)
 {
   PetscFunctionBegin;
-  PC_PYTHON_CALL_MAYBE(pc, "applySymmetricRight", 
-		       ("O&O&O&",
-			PyPetscPC_New,  pc,
-			PyPetscVec_New, x,
-			PyPetscVec_New, y  ),
-		       notimplemented);
+  PC_PYTHON_CALL_MAYBE(pc, "applySymmetricRight",
+                       ("O&O&O&",
+                        PyPetscPC_New,  pc,
+                        PyPetscVec_New, x,
+                        PyPetscVec_New, y  ),
+                       notimplemented);
   PetscFunctionReturn(0);
  notimplemented:
   PC_PYTHON_SETERRSUP(pc, "applySymmetricRight");
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyTranspose_Python"
 static PetscErrorCode PCApplyTranspose_Python(PC pc,Vec x, Vec y)
 {
   PetscFunctionBegin;
   PC_PYTHON_CALL_MAYBE(pc, "applyTranspose",
-		       ("O&O&O&",
-			PyPetscPC_New,  pc,
-			PyPetscVec_New, x,
-			PyPetscVec_New, y  ),
-		       notimplemented);
+                       ("O&O&O&",
+                        PyPetscPC_New,  pc,
+                        PyPetscVec_New, x,
+                        PyPetscVec_New, y  ),
+                       notimplemented);
   PetscFunctionReturn(0);
  notimplemented:
   PC_PYTHON_SETERRSUP(pc, "applyTranspose");
 }
 
 #if 0
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCApplyRichardson_Python"
 static PetscErrorCode PCApplyRichardson_Python(PC pc,Vec x, Vec y, Vec w,
-					       PetscReal rtol,PetscReal atol,PetscReal dtol,PetscInt its)
+                                               PetscReal rtol,PetscReal atol,PetscReal dtol,PetscInt its)
 {
   PetscFunctionBegin;
   PC_PYTHON_CALL_MAYBE(pc, "applyRichardson",
-		       ("O&O&O&O&(dddl)",
-			PyPetscPC_New,  pc,
-			PyPetscVec_New, x,
-			PyPetscVec_New, y,
-			PyPetscVec_New, w,
-			(double)rtol,(double)atol,(double)dtol,(long)its),
-		       notimplemented);
+                       ("O&O&O&O&(dddl)",
+                        PyPetscPC_New,  pc,
+                        PyPetscVec_New, x,
+                        PyPetscVec_New, y,
+                        PyPetscVec_New, w,
+                        (double)rtol,(double)atol,(double)dtol,(long)its),
+                       notimplemented);
   PetscFunctionReturn(0);
  notimplemented:
   PC_PYTHON_SETERRSUP(pc, "applyRichardson");
@@ -273,7 +273,7 @@ static int PCPythonHasOperation(PC pc, const char operation[])
   else                      { Py_DecRef(attr); return 1; }
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCPythonFillOperations"
 static PetscErrorCode PCPythonFillOperations(PC pc)
 {
@@ -282,7 +282,7 @@ static PetscErrorCode PCPythonFillOperations(PC pc)
   pc->ops->applysymmetricleft =
     PCPythonHasOperation(pc, "applySymmetricLeft") ?
     PCApplySymmetricLeft_Python : PETSC_NULL;
-  
+
   pc->ops->applysymmetricright =
     PCPythonHasOperation(pc, "applySymmetricRight") ?
     PCApplySymmetricRight_Python : PETSC_NULL;
@@ -300,17 +300,17 @@ static PetscErrorCode PCPythonFillOperations(PC pc)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCSetUp_Python"
 static PetscErrorCode PCSetUp_Python(PC pc)
 {
   PC_Py          *py = (PC_Py *)pc->data;
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  if (!py->self) { 
+  if (!py->self) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Python context not set, call one of \n"
-	    " * PCPythonSetType(pc,\"[package.]module.class\")\n"
-	    " * PCSetFromOptions(pc) and pass option -pc_python_type [package.]module.class");
+            " * PCPythonSetType(pc,\"[package.]module.class\")\n"
+            " * PCSetFromOptions(pc) and pass option -pc_python_type [package.]module.class");
   }
   PC_PYTHON_CALL_PCARG(pc, "setUp");
   ierr = PCPythonFillOperations(pc);CHKERRQ(ierr);
@@ -320,7 +320,7 @@ static PetscErrorCode PCSetUp_Python(PC pc)
 /* -------------------------------------------------------------------------- */
 
 /*MC
-      PCPYTHON - 
+      PCPYTHON -
 
   Level: beginner
 
@@ -328,7 +328,7 @@ static PetscErrorCode PCSetUp_Python(PC pc)
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "PCCreate_Python"
 PetscErrorCode PETSCTS_DLLEXPORT PCCreate_Python(PC pc)
 {
@@ -361,8 +361,8 @@ PetscErrorCode PETSCTS_DLLEXPORT PCCreate_Python(PC pc)
   pc->ops->applyrichardson     = PETSC_NULL/*PCApplyRichardson_Python*/;
 
   ierr = PetscObjectComposeFunction((PetscObject)pc,
-				    "PCPythonSetType_C","PCPythonSetType_PYTHON",
-				    (PetscVoidFunction)PCPythonSetType_PYTHON);CHKERRQ(ierr);
+                                    "PCPythonSetType_C","PCPythonSetType_PYTHON",
+                                    (PetscVoidFunction)PCPythonSetType_PYTHON);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -440,7 +440,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPythonSetContext(PC pc,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the PC object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr); 
+  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   PC_PYTHON_CALL_PCARG(pc, "create");
   if (pc->setupcalled) pc->setupcalled = 1;

@@ -27,45 +27,45 @@ typedef struct {
   PETSC_PYTHON_CALL_HEAD(KSP_Py_Self(ksp), PyMethod)
 #define KSP_PYTHON_CALL_JUMP(ksp, LABEL) \
   PETSC_PYTHON_CALL_JUMP(LABEL)
-#define KSP_PYTHON_CALL_BODY(ksp, ARGS)	\
+#define KSP_PYTHON_CALL_BODY(ksp, ARGS) \
   PETSC_PYTHON_CALL_BODY(ARGS)
 #define KSP_PYTHON_CALL_TAIL(ksp, PyMethod) \
   PETSC_PYTHON_CALL_TAIL()
 
 #define KSP_PYTHON_CALL(ksp, PyMethod, ARGS) \
-  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);	     \
-  KSP_PYTHON_CALL_BODY(ksp, ARGS);	     \
-  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)	     \
-/**/  
-
-#define KSP_PYTHON_CALL_NOARGS(ksp, PyMethod) \
-  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);	      \
-  KSP_PYTHON_CALL_BODY(ksp, ("", NULL));      \
-  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)	      \
+  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);       \
+  KSP_PYTHON_CALL_BODY(ksp, ARGS);           \
+  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)        \
 /**/
 
-#define KSP_PYTHON_CALL_KSPARG(ksp, PyMethod)		  \
-  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);			  \
+#define KSP_PYTHON_CALL_NOARGS(ksp, PyMethod) \
+  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);        \
+  KSP_PYTHON_CALL_BODY(ksp, ("", NULL));      \
+  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)         \
+/**/
+
+#define KSP_PYTHON_CALL_KSPARG(ksp, PyMethod)             \
+  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);                    \
   KSP_PYTHON_CALL_BODY(ksp, ("O&", PyPetscKSP_New, ksp)); \
-  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)			  \
+  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)                     \
 /**/
 
 #define KSP_PYTHON_CALL_MAYBE(ksp, PyMethod, ARGS, LABEL) \
-  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);			  \
-  KSP_PYTHON_CALL_JUMP(ksp, LABEL);			  \
-  KSP_PYTHON_CALL_BODY(ksp, ARGS);			  \
-  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)			  \
+  KSP_PYTHON_CALL_HEAD(ksp, PyMethod);                    \
+  KSP_PYTHON_CALL_JUMP(ksp, LABEL);                       \
+  KSP_PYTHON_CALL_BODY(ksp, ARGS);                        \
+  KSP_PYTHON_CALL_TAIL(ksp, PyMethod)                     \
 /**/
 
-#define KSP_PYTHON_SETERRSUP(ksp, PyMethod)			  \
+#define KSP_PYTHON_SETERRSUP(ksp, PyMethod)                       \
   SETERRQ1(PETSC_ERR_SUP,"method %s() not implemented",PyMethod); \
-  PetscFunctionReturn(PETSC_ERR_SUP)				  \
+  PetscFunctionReturn(PETSC_ERR_SUP)                              \
 /**/
 
 /* -------------------------------------------------------------------------- */
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPPythonSetType_PYTHON"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType_PYTHON(KSP ksp,const char pyname[])
 {
@@ -80,7 +80,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetType_PYTHON(KSP ksp,const char pyn
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPDestroy_Python"
 static PetscErrorCode KSPDestroy_Python(KSP ksp)
 {
@@ -96,7 +96,7 @@ static PetscErrorCode KSPDestroy_Python(KSP ksp)
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
   ksp->data = PETSC_NULL;
   ierr = PetscObjectComposeFunction((PetscObject)ksp,"KSPPythonSetType_C",
-				    "",PETSC_NULL);CHKERRQ(ierr);
+                                    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -111,9 +111,9 @@ static PetscErrorCode KSPSetFromOptions_Python(KSP ksp)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-ksp_python_type","Python package.module[.{class|function}]",
-			    "KSPPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
+                            "KSPPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg && pyname[0]) { 
+  if (flg && pyname[0]) {
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
     if (!flg) { ierr = KSPPythonSetType_PYTHON(ksp,pyname);CHKERRQ(ierr); }
   }
@@ -121,7 +121,7 @@ static PetscErrorCode KSPSetFromOptions_Python(KSP ksp)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPView_Python"
 static PetscErrorCode KSPView_Python(KSP ksp,PetscViewer viewer)
 {
@@ -140,13 +140,13 @@ static PetscErrorCode KSPView_Python(KSP ksp,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer,"%s",pyname);CHKERRQ(ierr);
   }
   KSP_PYTHON_CALL(ksp, "view", ("O&O&",
-				PyPetscKSP_New,     ksp,
-				PyPetscViewer_New,  viewer));
+                                PyPetscKSP_New,     ksp,
+                                PyPetscViewer_New,  viewer));
 
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__  
+#undef  __FUNCT__
 #define __FUNCT__ "KSPSetUp_Python"
 static PetscErrorCode KSPSetUp_Python(KSP ksp)
 {
@@ -154,14 +154,14 @@ static PetscErrorCode KSPSetUp_Python(KSP ksp)
   PetscFunctionBegin;
   if (!py->self) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Python context not set, call one of \n"
-	    " * KSPPythonSetType(ksp,\"[package.]module.class\")\n"
-	    " * KSPSetFromOptions(ksp) and pass option -ksp_python_type [package.]module.class");
+            " * KSPPythonSetType(ksp,\"[package.]module.class\")\n"
+            " * KSPSetFromOptions(ksp) and pass option -ksp_python_type [package.]module.class");
   }
   KSP_PYTHON_CALL_KSPARG(ksp, "setUp");
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__  
+#undef  __FUNCT__
 #define __FUNCT__ "KSPSolve_Python"
 static PetscErrorCode KSPSolve_Python(KSP ksp)
 {
@@ -169,24 +169,24 @@ static PetscErrorCode KSPSolve_Python(KSP ksp)
   PetscFunctionBegin;
   if (!ksp->transpose_solve)
     solveMeth = "solve";
-  else                       
+  else
     solveMeth = "solveTranspose";
   ksp->its    = 0;
   ksp->rnorm  = 0;
   ksp->rnorm0 = 0;
   ksp->reason = KSP_CONVERGED_ITERATING;
-  KSP_PYTHON_CALL_MAYBE(ksp, solveMeth, ("O&O&O&", 
-					 PyPetscKSP_New, ksp,
-					 PyPetscVec_New, ksp->vec_rhs,
-					 PyPetscVec_New, ksp->vec_sol),
-			notimplemented);
+  KSP_PYTHON_CALL_MAYBE(ksp, solveMeth, ("O&O&O&",
+                                         PyPetscKSP_New, ksp,
+                                         PyPetscVec_New, ksp->vec_rhs,
+                                         PyPetscVec_New, ksp->vec_sol),
+                        notimplemented);
   if (!ksp->reason) ksp->reason = KSP_CONVERGED_ITS;
   PetscFunctionReturn(0);
  notimplemented:
   KSP_PYTHON_SETERRSUP(ksp, solveMeth);
 }
 
-#undef  __FUNCT__  
+#undef  __FUNCT__
 #define __FUNCT__ "KSPBuildSolution_Python"
 static PetscErrorCode KSPBuildSolution_Python(KSP ksp, Vec v, Vec *V)
 {
@@ -201,10 +201,10 @@ static PetscErrorCode KSPBuildSolution_Python(KSP ksp, Vec v, Vec *V)
       ierr = PetscObjectDereference((PetscObject)x);CHKERRQ(ierr);
     }
   }
-  KSP_PYTHON_CALL_MAYBE(ksp, "buildSolution", ("O&O&", 
-					       PyPetscKSP_New, ksp,
-					       PyPetscVec_New, x),
-			notimplemented);
+  KSP_PYTHON_CALL_MAYBE(ksp, "buildSolution", ("O&O&",
+                                               PyPetscKSP_New, ksp,
+                                               PyPetscVec_New, x),
+                        notimplemented);
   if (V) { *V = x; }
   PetscFunctionReturn(0);
  notimplemented:
@@ -212,16 +212,16 @@ static PetscErrorCode KSPBuildSolution_Python(KSP ksp, Vec v, Vec *V)
   PetscFunctionReturn(0);
 }
 
-#undef  __FUNCT__  
+#undef  __FUNCT__
 #define __FUNCT__ "KSPBuildResidual_Python"
 static PetscErrorCode KSPBuildResidual_Python(KSP ksp, Vec t, Vec v, Vec *V)
 {
   PetscErrorCode ierr;
-  KSP_PYTHON_CALL_MAYBE(ksp, "buildResidual", ("O&O&O&", 
-					       PyPetscKSP_New, ksp,
-					       PyPetscVec_New, t,
-					       PyPetscVec_New, v),
-			notimplemented);
+  KSP_PYTHON_CALL_MAYBE(ksp, "buildResidual", ("O&O&O&",
+                                               PyPetscKSP_New, ksp,
+                                               PyPetscVec_New, t,
+                                               PyPetscVec_New, v),
+                        notimplemented);
   if (V) { *V = v; }
   PetscFunctionReturn(0);
  notimplemented:
@@ -242,7 +242,7 @@ static PetscErrorCode KSPBuildResidual_Python(KSP ksp, Vec t, Vec v, Vec *V)
 M*/
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "KSPCreate_Python"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Python(KSP ksp)
 {
@@ -270,8 +270,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Python(KSP ksp)
   ksp->ops->buildresidual        = KSPBuildResidual_Python;
 
   ierr = PetscObjectComposeFunction((PetscObject)ksp,
-				    "KSPPythonSetType_C","KSPPythonSetType_PYTHON",
-				    (PetscVoidFunction)KSPPythonSetType_PYTHON);CHKERRQ(ierr);
+                                    "KSPPythonSetType_C","KSPPythonSetType_PYTHON",
+                                    (PetscVoidFunction)KSPPythonSetType_PYTHON);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -352,7 +352,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPPythonSetContext(KSP ksp,void *ctx)
   old = py->self; py->self = NULL; Py_DecRef(old);
   /* set current Python context in the KSP object  */
   py->self = (PyObject *) self; Py_IncRef(py->self);
-  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr); 
+  ierr = PetscStrfree(py->pyname);CHKERRQ(ierr);
   ierr = PetscPythonGetFullName(py->self,&py->pyname);CHKERRQ(ierr);
   KSP_PYTHON_CALL_KSPARG(ksp, "create");
   if (ksp->setupcalled) ksp->setupcalled = 0;

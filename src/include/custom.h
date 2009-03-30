@@ -84,7 +84,7 @@ PetscLogEventFindId(const char name[], PetscLogEvent *eventid)
 #define __FUNCT__ "PetscLogStageFindName"
 PETSC_STATIC_INLINE PetscErrorCode
 PetscLogStageFindName(PetscLogStage stageid,
-		      const char *name[])
+                      const char *name[])
 {
   StageLog       stageLog = 0;
   PetscErrorCode ierr;
@@ -103,7 +103,7 @@ PetscLogStageFindName(PetscLogStage stageid,
 #define __FUNCT__ "PetscLogClassFindName"
 PETSC_STATIC_INLINE PetscErrorCode
 PetscLogClassFindName(PetscCookie classid,
-		      const char *name[])
+                      const char *name[])
 {
   int            c;
   StageLog       stageLog = 0;
@@ -126,7 +126,7 @@ PetscLogClassFindName(PetscCookie classid,
 #define __FUNCT__ "PetscLogEventFindName"
 PETSC_STATIC_INLINE PetscErrorCode
 PetscLogEventFindName(PetscLogEvent eventid,
-		      const char *name[])
+                      const char *name[])
 {
   StageLog       stageLog = 0;
   PetscErrorCode ierr;
@@ -276,7 +276,7 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
   PetscValidType(mat,1);
   if (bs < 1)
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,
-	     "Invalid block size specified, must be positive but it is %D",bs);
+             "Invalid block size specified, must be positive but it is %D",bs);
   if (mat->ops->setblocksize) {
     ierr = MatBlockSize_Check(mat,bs);CHKERRQ(ierr);
     ierr = (*mat->ops->setblocksize)(mat,bs);CHKERRQ(ierr);
@@ -286,8 +286,8 @@ MatSetBlockSize_Patch(Mat mat,PetscInt bs)
     ierr = MatBlockSize_SetUp(mat,bs);CHKERRQ(ierr);
   } else if (rmap->bs != bs || cmap->bs != bs) {
     SETERRQ1(PETSC_ERR_ARG_INCOMP,
-	     "Cannot set/change the block size for matrix type %s",
-	     ((PetscObject)mat)->type_name);
+             "Cannot set/change the block size for matrix type %s",
+             ((PetscObject)mat)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -310,9 +310,9 @@ MatIsPreallocated(Mat A,PetscTruth *flag)
 #define __FUNCT__ "MatCreateAnyAIJ"
 PETSC_STATIC_INLINE PetscErrorCode
 MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
-		PetscInt m, PetscInt n,
-		PetscInt M, PetscInt N,
-		Mat *A)
+                PetscInt m, PetscInt n,
+                PetscInt M, PetscInt N,
+                Mat *A)
 {
   Mat            mat = PETSC_NULL;
   MatType        mtype = PETSC_NULL;
@@ -344,8 +344,8 @@ MatCreateAnyAIJ(MPI_Comm comm, PetscInt bs,
 #define __FUNCT__ "MatAnyAIJSetPreallocation"
 PETSC_STATIC_INLINE PetscErrorCode
 MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
-			  PetscInt d_nz,const PetscInt d_nnz[],
-			  PetscInt o_nz,const PetscInt o_nnz[])
+                          PetscInt d_nz,const PetscInt d_nnz[],
+                          PetscInt o_nz,const PetscInt o_nnz[])
 {
   PetscTruth     flag = PETSC_FALSE;
   PetscErrorCode ierr;
@@ -372,7 +372,7 @@ MatAnyAIJSetPreallocation(Mat A,PetscInt bs,
 #define __FUNCT__ "MatAnyAIJSetPreallocationCSR"
 PETSC_STATIC_INLINE PetscErrorCode
 MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
-			     const PetscInt Jj[], const PetscScalar V[])
+                             const PetscInt Jj[], const PetscScalar V[])
 {
   PetscTruth     flag = PETSC_FALSE;
   PetscErrorCode ierr;
@@ -401,9 +401,9 @@ MatAnyAIJSetPreallocationCSR(Mat A,PetscInt bs, const PetscInt Ii[],
 #define __FUNCT__ "MatCreateAnyDense"
 PETSC_STATIC_INLINE PetscErrorCode
 MatCreateAnyDense(MPI_Comm comm, PetscInt bs,
-		  PetscInt m, PetscInt n,
-		  PetscInt M, PetscInt N,
-		  Mat *A)
+                  PetscInt m, PetscInt n,
+                  PetscInt M, PetscInt N,
+                  Mat *A)
 {
   Mat            mat = PETSC_NULL;
   MatType        mtype = PETSC_NULL;
@@ -616,8 +616,8 @@ SNESMonitorCall(SNES snes, PetscInt its, PetscReal rnorm)
 #define __FUNCT__ "SNESConvergenceTestCall"
 PETSC_STATIC_INLINE PetscErrorCode
 SNESConvergenceTestCall(SNES snes, PetscInt its,
-			PetscReal xnorm, PetscReal ynorm, PetscReal fnorm,
-			SNESConvergedReason *reason)
+                        PetscReal xnorm, PetscReal ynorm, PetscReal fnorm,
+                        SNESConvergedReason *reason)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;

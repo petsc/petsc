@@ -25,45 +25,45 @@ typedef struct {
 
 #define Mat_Py_Self(mat) (((Mat_Py*)(mat)->data)->self)
 
-#define MAT_PYTHON_CALL_HEAD(mat, PyMethod)	\
+#define MAT_PYTHON_CALL_HEAD(mat, PyMethod)     \
   PETSC_PYTHON_CALL_HEAD(Mat_Py_Self(mat), PyMethod)
-#define MAT_PYTHON_CALL_JUMP(mat, LABEL)	\
+#define MAT_PYTHON_CALL_JUMP(mat, LABEL)        \
   PETSC_PYTHON_CALL_JUMP(LABEL)
-#define MAT_PYTHON_CALL_BODY(mat, ARGS)		\
+#define MAT_PYTHON_CALL_BODY(mat, ARGS)         \
   PETSC_PYTHON_CALL_BODY(ARGS)
-#define MAT_PYTHON_CALL_TAIL(mat, PyMethod)	\
+#define MAT_PYTHON_CALL_TAIL(mat, PyMethod)     \
   PETSC_PYTHON_CALL_TAIL()
 
-#define MAT_PYTHON_CALL(mat, PyMethod, ARGS)	\
-  MAT_PYTHON_CALL_HEAD(mat, PyMethod);		\
-  MAT_PYTHON_CALL_BODY(mat, ARGS);		\
-  MAT_PYTHON_CALL_TAIL(mat, PyMethod)		\
+#define MAT_PYTHON_CALL(mat, PyMethod, ARGS)    \
+  MAT_PYTHON_CALL_HEAD(mat, PyMethod);          \
+  MAT_PYTHON_CALL_BODY(mat, ARGS);              \
+  MAT_PYTHON_CALL_TAIL(mat, PyMethod)           \
 /**/
 
-#define MAT_PYTHON_CALL_MAYBE(mat, PyMethod, ARGS, LABEL)	\
-  MAT_PYTHON_CALL_HEAD(mat, PyMethod);				\
-  MAT_PYTHON_CALL_JUMP(mat, LABEL);				\
-  MAT_PYTHON_CALL_BODY(mat, ARGS);				\
-  MAT_PYTHON_CALL_TAIL(mat, PyMethod)				\
+#define MAT_PYTHON_CALL_MAYBE(mat, PyMethod, ARGS, LABEL)       \
+  MAT_PYTHON_CALL_HEAD(mat, PyMethod);                          \
+  MAT_PYTHON_CALL_JUMP(mat, LABEL);                             \
+  MAT_PYTHON_CALL_BODY(mat, ARGS);                              \
+  MAT_PYTHON_CALL_TAIL(mat, PyMethod)                           \
 /**/
 
-#define MAT_PYTHON_CALL_NOARGS(mat, PyMethod)				\
-  MAT_PYTHON_CALL_HEAD(mat, PyMethod);					\
-  MAT_PYTHON_CALL_BODY(mat, ("", NULL));				\
-  MAT_PYTHON_CALL_TAIL(mat, PyMethod)					\
+#define MAT_PYTHON_CALL_NOARGS(mat, PyMethod)                           \
+  MAT_PYTHON_CALL_HEAD(mat, PyMethod);                                  \
+  MAT_PYTHON_CALL_BODY(mat, ("", NULL));                                \
+  MAT_PYTHON_CALL_TAIL(mat, PyMethod)                                   \
 /**/
 
 #define MAT_PYTHON_MATARG(mat) ("O&",PyPetscMat_New,mat)
 
-#define MAT_PYTHON_CALL_MATARG(mat, PyMethod)				\
-  MAT_PYTHON_CALL_HEAD(mat, PyMethod);					\
-  MAT_PYTHON_CALL_BODY(mat, ("O&", PyPetscMat_New, mat));		\
-  MAT_PYTHON_CALL_TAIL(mat, PyMethod)					\
+#define MAT_PYTHON_CALL_MATARG(mat, PyMethod)                           \
+  MAT_PYTHON_CALL_HEAD(mat, PyMethod);                                  \
+  MAT_PYTHON_CALL_BODY(mat, ("O&", PyPetscMat_New, mat));               \
+  MAT_PYTHON_CALL_TAIL(mat, PyMethod)                                   \
 /**/
 
-#define MAT_PYTHON_SETERRSUP(mat, PyMethod)				\
-  SETERRQ1(PETSC_ERR_SUP,"method %s() not implemented",PyMethod);	\
-  PetscFunctionReturn(PETSC_ERR_SUP)					\
+#define MAT_PYTHON_SETERRSUP(mat, PyMethod)                             \
+  SETERRQ1(PETSC_ERR_SUP,"method %s() not implemented",PyMethod);       \
+  PetscFunctionReturn(PETSC_ERR_SUP)                                    \
 /**/
 
 /* -------------------------------------------------------------------------- */
@@ -80,7 +80,7 @@ static int MatPythonHasOperation(Mat mat, const char operation[])
   return 1;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPythonFillOperations"
 static PetscErrorCode MatPythonFillOperations(Mat mat)
 {
@@ -93,7 +93,7 @@ static PetscErrorCode MatPythonFillOperations(Mat mat)
 /* -------------------------------------------------------------------------- */
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "MatPythonSetType_PYTHON"
 PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType_PYTHON(Mat mat,const char pyname[])
 {
@@ -124,7 +124,7 @@ static PetscErrorCode MatDestroy_Python(Mat mat)
   ierr = PetscFree(mat->data);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatPythonSetType_C",
-				    "",PETSC_NULL);CHKERRQ(ierr);
+                                    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -139,7 +139,7 @@ static PetscErrorCode MatSetFromOptions_Python(Mat mat)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Mat Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-mat_python_type","Python [package.]module[.{class|function}]",
-			    "MatPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
+                            "MatPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   if (flg && pyname[0]) {
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
@@ -168,8 +168,8 @@ static PetscErrorCode MatView_Python(Mat mat,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer,"%s",pyname);CHKERRQ(ierr);
   }
   MAT_PYTHON_CALL(mat, "view", ("O&O&",
-				PyPetscMat_New,     mat,
-				PyPetscViewer_New,  viewer));
+                                PyPetscMat_New,     mat,
+                                PyPetscViewer_New,  viewer));
   PetscFunctionReturn(0);
 }
 
@@ -179,9 +179,9 @@ static PetscErrorCode MatSetOption_Python(Mat mat,MatOption op,PetscTruth flag)
 {
   PetscFunctionBegin;
   MAT_PYTHON_CALL(mat, "setOption", ("O&ii",
-				     PyPetscMat_New, mat,
-				     (int)           op,
-				     (int)           flag));
+                                     PyPetscMat_New, mat,
+                                     (int)           op,
+                                     (int)           flag));
   PetscFunctionReturn(0);
 }
 
@@ -242,14 +242,14 @@ static PetscErrorCode MatSetUpPreallocation_Python(Mat mat)
     char       pyname[2*PETSC_MAX_PATH_LEN+3];
     PetscTruth flag = PETSC_FALSE;
     ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_python_type",
-				 pyname,sizeof(pyname),&flag);CHKERRQ(ierr);
+                                 pyname,sizeof(pyname),&flag);CHKERRQ(ierr);
     if (flag && pyname[0]==0) flag = PETSC_FALSE;
     if (flag) { ierr = MatPythonSetType_PYTHON(mat,pyname);CHKERRQ(ierr); }
   }
   if (!py->self) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Python context not set, call one of \n"
-	    " * MatPythonSetType(mat,\"[package.]module.class\")\n"
-	    " * MatSetFromOptions(mat) and pass option -mat_python_type [package.]module.class");
+            " * MatPythonSetType(mat,\"[package.]module.class\")\n"
+            " * MatSetFromOptions(mat) and pass option -mat_python_type [package.]module.class");
   }
   /* */
   MAT_PYTHON_CALL_MATARG(mat, "setUp");
@@ -264,9 +264,9 @@ static PetscErrorCode MatZeroEntries_Python(Mat mat)
 {
   Mat_Py *py = (Mat_Py *) mat->data;
   PetscFunctionBegin;
-  MAT_PYTHON_CALL_MAYBE(mat, "zeroEntries", 
-			MAT_PYTHON_MATARG(mat),
-			notimplemented);
+  MAT_PYTHON_CALL_MAYBE(mat, "zeroEntries",
+                        MAT_PYTHON_MATARG(mat),
+                        notimplemented);
   py->scale = PETSC_FALSE; py->vscale = 1;
   py->shift = PETSC_FALSE; py->vshift = 0;
   PetscFunctionReturn(0);
@@ -289,14 +289,14 @@ static PetscErrorCode MatScale_Python(Mat mat,PetscScalar a)
 #endif
 #if defined(PETSC_USE_COMPLEX)
   MAT_PYTHON_CALL_MAYBE(mat, "scale", ("O&D",
-				       PyPetscMat_New, mat,
-				       ca),
-			scale);
+                                       PyPetscMat_New, mat,
+                                       ca),
+                        scale);
 #else
   MAT_PYTHON_CALL_MAYBE(mat, "scale", ("O&d",
-				       PyPetscMat_New, mat,
-				       (double)        a),
-			scale);
+                                       PyPetscMat_New, mat,
+                                       (double)        a),
+                        scale);
 #endif
   py->scale  = PETSC_FALSE;
   py->vscale = 1;
@@ -322,14 +322,14 @@ static PetscErrorCode MatShift_Python(Mat mat,PetscScalar a)
 #endif
 #if defined(PETSC_USE_COMPLEX)
   MAT_PYTHON_CALL_MAYBE(mat, "shift", ("O&D",
-				       PyPetscMat_New, mat,
-				       ca),
-			shift);
+                                       PyPetscMat_New, mat,
+                                       ca),
+                        shift);
 #else
   MAT_PYTHON_CALL_MAYBE(mat, "shift", ("O&d",
-				       PyPetscMat_New, mat,
-				       (double)        a),
-			shift);
+                                       PyPetscMat_New, mat,
+                                       (double)        a),
+                        shift);
 #endif
   py->shift  = PETSC_FALSE;
   py->vshift = 0;
@@ -347,8 +347,8 @@ static PetscErrorCode MatAssemblyBegin_Python(Mat mat,MatAssemblyType type)
 {
   PetscFunctionBegin;
   MAT_PYTHON_CALL(mat, "assemblyBegin", ("O&i",
-					 PyPetscMat_New, mat,
-					 (int)           type));
+                                         PyPetscMat_New, mat,
+                                         (int)           type));
   PetscFunctionReturn(0);
 }
 
@@ -359,8 +359,8 @@ static PetscErrorCode MatAssemblyEnd_Python(Mat mat,MatAssemblyType type)
   Mat_Py         *py = (Mat_Py *) mat->data;
   PetscFunctionBegin;
   MAT_PYTHON_CALL(mat, "assemblyEnd", ("O&i",
-				       PyPetscMat_New, mat,
-				       (int)           type));
+                                       PyPetscMat_New, mat,
+                                       (int)           type));
   if (type == MAT_FINAL_ASSEMBLY) {
     py->scale = PETSC_FALSE; py->vscale = 1;
     py->shift = PETSC_FALSE; py->vshift = 0;
@@ -376,10 +376,10 @@ static PetscErrorCode MatMult_Python(Mat mat,Vec x,Vec y)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "mult", ("O&O&O&",
-				      PyPetscMat_New, mat,
-				      PyPetscVec_New, x,
-				      PyPetscVec_New, y),
-			notimplemented);
+                                      PyPetscMat_New, mat,
+                                      PyPetscVec_New, x,
+                                      PyPetscVec_New, y),
+                        notimplemented);
   /* shift and scale */
   if (py->shift && py->scale) {
     ierr = VecAXPBY(y,py->vshift,py->vscale,x);CHKERRQ(ierr);
@@ -402,11 +402,11 @@ static PetscErrorCode MatMultAdd_Python(Mat mat,Vec x,Vec v,Vec y)
   PetscFunctionBegin;
   if (py->scale || py->shift) goto multadd;
   MAT_PYTHON_CALL_MAYBE(mat, "multAdd", ("O&O&O&O&",
-					 PyPetscMat_New, mat,
-					 PyPetscVec_New, x,
-					 PyPetscVec_New, v,
-					 PyPetscVec_New, y),
-			multadd);
+                                         PyPetscMat_New, mat,
+                                         PyPetscVec_New, x,
+                                         PyPetscVec_New, v,
+                                         PyPetscVec_New, y),
+                        multadd);
   PetscFunctionReturn(0);
  multadd: /* MatMultAdd */
   ierr = MatMult_Python(mat,x,y);CHKERRQ(ierr);
@@ -423,10 +423,10 @@ static PetscErrorCode MatMultTranspose_Python(Mat mat,Vec x, Vec y)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "multTranspose", ("O&O&O&",
-					       PyPetscMat_New, mat,
-					       PyPetscVec_New, x,
-					       PyPetscVec_New, y),
-			mult);
+                                               PyPetscMat_New, mat,
+                                               PyPetscVec_New, x,
+                                               PyPetscVec_New, y),
+                        mult);
   /* shift and scale */
   if (py->shift && py->scale) {
     ierr = VecAXPBY(y,py->vshift,py->vscale,x);CHKERRQ(ierr);
@@ -455,11 +455,11 @@ static PetscErrorCode MatMultTransposeAdd_Python(Mat mat,Vec x,Vec v,Vec y)
   PetscFunctionBegin;
   if (py->scale || py->shift) goto multtransposeadd;
   MAT_PYTHON_CALL_MAYBE(mat, "multTransposeAdd", ("O&O&O&O&",
-						  PyPetscMat_New, mat,
-						  PyPetscVec_New, x,
-						  PyPetscVec_New, v,
-						  PyPetscVec_New, y),
-			multtransposeadd);
+                                                  PyPetscMat_New, mat,
+                                                  PyPetscVec_New, x,
+                                                  PyPetscVec_New, v,
+                                                  PyPetscVec_New, y),
+                        multtransposeadd);
   PetscFunctionReturn(0);
  multtransposeadd: /* MatMultTransposeAdd */
   ierr = MatMultTranspose_Python(mat,x,y);CHKERRQ(ierr);
@@ -478,10 +478,10 @@ static PetscErrorCode MatSolve_Python(Mat mat,Vec b,Vec x)
   /*  shift */
   if (py->shift) goto notimplemented;
   MAT_PYTHON_CALL_MAYBE(mat, "solve", ("O&O&O&",
-				       PyPetscMat_New, mat,
-				       PyPetscVec_New, b,
-				       PyPetscVec_New, x),
-			notimplemented);
+                                       PyPetscMat_New, mat,
+                                       PyPetscVec_New, b,
+                                       PyPetscVec_New, x),
+                        notimplemented);
   /*  scale */
   if (py->scale) { ierr = VecScale(x,one/py->vscale);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
@@ -498,11 +498,11 @@ static PetscErrorCode MatSolveAdd_Python(Mat mat,Vec b,Vec v,Vec x)
   PetscFunctionBegin;
   if (py->scale || py->shift) goto solveadd;
   MAT_PYTHON_CALL_MAYBE(mat, "solveAdd", ("O&O&O&O&",
-					  PyPetscMat_New, mat,
-					  PyPetscVec_New, b,
-					  PyPetscVec_New, v,
-					  PyPetscVec_New, x),
-			solveadd);
+                                          PyPetscMat_New, mat,
+                                          PyPetscVec_New, b,
+                                          PyPetscVec_New, v,
+                                          PyPetscVec_New, x),
+                        solveadd);
   PetscFunctionReturn(0);
  solveadd: /* MatSolveAdd */
   ierr = MatSolve_Python(mat,b,x);CHKERRQ(ierr);
@@ -522,10 +522,10 @@ static PetscErrorCode MatSolveTranspose_Python(Mat mat,Vec b, Vec x)
   /*  shift */
   if (py->shift) goto notimplemented;
   MAT_PYTHON_CALL_MAYBE(mat, "solveTranspose", ("O&O&O&",
-						PyPetscMat_New, mat,
-						PyPetscVec_New, b,
-						PyPetscVec_New, x),
-			solve);
+                                                PyPetscMat_New, mat,
+                                                PyPetscVec_New, b,
+                                                PyPetscVec_New, x),
+                        solve);
   /* scale */
   if (py->scale) { ierr = VecScale(x,one/py->vscale);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
@@ -548,11 +548,11 @@ static PetscErrorCode MatSolveTransposeAdd_Python(Mat mat,Vec b,Vec v,Vec x)
   PetscFunctionBegin;
   if (py->scale || py->shift) goto solvetransposeadd;
   MAT_PYTHON_CALL_MAYBE(mat, "solveTransposeAdd", ("O&O&O&O&",
-						   PyPetscMat_New, mat,
-						   PyPetscVec_New, b,
-						   PyPetscVec_New, v,
-						   PyPetscVec_New, x),
-			solvetransposeadd);
+                                                   PyPetscMat_New, mat,
+                                                   PyPetscVec_New, b,
+                                                   PyPetscVec_New, v,
+                                                   PyPetscVec_New, x),
+                        solvetransposeadd);
   PetscFunctionReturn(0);
  solvetransposeadd: /* MatSolveTransposeAdd */
   ierr = MatSolveTranspose_Python(mat,b,x);CHKERRQ(ierr);
@@ -568,9 +568,9 @@ static PetscErrorCode MatGetDiagonal_Python(Mat mat,Vec v)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "getDiagonal", ("O&O&",
-					     PyPetscMat_New, mat,
-					     PyPetscVec_New, v),
-			notimplemented);
+                                             PyPetscMat_New, mat,
+                                             PyPetscVec_New, v),
+                        notimplemented);
   if (py->scale) { ierr = VecScale(v,py->vscale);CHKERRQ(ierr); }
   if (py->shift) { ierr = VecShift(v,py->vshift);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
@@ -585,10 +585,10 @@ static PetscErrorCode MatDiagonalSet_Python(Mat mat,Vec v,InsertMode im)
   Mat_Py *py = (Mat_Py *) mat->data;
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "setDiagonal", ("O&O&i",
-					     PyPetscMat_New, mat,
-					     PyPetscVec_New, v,
-					     (int)           im),
-			notimplemented);
+                                             PyPetscMat_New, mat,
+                                             PyPetscVec_New, v,
+                                             (int)           im),
+                        notimplemented);
   if (im != ADD_VALUES) py->shift = PETSC_FALSE; py->vshift = 0;
   PetscFunctionReturn(0);
  notimplemented:  /* MatDiagonalSet */
@@ -601,10 +601,10 @@ static PetscErrorCode MatDiagonalScale_Python(Mat mat,Vec l, Vec r)
 {
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "diagonalScale", ("O&O&O&",
-					       PyPetscMat_New, mat,
-					       PyPetscVec_New, l,
-					       PyPetscVec_New, r),
-			notimplemented);
+                                               PyPetscMat_New, mat,
+                                               PyPetscVec_New, l,
+                                               PyPetscVec_New, r),
+                        notimplemented);
   PetscFunctionReturn(0);
  notimplemented: /* MatDiagonalScale */
   MAT_PYTHON_SETERRSUP(mat, "diagonalScale");
@@ -616,8 +616,8 @@ static PetscErrorCode MatRealPart_Python(Mat mat)
 {
   PetscFunctionBegin;
   MAT_PYTHON_CALL_MAYBE(mat, "realPart",
-			MAT_PYTHON_MATARG(mat),
-			notimplemented);
+                        MAT_PYTHON_MATARG(mat),
+                        notimplemented);
   PetscFunctionReturn(0);
  notimplemented: /* MatRealPart */
   MAT_PYTHON_SETERRSUP(mat, "realPart");
@@ -628,9 +628,9 @@ static PetscErrorCode MatRealPart_Python(Mat mat)
 static PetscErrorCode MatImaginaryPart_Python(Mat mat)
 {
   PetscFunctionBegin;
-  MAT_PYTHON_CALL_MAYBE(mat, "imagPart", 
-			MAT_PYTHON_MATARG(mat),
-			notimplemented);
+  MAT_PYTHON_CALL_MAYBE(mat, "imagPart",
+                        MAT_PYTHON_MATARG(mat),
+                        notimplemented);
   PetscFunctionReturn(0);
  notimplemented: /* MatImaginaryPart */
   MAT_PYTHON_SETERRSUP(mat, "imagPart");
@@ -641,9 +641,9 @@ static PetscErrorCode MatImaginaryPart_Python(Mat mat)
 static PetscErrorCode MatConjugate_Python(Mat mat)
 {
   PetscFunctionBegin;
-  MAT_PYTHON_CALL_MAYBE(mat, "conjugate", 
-			MAT_PYTHON_MATARG(mat),
-			notimplemented);
+  MAT_PYTHON_CALL_MAYBE(mat, "conjugate",
+                        MAT_PYTHON_MATARG(mat),
+                        notimplemented);
   PetscFunctionReturn(0);
  notimplemented: /* MatConjugate */
   MAT_PYTHON_SETERRSUP(mat, "conjugate");
@@ -727,8 +727,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Python(Mat mat)
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,MATPYTHON);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,
-				    "MatPythonSetType_C","MatPythonSetType_PYTHON",
-				    (PetscVoidFunction)MatPythonSetType_PYTHON);CHKERRQ(ierr);
+                                    "MatPythonSetType_C","MatPythonSetType_PYTHON",
+                                    (PetscVoidFunction)MatPythonSetType_PYTHON);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -851,7 +851,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPythonSetType(Mat mat,const char pyname[])
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidCharPointer(pyname,2);
   ierr = PetscObjectQueryFunction((PetscObject)mat,"MatPythonSetType_C",
-				  (PetscVoidFunction*)&f);CHKERRQ(ierr);
+                                  (PetscVoidFunction*)&f);CHKERRQ(ierr);
   if (f) {ierr = (*f)(mat,pyname);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

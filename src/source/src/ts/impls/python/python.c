@@ -2,10 +2,10 @@
 
 /*
   Code for general, user-defined timestepping with implicit schemes.
-       
+
   F(t^{n+1},x^{n+1}) = G(t^{n-k},x^{n-k}), k>=0
                  t^0 = t_0
-		 x^0 = x_0
+                 x^0 = x_0
 
 */
 
@@ -72,61 +72,61 @@ typedef struct {
 
 #define TS_Py_Self(ts) (((TS_Py*)(ts)->data)->self)
 
-#define TS_PYTHON_CALL_HEAD(ts, PyMethod)		\
+#define TS_PYTHON_CALL_HEAD(ts, PyMethod)               \
   PETSC_PYTHON_CALL_HEAD(TS_Py_Self(ts), PyMethod)
-#define TS_PYTHON_CALL_JUMP(ts, LABEL)			\
+#define TS_PYTHON_CALL_JUMP(ts, LABEL)                  \
   PETSC_PYTHON_CALL_JUMP(LABEL)
-#define TS_PYTHON_CALL_BODY(ts, ARGS)			\
+#define TS_PYTHON_CALL_BODY(ts, ARGS)                   \
   PETSC_PYTHON_CALL_BODY(ARGS)
-#define TS_PYTHON_CALL_TAIL(ts, PyMethod)		\
+#define TS_PYTHON_CALL_TAIL(ts, PyMethod)               \
   PETSC_PYTHON_CALL_TAIL()
 
-#define TS_PYTHON_CALL(ts, PyMethod, ARGS)		\
-  TS_PYTHON_CALL_HEAD(ts, PyMethod);			\
-  TS_PYTHON_CALL_BODY(ts, ARGS);			\
-  TS_PYTHON_CALL_TAIL(ts, PyMethod)			\
-/**/  
-
-#define TS_PYTHON_CALL_NOARGS(ts, PyMethod)		\
-  TS_PYTHON_CALL_HEAD(ts, PyMethod);			\
-  TS_PYTHON_CALL_BODY(ts, ("", NULL));			\
-  TS_PYTHON_CALL_TAIL(ts, PyMethod)			\
+#define TS_PYTHON_CALL(ts, PyMethod, ARGS)              \
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);                    \
+  TS_PYTHON_CALL_BODY(ts, ARGS);                        \
+  TS_PYTHON_CALL_TAIL(ts, PyMethod)                     \
 /**/
 
-#define TS_PYTHON_CALL_TSARG(ts, PyMethod)		\
-  TS_PYTHON_CALL_HEAD(ts, PyMethod);			\
-  TS_PYTHON_CALL_BODY(ts, ("O&",PyPetscTS_New,ts));	\
-  TS_PYTHON_CALL_TAIL(ts, PyMethod)			\
+#define TS_PYTHON_CALL_NOARGS(ts, PyMethod)             \
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);                    \
+  TS_PYTHON_CALL_BODY(ts, ("", NULL));                  \
+  TS_PYTHON_CALL_TAIL(ts, PyMethod)                     \
 /**/
 
-#define TS_PYTHON_CALL_MAYBE(ts, PyMethod, ARGS, LABEL)	\
-  TS_PYTHON_CALL_HEAD(ts, PyMethod);			\
-  TS_PYTHON_CALL_JUMP(ts, LABEL);			\
-  TS_PYTHON_CALL_BODY(ts, ARGS);			\
-  TS_PYTHON_CALL_TAIL(ts, PyMethod)			\
+#define TS_PYTHON_CALL_TSARG(ts, PyMethod)              \
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);                    \
+  TS_PYTHON_CALL_BODY(ts, ("O&",PyPetscTS_New,ts));     \
+  TS_PYTHON_CALL_TAIL(ts, PyMethod)                     \
+/**/
+
+#define TS_PYTHON_CALL_MAYBE(ts, PyMethod, ARGS, LABEL) \
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);                    \
+  TS_PYTHON_CALL_JUMP(ts, LABEL);                       \
+  TS_PYTHON_CALL_BODY(ts, ARGS);                        \
+  TS_PYTHON_CALL_TAIL(ts, PyMethod)                     \
 /**/
 
 #define TS_PYTHON_CALL_MAYBE_RET(ts, PyMethod, ARGS, LABEL, Obj2Val, ValP) \
-  TS_PYTHON_CALL_HEAD(ts, PyMethod);					\
-  TS_PYTHON_CALL_JUMP(ts, LABEL);					\
-  TS_PYTHON_CALL_BODY(ts, ARGS);					\
-  _retv = Obj2Val(_retv, ValP);						\
-  TS_PYTHON_CALL_TAIL(ts, PyMethod)					\
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);                                    \
+  TS_PYTHON_CALL_JUMP(ts, LABEL);                                       \
+  TS_PYTHON_CALL_BODY(ts, ARGS);                                        \
+  _retv = Obj2Val(_retv, ValP);                                         \
+  TS_PYTHON_CALL_TAIL(ts, PyMethod)                                     \
 /**/
 
 #define TS_PYTHON_CALL_MAYBE_RET2(ts, PyMethod, ARGS, LABEL, Obj2Val, V1, V2) \
-  TS_PYTHON_CALL_HEAD(ts, PyMethod);					\
-  TS_PYTHON_CALL_JUMP(ts, LABEL);					\
-  TS_PYTHON_CALL_BODY(ts, ARGS);					\
-  _retv = Obj2Val(_retv, V1, V2);					\
-  TS_PYTHON_CALL_TAIL(ts, PyMethod)					\
+  TS_PYTHON_CALL_HEAD(ts, PyMethod);                                    \
+  TS_PYTHON_CALL_JUMP(ts, LABEL);                                       \
+  TS_PYTHON_CALL_BODY(ts, ARGS);                                        \
+  _retv = Obj2Val(_retv, V1, V2);                                       \
+  TS_PYTHON_CALL_TAIL(ts, PyMethod)                                     \
 /**/
 
 
 /* -------------------------------------------------------------------------- */
 
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPythonSetType_PYTHON"
 PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType_PYTHON(TS ts,const char pyname[])
 {
@@ -141,7 +141,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType_PYTHON(TS ts,const char pyname[
 }
 EXTERN_C_END
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSDestroy_Python"
 static PetscErrorCode TSDestroy_Python(TS ts)
 {
@@ -161,7 +161,7 @@ static PetscErrorCode TSDestroy_Python(TS ts)
   ierr = PetscFree(ts->data);CHKERRQ(ierr);
   ts->data = PETSC_NULL;
   ierr = PetscObjectComposeFunction((PetscObject)ts,"TSPythonSetType_C",
-				    "",PETSC_NULL);CHKERRQ(ierr);
+                                    "",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -176,9 +176,9 @@ static PetscErrorCode TSSetFromOptions_Python(TS ts)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("TS Python options");CHKERRQ(ierr);
   ierr = PetscOptionsString("-ts_python_type","Python package.module[.{class|function}]",
-			    "TSPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
+                            "TSPythonSetType",py->pyname,pyname,sizeof(pyname),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-  if (flg && pyname[0]) { 
+  if (flg && pyname[0]) {
     ierr = PetscStrcmp(py->pyname,pyname,&flg);CHKERRQ(ierr);
     if (!flg) { ierr = TSPythonSetType_PYTHON(ts,pyname);CHKERRQ(ierr); }
   }
@@ -186,7 +186,7 @@ static PetscErrorCode TSSetFromOptions_Python(TS ts)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSView_Python"
 static PetscErrorCode TSView_Python(TS ts,PetscViewer viewer)
 {
@@ -206,8 +206,8 @@ static PetscErrorCode TSView_Python(TS ts,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer,"%s",pyname);CHKERRQ(ierr);
   }
   TS_PYTHON_CALL(ts, "view", ("O&O&",
-			      PyPetscTS_New,      ts,
-			      PyPetscViewer_New,  viewer));
+                              PyPetscTS_New,      ts,
+                              PyPetscViewer_New,  viewer));
   PetscFunctionReturn(0);
 }
 
@@ -215,7 +215,7 @@ static PetscErrorCode TSView_Python(TS ts,PetscViewer viewer)
 
 
 /* The nonlinear equation that is to be solved with SNES */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPyFunction"
 static PetscErrorCode TSPyFunction(SNES snes,Vec x,Vec f,void *ctx)
 {
@@ -224,11 +224,11 @@ static PetscErrorCode TSPyFunction(SNES snes,Vec x,Vec f,void *ctx)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   TS_PYTHON_CALL_MAYBE(ts, "computeFunction", ("O&dO&O&",
-					       PyPetscTS_New,  ts,
-					       (double)        py->utime,
-					       PyPetscVec_New, x,
-					       PyPetscVec_New, f),
-		       notimplemented);
+                                               PyPetscTS_New,  ts,
+                                               (double)        py->utime,
+                                               PyPetscVec_New, x,
+                                               PyPetscVec_New, f),
+                       notimplemented);
   PetscFunctionReturn(0);
  notimplemented:
   ierr = TSComputeRHSFunction(ts,py->utime,x,f);CHKERRQ(ierr);
@@ -238,7 +238,7 @@ static PetscErrorCode TSPyFunction(SNES snes,Vec x,Vec f,void *ctx)
 static PyObject * TSPyObjToMatStructure(PyObject *value, MatStructure *outflag)
 {
   MatStructure flag = DIFFERENT_NONZERO_PATTERN;
-  if (value == NULL) 
+  if (value == NULL)
     return NULL;
   if (value == Py_None) {
     flag = SAME_NONZERO_PATTERN;
@@ -249,16 +249,16 @@ static PyObject * TSPyObjToMatStructure(PyObject *value, MatStructure *outflag)
   } else if (PyInt_Check(value)) {
     flag = (MatStructure) PyInt_AsLong(value);
     if (flag < SAME_NONZERO_PATTERN ||
-	flag > SUBSET_NONZERO_PATTERN) {
+        flag > SUBSET_NONZERO_PATTERN) {
       PyErr_SetString(PyExc_ValueError,
-		      "Jacobian routine returned an out of range "
-		      "integer value for MatStructure"); 
+                      "Jacobian routine returned an out of range "
+                      "integer value for MatStructure");
       goto fail;
     }
   } else {
     PyErr_SetString(PyExc_TypeError,
-		    "Jacobian routine must return None, Boolean, "
-		    "or a valid integer value for MatStructure");
+                    "Jacobian routine must return None, Boolean, "
+                    "or a valid integer value for MatStructure");
     goto fail;
   }
   *outflag = flag;
@@ -269,7 +269,7 @@ static PyObject * TSPyObjToMatStructure(PyObject *value, MatStructure *outflag)
 }
 
 /*  The Jacobian needed for SNES */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPyJacobian"
 static PetscErrorCode TSPyJacobian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *flg,void *ctx)
 {
@@ -278,13 +278,13 @@ static PetscErrorCode TSPyJacobian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *f
   PetscErrorCode ierr;
   PetscFunctionBegin;
   TS_PYTHON_CALL_MAYBE_RET(ts, "computeJacobian", ("O&dO&O&O&",
-						   PyPetscTS_New,   ts,
-						   (double)         py->utime,
-						   PyPetscVec_New,  x,
-						   PyPetscMat_New,  *A,
-						   PyPetscMat_New,  *B),
-			   notimplemented,
-			   TSPyObjToMatStructure, flg);
+                                                   PyPetscTS_New,   ts,
+                                                   (double)         py->utime,
+                                                   PyPetscVec_New,  x,
+                                                   PyPetscMat_New,  *A,
+                                                   PyPetscMat_New,  *B),
+                           notimplemented,
+                           TSPyObjToMatStructure, flg);
   PetscFunctionReturn(0);
  notimplemented:
   ierr = TSComputeRHSJacobian(ts,py->utime,x,A,B,flg);CHKERRQ(ierr);
@@ -293,63 +293,63 @@ static PetscErrorCode TSPyJacobian(SNES snes,Vec x,Mat *A,Mat *B,MatStructure *f
 
 /* -------------------------------------------------------------------------- */
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPreSolve_Python"
 static PetscErrorCode TSPreSolve_Python(TS ts)
 {
   PetscFunctionBegin;
   TS_PYTHON_CALL(ts, "preSolve", ("O&",
-				  PyPetscTS_New, ts ));
+                                  PyPetscTS_New, ts ));
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPostSolve_Python"
 static PetscErrorCode TSPostSolve_Python(TS ts)
 {
   PetscFunctionBegin;
   TS_PYTHON_CALL(ts, "postSolve", ("O&",
-				   PyPetscTS_New, ts ));
+                                   PyPetscTS_New, ts ));
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPreStep_Python"
 static PetscErrorCode TSPreStep_Python(TS ts, PetscReal t, Vec x)
 {
   PetscFunctionBegin;
   TS_PYTHON_CALL(ts, "preStep", ("O&dO&",
-				 PyPetscTS_New,  ts ,
-				 (double)        t  ,
-				 PyPetscVec_New, x  ));
+                                 PyPetscTS_New,  ts ,
+                                 (double)        t  ,
+                                 PyPetscVec_New, x  ));
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSPostStep_Python"
 static PetscErrorCode TSPostStep_Python(TS ts, PetscReal t, Vec x)
 {
   PetscFunctionBegin;
   TS_PYTHON_CALL(ts, "postStep", ("O&dO&",
-				  PyPetscTS_New,  ts ,
-				  (double)        t  ,
-				  PyPetscVec_New, x  ));
+                                  PyPetscTS_New,  ts ,
+                                  (double)        t  ,
+                                  PyPetscVec_New, x  ));
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSStartStep_Python"
 static PetscErrorCode TSStartStep_Python(TS ts,PetscReal t,Vec u)
 {
   PetscFunctionBegin;
   TS_PYTHON_CALL(ts, "startStep", ("O&dO&",
-				   PyPetscTS_New,  ts,
-				   (double)        t,
-				   PyPetscVec_New, u  ));
+                                   PyPetscTS_New,  ts,
+                                   (double)        t,
+                                   PyPetscVec_New, u  ));
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSStep_Python"
 static PetscErrorCode TSStep_Python(TS ts,PetscReal t,Vec u)
 {
@@ -365,17 +365,17 @@ static PetscErrorCode TSStep_Python(TS ts,PetscReal t,Vec u)
   }
 #endif
   TS_PYTHON_CALL_MAYBE(ts, "step", ("O&dO&",
-				    PyPetscTS_New,  ts,
-				    (double)        t,
-				    PyPetscVec_New, u),
-		       notimplemented);
+                                    PyPetscTS_New,  ts,
+                                    (double)        t,
+                                    PyPetscVec_New, u),
+                       notimplemented);
  finally:
   if (ts->problem_type == TS_NONLINEAR) {
     ierr = SNESGetIterationNumber(ts->snes,&its);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);
   } else if (ts->problem_type == TS_LINEAR) {
     ierr = KSPGetIterationNumber(ts->ksp,&lits);CHKERRQ(ierr);
-  }  
+  }
   ts->nonlinear_its += its; ts->linear_its += lits;
   PetscFunctionReturn(0);
  notimplemented:
@@ -404,14 +404,14 @@ static PyObject * TSPyObjToVSArgs(PyObject *value,PetscTruth *ok,PetscReal *dt)
   /**/
   if (PyList_Check(value)) {
     if (PyList_Size(value) != 2) goto fail;
-    ook = PyList_GET_ITEM(value, 0); 
+    ook = PyList_GET_ITEM(value, 0);
     odt = PyList_GET_ITEM(value, 1);
   }
   else if (PyTuple_Check(value)) {
     if (PyTuple_Size(value) != 2) goto fail;
-    ook = PyTuple_GET_ITEM(value, 0); 
+    ook = PyTuple_GET_ITEM(value, 0);
     odt = PyTuple_GET_ITEM(value, 1);
-  } 
+  }
   else if (PyBool_Check(value))   { ook = value; }
   else if (PyNumber_Check(value)) { odt = value; }
   else                            { goto fail;   }
@@ -433,44 +433,44 @@ static PyObject * TSPyObjToVSArgs(PyObject *value,PetscTruth *ok,PetscReal *dt)
  fail:
   Py_DecRef(value);
   PyErr_SetString(PyExc_TypeError,
-		  "verify step routine must return None, bool, float "
-		  "or a 2-tuple/list (bool, float)");
+                  "verify step routine must return None, bool, float "
+                  "or a 2-tuple/list (bool, float)");
   return NULL;
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSVerifyStep_Python"
 static PetscErrorCode TSVerifyStep_Python(TS ts,PetscReal t,Vec u,PetscTruth *ok,PetscReal *dt)
 {
   PetscFunctionBegin;
   *ok = PETSC_TRUE; *dt = ts->time_step;
   TS_PYTHON_CALL_MAYBE_RET2(ts, "verifyStep", ("O&dO&",
-					       PyPetscTS_New,  ts,
-					       (double)        t,
-					       PyPetscVec_New, u  ),
-			    notimplemented,
-			    TSPyObjToVSArgs, ok, dt);
+                                               PyPetscTS_New,  ts,
+                                               (double)        t,
+                                               PyPetscVec_New, u  ),
+                            notimplemented,
+                            TSPyObjToVSArgs, ok, dt);
  notimplemented:
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSMonitor_Python"
 static PetscErrorCode TSMonitor_Python(TS ts,PetscInt i,PetscReal t,Vec x)
 {
   PetscFunctionBegin;
   TS_PYTHON_CALL(ts, "monitor", ("O&ldO&",
-				 PyPetscTS_New,  ts ,
-				 (long)          i  ,
-				 (double)        t  ,
-				 PyPetscVec_New, x  ));
+                                 PyPetscTS_New,  ts ,
+                                 (long)          i  ,
+                                 (double)        t  ,
+                                 PyPetscVec_New, x  ));
   /* call registered monitors */
   TSMonitor(ts,i,t,x);
   PetscFunctionReturn(0);
 }
 
 
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSSetUp_Python"
 static PetscErrorCode TSSetUp_Python(TS ts)
 {
@@ -520,16 +520,16 @@ static PetscErrorCode TSSetUp_Python(TS ts)
 #define TSPyStep       (*py->ops->step)
 #define TSPyVerifyStep (*py->ops->verify)
 #define TSPyMonitor    (*py->ops->monitor)
-  
 
-#undef __FUNCT__  
+
+#undef __FUNCT__
 #define __FUNCT__ "TSSolve_Python"
 static PetscErrorCode TSSolve_Python(TS ts,PetscInt *steps,PetscReal *ptime)
 {
   TS_Py          *py = (TS_Py*)ts->data;
   PetscInt       i,j;
   PetscErrorCode ierr;
-  
+
   PetscFunctionBegin;
 
   ts->steps         = 0; /* XXX */
@@ -551,7 +551,7 @@ static PetscErrorCode TSSolve_Python(TS ts,PetscInt *steps,PetscReal *ptime)
     PetscReal  nextdt = ts->time_step;
     /* call prestep routine, only once per time step */
     /* update vector already have the previous solution */
-    ierr = TSPyPreStep(ts,ts->ptime,py->update);CHKERRQ(ierr); 
+    ierr = TSPyPreStep(ts,ts->ptime,py->update);CHKERRQ(ierr);
     for (j=0; j<10; j++) { /* XXX "10" should be setteable */
       /* for j>0 update vector lost the previous solution, restore it */
       if (j > 0) { ierr = VecCopy(ts->vec_sol,py->update);CHKERRQ(ierr); }
@@ -590,7 +590,7 @@ static PetscErrorCode TSSolve_Python(TS ts,PetscInt *steps,PetscReal *ptime)
 /* -------------------------------------------------------------------------- */
 
 /*MC
-      TS_PYTHON - 
+      TS_PYTHON -
 
   Level: beginner
 
@@ -598,7 +598,7 @@ static PetscErrorCode TSSolve_Python(TS ts,PetscInt *steps,PetscReal *ptime)
 
 M*/
 EXTERN_C_BEGIN
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "TSCreate_Python"
 PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
 {
@@ -639,11 +639,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Python(TS ts)
   py->update   = PETSC_NULL;
   py->vec_func = PETSC_NULL;
   py->vec_rhs  = PETSC_NULL;
-  
+
   ierr = PetscObjectComposeFunction((PetscObject)ts,
-				    "TSPythonSetType_C","TSPythonSetType_PYTHON",
-				    (PetscVoidFunction)TSPythonSetType_PYTHON);CHKERRQ(ierr);
-  
+                                    "TSPythonSetType_C","TSPythonSetType_PYTHON",
+                                    (PetscVoidFunction)TSPythonSetType_PYTHON);CHKERRQ(ierr);
+
   ts->problem_type = TS_NONLINEAR;
 
   if (ts->problem_type == TS_NONLINEAR) {
@@ -779,7 +779,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSPythonSetType(TS ts,const char pyname[])
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   PetscValidCharPointer(pyname,2);
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSPythonSetType_C",
-				  (PetscVoidFunction*)&f);CHKERRQ(ierr);
+                                  (PetscVoidFunction*)&f);CHKERRQ(ierr);
   if (f) {ierr = (*f)(ts,pyname);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }

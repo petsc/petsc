@@ -17,8 +17,8 @@
 
 #if !defined(PETSC_VERSION_)
 #define PETSC_VERSION_(MAJOR,MINOR,SUBMINOR) \
-  ((PETSC_VERSION_MAJOR == (MAJOR)) &&	     \
-   (PETSC_VERSION_MINOR == (MINOR)) &&	     \
+  ((PETSC_VERSION_MAJOR == (MAJOR)) &&       \
+   (PETSC_VERSION_MINOR == (MINOR)) &&       \
    (PETSC_VERSION_SUBMINOR == (SUBMINOR)) && \
    (PETSC_VERSION_RELEASE  == 1))
 #endif
