@@ -1996,7 +1996,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec 
    Level: beginner
 
 .keywords: matrix, multiply, matrix-vector product, constraint
-.seealso: MatMult(), MatMultTrans(), MatMultAdd(), MatMultTransAdd()
+.seealso: MatMult(), MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat mat,Vec x,Vec y)
 {
@@ -2043,7 +2043,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat mat,Vec x,Vec y)
    Level: beginner
 
 .keywords: matrix, multiply, matrix-vector product, constraint
-.seealso: MatMult(), MatMultTrans(), MatMultAdd(), MatMultTransAdd()
+.seealso: MatMult(), MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
 {
