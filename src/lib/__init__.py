@@ -123,4 +123,28 @@ def getPathArch(path, arch, rcvar='PETSC_ARCH', rcfile='petsc.cfg'):
     # nothing good found
     return (path, '')
 
+def getInitArgs(args):
+    """
+    Undocumented.
+    """
+    import sys
+    if args is None:
+        args = []
+    elif isinstance(args, str):
+        args = args.split()
+    else:
+        args = [str(a) for a in args]
+        args = [a for a in args if a]
+    if args and args[0].startswith('-'):
+        sys_argv = getattr(sys, 'argv', None)
+        sys_exec = getattr(sys, 'executable', 'python')
+        if (sys_argv and
+            sys_argv[0] and
+            sys_argv[0] != '-c'):
+            prog_name = sys_argv[0]
+        else:
+            prog_name = sys_exec
+        args.insert(0, prog_name)
+    return args
+
 # --------------------------------------------------------------------

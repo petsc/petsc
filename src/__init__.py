@@ -1,6 +1,5 @@
 # Author:  Lisandro Dalcin
 # Contact: dalcinl@gmail.com
-# Id: $Id$
 
 # --------------------------------------------------------------------
 
@@ -39,23 +38,8 @@ def init(args=None, arch=None):
        the very beginning of the bootstrap script of an application.
     """
     import petsc4py.lib
-    if args is None:
-        args = []
-    elif isinstance(args, str):
-        args = str(args).split()
-    else:
-        args = [str(a) for a in args]
-        args = [a for a in args if a]
-    if args and args[0].startswith('-'):
-        import sys
-        argv = getattr(sys, 'argv', None)
-        program_name = None
-        if argv and type(argv[0]) is str:
-            program_name = argv[0]
-        if not program_name:
-            program_name = getattr(sys, 'executable', 'python')
-        args.insert(0, program_name)
     PETSc = petsc4py.lib.ImportPETSc(arch)
+    args  = petsc4py.lib.getInitArgs(args)
     PETSc._initialize(args)
 
 # --------------------------------------------------------------------

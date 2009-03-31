@@ -277,10 +277,8 @@ cdef void finalize() nogil:
     # and we are done, see you later !!
 
 cdef int initialize(object args) except -1:
-    if (<int>PetscInitializeCalled):
-        return 1
-    if (<int>PetscFinalizeCalled):
-        return 0
+    if (<int>PetscInitializeCalled): return 1
+    if (<int>PetscFinalizeCalled):   return 0
     # allocate command line arguments
     global PyPetsc_Argc; global PyPetsc_Argv;
     getinitargs(args, &PyPetsc_Argc, &PyPetsc_Argv)
