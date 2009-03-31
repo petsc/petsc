@@ -434,11 +434,11 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const Ma
   ierr = PetscLogObjectMemory(B,(bi[n]-n)*(sizeof(PetscInt)+sizeof(PetscScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = bi[n] ;
 
-  (B)->factor                 =  MAT_FACTOR_LU;
-  (B)->info.factor_mallocs    = reallocs;
-  (B)->info.fill_ratio_given  = f;
+  (B)->factor                = MAT_FACTOR_LU;
+  (B)->info.factor_mallocs   = reallocs;
+  (B)->info.fill_ratio_given = f;
 
-  if (ai[n] != 0) {
+  if (ai[n]) {
     (B)->info.fill_ratio_needed = ((PetscReal)bi[n])/((PetscReal)ai[n]);
   } else {
     (B)->info.fill_ratio_needed = 0.0;
@@ -487,22 +487,19 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   IS             isrow = b->row,isicol = b->icol;
   PetscErrorCode ierr;
   const PetscInt  *r,*ic,*ics;
-  PetscInt       i,j,n=A->rmap->n,*bi=b->i,*bj=b->j;
-  PetscInt       *ajtmp,*bjtmp,nz,row;
-  PetscInt       *diag_offset = b->diag,diag,*pj;
-  PetscScalar    *rtmp,*pc,multiplier,*rtmps;
-  MatScalar      *v,*pv;
-  PetscScalar    d;
+  PetscInt       i,j,n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
+  PetscInt       *ajtmp,*bjtmp,nz,row,*diag_offset = b->diag,diag,*pj;
+  MatScalar      *rtmp,*pc,multiplier,*v,*pv,d,*aa=a->a;
   PetscReal      rs;
   LUShift_Ctx    sctx;
   PetscInt       newshift,*ddiag;
 
   PetscFunctionBegin;
-  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
-  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
-  ierr  = PetscMalloc((n+1)*sizeof(PetscScalar),&rtmp);CHKERRQ(ierr);
-  ierr  = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  rtmps = rtmp; ics = ic;
+  ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = PetscMalloc((n+1)*sizeof(PetscScalar),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ics  = ic;
 
   sctx.shift_top      = 0;
   sctx.nshift_max     = 0;
@@ -512,39 +509,37 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
 
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
-    PetscInt *aai = a->i;
     ddiag          = a->diag;
-    sctx.shift_top = 0;
+    sctx.shift_top = info->zeropivot;
     for (i=0; i<n; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
-      d  = (a->a)[ddiag[i]];
+      d  = (aa)[ddiag[i]];
       rs = -PetscAbsScalar(d) - PetscRealPart(d);
-      v  = a->a+aai[i];
-      nz = aai[i+1] - aai[i];
+      v  = aa+ai[i];
+      nz = ai[i+1] - ai[i];
       for (j=0; j<nz; j++) 
 	rs += PetscAbsScalar(v[j]);
       if (rs>sctx.shift_top) sctx.shift_top = rs;
     }
-    if (sctx.shift_top < info->zeropivot) sctx.shift_top = info->zeropivot;
-    sctx.shift_top    *= 1.1;
+    sctx.shift_top   *= 1.1;
     sctx.nshift_max   = 5;
     sctx.shift_lo     = 0.;
     sctx.shift_hi     = 1.;
   }
 
-  sctx.shift_amount = 0;
+  sctx.shift_amount = 0.0;
   sctx.nshift       = 0;
   do {
     sctx.lushift = PETSC_FALSE;
     for (i=0; i<n; i++){
       nz    = bi[i+1] - bi[i];
       bjtmp = bj + bi[i];
-      for  (j=0; j<nz; j++) rtmps[bjtmp[j]] = 0.0;
+      for  (j=0; j<nz; j++) rtmp[bjtmp[j]] = 0.0;
 
       /* load in initial (unfactored row) */
-      nz    = a->i[r[i]+1] - a->i[r[i]];
-      ajtmp = a->j + a->i[r[i]];
-      v     = a->a + a->i[r[i]];
+      nz    = ai[r[i]+1] - ai[r[i]];
+      ajtmp = aj + ai[r[i]];
+      v     = aa + ai[r[i]];
       for (j=0; j<nz; j++) {
         rtmp[ics[ajtmp[j]]] = v[j];
       }
@@ -559,7 +554,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
           multiplier = *pc / *pv++;
           *pc        = multiplier;
           nz         = bi[row+1] - diag_offset[row] - 1;
-          for (j=0; j<nz; j++) rtmps[pj[j]] -= multiplier * pv[j];
+          for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
           ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
         }
         row = *bjtmp++;
@@ -569,10 +564,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
       pj   = b->j + bi[i] ;
       nz   = bi[i+1] - bi[i];
       diag = diag_offset[i] - bi[i];
-      rs   = 0.0;
+      rs   = -PetscAbsScalar(pv[diag]);
       for (j=0; j<nz; j++) {
-        pv[j] = rtmps[pj[j]];
-        if (j != diag) rs += PetscAbsScalar(pv[j]);
+        pv[j] = rtmp[pj[j]];
+        rs   += PetscAbsScalar(pv[j]);
       }
 
       /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
@@ -587,10 +582,10 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
        * if no shift in this attempt & shifting & started shifting & can refine,
        * then try lower shift
        */
-      sctx.shift_hi        = sctx.shift_fraction;
+      sctx.shift_hi       = sctx.shift_fraction;
       sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
-      sctx.shift_amount    = sctx.shift_fraction * sctx.shift_top;
-      sctx.lushift         = PETSC_TRUE;
+      sctx.shift_amount   = sctx.shift_fraction * sctx.shift_top;
+      sctx.lushift        = PETSC_TRUE;
       sctx.nshift++;
     }
   } while (sctx.lushift);
