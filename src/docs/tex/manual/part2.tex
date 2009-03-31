@@ -3029,116 +3029,114 @@ A multigrid preconditioner is created with the four commands
   KSPCreate(MPI\_Comm comm,KSP *ksp);\\
   KSPGetPC(KSP ksp,PC *pc);\\
   PCSetType(PC pc,PCMG);\\
-  MGSetLevels(pc,int levels,MPI\_Comm *comms);
+  PCMGSetLevels(pc,int levels,MPI\_Comm *comms);
 \end{tabbing}
-A \findex{MGSetLevels()} 
+A \findex{PCMGSetLevels()} 
 large number of parameters affect the multigrid behavior. The command
 \begin{tabbing}
-  MGSetType(PC pc,MGType mode); 
+  PCMGSetType(PC pc,PCMGType mode); 
 \end{tabbing}
 indicates which form of multigrid to apply \cite{1sbg}. 
-\findex{MGSetType()}
+\findex{PCMGSetType()}
 \sindex{multigrid, multiplicative} 
 \sindex{multigrid, additive} \sindex{multigrid, full} \sindex{multigrid, Kaskade}
 
 For standard V or W-cycle multigrids, one sets the \trl{
-mode} to be \findex{MGMULTIPLICATIVE} \trl{MGMULTIPLICATIVE}; for the
+mode} to be \findex{PC_MG_MULTIPLICATIVE} \trl{PC_MG_MULTIPLICATIVE}; for the
 additive form (which in certain cases reduces to the BPX method, or additive 
 multilevel Schwarz, or multilevel diagonal scaling), one uses
-\findex{MGADDITIVE} \trl{MGADDITIVE} as the \trl{mode}.  For a variant
+\findex{PC_MG_ADDITIVE} \trl{PC_MG_ADDITIVE} as the \trl{mode}.  For a variant
 of full multigrid, one can
- use \findex{MGFULL} \trl{MGFULL}, and for the Kaskade 
-algorithm \findex{MGKASKADE} \trl{MGKASKADE}.
+ use \findex{PC_MG_FULL} \trl{PC_MG_FULL}, and for the Kaskade 
+algorithm \findex{PC_MG_KASKADE} \trl{PC_MG_KASKADE}.
 For the multiplicative and full multigrid options, one can use a
 W-cycle by \sindex{W-cycle} \sindex{V-cycle} calling
-\findex{MGSetCycles()} \findex{MG_W_CYCLE}
+\findex{PCMGSetCycleType()} \findex{PC_MG_CYCLE_W}
 \begin{tabbing}
-  MGSetCycles(PC pc,int cycles);
+  PCMGSetCycleType(PC pc,PCMGCycleType ctype);
 \end{tabbing}
-with a value of \trl{MG_W_CYCLE} for \trl{cycles}. 
+with a value of \trl{PC_MG_CYCLE_W} for \trl{ctype}. 
 The commands above can also be set from the options database. The option 
 names are \trl{-pc_mg_type [multiplicative, additive, full, kaskade]},
-and \trl{-pc_mg_cycles} \trl{<cycles>}. \findex{-pc_mg_type} \findex{-pc_mg_cycles}
+and \trl{-pc_mg_cycle_type} \trl{<ctype>}. \findex{-pc_mg_type} \findex{-pc_mg_cycle_type}
 
 The user can control the amount of pre- and postsmoothing 
 \sindex{smoothing} \sindex{relaxation} by using
 either the options \findex{-pc_mg_smoothup} \findex{-pc_mg_smoothdown}
 \trl{-pc_mg_smoothup} \trl{m} and \trl{-pc_mg_smoothdown} \trl{n} or
-the routines \findex{MGSetNumberSmoothUp()} \findex{MGSetNumberSmoothDown()}
+the routines \findex{PCMGSetNumberSmoothUp()} \findex{PCMGSetNumberSmoothDown()}
 \begin{tabbing}
-  MGSetNumberSmoothUp(PC pc,int m);\\
-  MGSetNumberSmoothDown(PC pc,int n);
+  PCMGSetNumberSmoothUp(PC pc,int m);\\
+  PCMGSetNumberSmoothDown(PC pc,int n);
 \end{tabbing}
-Note that if the command MGSetSmoother() (discussed below) has
-\findex{MGSetSmoother()} been employed, the same amounts of pre-
-and postsmoothing will be used.
 
 The multigrid routines, which determine
 the solvers and interpolation/restriction operators that are used,
 are mandatory.
 To set the coarse grid solver, one must \sindex{coarse grid solve}
-call \findex{MGGetCoarseSolve()}
+call \findex{PCMGGetCoarseSolve()}
 \begin{tabbing}
-  MGGetCoarseSolve(PC pc,KSP *ksp);
+  PCMGGetCoarseSolve(PC pc,KSP *ksp);
 \end{tabbing}
 and set the appropriate options in \trl{ksp}. Similarly, the 
-smoothers are set by calling \findex{MGGetSmoother()}
+smoothers are set by calling \findex{PCMGGetSmoother()}
 \begin{tabbing}
-  MGGetSmoother(PC pc,int level,KSP *ksp);
+  PCMGGetSmoother(PC pc,int level,KSP *ksp);
 \end{tabbing}
 and setting the various options in \trl{ksp.} 
 To use a different pre- and postsmoother, one should call the following
 routines instead.
 \begin{tabbing}
-  MGGetSmootherUp(PC pc,int level,KSP *upksp);
+  PCMGGetSmootherUp(PC pc,int level,KSP *upksp);
 \end{tabbing}
 and 
 \begin{tabbing}
-  MGGetSmootherDown(PC pc,int level,KSP *downksp);
+  PCMGGetSmootherDown(PC pc,int level,KSP *downksp);
 \end{tabbing}
 
 Use
 \begin{tabbing}
-  MGSetInterpolate(PC pc,int level,Mat P);
+  PCMGSetInterpolation(PC pc,int level,Mat P);
 \end{tabbing}
 and
 \begin{tabbing}
-  MGSetRestriction(PC pc,int level,Mat R);
+  PCMGSetRestriction(PC pc,int level,Mat R);
 \end{tabbing}
-to define the intergrid transfer operations.
+to define the intergrid transfer operations.  If only one of these is
+set, it's transpose will be used for the other.
 
 It is possible for these interpolation operations to be matrix free
 (see Section \ref{sec_matrixfree}),
 he or she should make sure that these operations are defined for the (matrix-free) matrices
 passed in. 
 Note that this system is arranged so that if the interpolation is 
-the transpose of the restriction, the same \trl{mat} argument can be 
-passed to both MGSetRestriction() and MGSetInterpolation().
+the transpose of the restriction, you can pass the same \trl{mat}
+argument to both PCMGSetRestriction() and PCMGSetInterpolation().
 
 On each level except the coarsest, one must also set the routine to 
-compute the residual.  The following command suffices: \findex{MGSetResidual()}
+compute the residual.  The following command suffices: \findex{PCMGSetResidual()}
 \begin{tabbing}
-   MGSetResidual(PC pc,int level,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat);
+   PCMGSetResidual(PC pc,int level,PetscErrorCode (*residual)(Mat,Vec,Vec,Vec),Mat mat);
 \end{tabbing}
-The residual() function can be set to be MGDefaultResidual()
-if \findex{MGDefaultResidual()}
+The residual() function can be set to be PCMGDefaultResidual()
+if \findex{PCMGDefaultResidual()}
 one's operator is stored in a \trl{Mat} format.  In certain circumstances, 
 where it is much cheaper to calculate the residual directly, rather 
 than through the usual formula $b - Ax$,  the user may wish to provide 
 an alternative. 
 
-Finally, the user must provide three work vectors for each level 
+Finally, the user may provide three work vectors for each level 
 (except on the finest, where only the residual work vector is required).
 The work vectors are set with the 
-commands \findex{MGSetRhs()} \findex{MGSetX()} \findex{MGSetR()} 
+commands \findex{PCMGSetRhs()} \findex{PCMGSetX()} \findex{PCMGSetR()} 
 \begin{tabbing}
-  MGSetRhs(PC pc,int level,Vec b);\\
-  MGSetX(PC pc,int level,Vec x);\\
-  MGSetR(PC pc,int level,Vec r);
+  PCMGSetRhs(PC pc,int level,Vec b);\\
+  PCMGSetX(PC pc,int level,Vec x);\\
+  PCMGSetR(PC pc,int level,Vec r);
 \end{tabbing}
-
-The user is responsible for freeing these vectors once the iteration 
-is complete.
+The PC references these vectors so you should call \trl{VecDestroy()}
+when you are finished with them.  If any of these vectors are not
+provided, the preconditioner will allocate them.
 
 One can control the KSP and PC options used on the various levels
 (as well as the coarse grid) using the prefix \trl{mg_levels_} 
@@ -3150,7 +3148,7 @@ One can control the KSP and PC options used on the various levels
 will cause the CG method to be used as the Krylov method for each level.
 Or
 \begin{tabbing}
-  -mg\_levels\_pc\_type ilu -mg\_levels\_pc\_ilu\_levels 2
+  -mg\_levels\_pc\_type ilu -mg\_levels\_pc\_factor\_levels 2
 \end{tabbing}
 will cause the the ILU preconditioner to be used on each level with 
 two levels of fill in the incomplete factorization.
