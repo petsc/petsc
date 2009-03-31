@@ -212,7 +212,7 @@ PetscErrorCode FormFunction1(SNES snes,Vec x,Vec f,void *ctx)
     ierr = VecGetArray(floc,&ff);CHKERRQ(ierr);
     ff[0] = xx[0]*xx[0] + xx[0]*xx[1] - 3.0;
     ff[1] = xx[0]*xx[1] + xx[1]*xx[1] - 6.0;
-    ierr = VecRestoreArray(floc,&xx);CHKERRQ(ierr);
+    ierr = VecRestoreArray(floc,&ff);CHKERRQ(ierr);
     ierr = VecRestoreArray(xloc,&xx);CHKERRQ(ierr);
 
     ierr = VecScatterBegin(scatter,floc,f,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
