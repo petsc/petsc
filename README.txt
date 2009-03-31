@@ -3,10 +3,10 @@ README: PETSc for Python
 ========================
 
 :Author:       Lisandro Dalcin
-:Organization: CIMEC_
-:Address:      PTLC, (3000) Santa Fe, Argentina
 :Contact:      dalcinl@gmail.com
 :Web Site:     http://petsc4py.googlecode.com/
+:Organization: CIMEC <http://www.cimec.org.ar/>
+:Address:      PTLC, (3000) Santa Fe, Argentina
 
 Thank you for downloading the *PETSc for Python* project archive. As
 this is a work in progress, please check the `project website`_ for
