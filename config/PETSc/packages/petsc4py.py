@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download          = ['http://petsc4py.googlecode.com/files/petsc4py-1.0.1.tar.gz']
+    self.download          = ['http://petsc4py.googlecode.com/files/petsc4py-1.0.2.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = []
