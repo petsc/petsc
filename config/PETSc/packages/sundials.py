@@ -57,6 +57,9 @@ class Configure(PETSc.package.Package):
         libs = []
         for l in self.mpi.lib:
           ll = os.path.basename(l)
+          if ll.endswith('.a'): libs.append(ll[3:-2])
+          elif ll.endswith('.so'): libs.append(ll[3:-3])
+          elif ll.endswith('.dylib'): libs.append(ll[3:-6])
           libs.append(ll[3:-2])
         libs = '-l' + ' -l'.join(libs)
         args.append('--with-mpi-libs="'+libs+'"')
