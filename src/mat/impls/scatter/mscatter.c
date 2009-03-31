@@ -64,8 +64,9 @@ PetscErrorCode MatMult_Scatter(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!scatter->scatter) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
-  ierr = VecScatterBegin(scatter->scatter,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter->scatter,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecZeroEntries(y);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -93,8 +94,9 @@ PetscErrorCode MatMultTranspose_Scatter(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!scatter->scatter) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
-  ierr = VecScatterBegin(scatter->scatter,x,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter->scatter,x,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecZeroEntries(y);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter->scatter,x,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -243,6 +245,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat A)
 
   A->assembled     = PETSC_TRUE;
   A->preallocated  = PETSC_FALSE;
+
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSCATTER);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
