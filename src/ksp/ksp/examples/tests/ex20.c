@@ -67,7 +67,7 @@ int main(int argc,char **args)
   ierr = VecDuplicate(u,&b);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject)b,"Right hand side");CHKERRQ(ierr);
 
-  ierr = VecSet(u,one);CHKERRQ(ierr);
+  ierr = VecSet(u,1);CHKERRQ(ierr);
   ierr = MatMult(C,u,b);CHKERRQ(ierr);
   ierr = VecSet(u,0.0);CHKERRQ(ierr);
 
