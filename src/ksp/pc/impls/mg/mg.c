@@ -345,7 +345,7 @@ PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
     }
     for (i=0; i<levels; i++) {
       if (!i) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Coarse gride solver -- level %D presmooths=%D postsmooths=%D -----\n",i,mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Coarse grid solver -- level %D presmooths=%D postsmooths=%D -----\n",i,mg[0]->default_smoothd,mg[0]->default_smoothu);CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level %D smooths=%D --------------------\n",i,mg[i]->default_smoothd);CHKERRQ(ierr);
       }
