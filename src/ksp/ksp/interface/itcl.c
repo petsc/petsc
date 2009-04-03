@@ -347,7 +347,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     flag = PETSC_FALSE;
     ierr = PetscOptionsTruth("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPDefaultConvergedSetUMIRNorm",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
     if (flag) {ierr = KSPDefaultConvergedSetUMIRNorm(ksp);CHKERRQ(ierr);}
-
+    flag = PETSC_FALSE;
     ierr = PetscOptionsTruth("-ksp_initial_guess_nonzero","Use the contents of the solution vector for initial guess","KSPSetInitialNonzero",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
     if (flag) ksp->guess_zero = PETSC_FALSE;
 
