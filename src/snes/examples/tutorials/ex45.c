@@ -124,6 +124,8 @@ int main(int argc,char **argv)
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n",its);CHKERRQ(ierr);
 
+  ierr = VecAssemblyBegin(DMMGGetx(dmmg));CHKERRQ(ierr);
+  ierr = VecAssemblyEnd(DMMGGetx(dmmg));CHKERRQ(ierr);
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
