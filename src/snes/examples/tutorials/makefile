@@ -11,7 +11,8 @@ LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
-                   ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c
+                   ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c ex31.c ex38.c ex42.c ex43.c \
+                   ex44.c ex45.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F mex34f90.F ex34f90.F \
 		   mex35f90.F90 ex35f90.F90 mex36f90.F90 ex36f90.F90 mex37f90.F90 ex37f90.F90 ex39f90.F
 EXAMPLESCH	 = ex43-44.h
@@ -175,6 +176,12 @@ ex42: ex42.o  chkopts
 ex43: ex43.o  chkopts
 	-${CLINKER} -o ex43 ex43.o ${PETSC_SNES_LIB}
 	${RM} ex43.o
+ex44: ex44.o  chkopts
+	-${CLINKER} -o ex44 ex44.o ${PETSC_SNES_LIB}
+	${RM} ex44.o
+ex45: ex45.o  chkopts
+	-${CLINKER} -o ex45 ex45.o ${PETSC_SNES_LIB}
+	${RM} ex45.o
 
 #--------------------------------------------------------------------------
 runex1:
@@ -541,6 +548,33 @@ runex42:
 	   else echo "Possible problem with ex42_1, diffs above"; fi; \
 	   ${RM} -f ex42_1.tmp
 
+runex44:
+	-@${MPIEXEC} -n 1 ./ex44 -n 10 -snes_mf -user_precond > ex44.tmp 2>&1; \
+	   if (${DIFF} output/ex44.out ex44.tmp) then true; \
+	   else echo "Possible problem with ex44, diffs above"; fi; \
+	   ${RM} -f ex44.tmp
+runex44_2:
+	-@${MPIEXEC} -n 1 ./ex44 -n 10 -snes_mf > ex44.tmp 2>&1; \
+	   if (${DIFF} output/ex44.out ex44.tmp) then true; \
+	   else echo "Possible problem with ex44_2, diffs above"; fi; \
+	   ${RM} -f ex44.tmp
+
+runex45:
+	-@${MPIEXEC} -n 1 ./ex45 -n 10 > ex45.tmp 2>&1; \
+	   if (${DIFF} output/ex44.out ex45.tmp) then true; \
+	   else echo "Possible problem with ex45, diffs above"; fi; \
+	   ${RM} -f ex45.tmp
+runex45_2:
+	-@${MPIEXEC} -n 1 ./ex45 -n 10 -snes_jacobian_default -pc_type jacobi > ex45.tmp 2>&1; \
+	   if (${DIFF} output/ex44.out ex45.tmp) then true; \
+	   else echo "Possible problem with ex45_2, diffs above"; fi; \
+	   ${RM} -f ex45.tmp
+runex45_3:
+	-@${MPIEXEC} -n 1 ./ex45 -n 10 -snes_jacobian_default -fd_jacobian_coloring -my_jacobian_struct > ex45.tmp 2>&1; \
+	   if (${DIFF} output/ex44.out ex45.tmp) then true; \
+	   else echo "Possible problem with ex45_3, diffs above"; fi; \
+	   ${RM} -f ex45.tmp
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.rm ex3.PETSc runex3 \
                                  runex3_2 runex3_3 runex3_4 ex3.rm ex5.PETSc runex5 runex5_2 runex5_3 runex5_4 \
                                  runex5_5 runex5_6 runex5_7 runex5_9 runex5_13 runex5_14 ex5.rm \
@@ -549,7 +583,8 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  runex19_10 ex19.rm \
                                  ex22.PETSc runex22 ex22.rm ex18.PETSc ex18.rm ex19.PETSc ex19.rm ex21.PETSc runex21 ex21.rm \
                                  ex23.PETSc runex23 ex23.rm ex24.PETSc ex24.rm   ex25.PETSc runex25 runex25_2 \
-                                 ex25.rm ex29.PETSc ex29.rm ex31.PETSc ex31.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm
+                                 ex25.rm ex29.PETSc ex29.rm ex31.PETSc ex31.rm ex42.PETSc runex42 ex42.rm ex43.PETSc ex43.rm \
+                                 ex44.PETSc runex44 runex44_2 ex44.rm ex45.PETSc runex45 runex45_2 runex45_3 ex45.rm
 TESTEXAMPLES_C_X11	       = ex5.PETSc runex5_8 runex5_10 ex5.rm 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex26.PETSc ex26.rm ex30.PETSc ex30.rm
