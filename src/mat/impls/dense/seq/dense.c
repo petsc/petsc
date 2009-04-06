@@ -1914,7 +1914,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqDense(MPI_Comm comm,PetscInt m,Pet
 
 .keywords: dense, matrix, LAPACK, BLAS
 
-.seealso: MatCreate(), MatCreateMPIDense(), MatSetValues()
+.seealso: MatCreate(), MatCreateMPIDense(), MatSetValues(), MatSeqDenseSetLDA()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation(Mat B,PetscScalar data[])
 {
@@ -1966,7 +1967,7 @@ EXTERN_C_END
 - lda - the leading dimension
 
   Notes:
-  This routine is to be used in conjunction with MatSeqDenseSetPreallocation;
+  This routine is to be used in conjunction with MatSeqDenseSetPreallocation();
   it asserts that the preallocation has a leading dimension (the LDA parameter
   of Blas and Lapack fame) larger than M, the first dimension of the matrix.
 
@@ -1975,6 +1976,7 @@ EXTERN_C_END
 .keywords: dense, matrix, LAPACK, BLAS
 
 .seealso: MatCreate(), MatCreateSeqDense(), MatSeqDenseSetPreallocation(), MatSetMaximumSize()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetLDA(Mat B,PetscInt lda)
 {
