@@ -2574,7 +2574,12 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        MatGetRowMin_SeqAIJ,
        0,
-       MatMissingDiagonal_SeqAIJ
+       MatMissingDiagonal_SeqAIJ,
+/*115*/0,
+       0,
+       0,
+       MatILUDTFactorSymbolic_SeqAIJ,
+       MatILUDTFactorNumeric_SeqAIJ
 };
 
 EXTERN_C_BEGIN
