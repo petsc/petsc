@@ -207,8 +207,8 @@ cdef class TS(Object):
         cdef PetscInt  mstep = 0
         cdef PetscReal mtime = 0
         CHKERR( TSGetDuration(self.ts, &mstep, &mtime) )
-        if max_steps is None: mstep = max_steps
-        if max_time  is None: mtime = asReal(max_time)
+        if max_steps is not None: mstep = max_steps
+        if max_time  is not None: mtime = asReal(max_time)
         CHKERR( TSSetDuration(self.ts, mstep, mtime) )
 
     def getDuration(self):
