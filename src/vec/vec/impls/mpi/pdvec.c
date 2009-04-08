@@ -708,7 +708,6 @@ PetscErrorCode VecView_MPI_Netcdf(Vec xin,PetscViewer v)
 #endif
 
 #if defined(PETSC_HAVE_HDF5)
-
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_HDF5"
 PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
@@ -720,22 +719,24 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   hid_t         file_id;
   herr_t        status;
   /* PetscInt       bs        = xin->map->bs > 0 ? xin->map->bs : 1; */
-  PetscInt       mult      = sizeof(PetscScalar)/sizeof(PetscReal);
-  int            rank      = 1; /* Could have rank 2 for blocked vectors */
-  hsize_t        dims[1],count[1],offset[1];
+  hsize_t        dim      = 1; /* Could have dim 2 for blocked vectors */
+  hsize_t        dims[2],count[2],offset[2];
   PetscInt       low;
   PetscScalar    *x;
   PetscErrorCode ierr;
   const char     *vecname;
 
   PetscFunctionBegin;
-  dims[0]  = PetscHDF5IntCast(xin->map->N*mult);
-  count[0] = PetscHDF5IntCast(xin->map->n*mult);
 
   ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
 
   /* Create the dataspace for the dataset */
-  filespace = H5Screate_simple(rank, dims, NULL); 
+  dims[0]  = PetscHDF5IntCast(xin->map->N);
+#if defined(PETSC_USE_COMPLEX)
+  dim++;
+  dims[1] = 2;
+#endif
+  filespace = H5Screate_simple(dim, dims, NULL); 
   if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
   /* Create the dataset with default properties and close filespace */
@@ -749,12 +750,19 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
-  memspace = H5Screate_simple(rank, count, NULL);
+  count[0] = PetscHDF5IntCast(xin->map->n);
+#if defined(PETSC_USE_COMPLEX)
+  count[1] = 2;
+#endif
+  memspace = H5Screate_simple(dim, count, NULL);
   if (memspace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Screate_simple()");
 
   /* Select hyperslab in the file */
   ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
-  offset[0] = PetscHDF5IntCast(low*mult);
+  offset[0] = PetscHDF5IntCast(low);
+#if defined(PETSC_USE_COMPLEX)
+  offset[1] = 0;
+#endif
   filespace = H5Dget_space(dset_id);
   if (filespace == -1) SETERRQ(PETSC_ERR_LIB,"Cannot H5Dget_space()");
   status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
