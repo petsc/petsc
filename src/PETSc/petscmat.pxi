@@ -524,7 +524,7 @@ cdef inline int Mat_AllocAIJ_CSR(PetscMat A, PetscInt bs, object CSR) except -1:
     CHKERR( MatGetLocalSize(A, &m, NULL) )
     if bs == PETSC_DECIDE: b = 1
     if (m != PETSC_DECIDE) and (((ni-1)*b) != m):
-        raise ValueError("size(I) is %d, expected %d" % (ni, (m/b+1)))
+        raise ValueError("size(I) is %d, expected %d" % (ni, (m//b+1)))
     if (i[0] != 0):
         raise ValueError("I[0] is %d, expected %d"    % (i[0], 0))
     if (i[ni-1] != nj):
@@ -670,7 +670,7 @@ cdef inline int matsetvalues_ijv(PetscMat A,
     else:
         if not local:
             CHKERR( MatGetOwnershipRange(A, &rs, &re) )
-            rs /= bs; re /= bs
+            rs //= bs; re //= bs
         nm = re - rs
     # check various sizes
     if (ni-1 != nm):

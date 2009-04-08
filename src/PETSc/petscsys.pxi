@@ -61,8 +61,8 @@ cdef inline int Sys_SplitSizes(MPI_Comm comm, object size, object bsize,
     if (N > 0) and (N % bs): raise ValueError(
         "global size %d not divisible by block size %d" % (N, bs) )
     # split ownership
-    if n > 0: n = n / bs
-    if N > 0: N = N / bs
+    if n > 0: n = n // bs
+    if N > 0: N = N // bs
     CHKERR( PetscSplitOwnership(comm, &n, &N) )
     n = n * bs
     N = N * bs

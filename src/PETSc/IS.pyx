@@ -147,7 +147,7 @@ cdef class IS(Object):
         CHKERR( ISBlockGetIndices(self.iset, &indices) )
         cdef object oindices = None
         try:
-            oindices = array_i(size/bs, indices)
+            oindices = array_i(size//bs, indices)
         finally:
             CHKERR( ISBlockRestoreIndices(self.iset, &indices) )
         return oindices
