@@ -2553,7 +2553,7 @@ When repeatedly solving linear systems with the same KSP
 context, one can reuse some information  computed
 during the first linear solve.
 In particular, PCFactorSetReuseOrdering() causes the ordering  (for example, set with 
-\trl{-pc_factor_ordering_type} \trl{order}) computed in the first factorization to be reused
+\trl{-pc_factor_mat_ordering_type} \trl{order}) computed in the first factorization to be reused
 for later factorizations. \sindex{orderings} 
 The \trl{ PCFactorDTSetReuseFill()} causes the 
 fill computed during the first drop tolerance factorization to be reused
@@ -2735,9 +2735,9 @@ causes the factorization to be performed in-place and hence
 destroys the original matrix.  The options database variant of
 this command is \trl{-pc_factor_in_place}. \findex{-pc_factor_in_place}
 Another direct preconditioner option is selecting the ordering
-of equations with the command \findex{-pc_factor_ordering_type} \sindex{orderings}
+of equations with the command \findex{-pc_factor_mat_ordering_type} \sindex{orderings}
 \begin{tabbing}
-   \trl{-pc_factor_ordering_type <ordering>}
+   \trl{-pc_factor_mat_ordering_type <ordering>}
 \end{tabbing}
 The possible orderings are
 \begin{itemize}
@@ -2750,11 +2750,11 @@ The possible orderings are
 \findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
 \findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
-\sindex{quotient minimum degree} \findex{-pc_factor_ordering_type}
+\sindex{quotient minimum degree} \findex{-pc_factor_mat_ordering_type}
 These orderings can also be set through the options database by specifying 
-one of the following:  \trl{-pc_factor_ordering_type} \trl{natural}, \trl{-pc_factor_ordering_type}
-\trl{nd}, \trl{-pc_factor_ordering_type} \trl{1wd}, \trl{-pc_factor_ordering_type} \trl{rcm},
-\trl{-pc_factor_ordering_type} \trl{qmd}.
+one of the following:  \trl{-pc_factor_mat_ordering_type} \trl{natural}, \trl{-pc_factor_mat_ordering_type}
+\trl{nd}, \trl{-pc_factor_mat_ordering_type} \trl{1wd}, \trl{-pc_factor_mat_ordering_type} \trl{rcm},
+\trl{-pc_factor_mat_ordering_type} \trl{qmd}.
 In addition, see MatGetOrdering(), discussed in Section~\ref{sec_matfactor}.
 
 The sparse LU factorization provided in PETSc does not perform pivoting for 
@@ -7148,13 +7148,13 @@ The currently available alternatives for the ordering \trl{type} are
 \item \trl{MATORDERING_QMD} - Quotient Minimum Degree
 \end{itemize}
 These orderings can also be set through the options database by specifying 
-one of the following:  \trl{-pc_factor_ordering_type} \trl{natural}, \trl{-pc_factor_ordering_type} \trl{nd}, 
-\trl{-pc_factor_ordering_type} \trl{1wd}, \trl{-pc_factor_ordering_type} \trl{rcm}, \trl{-pc_factor_ordering_type}
+one of the following:  \trl{-pc_factor_mat_ordering_type} \trl{natural}, \trl{-pc_factor_mat_ordering_type} \trl{nd}, 
+\trl{-pc_factor_mat_ordering_type} \trl{1wd}, \trl{-pc_factor_mat_ordering_type} \trl{rcm}, \trl{-pc_factor_mat_ordering_type}
 \trl{qmd}.
 \findex{MATORDERING_NATURAL} \findex{MATORDERING_ND} \findex{MATORDERING_1WD}
 \findex{MATORDERING_RCM} \findex{MATORDERING_QMD} \sindex{nested dissection}
 \sindex{one-way dissection} \sindex{reverse Cuthill-McKee} 
-\sindex{quotient minimum degree} \findex{-pc_factor_ordering_type}
+\sindex{quotient minimum degree} \findex{-pc_factor_mat_ordering_type}
 
 Certain matrix formats may support only a subset of these; more options may 
 be added. Check the manual pages for up-to-date information. All of these orderings are 
@@ -7185,7 +7185,7 @@ directory for examples on how the reordering routines may be written.
 
 Once the reordering routine has been registered,
 it can be selected for use at runtime with the
-command line option \trl{-pc_factor_ordering_type} \trl{sname}.  If reordering directly,
+command line option \trl{-pc_factor_mat_ordering_type} \trl{sname}.  If reordering directly,
 the user should provide the \trl{name} as the second input argument of
 MatGetOrdering().
 
