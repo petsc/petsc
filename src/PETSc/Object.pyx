@@ -203,7 +203,7 @@ cdef int TypeRegistryAdd(PetscCookie cookie, type cls) except -1:
     if key not in type_registry:
         type_registry[key] = cls
         reg_LogClass(cls.__name__, <PetscLogClass>cookie)
-        TypeEnableGC(<PyTypeObject*>cls)
+        # TypeEnableGC(<PyTypeObject*>cls) # XXX disabled !!!
     else:
         value = type_registry[key]
         if cls is not value:

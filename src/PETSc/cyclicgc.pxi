@@ -39,7 +39,7 @@ cdef int clear(PyObject *o):
     PetscDEALLOC(p)
     return 0
 
-cdef void TypeEnableGC(PyTypeObject *t):
+cdef inline void TypeEnableGC(PyTypeObject *t):
     ## printf("%s: enforcing GC support\n", t.tp_name)
     # this is required
     t.tp_traverse = traverse
