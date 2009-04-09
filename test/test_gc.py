@@ -1,6 +1,7 @@
 from petsc4py import PETSc
 import unittest
 import gc, weakref
+import warnings
 
 # --------------------------------------------------------------------
 
@@ -16,50 +17,80 @@ class BaseTestGC(object):
         self.obj = self.CLASS().create(comm=PETSc.COMM_SELF)
 
     def tearDown(self):
-        wref = weakref.ref(self.obj)
+        wref = self.make_weakref()
         self.assertTrue(wref() is self.obj)
         self.obj = None
         gc.collect()
         self.assertTrue(wref() is None)
 
+    def make_weakref(self):
+        try:
+            wref = weakref.ref(self.obj)
+        except TypeError:
+            warnings.warn("weak references are disabled !!!")
+            wref = lambda: self.obj
+        return wref
+
     def testCycleInSelf(self):
-        self.obj.getDict()['self'] = self.obj
+        self.obj.setAttr('myself', self.obj)
 
-    def testCycleInMeth(self):
-        self.obj.getDict()['meth'] = self.obj.view
+    def testCycleInMethod(self):
+        self.obj.setAttr('mymeth', self.obj.view)
 
-    def testCycleInInst(self):
+    def testCycleInInstance(self):
         class A: pass
         a = A()
         a.obj = self.obj
-        self.obj.getDict()['inst'] = a
+        self.obj.setAttr('myinst', a)
 
-    def testCycleInManyWays(self):
+    def testCycleInAllWays(self):
         self.testCycleInSelf()
-        self.testCycleInMeth()
-        self.testCycleInInst()
+        self.testCycleInMethod()
+        self.testCycleInInstance()
 
 # --------------------------------------------------------------------
 
-
 class TestGCVec(BaseTestGC, unittest.TestCase):
+    CLASS = PETSc.Vec
+
+class TestGCVecSubType(TestGCVec):
     CLASS = type('_Vec', (PETSc.Vec,), {})
 
 class TestGCMat(BaseTestGC, unittest.TestCase):
+    CLASS = PETSc.Mat
+
+class TestGCMatSubType(TestGCMat):
     CLASS = type('_Mat', (PETSc.Mat,), {})
 
+class TestGCPC(BaseTestGC, unittest.TestCase):
+    CLASS = PETSc.PC
+
+class TestGCPCSubType(TestGCPC):
+    CLASS = type('_PC', (PETSc.PC,), {})
+
 class TestGCKSP(BaseTestGC, unittest.TestCase):
+    CLASS = PETSc.KSP
+
+class TestGCKSPSubType(TestGCKSP):
     CLASS = type('_KSP', (PETSc.KSP,), {})
 
 class TestGCSNES(BaseTestGC, unittest.TestCase):
+    CLASS = PETSc.SNES
+    def testCycleInAppCtx(self):
+        self.obj.setAppCtx(self.obj)
+
+class TestGCSNESSubType(TestGCSNES):
     CLASS = type('_SNES', (PETSc.SNES,), {})
-    #def testCycleInAppCtx(self):
-    #    self.obj.setAppCtx(self.obj)
 
 class TestGCTS(BaseTestGC, unittest.TestCase):
+    CLASS = PETSc.TS
+    def testCycleInAppCtx(self):
+        self.obj.setAppCtx(self.obj)
+
+class TestGCTSSubType(TestGCTS):
     CLASS = type('_TS', (PETSc.TS,), {})
-    #def testCycleInAppCtx(self):
-    #    self.obj.setAppCtx(self.obj)
+    def testCycleInAppCtx(self):
+        self.obj.setAppCtx(self.obj)
 
 # --------------------------------------------------------------------
 

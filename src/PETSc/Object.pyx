@@ -191,6 +191,8 @@ cdef class Object:
 
 # --------------------------------------------------------------------
 
+include "cyclicgc.pxi"
+
 cdef dict type_registry = { 0 : None }
 __type_registry__ = type_registry
 
@@ -201,6 +203,7 @@ cdef int TypeRegistryAdd(PetscCookie cookie, type cls) except -1:
     if key not in type_registry:
         type_registry[key] = cls
         reg_LogClass(cls.__name__, <PetscLogClass>cookie)
+        TypeEnableGC(<PyTypeObject*>cls)
     else:
         value = type_registry[key]
         if cls is not value:
