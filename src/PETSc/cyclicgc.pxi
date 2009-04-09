@@ -27,12 +27,11 @@ cdef extern from "Python.h":
 cdef int traverse(PyObject *o, visitproc visit, void *arg):
     ## printf("%s.tp_traverse(%p)\n", Py_TYPE(o).tp_name, <void*>o)
     cdef PetscObject p = (<Object>o).obj[0]
-    cdef void *dct = NULL
-    cdef int vret = 0
-    if not p: return 0
-    PetscObjectGetPyDict(p, PETSC_FALSE, &dct)
-    if not dct: return 0
-    return visit(<PyObject*>dct, arg)
+    cdef PyObject *dct = NULL
+    if p == NULL: return 0
+    PetscObjectGetPyDict(p, PETSC_FALSE, <void**>&dct)
+    if dct == <PyObject*>None: return 0
+    return visit(dct, arg)
 
 cdef int clear(PyObject *o):
     ## printf("%s.tp_clear(%p)\n", Py_TYPE(o).tp_name, <void*>o)
