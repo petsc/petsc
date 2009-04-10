@@ -1578,7 +1578,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat x,ISLocalT
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
   }
   ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
-  if (x->bmapping) { ierr = ISLocalToGlobalMappingDestroy(x->mapping);CHKERRQ(ierr); }
+  if (x->bmapping) { ierr = ISLocalToGlobalMappingDestroy(x->bmapping);CHKERRQ(ierr); }
   x->bmapping = mapping;
   PetscFunctionReturn(0);
 }
