@@ -200,6 +200,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x)
     ierr = VecGetArray(x,&array);CHKERRQ(ierr);
   }
   if (!lu->myid) { /* define rhs on the host */
+    lu->id.nrhs = 1;
 #if defined(PETSC_USE_COMPLEX)
     lu->id.rhs = (mumps_double_complex*)array;
 #else

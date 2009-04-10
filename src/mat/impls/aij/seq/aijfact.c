@@ -2104,7 +2104,7 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *inf
       nzbd = 0;
       rs   = 0.0;
       j = 0;
-      while (bjtmp[j] < i & j < ncut){     
+      while (bjtmp[j] < i && j < ncut){     
         rs += PetscAbsScalar(batmp[j]);
         j++; nzbd++;
       }
