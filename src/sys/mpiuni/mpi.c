@@ -213,6 +213,8 @@ int MPI_Finalized(int *flag)
 #define mpi_request_free_     MPI_REQUEST_FREE
 #define mpi_ssend_            MPI_SSEND
 #define mpi_wait_             MPI_WAIT
+#define mpi_comm_group_       MPI_COMM_GROUP
+#define mpi_exscan_           MPI_EXSCAN
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define mpi_init_             mpi_init
 #define mpi_finalize_         mpi_finalize
@@ -257,6 +259,8 @@ int MPI_Finalized(int *flag)
 #define mpi_request_free_     mpi_request_free
 #define mpi_ssend_            mpi_ssend
 #define mpi_wait_             mpi_wait
+#define mpi_comm_group_       mpi_comm_group
+#define mpi_exscan_           mpi_exscan
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
@@ -303,6 +307,8 @@ int MPI_Finalized(int *flag)
 #define mpi_request_free_     mpi_request_free__
 #define mpi_ssend_            mpi_ssend__
 #define mpi_wait_             mpi_wait__
+#define mpi_comm_group_       mpi_comm_group
+#define mpi_exscan_           mpi_exscan__
 #endif
 
 
@@ -548,6 +554,16 @@ void PETSC_STDCALL mpi_ssend_(void*buf,int *count,int *datatype,int *dest,int *t
 }
 
 void PETSC_STDCALL mpi_wait_(int *request,int *status,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_comm_group_(int*comm,int*group,int *ierr)
+{
+  *ierr = MPI_SUCCESS;
+}
+
+void PETSC_STDCALL mpi_exscan_(void*sendbuf,void*recvbuf,int*count,int*datatype,int*op,int*comm,int*ierr)
 {
   *ierr = MPI_SUCCESS;
 }

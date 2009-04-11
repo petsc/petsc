@@ -492,7 +492,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *info)
   PetscInt       i,j,n=A->rmap->n,*ai=a->i,*aj=a->j,*bi=b->i,*bj=b->j;
   PetscInt       *ajtmp,*bjtmp,nz,row,*diag_offset = b->diag,diag,*pj;
   MatScalar      *rtmp,*pc,multiplier,*v,*pv,d,*aa=a->a;
-  PetscReal      rs;
+  PetscReal      rs = 0.0;
   LUShift_Ctx    sctx;
   PetscInt       newshift,*ddiag;
 
@@ -2095,7 +2095,7 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *inf
       for (j=0; j<nzi; j++) {   
         batmp[j] = rtmp[bjtmp[j]];
       }
-      ncut = PetscMin(nzi,dtcount+1); 
+      ncut = PetscMin(nzi,dtcount); 
       ierr = PetscSortSplit(ncut,nzi,batmp,bjtmp);CHKERRQ(ierr);
       ierr = PetscSortIntWithScalarArray(ncut,bjtmp,batmp);CHKERRQ(ierr);
 
@@ -2104,7 +2104,7 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *inf
       nzbd = 0;
       rs   = 0.0;
       j = 0;
-      while (bjtmp[j] < i & j < ncut){     
+      while (bjtmp[j] < i && j < ncut){     
         rs += PetscAbsScalar(batmp[j]);
         j++; nzbd++;
       }
