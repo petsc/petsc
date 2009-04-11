@@ -287,7 +287,7 @@ PetscErrorCode VecView_MPI_HDF5_DA(Vec xin,PetscViewer viewer)
   dim       = PetscHDF5IntCast(da->dim + ((da->w == 1) ? 0 : 1));
   dims[cnt++]   = PetscHDF5IntCast(da->P);
   dims[cnt++]   = PetscHDF5IntCast(da->N);
-  dims[cnt]     = PetscHDF5IntCast(da->M);
+  dims[cnt++]   = PetscHDF5IntCast(da->M);
   if (da->w > 1) dims[cnt++] = PetscHDF5IntCast(da->w);
 #if defined(PETSC_USE_COMPLEX)
   dim++;
