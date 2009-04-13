@@ -625,7 +625,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], PetscLogSta
 .vb
       PetscLogEvent USER_EVENT;
       PetscCookie cookie;
-      int user_event_flops;
+      PetscLogDouble user_event_flops;
       PetscCookieRegister("class name",&cookie);
       PetscLogEventRegister("User event name",cookie,&USER_EVENT);
       PetscLogEventBegin(USER_EVENT,0,0,0,0);
@@ -864,7 +864,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogEventDeactivateClass(PetscCookie cookie)
    Usage:
 .vb
      int USER_EVENT;
-     int user_event_flops;
+     PetscLogDouble user_event_flops;
      PetscLogEventRegister("User event",0,&USER_EVENT);
      PetscLogEventBegin(USER_EVENT,0,0,0,0);
         [code segment to monitor]
@@ -906,7 +906,7 @@ M*/
    Usage:
 .vb
      int USER_EVENT;
-     int user_event_flops;
+     PetscLogDouble user_event_flops;
      PetscLogEventRegister("User event",0,&USER_EVENT,);
      PetscLogEventBegin(USER_EVENT,0,0,0,0);
         [code segment to monitor]
@@ -1870,7 +1870,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogGetStageLog(StageLog *stageLog)
 .  f - flop counter
 
    Synopsis:
-   void PetscLogFlops(int f)
+   void PetscLogFlops(PetscLogDouble f)
 
    Usage:
 .vb

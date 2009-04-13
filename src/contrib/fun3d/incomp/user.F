@@ -737,7 +737,8 @@
       PetscScalar  cdt(1)
       integer isnode(1),ivnode(1),ifnode(1)
       integer n,i,node1,node2,inode
-      integer flops,ierr
+      integer ierr
+      PetscLogDouble flops
       PetscScalar xnorm,ynorm,znorm,area
       PetscScalar u1,v1,w1,u2,v2,w2,u,v,c,w
       PetscScalar ubar,Vn,term
@@ -777,7 +778,7 @@
 !
 ! First loop over nodes and zero out cdt
 !
-      flops = 0
+      flops = 0.0
       if (LocalTS .gt. 0) then
          do 1000 i = 1,nvertices
             cdt(i) = 0.0d0
@@ -824,7 +825,7 @@
                cdt(node2) = cdt(node2) + term
 !
  1020    continue
-         flops = flops + 27*nedge
+         flops = flops + 27.0*nedge
 ! 
 ! Now loop over boundaries and close the contours
 !
@@ -848,7 +849,7 @@
             cdt(inode) = cdt(inode) + Vn
 !
  1030    continue
-         flops = flops + 24*nsnode
+         flops = flops + 24.0*nsnode
 
 !
 ! Now viscous faces
@@ -872,7 +873,7 @@
             cdt(inode) = cdt(inode) + Vn
 !
  1040    continue
-         flops = flops + 9*nvnode
+         flops = flops + 9.0*nvnode
 !
 ! Now far field
 !
@@ -895,7 +896,7 @@
             Vn = abs(xnorm*u + ynorm*v + znorm*w) + c*area
             cdt(inode) = cdt(inode) + Vn
  1050    continue
-         flops = flops + 24*nfnode
+         flops = flops + 24.0*nfnode
  
          do 1060 n = 1,nvertices
             cdt(n) = vol(n)/cdt(n)
@@ -1008,7 +1009,8 @@
       integer f2ntv(nvfacet,4)
       integer f2ntf(nffacet,4)
       integer i,n,node1,node2,node3,inode      
-      integer flops,ierr,first_edge,last_edge
+      integer ierr,first_edge,last_edge
+      PetscLogDouble flops
       PetscScalar  xmean,ymean,zmean,xnorm,ynorm
       PetscScalar  znorm,rlen,area,dot,size
       PetscScalar  X1,Y1,Z1,X2,Y2,Z2,X3,Y3,Z3
@@ -1122,7 +1124,7 @@
        call PetscLogEventBegin(flux_event,PETSC_NULL_OBJECT,            &
      &                         PETSC_NULL_OBJECT,PETSC_NULL_OBJECT,     &
      &                         PETSC_NULL_OBJECT,ierr)
-       flops = 0
+       flops = 0.0
        second = 1.0d0
 !      if(ntt.le.nitfo)second = 0.0
 !      print *, 'Second is' , second
@@ -1393,7 +1395,7 @@
           res3 = 0.5d0*(fluxp3 + fluxm3 - rlen*t3)
           res4 = 0.5d0*(fluxp4 + fluxm4 - rlen*t4)
 !
-	  flops = flops + 318
+	  flops = flops + 318.0
 
 !
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
@@ -1406,7 +1408,7 @@
            res(2,node1) = res(2,node1) + res2
            res(3,node1) = res(3,node1) + res3
            res(4,node1) = res(4,node1) + res4
-           flops = flops + 4
+           flops = flops + 4.0
           endif
 !
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK) && !defined(HAVE_EDGE_COLORING)
@@ -1419,7 +1421,7 @@
            res(2,node2) = res(2,node2) - res2
            res(3,node2) = res(3,node2) - res3
            res(4,node2) = res(4,node2) - res4
-           flops = flops + 4
+           flops = flops + 4.0
           endif
 #if defined(_OPENMP) && !defined(HAVE_REDUNDANT_WORK)&& !defined(HAVE_EDGE_COLORING)
          endif
@@ -1441,7 +1443,7 @@
           resvec(3,n)=resvec(3,n)+res(3,n)
           resvec(4,n)=resvec(4,n)+res(4,n)
        enddo
-       flops = flops + 4*nnodes
+       flops = flops + 4.0*nnodes
 !$omp end critical (residual_update)
 !$omp end parallel
 #undef res
@@ -1502,26 +1504,26 @@
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
 !
-               flops = flops + 35
+               flops = flops + 35.0
           if (node1.le.nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
-	        flops = flops + 6
+	        flops = flops + 6.0
           endif
 
           if (node2.le.nnodes) then
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
-	        flops = flops + 6
+	        flops = flops + 6.0
           endif
 
           if (node3.le.nnodes) then
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
-	        flops = flops + 6
+	        flops = flops + 6.0
           endif
 
       enddo
@@ -1567,13 +1569,13 @@
                pb = c68*p2 + c18*(p3 + p1)
                pc = c68*p3 + c18*(p1 + p2)
 !
-	       flops = flops + 35
+	       flops = flops + 35.0
 !
           if (node1.le.nnodes) then
                 res(2,node1) = res(2,node1) + xnorm*pa
                 res(3,node1) = res(3,node1) + ynorm*pa
                 res(4,node1) = res(4,node1) + znorm*pa
-                flops = flops + 6
+                flops = flops + 6.0
 
           endif
 
@@ -1581,14 +1583,14 @@
                 res(2,node2) = res(2,node2) + xnorm*pb
                 res(3,node2) = res(3,node2) + ynorm*pb
                 res(4,node2) = res(4,node2) + znorm*pb
-                flops = flops + 6
+                flops = flops + 6.0
           endif
 
           if (node3.le.nnodes) then
                 res(2,node3) = res(2,node3) + xnorm*pc
                 res(3,node3) = res(3,node3) + ynorm*pc
                 res(4,node3) = res(4,node3) + znorm*pc
-                flops = flops + 6
+                flops = flops + 6.0
           endif
 
       enddo
@@ -1767,14 +1769,14 @@
          wb = t41*rhs1 + t42*rhs2 + t43*rhs3 + t44*rhs4
 
          ubar = xnorm*ub + ynorm*vb + znorm*wb
-         flops = flops + 180
+         flops = flops + 180.0
 !
         if (inode.le.nnodes) then
           res(1,inode) = res(1,inode)+area*beta*ubar
           res(2,inode) = res(2,inode)+area*(ub*ubar + xnorm*pb)
           res(3,inode) = res(3,inode)+area*(vb*ubar + ynorm*pb)
           res(4,inode) = res(4,inode)+area*(wb*ubar + znorm*pb)
-          flops = flops + 18
+          flops = flops + 18.0
         endif
 !
        enddo
@@ -2112,7 +2114,7 @@
       common/runge/cfl1,cfl2,nsmoth,iflim,itran,nbtran,jupdate,           &
      &             nstage,ncyct,iramp,nitfo
       integer n,node1,node2,ierr
-      integer flops
+      PetscLogDouble flops
       PetscScalar  dx1,dy1,dz1,dx2,dy2,dz2,                                    &
      &        dq1,dq2,dq3,dq4,                                            &
      &        weight,w11,r12r11,r13r11,w22,r23r22,w33,rmess,              &
@@ -2136,7 +2138,7 @@
 !     endif
 !     call PetscLogEventBegin(grad_event,0,0,0,0,ierr)
 
-      flops = 0
+      flops = 0.0
 ! For checking out the code input a linear distribution
 !
 !     write(6,700)nnodes,nedge
@@ -2197,7 +2199,7 @@
            dy1 = weight*dy1
            dz1 = weight*dz1
 
-           flops = flops + 6
+           flops = flops + 6.0
 !
 !         call PetscLogEventBegin(node1_event,0,0,0,0,ierr)
           if (node1 .le. nnodes) then
@@ -2245,7 +2247,7 @@
            grady(4,node1) = grady(4,node1) + termy*dq4
            gradz(4,node1) = gradz(4,node1) + termz*dq4
 !
-           flops = flops + 49
+           flops = flops + 49.0
           endif
 !         call PetscLogEventEnd(node1_event,0,0,0,0,ierr)
 !
@@ -2301,7 +2303,7 @@
            grady(4,node2) = grady(4,node2) + termy*dq4
            gradz(4,node2) = gradz(4,node2) + termz*dq4
 !
-           flops = flops + 52
+           flops = flops + 52.0
           endif
 !         call PetscLogEventEnd(node2_event,0,0,0,0,ierr)
 !       endif

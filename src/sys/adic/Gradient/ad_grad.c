@@ -60,7 +60,7 @@ void ad_grad_axpy_n(int arity, void* ddz, ...)
       z[i] += alpha*gradv[i];
     }
   }   
-  PetscLogFlops(2*ad_grad_size*(arity-.5));
+  PetscLogFlops(2.0*ad_grad_size*(arity-.5));
 }
 
 void mfad_grad_axpy_n(int arity, void* ddz, ...)
@@ -88,7 +88,7 @@ void mfad_grad_axpy_n(int arity, void* ddz, ...)
     gradv = DERIV_grad(*grads[j]);
     z[0] += alphas[j]*gradv[0];
   }
-  PetscLogFlops(2*(arity-.5));
+  PetscLogFlops(2.0*(arity-.5));
 }
 
 EXTERN_C_END

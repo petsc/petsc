@@ -1222,7 +1222,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec s,Vec t,PetscScalar *dp, Petsc
   
   ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
   ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);
-  ierr = PetscLogFlops(4*n);CHKERRQ(ierr);  
+  ierr = PetscLogFlops(4.0*n);CHKERRQ(ierr);  
   ierr = PetscLogEventBarrierEnd(VEC_DotNormBarrier,s,t,0,0,((PetscObject)s)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

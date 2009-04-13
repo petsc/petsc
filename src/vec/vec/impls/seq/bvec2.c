@@ -60,7 +60,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     *z = BLASnrm2_(&bn,xx,&one);
 #endif
     ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
-    ierr = PetscLogFlops(PetscMax(2*n-1,0));CHKERRQ(ierr);
+    ierr = PetscLogFlops(PetscMax(2.0*n-1,0.0));CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     PetscInt          i;
     PetscReal    max = 0.0,tmp;
@@ -78,7 +78,7 @@ PetscErrorCode VecNorm_Seq(Vec xin,NormType type,PetscReal* z)
     ierr = VecGetArray(xin,&xx);CHKERRQ(ierr);
     *z = BLASasum_(&bn,xx,&one);
     ierr = VecRestoreArray(xin,&xx);CHKERRQ(ierr);
-    ierr = PetscLogFlops(PetscMax(n-1,0));CHKERRQ(ierr);
+    ierr = PetscLogFlops(PetscMax(n-1.0,0.0));CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
     ierr = VecNorm_Seq(xin,NORM_1,z);CHKERRQ(ierr);
     ierr = VecNorm_Seq(xin,NORM_2,z+1);CHKERRQ(ierr);

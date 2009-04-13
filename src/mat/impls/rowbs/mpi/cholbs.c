@@ -42,7 +42,7 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat factp,Mat mat,const MatFact
     ierr = PetscInfo3(mat,"BlockSolve95: %d failed factor(s), err=%d, alpha=%g\n",mbs->failures,mbs->ierr,mbs->alpha);CHKERRQ(ierr);
   }
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogFlops((int)(BSlocal_flops()-flop1));CHKERRQ(ierr);
+  ierr = PetscLogFlops(BSlocal_flops()-flop1);CHKERRQ(ierr);
 #endif
 
   factp->ops->solve         = MatSolve_MPIRowbs;
@@ -90,7 +90,7 @@ PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat factp,Mat mat,const MatFactorInfo
   factp->ops->backwardsolve = MatBackSolve_MPIRowbs;
 
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogFlops((int)(BSlocal_flops()-flop1));CHKERRQ(ierr);
+  ierr = PetscLogFlops(BSlocal_flops()-flop1);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -142,7 +142,7 @@ PetscErrorCode MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
   }
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogFlops((int)(BSlocal_flops()-flop1));CHKERRQ(ierr);
+  ierr = PetscLogFlops(BSlocal_flops()-flop1);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
@@ -184,7 +184,7 @@ PetscErrorCode MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_LOG)
-  ierr = PetscLogFlops((int)(BSlocal_flops()-flop1));CHKERRQ(ierr);
+  ierr = PetscLogFlops(BSlocal_flops()-flop1);CHKERRQ(ierr);
 #endif
 
   PetscFunctionReturn(0);
@@ -226,7 +226,7 @@ PetscErrorCode MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
     ierr = VecRestoreArray(mbs->xwork,&xworka);CHKERRQ(ierr);
   }
 #if defined (PETSC_USE_LOG)
-  ierr = PetscLogFlops((int)(BSlocal_flops()-flop1));CHKERRQ(ierr);
+  ierr = PetscLogFlops(BSlocal_flops()-flop1);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }

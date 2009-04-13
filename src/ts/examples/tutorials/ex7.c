@@ -204,7 +204,7 @@ PetscErrorCode FormFunction(TS ts,PetscReal ftime,Vec X,Vec F,void *ptr)
   ierr = DAVecRestoreArray(da,localX,&x);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,F,&f);CHKERRQ(ierr);
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
-  ierr = PetscLogFlops(11*ym*xm);CHKERRQ(ierr);
+  ierr = PetscLogFlops(11.0*ym*xm);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 
