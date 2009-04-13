@@ -1930,10 +1930,11 @@ PetscErrorCode MatILUDTFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const
   /* bdiag is location of diagonal in factor */
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&bdiag);CHKERRQ(ierr);
 
-  /* max num of nonzero entries is (ai[n]+n*dtcount+1) */
+  /* max num of nonzero entries is (ai[n]+2*n*dtcount+1) */
   dtcount = (PetscInt)info->dtcount;
-  nnz  = ai[n]+n*dtcount+1;
+  nnz  = ai[n]+2*n*dtcount+1;
   ierr = PetscMalloc2(nnz,PetscInt,&bj,nnz,PetscScalar,&ba);CHKERRQ(ierr);
+  /* printf("nnz %d\n",nnz); */
 
   /* put together the new matrix */
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(B,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
@@ -1962,14 +1963,6 @@ PetscErrorCode MatILUDTFactorSymbolic_SeqAIJ(Mat B,Mat A,IS isrow,IS iscol,const
   (B)->factor                = MAT_FACTOR_ILUDT;
   (B)->info.factor_mallocs   = 0;
   (B)->info.fill_ratio_given = ((PetscReal)nnz)/((PetscReal)ai[n]);
-  /*
-  if (info->shiftnz == PETSC_DEFAULT){
-    (B)->info.shiftnz = 1.e-12; 
-  } else {
-    (B)->info.shiftnz = info->shiftnz;
-  }
-  B->info.shiftpd = PESC_FALSE;
-  */
   B->ops->lufactornumeric = MatILUDTFactorNumeric_SeqAIJ;
   PetscFunctionReturn(0); 
 }
@@ -1982,17 +1975,16 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *inf
   IS                 isrow=b->row,isicol=b->icol;  
   PetscErrorCode     ierr;
   const PetscInt     *r,*ic;
-  PetscInt           i,n=A->rmap->n,*ai=a->i,*aj=a->j,*ajtmp;
-  PetscInt           *bi=b->i,*bj=b->j,*bdiag=b->diag,row,nnz,nzi,nzbd,*im,dtcount;
+  PetscInt           i,n=A->rmap->n,*ai=a->i,*aj=a->j,*ajtmp,*adiag=a->diag;
+  PetscInt           *bi=b->i,*bj=b->j,*bdiag=b->diag;
+  PetscInt           row,nzi,nzi_bl,nzi_bu,*im,dtcount,nzi_al,nzi_au;
   PetscInt           nlnk,*lnk;
   PetscBT            lnkbt;
   PetscTruth         row_identity,icol_identity,both_identity;
-  MatScalar          *v,*pv,*batmp,*ba=b->a,d,*rtmp,*pc,multiplier;
+  MatScalar          *v,*pv,*batmp,*ba=b->a,*rtmp,*pc,multiplier,*vtmp;
   const PetscInt     *ics;
-  PetscInt           j,nz,*pj,*bjtmp,k,ncut;
-  LUShift_Ctx        sctx;
-  PetscInt           newshift,*ddiag;
-  PetscReal          rs,dt=info->dt;
+  PetscInt           j,nz,*pj,*bjtmp,k,ncut,*jtmp;
+  PetscReal          dt=info->dt;
 
   PetscFunctionBegin;
   ierr = ISGetIndices(isrow,&r);CHKERRQ(ierr);
@@ -2003,154 +1995,123 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *inf
   nlnk = n + 1;
   ierr = PetscLLCreate(n,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscMalloc((n+1)*sizeof(PetscInt),&im);CHKERRQ(ierr);
-
-  ierr = PetscMalloc((n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  ierr = PetscMalloc((2*n+1)*sizeof(MatScalar),&rtmp);CHKERRQ(ierr);
+  vtmp = rtmp + n;
+  ierr = PetscMalloc((n+1)*sizeof(PetscInt),&jtmp);CHKERRQ(ierr);
 
   dtcount = (PetscInt)info->dtcount;
 
-  sctx.shift_top      = 0;
-  sctx.nshift_max     = 0;
-  sctx.shift_lo       = 0;
-  sctx.shift_hi       = 0;
-  sctx.shift_fraction = 0;
+  bi[0]    = 0;
+  bdiag[0] = 0; /* location of diagonal in factor B */
+  for (i=0; i<n; i++) {
+    /* copy initial fill into linked list */
+    nzi = 0; /* nonzeros for active row i */
+    nzi = ai[r[i]+1] - ai[r[i]];
+    if (!nzi) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
+    nzi_al = adiag[r[i]] - ai[r[i]];
+    nzi_au = ai[r[i]+1] - adiag[r[i]] -1;
+    ajtmp = aj + ai[r[i]]; 
+    ierr = PetscLLAddPerm(nzi,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  /* if both shift schemes are chosen by user, only use info->shiftpd */
-  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
-    ddiag          = a->diag;
-    sctx.shift_top = info->zeropivot;
-    for (i=0; i<n; i++) {
-      /* calculate sum(|Ai:|)-RealPart(Aii), amt of shift needed for this row */
-      d  = (a->a)[ddiag[i]];
-      rs = -PetscAbsScalar(d) - PetscRealPart(d);
-      v  = a->a+ai[i];
-      nz = ai[i+1] - ai[i];
-      for (j=0; j<nz; j++) 
-	rs += PetscAbsScalar(v[j]);
-      if (rs>sctx.shift_top) sctx.shift_top = rs;
+    /* load in initial (unfactored row) */
+    ierr = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+    v = a->a + ai[r[i]];
+    for (j=0; j<nzi; j++) {
+      rtmp[ics[ajtmp[j]]] = v[j];
     }
-    sctx.shift_top   *= 1.1;
-    sctx.nshift_max   = 5;
-    sctx.shift_lo     = 0.;
-    sctx.shift_hi     = 1.;
-  }
 
-  sctx.shift_amount = 0.0;
-  sctx.nshift       = 0;
-  do {
-    sctx.lushift = PETSC_FALSE;
+    /* add pivot rows into linked list */
+    row = lnk[n]; 
+    while (row < i) {
+      nzi_bl  = bdiag[row] - bi[row] + 1; /* num of entries in the row with column index <= row */
+      ajtmp = bj + bi[row] + nzi_bl; /* points to the column next to the diagonal */
+      ierr  = PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzi_bl,im);CHKERRQ(ierr);
+      nzi  += nlnk;
+      row   = lnk[row];
+    }
 
-    bi[0]    = 0;
-    bdiag[0] = 0; /* location of diagonal in factor B */
-    for (i=0; i<n; i++) {
-      /* copy initial fill into linked list */
-      nzi = 0; /* nonzeros for active row i */
-      nnz = ai[r[i]+1] - ai[r[i]];
-      if (!nnz) SETERRQ2(PETSC_ERR_MAT_LU_ZRPVT,"Empty row in matrix: row in original ordering %D in permuted ordering %D",r[i],i);
-      ajtmp = aj + ai[r[i]]; 
-      ierr = PetscLLAddPerm(nnz,ajtmp,ic,n,nlnk,lnk,lnkbt);CHKERRQ(ierr);
-      nzi += nlnk;
+    /* copy data from lnk into jtmp, then initialize lnk */
+    ierr = PetscLLClean(n,n,nzi,lnk,jtmp,lnkbt);CHKERRQ(ierr);
 
-      /* load in initial (unfactored row) */
-      ierr = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-      v = a->a + ai[r[i]];
-      for (j=0; j<nnz; j++) {
-        rtmp[ics[ajtmp[j]]] = v[j];
-      }
-      rtmp[ics[r[i]]] += sctx.shift_amount; /* shift the diagonal of the matrix A */
+    /* numerical factorization */
+    bjtmp = jtmp;
+    row = *bjtmp++; /* 1st pivot row */
+    while  (row < i) {
+      pc = rtmp + row;
+      /* apply tolerance dropping rule */
+      if (PetscAbsScalar(*pc) > dt){
+        pv         = ba + bdiag[row]; /* diag of the pivot row */
+        pj         = bj + bdiag[row] + 1;
+        multiplier = *pc / *pv++;
+        *pc        = multiplier;
+        nz         = bi[row+1] - bdiag[row] - 1;
+        for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
+        ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
+      } 
+      row = *bjtmp++;
+    }
 
-      /* add pivot rows into linked list */
-      row = lnk[n]; 
-      while (row < i) {
-        nzbd  = bdiag[row] - bi[row] + 1; /* num of entries in the row with column index <= row */
-        ajtmp = bj + bi[row] + nzbd; /* points to the column next to the diagonal */
-        ierr  = PetscLLAddSortedLU(ajtmp,row,nlnk,lnk,lnkbt,i,nzbd,im);CHKERRQ(ierr);
-        nzi  += nlnk;
-        row   = lnk[row];
-      }
+    /* copy sparse rtmp into contiguous vtmp; separate L and U part */
+    /* printf("row %d:\n",i); */
+    nzi_bl = 0; j = 0;
+    while (jtmp[j] < i){ /* Note: jtmp is sorted */
+      vtmp[j] = rtmp[jtmp[j]];
+      nzi_bl++; j++;
+    }
+    nzi_bu = nzi - nzi_bl -1;
+    while (j < nzi){
+      vtmp[j] = rtmp[jtmp[j]];
+      j++;
+    }
+    
+    bjtmp = bj + bi[i];
+    batmp = ba + bi[i];
+    /* apply level dropping rule to L part */
+    ncut = nzi_al + dtcount; 
+    if (ncut < nzi_bl){ 
+      ierr = PetscSortSplit(ncut,nzi_bl,vtmp,jtmp);CHKERRQ(ierr);
+      ierr = PetscSortIntWithScalarArray(ncut,jtmp,vtmp);CHKERRQ(ierr);
+    } else {
+      ncut = nzi_bl;
+    }
+    for (j=0; j<ncut; j++){
+      bjtmp[j] = jtmp[j];
+      batmp[j] = vtmp[j];
+      /* printf(" (%d,%g),",bjtmp[j],batmp[j]); */
+    }
 
-      /* copy data from lnk into bj, then initialize lnk */
-      bjtmp = bj + bi[i];
-      ierr = PetscLLClean(n,n,nzi,lnk,bjtmp,lnkbt);CHKERRQ(ierr);
-
-      /* numerical factorization */
-      row = *bjtmp++; /* 1st pivot row */
-      while  (row < i) {
-        pc = rtmp + row;
-        /* apply tolerance dropping rule */
-        if (PetscAbsScalar(*pc) > dt){
-          pv         = ba + bdiag[row]; /* diag of the pivot row */
-          pj         = bj + bdiag[row] + 1;
-          multiplier = *pc / *pv++;
-          *pc        = multiplier;
-          nz         = bi[row+1] - bdiag[row] - 1;
-          for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
-          ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
-        } 
-        row = *bjtmp++;
-      }
-
-      /* apply level dropping rule */
-      bjtmp = bj + bi[i];
-      batmp = ba + bi[i];
-      for (j=0; j<nzi; j++) {   
-        batmp[j] = rtmp[bjtmp[j]];
-      }
-      ncut = PetscMin(nzi,dtcount); 
-      ierr = PetscSortSplit(ncut,nzi,batmp,bjtmp);CHKERRQ(ierr);
-      ierr = PetscSortIntWithScalarArray(ncut,bjtmp,batmp);CHKERRQ(ierr);
-
-      /* mark bdiag, get rs=sum(|Bi:|)-RealPart(Bii) */
-      nzi  = ncut;
-      nzbd = 0;
-      rs   = 0.0;
-      j = 0;
-      while (bjtmp[j] < i && j < ncut){     
-        rs += PetscAbsScalar(batmp[j]);
-        j++; nzbd++;
-      }
-      bdiag[i] = bi[i] + nzbd; 
+    /* mark bdiagonal */
+    bdiag[i] = bi[i] + ncut;
+    bjtmp[ncut] = i;
+    batmp[ncut] = rtmp[i];
+    /* printf(" diag(%d,%g),",bjtmp[ncut],batmp[ncut]); */
+    j++;
+    nzi = ncut + 1;
       
-      if (bjtmp[j] > i){
-        /* diagonal entry is dropped, add it into bj and ba */
-        for (k=ncut; k>j; k--){
-          bjtmp[k] = bjtmp[k-1];
-          batmp[k] = batmp[k-1];
-        }
-        bjtmp[j] = i;
-        batmp[j] = rtmp[i];
-        rs      += PetscImaginaryPart(rtmp[i]);
-        nzi++;
-      } else {
-        rs += PetscImaginaryPart(batmp[j]);
-        j++;
-      }
+    /* apply level dropping rule to U part */
+    ncut = nzi_au + dtcount; 
+    if (ncut < nzi_bu){
+      ierr = PetscSortSplit(ncut,nzi_bu,vtmp+nzi_bl+1,jtmp+nzi_bl+1);CHKERRQ(ierr);
+      ierr = PetscSortIntWithScalarArray(ncut,jtmp+nzi_bl+1,vtmp+nzi_bl+1);CHKERRQ(ierr);
+    } else {
+      ncut = nzi_bu;
+    }
+    nzi += ncut;
+    /* printf(" \nU level dropping ..."); */
+    for (k=0; k<ncut; k++){
+      bjtmp[j] = jtmp[nzi_bl+1+k];
+      batmp[j] = vtmp[nzi_bl+1+k];
+      /* printf(" (%d,%g),",bjtmp[j],batmp[j]); */
+      j++;
+    }
       
-      while (j < ncut){ 
-        rs += PetscAbsScalar(batmp[j]);
-        j++;
-      }
-      bi[i+1] = bi[i] + nzi;
-      im[i]   = nzi; /* used by PetscLLAddSortedLU() */
-
-      /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
-      sctx.rs  = rs;
-      sctx.pv  = rtmp[i]; //diagonal ???
-      ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr);
-      if (newshift == 1) break;
-    } /* for (i=0; i<n; i++) */
-  
-    if (info->shiftpd && !sctx.lushift && sctx.shift_fraction>0 && sctx.nshift<sctx.nshift_max){
-      /*
-       * if no shift in this attempt & shifting & started shifting & can refine,
-       * then try lower shift
-       */
-      sctx.shift_hi       = sctx.shift_fraction;
-      sctx.shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
-      sctx.shift_amount   = sctx.shift_fraction * sctx.shift_top;
-      sctx.lushift        = PETSC_TRUE;
-      sctx.nshift++;
-    }    
-  } while (sctx.lushift);
+    bi[i+1] = bi[i] + nzi;
+    im[i]   = nzi; /* used by PetscLLAddSortedLU() */
+    /*
+      printf("bi[%d] = %d\n",i+1,bi[i+1]);
+      printf(" ----------------------------\n");
+    */
+  } /* for (i=0; i<n; i++) */
 
   /* invert diagonal entries for simplier triangular solves */
   for (i=0; i<n; i++) {
@@ -2163,15 +2124,8 @@ PetscErrorCode MatILUDTFactorNumeric_SeqAIJ(Mat B,Mat A,const MatFactorInfo *inf
   ierr = PetscLLDestroy(lnk,lnkbt);CHKERRQ(ierr);
   ierr = PetscFree(im);CHKERRQ(ierr);
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  ierr = PetscFree(jtmp);CHKERRQ(ierr);
 
-
-  if (sctx.nshift){
-    if (info->shiftpd) {
-      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,sctx.shift_fraction,sctx.shift_top);CHKERRQ(ierr);
-    } else if (info->shiftnz) {
-      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
-    }
-  }
   ierr = PetscLogFlops(B->cmap->n);CHKERRQ(ierr);
 
   ierr = ISIdentity(isrow,&row_identity);CHKERRQ(ierr);
