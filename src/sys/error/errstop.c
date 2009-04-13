@@ -39,7 +39,7 @@ $     SETERRQ(n,p,mess)
  @*/
 PetscErrorCode PETSC_DLLEXPORT PetscMPIAbortErrorHandler(int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
 {
-  PetscTruth     flg1,flg2;
+  PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
   PetscLogDouble mem,rss;
 
   PetscFunctionBegin;
@@ -51,8 +51,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMPIAbortErrorHandler(int line,const char *fu
     (*PetscErrorPrintf)("too large an object or bleeding by not properly\n");
     (*PetscErrorPrintf)("destroying unneeded objects.\n");
     PetscMallocGetCurrentUsage(&mem); PetscMemoryGetCurrentUsage(&rss);
-    PetscOptionsHasName(PETSC_NULL,"-malloc_dump",&flg1);
-    PetscOptionsHasName(PETSC_NULL,"-malloc_log",&flg2);
+    PetscOptionsGetTruth(PETSC_NULL,"-malloc_dump",&flg1,PETSC_NULL);
+    PetscOptionsGetTruth(PETSC_NULL,"-malloc_log",&flg2,PETSC_NULL);
     if (flg2) {
       PetscMallocDumpLog(stdout);
     } else {

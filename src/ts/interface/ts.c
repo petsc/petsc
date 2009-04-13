@@ -96,11 +96,13 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
       ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,monfilename,((PetscObject)ts)->tablevel,&monviewer);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",&opt);CHKERRQ(ierr);
+    opt  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
     if (opt) {
       ierr = TSMonitorSet(ts,TSMonitorLG,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-ts_monitor_solution","Monitor solution graphically","TSMonitorSolution",&opt);CHKERRQ(ierr);
+    opt  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-ts_monitor_solution","Monitor solution graphically","TSMonitorSolution",opt,&opt,PETSC_NULL);CHKERRQ(ierr);
     if (opt) {
       ierr = TSMonitorSet(ts,TSMonitorSolution,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
@@ -158,7 +160,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSViewFromOptions(TS ts,const char title[])
 {
   PetscViewer    viewer;
   PetscDraw      draw;
-  PetscTruth     opt;
+  PetscTruth     opt = PETSC_FALSE;
   char           fileName[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
@@ -169,7 +171,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSViewFromOptions(TS ts,const char title[])
     ierr = TSView(ts, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(((PetscObject)ts)->prefix, "-ts_view_draw", &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)ts)->prefix, "-ts_view_draw", &opt,PETSC_NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm, 0, 0, 0, 0, 300, 300, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);

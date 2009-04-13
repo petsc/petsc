@@ -2084,7 +2084,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   PetscReal      epsilon = coloring->error_rel,umin = coloring->umin; 
   Vec            w1,w2,w3;
   void           *fctx = coloring->fctx;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   if (!coloring->w1) {
@@ -2098,7 +2098,7 @@ PetscErrorCode MatFDColoringApply_SeqAIJ(Mat J,MatFDColoring coloring,Vec x1,Mat
   w1 = coloring->w1; w2 = coloring->w2; w3 = coloring->w3;
 
   ierr = MatSetUnfactored(J);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(((PetscObject)coloring)->prefix,"-mat_fd_coloring_dont_rezero",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)coloring)->prefix,"-mat_fd_coloring_dont_rezero",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = PetscInfo(coloring,"Not calling MatZeroEntries()\n");CHKERRQ(ierr);
   } else {
@@ -2574,7 +2574,12 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        MatGetRowMin_SeqAIJ,
        0,
-       MatMissingDiagonal_SeqAIJ
+       MatMissingDiagonal_SeqAIJ,
+/*115*/0,
+       0,
+       0,
+       MatILUDTFactorSymbolic_SeqAIJ,
+       MatILUDTFactorNumeric_SeqAIJ
 };
 
 EXTERN_C_BEGIN
@@ -3191,7 +3196,7 @@ EXTERN_C_BEGIN
 #if defined(PETSC_HAVE_PASTIX)
 extern PetscErrorCode MatGetFactor_seqaij_pastix(Mat,MatFactorType,Mat*);
 #endif
-#if defined(PETSC_HAVE_ESSL)
+#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
 extern PetscErrorCode MatGetFactor_seqaij_essl(Mat,MatFactorType,Mat *);
 #endif
 extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
@@ -3268,7 +3273,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
 					   "MatGetFactor_seqaij_pastix",
 					   MatGetFactor_seqaij_pastix);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_ESSL)
+#if defined(PETSC_HAVE_ESSL) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatGetFactor_seqaij_essl_C",
                                      "MatGetFactor_seqaij_essl",
                                      MatGetFactor_seqaij_essl);CHKERRQ(ierr);

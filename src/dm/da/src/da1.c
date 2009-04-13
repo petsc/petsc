@@ -136,7 +136,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   PetscErrorCode ierr;
   PetscMPIInt    rank,size;
   PetscInt       i,*idx,nn,left,refine_x = 2,tM = M,xs,xe,x,Xs,Xe,start,end,m;
-  PetscTruth     flg1,flg2;
+  PetscTruth     flg1 = PETSC_FALSE,flg2 = PETSC_FALSE;
   DA             da;
   Vec            local,global;
   VecScatter     ltog,gtol;
@@ -193,8 +193,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
      xs is the first local node number, x is the number of local nodes 
   */
   if (!lc) {
-    ierr = PetscOptionsHasName(PETSC_NULL,"-da_partition_blockcomm",&flg1);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(PETSC_NULL,"-da_partition_nodes_at_end",&flg2);CHKERRQ(ierr);
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-da_partition_blockcomm",&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-da_partition_nodes_at_end",&flg2,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {      /* Block Comm type Distribution */
       xs = rank*M/m;
       x  = (rank + 1)*M/m - xs;
@@ -388,7 +388,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
 PetscErrorCode DAView_Private(DA da)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg1;
+  PetscTruth     flg1 = PETSC_FALSE;
   PetscViewer    view;
 
   PetscFunctionBegin;
@@ -398,6 +398,7 @@ PetscErrorCode DAView_Private(DA da)
       ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&view);CHKERRQ(ierr);
       ierr = DAView(da,view);CHKERRQ(ierr);
     }
+    flg1 = PETSC_FALSE;
     ierr = PetscOptionsTruth("-da_view_draw","Draw how the DA is distributed","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(((PetscObject)da)->comm));CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

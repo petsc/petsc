@@ -741,11 +741,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateEmpty(MPI_Comm comm,VecScatter
   ierr = PetscHeaderCreate(ctx,_p_VecScatter,int,VEC_SCATTER_COOKIE,0,"VecScatter",comm,VecScatterDestroy,VecScatterView);CHKERRQ(ierr);
   ctx->inuse               = PETSC_FALSE;
   ctx->beginandendtogether = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether,PETSC_NULL);CHKERRQ(ierr);
   if (ctx->beginandendtogether) {
     ierr = PetscInfo(ctx,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_packtogether",&ctx->packtogether);CHKERRQ(ierr);
+  ctx->packtogether = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-vecscatter_packtogether",&ctx->packtogether,PETSC_NULL);CHKERRQ(ierr);
   if (ctx->packtogether) {
     ierr = PetscInfo(ctx,"Pack all messages before sending\n");CHKERRQ(ierr);
   }
@@ -852,11 +853,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
   ctx->inuse               = PETSC_FALSE;
 
   ctx->beginandendtogether = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-vecscatter_merge",&ctx->beginandendtogether,PETSC_NULL);CHKERRQ(ierr);
   if (ctx->beginandendtogether) {
     ierr = PetscInfo(ctx,"Using combined (merged) vector scatter begin and end\n");CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_packtogether",&ctx->packtogether);CHKERRQ(ierr);
+  ctx->packtogether = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-vecscatter_packtogether",&ctx->packtogether,PETSC_NULL);CHKERRQ(ierr);
   if (ctx->packtogether) {
     ierr = PetscInfo(ctx,"Pack all messages before sending\n");CHKERRQ(ierr);
   }
@@ -1410,7 +1412,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
   *newctx = ctx;
   if (tix) {ierr = ISDestroy(tix);CHKERRQ(ierr);}
   if (tiy) {ierr = ISDestroy(tiy);CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_view_info",&flag);CHKERRQ(ierr);
+  flag = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-vecscatter_view_info",&flag,PETSC_NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
@@ -1418,7 +1421,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
     ierr = VecScatterView(ctx,viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_view",&flag);CHKERRQ(ierr);
+  flag = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-vecscatter_view",&flag,PETSC_NULL);CHKERRQ(ierr);
   if (flag) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);

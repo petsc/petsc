@@ -207,10 +207,10 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
 PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(((PetscObject)Y)->prefix,"-mat_composite_merge",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)Y)->prefix,"-mat_composite_merge",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCompositeMerge(Y);CHKERRQ(ierr);
   }

@@ -25,6 +25,7 @@ PetscLogEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTr
 PetscLogEvent  MAT_Getsymtranspose, MAT_Getsymtransreduced, MAT_Transpose_SeqAIJ, MAT_GetBrowsOfAcols;
 PetscLogEvent  MAT_GetBrowsOfAocols, MAT_Getlocalmat, MAT_Getlocalmatcondensed, MAT_Seqstompi, MAT_Seqstompinum, MAT_Seqstompisym;
 PetscLogEvent  MAT_Applypapt, MAT_Applypapt_numeric, MAT_Applypapt_symbolic, MAT_GetSequentialNonzeroStructure;
+PetscLogEvent  MAT_ILUDTFactorSymbolic, MAT_ILUDTFactorNumeric;
 
 /* nasty global values for MatSetValue() */
 PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Row = 0;
@@ -1996,7 +1997,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAdd(Mat mat,Vec v1,Vec v2,Vec 
    Level: beginner
 
 .keywords: matrix, multiply, matrix-vector product, constraint
-.seealso: MatMult(), MatMultTrans(), MatMultAdd(), MatMultTransAdd()
+.seealso: MatMult(), MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat mat,Vec x,Vec y)
 {
@@ -2043,7 +2044,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultConstrained(Mat mat,Vec x,Vec y)
    Level: beginner
 
 .keywords: matrix, multiply, matrix-vector product, constraint
-.seealso: MatMult(), MatMultTrans(), MatMultAdd(), MatMultTransAdd()
+.seealso: MatMult(), MatMultTranspose(), MatMultAdd(), MatMultTransposeAdd()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat mat,Vec x,Vec y)
 {
@@ -4433,25 +4434,25 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssembled(Mat mat,PetscTruth *assembled)
 PetscErrorCode MatView_Private(Mat mat)
 {
   PetscErrorCode    ierr;
-  PetscTruth        flg1,flg2,flg3,flg4,flg6,flg7,flg8;
+  PetscTruth        flg1 = PETSC_FALSE,flg2 = PETSC_FALSE,flg3 = PETSC_FALSE,flg4 = PETSC_FALSE,flg6 = PETSC_FALSE,flg7 = PETSC_FALSE,flg8 = PETSC_FALSE;
   static PetscTruth incall = PETSC_FALSE;
 #if defined(PETSC_USE_SOCKET_VIEWER)
-  PetscTruth        flg5;
+  PetscTruth        flg5 = PETSC_FALSE;
 #endif
 
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
   ierr = PetscOptionsBegin(((PetscObject)mat)->comm,((PetscObject)mat)->prefix,"Matrix Options","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view_info","Information on matrix size","MatView",&flg1);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view_info_detailed","Nonzeros in the matrix","MatView",&flg2);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view","Print matrix to stdout","MatView",&flg3);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view_matlab","Print matrix to stdout in a format Matlab can read","MatView",&flg4);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_info","Information on matrix size","MatView",flg1,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_info_detailed","Nonzeros in the matrix","MatView",flg2,&flg2,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view","Print matrix to stdout","MatView",flg3,&flg3,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_matlab","Print matrix to stdout in a format Matlab can read","MatView",flg4,&flg4,PETSC_NULL);CHKERRQ(ierr);
 #if defined(PETSC_USE_SOCKET_VIEWER)
-    ierr = PetscOptionsName("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",&flg5);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",flg5,&flg5,PETSC_NULL);CHKERRQ(ierr);
 #endif
-    ierr = PetscOptionsName("-mat_view_binary","Save matrix to file in binary format","MatView",&flg6);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view_draw","Draw the matrix nonzero structure","MatView",&flg7);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_binary","Save matrix to file in binary format","MatView",flg6,&flg6,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_view_draw","Draw the matrix nonzero structure","MatView",flg7,&flg7,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (flg1) {
@@ -4495,7 +4496,7 @@ PetscErrorCode MatView_Private(Mat mat)
     ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(((PetscObject)mat)->comm));CHKERRQ(ierr);
   }
   if (flg7) {
-    ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_view_contour",&flg8);CHKERRQ(ierr);
+    ierr = PetscOptionsGetTruth(((PetscObject)mat)->prefix,"-mat_view_contour",&flg8,PETSC_NULL);CHKERRQ(ierr);
     if (flg8) {
       PetscViewerPushFormat(PETSC_VIEWER_DRAW_(((PetscObject)mat)->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
     }
@@ -4550,7 +4551,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
 {
   PetscErrorCode  ierr;
   static PetscInt inassm = 0;
-  PetscTruth      flg;
+  PetscTruth      flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -4584,7 +4585,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
   }
   if (inassm == 1 && type != MAT_FLUSH_ASSEMBLY) {
     ierr = MatView_Private(mat);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetTruth(((PetscObject)mat)->prefix,"-mat_is_symmetric",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscReal tol = 0.0;
       ierr = PetscOptionsGetReal(((PetscObject)mat)->prefix,"-mat_is_symmetric",&tol,PETSC_NULL);CHKERRQ(ierr);
@@ -5368,6 +5369,115 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactorSymbolic(Mat fact,Mat mat,IS perm,
   ierr = PetscLogEventBegin(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
   ierr = (fact->ops->iccfactorsymbolic)(fact,mat,perm,info);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_ICCFactorSymbolic,mat,perm,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUDTFactorSymbolic"
+/*@  
+   MatILUDTFactorSymbolic - Performs symbolic pivoting drop-tolerance ILU factorization of a matrix.
+   User provides the drop tolerance(dt) and the maximum nonzeros to be allowed per row(dtcount). 
+   Use MatILUDTFactorNumeric() to complete the factorization.
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  row - row permutation
+.  column - column permutation
+-  info - structure containing 
+$      dt - drop tolerance.
+$      dtcount - maximum nonzeros to be allowed per row.
+
+   Output Parameters:
+.  fact - factor matrix with memory preallocated 
+
+   Notes:
+   See the ILUT algorithm written by Yousef Saad.
+
+   Most users should employ the simplified KSP interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., KSPCreate().
+
+   Level: developer
+
+  Concepts: matrices^symbolic ILU factorization
+  Concepts: matrices^factorization
+
+.seealso: MatILUDTFactorNumeric()
+          MatGetOrdering(), MatGetFactor(), MatFactorInfo
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorSymbolic(Mat fact,Mat mat,IS row,IS col,const MatFactorInfo *info)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(row,IS_COOKIE,2);
+  PetscValidHeaderSpecific(col,IS_COOKIE,3);
+  PetscValidPointer(info,4);
+  PetscValidPointer(fact,5);
+  if (info->dt < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"drop tolerance negative %G",(PetscInt)info->dt);
+  if (info->dtcount < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"nonzeros per row %D <0",info->dtcount);
+  if (!(fact)->ops->iludtfactorsymbolic) SETERRQ1(PETSC_ERR_SUP,"Matrix type %s  symbolic ILUDT",((PetscObject)mat)->type_name);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_ILUDTFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
+  ierr = (fact->ops->iludtfactorsymbolic)(fact,mat,row,col,info);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_ILUDTFactorSymbolic,mat,row,col,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUDTFactorNumeric"
+/*@  
+   MatILUDTFactorNumeric - Performs numeric pivoting drop-tolerance ILU factorization of a matrix.
+   Call this routine after first calling MatILUDTFactorSymbolic().
+
+   Collective on Mat
+
+   Input Parameters:
++  fact - the factor matrix obtained with MatGetFactor()
+.  mat - the matrix
+-  info - options for factorization
+
+   Output Parameters:
+.  fact - assembled factor matrix 
+
+   Notes:
+   Most users should employ the simplified KSP interface for linear solvers
+   instead of working directly with matrix algebra routines such as this.
+   See, e.g., KSPCreate().
+
+   Level: developer
+
+.seealso: MatILUDTFactorSymbolic()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatILUDTFactorNumeric(Mat fact,Mat mat,const MatFactorInfo *info)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidPointer(fact,2);
+  PetscValidHeaderSpecific(fact,MAT_COOKIE,2);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->rmap->N != (fact)->rmap->N || mat->cmap->N != (fact)->cmap->N) {
+    SETERRQ4(PETSC_ERR_ARG_SIZ,"Mat mat,Mat fact: global dimensions are different %D should = %D %D should = %D",mat->rmap->N,(fact)->rmap->N,mat->cmap->N,(fact)->cmap->N);
+  }
+  if (!(fact)->ops->iludtfactornumeric) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",((PetscObject)mat)->type_name);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_ILUDTFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
+  ierr = (fact->ops->iludtfactornumeric)(fact,mat,info);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_ILUDTFactorNumeric,mat,fact,0,0);CHKERRQ(ierr);
+
+  ierr = MatView_Private(fact);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)fact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

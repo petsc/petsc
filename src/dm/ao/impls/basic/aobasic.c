@@ -310,7 +310,8 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateBasic(MPI_Comm comm,PetscInt napp,const
     aobasic->petsc[i]--;
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL, "-ao_view", &opt);CHKERRQ(ierr);
+  opt = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL, "-ao_view", &opt,PETSC_NULL);CHKERRQ(ierr);
   if (opt) {
     ierr = AOView(ao, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   }

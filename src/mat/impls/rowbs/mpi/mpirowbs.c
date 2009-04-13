@@ -1567,7 +1567,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   BSoff_map    *bsoff;
   PetscErrorCode ierr;
   int          *offset,m,M;
-  PetscTruth   flg1,flg3;
+  PetscTruth   flg1 = PETSC_FALSE,flg3;
   BSprocinfo   *bspinfo;
   MPI_Comm     comm;
   
@@ -1629,7 +1629,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
 #endif
   BSctx_set_rt(bspinfo,1);CHKERRBS(0);
 #if defined (PETSC_USE_INFO)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-info",&flg1);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-info",&flg1,PETSC_NULL);CHKERRQ(ierr);
   if (flg1) {
     BSctx_set_pr(bspinfo,1);CHKERRBS(0);
   }

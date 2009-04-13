@@ -117,15 +117,14 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
   ierr = PetscOptionsHead("ILU Options");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_factor_levels","levels of fill","PCFactorSetLevels",(PetscInt)((PC_Factor*)ilu)->info.levels,&itmp,&flg);CHKERRQ(ierr);
     if (flg) ((PC_Factor*)ilu)->info.levels = itmp;
-    ierr = PetscOptionsName("-pc_factor_in_place","do factorization in place","PCFactorSetUseInPlace",&flg);CHKERRQ(ierr);
-    if (flg) ilu->inplace = PETSC_TRUE;
-    ierr = PetscOptionsName("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_factor_in_place","do factorization in place","PCFactorSetUseInPlace",ilu->inplace,&ilu->inplace,PETSC_NULL);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-pc_factor_diagonal_fill","Allow fill into empty diagonal entry","PCFactorSetAllowDiagonalFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     ((PC_Factor*)ilu)->info.diagonal_fill = (double) flg;
-    ierr = PetscOptionsName("-pc_factor_reuse_fill","Reuse fill ratio from previous factorization","PCFactorSetReuseFill",&flg);CHKERRQ(ierr);
-    if (flg) ilu->reusefill = PETSC_TRUE;
-    ierr = PetscOptionsName("-pc_factor_reuse_ordering","Reuse previous reordering","PCFactorSetReuseOrdering",&flg);CHKERRQ(ierr);
-    if (flg) ilu->reuseordering = PETSC_TRUE;
-    ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_factor_reuse_fill","Reuse fill ratio from previous factorization","PCFactorSetReuseFill",ilu->reusefill,&ilu->reusefill,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_factor_reuse_ordering","Reuse previous reordering","PCFactorSetReuseOrdering",ilu->reuseordering,&ilu->reuseordering,PETSC_NULL);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftNonzero(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }
@@ -160,7 +159,8 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     if (set) {
       ierr = PCFactorSetPivotInBlocks(pc,flg);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-pc_factor_shift_in_blocks","Shift added to diagonal of block","PCFactorSetShiftInBlocks",&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-pc_factor_shift_in_blocks","Shift added to diagonal of block","PCFactorSetShiftInBlocks",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftInBlocks(pc,(PetscReal)PETSC_DECIDE);CHKERRQ(ierr);
     }

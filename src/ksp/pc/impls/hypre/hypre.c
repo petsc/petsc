@@ -534,7 +534,6 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   }
 
   /* the Relax Order */ 
-  /* ierr = PetscOptionsName("-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", &flg);CHKERRQ(ierr); */
   ierr = PetscOptionsTruth( "-pc_hypre_boomeramg_no_CF", "Do not use CF-relaxation", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
 
   if (flg) {
@@ -560,8 +559,8 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     ierr = HYPRE_BoomerAMGSetInterpType(jac->hsolver,jac->interptype);CHKERRQ(ierr); 
   }
 
-
-  ierr = PetscOptionsName("-pc_hypre_boomeramg_print_statistics","Print statistics","None",&flg);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsTruth("-pc_hypre_boomeramg_print_statistics","Print statistics","None",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     int level=3;
     jac->printstatistics = PETSC_TRUE;
@@ -569,7 +568,8 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     ierr = HYPRE_BoomerAMGSetPrintLevel(jac->hsolver,level);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsName("-pc_hypre_boomeramg_print_debug","Print debug information","None",&flg);CHKERRQ(ierr);
+  flg  = PETSC_FALSE;
+  ierr = PetscOptionsTruth("-pc_hypre_boomeramg_print_debug","Print debug information","None",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     int level=3;
     jac->printstatistics = PETSC_TRUE;

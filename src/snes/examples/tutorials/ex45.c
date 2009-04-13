@@ -1,4 +1,3 @@
-static char help[] = "Surface processes in geophysics.\n\n";
 
 /*T
    Concepts: SNES^parallel Surface process example
@@ -13,15 +12,15 @@ T*/
     the partial differential equation
   
             -Laplacian u - lambda*exp(u) = 0,  0 < x,y < 1,
-  
-    with boundary conditions
-   
-             u = 0  for  x = 0, x = 1, y = 0, y = 1.
-  
-    A finite difference approximation with the usual 5-point stencil
-    is used to discretize the boundary value problem to obtain a nonlinear 
-    system of equations.
 
+static char help[] = "u`` + u^{2} = f. \n\
+Demonstrates the use of Newton-Krylov methods \n\
+with different jacobian evaluation routines and matrix colorings. \n\
+Modified from ex6.c \n\
+Input arguments are:\n\
+   -snes_jacobian_default : Jacobian using finite differences. Slow and expensive, not take advantage of sparsity \n\
+   -fd_jacobian_coloring:   Jacobian using finite differences with matrix coloring\n\
+   -my_jacobian_struct:     use user-provided Jacobian data structure to create matcoloring context \n\n";
     Program usage:  mpiexec -n <procs> ex5 [-help] [all PETSc options] 
      e.g.,
       ./ex5 -fd_jacobian -mat_fd_coloring_view_draw -draw_pause -1
@@ -29,20 +28,20 @@ T*/
 
   ------------------------------------------------------------------------- */
 
-/* 
-   Include "petscda.h" so that we can use distributed arrays (DAs).
-   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
-   file automatically includes:
-     petsc.h       - base PETSc routines   petscvec.h - vectors
-     petscsys.h    - system routines       petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
+/*
+  Example: 
+  ./ex45 -n 10 -snes_monitor -ksp_monitor
+  ./ex45 -n 10 -snes_monitor -ksp_monitor -snes_jacobian_default -pc_type jacobi
+  ./ex45 -n 10 -snes_monitor -ksp_monitor -snes_jacobian_default -pc_type ilu
+  ./ex45 -n 10 -snes_jacobian_default -log_summary |grep SNESFunctionEval 
+  ./ex45 -n 10 -snes_jacobian_default -fd_jacobian_coloring -my_jacobian_struct -log_summary |grep SNESFunctionEval 
      petscviewer.h - viewers               petscpc.h  - preconditioners
      petscksp.h   - linear solvers
-*/
+ */
 #include "petscdmmg.h"
 #include "petscsnes.h"
 
-/* 
+#include "petscsnes.h"
    User-defined application context - contains data needed by the 
    application-provided call-back routines, FormJacobianLocal() and
    FormFunctionLocal().
@@ -57,30 +56,37 @@ typedef struct {
 /* 
    User-defined routines
 */
-extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar**,PetscScalar**,AppCtx*);
-extern PetscErrorCode FormJacobianLocal(DALocalInfo*,PetscScalar**,Mat,AppCtx*);
-extern PetscErrorCode FormInitialGuess(AppCtx *,Vec);
+PetscErrorCode MyJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+PetscErrorCode MyApproxJacobianStructure(Mat *,void *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG                  *dmmg;
-  SNES                   snes;                 /* nonlinear solver */
-  AppCtx                 user;                 /* user-defined work context */
+  SNES           snes;                /* SNES context */
+  Vec            x,r,F;               /* vectors */
+  Mat            J,JPrec;             /* Jacobian,preconditioner matrices */
   PetscInt               its;                  /* iterations for convergence */
-  PetscErrorCode         ierr;
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Initialize program
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  PetscErrorCode ierr;
+  PetscInt       it,n = 5,i;
+  PetscMPIInt    size;
+  PetscReal      h,xp = 0.0; 
+  PetscScalar    v,pfive = .5;
+  PetscTruth     flg;
+  MatFDColoring  matfdcoloring = 0;
+  PetscTruth     fd_jacobian_coloring;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+  if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
+  h = 1.0/(n-1);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Initialize problem parameters
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Surface Process Problem Options", "DMMG");CHKERRQ(ierr);
+     Create nonlinear solver context
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
     user.D = 1.0;
     ierr = PetscOptionsReal("-D", "The diffusion coefficient D", __FILE__, user.D, &user.D, PETSC_NULL);CHKERRQ(ierr);
     user.K = 1.0;
@@ -90,39 +96,91 @@ int main(int argc,char **argv)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Create distributed array (DA) to manage parallel grid and vectors
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,
-                    1,1,PETSC_NULL,PETSC_NULL,&user.da);CHKERRQ(ierr);
-  ierr = DASetUniformCoordinates(user.da, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0);CHKERRQ(ierr);
-  ierr = DMMGCreate(PETSC_COMM_WORLD, 1, &user, &dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg, (DM) user.da);CHKERRQ(ierr);
+     Create vector data structures; set function evaluation routine
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = VecCreate(PETSC_COMM_SELF,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&r);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&F);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Set local function evaluation routine
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSetSNESLocal(dmmg, FormFunctionLocal, FormJacobianLocal, 0, 0);CHKERRQ(ierr);
-
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Customize solver; set runtime options
+     Initialize application:
+     Store right-hand-side of PDE and exact solution
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSetFromOptions(dmmg);CHKERRQ(ierr);
+  xp = 0.0;
+  for (i=0; i<n; i++) {
+    v = 6.0*xp + pow(xp+1.e-12,6.0); /* +1.e-12 is to prevent 0^6 */
+    ierr = VecSetValues(F,1,&i,&v,INSERT_VALUES);CHKERRQ(ierr);
+    xp += h;
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Form initial guess
+     Evaluate initial guess; then solve nonlinear system
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = FormInitialGuess(&user,DMMGGetx(dmmg));CHKERRQ(ierr);
+  ierr = VecSet(x,pfive);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-     Solve nonlinear system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-  snes = DMMGGetSNES(dmmg);
+     Set Function evaluation routine
+   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)F);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Create matrix data structures; set Jacobian evaluation routine
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,3,PETSC_NULL,&J);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,n,n,1,PETSC_NULL,&JPrec);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
+  
+  flg = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_jacobian_default",&flg,PETSC_NULL);CHKERRQ(ierr);
+  if (flg){ 
+    /* Jacobian using finite differences. Slow and expensive, not take advantage of sparsity */ 
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobian,PETSC_NULL);CHKERRQ(ierr);
+  } else {
+    /* User provided Jacobian and preconditioner(diagonal part of Jacobian) */
+    ierr = SNESSetJacobian(snes,J,JPrec,MyJacobian,0);CHKERRQ(ierr);
+  } 
 
-  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of Newton iterations = %D\n",its);CHKERRQ(ierr);
+  fd_jacobian_coloring = PETSC_FALSE;
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,PETSC_NULL);CHKERRQ(ierr);  
+  if (fd_jacobian_coloring){ 
+    /* Jacobian using finite differences with matfdcoloring based on the sparse structure.
+     In this case, only three calls to FormFunction() for each Jacobian evaluation - very fast! */
+    ISColoring    iscoloring;
+    
+    /* Get the data structure of J */
+    flg = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-my_jacobian_struct",&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg){ 
+      /* use user-provided jacobian data structure */
+      ierr = MyApproxJacobianStructure(&J,PETSC_NULL);CHKERRQ(ierr);
+    } else {
+      /* use previously defined jacobian: SNESDefaultComputeJacobian() or MyJacobian()  */
+      MatStructure  flag;
+      ierr = SNESComputeJacobian(snes,x,&J,&J,&flag);CHKERRQ(ierr);
+    }
+
+    /* Create coloring context */
+    ierr = MatGetColoring(J,MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,(void*)F);CHKERRQ(ierr);
+    ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+    /* ierr = MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+    
+    /* Use SNESDefaultComputeJacobianColor() for Jacobian evaluation */
+    ierr = SNESSetJacobian(snes,J,J,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr); 
+    ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+  }
+
+  ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     Solve nonlinear system
+     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = SNESSolve(snes,PETSC_NULL,x);CHKERRQ(ierr);
+  ierr = SNESGetIterationNumber(snes,&it);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_SELF,"Newton iterations = %D\n\n",it);CHKERRQ(ierr);
 
   ierr = VecAssemblyBegin(DMMGGetx(dmmg));CHKERRQ(ierr);
   ierr = VecAssemblyEnd(DMMGGetx(dmmg));CHKERRQ(ierr);
@@ -130,10 +188,14 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-
+  ierr = VecDestroy(x);CHKERRQ(ierr);     ierr = VecDestroy(r);CHKERRQ(ierr);
+  ierr = VecDestroy(F);CHKERRQ(ierr);     ierr = MatDestroy(J);CHKERRQ(ierr);
+  ierr = MatDestroy(JPrec);CHKERRQ(ierr); ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  if (fd_jacobian_coloring){
+    ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
+  }
   ierr = PetscFinalize();CHKERRQ(ierr);
-  PetscFunctionReturn(0);
+  return 0;
 }
 /* ------------------------------------------------------------------- */
 #undef __FUNCT__
@@ -148,11 +210,11 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
+PetscErrorCode FormFunction(SNES snes,Vec x,Vec f,void *dummy)
 {
-  PetscInt       i,j,Mx,My,xs,ys,xm,ym;
+  PetscScalar    *xx,*ff,*FF,d;
   PetscErrorCode ierr;
-  PetscReal      D,temp1,temp,hx,hy;
+  PetscInt       i,n;
   PetscScalar    **x;
 
   PetscFunctionBegin;
@@ -181,64 +243,84 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
   */
   ierr = DAGetCorners(user->da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
 
-  /*
-     Compute initial guess over the locally owned part of the grid
-  */
-  for (j=ys; j<ys+ym; j++) {
-    temp = (PetscReal)(PetscMin(j,My-j-1))*hy;
-    for (i=xs; i<xs+xm; i++) {
-      if (i == 0 || j == 0 || i == Mx-1 || j == My-1) {
-        /* boundary conditions are all zero Dirichlet */
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetArray(f,&ff);CHKERRQ(ierr);
+  ierr = VecGetArray((Vec)dummy,&FF);CHKERRQ(ierr);
+  ierr = VecGetSize(x,&n);CHKERRQ(ierr);
+  d = (PetscReal)(n - 1); d = d*d;
+  ff[0]   = xx[0];
+  for (i=1; i<n-1; i++) {
+    ff[i] = d*(xx[i-1] - 2.0*xx[i] + xx[i+1]) + xx[i]*xx[i] - FF[i];
         x[j][i] = 0.0; 
       } else {
         x[j][i] = temp1*sqrt(PetscMin((PetscReal)(PetscMin(i,Mx-i-1))*hx,temp)); 
       }
-    }
   }
-
-  /*
-     Restore vector
-  */
+  ff[n-1] = xx[n-1] - 1.0;
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(f,&ff);CHKERRQ(ierr);
+  ierr = VecRestoreArray((Vec)dummy,&FF);CHKERRQ(ierr);
+  return 0;
+}
+/* ------------------------------------------------------------------- */
+/*
+   MyJacobian - This routine demonstrates the use of different
+   matrices for the Jacobian and preconditioner
   ierr = DAVecRestoreArray(user->da,X,&x);CHKERRQ(ierr);
 
-  PetscFunctionReturn(0);
-} 
+   Input Parameters:
+.  snes - the SNES context
+.  x - input vector
+.  ptr - optional user-defined context, as set by SNESSetJacobian()
 
-#undef __FUNCT__
-#define __FUNCT__ "funcU"
-PetscScalar funcU(DACoor2d *coords)
+   Output Parameters:
+.  A - Jacobian matrix
+.  B - different preconditioning matrix
+.  flag - flag indicating matrix structure
+*/
+PetscErrorCode MyJacobian(SNES snes,Vec x,Mat *jac,Mat *prejac,MatStructure *flag,void *dummy)
 {
-  return coords->x + coords->y;
-}
+  PetscScalar    *xx,A[3],d;
+  PetscInt       i,n,j[3];
+  PetscErrorCode ierr;
 
-#undef __FUNCT__
-#define __FUNCT__ "funcA"
-PetscScalar funcA(PetscScalar z, AppCtx *user)
-{
-  PetscScalar v = 1.0;
-
-  for(PetscInt i = 0; i < user->m; ++i) {
-    v *= z;
-  }
-  return v;
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "funcADer"
-PetscScalar funcADer(PetscScalar z, AppCtx *user)
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecGetSize(x,&n);CHKERRQ(ierr);
+  d = (PetscReal)(n - 1); d = d*d;
 {
   PetscScalar v = 1.0;
 
-  for(PetscInt i = 0; i < user->m-1; ++i) {
-    v *= z;
+  /* Form Jacobian.  Also form a different preconditioning matrix that 
+     has only the diagonal elements. */
+  i = 0; A[0] = 1.0; 
+  ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
+  for (i=1; i<n-1; i++) {
+    j[0] = i - 1; j[1] = i;                   j[2] = i + 1; 
+    A[0] = d;     A[1] = -2.0*d + 2.0*xx[i];  A[2] = d; 
+    ierr = MatSetValues(*jac,1,&i,3,j,A,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = MatSetValues(*prejac,1,&i,1,&i,&A[1],INSERT_VALUES);CHKERRQ(ierr);
   }
+  i = n-1; A[0] = 1.0; 
+  ierr = MatSetValues(*jac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
+  ierr = MatSetValues(*prejac,1,&i,1,&i,&A[0],INSERT_VALUES);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*prejac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscScalar v = 1.0;
+
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+  return 0;
   return user->m*v;
 }
 
-#undef __FUNCT__
+/* ------------------------------------------------------------------- */
 #define __FUNCT__ "FormFunctionLocal"
-/* 
-   FormFunctionLocal - Evaluates nonlinear function, F(x).
+/*
+  Create an approximate data structure for Jacobian matrix to be used with matcoloring
 */
 PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar **f,AppCtx *user)
 {
@@ -252,8 +334,8 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
 
   PetscFunctionBegin;
 
-  D      = user->D;
-  K      = user->K;
+   Input Parameters:
+.    A - dummy jacobian matrix 
   hx     = 1.0/(PetscReal)(info->mx-1);
   hy     = 1.0/(PetscReal)(info->my-1);
   hxdhy  = hx/hy; 
@@ -286,19 +368,19 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,PetscScalar **x,PetscScalar *
   PetscFunctionReturn(0); 
 } 
 
-#undef __FUNCT__
-#define __FUNCT__ "FormJacobianLocal"
+   Output Parameters:
+     A -  jacobian matrix with assigned non-zero structure
 /*
    FormJacobianLocal - Evaluates Jacobian matrix.
-*/
-PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCtx *user)
+ */
+PetscErrorCode MyApproxJacobianStructure(Mat *jac,void *dummy)
 {
-  MatStencil     col[5], row;
-  PetscScalar    D, K, A, v[5], hx, hy, hxdhy, hydhx, ux, uy, normGradZ;
+  PetscScalar    zeros[3];
+  PetscInt       i,n,j[3];
   PetscInt       i, j;
   PetscErrorCode ierr;
 
-  PetscFunctionBegin;
+  ierr = MatGetSize(*jac,&n,&n);CHKERRQ(ierr);
   D      = user->D;
   K      = user->K;
   hx     = 1.0/(PetscReal)(info->mx-1);
@@ -306,9 +388,9 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
   hxdhy  = hx/hy; 
   hydhx  = hy/hx;
 
-  /* 
-     Compute entries for the locally owned part of the Jacobian.
-      - Currently, all PETSc parallel matrix formats are partitioned by
+  zeros[0] = zeros[1] = zeros[2] = 0.0;
+  i = 0; 
+  ierr = MatSetValues(*jac,1,&i,1,&i,zeros,INSERT_VALUES);CHKERRQ(ierr);
         contiguous chunks of rows across the processors. 
       - Each processor needs to insert only elements that it owns
         locally (but any non-local elements will be sent to the
@@ -334,10 +416,10 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
           normGradZ = 1.0e-8;
         }
         A         = funcA(x[j][i], user);
-
-        v[0] = -D*hxdhy;                                                                          col[0].j = j - 1; col[0].i = i;
-        v[1] = -D*hydhx;                                                                          col[1].j = j;     col[1].i = i-1;
-        v[2] = D*2.0*(hydhx + hxdhy) + K*(funcADer(x[j][i], user)*normGradZ - A/normGradZ)*hx*hy; col[2].j = row.j; col[2].i = row.i;
+  
+  for (i=1; i<n-1; i++) {
+    j[0] = i - 1; j[1] = i; j[2] = i + 1; 
+    ierr = MatSetValues(*jac,1,&i,3,j,zeros,INSERT_VALUES);CHKERRQ(ierr);
         v[3] = -D*hydhx + K*A*hx*hy/(2.0*normGradZ);                                              col[3].j = j;     col[3].i = i+1;
         v[4] = -D*hxdhy + K*A*hx*hy/(2.0*normGradZ);                                              col[4].j = j + 1; col[4].i = i;
         for(int k = 0; k < 5; ++k) {
@@ -347,10 +429,12 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
       }
     }
   }
+  i = n-1; 
+  ierr = MatSetValues(*jac,1,&i,1,&i,zeros,INSERT_VALUES);CHKERRQ(ierr);
 
-  /* 
-     Assemble matrix, using the 2-step process:
-       MatAssemblyBegin(), MatAssemblyEnd().
+  ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  return 0;
   */
   ierr = MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

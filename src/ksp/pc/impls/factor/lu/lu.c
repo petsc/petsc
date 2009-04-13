@@ -58,7 +58,7 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
 {
   PC_LU           *lu = (PC_LU*)pc->data;
   PetscErrorCode  ierr;
-  PetscTruth      flg,set;
+  PetscTruth      flg = PETSC_FALSE,set;
   char            tname[256], solvertype[64];
   PetscFList      ordlist;
   PetscReal       tol;
@@ -66,7 +66,7 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
   PetscFunctionBegin;
   if (!MatOrderingRegisterAllCalled) {ierr = MatOrderingRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr = PetscOptionsHead("LU options");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_factor_in_place","Form LU in the same memory as the matrix","PCFactorSetUseInPlace",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-pc_factor_in_place","Form LU in the same memory as the matrix","PCFactorSetUseInPlace",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetUseInPlace(pc);CHKERRQ(ierr);
     }
@@ -77,17 +77,20 @@ static PetscErrorCode PCSetFromOptions_LU(PC pc)
         ierr = PCFactorSetShiftNonzero(pc,(PetscReal) PETSC_DECIDE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",((PC_Factor*)lu)->info.shiftnz,&((PC_Factor*)lu)->info.shiftnz,0);CHKERRQ(ierr);
-    ierr = PetscOptionsName("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-pc_factor_shift_positive_definite","Manteuffel shift applied to diagonal","PCFactorSetShiftPd",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetShiftPd(pc,PETSC_TRUE);CHKERRQ(ierr);
     }
     ierr = PetscOptionsReal("-pc_factor_zeropivot","Pivot is considered zero if less than","PCFactorSetZeroPivot",((PC_Factor*)lu)->info.zeropivot,&((PC_Factor*)lu)->info.zeropivot,0);CHKERRQ(ierr);
 
-    ierr = PetscOptionsName("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-pc_factor_reuse_fill","Use fill from previous factorization","PCFactorSetReuseFill",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetReuseFill(pc,PETSC_TRUE);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-pc_factor_reuse_ordering","Reuse ordering from previous factorization","PCFactorSetReuseOrdering",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PCFactorSetReuseOrdering(pc,PETSC_TRUE);CHKERRQ(ierr);
     }

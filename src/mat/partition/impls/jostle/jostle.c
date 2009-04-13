@@ -233,23 +233,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningJostleSetCoarseSequential(MatPa
 PetscErrorCode MatPartitioningSetFromOptions_Jostle(MatPartitioning part)
 {
     PetscErrorCode ierr;
-    PetscTruth flag;
-    PetscReal level;
+    PetscTruth     flag = PETSC_FALSE;
+    PetscReal      level;
 
     PetscFunctionBegin;
     ierr = PetscOptionsHead("Set Jostle partitioning options");CHKERRQ(ierr);
 
-    ierr = PetscOptionsReal("-mat_partitioning_jostle_coarse_level",
-        "Coarse level", "MatPartitioningJostleSetCoarseLevel", 0,
-        &level, &flag);CHKERRQ(ierr);
-    if (flag)
-        ierr = MatPartitioningJostleSetCoarseLevel(part, level);CHKERRQ(ierr);
-
-    ierr = PetscOptionsName("-mat_partitioning_jostle_coarse_sequential",
-        "Use sequential coarse partitioner",
-        "MatPartitioningJostleSetCoarseSequential", &flag);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-mat_partitioning_jostle_coarse_level","Coarse level", "MatPartitioningJostleSetCoarseLevel", 0, &level, &flag);CHKERRQ(ierr);
     if (flag) {
-        ierr = MatPartitioningJostleSetCoarseSequential(part);CHKERRQ(ierr);
+      ierr = MatPartitioningJostleSetCoarseLevel(part, level);CHKERRQ(ierr);
+    }
+
+    flag = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-mat_partitioning_jostle_coarse_sequential","Use sequential coarse partitioner","MatPartitioningJostleSetCoarseSequential",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
+    if (flag) {
+      ierr = MatPartitioningJostleSetCoarseSequential(part);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsTail();CHKERRQ(ierr);

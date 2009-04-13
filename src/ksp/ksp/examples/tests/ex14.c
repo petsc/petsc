@@ -105,12 +105,12 @@ int main(int argc,char **argv)
   PetscInt       lin_its;             /* number of linear solver iterations for each step */
   PetscInt       i;                   /* nonlinear solve iteration number */
   MatStructure   mat_flag;        /* flag indicating structure of preconditioner matrix */
-  PetscTruth     no_output;           /* flag indicating whether to surpress output */
+  PetscTruth     no_output = PETSC_FALSE;           /* flag indicating whether to surpress output */
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
   ierr = MPI_Comm_rank(comm,&user.rank);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-no_output",&no_output);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-no_output",&no_output,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Initialize problem parameters

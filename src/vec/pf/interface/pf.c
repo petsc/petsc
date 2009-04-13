@@ -64,13 +64,13 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSet(PF pf,PetscErrorCode (*apply)(void*,Pets
 PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
 {
   PetscErrorCode ierr;
-  PetscTruth flg;
+  PetscTruth     flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
   if (--((PetscObject)pf)->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsHasName(((PetscObject)pf)->prefix,"-pf_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)pf)->prefix,"-pf_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)pf)->comm,&viewer);CHKERRQ(ierr);

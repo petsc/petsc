@@ -17,7 +17,7 @@ int main(int argc,char **argv)
   Vec            local,global;
   PetscScalar    value;
   PetscDraw      draw;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
 
@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   ierr = DAGlobalToLocalBegin(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,global,INSERT_VALUES,local);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-local_print",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-local_print",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer            sviewer;
     ISLocalToGlobalMapping is;

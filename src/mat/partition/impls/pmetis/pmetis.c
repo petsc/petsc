@@ -200,11 +200,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningParmetisGetEdgeCut(MatPartition
 PetscErrorCode MatPartitioningSetFromOptions_Parmetis(MatPartitioning part)
 {
   PetscErrorCode ierr;
-  PetscTruth flag;
+  PetscTruth     flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Set ParMeTiS partitioning options");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-mat_partitioning_parmetis_coarse_sequential","Use sequential coarse partitioner","MatPartitioningParmetisSetCoarseSequential",flag,&flag,PETSC_NULL);CHKERRQ(ierr);
     if (flag) {
       ierr = MatPartitioningParmetisSetCoarseSequential(part);CHKERRQ(ierr);
     }

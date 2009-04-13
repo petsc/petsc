@@ -442,7 +442,7 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       this_ell;
   PetscReal      delta;
-  PetscTruth     flga, flg;
+  PetscTruth     flga = PETSC_FALSE, flg;
 
   PetscFunctionBegin;
   /* PetscOptionsBegin/End are called in KSPSetFromOptions. They
@@ -457,11 +457,12 @@ PetscErrorCode KSPSetFromOptions_BCGSL(KSP ksp)
   }
 
   /* Set polynomial type */
-  ierr = PetscOptionsName("-ksp_bcgsl_cxpoly", "Polynomial part of BiCGStabL is MinRes + OR", "KSPBCGSLSetPol", &flga);CHKERRQ(ierr);
+  ierr = PetscOptionsTruth("-ksp_bcgsl_cxpoly", "Polynomial part of BiCGStabL is MinRes + OR", "KSPBCGSLSetPol", flga,&flga,PETSC_NULL);CHKERRQ(ierr);
   if (flga) {
     ierr = KSPBCGSLSetPol(ksp, PETSC_TRUE);CHKERRQ(ierr);
   } else {
-    ierr = PetscOptionsName("-ksp_bcgsl_mrpoly", "Polynomial part of BiCGStabL is MinRes", "KSPBCGSLSetPol", &flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-ksp_bcgsl_mrpoly", "Polynomial part of BiCGStabL is MinRes", "KSPBCGSLSetPol", flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     ierr = KSPBCGSLSetPol(ksp, PETSC_FALSE);CHKERRQ(ierr);
   }
 

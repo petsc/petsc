@@ -35,7 +35,7 @@ int main(int argc,char **args)
   PetscErrorCode ierr;
   PetscInt       i,j,m = 3,n = 2,its;
   PetscMPIInt    size,rank;
-  PetscTruth     mat_nonsymmetric;
+  PetscTruth     mat_nonsymmetric = PETSC_FALSE;
 #if defined (PETSC_USE_LOG)
   PetscLogStage  stages[2];
 #endif
@@ -49,7 +49,7 @@ int main(int argc,char **args)
   /*
      Set flag if we are doing a nonsymmetric problem; the default is symmetric.
   */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-mat_nonsym",&mat_nonsymmetric,PETSC_NULL);CHKERRQ(ierr);
 
   /*
      Register two stages for separate profiling of the two linear solves.

@@ -71,7 +71,7 @@ int main(int argc,char **argv)
   Mat                    J;                    /* Jacobian matrix */
   AppCtx                 user;                 /* user-defined work context */
   PetscInt               its;                  /* iterations for convergence */
-  PetscTruth             matrix_free,coloring;
+  PetscTruth             matrix_free = PETSC_FALSE,coloring = PETSC_FALSE;
   PetscErrorCode         ierr;
   PetscReal              bratu_lambda_max = 6.81,bratu_lambda_min = 0.,fnorm;
   MatFDColoring          matfdcoloring;
@@ -127,8 +127,8 @@ int main(int argc,char **argv)
      -fdcoloring : using finite differences with coloring to compute the Jacobian
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-fdcoloring",&coloring);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-fdcoloring",&coloring,PETSC_NULL);CHKERRQ(ierr);
   if (!matrix_free) {
     if (coloring) {
       ISColoring    iscoloring;

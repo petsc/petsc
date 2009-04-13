@@ -52,7 +52,7 @@ int main(int argc,char **argv)
   AppCtx         user;                      /* user-defined work context */
   PetscInt       i,its,N,Nx = PETSC_DECIDE,Ny = PETSC_DECIDE;
   PetscErrorCode ierr;
-  PetscTruth     matrix_free;
+  PetscTruth     matrix_free = PETSC_FALSE;
   PetscMPIInt    size; 
   PetscReal      bratu_lambda_max = 6.81,bratu_lambda_min = 0.;
 #if defined(PETSC_USE_LOG)
@@ -101,7 +101,7 @@ int main(int argc,char **argv)
        (unless user explicitly sets preconditioner) 
        -snes_fd : default finite differencing approximation of Jacobian
        */
-    ierr = PetscOptionsHasName(PETSC_NULL,"-snes_mf",&matrix_free);CHKERRQ(ierr);
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-snes_mf",&matrix_free,PETSC_NULL);CHKERRQ(ierr);
     if (!matrix_free) {
       ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
       ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,N,N);CHKERRQ(ierr);

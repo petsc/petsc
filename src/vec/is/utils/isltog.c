@@ -544,7 +544,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalM
     PetscFunctionReturn(0);
   }
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-islocaltoglobalmappinggetinfo_debug",&debug);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-islocaltoglobalmappinggetinfo_debug",&debug,PETSC_NULL);CHKERRQ(ierr);
 
   /*
     Notes on ISLocalToGlobalMappingGetInfo

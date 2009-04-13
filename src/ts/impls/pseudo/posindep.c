@@ -293,17 +293,18 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
 {
   TS_Pseudo               *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode          ierr;
-  PetscTruth              flg;
+  PetscTruth              flg = PETSC_FALSE;
   PetscViewerASCIIMonitor viewer;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-ts_monitor","Monitor convergence","TSPseudoMonitorDefault",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-ts_monitor","Monitor convergence","TSPseudoMonitorDefault",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",&flg);CHKERRQ(ierr);
+    flg  = PETSC_FALSE;
+    ierr = PetscOptionsTruth("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",flg,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       ierr = TSPseudoIncrementDtFromInitialDt(ts);CHKERRQ(ierr);
     }

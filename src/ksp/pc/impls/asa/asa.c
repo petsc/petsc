@@ -2016,7 +2016,7 @@ static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
     asa_lev = asa->levellist;
     while (asa_lev) {
       if (!asa_lev->next) {
-        ierr = PetscViewerASCIIPrintf(viewer,"Coarse gride solver -- level %D -------------------------------\n",0);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer,"Coarse grid solver -- level %D -------------------------------\n",0);CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level ? -------------------------------\n");CHKERRQ(ierr);
       }

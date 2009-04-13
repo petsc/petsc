@@ -238,7 +238,8 @@ PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP LSQR Options");CHKERRQ(ierr);
-  ierr = PetscOptionsName("-ksp_lsqr_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",&lsqr->se_flg);CHKERRQ(ierr);
+  lsqr->se_flg = PETSC_FALSE;
+  ierr = PetscOptionsTruth("-ksp_lsqr_set_standard_error","Set Standard Error Estimates of Solution","KSPLSQRSetStandardErrorVec",lsqr->se_flg,&lsqr->se_flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

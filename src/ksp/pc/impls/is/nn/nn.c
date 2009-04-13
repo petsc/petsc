@@ -385,8 +385,8 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 
   /* for DEBUGGING, save the coarse matrix to a file. */
   {
-    PetscTruth flg;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-pc_nn_save_coarse_matrix",&flg);CHKERRQ(ierr);
+    PetscTruth flg = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-pc_nn_save_coarse_matrix",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) {
       PetscViewer viewer;
       ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"coarse.m",&viewer);CHKERRQ(ierr);
@@ -473,8 +473,8 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
     First balancing step.
   */
   {
-    PetscTruth flg;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-pc_nn_turn_off_first_balancing",&flg);CHKERRQ(ierr);
+    PetscTruth flg = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-pc_nn_turn_off_first_balancing",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,(Vec)0,z,vec1_B,vec2_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {
@@ -496,8 +496,8 @@ PetscErrorCode PCNNApplyInterfacePreconditioner (PC pc, Vec r, Vec z, PetscScala
     Second balancing step.
   */
   {
-    PetscTruth flg;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-pc_turn_off_second_balancing",&flg);CHKERRQ(ierr);
+    PetscTruth flg = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-pc_turn_off_second_balancing",&flg,PETSC_NULL);CHKERRQ(ierr);
     if (!flg) {
       ierr = PCNNBalancing(pc,r,vec1_B,z,vec2_B,vec3_B,(Vec)0,vec1_D,vec2_D,work_N);CHKERRQ(ierr);
     } else {

@@ -11,7 +11,7 @@ int main(int argc,char **argv)
   PetscMPIInt    rank;
   PetscInt       M=8,dof=1,stencil_width=1,i,start,end,P=5,N = 6,m=PETSC_DECIDE,n=PETSC_DECIDE,p=PETSC_DECIDE,pt = 0,st = 0;
   PetscErrorCode ierr;
-  PetscTruth     flg,flg2,flg3;
+  PetscTruth     flg = PETSC_FALSE,flg2,flg3;
   DAPeriodicType periodic;
   DAStencilType  stencil_type;
   DA             da;
@@ -71,7 +71,8 @@ int main(int argc,char **argv)
   ierr = DALocalToLocalBegin(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
   ierr = DALocalToLocalEnd(da,local,INSERT_VALUES,local_copy);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-save",&flg);CHKERRQ(ierr);
+  
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-save",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
     sprintf(filename,"local.%d",rank);

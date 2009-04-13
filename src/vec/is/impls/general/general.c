@@ -237,7 +237,7 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
   PetscInt       n = sub->n,i,min,max;
   const PetscInt *idx = sub->idx;
   PetscTruth     sorted = PETSC_TRUE;
-  PetscTruth     flg;
+  PetscTruth     flg = PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidPointer(is,4);
@@ -263,7 +263,7 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
   ierr = PetscMemcpy(Nindex->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   Nindex->isperm     = PETSC_FALSE;
   Nindex->isidentity = PETSC_FALSE;
-  ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-is_view",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
     ierr = PetscViewerASCIIGetStdout(((PetscObject)Nindex)->comm,&viewer);CHKERRQ(ierr);

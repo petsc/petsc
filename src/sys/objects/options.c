@@ -452,7 +452,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   char           pfile[PETSC_MAX_PATH_LEN];
-  PetscTruth     flag;
+  PetscTruth     flag = PETSC_FALSE;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -463,7 +463,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
   if (file) {
     ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD,file,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-skip_petscrc",&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(PETSC_NULL,"-skip_petscrc",&flag,PETSC_NULL);CHKERRQ(ierr);
   if (!flag) {
     ierr = PetscGetHomeDirectory(pfile,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
     /* warning: assumes all processes have a home directory or none, but nothing in between */
@@ -1004,7 +1004,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsReject(const char name[],const char m
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsHasName"
 /*@C
-   PetscOptionsHasName - Determines whether a certain option is given in the database.
+   PetscOptionsHasName - Determines whether a certain option is given in the database. This returns true whether the option is a number, string or boolean, even 
+                      its value is set to false.
 
    Not Collective
 
@@ -1021,6 +1022,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsReject(const char name[],const char m
 
    Notes: Name cannot be simply -h
 
+          In many cases you probably want to use PetscOptionsGetTruth() instead of calling this, to allowing toggling values.
+
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),
            PetscOptionsGetString(), PetscOptionsGetIntArray(), PetscOptionsGetRealArray(), PetscOptionsTruth(),
           PetscOptionsName(), PetscOptionsBegin(), PetscOptionsEnd(), PetscOptionsHead(),
@@ -1032,20 +1035,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsHasName(const char pre[],const char n
 {
   char           *value;
   PetscErrorCode ierr;
-  PetscTruth     isfalse,flag;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   ierr = PetscOptionsFindPair_Private(pre,name,&value,&flag);CHKERRQ(ierr);
-
-  /* remove if turned off */
-  if (flag) {    
-    ierr = PetscStrcasecmp(value,"FALSE",&isfalse);CHKERRQ(ierr);
-    if (isfalse) flag = PETSC_FALSE;
-    ierr = PetscStrcasecmp(value,"NO",&isfalse);CHKERRQ(ierr);
-    if (isfalse) flag = PETSC_FALSE;
-    ierr = PetscStrcasecmp(value,"0",&isfalse);CHKERRQ(ierr);
-    if (isfalse) flag = PETSC_FALSE;
-  }
   if (flg) *flg = flag;
   PetscFunctionReturn(0);
 }
